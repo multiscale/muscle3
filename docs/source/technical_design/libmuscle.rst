@@ -150,3 +150,8 @@ Actual communication is done by a TCP submodule, which knows how to
 set up a connection to a peer given its network location, and
 performs actual communication. In the future, we envision submodules
 for other protocols as well, e.g. MPI.
+
+
+.. _`submodel.py`: https://github.com/multiscale/littlemuscle/blob/develop/littlemuscle/submodel.py
+.. _`LittleMuscle`: https://github.com/multiscale/littlemuscle
+

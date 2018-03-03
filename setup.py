@@ -19,7 +19,8 @@ setup(
         install_requires=[],
         extras_require={
             'dev': [
-                'pytest'
+                'pytest',
+                'pytest-cov'
                 ]
             },
         )

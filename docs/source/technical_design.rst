@@ -18,7 +18,7 @@ submodels can exchange information when needed, that the model configuration
 and parameters are available to the submodels, and in case of dynamic use of
 compute resources, that the correct set of submodels is running when needed.
 Thus, the coupling library provides coordination and communication in addition
-the computing done by the submodels.
+to the computing done by the submodels.
 
 MUSCLE 3 is the third major version of the Multiscale Coupling Library and
 Environment. MUSCLE is grounded in a solid theoretical basis provided by the
@@ -126,7 +126,7 @@ Model description
 -----------------
 
 The description of a model comprises a description of its kernels, the
-instances of those kernels that the running model is made of of, and the
+instances of those kernels that the running model is made of, and the
 conduits that carry information between the instances. This information is read
 by the manager from a configuration file in yMML format. In this section, the
 model description is described in more detail.

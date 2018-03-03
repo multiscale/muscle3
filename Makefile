@@ -1,3 +1,3 @@
 .PHONY: test
 test:
-	pytest --cov-report xml --cov-report term --cov
+	pytest --cov-report xml --cov-report term --cov --pep8

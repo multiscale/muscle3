@@ -13,7 +13,7 @@ Environment.
    :maxdepth: 4
    :caption: Contents:
 
-   technical_design
+   technical_design/index.rst
    road_map
    apidocs/modules
 

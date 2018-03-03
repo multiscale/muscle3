@@ -1,3 +1,4 @@
 docs/build
+MUSCLE_3.egg-info/
 */**/__pycache__
 .swp

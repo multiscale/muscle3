@@ -22,6 +22,7 @@ setup(
             'pytest',
             'pytest-cov',
             'pytest-pep8',
+            'mypy',
         ]
     },
 )

@@ -1,3 +1,2 @@
-def test_test():
+def test_test() -> None:
     """Test the test system."""
-    pass

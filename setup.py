@@ -19,7 +19,7 @@ setup(
     install_requires=[],
     extras_require={
         'dev': [
-            'codacy-coverage=1.3.10',
+            'codacy-coverage==1.3.10',
             'mypy==0.570',
             'pytest==3.4.1',
             'pytest-cov==2.5.1',

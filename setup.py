@@ -19,10 +19,12 @@ setup(
     install_requires=[],
     extras_require={
         'dev': [
+            'mypy',
             'pytest',
             'pytest-cov',
             'pytest-pep8',
-            'mypy',
+            'sphinx',
+            'sphinx_rtd_theme',
         ]
     },
 )

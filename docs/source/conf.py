@@ -91,11 +91,14 @@ def run_apidoc(_):
     cur_dir = os.path.abspath(os.path.dirname(__file__))
     output_dir = os.path.join(cur_dir, 'apidocs')
 
-    libmuscle_dir = os.path.join(cur_dir, '..', '..', 'libmuscle', 'python', 'libmuscle')
+    libmuscle_dir = os.path.join(
+            cur_dir, '..', '..', 'libmuscle', 'python', 'libmuscle')
     exclude_pattern = '*/test/*'
     sys.path.append(libmuscle_dir)
 
-    main(['sphinx-apidoc', '-e', '--force', '-o', output_dir, libmuscle_dir, exclude_pattern])
+    main([
+        'sphinx-apidoc', '-e', '--force', '-o', output_dir,
+        libmuscle_dir, exclude_pattern])
 
 
 def setup(app):

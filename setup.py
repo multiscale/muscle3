@@ -23,7 +23,7 @@ setup(
             'pytest',
             'pytest-cov',
             'pytest-pep8',
-            'sphinx',
+            'sphinx==1.6.5',
             'sphinx_rtd_theme',
         ]
     },

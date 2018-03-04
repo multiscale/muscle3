@@ -87,7 +87,7 @@ autoclass_content = 'both'
 # -- Run apidoc plug-in manually, as readthedocs doesn't support it -------
 # See https://github.com/rtfd/readthedocs.org/issues/1139
 def run_apidoc(_):
-    from sphinx.ext.apidoc import main
+    from sphinx.apidoc import main
     cur_dir = os.path.abspath(os.path.dirname(__file__))
     output_dir = os.path.join(cur_dir, 'apidocs')
 
@@ -95,7 +95,7 @@ def run_apidoc(_):
     exclude_pattern = '*/test/*'
     sys.path.append(libmuscle_dir)
 
-    main(['-e', '--force', '-o', output_dir, libmuscle_dir, exclude_pattern])
+    main(['sphinx-apidoc', '-e', '--force', '-o', output_dir, libmuscle_dir, exclude_pattern])
 
 
 def setup(app):

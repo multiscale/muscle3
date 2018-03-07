@@ -1,5 +1,5 @@
 .. image:: https://readthedocs.org/projects/muscle3/badge/?version=develop
-    :target: https://readthedocs.io/en/develop/?badge=develop
+    :target: https://muscle3.readthedocs.io/en/develop/?badge=develop
     :alt: Documentation Build Status
 
 .. image:: https://api.travis-ci.org/multiscale/muscle3.svg?branch=develop

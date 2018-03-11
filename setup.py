@@ -21,7 +21,7 @@ setup(
         'dev': [
             'codacy-coverage==1.3.10',
             'mypy==0.570',
-            'pytest==3.4.1',
+            'pytest==3.4.2',
             'pytest-cov==2.5.1',
             'pytest-pep8==1.0.6',
             'sphinx==1.6.5',

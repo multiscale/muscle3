@@ -1,2 +1,8 @@
 docs/build
-.swp
+MUSCLE_3.egg-info/
+**/__pycache__
+.pytest_cache
+**/.mypy_cache
+.coverage
+coverage.xml
+**/*.swp

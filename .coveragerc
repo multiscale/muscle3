@@ -1,0 +1,5 @@
+[run]
+
+include =
+    muscle_manager/*
+    libmuscle/python/libmuscle/*

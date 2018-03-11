@@ -51,6 +51,6 @@ to everyone. In order to ensure that it stays that way, we have a
 `code of conduct`_, and we will enforce it if necessary. Please treat your
 fellow human beings with respect.
 
-.. _`documentation on contributing`: https://readthedocs.io/en/develop/TODO
+.. _`documentation on contributing`: http://muscle3.readthedocs.io/en/latest/contributing.html
 .. _`ComPat`: http://www.compat.eu
 .. _`code of conduct`: https://github.com/multiscale/muscle3/blob/develop/CODE_OF_CONDUCT.md

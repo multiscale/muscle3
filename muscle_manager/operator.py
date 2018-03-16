@@ -12,4 +12,5 @@ class Operator(Enum):
     O_I = 2
     S = 3
     B = 4
-    MAP = 5
+    O_F = 5
+    MAP = 6

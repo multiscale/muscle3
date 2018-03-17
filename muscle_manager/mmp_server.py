@@ -31,7 +31,7 @@ class MMPServer(mmp_grpc.MuscleManagerServicer):
             request: mmp.LogMessage,
             context: grpc.ServicerContext
             ) -> mmp.LogResult:
-
+        """Forwards a submitted log message to the Logger."""
         self.__logger.log_message(
                 request.instance_id,
                 operator_from_grpc(request.operator),

@@ -16,10 +16,13 @@ setup(
         'Programming Language :: Python :: 3.6'],
 
     python_requires='>=3.5, <4',
-    install_requires=[],
+    install_requires=[
+        'grpcio==1.10.0'
+    ],
     extras_require={
         'dev': [
             'codacy-coverage==1.3.10',
+            'grpcio-tools==1.10.0',
             'mypy==0.570',
             'pytest==3.4.2',
             'pytest-cov==2.5.1',

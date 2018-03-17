@@ -1,5 +1,5 @@
-from muscle_manager.logger import LogLevel
-from muscle_manager.operator import Operator
+from libmuscle.log_level import LogLevel
+from libmuscle.operator import Operator
 import muscle_manager.protocol.muscle_manager_protocol_pb2 as mmp
 
 from typing import Dict

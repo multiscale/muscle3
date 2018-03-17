@@ -1,7 +1,8 @@
 import logging
 
-from muscle_manager.logger import LogLevel, Logger
-from muscle_manager.operator import Operator
+from libmuscle.log_level import LogLevel
+from libmuscle.operator import Operator
+from muscle_manager.logger import Logger
 
 
 def test_log_level():

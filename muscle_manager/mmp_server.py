@@ -4,9 +4,12 @@ from typing import Any, Dict
 
 import grpc
 
-from muscle_manager.logger import Logger, LogLevel
-from muscle_manager.operator import Operator
-from muscle_manager.grpc_support import operator_from_grpc, log_level_from_grpc
+from libmuscle.grpc_support import operator_from_grpc, log_level_from_grpc
+from libmuscle.log_level import LogLevel
+from libmuscle.operator import Operator
+
+from muscle_manager.logger import Logger
+
 import muscle_manager.protocol.muscle_manager_protocol_pb2 as mmp
 import muscle_manager.protocol.muscle_manager_protocol_pb2_grpc as mmp_grpc
 

@@ -49,7 +49,7 @@ class Logger:
             self,
             instance_id: str,
             operator: Operator,
-            time_stamp: str,
+            timestamp: str,
             level: LogLevel,
             text: str) -> None:
         """Log a message.
@@ -58,7 +58,7 @@ class Logger:
             instance_id: Identifier of the instance that generated the \
                     message.
             operator: The operator that generated the message.
-            time_stamp: Time when this log message was generated, \
+            timestamp: Time when this log message was generated, \
                     according to the clock on that machine.
             level: The log level of the message.
             text: The message text.
@@ -67,6 +67,6 @@ class Logger:
                 level.as_python_level(),
                 text,
                 extra={
-                    'time_stamp': time_stamp,
+                    'time_stamp': timestamp,
                     'instance_id': instance_id,
                     'operator': operator.name})

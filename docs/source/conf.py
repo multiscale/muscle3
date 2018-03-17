@@ -92,13 +92,20 @@ def run_apidoc(_):
     output_dir = os.path.join(cur_dir, 'apidocs')
 
     libmuscle_dir = os.path.join(
-            cur_dir, '..', '..', 'libmuscle', 'python', 'libmuscle')
-    exclude_pattern = '*/test/*'
+            cur_dir, '..', '..', 'libmuscle', 'python')
     sys.path.append(libmuscle_dir)
 
-    main([
-        'sphinx-apidoc', '-e', '--force', '-o', output_dir,
-        libmuscle_dir, exclude_pattern])
+    args = [
+            'sphinx-apidoc',
+            '-e',
+            '--force',
+            '-o', output_dir,
+            libmuscle_dir,
+            '*/test',
+            'muscle_manager/protocol/*',
+            'libmuscle/python/libmuscle/manager_protocol/*'
+    ]
+    main(args)
 
 
 def setup(app):

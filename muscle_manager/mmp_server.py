@@ -4,8 +4,7 @@ from typing import Any, Dict
 
 import grpc
 
-from libmuscle.grpc_support import operator_from_grpc, log_level_from_grpc
-from libmuscle.log_level import LogLevel
+from libmuscle.logging import LogLevel
 from libmuscle.operator import Operator
 
 from muscle_manager.logger import Logger
@@ -37,7 +36,7 @@ class MMPServer(mmp_grpc.MuscleManagerServicer):
         """Forwards a submitted log message to the Logger."""
         self.__logger.log_message(
                 request.instance_id,
-                operator_from_grpc(request.operator),
+                Operator.from_grpc(request.operator),
                 request.timestamp,
-                log_level_from_grpc(request.level),
+                LogLevel.from_grpc(request.level),
                 request.text)

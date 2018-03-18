@@ -1,6 +1,6 @@
 import logging
 
-from libmuscle.log_level import LogLevel
+from libmuscle.logging import LogLevel
 from libmuscle.operator import Operator
 from muscle_manager.logger import Logger
 

@@ -1,7 +1,7 @@
 from enum import Enum
 import logging
 
-from libmuscle.log_level import LogLevel
+from libmuscle.logging import LogLevel
 from libmuscle.operator import Operator
 
 

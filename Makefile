@@ -1,7 +1,8 @@
 .PHONY: test
 test:
 	mypy --strict muscle_manager libmuscle/python
-	pytest --cov-report xml --cov-report term-missing --cov --pep8
+	pytest --cov-report xml --cov-report term-missing --cov
+	pytest --pep8 -m pep8
 
 .PHONY: docs-clean
 docs-clean:

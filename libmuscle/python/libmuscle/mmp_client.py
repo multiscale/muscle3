@@ -16,7 +16,7 @@ class MMPClient():
     """
     def __init__(self) -> None:
         channel = grpc.insecure_channel('localhost:9000')
-        self.__client = mmp_grpc.MuscleManagerStub(channel)     # type: ignore
+        self.__client = mmp_grpc.MuscleManagerStub(channel)
 
     def submit_log_message(self, message: LogMessage) -> None:
         self.__client.SubmitLogMessage(message.to_grpc())

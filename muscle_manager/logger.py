@@ -1,7 +1,8 @@
 from enum import Enum
 import logging
+from pathlib import Path
 
-from libmuscle.logging import LogLevel
+from libmuscle.logging import LogLevel, Timestamp
 from libmuscle.operator import Operator
 
 
@@ -13,15 +14,15 @@ class Logger:
     """
     def __init__(self) -> None:
         logging.basicConfig(
-                format='%(time_stamp)-15s: %(instance_id)s ' +
-                '(%(operator)s) %(levelname)s: %(message)s')
-        self.__logger = logging.getLogger("muscle3.manager")
+                format='%(time_stamp)-15s: %(name)s ' +
+                '(%(operator)s) %(levelname)s: %(message)s',
+                level=logging.DEBUG)
 
     def log_message(
             self,
             instance_id: str,
             operator: Operator,
-            timestamp: str,
+            timestamp: Timestamp,
             level: LogLevel,
             text: str) -> None:
         """Log a message.
@@ -35,10 +36,10 @@ class Logger:
             level: The log level of the message.
             text: The message text.
         """
-        self.__logger.log(
+        logger = logging.getLogger(instance_id)
+        logger.log(
                 level.as_python_level(),
                 text,
                 extra={
-                    'time_stamp': timestamp,
-                    'instance_id': instance_id,
+                    'time_stamp': timestamp.to_rfc3339(),
                     'operator': operator.name})

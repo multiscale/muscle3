@@ -1,5 +1,7 @@
+import datetime
 from enum import Enum
 import logging
+import time
 from typing import Dict, NewType
 
 import muscle_manager.protocol.muscle_manager_protocol_pb2 as mmp
@@ -33,7 +35,6 @@ class LogLevel(Enum):
                 LogLevel.PROFILE: logging.INFO,
                 LogLevel.INFO: logging.INFO,
                 LogLevel.DEBUG: logging.DEBUG}
-
         return to_python_level[self]
 
     @staticmethod
@@ -78,24 +79,48 @@ class LogLevel(Enum):
         return log_level_map[self]
 
 
-Timestamp = NewType('Timestamp', float)
-"""A timestamp, as the number of seconds since the UNIX epoch."""
-
-
-def timestamp_to_grpc(
-        timestamp: Timestamp
-        ) -> pbts.Timestamp:
-    """Converts a Timestamp to the gRPC type.
+class Timestamp:
+    """A timestamp, as the number of seconds since the UNIX epoch.
 
     Args:
-        timestamp: A timestamp.
-
-    Returns:
-        The same timestamp, as a gRPC object.
+        seconds: The number of seconds since the start of 1970.
     """
-    seconds = int(timestamp)
-    nanos = int((timestamp - seconds) * 10**9)
-    return pbts.Timestamp(seconds=seconds, nanos=nanos)
+    def __init__(self, seconds: float) -> None:
+        self.__seconds = seconds
+
+    def to_rfc3339(self) -> str:
+        """Converts a Timestamp to a datetime string.
+
+        Returns:
+            The timestamp as a string.
+        """
+        date_time = datetime.datetime.utcfromtimestamp(self.__seconds)
+        return date_time.isoformat() + 'Z'
+
+    @staticmethod
+    def from_grpc(timestamp: pbts.Timestamp) -> 'Timestamp':
+        """Creates a Timestamp from a gRPC Timestamp message.
+
+        Args:
+            timestamp: A gRPC Timestamp from a gRPC call.
+
+        Returns:
+            The same timestamp as a Timestamp object.
+        """
+        return Timestamp(timestamp.seconds + timestamp.nanos * 1e-9)
+
+    def to_grpc(self) -> pbts.Timestamp:
+        """Converts a Timestamp to the gRPC type.
+
+        Args:
+            timestamp: A timestamp.
+
+        Returns:
+            The same timestamp, as a gRPC object.
+        """
+        seconds = int(self.__seconds)
+        nanos = int((self.__seconds - seconds) * 10**9)
+        return pbts.Timestamp(seconds=seconds, nanos=nanos)
 
 
 class LogMessage:
@@ -144,6 +169,6 @@ class LogMessage:
         return mmp.LogMessage(
                 instance_id=self.instance_id,
                 operator=self.operator.to_grpc(),
-                timestamp=timestamp_to_grpc(self.timestamp),
+                timestamp=self.timestamp.to_grpc(),
                 level=self.level.to_grpc(),
                 text=self.text)

@@ -5,7 +5,7 @@ from typing import Any, Dict
 
 import grpc
 
-from libmuscle.logging import LogLevel
+from libmuscle.logging import LogLevel, Timestamp
 from libmuscle.operator import Operator
 
 from muscle_manager.logger import Logger
@@ -38,7 +38,7 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
         self.__logger.log_message(
                 request.instance_id,
                 Operator.from_grpc(request.operator),
-                request.timestamp,
+                Timestamp.from_grpc(request.timestamp),
                 LogLevel.from_grpc(request.level),
                 request.text)
         return mmp.LogResult()

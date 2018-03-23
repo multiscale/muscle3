@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package muscle_manager_protocol;
+
+// The MUSCLE Manager Protocol
+service MuscleManager {
+    // Sends a logged message to the Manager
+    rpc SubmitLogMessage(LogMessage) returns (LogResult);
+}
+
+// MML operators
+enum Operator {
+    OPERATOR_NONE = 0;
+    OPERATOR_F_INIT = 1;
+    OPERATOR_O_I = 2;
+    OPERATOR_S = 3;
+    OPERATOR_B = 4;
+    OPERATOR_O_F = 5;
+    OPERATOR_MAP = 6;
+}
+
+// Log levels
+enum LogLevel {
+    LOG_LEVEL_DEBUG = 0;
+    LOG_LEVEL_INFO = 1;
+    LOG_LEVEL_PROFILE = 2;
+    LOG_LEVEL_WARNING = 3;
+    LOG_LEVEL_ERROR = 4;
+    LOG_LEVEL_CRITICAL = 5;
+}
+
+// A log message
+message LogMessage {
+    string instance_id = 1;
+    Operator operator = 2;
+    google.protobuf.Timestamp timestamp = 3;
+    LogLevel level = 4;
+    string text = 5;
+}
+
+// Result of a SubmitLogMessage call, for future extensibility
+message LogResult {}
+
+

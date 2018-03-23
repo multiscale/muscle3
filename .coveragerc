@@ -3,3 +3,8 @@
 include =
     muscle_manager/*
     libmuscle/python/libmuscle/*
+
+omit =
+    # Generated code
+    muscle_manager/protocol/muscle_manager_protocol_pb2*
+    libmuscle/python/libmuscle/manager_protocol/*

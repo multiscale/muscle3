@@ -1,4 +1,3 @@
-import grpc
 import pytest
 
 import include_libmuscle

@@ -1,4 +1,4 @@
-from unittest.mock import call, Mock, patch
+from unittest.mock import call, patch
 
 from libmuscle.logging import LogLevel, LogMessage, Timestamp
 from libmuscle.mmp_client import MMPClient
@@ -6,7 +6,7 @@ from libmuscle.operator import Operator
 
 
 def test_init() -> None:
-    with patch('grpc.insecure_channel') as mock_channel:
+    with patch('grpc.insecure_channel'):
         with patch(
                 'libmuscle.manager_protocol.' +
                 'muscle_manager_protocol_pb2_grpc.MuscleManagerStub'

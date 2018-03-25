@@ -1,4 +1,4 @@
-from unittest.mock import call, patch
+from unittest.mock import patch
 
 from libmuscle.logging import LogLevel, LogMessage, Timestamp
 from libmuscle.mmp_client import MMPClient

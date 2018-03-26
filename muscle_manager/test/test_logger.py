@@ -12,7 +12,7 @@ def test_log_level():
 
 
 def test_create_logger():
-    logger = Logger()
+    Logger()
 
 
 def test_log_message(logger, caplog):

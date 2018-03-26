@@ -1,18 +1,13 @@
-import logging
-import time
-
 from muscle_manager.mmp_server import MMPServicer
 import muscle_manager.protocol.muscle_manager_protocol_pb2 as mmp
 from google.protobuf.timestamp_pb2 import Timestamp
 
 
 def test_create_servicer(logger):
-    server = MMPServicer(logger)
+    MMPServicer(logger)
 
 
 def test_log_message(mmp_servicer, caplog):
-    now = time.time()
-    seconds = int(now)
     timestamp = Timestamp()
     timestamp.FromJsonString("1970-01-01T00:00:00.000Z")
     message = mmp.LogMessage(

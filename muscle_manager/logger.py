@@ -1,6 +1,4 @@
-from enum import Enum
 import logging
-from pathlib import Path
 
 from libmuscle.logging import LogLevel, Timestamp
 from libmuscle.operator import Operator

@@ -1,7 +1,12 @@
-import grpc
+from typing import List
 
+import grpc
+from ymmsl import Endpoint, Reference
+
+import libmuscle.manager_protocol.muscle_manager_protocol_pb2 as mmp
 import libmuscle.manager_protocol.muscle_manager_protocol_pb2_grpc as mmp_grpc
 
+from libmuscle.endpoint import endpoint_to_grpc
 from libmuscle.logging import LogMessage
 
 
@@ -20,3 +25,12 @@ class MMPClient():
 
     def submit_log_message(self, message: LogMessage) -> None:
         self.__client.SubmitLogMessage(message.to_grpc())
+
+    def register_instance(self, name: Reference, location: str,
+                          endpoints: List[Endpoint]) -> None:
+        grpc_endpoints = list(map(endpoint_to_grpc, endpoints))
+        request = mmp.RegistrationRequest(
+                instance_name=str(name),
+                network_location=location,
+                endpoints=grpc_endpoints)
+        self.__client.RegisterInstance(request)

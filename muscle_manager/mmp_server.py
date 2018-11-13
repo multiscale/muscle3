@@ -3,7 +3,8 @@ from concurrent import futures
 import grpc
 
 from libmuscle.logging import LogLevel, Timestamp
-from libmuscle.operator import Operator
+from libmuscle.operator import operator_from_grpc
+from ymmsl import Operator
 
 from muscle_manager.logger import Logger
 
@@ -34,7 +35,7 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
         """Forwards a submitted log message to the Logger."""
         self.__logger.log_message(
                 request.instance_id,
-                Operator.from_grpc(request.operator),
+                operator_from_grpc(request.operator),
                 Timestamp.from_grpc(request.timestamp),
                 LogLevel.from_grpc(request.level),
                 request.text)

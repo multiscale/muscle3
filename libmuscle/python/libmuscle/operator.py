@@ -27,6 +27,7 @@ def operator_from_grpc(
             }   # type: Dict[int, Operator]
     return operator_map[operator]
 
+
 def operator_to_grpc(operator: Operator) -> mmp.Operator:
     """Converts the operator to the gRPC generated type.
 

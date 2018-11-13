@@ -22,7 +22,7 @@ setup(
     python_requires='>=3.5, <4',
     install_requires=[
         'grpcio==1.10.0',
-        'ymmsl==0.1.0'
+        'ymmsl==0.2.1'
     ],
     extras_require={
         'dev': [

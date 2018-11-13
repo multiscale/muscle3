@@ -19,6 +19,11 @@ class MuscleManagerStub(object):
         request_serializer=muscle__manager__protocol__pb2.LogMessage.SerializeToString,
         response_deserializer=muscle__manager__protocol__pb2.LogResult.FromString,
         )
+    self.RegisterInstance = channel.unary_unary(
+        '/muscle_manager_protocol.MuscleManager/RegisterInstance',
+        request_serializer=muscle__manager__protocol__pb2.RegistrationRequest.SerializeToString,
+        response_deserializer=muscle__manager__protocol__pb2.RegistrationResult.FromString,
+        )
 
 
 class MuscleManagerServicer(object):
@@ -32,6 +37,13 @@ class MuscleManagerServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def RegisterInstance(self, request, context):
+    """Registers a newly started kernel instance
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_MuscleManagerServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -39,6 +51,11 @@ def add_MuscleManagerServicer_to_server(servicer, server):
           servicer.SubmitLogMessage,
           request_deserializer=muscle__manager__protocol__pb2.LogMessage.FromString,
           response_serializer=muscle__manager__protocol__pb2.LogResult.SerializeToString,
+      ),
+      'RegisterInstance': grpc.unary_unary_rpc_method_handler(
+          servicer.RegisterInstance,
+          request_deserializer=muscle__manager__protocol__pb2.RegistrationRequest.FromString,
+          response_serializer=muscle__manager__protocol__pb2.RegistrationResult.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

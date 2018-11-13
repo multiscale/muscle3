@@ -14,9 +14,11 @@ Environment.
    :caption: Contents:
 
    contributing
+   devtools
 
    technical_design/index.rst
    road_map
+
    apidocs/modules
 
 

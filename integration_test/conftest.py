@@ -1,3 +1,6 @@
+import sys
+from typing import Generator
+
 import pytest
 
 import include_libmuscle
@@ -14,3 +17,11 @@ def mmp_server(tmpdir):
     server = MMPServer(logger, instance_registry)
     yield server
     server.stop()
+
+
+@pytest.fixture
+def replaced_sys_argv() -> Generator[None, None, None]:
+    old_argv = sys.argv
+    sys.argv = ['', '--muscle-manager=localhost:9000']
+    yield None
+    sys.argv = old_argv

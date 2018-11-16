@@ -4,7 +4,7 @@ from libmuscle.operator import Operator
 
 
 def test_logging(mmp_server, caplog):
-    client = MMPClient()
+    client = MMPClient('localhost:9000')
     message = LogMessage(
             instance_id='test_logging',
             operator=Operator.O_F,

@@ -5,7 +5,7 @@ from libmuscle.mmp_client import MMPClient
 
 
 def test_registration(mmp_server):
-    client = MMPClient()
+    client = MMPClient('localhost:9000')
     instance_name = Reference.from_string('test_instance')
     endpoint = Endpoint(
             Reference.from_string('test_in'),

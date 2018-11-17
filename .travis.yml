@@ -3,7 +3,14 @@ python:
     - "3.5"
     - "3.6"
 
-install: "pip install -e .[dev]"
+# Travis comes with an old pytest that does not work with pytest-flake8
+# So upgrade that first.
+before_install:
+  - pip install --upgrade pytest
+
+install:
+  - pip install codacy-coverage
+
 script: make test
 
 after_success:

@@ -1,8 +1,7 @@
 .PHONY: test
+test: export MYPYPATH=libmuscle/python
 test:
-	mypy --strict muscle_manager libmuscle/python
-	pytest --cov-report xml --cov-report term-missing --cov
-	pytest --pep8 -m pep8
+	python3 setup.py test
 
 .PHONY: docs-clean
 docs-clean:

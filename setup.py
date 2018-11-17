@@ -5,9 +5,8 @@ setup(
     version='0.0.0.dev',
     description='Version 3 of the MUltiScale Coupling Library and Environment',
     author='Lourens Veen',
-    author_email='l.veen@esciencecenter.nl'
+    author_email='l.veen@esciencecenter.nl',
     url='https://github.com/multiscale/muscle3',
-    download_url='https://github.com/multiscale/muscle3/archive/develop.tar.gz',
     license='Apache License 2.0',
     keywords=['multiscale', 'coupling', 'MUSCLE'],
     classifiers=[
@@ -27,16 +26,29 @@ setup(
         'grpcio==1.10.0',
         'ymmsl==0.2.1'
     ],
+    setup_requires=[
+        'pytest-runner',
+        # dependencies for `python setup.py build_sphinx`
+        'sphinx',
+        'recommonmark',
+        'sphinx-rtd-theme'
+    ],
+    tests_require=[
+        'coverage<5',
+        'mypy',
+        'pytest>=3.5',
+        'pytest-cov',
+        'pytest-pep8',
+        'pytest-flake8',
+        'pytest-mypy'
+    ],
     extras_require={
         'dev': [
-            'codacy-coverage==1.3.10',
             'grpcio-tools==1.10.0',
-            'mypy==0.570',
-            'pytest==3.4.2',
-            'pytest-cov==2.5.1',
-            'pytest-pep8==1.0.6',
             'sphinx==1.6.5',
             'sphinx_rtd_theme==0.2.4',
+            'yapf',
+            'isort'
         ]
     },
 )

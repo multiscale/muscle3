@@ -2,9 +2,12 @@ from concurrent import futures
 
 import grpc
 
+from libmuscle.endpoint import endpoint_from_grpc
 from libmuscle.logging import LogLevel, Timestamp
-from libmuscle.operator import Operator
+from libmuscle.operator import operator_from_grpc
+from ymmsl import Endpoint, Operator
 
+from muscle_manager.instance_registry import InstanceRegistry
 from muscle_manager.logger import Logger
 
 import muscle_manager.protocol.muscle_manager_protocol_pb2 as mmp
@@ -22,9 +25,11 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
     """
     def __init__(
             self,
-            logger: Logger
+            logger: Logger,
+            instance_registry: InstanceRegistry
             ) -> None:
         self.__logger = logger
+        self.__instance_registry = instance_registry
 
     def SubmitLogMessage(
             self,
@@ -34,11 +39,31 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
         """Forwards a submitted log message to the Logger."""
         self.__logger.log_message(
                 request.instance_id,
-                Operator.from_grpc(request.operator),
+                operator_from_grpc(request.operator),
                 Timestamp.from_grpc(request.timestamp),
                 LogLevel.from_grpc(request.level),
                 request.text)
         return mmp.LogResult()
+
+    def RegisterInstance(
+            self,
+            request: mmp.RegistrationRequest,
+            context: grpc.ServicerContext
+            ) -> mmp.RegistrationResult:
+        """Handles an instance registration request."""
+        try:
+            endpoints = list(map(endpoint_from_grpc, request.endpoints))
+            self.__instance_registry.add(
+                    request.instance_name,
+                    request.network_location,
+                    endpoints)
+            return mmp.RegistrationResult(status=mmp.RESULT_STATUS_SUCCESS)
+        except ValueError:
+            return mmp.RegistrationResult(
+                    status=mmp.RESULT_STATUS_ERROR,
+                    error_message=('An instance with name {} was already'
+                                   ' registered').format(
+                                           request.instance_name))
 
 
 class MMPServer():
@@ -50,9 +75,10 @@ class MMPServer():
     """
     def __init__(
             self,
-            logger: Logger
+            logger: Logger,
+            instance_registry: InstanceRegistry
             ) -> None:
-        self.__servicer = MMPServicer(logger)
+        self.__servicer = MMPServicer(logger, instance_registry)
         self.__server = grpc.server(futures.ThreadPoolExecutor(max_workers=2))
         mmp_grpc.add_MuscleManagerServicer_to_server(
                 self.__servicer, self.__server)

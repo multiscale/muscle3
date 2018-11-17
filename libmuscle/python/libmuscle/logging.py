@@ -2,11 +2,12 @@ import datetime
 from enum import Enum
 import logging
 from typing import Dict, NewType
+from ymmsl import Operator
 
 import muscle_manager.protocol.muscle_manager_protocol_pb2 as mmp
 import google.protobuf.timestamp_pb2 as pbts
 
-from libmuscle.operator import Operator
+from libmuscle.operator import operator_to_grpc
 
 
 class LogLevel(Enum):
@@ -167,7 +168,7 @@ class LogMessage:
         """
         return mmp.LogMessage(
                 instance_id=self.instance_id,
-                operator=self.operator.to_grpc(),
+                operator=operator_to_grpc(self.operator),
                 timestamp=self.timestamp.to_grpc(),
                 level=self.level.to_grpc(),
                 text=self.text)

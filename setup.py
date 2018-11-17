@@ -1,8 +1,11 @@
 from setuptools import setup
+
 setup(
     name='MUSCLE 3',
-    version='develop',
+    version='0.0.0.dev',
     description='Version 3 of the MUltiScale Coupling Library and Environment',
+    author='Lourens Veen',
+    author_email='l.veen@esciencecenter.nl'
     url='https://github.com/multiscale/muscle3',
     download_url='https://github.com/multiscale/muscle3/archive/develop.tar.gz',
     license='Apache License 2.0',

@@ -1,17 +1,3 @@
-.PHONY: test
-test: export MYPYPATH=libmuscle/python
-test:
-	python3 setup.py test
-
-.PHONY: docs-clean
-docs-clean:
-	rm -rf docs/source/apidocs/*
-	rm -rf docs/build/*
-
-.PHONY: docs
-docs:
-	sphinx-build -a docs/source/ docs/build
-
 .PHONY: grpc
 grpc:
 	# Server

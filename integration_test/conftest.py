@@ -3,7 +3,7 @@ from typing import Generator
 
 import pytest
 
-import include_libmuscle
+import integration_test.include_libmuscle
 
 from muscle_manager.instance_registry import InstanceRegistry
 from muscle_manager.logger import Logger

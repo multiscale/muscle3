@@ -80,7 +80,7 @@ class MMPServer():
             ) -> None:
         self.__servicer = MMPServicer(logger, instance_registry)
         self.__server = grpc.server(futures.ThreadPoolExecutor(max_workers=2))
-        mmp_grpc.add_MuscleManagerServicer_to_server(
+        mmp_grpc.add_MuscleManagerServicer_to_server(  # type: ignore
                 self.__servicer, self.__server)
         self.__server.add_insecure_port('[::]:9000')
         self.__server.start()

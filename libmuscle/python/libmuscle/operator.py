@@ -42,5 +42,5 @@ def operator_to_grpc(operator: Operator) -> mmp.Operator:
             Operator.B: mmp.OPERATOR_B,
             Operator.O_F: mmp.OPERATOR_O_F,
             Operator.MAP: mmp.OPERATOR_MAP
-            }   # type: Dict[Operator, int]
+            }   # type: Dict[Operator, mmp.Operator]
     return operator_map[operator]

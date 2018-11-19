@@ -32,7 +32,7 @@ class MMPClient():
         except grpc.FutureTimeoutError:
             raise RuntimeError('Failed to connect to the MUSCLE manager')
 
-        self.__client = mmp_grpc.MuscleManagerStub(channel)
+        self.__client = mmp_grpc.MuscleManagerStub(channel)  # type: ignore
 
     def submit_log_message(self, message: LogMessage) -> None:
         """Send a log message to the manager.
@@ -44,7 +44,6 @@ class MMPClient():
 
     def register_instance(self, name: Reference, location: str,
                           endpoints: List[Endpoint]) -> None:
-        grpc_endpoints = list(map(endpoint_to_grpc, endpoints))
         """Register a compute element instance with the manager.
 
         Args:
@@ -53,7 +52,10 @@ class MMPClient():
                     reached.
             endpoints: List of endpoints of this instance.
         """
-        request = mmp.RegistrationRequest(
+        grpc_endpoints = map(endpoint_to_grpc, endpoints)
+        # The following breaks mypy 0.641
+        # See https://github.com/python/mypy/issues/4546
+        request = mmp.RegistrationRequest(  # type: ignore
                 instance_name=str(name),
                 network_location=location,
                 endpoints=grpc_endpoints)

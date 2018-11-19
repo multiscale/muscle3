@@ -56,7 +56,7 @@ class LogLevel(Enum):
                 mmp.LOG_LEVEL_WARNING: LogLevel.WARNING,
                 mmp.LOG_LEVEL_ERROR: LogLevel.ERROR,
                 mmp.LOG_LEVEL_CRITICAL: LogLevel.CRITICAL
-                }  # type: Dict[int, LogLevel]
+                }  # type: Dict[mmp.LogLevel, LogLevel]
         return log_level_map[level]
 
     def to_grpc(self) -> mmp.LogLevel:
@@ -75,7 +75,7 @@ class LogLevel(Enum):
                 LogLevel.WARNING: mmp.LOG_LEVEL_WARNING,
                 LogLevel.ERROR: mmp.LOG_LEVEL_ERROR,
                 LogLevel.CRITICAL: mmp.LOG_LEVEL_CRITICAL
-                }  # type: Dict[LogLevel, int]
+                }  # type: Dict[LogLevel, mmp.LogLevel]
         return log_level_map[self]
 
 

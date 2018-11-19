@@ -20,8 +20,9 @@ def test_init() -> None:
 
 
 def test_connection_fail() -> None:
-    with pytest.raises(RuntimeError):
-        MMPClient('localhost:9000')
+    with patch('libmuscle.mmp_client.CONNECTION_TIMEOUT', 1):
+        with pytest.raises(RuntimeError):
+            MMPClient('localhost:9000')
 
 
 def test_submit_log_message(mocked_mmp_client) -> None:

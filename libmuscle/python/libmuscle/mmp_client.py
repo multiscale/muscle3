@@ -10,6 +10,9 @@ from libmuscle.endpoint import endpoint_to_grpc
 from libmuscle.logging import LogMessage
 
 
+CONNECTION_TIMEOUT = 300
+
+
 class MMPClient():
     """The client for the MUSCLE Manager Protocol.
 
@@ -28,7 +31,7 @@ class MMPClient():
         channel = grpc.insecure_channel(location)
         ready = grpc.channel_ready_future(channel)
         try:
-            ready.result(timeout=6)
+            ready.result(timeout=CONNECTION_TIMEOUT)
         except grpc.FutureTimeoutError:
             raise RuntimeError('Failed to connect to the MUSCLE manager')
 

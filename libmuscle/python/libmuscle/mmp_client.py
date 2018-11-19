@@ -56,9 +56,7 @@ class MMPClient():
             endpoints: List of endpoints of this instance.
         """
         grpc_endpoints = map(endpoint_to_grpc, endpoints)
-        # The following breaks mypy 0.641
-        # See https://github.com/python/mypy/issues/4546
-        request = mmp.RegistrationRequest(  # type: ignore
+        request = mmp.RegistrationRequest(
                 instance_name=str(name),
                 network_location=location,
                 endpoints=grpc_endpoints)

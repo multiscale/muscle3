@@ -4,7 +4,7 @@ from ymmsl import Endpoint, Reference, Operator
 
 from libmuscle.operator import operator_from_grpc
 
-import muscle_manager.protocol.muscle_manager_protocol_pb2 as mmp
+import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
 
 
 class InstanceRegistry:

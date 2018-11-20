@@ -3,8 +3,8 @@ from typing import List
 import grpc
 from ymmsl import Endpoint, Operator, Reference
 
-import libmuscle.manager_protocol.muscle_manager_protocol_pb2 as mmp
-import libmuscle.manager_protocol.muscle_manager_protocol_pb2_grpc as mmp_grpc
+import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
+import muscle_manager_protocol.muscle_manager_protocol_pb2_grpc as mmp_grpc
 
 from libmuscle.endpoint import endpoint_to_grpc
 from libmuscle.logging import LogMessage
@@ -35,7 +35,7 @@ class MMPClient():
         except grpc.FutureTimeoutError:
             raise RuntimeError('Failed to connect to the MUSCLE manager')
 
-        self.__client = mmp_grpc.MuscleManagerStub(channel)  # type: ignore
+        self.__client = mmp_grpc.MuscleManagerStub(channel)
 
     def submit_log_message(self, message: LogMessage) -> None:
         """Send a log message to the manager.

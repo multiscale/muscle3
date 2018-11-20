@@ -10,7 +10,7 @@ from libmuscle.operator import Operator
 def test_init() -> None:
     with patch('libmuscle.mmp_client.grpc.insecure_channel'), \
          patch('libmuscle.mmp_client.grpc.channel_ready_future'), \
-         patch('libmuscle.manager_protocol.' +
+         patch('muscle_manager_protocol.' +
                'muscle_manager_protocol_pb2_grpc.MuscleManagerStub'
                ) as mock_stub:
 

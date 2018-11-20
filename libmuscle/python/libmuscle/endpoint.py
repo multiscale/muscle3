@@ -2,7 +2,7 @@ from ymmsl import Endpoint, Reference
 
 from libmuscle.operator import operator_from_grpc, operator_to_grpc
 
-import muscle_manager.protocol.muscle_manager_protocol_pb2 as mmp
+import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
 
 
 def endpoint_from_grpc(endpoint: mmp.Endpoint) -> Endpoint:

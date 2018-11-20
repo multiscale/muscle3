@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Dict
 
 from ymmsl import Operator
-import muscle_manager.protocol.muscle_manager_protocol_pb2 as mmp
+import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
 
 
 def operator_from_grpc(

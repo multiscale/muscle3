@@ -4,7 +4,7 @@ import logging
 from typing import Dict, NewType
 from ymmsl import Operator
 
-import muscle_manager.protocol.muscle_manager_protocol_pb2 as mmp
+import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
 import google.protobuf.timestamp_pb2 as pbts
 
 from libmuscle.operator import operator_to_grpc

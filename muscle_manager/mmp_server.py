@@ -10,8 +10,8 @@ from ymmsl import Endpoint, Operator
 from muscle_manager.instance_registry import InstanceRegistry
 from muscle_manager.logger import Logger
 
-import muscle_manager.protocol.muscle_manager_protocol_pb2 as mmp
-import muscle_manager.protocol.muscle_manager_protocol_pb2_grpc as mmp_grpc
+import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
+import muscle_manager_protocol.muscle_manager_protocol_pb2_grpc as mmp_grpc
 
 
 class MMPServicer(mmp_grpc.MuscleManagerServicer):
@@ -80,7 +80,7 @@ class MMPServer():
             ) -> None:
         self.__servicer = MMPServicer(logger, instance_registry)
         self.__server = grpc.server(futures.ThreadPoolExecutor(max_workers=2))
-        mmp_grpc.add_MuscleManagerServicer_to_server(
+        mmp_grpc.add_MuscleManagerServicer_to_server(  # type: ignore
                 self.__servicer, self.__server)
         self.__server.add_insecure_port('[::]:9000')
         self.__server.start()

@@ -3,11 +3,14 @@ from typing import List
 import grpc
 from ymmsl import Endpoint, Operator, Reference
 
-import libmuscle.manager_protocol.muscle_manager_protocol_pb2 as mmp
-import libmuscle.manager_protocol.muscle_manager_protocol_pb2_grpc as mmp_grpc
+import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
+import muscle_manager_protocol.muscle_manager_protocol_pb2_grpc as mmp_grpc
 
 from libmuscle.endpoint import endpoint_to_grpc
 from libmuscle.logging import LogMessage
+
+
+CONNECTION_TIMEOUT = 300
 
 
 class MMPClient():
@@ -28,7 +31,7 @@ class MMPClient():
         channel = grpc.insecure_channel(location)
         ready = grpc.channel_ready_future(channel)
         try:
-            ready.result(timeout=6)
+            ready.result(timeout=CONNECTION_TIMEOUT)
         except grpc.FutureTimeoutError:
             raise RuntimeError('Failed to connect to the MUSCLE manager')
 
@@ -44,7 +47,6 @@ class MMPClient():
 
     def register_instance(self, name: Reference, location: str,
                           endpoints: List[Endpoint]) -> None:
-        grpc_endpoints = list(map(endpoint_to_grpc, endpoints))
         """Register a compute element instance with the manager.
 
         Args:
@@ -53,6 +55,7 @@ class MMPClient():
                     reached.
             endpoints: List of endpoints of this instance.
         """
+        grpc_endpoints = map(endpoint_to_grpc, endpoints)
         request = mmp.RegistrationRequest(
                 instance_name=str(name),
                 network_location=location,

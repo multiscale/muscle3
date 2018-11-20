@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Dict
 
 from ymmsl import Operator
-import muscle_manager.protocol.muscle_manager_protocol_pb2 as mmp
+import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
 
 
 def operator_from_grpc(
@@ -42,5 +42,5 @@ def operator_to_grpc(operator: Operator) -> mmp.Operator:
             Operator.B: mmp.OPERATOR_B,
             Operator.O_F: mmp.OPERATOR_O_F,
             Operator.MAP: mmp.OPERATOR_MAP
-            }   # type: Dict[Operator, int]
+            }   # type: Dict[Operator, mmp.Operator]
     return operator_map[operator]

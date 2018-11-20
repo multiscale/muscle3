@@ -44,9 +44,9 @@ setup(
     ],
     extras_require={
         'dev': [
-            'grpcio-tools==1.10.0',
+            'grpcio-tools',
             'sphinx',
-            'sphinx_rtd_theme==0.2.4',
+            'sphinx_rtd_theme',
             'yapf',
             'isort'
         ]

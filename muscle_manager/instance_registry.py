@@ -1,10 +1,7 @@
-from typing import cast, Dict, List
+from typing import Dict  # noqa
+from typing import cast, List
 
-from ymmsl import Endpoint, Reference, Operator
-
-from libmuscle.operator import operator_from_grpc
-
-import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
+from ymmsl import Endpoint, Reference
 
 
 class InstanceRegistry:

@@ -1,4 +1,3 @@
-from libmuscle.mmp_client import MMPClient
 from libmuscle import Muscle3
 
 

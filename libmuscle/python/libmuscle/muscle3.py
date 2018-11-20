@@ -21,7 +21,8 @@ class Muscle3:
         if mmp_location is not None:
             self.__manager = MMPClient(mmp_location)
 
-    def __extract_manager_location(self) -> Optional[str]:
+    @staticmethod
+    def __extract_manager_location() -> Optional[str]:
         """Gets the manager network location from the command line.
 
         We use a --muscle-manager=<host:port> argument to tell the

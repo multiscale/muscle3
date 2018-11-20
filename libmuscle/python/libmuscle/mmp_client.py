@@ -1,7 +1,7 @@
 from typing import List
 
 import grpc
-from ymmsl import Endpoint, Operator, Reference
+from ymmsl import Endpoint, Reference
 
 import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
 import muscle_manager_protocol.muscle_manager_protocol_pb2_grpc as mmp_grpc

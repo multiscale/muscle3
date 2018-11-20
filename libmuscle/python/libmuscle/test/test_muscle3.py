@@ -15,7 +15,7 @@ def replaced_sys_argv() -> Generator[None, None, None]:
 
 
 def test_extract_manager_location(replaced_sys_argv) -> None:
-    assert (Muscle3._Muscle3__extract_manager_location(None) ==
+    assert (Muscle3._Muscle3__extract_manager_location() ==
             'localhost:9000')
 
 
@@ -26,5 +26,5 @@ def test_muscle_init_no_manager() -> None:
 
 def test_muscle_init_manager(replaced_sys_argv) -> None:
     with patch('libmuscle.muscle3.MMPClient') as mock_client:
-        muscle = Muscle3()
+        Muscle3()
         mock_client.assert_called_once_with('localhost:9000')

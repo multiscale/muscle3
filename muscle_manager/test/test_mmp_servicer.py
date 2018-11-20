@@ -2,7 +2,7 @@ from muscle_manager.mmp_server import MMPServicer
 import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
 from google.protobuf.timestamp_pb2 import Timestamp
 
-from ymmsl import Operator, Reference
+from ymmsl import Operator
 
 
 def test_create_servicer(logger, instance_registry):

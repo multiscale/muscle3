@@ -28,11 +28,11 @@ def test_log_message(mmp_servicer, caplog):
 
 
 def test_register_instance(mmp_servicer, instance_registry):
-    endpoint = mmp.Endpoint(name='test_in', operator=mmp.OPERATOR_F_INIT)
+    port = mmp.Port(name='test_in', operator=mmp.OPERATOR_F_INIT)
     request = mmp.RegistrationRequest(
             instance_name='test_instance',
             network_location='tcp://localhost:10000',
-            endpoints=[endpoint])
+            ports=[port])
 
     result = mmp_servicer.RegisterInstance(request, None)
 
@@ -40,17 +40,17 @@ def test_register_instance(mmp_servicer, instance_registry):
     assert (instance_registry._InstanceRegistry__locations['test_instance'] ==
             'tcp://localhost:10000')
 
-    registered_endpoints = instance_registry._InstanceRegistry__endpoints
-    assert str(registered_endpoints['test_instance'][0].name) == 'test_in'
-    assert registered_endpoints['test_instance'][0].operator == Operator.F_INIT
+    registered_ports = instance_registry._InstanceRegistry__ports
+    assert str(registered_ports['test_instance'][0].name) == 'test_in'
+    assert registered_ports['test_instance'][0].operator == Operator.F_INIT
 
 
 def test_double_register_instance(mmp_servicer, instance_registry):
-    endpoint = mmp.Endpoint(name='test_in', operator=mmp.OPERATOR_F_INIT)
+    port = mmp.Port(name='test_in', operator=mmp.OPERATOR_F_INIT)
     request = mmp.RegistrationRequest(
             instance_name='test_instance',
             network_location='tcp://localhost:10000',
-            endpoints=[endpoint])
+            ports=[port])
 
     mmp_servicer.RegisterInstance(request, None)
     result = mmp_servicer.RegisterInstance(request, None)

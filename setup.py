@@ -23,8 +23,8 @@ setup(
     },
     python_requires='>=3.5, <4',
     install_requires=[
-        'grpcio==1.10.0',
-        'ymmsl==0.2.1'
+        'grpcio==1.16.1',
+        'ymmsl==0.3.0'
     ],
     setup_requires=[
         'pytest-runner',
@@ -44,7 +44,8 @@ setup(
     ],
     extras_require={
         'dev': [
-            'grpcio-tools',
+            'grpcio-tools==1.16.1',
+            'mypy-protobuf',
             'sphinx',
             'sphinx_rtd_theme',
             'yapf',

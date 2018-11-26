@@ -2,7 +2,7 @@ from concurrent import futures
 
 import grpc
 
-from libmuscle.endpoint import endpoint_from_grpc
+from libmuscle.port import port_from_grpc
 from libmuscle.logging import LogLevel, Timestamp
 from libmuscle.operator import operator_from_grpc
 from ymmsl import Operator
@@ -52,11 +52,11 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
             ) -> mmp.RegistrationResult:
         """Handles an instance registration request."""
         try:
-            endpoints = list(map(endpoint_from_grpc, request.endpoints))
+            ports = list(map(port_from_grpc, request.ports))
             self.__instance_registry.add(
                     request.instance_name,
                     request.network_location,
-                    endpoints)
+                    ports)
             return mmp.RegistrationResult(status=mmp.RESULT_STATUS_SUCCESS)
         except ValueError:
             return mmp.RegistrationResult(

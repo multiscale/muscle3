@@ -1,12 +1,12 @@
 from typing import List
 
 import grpc
-from ymmsl import Endpoint, Reference
+from ymmsl import Port, Reference
 
 import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
 import muscle_manager_protocol.muscle_manager_protocol_pb2_grpc as mmp_grpc
 
-from libmuscle.endpoint import endpoint_to_grpc
+from libmuscle.port import port_to_grpc
 from libmuscle.logging import LogMessage
 
 
@@ -46,18 +46,18 @@ class MMPClient():
         self.__client.SubmitLogMessage(message.to_grpc())
 
     def register_instance(self, name: Reference, location: str,
-                          endpoints: List[Endpoint]) -> None:
+                          ports: List[Port]) -> None:
         """Register a compute element instance with the manager.
 
         Args:
             name: Name of the instance in the simulation.
             location: String describing where the instance can be
                     reached.
-            endpoints: List of endpoints of this instance.
+            ports: List of ports of this instance.
         """
-        grpc_endpoints = map(endpoint_to_grpc, endpoints)
+        grpc_ports = map(port_to_grpc, ports)
         request = mmp.RegistrationRequest(
                 instance_name=str(name),
                 network_location=location,
-                endpoints=grpc_endpoints)
+                ports=grpc_ports)
         self.__client.RegisterInstance(request)

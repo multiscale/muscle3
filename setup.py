@@ -24,6 +24,7 @@ setup(
     python_requires='>=3.5, <4',
     install_requires=[
         'grpcio==1.16.1',
+        'protobuf',
         'ymmsl==0.3.0'
     ],
     setup_requires=[

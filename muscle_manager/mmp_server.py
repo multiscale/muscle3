@@ -5,7 +5,6 @@ import grpc
 from libmuscle.port import port_from_grpc
 from libmuscle.logging import LogLevel, Timestamp
 from libmuscle.operator import operator_from_grpc
-from ymmsl import Operator
 
 from muscle_manager.instance_registry import InstanceRegistry
 from muscle_manager.logger import Logger

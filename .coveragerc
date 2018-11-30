@@ -1,8 +1,8 @@
 [run]
 
-include =
-    muscle_manager/*
-    libmuscle/python/libmuscle/*
+source =
+    muscle_manager
+    libmuscle/python/libmuscle
 
 omit =
     # Generated code

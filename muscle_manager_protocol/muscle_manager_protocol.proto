@@ -63,7 +63,7 @@ message Port {
 // Request to register a new instance
 message RegistrationRequest {
     string instance_name = 1;
-    string network_location = 2;
+    repeated string network_locations = 2;
     repeated Port ports = 3;
 }
 

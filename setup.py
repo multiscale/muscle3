@@ -23,7 +23,7 @@ setup(
     },
     python_requires='>=3.5, <4',
     install_requires=[
-        'grpcio==1.16.1',
+        'grpcio==1.17.1',
         'msgpack',
         'protobuf',
         'ymmsl==0.4.0'
@@ -46,7 +46,7 @@ setup(
     ],
     extras_require={
         'dev': [
-            'grpcio-tools==1.16.1',
+            'grpcio-tools==1.17.1',
             'mypy-protobuf',
             'sphinx',
             'sphinx_rtd_theme',

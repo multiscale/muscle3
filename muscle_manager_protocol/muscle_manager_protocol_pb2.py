@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='muscle_manager_protocol',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x1dmuscle_manager_protocol.proto\x12\x17muscle_manager_protocol\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc5\x01\n\nLogMessage\x12\x13\n\x0binstance_id\x18\x01 \x01(\t\x12\x33\n\x08operator\x18\x02 \x01(\x0e\x32!.muscle_manager_protocol.Operator\x12-\n\ttimestamp\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x30\n\x05level\x18\x04 \x01(\x0e\x32!.muscle_manager_protocol.LogLevel\x12\x0c\n\x04text\x18\x05 \x01(\t\"\x0b\n\tLogResult\"I\n\x04Port\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x33\n\x08operator\x18\x02 \x01(\x0e\x32!.muscle_manager_protocol.Operator\"t\n\x13RegistrationRequest\x12\x15\n\rinstance_name\x18\x01 \x01(\t\x12\x18\n\x10network_location\x18\x02 \x01(\t\x12,\n\x05ports\x18\x03 \x03(\x0b\x32\x1d.muscle_manager_protocol.Port\"b\n\x12RegistrationResult\x12\x35\n\x06status\x18\x01 \x01(\x0e\x32%.muscle_manager_protocol.ResultStatus\x12\x15\n\rerror_message\x18\x02 \x01(\t*]\n\x0cResultStatus\x12\x19\n\x15RESULT_STATUS_SUCCESS\x10\x00\x12\x17\n\x13RESULT_STATUS_ERROR\x10\x01\x12\x19\n\x15RESULT_STATUS_PENDING\x10\x02*\x88\x01\n\x08Operator\x12\x11\n\rOPERATOR_NONE\x10\x00\x12\x13\n\x0fOPERATOR_F_INIT\x10\x01\x12\x10\n\x0cOPERATOR_O_I\x10\x02\x12\x0e\n\nOPERATOR_S\x10\x03\x12\x0e\n\nOPERATOR_B\x10\x04\x12\x10\n\x0cOPERATOR_O_F\x10\x05\x12\x10\n\x0cOPERATOR_MAP\x10\x06*\x8e\x01\n\x08LogLevel\x12\x13\n\x0fLOG_LEVEL_DEBUG\x10\x00\x12\x12\n\x0eLOG_LEVEL_INFO\x10\x01\x12\x15\n\x11LOG_LEVEL_PROFILE\x10\x02\x12\x15\n\x11LOG_LEVEL_WARNING\x10\x03\x12\x13\n\x0fLOG_LEVEL_ERROR\x10\x04\x12\x16\n\x12LOG_LEVEL_CRITICAL\x10\x05\x32\xdb\x01\n\rMuscleManager\x12[\n\x10SubmitLogMessage\x12#.muscle_manager_protocol.LogMessage\x1a\".muscle_manager_protocol.LogResult\x12m\n\x10RegisterInstance\x12,.muscle_manager_protocol.RegistrationRequest\x1a+.muscle_manager_protocol.RegistrationResultb\x06proto3')
+  serialized_pb=_b('\n\x1dmuscle_manager_protocol.proto\x12\x17muscle_manager_protocol\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc5\x01\n\nLogMessage\x12\x13\n\x0binstance_id\x18\x01 \x01(\t\x12\x33\n\x08operator\x18\x02 \x01(\x0e\x32!.muscle_manager_protocol.Operator\x12-\n\ttimestamp\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x30\n\x05level\x18\x04 \x01(\x0e\x32!.muscle_manager_protocol.LogLevel\x12\x0c\n\x04text\x18\x05 \x01(\t\"\x0b\n\tLogResult\"I\n\x04Port\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x33\n\x08operator\x18\x02 \x01(\x0e\x32!.muscle_manager_protocol.Operator\"u\n\x13RegistrationRequest\x12\x15\n\rinstance_name\x18\x01 \x01(\t\x12\x19\n\x11network_locations\x18\x02 \x03(\t\x12,\n\x05ports\x18\x03 \x03(\x0b\x32\x1d.muscle_manager_protocol.Port\"b\n\x12RegistrationResult\x12\x35\n\x06status\x18\x01 \x01(\x0e\x32%.muscle_manager_protocol.ResultStatus\x12\x15\n\rerror_message\x18\x02 \x01(\t*]\n\x0cResultStatus\x12\x19\n\x15RESULT_STATUS_SUCCESS\x10\x00\x12\x17\n\x13RESULT_STATUS_ERROR\x10\x01\x12\x19\n\x15RESULT_STATUS_PENDING\x10\x02*\x88\x01\n\x08Operator\x12\x11\n\rOPERATOR_NONE\x10\x00\x12\x13\n\x0fOPERATOR_F_INIT\x10\x01\x12\x10\n\x0cOPERATOR_O_I\x10\x02\x12\x0e\n\nOPERATOR_S\x10\x03\x12\x0e\n\nOPERATOR_B\x10\x04\x12\x10\n\x0cOPERATOR_O_F\x10\x05\x12\x10\n\x0cOPERATOR_MAP\x10\x06*\x8e\x01\n\x08LogLevel\x12\x13\n\x0fLOG_LEVEL_DEBUG\x10\x00\x12\x12\n\x0eLOG_LEVEL_INFO\x10\x01\x12\x15\n\x11LOG_LEVEL_PROFILE\x10\x02\x12\x15\n\x11LOG_LEVEL_WARNING\x10\x03\x12\x13\n\x0fLOG_LEVEL_ERROR\x10\x04\x12\x16\n\x12LOG_LEVEL_CRITICAL\x10\x05\x32\xdb\x01\n\rMuscleManager\x12[\n\x10SubmitLogMessage\x12#.muscle_manager_protocol.LogMessage\x1a\".muscle_manager_protocol.LogResult\x12m\n\x10RegisterInstance\x12,.muscle_manager_protocol.RegistrationRequest\x1a+.muscle_manager_protocol.RegistrationResultb\x06proto3')
   ,
   dependencies=[google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,])
 
@@ -46,8 +46,8 @@ _RESULTSTATUS = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=597,
-  serialized_end=690,
+  serialized_start=598,
+  serialized_end=691,
 )
 _sym_db.RegisterEnumDescriptor(_RESULTSTATUS)
 
@@ -89,8 +89,8 @@ _OPERATOR = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=693,
-  serialized_end=829,
+  serialized_start=694,
+  serialized_end=830,
 )
 _sym_db.RegisterEnumDescriptor(_OPERATOR)
 
@@ -128,8 +128,8 @@ _LOGLEVEL = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=832,
-  serialized_end=974,
+  serialized_start=833,
+  serialized_end=975,
 )
 _sym_db.RegisterEnumDescriptor(_LOGLEVEL)
 
@@ -289,9 +289,9 @@ _REGISTRATIONREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='network_location', full_name='muscle_manager_protocol.RegistrationRequest.network_location', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      name='network_locations', full_name='muscle_manager_protocol.RegistrationRequest.network_locations', index=1,
+      number=2, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -315,7 +315,7 @@ _REGISTRATIONREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=379,
-  serialized_end=495,
+  serialized_end=496,
 )
 
 
@@ -352,8 +352,8 @@ _REGISTRATIONRESULT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=497,
-  serialized_end=595,
+  serialized_start=498,
+  serialized_end=596,
 )
 
 _LOGMESSAGE.fields_by_name['operator'].enum_type = _OPERATOR
@@ -415,8 +415,8 @@ _MUSCLEMANAGER = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=977,
-  serialized_end=1196,
+  serialized_start=978,
+  serialized_end=1197,
   methods=[
   _descriptor.MethodDescriptor(
     name='SubmitLogMessage',

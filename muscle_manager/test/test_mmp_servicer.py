@@ -31,14 +31,14 @@ def test_register_instance(mmp_servicer, instance_registry):
     port = mmp.Port(name='test_in', operator=mmp.OPERATOR_F_INIT)
     request = mmp.RegistrationRequest(
             instance_name='test_instance',
-            network_location='tcp://localhost:10000',
+            network_locations=['tcp://localhost:10000'],
             ports=[port])
 
     result = mmp_servicer.RegisterInstance(request, None)
 
     assert result.status == mmp.RESULT_STATUS_SUCCESS
     assert (instance_registry._InstanceRegistry__locations['test_instance'] ==
-            'tcp://localhost:10000')
+            ['tcp://localhost:10000'])
 
     registered_ports = instance_registry._InstanceRegistry__ports
     assert registered_ports['test_instance'][0].name == 'test_in'
@@ -49,7 +49,7 @@ def test_double_register_instance(mmp_servicer, instance_registry):
     port = mmp.Port(name='test_in', operator=mmp.OPERATOR_F_INIT)
     request = mmp.RegistrationRequest(
             instance_name='test_instance',
-            network_location='tcp://localhost:10000',
+            network_locations=['tcp://localhost:10000'],
             ports=[port])
 
     result = mmp_servicer.RegisterInstance(request, None)

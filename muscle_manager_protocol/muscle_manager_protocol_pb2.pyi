@@ -10,6 +10,7 @@ from concurrent.futures import (
 
 from google.protobuf.internal.containers import (
     RepeatedCompositeFieldContainer as google___protobuf___internal___containers___RepeatedCompositeFieldContainer,
+    RepeatedScalarFieldContainer as google___protobuf___internal___containers___RepeatedScalarFieldContainer,
 )
 
 from google.protobuf.message import (
@@ -129,14 +130,14 @@ class Port(google___protobuf___message___Message):
 
 class RegistrationRequest(google___protobuf___message___Message):
     instance_name = ... # type: typing___Text
-    network_location = ... # type: typing___Text
+    network_locations = ... # type: google___protobuf___internal___containers___RepeatedScalarFieldContainer[typing___Text]
 
     @property
     def ports(self) -> google___protobuf___internal___containers___RepeatedCompositeFieldContainer[Port]: ...
 
     def __init__(self,
         instance_name : typing___Optional[typing___Text] = None,
-        network_location : typing___Optional[typing___Text] = None,
+        network_locations : typing___Optional[typing___Iterable[typing___Text]] = None,
         ports : typing___Optional[typing___Iterable[Port]] = None,
         ) -> None: ...
     @classmethod

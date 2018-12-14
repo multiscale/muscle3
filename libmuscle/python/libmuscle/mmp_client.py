@@ -45,7 +45,7 @@ class MMPClient():
         """
         self.__client.SubmitLogMessage(message.to_grpc())
 
-    def register_instance(self, name: Reference, location: str,
+    def register_instance(self, name: Reference, locations: List[str],
                           ports: List[Port]) -> None:
         """Register a compute element instance with the manager.
 
@@ -58,6 +58,6 @@ class MMPClient():
         grpc_ports = map(port_to_grpc, ports)
         request = mmp.RegistrationRequest(
                 instance_name=str(name),
-                network_location=location,
+                network_locations=locations,
                 ports=grpc_ports)
         self.__client.RegisterInstance(request)

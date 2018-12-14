@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import pytest
+from ymmsl import Port, Reference
 
 from libmuscle.logging import LogLevel, LogMessage, Timestamp
 from libmuscle.mmp_client import MMPClient
@@ -35,3 +36,11 @@ def test_submit_log_message(mocked_mmp_client) -> None:
 
     mocked_mmp_client[0].submit_log_message(message)
     assert mocked_mmp_client[1].SubmitLogMessage.called
+
+
+def test_register_instance(mocked_mmp_client) -> None:
+    mocked_mmp_client[0].register_instance(
+            Reference('kernel[13]'),
+            ['direct:test', 'tcp:test'],
+            [Port('out', Operator.O_I), Port('in', Operator.S)])
+    assert mocked_mmp_client[1].RegisterInstance.called

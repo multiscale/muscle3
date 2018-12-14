@@ -13,16 +13,16 @@ class InstanceRegistry:
     def __init__(self) -> None:
         """Construct an empty InstanceRegistry.
         """
-        self.__locations = dict()  # type: Dict[Reference, str]
+        self.__locations = dict()  # type: Dict[Reference, List[str]]
         self.__ports = dict()  # type: Dict[Reference, List[Port]]
 
-    def add(self, name: Reference, location: str, ports: List[Port]
+    def add(self, name: Reference, locations: List[str], ports: List[Port]
             ) -> None:
         """Add an instance to the registry.
 
         Args:
             name: Name of the instance.
-            location: Network location where it can be reached.
+            locations: Network locations where it can be reached.
             ports: List of ports of this instance.
 
         Raises:
@@ -31,11 +31,11 @@ class InstanceRegistry:
         """
         if name in self.__locations or name in self.__ports:
             raise ValueError('Instance already registered')
-        self.__locations[name] = location
+        self.__locations[name] = locations
         self.__ports[name] = ports
 
-    def get_location(self, name: Reference) -> str:
-        """Retrieves the location of a registered instance.
+    def get_locations(self, name: Reference) -> List[str]:
+        """Retrieves the locations of a registered instance.
 
         Args:
             name: The name of the instance to get the location of.

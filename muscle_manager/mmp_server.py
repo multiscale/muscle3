@@ -53,14 +53,12 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
         """Handles an instance registration request."""
         try:
             ports = list(map(port_from_grpc, request.ports))
-            print('instance: {}'.format(request.instance_name))
             self.__instance_registry.add(
                     Reference(str(request.instance_name)),
-                    request.network_location,
+                    list(request.network_locations),
                     ports)
             return mmp.RegistrationResult(status=mmp.RESULT_STATUS_SUCCESS)
         except ValueError as e:
-            print('error: {}'.format(e))
             return mmp.RegistrationResult(
                     status=mmp.RESULT_STATUS_ERROR,
                     error_message=('An instance with name {} was already'

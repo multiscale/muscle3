@@ -26,6 +26,7 @@ setup(
         'grpcio==1.17.1',
         'msgpack',
         'protobuf',
+        'ruamel.yaml',
         'ymmsl==0.4.0'
     ],
     setup_requires=[

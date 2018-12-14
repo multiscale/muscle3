@@ -10,7 +10,7 @@ from libmuscle.mcp.message import Message
 
 @pytest.fixture
 def receiver():
-    return Reference.from_string('test_receiver.test_port')
+    return Reference('test_receiver.test_port')
 
 
 @pytest.fixture
@@ -33,7 +33,7 @@ def test_location(server):
 
 
 def test_request(receiver, outboxes, server):
-    message = Message(Reference.from_string('test_sender.test_port'),
+    message = Message(Reference('test_sender.test_port'),
                       receiver, bytes())
     outboxes[receiver].deposit(message)
     assert server.request(receiver) == message

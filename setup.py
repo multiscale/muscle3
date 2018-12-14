@@ -25,7 +25,7 @@ setup(
     install_requires=[
         'grpcio==1.16.1',
         'protobuf',
-        'ymmsl==0.3.0'
+        'ymmsl==0.4.0'
     ],
     setup_requires=[
         'pytest-runner',

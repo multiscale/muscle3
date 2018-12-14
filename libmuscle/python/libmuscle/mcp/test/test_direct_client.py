@@ -24,6 +24,6 @@ def test_create(mock_servers) -> None:
 @patch('libmuscle.mcp.direct_client.registered_servers')
 def test_receive(mock_servers) -> None:
     client = DirectClient('direct:test_server')
-    receiver = Reference.from_string('receiver')
+    receiver = Reference('receiver')
     client.receive(receiver)
     client._DirectClient__server.request.assert_called_with(receiver)

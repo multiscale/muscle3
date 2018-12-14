@@ -41,7 +41,7 @@ def test_register_instance(mmp_servicer, instance_registry):
             'tcp://localhost:10000')
 
     registered_ports = instance_registry._InstanceRegistry__ports
-    assert str(registered_ports['test_instance'][0].name) == 'test_in'
+    assert registered_ports['test_instance'][0].name == 'test_in'
     assert registered_ports['test_instance'][0].operator == Operator.F_INIT
 
 
@@ -52,8 +52,9 @@ def test_double_register_instance(mmp_servicer, instance_registry):
             network_location='tcp://localhost:10000',
             ports=[port])
 
-    mmp_servicer.RegisterInstance(request, None)
     result = mmp_servicer.RegisterInstance(request, None)
+    assert result.status == mmp.RESULT_STATUS_SUCCESS
 
+    result = mmp_servicer.RegisterInstance(request, None)
     assert result.status == mmp.RESULT_STATUS_ERROR
     assert 'test_instance' in result.error_message

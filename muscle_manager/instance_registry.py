@@ -13,11 +13,8 @@ class InstanceRegistry:
     def __init__(self) -> None:
         """Construct an empty InstanceRegistry.
         """
-        # We index on the string version of the Reference because they
-        # are not immutable and hashable, so two References with the
-        # same contents will not match.
-        self.__locations = dict()  # type: Dict[str, str]
-        self.__ports = dict()  # type: Dict[str, Port]
+        self.__locations = dict()  # type: Dict[Reference, str]
+        self.__ports = dict()  # type: Dict[Reference, List[Port]]
 
     def add(self, name: Reference, location: str, ports: List[Port]
             ) -> None:
@@ -32,11 +29,10 @@ class InstanceRegistry:
             ValueError: If an instance with this name has already been
                     registered.
         """
-        sname = str(name)
-        if sname in self.__locations or sname in self.__ports:
+        if name in self.__locations or name in self.__ports:
             raise ValueError('Instance already registered')
-        self.__locations[sname] = location
-        self.__ports[sname] = ports
+        self.__locations[name] = location
+        self.__ports[name] = ports
 
     def get_location(self, name: Reference) -> str:
         """Retrieves the location of a registered instance.
@@ -47,7 +43,7 @@ class InstanceRegistry:
         Raises:
             KeyError: If no instance with this name was registered.
         """
-        return self.__locations[str(name)]
+        return self.__locations[name]
 
     def get_ports(self, name: Reference) -> List[Port]:
         """Retrieves the ports of a registered instance.
@@ -58,8 +54,7 @@ class InstanceRegistry:
         Raises:
             KeyError: If no instance with this name was registered.
         """
-        # cast should be removable once we fix mypy ymmsl import
-        return cast(List[Port], self.__ports[str(name)])
+        return self.__ports[name]
 
     def remove(self, name: Reference) -> None:
         """Remove an instance from the registry.
@@ -70,5 +65,5 @@ class InstanceRegistry:
         Raises:
             KeyError: If the instance does not exist.
         """
-        del(self.__locations[str(name)])
-        del(self.__ports[str(name)])
+        del(self.__locations[name])
+        del(self.__ports[name])

@@ -14,7 +14,7 @@ def outbox():
 
 @pytest.fixture
 def message():
-    Ref = Reference.from_string
+    Ref = Reference
     return Message(
             Ref('sender.out'), Ref('receiver.in'),
             'testing'.encode('utf-8'))

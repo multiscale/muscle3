@@ -12,7 +12,7 @@ from libmuscle.mcp.message import Message
 
 @pytest.fixture
 def receiver():
-    return Reference.from_string('test_receiver.test_port')
+    return Reference('test_receiver.test_port')
 
 
 @pytest.fixture
@@ -29,7 +29,7 @@ def test_send_receive(receiver, server, outboxes):
     assert DirectClient.can_connect_to(server.get_location())
     client = DirectClient(server.get_location())
 
-    message = Message(Reference.from_string('test_sender.test_port'),
+    message = Message(Reference('test_sender.test_port'),
                       receiver, 'message'.encode('utf-8'))
 
     outboxes[receiver].deposit(message)

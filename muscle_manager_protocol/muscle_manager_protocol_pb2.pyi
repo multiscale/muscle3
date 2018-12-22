@@ -158,6 +158,81 @@ class RegistrationResult(google___protobuf___message___Message):
     def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
     def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
 
+class Conduit(google___protobuf___message___Message):
+    sender = ... # type: typing___Text
+    receiver = ... # type: typing___Text
+
+    def __init__(self,
+        sender : typing___Optional[typing___Text] = None,
+        receiver : typing___Optional[typing___Text] = None,
+        ) -> None: ...
+    @classmethod
+    def FromString(cls, s: bytes) -> Conduit: ...
+    def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+    def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+
+class PeerRequest(google___protobuf___message___Message):
+    instance_name = ... # type: typing___Text
+
+    def __init__(self,
+        instance_name : typing___Optional[typing___Text] = None,
+        ) -> None: ...
+    @classmethod
+    def FromString(cls, s: bytes) -> PeerRequest: ...
+    def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+    def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+
+class PeerResult(google___protobuf___message___Message):
+    class PeerDimensions(google___protobuf___message___Message):
+        peer_name = ... # type: typing___Text
+        dimensions = ... # type: google___protobuf___internal___containers___RepeatedScalarFieldContainer[int]
+
+        def __init__(self,
+            peer_name : typing___Optional[typing___Text] = None,
+            dimensions : typing___Optional[typing___Iterable[int]] = None,
+            ) -> None: ...
+        @classmethod
+        def FromString(cls, s: bytes) -> PeerResult.PeerDimensions: ...
+        def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+        def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+
+    class PeerLocations(google___protobuf___message___Message):
+        instance_name = ... # type: typing___Text
+        locations = ... # type: google___protobuf___internal___containers___RepeatedScalarFieldContainer[typing___Text]
+
+        def __init__(self,
+            instance_name : typing___Optional[typing___Text] = None,
+            locations : typing___Optional[typing___Iterable[typing___Text]] = None,
+            ) -> None: ...
+        @classmethod
+        def FromString(cls, s: bytes) -> PeerResult.PeerLocations: ...
+        def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+        def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+
+    status = ... # type: ResultStatus
+    error_message = ... # type: typing___Text
+
+    @property
+    def conduits(self) -> google___protobuf___internal___containers___RepeatedCompositeFieldContainer[Conduit]: ...
+
+    @property
+    def peer_dimensions(self) -> google___protobuf___internal___containers___RepeatedCompositeFieldContainer[PeerResult.PeerDimensions]: ...
+
+    @property
+    def peer_locations(self) -> google___protobuf___internal___containers___RepeatedCompositeFieldContainer[PeerResult.PeerLocations]: ...
+
+    def __init__(self,
+        status : typing___Optional[ResultStatus] = None,
+        error_message : typing___Optional[typing___Text] = None,
+        conduits : typing___Optional[typing___Iterable[Conduit]] = None,
+        peer_dimensions : typing___Optional[typing___Iterable[PeerResult.PeerDimensions]] = None,
+        peer_locations : typing___Optional[typing___Iterable[PeerResult.PeerLocations]] = None,
+        ) -> None: ...
+    @classmethod
+    def FromString(cls, s: bytes) -> PeerResult: ...
+    def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+    def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+
 class MuscleManager(typing___Any, metaclass=abc___ABCMeta):
     @abc___abstractmethod
     def SubmitLogMessage(self,
@@ -171,6 +246,12 @@ class MuscleManager(typing___Any, metaclass=abc___ABCMeta):
         request: RegistrationRequest,
         done: typing___Optional[typing___Callable[[RegistrationResult], None]],
     ) -> concurrent___futures___Future[RegistrationResult]: ...
+    @abc___abstractmethod
+    def RequestPeers(self,
+        rpc_controller: typing___Any,
+        request: PeerRequest,
+        done: typing___Optional[typing___Callable[[PeerResult], None]],
+    ) -> concurrent___futures___Future[PeerResult]: ...
 class MuscleManager_Stub(MuscleManager):
     def __init__(self, rpc_channel: typing___Any) -> None: ...
     def SubmitLogMessage(self,
@@ -183,3 +264,8 @@ class MuscleManager_Stub(MuscleManager):
         request: RegistrationRequest,
         done: typing___Optional[typing___Callable[[RegistrationResult], None]],
     ) -> concurrent___futures___Future[RegistrationResult]: ...
+    def RequestPeers(self,
+        rpc_controller: typing___Any,
+        request: PeerRequest,
+        done: typing___Optional[typing___Callable[[PeerResult], None]],
+    ) -> concurrent___futures___Future[PeerResult]: ...

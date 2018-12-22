@@ -11,6 +11,9 @@ service MuscleManager {
 
     // Registers a newly started kernel instance
     rpc RegisterInstance(RegistrationRequest) returns (RegistrationResult);
+
+    // Requests information about peers
+    rpc RequestPeers(PeerRequest) returns (PeerResult);
 }
 
 // Type of result
@@ -72,4 +75,43 @@ message RegistrationResult {
     // if status is ERROR, error_message is present and contains a message
     ResultStatus status = 1;
     string error_message = 2;
+}
+
+
+// Conduit between kernels
+message Conduit {
+    string sender = 1;
+    string receiver = 2;
+}
+
+// Request for network locations of peers
+message PeerRequest {
+    // name of requesting instance
+    string instance_name = 1;
+}
+
+// Result of peer request
+message PeerResult {
+    // if this is PENDING, not all peers are available yet
+    // the rest of the fields are only present on SUCCESS
+    // if status is ERROR or PENDING, error_message is present and contains a
+    // message
+    ResultStatus status = 1;
+    string error_message = 2;
+
+    message PeerDimensions {
+        // name of peer kernel (not instance)
+        string peer_name = 1;
+        repeated int32 dimensions = 2;
+    }
+
+    message PeerLocations {
+        // name of peer instance (not kernel)
+        string instance_name = 1;
+        repeated string locations = 2;
+    }
+
+    repeated Conduit conduits = 3;
+    repeated PeerDimensions peer_dimensions = 4;
+    repeated PeerLocations peer_locations = 5;
 }

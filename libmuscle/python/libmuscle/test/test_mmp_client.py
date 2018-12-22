@@ -1,7 +1,9 @@
 from unittest.mock import patch
 
 import pytest
-from ymmsl import Port, Reference
+from ymmsl import Conduit, Port, Reference
+
+import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
 
 from libmuscle.logging import LogLevel, LogMessage, Timestamp
 from libmuscle.mmp_client import MMPClient
@@ -44,3 +46,48 @@ def test_register_instance(mocked_mmp_client) -> None:
             ['direct:test', 'tcp:test'],
             [Port('out', Operator.O_I), Port('in', Operator.S)])
     assert mocked_mmp_client[1].RegisterInstance.called
+
+
+def test_request_peers(mocked_mmp_client) -> None:
+    conduits = [mmp.Conduit(sender='kernel.out', receiver='other.in')]
+    peer_dimensions = [mmp.PeerResult.PeerDimensions(
+            peer_name='other', dimensions=[20])]
+    peer_locations = [mmp.PeerResult.PeerLocations(
+            instance_name='other', locations=['direct:test', 'tcp:test'])]
+
+    mocked_mmp_client[1].RequestPeers.return_value = mmp.PeerResult(
+            status=mmp.RESULT_STATUS_SUCCESS,
+            conduits=conduits,
+            peer_dimensions=peer_dimensions,
+            peer_locations=peer_locations)
+    result = mocked_mmp_client[0].request_peers(Reference('kernel[13]'))
+    assert mocked_mmp_client[1].RequestPeers.called
+
+    assert len(result[0]) == 1
+    assert isinstance(result[0][0], Conduit)
+    assert result[0][0].sender == 'kernel.out'
+    assert result[0][0].receiver == 'other.in'
+
+    assert isinstance(result[1], dict)
+    assert result[1]['other'] == [20]
+
+    assert isinstance(result[2], dict)
+    assert result[2]['other'] == ['direct:test', 'tcp:test']
+
+
+def test_request_peers_error(mocked_mmp_client) -> None:
+    mocked_mmp_client[1].RequestPeers.return_value = mmp.PeerResult(
+            status=mmp.RESULT_STATUS_ERROR,
+            error_message='test_error_message')
+    with pytest.raises(RuntimeError):
+        mocked_mmp_client[0].request_peers(Reference('kernel[13]'))
+
+
+def test_request_peers_timeout(mocked_mmp_client) -> None:
+    mocked_mmp_client[1].RequestPeers.return_value = mmp.PeerResult(
+            status=mmp.RESULT_STATUS_PENDING)
+    with patch('libmuscle.mmp_client.PEER_TIMEOUT', 1), \
+            patch('libmuscle.mmp_client.PEER_INTERVAL_MIN', 0.1), \
+            patch('libmuscle.mmp_client.PEER_INTERVAL_MAX', 1.0):
+        with pytest.raises(RuntimeError):
+            mocked_mmp_client[0].request_peers(Reference('kernel[13]'))

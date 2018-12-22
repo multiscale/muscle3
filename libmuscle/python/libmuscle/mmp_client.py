@@ -1,7 +1,9 @@
-from typing import List
+from random import uniform
+from time import perf_counter, sleep
+from typing import Dict, List, Tuple
 
 import grpc
-from ymmsl import Port, Reference
+from ymmsl import Conduit, Port, Reference
 
 import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
 import muscle_manager_protocol.muscle_manager_protocol_pb2_grpc as mmp_grpc
@@ -11,6 +13,21 @@ from libmuscle.logging import LogMessage
 
 
 CONNECTION_TIMEOUT = 300
+PEER_TIMEOUT = 600
+PEER_INTERVAL_MIN = 5.0
+PEER_INTERVAL_MAX = 10.0
+
+
+def conduit_from_grpc(conduit: mmp.Conduit) -> Conduit:
+    """Converts a Conduit from grpc to ymmsl.
+
+    Args:
+        conduit: A conduit.
+
+    Returns:
+        The same conduit, as ymmsl.Conduit.
+    """
+    return Conduit(Reference(conduit.sender), Reference(conduit.receiver))
 
 
 class MMPClient():
@@ -61,3 +78,50 @@ class MMPClient():
                 network_locations=locations,
                 ports=grpc_ports)
         self.__client.RegisterInstance(request)
+
+    def request_peers(self, name: Reference
+                      ) -> Tuple[List[Conduit],
+                                 Dict[Reference, List[int]],
+                                 Dict[Reference, List[str]]]:
+        """Request connection information about peers.
+
+        Args:
+            name: Name of the current instance.
+
+        Returns:
+            A tuple containing a list of conduits that this instance is
+            attached to, a dictionary of peer dimensions, which is
+            indexed by Reference to the peer kernel, and specifies how
+            many instances of that kernel there are, and a dictionary
+            of peer instance locations, indexed by Reference to a peer
+            instance, and containing for each peer instance a list of
+            network location strings at which it can be reached.
+        """
+        start_time = perf_counter()
+        request = mmp.PeerRequest(instance_name=str(name))
+        result = self.__client.RequestPeers(request)
+        while (result.status == mmp.RESULT_STATUS_PENDING and
+               perf_counter() < start_time + PEER_TIMEOUT):
+            sleep(uniform(PEER_INTERVAL_MIN, PEER_INTERVAL_MAX))
+            result = self.__client.RequestPeers(request)
+
+        if result.status == mmp.RESULT_STATUS_PENDING:
+            raise RuntimeError('Timeout waiting for peers to appear')
+
+        if result.status == mmp.RESULT_STATUS_ERROR:
+            raise RuntimeError('Error getting peers from manager: {}'.format(
+                    result.error_message))
+
+        conduits = list(map(conduit_from_grpc, result.conduits))
+
+        peer_dimensions = dict()
+        for peer_dimension in result.peer_dimensions:
+            peer_dimensions[peer_dimension.peer_name] = \
+                    peer_dimension.dimensions
+
+        peer_locations = dict()
+        for peer_location in result.peer_locations:
+            peer_locations[peer_location.instance_name] = \
+                    peer_location.locations
+
+        return conduits, peer_dimensions, peer_locations

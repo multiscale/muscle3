@@ -27,7 +27,7 @@ setup(
         'msgpack',
         'protobuf',
         'ruamel.yaml<=0.15.64',
-        'ymmsl==0.4.0'
+        'ymmsl==0.5.0'
     ],
     setup_requires=[
         'pytest-runner',

@@ -8,13 +8,28 @@ import integration_test.include_libmuscle
 from muscle_manager.instance_registry import InstanceRegistry
 from muscle_manager.logger import Logger
 from muscle_manager.mmp_server import MMPServer
+from muscle_manager.topology_store import TopologyStore
 
 
 @pytest.fixture
 def mmp_server(tmpdir):
+    ymmsl_text = (
+            'version: v0.1\n'
+            'simulation:\n'
+            '  name: test_model\n'
+            '  compute_elements:\n'
+            '    macro: macro_implementation\n'
+            '    micro:\n'
+            '      implementation: micro_implementation\n'
+            '      multiplicity: [10, 10]\n'
+            '  conduits:\n'
+            '    macro.out: micro.in\n'
+            '    micro.out: macro.in\n')
+
     logger = Logger()
     instance_registry = InstanceRegistry()
-    server = MMPServer(logger, instance_registry)
+    topology_store = TopologyStore(ymmsl_text)
+    server = MMPServer(logger, instance_registry, topology_store)
     yield server
     server.stop()
 

@@ -3,6 +3,7 @@
 source =
     muscle_manager
     libmuscle/python/libmuscle
+    integration_test
 
 omit =
     # Generated code

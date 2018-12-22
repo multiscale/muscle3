@@ -346,4 +346,4 @@ class Communicator:
                              ' please check the name and your conduit'
                              ' definitions.'.format(full_port))
         peer = self.__peers[full_port]
-        return peer[:-1], cast(Identifier, peer[-1])    # type: ignore
+        return peer[:-1], cast(Identifier, peer[-1])

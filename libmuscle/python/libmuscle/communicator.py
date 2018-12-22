@@ -166,8 +166,8 @@ class Communicator:
                     element, as received from the manager.
             peer_dims: For each peer we share a conduit with, the
                     dimensions of the instance set.
-            peer_locations: A list of locations for each peer we share
-                    a conduit with.
+            peer_locations: A list of locations for each peer instance
+                    we share a conduit with.
         """
         for conduit in conduits:
             if str(conduit.sending_compute_element()) == str(self.__kernel):
@@ -177,8 +177,8 @@ class Communicator:
                 # we receive on the port this conduit attaches to
                 self.__peers[conduit.receiver] = conduit.sender
 
-        self.__peer_dims = peer_dims
-        self.__peer_locations = peer_locations
+        self.__peer_dims = peer_dims    # indexed by kernel id
+        self.__peer_locations = peer_locations  # indexed by instance id
 
     def send_message(self, port_name: str, message: Union[bytes, Message],
                      slot: Union[int, List[int]]=[]) -> None:
@@ -270,7 +270,7 @@ class Communicator:
 
         # receive
         client = self.__get_client(snd_endpoint.instance())
-        mcp_message = client.receive(snd_endpoint.ref())
+        mcp_message = client.receive(recv_endpoint.ref())
 
         if decode:
             return msgpack.unpackb(mcp_message.data, raw=False)

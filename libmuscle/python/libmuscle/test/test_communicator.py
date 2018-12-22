@@ -148,7 +148,7 @@ def test_receive_message(communicator) -> None:
     msg = communicator.receive_message('in', False)
 
     get_client_mock.assert_called_with(Reference('other'))
-    client_mock.receive.assert_called_with(Reference('other.out[13]'))
+    client_mock.receive.assert_called_with(Reference('kernel[13].in'))
     assert msg == b'test'
 
 
@@ -170,7 +170,7 @@ def test_receive_msgpack(communicator) -> None:
     msg = communicator.receive_message('in', True)
 
     get_client_mock.assert_called_with(Reference('other'))
-    client_mock.receive.assert_called_with(Reference('other.out[13]'))
+    client_mock.receive.assert_called_with(Reference('kernel[13].in'))
     assert msg == {'test': 13}
 
 
@@ -184,7 +184,7 @@ def test_receive_with_slot(communicator2) -> None:
     msg = communicator2.receive_message('in', False, 13)
 
     get_client_mock.assert_called_with(Reference('kernel[13]'))
-    client_mock.receive.assert_called_with(Reference('kernel[13].out'))
+    client_mock.receive.assert_called_with(Reference('other.in[13]'))
     assert msg == b'test'
 
 

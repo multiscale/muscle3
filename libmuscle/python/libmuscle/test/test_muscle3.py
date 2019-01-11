@@ -16,14 +16,6 @@ def sys_argv_manager() -> Generator[None, None, None]:
     sys.argv = old_argv
 
 
-@pytest.fixture
-def sys_argv_index() -> Generator[None, None, None]:
-    old_argv = sys.argv
-    sys.argv = ['', '--muscle-index=13,42']
-    yield
-    sys.argv = old_argv
-
-
 def test_extract_manager_location(sys_argv_manager) -> None:
     assert (Muscle3._Muscle3__extract_manager_location() ==
             'localhost:9000')
@@ -47,10 +39,11 @@ def test_register() -> None:
     muscle._Muscle3__manager = manager_client
 
     element = MagicMock()
-    ports = {
+    element._name = Reference('test_model')
+    element._ports = {
             Operator.F_INIT: ['receive_init'],
             Operator.O_F: ['send_output']}
-    muscle.register('test_model', ports, element)
+    muscle.register([element])
 
     args = manager_client.register_instance.call_args[0]
     assert args[0] == Reference('test_model')
@@ -68,17 +61,18 @@ def test_register() -> None:
             *manager_client.request_peers.return_value)
 
 
-def test_register_instance(sys_argv_index) -> None:
+def test_register2() -> None:
     muscle = Muscle3()
     manager_client = MagicMock()
     manager_client.request_peers = MagicMock(return_value=(1, 2, 3))
     muscle._Muscle3__manager = manager_client
 
     element = MagicMock()
-    ports = {
+    element._name = 'test_model[13][42]'
+    element._ports = {
             Operator.O_I: ['out_x', 'out_y'],
             Operator.B: ['in_x', 'in_y']}
-    muscle.register('test_model', ports, element)
+    muscle.register([element])
 
     args = manager_client.register_instance.call_args[0]
     assert args[0] == Reference('test_model[13][42]')

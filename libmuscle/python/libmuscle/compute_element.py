@@ -1,6 +1,7 @@
-from typing import List, Union
+import sys
+from typing import Dict, List, Union
 
-from ymmsl import Reference
+from ymmsl import Operator, Reference
 
 from libmuscle.communicator import Communicator, Message
 
@@ -11,16 +12,23 @@ class ComputeElement:
     This class provides a low-level send/receive API for the instance
     to use.
     """
-    def __init__(self, instance: Reference) -> None:
+    def __init__(self, instance: str, ports: Dict[Operator, List[str]]
+                 ) -> None:
         """Create a ComputeElement.
 
         Args:
             instance: The name of the instance represented by this
                 class.
         """
-        # Accessed directly by Muscle3, but not part of public API.
-        self._communicator = Communicator(instance)
+        # Note that these are accessed by Muscle3, but otherwise private.
+        self._name = self.__make_full_name(instance)
+        """Name of this instance."""
+
+        self._communicator = Communicator(self._name)
         """Communicator for this instance."""
+
+        self._ports = ports
+        """Ports for this instance."""
 
     def send_message(self, port_name: str, message: Union[bytes, Message],
                      slot: Union[int, List[int]]=[]) -> None:
@@ -56,3 +64,24 @@ class ComputeElement:
             True, otherwise as a raw bytes object.
         """
         return self._communicator.receive_message(port_name, decode, slot)
+
+    def __make_full_name(self, name: str) -> Reference:
+        """Makes a Reference of the name and optionally index.
+
+        If a --muscle-index=x,y,z is given on the command line, then
+        it is appended to the name.
+        """
+        full_name = Reference(name)
+
+        # Neither getopt, optparse, or argparse will let me pick out
+        # just one option from the command line and ignore the rest.
+        # So we do it by hand.
+        prefix = '--muscle-index='
+        for arg in sys.argv[1:]:
+            if arg.startswith(prefix):
+                index_str = arg[len(prefix):]
+                indices = index_str.split(',')
+                full_name += map(int, indices)
+                break
+
+        return full_name

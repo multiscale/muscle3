@@ -24,45 +24,23 @@ class Muscle3:
         if mmp_location is not None:
             self.__manager = MMPClient(mmp_location)
 
-    def register(self, name: str, ports: Dict[Operator, List[str]],
-                 element: ComputeElement) -> None:
+    def register(self, elements: List[ComputeElement]) -> None:
         """Register a compute element with MUSCLE3.
 
         Args:
-            name: The name of this element or instance.
-            ports: A dictionary mapping operators to a list of port
-                names for that operator.
-            element: The compute element to register.
+            elements: The compute elements to register.
         """
-        full_name = self.__make_full_name(name)
-        locations = element._communicator.get_locations()
-        port_list = self.__port_list_from_ports(ports)
         if self.__manager is not None:
-            self.__manager.register_instance(full_name, locations, port_list)
-            conduits, peer_dims, peer_locations = self.__manager.request_peers(
-                    full_name)
-            element._communicator.connect(conduits, peer_dims, peer_locations)
+            for element in elements:
+                locations = element._communicator.get_locations()
+                port_list = self.__port_list_from_ports(element._ports)
+                self.__manager.register_instance(element._name, locations,
+                                                 port_list)
 
-    def __make_full_name(self, name: str) -> Reference:
-        """Makes a Reference of the name and optionally index.
-
-        If a --muscle-index=x,y,z is given on the command line, then
-        it is appended to the name.
-        """
-        full_name = Reference(name)
-
-        # Neither getopt, optparse, or argparse will let me pick out
-        # just one option from the command line and ignore the rest.
-        # So we do it by hand.
-        prefix = '--muscle-index='
-        for arg in sys.argv[1:]:
-            if arg.startswith(prefix):
-                index_str = arg[len(prefix):]
-                indices = index_str.split(',')
-                full_name += map(int, indices)
-                break
-
-        return full_name
+            for element in elements:
+                conduits, dims, locs = self.__manager.request_peers(
+                        element._name)
+                element._communicator.connect(conduits, dims, locs)
 
     def __port_list_from_ports(self, ports: Dict[Operator, List[str]]
                                ) -> List[Port]:

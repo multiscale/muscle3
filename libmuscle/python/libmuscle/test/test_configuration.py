@@ -63,6 +63,9 @@ def test_set_item(configuration):
     configuration['param1'] = 3
     assert configuration._store[Reference('param1')] == 3
 
+    configuration[Reference('param2')] = 4
+    assert configuration._store[Reference('param2')] == 4
+
 
 def test_del_item(configuration):
     configuration._store = {Reference('param1'): 'test',

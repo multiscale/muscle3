@@ -129,7 +129,7 @@ class Communicator:
         # indexed by remote instance id
         self.__clients = dict()  # type: Dict[Reference, MCPClient]
 
-        # indexed by local kernel.port id
+        # peer port ids, indexed by local kernel.port id
         self.__peers = dict()  # type: Dict[Reference, Reference]
 
         # indexed by receiving endpoint id

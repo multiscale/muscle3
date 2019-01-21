@@ -6,9 +6,6 @@ from libmuscle.configuration import Configuration
 def config_for_experiment(experiment: Experiment) -> Configuration:
     """Creates a Configuration from a yMMSL Experiment.
 
-    This will replace any existing configuration with a new one
-    containing the settings for the given experiment.
-
     Args:
         experiment: The experiment to create a Configuration for.
     """

@@ -55,3 +55,10 @@ class Configuration(MutableMapping):
         """Returns the number of parameter settings.
         """
         return len(self._store)
+
+    def copy(self) -> 'Configuration':
+        """Makes a shallow copy of this configuration and returns it.
+        """
+        new_conf = Configuration()
+        new_conf._store = self._store.copy()
+        return new_conf

@@ -114,3 +114,21 @@ def test_update(configuration):
     assert configuration['param1'] == 13
     assert configuration['param2'] == [[1, 2], [2, 3]]
     assert configuration['param3'] == 3.1415
+
+
+def test_copy():
+    conf1 = Configuration()
+    conf1['test'] = 12
+    conf1['test2'] = [23, 12]
+    conf1['test3'] = 'test3'
+
+    conf2 = conf1.copy()
+
+    assert conf1 == conf2
+    conf2['test'] = 13
+    assert conf2['test'] == 13
+    assert conf1['test'] == 12
+
+    conf2['test2'][0] = 24
+    assert conf2['test2'] == [24, 12]
+    assert conf1['test2'] == [24, 12]

@@ -13,6 +13,46 @@ def test_create_configuration(configuration):
     assert configuration._store == {}
 
 
+def test_equality(configuration):
+    conf2 = Configuration()
+    assert configuration == conf2
+    assert conf2 == configuration
+    assert not (configuration != conf2)
+    assert not (conf2 != configuration)
+
+    conf1 = Configuration()
+    conf1._store[Reference('x')] = 12
+    conf1._store[Reference('y')] = 'test'
+    conf1._store[Reference('z')] = [1.4, 5.3]
+
+    conf2._store[Reference('x')] = 12
+    conf2._store[Reference('y')] = 'test'
+    conf2._store[Reference('z')] = [1.4, 5.3]
+
+    assert conf1 == conf2
+    assert conf2 == conf1
+
+    conf3 = Configuration()
+    conf3._store[Reference('x')] = 12
+    conf3._store[Reference('z')] = [1.4, 5.3]
+
+    assert conf3 != conf1
+    assert conf1 != conf3
+
+    conf4 = Configuration()
+    conf4._store[Reference('x')] = 12
+    conf4._store[Reference('y')] = 'test'
+    conf4._store[Reference('z')] = [1.41, 5.3]
+
+    assert conf1 != conf4
+    assert conf4 != conf1
+    assert conf3 != conf4
+    assert conf4 != conf3
+
+    assert conf1 != 'test'
+    assert not (conf4 == 13)
+
+
 def test_get_item(configuration):
     configuration._store[Reference('test')] = 13
     assert configuration[Reference('test')] == 13

@@ -1,5 +1,5 @@
 from collections import MutableMapping
-from typing import Dict, Iterator, List, Tuple, Union
+from typing import Any, Dict, Iterator, List, Tuple, Union
 
 from ymmsl import Experiment, Reference
 
@@ -16,6 +16,13 @@ class Configuration(MutableMapping):
         """Create an empty Configuration object.
         """
         self._store = dict()    # type: Dict[Reference, ParameterValue]
+
+    def __eq__(self, other: Any) -> bool:
+        """Returns whether keys and values are identical.
+        """
+        if not isinstance(other, Configuration):
+            return NotImplemented
+        return self._store == other._store
 
     def __getitem__(self, key: Union[str, Reference]) -> ParameterValue:
         """Returns an item, implements configuration[name]

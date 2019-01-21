@@ -80,7 +80,7 @@ def test_del_item(configuration):
 
 def test_iter(configuration):
     assert len(configuration) == 0
-    for parameter, value in configuration:
+    for parameter, value in configuration.items():
         assert False    # pragma: no cover
 
     configuration._store = {

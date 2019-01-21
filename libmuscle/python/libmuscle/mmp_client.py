@@ -8,6 +8,7 @@ from ymmsl import Conduit, Port, Reference
 import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
 import muscle_manager_protocol.muscle_manager_protocol_pb2_grpc as mmp_grpc
 
+from libmuscle.configuration import Configuration
 from libmuscle.port import port_to_grpc
 from libmuscle.logging import LogMessage
 
@@ -61,6 +62,34 @@ class MMPClient():
             message: The message to send.
         """
         self.__client.SubmitLogMessage(message.to_grpc())
+
+    def get_configuration(self) -> Configuration:
+        """Get the central configuration from the manager.
+
+        Returns:
+            The requested configuration.
+        """
+        LLF = mmp.PARAMETER_VALUE_TYPE_LIST_LIST_FLOAT
+        result = self.__client.RequestConfiguration(mmp.ConfigurationRequest())
+        config = Configuration()
+        for setting in result.parameter_values:
+            if setting.value_type == mmp.PARAMETER_VALUE_TYPE_STRING:
+                config[setting.parameter] = setting.value_string
+            elif setting.value_type == mmp.PARAMETER_VALUE_TYPE_INT:
+                config[setting.parameter] = setting.value_int
+            elif setting.value_type == mmp.PARAMETER_VALUE_TYPE_FLOAT:
+                config[setting.parameter] = setting.value_float
+            elif setting.value_type == mmp.PARAMETER_VALUE_TYPE_BOOL:
+                config[setting.parameter] = setting.value_bool
+            elif setting.value_type == mmp.PARAMETER_VALUE_TYPE_LIST_FLOAT:
+                config[setting.parameter] = list(
+                        setting.value_list_float.values)
+            elif setting.value_type == LLF:
+                rows = list()   # type: List[List[float]]
+                for mmp_row in setting.value_list_list_float.values:
+                    rows.append(list(mmp_row.values))
+                config[setting.parameter] = rows
+        return config
 
     def register_instance(self, name: Reference, locations: List[str],
                           ports: List[Port]) -> None:

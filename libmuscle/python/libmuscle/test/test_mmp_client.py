@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from ymmsl import Conduit, Port, Reference
@@ -38,6 +38,44 @@ def test_submit_log_message(mocked_mmp_client) -> None:
 
     mocked_mmp_client[0].submit_log_message(message)
     assert mocked_mmp_client[1].SubmitLogMessage.called
+
+
+def test_get_configuration(mocked_mmp_client) -> None:
+    client, stub = mocked_mmp_client
+
+    row0 = mmp.ListOfDouble(values=[1.2, 3.4])
+    row1 = mmp.ListOfDouble(values=[5.6, 7.8])
+    array = mmp.ListOfListOfDouble(values=[row0, row1])
+    mmp_values = [
+            mmp.Setting(
+                parameter='test1',
+                value_type=mmp.PARAMETER_VALUE_TYPE_STRING,
+                value_string='test'),
+            mmp.Setting(
+                parameter='test2',
+                value_type=mmp.PARAMETER_VALUE_TYPE_INT,
+                value_int=12),
+            mmp.Setting(
+                parameter='test3',
+                value_type=mmp.PARAMETER_VALUE_TYPE_FLOAT,
+                value_float=3.14),
+            mmp.Setting(
+                parameter='test4',
+                value_type=mmp.PARAMETER_VALUE_TYPE_BOOL,
+                value_bool=True),
+            mmp.Setting(
+                parameter='test5',
+                value_type=mmp.PARAMETER_VALUE_TYPE_LIST_FLOAT,
+                value_list_float=mmp.ListOfDouble(values=[1.2, 3.4])),
+            mmp.Setting(
+                parameter='test6',
+                value_type=mmp.PARAMETER_VALUE_TYPE_LIST_LIST_FLOAT,
+                value_list_list_float=array)]
+    config_result = mmp.ConfigurationResult(parameter_values=mmp_values)
+    stub.RequestConfiguration.return_value = config_result
+    config = client.get_configuration()
+
+    assert len(config) == 6
 
 
 def test_register_instance(mocked_mmp_client) -> None:

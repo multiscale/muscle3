@@ -85,6 +85,24 @@ LOG_LEVEL_WARNING = typing___cast(LogLevel, 3)
 LOG_LEVEL_ERROR = typing___cast(LogLevel, 4)
 LOG_LEVEL_CRITICAL = typing___cast(LogLevel, 5)
 
+class ParameterValueType(int):
+    @classmethod
+    def Name(cls, number: int) -> str: ...
+    @classmethod
+    def Value(cls, name: str) -> int: ...
+    @classmethod
+    def keys(cls) -> typing___List[str]: ...
+    @classmethod
+    def values(cls) -> typing___List[int]: ...
+    @classmethod
+    def items(cls) -> typing___List[typing___Tuple[str, int]]: ...
+PARAMETER_VALUE_TYPE_STRING = typing___cast(ParameterValueType, 0)
+PARAMETER_VALUE_TYPE_INT = typing___cast(ParameterValueType, 1)
+PARAMETER_VALUE_TYPE_FLOAT = typing___cast(ParameterValueType, 2)
+PARAMETER_VALUE_TYPE_BOOL = typing___cast(ParameterValueType, 3)
+PARAMETER_VALUE_TYPE_LIST_FLOAT = typing___cast(ParameterValueType, 4)
+PARAMETER_VALUE_TYPE_LIST_LIST_FLOAT = typing___cast(ParameterValueType, 5)
+
 class LogMessage(google___protobuf___message___Message):
     instance_id = ... # type: typing___Text
     operator = ... # type: Operator
@@ -233,6 +251,81 @@ class PeerResult(google___protobuf___message___Message):
     def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
     def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
 
+class ListOfDouble(google___protobuf___message___Message):
+    values = ... # type: google___protobuf___internal___containers___RepeatedScalarFieldContainer[float]
+
+    def __init__(self,
+        values : typing___Optional[typing___Iterable[float]] = None,
+        ) -> None: ...
+    @classmethod
+    def FromString(cls, s: bytes) -> ListOfDouble: ...
+    def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+    def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+
+class ListOfListOfDouble(google___protobuf___message___Message):
+
+    @property
+    def values(self) -> google___protobuf___internal___containers___RepeatedCompositeFieldContainer[ListOfDouble]: ...
+
+    def __init__(self,
+        values : typing___Optional[typing___Iterable[ListOfDouble]] = None,
+        ) -> None: ...
+    @classmethod
+    def FromString(cls, s: bytes) -> ListOfListOfDouble: ...
+    def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+    def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+
+class Setting(google___protobuf___message___Message):
+    parameter = ... # type: typing___Text
+    value_type = ... # type: ParameterValueType
+    value_string = ... # type: typing___Text
+    value_int = ... # type: int
+    value_float = ... # type: float
+    value_bool = ... # type: bool
+
+    @property
+    def value_list_float(self) -> ListOfDouble: ...
+
+    @property
+    def value_list_list_float(self) -> ListOfListOfDouble: ...
+
+    def __init__(self,
+        parameter : typing___Optional[typing___Text] = None,
+        value_type : typing___Optional[ParameterValueType] = None,
+        value_string : typing___Optional[typing___Text] = None,
+        value_int : typing___Optional[int] = None,
+        value_float : typing___Optional[float] = None,
+        value_bool : typing___Optional[bool] = None,
+        value_list_float : typing___Optional[ListOfDouble] = None,
+        value_list_list_float : typing___Optional[ListOfListOfDouble] = None,
+        ) -> None: ...
+    @classmethod
+    def FromString(cls, s: bytes) -> Setting: ...
+    def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+    def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+
+class ConfigurationRequest(google___protobuf___message___Message):
+
+    def __init__(self,
+        ) -> None: ...
+    @classmethod
+    def FromString(cls, s: bytes) -> ConfigurationRequest: ...
+    def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+    def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+
+class ConfigurationResult(google___protobuf___message___Message):
+
+    @property
+    def parameter_values(self) -> google___protobuf___internal___containers___RepeatedCompositeFieldContainer[Setting]: ...
+
+    def __init__(self,
+        parameter_values : typing___Optional[typing___Iterable[Setting]] = None,
+        ) -> None: ...
+    @classmethod
+    def FromString(cls, s: bytes) -> ConfigurationResult: ...
+    def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+    def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+
 class MuscleManager(typing___Any, metaclass=abc___ABCMeta):
     @abc___abstractmethod
     def SubmitLogMessage(self,
@@ -240,6 +333,12 @@ class MuscleManager(typing___Any, metaclass=abc___ABCMeta):
         request: LogMessage,
         done: typing___Optional[typing___Callable[[LogResult], None]],
     ) -> concurrent___futures___Future[LogResult]: ...
+    @abc___abstractmethod
+    def RequestConfiguration(self,
+        rpc_controller: typing___Any,
+        request: ConfigurationRequest,
+        done: typing___Optional[typing___Callable[[ConfigurationResult], None]],
+    ) -> concurrent___futures___Future[ConfigurationResult]: ...
     @abc___abstractmethod
     def RegisterInstance(self,
         rpc_controller: typing___Any,
@@ -259,6 +358,11 @@ class MuscleManager_Stub(MuscleManager):
         request: LogMessage,
         done: typing___Optional[typing___Callable[[LogResult], None]],
     ) -> concurrent___futures___Future[LogResult]: ...
+    def RequestConfiguration(self,
+        rpc_controller: typing___Any,
+        request: ConfigurationRequest,
+        done: typing___Optional[typing___Callable[[ConfigurationResult], None]],
+    ) -> concurrent___futures___Future[ConfigurationResult]: ...
     def RegisterInstance(self,
         rpc_controller: typing___Any,
         request: RegistrationRequest,

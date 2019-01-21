@@ -9,6 +9,9 @@ service MuscleManager {
     // Sends a logged message to the Manager
     rpc SubmitLogMessage(LogMessage) returns (LogResult);
 
+    // Requests the global base configuration
+    rpc RequestConfiguration(ConfigurationRequest) returns (ConfigurationResult);
+
     // Registers a newly started kernel instance
     rpc RegisterInstance(RegistrationRequest) returns (RegistrationResult);
 
@@ -114,4 +117,45 @@ message PeerResult {
     repeated Conduit conduits = 3;
     repeated PeerDimensions peer_dimensions = 4;
     repeated PeerLocations peer_locations = 5;
+}
+
+
+// Supported parameter value types (from yMMSL)
+enum ParameterValueType {
+    PARAMETER_VALUE_TYPE_STRING = 0;
+    PARAMETER_VALUE_TYPE_INT = 1;
+    PARAMETER_VALUE_TYPE_FLOAT = 2;
+    PARAMETER_VALUE_TYPE_BOOL = 3;
+    PARAMETER_VALUE_TYPE_LIST_FLOAT = 4;
+    PARAMETER_VALUE_TYPE_LIST_LIST_FLOAT = 5;
+}
+
+// Parameter setting
+message ListOfDouble {
+    repeated double values = 1;
+}
+
+message ListOfListOfDouble {
+    repeated ListOfDouble values = 1;
+}
+
+message Setting {
+    string parameter = 1;
+    ParameterValueType value_type = 2;
+    string value_string = 3;
+    int64 value_int = 4;
+    double value_float = 5;
+    bool value_bool = 6;
+    ListOfDouble value_list_float = 7;
+    ListOfListOfDouble value_list_list_float = 8;
+}
+
+// Request for the base configuration
+message ConfigurationRequest {
+    // no content, this requests the one and only base configuration
+}
+
+// Result of configuration request
+message ConfigurationResult {
+    repeated Setting parameter_values = 1;
 }

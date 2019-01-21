@@ -1,0 +1,24 @@
+import pytest
+
+from libmuscle.configuration import Configuration
+from libmuscle.configuration_store import ConfigurationStore
+
+
+@pytest.fixture
+def store() -> ConfigurationStore:
+    return ConfigurationStore()
+
+
+def test_create(store):
+    assert len(store._base) == 0
+
+
+def test_set_base(store):
+    config = Configuration()
+    store.set_base(config)
+    assert store._base == config
+
+
+def test_get_parameter(store):
+    store._base['test'] = 13
+    assert store.get_parameter('test') == 13

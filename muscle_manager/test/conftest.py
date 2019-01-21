@@ -1,6 +1,8 @@
 import pytest
 from ymmsl import Reference
 
+from libmuscle.configuration import Configuration
+
 from muscle_manager.instance_registry import InstanceRegistry
 from muscle_manager.logger import Logger
 from muscle_manager.mmp_server import MMPServicer
@@ -10,6 +12,11 @@ from muscle_manager.topology_store import TopologyStore
 @pytest.fixture
 def logger():
     return Logger()
+
+
+@pytest.fixture
+def configuration():
+    return Configuration()
 
 
 @pytest.fixture
@@ -36,8 +43,9 @@ def topology_store() -> TopologyStore:
 
 
 @pytest.fixture
-def mmp_servicer(logger, instance_registry, topology_store):
-    return MMPServicer(logger, instance_registry, topology_store)
+def mmp_servicer(logger, configuration, instance_registry, topology_store):
+    return MMPServicer(logger, configuration, instance_registry,
+                       topology_store)
 
 
 @pytest.fixture
@@ -52,8 +60,10 @@ def loaded_instance_registry(instance_registry):
 
 
 @pytest.fixture
-def registered_mmp_servicer(logger, loaded_instance_registry, topology_store):
-    return MMPServicer(logger, loaded_instance_registry, topology_store)
+def registered_mmp_servicer(logger, configuration, loaded_instance_registry,
+                            topology_store):
+    return MMPServicer(logger, configuration, loaded_instance_registry,
+                       topology_store)
 
 
 @pytest.fixture
@@ -98,5 +108,6 @@ def loaded_instance_registry2(instance_registry):
 
 @pytest.fixture
 def registered_mmp_servicer2(
-        logger, loaded_instance_registry2, topology_store2):
-    return MMPServicer(logger, loaded_instance_registry2, topology_store2)
+        logger, configuration, loaded_instance_registry2, topology_store2):
+    return MMPServicer(logger, configuration, loaded_instance_registry2,
+                       topology_store2)

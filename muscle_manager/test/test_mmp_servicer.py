@@ -5,8 +5,9 @@ from google.protobuf.timestamp_pb2 import Timestamp
 from ymmsl import Operator, Reference
 
 
-def test_create_servicer(logger, instance_registry, topology_store):
-    MMPServicer(logger, instance_registry, topology_store)
+def test_create_servicer(logger, configuration, instance_registry,
+                         topology_store):
+    MMPServicer(logger, configuration, instance_registry, topology_store)
 
 
 def test_log_message(mmp_servicer, caplog):
@@ -25,6 +26,53 @@ def test_log_message(mmp_servicer, caplog):
     assert caplog.records[0].time_stamp == '1970-01-01T00:00:00Z'
     assert caplog.records[0].levelname == 'WARNING'
     assert caplog.records[0].message == 'Testing log message'
+
+
+def test_request_configuration(configuration, mmp_servicer):
+    request = mmp.ConfigurationRequest()
+    result = mmp_servicer.RequestConfiguration(request, None)
+
+    assert len(result.parameter_values) == 0
+
+    configuration['test1'] = 13
+    configuration['test2'] = 12.3
+    configuration['test3'] = 'testing'
+    configuration['test4'] = True
+    configuration['test5'] = [2.3, 7.4]
+    configuration['test6'] = [[1.0, 2.0], [2.0, 1.0]]
+
+    result = mmp_servicer.RequestConfiguration(request, None)
+    assert len(result.parameter_values) == 6
+
+    result_dict = dict()
+    for mmp_setting in result.parameter_values:
+        result_dict[mmp_setting.parameter] = (
+                mmp_setting.value_type, mmp_setting.value_string,
+                mmp_setting.value_int, mmp_setting.value_float,
+                mmp_setting.value_bool, mmp_setting.value_list_float,
+                mmp_setting.value_list_list_float)
+
+    no_list = mmp.ListOfDouble()
+    no_list2 = mmp.ListOfListOfDouble()
+    assert result_dict['test1'] == (
+            mmp.PARAMETER_VALUE_TYPE_INT, '', 13, 0.0, False, no_list,
+            no_list2)
+    assert result_dict['test2'] == (
+            mmp.PARAMETER_VALUE_TYPE_FLOAT, '', 0, 12.3, False, no_list,
+            no_list2)
+    assert result_dict['test3'] == (
+            mmp.PARAMETER_VALUE_TYPE_STRING, 'testing', 0, 0.0, False, no_list,
+            no_list2)
+    assert result_dict['test4'] == (
+            mmp.PARAMETER_VALUE_TYPE_BOOL, '', 0, 0.0, True, no_list, no_list2)
+    assert result_dict['test5'] == (
+            mmp.PARAMETER_VALUE_TYPE_LIST_FLOAT, '', 0, 0.0, False,
+            mmp.ListOfDouble(values=[2.3, 7.4]), no_list2)
+    row0 = mmp.ListOfDouble(values=[1.0, 2.0])
+    row1 = mmp.ListOfDouble(values=[2.0, 1.0])
+    assert result_dict['test6'] == (
+            mmp.PARAMETER_VALUE_TYPE_LIST_LIST_FLOAT, '', 0, 0.0, False,
+            no_list, mmp.ListOfListOfDouble(values=[row0, row1]))
 
 
 def test_register_instance(mmp_servicer, instance_registry):

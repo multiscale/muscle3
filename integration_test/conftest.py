@@ -5,6 +5,7 @@ import pytest
 
 import integration_test.include_libmuscle
 
+from libmuscle.configuration import Configuration
 from muscle_manager.instance_registry import InstanceRegistry
 from muscle_manager.logger import Logger
 from muscle_manager.mmp_server import MMPServer
@@ -27,9 +28,11 @@ def mmp_server(tmpdir):
             '    micro.out: macro.in\n')
 
     logger = Logger()
+    configuration = Configuration()
     instance_registry = InstanceRegistry()
     topology_store = TopologyStore(ymmsl_text)
-    server = MMPServer(logger, instance_registry, topology_store)
+    server = MMPServer(logger, configuration, instance_registry,
+                       topology_store)
     yield server
     server.stop()
 

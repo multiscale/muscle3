@@ -60,6 +60,10 @@ def test_register() -> None:
     element._communicator.connect.assert_called_with(
             *manager_client.request_peers.return_value)
 
+    manager_client.get_configuration.assert_called_with()
+    assert (manager_client.get_configuration.return_value ==
+            element._configuration._base)
+
 
 def test_register2() -> None:
     muscle = Muscle3()

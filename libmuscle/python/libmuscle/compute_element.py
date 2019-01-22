@@ -4,6 +4,7 @@ from typing import Dict, List, Union
 from ymmsl import Operator, Reference
 
 from libmuscle.communicator import Communicator, Message
+from libmuscle.configuration_store import ConfigurationStore
 
 
 class ComputeElement:
@@ -24,11 +25,14 @@ class ComputeElement:
         self._name = self.__make_full_name(instance)
         """Name of this instance."""
 
+        self._ports = ports
+        """Ports for this instance."""
+
         self._communicator = Communicator(self._name)
         """Communicator for this instance."""
 
-        self._ports = ports
-        """Ports for this instance."""
+        self._configuration = ConfigurationStore()
+        """Configuration (parameters) for this instance."""
 
     def send_message(self, port_name: str, message: Union[bytes, Message],
                      slot: Union[int, List[int]]=[]) -> None:

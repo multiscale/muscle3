@@ -6,6 +6,7 @@ import pytest
 from ymmsl import Operator, Reference
 
 from libmuscle.compute_element import ComputeElement
+from libmuscle.configuration_store import ConfigurationStore
 
 
 @pytest.fixture
@@ -35,9 +36,11 @@ def test_create_compute_element(sys_argv_index):
             Operator.O_F: 'out'}
         element = ComputeElement('test_element', ports)
         assert element._name == 'test_element[13][42]'
+        assert element._ports == ports
         comm_type.assert_called_with(Reference('test_element[13][42]'))
         assert element._communicator == comm_type.return_value
-        assert element._ports == ports
+        assert isinstance(element._configuration, ConfigurationStore)
+        assert len(element._configuration._base) == 0
 
 
 def test_send_message(compute_element):

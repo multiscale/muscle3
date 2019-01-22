@@ -1,10 +1,15 @@
 import sys
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Type, Union
 
 from ymmsl import Operator, Reference
 
 from libmuscle.communicator import Communicator, Message
+from libmuscle.configuration import ParameterValue
 from libmuscle.configuration_store import ConfigurationStore
+
+
+class _Any:
+    pass
 
 
 class ComputeElement:
@@ -31,8 +36,34 @@ class ComputeElement:
         self._communicator = Communicator(self._name)
         """Communicator for this instance."""
 
-        self._configuration = ConfigurationStore()
+        self._configuration_store = ConfigurationStore()
         """Configuration (parameters) for this instance."""
+
+    def get_parameter_value(self, name: str, typ: Type = _Any
+                            ) -> ParameterValue:
+        """Returns the value of a model parameter.
+
+        Args:
+            name: The name of the parameter, without any instance
+                    prefix.
+            typ: The expected type of the value. If the value does
+                    not match this type, a TypeError will be raised.
+                    If not specified, any of the supported types
+                    will be accepted, and you'll have to figure out
+                    what you got yourself.
+
+        Raises:
+            KeyError: If no value was set for this parameter.
+            TypeError: If the type of the parameter's value was not
+                    as expected.
+        """
+        value = self._configuration_store.get_parameter(Reference(name))
+        if typ is not _Any:
+            if not isinstance(value, typ):
+                raise TypeError('Value for parameter {} is of type {},'
+                                ' where a(n) {} was expected.'.format(
+                                    name, type(value), typ))
+        return value
 
     def send_message(self, port_name: str, message: Union[bytes, Message],
                      slot: Union[int, List[int]]=[]) -> None:

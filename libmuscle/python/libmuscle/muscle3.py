@@ -43,7 +43,7 @@ class Muscle3:
                 conduits, dims, locs = self.__manager.request_peers(
                         element._name)
                 element._communicator.connect(conduits, dims, locs)
-                element._configuration._base = configuration
+                element._configuration_store._base = configuration
 
     def __port_list_from_ports(self, ports: Dict[Operator, List[str]]
                                ) -> List[Port]:

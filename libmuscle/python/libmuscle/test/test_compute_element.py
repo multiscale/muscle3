@@ -6,6 +6,7 @@ import pytest
 from ymmsl import Operator, Reference
 
 from libmuscle.compute_element import ComputeElement
+from libmuscle.configuration import Configuration
 from libmuscle.configuration_store import ConfigurationStore
 
 
@@ -39,8 +40,34 @@ def test_create_compute_element(sys_argv_index):
         assert element._ports == ports
         comm_type.assert_called_with(Reference('test_element[13][42]'))
         assert element._communicator == comm_type.return_value
-        assert isinstance(element._configuration, ConfigurationStore)
-        assert len(element._configuration._base) == 0
+        assert isinstance(element._configuration_store, ConfigurationStore)
+        assert len(element._configuration_store._base) == 0
+
+
+def test_get_parameter_value(compute_element):
+    config = Configuration()
+    config['test1'] = 'test'
+    config['test2'] = 12
+    config['test3'] = 27.1
+    config['test4'] = True
+    config['test5'] = [2.3, 5.6]
+    config['test6'] = [[1.0, 2.0], [3.0, 4.0]]
+    compute_element._configuration_store._base = config
+
+    assert compute_element.get_parameter_value('test1') == 'test'
+    assert compute_element.get_parameter_value('test2') == 12
+    assert compute_element.get_parameter_value('test3') == 27.1
+    assert compute_element.get_parameter_value('test4') is True
+    assert compute_element.get_parameter_value('test5') == [2.3, 5.6]
+    assert compute_element.get_parameter_value('test6') == [
+            [1.0, 2.0], [3.0, 4.0]]
+
+    with pytest.raises(KeyError):
+        compute_element.get_parameter_value('testx')
+
+    assert compute_element.get_parameter_value('test1', str) == 'test'
+    with pytest.raises(TypeError):
+        compute_element.get_parameter_value('test1', int)
 
 
 def test_send_message(compute_element):

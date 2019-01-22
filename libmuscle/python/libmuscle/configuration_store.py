@@ -1,4 +1,7 @@
-from libmuscle.configuration import Configuration, ParameterValue
+from typing import Optional
+
+from libmuscle.configuration import (Configuration, ParameterValue,
+                                     has_parameter_type)
 
 from ymmsl import Reference
 
@@ -16,5 +19,12 @@ class ConfigurationStore:
     def set_base(self, base_config: Configuration) -> None:
         self._base = base_config
 
-    def get_parameter(self, name: Reference) -> ParameterValue:
-        return self._base[name]
+    def get_parameter(self, name: Reference,
+                      typ: Optional[str] = None) -> ParameterValue:
+        value = self._base[name]
+        if typ is not None:
+            if not has_parameter_type(value, typ):
+                raise TypeError('Value for parameter {} is of type {},'
+                                ' where a {} was expected.'.format(
+                                    name, type(value), typ))
+        return value

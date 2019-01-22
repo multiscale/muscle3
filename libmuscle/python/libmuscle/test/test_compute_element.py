@@ -1,5 +1,5 @@
 import sys
-from typing import Generator
+from typing import Generator, List
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -62,12 +62,26 @@ def test_get_parameter_value(compute_element):
     assert compute_element.get_parameter_value('test6') == [
             [1.0, 2.0], [3.0, 4.0]]
 
+    assert compute_element.get_parameter_value('test1', 'str') == 'test'
+    assert compute_element.get_parameter_value('test2', 'int') == 12
+    assert compute_element.get_parameter_value('test3', 'float') == 27.1
+    assert compute_element.get_parameter_value('test4', 'bool') is True
+    assert (compute_element.get_parameter_value('test5', '[float]') ==
+            [2.3, 5.6])
+    assert (compute_element.get_parameter_value('test6', '[[float]]') ==
+            [[1.0, 2.0], [3.0, 4.0]])
+
     with pytest.raises(KeyError):
         compute_element.get_parameter_value('testx')
 
-    assert compute_element.get_parameter_value('test1', str) == 'test'
     with pytest.raises(TypeError):
-        compute_element.get_parameter_value('test1', int)
+        compute_element.get_parameter_value('test1', 'int')
+    with pytest.raises(TypeError):
+        compute_element.get_parameter_value('test6', '[float]')
+    with pytest.raises(TypeError):
+        compute_element.get_parameter_value('test5', '[[float]]')
+    with pytest.raises(ValueError):
+        compute_element.get_parameter_value('test2', 'nonexistenttype')
 
 
 def test_send_message(compute_element):

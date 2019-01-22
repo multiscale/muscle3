@@ -8,10 +8,6 @@ from libmuscle.configuration import ParameterValue
 from libmuscle.configuration_store import ConfigurationStore
 
 
-class _Any:
-    pass
-
-
 class ComputeElement:
     """Represents a Compute Element instance in a MUSCLE3 simulation.
 
@@ -39,7 +35,8 @@ class ComputeElement:
         self._configuration_store = ConfigurationStore()
         """Configuration (parameters) for this instance."""
 
-    def get_parameter_value(self, name: str, typ: Type = _Any
+    def get_parameter_value(self, name: str,
+                            typ: Optional[str] = None
                             ) -> ParameterValue:
         """Returns the value of a model parameter.
 
@@ -57,13 +54,7 @@ class ComputeElement:
             TypeError: If the type of the parameter's value was not
                     as expected.
         """
-        value = self._configuration_store.get_parameter(Reference(name))
-        if typ is not _Any:
-            if not isinstance(value, typ):
-                raise TypeError('Value for parameter {} is of type {},'
-                                ' where a(n) {} was expected.'.format(
-                                    name, type(value), typ))
-        return value
+        return self._configuration_store.get_parameter(Reference(name), typ)
 
     def send_message(self, port_name: str, message: Union[bytes, Message],
                      slot: Union[int, List[int]]=[]) -> None:

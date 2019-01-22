@@ -1,4 +1,5 @@
 import sys
+from typing import List
 
 import pytest
 from ymmsl import Operator, Reference
@@ -36,6 +37,12 @@ def test_all(mmp_server, sys_argv_manager):
 
     # register submodels
     muscle.register(micros + [macro])
+
+    # check parameters
+    assert macro.get_parameter_value('test1') == 13
+    assert micros[50].get_parameter_value('test3', str) == 'testing'
+    assert (micros[79].get_parameter_value('test6', List[List[float]])[0][1] ==
+            2.0)
 
     # send and receive some messages
     macro.send_message('out', 'testing', [0, 0])

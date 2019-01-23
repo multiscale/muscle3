@@ -7,6 +7,7 @@ from libmuscle.mcp.client import Client as MCPClient
 from libmuscle.mcp.server import Server as MCPServer
 from libmuscle.mcp.type_registry import client_types, server_types
 from libmuscle.outbox import Outbox
+from libmuscle.post_office import PostOffice
 
 
 Message = Any
@@ -103,7 +104,7 @@ class Endpoint:
         return ret
 
 
-class Communicator:
+class Communicator(PostOffice):
     """Communication engine for MUSCLE 3.
 
     This class is the mailroom for a kernel that uses MUSCLE 3. It
@@ -136,7 +137,7 @@ class Communicator:
         self.__outboxes = dict()  # type: Dict[Reference, Outbox]
 
         for server_type in server_types:
-            self.__servers.append(server_type(self.__outboxes))
+            self.__servers.append(server_type(self))
 
     def get_locations(self) -> List[str]:
         """Returns a list of locations that we can be reached at.
@@ -280,6 +281,18 @@ class Communicator:
             return msgpack.unpackb(mcp_message.data, raw=False)
         else:
             return mcp_message.data
+
+    def get_message(self, receiver: Reference) -> MCPMessage:
+        """Get a message from a receiver's outbox.
+
+        Used by servers to get messages that have been sent to another
+        instance.
+
+        Args:
+            receiver: The receiver of the message, a reference to an
+                    instance.
+        """
+        return self.__outboxes[receiver].retrieve()
 
     def __split_instance(self, instance: Reference
                          ) -> Tuple[Reference, List[int]]:

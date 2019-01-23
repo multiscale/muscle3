@@ -188,6 +188,11 @@ def test_receive_with_slot(communicator2) -> None:
     assert msg == b'test'
 
 
+def test_get_message(communicator) -> None:
+    communicator.send_message('out', b'test')
+    assert communicator.get_message('other.in[13]').data == b'test'
+
+
 @patch('libmuscle.mcp.direct_client.registered_servers')
 def test_get_client(mock_servers, communicator) -> None:
     mock_servers.__contains__.return_value = True

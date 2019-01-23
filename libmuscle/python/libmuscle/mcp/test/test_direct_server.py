@@ -4,36 +4,22 @@ import pytest
 from ymmsl import Reference
 
 from libmuscle.outbox import Outbox
+from libmuscle.post_office import PostOffice
 from libmuscle.mcp.direct_server import DirectServer, registered_servers
 from libmuscle.mcp.message import Message
 
 
-@pytest.fixture
-def receiver():
-    return Reference('test_receiver.test_port')
+def test_create(direct_server):
+    assert direct_server._DirectServer__id in registered_servers
+    assert registered_servers[direct_server._DirectServer__id] == direct_server
 
 
-@pytest.fixture
-def outboxes(receiver):
-    return {receiver: Outbox()}
+def test_location(direct_server):
+    assert direct_server.get_location().startswith('direct:')
 
 
-@pytest.fixture
-def server(outboxes):
-    return DirectServer(outboxes)
-
-
-def test_create(server):
-    assert server._DirectServer__id in registered_servers
-    assert registered_servers[server._DirectServer__id] == server
-
-
-def test_location(server):
-    assert server.get_location().startswith('direct:')
-
-
-def test_request(receiver, outboxes, server):
+def test_request(receiver, post_office, direct_server):
     message = Message(Reference('test_sender.test_port'),
                       receiver, bytes())
-    outboxes[receiver].deposit(message)
-    assert server.request(receiver) == message
+    post_office.outboxes[receiver].deposit(message)
+    assert direct_server.request(receiver) == message

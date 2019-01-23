@@ -3,7 +3,7 @@ import uuid
 
 from ymmsl import Reference
 
-from libmuscle.outbox import Outbox
+from libmuscle.post_office import PostOffice
 from libmuscle.mcp.message import Message
 from libmuscle.mcp.server import Server
 
@@ -18,13 +18,14 @@ class DirectServer(Server):
     This server is for connecting compute elements within the same
     program.
     """
-    def __init__(self, outboxes: Dict[Reference, Outbox]) -> None:
+    def __init__(self, post_office: PostOffice) -> None:
         """Create a DirectServer.
 
         Args:
-            outboxes: A dictionary of outboxes, indexed by receiver.
+            post_office: A PostOffice to obtain messages from, for
+                    servicing requests.
         """
-        super().__init__(outboxes)
+        super().__init__(post_office)
 
         self.__id = str(uuid.uuid4())
         registered_servers[self.__id] = self
@@ -48,4 +49,4 @@ class DirectServer(Server):
         Returns:
             The next message.
         """
-        return self._outboxes[receiver].retrieve()
+        return self._post_office.get_message(receiver)

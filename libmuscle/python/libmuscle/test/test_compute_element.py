@@ -41,13 +41,13 @@ def test_create_compute_element(sys_argv_index):
         assert element._name == 'test_element[13][42]'
         assert element._ports == ports
         assert isinstance(element._configuration_store, ConfigurationStore)
-        assert len(element._configuration_store._base) == 0
-        assert len(element._configuration_store._overlay) == 0
+        assert len(element._configuration_store.base) == 0
+        assert len(element._configuration_store.overlay) == 0
         comm_type.assert_called_with(Reference('test_element[13][42]'),
                                      element._configuration_store)
         assert element._communicator == comm_type.return_value
         assert isinstance(element._configuration_store, ConfigurationStore)
-        assert len(element._configuration_store._base) == 0
+        assert len(element._configuration_store.base) == 0
 
 
 def test_get_parameter_value(compute_element):
@@ -58,7 +58,7 @@ def test_get_parameter_value(compute_element):
     config['test4'] = True
     config['test5'] = [2.3, 5.6]
     config['test6'] = [[1.0, 2.0], [3.0, 4.0]]
-    compute_element._configuration_store._base = config
+    compute_element._configuration_store.base = config
 
     assert compute_element.get_parameter_value('test1') == 'test'
     assert compute_element.get_parameter_value('test2') == 12

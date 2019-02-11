@@ -19,25 +19,13 @@ class ConfigurationStore:
         layer that contains an immutable set of parameters set in the
         simulation's configuration, and an overlay layer that holds
         parameter values that have been set at run-time.
+
+        Attributes:
+            base: The base layer.
+            overlay: The overlay layer.
         """
-        self._base = Configuration()
-        self._overlay = Configuration()
-
-    def set_base(self, base_config: Configuration) -> None:
-        """Set the base layer configuration.
-
-        Args:
-            base_config: The new base configuration
-        """
-        self._base = base_config
-
-    def set_overlay(self, overlay_config: Configuration) -> None:
-        """Set the overlay configuration.
-
-        Args:
-            overlay_config: The new overlay configuration
-        """
-        self._overlay = overlay_config
+        self.base = Configuration()
+        self.overlay = Configuration()
 
     def get_parameter(self, name: Reference,
                       typ: Optional[str] = None) -> ParameterValue:
@@ -56,10 +44,10 @@ class ConfigurationStore:
                     not match `typ`.
             ValueError: If an invalid value was specified for `typ`
         """
-        if name in self._overlay:
-            value = self._overlay[name]
+        if name in self.overlay:
+            value = self.overlay[name]
         else:
-            value = self._base[name]
+            value = self.base[name]
         if typ is not None:
             if not has_parameter_type(value, typ):
                 raise TypeError('Value for parameter {} is of type {},'

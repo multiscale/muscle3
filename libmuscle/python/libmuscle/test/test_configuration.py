@@ -135,3 +135,16 @@ def test_copy():
     conf2['test2'][0] = 24
     assert conf2['test2'] == [24, 12]
     assert conf1['test2'] == [24, 12]
+
+
+def test_as_plain_dict(configuration):
+    configuration._store = {
+            Reference('test1'): 12,
+            Reference('test2'): '12',
+            Reference('test3'): 'testing',
+            Reference('test4'): [12.3, 45.6]}
+    conf_dict = configuration.as_plain_dict()
+    assert conf_dict['test1'] == 12
+    assert conf_dict['test2'] == '12'
+    assert conf_dict['test3'] == 'testing'
+    assert conf_dict['test4'] == [12.3, 45.6]

@@ -8,7 +8,8 @@ class Message:
     they can be routed by a MUSCLE Transport Overlay when we get to
     multi-site running in the future.
     """
-    def __init__(self, sender: Reference, receiver: Reference, data: bytes
+    def __init__(self, sender: Reference, receiver: Reference,
+                 parameter_overlay: bytes, data: bytes
                  ) -> None:
         """Create an MCPMessage.
 
@@ -18,8 +19,10 @@ class Message:
         Args:
             sender: The sending endpoint.
             receiver: The receiving endpoint.
+            parameter_overlay: The serialised overlay parameters.
             data: The serialised contents of the message.
         """
         self.sender = sender
         self.receiver = receiver
+        self.parameter_overlay = parameter_overlay
         self.data = data

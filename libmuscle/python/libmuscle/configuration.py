@@ -63,6 +63,12 @@ class Configuration(MutableMapping):
         new_conf._store = self._store.copy()
         return new_conf
 
+    def as_plain_dict(self) -> Dict[str, ParameterValue]:
+        plain_dict = dict()     # type: Dict[str, ParameterValue]
+        for key, value in self._store.items():
+            plain_dict[str(key)] = value
+        return plain_dict
+
 
 def has_parameter_type(value: ParameterValue, typ: str) -> bool:
     """Checks whether the value has the given type.

@@ -62,7 +62,7 @@ def test_register() -> None:
 
     manager_client.get_configuration.assert_called_with()
     assert (manager_client.get_configuration.return_value ==
-            element._configuration_store._base)
+            element._configuration_store.base)
 
 
 def test_register2() -> None:

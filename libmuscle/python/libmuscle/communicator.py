@@ -232,7 +232,7 @@ class Communicator(PostOffice):
 
         # deposit
         mcp_message = MCPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
-                                 msgpack_message)
+                                 self.__get_packed_overlay(), msgpack_message)
         self.__ensure_outbox_exists(recv_endpoint)
         self.__outboxes[recv_endpoint.ref()].deposit(mcp_message)
 
@@ -370,3 +370,10 @@ class Communicator(PostOffice):
                              ' definitions.'.format(full_port))
         peer = self.__peers[full_port]
         return peer[:-1], cast(Identifier, peer[-1])
+
+    def __get_packed_overlay(self) -> bytes:
+        """Returns our configuration store's overlay as MsgPack.
+        """
+        overlay = self.__configuration_store.overlay.as_plain_dict()
+        data = msgpack.packb(overlay, use_bin_type=True)
+        return cast(bytes, data)

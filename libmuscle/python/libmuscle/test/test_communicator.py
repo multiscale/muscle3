@@ -39,7 +39,12 @@ def test_endpoint_instance() -> None:
 @pytest.fixture
 def communicator() -> Communicator:
     instance_id = Reference('kernel[13]')
-    communicator = Communicator(instance_id, MagicMock())
+    config_store = MagicMock()
+    config_store.overlay.as_plain_dict.return_value = {
+            'test1': 12,
+            'test2': 'testing',
+            'test3': 3.14}
+    communicator = Communicator(instance_id, config_store)
     communicator._Communicator__peers = {
             'kernel.out': Reference('other.in'),
             'kernel.in': Reference('other.out')
@@ -53,7 +58,9 @@ def communicator() -> Communicator:
 @pytest.fixture
 def communicator2() -> Communicator:
     instance_id = Reference('other')
-    communicator = Communicator(instance_id, MagicMock())
+    config_store = MagicMock()
+    config_store.overlay.as_plain_dict.return_value = {}
+    communicator = Communicator(instance_id, config_store)
     communicator._Communicator__peers = {
             'other.out': Reference('kernel.in'),
             'other.in': Reference('kernel.out')
@@ -103,6 +110,10 @@ def test_send_message(communicator) -> None:
             'other.in[13]']._Outbox__queue[0]
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
+    assert msg.parameter_overlay == msgpack.packb(
+            (communicator._Communicator__configuration_store.overlay.
+                as_plain_dict()),
+            use_bin_type=True)
     assert msg.data.decode('utf-8') == 'test'
 
 
@@ -123,6 +134,10 @@ def test_send_msgpack(communicator) -> None:
             'other.in[13]']._Outbox__queue[0]
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
+    assert msg.parameter_overlay == msgpack.packb(
+            (communicator._Communicator__configuration_store.overlay.
+                as_plain_dict()),
+            use_bin_type=True)
     assert msg.data == msgpack.packb({'test': 17}, use_bin_type=True)
 
 
@@ -135,13 +150,18 @@ def test_send_message_with_slot(communicator2) -> None:
             'kernel[13].in']._Outbox__queue[0]
     assert msg.sender == 'other.out[13]'
     assert msg.receiver == 'kernel[13].in'
+    assert msg.parameter_overlay == msgpack.packb(
+            (communicator2._Communicator__configuration_store.overlay.
+                as_plain_dict()),
+            use_bin_type=True)
     assert msg.data.decode('utf-8') == 'test'
 
 
 def test_receive_message(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = Message(
-            Reference('other.out[13]'), Reference('kernel[13].in'), b'test')
+            Reference('other.out[13]'), Reference('kernel[13].in'),
+            msgpack.packb({'test': 'testing'}), b'test')
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
 
@@ -163,6 +183,7 @@ def test_receive_msgpack(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = Message(
             Reference('other.out[13]'), Reference('kernel[13].in'),
+            msgpack.packb({'test': 'testing'}),
             msgpack.packb({'test': 13}))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
@@ -177,7 +198,8 @@ def test_receive_msgpack(communicator) -> None:
 def test_receive_with_slot(communicator2) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = Message(
-            Reference('kernel[13].out'), Reference('other.in[13]'), b'test')
+            Reference('kernel[13].out'), Reference('other.in[13]'),
+            msgpack.packb({'test': 'testing'}), b'test')
     get_client_mock = MagicMock(return_value=client_mock)
     communicator2._Communicator__get_client = get_client_mock
 

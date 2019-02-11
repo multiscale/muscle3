@@ -39,7 +39,7 @@ def test_endpoint_instance() -> None:
 @pytest.fixture
 def communicator() -> Communicator:
     instance_id = Reference('kernel[13]')
-    communicator = Communicator(instance_id)
+    communicator = Communicator(instance_id, MagicMock())
     communicator._Communicator__peers = {
             'kernel.out': Reference('other.in'),
             'kernel.in': Reference('other.out')
@@ -53,7 +53,7 @@ def communicator() -> Communicator:
 @pytest.fixture
 def communicator2() -> Communicator:
     instance_id = Reference('other')
-    communicator = Communicator(instance_id)
+    communicator = Communicator(instance_id, MagicMock())
     communicator._Communicator__peers = {
             'other.out': Reference('kernel.in'),
             'other.in': Reference('kernel.out')

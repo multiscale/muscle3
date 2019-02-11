@@ -2,6 +2,7 @@ import msgpack
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 from ymmsl import ComputeElementDecl, Conduit, Identifier, Port, Reference
 
+from libmuscle.configuration_store import ConfigurationStore
 from libmuscle.mcp.message import Message as MCPMessage
 from libmuscle.mcp.client import Client as MCPClient
 from libmuscle.mcp.server import Server as MCPServer
@@ -112,7 +113,8 @@ class Communicator(PostOffice):
     leaves the actual data transmission to various protocol-specific
     servers and clients.
     """
-    def __init__(self, instance: Reference) -> None:
+    def __init__(self, instance: Reference,
+                 configuration_store: ConfigurationStore) -> None:
         """Create a Communicator.
 
         The instance reference must start with one or more Identifiers,
@@ -121,9 +123,12 @@ class Communicator(PostOffice):
 
         Args:
             instance: The kernel instance this is the Communicator for.
+            configuration_store: The configuration store for this
+                    instance.
         """
-        self.__kernel, self.__index = self.__split_instance(
-                instance)
+        self.__kernel, self.__index = self.__split_instance(instance)
+
+        self.__configuration_store = configuration_store
 
         self.__servers = list()  # type: List[MCPServer]
 
@@ -292,6 +297,7 @@ class Communicator(PostOffice):
             receiver: The receiver of the message, a reference to an
                     instance.
         """
+
         return self.__outboxes[receiver].retrieve()
 
     def __split_instance(self, instance: Reference

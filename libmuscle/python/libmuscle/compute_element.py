@@ -29,11 +29,12 @@ class ComputeElement:
         self._ports = ports
         """Ports for this instance."""
 
-        self._communicator = Communicator(self._name)
-        """Communicator for this instance."""
-
         self._configuration_store = ConfigurationStore()
         """Configuration (parameters) for this instance."""
+
+        self._communicator = Communicator(
+                self._name, self._configuration_store)
+        """Communicator for this instance."""
 
     def get_parameter_value(self, name: str,
                             typ: Optional[str] = None

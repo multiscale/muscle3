@@ -24,10 +24,12 @@ def compute_element():
         communicator = MagicMock()
         communicator.receive_message.return_value = 'message'
         comm_type.return_value = communicator
-        yield ComputeElement('test_element', {
+        element = ComputeElement('test_element', {
             Operator.F_INIT: 'in',
             Operator.O_F: 'out'})
-        comm_type.assert_called_with(Reference('test_element'))
+        yield element
+        comm_type.assert_called_with(Reference('test_element'),
+                                     element._configuration_store)
 
 
 def test_create_compute_element(sys_argv_index):
@@ -38,7 +40,11 @@ def test_create_compute_element(sys_argv_index):
         element = ComputeElement('test_element', ports)
         assert element._name == 'test_element[13][42]'
         assert element._ports == ports
-        comm_type.assert_called_with(Reference('test_element[13][42]'))
+        assert isinstance(element._configuration_store, ConfigurationStore)
+        assert len(element._configuration_store._base) == 0
+        assert len(element._configuration_store._overlay) == 0
+        comm_type.assert_called_with(Reference('test_element[13][42]'),
+                                     element._configuration_store)
         assert element._communicator == comm_type.return_value
         assert isinstance(element._configuration_store, ConfigurationStore)
         assert len(element._configuration_store._base) == 0

@@ -201,10 +201,31 @@ class Communicator(PostOffice):
         Sending is non-blocking, a copy of the message will be made
         and stored until the receiver is ready to receive it.
 
+        Args:
+            port_name: The port on which this message is to be sent.
+            message: The message to be sent.
+            slot: The slot to send the message on, if any.
+        """
+        self.send_message_with_parameters(port_name, message, Configuration(),
+                                          slot)
+
+    def send_message_with_parameters(
+            self, port_name: str, message: Union[bytes, Message],
+            parameters: Configuration, slot: Union[int, List[int]]=[]
+            ) -> None:
+        """Send a message and parameters to the outside world.
+
+        Sending is non-blocking, a copy of the message will be made
+        and stored until the receiver is ready to receive it.
+
+        This function should not be used in submodels. It is intended
+        for use by special compute elements that are ensemble-aware and
+        either generate overlay parameter sets or pass them on.
 
         Args:
             port_name: The port on which this message is to be sent.
             message: The message to be sent.
+            parameters: A parameter overlay to inject.
             slot: The slot to send the message on, if any.
         """
         # note that slot is read-only, so the empty list default is fine
@@ -240,7 +261,8 @@ class Communicator(PostOffice):
 
         # deposit
         mcp_message = MCPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
-                                 self.__get_packed_overlay(), msgpack_message)
+                                 self.__get_packed_overlay(parameters),
+                                 msgpack_message)
         self.__ensure_outbox_exists(recv_endpoint)
         self.__outboxes[recv_endpoint.ref()].deposit(mcp_message)
 
@@ -395,9 +417,16 @@ class Communicator(PostOffice):
         peer = self.__peers[full_port]
         return peer[:-1], cast(Identifier, peer[-1])
 
-    def __get_packed_overlay(self) -> bytes:
+    def __get_packed_overlay(self, parameters: Configuration) -> bytes:
         """Returns our configuration store's overlay as MsgPack.
+
+        Overlays the given parameters.
+
+        Args:
+            parameters: A set of parameter values to overlay.
         """
-        overlay = self.__configuration_store.overlay.as_plain_dict()
-        data = msgpack.packb(overlay, use_bin_type=True)
-        return cast(bytes, data)
+        overlay = self.__configuration_store.overlay.copy()
+        for key, value in parameters.items():
+            overlay[key] = value
+        overlay_msg = msgpack.packb(overlay.as_plain_dict(), use_bin_type=True)
+        return cast(bytes, overlay_msg)

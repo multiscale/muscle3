@@ -62,7 +62,7 @@ def communicator() -> Communicator:
 def communicator2() -> Communicator:
     instance_id = Reference('other')
     config_store = MagicMock()
-    config_store.overlay.as_plain_dict.return_value = {}
+    config_store.overlay = Configuration()
     port_operators = {
             'in': Operator.F_INIT,
             'out': Operator.O_F}
@@ -149,7 +149,7 @@ def test_send_msgpack(communicator) -> None:
 
 def test_send_message_with_slot(communicator2) -> None:
     ref = Reference
-    communicator2.send_message('out', 'test'.encode('utf-8'), 13)
+    communicator2.send_message('out', 'test'.encode('utf-8'), slot=13)
 
     assert 'kernel[13].in' in communicator2._Communicator__outboxes
     msg = communicator2._Communicator__outboxes[
@@ -160,6 +160,23 @@ def test_send_message_with_slot(communicator2) -> None:
             (communicator2._Communicator__configuration_store.overlay.
                 as_plain_dict()),
             use_bin_type=True)
+    assert msg.data.decode('utf-8') == 'test'
+
+
+def test_send_message_with_parameters(communicator) -> None:
+    ref = Reference
+    config = Configuration()
+    config['test2'] = 'testing'
+    communicator.send_message_with_parameters('out', 'test'.encode('utf-8'),
+                                              config)
+
+    assert 'other.in[13]' in communicator._Communicator__outboxes
+    msg = communicator._Communicator__outboxes[
+            'other.in[13]']._Outbox__queue[0]
+    assert msg.sender == 'kernel[13].out'
+    assert msg.receiver == 'other.in[13]'
+    assert msgpack.unpackb(msg.parameter_overlay, raw=False) == {
+            'test1': 12, 'test2': 'testing'}
     assert msg.data.decode('utf-8') == 'test'
 
 

@@ -76,7 +76,7 @@ class ComputeElement:
             message: The message to be sent.
             slot: The slot to send the message on, if any.
         """
-        self._communicator.send_message(port_name, message, slot)
+        self._communicator.send_message(port_name, message, slot=slot)
 
     def receive_message(self, port_name: str, decode: bool,
                         slot: Union[int, List[int]]=[]) -> Message:

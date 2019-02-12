@@ -1,8 +1,9 @@
 from libmuscle.communicator import Communicator, Endpoint
+from libmuscle.configuration import Configuration
 from libmuscle.mcp.direct_client import DirectClient
 from libmuscle.mcp.message import Message
 
-from ymmsl import Conduit, Identifier, Reference
+from ymmsl import Conduit, Identifier, Operator, Reference
 
 import msgpack
 import pytest
@@ -40,11 +41,13 @@ def test_endpoint_instance() -> None:
 def communicator() -> Communicator:
     instance_id = Reference('kernel[13]')
     config_store = MagicMock()
-    config_store.overlay.as_plain_dict.return_value = {
-            'test1': 12,
-            'test2': 'testing',
-            'test3': 3.14}
-    communicator = Communicator(instance_id, config_store)
+    # Using an actual Configuration here, mocking became too cumbersome
+    config_store.overlay = Configuration()
+    config_store.overlay['test1'] = 12
+    port_operators = {
+            'out': Operator.O_I,
+            'in': Operator.S}
+    communicator = Communicator(instance_id, config_store, port_operators)
     communicator._Communicator__peers = {
             'kernel.out': Reference('other.in'),
             'kernel.in': Reference('other.out')
@@ -60,7 +63,10 @@ def communicator2() -> Communicator:
     instance_id = Reference('other')
     config_store = MagicMock()
     config_store.overlay.as_plain_dict.return_value = {}
-    communicator = Communicator(instance_id, config_store)
+    port_operators = {
+            'in': Operator.F_INIT,
+            'out': Operator.O_F}
+    communicator = Communicator(instance_id, config_store, port_operators)
     communicator._Communicator__peers = {
             'other.out': Reference('kernel.in'),
             'other.in': Reference('kernel.out')
@@ -161,7 +167,7 @@ def test_receive_message(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = Message(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            msgpack.packb({'test': 'testing'}), b'test')
+            msgpack.packb({'test1': 12}), b'test')
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
 
@@ -179,11 +185,24 @@ def test_receive_on_invalid_port(communicator) -> None:
         communicator.receive_message('does_not_exist', b'test')
 
 
+def test_receive_parallel_universe(communicator) -> None:
+    client_mock = MagicMock()
+    client_mock.receive.return_value = Message(
+            Reference('other.out[13]'), Reference('kernel[13].in'),
+            msgpack.packb({'test2': 42}),
+            msgpack.packb({'test': 13}))
+    get_client_mock = MagicMock(return_value=client_mock)
+    communicator._Communicator__get_client = get_client_mock
+
+    with pytest.raises(RuntimeError):
+        communicator.receive_message('in', True)
+
+
 def test_receive_msgpack(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = Message(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            msgpack.packb({'test': 'testing'}),
+            msgpack.packb({'test1': 12}),
             msgpack.packb({'test': 13}))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock

@@ -1,7 +1,9 @@
 import msgpack
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
-from ymmsl import ComputeElementDecl, Conduit, Identifier, Port, Reference
+from ymmsl import (ComputeElementDecl, Conduit, Identifier, Operator, Port,
+                   Reference)
 
+from libmuscle.configuration import Configuration
 from libmuscle.configuration_store import ConfigurationStore
 from libmuscle.mcp.message import Message as MCPMessage
 from libmuscle.mcp.client import Client as MCPClient
@@ -114,7 +116,9 @@ class Communicator(PostOffice):
     servers and clients.
     """
     def __init__(self, instance: Reference,
-                 configuration_store: ConfigurationStore) -> None:
+                 configuration_store: ConfigurationStore,
+                 port_operators: Dict[str, Operator]
+                 ) -> None:
         """Create a Communicator.
 
         The instance reference must start with one or more Identifiers,
@@ -125,10 +129,14 @@ class Communicator(PostOffice):
             instance: The kernel instance this is the Communicator for.
             configuration_store: The configuration store for this
                     instance.
+            port_operators: A map of port names to the corresponding
+                    operators.
         """
         self.__kernel, self.__index = self.__split_instance(instance)
 
         self.__configuration_store = configuration_store
+
+        self.__port_operators = port_operators
 
         self.__servers = list()  # type: List[MCPServer]
 
@@ -281,6 +289,22 @@ class Communicator(PostOffice):
         # receive
         client = self.__get_client(snd_endpoint.instance())
         mcp_message = client.receive(recv_endpoint.ref())
+
+        # check and perhaps update parameter overlay
+        overlay_config = Configuration.from_plain_dict(msgpack.unpackb(
+            mcp_message.parameter_overlay, raw=False))
+        if (self.__port_operators[port_name] == Operator.F_INIT and
+                len(self.__configuration_store.overlay) == 0):
+            self.__configuration_store.overlay = overlay_config
+        else:
+            if self.__configuration_store.overlay != overlay_config:
+                raise RuntimeError(('Unexpectedly received data from a'
+                                    ' parallel universe on port "{}". My'
+                                    ' parameters are "{}" and I received from'
+                                    ' a universe with "{}".').format(
+                                        recv_endpoint,
+                                        self.__configuration_store.overlay,
+                                        overlay_config))
 
         if decode:
             return msgpack.unpackb(mcp_message.data, raw=False)

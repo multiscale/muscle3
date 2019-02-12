@@ -28,23 +28,24 @@ def compute_element():
             Operator.F_INIT: 'in',
             Operator.O_F: 'out'})
         yield element
-        comm_type.assert_called_with(Reference('test_element'),
-                                     element._configuration_store)
 
 
 def test_create_compute_element(sys_argv_index):
     with patch('libmuscle.compute_element.Communicator') as comm_type:
         ports = {
-            Operator.F_INIT: 'in',
-            Operator.O_F: 'out'}
+            Operator.F_INIT: ['in'],
+            Operator.O_F: ['out']}
         element = ComputeElement('test_element', ports)
         assert element._name == 'test_element[13][42]'
         assert element._ports == ports
         assert isinstance(element._configuration_store, ConfigurationStore)
         assert len(element._configuration_store.base) == 0
         assert len(element._configuration_store.overlay) == 0
+        ref_ports = {
+                'in': Operator.F_INIT,
+                'out': Operator.O_F}
         comm_type.assert_called_with(Reference('test_element[13][42]'),
-                                     element._configuration_store)
+                                     element._configuration_store, ref_ports)
         assert element._communicator == comm_type.return_value
         assert isinstance(element._configuration_store, ConfigurationStore)
         assert len(element._configuration_store.base) == 0

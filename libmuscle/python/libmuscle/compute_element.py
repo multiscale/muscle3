@@ -21,6 +21,8 @@ class ComputeElement:
         Args:
             instance: The name of the instance represented by this
                 class.
+            ports: A list of port names for each operator of this
+                compute element.
         """
         # Note that these are accessed by Muscle3, but otherwise private.
         self._name = self.__make_full_name(instance)
@@ -32,8 +34,13 @@ class ComputeElement:
         self._configuration_store = ConfigurationStore()
         """Configuration (parameters) for this instance."""
 
+        port_operators = dict()
+        for op, port_names in ports.items():
+            for port in port_names:
+                port_operators[port] = op
+
         self._communicator = Communicator(
-                self._name, self._configuration_store)
+                self._name, self._configuration_store, port_operators)
         """Communicator for this instance."""
 
     def get_parameter_value(self, name: str,

@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Type, Union
 from ymmsl import Operator, Reference
 
 from libmuscle.communicator import Communicator, Message
-from libmuscle.configuration import ParameterValue
+from libmuscle.configuration import Configuration, ParameterValue
 from libmuscle.configuration_store import ConfigurationStore
 
 
@@ -77,6 +77,28 @@ class ComputeElement:
             slot: The slot to send the message on, if any.
         """
         self._communicator.send_message(port_name, message, slot=slot)
+
+    def send_message_with_parameters(
+            self, port_name: str, message: Union[bytes, Message],
+            parameters: Configuration, slot: Union[int, List[int]]=[]) -> None:
+        """Send a message to the outside world.
+
+        Sending is non-blocking, a copy of the message will be made
+        and stored until the receiver is ready to receive it.
+
+        In a submodel, user :meth:`send_message` instead. This function
+        is intended for use by special compute elements that are
+        ensemble-aware and either generate overlay parameter sets or
+        pass them on.
+
+        Args:
+            port_name: The port on which this message is to be sent.
+            message: The message to be sent.
+            parameters: A parameter overlay to inject.
+            slot: The slot to send the message on, if any.
+        """
+        self._communicator.send_message_with_parameters(
+                port_name, message, parameters, slot)
 
     def receive_message(self, port_name: str, decode: bool,
                         slot: Union[int, List[int]]=[]) -> Message:

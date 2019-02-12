@@ -97,6 +97,14 @@ def test_send_message(compute_element):
             'out', 'message', 1)
 
 
+def test_send_message_with_parameters(compute_element):
+    message = MagicMock()
+    config = MagicMock()
+    compute_element.send_message_with_parameters('out', message, config, 1)
+    assert (compute_element._communicator.send_message_with_parameters
+            .called_with('out', message, config, 1))
+
+
 def test_receive_message(compute_element):
     msg = compute_element.receive_message('in', True, 1)
     assert compute_element._communicator.receive_message.called_with(

@@ -193,6 +193,8 @@ def test_receive_message(communicator) -> None:
     get_client_mock.assert_called_with(Reference('other'))
     client_mock.receive.assert_called_with(Reference('kernel[13].in'))
     assert msg == b'test'
+    overlay = communicator._Communicator__configuration_store.overlay
+    assert overlay['test1'] == 12
 
 
 def test_receive_on_invalid_port(communicator) -> None:
@@ -244,6 +246,8 @@ def test_receive_with_slot(communicator2) -> None:
     get_client_mock.assert_called_with(Reference('kernel[13]'))
     client_mock.receive.assert_called_with(Reference('other.in[13]'))
     assert msg == b'test'
+    overlay = communicator2._Communicator__configuration_store.overlay
+    assert overlay['test'] == 'testing'
 
 
 def test_get_message(communicator) -> None:

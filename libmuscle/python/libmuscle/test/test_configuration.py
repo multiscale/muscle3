@@ -53,6 +53,13 @@ def test_equality(configuration):
     assert not (conf4 == 13)
 
 
+def test_to_string(configuration):
+    assert str(configuration) == '{}'
+    configuration['test'] = 42
+    assert 'test' in str(configuration)
+    assert '42' in str(configuration)
+
+
 def test_get_item(configuration):
     configuration._store[Reference('test')] = 13
     assert configuration[Reference('test')] == 13
@@ -148,3 +155,25 @@ def test_as_plain_dict(configuration):
     assert conf_dict['test2'] == '12'
     assert conf_dict['test3'] == 'testing'
     assert conf_dict['test4'] == [12.3, 45.6]
+
+
+def test_from_plain_dict():
+    config = Configuration.from_plain_dict({
+        'test1': 23,
+        'test2': 'testing',
+        'test3': [23.4, 1.0],
+        'test4': [[1.0], [2.0]],
+        'test5': 12.3})
+
+    assert len(config) == 5
+    assert config['test1'] == 23
+    assert config['test2'] == 'testing'
+    assert config['test3'] == [23.4, 1.0]
+    assert config['test4'] == [[1.0], [2.0]]
+    assert config['test5'] == 12.3
+
+
+def test_from_broken_plain_dict():
+    with pytest.raises(ValueError):
+        Configuration.from_plain_dict({
+            '$invalid&': 12})

@@ -250,6 +250,44 @@ def test_receive_with_slot(communicator2) -> None:
     assert overlay['test'] == 'testing'
 
 
+def test_receive_with_parameters(communicator) -> None:
+    client_mock = MagicMock()
+    client_mock.receive.return_value = Message(
+            Reference('other.out[13]'), Reference('kernel[13].in'),
+            msgpack.packb({'test2': 3.1}), b'test')
+    get_client_mock = MagicMock(return_value=client_mock)
+    communicator._Communicator__get_client = get_client_mock
+
+    msg, config = communicator.receive_message_with_parameters('in', False)
+
+    get_client_mock.assert_called_with(Reference('other'))
+    client_mock.receive.assert_called_with(Reference('kernel[13].in'))
+    assert msg == b'test'
+    overlay = communicator._Communicator__configuration_store.overlay
+    assert len(overlay) == 1
+    assert overlay['test1'] == 12
+    assert config['test2'] == 3.1
+
+
+def test_receive_msgpack_with_slot_and_parameters(communicator2) -> None:
+    client_mock = MagicMock()
+    client_mock.receive.return_value = Message(
+            Reference('kernel[13].out'), Reference('other.in[13]'),
+            msgpack.packb({'test': 'testing'}), msgpack.packb('test'))
+    get_client_mock = MagicMock(return_value=client_mock)
+    communicator2._Communicator__get_client = get_client_mock
+
+    msg, config = communicator2.receive_message_with_parameters(
+            'in', True, 13)
+
+    get_client_mock.assert_called_with(Reference('kernel[13]'))
+    client_mock.receive.assert_called_with(Reference('other.in[13]'))
+    assert msg == 'test'
+    overlay = communicator2._Communicator__configuration_store.overlay
+    assert len(overlay) == 0
+    assert config['test'] == 'testing'
+
+
 def test_get_message(communicator) -> None:
     communicator.send_message('out', b'test')
     assert communicator.get_message('other.in[13]').data == b'test'

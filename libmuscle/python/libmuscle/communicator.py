@@ -289,49 +289,46 @@ class Communicator(PostOffice):
         if isinstance(slot, int):
             slot = [slot]
 
-        # determine the receiver
-        try:
-            recv_port = Identifier(port_name)
-        except ValueError as e:
-            raise ValueError('{} is not a valid port name: {}'.format(
-                port_name, e))
-
-        recv_endpoint = Endpoint(self.__kernel, self.__index, recv_port, slot)
-
-        # balance the indexes and determine the sender
-        recv_port_full = self.__kernel + recv_port
-        snd_kernel, snd_port = self.__split_peer(recv_port_full)
-
-        total_index = self.__index + slot
-        snd_dim = len(self.__peer_dims[snd_kernel])
-        snd_index = total_index[0:snd_dim]
-        snd_slot = total_index[snd_dim:]
-        snd_endpoint = Endpoint(snd_kernel, snd_index, snd_port, snd_slot)
-
-        # receive
+        recv_endpoint = self.__get_receiver(port_name, slot)
+        snd_endpoint = self.__get_sender(recv_endpoint.port, slot)
         client = self.__get_client(snd_endpoint.instance())
         mcp_message = client.receive(recv_endpoint.ref())
-
-        # check and perhaps update parameter overlay
-        overlay_config = Configuration.from_plain_dict(msgpack.unpackb(
-            mcp_message.parameter_overlay, raw=False))
-        if (self.__port_operators[port_name] == Operator.F_INIT and
-                len(self.__configuration_store.overlay) == 0):
-            self.__configuration_store.overlay = overlay_config
-        else:
-            if self.__configuration_store.overlay != overlay_config:
-                raise RuntimeError(('Unexpectedly received data from a'
-                                    ' parallel universe on port "{}". My'
-                                    ' parameters are "{}" and I received from'
-                                    ' a universe with "{}".').format(
-                                        recv_endpoint,
-                                        self.__configuration_store.overlay,
-                                        overlay_config))
+        self.__check_update_overlay(recv_endpoint, mcp_message)
 
         if decode:
             return msgpack.unpackb(mcp_message.data, raw=False)
         else:
             return mcp_message.data
+
+    def receive_message_with_parameters(self, port_name: str, decode: bool,
+                                        slot: Union[int, List[int]]=[]
+                                        ) -> Tuple[Message, Configuration]:
+        """Receive a message and attached parameter overlay.
+
+        This function should not be used in submodels. It is intended
+        for use by special compute elements that are ensemble-aware and
+        have to pass on overlay parameter sets explicitly.
+
+        Receiving is a blocking operaton. This function will contact
+        the sender, wait for a message to be available, and receive and
+        return it.
+        """
+        # note that slot is read-only, so the empty list default is fine
+        if isinstance(slot, int):
+            slot = [slot]
+
+        recv_endpoint = self.__get_receiver(port_name, slot)
+        snd_endpoint = self.__get_sender(recv_endpoint.port, slot)
+        client = self.__get_client(snd_endpoint.instance())
+        mcp_message = client.receive(recv_endpoint.ref())
+
+        overlay_config = Configuration.from_plain_dict(msgpack.unpackb(
+            mcp_message.parameter_overlay, raw=False))
+
+        if decode:
+            return msgpack.unpackb(mcp_message.data, raw=False), overlay_config
+        else:
+            return mcp_message.data, overlay_config
 
     def get_message(self, receiver: Reference) -> MCPMessage:
         """Get a message from a receiver's outbox.
@@ -417,6 +414,40 @@ class Communicator(PostOffice):
         peer = self.__peers[full_port]
         return peer[:-1], cast(Identifier, peer[-1])
 
+    def __get_receiver(self, port_name: str, slot: List[int]) -> Endpoint:
+        """Determines the receiving endpoint for receiving a message.
+
+        Args:
+            port_name: Name of the port to receive on.
+            slot: Slot to receive on.
+        """
+        try:
+            recv_port = Identifier(port_name)
+        except ValueError as e:
+            raise ValueError('{} is not a valid port name: {}'.format(
+                port_name, e))
+
+        return Endpoint(self.__kernel, self.__index, recv_port, slot)
+
+    def __get_sender(self, recv_port: Identifier, slot: List[int]) -> Endpoint:
+        """Determine the sending endpoint for receiving a message.
+
+        Args:
+            recv_port: The receiving port.
+            slot: The slot to receive on.
+
+        Returns:
+            The sending endpoint.
+        """
+        recv_port_full = self.__kernel + recv_port
+        snd_kernel, snd_port = self.__split_peer(recv_port_full)
+
+        total_index = self.__index + slot
+        snd_dim = len(self.__peer_dims[snd_kernel])
+        snd_index = total_index[0:snd_dim]
+        snd_slot = total_index[snd_dim:]
+        return Endpoint(snd_kernel, snd_index, snd_port, snd_slot)
+
     def __get_packed_overlay(self, parameters: Configuration) -> bytes:
         """Returns our configuration store's overlay as MsgPack.
 
@@ -430,3 +461,27 @@ class Communicator(PostOffice):
             overlay[key] = value
         overlay_msg = msgpack.packb(overlay.as_plain_dict(), use_bin_type=True)
         return cast(bytes, overlay_msg)
+
+    def __check_update_overlay(self, recv_endpoint: Endpoint,
+                               recv_message: MCPMessage) -> None:
+        """Check and if needed update parameter overlay.
+
+        Args:
+            port_name: Name of the port we received on.
+            recv_message: The received message.
+        """
+        overlay_config = Configuration.from_plain_dict(msgpack.unpackb(
+            recv_message.parameter_overlay, raw=False))
+        port_name = str(recv_endpoint.port)
+        if (self.__port_operators[port_name] == Operator.F_INIT and
+                len(self.__configuration_store.overlay) == 0):
+            self.__configuration_store.overlay = overlay_config
+        else:
+            if self.__configuration_store.overlay != overlay_config:
+                raise RuntimeError(('Unexpectedly received data from a'
+                                    ' parallel universe on port "{}". My'
+                                    ' parameters are "{}" and I received from'
+                                    ' a universe with "{}".').format(
+                                        recv_endpoint,
+                                        self.__configuration_store.overlay,
+                                        overlay_config))

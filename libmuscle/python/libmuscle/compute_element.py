@@ -43,6 +43,25 @@ class ComputeElement:
                 self._name, self._configuration_store, port_operators)
         """Communicator for this instance."""
 
+    def init_instance(self) -> None:
+        """Initialise this instance.
+
+        This method must be called once at the beginning of the reuse
+        loop, i.e. before the F_INIT operator.
+        """
+        config, overlay = self._communicator.receive_message_with_parameters(
+                'muscle_parameters_in', True)
+        if not isinstance(config, Configuration):
+            raise RuntimeError('"{}" received a message on'
+                               ' muscle_parameters_in that is not a'
+                               ' Configuration. It seems that your simulation'
+                               ' is miswired or the sending instance is'
+                               ' broken.'.format(self._name))
+
+        for key, value in config.items():
+            overlay[key] = value
+        self._configuration_store.overlay = overlay
+
     def get_parameter_value(self, name: str,
                             typ: Optional[str] = None
                             ) -> ParameterValue:

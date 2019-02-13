@@ -121,3 +121,25 @@ def test_receive_message_with_parameters(compute_element):
             .called_with('in', True, 1))
     assert msg == 'message'
     assert config == 'config'
+
+
+def test_init_instance(compute_element):
+    compute_element._configuration_store.overlay = Configuration()
+    test_base_config = Configuration()
+    test_base_config['test1'] = 24
+    test_base_config['test2'] = [1.3, 2.0]
+    test_overlay = Configuration()
+    test_overlay['test2'] = 'abc'
+    recv = compute_element._communicator.receive_message_with_parameters
+    recv.return_value = (test_overlay, test_base_config)
+    compute_element.init_instance()
+    assert compute_element._communicator.receive_message.called_with(
+        'muscle_parameters_in', True)
+    assert len(compute_element._configuration_store.overlay) == 2
+    assert compute_element._configuration_store.overlay['test1'] == 24
+    assert compute_element._configuration_store.overlay['test2'] == 'abc'
+
+
+def test_init_instance_miswired(compute_element):
+    with pytest.raises(RuntimeError):
+        compute_element.init_instance()

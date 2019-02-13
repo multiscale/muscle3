@@ -1,5 +1,5 @@
 import sys
-from typing import Dict, List, Optional, Type, Union
+from typing import Dict, List, Optional, Tuple, Type, Union
 
 from ymmsl import Operator, Reference
 
@@ -120,6 +120,34 @@ class ComputeElement:
             True, otherwise as a raw bytes object.
         """
         return self._communicator.receive_message(port_name, decode, slot)
+
+    def receive_message_with_parameters(
+            self, port_name: str, decode: bool, slot: Union[int, List[int]]=[]
+            ) -> Tuple[Message, Configuration]:
+        """Receive a message with attached parameter overlay.
+
+        This function should not be used in submodels. It is intended
+        for use by special compute elements that are ensemble-aware and
+        have to pass on overlay parameter sets explicitly.
+
+        Receiving is a blocking operaton. This function will contact
+        the sender, wait for a message to be available, and receive and
+        return it.
+
+        Args:
+            port_name: The endpoint on which a message is to be
+                    received.
+            decode: Whether to MsgPack-decode the message (True) or
+                    return raw bytes() (False).
+            slot: The slot to receive the message on, if any.
+
+        Returns:
+            The received message, decoded from MsgPack if decode is
+            True and otherwise as a raw bytes object, and a
+            Configuration holding the parameter overlay.
+        """
+        return self._communicator.receive_message_with_parameters(
+                port_name, decode, slot)
 
     def __make_full_name(self, name: str) -> Reference:
         """Makes a Reference of the name and optionally index.

@@ -23,6 +23,8 @@ def compute_element():
     with patch('libmuscle.compute_element.Communicator') as comm_type:
         communicator = MagicMock()
         communicator.receive_message.return_value = 'message'
+        communicator.receive_message_with_parameters.return_value = (
+                'message', 'config')
         comm_type.return_value = communicator
         element = ComputeElement('test_element', {
             Operator.F_INIT: 'in',
@@ -110,3 +112,12 @@ def test_receive_message(compute_element):
     assert compute_element._communicator.receive_message.called_with(
             'in', True, 1)
     assert msg == 'message'
+
+
+def test_receive_message_with_parameters(compute_element):
+    msg, config = compute_element.receive_message_with_parameters(
+            'in', True, 1)
+    assert (compute_element._communicator.receive_message_with_parameters
+            .called_with('in', True, 1))
+    assert msg == 'message'
+    assert config == 'config'

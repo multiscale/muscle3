@@ -1,3 +1,4 @@
+from enum import IntEnum
 import msgpack
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 from ymmsl import (ComputeElementDecl, Conduit, Identifier, Operator, Port,
@@ -105,6 +106,16 @@ class Endpoint:
         if self.index:
             ret += self.index
         return ret
+
+
+class ExtTypeId(IntEnum):
+    """MessagePack extension type ids.
+
+    MessagePack lets you define your own types as an extension to the
+    built-in ones. These are distinguished by a number from 0 to 127.
+    This class is our registry of extension type ids.
+    """
+    CONFIGURATION = 0
 
 
 class Communicator(PostOffice):
@@ -257,7 +268,12 @@ class Communicator(PostOffice):
         if isinstance(message, bytes):
             msgpack_message = message
         else:
-            msgpack_message = msgpack.packb(message, use_bin_type=True)
+            if isinstance(message, Configuration):
+                data = msgpack.packb(message.as_plain_dict())
+                ext_data = msgpack.ExtType(ExtTypeId.CONFIGURATION, data)
+                msgpack_message = msgpack.packb(ext_data, use_bin_type=True)
+            else:
+                msgpack_message = msgpack.packb(message, use_bin_type=True)
 
         # deposit
         mcp_message = MCPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
@@ -294,11 +310,7 @@ class Communicator(PostOffice):
         client = self.__get_client(snd_endpoint.instance())
         mcp_message = client.receive(recv_endpoint.ref())
         self.__check_update_overlay(recv_endpoint, mcp_message)
-
-        if decode:
-            return msgpack.unpackb(mcp_message.data, raw=False)
-        else:
-            return mcp_message.data
+        return self.__extract_object(mcp_message, decode)
 
     def receive_message_with_parameters(self, port_name: str, decode: bool,
                                         slot: Union[int, List[int]]=[]
@@ -337,10 +349,7 @@ class Communicator(PostOffice):
         overlay_config = Configuration.from_plain_dict(msgpack.unpackb(
             mcp_message.parameter_overlay, raw=False))
 
-        if decode:
-            return msgpack.unpackb(mcp_message.data, raw=False), overlay_config
-        else:
-            return mcp_message.data, overlay_config
+        return self.__extract_object(mcp_message, decode), overlay_config
 
     def get_message(self, receiver: Reference) -> MCPMessage:
         """Get a message from a receiver's outbox.
@@ -497,3 +506,25 @@ class Communicator(PostOffice):
                                         recv_endpoint,
                                         self.__configuration_store.overlay,
                                         overlay_config))
+
+    def __extract_object(self, mcp_message: MCPMessage, decode: bool
+                         ) -> Message:
+        """Extract object from a received message.
+
+        Args:
+            mcp_message: The received message.
+            decode: Whether to decode, or return the raw data bytes.
+
+        Returns:
+            The object that was received.
+        """
+
+        if decode:
+            data = msgpack.unpackb(mcp_message.data, raw=False)
+            if isinstance(data, msgpack.ExtType):
+                if data.code == ExtTypeId.CONFIGURATION:
+                    plain_dict = msgpack.unpackb(data.data, raw=False)
+                    return Configuration.from_plain_dict(plain_dict)
+            return msgpack.unpackb(mcp_message.data, raw=False)
+        else:
+            return mcp_message.data

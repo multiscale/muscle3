@@ -180,6 +180,27 @@ def test_send_message_with_parameters(communicator) -> None:
     assert msg.data.decode('utf-8') == 'test'
 
 
+def test_send_configuration(communicator) -> None:
+    ref = Reference
+    config = Configuration()
+    config['test1'] = 'testing'
+    communicator.send_message('out', config)
+
+    assert 'other.in[13]' in communicator._Communicator__outboxes
+    msg = communicator._Communicator__outboxes[
+            'other.in[13]']._Outbox__queue[0]
+    assert msg.sender == 'kernel[13].out'
+    assert msg.receiver == 'other.in[13]'
+    assert msg.parameter_overlay == msgpack.packb(
+            (communicator._Communicator__configuration_store.overlay.
+                as_plain_dict()),
+            use_bin_type=True)
+    assert msg.data == msgpack.packb(
+            msgpack.ExtType(0, msgpack.packb({'test1': 'testing'},
+                                             use_bin_type=True)),
+            use_bin_type=True)
+
+
 def test_receive_message(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = Message(
@@ -286,6 +307,26 @@ def test_receive_msgpack_with_slot_and_parameters(communicator2) -> None:
     overlay = communicator2._Communicator__configuration_store.overlay
     assert len(overlay) == 0
     assert config['test'] == 'testing'
+
+
+def test_receive_configuration(communicator) -> None:
+    client_mock = MagicMock()
+    config_dict = {'test': 13}
+    config_data = msgpack.ExtType(0, msgpack.packb(config_dict,
+                                                   use_bin_type=True))
+    client_mock.receive.return_value = Message(
+            Reference('other.out[13]'), Reference('kernel[13].in'),
+            msgpack.packb({'test1': 12}),
+            msgpack.packb(config_data))
+    get_client_mock = MagicMock(return_value=client_mock)
+    communicator._Communicator__get_client = get_client_mock
+
+    msg = communicator.receive_message('in', True)
+
+    get_client_mock.assert_called_with(Reference('other'))
+    client_mock.receive.assert_called_with(Reference('kernel[13].in'))
+    assert isinstance(msg, Configuration)
+    assert msg['test'] == 13
 
 
 def test_get_message(communicator) -> None:

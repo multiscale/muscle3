@@ -312,6 +312,18 @@ class Communicator(PostOffice):
         Receiving is a blocking operaton. This function will contact
         the sender, wait for a message to be available, and receive and
         return it.
+
+        Args:
+            port_name: The endpoint on which a message is to be
+                    received.
+            decode: Whether to MsgPack-decode the message (True) or
+                    return raw bytes() (False).
+            slot: The slot to receive the message on, if any.
+
+        Returns:
+            The received message, decoded from MsgPack if decode is
+            True and otherwise as a raw bytes object, and a
+            Configuration holding the parameter overlay.
         """
         # note that slot is read-only, so the empty list default is fine
         if isinstance(slot, int):

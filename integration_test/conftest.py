@@ -54,6 +54,48 @@ def mmp_server(tmpdir):
 
 
 @pytest.fixture
+def mmp_server_qmc(tmpdir):
+    ymmsl_text = (
+            'version: v0.1\n'
+            'simulation:\n'
+            '  name: test_model\n'
+            '  compute_elements:\n'
+            '    qmc: muscle.qmc\n'
+            '    macro:\n'
+            '      implementation: macro_implementation\n'
+            '      multiplicity: [100]\n'
+            '    micro:\n'
+            '      implementation: micro_implementation\n'
+            '      multiplicity: [100]\n'
+            '  conduits:\n'
+            '    qmc.parameters_out: macro.muscle_parameters_in\n'
+            '    macro.out: micro.in\n'
+            '    micro.out: macro.in\n'
+            'experiment:\n'
+            '  model: test_model\n'
+            '  parameter_values:\n'
+            '    test1: 13\n'
+            '    test2: 13.3\n'
+            '    test3: testing\n'
+            # '    test4: True\n'
+            '    test5: [2.3, 5.6]\n'
+            '    test6:\n'
+            '      - [1.0, 2.0]\n'
+            '      - [3.0, 1.0]\n'
+            )
+
+    logger = Logger()
+    ymmsl = yaml.load(ymmsl_text, Loader=loader)
+    configuration = config_for_experiment(ymmsl.experiment)
+    instance_registry = InstanceRegistry()
+    topology_store = TopologyStore(ymmsl_text)
+    server = MMPServer(logger, configuration, instance_registry,
+                       topology_store)
+    yield server
+    server.stop()
+
+
+@pytest.fixture
 def replaced_sys_argv() -> Generator[None, None, None]:
     old_argv = sys.argv
     sys.argv = ['', '--muscle-manager=localhost:9000']

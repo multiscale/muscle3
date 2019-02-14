@@ -22,13 +22,14 @@ def sys_argv_index() -> Generator[None, None, None]:
 def compute_element():
     with patch('libmuscle.compute_element.Communicator') as comm_type:
         communicator = MagicMock()
-        communicator.receive_message.return_value = 'message'
-        communicator.receive_message_with_parameters.return_value = (
-                'message', 'config')
+        config = Configuration()
+        config['test1'] = 12
+        communicator.receive_message.return_value = (
+                'message', config)
         comm_type.return_value = communicator
         element = ComputeElement('test_element', {
-            Operator.F_INIT: 'in',
-            Operator.O_F: 'out'})
+            Operator.F_INIT: ['in'],
+            Operator.O_F: ['out']})
         yield element
 
 
@@ -43,14 +44,14 @@ def test_create_compute_element(sys_argv_index):
         assert isinstance(element._configuration_store, ConfigurationStore)
         assert len(element._configuration_store.base) == 0
         assert len(element._configuration_store.overlay) == 0
-        ref_ports = {
-                'in': Operator.F_INIT,
-                'out': Operator.O_F}
-        comm_type.assert_called_with(Reference('test_element[13][42]'),
-                                     element._configuration_store, ref_ports)
+        comm_type.assert_called_with(Reference('test_element[13][42]'))
         assert element._communicator == comm_type.return_value
         assert isinstance(element._configuration_store, ConfigurationStore)
         assert len(element._configuration_store.base) == 0
+        ref_ports = {
+                'in': Operator.F_INIT,
+                'out': Operator.O_F}
+        assert element._port_operators == ref_ports
 
 
 def test_get_parameter_value(compute_element):
@@ -120,7 +121,13 @@ def test_receive_message_with_parameters(compute_element):
     assert (compute_element._communicator.receive_message_with_parameters
             .called_with('in', True, 1))
     assert msg == 'message'
-    assert config == 'config'
+    assert config['test1'] == 12
+
+
+def test_receive_parallel_universe(compute_element) -> None:
+    compute_element._configuration_store.overlay['test2'] = 'test'
+    with pytest.raises(RuntimeError):
+        compute_element.receive_message('in', True)
 
 
 def test_init_instance(compute_element):
@@ -130,7 +137,7 @@ def test_init_instance(compute_element):
     test_base_config['test2'] = [1.3, 2.0]
     test_overlay = Configuration()
     test_overlay['test2'] = 'abc'
-    recv = compute_element._communicator.receive_message_with_parameters
+    recv = compute_element._communicator.receive_message
     recv.return_value = (test_overlay, test_base_config)
     compute_element.init_instance()
     assert compute_element._communicator.receive_message.called_with(

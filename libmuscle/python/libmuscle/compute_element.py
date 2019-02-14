@@ -34,14 +34,13 @@ class ComputeElement:
         self._configuration_store = ConfigurationStore()
         """Configuration (parameters) for this instance."""
 
-        port_operators = dict()
+        self._communicator = Communicator(self._name)
+        """Communicator for this instance."""
+
+        self._port_operators = dict()   # type: Dict[str, Operator]
         for op, port_names in ports.items():
             for port in port_names:
-                port_operators[port] = op
-
-        self._communicator = Communicator(
-                self._name, self._configuration_store, port_operators)
-        """Communicator for this instance."""
+                self._port_operators[port] = op
 
     def init_instance(self) -> None:
         """Initialise this instance.
@@ -49,7 +48,7 @@ class ComputeElement:
         This method must be called once at the beginning of the reuse
         loop, i.e. before the F_INIT operator.
         """
-        config, overlay = self._communicator.receive_message_with_parameters(
+        config, overlay = self._communicator.receive_message(
                 'muscle_parameters_in', True)
         if not isinstance(config, Configuration):
             raise RuntimeError('"{}" received a message on'
@@ -141,7 +140,21 @@ class ComputeElement:
             The received message, decoded from MsgPack if decode is
             True, otherwise as a raw bytes object.
         """
-        return self._communicator.receive_message(port_name, decode, slot)
+        msg, config = self._communicator.receive_message(
+                port_name, decode, slot)
+        if (self._port_operators[port_name] == Operator.F_INIT and
+                len(self._configuration_store.overlay) == 0):
+            self._configuration_store.overlay = config
+        else:
+            if self._configuration_store.overlay != config:
+                raise RuntimeError(('Unexpectedly received data from a'
+                                    ' parallel universe on port "{}". My'
+                                    ' parameters are "{}" and I received from'
+                                    ' a universe with "{}".').format(
+                                        port_name,
+                                        self._configuration_store.overlay,
+                                        config))
+        return msg
 
     def receive_message_with_parameters(
             self, port_name: str, decode: bool, slot: Union[int, List[int]]=[]
@@ -168,8 +181,7 @@ class ComputeElement:
             True and otherwise as a raw bytes object, and a
             Configuration holding the parameter overlay.
         """
-        return self._communicator.receive_message_with_parameters(
-                port_name, decode, slot)
+        return self._communicator.receive_message(port_name, decode, slot)
 
     def __make_full_name(self, name: str) -> Reference:
         """Makes a Reference of the name and optionally index.

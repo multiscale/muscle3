@@ -40,14 +40,7 @@ def test_endpoint_instance() -> None:
 @pytest.fixture
 def communicator() -> Communicator:
     instance_id = Reference('kernel[13]')
-    config_store = MagicMock()
-    # Using an actual Configuration here, mocking became too cumbersome
-    config_store.overlay = Configuration()
-    config_store.overlay['test1'] = 12
-    port_operators = {
-            'out': Operator.O_I,
-            'in': Operator.S}
-    communicator = Communicator(instance_id, config_store, port_operators)
+    communicator = Communicator(instance_id)
     communicator._Communicator__peers = {
             'kernel.out': Reference('other.in'),
             'kernel.in': Reference('other.out')
@@ -61,12 +54,7 @@ def communicator() -> Communicator:
 @pytest.fixture
 def communicator2() -> Communicator:
     instance_id = Reference('other')
-    config_store = MagicMock()
-    config_store.overlay = Configuration()
-    port_operators = {
-            'in': Operator.F_INIT,
-            'out': Operator.O_F}
-    communicator = Communicator(instance_id, config_store, port_operators)
+    communicator = Communicator(instance_id)
     communicator._Communicator__peers = {
             'other.out': Reference('kernel.in'),
             'other.in': Reference('kernel.out')
@@ -186,12 +174,11 @@ def test_receive_message(communicator) -> None:
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
 
-    msg = communicator.receive_message('in', False)
+    msg, overlay = communicator.receive_message('in', False)
 
     get_client_mock.assert_called_with(Reference('other'))
     client_mock.receive.assert_called_with(Reference('kernel[13].in'))
     assert msg == b'test'
-    overlay = communicator._Communicator__configuration_store.overlay
     assert overlay['test1'] == 12
 
 
@@ -200,19 +187,6 @@ def test_receive_on_invalid_port(communicator) -> None:
         communicator.receive_message('@$Invalid_id', b'test')
     with pytest.raises(ValueError):
         communicator.receive_message('does_not_exist', b'test')
-
-
-def test_receive_parallel_universe(communicator) -> None:
-    client_mock = MagicMock()
-    client_mock.receive.return_value = Message(
-            Reference('other.out[13]'), Reference('kernel[13].in'),
-            msgpack.packb({'test2': 42}),
-            msgpack.packb({'test': 13}))
-    get_client_mock = MagicMock(return_value=client_mock)
-    communicator._Communicator__get_client = get_client_mock
-
-    with pytest.raises(RuntimeError):
-        communicator.receive_message('in', True)
 
 
 def test_receive_msgpack(communicator) -> None:
@@ -224,7 +198,7 @@ def test_receive_msgpack(communicator) -> None:
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
 
-    msg = communicator.receive_message('in', True)
+    msg, _ = communicator.receive_message('in', True)
 
     get_client_mock.assert_called_with(Reference('other'))
     client_mock.receive.assert_called_with(Reference('kernel[13].in'))
@@ -239,12 +213,11 @@ def test_receive_with_slot(communicator2) -> None:
     get_client_mock = MagicMock(return_value=client_mock)
     communicator2._Communicator__get_client = get_client_mock
 
-    msg = communicator2.receive_message('in', False, 13)
+    msg, overlay = communicator2.receive_message('in', False, 13)
 
     get_client_mock.assert_called_with(Reference('kernel[13]'))
     client_mock.receive.assert_called_with(Reference('other.in[13]'))
     assert msg == b'test'
-    overlay = communicator2._Communicator__configuration_store.overlay
     assert overlay['test'] == 'testing'
 
 
@@ -256,14 +229,11 @@ def test_receive_with_parameters(communicator) -> None:
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
 
-    msg, config = communicator.receive_message_with_parameters('in', False)
+    msg, config = communicator.receive_message('in', False)
 
     get_client_mock.assert_called_with(Reference('other'))
     client_mock.receive.assert_called_with(Reference('kernel[13].in'))
     assert msg == b'test'
-    overlay = communicator._Communicator__configuration_store.overlay
-    assert len(overlay) == 1
-    assert overlay['test1'] == 12
     assert config['test2'] == 3.1
 
 
@@ -275,14 +245,11 @@ def test_receive_msgpack_with_slot_and_parameters(communicator2) -> None:
     get_client_mock = MagicMock(return_value=client_mock)
     communicator2._Communicator__get_client = get_client_mock
 
-    msg, config = communicator2.receive_message_with_parameters(
-            'in', True, 13)
+    msg, config = communicator2.receive_message('in', True, 13)
 
     get_client_mock.assert_called_with(Reference('kernel[13]'))
     client_mock.receive.assert_called_with(Reference('other.in[13]'))
     assert msg == 'test'
-    overlay = communicator2._Communicator__configuration_store.overlay
-    assert len(overlay) == 0
     assert config['test'] == 'testing'
 
 
@@ -298,7 +265,7 @@ def test_receive_configuration(communicator) -> None:
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
 
-    msg = communicator.receive_message('in', True)
+    msg, config = communicator.receive_message('in', True)
 
     get_client_mock.assert_called_with(Reference('other'))
     client_mock.receive.assert_called_with(Reference('kernel[13].in'))

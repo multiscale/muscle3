@@ -126,10 +126,7 @@ class Communicator(PostOffice):
     leaves the actual data transmission to various protocol-specific
     servers and clients.
     """
-    def __init__(self, instance: Reference,
-                 configuration_store: ConfigurationStore,
-                 port_operators: Dict[str, Operator]
-                 ) -> None:
+    def __init__(self, instance: Reference) -> None:
         """Create a Communicator.
 
         The instance reference must start with one or more Identifiers,
@@ -138,16 +135,8 @@ class Communicator(PostOffice):
 
         Args:
             instance: The kernel instance this is the Communicator for.
-            configuration_store: The configuration store for this
-                    instance.
-            port_operators: A map of port names to the corresponding
-                    operators.
         """
         self.__kernel, self.__index = self.__split_instance(instance)
-
-        self.__configuration_store = configuration_store
-
-        self.__port_operators = port_operators
 
         self.__servers = list()  # type: List[MCPServer]
 
@@ -271,38 +260,8 @@ class Communicator(PostOffice):
         self.__outboxes[recv_endpoint.ref()].deposit(mcp_message)
 
     def receive_message(self, port_name: str, decode: bool,
-                        slot: Union[int, List[int]]=[]) -> Message:
-        """Receive a message from the outside world.
-
-        Receiving is a blocking operation. This function will contact
-        the sender, wait for a message to be available, and receive and
-        return it.
-
-        Args:
-            port_name: The endpoint on which a message is to be
-                    received.
-            decode: Whether to MsgPack-decode the message (True) or
-                    return raw bytes() (False).
-            slot: The slot to receive the message on, if any.
-
-        Returns:
-            The received message, decoded from MsgPack if decode is
-                True, otherwise as a raw bytes object.
-        """
-        # note that slot is read-only, so the empty list default is fine
-        if isinstance(slot, int):
-            slot = [slot]
-
-        recv_endpoint = self.__get_receiver(port_name, slot)
-        snd_endpoint = self.__get_sender(recv_endpoint.port, slot)
-        client = self.__get_client(snd_endpoint.instance())
-        mcp_message = client.receive(recv_endpoint.ref())
-        self.__check_update_overlay(recv_endpoint, mcp_message)
-        return self.__extract_object(mcp_message, decode)
-
-    def receive_message_with_parameters(self, port_name: str, decode: bool,
-                                        slot: Union[int, List[int]]=[]
-                                        ) -> Tuple[Message, Configuration]:
+                        slot: Union[int, List[int]]=[]
+                        ) -> Tuple[Message, Configuration]:
         """Receive a message and attached parameter overlay.
 
         This function should not be used in submodels. It is intended
@@ -456,30 +415,6 @@ class Communicator(PostOffice):
         snd_index = total_index[0:snd_dim]
         snd_slot = total_index[snd_dim:]
         return Endpoint(snd_kernel, snd_index, snd_port, snd_slot)
-
-    def __check_update_overlay(self, recv_endpoint: Endpoint,
-                               recv_message: MCPMessage) -> None:
-        """Check and if needed update parameter overlay.
-
-        Args:
-            port_name: Name of the port we received on.
-            recv_message: The received message.
-        """
-        overlay_config = Configuration.from_plain_dict(msgpack.unpackb(
-            recv_message.parameter_overlay, raw=False))
-        port_name = str(recv_endpoint.port)
-        if (self.__port_operators[port_name] == Operator.F_INIT and
-                len(self.__configuration_store.overlay) == 0):
-            self.__configuration_store.overlay = overlay_config
-        else:
-            if self.__configuration_store.overlay != overlay_config:
-                raise RuntimeError(('Unexpectedly received data from a'
-                                    ' parallel universe on port "{}". My'
-                                    ' parameters are "{}" and I received from'
-                                    ' a universe with "{}".').format(
-                                        recv_endpoint,
-                                        self.__configuration_store.overlay,
-                                        overlay_config))
 
     def __extract_object(self, mcp_message: MCPMessage, decode: bool
                          ) -> Message:

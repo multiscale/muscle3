@@ -205,24 +205,9 @@ class Communicator(PostOffice):
         self.__peer_dims = peer_dims    # indexed by kernel id
         self.__peer_locations = peer_locations  # indexed by instance id
 
-    def send_message(self, port_name: str, message: Union[bytes, Message],
-                     slot: Union[int, List[int]]=[]) -> None:
-        """Send a message to the outside world.
-
-        Sending is non-blocking, a copy of the message will be made
-        and stored until the receiver is ready to receive it.
-
-        Args:
-            port_name: The port on which this message is to be sent.
-            message: The message to be sent.
-            slot: The slot to send the message on, if any.
-        """
-        self.send_message_with_parameters(port_name, message, Configuration(),
-                                          slot)
-
-    def send_message_with_parameters(
+    def send_message(
             self, port_name: str, message: Union[bytes, Message],
-            parameters: Configuration, slot: Union[int, List[int]]=[]
+            overlay: Configuration, slot: Union[int, List[int]]=[]
             ) -> None:
         """Send a message and parameters to the outside world.
 
@@ -236,7 +221,7 @@ class Communicator(PostOffice):
         Args:
             port_name: The port on which this message is to be sent.
             message: The message to be sent.
-            parameters: A parameter overlay to inject.
+            overlay: A parameter overlay to piggy-back onto the message.
             slot: The slot to send the message on, if any.
         """
         # note that slot is read-only, so the empty list default is fine
@@ -264,21 +249,24 @@ class Communicator(PostOffice):
         recv_endpoint = Endpoint(recv_kernel, recv_index, recv_port,
                                  recv_slot)
 
+        # encode overlay
+        packed_overlay = msgpack.packb(overlay.as_plain_dict(),
+                                       use_bin_type=True)
+
         # encode message
         if isinstance(message, bytes):
-            msgpack_message = message
+            packed_message = message
         else:
             if isinstance(message, Configuration):
                 data = msgpack.packb(message.as_plain_dict())
                 ext_data = msgpack.ExtType(ExtTypeId.CONFIGURATION, data)
-                msgpack_message = msgpack.packb(ext_data, use_bin_type=True)
+                packed_message = msgpack.packb(ext_data, use_bin_type=True)
             else:
-                msgpack_message = msgpack.packb(message, use_bin_type=True)
+                packed_message = msgpack.packb(message, use_bin_type=True)
 
         # deposit
         mcp_message = MCPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
-                                 self.__get_packed_overlay(parameters),
-                                 msgpack_message)
+                                 packed_overlay, packed_message)
         self.__ensure_outbox_exists(recv_endpoint)
         self.__outboxes[recv_endpoint.ref()].deposit(mcp_message)
 
@@ -468,20 +456,6 @@ class Communicator(PostOffice):
         snd_index = total_index[0:snd_dim]
         snd_slot = total_index[snd_dim:]
         return Endpoint(snd_kernel, snd_index, snd_port, snd_slot)
-
-    def __get_packed_overlay(self, parameters: Configuration) -> bytes:
-        """Returns our configuration store's overlay as MsgPack.
-
-        Overlays the given parameters.
-
-        Args:
-            parameters: A set of parameter values to overlay.
-        """
-        overlay = self.__configuration_store.overlay.copy()
-        for key, value in parameters.items():
-            overlay[key] = value
-        overlay_msg = msgpack.packb(overlay.as_plain_dict(), use_bin_type=True)
-        return cast(bytes, overlay_msg)
 
     def __check_update_overlay(self, recv_endpoint: Endpoint,
                                recv_message: MCPMessage) -> None:

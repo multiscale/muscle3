@@ -95,7 +95,8 @@ class ComputeElement:
             message: The message to be sent.
             slot: The slot to send the message on, if any.
         """
-        self._communicator.send_message(port_name, message, slot=slot)
+        self._communicator.send_message(
+                port_name, message, self._configuration_store.overlay, slot)
 
     def send_message_with_parameters(
             self, port_name: str, message: Union[bytes, Message],
@@ -116,8 +117,10 @@ class ComputeElement:
             parameters: A parameter overlay to inject.
             slot: The slot to send the message on, if any.
         """
-        self._communicator.send_message_with_parameters(
-                port_name, message, parameters, slot)
+        overlay = self._configuration_store.overlay.copy()
+        for key, value in parameters.items():
+            overlay[key] = value
+        self._communicator.send_message(port_name, message, overlay, slot)
 
     def receive_message(self, port_name: str, decode: bool,
                         slot: Union[int, List[int]]=[]) -> Message:

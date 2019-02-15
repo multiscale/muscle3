@@ -95,13 +95,14 @@ def test_connect(communicator) -> None:
     assert communicator._Communicator__peer_locations == peer_locations
 
 
+def test_send_on_disconnected_port(communicator) -> None:
+    communicator.send_message('not_connected', 'test'.encode('utf-8'),
+                              Configuration())
+
+
 def test_send_on_invalid_port(communicator) -> None:
     with pytest.raises(ValueError):
         communicator.send_message('[$Invalid_id', 'test'.encode('utf-8'),
-                                  Configuration())
-
-    with pytest.raises(ValueError):
-        communicator.send_message('not_a_port', 'test'.encode('utf-8'),
                                   Configuration())
 
 
@@ -185,8 +186,6 @@ def test_receive_message(communicator) -> None:
 def test_receive_on_invalid_port(communicator) -> None:
     with pytest.raises(ValueError):
         communicator.receive_message('@$Invalid_id', b'test')
-    with pytest.raises(ValueError):
-        communicator.receive_message('does_not_exist', b'test')
 
 
 def test_receive_msgpack(communicator) -> None:

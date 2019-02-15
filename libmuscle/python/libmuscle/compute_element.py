@@ -94,6 +94,7 @@ class ComputeElement:
             message: The message to be sent.
             slot: The slot to send the message on, if any.
         """
+        self.__check_port(port_name)
         self._communicator.send_message(
                 port_name, message, self._configuration_store.overlay, slot)
 
@@ -116,6 +117,7 @@ class ComputeElement:
             parameters: A parameter overlay to inject.
             slot: The slot to send the message on, if any.
         """
+        self.__check_port(port_name)
         overlay = self._configuration_store.overlay.copy()
         for key, value in parameters.items():
             overlay[key] = value
@@ -140,6 +142,7 @@ class ComputeElement:
             The received message, decoded from MsgPack if decode is
             True, otherwise as a raw bytes object.
         """
+        self.__check_port(port_name)
         msg, config = self._communicator.receive_message(
                 port_name, decode, slot)
         if (self._port_operators[port_name] == Operator.F_INIT and
@@ -181,6 +184,7 @@ class ComputeElement:
             True and otherwise as a raw bytes object, and a
             Configuration holding the parameter overlay.
         """
+        self.__check_port(port_name)
         return self._communicator.receive_message(port_name, decode, slot)
 
     def __make_full_name(self, name: str) -> Reference:
@@ -203,3 +207,12 @@ class ComputeElement:
                 break
 
         return full_name
+
+    def __check_port(self, port_name: str) -> None:
+        for operator, port_names in self._ports.items():
+            for registered_port in port_names:
+                if port_name == registered_port:
+                    return
+        raise ValueError(('Port "{}" does not exist on "{}". Please check the'
+                          ' name and the list of ports you gave for this'
+                          ' compute element.').format(port_name, self._name))

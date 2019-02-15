@@ -228,6 +228,9 @@ class Communicator(PostOffice):
 
         # balance the indexes and determine the receiver
         snd_port_full = self.__kernel + snd_port
+        if snd_port_full not in self.__peers:
+            # log sending on disconnected port
+            return
         recv_kernel, recv_port = self.__split_peer(snd_port_full)
 
         total_index = self.__index + slot
@@ -375,10 +378,6 @@ class Communicator(PostOffice):
 
     def __split_peer(self, full_port: Reference
                      ) -> Tuple[Reference, Identifier]:
-        if full_port not in self.__peers:
-            raise ValueError('Port {} does not exist or is not connected,'
-                             ' please check the name and your conduit'
-                             ' definitions.'.format(full_port))
         peer = self.__peers[full_port]
         return peer[:-1], cast(Identifier, peer[-1])
 

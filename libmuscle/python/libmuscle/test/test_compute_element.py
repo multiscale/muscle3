@@ -100,6 +100,11 @@ def test_send_message(compute_element):
             'out', 'message', 1)
 
 
+def test_send_message_invalid_port(compute_element):
+    with pytest.raises(ValueError):
+        compute_element.send_message('does_not_exist', 'message', 1)
+
+
 def test_send_message_with_parameters(compute_element):
     compute_element._configuration_store.overlay['test1'] = 23
     compute_element._configuration_store.overlay['test3'] = 23
@@ -122,6 +127,11 @@ def test_receive_message(compute_element):
     assert compute_element._communicator.receive_message.called_with(
             'in', True, 1)
     assert msg == 'message'
+
+
+def test_receive_message_invalid_port(compute_element):
+    with pytest.raises(ValueError):
+        compute_element.receive_message('does_not_exist', True, 1)
 
 
 def test_receive_message_with_parameters(compute_element):

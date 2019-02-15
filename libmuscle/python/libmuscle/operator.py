@@ -21,8 +21,7 @@ def operator_from_grpc(
             mmp.OPERATOR_O_I: Operator.O_I,
             mmp.OPERATOR_S: Operator.S,
             mmp.OPERATOR_B: Operator.B,
-            mmp.OPERATOR_O_F: Operator.O_F,
-            mmp.OPERATOR_MAP: Operator.MAP
+            mmp.OPERATOR_O_F: Operator.O_F
             }   # type: Dict[int, Operator]
     return operator_map[operator]
 
@@ -39,7 +38,6 @@ def operator_to_grpc(operator: Operator) -> mmp.Operator:
             Operator.O_I: mmp.OPERATOR_O_I,
             Operator.S: mmp.OPERATOR_S,
             Operator.B: mmp.OPERATOR_B,
-            Operator.O_F: mmp.OPERATOR_O_F,
-            Operator.MAP: mmp.OPERATOR_MAP
+            Operator.O_F: mmp.OPERATOR_O_F
             }   # type: Dict[Operator, mmp.Operator]
     return operator_map[operator]

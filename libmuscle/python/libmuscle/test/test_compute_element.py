@@ -28,7 +28,7 @@ def compute_element():
                 'message', config)
         comm_type.return_value = communicator
         element = ComputeElement('test_element', {
-            Operator.F_INIT: ['in'],
+            Operator.F_INIT: ['in', 'not_connected'],
             Operator.O_F: ['out']})
         yield element
 
@@ -129,6 +129,12 @@ def test_receive_message(compute_element):
     assert msg == 'message'
 
 
+def test_receive_message_default(compute_element):
+    compute_element.receive_message('not_connected', True, 1, 'testing')
+    assert compute_element._communicator.receive_message.called_with(
+            'not_connected', True, 1, 'testing')
+
+
 def test_receive_message_invalid_port(compute_element):
     with pytest.raises(ValueError):
         compute_element.receive_message('does_not_exist', True, 1)
@@ -141,6 +147,13 @@ def test_receive_message_with_parameters(compute_element):
             .called_with('in', True, 1))
     assert msg == 'message'
     assert config['test1'] == 12
+
+
+def test_receive_message_with_parameters_default(compute_element):
+    compute_element.receive_message_with_parameters('not_connected', True, 1,
+                                                    'testing')
+    assert compute_element._communicator.receive_message.called_with(
+            'not_connected', True, 1, 'testing')
 
 
 def test_receive_parallel_universe(compute_element) -> None:

@@ -118,6 +118,12 @@ class ExtTypeId(IntEnum):
     CONFIGURATION = 0
 
 
+class _NoDefault:
+    """Used as a sentinel value for receive_message default parameter.
+    """
+    pass
+
+
 class Communicator(PostOffice):
     """Communication engine for MUSCLE 3.
 
@@ -263,7 +269,8 @@ class Communicator(PostOffice):
         self.__outboxes[recv_endpoint.ref()].deposit(mcp_message)
 
     def receive_message(self, port_name: str, decode: bool,
-                        slot: Union[int, List[int]]=[]
+                        slot: Union[int, List[int]]=[],
+                        default: Optional[Message]=_NoDefault
                         ) -> Tuple[Message, Configuration]:
         """Receive a message and attached parameter overlay.
 
@@ -275,23 +282,43 @@ class Communicator(PostOffice):
         the sender, wait for a message to be available, and receive and
         return it.
 
+        If the port is not connected, then the default value will be
+        returned if one was given, exactly as it was given (so decode
+        does not affect anything in this case). If no default was given
+        then a RuntimeError will be raised.
+
         Args:
             port_name: The endpoint on which a message is to be
                     received.
             decode: Whether to MsgPack-decode the message (True) or
                     return raw bytes() (False).
             slot: The slot to receive the message on, if any.
+            default: A message to return if this port is not connected.
 
         Returns:
             The received message, decoded from MsgPack if decode is
             True and otherwise as a raw bytes object, and a
             Configuration holding the parameter overlay.
+
+        Raises:
+            RuntimeError: If no default was given and the port is not
+                connected.
         """
         # note that slot is read-only, so the empty list default is fine
         if isinstance(slot, int):
             slot = [slot]
 
         recv_endpoint = self.__get_receiver(port_name, slot)
+
+        if not self.__is_connected(recv_endpoint.port):
+            if default is _NoDefault:
+                raise RuntimeError(('Tried to receive on port "{}", which is'
+                                    ' disconnected, and no default value was'
+                                    ' given. Either specify a default, or'
+                                    ' connect a sending component to this'
+                                    ' port.').format(port_name))
+            return default, Configuration()
+
         snd_endpoint = self.__get_sender(recv_endpoint.port, slot)
         client = self.__get_client(snd_endpoint.instance())
         mcp_message = client.receive(recv_endpoint.ref())
@@ -395,6 +422,15 @@ class Communicator(PostOffice):
                 port_name, e))
 
         return Endpoint(self.__kernel, self.__index, recv_port, slot)
+
+    def __is_connected(self, recv_port: Identifier) -> bool:
+        """Determine whether the given port is connected.
+
+        Args:
+            recv_port: The receiving port.
+        """
+        recv_port_full = self.__kernel + recv_port
+        return recv_port_full in self.__peers
 
     def __get_sender(self, recv_port: Identifier, slot: List[int]) -> Endpoint:
         """Determine the sending endpoint for receiving a message.

@@ -183,6 +183,18 @@ def test_receive_message(communicator) -> None:
     assert overlay['test1'] == 12
 
 
+def test_receive_message_default(communicator) -> None:
+    msg, overlay = communicator.receive_message('not_connected', False,
+                                                default='test')
+    assert msg == 'test'
+    assert len(overlay) == 0
+
+
+def test_receive_message_no_default(communicator) -> None:
+    with pytest.raises(RuntimeError):
+        communicator.receive_message('not_connected', False)
+
+
 def test_receive_on_invalid_port(communicator) -> None:
     with pytest.raises(ValueError):
         communicator.receive_message('@$Invalid_id', b'test')

@@ -223,20 +223,12 @@ class Communicator(PostOffice):
         if isinstance(slot, int):
             slot = [slot]
 
-        # determine the sender
-        try:
-            snd_port = Identifier(port_name)
-        except ValueError as e:
-            raise ValueError('{} is not a valid port name: {}'.format(
-                port_name, e))
-
-        snd_endpoint = Endpoint(self.__kernel, self.__index, snd_port, slot)
-
+        # determine the endpoints
+        snd_endpoint = self.__get_endpoint(port_name, slot)
         if not self.__is_connected(snd_endpoint.port, slot):
             # log sending on disconnected port
             return
-
-        recv_endpoint = self.__get_peer_endpoint(snd_port, slot)
+        recv_endpoint = self.__get_peer_endpoint(snd_endpoint.port, slot)
 
         # encode overlay
         packed_overlay = msgpack.packb(overlay.as_plain_dict(),
@@ -299,7 +291,7 @@ class Communicator(PostOffice):
         if isinstance(slot, int):
             slot = [slot]
 
-        recv_endpoint = self.__get_receiver(port_name, slot)
+        recv_endpoint = self.__get_endpoint(port_name, slot)
 
         if not self.__is_connected(recv_endpoint.port, slot):
             if default is _NoDefault:
@@ -405,20 +397,20 @@ class Communicator(PostOffice):
 
         return peer[:i-1], cast(Identifier, peer[i-1]), slot
 
-    def __get_receiver(self, port_name: str, slot: List[int]) -> Endpoint:
-        """Determines the receiving endpoint for receiving a message.
+    def __get_endpoint(self, port_name: str, slot: List[int]) -> Endpoint:
+        """Determines the endpoint on our side.
 
         Args:
-            port_name: Name of the port to receive on.
-            slot: Slot to receive on.
+            port_name: Name of the port to send or receive on.
+            slot: Slot to send or receive on.
         """
         try:
-            recv_port = Identifier(port_name)
+            port = Identifier(port_name)
         except ValueError as e:
-            raise ValueError('{} is not a valid port name: {}'.format(
+            raise ValueError('"{}" is not a valid port name: {}'.format(
                 port_name, e))
 
-        return Endpoint(self.__kernel, self.__index, recv_port, slot)
+        return Endpoint(self.__kernel, self.__index, port, slot)
 
     def __is_connected(self, recv_port: Identifier, recv_slot: List[int]
                        ) -> bool:

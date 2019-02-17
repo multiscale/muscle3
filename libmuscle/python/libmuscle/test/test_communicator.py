@@ -344,6 +344,38 @@ def test_receive_configuration(communicator) -> None:
     assert msg['test'] == 13
 
 
+def test_receive_from_slot(communicator4) -> None:
+    client_mock = MagicMock()
+    client_mock.receive.return_value = Message(
+            Reference('mapper.out[0]'), Reference('kernel.in'),
+            msgpack.packb({'test1': 1}), b'test')
+    get_client_mock = MagicMock(return_value=client_mock)
+    communicator4._Communicator__get_client = get_client_mock
+
+    msg, overlay = communicator4.receive_message('in', False)
+
+    get_client_mock.assert_called_with(Reference('mapper'))
+    client_mock.receive.assert_called_with(Reference('kernel.in'))
+    assert msg == b'test'
+    assert overlay['test1'] == 1
+
+
+def test_receive_on_slot(communicator3) -> None:
+    client_mock = MagicMock()
+    client_mock.receive.return_value = Message(
+            Reference('kernel.out'), Reference('mapper.in[0]'),
+            msgpack.packb({'test1': 'x'}), b'test')
+    get_client_mock = MagicMock(return_value=client_mock)
+    communicator3._Communicator__get_client = get_client_mock
+
+    msg, overlay = communicator3.receive_message('in', False, 0)
+
+    get_client_mock.assert_called_with(Reference('kernel'))
+    client_mock.receive.assert_called_with(Reference('mapper.in[0]'))
+    assert msg == b'test'
+    assert overlay['test1'] == 'x'
+
+
 def test_get_message(communicator) -> None:
     communicator.send_message('out', b'test', Configuration())
     assert communicator.get_message('other.in[13]').data == b'test'

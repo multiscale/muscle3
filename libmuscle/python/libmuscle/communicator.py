@@ -318,7 +318,7 @@ class Communicator(PostOffice):
 
         recv_endpoint = self.__get_receiver(port_name, slot)
 
-        if not self.__is_connected(recv_endpoint.port):
+        if not self.__is_connected(recv_endpoint.port, slot):
             if default is _NoDefault:
                 raise RuntimeError(('Tried to receive on port "{}", which is'
                                     ' disconnected, and no default value was'
@@ -437,14 +437,16 @@ class Communicator(PostOffice):
 
         return Endpoint(self.__kernel, self.__index, recv_port, slot)
 
-    def __is_connected(self, recv_port: Identifier) -> bool:
+    def __is_connected(self, recv_port: Identifier, recv_slot: List[int]
+                       ) -> bool:
         """Determine whether the given port is connected.
 
         Args:
             recv_port: The receiving port.
         """
         recv_port_full = self.__kernel + recv_port
-        return recv_port_full in self.__peers
+        recv_slot_full = recv_port_full + recv_slot
+        return recv_port_full in self.__peers or recv_slot_full in self.__peers
 
     def __get_sender(self, recv_port: Identifier, slot: List[int]) -> Endpoint:
         """Determine the sending endpoint for receiving a message.
@@ -457,12 +459,17 @@ class Communicator(PostOffice):
             The sending endpoint.
         """
         recv_port_full = self.__kernel + recv_port
-        snd_kernel, snd_port, _ = self.__split_peer(recv_port_full)
+        recv_slot_full = recv_port_full + slot
+        if slot != [] and recv_slot_full in self.__peers:
+            snd_kernel, snd_port, snd_slot = self.__split_peer(recv_slot_full)
+            total_index = self.__index
+        elif recv_port_full in self.__peers:
+            snd_kernel, snd_port, snd_slot = self.__split_peer(recv_port_full)
+            total_index = self.__index + slot
 
-        total_index = self.__index + slot
         snd_dim = len(self.__peer_dims[snd_kernel])
         snd_index = total_index[0:snd_dim]
-        snd_slot = total_index[snd_dim:]
+        snd_slot += total_index[snd_dim:]
         return Endpoint(snd_kernel, snd_index, snd_port, snd_slot)
 
     def __extract_object(self, mcp_message: MCPMessage, decode: bool

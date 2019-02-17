@@ -63,6 +63,30 @@ def communicator2() -> Communicator:
     return communicator
 
 
+@pytest.fixture
+def communicator3() -> Communicator:
+    instance_id = Reference('mapper')
+    communicator = Communicator(instance_id)
+    communicator._Communicator__peers = {
+            'mapper.in[0]': Reference('kernel.out'),
+            'mapper.out[0]': Reference('kernel.in')
+            }
+    communicator._Communicator__peer_dims = {Reference('kernel'): []}
+    return communicator
+
+
+@pytest.fixture
+def communicator4() -> Communicator:
+    instance_id = Reference('kernel')
+    communicator = Communicator(instance_id)
+    communicator._Communicator__peers = {
+            'kernel.out': Reference('mapper.in[0]'),
+            'kernel.in': Reference('mapper.out[0]')
+            }
+    communicator._Communicator__peer_dims = {Reference('mapper'): []}
+    return communicator
+
+
 def test_create_communicator(communicator) -> None:
     assert str(communicator._Communicator__kernel) == 'kernel'
     assert communicator._Communicator__index == [13]
@@ -74,6 +98,19 @@ def test_create_communicator(communicator) -> None:
 def test_get_locations(communicator) -> None:
     assert len(communicator.get_locations()) == 1
     assert communicator.get_locations()[0].startswith('direct:')
+
+
+def test_send_message(communicator) -> None:
+    ref = Reference
+    communicator.send_message('out', b'test', Configuration())
+
+    assert 'other.in[13]' in communicator._Communicator__outboxes
+    msg = communicator._Communicator__outboxes[
+            'other.in[13]']._Outbox__queue[0]
+    assert msg.sender == 'kernel[13].out'
+    assert msg.receiver == 'other.in[13]'
+    assert msg.parameter_overlay == msgpack.packb({}, use_bin_type=True)
+    assert msg.data == b'test'
 
 
 def test_connect(communicator) -> None:
@@ -147,6 +184,29 @@ def test_send_message_with_parameters(communicator) -> None:
     assert msgpack.unpackb(msg.parameter_overlay, raw=False) == {
             'test2': 'testing'}
     assert msg.data.decode('utf-8') == 'test'
+
+
+def test_send_message_from_mapper(communicator3) -> None:
+    communicator3.send_message('out', b'test', Configuration(), 0)
+
+    assert 'kernel.in' in communicator3._Communicator__outboxes
+    msg = communicator3._Communicator__outboxes['kernel.in']._Outbox__queue[0]
+    assert msg.sender == 'mapper.out[0]'
+    assert msg.receiver == 'kernel.in'
+    assert msg.parameter_overlay == msgpack.packb({}, use_bin_type=True)
+    assert msg.data == b'test'
+
+
+def test_send_message_to_mapper(communicator4) -> None:
+    communicator4.send_message('out', b'test', Configuration())
+
+    assert 'mapper.in[0]' in communicator4._Communicator__outboxes
+    msg = communicator4._Communicator__outboxes[
+            'mapper.in[0]']._Outbox__queue[0]
+    assert msg.sender == 'kernel.out'
+    assert msg.receiver == 'mapper.in[0]'
+    assert msg.parameter_overlay == msgpack.packb({}, use_bin_type=True)
+    assert msg.data == b'test'
 
 
 def test_send_configuration(communicator) -> None:

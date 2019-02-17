@@ -232,17 +232,25 @@ class Communicator(PostOffice):
 
         snd_endpoint = Endpoint(self.__kernel, self.__index, snd_port, slot)
 
-        # balance the indexes and determine the receiver
+        # find peer
         snd_port_full = self.__kernel + snd_port
-        if snd_port_full not in self.__peers:
-            # log sending on disconnected port
-            return
-        recv_kernel, recv_port = self.__split_peer(snd_port_full)
+        snd_slot_full = snd_port_full + slot
+        if slot != [] and snd_slot_full in self.__peers:
+            recv_kernel, recv_port, recv_slot = self.__split_peer(
+                    snd_slot_full)
+            total_index = self.__index
+        elif snd_port_full in self.__peers:
+            recv_kernel, recv_port, recv_slot = self.__split_peer(
+                    snd_port_full)
+            total_index = self.__index + slot
+        else:
+                # log sending on disconnected port
+                return
 
-        total_index = self.__index + slot
+        # balance the indexes and determine the receiver
         recv_dim = len(self.__peer_dims[recv_kernel])
         recv_index = total_index[0:recv_dim]
-        recv_slot = total_index[recv_dim:]
+        recv_slot += total_index[recv_dim:]
 
         recv_endpoint = Endpoint(recv_kernel, recv_index, recv_port,
                                  recv_slot)
@@ -404,9 +412,15 @@ class Communicator(PostOffice):
             self.__outboxes[receiver.ref()] = Outbox()
 
     def __split_peer(self, full_port: Reference
-                     ) -> Tuple[Reference, Identifier]:
+                     ) -> Tuple[Reference, Identifier, List[int]]:
         peer = self.__peers[full_port]
-        return peer[:-1], cast(Identifier, peer[-1])
+        slot = []   # type: List[int]
+        i = len(peer)
+        while isinstance(peer[i-1], int):
+            slot.insert(0, cast(int, peer[i-1]))
+            i -= 1
+
+        return peer[:i-1], cast(Identifier, peer[i-1]), slot
 
     def __get_receiver(self, port_name: str, slot: List[int]) -> Endpoint:
         """Determines the receiving endpoint for receiving a message.
@@ -443,7 +457,7 @@ class Communicator(PostOffice):
             The sending endpoint.
         """
         recv_port_full = self.__kernel + recv_port
-        snd_kernel, snd_port = self.__split_peer(recv_port_full)
+        snd_kernel, snd_port, _ = self.__split_peer(recv_port_full)
 
         total_index = self.__index + slot
         snd_dim = len(self.__peer_dims[snd_kernel])

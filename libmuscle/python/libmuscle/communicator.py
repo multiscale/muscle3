@@ -232,28 +232,11 @@ class Communicator(PostOffice):
 
         snd_endpoint = Endpoint(self.__kernel, self.__index, snd_port, slot)
 
-        # find peer
-        snd_port_full = self.__kernel + snd_port
-        snd_slot_full = snd_port_full + slot
-        if slot != [] and snd_slot_full in self.__peers:
-            recv_kernel, recv_port, recv_slot = self.__split_peer(
-                    snd_slot_full)
-            total_index = self.__index
-        elif snd_port_full in self.__peers:
-            recv_kernel, recv_port, recv_slot = self.__split_peer(
-                    snd_port_full)
-            total_index = self.__index + slot
-        else:
-                # log sending on disconnected port
-                return
+        if not self.__is_connected(snd_endpoint.port, slot):
+            # log sending on disconnected port
+            return
 
-        # balance the indexes and determine the receiver
-        recv_dim = len(self.__peer_dims[recv_kernel])
-        recv_index = total_index[0:recv_dim]
-        recv_slot += total_index[recv_dim:]
-
-        recv_endpoint = Endpoint(recv_kernel, recv_index, recv_port,
-                                 recv_slot)
+        recv_endpoint = self.__get_peer_endpoint(snd_port, slot)
 
         # encode overlay
         packed_overlay = msgpack.packb(overlay.as_plain_dict(),
@@ -327,7 +310,7 @@ class Communicator(PostOffice):
                                     ' port.').format(port_name))
             return default, Configuration()
 
-        snd_endpoint = self.__get_sender(recv_endpoint.port, slot)
+        snd_endpoint = self.__get_peer_endpoint(recv_endpoint.port, slot)
         client = self.__get_client(snd_endpoint.instance())
         mcp_message = client.receive(recv_endpoint.ref())
 
@@ -448,29 +431,32 @@ class Communicator(PostOffice):
         recv_slot_full = recv_port_full + recv_slot
         return recv_port_full in self.__peers or recv_slot_full in self.__peers
 
-    def __get_sender(self, recv_port: Identifier, slot: List[int]) -> Endpoint:
-        """Determine the sending endpoint for receiving a message.
+    def __get_peer_endpoint(self, port: Identifier, slot: List[int]
+                            ) -> Endpoint:
+        """Determine the peer endpoint for the given port and slot.
 
         Args:
-            recv_port: The receiving port.
-            slot: The slot to receive on.
+            port: The port on our side to send or receive on.
+            slot: The slot to send or receive on.
 
         Returns:
-            The sending endpoint.
+            The peer endpoint.
         """
-        recv_port_full = self.__kernel + recv_port
-        recv_slot_full = recv_port_full + slot
-        if slot != [] and recv_slot_full in self.__peers:
-            snd_kernel, snd_port, snd_slot = self.__split_peer(recv_slot_full)
+        our_port_full = self.__kernel + port
+        our_slot_full = our_port_full + slot
+        if slot != [] and our_slot_full in self.__peers:
+            peer_kernel, peer_port, peer_slot = self.__split_peer(
+                    our_slot_full)
             total_index = self.__index
-        elif recv_port_full in self.__peers:
-            snd_kernel, snd_port, snd_slot = self.__split_peer(recv_port_full)
+        elif our_port_full in self.__peers:
+            peer_kernel, peer_port, peer_slot = self.__split_peer(
+                    our_port_full)
             total_index = self.__index + slot
 
-        snd_dim = len(self.__peer_dims[snd_kernel])
-        snd_index = total_index[0:snd_dim]
-        snd_slot += total_index[snd_dim:]
-        return Endpoint(snd_kernel, snd_index, snd_port, snd_slot)
+        peer_dim = len(self.__peer_dims[peer_kernel])
+        peer_index = total_index[0:peer_dim]
+        peer_slot += total_index[peer_dim:]
+        return Endpoint(peer_kernel, peer_index, peer_port, peer_slot)
 
     def __extract_object(self, mcp_message: MCPMessage, decode: bool
                          ) -> Message:

@@ -54,6 +54,13 @@ def test_create_compute_element(sys_argv_index):
         assert element._port_operators == ref_ports
 
 
+def test_create_compute_element_inferred_ports(sys_argv_index):
+    with patch('libmuscle.compute_element.Communicator') as comm_type:
+        element = ComputeElement('test_element')
+        assert element._name == 'test_element[13][42]'
+        assert element._ports is None
+
+
 def test_get_parameter_value(compute_element):
     config = Configuration()
     config['test1'] = 'test'

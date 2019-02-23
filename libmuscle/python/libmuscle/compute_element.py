@@ -1,5 +1,5 @@
 import sys
-from typing import Dict, List, Optional, Tuple, Type, Union
+from typing import cast, Dict, List, Optional, Tuple, Type, Union
 
 from ymmsl import Operator, Reference
 
@@ -14,7 +14,8 @@ class ComputeElement:
     This class provides a low-level send/receive API for the instance
     to use.
     """
-    def __init__(self, instance: str, ports: Dict[Operator, List[str]]
+    def __init__(self, instance: str,
+                 ports: Optional[Dict[Operator, List[str]]]=None
                  ) -> None:
         """Create a ComputeElement.
 
@@ -37,10 +38,11 @@ class ComputeElement:
         self._communicator = Communicator(self._name)
         """Communicator for this instance."""
 
-        self._port_operators = dict()   # type: Dict[str, Operator]
-        for op, port_names in ports.items():
-            for port in port_names:
-                self._port_operators[port] = op
+        if ports is not None:
+            self._port_operators = dict()   # type: Dict[str, Operator]
+            for op, port_names in ports.items():
+                for port in port_names:
+                    self._port_operators[port] = op
 
     def init_instance(self) -> None:
         """Initialise this instance.
@@ -240,7 +242,8 @@ class ComputeElement:
         return full_name
 
     def __check_port(self, port_name: str) -> None:
-        for operator, port_names in self._ports.items():
+        ports = cast(Dict[Operator, List[str]], self._ports)
+        for operator, port_names in ports.items():
             for registered_port in port_names:
                 if port_name == registered_port:
                     return

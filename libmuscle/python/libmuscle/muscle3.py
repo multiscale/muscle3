@@ -1,5 +1,5 @@
 import sys
-from typing import Dict, List, Optional
+from typing import cast, Dict, List, Optional
 
 from ymmsl import Identifier, Operator, Port, Reference
 
@@ -33,7 +33,8 @@ class Muscle3:
         if self.__manager is not None:
             for element in elements:
                 locations = element._communicator.get_locations()
-                port_list = self.__port_list_from_ports(element._ports)
+                port_list = self.__port_list_from_ports(
+                        cast(Dict[Operator, List[str]], element._ports))
                 self.__manager.register_instance(element._name, locations,
                                                  port_list)
 

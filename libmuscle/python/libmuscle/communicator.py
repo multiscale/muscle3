@@ -225,7 +225,7 @@ class Communicator(PostOffice):
 
         # determine the endpoints
         snd_endpoint = self.__get_endpoint(port_name, slot)
-        if not self.__is_connected(snd_endpoint.port, slot):
+        if not self.__is_connected(snd_endpoint.port):
             # log sending on disconnected port
             return
         recv_endpoint = self.__get_peer_endpoint(snd_endpoint.port, slot)
@@ -293,7 +293,7 @@ class Communicator(PostOffice):
 
         recv_endpoint = self.__get_endpoint(port_name, slot)
 
-        if not self.__is_connected(recv_endpoint.port, slot):
+        if not self.__is_connected(recv_endpoint.port):
             if default is _NoDefault:
                 raise RuntimeError(('Tried to receive on port "{}", which is'
                                     ' disconnected, and no default value was'
@@ -387,15 +387,9 @@ class Communicator(PostOffice):
             self.__outboxes[receiver.ref()] = Outbox()
 
     def __split_peer(self, full_port: Reference
-                     ) -> Tuple[Reference, Identifier, List[int]]:
+                     ) -> Tuple[Reference, Identifier]:
         peer = self.__peers[full_port]
-        slot = []   # type: List[int]
-        i = len(peer)
-        while isinstance(peer[i-1], int):
-            slot.insert(0, cast(int, peer[i-1]))
-            i -= 1
-
-        return peer[:i-1], cast(Identifier, peer[i-1]), slot
+        return peer[:-1], cast(Identifier, peer[-1])
 
     def __get_endpoint(self, port_name: str, slot: List[int]) -> Endpoint:
         """Determines the endpoint on our side.
@@ -412,16 +406,14 @@ class Communicator(PostOffice):
 
         return Endpoint(self.__kernel, self.__index, port, slot)
 
-    def __is_connected(self, recv_port: Identifier, recv_slot: List[int]
-                       ) -> bool:
+    def __is_connected(self, recv_port: Identifier) -> bool:
         """Determine whether the given port is connected.
 
         Args:
             recv_port: The receiving port.
         """
         recv_port_full = self.__kernel + recv_port
-        recv_slot_full = recv_port_full + recv_slot
-        return recv_port_full in self.__peers or recv_slot_full in self.__peers
+        return recv_port_full in self.__peers
 
     def __get_peer_endpoint(self, port: Identifier, slot: List[int]
                             ) -> Endpoint:
@@ -434,20 +426,12 @@ class Communicator(PostOffice):
         Returns:
             The peer endpoint.
         """
-        our_port_full = self.__kernel + port
-        our_slot_full = our_port_full + slot
-        if slot != [] and our_slot_full in self.__peers:
-            peer_kernel, peer_port, peer_slot = self.__split_peer(
-                    our_slot_full)
-            total_index = self.__index
-        elif our_port_full in self.__peers:
-            peer_kernel, peer_port, peer_slot = self.__split_peer(
-                    our_port_full)
-            total_index = self.__index + slot
+        peer_kernel, peer_port = self.__split_peer(self.__kernel + port)
+        total_index = self.__index + slot
 
         peer_dim = len(self.__peer_dims[peer_kernel])
         peer_index = total_index[0:peer_dim]
-        peer_slot += total_index[peer_dim:]
+        peer_slot = total_index[peer_dim:]
         return Endpoint(peer_kernel, peer_index, peer_port, peer_slot)
 
     def __extract_object(self, mcp_message: MCPMessage, decode: bool

@@ -63,30 +63,6 @@ def communicator2() -> Communicator:
     return communicator
 
 
-@pytest.fixture
-def communicator3() -> Communicator:
-    instance_id = Reference('mapper')
-    communicator = Communicator(instance_id)
-    communicator._Communicator__peers = {
-            'mapper.in[0]': Reference('kernel.out'),
-            'mapper.out[0]': Reference('kernel.in')
-            }
-    communicator._Communicator__peer_dims = {Reference('kernel'): []}
-    return communicator
-
-
-@pytest.fixture
-def communicator4() -> Communicator:
-    instance_id = Reference('kernel')
-    communicator = Communicator(instance_id)
-    communicator._Communicator__peers = {
-            'kernel.out': Reference('mapper.in[0]'),
-            'kernel.in': Reference('mapper.out[0]')
-            }
-    communicator._Communicator__peer_dims = {Reference('mapper'): []}
-    return communicator
-
-
 def test_create_communicator(communicator) -> None:
     assert str(communicator._Communicator__kernel) == 'kernel'
     assert communicator._Communicator__index == [13]
@@ -184,29 +160,6 @@ def test_send_message_with_parameters(communicator) -> None:
     assert msgpack.unpackb(msg.parameter_overlay, raw=False) == {
             'test2': 'testing'}
     assert msg.data.decode('utf-8') == 'test'
-
-
-def test_send_message_from_mapper(communicator3) -> None:
-    communicator3.send_message('out', b'test', Configuration(), 0)
-
-    assert 'kernel.in' in communicator3._Communicator__outboxes
-    msg = communicator3._Communicator__outboxes['kernel.in']._Outbox__queue[0]
-    assert msg.sender == 'mapper.out[0]'
-    assert msg.receiver == 'kernel.in'
-    assert msg.parameter_overlay == msgpack.packb({}, use_bin_type=True)
-    assert msg.data == b'test'
-
-
-def test_send_message_to_mapper(communicator4) -> None:
-    communicator4.send_message('out', b'test', Configuration())
-
-    assert 'mapper.in[0]' in communicator4._Communicator__outboxes
-    msg = communicator4._Communicator__outboxes[
-            'mapper.in[0]']._Outbox__queue[0]
-    assert msg.sender == 'kernel.out'
-    assert msg.receiver == 'mapper.in[0]'
-    assert msg.parameter_overlay == msgpack.packb({}, use_bin_type=True)
-    assert msg.data == b'test'
 
 
 def test_send_configuration(communicator) -> None:
@@ -342,38 +295,6 @@ def test_receive_configuration(communicator) -> None:
     client_mock.receive.assert_called_with(Reference('kernel[13].in'))
     assert isinstance(msg, Configuration)
     assert msg['test'] == 13
-
-
-def test_receive_from_slot(communicator4) -> None:
-    client_mock = MagicMock()
-    client_mock.receive.return_value = Message(
-            Reference('mapper.out[0]'), Reference('kernel.in'),
-            msgpack.packb({'test1': 1}), b'test')
-    get_client_mock = MagicMock(return_value=client_mock)
-    communicator4._Communicator__get_client = get_client_mock
-
-    msg, overlay = communicator4.receive_message('in', False)
-
-    get_client_mock.assert_called_with(Reference('mapper'))
-    client_mock.receive.assert_called_with(Reference('kernel.in'))
-    assert msg == b'test'
-    assert overlay['test1'] == 1
-
-
-def test_receive_on_slot(communicator3) -> None:
-    client_mock = MagicMock()
-    client_mock.receive.return_value = Message(
-            Reference('kernel.out'), Reference('mapper.in[0]'),
-            msgpack.packb({'test1': 'x'}), b'test')
-    get_client_mock = MagicMock(return_value=client_mock)
-    communicator3._Communicator__get_client = get_client_mock
-
-    msg, overlay = communicator3.receive_message('in', False, 0)
-
-    get_client_mock.assert_called_with(Reference('kernel'))
-    client_mock.receive.assert_called_with(Reference('mapper.in[0]'))
-    assert msg == b'test'
-    assert overlay['test1'] == 'x'
 
 
 def test_get_message(communicator) -> None:

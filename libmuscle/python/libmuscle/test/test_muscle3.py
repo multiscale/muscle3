@@ -40,6 +40,7 @@ def test_register() -> None:
 
     element = MagicMock()
     element._name = Reference('test_model')
+    element._index = []
     element._ports = {
             Operator.F_INIT: ['receive_init'],
             Operator.O_F: ['send_output']}
@@ -55,7 +56,7 @@ def test_register() -> None:
     assert ports[1].operator == Operator.O_F
 
     manager_client.request_peers.assert_called_with(
-            Reference('test_model'))
+            element._instance_name.return_value)
 
     element._connect.assert_called_with(
             *manager_client.request_peers.return_value)
@@ -93,7 +94,7 @@ def test_register2() -> None:
     assert ports[3].operator == Operator.O_I
 
     manager_client.request_peers.assert_called_with(
-            Reference('test_model[13][42]'))
+            element._instance_name.return_value)
 
     element._connect.assert_called_with(
             *manager_client.request_peers.return_value)

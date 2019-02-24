@@ -23,8 +23,9 @@ def test_duplication_mapper(mmp_server_dm, sys_argv_manager):
     muscle.register([duplication_mapper, first, second])
 
     # send and receive some messages
-    duplication_mapper.send_message('out1', 'testing')
-    duplication_mapper.send_message('out2', 'testing')
+    out_ports = duplication_mapper.get_ports()[Operator.O_F]
+    for out_port in out_ports:
+        duplication_mapper.send_message(out_port, 'testing')
 
     msg1 = first.receive_message('in', decode=True)
     msg2 = second.receive_message('in', decode=True)

@@ -87,7 +87,7 @@ class ComputeElement:
                                ' muscle_parameters_in that is not a'
                                ' Configuration. It seems that your simulation'
                                ' is miswired or the sending instance is'
-                               ' broken.'.format(self._name))
+                               ' broken.'.format(self._instance_name()))
 
         for key, value in config.items():
             overlay[key] = value
@@ -113,6 +113,22 @@ class ComputeElement:
                     as expected.
         """
         return self._configuration_store.get_parameter(Reference(name), typ)
+
+    def get_ports(self) -> Dict[Operator, List[str]]:
+        """Returns a description of the ports that this CE has.
+
+        Returns:
+            A dictionary, indexed by Operator, containing lists of
+            port names. Operators with no associated ports are not
+            included.
+        """
+        if self._ports is None:
+            raise RuntimeError(('The set of ports was requested for Compute'
+                                ' Element "{}", but it has no ports. No ports'
+                                ' were specified when it was created, and it'
+                                ' has not (yet) been registered.').format(
+                                    self._instance_name()))
+        return self._ports
 
     def send_message(self, port_name: str, message: Union[bytes, Message],
                      slot: Union[int, List[int]]=[]) -> None:
@@ -285,6 +301,11 @@ class ComputeElement:
             i += 1
 
         return kernel, index
+
+    def _instance_name(self) -> Reference:
+        """Returns the full instance name.
+        """
+        return self._name + self._index
 
     def __check_port(self, port_name: str) -> None:
         ports = cast(Dict[Operator, List[str]], self._ports)

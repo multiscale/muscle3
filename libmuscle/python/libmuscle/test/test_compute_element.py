@@ -62,6 +62,9 @@ def test_create_compute_element_inferred_ports(sys_argv_index):
         assert element._index == [13, 42]
         assert element._ports is None
 
+        with pytest.raises(RuntimeError):
+            element.get_ports()
+
         conduits = [
                 Conduit(Reference('other.out'), Reference('test_element.in')),
                 Conduit(Reference('test_element.out'), Reference('other2.in'))]
@@ -75,6 +78,7 @@ def test_create_compute_element_inferred_ports(sys_argv_index):
             Operator.F_INIT: ['in'],
             Operator.O_F: ['out']}
         assert element._ports == ports
+        assert element.get_ports() == ports
 
         port_ops = {
                 'in': Operator.F_INIT,

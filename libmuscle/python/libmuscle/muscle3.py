@@ -44,7 +44,7 @@ class Muscle3:
             for element in elements:
                 instance_name = element._name + element._index
                 conduits, dims, locs = self.__manager.request_peers(
-                        instance_name)
+                        element._instance_name())
                 element._connect(conduits, dims, locs)
                 element._configuration_store.base = configuration
 

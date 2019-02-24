@@ -48,7 +48,7 @@ class Muscle3:
                 element._connect(conduits, dims, locs)
                 element._configuration_store.base = configuration
 
-    def __port_list_from_ports(self, ports: Dict[Operator, List[str]]
+    def __port_list_from_ports(self, ports: Optional[Dict[Operator, List[str]]]
                                ) -> List[Port]:
         """Converts a dict of ports per operator to a list of ports.
 
@@ -59,9 +59,10 @@ class Muscle3:
             The ports as expected by MMP.
         """
         result = list()
-        for operator, port_names in ports.items():
-            for name in port_names:
-                result.append(Port(Identifier(name), operator))
+        if ports is not None:
+            for operator, port_names in ports.items():
+                for name in port_names:
+                    result.append(Port(Identifier(name), operator))
         return result
 
     @staticmethod

@@ -1,8 +1,10 @@
+import logging
 import sys
 from typing import Generator
 
 import pytest
 from ruamel import yaml
+import yatiml
 from ymmsl import loader
 
 import integration_test.include_libmuscle
@@ -16,7 +18,12 @@ from muscle_manager.topology_store import TopologyStore
 
 
 @pytest.fixture
-def mmp_server(tmpdir):
+def yatiml_log_warning():
+    yatiml.logger.setLevel(logging.WARNING)
+
+
+@pytest.fixture
+def mmp_server(tmpdir, yatiml_log_warning):
     ymmsl_text = (
             'version: v0.1\n'
             'simulation:\n'
@@ -54,7 +61,7 @@ def mmp_server(tmpdir):
 
 
 @pytest.fixture
-def mmp_server_qmc(tmpdir):
+def mmp_server_qmc(tmpdir, yatiml_log_warning):
     ymmsl_text = (
             'version: v0.1\n'
             'simulation:\n'
@@ -82,6 +89,34 @@ def mmp_server_qmc(tmpdir):
             '    test6:\n'
             '      - [1.0, 2.0]\n'
             '      - [3.0, 1.0]\n'
+            )
+
+    logger = Logger()
+    ymmsl = yaml.load(ymmsl_text, Loader=loader)
+    configuration = config_for_experiment(ymmsl.experiment)
+    instance_registry = InstanceRegistry()
+    topology_store = TopologyStore(ymmsl_text)
+    server = MMPServer(logger, configuration, instance_registry,
+                       topology_store)
+    yield server
+    server.stop()
+
+
+@pytest.fixture
+def mmp_server_dm(tmpdir, yatiml_log_warning):
+    ymmsl_text = (
+            'version: v0.1\n'
+            'simulation:\n'
+            '  name: test_model\n'
+            '  compute_elements:\n'
+            '    dm: muscle.duplication_mapper\n'
+            '    first: first_step\n'
+            '    second: second_step\n'
+            '  conduits:\n'
+            '    dm.out1: first.in\n'
+            '    dm.out2: second.in\n'
+            'experiment:\n'
+            '  model: test_model\n'
             )
 
     logger = Logger()

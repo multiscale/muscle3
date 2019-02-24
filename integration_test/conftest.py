@@ -96,7 +96,7 @@ def mmp_server_qmc(tmpdir):
 
 
 @pytest.fixture
-def replaced_sys_argv() -> Generator[None, None, None]:
+def sys_argv_manager() -> Generator[None, None, None]:
     old_argv = sys.argv
     sys.argv = ['', '--muscle-manager=localhost:9000']
     yield None

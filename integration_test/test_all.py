@@ -8,14 +8,6 @@ from libmuscle.compute_element import ComputeElement
 from libmuscle.muscle3 import Muscle3
 
 
-@pytest.fixture
-def sys_argv_manager():
-    old_argv = sys.argv
-    sys.argv = ['', '--muscle-manager=localhost:9000']
-    yield
-    sys.argv = old_argv
-
-
 def test_all(mmp_server, sys_argv_manager):
     """A positive all-up test of everything.
     """

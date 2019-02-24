@@ -132,7 +132,7 @@ class Communicator(PostOffice):
     leaves the actual data transmission to various protocol-specific
     servers and clients.
     """
-    def __init__(self, instance: Reference) -> None:
+    def __init__(self, kernel: Reference, index: List[int]) -> None:
         """Create a Communicator.
 
         The instance reference must start with one or more Identifiers,
@@ -142,7 +142,8 @@ class Communicator(PostOffice):
         Args:
             instance: The kernel instance this is the Communicator for.
         """
-        self.__kernel, self.__index = self.__split_instance(instance)
+        self.__kernel = kernel
+        self.__index = index
 
         self.__servers = list()  # type: List[MCPServer]
 
@@ -323,33 +324,6 @@ class Communicator(PostOffice):
         """
 
         return self.__outboxes[receiver].retrieve()
-
-    def __split_instance(self, instance: Reference
-                         ) -> Tuple[Reference, List[int]]:
-        """Split instance id into a kernel reference and an index.
-
-        This assumes a valid instance id consisting of an optional
-        sequence of namespaces, followed by the kernel identifier,
-        followed by an optional index list, and splits it into the
-        namespaced kernel identifier, and the index list.
-
-        Args:
-            instance: The instance we're the Communicator for.
-
-        Returns:
-            A kernel reference and index list.
-        """
-        i = 0
-        while i < len(instance) and isinstance(instance[i], Identifier):
-            i += 1
-        kernel = instance[:i]
-
-        index = list()  # type: List[int]
-        while i < len(instance) and isinstance(instance[i], int):
-            index.append(cast(int, instance[i]))
-            i += 1
-
-        return kernel, index
 
     def __get_client(self, instance: Reference) -> MCPClient:
         """Get or create a client to connect to the given instance.

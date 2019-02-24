@@ -57,7 +57,7 @@ def test_register() -> None:
     manager_client.request_peers.assert_called_with(
             Reference('test_model'))
 
-    element._communicator.connect.assert_called_with(
+    element._connect.assert_called_with(
             *manager_client.request_peers.return_value)
 
     manager_client.get_configuration.assert_called_with()
@@ -72,7 +72,8 @@ def test_register2() -> None:
     muscle._Muscle3__manager = manager_client
 
     element = MagicMock()
-    element._name = 'test_model[13][42]'
+    element._name = Reference('test_model')
+    element._index = [13, 42]
     element._ports = {
             Operator.O_I: ['out_x', 'out_y'],
             Operator.B: ['in_x', 'in_y']}
@@ -94,5 +95,5 @@ def test_register2() -> None:
     manager_client.request_peers.assert_called_with(
             Reference('test_model[13][42]'))
 
-    element._communicator.connect.assert_called_with(
+    element._connect.assert_called_with(
             *manager_client.request_peers.return_value)

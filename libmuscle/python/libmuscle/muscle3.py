@@ -35,15 +35,17 @@ class Muscle3:
                 locations = element._communicator.get_locations()
                 port_list = self.__port_list_from_ports(
                         cast(Dict[Operator, List[str]], element._ports))
-                self.__manager.register_instance(element._name, locations,
+                instance_name = element._name + element._index
+                self.__manager.register_instance(instance_name, locations,
                                                  port_list)
 
             configuration = self.__manager.get_configuration()
 
             for element in elements:
+                instance_name = element._name + element._index
                 conduits, dims, locs = self.__manager.request_peers(
-                        element._name)
-                element._communicator.connect(conduits, dims, locs)
+                        instance_name)
+                element._connect(conduits, dims, locs)
                 element._configuration_store.base = configuration
 
     def __port_list_from_ports(self, ports: Dict[Operator, List[str]]

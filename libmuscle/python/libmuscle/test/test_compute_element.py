@@ -3,7 +3,7 @@ from typing import Generator, List
 from unittest.mock import MagicMock, patch
 
 import pytest
-from ymmsl import Operator, Reference
+from ymmsl import Conduit, Operator, Reference
 
 from libmuscle.compute_element import ComputeElement
 from libmuscle.configuration import Configuration
@@ -39,12 +39,13 @@ def test_create_compute_element(sys_argv_index):
             Operator.F_INIT: ['in'],
             Operator.O_F: ['out']}
         element = ComputeElement('test_element', ports)
-        assert element._name == 'test_element[13][42]'
+        assert element._name == Reference('test_element')
+        assert element._index == [13, 42]
         assert element._ports == ports
         assert isinstance(element._configuration_store, ConfigurationStore)
         assert len(element._configuration_store.base) == 0
         assert len(element._configuration_store.overlay) == 0
-        comm_type.assert_called_with(Reference('test_element[13][42]'))
+        comm_type.assert_called_with(Reference('test_element'), [13, 42])
         assert element._communicator == comm_type.return_value
         assert isinstance(element._configuration_store, ConfigurationStore)
         assert len(element._configuration_store.base) == 0
@@ -57,8 +58,28 @@ def test_create_compute_element(sys_argv_index):
 def test_create_compute_element_inferred_ports(sys_argv_index):
     with patch('libmuscle.compute_element.Communicator') as comm_type:
         element = ComputeElement('test_element')
-        assert element._name == 'test_element[13][42]'
+        assert element._name == Reference('test_element')
+        assert element._index == [13, 42]
         assert element._ports is None
+
+        conduits = [
+                Conduit(Reference('other.out'), Reference('test_element.in')),
+                Conduit(Reference('test_element.out'), Reference('other2.in'))]
+        peer_dims = MagicMock()
+        peer_locations = MagicMock()
+        element._connect(conduits, peer_dims, peer_locations)
+        element._communicator.connect.assert_called_with(
+                conduits, peer_dims, peer_locations)
+
+        ports = {
+            Operator.F_INIT: ['in'],
+            Operator.O_F: ['out']}
+        assert element._ports == ports
+
+        port_ops = {
+                'in': Operator.F_INIT,
+                'out': Operator.O_F}
+        assert element._port_operators == port_ops
 
 
 def test_get_parameter_value(compute_element):

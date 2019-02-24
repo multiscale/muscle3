@@ -1,7 +1,7 @@
 import sys
 from typing import cast, Dict, List, Optional, Tuple, Type, Union
 
-from ymmsl import Operator, Reference
+from ymmsl import Conduit, Identifier, Operator, Reference
 
 from libmuscle.communicator import Communicator, Message, _NoDefault
 from libmuscle.configuration import Configuration, ParameterValue
@@ -20,14 +20,13 @@ class ComputeElement:
         """Create a ComputeElement.
 
         Args:
-            instance: The name of the instance represented by this
-                class.
+            name: The name of the instance represented by this object.
             ports: A list of port names for each operator of this
                 compute element.
         """
         # Note that these are accessed by Muscle3, but otherwise private.
-        self._name = self.__make_full_name(instance)
-        """Name of this instance."""
+        self._name, self._index = self.__make_full_name(Reference(instance))
+        """Name and index of this compute element."""
 
         self._ports = ports
         """Ports for this instance."""
@@ -35,7 +34,7 @@ class ComputeElement:
         self._configuration_store = ConfigurationStore()
         """Configuration (parameters) for this instance."""
 
-        self._communicator = Communicator(self._name)
+        self._communicator = Communicator(self._name, self._index)
         """Communicator for this instance."""
 
         if ports is not None:
@@ -43,6 +42,37 @@ class ComputeElement:
             for op, port_names in ports.items():
                 for port in port_names:
                     self._port_operators[port] = op
+
+    def _connect(self, conduits: List[Conduit],
+                 peer_dims: Dict[Reference, List[int]],
+                 peer_locations: Dict[Reference, List[str]]) -> None:
+        """Connect this compute element to the given peers / conduits.
+
+        Args:
+            conduits: A list of conduits attached to this compute
+                element.
+            peer_dims: For each peer, the dimensions of the instance
+                set.
+            peer_locations: A list of locations for each peer instance.
+        """
+        if self._ports is None:
+            self._ports = dict()
+            self._port_operators = dict()
+            for conduit in conduits:
+                if conduit.sending_compute_element() == self._name:
+                    port_name = str(conduit.sending_port())
+                    if Operator.O_F not in self._ports:
+                        self._ports[Operator.O_F] = list()
+                    self._ports[Operator.O_F].append(port_name)
+                    self._port_operators[port_name] = Operator.O_F
+                elif conduit.receiving_compute_element() == self._name:
+                    port_name = str(conduit.receiving_port())
+                    if Operator.F_INIT not in self._ports:
+                        self._ports[Operator.F_INIT] = list()
+                    self._ports[Operator.F_INIT].append(port_name)
+                    self._port_operators[port_name] = Operator.F_INIT
+
+        self._communicator.connect(conduits, peer_dims, peer_locations)
 
     def init_instance(self) -> None:
         """Initialise this instance.
@@ -220,26 +250,41 @@ class ComputeElement:
         return self._communicator.receive_message(port_name, decode, slot,
                                                   default)
 
-    def __make_full_name(self, name: str) -> Reference:
-        """Makes a Reference of the name and optionally index.
+    def __make_full_name(self, instance: Reference
+                         ) -> Tuple[Reference, List[int]]:
+        """Returns instance name and index.
+
+        The given instance string is split into a compute element and
+        an index, which are returned.
 
         If a --muscle-index=x,y,z is given on the command line, then
-        it is appended to the name.
+        it is parsed and prepended on the index. If there is no
+        --muscle-index on the command line, and instance does not
+        contain an index either, then this returns an empty list for
+        the second item.
         """
-        full_name = Reference(name)
-
         # Neither getopt, optparse, or argparse will let me pick out
         # just one option from the command line and ignore the rest.
         # So we do it by hand.
+        index = list()     # type: List[int]
         prefix = '--muscle-index='
         for arg in sys.argv[1:]:
             if arg.startswith(prefix):
                 index_str = arg[len(prefix):]
                 indices = index_str.split(',')
-                full_name += map(int, indices)
+                index += map(int, indices)
                 break
 
-        return full_name
+        i = 0
+        while i < len(instance) and isinstance(instance[i], Identifier):
+            i += 1
+        kernel = instance[:i]
+
+        while i < len(instance) and isinstance(instance[i], int):
+            index.append(cast(int, instance[i]))
+            i += 1
+
+        return kernel, index
 
     def __check_port(self, port_name: str) -> None:
         ports = cast(Dict[Operator, List[str]], self._ports)

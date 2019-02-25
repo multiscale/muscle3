@@ -4,6 +4,7 @@ from typing import List
 import pytest
 from ymmsl import Operator, Reference
 
+from libmuscle.communicator import Message
 from libmuscle.compute_element import ComputeElement
 from libmuscle.configuration import Configuration
 from libmuscle.muscle3 import Muscle3
@@ -51,17 +52,17 @@ def test_parameter_overlays(mmp_server_qmc, sys_argv_manager):
 
     # send and receive some messages
     config0 = Configuration.from_plain_dict({'test2': 14.4})
-    qmc.send_message('parameters_out', 0.0, None, config0, [0])
+    qmc.send_message('parameters_out', Message(0.0, None, config0), [0])
 
     macros[0].init_instance()
     assert macros[0].get_parameter_value('test2') == 14.4
 
-    macros[0].send_message('out', 0.0, 1.0, 'testing')
+    macros[0].send_message('out', Message(0.0, 1.0, 'testing'))
     msg = micros[0].receive_message('in', True)
     assert msg == 'testing'
     assert micros[0].get_parameter_value('test2') == 14.4
 
-    micros[0].send_message('out', 0.0, None, 'testing back')
+    micros[0].send_message('out', Message(0.0, None, 'testing back'))
     msg = macros[0].receive_message('in', True)
     assert msg == 'testing back'
     assert macros[0].get_parameter_value('test2') == 14.4

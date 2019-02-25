@@ -126,33 +126,15 @@ def test_get_parameter_value(compute_element):
         compute_element.get_parameter_value('test2', 'nonexistenttype')
 
 
-def test_send_message(compute_element):
-    compute_element.send_message('out', 0.0, None, 'message', 1)
+def test_send_message(compute_element, message):
+    compute_element.send_message('out', message, 1)
     assert compute_element._communicator.send_message.called_with(
-            'out', 'message', 1)
+            'out', message, 1)
 
 
-def test_send_message_invalid_port(compute_element):
+def test_send_message_invalid_port(compute_element, message):
     with pytest.raises(ValueError):
-        compute_element.send_message('does_not_exist', 0.0, None, 'message', 1)
-
-
-def test_send_message_with_parameters(compute_element):
-    compute_element._configuration_store.overlay['test1'] = 23
-    compute_element._configuration_store.overlay['test3'] = 23
-    message = MagicMock()
-    config = Configuration()
-    config['test1'] = 12
-    config['test2'] = 'testing'
-    compute_element.send_message_with_parameters('out', 0.0, None, message,
-                                                 config, 1)
-
-    ref_config = Configuration()
-    ref_config['test1'] = 12
-    ref_config['test2'] = 'testing'
-    ref_config['test3'] = 23
-    assert (compute_element._communicator.send_message_with_parameters
-            .called_with('out', message, ref_config, 1))
+        compute_element.send_message('does_not_exist', message, 1)
 
 
 def test_receive_message(compute_element):

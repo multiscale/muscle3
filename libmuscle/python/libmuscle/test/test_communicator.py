@@ -76,9 +76,9 @@ def test_get_locations(communicator) -> None:
     assert communicator.get_locations()[0].startswith('direct:')
 
 
-def test_send_message(communicator) -> None:
+def test_send_message(communicator, message) -> None:
     ref = Reference
-    communicator.send_message('out', 0.0, None, b'test', Configuration())
+    communicator.send_message('out', message)
 
     assert 'other.in[13]' in communicator._Communicator__outboxes
     msg = communicator._Communicator__outboxes[
@@ -110,20 +110,18 @@ def test_connect(communicator) -> None:
     assert communicator._Communicator__peer_locations == peer_locations
 
 
-def test_send_on_disconnected_port(communicator) -> None:
-    communicator.send_message('not_connected', 0.0, None,
-                              'test'.encode('utf-8'), Configuration())
+def test_send_on_disconnected_port(communicator, message) -> None:
+    communicator.send_message('not_connected', message)
 
 
-def test_send_on_invalid_port(communicator) -> None:
+def test_send_on_invalid_port(communicator, message) -> None:
     with pytest.raises(ValueError):
-        communicator.send_message('[$Invalid_id', 0.0, None,
-                                  'test'.encode('utf-8'), Configuration())
+        communicator.send_message('[$Invalid_id', message)
 
 
-def test_send_msgpack(communicator) -> None:
+def test_send_msgpack(communicator, message2) -> None:
     ref = Reference
-    communicator.send_message('out', 0.0, None, {'test': 17}, Configuration())
+    communicator.send_message('out', message2)
 
     assert 'other.in[13]' in communicator._Communicator__outboxes
     msg = communicator._Communicator__outboxes[
@@ -134,10 +132,9 @@ def test_send_msgpack(communicator) -> None:
     assert msg.data == msgpack.packb({'test': 17}, use_bin_type=True)
 
 
-def test_send_message_with_slot(communicator2) -> None:
+def test_send_message_with_slot(communicator2, message) -> None:
     ref = Reference
-    communicator2.send_message(
-            'out', 0.0, None, 'test'.encode('utf-8'), Configuration(), 13)
+    communicator2.send_message('out', message, 13)
 
     assert 'kernel[13].in' in communicator2._Communicator__outboxes
     msg = communicator2._Communicator__outboxes[
@@ -148,11 +145,10 @@ def test_send_message_with_slot(communicator2) -> None:
     assert msg.data.decode('utf-8') == 'test'
 
 
-def test_send_message_with_parameters(communicator) -> None:
+def test_send_message_with_parameters(communicator, message) -> None:
     ref = Reference
-    config = Configuration()
-    config['test2'] = 'testing'
-    communicator.send_message('out', 0.0, None, 'test'.encode('utf-8'), config)
+    message.configuration['test2'] = 'testing'
+    communicator.send_message('out', message)
 
     assert 'other.in[13]' in communicator._Communicator__outboxes
     msg = communicator._Communicator__outboxes[
@@ -164,11 +160,11 @@ def test_send_message_with_parameters(communicator) -> None:
     assert msg.data.decode('utf-8') == 'test'
 
 
-def test_send_configuration(communicator) -> None:
+def test_send_configuration(communicator, message) -> None:
     ref = Reference
-    config = Configuration()
-    config['test1'] = 'testing'
-    communicator.send_message('out', 0.0, None, config, Configuration())
+    message.data = Configuration()
+    message.data['test1'] = 'testing'
+    communicator.send_message('out', message)
 
     assert 'other.in[13]' in communicator._Communicator__outboxes
     msg = communicator._Communicator__outboxes[
@@ -300,8 +296,8 @@ def test_receive_configuration(communicator) -> None:
     assert msg['test'] == 13
 
 
-def test_get_message(communicator) -> None:
-    communicator.send_message('out', 0.0, None, b'test', Configuration())
+def test_get_message(communicator, message) -> None:
+    communicator.send_message('out', message)
     assert communicator.get_message('other.in[13]').data == b'test'
 
 

@@ -124,6 +124,42 @@ class _NoDefault:
     pass
 
 
+class Message:
+    """A message to be sent or received.
+
+    This class describes a message to be sent or that has been
+    received.
+
+    Attributes:
+        timestamp (float): Simulation time for which this data is valid.
+        next_timestamp (Optional[float]): Simulation time for the next
+                message to be transmitted through this port.
+        data (MessageObject): An object to send or that was received.
+        configuration (Configuration): An overlay configuration to send
+                or that was received.
+    """
+    # Note: This is for communication with the user, it's not what
+    # actually goes out on the wire, see libmuscle.mcp.Message for that.
+    def __init__(self, timestamp: float, next_timestamp: Optional[float],
+                 data: MessageObject,
+                 configuration: Optional[Configuration]=None
+                 ) -> None:
+        """Create a Message.
+
+        Args:
+            timestamp: Simulation time for which this data is valid.
+            next_timestamp: Simulation time for the next message to be
+                    transmitted through this port.
+            data: An object to send or that was received.
+            configuration: An overlay configuration to send or that
+                    was received.
+        """
+        self.timestamp = timestamp
+        self.next_timestamp = next_timestamp
+        self.data = data
+        self.configuration = configuration
+
+
 class Communicator(PostOffice):
     """Communication engine for MUSCLE 3.
 
@@ -202,24 +238,16 @@ class Communicator(PostOffice):
         self.__peer_locations = peer_locations  # indexed by instance id
 
     def send_message(
-            self, port_name: str, timestamp: float,
-            next_timestamp: Optional[float],
-            message: Union[bytes, MessageObject],
-            overlay: Configuration, slot: Union[int, List[int]]=[]
-            ) -> None:
+            self, port_name: str, message: Message,
+            slot: Union[int, List[int]]=[]) -> None:
         """Send a message and parameters to the outside world.
 
         Sending is non-blocking, a copy of the message will be made
         and stored until the receiver is ready to receive it.
 
-        This function should not be used in submodels. It is intended
-        for use by special compute elements that are ensemble-aware and
-        either generate overlay parameter sets or pass them on.
-
         Args:
             port_name: The port on which this message is to be sent.
             message: The message to be sent.
-            overlay: A parameter overlay to piggy-back onto the message.
             slot: The slot to send the message on, if any.
         """
         # note that slot is read-only, so the empty list default is fine
@@ -234,23 +262,24 @@ class Communicator(PostOffice):
         recv_endpoint = self.__get_peer_endpoint(snd_endpoint.port, slot)
 
         # encode overlay
-        packed_overlay = msgpack.packb(overlay.as_plain_dict(),
-                                       use_bin_type=True)
+        packed_overlay = msgpack.packb(
+                cast(Configuration, message.configuration).as_plain_dict(),
+                use_bin_type=True)
 
         # encode message
-        if isinstance(message, bytes):
-            packed_message = message
+        if isinstance(message.data, bytes):
+            packed_message = message.data
         else:
-            if isinstance(message, Configuration):
-                data = msgpack.packb(message.as_plain_dict())
+            if isinstance(message.data, Configuration):
+                data = msgpack.packb(message.data.as_plain_dict())
                 ext_data = msgpack.ExtType(ExtTypeId.CONFIGURATION, data)
                 packed_message = msgpack.packb(ext_data, use_bin_type=True)
             else:
-                packed_message = msgpack.packb(message, use_bin_type=True)
+                packed_message = msgpack.packb(message.data, use_bin_type=True)
 
         # deposit
         mcp_message = MCPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
-                                 timestamp, next_timestamp,
+                                 message.timestamp, message.next_timestamp,
                                  packed_overlay, packed_message)
         self.__ensure_outbox_exists(recv_endpoint)
         self.__outboxes[recv_endpoint.ref()].deposit(mcp_message)

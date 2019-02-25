@@ -1,6 +1,8 @@
 import pytest
 from unittest.mock import patch
 
+from libmuscle.communicator import Message
+from libmuscle.configuration import Configuration
 from libmuscle.mmp_client import MMPClient
 
 
@@ -20,3 +22,13 @@ def mocked_mmp_client(mock_grpc_channel):
 
         stub = mock_stub.return_value
         yield MMPClient(''), stub
+
+
+@pytest.fixture
+def message() -> Message:
+    return Message(0.0, None, b'test', Configuration())
+
+
+@pytest.fixture
+def message2() -> Message:
+    return Message(0.0, None, {'test': 17}, Configuration())

@@ -1,9 +1,11 @@
+from copy import copy
 import sys
 from typing import cast, Dict, List, Optional, Tuple, Type, Union
 
 from ymmsl import Conduit, Identifier, Operator, Reference
 
-from libmuscle.communicator import Communicator, MessageObject, _NoDefault
+from libmuscle.communicator import (Communicator, Message, MessageObject,
+                                    _NoDefault)
 from libmuscle.configuration import Configuration, ParameterValue
 from libmuscle.configuration_store import ConfigurationStore
 
@@ -130,9 +132,7 @@ class ComputeElement:
                                     self._instance_name()))
         return self._ports
 
-    def send_message(self, port_name: str, timestamp: float,
-                     next_timestamp: Optional[float],
-                     message: Union[bytes, MessageObject],
+    def send_message(self, port_name: str, message: Message,
                      slot: Union[int, List[int]]=[]) -> None:
         """Send a message to the outside world.
 
@@ -145,37 +145,11 @@ class ComputeElement:
             slot: The slot to send the message on, if any.
         """
         self.__check_port(port_name)
-        self._communicator.send_message(
-                port_name, timestamp, next_timestamp, message,
-                self._configuration_store.overlay, slot)
+        if message.configuration is None:
+            message = copy(message)
+            message.configuration = self._configuration_store.overlay
 
-    def send_message_with_parameters(
-            self, port_name: str, timestamp: float,
-            next_timestamp: Optional[float],
-            message: Union[bytes, MessageObject],
-            parameters: Configuration, slot: Union[int, List[int]]=[]) -> None:
-        """Send a message to the outside world.
-
-        Sending is non-blocking, a copy of the message will be made
-        and stored until the receiver is ready to receive it.
-
-        In a submodel, user :meth:`send_message` instead. This function
-        is intended for use by special compute elements that are
-        ensemble-aware and either generate overlay parameter sets or
-        pass them on.
-
-        Args:
-            port_name: The port on which this message is to be sent.
-            message: The message to be sent.
-            parameters: A parameter overlay to inject.
-            slot: The slot to send the message on, if any.
-        """
-        self.__check_port(port_name)
-        overlay = self._configuration_store.overlay.copy()
-        for key, value in parameters.items():
-            overlay[key] = value
-        self._communicator.send_message(port_name, timestamp, next_timestamp,
-                                        message, overlay, slot)
+        self._communicator.send_message(port_name, message, slot)
 
     def receive_message(self, port_name: str, decode: bool,
                         slot: Union[int, List[int]]=[],

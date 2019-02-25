@@ -3,6 +3,7 @@ from typing import List
 import pytest
 from ymmsl import Operator, Reference
 
+from libmuscle.communicator import Message
 from libmuscle.compute_element import ComputeElement
 from libmuscle.muscle3 import Muscle3
 
@@ -25,7 +26,8 @@ def test_duplication_mapper(mmp_server_dm, sys_argv_manager):
     # send and receive some messages
     out_ports = duplication_mapper.get_ports()[Operator.O_F]
     for out_port in out_ports:
-        duplication_mapper.send_message(out_port, 0.0, None, 'testing')
+        message = Message(0.0, None, 'testing')
+        duplication_mapper.send_message(out_port, message)
 
     msg1 = first.receive_message('in', decode=True)
     msg2 = second.receive_message('in', decode=True)

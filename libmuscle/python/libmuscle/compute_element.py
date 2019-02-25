@@ -3,7 +3,7 @@ from typing import cast, Dict, List, Optional, Tuple, Type, Union
 
 from ymmsl import Conduit, Identifier, Operator, Reference
 
-from libmuscle.communicator import Communicator, Message, _NoDefault
+from libmuscle.communicator import Communicator, MessageObject, _NoDefault
 from libmuscle.configuration import Configuration, ParameterValue
 from libmuscle.configuration_store import ConfigurationStore
 
@@ -132,7 +132,7 @@ class ComputeElement:
 
     def send_message(self, port_name: str, timestamp: float,
                      next_timestamp: Optional[float],
-                     message: Union[bytes, Message],
+                     message: Union[bytes, MessageObject],
                      slot: Union[int, List[int]]=[]) -> None:
         """Send a message to the outside world.
 
@@ -151,7 +151,8 @@ class ComputeElement:
 
     def send_message_with_parameters(
             self, port_name: str, timestamp: float,
-            next_timestamp: Optional[float], message: Union[bytes, Message],
+            next_timestamp: Optional[float],
+            message: Union[bytes, MessageObject],
             parameters: Configuration, slot: Union[int, List[int]]=[]) -> None:
         """Send a message to the outside world.
 
@@ -178,8 +179,8 @@ class ComputeElement:
 
     def receive_message(self, port_name: str, decode: bool,
                         slot: Union[int, List[int]]=[],
-                        default: Optional[Message]=_NoDefault
-                        ) -> Message:
+                        default: Optional[MessageObject]=_NoDefault
+                        ) -> MessageObject:
         """Receive a message from the outside world.
 
         Receiving is a blocking operation. This function will contact
@@ -229,8 +230,8 @@ class ComputeElement:
 
     def receive_message_with_parameters(
             self, port_name: str, decode: bool, slot: Union[int, List[int]]=[],
-            default: Optional[Message]=_NoDefault
-            ) -> Tuple[Message, Configuration]:
+            default: Optional[MessageObject]=_NoDefault
+            ) -> Tuple[MessageObject, Configuration]:
         """Receive a message with attached parameter overlay.
 
         This function should not be used in submodels. It is intended

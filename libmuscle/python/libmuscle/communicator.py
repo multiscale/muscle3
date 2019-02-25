@@ -14,7 +14,7 @@ from libmuscle.outbox import Outbox
 from libmuscle.post_office import PostOffice
 
 
-Message = Any
+MessageObject = Any
 
 
 class Endpoint:
@@ -203,7 +203,8 @@ class Communicator(PostOffice):
 
     def send_message(
             self, port_name: str, timestamp: float,
-            next_timestamp: Optional[float], message: Union[bytes, Message],
+            next_timestamp: Optional[float],
+            message: Union[bytes, MessageObject],
             overlay: Configuration, slot: Union[int, List[int]]=[]
             ) -> None:
         """Send a message and parameters to the outside world.
@@ -256,8 +257,8 @@ class Communicator(PostOffice):
 
     def receive_message(self, port_name: str, decode: bool,
                         slot: Union[int, List[int]]=[],
-                        default: Optional[Message]=_NoDefault
-                        ) -> Tuple[Message, Configuration]:
+                        default: Optional[MessageObject]=_NoDefault
+                        ) -> Tuple[MessageObject, Configuration]:
         """Receive a message and attached parameter overlay.
 
         This function should not be used in submodels. It is intended
@@ -411,7 +412,7 @@ class Communicator(PostOffice):
         return Endpoint(peer_kernel, peer_index, peer_port, peer_slot)
 
     def __extract_object(self, mcp_message: MCPMessage, decode: bool
-                         ) -> Message:
+                         ) -> MessageObject:
         """Extract object from a received message.
 
         Args:

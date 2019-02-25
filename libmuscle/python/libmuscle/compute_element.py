@@ -82,7 +82,7 @@ class ComputeElement:
         loop, i.e. before the F_INIT operator.
         """
         message = self._communicator.receive_message(
-                'muscle_parameters_in', True)
+                'muscle_parameters_in')
         if not isinstance(message.data, Configuration):
             raise RuntimeError('"{}" received a message on'
                                ' muscle_parameters_in that is not a'
@@ -151,8 +151,7 @@ class ComputeElement:
 
         self._communicator.send_message(port_name, message, slot)
 
-    def receive_message(self, port_name: str, decode: bool,
-                        slot: Union[int, List[int]]=[],
+    def receive_message(self, port_name: str, slot: Union[int, List[int]]=[],
                         default: Optional[Message]=None
                         ) -> Message:
         """Receive a message from the outside world.
@@ -162,26 +161,21 @@ class ComputeElement:
         return it.
 
         If the port you are receiving on is not connected, the default
-        value you specified will be returned exactly as you passed it
-        (i.e. decode does not apply). If you didn't specify a default
-        value (e.g. because there is no reasonable default, you really
-        need the outside input) and the port is not connected, you'll
-        get a RuntimeError.
+        value you specified will be returned exactly as you passed it.
+        If you didn't specify a default value (e.g. because there is no
+        reasonable default, you really need the outside input) and the
+        port is not connected, you'll get a RuntimeError.
 
         Args:
             port_name: The endpoint on which a message is to be
                     received.
-            decode: Whether to MsgPack-decode the message (True) or
-                    return raw bytes() (False).
             slot: The slot to receive the message on, if any.
             default: A default value to return if this port is not
                     connected.
 
         Returns:
-            The received message, with message.data decoded from
-            MsgPack if decode is True, otherwise as a raw bytes
-            object. The configuration attribute of the received
-            message will be None.
+            The received message.The configuration attribute of the
+            received message will be None.
 
         Raises:
             RuntimeError: If the given port is not connected and no
@@ -189,7 +183,7 @@ class ComputeElement:
         """
         self.__check_port(port_name)
         msg = self._communicator.receive_message(
-                port_name, decode, slot, default)
+                port_name, slot, default)
         if (self._port_operators[port_name] == Operator.F_INIT and
                 len(self._configuration_store.overlay) == 0):
             self._configuration_store.overlay = cast(
@@ -207,7 +201,7 @@ class ComputeElement:
         return msg
 
     def receive_message_with_parameters(
-            self, port_name: str, decode: bool, slot: Union[int, List[int]]=[],
+            self, port_name: str, slot: Union[int, List[int]]=[],
             default: Optional[Message]=None
             ) -> Message:
         """Receive a message with attached parameter overlay.
@@ -221,35 +215,28 @@ class ComputeElement:
         return it.
 
         If the port you are receiving on is not connected, the default
-        value you specified will be returned exactly as you passed it
-        (i.e. decode does not apply), together with an empty
-        Configuration. If you didn't specify a default value (e.g.
-        because there is no reasonable default, and you really need the
-        outside input) and the port is not connected, then you'll get a
-        RuntimeError.
+        value you specified will be returned exactly as you passed it.
+        If you didn't specify a default value (e.g. because there is no
+        reasonable default, and you really need the outside input) and
+        the port is not connected, then you'll get a RuntimeError.
 
         Args:
             port_name: The endpoint on which a message is to be
                     received.
-            decode: Whether to MsgPack-decode the message (True) or
-                    return raw bytes() (False).
             slot: The slot to receive the message on, if any.
             default: A default value to return if this port is not
                     connected.
 
         Returns:
-            The received message, with data decoded from MsgPack if
-            decode is True and otherwise as a raw bytes object. The
-            configuration attribute will contain the received
-            Configuration.
+            The received message. The configuration attribute will
+            contain the received Configuration, and will not be None.
 
         Raises:
             RuntimeError: If the given port is not connected and no
                     default value was given.
         """
         self.__check_port(port_name)
-        return self._communicator.receive_message(port_name, decode, slot,
-                                                  default)
+        return self._communicator.receive_message(port_name, slot, default)
 
     def __make_full_name(self, instance: Reference
                          ) -> Tuple[Reference, List[int]]:

@@ -139,29 +139,29 @@ def test_send_message_invalid_port(compute_element, message):
 
 
 def test_receive_message(compute_element):
-    msg = compute_element.receive_message('in', True, 1)
+    msg = compute_element.receive_message('in', 1)
     assert msg.timestamp == 0.0
     assert msg.next_timestamp == 1.0
     assert compute_element._communicator.receive_message.called_with(
-            'in', True, 1)
+            'in', 1)
     assert msg.data == 'message'
 
 
 def test_receive_message_default(compute_element):
-    compute_element.receive_message('not_connected', True, 1, 'testing')
+    compute_element.receive_message('not_connected', 1, 'testing')
     assert compute_element._communicator.receive_message.called_with(
-            'not_connected', True, 1, 'testing')
+            'not_connected', 1, 'testing')
 
 
 def test_receive_message_invalid_port(compute_element):
     with pytest.raises(ValueError):
-        compute_element.receive_message('does_not_exist', True, 1)
+        compute_element.receive_message('does_not_exist', 1)
 
 
 def test_receive_message_with_parameters(compute_element):
-    msg = compute_element.receive_message_with_parameters('in', True, 1)
+    msg = compute_element.receive_message_with_parameters('in', 1)
     assert (compute_element._communicator.receive_message
-            .called_with('in', True, 1))
+            .called_with('in', 1))
     assert msg.timestamp == 0.0
     assert msg.next_timestamp == 1.0
     assert msg.data == 'message'
@@ -169,16 +169,16 @@ def test_receive_message_with_parameters(compute_element):
 
 
 def test_receive_message_with_parameters_default(compute_element):
-    compute_element.receive_message_with_parameters('not_connected', True, 1,
+    compute_element.receive_message_with_parameters('not_connected', 1,
                                                     'testing')
     assert compute_element._communicator.receive_message.called_with(
-            'not_connected', True, 1, 'testing')
+            'not_connected', 1, 'testing')
 
 
 def test_receive_parallel_universe(compute_element) -> None:
     compute_element._configuration_store.overlay['test2'] = 'test'
     with pytest.raises(RuntimeError):
-        compute_element.receive_message('in', True)
+        compute_element.receive_message('in')
 
 
 def test_init_instance(compute_element):
@@ -192,7 +192,7 @@ def test_init_instance(compute_element):
     recv.return_value = Message(0.0, None, test_overlay, test_base_config)
     compute_element.init_instance()
     assert compute_element._communicator.receive_message.called_with(
-        'muscle_parameters_in', True)
+        'muscle_parameters_in')
     assert len(compute_element._configuration_store.overlay) == 2
     assert compute_element._configuration_store.overlay['test1'] == 24
     assert compute_element._configuration_store.overlay['test2'] == 'abc'

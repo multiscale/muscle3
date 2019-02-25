@@ -38,13 +38,13 @@ def test_all(mmp_server, sys_argv_manager):
 
     # send and receive some messages
     macro.send_message('out', Message(0.0, 10.0, 'testing'), [0, 0])
-    msg = micros[0].receive_message('in', True)
+    msg = micros[0].receive_message('in')
     assert msg.data == 'testing'
 
     micros[0].send_message('out', Message(0.0, None, 'testing back'))
-    msg = macro.receive_message('in', True, [0, 0])
+    msg = macro.receive_message('in', [0, 0])
     assert msg.data == 'testing back'
 
     macro.send_message('out', Message(10.0, 20.0, [1, 2, 3]), [3, 4])
-    msg = micros[34].receive_message('in', True)
+    msg = micros[34].receive_message('in')
     assert msg.data == [1, 2, 3]

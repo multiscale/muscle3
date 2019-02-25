@@ -261,15 +261,12 @@ class Communicator(PostOffice):
                 use_bin_type=True)
 
         # encode message
-        if isinstance(message.data, bytes):
-            packed_message = message.data
+        if isinstance(message.data, Configuration):
+            data = msgpack.packb(message.data.as_plain_dict())
+            ext_data = msgpack.ExtType(ExtTypeId.CONFIGURATION, data)
+            packed_message = msgpack.packb(ext_data, use_bin_type=True)
         else:
-            if isinstance(message.data, Configuration):
-                data = msgpack.packb(message.data.as_plain_dict())
-                ext_data = msgpack.ExtType(ExtTypeId.CONFIGURATION, data)
-                packed_message = msgpack.packb(ext_data, use_bin_type=True)
-            else:
-                packed_message = msgpack.packb(message.data, use_bin_type=True)
+            packed_message = msgpack.packb(message.data, use_bin_type=True)
 
         # deposit
         mcp_message = MCPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
@@ -278,8 +275,7 @@ class Communicator(PostOffice):
         self.__ensure_outbox_exists(recv_endpoint)
         self.__outboxes[recv_endpoint.ref()].deposit(mcp_message)
 
-    def receive_message(self, port_name: str, decode: bool,
-                        slot: Union[int, List[int]]=[],
+    def receive_message(self, port_name: str, slot: Union[int, List[int]]=[],
                         default: Optional[Message]=None
                         ) -> Message:
         """Receive a message and attached parameter overlay.
@@ -289,23 +285,19 @@ class Communicator(PostOffice):
         return it.
 
         If the port is not connected, then the default value will be
-        returned if one was given, exactly as it was given (so decode
-        does not affect anything in this case). If no default was given
-        then a RuntimeError will be raised.
+        returned if one was given, exactly as it was given. If no
+        default was given then a RuntimeError will be raised.
 
         Args:
             port_name: The endpoint on which a message is to be
                     received.
-            decode: Whether to MsgPack-decode the message (True) or
-                    return raw bytes() (False).
             slot: The slot to receive the message on, if any.
             default: A message to return if this port is not connected.
 
         Returns:
-            The received message, with data decoded from MsgPack if
-            decode is True and otherwise as a raw bytes object, and
-            message.configuration holding the parameter overlay. The
-            configuration attribute is guaranteed not not be None.
+            The received message, with message.configuration holding
+            the parameter overlay. The configuration attribute is
+            guaranteed to not be None.
 
         Raises:
             RuntimeError: If no default was given and the port is not
@@ -334,8 +326,7 @@ class Communicator(PostOffice):
             mcp_message.parameter_overlay, raw=False))
 
         return Message(mcp_message.timestamp, mcp_message.next_timestamp,
-                       self.__extract_object(mcp_message, decode),
-                       overlay_config)
+                       self.__extract_object(mcp_message), overlay_config)
 
     def get_message(self, receiver: Reference) -> MCPMessage:
         """Get a message from a receiver's outbox.
@@ -433,24 +424,18 @@ class Communicator(PostOffice):
         peer_slot = total_index[peer_dim:]
         return Endpoint(peer_kernel, peer_index, peer_port, peer_slot)
 
-    def __extract_object(self, mcp_message: MCPMessage, decode: bool
-                         ) -> MessageObject:
+    def __extract_object(self, mcp_message: MCPMessage) -> MessageObject:
         """Extract object from a received message.
 
         Args:
             mcp_message: The received message.
-            decode: Whether to decode, or return the raw data bytes.
 
         Returns:
             The object that was received.
         """
-
-        if decode:
-            data = msgpack.unpackb(mcp_message.data, raw=False)
-            if isinstance(data, msgpack.ExtType):
-                if data.code == ExtTypeId.CONFIGURATION:
-                    plain_dict = msgpack.unpackb(data.data, raw=False)
-                    return Configuration.from_plain_dict(plain_dict)
-            return msgpack.unpackb(mcp_message.data, raw=False)
-        else:
-            return mcp_message.data
+        data = msgpack.unpackb(mcp_message.data, raw=False)
+        if isinstance(data, msgpack.ExtType):
+            if data.code == ExtTypeId.CONFIGURATION:
+                plain_dict = msgpack.unpackb(data.data, raw=False)
+                return Configuration.from_plain_dict(plain_dict)
+        return msgpack.unpackb(mcp_message.data, raw=False)

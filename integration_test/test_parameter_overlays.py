@@ -59,10 +59,10 @@ def test_parameter_overlays(mmp_server_qmc, sys_argv_manager):
 
     macros[0].send_message('out', Message(0.0, 1.0, 'testing'))
     msg = micros[0].receive_message('in', True)
-    assert msg == 'testing'
+    assert msg.data == 'testing'
     assert micros[0].get_parameter_value('test2') == 14.4
 
     micros[0].send_message('out', Message(0.0, None, 'testing back'))
     msg = macros[0].receive_message('in', True)
-    assert msg == 'testing back'
+    assert msg.data == 'testing back'
     assert macros[0].get_parameter_value('test2') == 14.4

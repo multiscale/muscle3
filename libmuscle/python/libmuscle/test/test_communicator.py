@@ -1,7 +1,7 @@
-from libmuscle.communicator import Communicator, Endpoint
+from libmuscle.communicator import Communicator, Endpoint, Message
 from libmuscle.configuration import Configuration
 from libmuscle.mcp.direct_client import DirectClient
-from libmuscle.mcp.message import Message
+from libmuscle.mcp.message import Message as MCPMessage
 
 from ymmsl import Conduit, Identifier, Operator, Reference
 
@@ -180,25 +180,28 @@ def test_send_configuration(communicator, message) -> None:
 
 def test_receive_message(communicator) -> None:
     client_mock = MagicMock()
-    client_mock.receive.return_value = Message(
+    client_mock.receive.return_value = MCPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
             0.0, None, msgpack.packb({'test1': 12}), b'test')
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
 
-    msg, overlay = communicator.receive_message('in', False)
+    msg = communicator.receive_message('in', False)
 
     get_client_mock.assert_called_with(Reference('other'))
     client_mock.receive.assert_called_with(Reference('kernel[13].in'))
-    assert msg == b'test'
-    assert overlay['test1'] == 12
+    assert msg.data == b'test'
+    assert msg.configuration['test1'] == 12
 
 
 def test_receive_message_default(communicator) -> None:
-    msg, overlay = communicator.receive_message('not_connected', False,
-                                                default='test')
-    assert msg == 'test'
-    assert len(overlay) == 0
+    default_msg = Message(3.0, 4.0, 'test', Configuration())
+    msg = communicator.receive_message('not_connected', False,
+                                       default=default_msg)
+    assert msg.timestamp == 3.0
+    assert msg.next_timestamp == 4.0
+    assert msg.data == 'test'
+    assert len(msg.configuration) == 0
 
 
 def test_receive_message_no_default(communicator) -> None:
@@ -213,67 +216,67 @@ def test_receive_on_invalid_port(communicator) -> None:
 
 def test_receive_msgpack(communicator) -> None:
     client_mock = MagicMock()
-    client_mock.receive.return_value = Message(
+    client_mock.receive.return_value = MCPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
             0.0, None, msgpack.packb({'test1': 12}),
             msgpack.packb({'test': 13}))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
 
-    msg, _ = communicator.receive_message('in', True)
+    msg = communicator.receive_message('in', True)
 
     get_client_mock.assert_called_with(Reference('other'))
     client_mock.receive.assert_called_with(Reference('kernel[13].in'))
-    assert msg == {'test': 13}
+    assert msg.data == {'test': 13}
 
 
 def test_receive_with_slot(communicator2) -> None:
     client_mock = MagicMock()
-    client_mock.receive.return_value = Message(
+    client_mock.receive.return_value = MCPMessage(
             Reference('kernel[13].out'), Reference('other.in[13]'),
             0.0, None, msgpack.packb({'test': 'testing'}), b'test')
     get_client_mock = MagicMock(return_value=client_mock)
     communicator2._Communicator__get_client = get_client_mock
 
-    msg, overlay = communicator2.receive_message('in', False, 13)
+    msg = communicator2.receive_message('in', False, 13)
 
     get_client_mock.assert_called_with(Reference('kernel[13]'))
     client_mock.receive.assert_called_with(Reference('other.in[13]'))
-    assert msg == b'test'
-    assert overlay['test'] == 'testing'
+    assert msg.data == b'test'
+    assert msg.configuration['test'] == 'testing'
 
 
 def test_receive_with_parameters(communicator) -> None:
     client_mock = MagicMock()
-    client_mock.receive.return_value = Message(
+    client_mock.receive.return_value = MCPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
             0.0, None, msgpack.packb({'test2': 3.1}), b'test')
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
 
-    msg, config = communicator.receive_message('in', False)
+    msg = communicator.receive_message('in', False)
 
     get_client_mock.assert_called_with(Reference('other'))
     client_mock.receive.assert_called_with(Reference('kernel[13].in'))
-    assert msg == b'test'
-    assert config['test2'] == 3.1
+    assert msg.data == b'test'
+    assert msg.configuration['test2'] == 3.1
 
 
 def test_receive_msgpack_with_slot_and_parameters(communicator2) -> None:
     client_mock = MagicMock()
-    client_mock.receive.return_value = Message(
+    client_mock.receive.return_value = MCPMessage(
             Reference('kernel[13].out'), Reference('other.in[13]'),
             0.0, 1.0,
             msgpack.packb({'test': 'testing'}), msgpack.packb('test'))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator2._Communicator__get_client = get_client_mock
 
-    msg, config = communicator2.receive_message('in', True, 13)
+    msg = communicator2.receive_message('in', True, 13)
 
     get_client_mock.assert_called_with(Reference('kernel[13]'))
     client_mock.receive.assert_called_with(Reference('other.in[13]'))
-    assert msg == 'test'
-    assert config['test'] == 'testing'
+    assert msg.data == 'test'
+    assert msg.configuration['test'] == 'testing'
 
 
 def test_receive_configuration(communicator) -> None:
@@ -281,19 +284,19 @@ def test_receive_configuration(communicator) -> None:
     config_dict = {'test': 13}
     config_data = msgpack.ExtType(0, msgpack.packb(config_dict,
                                                    use_bin_type=True))
-    client_mock.receive.return_value = Message(
+    client_mock.receive.return_value = MCPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
             0.0, None, msgpack.packb({'test1': 12}),
             msgpack.packb(config_data))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
 
-    msg, config = communicator.receive_message('in', True)
+    msg = communicator.receive_message('in', True)
 
     get_client_mock.assert_called_with(Reference('other'))
     client_mock.receive.assert_called_with(Reference('kernel[13].in'))
-    assert isinstance(msg, Configuration)
-    assert msg['test'] == 13
+    assert isinstance(msg.data, Configuration)
+    assert msg.data['test'] == 13
 
 
 def test_get_message(communicator, message) -> None:

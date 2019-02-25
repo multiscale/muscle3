@@ -118,12 +118,6 @@ class ExtTypeId(IntEnum):
     CONFIGURATION = 0
 
 
-class _NoDefault:
-    """Used as a sentinel value for receive_message default parameter.
-    """
-    pass
-
-
 class Message:
     """A message to be sent or received.
 
@@ -286,13 +280,9 @@ class Communicator(PostOffice):
 
     def receive_message(self, port_name: str, decode: bool,
                         slot: Union[int, List[int]]=[],
-                        default: Optional[MessageObject]=_NoDefault
-                        ) -> Tuple[MessageObject, Configuration]:
+                        default: Optional[Message]=None
+                        ) -> Message:
         """Receive a message and attached parameter overlay.
-
-        This function should not be used in submodels. It is intended
-        for use by special compute elements that are ensemble-aware and
-        have to pass on overlay parameter sets explicitly.
 
         Receiving is a blocking operaton. This function will contact
         the sender, wait for a message to be available, and receive and
@@ -312,9 +302,10 @@ class Communicator(PostOffice):
             default: A message to return if this port is not connected.
 
         Returns:
-            The received message, decoded from MsgPack if decode is
-            True and otherwise as a raw bytes object, and a
-            Configuration holding the parameter overlay.
+            The received message, with data decoded from MsgPack if
+            decode is True and otherwise as a raw bytes object, and
+            message.configuration holding the parameter overlay. The
+            configuration attribute is guaranteed not not be None.
 
         Raises:
             RuntimeError: If no default was given and the port is not
@@ -327,13 +318,13 @@ class Communicator(PostOffice):
         recv_endpoint = self.__get_endpoint(port_name, slot)
 
         if not self.__is_connected(recv_endpoint.port):
-            if default is _NoDefault:
+            if default is None:
                 raise RuntimeError(('Tried to receive on port "{}", which is'
                                     ' disconnected, and no default value was'
                                     ' given. Either specify a default, or'
                                     ' connect a sending component to this'
                                     ' port.').format(port_name))
-            return default, Configuration()
+            return default
 
         snd_endpoint = self.__get_peer_endpoint(recv_endpoint.port, slot)
         client = self.__get_client(snd_endpoint.instance())
@@ -342,7 +333,9 @@ class Communicator(PostOffice):
         overlay_config = Configuration.from_plain_dict(msgpack.unpackb(
             mcp_message.parameter_overlay, raw=False))
 
-        return self.__extract_object(mcp_message, decode), overlay_config
+        return Message(mcp_message.timestamp, mcp_message.next_timestamp,
+                       self.__extract_object(mcp_message, decode),
+                       overlay_config)
 
     def get_message(self, receiver: Reference) -> MCPMessage:
         """Get a message from a receiver's outbox.

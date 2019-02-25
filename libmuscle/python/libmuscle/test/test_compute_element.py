@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from ymmsl import Conduit, Operator, Reference
 
+from libmuscle.communicator import Message
 from libmuscle.compute_element import ComputeElement
 from libmuscle.configuration import Configuration
 from libmuscle.configuration_store import ConfigurationStore
@@ -24,8 +25,8 @@ def compute_element():
         communicator = MagicMock()
         config = Configuration()
         config['test1'] = 12
-        communicator.receive_message.return_value = (
-                'message', config)
+        communicator.receive_message.return_value = Message(
+                0.0, 1.0, 'message', config)
         comm_type.return_value = communicator
         element = ComputeElement('test_element', {
             Operator.F_INIT: ['in', 'not_connected'],
@@ -139,9 +140,11 @@ def test_send_message_invalid_port(compute_element, message):
 
 def test_receive_message(compute_element):
     msg = compute_element.receive_message('in', True, 1)
+    assert msg.timestamp == 0.0
+    assert msg.next_timestamp == 1.0
     assert compute_element._communicator.receive_message.called_with(
             'in', True, 1)
-    assert msg == 'message'
+    assert msg.data == 'message'
 
 
 def test_receive_message_default(compute_element):
@@ -156,12 +159,13 @@ def test_receive_message_invalid_port(compute_element):
 
 
 def test_receive_message_with_parameters(compute_element):
-    msg, config = compute_element.receive_message_with_parameters(
-            'in', True, 1)
-    assert (compute_element._communicator.receive_message_with_parameters
+    msg = compute_element.receive_message_with_parameters('in', True, 1)
+    assert (compute_element._communicator.receive_message
             .called_with('in', True, 1))
-    assert msg == 'message'
-    assert config['test1'] == 12
+    assert msg.timestamp == 0.0
+    assert msg.next_timestamp == 1.0
+    assert msg.data == 'message'
+    assert msg.configuration['test1'] == 12
 
 
 def test_receive_message_with_parameters_default(compute_element):
@@ -185,7 +189,7 @@ def test_init_instance(compute_element):
     test_overlay = Configuration()
     test_overlay['test2'] = 'abc'
     recv = compute_element._communicator.receive_message
-    recv.return_value = (test_overlay, test_base_config)
+    recv.return_value = Message(0.0, None, test_overlay, test_base_config)
     compute_element.init_instance()
     assert compute_element._communicator.receive_message.called_with(
         'muscle_parameters_in', True)

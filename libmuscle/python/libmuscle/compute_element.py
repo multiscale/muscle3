@@ -4,8 +4,7 @@ from typing import cast, Dict, List, Optional, Tuple, Type, Union
 
 from ymmsl import Conduit, Identifier, Operator, Reference
 
-from libmuscle.communicator import (Communicator, Message, MessageObject,
-                                    _NoDefault)
+from libmuscle.communicator import Communicator, Message, MessageObject
 from libmuscle.configuration import Configuration, ParameterValue
 from libmuscle.configuration_store import ConfigurationStore
 
@@ -82,18 +81,19 @@ class ComputeElement:
         This method must be called once at the beginning of the reuse
         loop, i.e. before the F_INIT operator.
         """
-        config, overlay = self._communicator.receive_message(
+        message = self._communicator.receive_message(
                 'muscle_parameters_in', True)
-        if not isinstance(config, Configuration):
+        if not isinstance(message.data, Configuration):
             raise RuntimeError('"{}" received a message on'
                                ' muscle_parameters_in that is not a'
                                ' Configuration. It seems that your simulation'
                                ' is miswired or the sending instance is'
                                ' broken.'.format(self._instance_name()))
 
-        for key, value in config.items():
-            overlay[key] = value
-        self._configuration_store.overlay = overlay
+        configuration = cast(Configuration, message.configuration)
+        for key, value in message.data.items():
+            configuration[key] = value
+        self._configuration_store.overlay = configuration
 
     def get_parameter_value(self, name: str,
                             typ: Optional[str] = None
@@ -153,8 +153,8 @@ class ComputeElement:
 
     def receive_message(self, port_name: str, decode: bool,
                         slot: Union[int, List[int]]=[],
-                        default: Optional[MessageObject]=_NoDefault
-                        ) -> MessageObject:
+                        default: Optional[Message]=None
+                        ) -> Message:
         """Receive a message from the outside world.
 
         Receiving is a blocking operation. This function will contact
@@ -178,34 +178,38 @@ class ComputeElement:
                     connected.
 
         Returns:
-            The received message, decoded from MsgPack if decode is
-            True, otherwise as a raw bytes object.
+            The received message, with message.data decoded from
+            MsgPack if decode is True, otherwise as a raw bytes
+            object. The configuration attribute of the received
+            message will be None.
 
         Raises:
             RuntimeError: If the given port is not connected and no
                     default value was given.
         """
         self.__check_port(port_name)
-        msg, config = self._communicator.receive_message(
+        msg = self._communicator.receive_message(
                 port_name, decode, slot, default)
         if (self._port_operators[port_name] == Operator.F_INIT and
                 len(self._configuration_store.overlay) == 0):
-            self._configuration_store.overlay = config
+            self._configuration_store.overlay = cast(
+                    Configuration, msg.configuration)
         else:
-            if self._configuration_store.overlay != config:
+            if self._configuration_store.overlay != msg.configuration:
                 raise RuntimeError(('Unexpectedly received data from a'
                                     ' parallel universe on port "{}". My'
                                     ' parameters are "{}" and I received from'
                                     ' a universe with "{}".').format(
                                         port_name,
                                         self._configuration_store.overlay,
-                                        config))
+                                        msg.configuration))
+        msg.configuration = None
         return msg
 
     def receive_message_with_parameters(
             self, port_name: str, decode: bool, slot: Union[int, List[int]]=[],
-            default: Optional[MessageObject]=_NoDefault
-            ) -> Tuple[MessageObject, Configuration]:
+            default: Optional[Message]=None
+            ) -> Message:
         """Receive a message with attached parameter overlay.
 
         This function should not be used in submodels. It is intended
@@ -234,9 +238,10 @@ class ComputeElement:
                     connected.
 
         Returns:
-            The received message, decoded from MsgPack if decode is
-            True and otherwise as a raw bytes object, and a
-            Configuration holding the parameter overlay.
+            The received message, with data decoded from MsgPack if
+            decode is True and otherwise as a raw bytes object. The
+            configuration attribute will contain the received
+            Configuration.
 
         Raises:
             RuntimeError: If the given port is not connected and no

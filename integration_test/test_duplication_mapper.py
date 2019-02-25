@@ -31,5 +31,5 @@ def test_duplication_mapper(mmp_server_dm, sys_argv_manager):
 
     msg1 = first.receive_message('in', decode=True)
     msg2 = second.receive_message('in', decode=True)
-    assert msg1 == 'testing'
-    assert msg2 == 'testing'
+    assert msg1.data == 'testing'
+    assert msg2.data == 'testing'

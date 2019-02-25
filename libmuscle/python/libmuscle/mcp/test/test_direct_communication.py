@@ -13,7 +13,7 @@ def test_send_receive(receiver, direct_server, post_office):
     client = DirectClient(direct_server.get_location())
 
     message = Message(Reference('test_sender.test_port'),
-                      receiver, bytes(), 'message'.encode('utf-8'))
+                      receiver, 0.0, 1.0, bytes(), 'message'.encode('utf-8'))
 
     post_office.outboxes[receiver].deposit(message)
     message2 = client.receive(receiver)

@@ -36,14 +36,14 @@ def test_all(mmp_server, sys_argv_manager):
     assert micros[79].get_parameter_value('test6', '[[float]]')[0][1] == 2.0
 
     # send and receive some messages
-    macro.send_message('out', 'testing', [0, 0])
+    macro.send_message('out', 0.0, 10.0, 'testing', [0, 0])
     msg = micros[0].receive_message('in', True)
     assert msg == 'testing'
 
-    micros[0].send_message('out', 'testing back')
+    micros[0].send_message('out', 0.0, None, 'testing back')
     msg = macro.receive_message('in', True, [0, 0])
     assert msg == 'testing back'
 
-    macro.send_message('out', [1, 2, 3], [3, 4])
+    macro.send_message('out', 10.0, 20.0, [1, 2, 3], [3, 4])
     msg = micros[34].receive_message('in', True)
     assert msg == [1, 2, 3]

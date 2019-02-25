@@ -202,7 +202,8 @@ class Communicator(PostOffice):
         self.__peer_locations = peer_locations  # indexed by instance id
 
     def send_message(
-            self, port_name: str, message: Union[bytes, Message],
+            self, port_name: str, timestamp: float,
+            next_timestamp: Optional[float], message: Union[bytes, Message],
             overlay: Configuration, slot: Union[int, List[int]]=[]
             ) -> None:
         """Send a message and parameters to the outside world.
@@ -248,6 +249,7 @@ class Communicator(PostOffice):
 
         # deposit
         mcp_message = MCPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
+                                 timestamp, next_timestamp,
                                  packed_overlay, packed_message)
         self.__ensure_outbox_exists(recv_endpoint)
         self.__outboxes[recv_endpoint.ref()].deposit(mcp_message)

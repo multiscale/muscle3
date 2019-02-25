@@ -78,13 +78,15 @@ def test_get_locations(communicator) -> None:
 
 def test_send_message(communicator) -> None:
     ref = Reference
-    communicator.send_message('out', b'test', Configuration())
+    communicator.send_message('out', 0.0, None, b'test', Configuration())
 
     assert 'other.in[13]' in communicator._Communicator__outboxes
     msg = communicator._Communicator__outboxes[
             'other.in[13]']._Outbox__queue[0]
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
+    assert msg.timestamp == 0.0
+    assert msg.next_timestamp is None
     assert msg.parameter_overlay == msgpack.packb({}, use_bin_type=True)
     assert msg.data == b'test'
 
@@ -109,19 +111,19 @@ def test_connect(communicator) -> None:
 
 
 def test_send_on_disconnected_port(communicator) -> None:
-    communicator.send_message('not_connected', 'test'.encode('utf-8'),
-                              Configuration())
+    communicator.send_message('not_connected', 0.0, None,
+                              'test'.encode('utf-8'), Configuration())
 
 
 def test_send_on_invalid_port(communicator) -> None:
     with pytest.raises(ValueError):
-        communicator.send_message('[$Invalid_id', 'test'.encode('utf-8'),
-                                  Configuration())
+        communicator.send_message('[$Invalid_id', 0.0, None,
+                                  'test'.encode('utf-8'), Configuration())
 
 
 def test_send_msgpack(communicator) -> None:
     ref = Reference
-    communicator.send_message('out', {'test': 17}, Configuration())
+    communicator.send_message('out', 0.0, None, {'test': 17}, Configuration())
 
     assert 'other.in[13]' in communicator._Communicator__outboxes
     msg = communicator._Communicator__outboxes[
@@ -135,7 +137,7 @@ def test_send_msgpack(communicator) -> None:
 def test_send_message_with_slot(communicator2) -> None:
     ref = Reference
     communicator2.send_message(
-            'out', 'test'.encode('utf-8'), Configuration(), 13)
+            'out', 0.0, None, 'test'.encode('utf-8'), Configuration(), 13)
 
     assert 'kernel[13].in' in communicator2._Communicator__outboxes
     msg = communicator2._Communicator__outboxes[
@@ -150,7 +152,7 @@ def test_send_message_with_parameters(communicator) -> None:
     ref = Reference
     config = Configuration()
     config['test2'] = 'testing'
-    communicator.send_message('out', 'test'.encode('utf-8'), config)
+    communicator.send_message('out', 0.0, None, 'test'.encode('utf-8'), config)
 
     assert 'other.in[13]' in communicator._Communicator__outboxes
     msg = communicator._Communicator__outboxes[
@@ -166,7 +168,7 @@ def test_send_configuration(communicator) -> None:
     ref = Reference
     config = Configuration()
     config['test1'] = 'testing'
-    communicator.send_message('out', config, Configuration())
+    communicator.send_message('out', 0.0, None, config, Configuration())
 
     assert 'other.in[13]' in communicator._Communicator__outboxes
     msg = communicator._Communicator__outboxes[
@@ -184,7 +186,7 @@ def test_receive_message(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = Message(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            msgpack.packb({'test1': 12}), b'test')
+            0.0, None, msgpack.packb({'test1': 12}), b'test')
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
 
@@ -217,7 +219,7 @@ def test_receive_msgpack(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = Message(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            msgpack.packb({'test1': 12}),
+            0.0, None, msgpack.packb({'test1': 12}),
             msgpack.packb({'test': 13}))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
@@ -233,7 +235,7 @@ def test_receive_with_slot(communicator2) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = Message(
             Reference('kernel[13].out'), Reference('other.in[13]'),
-            msgpack.packb({'test': 'testing'}), b'test')
+            0.0, None, msgpack.packb({'test': 'testing'}), b'test')
     get_client_mock = MagicMock(return_value=client_mock)
     communicator2._Communicator__get_client = get_client_mock
 
@@ -249,7 +251,7 @@ def test_receive_with_parameters(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = Message(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            msgpack.packb({'test2': 3.1}), b'test')
+            0.0, None, msgpack.packb({'test2': 3.1}), b'test')
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
 
@@ -265,6 +267,7 @@ def test_receive_msgpack_with_slot_and_parameters(communicator2) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = Message(
             Reference('kernel[13].out'), Reference('other.in[13]'),
+            0.0, 1.0,
             msgpack.packb({'test': 'testing'}), msgpack.packb('test'))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator2._Communicator__get_client = get_client_mock
@@ -284,7 +287,7 @@ def test_receive_configuration(communicator) -> None:
                                                    use_bin_type=True))
     client_mock.receive.return_value = Message(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            msgpack.packb({'test1': 12}),
+            0.0, None, msgpack.packb({'test1': 12}),
             msgpack.packb(config_data))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
@@ -298,7 +301,7 @@ def test_receive_configuration(communicator) -> None:
 
 
 def test_get_message(communicator) -> None:
-    communicator.send_message('out', b'test', Configuration())
+    communicator.send_message('out', 0.0, None, b'test', Configuration())
     assert communicator.get_message('other.in[13]').data == b'test'
 
 

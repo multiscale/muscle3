@@ -1,3 +1,5 @@
+from typing import Optional
+
 from ymmsl import Reference
 
 
@@ -9,6 +11,7 @@ class Message:
     multi-site running in the future.
     """
     def __init__(self, sender: Reference, receiver: Reference,
+                 timestamp: float, next_timestamp: Optional[float],
                  parameter_overlay: bytes, data: bytes
                  ) -> None:
         """Create an MCPMessage.
@@ -24,5 +27,7 @@ class Message:
         """
         self.sender = sender
         self.receiver = receiver
+        self.timestamp = timestamp
+        self.next_timestamp = next_timestamp
         self.parameter_overlay = parameter_overlay
         self.data = data

@@ -25,7 +25,7 @@ def test_duplication_mapper(mmp_server_dm, sys_argv_manager):
     # send and receive some messages
     out_ports = duplication_mapper.get_ports()[Operator.O_F]
     for out_port in out_ports:
-        duplication_mapper.send_message(out_port, 'testing')
+        duplication_mapper.send_message(out_port, 0.0, None, 'testing')
 
     msg1 = first.receive_message('in', decode=True)
     msg2 = second.receive_message('in', decode=True)

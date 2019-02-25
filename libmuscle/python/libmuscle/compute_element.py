@@ -130,7 +130,9 @@ class ComputeElement:
                                     self._instance_name()))
         return self._ports
 
-    def send_message(self, port_name: str, message: Union[bytes, Message],
+    def send_message(self, port_name: str, timestamp: float,
+                     next_timestamp: Optional[float],
+                     message: Union[bytes, Message],
                      slot: Union[int, List[int]]=[]) -> None:
         """Send a message to the outside world.
 
@@ -144,10 +146,12 @@ class ComputeElement:
         """
         self.__check_port(port_name)
         self._communicator.send_message(
-                port_name, message, self._configuration_store.overlay, slot)
+                port_name, timestamp, next_timestamp, message,
+                self._configuration_store.overlay, slot)
 
     def send_message_with_parameters(
-            self, port_name: str, message: Union[bytes, Message],
+            self, port_name: str, timestamp: float,
+            next_timestamp: Optional[float], message: Union[bytes, Message],
             parameters: Configuration, slot: Union[int, List[int]]=[]) -> None:
         """Send a message to the outside world.
 
@@ -169,7 +173,8 @@ class ComputeElement:
         overlay = self._configuration_store.overlay.copy()
         for key, value in parameters.items():
             overlay[key] = value
-        self._communicator.send_message(port_name, message, overlay, slot)
+        self._communicator.send_message(port_name, timestamp, next_timestamp,
+                                        message, overlay, slot)
 
     def receive_message(self, port_name: str, decode: bool,
                         slot: Union[int, List[int]]=[],

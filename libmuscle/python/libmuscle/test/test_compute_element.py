@@ -127,14 +127,14 @@ def test_get_parameter_value(compute_element):
 
 
 def test_send_message(compute_element):
-    compute_element.send_message('out', 'message', 1)
+    compute_element.send_message('out', 0.0, None, 'message', 1)
     assert compute_element._communicator.send_message.called_with(
             'out', 'message', 1)
 
 
 def test_send_message_invalid_port(compute_element):
     with pytest.raises(ValueError):
-        compute_element.send_message('does_not_exist', 'message', 1)
+        compute_element.send_message('does_not_exist', 0.0, None, 'message', 1)
 
 
 def test_send_message_with_parameters(compute_element):
@@ -144,7 +144,8 @@ def test_send_message_with_parameters(compute_element):
     config = Configuration()
     config['test1'] = 12
     config['test2'] = 'testing'
-    compute_element.send_message_with_parameters('out', message, config, 1)
+    compute_element.send_message_with_parameters('out', 0.0, None, message,
+                                                 config, 1)
 
     ref_config = Configuration()
     ref_config['test1'] = 12

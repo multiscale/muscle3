@@ -181,7 +181,7 @@ def test_receive_parallel_universe(compute_element) -> None:
         compute_element.receive_message('in')
 
 
-def test_init_instance(compute_element):
+def test_reuse_instance(compute_element):
     compute_element._configuration_store.overlay = Configuration()
     test_base_config = Configuration()
     test_base_config['test1'] = 24
@@ -190,7 +190,7 @@ def test_init_instance(compute_element):
     test_overlay['test2'] = 'abc'
     recv = compute_element._communicator.receive_message
     recv.return_value = Message(0.0, None, test_overlay, test_base_config)
-    compute_element.init_instance()
+    compute_element.reuse_instance()
     assert compute_element._communicator.receive_message.called_with(
         'muscle_parameters_in')
     assert len(compute_element._configuration_store.overlay) == 2
@@ -198,6 +198,6 @@ def test_init_instance(compute_element):
     assert compute_element._configuration_store.overlay['test2'] == 'abc'
 
 
-def test_init_instance_miswired(compute_element):
+def test_reuse_instance_miswired(compute_element):
     with pytest.raises(RuntimeError):
-        compute_element.init_instance()
+        compute_element.reuse_instance()

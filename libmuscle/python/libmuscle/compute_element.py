@@ -75,11 +75,28 @@ class ComputeElement:
 
         self._communicator.connect(conduits, peer_dims, peer_locations)
 
-    def init_instance(self) -> None:
-        """Initialise this instance.
+    def reuse_instance(self) -> None:
+        """Decide whether to run this instance again.
 
-        This method must be called once at the beginning of the reuse
-        loop, i.e. before the F_INIT operator.
+        In a multiscale simulation, instances get reused all the time.
+        For example, in a macro-micro simulation, the micromodel does a
+        complete run for every timestep of the macromodel. Rather than
+        starting up a new instance of the micromodel, which could be
+        expensive, we reuse a single instance many times.
+
+        This may bring other advantages, such as faster convergence
+        when starting from the previous final state, and in some
+        cases may be necessary if micromodel state needs to be
+        preserved from one macro timestep to the next.
+
+        So in MUSCLE, submodels run in a *reuse loop*, which runs them
+        over and over again until their work is done and they should be
+        shut down. Whether to do another F_INIT, O_I, S, B, O_F cycle
+        is decided by this method.
+
+        This method must be called at the beginning of the reuse loop,
+        i.e. before the F_INIT operator, and its return value should
+        decide whether to enter that loop again.
         """
         message = self._communicator.receive_message(
                 'muscle_parameters_in')

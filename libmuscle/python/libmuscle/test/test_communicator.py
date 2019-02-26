@@ -173,7 +173,7 @@ def test_send_configuration(communicator, message) -> None:
     assert msg.receiver == 'other.in[13]'
     assert msg.parameter_overlay == msgpack.packb({})
     assert msg.data == msgpack.packb(
-            msgpack.ExtType(0, msgpack.packb({'test1': 'testing'},
+            msgpack.ExtType(1, msgpack.packb({'test1': 'testing'},
                                              use_bin_type=True)),
             use_bin_type=True)
 
@@ -284,7 +284,7 @@ def test_receive_msgpack_with_slot_and_parameters(communicator2) -> None:
 def test_receive_configuration(communicator) -> None:
     client_mock = MagicMock()
     config_dict = {'test': 13}
-    config_data = msgpack.ExtType(0, msgpack.packb(config_dict,
+    config_data = msgpack.ExtType(1, msgpack.packb(config_dict,
                                                    use_bin_type=True))
     client_mock.receive.return_value = MCPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
@@ -299,6 +299,22 @@ def test_receive_configuration(communicator) -> None:
     client_mock.receive.assert_called_with(Reference('kernel[13].in'))
     assert isinstance(msg.data, Configuration)
     assert msg.data['test'] == 13
+
+
+def test_close_port(communicator) -> None:
+    communicator.close_port('out')
+
+    assert 'other.in[13]' in communicator._Communicator__outboxes
+    msg = communicator._Communicator__outboxes[
+            'other.in[13]']._Outbox__queue[0]
+    assert msg.sender == 'kernel[13].out'
+    assert msg.receiver == 'other.in[13]'
+    assert msg.timestamp == float('inf')
+    assert msg.next_timestamp is None
+    assert msg.parameter_overlay == msgpack.packb({}, use_bin_type=True)
+    unpacked = msgpack.unpackb(msg.data, raw=False)
+    assert isinstance(unpacked, msgpack.ExtType)
+    assert unpacked[0] == 0
 
 
 def test_get_message(communicator, message) -> None:

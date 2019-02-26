@@ -115,7 +115,20 @@ class ExtTypeId(IntEnum):
     built-in ones. These are distinguished by a number from 0 to 127.
     This class is our registry of extension type ids.
     """
-    CONFIGURATION = 0
+    CLOSE_PORT = 0
+    CONFIGURATION = 1
+
+
+class _ClosePort:
+    """Sentinel value to send when closing a port.
+
+    Sending an object of this class on a port/conduit conveys to the
+    receiver the message that no further messages will be sent on this
+    port during the simulation.
+
+    All information is carried by the type, this has no attributes.
+    """
+    pass
 
 
 class Message:
@@ -248,27 +261,17 @@ class Communicator(PostOffice):
         if isinstance(slot, int):
             slot = [slot]
 
-        # determine the endpoints
         snd_endpoint = self.__get_endpoint(port_name, slot)
         if not self.__is_connected(snd_endpoint.port):
             # log sending on disconnected port
             return
         recv_endpoint = self.__get_peer_endpoint(snd_endpoint.port, slot)
 
-        # encode overlay
-        packed_overlay = msgpack.packb(
-                cast(Configuration, message.configuration).as_plain_dict(),
-                use_bin_type=True)
+        packed_overlay = self.__pack_object(
+                cast(Configuration, message.configuration).as_plain_dict())
 
-        # encode message
-        if isinstance(message.data, Configuration):
-            data = msgpack.packb(message.data.as_plain_dict())
-            ext_data = msgpack.ExtType(ExtTypeId.CONFIGURATION, data)
-            packed_message = msgpack.packb(ext_data, use_bin_type=True)
-        else:
-            packed_message = msgpack.packb(message.data, use_bin_type=True)
+        packed_message = self.__pack_object(message.data)
 
-        # deposit
         mcp_message = MCPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
                                  message.timestamp, message.next_timestamp,
                                  packed_overlay, packed_message)
@@ -327,6 +330,20 @@ class Communicator(PostOffice):
 
         return Message(mcp_message.timestamp, mcp_message.next_timestamp,
                        self.__extract_object(mcp_message), overlay_config)
+
+    def close_port(self, port_name: str, slot: Union[int, List[int]]=[]
+                   ) -> None:
+        """Closes the given port.
+
+        This signals to any connected instance that no more messages
+        will be sent on this port, which it can use to decided whether
+        to shut down or continue running.
+
+        Args:
+            port_name: The name of the port to close.
+        """
+        message = Message(float('inf'), None, _ClosePort(), Configuration())
+        self.send_message(port_name, message, slot)
 
     def get_message(self, receiver: Reference) -> MCPMessage:
         """Get a message from a receiver's outbox.
@@ -439,3 +456,20 @@ class Communicator(PostOffice):
                 plain_dict = msgpack.unpackb(data.data, raw=False)
                 return Configuration.from_plain_dict(plain_dict)
         return msgpack.unpackb(mcp_message.data, raw=False)
+
+    def __pack_object(self, obj: MessageObject) -> bytes:
+        """MessagePack-encode an object for transmission.
+
+        Args:
+            obj: The object to pack.
+
+        Returns:
+            MessagePack-encoded bytes.
+        """
+        if isinstance(obj, _ClosePort):
+            obj = msgpack.ExtType(ExtTypeId.CLOSE_PORT, bytes())
+        elif isinstance(obj, Configuration):
+            data = msgpack.packb(obj.as_plain_dict())
+            obj = msgpack.ExtType(ExtTypeId.CONFIGURATION, data)
+        packed_message = msgpack.packb(obj, use_bin_type=True)
+        return cast(bytes, packed_message)

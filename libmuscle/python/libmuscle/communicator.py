@@ -452,7 +452,9 @@ class Communicator(PostOffice):
         """
         data = msgpack.unpackb(mcp_message.data, raw=False)
         if isinstance(data, msgpack.ExtType):
-            if data.code == ExtTypeId.CONFIGURATION:
+            if data.code == ExtTypeId.CLOSE_PORT:
+                return _ClosePort()
+            elif data.code == ExtTypeId.CONFIGURATION:
                 plain_dict = msgpack.unpackb(data.data, raw=False)
                 return Configuration.from_plain_dict(plain_dict)
         return msgpack.unpackb(mcp_message.data, raw=False)

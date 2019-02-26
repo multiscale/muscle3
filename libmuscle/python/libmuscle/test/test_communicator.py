@@ -1,4 +1,4 @@
-from libmuscle.communicator import Communicator, Endpoint, Message
+from libmuscle.communicator import _ClosePort, Communicator, Endpoint, Message
 from libmuscle.configuration import Configuration
 from libmuscle.mcp.direct_client import DirectClient
 from libmuscle.mcp.message import Message as MCPMessage
@@ -178,6 +178,22 @@ def test_send_configuration(communicator, message) -> None:
             use_bin_type=True)
 
 
+def test_close_port(communicator) -> None:
+    communicator.close_port('out')
+
+    assert 'other.in[13]' in communicator._Communicator__outboxes
+    msg = communicator._Communicator__outboxes[
+            'other.in[13]']._Outbox__queue[0]
+    assert msg.sender == 'kernel[13].out'
+    assert msg.receiver == 'other.in[13]'
+    assert msg.timestamp == float('inf')
+    assert msg.next_timestamp is None
+    assert msg.parameter_overlay == msgpack.packb({}, use_bin_type=True)
+    unpacked = msgpack.unpackb(msg.data, raw=False)
+    assert isinstance(unpacked, msgpack.ExtType)
+    assert unpacked[0] == 0
+
+
 def test_receive_message(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MCPMessage(
@@ -301,20 +317,20 @@ def test_receive_configuration(communicator) -> None:
     assert msg.data['test'] == 13
 
 
-def test_close_port(communicator) -> None:
-    communicator.close_port('out')
+def test_receive_close_port(communicator) -> None:
+    client_mock = MagicMock()
+    config_data = msgpack.packb({}, use_bin_type=True)
+    sentinel = msgpack.ExtType(0, bytes())
+    client_mock.receive.return_value = MCPMessage(
+            Reference('other.out[13]'), Reference('kernel[13].in'),
+            0.0, None, config_data, msgpack.packb(sentinel))
+    print(client_mock.receive.return_value.parameter_overlay)
+    get_client_mock = MagicMock(return_value=client_mock)
+    communicator._Communicator__get_client = get_client_mock
 
-    assert 'other.in[13]' in communicator._Communicator__outboxes
-    msg = communicator._Communicator__outboxes[
-            'other.in[13]']._Outbox__queue[0]
-    assert msg.sender == 'kernel[13].out'
-    assert msg.receiver == 'other.in[13]'
-    assert msg.timestamp == float('inf')
-    assert msg.next_timestamp is None
-    assert msg.parameter_overlay == msgpack.packb({}, use_bin_type=True)
-    unpacked = msgpack.unpackb(msg.data, raw=False)
-    assert isinstance(unpacked, msgpack.ExtType)
-    assert unpacked[0] == 0
+    msg = communicator.receive_message('in')
+
+    assert isinstance(msg.data, _ClosePort)
 
 
 def test_get_message(communicator, message) -> None:

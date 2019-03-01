@@ -183,7 +183,8 @@ class Communicator(PostOffice):
         specify the instance index.
 
         Args:
-            instance: The kernel instance this is the Communicator for.
+            kernel: The kernel this is the Communicator for.
+            index: The index for this instance.
         """
         self.__kernel = kernel
         self.__index = index

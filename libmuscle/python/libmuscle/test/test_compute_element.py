@@ -56,6 +56,20 @@ def test_create_compute_element(sys_argv_index):
         assert element._port_operators == ref_ports
 
 
+def test_create_compute_element_multidimensional_ports(sys_argv_index):
+    with patch('libmuscle.compute_element.Communicator') as comm_type:
+        ports = {
+                Operator.F_INIT: ['in[]'],
+                Operator.O_F: ['out1', 'out2[][]']}
+        element = ComputeElement('test_element', ports)
+
+        stripped_ports = {
+                Operator.F_INIT: ['in'],
+                Operator.O_F: ['out1', 'out2']}
+        assert element._ports == stripped_ports
+        assert element._port_dims == {'in': 1, 'out1': 0, 'out2': 2}
+
+
 def test_create_compute_element_inferred_ports(sys_argv_index):
     with patch('libmuscle.compute_element.Communicator') as comm_type:
         element = ComputeElement('test_element')

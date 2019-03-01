@@ -4,7 +4,7 @@ from typing import cast, Dict, List, Optional, Tuple, Type, Union
 
 from ymmsl import Conduit, Identifier, Operator, Reference
 
-from libmuscle.communicator import Communicator, Message, MessageObject
+from libmuscle.communicator import _ClosePort, Communicator, Message
 from libmuscle.configuration import Configuration, ParameterValue
 from libmuscle.configuration_store import ConfigurationStore
 
@@ -29,14 +29,19 @@ class ComputeElement:
         self._name, self._index = self.__make_full_name(Reference(instance))
         """Name and index of this compute element."""
 
-        self._ports = ports
-        """Ports for this instance."""
-
         self._configuration_store = ConfigurationStore()
         """Configuration (parameters) for this instance."""
 
         self._communicator = Communicator(self._name, self._index)
         """Communicator for this instance."""
+
+        if ports is None:
+            self._ports = None  # type: Optional[Dict[Operator, List[str]]]
+            """Ports for this instance."""
+            self._port_dims = None  # type: Optional[Dict[str, int]]
+            """Port dimensionalities (length of slot argument)."""
+        else:
+            self._ports, self._port_dims = self.__split_ports(ports)
 
         if ports is not None:
             self._port_operators = dict()   # type: Dict[str, Operator]
@@ -295,6 +300,37 @@ class ComputeElement:
         """Returns the full instance name.
         """
         return self._name + self._index
+
+    def __split_ports(self, ports: Dict[Operator, List[str]]
+                      ) -> Tuple[Dict[Operator, List[str]], Dict[str, int]]:
+        """Separate port dimensionality from declared ports.
+
+        This takes a ports declaration of the form
+
+        {Operator.X: ["port1", "port2[]", "port3[][]", ...], ...}
+
+        and separates out the dimensionalities (number of dimensions),
+        returning the same declaration but with bare port names, and a
+        separate dictionary containing the dimensionalities, e.g.
+
+        {Operator.X: ["port1", "port2", "port3", ...], ...}
+
+        {"port1": 0, "port2": 1, "port3": 2}
+        """
+        stripped_ports = dict()
+        dimensionalities = dict()
+        for operator, port_names in ports.items():
+            stripped_names = list()     # type: List[str]
+            for port_name in port_names:
+                stripped_name = port_name
+                dimensionality = 0
+                while stripped_name.endswith('[]'):
+                    stripped_name = stripped_name[:-2]
+                    dimensionality += 1
+                stripped_names.append(stripped_name)
+                dimensionalities[stripped_name] = dimensionality
+            stripped_ports[operator] = stripped_names
+        return stripped_ports, dimensionalities
 
     def __check_port(self, port_name: str) -> None:
         ports = cast(Dict[Operator, List[str]], self._ports)

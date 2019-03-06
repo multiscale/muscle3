@@ -29,25 +29,14 @@ class ComputeElement:
         self._name, self._index = self.__make_full_name(Reference(instance))
         """Name and index of this compute element."""
 
-        self._configuration_store = ConfigurationStore()
-        """Configuration (parameters) for this instance."""
-
-        self._communicator = Communicator(self._name, self._index)
+        self._communicator = Communicator(self._name, self._index, ports)
         """Communicator for this instance."""
 
-        if ports is None:
-            self._ports = None  # type: Optional[Dict[Operator, List[str]]]
-            """Ports for this instance."""
-            self._port_dims = None  # type: Optional[Dict[str, int]]
-            """Port dimensionalities (length of slot argument)."""
-        else:
-            self._ports, self._port_dims = self.__split_ports(ports)
+        self._declared_ports = ports
+        """Declared ports for this instance."""
 
-        if ports is not None:
-            self._port_operators = dict()   # type: Dict[str, Operator]
-            for op, port_names in ports.items():
-                for port in port_names:
-                    self._port_operators[port] = op
+        self._configuration_store = ConfigurationStore()
+        """Configuration (parameters) for this instance."""
 
     def _connect(self, conduits: List[Conduit],
                  peer_dims: Dict[Reference, List[int]],
@@ -61,23 +50,6 @@ class ComputeElement:
                 set.
             peer_locations: A list of locations for each peer instance.
         """
-        if self._ports is None:
-            self._ports = dict()
-            self._port_operators = dict()
-            for conduit in conduits:
-                if conduit.sending_compute_element() == self._name:
-                    port_name = str(conduit.sending_port())
-                    if Operator.O_F not in self._ports:
-                        self._ports[Operator.O_F] = list()
-                    self._ports[Operator.O_F].append(port_name)
-                    self._port_operators[port_name] = Operator.O_F
-                elif conduit.receiving_compute_element() == self._name:
-                    port_name = str(conduit.receiving_port())
-                    if Operator.F_INIT not in self._ports:
-                        self._ports[Operator.F_INIT] = list()
-                    self._ports[Operator.F_INIT].append(port_name)
-                    self._port_operators[port_name] = Operator.F_INIT
-
         self._communicator.connect(conduits, peer_dims, peer_locations)
 
     def reuse_instance(self) -> None:
@@ -138,21 +110,35 @@ class ComputeElement:
         """
         return self._configuration_store.get_parameter(Reference(name), typ)
 
-    def get_ports(self) -> Dict[Operator, List[str]]:
+    def list_ports(self) -> Dict[Operator, List[str]]:
         """Returns a description of the ports that this CE has.
+
+        This method will return an empty dictionary if _connect() has
+        not yet been called.
 
         Returns:
             A dictionary, indexed by Operator, containing lists of
             port names. Operators with no associated ports are not
             included.
         """
-        if self._ports is None:
-            raise RuntimeError(('The set of ports was requested for Compute'
-                                ' Element "{}", but it has no ports. No ports'
-                                ' were specified when it was created, and it'
-                                ' has not (yet) been registered.').format(
-                                    self._instance_name()))
-        return self._ports
+        return self._communicator.list_ports()
+
+    def is_vector_port(self, port: str) -> bool:
+        """Returns whether a port is a vector or scalar port
+
+        If a port has been declared to be a vector port (i.e. the
+        name passed when creating this ComputeElement had '[]' at the
+        end), then you can pass a 'slot' argument when sending or
+        receiving. It's like the port is a vector of slots on which
+        you can send or receive messages.
+
+        This function returns True if the given port is a vector
+        port, and False if it is a scalar port.
+
+        Args:
+            port: The port to check this property of.
+        """
+        return self._communicator.get_port(port).is_vector()
 
     def send_message(self, port_name: str, message: Message,
                      slot: Union[int, List[int]]=[]) -> None:
@@ -206,7 +192,8 @@ class ComputeElement:
         self.__check_port(port_name)
         msg = self._communicator.receive_message(
                 port_name, slot, default)
-        if (self._port_operators[port_name] == Operator.F_INIT and
+        operator = self._communicator.get_port(port_name).operator
+        if (operator == Operator.F_INIT and
                 len(self._configuration_store.overlay) == 0):
             self._configuration_store.overlay = cast(
                     Configuration, msg.configuration)
@@ -301,43 +288,9 @@ class ComputeElement:
         """
         return self._name + self._index
 
-    def __split_ports(self, ports: Dict[Operator, List[str]]
-                      ) -> Tuple[Dict[Operator, List[str]], Dict[str, int]]:
-        """Separate port dimensionality from declared ports.
-
-        This takes a ports declaration of the form
-
-        {Operator.X: ["port1", "port2[]", "port3[][]", ...], ...}
-
-        and separates out the dimensionalities (number of dimensions),
-        returning the same declaration but with bare port names, and a
-        separate dictionary containing the dimensionalities, e.g.
-
-        {Operator.X: ["port1", "port2", "port3", ...], ...}
-
-        {"port1": 0, "port2": 1, "port3": 2}
-        """
-        stripped_ports = dict()
-        dimensionalities = dict()
-        for operator, port_names in ports.items():
-            stripped_names = list()     # type: List[str]
-            for port_name in port_names:
-                stripped_name = port_name
-                dimensionality = 0
-                while stripped_name.endswith('[]'):
-                    stripped_name = stripped_name[:-2]
-                    dimensionality += 1
-                stripped_names.append(stripped_name)
-                dimensionalities[stripped_name] = dimensionality
-            stripped_ports[operator] = stripped_names
-        return stripped_ports, dimensionalities
-
     def __check_port(self, port_name: str) -> None:
-        ports = cast(Dict[Operator, List[str]], self._ports)
-        for operator, port_names in ports.items():
-            for registered_port in port_names:
-                if port_name == registered_port:
-                    return
-        raise ValueError(('Port "{}" does not exist on "{}". Please check the'
-                          ' name and the list of ports you gave for this'
-                          ' compute element.').format(port_name, self._name))
+        if not self._communicator.port_exists(port_name):
+            raise ValueError(('Port "{}" does not exist on "{}". Please check'
+                              ' the name and the list of ports you gave for'
+                              ' this compute element.').format(port_name,
+                                                               self._name))

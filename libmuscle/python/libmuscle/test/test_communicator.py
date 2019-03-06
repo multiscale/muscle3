@@ -40,7 +40,7 @@ def test_endpoint_instance() -> None:
 @pytest.fixture
 def communicator() -> Communicator:
     instance_id = Reference('kernel')
-    communicator = Communicator(instance_id, [13])
+    communicator = Communicator(instance_id, [13], None)
     communicator._Communicator__peers = {
             'kernel.out': Reference('other.in'),
             'kernel.in': Reference('other.out')
@@ -54,7 +54,7 @@ def communicator() -> Communicator:
 @pytest.fixture
 def communicator2() -> Communicator:
     instance_id = Reference('other')
-    communicator = Communicator(instance_id, [])
+    communicator = Communicator(instance_id, [], None)
     communicator._Communicator__peers = {
             'other.out': Reference('kernel.in'),
             'other.in': Reference('kernel.out')
@@ -108,6 +108,100 @@ def test_connect(communicator) -> None:
 
     assert communicator._Communicator__peer_dims == peer_dims
     assert communicator._Communicator__peer_locations == peer_locations
+
+    # check inferred ports
+    ports = communicator._Communicator__ports
+    assert ports['in'].name == Identifier('in')
+    assert ports['in'].operator == Operator.F_INIT
+    assert ports['in']._length is None
+
+    assert ports['out'].name == Identifier('out')
+    assert ports['out'].operator == Operator.O_F
+    assert ports['out']._length is None
+
+
+def test_connect_vector_ports(communicator) -> None:
+    ref = Reference
+
+    communicator._Communicator__declared_ports = {
+            Operator.F_INIT: ['in[]'],
+            Operator.O_F: ['out1', 'out2[]']}
+
+    conduits = [Conduit(ref('other1.out'), ref('kernel.in')),
+                Conduit(ref('kernel.out1'), ref('other.in')),
+                Conduit(ref('kernel.out2'), ref('other3.in'))]
+    peer_dims = {
+            ref('other1'): [20, 7],
+            ref('other'): [25],
+            ref('other3'): [20]}
+    peer_locations = {
+            ref('other'): ['direct:test'],
+            ref('other1'): ['direct:test1'],
+            ref('other3'): ['direct:test3']}
+
+    communicator.connect(conduits, peer_dims, peer_locations)
+
+    ports = communicator._Communicator__ports
+    assert ports['in'].name == Identifier('in')
+    assert ports['in'].operator == Operator.F_INIT
+    assert ports['in']._length == 7
+    assert ports['in']._is_resizable is False
+
+    assert ports['out1'].name == Identifier('out1')
+    assert ports['out1'].operator == Operator.O_F
+    assert ports['out1']._length is None
+
+    assert ports['out2'].name == Identifier('out2')
+    assert ports['out2'].operator == Operator.O_F
+    assert ports['out2']._length == 0
+    assert ports['out2']._is_resizable is True
+
+
+def test_connect_multidimensional_ports(communicator) -> None:
+    ref = Reference
+
+    communicator._Communicator__declared_ports = {
+            Operator.F_INIT: ['in[][]']}
+
+    conduits = [Conduit(ref('other.out'), ref('kernel.in'))]
+    peer_dims = {ref('other'): [20, 7, 30]}
+    peer_locations = {ref('other'): ['direct:test']}
+    with pytest.raises(ValueError):
+        communicator.connect(conduits, peer_dims, peer_locations)
+
+
+def test_connect_inferred_ports(communicator) -> None:
+    ref = Reference
+
+    communicator._Communicator__declared_ports = None
+
+    conduits = [Conduit(ref('other1.out'), ref('kernel.in')),
+                Conduit(ref('kernel.out1'), ref('other.in')),
+                Conduit(ref('kernel.out3'), ref('other2.in'))]
+    peer_dims = {
+            ref('other1'): [20, 7],
+            ref('other'): [25],
+            ref('other2'): []}
+    peer_locations = {
+            ref('other'): ['direct:test'],
+            ref('other1'): ['direct:test1'],
+            ref('other2'): ['direct:test2']}
+
+    communicator.connect(conduits, peer_dims, peer_locations)
+
+    ports = communicator._Communicator__ports
+    assert ports['in'].name == Identifier('in')
+    assert ports['in'].operator == Operator.F_INIT
+    assert ports['in']._length == 7
+    assert ports['in']._is_resizable is False
+
+    assert ports['out1'].name == Identifier('out1')
+    assert ports['out1'].operator == Operator.O_F
+    assert ports['out1']._length is None
+
+    assert ports['out3'].name == Identifier('out3')
+    assert ports['out3'].operator == Operator.O_F
+    assert ports['out3']._length is None
 
 
 def test_send_on_disconnected_port(communicator, message) -> None:

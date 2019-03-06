@@ -41,7 +41,7 @@ def test_register() -> None:
     element = MagicMock()
     element._name = Reference('test_model')
     element._index = []
-    element._ports = {
+    element._declared_ports = {
             Operator.F_INIT: ['receive_init'],
             Operator.O_F: ['send_output']}
     muscle.register([element])
@@ -75,7 +75,7 @@ def test_register2() -> None:
     element = MagicMock()
     element._name = Reference('test_model')
     element._index = [13, 42]
-    element._ports = {
+    element._declared_ports = {
             Operator.O_I: ['out_x', 'out_y'],
             Operator.B: ['in_x', 'in_y']}
     muscle.register([element])

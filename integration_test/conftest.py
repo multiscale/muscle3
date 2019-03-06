@@ -32,7 +32,7 @@ def mmp_server(tmpdir, yatiml_log_warning):
             '    macro: macro_implementation\n'
             '    micro:\n'
             '      implementation: micro_implementation\n'
-            '      multiplicity: [10, 10]\n'
+            '      multiplicity: [100]\n'
             '  conduits:\n'
             '    macro.out: micro.in\n'
             '    micro.out: macro.in\n'

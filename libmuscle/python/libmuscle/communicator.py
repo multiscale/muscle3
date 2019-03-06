@@ -1,7 +1,7 @@
 from enum import IntEnum
 import msgpack
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
-from ymmsl import (ComputeElementDecl, Conduit, Identifier, Operator, Port,
+from ymmsl import (ComputeElementDecl, Conduit, Identifier, Operator,
                    Reference)
 
 from libmuscle.configuration import Configuration
@@ -12,6 +12,7 @@ from libmuscle.mcp.server import Server as MCPServer
 from libmuscle.mcp.type_registry import client_types, server_types
 from libmuscle.outbox import Outbox
 from libmuscle.post_office import PostOffice
+from libmuscle.port import Port
 
 
 MessageObject = Any
@@ -175,7 +176,8 @@ class Communicator(PostOffice):
     leaves the actual data transmission to various protocol-specific
     servers and clients.
     """
-    def __init__(self, kernel: Reference, index: List[int]) -> None:
+    def __init__(self, kernel: Reference, index: List[int],
+                 declared_ports: Optional[Dict[Operator, List[str]]]) -> None:
         """Create a Communicator.
 
         The instance reference must start with one or more Identifiers,
@@ -188,6 +190,7 @@ class Communicator(PostOffice):
         """
         self.__kernel = kernel
         self.__index = index
+        self.__declared_ports = declared_ports
 
         self.__servers = list()  # type: List[MCPServer]
 
@@ -202,6 +205,8 @@ class Communicator(PostOffice):
 
         for server_type in server_types:
             self.__servers.append(server_type(self))
+
+        self.__ports = dict()   # type: Dict[str, Port]
 
     def get_locations(self) -> List[str]:
         """Returns a list of locations that we can be reached at.
@@ -244,6 +249,69 @@ class Communicator(PostOffice):
 
         self.__peer_dims = peer_dims    # indexed by kernel id
         self.__peer_locations = peer_locations  # indexed by instance id
+
+        # init self.__ports
+        if self.__declared_ports is not None:
+            # create from declared ports and self.__peer_dims
+            for operator, port_list in self.__declared_ports.items():
+                for port_desc in port_list:
+                    port_name, is_vector = self.__split_port_desc(port_desc)
+                    port_ref = self.__kernel + Identifier(port_name)
+                    peer_port = self.__peers[port_ref]
+                    peer_ce = peer_port[:-1]
+                    port_peer_dims = self.__peer_dims[peer_ce]
+                    self.__ports[port_name] = Port(
+                            port_name, operator, is_vector, len(self.__index),
+                            port_peer_dims)
+        else:
+            # derive from conduits
+            for conduit in conduits:
+                if conduit.sending_compute_element() == self.__kernel:
+                    port_name = str(conduit.sending_port())
+                    operator = Operator.O_F
+                    port_peer_dims = self.__peer_dims[
+                            conduit.receiving_compute_element()]
+                elif conduit.receiving_compute_element() == self.__kernel:
+                    port_name = str(conduit.receiving_port())
+                    operator = Operator.F_INIT
+                    port_peer_dims = self.__peer_dims[
+                            conduit.sending_compute_element()]
+                ndims = max(0, len(port_peer_dims) - len(self.__index))
+                is_vector = (ndims == 1)
+                self.__ports[port_name] = Port(
+                        port_name, operator, is_vector, len(self.__index),
+                        port_peer_dims)
+
+    def list_ports(self) -> Dict[Operator, List[str]]:
+        """Returns a description of the ports this Communicator has.
+
+        Returns:
+            A dictionary, indexed by Operator, containing lists of
+            port names. Operators with no associated ports are not
+            included.
+        """
+        result = dict()     # type: Dict[Operator, List[str]]
+        for port_name, port in self.__ports.items():
+            if port.operator not in result:
+                result[port.operator] = list()
+            result[port.operator].append(port_name)
+        return result
+
+    def port_exists(self, port_name: str) -> bool:
+        """Returns whether a port with the given name exists.
+
+        Args:
+            port_name: Port name to check.
+        """
+        return port_name in self.__ports
+
+    def get_port(self, port_name: str) -> Port:
+        """Returns a Port object describing a port with the given name.
+
+        Args:
+            port: The port to retrieve.
+        """
+        return self.__ports[port_name]
 
     def send_message(
             self, port_name: str, message: Message,
@@ -441,6 +509,28 @@ class Communicator(PostOffice):
         peer_index = total_index[0:peer_dim]
         peer_slot = total_index[peer_dim:]
         return Endpoint(peer_kernel, peer_index, peer_port, peer_slot)
+
+    def __split_port_desc(self, port_desc: str) -> Tuple[str, bool]:
+        """Split a port description into its name and dimensionality.
+
+        Expects a port description of the form port_name or
+        port_name[], and returns the port name and whether it is a
+        vector port.
+
+        Args:
+            port_desc: A port description string, as above.
+        """
+        is_vector = False
+        if port_desc.endswith('[]'):
+            is_vector = True
+            port_desc = port_desc[:-2]
+
+        if port_desc.endswith('[]'):
+            raise ValueError(('Port description "{}" is invalid: ports can'
+                              ' have at most one dimension.').format(
+                                  port_desc))
+
+        return port_desc, is_vector
 
     def __extract_object(self, mcp_message: MCPMessage) -> MessageObject:
         """Extract object from a received message.

@@ -42,63 +42,15 @@ def test_create_compute_element(sys_argv_index):
         element = ComputeElement('test_element', ports)
         assert element._name == Reference('test_element')
         assert element._index == [13, 42]
-        assert element._ports == ports
+        assert element._declared_ports == ports
         assert isinstance(element._configuration_store, ConfigurationStore)
         assert len(element._configuration_store.base) == 0
         assert len(element._configuration_store.overlay) == 0
-        comm_type.assert_called_with(Reference('test_element'), [13, 42])
+        comm_type.assert_called_with(Reference('test_element'), [13, 42],
+                                     ports)
         assert element._communicator == comm_type.return_value
         assert isinstance(element._configuration_store, ConfigurationStore)
         assert len(element._configuration_store.base) == 0
-        ref_ports = {
-                'in': Operator.F_INIT,
-                'out': Operator.O_F}
-        assert element._port_operators == ref_ports
-
-
-def test_create_compute_element_multidimensional_ports(sys_argv_index):
-    with patch('libmuscle.compute_element.Communicator') as comm_type:
-        ports = {
-                Operator.F_INIT: ['in[]'],
-                Operator.O_F: ['out1', 'out2[][]']}
-        element = ComputeElement('test_element', ports)
-
-        stripped_ports = {
-                Operator.F_INIT: ['in'],
-                Operator.O_F: ['out1', 'out2']}
-        assert element._ports == stripped_ports
-        assert element._port_dims == {'in': 1, 'out1': 0, 'out2': 2}
-
-
-def test_create_compute_element_inferred_ports(sys_argv_index):
-    with patch('libmuscle.compute_element.Communicator') as comm_type:
-        element = ComputeElement('test_element')
-        assert element._name == Reference('test_element')
-        assert element._index == [13, 42]
-        assert element._ports is None
-
-        with pytest.raises(RuntimeError):
-            element.get_ports()
-
-        conduits = [
-                Conduit(Reference('other.out'), Reference('test_element.in')),
-                Conduit(Reference('test_element.out'), Reference('other2.in'))]
-        peer_dims = MagicMock()
-        peer_locations = MagicMock()
-        element._connect(conduits, peer_dims, peer_locations)
-        element._communicator.connect.assert_called_with(
-                conduits, peer_dims, peer_locations)
-
-        ports = {
-            Operator.F_INIT: ['in'],
-            Operator.O_F: ['out']}
-        assert element._ports == ports
-        assert element.get_ports() == ports
-
-        port_ops = {
-                'in': Operator.F_INIT,
-                'out': Operator.O_F}
-        assert element._port_operators == port_ops
 
 
 def test_get_parameter_value(compute_element):
@@ -141,6 +93,20 @@ def test_get_parameter_value(compute_element):
         compute_element.get_parameter_value('test2', 'nonexistenttype')
 
 
+def test_list_ports(compute_element):
+    ports = compute_element.list_ports()
+    assert compute_element._communicator.list_ports.called_with()
+    assert ports == compute_element._communicator.list_ports.return_value
+
+
+def test_is_vector_port(compute_element):
+    compute_element._communicator.get_port.return_value.is_vector = MagicMock(
+            return_value=True)
+    is_vector = compute_element.is_vector_port('out_port')
+    assert is_vector is True
+    assert compute_element._communicator.get_port.called_with('out_port')
+
+
 def test_send_message(compute_element, message):
     compute_element.send_message('out', message, 1)
     assert compute_element._communicator.send_message.called_with(
@@ -148,11 +114,14 @@ def test_send_message(compute_element, message):
 
 
 def test_send_message_invalid_port(compute_element, message):
+    compute_element._communicator.port_exists.return_value = False
     with pytest.raises(ValueError):
         compute_element.send_message('does_not_exist', message, 1)
 
 
 def test_receive_message(compute_element):
+    compute_element._communicator.get_port.return_value = MagicMock(
+            operator=Operator.F_INIT)
     msg = compute_element.receive_message('in', 1)
     assert msg.timestamp == 0.0
     assert msg.next_timestamp == 1.0
@@ -162,12 +131,16 @@ def test_receive_message(compute_element):
 
 
 def test_receive_message_default(compute_element):
+    compute_element._communicator.port_exists.return_value = True
+    compute_element._communicator.get_port.return_value.operator = (
+            Operator.F_INIT)
     compute_element.receive_message('not_connected', 1, 'testing')
     assert compute_element._communicator.receive_message.called_with(
             'not_connected', 1, 'testing')
 
 
 def test_receive_message_invalid_port(compute_element):
+    compute_element._communicator.port_exists.return_value = False
     with pytest.raises(ValueError):
         compute_element.receive_message('does_not_exist', 1)
 

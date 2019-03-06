@@ -34,7 +34,7 @@ class Muscle3:
             for element in elements:
                 locations = element._communicator.get_locations()
                 port_list = self.__port_list_from_ports(
-                        cast(Dict[Operator, List[str]], element._ports))
+                        element._declared_ports)
                 instance_name = element._name + element._index
                 self.__manager.register_instance(instance_name, locations,
                                                  port_list)
@@ -62,6 +62,8 @@ class Muscle3:
         if ports is not None:
             for operator, port_names in ports.items():
                 for name in port_names:
+                    if name.endswith('[]'):
+                        name = name[:-2]
                     result.append(Port(Identifier(name), operator))
         return result
 

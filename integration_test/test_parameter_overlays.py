@@ -24,7 +24,7 @@ def test_parameter_overlays(mmp_server_qmc, sys_argv_manager):
     muscle = Muscle3()
 
     # create qMC
-    qmc = ComputeElement('qmc', {Operator.O_F: ['parameters_out']})
+    qmc = ComputeElement('qmc', {Operator.O_F: ['parameters_out[]']})
 
     # create macros
     macros = list()

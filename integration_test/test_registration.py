@@ -1,9 +1,8 @@
 from unittest.mock import patch
 
 import pytest
-from ymmsl import Conduit, Operator, Reference
+from ymmsl import Conduit, Operator, Port, Reference
 
-from libmuscle.port import Port
 from libmuscle.mmp_client import MMPClient
 
 
@@ -29,7 +28,7 @@ def test_wiring(mmp_server):
     client.register_instance(Reference('macro'), ['direct:macro'], [])
 
     conduits, peer_dims, peer_locations = client.request_peers(
-            Reference('micro[0][0]'))
+            Reference('micro[0]'))
 
     assert Conduit(Reference('macro.out'), Reference('micro.in')) in conduits
     assert Conduit(Reference('micro.out'), Reference('macro.in')) in conduits
@@ -43,11 +42,10 @@ def test_wiring(mmp_server):
         with pytest.raises(RuntimeError):
             client.request_peers(Reference('macro'))
 
-    for i in range(5):
-        for j in range(10):
-            instance = Reference('micro[{}][{}]'.format(i, j))
-            location = 'direct:{}'.format(instance)
-            client.register_instance(instance, [location], [])
+    for i in range(50):
+        instance = Reference('micro[{}]'.format(i))
+        location = 'direct:{}'.format(instance)
+        client.register_instance(instance, [location], [])
 
     with patch('libmuscle.mmp_client.PEER_TIMEOUT', 0.1), \
             patch('libmuscle.mmp_client.PEER_INTERVAL_MIN', 0.01), \
@@ -55,11 +53,10 @@ def test_wiring(mmp_server):
         with pytest.raises(RuntimeError):
             client.request_peers(Reference('macro'))
 
-    for i in range(5, 10):
-        for j in range(10):
-            instance = Reference('micro[{}][{}]'.format(i, j))
-            location = 'direct:{}'.format(instance)
-            client.register_instance(instance, [location], [])
+    for i in range(50, 100):
+        instance = Reference('micro[{}]'.format(i))
+        location = 'direct:{}'.format(instance)
+        client.register_instance(instance, [location], [])
 
     conduits, peer_dims, peer_locations = client.request_peers(
             Reference('macro'))
@@ -67,5 +64,5 @@ def test_wiring(mmp_server):
     assert Conduit(Reference('macro.out'), Reference('micro.in')) in conduits
     assert Conduit(Reference('micro.out'), Reference('macro.in')) in conduits
 
-    assert peer_dims[Reference('micro')] == [10, 10]
-    assert peer_locations['micro[2][2]'] == ['direct:micro[2][2]']
+    assert peer_dims[Reference('micro')] == [100]
+    assert peer_locations['micro[22]'] == ['direct:micro[22]']

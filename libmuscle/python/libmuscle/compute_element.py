@@ -141,7 +141,7 @@ class ComputeElement:
         return self._communicator.get_port(port).is_vector()
 
     def send_message(self, port_name: str, message: Message,
-                     slot: Union[int, List[int]]=[]) -> None:
+                     slot: Optional[int]=None) -> None:
         """Send a message to the outside world.
 
         Sending is non-blocking, a copy of the message will be made
@@ -159,7 +159,7 @@ class ComputeElement:
 
         self._communicator.send_message(port_name, message, slot)
 
-    def receive_message(self, port_name: str, slot: Union[int, List[int]]=[],
+    def receive_message(self, port_name: str, slot: Optional[int]=None,
                         default: Optional[Message]=None
                         ) -> Message:
         """Receive a message from the outside world.
@@ -210,7 +210,7 @@ class ComputeElement:
         return msg
 
     def receive_message_with_parameters(
-            self, port_name: str, slot: Union[int, List[int]]=[],
+            self, port_name: str, slot: Optional[int]=None,
             default: Optional[Message]=None
             ) -> Message:
         """Receive a message with attached parameter overlay.

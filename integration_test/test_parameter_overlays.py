@@ -52,7 +52,7 @@ def test_parameter_overlays(mmp_server_qmc, sys_argv_manager):
 
     # send and receive some messages
     config0 = Configuration.from_plain_dict({'test2': 14.4})
-    qmc.send_message('parameters_out', Message(0.0, None, config0), [0])
+    qmc.send_message('parameters_out', Message(0.0, None, config0), 0)
 
     macros[0].reuse_instance()
     assert macros[0].get_parameter_value('test2') == 14.4

@@ -38,7 +38,7 @@ class Endpoint:
     have a unique index, which is a list of integers, to distinguish
     them from each other. Since a conduit instance connects kernel
     instances, each side will have an index to supply to the endpoint.
-    The slot is a list of integers, like the index, and is passed when
+    The slot is an optional integer, like the index, and is passed when
     sending or receiving a message, and gives additional information
     on where to send the message.
 
@@ -47,8 +47,8 @@ class Endpoint:
     and of kernel ``def`` there are 10 instances. A message sent by
     ``abc`` on ``p1`` to the fourth instance of ``def`` port ``p2`` is
     sent from an endpoint with kernel ``abc``, index ``[]``, port
-    ``p1`` and slot ``[3]``, and received on an endpoint with kernel
-    ``def``, index ``[3]``, port ``p2`` and slot ``[]``.
+    ``p1`` and slot ``3``, and received on an endpoint with kernel
+    ``def``, index ``[3]``, port ``p2`` and slot ``None``.
 
     Conduit instances are never actually created in the code, but
     Endpoints are.
@@ -315,7 +315,7 @@ class Communicator(PostOffice):
 
     def send_message(
             self, port_name: str, message: Message,
-            slot: Union[int, List[int]]=[]) -> None:
+            slot: Optional[int]=None) -> None:
         """Send a message and parameters to the outside world.
 
         Sending is non-blocking, a copy of the message will be made
@@ -326,15 +326,16 @@ class Communicator(PostOffice):
             message: The message to be sent.
             slot: The slot to send the message on, if any.
         """
-        # note that slot is read-only, so the empty list default is fine
-        if isinstance(slot, int):
-            slot = [slot]
+        if slot is None:
+            slot_list = []  # type: List[int]
+        else:
+            slot_list = [slot]
 
-        snd_endpoint = self.__get_endpoint(port_name, slot)
+        snd_endpoint = self.__get_endpoint(port_name, slot_list)
         if not self.__is_connected(snd_endpoint.port):
             # log sending on disconnected port
             return
-        recv_endpoint = self.__get_peer_endpoint(snd_endpoint.port, slot)
+        recv_endpoint = self.__get_peer_endpoint(snd_endpoint.port, slot_list)
 
         packed_overlay = self.__pack_object(
                 cast(Configuration, message.configuration).as_plain_dict())
@@ -347,7 +348,7 @@ class Communicator(PostOffice):
         self.__ensure_outbox_exists(recv_endpoint)
         self.__outboxes[recv_endpoint.ref()].deposit(mcp_message)
 
-    def receive_message(self, port_name: str, slot: Union[int, List[int]]=[],
+    def receive_message(self, port_name: str, slot: Optional[int]=None,
                         default: Optional[Message]=None
                         ) -> Message:
         """Receive a message and attached parameter overlay.
@@ -375,11 +376,12 @@ class Communicator(PostOffice):
             RuntimeError: If no default was given and the port is not
                 connected.
         """
-        # note that slot is read-only, so the empty list default is fine
-        if isinstance(slot, int):
-            slot = [slot]
+        if slot is None:
+            slot_list = []      # type: List[int]
+        else:
+            slot_list = [slot]
 
-        recv_endpoint = self.__get_endpoint(port_name, slot)
+        recv_endpoint = self.__get_endpoint(port_name, slot_list)
 
         if not self.__is_connected(recv_endpoint.port):
             if default is None:
@@ -390,7 +392,7 @@ class Communicator(PostOffice):
                                     ' port.').format(port_name))
             return default
 
-        snd_endpoint = self.__get_peer_endpoint(recv_endpoint.port, slot)
+        snd_endpoint = self.__get_peer_endpoint(recv_endpoint.port, slot_list)
         client = self.__get_client(snd_endpoint.instance())
         mcp_message = client.receive(recv_endpoint.ref())
 
@@ -400,7 +402,7 @@ class Communicator(PostOffice):
         return Message(mcp_message.timestamp, mcp_message.next_timestamp,
                        self.__extract_object(mcp_message), overlay_config)
 
-    def close_port(self, port_name: str, slot: Union[int, List[int]]=[]
+    def close_port(self, port_name: str, slot: Optional[int]=None
                    ) -> None:
         """Closes the given port.
 

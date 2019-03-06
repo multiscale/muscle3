@@ -303,6 +303,12 @@ class Communicator(PostOffice):
             slot_list = []  # type: List[int]
         else:
             slot_list = [slot]
+            slot_length = self.__ports[port_name].get_length()
+            if slot_length <= slot:
+                raise RuntimeError(('Slot out of bounds. You are sending on'
+                                    ' slot {} of port "{}", which is of length'
+                                    ' {}, so that slot does not exist'
+                                    ).format(slot, port_name, slot_length))
 
         snd_endpoint = self.__get_endpoint(port_name, slot_list)
         if not self.__is_connected(snd_endpoint.port):
@@ -315,7 +321,12 @@ class Communicator(PostOffice):
 
         packed_message = self.__pack_object(message.data)
 
+        port_length = None
+        if self.__ports[port_name].is_resizable():
+            port_length = self.__ports[port_name].get_length()
+
         mcp_message = MCPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
+                                 port_length,
                                  message.timestamp, message.next_timestamp,
                                  packed_overlay, packed_message)
         self.__ensure_outbox_exists(recv_endpoint)
@@ -371,6 +382,10 @@ class Communicator(PostOffice):
 
         overlay_config = Configuration.from_plain_dict(msgpack.unpackb(
             mcp_message.parameter_overlay, raw=False))
+
+        if mcp_message.port_length is not None:
+            if self.__ports[port_name].is_resizable():
+                self.__ports[port_name].set_length(mcp_message.port_length)
 
         return Message(mcp_message.timestamp, mcp_message.next_timestamp,
                        self.__extract_object(mcp_message), overlay_config)

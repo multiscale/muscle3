@@ -2,6 +2,7 @@ from libmuscle.communicator import _ClosePort, Communicator, Endpoint, Message
 from libmuscle.configuration import Configuration
 from libmuscle.mcp.direct_client import DirectClient
 from libmuscle.mcp.message import Message as MCPMessage
+from libmuscle.port import Port
 
 from ymmsl import Conduit, Identifier, Operator, Reference
 
@@ -48,6 +49,9 @@ def communicator() -> Communicator:
     communicator._Communicator__peer_dims = {Reference('other'): []}
     communicator._Communicator__peer_locations = {
             Reference('other'): ['direct:test']}
+    communicator._Communicator__ports = {
+            'out': Port('out', Operator.O_I, False, 1, []),
+            'in': Port('in', Operator.S, False, 1, [])}
     return communicator
 
 
@@ -60,6 +64,23 @@ def communicator2() -> Communicator:
             'other.in': Reference('kernel.out')
             }
     communicator._Communicator__peer_dims = {Reference('kernel'): [20]}
+    communicator._Communicator__ports = {
+            'out': Port('out', Operator.O_I, True, 0, [20]),
+            'in': Port('in', Operator.S, True, 0, [20])}
+    return communicator
+
+
+@pytest.fixture
+def communicator3() -> Communicator:
+    instance_id = Reference('kernel')
+    communicator = Communicator(instance_id, [], None)
+    communicator._Communicator__peers = {
+            'kernel.out': Reference('other.in'),
+            'kernel.in': Reference('other.out')}
+    communicator._Communicator__peer_dims = {Reference('other'): []}
+    communicator._Communicator__ports = {
+            'out': Port('out', Operator.O_I, True, 0, []),
+            'in': Port('in', Operator.S, True, 0, [])}
     return communicator
 
 
@@ -76,29 +97,16 @@ def test_get_locations(communicator) -> None:
     assert communicator.get_locations()[0].startswith('direct:')
 
 
-def test_send_message(communicator, message) -> None:
-    ref = Reference
-    communicator.send_message('out', message)
-
-    assert 'other.in[13]' in communicator._Communicator__outboxes
-    msg = communicator._Communicator__outboxes[
-            'other.in[13]']._Outbox__queue[0]
-    assert msg.sender == 'kernel[13].out'
-    assert msg.receiver == 'other.in[13]'
-    assert msg.timestamp == 0.0
-    assert msg.next_timestamp is None
-    assert msg.parameter_overlay == msgpack.packb({}, use_bin_type=True)
-    assert msg.data == msgpack.packb(b'test', use_bin_type=True)
-
-
 def test_connect(communicator) -> None:
     ref = Reference
 
+    instance_id = Reference('kernel')
     conduits = [Conduit(ref('kernel.out'), ref('other.in')),
                 Conduit(ref('other.out'), ref('kernel.in'))]
     peer_dims = {ref('other'): [1]}
     peer_locations = {ref('other'): ['direct:test']}
 
+    communicator = Communicator(instance_id, [13], None)
     communicator.connect(conduits, peer_dims, peer_locations)
 
     assert (str(communicator._Communicator__peers['kernel.out']) ==
@@ -204,6 +212,20 @@ def test_connect_inferred_ports(communicator) -> None:
     assert ports['out3']._length is None
 
 
+def test_send_message(communicator, message) -> None:
+    communicator.send_message('out', message)
+
+    assert 'other.in[13]' in communicator._Communicator__outboxes
+    msg = communicator._Communicator__outboxes[
+            'other.in[13]']._Outbox__queue[0]
+    assert msg.sender == 'kernel[13].out'
+    assert msg.receiver == 'other.in[13]'
+    assert msg.timestamp == 0.0
+    assert msg.next_timestamp is None
+    assert msg.parameter_overlay == msgpack.packb({}, use_bin_type=True)
+    assert msg.data == msgpack.packb(b'test', use_bin_type=True)
+
+
 def test_send_on_disconnected_port(communicator, message) -> None:
     communicator.send_message('not_connected', message)
 
@@ -214,7 +236,6 @@ def test_send_on_invalid_port(communicator, message) -> None:
 
 
 def test_send_msgpack(communicator, message2) -> None:
-    ref = Reference
     communicator.send_message('out', message2)
 
     assert 'other.in[13]' in communicator._Communicator__outboxes
@@ -227,7 +248,6 @@ def test_send_msgpack(communicator, message2) -> None:
 
 
 def test_send_message_with_slot(communicator2, message) -> None:
-    ref = Reference
     communicator2.send_message('out', message, 13)
 
     assert 'kernel[13].in' in communicator2._Communicator__outboxes
@@ -239,8 +259,22 @@ def test_send_message_with_slot(communicator2, message) -> None:
     assert msgpack.unpackb(msg.data).decode('utf-8') == 'test'
 
 
+def test_send_message_resizable(communicator3, message) -> None:
+    with pytest.raises(RuntimeError):
+        communicator3.send_message('out', message, 13)
+
+    communicator3.get_port('out').set_length(20)
+    communicator3.send_message('out', message, 13)
+
+    assert 'other.in[13]' in communicator3._Communicator__outboxes
+    msg = communicator3._Communicator__outboxes[
+            'other.in[13]']._Outbox__queue[0]
+    assert msg.sender == 'kernel.out[13]'
+    assert msg.receiver == 'other.in[13]'
+    assert msg.port_length == 20
+
+
 def test_send_message_with_parameters(communicator, message) -> None:
-    ref = Reference
     message.configuration['test2'] = 'testing'
     communicator.send_message('out', message)
 
@@ -255,7 +289,6 @@ def test_send_message_with_parameters(communicator, message) -> None:
 
 
 def test_send_configuration(communicator, message) -> None:
-    ref = Reference
     message.data = Configuration()
     message.data['test1'] = 'testing'
     communicator.send_message('out', message)
@@ -292,7 +325,7 @@ def test_receive_message(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MCPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            0.0, None, msgpack.packb({'test1': 12}),
+            None, 0.0, None, msgpack.packb({'test1': 12}),
             msgpack.packb(b'test', use_bin_type=True))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
@@ -328,7 +361,7 @@ def test_receive_msgpack(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MCPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            0.0, None, msgpack.packb({'test1': 12}),
+            None, 0.0, None, msgpack.packb({'test1': 12}),
             msgpack.packb({'test': 13}))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
@@ -344,7 +377,7 @@ def test_receive_with_slot(communicator2) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MCPMessage(
             Reference('kernel[13].out'), Reference('other.in[13]'),
-            0.0, None, msgpack.packb({'test': 'testing'}),
+            None, 0.0, None, msgpack.packb({'test': 'testing'}),
             msgpack.packb(b'test', use_bin_type=True))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator2._Communicator__get_client = get_client_mock
@@ -357,11 +390,28 @@ def test_receive_with_slot(communicator2) -> None:
     assert msg.configuration['test'] == 'testing'
 
 
+def test_receive_message_resizable(communicator3) -> None:
+    client_mock = MagicMock()
+    client_mock.receive.return_value = MCPMessage(
+            Reference('kernel.out[13]'), Reference('other.in[13]'),
+            20, 0.0, None, msgpack.packb({'test': 'testing'}),
+            msgpack.packb(b'test', use_bin_type=True))
+    get_client_mock = MagicMock(return_value=client_mock)
+    communicator3._Communicator__get_client = get_client_mock
+
+    msg = communicator3.receive_message('in', 13)
+
+    get_client_mock.assert_called_with(Reference('other'))
+    client_mock.receive.assert_called_with(Reference('kernel.in[13]'))
+    assert msg.data == b'test'
+    assert communicator3.get_port('in').get_length() == 20
+
+
 def test_receive_with_parameters(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MCPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            0.0, None, msgpack.packb({'test2': 3.1}),
+            None, 0.0, None, msgpack.packb({'test2': 3.1}),
             msgpack.packb(b'test', use_bin_type=True))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
@@ -378,7 +428,7 @@ def test_receive_msgpack_with_slot_and_parameters(communicator2) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MCPMessage(
             Reference('kernel[13].out'), Reference('other.in[13]'),
-            0.0, 1.0,
+            None, 0.0, 1.0,
             msgpack.packb({'test': 'testing'}), msgpack.packb('test'))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator2._Communicator__get_client = get_client_mock
@@ -398,7 +448,7 @@ def test_receive_configuration(communicator) -> None:
                                                    use_bin_type=True))
     client_mock.receive.return_value = MCPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            0.0, None, msgpack.packb({'test1': 12}),
+            None, 0.0, None, msgpack.packb({'test1': 12}),
             msgpack.packb(config_data))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
@@ -417,7 +467,7 @@ def test_receive_close_port(communicator) -> None:
     sentinel = msgpack.ExtType(0, bytes())
     client_mock.receive.return_value = MCPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            0.0, None, config_data, msgpack.packb(sentinel))
+            None, 0.0, None, config_data, msgpack.packb(sentinel))
     print(client_mock.receive.return_value.parameter_overlay)
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock

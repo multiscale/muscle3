@@ -17,7 +17,7 @@ def message():
     Ref = Reference
     return Message(
             Ref('sender.out'), Ref('receiver.in'),
-            0.0, 1.0,
+            None, 0.0, 1.0,
             bytes(),
             'testing'.encode('utf-8'))
 

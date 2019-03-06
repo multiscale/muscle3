@@ -19,7 +19,7 @@ def test_location(direct_server):
 
 
 def test_request(receiver, post_office, direct_server):
-    message = Message(Reference('test_sender.test_port'),
-                      receiver, 0.0, 1.0, bytes(), bytes())
+    message = Message(Reference('test_sender.test_port'), receiver,
+                      None, 0.0, 1.0, bytes(), bytes())
     post_office.outboxes[receiver].deposit(message)
     assert direct_server.request(receiver) == message

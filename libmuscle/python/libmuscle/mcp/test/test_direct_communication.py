@@ -12,8 +12,8 @@ def test_send_receive(receiver, direct_server, post_office):
     assert DirectClient.can_connect_to(direct_server.get_location())
     client = DirectClient(direct_server.get_location())
 
-    message = Message(Reference('test_sender.test_port'),
-                      receiver, 0.0, 1.0, bytes(), 'message'.encode('utf-8'))
+    message = Message(Reference('test_sender.test_port'), receiver,
+                      None, 0.0, 1.0, bytes(), 'message'.encode('utf-8'))
 
     post_office.outboxes[receiver].deposit(message)
     message2 = client.receive(receiver)

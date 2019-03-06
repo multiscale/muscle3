@@ -468,7 +468,6 @@ def test_receive_close_port(communicator) -> None:
     client_mock.receive.return_value = MCPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
             None, 0.0, None, config_data, msgpack.packb(sentinel))
-    print(client_mock.receive.return_value.parameter_overlay)
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
 

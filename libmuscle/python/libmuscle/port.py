@@ -42,8 +42,6 @@ class Port(ymmsl.Port):
             peer_dims: Dimensions of the peer instance set of this port.
         """
         super().__init__(Identifier(name), operator)
-        print('Creating Port {} {} {} {} {}'.format(name, operator, is_vector,
-                                                    our_ndims, peer_dims))
 
         if is_vector:
             if our_ndims == len(peer_dims):

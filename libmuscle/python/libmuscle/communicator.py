@@ -250,37 +250,10 @@ class Communicator(PostOffice):
         self.__peer_dims = peer_dims    # indexed by kernel id
         self.__peer_locations = peer_locations  # indexed by instance id
 
-        # init self.__ports
         if self.__declared_ports is not None:
-            # create from declared ports and self.__peer_dims
-            for operator, port_list in self.__declared_ports.items():
-                for port_desc in port_list:
-                    port_name, is_vector = self.__split_port_desc(port_desc)
-                    port_ref = self.__kernel + Identifier(port_name)
-                    peer_port = self.__peers[port_ref]
-                    peer_ce = peer_port[:-1]
-                    port_peer_dims = self.__peer_dims[peer_ce]
-                    self.__ports[port_name] = Port(
-                            port_name, operator, is_vector, len(self.__index),
-                            port_peer_dims)
+            self.__ports = self.__ports_from_declared()
         else:
-            # derive from conduits
-            for conduit in conduits:
-                if conduit.sending_compute_element() == self.__kernel:
-                    port_name = str(conduit.sending_port())
-                    operator = Operator.O_F
-                    port_peer_dims = self.__peer_dims[
-                            conduit.receiving_compute_element()]
-                elif conduit.receiving_compute_element() == self.__kernel:
-                    port_name = str(conduit.receiving_port())
-                    operator = Operator.F_INIT
-                    port_peer_dims = self.__peer_dims[
-                            conduit.sending_compute_element()]
-                ndims = max(0, len(port_peer_dims) - len(self.__index))
-                is_vector = (ndims == 1)
-                self.__ports[port_name] = Port(
-                        port_name, operator, is_vector, len(self.__index),
-                        port_peer_dims)
+            self.__ports = self.__ports_from_conduits(conduits)
 
     def list_ports(self) -> Dict[Operator, List[str]]:
         """Returns a description of the ports this Communicator has.
@@ -428,6 +401,49 @@ class Communicator(PostOffice):
         """
 
         return self.__outboxes[receiver].retrieve()
+
+    def __ports_from_declared(self) -> Dict[str, Port]:
+        """Derives port definitions from supplied declaration.
+        """
+        ports = dict()
+        declared_ports = cast(Dict[Operator, List[str]], self.__declared_ports)
+        for operator, port_list in declared_ports.items():
+            for port_desc in port_list:
+                port_name, is_vector = self.__split_port_desc(port_desc)
+                port_ref = self.__kernel + Identifier(port_name)
+                peer_port = self.__peers[port_ref]
+                peer_ce = peer_port[:-1]
+                port_peer_dims = self.__peer_dims[peer_ce]
+                ports[port_name] = Port(
+                        port_name, operator, is_vector, len(self.__index),
+                        port_peer_dims)
+        return ports
+
+    def __ports_from_conduits(self, conduits: List[Conduit]
+                              ) -> Dict[str, Port]:
+        """Derives port definitions from conduits.
+
+        Args:
+            conduits: The list of conduits.
+        """
+        ports = dict()
+        for conduit in conduits:
+            if conduit.sending_compute_element() == self.__kernel:
+                port_name = str(conduit.sending_port())
+                operator = Operator.O_F
+                port_peer_dims = self.__peer_dims[
+                        conduit.receiving_compute_element()]
+            elif conduit.receiving_compute_element() == self.__kernel:
+                port_name = str(conduit.receiving_port())
+                operator = Operator.F_INIT
+                port_peer_dims = self.__peer_dims[
+                        conduit.sending_compute_element()]
+            ndims = max(0, len(port_peer_dims) - len(self.__index))
+            is_vector = (ndims == 1)
+            ports[port_name] = Port(
+                    port_name, operator, is_vector, len(self.__index),
+                    port_peer_dims)
+        return ports
 
     def __get_client(self, instance: Reference) -> MCPClient:
         """Get or create a client to connect to the given instance.

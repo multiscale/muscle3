@@ -429,9 +429,10 @@ class Communicator(PostOffice):
                 peer_port = self.__peers[port_ref]
                 peer_ce = peer_port[:-1]
                 port_peer_dims = self.__peer_dims[peer_ce]
+                is_connected = self.__is_connected(Identifier(port_name))
                 ports[port_name] = Port(
-                        port_name, operator, is_vector, len(self.__index),
-                        port_peer_dims)
+                        port_name, operator, is_vector, is_connected,
+                        len(self.__index), port_peer_dims)
         return ports
 
     def __ports_from_conduits(self, conduits: List[Conduit]
@@ -444,20 +445,21 @@ class Communicator(PostOffice):
         ports = dict()
         for conduit in conduits:
             if conduit.sending_compute_element() == self.__kernel:
-                port_name = str(conduit.sending_port())
+                port_id = conduit.sending_port()
                 operator = Operator.O_F
                 port_peer_dims = self.__peer_dims[
                         conduit.receiving_compute_element()]
             elif conduit.receiving_compute_element() == self.__kernel:
-                port_name = str(conduit.receiving_port())
+                port_id = conduit.receiving_port()
                 operator = Operator.F_INIT
                 port_peer_dims = self.__peer_dims[
                         conduit.sending_compute_element()]
             ndims = max(0, len(port_peer_dims) - len(self.__index))
             is_vector = (ndims == 1)
-            ports[port_name] = Port(
-                    port_name, operator, is_vector, len(self.__index),
-                    port_peer_dims)
+            is_connected = self.__is_connected(port_id)
+            ports[str(port_id)] = Port(
+                    str(port_id), operator, is_vector, is_connected,
+                    len(self.__index), port_peer_dims)
         return ports
 
     def __get_client(self, instance: Reference) -> MCPClient:

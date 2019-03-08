@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from ymmsl import Conduit, Operator, Reference
 
-from libmuscle.communicator import Message
+from libmuscle.communicator import _ClosePort, Message
 from libmuscle.compute_element import ComputeElement
 from libmuscle.configuration import Configuration
 from libmuscle.configuration_store import ConfigurationStore
@@ -25,11 +25,22 @@ def compute_element():
         communicator = MagicMock()
         config = Configuration()
         config['test1'] = 12
-        communicator.receive_message.return_value = Message(
-                0.0, 1.0, 'message', config)
+        msg = Message(0.0, 1.0, 'message', config)
+        communicator.receive_message.return_value = msg
         comm_type.return_value = communicator
         element = ComputeElement('test_element', {
             Operator.F_INIT: ['in', 'not_connected'],
+            Operator.O_F: ['out']})
+        element._f_init_cache = dict()
+        element._f_init_cache[('in', None)] = msg
+        yield element
+
+
+@pytest.fixture
+def compute_element2():
+    with patch('libmuscle.compute_element.Communicator') as comm_type:
+        element = ComputeElement('test_element', {
+            Operator.F_INIT: ['in[]'],
             Operator.O_F: ['out']})
         yield element
 
@@ -122,21 +133,27 @@ def test_send_message_invalid_port(compute_element, message):
 def test_receive_message(compute_element):
     compute_element._communicator.get_port.return_value = MagicMock(
             operator=Operator.F_INIT)
-    msg = compute_element.receive_message('in', 1)
+    msg = compute_element.receive_message('in')
     assert msg.timestamp == 0.0
     assert msg.next_timestamp == 1.0
     assert compute_element._communicator.receive_message.called_with(
-            'in', 1)
+            'in', None)
     assert msg.data == 'message'
+
+    with pytest.raises(RuntimeError):
+        compute_element.receive_message('in')
 
 
 def test_receive_message_default(compute_element):
     compute_element._communicator.port_exists.return_value = True
-    compute_element._communicator.get_port.return_value.operator = (
-            Operator.F_INIT)
+    port = compute_element._communicator.get_port.return_value
+    port.operator = Operator.F_INIT
+    port.is_connected.return_value = False
     compute_element.receive_message('not_connected', 1, 'testing')
     assert compute_element._communicator.receive_message.called_with(
             'not_connected', 1, 'testing')
+    with pytest.raises(RuntimeError):
+        compute_element.receive_message('not_connected', 1)
 
 
 def test_receive_message_invalid_port(compute_element):
@@ -168,7 +185,7 @@ def test_receive_parallel_universe(compute_element) -> None:
         compute_element.receive_message('in')
 
 
-def test_reuse_instance(compute_element):
+def test_reuse_instance_receive_overlay(compute_element):
     compute_element._configuration_store.overlay = Configuration()
     test_base_config = Configuration()
     test_base_config['test1'] = 24
@@ -183,6 +200,72 @@ def test_reuse_instance(compute_element):
     assert len(compute_element._configuration_store.overlay) == 2
     assert compute_element._configuration_store.overlay['test1'] == 24
     assert compute_element._configuration_store.overlay['test2'] == 'abc'
+
+
+def test_reuse_instance_closed_port(compute_element):
+    def receive_message(port_name, slot=None, default=None):
+        if port_name == 'muscle_parameters_in':
+            return Message(0.0, None, Configuration(), Configuration())
+        elif port_name == 'in':
+            return Message(0.0, None, _ClosePort(), Configuration())
+        assert False    # pragma: no cover
+
+    def get_port(port_name):
+        port = MagicMock()
+        port.is_vector.return_value = False
+        if port_name == 'not_connected':
+            port.is_connected.return_value = False
+        else:
+            port.is_connected.return_value = True
+        return port
+
+    compute_element._communicator.receive_message = receive_message
+    compute_element._communicator.list_ports.return_value = {
+            Operator.F_INIT: ['in', 'not_connected'],
+            Operator.O_F: ['out']}
+    compute_element._communicator.get_port = get_port
+
+    do_reuse = compute_element.reuse_instance()
+    assert do_reuse is False
+
+
+def test_reuse_instance_vector_port(compute_element2):
+    def receive_message(port_name, slot=None, default=None):
+        if port_name == 'muscle_parameters_in':
+            return Message(0.0, None, Configuration(), Configuration())
+        elif port_name == 'in':
+            data = 'test {}'.format(slot)
+            return Message(0.0, None, data, Configuration())
+        assert False    # pragma: no cover
+
+    compute_element2._communicator.receive_message = receive_message
+    compute_element2._communicator.list_ports.return_value = {
+            Operator.F_INIT: ['in'],
+            Operator.O_F: ['out']}
+
+    port = MagicMock()
+    port.is_vector.return_value = True
+    port.is_connected.return_value = True
+    port.get_length.return_value = 10
+    compute_element2._communicator.get_port.return_value = port
+
+    do_reuse = compute_element2.reuse_instance()
+    assert do_reuse is True
+
+    msg = compute_element2.receive_message('in', 5)
+    assert msg.timestamp == 0.0
+    assert msg.next_timestamp is None
+    assert msg.data == 'test 5'
+
+
+def test_reuse_instance_no_f_init_ports(compute_element):
+    compute_element._communicator.receive_message.return_value = Message(
+            0.0, None, Configuration(), Configuration())
+    compute_element._communicator.list_ports.return_value = {}
+    do_reuse = compute_element.reuse_instance()
+    assert do_reuse is True
+    do_reuse = compute_element.reuse_instance()
+    assert do_reuse is False
 
 
 def test_reuse_instance_miswired(compute_element):

@@ -31,17 +31,21 @@ class Port(ymmsl.Port):
         operator (Operator): Operator associated with this port.
     """
     def __init__(self, name: str, operator: Operator, is_vector: bool,
-                 our_ndims: int, peer_dims: List[int]) -> None:
+                 is_connected: bool, our_ndims: int, peer_dims: List[int]
+                 ) -> None:
         """Create a Port.
 
         Args:
             name: Name of this port.
             operator: Corresponding operator.
             is_vector: Whether this is a vector port.
+            is_connected: Whether this port is connected to a peer.
             our_ndims: Number of dimensions of our instance set.
             peer_dims: Dimensions of the peer instance set of this port.
         """
         super().__init__(Identifier(name), operator)
+
+        self._is_connected = is_connected
 
         if is_vector:
             if our_ndims == len(peer_dims):
@@ -78,6 +82,18 @@ class Port(ymmsl.Port):
             self._length = None
 
         self._is_resizable = is_vector and (our_ndims == len(peer_dims))
+
+    # Note: I'm not sure how this will develop exactly, so this class has some
+    # accessors even if those are un-Pythonic; in the future a simple variable
+    # read may not be the right model.
+
+    def is_connected(self) -> bool:
+        """Returns whether the port is connected to a peer.
+
+        Returns:
+            True if there is a peer, False if there is not.
+        """
+        return self._is_connected
 
     def is_vector(self) -> bool:
         """Returns whether this is a vector port.

@@ -29,7 +29,10 @@ def test_duplication_mapper(mmp_server_dm, sys_argv_manager):
         message = Message(0.0, None, 'testing')
         duplication_mapper.send_message(out_port, message)
 
+    assert first.reuse_instance()
     msg1 = first.receive_message('in')
-    msg2 = second.receive_message('in')
     assert msg1.data == 'testing'
+
+    assert second.reuse_instance()
+    msg2 = second.receive_message('in')
     assert msg2.data == 'testing'

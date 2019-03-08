@@ -38,6 +38,12 @@ class ComputeElement:
         self._configuration_store = ConfigurationStore()
         """Configuration (parameters) for this instance."""
 
+        self._first_run = True
+        """Keeps track of whether this is the first reuse run."""
+
+        FInitCacheType = Dict[Tuple[str, Optional[int]], Message]
+        self._f_init_cache = dict()     # type: FInitCacheType
+
     def _connect(self, conduits: List[Conduit],
                  peer_dims: Dict[Reference, List[int]],
                  peer_locations: Dict[Reference, List[str]]) -> None:
@@ -52,7 +58,7 @@ class ComputeElement:
         """
         self._communicator.connect(conduits, peer_dims, peer_locations)
 
-    def reuse_instance(self) -> None:
+    def reuse_instance(self, apply_overlay: bool=True) -> bool:
         """Decide whether to run this instance again.
 
         In a multiscale simulation, instances get reused all the time.
@@ -74,20 +80,40 @@ class ComputeElement:
         This method must be called at the beginning of the reuse loop,
         i.e. before the F_INIT operator, and its return value should
         decide whether to enter that loop again.
-        """
-        message = self._communicator.receive_message(
-                'muscle_parameters_in')
-        if not isinstance(message.data, Configuration):
-            raise RuntimeError('"{}" received a message on'
-                               ' muscle_parameters_in that is not a'
-                               ' Configuration. It seems that your simulation'
-                               ' is miswired or the sending instance is'
-                               ' broken.'.format(self._instance_name()))
 
-        configuration = cast(Configuration, message.configuration)
-        for key, value in message.data.items():
-            configuration[key] = value
-        self._configuration_store.overlay = configuration
+        Args:
+            apply_overlay: Whether to apply the received configuration
+                overlay or to save it. If you're going to use
+                :meth:`receive_with_parameters` on your F_INIT ports,
+                set this to False. If you don't know what that means,
+                just call `reuse_instance()` without specifying this
+                and everything will be fine, this is only for some
+                specific uses that you're probably not doing.
+        """
+        self.__receive_parameters()
+
+        # TODO: _f_init_cache should be empty here, or the user didn't
+        # receive something that was sent on the last go-around.
+        # At least emit a warning.
+        self.__pre_receive_f_init(apply_overlay)
+
+        do_reuse = False
+        ports = self._communicator.list_ports()
+        if Operator.F_INIT not in ports or ports[Operator.F_INIT] == []:
+            if self._first_run:
+                self._first_run = False
+                do_reuse = True
+        else:
+            # do_reuse = not any(map(lambda x: isinstance(x, _ClosePort),
+            #                        self._f_init_cache.values()))
+            do_reuse = True
+            for message in self._f_init_cache.values():
+                if isinstance(message.data, _ClosePort):
+                    do_reuse = False
+
+        if not do_reuse:
+            self.__close_ports()
+        return do_reuse
 
     def get_parameter_value(self, name: str,
                             typ: Optional[str] = None
@@ -112,6 +138,11 @@ class ComputeElement:
 
     def list_ports(self) -> Dict[Operator, List[str]]:
         """Returns a description of the ports that this CE has.
+
+        Note that the result has almost the same format as the port
+        declarations you pass when making a ComputeElement. The only
+        difference is that the port names never have `[]` at the end,
+        even if the port is a vector port.
 
         This method will return an empty dictionary if _connect() has
         not yet been called.
@@ -189,25 +220,7 @@ class ComputeElement:
             RuntimeError: If the given port is not connected and no
                     default value was given.
         """
-        self.__check_port(port_name)
-        msg = self._communicator.receive_message(
-                port_name, slot, default)
-        operator = self._communicator.get_port(port_name).operator
-        if (operator == Operator.F_INIT and
-                len(self._configuration_store.overlay) == 0):
-            self._configuration_store.overlay = cast(
-                    Configuration, msg.configuration)
-        else:
-            if self._configuration_store.overlay != msg.configuration:
-                raise RuntimeError(('Unexpectedly received data from a'
-                                    ' parallel universe on port "{}". My'
-                                    ' parameters are "{}" and I received from'
-                                    ' a universe with "{}".').format(
-                                        port_name,
-                                        self._configuration_store.overlay,
-                                        msg.configuration))
-        msg.configuration = None
-        return msg
+        return self.__receive_message(port_name, slot, default, False)
 
     def receive_message_with_parameters(
             self, port_name: str, slot: Optional[int]=None,
@@ -244,8 +257,53 @@ class ComputeElement:
             RuntimeError: If the given port is not connected and no
                     default value was given.
         """
+        return self.__receive_message(port_name, slot, default, True)
+
+    def __receive_message(
+            self, port_name: str, slot: Optional[int],
+            default: Optional[Message], with_parameters: bool
+            ) -> Message:
+        """Receives a message on the given port.
+
+        This implements receive_message and
+        receive_message_with_parameters, see the description of those.
+        """
         self.__check_port(port_name)
-        return self._communicator.receive_message(port_name, slot, default)
+
+        port = self._communicator.get_port(port_name)
+        if port.operator == Operator.F_INIT:
+            if (port_name, slot) in self._f_init_cache:
+                msg = self._f_init_cache[(port_name, slot)]
+                del(self._f_init_cache[(port_name, slot)])
+                if with_parameters and msg.configuration is None:
+                    raise RuntimeError('If you use receive_with_parameters()'
+                                       ' on an F_INIT port, then you have to'
+                                       ' pass False to reuse_instance(),'
+                                       ' otherwise the parameters will already'
+                                       ' have been applied by MUSCLE.')
+            else:
+                if port.is_connected():
+                    raise RuntimeError(('Tried to receive twice on the same'
+                                        ' port "{}", that\'s not possible.'
+                                        ' Did you forget to call'
+                                        ' reuse_instance() in your reuse loop?'
+                                        ).format(port_name))
+                else:
+                    if default is not None:
+                        return default
+                    raise RuntimeError(('Tried to receive on port "{}",'
+                                        ' which is not connected, and no'
+                                        ' default value was given. Please'
+                                        ' connect this port!').format(
+                                            port_name))
+
+        else:
+            msg = self._communicator.receive_message(
+                    port_name, slot, default)
+            if not with_parameters:
+                self.__check_compatibility(port_name, msg.configuration)
+                msg.configuration = None
+        return msg
 
     def __make_full_name(self, instance: Reference
                          ) -> Tuple[Reference, List[int]]:
@@ -294,3 +352,95 @@ class ComputeElement:
                               ' the name and the list of ports you gave for'
                               ' this compute element.').format(port_name,
                                                                self._name))
+
+    def __receive_parameters(self) -> None:
+        """Receives parameters on muscle_parameters_in
+        """
+        default_message = Message(0.0, None, Configuration(), Configuration())
+        message = self._communicator.receive_message(
+                'muscle_parameters_in', None, default_message)
+        if not isinstance(message.data, Configuration):
+            raise RuntimeError('"{}" received a message on'
+                               ' muscle_parameters_in that is not a'
+                               ' Configuration. It seems that your'
+                               ' simulation is miswired or the sending'
+                               ' instance is broken.'.format(
+                                   self._instance_name()))
+
+        configuration = cast(Configuration, message.configuration)
+        for key, value in message.data.items():
+            configuration[key] = value
+        self._configuration_store.overlay = configuration
+
+    def __pre_receive_f_init(self, apply_overlay: bool) -> None:
+        """Receives on all ports connected to F_INIT.
+
+        This receives all incoming messages on F_INIT and stores them
+        in self._f_init_cache.
+        """
+        def pre_receive(port_name: str, slot: Optional[int]) -> None:
+            msg = self._communicator.receive_message(port_name)
+            self._f_init_cache[(port_name, None)] = msg
+            if apply_overlay:
+                self.__apply_overlay(msg)
+                self.__check_compatibility(port_name, msg.configuration)
+                msg.configuration = None
+
+        self._f_init_cache = dict()
+        ports = self._communicator.list_ports()
+        for port_name in ports.get(Operator.F_INIT, []):
+            port = self._communicator.get_port(port_name)
+            if not port.is_connected():
+                continue
+            if not port.is_vector():
+                pre_receive(port_name, None)
+            else:
+                pre_receive(port_name, 0)
+                # The above receives the length, if needed, so now we can
+                # get the rest.
+                for slot in range(1, port.get_length()):
+                    pre_receive(port_name, slot)
+
+    def __apply_overlay(self, message: Message) -> None:
+        """Sets local overlay if we don't already have one.
+
+        Args:
+            message: The message to apply the overlay from.
+        """
+        if len(self._configuration_store.overlay) == 0:
+            if message.configuration is not None:
+                self._configuration_store.overlay = message.configuration
+
+    def __check_compatibility(self, port_name: str,
+                              overlay: Optional[Configuration]) -> None:
+        """Checks whether a received overlay matches the current one.
+
+        Args:
+            port_name: Name of the port on which the overlay was
+                    received.
+            overlay: The received overlay.
+        """
+        if self._configuration_store.overlay != overlay:
+            raise RuntimeError(('Unexpectedly received data from a'
+                                ' parallel universe on port "{}". My'
+                                ' parameters are "{}" and I received'
+                                ' from a universe with "{}".').format(
+                                    port_name,
+                                    self._configuration_store.overlay,
+                                    overlay))
+
+    def __close_ports(self) -> None:
+        """Closes outgoing ports.
+
+        This sends a close port message on all slots of all outgoing
+        ports.
+        """
+        for operator, ports in self._communicator.list_ports().items():
+            if operator.allows_sending():
+                for port_name in ports:
+                    port = self._communicator.get_port(port_name)
+                    if port.is_vector():
+                        for slot in range(port.get_length()):
+                            self._communicator.close_port(port_name, slot)
+                    else:
+                        self._communicator.close_port(port_name)

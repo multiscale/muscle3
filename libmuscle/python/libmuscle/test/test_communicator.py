@@ -50,8 +50,8 @@ def communicator() -> Communicator:
     communicator._Communicator__peer_locations = {
             Reference('other'): ['direct:test']}
     communicator._Communicator__ports = {
-            'out': Port('out', Operator.O_I, False, 1, []),
-            'in': Port('in', Operator.S, False, 1, [])}
+            'out': Port('out', Operator.O_I, False, True, 1, []),
+            'in': Port('in', Operator.S, False, True, 1, [])}
     return communicator
 
 
@@ -65,8 +65,8 @@ def communicator2() -> Communicator:
             }
     communicator._Communicator__peer_dims = {Reference('kernel'): [20]}
     communicator._Communicator__ports = {
-            'out': Port('out', Operator.O_I, True, 0, [20]),
-            'in': Port('in', Operator.S, True, 0, [20])}
+            'out': Port('out', Operator.O_I, True, True, 0, [20]),
+            'in': Port('in', Operator.S, True, True, 0, [20])}
     return communicator
 
 
@@ -79,8 +79,8 @@ def communicator3() -> Communicator:
             'kernel.in': Reference('other.out')}
     communicator._Communicator__peer_dims = {Reference('other'): []}
     communicator._Communicator__ports = {
-            'out': Port('out', Operator.O_I, True, 0, []),
-            'in': Port('in', Operator.S, True, 0, [])}
+            'out': Port('out', Operator.O_I, True, True, 0, []),
+            'in': Port('in', Operator.S, True, True, 0, [])}
     return communicator
 
 

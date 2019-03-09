@@ -1,9 +1,8 @@
 from typing import Optional
 
-from libmuscle.configuration import (Configuration, ParameterValue,
-                                     has_parameter_type)
+from libmuscle.configuration import Configuration, has_parameter_type
 
-from ymmsl import Reference
+from ymmsl import ParameterValue, Reference
 
 
 class ConfigurationStore:

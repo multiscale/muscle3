@@ -1,10 +1,7 @@
 from collections import MutableMapping
 from typing import Any, Dict, Iterator, List, Tuple, Union
 
-from ymmsl import Experiment, Reference
-
-
-ParameterValue = Union[str, int, float, List[float], List[List[float]]]
+from ymmsl import Experiment, ParameterValue, Reference
 
 
 class Configuration(MutableMapping):

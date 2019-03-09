@@ -2,10 +2,10 @@ from copy import copy
 import sys
 from typing import cast, Dict, List, Optional, Tuple, Type, Union
 
-from ymmsl import Conduit, Identifier, Operator, Reference
+from ymmsl import Conduit, Identifier, Operator, ParameterValue, Reference
 
 from libmuscle.communicator import _ClosePort, Communicator, Message
-from libmuscle.configuration import Configuration, ParameterValue
+from libmuscle.configuration import Configuration
 from libmuscle.configuration_store import ConfigurationStore
 
 

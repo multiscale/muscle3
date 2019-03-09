@@ -1,5 +1,6 @@
 import pytest
-from ymmsl import Reference
+from ymmsl import (ComputeElementDecl, Conduit, Identifier, Simulation,
+                   Reference, YmmslDocument)
 
 from libmuscle.configuration import Configuration
 
@@ -26,20 +27,23 @@ def instance_registry():
 
 @pytest.fixture
 def topology_store() -> TopologyStore:
-    ymmsl_text = (
-            'version: v0.1\n'
-            'simulation:\n'
-            '  name: test_model\n'
-            '  compute_elements:\n'
-            '    macro: macro_implementation\n'
-            '    micro:\n'
-            '      implementation: micro_implementation\n'
-            '      multiplicity: [10, 10]\n'
-            '  conduits:\n'
-            '    macro.out: micro.in\n'
-            '    micro.out: macro.in\n')
+    ymmsl = YmmslDocument(
+            'v0.1',
+            None,
+            Simulation(
+                Identifier('test_model'),
+                [
+                    ComputeElementDecl(
+                        Reference('macro'), Reference('macro_implementation')),
+                    ComputeElementDecl(
+                        Reference('micro'), Reference('micro_implementation'),
+                        [10, 10])],
+                [
+                    Conduit(Reference('macro.out'), Reference('micro.in')),
+                    Conduit(Reference('micro.out'), Reference('macro.in'))
+                ]))
 
-    return TopologyStore(ymmsl_text)
+    return TopologyStore(ymmsl)
 
 
 @pytest.fixture
@@ -68,25 +72,29 @@ def registered_mmp_servicer(logger, configuration, loaded_instance_registry,
 
 @pytest.fixture
 def topology_store2() -> TopologyStore:
-    ymmsl_text = (
-            'version: v0.1\n'
-            'simulation:\n'
-            '  name: test_model\n'
-            '  compute_elements:\n'
-            '    macro: macro_implementation\n'
-            '    meso:\n'
-            '      implementation: meso_implementation\n'
-            '      multiplicity: 5\n'
-            '    micro:\n'
-            '      implementation: micro_implementation\n'
-            '      multiplicity: [5, 10]\n'
-            '  conduits:\n'
-            '    macro.out: meso.in\n'
-            '    meso.out: micro.in\n'
-            '    micro.out: meso.in\n'
-            '    meso.out: macro.in\n')
+    ymmsl = YmmslDocument(
+            'v0.1',
+            None,
+            Simulation(
+                Identifier('test_model'),
+                [
+                    ComputeElementDecl(
+                        Reference('macro'), Reference('macro_implementation')),
+                    ComputeElementDecl(
+                        Reference('meso'), Reference('meso_implementation'),
+                        [5]),
+                    ComputeElementDecl(
+                        Reference('micro'), Reference('micro_implementation'),
+                        [5, 10])
+                ],
+                [
+                    Conduit(Reference('macro.out'), Reference('meso.in')),
+                    Conduit(Reference('meso.out'), Reference('micro.in')),
+                    Conduit(Reference('micro.out'), Reference('meso.in')),
+                    Conduit(Reference('meso.out'), Reference('macro.in'))
+                ]))
 
-    return TopologyStore(ymmsl_text)
+    return TopologyStore(ymmsl)
 
 
 @pytest.fixture

@@ -53,7 +53,7 @@ def mmp_server(tmpdir, yatiml_log_warning):
     ymmsl = yaml.load(ymmsl_text, Loader=loader)
     configuration = config_for_experiment(ymmsl.experiment)
     instance_registry = InstanceRegistry()
-    topology_store = TopologyStore(ymmsl_text)
+    topology_store = TopologyStore(ymmsl)
     server = MMPServer(logger, configuration, instance_registry,
                        topology_store)
     yield server
@@ -95,7 +95,7 @@ def mmp_server_qmc(tmpdir, yatiml_log_warning):
     ymmsl = yaml.load(ymmsl_text, Loader=loader)
     configuration = config_for_experiment(ymmsl.experiment)
     instance_registry = InstanceRegistry()
-    topology_store = TopologyStore(ymmsl_text)
+    topology_store = TopologyStore(ymmsl)
     server = MMPServer(logger, configuration, instance_registry,
                        topology_store)
     yield server
@@ -123,7 +123,7 @@ def mmp_server_dm(tmpdir, yatiml_log_warning):
     ymmsl = yaml.load(ymmsl_text, Loader=loader)
     configuration = config_for_experiment(ymmsl.experiment)
     instance_registry = InstanceRegistry()
-    topology_store = TopologyStore(ymmsl_text)
+    topology_store = TopologyStore(ymmsl)
     server = MMPServer(logger, configuration, instance_registry,
                        topology_store)
     yield server

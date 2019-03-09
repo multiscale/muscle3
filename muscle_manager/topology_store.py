@@ -1,7 +1,6 @@
 from typing import Dict, List
 
-from ruamel import yaml
-from ymmsl import Conduit, Reference, loader
+from ymmsl import Conduit, Reference, YmmslDocument
 
 
 class TopologyStore:
@@ -13,16 +12,15 @@ class TopologyStore:
     Attributes:
         conduits (List[Conduit]): A list of conduits.
     """
-    def __init__(self, ymmsl_text: str) -> None:
+    def __init__(self, ymmsl: YmmslDocument) -> None:
         """Creates a TopologyStore.
 
         Creates a TopologyStore containing conduits read from the given
         yMMSL data, which must contain a 'simulation' key.
 
         Args:
-            ymmsl_data: A yMMSL file, in string form.
+            ymmsl: A yMMSL file, in object form.
         """
-        ymmsl = yaml.load(ymmsl_text, Loader=loader)
         if ymmsl.simulation is None:
             raise ValueError('The yMMSL simulation description does not'
                              ' contain a simulation section, so there'

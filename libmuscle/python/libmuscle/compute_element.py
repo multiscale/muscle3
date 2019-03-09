@@ -134,7 +134,8 @@ class ComputeElement:
             TypeError: If the type of the parameter's value was not
                     as expected.
         """
-        return self._configuration_store.get_parameter(Reference(name), typ)
+        return self._configuration_store.get_parameter(
+                self._instance_name(), Reference(name), typ)
 
     def list_ports(self) -> Dict[Operator, List[str]]:
         """Returns a description of the ports that this CE has.

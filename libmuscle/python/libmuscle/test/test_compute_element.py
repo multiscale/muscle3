@@ -65,13 +65,14 @@ def test_create_compute_element(sys_argv_index):
 
 
 def test_get_parameter_value(compute_element):
+    ref = Reference
     config = Configuration()
-    config['test1'] = 'test'
-    config['test2'] = 12
-    config['test3'] = 27.1
-    config['test4'] = True
-    config['test5'] = [2.3, 5.6]
-    config['test6'] = [[1.0, 2.0], [3.0, 4.0]]
+    config[ref('test1')] = 'test'
+    config[ref('test2')] = 12
+    config[ref('test3')] = 27.1
+    config[ref('test4')] = True
+    config[ref('test5')] = [2.3, 5.6]
+    config[ref('test6')] = [[1.0, 2.0], [3.0, 4.0]]
     compute_element._configuration_store.base = config
 
     assert compute_element.get_parameter_value('test1') == 'test'

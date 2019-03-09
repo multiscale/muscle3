@@ -26,12 +26,13 @@ class ConfigurationStore:
         self.base = Configuration()
         self.overlay = Configuration()
 
-    def get_parameter(self, name: Reference,
+    def get_parameter(self, instance: Reference, parameter_name: Reference,
                       typ: Optional[str] = None) -> ParameterValue:
         """Returns the value of a parameter.
 
         Args:
-            name: The name of the parameter to get the value of.
+            instance: The instance that this value is for.
+            parameter_name: The name of the parameter to get the value of.
             typ: An optional type designation; if specified the type
                     is checked for a match before returning. Valid
                     values are 'str', 'int', 'float', 'bool',
@@ -43,13 +44,26 @@ class ConfigurationStore:
                     not match `typ`.
             ValueError: If an invalid value was specified for `typ`
         """
-        if name in self.overlay:
-            value = self.overlay[name]
+        for i in range(len(instance), -1, -1):
+            if i > 0:
+                name = instance[:i] + parameter_name
+            else:
+                name = parameter_name
+            print('{} {} {}'.format(i, instance, name))
+
+            if name in self.overlay:
+                value = self.overlay[name]
+                break
+            elif name in self.base:
+                value = self.base[name]
+                break
         else:
-            value = self.base[name]
+            raise KeyError(('Parameter value for parameter "{}" was not'
+                            ' set.'.format(parameter_name)))
+
         if typ is not None:
             if not has_parameter_type(value, typ):
-                raise TypeError('Value for parameter {} is of type {},'
-                                ' where a {} was expected.'.format(
+                raise TypeError('Value for parameter "{}" is of type {},'
+                                ' where {} was expected.'.format(
                                     name, type(value), typ))
         return value

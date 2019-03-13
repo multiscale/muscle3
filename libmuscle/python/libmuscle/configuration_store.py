@@ -49,7 +49,6 @@ class ConfigurationStore:
                 name = instance[:i] + parameter_name
             else:
                 name = parameter_name
-            print('{} {} {}'.format(i, instance, name))
 
             if name in self.overlay:
                 value = self.overlay[name]

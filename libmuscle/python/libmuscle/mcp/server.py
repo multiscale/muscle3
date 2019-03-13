@@ -5,6 +5,10 @@ from ymmsl import Reference
 from libmuscle.post_office import PostOffice
 
 
+class ServerNotSupported(RuntimeError):
+    pass
+
+
 class Server:
     """A server that accepts MCP connections.
 

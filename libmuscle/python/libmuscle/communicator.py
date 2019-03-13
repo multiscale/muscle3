@@ -8,7 +8,7 @@ from libmuscle.configuration import Configuration
 from libmuscle.configuration_store import ConfigurationStore
 from libmuscle.mcp.message import Message as MCPMessage
 from libmuscle.mcp.client import Client as MCPClient
-from libmuscle.mcp.server import Server as MCPServer
+from libmuscle.mcp.server import Server as MCPServer, ServerNotSupported
 from libmuscle.mcp.type_registry import client_types, server_types
 from libmuscle.outbox import Outbox
 from libmuscle.post_office import PostOffice
@@ -204,7 +204,11 @@ class Communicator(PostOffice):
         self.__outboxes = dict()  # type: Dict[Reference, Outbox]
 
         for server_type in server_types:
-            self.__servers.append(server_type(self.__instance_id(), self))
+            try:
+                server = server_type(self.__instance_id(), self)
+                self.__servers.append(server)
+            except ServerNotSupported:
+                pass
 
         self.__ports = dict()   # type: Dict[str, Port]
 
@@ -493,8 +497,7 @@ class Communicator(PostOffice):
         for ClientType in client_types:
             for location in self.__peer_locations[instance]:
                 if ClientType.can_connect_to(location):
-                    client = cast(MCPClient, ClientType(
-                        self.__instance_id(), location))
+                    client = ClientType(self.__instance_id(), location)
                     self.__clients[instance] = client
                     return client
         raise RuntimeError('Could not find a matching protocol for {}'.format(

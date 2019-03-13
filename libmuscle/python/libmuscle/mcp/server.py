@@ -1,5 +1,7 @@
 from typing import Dict
 
+from ymmsl import Reference
+
 from libmuscle.post_office import PostOffice
 
 
@@ -10,12 +12,15 @@ class Server:
     connections over some lower-level communication protocol, and
     processes message requests by sending the requested message.
     """
-    def __init__(self, post_office: PostOffice) -> None:
+    def __init__(self, instance_id: Reference, post_office: PostOffice
+                 ) -> None:
         """Create a Server.
 
         Args:
+            instance_id: Id of the instance we're a server for.
             post_office: A PostOffice to obtain data from.
         """
+        self._instance_id = instance_id
         self._post_office = post_office
 
     def get_location(self) -> str:

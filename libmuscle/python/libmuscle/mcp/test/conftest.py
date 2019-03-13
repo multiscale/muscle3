@@ -25,4 +25,4 @@ def post_office(receiver):
 
 @pytest.fixture
 def direct_server(post_office):
-    return DirectServer(post_office)
+    return DirectServer('test_sender', post_office)

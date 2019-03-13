@@ -18,14 +18,16 @@ class DirectServer(Server):
     This server is for connecting compute elements within the same
     program.
     """
-    def __init__(self, post_office: PostOffice) -> None:
+    def __init__(self, instance_id: Reference, post_office: PostOffice
+                 ) -> None:
         """Create a DirectServer.
 
         Args:
+            instance_id: Id of the instance we're a server for.
             post_office: A PostOffice to obtain messages from, for
                     servicing requests.
         """
-        super().__init__(post_office)
+        super().__init__(instance_id, post_office)
 
         self.__id = str(uuid.uuid4())
         registered_servers[self.__id] = self

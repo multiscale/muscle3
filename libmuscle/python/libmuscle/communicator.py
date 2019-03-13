@@ -204,7 +204,7 @@ class Communicator(PostOffice):
         self.__outboxes = dict()  # type: Dict[Reference, Outbox]
 
         for server_type in server_types:
-            self.__servers.append(server_type(self))
+            self.__servers.append(server_type(self.__instance_id(), self))
 
         self.__ports = dict()   # type: Dict[str, Port]
 

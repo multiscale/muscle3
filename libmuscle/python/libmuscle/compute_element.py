@@ -113,6 +113,7 @@ class ComputeElement:
 
         if not do_reuse:
             self.__close_ports()
+            self._communicator.shutdown()
         return do_reuse
 
     def get_parameter_value(self, name: str,

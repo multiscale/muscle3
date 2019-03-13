@@ -417,6 +417,15 @@ class Communicator(PostOffice):
 
         return self.__outboxes[receiver].retrieve()
 
+    def shutdown(self) -> None:
+        """Shuts down the Communicator, closing ports and connections.
+        """
+        for client in self.__clients.values():
+            client.close()
+
+        for server in self.__servers:
+            server.close()
+
     def __ports_from_declared(self) -> Dict[str, Port]:
         """Derives port definitions from supplied declaration.
         """

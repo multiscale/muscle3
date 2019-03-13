@@ -50,3 +50,11 @@ class DirectServer(Server):
             The next message.
         """
         return self._post_office.get_message(receiver)
+
+    def close(self) -> None:
+        """Closes this server.
+
+        Since we have no network connections or other resources, this
+        is a no-op.
+        """
+        pass

@@ -8,11 +8,10 @@ from libmuscle.mcp.direct_server import DirectServer, registered_servers
 
 
 class DirectClient(Client):
-    """A client that connects to an MCP server.
+    """A client that connects to an MCP server directly.
 
-    This is a base class for MCP Clients. An MCP Client connects to
-    an MCP Server over some lower-level communication protocol, and
-    requests messages from it.
+    This client connects to a DirectServer, and together they provide
+    communication within in the same process.
     """
     @staticmethod
     def can_connect_to(location: str) -> bool:
@@ -52,3 +51,8 @@ class DirectClient(Client):
             The received message.
         """
         return self.__server.request(receiver)
+
+    def close(self) -> None:
+        """Closes any resources needed.
+        """
+        pass

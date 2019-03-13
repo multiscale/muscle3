@@ -25,3 +25,11 @@ class Server:
             A string containing the location.
         """
         raise NotImplementedError()  # pragma: no cover
+
+    def close(self) -> None:
+        """Closes this server.
+
+        Stops the server listening, waits for existing clients to
+        disconnect, then frees any other resources.
+        """
+        raise NotImplementedError()  # pragma: no cover

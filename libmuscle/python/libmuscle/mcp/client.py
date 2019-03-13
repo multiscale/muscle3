@@ -43,3 +43,11 @@ class Client:
             The received message.
         """
         raise NotImplementedError()     # pragma: no cover
+
+    def close(self) -> None:
+        """Closes this client.
+
+        This closes any connections this client has and/or performs
+        other shutdown activities.
+        """
+        raise NotImplementedError()     # pragma: no cover

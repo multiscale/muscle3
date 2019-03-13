@@ -1,3 +1,4 @@
+from queue import Queue
 from typing import List
 
 from ymmsl import Reference
@@ -13,7 +14,7 @@ class Outbox:
     def __init__(self) -> None:
         """Create an empty Outbox.
         """
-        self.__queue = list()  # type: List[Message]
+        self.__queue = Queue()  # type: Queue[Message]
 
     def deposit(self, message: Message) -> None:
         """Put a message in the Outbox.
@@ -24,17 +25,16 @@ class Outbox:
         Args:
             message: The message to store.
         """
-        self.__queue.insert(0, message)
-        # TODO: signal that we have a message
+        self.__queue.put(message)
 
     def retrieve(self) -> Message:
         """Retrieve a message from the Outbox.
 
         The message will be removed from the front of the queue, and
-        returned to the caller.
+        returned to the caller. Blocks if the queue is empty, until a
+        message is deposited.
 
         Returns:
             The next message.
         """
-        # TODO: wait for a message to arrive
-        return self.__queue.pop()
+        return self.__queue.get()

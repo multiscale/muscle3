@@ -24,16 +24,17 @@ def message():
 
 def test_create_outbox():
     box = Outbox()
-    assert box._Outbox__queue == []
+    assert box._Outbox__queue.qsize() == 0
 
 
 def test_deposit_message(outbox, message):
     outbox.deposit(message)
-    assert outbox._Outbox__queue == [message]
+    assert outbox._Outbox__queue.qsize() == 1
+    assert outbox._Outbox__queue.get(message)
 
 
 def test_retrieve_message(outbox, message):
-    outbox._Outbox__queue = [message]
+    outbox._Outbox__queue.put(message)
     assert outbox.retrieve() == message
 
 

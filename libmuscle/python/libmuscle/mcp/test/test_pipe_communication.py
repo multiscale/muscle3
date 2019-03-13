@@ -65,22 +65,8 @@ def test_send_receive(receiver, post_office):
     client_proc.start()
     mux.close_instance_ends(recv_instance_id)
 
-    # run the mux part
-    client_conn = mux._instance_pipes[recv_instance_id].client_mux_conn
-    server_conn = mux._instance_pipes[sender_instance_id].server_mux_conn
-
-    # service connection request
-    conn_req = client_conn.recv()
-    assert conn_req == sender_instance_id
-    conn1, conn2 = mp.Pipe()
-    server_conn.send((conn1, recv_instance_id))
-    client_conn.send(conn2)
-    conn1.close()
-    conn2.close()
-
-    # check that client has closed port
-    with pytest.raises(EOFError):
-        client_conn.recv()
+    # service connection requests
+    mux.run()
 
     # shut down
     client_proc.join()

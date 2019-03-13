@@ -6,6 +6,12 @@ import uuid
 from ymmsl import Reference
 
 
+# This doesn't really multiplex anything, it facilitates the creation
+# of pipes between compute element instances running in different
+# processes. It's kind of similar to the MUSCLE manager in that, but
+# naming it manager would be even more confusing, so multiplexer it is.
+
+
 class _InstancePipes:
     """Pipes for communicating between an instance and the mux.
 
@@ -137,3 +143,36 @@ def can_connect_to(peer_address: str) -> bool:
     """
     peer_uuid = peer_address.split('/')[0]
     return peer_uuid == str(_process_uuid)
+
+
+def run() -> None:
+    """Runs the pipe-based communication multiplexer.
+
+    This listens for connection requests from instances, and creates
+    pipes between the requested instances so that they can exchange
+    messages.
+
+    Shuts down automatically when all client instances have shut down.
+    """
+    while len(_instance_pipes) > 0:
+        client_pipes = {instance_id: pipes.client_mux_conn
+                        for instance_id, pipes in _instance_pipes.items()}
+        ready_pipes = mp.connection.wait(client_pipes.values())
+        done_instances = list()
+        for client_id, pipe in client_pipes.items():
+            if pipe in ready_pipes:
+                try:
+                    requested_server = pipe.recv()
+                    conn1, conn2 = mp.Pipe()
+                    _instance_pipes[requested_server].server_mux_conn.send(
+                            (conn1, client_id))
+                    pipe.send(conn2)
+                    # close our copy of this pipe, they'll do peer-to-peer
+                    conn1.close()
+                    conn2.close()
+                except EOFError:
+                    done_instances.append(client_id)
+                    close_mux_ends(client_id)
+
+        for done_instance in done_instances:
+            del(_instance_pipes[done_instance])

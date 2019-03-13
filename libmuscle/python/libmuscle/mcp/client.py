@@ -22,6 +22,19 @@ class Client:
         """
         raise NotImplementedError()     # pragma: no cover
 
+    @staticmethod
+    def shutdown() -> None:
+        """Shut down and free any resources shared by all clients.
+
+        This is an optional hook for communication subsystems that
+        need it. If implemented, it must work correctly even if no
+        clients have ever been instantiated.
+
+        This will be called after all clients of this class have been
+        closed.
+        """
+        pass
+
     def __init__(self, location: str) -> None:
         """Create an MCPClient for a given location.
 

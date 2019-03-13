@@ -422,6 +422,8 @@ class Communicator(PostOffice):
         """
         for client in self.__clients.values():
             client.close()
+        for client_type in client_types:
+            client_type.shutdown()
 
         for server in self.__servers:
             server.close()

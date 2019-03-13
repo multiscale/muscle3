@@ -28,16 +28,17 @@ class DirectClient(Client):
         server_id = location[7:]
         return server_id in registered_servers
 
-    def __init__(self, location: str) -> None:
+    def __init__(self, instance_id: Reference, location: str) -> None:
         """Create a DirectClient for a given location.
 
         The client will connect to this location and be able to request
         messages from any compute element and port represented by it.
 
         Args:
+            instance_id: Our instance id.
             location: A location string.
         """
-        super().__init__(location)
+        super().__init__(instance_id, location)
         server_id = location[7:]
         self.__server = cast(DirectServer, registered_servers[server_id])
 

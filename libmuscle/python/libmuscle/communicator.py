@@ -423,10 +423,15 @@ class Communicator(PostOffice):
         for client in self.__clients.values():
             client.close()
         for client_type in client_types:
-            client_type.shutdown()
+            client_type.shutdown(self.__instance_id())
 
         for server in self.__servers:
             server.close()
+
+    def __instance_id(self) -> Reference:
+        """Returns our complete instance id.
+        """
+        return self.__kernel + self.__index
 
     def __ports_from_declared(self) -> Dict[str, Port]:
         """Derives port definitions from supplied declaration.
@@ -488,7 +493,8 @@ class Communicator(PostOffice):
         for ClientType in client_types:
             for location in self.__peer_locations[instance]:
                 if ClientType.can_connect_to(location):
-                    client = cast(MCPClient, ClientType(location))
+                    client = cast(MCPClient, ClientType(
+                        self.__instance_id(), location))
                     self.__clients[instance] = client
                     return client
         raise RuntimeError('Could not find a matching protocol for {}'.format(

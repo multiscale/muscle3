@@ -23,7 +23,7 @@ class Client:
         raise NotImplementedError()     # pragma: no cover
 
     @staticmethod
-    def shutdown() -> None:
+    def shutdown(instance_id: Reference) -> None:
         """Shut down and free any resources shared by all clients.
 
         This is an optional hook for communication subsystems that
@@ -35,14 +35,15 @@ class Client:
         """
         pass
 
-    def __init__(self, location: str) -> None:
+    def __init__(self, instance_id: Reference, location: str) -> None:
         """Create an MCPClient for a given location.
 
         The client will connect to this location and be able to request
         messages from any compute element and port represented by it.
 
         Args:
-            location: A location string.
+            instance_id: Id of our instance.
+            location: A location string for the peer.
         """
         self._location = location
 

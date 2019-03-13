@@ -26,7 +26,9 @@ class PipeClient(Client):
         """Free any resources shared by all clients for this instance.
         """
         if mux.can_communicate_for(instance_id):
-            _, mux_client_conn = mux.get_pipes_for_instance(instance_id)
+            # close mux ends to allow clean shutdown
+            mux.close_mux_ends(instance_id)
+            mux_client_conn = mux.get_instance_client_conn(instance_id)
             mux_client_conn.close()
 
     def __init__(self, instance_id: Reference, location: str) -> None:
@@ -38,7 +40,7 @@ class PipeClient(Client):
         """
         self._instance_id = instance_id
 
-        _, mux_client_conn = mux.get_pipes_for_instance(instance_id)
+        mux_client_conn = mux.get_instance_client_conn(instance_id)
         _, peer_id = location.split('/')
 
         # request connection

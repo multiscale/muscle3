@@ -24,7 +24,10 @@ class PipeServer(Server):
         """
         super().__init__(instance_id, post_office)
         if mux.can_communicate_for(instance_id):
-            self._mux_server_conn, _ = mux.get_pipes_for_instance(instance_id)
+            # close mux ends to allow clean shutdown
+            mux.close_mux_ends(instance_id)
+
+            self._mux_server_conn = mux.get_instance_server_conn(instance_id)
             self._shutdown_conn, self._handler_shutdown_conn = mp.Pipe()
             self._server_thread = threading.Thread(
                     target=self.__conn_request_handler,

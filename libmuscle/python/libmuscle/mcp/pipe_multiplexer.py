@@ -78,15 +78,37 @@ def close_instance_ends(instance_id: Reference) -> None:
     _instance_pipes[instance_id].close_instance_ends()
 
 
-def get_pipes_for_instance(name: Reference) -> Tuple[Connection, Connection]:
-    """Returns the instance sides of the pipes for this instance.
+def close_mux_ends(instance_id: Reference) -> None:
+    """Closes the mux sides of the pipes for the given instance.
+
+    Args:
+        instance_id: The instance to close for.
+    """
+    _instance_pipes[instance_id].close_mux_ends()
+
+
+def get_instance_server_conn(instance_id: Reference) -> Connection:
+    """Returns the instance side of the server pipe for this instance.
+
+    Args:
+        instance_id: The instance for which to get the pipe.
 
     Returns:
-        A tuple (server_conn, client_conn) of Connections.
+        The instance side of the server pipe.
     """
-    pipes = _instance_pipes[name]
-    pipes.close_mux_ends()
-    return pipes.server_instance_conn, pipes.client_instance_conn
+    return _instance_pipes[instance_id].server_instance_conn
+
+
+def get_instance_client_conn(instance_id: Reference) -> Connection:
+    """Returns the instance side of the client pipe for this instance.
+
+    Args:
+        instance_id: The instance for which to get the pipe.
+
+    Returns:
+        The instance side of the client pipe.
+    """
+    return _instance_pipes[instance_id].client_instance_conn
 
 
 _process_uuid = uuid.uuid4()

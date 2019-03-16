@@ -51,6 +51,8 @@ class MMPClient():
         try:
             ready.result(timeout=CONNECTION_TIMEOUT)
         except grpc.FutureTimeoutError:
+            ready.cancel()
+            channel.close()
             raise RuntimeError('Failed to connect to the MUSCLE manager')
 
         self.__client = mmp_grpc.MuscleManagerStub(channel)

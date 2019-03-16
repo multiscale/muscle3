@@ -88,3 +88,16 @@ def test_parameter_overlays(mmp_server_qmc, sys_argv_manager):
     assert micros[2].reuse_instance()
     with pytest.raises(RuntimeError):
         micros[2].receive_message_with_parameters('in')
+
+    # shut down properly
+    assert not qmc.reuse_instance()
+    assert not macros[0].reuse_instance()
+    assert not micros[0].reuse_instance()
+    assert not macros[1].reuse_instance()
+    assert not micros[1].reuse_instance()
+    assert not macros[2].reuse_instance()
+    assert not micros[2].reuse_instance()
+
+    for i in range(3, 100):
+        assert not macros[i].reuse_instance()
+        assert not micros[i].reuse_instance()

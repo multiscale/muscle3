@@ -24,6 +24,7 @@ def test_duplication_mapper(mmp_server_dm, sys_argv_manager):
     muscle.register([duplication_mapper, first, second])
 
     # send and receive some messages
+    assert duplication_mapper.reuse_instance()
     out_ports = duplication_mapper.list_ports()[Operator.O_F]
     for out_port in out_ports:
         message = Message(0.0, None, 'testing')
@@ -36,3 +37,7 @@ def test_duplication_mapper(mmp_server_dm, sys_argv_manager):
     assert second.reuse_instance()
     msg2 = second.receive_message('in')
     assert msg2.data == 'testing'
+
+    assert not duplication_mapper.reuse_instance()
+    assert not first.reuse_instance()
+    assert not second.reuse_instance()

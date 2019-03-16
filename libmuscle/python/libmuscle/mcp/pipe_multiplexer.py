@@ -2,7 +2,7 @@ import multiprocessing as mp
 from multiprocessing.connection import Connection
 # The below line seems to help avoid crashes, something to do with
 # a background thread in the library and forking threaded processes.
-from multiprocessing.resource_sharer import DupFd   # type: ignore
+from multiprocessing import resource_sharer    # type: ignore
 from typing import Dict, List, Tuple
 import uuid
 
@@ -181,6 +181,7 @@ def run() -> None:
                         for instance_id, pipes in _instance_pipes.items()}
         ready_pipes = mp.connection.wait(client_pipes.values())
         done_instances = list()
+
         for client_id, pipe in client_pipes.items():
             if pipe in ready_pipes:
                 try:
@@ -198,3 +199,8 @@ def run() -> None:
 
         for done_instance in done_instances:
             del(_instance_pipes[done_instance])
+
+    # Python uses a background thread to help share file descriptors over
+    # pipes. The below statement stops that thread, so that it doesn't
+    # cause crashes when we fork in later tests.
+    resource_sharer.stop()

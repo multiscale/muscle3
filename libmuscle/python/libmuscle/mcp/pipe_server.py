@@ -70,7 +70,8 @@ class PipeServer(Server):
                 conn_thread = threading.Thread(
                         target=self.__mcp_pipe_handler,
                         args=(client_id, connection),
-                        name='PipeHandler-{}'.format(client_id))
+                        name='PipeHandler-{}-{}'.format(
+                            self._instance_id, client_id))
                 conn_thread.start()
                 conn_threads.append(conn_thread)
 

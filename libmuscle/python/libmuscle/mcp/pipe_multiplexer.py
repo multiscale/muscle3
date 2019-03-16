@@ -1,6 +1,9 @@
 import multiprocessing as mp
 from multiprocessing.connection import Connection
-from typing import Dict, Tuple
+# The below line seems to help avoid crashes, something to do with
+# a background thread in the library and forking threaded processes.
+from multiprocessing.resource_sharer import DupFd   # type: ignore
+from typing import Dict, List, Tuple
 import uuid
 
 from ymmsl import Reference
@@ -93,6 +96,23 @@ def close_mux_ends(instance_id: Reference) -> None:
     _instance_pipes[instance_id].close_mux_ends()
 
 
+def close_all_pipes() -> None:
+    """Closes all the instance pipes.
+
+    For example, because each instance process and the mux process have
+    their own copies, so the main process doesn't need them and its
+    copies should be closed.
+    """
+    instances = list()  # type: List[Reference]
+    for instance_id in _instance_pipes.keys():
+        close_instance_ends(instance_id)
+        close_mux_ends(instance_id)
+        instances.append(instance_id)
+
+    for instance_id in instances:
+        del(_instance_pipes[instance_id])
+
+
 def get_instance_server_conn(instance_id: Reference) -> Connection:
     """Returns the instance side of the server pipe for this instance.
 
@@ -129,7 +149,7 @@ def get_address_for(instance_id: Reference) -> str:
     Returns:
         An address string that can be passed to the MUSCLE Manager.
     """
-    return '{}/{}'.format(_process_uuid, instance_id)
+    return 'pipe:{}/{}'.format(_process_uuid, instance_id)
 
 
 def can_connect_to(peer_address: str) -> bool:
@@ -141,7 +161,9 @@ def can_connect_to(peer_address: str) -> bool:
     Args:
         peer_address: An address of the form <uuid>/<instance_id>.
     """
-    peer_uuid = peer_address.split('/')[0]
+    if not peer_address.startswith('pipe:'):
+        return False
+    peer_uuid = peer_address[5:].split('/')[0]
     return peer_uuid == str(_process_uuid)
 
 

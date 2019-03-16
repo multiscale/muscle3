@@ -44,6 +44,9 @@ class PipeClient(Client):
         _, peer_id = location.split('/')
 
         # request connection
+        # This assumes that the clients are made one by one in the same thread
+        # so that they can use the same pipe without getting in each other's
+        # way.
         mux_client_conn.send(peer_id)
         self._conn = mux_client_conn.recv()
 

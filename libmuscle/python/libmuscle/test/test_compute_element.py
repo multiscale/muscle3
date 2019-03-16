@@ -263,6 +263,7 @@ def test_reuse_instance_no_f_init_ports(compute_element):
     compute_element._communicator.receive_message.return_value = Message(
             0.0, None, Configuration(), Configuration())
     compute_element._communicator.list_ports.return_value = {}
+    compute_element._communicator.parameters_in_connected.return_value = False
     do_reuse = compute_element.reuse_instance()
     assert do_reuse is True
     do_reuse = compute_element.reuse_instance()

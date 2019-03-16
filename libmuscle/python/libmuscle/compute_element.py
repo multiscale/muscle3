@@ -90,23 +90,21 @@ class ComputeElement:
                 and everything will be fine, this is only for some
                 specific uses that you're probably not doing.
         """
-        self.__receive_parameters()
+        do_reuse = self.__receive_parameters()
 
         # TODO: _f_init_cache should be empty here, or the user didn't
         # receive something that was sent on the last go-around.
         # At least emit a warning.
         self.__pre_receive_f_init(apply_overlay)
 
-        do_reuse = False
         ports = self._communicator.list_ports()
-        if Operator.F_INIT not in ports or ports[Operator.F_INIT] == []:
-            if self._first_run:
-                self._first_run = False
-                do_reuse = True
+        no_f_init_ports = ports.get(Operator.F_INIT, []) == []
+        no_parameters_in = not self._communicator.parameters_in_connected()
+
+        if no_f_init_ports and no_parameters_in:
+            do_reuse = self._first_run
+            self._first_run = False
         else:
-            # do_reuse = not any(map(lambda x: isinstance(x, _ClosePort),
-            #                        self._f_init_cache.values()))
-            do_reuse = True
             for message in self._f_init_cache.values():
                 if isinstance(message.data, _ClosePort):
                     do_reuse = False
@@ -355,12 +353,17 @@ class ComputeElement:
                               ' this compute element.').format(port_name,
                                                                self._name))
 
-    def __receive_parameters(self) -> None:
-        """Receives parameters on muscle_parameters_in
+    def __receive_parameters(self) -> bool:
+        """Receives parameters on muscle_parameters_in.
+
+        Returns:
+            False iff the port is connnected and ClosePort was received.
         """
         default_message = Message(0.0, None, Configuration(), Configuration())
         message = self._communicator.receive_message(
                 'muscle_parameters_in', None, default_message)
+        if isinstance(message.data, _ClosePort):
+            return False
         if not isinstance(message.data, Configuration):
             raise RuntimeError('"{}" received a message on'
                                ' muscle_parameters_in that is not a'
@@ -373,6 +376,7 @@ class ComputeElement:
         for key, value in message.data.items():
             configuration[key] = value
         self._configuration_store.overlay = configuration
+        return True
 
     def __pre_receive_f_init(self, apply_overlay: bool) -> None:
         """Receives on all ports connected to F_INIT.

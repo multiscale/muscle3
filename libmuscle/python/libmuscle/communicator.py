@@ -259,6 +259,11 @@ class Communicator(PostOffice):
         else:
             self.__ports = self.__ports_from_conduits(conduits)
 
+    def parameters_in_connected(self) -> bool:
+        """Returns True iff muscle_parameters_in is connected.
+        """
+        return self.__is_connected(Identifier('muscle_parameters_in'))
+
     def list_ports(self) -> Dict[Operator, List[str]]:
         """Returns a description of the ports this Communicator has.
 
@@ -333,7 +338,7 @@ class Communicator(PostOffice):
                                  port_length,
                                  message.timestamp, message.next_timestamp,
                                  packed_overlay, packed_message)
-        self.__ensure_outbox_exists(recv_endpoint)
+        self.__ensure_outbox_exists(recv_endpoint.ref())
         self.__outboxes[recv_endpoint.ref()].deposit(mcp_message)
 
     def receive_message(self, port_name: str, slot: Optional[int]=None,
@@ -418,7 +423,7 @@ class Communicator(PostOffice):
             receiver: The receiver of the message, a reference to an
                     instance.
         """
-
+        self.__ensure_outbox_exists(receiver)
         return self.__outboxes[receiver].retrieve()
 
     def shutdown(self) -> None:
@@ -503,7 +508,7 @@ class Communicator(PostOffice):
         raise RuntimeError('Could not find a matching protocol for {}'.format(
                 instance))
 
-    def __ensure_outbox_exists(self, receiver: Endpoint) -> None:
+    def __ensure_outbox_exists(self, receiver: Reference) -> None:
         """Ensure that an outbox exists.
 
         Outboxes are created dynamically, the first time a message is
@@ -514,8 +519,8 @@ class Communicator(PostOffice):
             receiver: The receiver that should have an outbox.
         """
         # TODO: get lock
-        if receiver.ref() not in self.__outboxes:
-            self.__outboxes[receiver.ref()] = Outbox()
+        if receiver not in self.__outboxes:
+            self.__outboxes[receiver] = Outbox()
 
     def __split_peer(self, full_port: Reference
                      ) -> Tuple[Reference, Identifier]:

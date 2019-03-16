@@ -170,7 +170,6 @@ def test_request_peers_bidir(registered_mmp_servicer2):
     assert mmp.PeerResult.PeerDimensions(
             peer_name='macro', dimensions=[]) in result.peer_dimensions
 
-    print(result.peer_locations)
     assert mmp.PeerResult.PeerLocations(
             instance_name='macro',
             locations=['direct:macro']) in result.peer_locations

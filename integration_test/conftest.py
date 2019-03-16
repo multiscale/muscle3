@@ -1,4 +1,5 @@
 import logging
+import multiprocessing as mp
 import sys
 from typing import Generator
 
@@ -22,6 +23,63 @@ def yatiml_log_warning():
     yatiml.logger.setLevel(logging.WARNING)
 
 
+def start_mmp_server(control_pipe):
+    control_pipe[0].close()
+
+    ymmsl_text = (
+            'version: v0.1\n'
+            'simulation:\n'
+            '  name: test_model\n'
+            '  compute_elements:\n'
+            '    macro: macro_implementation\n'
+            '    micro:\n'
+            '      implementation: micro_implementation\n'
+            '      multiplicity: [10]\n'
+            '  conduits:\n'
+            '    macro.out: micro.in\n'
+            '    micro.out: macro.in\n'
+            'experiment:\n'
+            '  model: test_model\n'
+            '  parameter_values:\n'
+            '    test1: 13\n'
+            '    test2: 13.3\n'
+            '    test3: testing\n'
+            # '    test4: True\n'
+            '    test5: [2.3, 5.6]\n'
+            '    test6:\n'
+            '      - [1.0, 2.0]\n'
+            '      - [3.0, 1.0]\n'
+            )
+
+    logger = Logger()
+    ymmsl = yaml.load(ymmsl_text, Loader=loader)
+    configuration = config_for_experiment(ymmsl.experiment)
+    instance_registry = InstanceRegistry()
+    topology_store = TopologyStore(ymmsl)
+    server = MMPServer(logger, configuration, instance_registry,
+                       topology_store)
+    control_pipe[1].send(True)
+    control_pipe[1].recv()
+    control_pipe[1].close()
+    server.stop()
+
+
+@pytest.fixture
+def mmp_server_process(tmpdir, yatiml_log_warning):
+    control_pipe = mp.Pipe()
+    process = mp.Process(target=start_mmp_server,
+                         args=(control_pipe,),
+                         name='MMPServer')
+    process.start()
+    control_pipe[1].close()
+    # wait for start
+    control_pipe[0].recv()
+    yield None
+    control_pipe[0].send(True)
+    control_pipe[0].close()
+    process.join()
+
+
 @pytest.fixture
 def mmp_server(tmpdir, yatiml_log_warning):
     ymmsl_text = (
@@ -32,7 +90,7 @@ def mmp_server(tmpdir, yatiml_log_warning):
             '    macro: macro_implementation\n'
             '    micro:\n'
             '      implementation: micro_implementation\n'
-            '      multiplicity: [100]\n'
+            '      multiplicity: [10]\n'
             '  conduits:\n'
             '    macro.out: micro.in\n'
             '    micro.out: macro.in\n'

@@ -1,9 +1,11 @@
+import multiprocessing as mp
 import sys
-from typing import cast, Dict, List, Optional
+from typing import cast, Callable, Dict, List, Optional
 
 from ymmsl import Identifier, Operator, Port, Reference
 
 from libmuscle.compute_element import ComputeElement
+from libmuscle.mcp import pipe_multiplexer as mux
 from libmuscle.mmp_client import MMPClient
 
 
@@ -89,3 +91,34 @@ class Muscle3:
                 return arg[len(prefix):]
 
         return None
+
+
+def run_instances(instances: Dict[str, Callable]) -> None:
+    """Runs the given instances and waits for them to finish.
+
+    The instances are described in a dictionary with their instance
+    id (e.g. 'macro' or 'micro[12]' or 'my_mapper') as the key, and
+    a function to run as the corresponding value. Each instance
+    will be run in a separate process.
+
+    Args:
+        instances: A dictionary of instances to run.
+    """
+    instance_processes = list()
+    for instance_id_str, implementation in instances.items():
+        instance_id = Reference(instance_id_str)
+        mux.add_instance(instance_id)
+        process = mp.Process(target=implementation,
+                             args=(instance_id_str,),
+                             name='Instance-{}'.format(instance_id))
+        process.start()
+        mux.close_instance_ends(instance_id)
+        instance_processes.append(process)
+
+    mux_process = mp.Process(target=mux.run, name='PipeCommMultiplexer')
+    mux_process.start()
+    mux.close_all_pipes()
+
+    for instance_process in instance_processes:
+        instance_process.join()
+    mux_process.join()

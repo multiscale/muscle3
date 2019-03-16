@@ -6,55 +6,62 @@ from ymmsl import Operator, Reference
 
 from libmuscle.communicator import Message
 from libmuscle.compute_element import ComputeElement
-from libmuscle.muscle3 import Muscle3
+from libmuscle.muscle3 import Muscle3, run_instances
 
 
-def test_all(mmp_server, sys_argv_manager):
-    """A positive all-up test of everything.
+def macro(instance_id: str):
+    """Macro model implementation.
     """
     muscle = Muscle3()
 
-    # create macro
-    macro = ComputeElement('macro', {
+    ce = ComputeElement(instance_id, {
             Operator.O_I: ['out[]'],
             Operator.S: ['in[]']})
 
-    # create micros
-    micros = list()
-    for i in range(100):
-        name = 'micro[{}]'.format(i)
-        micro = ComputeElement(name, {
-                Operator.F_INIT: ['in'],
-                Operator.O_F: ['out']})
-        micros.append(micro)
+    muscle.register([ce])
 
-    # register submodels
-    muscle.register(micros + [macro])
+    while ce.reuse_instance():
+        # f_init
+        assert ce.get_parameter_value('test1') == 13
 
-    # check parameters
-    assert macro.get_parameter_value('test1') == 13
-    assert micros[50].get_parameter_value('test3', 'str') == 'testing'
-    assert micros[79].get_parameter_value('test6', '[[float]]')[0][1] == 2.0
+        # o_i
+        assert ce.is_vector_port('out')
+        for slot in range(10):
+            ce.send_message('out', Message(0.0, 10.0, 'testing'), slot)
 
-    # send and receive some messages
-    assert macro.reuse_instance()
-    macro.send_message('out', Message(0.0, 10.0, 'testing'), 0)
+        # s/b
+        for slot in range(10):
+            msg = ce.receive_message('in', slot)
+            assert msg.data == 'testing back'
 
-    assert micros[0].reuse_instance()
-    msg = micros[0].receive_message('in')
-    assert msg.data == 'testing'
-    micros[0].send_message('out', Message(0.1, None, 'testing back'))
-    msg = macro.receive_message('in', 0)
-    assert msg.data == 'testing back'
 
-    macro.send_message('out', Message(10.0, None, [1, 2, 3]), 0)
+def micro(instance_id: str):
+    """Micro model implementation.
+    """
+    muscle = Muscle3()
 
-    assert micros[0].reuse_instance()
-    msg = micros[0].receive_message('in')
-    assert msg.data == [1, 2, 3]
-    micros[0].send_message('out', Message(10.1, None, 'testing back'))
-    msg = macro.receive_message('in', 0)
-    assert msg.data == 'testing back'
+    ce = ComputeElement(instance_id, {
+            Operator.F_INIT: ['in'],
+            Operator.O_F: ['out']})
 
-    assert not macro.reuse_instance()
-    assert not micros[0].reuse_instance()
+    muscle.register([ce])
+
+    while ce.reuse_instance():
+        # f_init
+        assert ce.get_parameter_value('test3', 'str') == 'testing'
+        assert ce.get_parameter_value('test6', '[[float]]')[0][1] == 2.0
+
+        msg = ce.receive_message('in')
+        assert msg.data == 'testing'
+
+        # o_f
+        ce.send_message('out', Message(0.1, None, 'testing back'))
+
+
+def test_all(mmp_server_process, sys_argv_manager):
+    """A positive all-up test of everything.
+    """
+    submodels = {'macro': macro}
+    for i in range(10):
+        submodels['micro[{}]'.format(i)] = micro
+    run_instances(submodels)

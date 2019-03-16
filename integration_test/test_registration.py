@@ -22,7 +22,7 @@ def test_registration(mmp_server):
     assert registry.get_ports(instance_name)[0].operator == Operator.S
 
 
-def test_wiring(mmp_server):
+def test_wiring(mmp_server_process):
     client = MMPClient('localhost:9000')
 
     client.register_instance(Reference('macro'), ['direct:macro'], [])
@@ -42,7 +42,7 @@ def test_wiring(mmp_server):
         with pytest.raises(RuntimeError):
             client.request_peers(Reference('macro'))
 
-    for i in range(50):
+    for i in range(5):
         instance = Reference('micro[{}]'.format(i))
         location = 'direct:{}'.format(instance)
         client.register_instance(instance, [location], [])
@@ -53,7 +53,7 @@ def test_wiring(mmp_server):
         with pytest.raises(RuntimeError):
             client.request_peers(Reference('macro'))
 
-    for i in range(50, 100):
+    for i in range(5, 10):
         instance = Reference('micro[{}]'.format(i))
         location = 'direct:{}'.format(instance)
         client.register_instance(instance, [location], [])
@@ -64,5 +64,5 @@ def test_wiring(mmp_server):
     assert Conduit(Reference('macro.out'), Reference('micro.in')) in conduits
     assert Conduit(Reference('micro.out'), Reference('macro.in')) in conduits
 
-    assert peer_dims[Reference('micro')] == [100]
-    assert peer_locations['micro[22]'] == ['direct:micro[22]']
+    assert peer_dims[Reference('micro')] == [10]
+    assert peer_locations['micro[7]'] == ['direct:micro[7]']

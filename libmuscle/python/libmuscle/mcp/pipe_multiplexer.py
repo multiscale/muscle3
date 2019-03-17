@@ -15,11 +15,11 @@ from ymmsl import Reference
 # naming it manager would be even more confusing, so multiplexer it is.
 
 
-class _InstancePipes:
+class _InstancePipe:
     """Pipes for communicating between an instance and the mux.
 
-    Objects of this class contain the endpoints for a set of two pipes
-    that is used to communicate between the instance processes and the
+    Objects of this class contain the endpoints for a pipe
+    that is used to communicate between an instance processe and the
     multiplexer. The multiplexer (in this module) facilitates the
     creation of peer-to-peer pipe connections between the processes.
 
@@ -29,31 +29,17 @@ class _InstancePipes:
     connection to another instance.
 
     Attributes:
-        server_mux_conn: Mux side of the server pipe.
-        server_instance_conn: Instance side of the server pipe.
-        client_mux_conn: Mux side of the client pipe
-        client_instance_conn: Instance side of the client pipe.
+        mux_conn: Mux side of the pipe.
+        instance_conn: Instance side of the pipe.
     """
     def __init__(self) -> None:
         """Create an InstancePipes containing two new pipes.
         """
-        self.server_mux_conn, self.server_instance_conn = mp.Pipe()
-        self.client_mux_conn, self.client_instance_conn = mp.Pipe()
-
-    def close_mux_ends(self) -> None:
-        """Closes the mux ends of both the pipes.
-        """
-        self.server_mux_conn.close()
-        self.client_mux_conn.close()
-
-    def close_instance_ends(self) -> None:
-        """Closes the instance ends of both the pipes.
-        """
-        self.server_instance_conn.close()
-        self.client_instance_conn.close()
+        self.mux_conn, self.instance_conn = mp.Pipe()
 
 
-_instance_pipes = dict()     # type: Dict[Reference, _InstancePipes]
+_instance_client_pipes = dict()     # type: Dict[Reference, _InstancePipe]
+_instance_server_pipes = dict()     # type: Dict[Reference, _InstancePipe]
 
 
 def add_instance(instance_id: Reference) -> None:
@@ -62,7 +48,8 @@ def add_instance(instance_id: Reference) -> None:
     Args:
         instance_id: Name of the new instance.
     """
-    _instance_pipes[instance_id] = _InstancePipes()
+    _instance_client_pipes[instance_id] = _InstancePipe()
+    _instance_server_pipes[instance_id] = _InstancePipe()
 
 
 def can_communicate_for(instance_id: Reference) -> bool:
@@ -75,7 +62,7 @@ def can_communicate_for(instance_id: Reference) -> bool:
     Args:
         instance_id: Name of the requested instance.
     """
-    return instance_id in _instance_pipes
+    return instance_id in _instance_server_pipes
 
 
 def close_instance_ends(instance_id: Reference) -> None:
@@ -84,7 +71,8 @@ def close_instance_ends(instance_id: Reference) -> None:
     Args:
         instance_id: The instance to close for.
     """
-    _instance_pipes[instance_id].close_instance_ends()
+    _instance_client_pipes[instance_id].instance_conn.close()
+    _instance_server_pipes[instance_id].instance_conn.close()
 
 
 def close_mux_ends(instance_id: Reference) -> None:
@@ -93,7 +81,8 @@ def close_mux_ends(instance_id: Reference) -> None:
     Args:
         instance_id: The instance to close for.
     """
-    _instance_pipes[instance_id].close_mux_ends()
+    _instance_client_pipes[instance_id].mux_conn.close()
+    _instance_server_pipes[instance_id].mux_conn.close()
 
 
 def close_all_pipes() -> None:
@@ -103,14 +92,18 @@ def close_all_pipes() -> None:
     their own copies, so the main process doesn't need them and its
     copies should be closed.
     """
-    instances = list()  # type: List[Reference]
-    for instance_id in _instance_pipes.keys():
-        close_instance_ends(instance_id)
-        close_mux_ends(instance_id)
-        instances.append(instance_id)
+    def close_all(pipes: Dict[Reference, _InstancePipe]) -> None:
+        instances = list()  # type: List[Reference]
+        for instance_id, instance_pipe in pipes.items():
+            instance_pipe.instance_conn.close()
+            instance_pipe.mux_conn.close()
+            instances.append(instance_id)
 
-    for instance_id in instances:
-        del(_instance_pipes[instance_id])
+        for instance_id in instances:
+            del(pipes[instance_id])
+
+    close_all(_instance_client_pipes)
+    close_all(_instance_server_pipes)
 
 
 def get_instance_server_conn(instance_id: Reference) -> Connection:
@@ -122,7 +115,7 @@ def get_instance_server_conn(instance_id: Reference) -> Connection:
     Returns:
         The instance side of the server pipe.
     """
-    return _instance_pipes[instance_id].server_instance_conn
+    return _instance_server_pipes[instance_id].instance_conn
 
 
 def get_instance_client_conn(instance_id: Reference) -> Connection:
@@ -134,7 +127,7 @@ def get_instance_client_conn(instance_id: Reference) -> Connection:
     Returns:
         The instance side of the client pipe.
     """
-    return _instance_pipes[instance_id].client_instance_conn
+    return _instance_client_pipes[instance_id].instance_conn
 
 
 _process_uuid = uuid.uuid4()
@@ -176,29 +169,31 @@ def run() -> None:
 
     Shuts down automatically when all client instances have shut down.
     """
-    while len(_instance_pipes) > 0:
-        client_pipes = {instance_id: pipes.client_mux_conn
-                        for instance_id, pipes in _instance_pipes.items()}
+    while len(_instance_client_pipes) > 0:
+        client_pipes = {instance_id: pipes.mux_conn
+                        for instance_id, pipes
+                        in _instance_client_pipes.items()}
         ready_pipes = mp.connection.wait(client_pipes.values())
-        done_instances = list()
 
         for client_id, pipe in client_pipes.items():
             if pipe in ready_pipes:
                 try:
                     requested_server = pipe.recv()
                     conn1, conn2 = mp.Pipe()
-                    _instance_pipes[requested_server].server_mux_conn.send(
+                    _instance_server_pipes[requested_server].mux_conn.send(
                             (conn1, client_id))
                     pipe.send(conn2)
                     # close our copy of this pipe, they'll do peer-to-peer
                     conn1.close()
                     conn2.close()
                 except EOFError:
-                    done_instances.append(client_id)
-                    close_mux_ends(client_id)
+                    _instance_client_pipes[client_id].mux_conn.close()
+                    del(_instance_client_pipes[client_id])
 
-        for done_instance in done_instances:
-            del(_instance_pipes[done_instance])
+    server_ids = list(_instance_server_pipes.keys())
+    for instance_id in server_ids:
+        _instance_server_pipes[instance_id].mux_conn.close()
+        del(_instance_server_pipes[instance_id])
 
     # Python uses a background thread to help share file descriptors over
     # pipes. The below statement stops that thread, so that it doesn't

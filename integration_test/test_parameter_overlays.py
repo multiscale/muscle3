@@ -7,7 +7,7 @@ from ymmsl import Operator, Reference
 from libmuscle.communicator import Message
 from libmuscle.compute_element import ComputeElement
 from libmuscle.configuration import Configuration
-from libmuscle.muscle3 import Muscle3
+from libmuscle.muscle3 import run_instances, Muscle3
 
 
 @pytest.fixture
@@ -18,86 +18,92 @@ def sys_argv_manager():
     sys.argv = old_argv
 
 
-def test_parameter_overlays(mmp_server_qmc, sys_argv_manager):
-    """A positive all-up test of parameter overlays.
+def qmc(instance_id: str):
+    """qMC implementation.
     """
     muscle = Muscle3()
+    ce = ComputeElement(instance_id, {Operator.O_F: ['parameters_out[]']})
+    muscle.register([ce])
 
-    # create qMC
-    qmc = ComputeElement('qmc', {Operator.O_F: ['parameters_out[]']})
+    while ce.reuse_instance():
+        # o_f
+        config0 = Configuration.from_plain_dict({'test2': 14.4})
+        for slot in range(10):
+            ce.send_message('parameters_out',
+                            Message(0.0, None, config0), slot)
 
-    # create macros
-    macros = list()
-    for i in range(100):
-        name = 'macro[{}]'.format(i)
-        macro = ComputeElement(name, {
-            Operator.O_I: ['out'],
-            Operator.S: ['in']})
-        macros.append(macro)
 
-    # create micros
-    micros = list()
-    for i in range(100):
-        name = 'micro[{}]'.format(i)
-        micro = ComputeElement(name, {
-                Operator.F_INIT: ['in'],
-                Operator.O_F: ['out']})
-        micros.append(micro)
+def macro(instance_id: str):
+    """Macro model implementation.
+    """
+    muscle = Muscle3()
+    ce = ComputeElement(instance_id, {
+            Operator.O_I: ['out'], Operator.S: ['in']})
+    muscle.register([ce])
 
-    # register submodels
-    muscle.register([qmc] + macros + micros)
+    while ce.reuse_instance():
+        # f_init
+        assert ce.get_parameter_value('test2') == 14.4
+        # o_i
+        ce.send_message('out', Message(0.0, 10.0, 'testing'))
+        # s/b
+        msg = ce.receive_message('in')
+        assert msg.data == 'testing back'
 
-    # check parameters
-    assert macro.get_parameter_value('test2') == 13.3
 
-    # send and receive some messages
-    config0 = Configuration.from_plain_dict({'test2': 14.4})
-    assert qmc.reuse_instance()
-    qmc.send_message('parameters_out', Message(0.0, None, config0), 0)
+def micro(instance_id: str):
+    """Micro model implementation.
+    """
+    muscle = Muscle3()
+    ce = ComputeElement(instance_id, {
+            Operator.F_INIT: ['in'], Operator.O_F: ['out']})
+    muscle.register([ce])
 
-    assert macros[0].reuse_instance()
-    assert macros[0].get_parameter_value('test2') == 14.4
+    assert ce.get_parameter_value('test2') == 13.3
+    while ce.reuse_instance():
+        # f_init
+        assert ce.get_parameter_value('test2', 'float') == 14.4
+        msg = ce.receive_message('in')
+        assert msg.data == 'testing'
 
-    macros[0].send_message('out', Message(0.0, 1.0, 'testing'))
-    assert micros[0].reuse_instance()
-    msg = micros[0].receive_message('in')
-    assert msg.data == 'testing'
-    assert micros[0].get_parameter_value('test2') == 14.4
+        # with pytest.raises(RuntimeError):
+        #     ce.receive_message_with_parameters('in')
 
-    micros[0].send_message('out', Message(0.0, None, 'testing back'))
-    msg = macros[0].receive_message('in')
-    assert msg.data == 'testing back'
-    assert macros[0].get_parameter_value('test2') == 14.4
+        # o_f
+        ce.send_message('out', Message(0.1, None, 'testing back'))
 
-    # test receive_with_parameters
-    qmc.send_message('parameters_out', Message(0.0, None, config0), 1)
 
-    assert macros[1].reuse_instance()
-    macros[1].send_message('out', Message(0.0, 1.0, 'testing'))
-    assert micros[1].reuse_instance(False)
-    msg = micros[1].receive_message_with_parameters('in')
-    assert msg.data == 'testing'
-    assert msg.configuration['test2'] == 14.4
-    assert micros[1].get_parameter_value('test2') == 13.3
+def explicit_micro(instance_id: str):
+    """Micro model implementation with explicit parameters.
 
-    # test receive_with_parameters incorrect reuse_instance
-    qmc.send_message('parameters_out', Message(0.0, None, config0), 2)
+    Receives overlay parameters explicitly, rather than having MUSCLE
+    handle them.
+    """
+    muscle = Muscle3()
+    ce = ComputeElement(instance_id, {
+            Operator.F_INIT: ['in'], Operator.O_F: ['out']})
+    muscle.register([ce])
 
-    assert macros[2].reuse_instance()
-    macros[2].send_message('out', Message(0.0, 1.0, 'testing'))
-    assert micros[2].reuse_instance()
-    with pytest.raises(RuntimeError):
-        micros[2].receive_message_with_parameters('in')
+    while ce.reuse_instance(False):
+        # f_init
+        assert ce.get_parameter_value('test2', 'float') == 13.3
+        msg = ce.receive_message_with_parameters('in')
+        assert msg.data == 'testing'
+        assert msg.configuration['test2'] == 14.4
+        assert ce.get_parameter_value('test2') == 13.3
 
-    # shut down properly
-    assert not qmc.reuse_instance()
-    assert not macros[0].reuse_instance()
-    assert not micros[0].reuse_instance()
-    assert not macros[1].reuse_instance()
-    assert not micros[1].reuse_instance()
-    assert not macros[2].reuse_instance()
-    assert not micros[2].reuse_instance()
+        # o_f
+        ce.send_message(
+                'out', Message(0.1, None, 'testing back', msg.configuration))
 
-    for i in range(3, 100):
-        assert not macros[i].reuse_instance()
-        assert not micros[i].reuse_instance()
+
+def test_parameter_overlays(mmp_server_process_qmc, sys_argv_manager):
+    """A positive all-up test of parameter overlays.
+    """
+    submodels = {'qmc': qmc}
+    for i in range(9):
+        submodels['macro[{}]'.format(i)] = macro
+        submodels['micro[{}]'.format(i)] = micro
+    submodels['macro[9]'] = macro
+    submodels['micro[9]'] = explicit_micro
+    run_instances(submodels)

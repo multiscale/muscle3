@@ -5,7 +5,36 @@ from ymmsl import Operator, Reference
 
 from libmuscle.communicator import Message
 from libmuscle.compute_element import ComputeElement
-from libmuscle.muscle3 import Muscle3
+from libmuscle.muscle3 import run_instances, Muscle3
+
+
+def duplication_mapper(instance_id: str):
+    """Duplication mapper implementation.
+    """
+    muscle = Muscle3()
+    ce = ComputeElement(instance_id)
+    muscle.register([ce])
+
+    while ce.reuse_instance():
+        # o_f
+        out_ports = ce.list_ports()[Operator.O_F]
+
+        message = Message(0.0, None, 'testing')
+        for out_port in out_ports:
+            ce.send_message(out_port, message)
+
+
+def receiver(instance_id: str):
+    """Receiver for messages from dm.
+    """
+    muscle = Muscle3()
+    ce = ComputeElement(instance_id, {Operator.F_INIT: ['in']})
+    muscle.register([ce])
+
+    while ce.reuse_instance():
+        # f_init
+        msg = ce.receive_message('in')
+        assert msg.data == 'testing'
 
 
 def test_duplication_mapper(mmp_server_dm, sys_argv_manager):
@@ -13,6 +42,13 @@ def test_duplication_mapper(mmp_server_dm, sys_argv_manager):
 
     This is an acyclic workflow.
     """
+    submodels = {
+            'dm': duplication_mapper,
+            'first': receiver,
+            'second': receiver}
+    run_instances(submodels)
+
+    '''
     muscle = Muscle3()
 
     # create elements
@@ -41,3 +77,4 @@ def test_duplication_mapper(mmp_server_dm, sys_argv_manager):
     assert not duplication_mapper.reuse_instance()
     assert not first.reuse_instance()
     assert not second.reuse_instance()
+    '''

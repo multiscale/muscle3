@@ -23,9 +23,23 @@ def yatiml_log_warning():
     yatiml.logger.setLevel(logging.WARNING)
 
 
-def start_mmp_server(control_pipe):
+def start_mmp_server(control_pipe, ymmsl):
     control_pipe[0].close()
 
+    logger = Logger()
+    configuration = config_for_experiment(ymmsl.experiment)
+    instance_registry = InstanceRegistry()
+    topology_store = TopologyStore(ymmsl)
+    server = MMPServer(logger, configuration, instance_registry,
+                       topology_store)
+    control_pipe[1].send(True)
+    control_pipe[1].recv()
+    control_pipe[1].close()
+    server.stop()
+
+
+@pytest.fixture
+def mmp_server_process(tmpdir, yatiml_log_warning):
     ymmsl_text = (
             'version: v0.1\n'
             'simulation:\n'
@@ -50,25 +64,11 @@ def start_mmp_server(control_pipe):
             '      - [1.0, 2.0]\n'
             '      - [3.0, 1.0]\n'
             )
-
-    logger = Logger()
     ymmsl = yaml.load(ymmsl_text, Loader=loader)
-    configuration = config_for_experiment(ymmsl.experiment)
-    instance_registry = InstanceRegistry()
-    topology_store = TopologyStore(ymmsl)
-    server = MMPServer(logger, configuration, instance_registry,
-                       topology_store)
-    control_pipe[1].send(True)
-    control_pipe[1].recv()
-    control_pipe[1].close()
-    server.stop()
 
-
-@pytest.fixture
-def mmp_server_process(tmpdir, yatiml_log_warning):
     control_pipe = mp.Pipe()
     process = mp.Process(target=start_mmp_server,
-                         args=(control_pipe,),
+                         args=(control_pipe, ymmsl),
                          name='MMPServer')
     process.start()
     control_pipe[1].close()
@@ -119,7 +119,7 @@ def mmp_server(tmpdir, yatiml_log_warning):
 
 
 @pytest.fixture
-def mmp_server_qmc(tmpdir, yatiml_log_warning):
+def mmp_server_process_qmc(tmpdir, yatiml_log_warning):
     ymmsl_text = (
             'version: v0.1\n'
             'simulation:\n'
@@ -128,10 +128,10 @@ def mmp_server_qmc(tmpdir, yatiml_log_warning):
             '    qmc: muscle.qmc\n'
             '    macro:\n'
             '      implementation: macro_implementation\n'
-            '      multiplicity: [100]\n'
+            '      multiplicity: [10]\n'
             '    micro:\n'
             '      implementation: micro_implementation\n'
-            '      multiplicity: [100]\n'
+            '      multiplicity: [10]\n'
             '  conduits:\n'
             '    qmc.parameters_out: macro.muscle_parameters_in\n'
             '    macro.out: micro.in\n'
@@ -148,16 +148,20 @@ def mmp_server_qmc(tmpdir, yatiml_log_warning):
             '      - [1.0, 2.0]\n'
             '      - [3.0, 1.0]\n'
             )
-
-    logger = Logger()
     ymmsl = yaml.load(ymmsl_text, Loader=loader)
-    configuration = config_for_experiment(ymmsl.experiment)
-    instance_registry = InstanceRegistry()
-    topology_store = TopologyStore(ymmsl)
-    server = MMPServer(logger, configuration, instance_registry,
-                       topology_store)
-    yield server
-    server.stop()
+
+    control_pipe = mp.Pipe()
+    process = mp.Process(target=start_mmp_server,
+                         args=(control_pipe, ymmsl),
+                         name='MMPServer')
+    process.start()
+    control_pipe[1].close()
+    # wait for start
+    control_pipe[0].recv()
+    yield None
+    control_pipe[0].send(True)
+    control_pipe[0].close()
+    process.join()
 
 
 @pytest.fixture
@@ -176,16 +180,20 @@ def mmp_server_dm(tmpdir, yatiml_log_warning):
             'experiment:\n'
             '  model: test_model\n'
             )
-
-    logger = Logger()
     ymmsl = yaml.load(ymmsl_text, Loader=loader)
-    configuration = config_for_experiment(ymmsl.experiment)
-    instance_registry = InstanceRegistry()
-    topology_store = TopologyStore(ymmsl)
-    server = MMPServer(logger, configuration, instance_registry,
-                       topology_store)
-    yield server
-    server.stop()
+
+    control_pipe = mp.Pipe()
+    process = mp.Process(target=start_mmp_server,
+                         args=(control_pipe, ymmsl),
+                         name='MMPServer')
+    process.start()
+    control_pipe[1].close()
+    # wait for start
+    control_pipe[0].recv()
+    yield None
+    control_pipe[0].send(True)
+    control_pipe[0].close()
+    process.join()
 
 
 @pytest.fixture

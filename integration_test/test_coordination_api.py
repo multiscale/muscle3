@@ -1,7 +1,7 @@
 from libmuscle import Muscle3
 
 
-def test_init_muscle(mmp_server, sys_argv_manager):
+def test_init_muscle(mmp_server_process, sys_argv_manager):
     Muscle3()
 
 

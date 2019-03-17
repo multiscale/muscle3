@@ -1,5 +1,6 @@
 from enum import IntEnum
 import msgpack
+from threading import Lock
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 from ymmsl import (ComputeElementDecl, Conduit, Identifier, Operator,
                    Reference)
@@ -518,9 +519,10 @@ class Communicator(PostOffice):
         Args:
             receiver: The receiver that should have an outbox.
         """
-        # TODO: get lock
+        self.__outbox_lock.acquire()
         if receiver not in self.__outboxes:
             self.__outboxes[receiver] = Outbox()
+        self.__outbox_lock.release()
 
     def __split_peer(self, full_port: Reference
                      ) -> Tuple[Reference, Identifier]:

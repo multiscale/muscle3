@@ -106,8 +106,10 @@ def run_instances(instances: Dict[str, Callable]) -> None:
     """
     instance_processes = list()
     for instance_id_str, implementation in instances.items():
+        mux.add_instance(Reference(instance_id_str))
+
+    for instance_id_str, implementation in instances.items():
         instance_id = Reference(instance_id_str)
-        mux.add_instance(instance_id)
         process = mp.Process(target=implementation,
                              args=(instance_id_str,),
                              name='Instance-{}'.format(instance_id))

@@ -16,6 +16,11 @@ class Outbox:
         """
         self.__queue = Queue()  # type: Queue[Message]
 
+    def is_empty(self) -> bool:
+        """Returns True iff the outbox is empty.
+        """
+        return self.__queue.empty()
+
     def deposit(self, message: Message) -> None:
         """Put a message in the Outbox.
 

@@ -386,7 +386,7 @@ class ComputeElement:
         """
         def pre_receive(port_name: str, slot: Optional[int]) -> None:
             msg = self._communicator.receive_message(port_name)
-            self._f_init_cache[(port_name, None)] = msg
+            self._f_init_cache[(port_name, slot)] = msg
             if apply_overlay:
                 self.__apply_overlay(msg)
                 self.__check_compatibility(port_name, msg.configuration)
@@ -435,7 +435,7 @@ class ComputeElement:
                                     self._configuration_store.overlay,
                                     overlay))
 
-    def __close_ports(self) -> None:
+    def __close_outgoing_ports(self) -> None:
         """Closes outgoing ports.
 
         This sends a close port message on all slots of all outgoing
@@ -450,3 +450,88 @@ class ComputeElement:
                             self._communicator.close_port(port_name, slot)
                     else:
                         self._communicator.close_port(port_name)
+
+    def __drain_incoming_port(self, port_name: str) -> None:
+        """Receives messages until a ClosePort is received.
+
+        Receives at least once.
+
+        Args:
+            port_name: Port to drain.
+        """
+        msg = self._communicator.receive_message(port_name)
+        while not isinstance(msg.data, _ClosePort):
+            # TODO: log warning if not a ClosePort
+            msg = self._communicator.receive_message(port_name)
+
+    def __drain_incoming_vector_port(self, port_name: str) -> None:
+        """Receives messages until a ClosePort is received.
+
+        Receives at least once, and works with (resizable) vector
+        ports.
+
+        Args:
+            port_name: Port to drain.
+        """
+        port = self._communicator.get_port(port_name)
+
+        msg = self._communicator.receive_message(port_name, 0)
+        for slot in range(1, port.get_length()):
+            self._communicator.receive_message(port_name, slot)
+        while not isinstance(msg.data, _ClosePort):
+            # TODO: log warning if not a ClosePort
+            msg = self._communicator.receive_message(port_name, 0)
+            for slot in range(1, port.get_length()):
+                self._communicator.receive_message(port_name, slot)
+
+    def __drain_f_init_port(self, port_name: str) -> None:
+        """Receives messages until a ClosePort is received.
+
+        Version for F_INIT ports, which have the cache to contend with.
+
+        Args:
+            port_name: Port to drain.
+        """
+        if (port_name, None) in self._f_init_cache:
+            msg = self._f_init_cache[(port_name, None)]
+            del(self._f_init_cache[(port_name, None)])
+            if not isinstance(msg.data, _ClosePort):
+                self.__drain_incoming_port(port_name)
+        elif (port_name, 0) in self._f_init_cache:
+            port = self._communicator.get_port(port_name)
+            msg = self._f_init_cache[(port_name, 0)]
+            del(self._f_init_cache[(port_name, 0)])
+            for slot in range(port.get_length()):
+                del(self._f_init_cache[(port_name, slot)])
+            if not isinstance(msg.data, _ClosePort):
+                self.__drain_incoming_port(port_name)
+
+    def __close_incoming_ports(self) -> None:
+        """Closes incoming ports.
+
+        This receives on all incoming ports until a ClosePort is
+        received on them, signaling that there will be no more
+        messages, and allowing the sending instance to shut down
+        cleanly.
+        """
+        for operator, port_names in self._communicator.list_ports().items():
+            if operator == Operator.F_INIT:
+                pass
+            elif operator.allows_receiving():
+                for port_name in port_names:
+                    port = self._communicator.get_port(port_name)
+                    if not port.is_connected():
+                        continue
+                    if not port.is_vector():
+                        self.__drain_incoming_port(port_name)
+                    else:
+                        self.__drain_incoming_vector_port(port_name)
+
+    def __close_ports(self) -> None:
+        """Closes all ports.
+
+        This sends a close port message on all slots of all outgoing
+        ports, then receives one on all incoming ports.
+        """
+        self.__close_outgoing_ports()
+        self.__close_incoming_ports()

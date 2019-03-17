@@ -1,6 +1,7 @@
 from enum import IntEnum
 import msgpack
 from threading import Lock
+import time
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 from ymmsl import (ComputeElementDecl, Conduit, Identifier, Operator,
                    Reference)
@@ -203,6 +204,8 @@ class Communicator(PostOffice):
 
         # indexed by receiving endpoint id
         self.__outboxes = dict()  # type: Dict[Reference, Outbox]
+
+        self.__outbox_lock = Lock()
 
         for server_type in server_types:
             try:
@@ -434,6 +437,10 @@ class Communicator(PostOffice):
             client.close()
         for client_type in client_types:
             client_type.shutdown(self.__instance_id())
+
+        for outbox in self.__outboxes.values():
+            while not outbox.is_empty():
+                time.sleep(0.1)
 
         for server in self.__servers:
             server.close()

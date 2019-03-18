@@ -28,7 +28,13 @@ def qmc(instance_id: str):
     while ce.reuse_instance():
         # o_f
         config0 = Configuration.from_plain_dict({'test2': 14.4})
-        for slot in range(10):
+
+        assert ce.is_connected('parameters_out')
+        assert ce.is_vector_port('parameters_out')
+        assert not ce.is_resizable('parameters_out')
+        length = ce.get_port_length('parameters_out')
+        assert length == 10
+        for slot in range(length):
             ce.send_message('parameters_out',
                             Message(0.0, None, config0), slot)
 

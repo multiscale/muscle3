@@ -154,6 +154,18 @@ class ComputeElement:
         """
         return self._communicator.list_ports()
 
+    def is_connected(self, port: str) -> bool:
+        """Returns whether the given port is connected.
+
+        Args:
+            port: The name of the port to inspect.
+
+        Returns:
+            True if there is a conduit attached to this port, False
+            if not.
+        """
+        return self._communicator.get_port(port).is_connected()
+
     def is_vector_port(self, port: str) -> bool:
         """Returns whether a port is a vector or scalar port
 
@@ -170,6 +182,46 @@ class ComputeElement:
             port: The port to check this property of.
         """
         return self._communicator.get_port(port).is_vector()
+
+    def is_resizable(self, port: str) -> bool:
+        """Returns whether the given port is resizable.
+
+        Scalar ports are never resizable. Whether a vector port is
+        resizable depends on what it is connected to.
+
+        Args:
+            port: Name of the port to inspect.
+
+        Returns:
+            True if the port can be resized.
+        """
+        return self._communicator.get_port(port).is_resizable()
+
+    def get_port_length(self, port: str) -> int:
+        """Returns the current length of the port.
+
+        Args:
+            port: The name of the port to measure.
+
+        Raises: RuntimeError if this is a scalar port.
+        """
+        return self._communicator.get_port(port).get_length()
+
+    def set_port_length(self, port: str, length: int) -> None:
+        """Resizes the port to the given length.
+
+        You should check whether the port is resizable using
+        `is_resizable()` first; whether it is depends on how this
+        compute element is wired up, so you should check.
+
+        Args:
+            port: Name of the port to resize.
+            length: The new length.
+
+        Raises:
+            RuntimeError: If the port is not resizable.
+        """
+        self._communicator.get_port(port).set_length(length)
 
     def send_message(self, port_name: str, message: Message,
                      slot: Optional[int]=None) -> None:

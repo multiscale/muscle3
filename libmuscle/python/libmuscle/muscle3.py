@@ -32,6 +32,7 @@ class Muscle3:
         Args:
             elements: The compute elements to register.
         """
+        self.__instances = list()   # type: List[Reference]
         if self.__manager is not None:
             for element in elements:
                 locations = element._communicator.get_locations()
@@ -40,6 +41,7 @@ class Muscle3:
                 instance_name = element._name + element._index
                 self.__manager.register_instance(instance_name, locations,
                                                  port_list)
+                self.__instances.append(instance_name)
 
             configuration = self.__manager.get_configuration()
 
@@ -49,6 +51,13 @@ class Muscle3:
                         element._instance_name())
                 element._connect(conduits, dims, locs)
                 element._configuration_store.base = configuration
+
+    def close(self) -> None:
+        """Deregister all registered instances.
+        """
+        if self.__manager is not None:
+            for instance in self.__instances:
+                self.__manager.deregister_instance(instance)
 
     def __port_list_from_ports(self, ports: Optional[Dict[Operator, List[str]]]
                                ) -> List[Port]:

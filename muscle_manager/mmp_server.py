@@ -172,6 +172,19 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
                 peer_dimensions=mmp_dimensions,
                 peer_locations=instance_locations)
 
+    def DeregisterInstance(self, request: mmp.DeregistrationRequest,
+                           context: grpc.ServicerContext
+                           ) -> mmp.DeregistrationResult:
+        """Handles an instance deregistration request."""
+        try:
+            self.__instance_registry.remove(Reference(request.instance_name))
+            return mmp.DeregistrationResult(status=mmp.RESULT_STATUS_SUCCESS)
+        except ValueError as e:
+            return mmp.DeregistrationResult(
+                    status=mmp.RESULT_STATUS_ERROR,
+                    error_message=('No instance with name {} was registered'
+                                   ).format(request.instance_name))
+
     def __generate_peer_instances(self, instance: Reference
                                   ) -> Generator[Reference, None, None]:
         """Generates the names of all peer instances of an instance.
@@ -250,6 +263,7 @@ class MMPServer():
             instance_registry: InstanceRegistry,
             topology_store: TopologyStore
             ) -> None:
+        self.__instance_registry = instance_registry
         self.__servicer = MMPServicer(logger, configuration, instance_registry,
                                       topology_store)
         self.__server = grpc.server(futures.ThreadPoolExecutor())
@@ -258,5 +272,18 @@ class MMPServer():
         self.__server.add_insecure_port('[::]:9000')
         self.__server.start()
 
+    def wait(self) -> None:
+        """Waits for the server to finish.
+
+        The server will shut down after every instance has been
+        registered and deregistered again.
+        """
+        self.__instance_registry.wait()
+
     def stop(self) -> None:
+        """Stops the server.
+
+        This makes the server stop serving requests, and shuts down its
+        background threads.
+        """
         self.__server.stop(0)

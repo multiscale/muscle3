@@ -12,7 +12,7 @@ def port():
 
 @pytest.fixture
 def registry():
-    return InstanceRegistry()
+    return InstanceRegistry(['instance1'])
 
 
 def test_port(port):

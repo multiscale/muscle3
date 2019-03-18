@@ -22,6 +22,7 @@ def duplication_mapper(instance_id: str):
         message = Message(0.0, None, 'testing')
         for out_port in out_ports:
             ce.send_message(out_port, message)
+    muscle.close()
 
 
 def receiver(instance_id: str):
@@ -35,6 +36,7 @@ def receiver(instance_id: str):
         # f_init
         msg = ce.receive_message('in')
         assert msg.data == 'testing'
+    muscle.close()
 
 
 def test_duplication_mapper(mmp_server_dm, sys_argv_manager):

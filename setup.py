@@ -1,7 +1,7 @@
-from setuptools import setup
+from setuptools import find_packages, setup
 
 setup(
-    name='MUSCLE 3',
+    name='mmsf-muscle3',
     version='0.0.0.dev',
     description='Version 3 of the MUltiScale Coupling Library and Environment',
     author='Lourens Veen',
@@ -16,13 +16,18 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6'],
 
-    packages=['muscle_manager', 'libmuscle'],
+    # packages=['muscle_manager', 'libmuscle'],
+    packages=find_packages() + find_packages('libmuscle/python'),
     package_dir={
         'muscle_manager': 'muscle_manager',
         'libmuscle': 'libmuscle/python/libmuscle'
     },
+    entry_points={
+        'console_scripts': ['muscle_manager=muscle_manager.muscle_manager:manage_simulation']
+    },
     python_requires='>=3.5, <4',
     install_requires=[
+        'click',
         'grpcio==1.17.1',
         'msgpack',
         'protobuf',

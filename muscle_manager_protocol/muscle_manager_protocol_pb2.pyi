@@ -326,6 +326,30 @@ class ConfigurationResult(google___protobuf___message___Message):
     def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
     def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
 
+class DeregistrationRequest(google___protobuf___message___Message):
+    instance_name = ... # type: typing___Text
+
+    def __init__(self,
+        instance_name : typing___Optional[typing___Text] = None,
+        ) -> None: ...
+    @classmethod
+    def FromString(cls, s: bytes) -> DeregistrationRequest: ...
+    def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+    def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+
+class DeregistrationResult(google___protobuf___message___Message):
+    status = ... # type: ResultStatus
+    error_message = ... # type: typing___Text
+
+    def __init__(self,
+        status : typing___Optional[ResultStatus] = None,
+        error_message : typing___Optional[typing___Text] = None,
+        ) -> None: ...
+    @classmethod
+    def FromString(cls, s: bytes) -> DeregistrationResult: ...
+    def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+    def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+
 class MuscleManager(typing___Any, metaclass=abc___ABCMeta):
     @abc___abstractmethod
     def SubmitLogMessage(self,
@@ -351,6 +375,12 @@ class MuscleManager(typing___Any, metaclass=abc___ABCMeta):
         request: PeerRequest,
         done: typing___Optional[typing___Callable[[PeerResult], None]],
     ) -> concurrent___futures___Future[PeerResult]: ...
+    @abc___abstractmethod
+    def DeregisterInstance(self,
+        rpc_controller: typing___Any,
+        request: DeregistrationRequest,
+        done: typing___Optional[typing___Callable[[DeregistrationResult], None]],
+    ) -> concurrent___futures___Future[DeregistrationResult]: ...
 class MuscleManager_Stub(MuscleManager):
     def __init__(self, rpc_channel: typing___Any) -> None: ...
     def SubmitLogMessage(self,
@@ -373,3 +403,8 @@ class MuscleManager_Stub(MuscleManager):
         request: PeerRequest,
         done: typing___Optional[typing___Callable[[PeerResult], None]],
     ) -> concurrent___futures___Future[PeerResult]: ...
+    def DeregisterInstance(self,
+        rpc_controller: typing___Any,
+        request: DeregistrationRequest,
+        done: typing___Optional[typing___Callable[[DeregistrationResult], None]],
+    ) -> concurrent___futures___Future[DeregistrationResult]: ...

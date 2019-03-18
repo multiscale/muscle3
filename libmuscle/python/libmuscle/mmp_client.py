@@ -156,3 +156,13 @@ class MMPClient():
                     peer_location.locations
 
         return conduits, peer_dimensions, peer_locations
+
+    def deregister_instance(self, name: Reference) -> None:
+        """Deregister a compute element instance with the manager.
+
+        Args:
+            name: Name of the instance in the simulation.
+        """
+        request = mmp.DeregistrationRequest(
+                instance_name=str(name))
+        self.__client.DeregisterInstance(request)

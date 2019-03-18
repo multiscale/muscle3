@@ -2,7 +2,8 @@ import grpc
 
 from muscle_manager_protocol.muscle_manager_protocol_pb2 import (
         ConfigurationRequest, ConfigurationResult, LogMessage, LogResult,
-        RegistrationRequest, RegistrationResult)
+        RegistrationRequest, RegistrationResult, DeregistrationRequest,
+        DeregistrationResult)
 
 
 class MuscleManagerStub():
@@ -17,6 +18,9 @@ class MuscleManagerStub():
                          ) -> RegistrationResult: ...
 
     def RequestPeers(self, request: PeerRequest) -> PeerResult: ...
+
+    def DeregisterInstance(self, request: DeregistrationRequest
+                           ) -> DeregistrationResult: ...
 
 
 class MuscleManagerServicer():
@@ -35,3 +39,7 @@ class MuscleManagerServicer():
 
     def RequestPeers(self, request: PeerRequest, context: grpc.ServicerContext
                      ) -> PeerResult: ...
+
+    def DeregisterInstance(self, request: DeregistrationRequest,
+                           context: grpc.ServicerContext
+                           ) -> DeregistrationResult: ...

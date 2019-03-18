@@ -34,6 +34,8 @@ def macro(instance_id: str):
             msg = ce.receive_message('in', slot)
             assert msg.data == 'testing back'
 
+    muscle.close()
+
 
 def micro(instance_id: str):
     """Micro model implementation.
@@ -56,6 +58,8 @@ def micro(instance_id: str):
 
         # o_f
         ce.send_message('out', Message(0.1, None, 'testing back'))
+
+    muscle.close()
 
 
 def test_all(mmp_server_process, sys_argv_manager):

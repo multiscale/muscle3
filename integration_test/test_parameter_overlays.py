@@ -38,6 +38,8 @@ def qmc(instance_id: str):
             ce.send_message('parameters_out',
                             Message(0.0, None, config0), slot)
 
+    muscle.close()
+
 
 def macro(instance_id: str):
     """Macro model implementation.
@@ -55,6 +57,8 @@ def macro(instance_id: str):
         # s/b
         msg = ce.receive_message('in')
         assert msg.data == 'testing back'
+
+    muscle.close()
 
 
 def micro(instance_id: str):
@@ -77,6 +81,8 @@ def micro(instance_id: str):
 
         # o_f
         ce.send_message('out', Message(0.1, None, 'testing back'))
+
+    muscle.close()
 
 
 def explicit_micro(instance_id: str):
@@ -101,6 +107,8 @@ def explicit_micro(instance_id: str):
         # o_f
         ce.send_message(
                 'out', Message(0.1, None, 'testing back', msg.configuration))
+
+    muscle.close()
 
 
 def test_parameter_overlays(mmp_server_process_qmc, sys_argv_manager):

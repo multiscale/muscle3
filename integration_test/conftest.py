@@ -10,11 +10,11 @@ from ymmsl import loader
 
 import integration_test.include_libmuscle
 
-from libmuscle.configuration import Configuration
 from muscle_manager.instance_registry import InstanceRegistry
 from muscle_manager.logger import Logger
 from muscle_manager.mmp_server import MMPServer
-from muscle_manager.muscle_manager import config_for_experiment
+from muscle_manager.muscle_manager import (
+        config_for_experiment, elements_for_simulation)
 from muscle_manager.topology_store import TopologyStore
 
 
@@ -28,7 +28,8 @@ def start_mmp_server(control_pipe, ymmsl):
 
     logger = Logger()
     configuration = config_for_experiment(ymmsl.experiment)
-    instance_registry = InstanceRegistry()
+    expected_elements = elements_for_simulation(ymmsl.simulation)
+    instance_registry = InstanceRegistry(expected_elements)
     topology_store = TopologyStore(ymmsl)
     server = MMPServer(logger, configuration, instance_registry,
                        topology_store)
@@ -110,7 +111,8 @@ def mmp_server(tmpdir, yatiml_log_warning):
     logger = Logger()
     ymmsl = yaml.load(ymmsl_text, Loader=loader)
     configuration = config_for_experiment(ymmsl.experiment)
-    instance_registry = InstanceRegistry()
+    expected_elements = elements_for_simulation(ymmsl.simulation)
+    instance_registry = InstanceRegistry(expected_elements)
     topology_store = TopologyStore(ymmsl)
     server = MMPServer(logger, configuration, instance_registry,
                        topology_store)

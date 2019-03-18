@@ -17,6 +17,9 @@ service MuscleManager {
 
     // Requests information about peers
     rpc RequestPeers(PeerRequest) returns (PeerResult);
+
+    // Deregisters an instance on shutdown
+    rpc DeregisterInstance(DeregistrationRequest) returns (DeregistrationResult);
 }
 
 // Type of result
@@ -158,4 +161,17 @@ message ConfigurationRequest {
 // Result of configuration request
 message ConfigurationResult {
     repeated Setting parameter_values = 1;
+}
+
+
+// Request to deregister an instance
+message DeregistrationRequest {
+    string instance_name = 1;
+}
+
+// Result of a RegisterInstance call
+message DeregistrationResult {
+    // if status is ERROR, error_message is present and contains a message
+    ResultStatus status = 1;
+    string error_message = 2;
 }

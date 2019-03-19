@@ -52,7 +52,8 @@ def communicator() -> Communicator:
     communicator._Communicator__ports = {
             'out': Port('out', Operator.O_I, False, True, 1, []),
             'in': Port('in', Operator.S, False, True, 1, [])}
-    return communicator
+    yield communicator
+    communicator.shutdown()
 
 
 @pytest.fixture
@@ -67,7 +68,8 @@ def communicator2() -> Communicator:
     communicator._Communicator__ports = {
             'out': Port('out', Operator.O_I, True, True, 0, [20]),
             'in': Port('in', Operator.S, True, True, 0, [20])}
-    return communicator
+    yield communicator
+    communicator.shutdown()
 
 
 @pytest.fixture
@@ -81,23 +83,24 @@ def communicator3() -> Communicator:
     communicator._Communicator__ports = {
             'out': Port('out', Operator.O_I, True, True, 0, []),
             'in': Port('in', Operator.S, True, True, 0, [])}
-    return communicator
+    yield communicator
+    communicator.shutdown()
 
 
 def test_create_communicator(communicator) -> None:
     assert str(communicator._Communicator__kernel) == 'kernel'
     assert communicator._Communicator__index == [13]
-    assert len(communicator._Communicator__servers) == 1
+    assert len(communicator._Communicator__servers) == 2
     assert communicator._Communicator__clients == {}
     assert communicator._Communicator__outboxes == {}
 
 
 def test_get_locations(communicator) -> None:
-    assert len(communicator.get_locations()) == 1
+    assert len(communicator.get_locations()) == 2
     assert communicator.get_locations()[0].startswith('direct:')
 
 
-def test_connect(communicator) -> None:
+def test_connect() -> None:
     ref = Reference
 
     instance_id = Reference('kernel')
@@ -119,6 +122,7 @@ def test_connect(communicator) -> None:
 
     # check inferred ports
     ports = communicator._Communicator__ports
+    communicator.shutdown()
     assert ports['in'].name == Identifier('in')
     assert ports['in'].operator == Operator.F_INIT
     assert ports['in']._length is None

@@ -480,6 +480,8 @@ class ComputeElement:
                     received.
             overlay: The received overlay.
         """
+        if overlay is None:
+            return
         if self._configuration_store.overlay != overlay:
             raise RuntimeError(('Unexpectedly received data from a'
                                 ' parallel universe on port "{}". My'

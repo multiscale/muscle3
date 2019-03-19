@@ -21,25 +21,27 @@ class TcpHandler(ss.BaseRequestHandler):
     """Handler for MCP-over-TCP connections.
     """
     def handle(self) -> None:
-        """Handles a request.
+        """Handles requests on a socket
         """
         receiver_id = self.request.recv(1024).decode('utf-8')
-        server = cast(TcpServerImpl, self.server).tcp_server
-        message = server.post_office.get_message(receiver_id)
+        while len(receiver_id) > 0:
+            server = cast(TcpServerImpl, self.server).tcp_server
+            message = server.post_office.get_message(receiver_id)
 
-        message_dict = {
-                'sender': str(message.sender),
-                'receiver': str(message.receiver),
-                'port_length': message.port_length,
-                'timestamp': message.timestamp,
-                'next_timestamp': message.next_timestamp,
-                'parameter_overlay': message.parameter_overlay,
-                'data': message.data}
-        packed_message = msgpack.packb(message_dict, use_bin_type=True)
+            message_dict = {
+                    'sender': str(message.sender),
+                    'receiver': str(message.receiver),
+                    'port_length': message.port_length,
+                    'timestamp': message.timestamp,
+                    'next_timestamp': message.next_timestamp,
+                    'parameter_overlay': message.parameter_overlay,
+                    'data': message.data}
+            packed_message = msgpack.packb(message_dict, use_bin_type=True)
 
-        length = len(packed_message).to_bytes(8, byteorder='little')
-        self.request.sendall(length)
-        self.request.sendall(packed_message)
+            length = len(packed_message).to_bytes(8, byteorder='little')
+            self.request.sendall(length)
+            self.request.sendall(packed_message)
+            receiver_id = self.request.recv(1024).decode('utf-8')
 
 
 class TcpServer(Server):

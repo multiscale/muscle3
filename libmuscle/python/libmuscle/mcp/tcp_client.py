@@ -79,4 +79,5 @@ class TcpClient(Client):
         This closes any connections this client has and/or performs
         other shutdown activities.
         """
+        self._socket.shutdown(socket.SHUT_RDWR)
         self._socket.close()

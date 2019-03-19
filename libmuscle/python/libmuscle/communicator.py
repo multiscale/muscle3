@@ -458,11 +458,14 @@ class Communicator(PostOffice):
         for operator, port_list in declared_ports.items():
             for port_desc in port_list:
                 port_name, is_vector = self.__split_port_desc(port_desc)
-                port_ref = self.__kernel + Identifier(port_name)
-                peer_port = self.__peers[port_ref]
-                peer_ce = peer_port[:-1]
-                port_peer_dims = self.__peer_dims[peer_ce]
                 is_connected = self.__is_connected(Identifier(port_name))
+                if is_connected:
+                    port_ref = self.__kernel + Identifier(port_name)
+                    peer_port = self.__peers[port_ref]
+                    peer_ce = peer_port[:-1]
+                    port_peer_dims = self.__peer_dims[peer_ce]
+                else:
+                    port_peer_dims = []
                 ports[port_name] = Port(
                         port_name, operator, is_vector, is_connected,
                         len(self.__index), port_peer_dims)

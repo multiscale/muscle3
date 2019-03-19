@@ -98,10 +98,12 @@ class ComputeElement:
         self.__pre_receive_f_init(apply_overlay)
 
         ports = self._communicator.list_ports()
-        no_f_init_ports = ports.get(Operator.F_INIT, []) == []
+        f_init_not_connected = all(
+                [not self.is_connected(port)
+                 for port in ports.get(Operator.F_INIT, [])])
         no_parameters_in = not self._communicator.parameters_in_connected()
 
-        if no_f_init_ports and no_parameters_in:
+        if f_init_not_connected and no_parameters_in:
             do_reuse = self._first_run
             self._first_run = False
         else:

@@ -18,7 +18,7 @@ def macro(instance_id: str):
             Operator.O_I: ['out[]'],
             Operator.S: ['in[]']})
 
-    muscle.register([ce])
+    muscle.register(ce)
 
     while ce.reuse_instance():
         # f_init
@@ -46,7 +46,7 @@ def micro(instance_id: str):
             Operator.F_INIT: ['in'],
             Operator.O_F: ['out']})
 
-    muscle.register([ce])
+    muscle.register(ce)
 
     while ce.reuse_instance():
         # f_init

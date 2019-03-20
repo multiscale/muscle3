@@ -23,7 +23,7 @@ def qmc(instance_id: str):
     """
     muscle = Muscle3()
     ce = ComputeElement(instance_id, {Operator.O_F: ['parameters_out[]']})
-    muscle.register([ce])
+    muscle.register(ce)
 
     while ce.reuse_instance():
         # o_f
@@ -47,7 +47,7 @@ def macro(instance_id: str):
     muscle = Muscle3()
     ce = ComputeElement(instance_id, {
             Operator.O_I: ['out'], Operator.S: ['in']})
-    muscle.register([ce])
+    muscle.register(ce)
 
     while ce.reuse_instance():
         # f_init
@@ -67,7 +67,7 @@ def micro(instance_id: str):
     muscle = Muscle3()
     ce = ComputeElement(instance_id, {
             Operator.F_INIT: ['in'], Operator.O_F: ['out']})
-    muscle.register([ce])
+    muscle.register(ce)
 
     assert ce.get_parameter_value('test2') == 13.3
     while ce.reuse_instance():
@@ -94,7 +94,7 @@ def explicit_micro(instance_id: str):
     muscle = Muscle3()
     ce = ComputeElement(instance_id, {
             Operator.F_INIT: ['in'], Operator.O_F: ['out']})
-    muscle.register([ce])
+    muscle.register(ce)
 
     while ce.reuse_instance(False):
         # f_init

@@ -13,7 +13,7 @@ def duplication_mapper(instance_id: str):
     """
     muscle = Muscle3()
     ce = ComputeElement(instance_id)
-    muscle.register([ce])
+    muscle.register(ce)
 
     while ce.reuse_instance():
         # o_f
@@ -30,7 +30,7 @@ def receiver(instance_id: str):
     """
     muscle = Muscle3()
     ce = ComputeElement(instance_id, {Operator.F_INIT: ['in']})
-    muscle.register([ce])
+    muscle.register(ce)
 
     while ce.reuse_instance():
         # f_init

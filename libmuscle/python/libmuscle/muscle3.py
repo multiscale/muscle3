@@ -1,6 +1,6 @@
 import multiprocessing as mp
 import sys
-from typing import cast, Callable, Dict, List, Optional
+from typing import cast, Callable, Dict, List, Optional, Union
 
 from ymmsl import Identifier, Operator, Port, Reference
 
@@ -26,12 +26,15 @@ class Muscle3:
         if mmp_location is not None:
             self.__manager = MMPClient(mmp_location)
 
-    def register(self, elements: List[ComputeElement]) -> None:
+    def register(self, elements: Union[ComputeElement, List[ComputeElement]]
+                 ) -> None:
         """Register a compute element with MUSCLE3.
 
         Args:
             elements: The compute elements to register.
         """
+        if isinstance(elements, ComputeElement):
+            elements = [elements]
         self.__instances = list()   # type: List[Reference]
         if self.__manager is not None:
             for element in elements:

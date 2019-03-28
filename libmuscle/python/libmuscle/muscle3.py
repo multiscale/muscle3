@@ -1,3 +1,4 @@
+import logging
 import multiprocessing as mp
 import sys
 from typing import cast, Callable, Dict, List, Optional, Union
@@ -5,6 +6,7 @@ from typing import cast, Callable, Dict, List, Optional, Union
 from ymmsl import Identifier, Operator, Port, Reference
 
 from libmuscle.compute_element import ComputeElement
+from libmuscle.logging_handler import MuscleManagerHandler
 from libmuscle.mcp import pipe_multiplexer as mux
 from libmuscle.mmp_client import MMPClient
 
@@ -35,6 +37,9 @@ class Muscle3:
         """
         if isinstance(elements, ComputeElement):
             elements = [elements]
+
+        self.__set_up_logging(elements)
+
         self.__instances = list()   # type: List[Reference]
         if self.__manager is not None:
             for element in elements:
@@ -80,6 +85,20 @@ class Muscle3:
                         name = name[:-2]
                     result.append(Port(Identifier(name), operator))
         return result
+
+    def __set_up_logging(self, elements: List[ComputeElement]) -> None:
+        """Adds logging handlers for one or more instances.
+        """
+        id_str = '-'.join([str(e._instance_name()) for e in elements])
+
+        logfile = 'muscle3.{}.log'.format(id_str)
+        local_handler = logging.FileHandler(logfile, mode='w')
+        logging.getLogger().addHandler(local_handler)
+
+        if self.__manager is not None:
+            mmp_handler = MuscleManagerHandler(id_str, logging.WARNING,
+                                               self.__manager)
+            logging.getLogger().addHandler(mmp_handler)
 
     @staticmethod
     def __extract_manager_location() -> Optional[str]:

@@ -26,6 +26,26 @@ class LogLevel(Enum):
     INFO = 1
     DEBUG = 0
 
+    @staticmethod
+    def from_python_level(level: int) -> 'LogLevel':
+        """Creates a LogLevel from a Python log level.
+
+        Args:
+            level: A standard Python log level, such as logging.WARNING.
+
+        Returns:
+            The same level, but as a LogLevel.
+        """
+        if level > 40:
+            return LogLevel.CRITICAL
+        elif level > 30:
+            return LogLevel.ERROR
+        elif level > 20:
+            return LogLevel.WARNING
+        elif level > 10:
+            return LogLevel.INFO
+        return LogLevel.DEBUG
+
     def as_python_level(self) -> int:
         """Convert the LogLevel to the corresponding Python level."""
         to_python_level = {

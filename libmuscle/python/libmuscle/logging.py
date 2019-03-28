@@ -129,30 +129,28 @@ class LogMessage:
     Args:
         instance_id: The identifier of the instance that generated \
                 this message.
-        operator: The kernel operator that generated this message.
-        timestamp: When the message was generated.
+        timestamp: When the message was generated (real-world, not \
+                simulation).
         level: Log level of the message.
-        text: Contents of the message.
+        text: Content of the message.
 
     Attributes:
         instance_id: The identifier of the instance that generated \
                 this message.
-        operator: The kernel operator that generated this message.
-        timestamp: When the message was generated.
+        timestamp: When the message was generated (real-world, not \
+                simulation).
         level: Log level of the message.
-        text: Contents of the message.
+        text: Content of the message.
     """
     def __init__(
             self,
             instance_id: str,
-            operator: Operator,
             timestamp: Timestamp,
             level: LogLevel,
             text: str
             ) -> None:
 
         self.instance_id = instance_id
-        self.operator = operator
         self.timestamp = timestamp
         self.level = level
         self.text = text
@@ -168,7 +166,6 @@ class LogMessage:
         """
         return mmp.LogMessage(
                 instance_id=self.instance_id,
-                operator=operator_to_grpc(self.operator),
                 timestamp=self.timestamp.to_grpc(),
                 level=self.level.to_grpc(),
                 text=self.text)

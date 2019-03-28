@@ -31,7 +31,6 @@ def test_connection_fail() -> None:
 def test_submit_log_message(mocked_mmp_client) -> None:
     message = LogMessage(
             'test_mmp_client',
-            Operator.NONE,
             Timestamp(1.0),
             LogLevel.WARNING,
             'Testing the MMPClient')

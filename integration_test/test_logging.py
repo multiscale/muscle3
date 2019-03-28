@@ -54,7 +54,6 @@ def do_logging_test(caplog):
     client = MMPClient('localhost:9000')
     message = LogMessage(
             instance_id='test_logging',
-            operator=Operator.O_F,
             timestamp=Timestamp(2.0),
             level=LogLevel.CRITICAL,
             text='Integration testing')
@@ -62,7 +61,6 @@ def do_logging_test(caplog):
     # log and check
     client.submit_log_message(message)
     assert caplog.records[0].name == 'test_logging'
-    assert caplog.records[0].operator == 'O_F'
     assert caplog.records[0].time_stamp == '1970-01-01T00:00:02Z'
     assert caplog.records[0].levelname == 'CRITICAL'
     assert caplog.records[0].message == 'Integration testing'

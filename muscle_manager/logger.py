@@ -12,14 +12,13 @@ class Logger:
     """
     def __init__(self) -> None:
         logging.basicConfig(
-                format='%(time_stamp)-15s: %(name)s ' +
-                '(%(operator)s) %(levelname)s: %(message)s',
+                format='%(time_stamp)-15s: %(name)s' +
+                ' %(levelname)s: %(message)s',
                 level=logging.DEBUG)
 
     def log_message(
             self,
             instance_id: str,
-            operator: Operator,
             timestamp: Timestamp,
             level: LogLevel,
             text: str) -> None:
@@ -28,7 +27,6 @@ class Logger:
         Args:
             instance_id: Identifier of the instance that generated the \
                     message.
-            operator: The operator that generated the message.
             timestamp: Time when this log message was generated, \
                     according to the clock on that machine.
             level: The log level of the message.
@@ -38,6 +36,4 @@ class Logger:
         logger.log(
                 level.as_python_level(),
                 text,
-                extra={
-                    'time_stamp': timestamp.to_rfc3339(),
-                    'operator': operator.name})
+                extra={'time_stamp': timestamp.to_rfc3339()})

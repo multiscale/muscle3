@@ -105,7 +105,6 @@ PARAMETER_VALUE_TYPE_LIST_LIST_FLOAT = typing___cast(ParameterValueType, 5)
 
 class LogMessage(google___protobuf___message___Message):
     instance_id = ... # type: typing___Text
-    operator = ... # type: Operator
     level = ... # type: LogLevel
     text = ... # type: typing___Text
 
@@ -114,7 +113,6 @@ class LogMessage(google___protobuf___message___Message):
 
     def __init__(self,
         instance_id : typing___Optional[typing___Text] = None,
-        operator : typing___Optional[Operator] = None,
         timestamp : typing___Optional[google___protobuf___timestamp_pb2___Timestamp] = None,
         level : typing___Optional[LogLevel] = None,
         text : typing___Optional[typing___Text] = None,

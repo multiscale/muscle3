@@ -17,12 +17,10 @@ def test_create_logger():
 
 def test_log_message(logger, caplog):
     logger.log_message(
-            'test_log_message', Operator.F_INIT,
-            Timestamp(123.0),
+            'test_log_message', Timestamp(123.0),
             LogLevel.CRITICAL, 'Testing the logging system')
 
     assert caplog.records[0].name == 'test_log_message'
-    assert caplog.records[0].operator == 'F_INIT'
     assert caplog.records[0].time_stamp == '1970-01-01T00:02:03Z'
     assert caplog.records[0].levelname == 'CRITICAL'
     assert caplog.records[0].message == 'Testing the logging system'

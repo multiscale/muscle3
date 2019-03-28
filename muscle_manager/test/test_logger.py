@@ -7,7 +7,6 @@ from muscle_manager.logger import Logger
 
 def test_log_level():
     assert LogLevel.CRITICAL.as_python_level() == logging.CRITICAL
-    assert LogLevel.PROFILE.as_python_level() == logging.INFO
     assert LogLevel.CRITICAL.value > LogLevel.DEBUG.value
 
 

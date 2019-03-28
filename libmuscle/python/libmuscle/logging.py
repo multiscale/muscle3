@@ -15,14 +15,11 @@ class LogLevel(Enum):
 
     These match the levels in the MUSCLE Manager Protocol, and should \
     be kept identical to those. They also match the Python logging log \
-    levels, with an additional PROFILE level. This is to be used by \
-    libmuscle for messages intended for the built-in simple profiling \
-    algorithm.
+    levels, although not numerically.
     """
     CRITICAL = 5
     ERROR = 4
     WARNING = 3
-    PROFILE = 2
     INFO = 1
     DEBUG = 0
 
@@ -52,7 +49,6 @@ class LogLevel(Enum):
                 LogLevel.CRITICAL: logging.CRITICAL,
                 LogLevel.ERROR: logging.ERROR,
                 LogLevel.WARNING: logging.WARNING,
-                LogLevel.PROFILE: logging.INFO,
                 LogLevel.INFO: logging.INFO,
                 LogLevel.DEBUG: logging.DEBUG}
         return to_python_level[self]
@@ -72,7 +68,6 @@ class LogLevel(Enum):
         log_level_map = {
                 mmp.LOG_LEVEL_DEBUG: LogLevel.DEBUG,
                 mmp.LOG_LEVEL_INFO: LogLevel.INFO,
-                mmp.LOG_LEVEL_PROFILE: LogLevel.PROFILE,
                 mmp.LOG_LEVEL_WARNING: LogLevel.WARNING,
                 mmp.LOG_LEVEL_ERROR: LogLevel.ERROR,
                 mmp.LOG_LEVEL_CRITICAL: LogLevel.CRITICAL
@@ -91,7 +86,6 @@ class LogLevel(Enum):
         log_level_map = {
                 LogLevel.DEBUG: mmp.LOG_LEVEL_DEBUG,
                 LogLevel.INFO: mmp.LOG_LEVEL_INFO,
-                LogLevel.PROFILE: mmp.LOG_LEVEL_PROFILE,
                 LogLevel.WARNING: mmp.LOG_LEVEL_WARNING,
                 LogLevel.ERROR: mmp.LOG_LEVEL_ERROR,
                 LogLevel.CRITICAL: mmp.LOG_LEVEL_CRITICAL

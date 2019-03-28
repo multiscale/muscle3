@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='muscle_manager_protocol',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x1dmuscle_manager_protocol.proto\x12\x17muscle_manager_protocol\x1a\x1fgoogle/protobuf/timestamp.proto\"\x90\x01\n\nLogMessage\x12\x13\n\x0binstance_id\x18\x01 \x01(\t\x12-\n\ttimestamp\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x30\n\x05level\x18\x04 \x01(\x0e\x32!.muscle_manager_protocol.LogLevel\x12\x0c\n\x04text\x18\x05 \x01(\t\"\x0b\n\tLogResult\"I\n\x04Port\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x33\n\x08operator\x18\x02 \x01(\x0e\x32!.muscle_manager_protocol.Operator\"u\n\x13RegistrationRequest\x12\x15\n\rinstance_name\x18\x01 \x01(\t\x12\x19\n\x11network_locations\x18\x02 \x03(\t\x12,\n\x05ports\x18\x03 \x03(\x0b\x32\x1d.muscle_manager_protocol.Port\"b\n\x12RegistrationResult\x12\x35\n\x06status\x18\x01 \x01(\x0e\x32%.muscle_manager_protocol.ResultStatus\x12\x15\n\rerror_message\x18\x02 \x01(\t\"+\n\x07\x43onduit\x12\x0e\n\x06sender\x18\x01 \x01(\t\x12\x10\n\x08receiver\x18\x02 \x01(\t\"$\n\x0bPeerRequest\x12\x15\n\rinstance_name\x18\x01 \x01(\t\"\x9a\x03\n\nPeerResult\x12\x35\n\x06status\x18\x01 \x01(\x0e\x32%.muscle_manager_protocol.ResultStatus\x12\x15\n\rerror_message\x18\x02 \x01(\t\x12\x32\n\x08\x63onduits\x18\x03 \x03(\x0b\x32 .muscle_manager_protocol.Conduit\x12K\n\x0fpeer_dimensions\x18\x04 \x03(\x0b\x32\x32.muscle_manager_protocol.PeerResult.PeerDimensions\x12I\n\x0epeer_locations\x18\x05 \x03(\x0b\x32\x31.muscle_manager_protocol.PeerResult.PeerLocations\x1a\x37\n\x0ePeerDimensions\x12\x11\n\tpeer_name\x18\x01 \x01(\t\x12\x12\n\ndimensions\x18\x02 \x03(\x05\x1a\x39\n\rPeerLocations\x12\x15\n\rinstance_name\x18\x01 \x01(\t\x12\x11\n\tlocations\x18\x02 \x03(\t\"\x1e\n\x0cListOfDouble\x12\x0e\n\x06values\x18\x01 \x03(\x01\"K\n\x12ListOfListOfDouble\x12\x35\n\x06values\x18\x01 \x03(\x0b\x32%.muscle_manager_protocol.ListOfDouble\"\xbc\x02\n\x07Setting\x12\x11\n\tparameter\x18\x01 \x01(\t\x12?\n\nvalue_type\x18\x02 \x01(\x0e\x32+.muscle_manager_protocol.ParameterValueType\x12\x14\n\x0cvalue_string\x18\x03 \x01(\t\x12\x11\n\tvalue_int\x18\x04 \x01(\x03\x12\x13\n\x0bvalue_float\x18\x05 \x01(\x01\x12\x12\n\nvalue_bool\x18\x06 \x01(\x08\x12?\n\x10value_list_float\x18\x07 \x01(\x0b\x32%.muscle_manager_protocol.ListOfDouble\x12J\n\x15value_list_list_float\x18\x08 \x01(\x0b\x32+.muscle_manager_protocol.ListOfListOfDouble\"\x16\n\x14\x43onfigurationRequest\"Q\n\x13\x43onfigurationResult\x12:\n\x10parameter_values\x18\x01 \x03(\x0b\x32 .muscle_manager_protocol.Setting\".\n\x15\x44\x65registrationRequest\x12\x15\n\rinstance_name\x18\x01 \x01(\t\"d\n\x14\x44\x65registrationResult\x12\x35\n\x06status\x18\x01 \x01(\x0e\x32%.muscle_manager_protocol.ResultStatus\x12\x15\n\rerror_message\x18\x02 \x01(\t*]\n\x0cResultStatus\x12\x19\n\x15RESULT_STATUS_SUCCESS\x10\x00\x12\x17\n\x13RESULT_STATUS_ERROR\x10\x01\x12\x19\n\x15RESULT_STATUS_PENDING\x10\x02*\x88\x01\n\x08Operator\x12\x11\n\rOPERATOR_NONE\x10\x00\x12\x13\n\x0fOPERATOR_F_INIT\x10\x01\x12\x10\n\x0cOPERATOR_O_I\x10\x02\x12\x0e\n\nOPERATOR_S\x10\x03\x12\x0e\n\nOPERATOR_B\x10\x04\x12\x10\n\x0cOPERATOR_O_F\x10\x05\x12\x10\n\x0cOPERATOR_MAP\x10\x06*\x8e\x01\n\x08LogLevel\x12\x13\n\x0fLOG_LEVEL_DEBUG\x10\x00\x12\x12\n\x0eLOG_LEVEL_INFO\x10\x01\x12\x15\n\x11LOG_LEVEL_PROFILE\x10\x02\x12\x15\n\x11LOG_LEVEL_WARNING\x10\x03\x12\x13\n\x0fLOG_LEVEL_ERROR\x10\x04\x12\x16\n\x12LOG_LEVEL_CRITICAL\x10\x05*\xe1\x01\n\x12ParameterValueType\x12\x1f\n\x1bPARAMETER_VALUE_TYPE_STRING\x10\x00\x12\x1c\n\x18PARAMETER_VALUE_TYPE_INT\x10\x01\x12\x1e\n\x1aPARAMETER_VALUE_TYPE_FLOAT\x10\x02\x12\x1d\n\x19PARAMETER_VALUE_TYPE_BOOL\x10\x03\x12#\n\x1fPARAMETER_VALUE_TYPE_LIST_FLOAT\x10\x04\x12(\n$PARAMETER_VALUE_TYPE_LIST_LIST_FLOAT\x10\x05\x32\xa0\x04\n\rMuscleManager\x12[\n\x10SubmitLogMessage\x12#.muscle_manager_protocol.LogMessage\x1a\".muscle_manager_protocol.LogResult\x12s\n\x14RequestConfiguration\x12-.muscle_manager_protocol.ConfigurationRequest\x1a,.muscle_manager_protocol.ConfigurationResult\x12m\n\x10RegisterInstance\x12,.muscle_manager_protocol.RegistrationRequest\x1a+.muscle_manager_protocol.RegistrationResult\x12Y\n\x0cRequestPeers\x12$.muscle_manager_protocol.PeerRequest\x1a#.muscle_manager_protocol.PeerResult\x12s\n\x12\x44\x65registerInstance\x12..muscle_manager_protocol.DeregistrationRequest\x1a-.muscle_manager_protocol.DeregistrationResultb\x06proto3')
+  serialized_pb=_b('\n\x1dmuscle_manager_protocol.proto\x12\x17muscle_manager_protocol\x1a\x1fgoogle/protobuf/timestamp.proto\"\x90\x01\n\nLogMessage\x12\x13\n\x0binstance_id\x18\x01 \x01(\t\x12-\n\ttimestamp\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x30\n\x05level\x18\x04 \x01(\x0e\x32!.muscle_manager_protocol.LogLevel\x12\x0c\n\x04text\x18\x05 \x01(\t\"\x0b\n\tLogResult\"I\n\x04Port\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x33\n\x08operator\x18\x02 \x01(\x0e\x32!.muscle_manager_protocol.Operator\"u\n\x13RegistrationRequest\x12\x15\n\rinstance_name\x18\x01 \x01(\t\x12\x19\n\x11network_locations\x18\x02 \x03(\t\x12,\n\x05ports\x18\x03 \x03(\x0b\x32\x1d.muscle_manager_protocol.Port\"b\n\x12RegistrationResult\x12\x35\n\x06status\x18\x01 \x01(\x0e\x32%.muscle_manager_protocol.ResultStatus\x12\x15\n\rerror_message\x18\x02 \x01(\t\"+\n\x07\x43onduit\x12\x0e\n\x06sender\x18\x01 \x01(\t\x12\x10\n\x08receiver\x18\x02 \x01(\t\"$\n\x0bPeerRequest\x12\x15\n\rinstance_name\x18\x01 \x01(\t\"\x9a\x03\n\nPeerResult\x12\x35\n\x06status\x18\x01 \x01(\x0e\x32%.muscle_manager_protocol.ResultStatus\x12\x15\n\rerror_message\x18\x02 \x01(\t\x12\x32\n\x08\x63onduits\x18\x03 \x03(\x0b\x32 .muscle_manager_protocol.Conduit\x12K\n\x0fpeer_dimensions\x18\x04 \x03(\x0b\x32\x32.muscle_manager_protocol.PeerResult.PeerDimensions\x12I\n\x0epeer_locations\x18\x05 \x03(\x0b\x32\x31.muscle_manager_protocol.PeerResult.PeerLocations\x1a\x37\n\x0ePeerDimensions\x12\x11\n\tpeer_name\x18\x01 \x01(\t\x12\x12\n\ndimensions\x18\x02 \x03(\x05\x1a\x39\n\rPeerLocations\x12\x15\n\rinstance_name\x18\x01 \x01(\t\x12\x11\n\tlocations\x18\x02 \x03(\t\"\x1e\n\x0cListOfDouble\x12\x0e\n\x06values\x18\x01 \x03(\x01\"K\n\x12ListOfListOfDouble\x12\x35\n\x06values\x18\x01 \x03(\x0b\x32%.muscle_manager_protocol.ListOfDouble\"\xbc\x02\n\x07Setting\x12\x11\n\tparameter\x18\x01 \x01(\t\x12?\n\nvalue_type\x18\x02 \x01(\x0e\x32+.muscle_manager_protocol.ParameterValueType\x12\x14\n\x0cvalue_string\x18\x03 \x01(\t\x12\x11\n\tvalue_int\x18\x04 \x01(\x03\x12\x13\n\x0bvalue_float\x18\x05 \x01(\x01\x12\x12\n\nvalue_bool\x18\x06 \x01(\x08\x12?\n\x10value_list_float\x18\x07 \x01(\x0b\x32%.muscle_manager_protocol.ListOfDouble\x12J\n\x15value_list_list_float\x18\x08 \x01(\x0b\x32+.muscle_manager_protocol.ListOfListOfDouble\"\x16\n\x14\x43onfigurationRequest\"Q\n\x13\x43onfigurationResult\x12:\n\x10parameter_values\x18\x01 \x03(\x0b\x32 .muscle_manager_protocol.Setting\".\n\x15\x44\x65registrationRequest\x12\x15\n\rinstance_name\x18\x01 \x01(\t\"d\n\x14\x44\x65registrationResult\x12\x35\n\x06status\x18\x01 \x01(\x0e\x32%.muscle_manager_protocol.ResultStatus\x12\x15\n\rerror_message\x18\x02 \x01(\t*]\n\x0cResultStatus\x12\x19\n\x15RESULT_STATUS_SUCCESS\x10\x00\x12\x17\n\x13RESULT_STATUS_ERROR\x10\x01\x12\x19\n\x15RESULT_STATUS_PENDING\x10\x02*\x88\x01\n\x08Operator\x12\x11\n\rOPERATOR_NONE\x10\x00\x12\x13\n\x0fOPERATOR_F_INIT\x10\x01\x12\x10\n\x0cOPERATOR_O_I\x10\x02\x12\x0e\n\nOPERATOR_S\x10\x03\x12\x0e\n\nOPERATOR_B\x10\x04\x12\x10\n\x0cOPERATOR_O_F\x10\x05\x12\x10\n\x0cOPERATOR_MAP\x10\x06*w\n\x08LogLevel\x12\x13\n\x0fLOG_LEVEL_DEBUG\x10\x00\x12\x12\n\x0eLOG_LEVEL_INFO\x10\x01\x12\x15\n\x11LOG_LEVEL_WARNING\x10\x03\x12\x13\n\x0fLOG_LEVEL_ERROR\x10\x04\x12\x16\n\x12LOG_LEVEL_CRITICAL\x10\x05*\xe1\x01\n\x12ParameterValueType\x12\x1f\n\x1bPARAMETER_VALUE_TYPE_STRING\x10\x00\x12\x1c\n\x18PARAMETER_VALUE_TYPE_INT\x10\x01\x12\x1e\n\x1aPARAMETER_VALUE_TYPE_FLOAT\x10\x02\x12\x1d\n\x19PARAMETER_VALUE_TYPE_BOOL\x10\x03\x12#\n\x1fPARAMETER_VALUE_TYPE_LIST_FLOAT\x10\x04\x12(\n$PARAMETER_VALUE_TYPE_LIST_LIST_FLOAT\x10\x05\x32\xa0\x04\n\rMuscleManager\x12[\n\x10SubmitLogMessage\x12#.muscle_manager_protocol.LogMessage\x1a\".muscle_manager_protocol.LogResult\x12s\n\x14RequestConfiguration\x12-.muscle_manager_protocol.ConfigurationRequest\x1a,.muscle_manager_protocol.ConfigurationResult\x12m\n\x10RegisterInstance\x12,.muscle_manager_protocol.RegistrationRequest\x1a+.muscle_manager_protocol.RegistrationResult\x12Y\n\x0cRequestPeers\x12$.muscle_manager_protocol.PeerRequest\x1a#.muscle_manager_protocol.PeerResult\x12s\n\x12\x44\x65registerInstance\x12..muscle_manager_protocol.DeregistrationRequest\x1a-.muscle_manager_protocol.DeregistrationResultb\x06proto3')
   ,
   dependencies=[google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,])
 
@@ -110,26 +110,22 @@ _LOGLEVEL = _descriptor.EnumDescriptor(
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='LOG_LEVEL_PROFILE', index=2, number=2,
+      name='LOG_LEVEL_WARNING', index=2, number=3,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='LOG_LEVEL_WARNING', index=3, number=3,
+      name='LOG_LEVEL_ERROR', index=3, number=4,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='LOG_LEVEL_ERROR', index=4, number=4,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='LOG_LEVEL_CRITICAL', index=5, number=5,
+      name='LOG_LEVEL_CRITICAL', index=4, number=5,
       serialized_options=None,
       type=None),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1961,
-  serialized_end=2103,
+  serialized_start=1960,
+  serialized_end=2079,
 )
 _sym_db.RegisterEnumDescriptor(_LOGLEVEL)
 
@@ -167,8 +163,8 @@ _PARAMETERVALUETYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2106,
-  serialized_end=2331,
+  serialized_start=2082,
+  serialized_end=2307,
 )
 _sym_db.RegisterEnumDescriptor(_PARAMETERVALUETYPE)
 
@@ -185,7 +181,6 @@ OPERATOR_O_F = 5
 OPERATOR_MAP = 6
 LOG_LEVEL_DEBUG = 0
 LOG_LEVEL_INFO = 1
-LOG_LEVEL_PROFILE = 2
 LOG_LEVEL_WARNING = 3
 LOG_LEVEL_ERROR = 4
 LOG_LEVEL_CRITICAL = 5
@@ -1029,8 +1024,8 @@ _MUSCLEMANAGER = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=2334,
-  serialized_end=2878,
+  serialized_start=2310,
+  serialized_end=2854,
   methods=[
   _descriptor.MethodDescriptor(
     name='SubmitLogMessage',

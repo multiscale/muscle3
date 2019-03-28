@@ -80,7 +80,6 @@ class LogLevel(int):
     def items(cls) -> typing___List[typing___Tuple[str, int]]: ...
 LOG_LEVEL_DEBUG = typing___cast(LogLevel, 0)
 LOG_LEVEL_INFO = typing___cast(LogLevel, 1)
-LOG_LEVEL_PROFILE = typing___cast(LogLevel, 2)
 LOG_LEVEL_WARNING = typing___cast(LogLevel, 3)
 LOG_LEVEL_ERROR = typing___cast(LogLevel, 4)
 LOG_LEVEL_CRITICAL = typing___cast(LogLevel, 5)

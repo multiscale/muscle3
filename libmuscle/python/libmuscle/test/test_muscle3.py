@@ -11,7 +11,15 @@ from typing import Generator
 @pytest.fixture
 def sys_argv_manager() -> Generator[None, None, None]:
     old_argv = sys.argv
-    sys.argv = ['', '--muscle-manager=localhost:9000']
+    sys.argv = sys.argv + ['--muscle-manager=localhost:9000']
+    yield None
+    sys.argv = old_argv
+
+
+@pytest.fixture
+def log_file_in_tmpdir(tmpdir) -> Generator[None, None, None]:
+    old_argv = sys.argv
+    sys.argv = sys.argv + ['--muscle-log-file={}'.format(tmpdir)]
     yield None
     sys.argv = old_argv
 
@@ -21,18 +29,18 @@ def test_extract_manager_location(sys_argv_manager) -> None:
             'localhost:9000')
 
 
-def test_muscle_init_no_manager() -> None:
+def test_muscle_init_no_manager(log_file_in_tmpdir) -> None:
     muscle = Muscle3()
     assert muscle._Muscle3__manager is None
 
 
-def test_muscle_init_manager(sys_argv_manager) -> None:
+def test_muscle_init_manager(log_file_in_tmpdir, sys_argv_manager) -> None:
     with patch('libmuscle.muscle3.MMPClient') as mock_client:
         Muscle3()
         mock_client.assert_called_once_with('localhost:9000')
 
 
-def test_register() -> None:
+def test_register(log_file_in_tmpdir) -> None:
     muscle = Muscle3()
     manager_client = MagicMock()
     manager_client.request_peers = MagicMock(return_value=(1, 2, 3))
@@ -66,7 +74,7 @@ def test_register() -> None:
             element._configuration_store.base)
 
 
-def test_register2() -> None:
+def test_register2(log_file_in_tmpdir) -> None:
     muscle = Muscle3()
     manager_client = MagicMock()
     manager_client.request_peers = MagicMock(return_value=(1, 2, 3))

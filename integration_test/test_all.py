@@ -62,7 +62,7 @@ def micro(instance_id: str):
     muscle.close()
 
 
-def test_all(mmp_server_process, sys_argv_manager):
+def test_all(log_file_in_tmpdir, mmp_server_process, sys_argv_manager):
     """A positive all-up test of everything.
     """
     submodels = {'macro': macro}

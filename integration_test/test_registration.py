@@ -6,7 +6,7 @@ from ymmsl import Conduit, Operator, Port, Reference
 from libmuscle.mmp_client import MMPClient
 
 
-def test_registration(mmp_server):
+def test_registration(log_file_in_tmpdir, mmp_server):
     client = MMPClient('localhost:9000')
     instance_name = Reference('test_instance')
     port = Port(Reference('test_in'), Operator.S)
@@ -22,7 +22,7 @@ def test_registration(mmp_server):
     assert registry.get_ports(instance_name)[0].operator == Operator.S
 
 
-def test_wiring(mmp_server_process):
+def test_wiring(log_file_in_tmpdir, mmp_server_process):
     client = MMPClient('localhost:9000')
 
     client.register_instance(Reference('macro'), ['direct:macro'], [])

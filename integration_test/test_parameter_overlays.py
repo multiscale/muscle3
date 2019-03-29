@@ -10,14 +10,6 @@ from libmuscle.configuration import Configuration
 from libmuscle.muscle3 import run_instances, Muscle3
 
 
-@pytest.fixture
-def sys_argv_manager():
-    old_argv = sys.argv
-    sys.argv = ['', '--muscle-manager=localhost:9000']
-    yield
-    sys.argv = old_argv
-
-
 def qmc(instance_id: str):
     """qMC implementation.
     """
@@ -111,7 +103,8 @@ def explicit_micro(instance_id: str):
     muscle.close()
 
 
-def test_parameter_overlays(mmp_server_process_qmc, sys_argv_manager):
+def test_parameter_overlays(log_file_in_tmpdir, mmp_server_process_qmc,
+                            sys_argv_manager):
     """A positive all-up test of parameter overlays.
     """
     submodels = {'qmc': qmc}

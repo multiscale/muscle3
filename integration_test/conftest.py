@@ -40,7 +40,7 @@ def start_mmp_server(control_pipe, ymmsl):
 
 
 @pytest.fixture
-def mmp_server_process(tmpdir, yatiml_log_warning):
+def mmp_server_process(yatiml_log_warning):
     ymmsl_text = (
             'version: v0.1\n'
             'simulation:\n'
@@ -82,7 +82,7 @@ def mmp_server_process(tmpdir, yatiml_log_warning):
 
 
 @pytest.fixture
-def mmp_server(tmpdir, yatiml_log_warning):
+def mmp_server(yatiml_log_warning):
     ymmsl_text = (
             'version: v0.1\n'
             'simulation:\n'
@@ -121,7 +121,7 @@ def mmp_server(tmpdir, yatiml_log_warning):
 
 
 @pytest.fixture
-def mmp_server_process_qmc(tmpdir, yatiml_log_warning):
+def mmp_server_process_qmc(yatiml_log_warning):
     ymmsl_text = (
             'version: v0.1\n'
             'simulation:\n'
@@ -167,7 +167,7 @@ def mmp_server_process_qmc(tmpdir, yatiml_log_warning):
 
 
 @pytest.fixture
-def mmp_server_dm(tmpdir, yatiml_log_warning):
+def mmp_server_dm(yatiml_log_warning):
     ymmsl_text = (
             'version: v0.1\n'
             'simulation:\n'
@@ -201,6 +201,14 @@ def mmp_server_dm(tmpdir, yatiml_log_warning):
 @pytest.fixture
 def sys_argv_manager() -> Generator[None, None, None]:
     old_argv = sys.argv
-    sys.argv = ['', '--muscle-manager=localhost:9000']
+    sys.argv = sys.argv + ['--muscle-manager=localhost:9000']
+    yield None
+    sys.argv = old_argv
+
+
+@pytest.fixture
+def log_file_in_tmpdir(tmpdir):
+    old_argv = sys.argv
+    sys.argv = sys.argv + ['--muscle-log-file={}'.format(tmpdir)]
     yield None
     sys.argv = old_argv

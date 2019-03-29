@@ -39,7 +39,8 @@ def receiver(instance_id: str):
     muscle.close()
 
 
-def test_duplication_mapper(mmp_server_dm, sys_argv_manager):
+def test_duplication_mapper(log_file_in_tmpdir, mmp_server_dm,
+                            sys_argv_manager):
     """A positive all-up test of duplication mappers.
 
     This is an acyclic workflow.

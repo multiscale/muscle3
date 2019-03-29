@@ -68,7 +68,7 @@ def do_logging_test(caplog):
     server.stop()
 
 
-def test_logging(caplog):
+def test_logging(log_file_in_tmpdir, caplog):
     process = mp.Process(target=do_logging_test, args=(caplog,))
     process.start()
     process.join()

@@ -1,5 +1,6 @@
 import logging
 import multiprocessing as mp
+from pathlib import Path
 import sys
 from typing import cast, Callable, Dict, List, Optional, Union
 
@@ -91,8 +92,9 @@ class Muscle3:
         """
         id_str = '-'.join([str(e._instance_name()) for e in elements])
 
-        logfile = 'muscle3.{}.log'.format(id_str)
-        local_handler = logging.FileHandler(logfile, mode='w')
+        logfile = self.__extract_log_file_location(
+                'muscle3.{}.log'.format(id_str))
+        local_handler = logging.FileHandler(str(logfile), mode='w')
         logging.getLogger().addHandler(local_handler)
 
         if self.__manager is not None:
@@ -122,6 +124,44 @@ class Muscle3:
                 return arg[len(prefix):]
 
         return None
+
+    @staticmethod
+    def __extract_log_file_location(filename: str) -> Optional[Path]:
+        """Gets the log file location from the command line.
+
+        Extracts the --muscle-log-file=<path> argument to tell the
+        MUSCLE library where to write the local log file. This
+        function will extract this argument from the command line
+        arguments if it is present. If the given path is to a
+        directory, <filename> will be written inside of that directory,
+        if the path is not an existing directory, then it will be used
+        as the name of the log file to write to. If no command line
+        argument is given, <filename> will be written in the current
+        directory.
+
+        Args:
+            filename: Default file name to use.
+
+        Returns:
+            Path to the log file to write.
+        """
+        # Neither getopt, optparse, or argparse will let me pick out
+        # just one option from the command line and ignore the rest.
+        # So we do it by hand.
+        prefix = '--muscle-log-file='
+        given_path_str = ''
+        for arg in sys.argv[1:]:
+            if arg.startswith(prefix):
+                given_path_str = arg[len(prefix):]
+
+        if given_path_str == '':
+            return Path('.') / filename
+
+        given_path = Path(given_path_str)
+
+        if given_path.is_dir():
+            return given_path / filename
+        return given_path
 
 
 def run_instances(instances: Dict[str, Callable]) -> None:

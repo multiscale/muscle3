@@ -9,6 +9,9 @@ service MuscleManager {
     // Sends a logged message to the Manager
     rpc SubmitLogMessage(LogMessage) returns (LogResult);
 
+    // Sends a batch of profiling events to the Manager
+    rpc SubmitProfileEvents(Profile) returns (ProfileResult);
+
     // Requests the global base configuration
     rpc RequestConfiguration(ConfigurationRequest) returns (ConfigurationResult);
 
@@ -66,6 +69,37 @@ message Port {
     string name = 1;
     Operator operator = 2;
 }
+
+
+// Event type for profiling
+enum ProfileEventType {
+    PROFILE_EVENT_TYPE_REGISTER = 0;
+    PROFILE_EVENT_TYPE_DEREGISTER = 1;
+    PROFILE_EVENT_TYPE_SEND = 2;
+    PROFILE_EVENT_TYPE_RECEIVE = 3;
+}
+
+// Event for profiling
+message ProfileEvent {
+    string instance_id = 1;
+    google.protobuf.Timestamp start_time = 2;
+    google.protobuf.Timestamp stop_time = 3;
+    ProfileEventType event_type = 4;
+    Port port = 5;
+    int32 port_length = 6;
+    int32 slot = 7;
+    int64 message_size = 8;
+}
+
+// A batch of profiling events for submission
+message Profile {
+    repeated ProfileEvent events = 1;
+}
+
+// Result of a profining event submission
+message ProfileResult {
+}
+
 
 // Request to register a new instance
 message RegistrationRequest {

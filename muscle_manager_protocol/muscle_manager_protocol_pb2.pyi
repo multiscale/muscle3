@@ -84,6 +84,22 @@ LOG_LEVEL_WARNING = typing___cast(LogLevel, 3)
 LOG_LEVEL_ERROR = typing___cast(LogLevel, 4)
 LOG_LEVEL_CRITICAL = typing___cast(LogLevel, 5)
 
+class ProfileEventType(int):
+    @classmethod
+    def Name(cls, number: int) -> str: ...
+    @classmethod
+    def Value(cls, name: str) -> int: ...
+    @classmethod
+    def keys(cls) -> typing___List[str]: ...
+    @classmethod
+    def values(cls) -> typing___List[int]: ...
+    @classmethod
+    def items(cls) -> typing___List[typing___Tuple[str, int]]: ...
+PROFILE_EVENT_TYPE_REGISTER = typing___cast(ProfileEventType, 0)
+PROFILE_EVENT_TYPE_DEREGISTER = typing___cast(ProfileEventType, 1)
+PROFILE_EVENT_TYPE_SEND = typing___cast(ProfileEventType, 2)
+PROFILE_EVENT_TYPE_RECEIVE = typing___cast(ProfileEventType, 3)
+
 class ParameterValueType(int):
     @classmethod
     def Name(cls, number: int) -> str: ...
@@ -140,6 +156,59 @@ class Port(google___protobuf___message___Message):
         ) -> None: ...
     @classmethod
     def FromString(cls, s: bytes) -> Port: ...
+    def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+    def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+
+class ProfileEvent(google___protobuf___message___Message):
+    instance_id = ... # type: typing___Text
+    event_type = ... # type: ProfileEventType
+    port_length = ... # type: int
+    slot = ... # type: int
+    message_size = ... # type: int
+
+    @property
+    def start_time(self) -> google___protobuf___timestamp_pb2___Timestamp: ...
+
+    @property
+    def stop_time(self) -> google___protobuf___timestamp_pb2___Timestamp: ...
+
+    @property
+    def port(self) -> Port: ...
+
+    def __init__(self,
+        instance_id : typing___Optional[typing___Text] = None,
+        start_time : typing___Optional[google___protobuf___timestamp_pb2___Timestamp] = None,
+        stop_time : typing___Optional[google___protobuf___timestamp_pb2___Timestamp] = None,
+        event_type : typing___Optional[ProfileEventType] = None,
+        port : typing___Optional[Port] = None,
+        port_length : typing___Optional[int] = None,
+        slot : typing___Optional[int] = None,
+        message_size : typing___Optional[int] = None,
+        ) -> None: ...
+    @classmethod
+    def FromString(cls, s: bytes) -> ProfileEvent: ...
+    def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+    def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+
+class Profile(google___protobuf___message___Message):
+
+    @property
+    def events(self) -> google___protobuf___internal___containers___RepeatedCompositeFieldContainer[ProfileEvent]: ...
+
+    def __init__(self,
+        events : typing___Optional[typing___Iterable[ProfileEvent]] = None,
+        ) -> None: ...
+    @classmethod
+    def FromString(cls, s: bytes) -> Profile: ...
+    def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+    def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+
+class ProfileResult(google___protobuf___message___Message):
+
+    def __init__(self,
+        ) -> None: ...
+    @classmethod
+    def FromString(cls, s: bytes) -> ProfileResult: ...
     def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
     def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
 
@@ -355,6 +424,12 @@ class MuscleManager(typing___Any, metaclass=abc___ABCMeta):
         done: typing___Optional[typing___Callable[[LogResult], None]],
     ) -> concurrent___futures___Future[LogResult]: ...
     @abc___abstractmethod
+    def SubmitProfileEvents(self,
+        rpc_controller: typing___Any,
+        request: Profile,
+        done: typing___Optional[typing___Callable[[ProfileResult], None]],
+    ) -> concurrent___futures___Future[ProfileResult]: ...
+    @abc___abstractmethod
     def RequestConfiguration(self,
         rpc_controller: typing___Any,
         request: ConfigurationRequest,
@@ -385,6 +460,11 @@ class MuscleManager_Stub(MuscleManager):
         request: LogMessage,
         done: typing___Optional[typing___Callable[[LogResult], None]],
     ) -> concurrent___futures___Future[LogResult]: ...
+    def SubmitProfileEvents(self,
+        rpc_controller: typing___Any,
+        request: Profile,
+        done: typing___Optional[typing___Callable[[ProfileResult], None]],
+    ) -> concurrent___futures___Future[ProfileResult]: ...
     def RequestConfiguration(self,
         rpc_controller: typing___Any,
         request: ConfigurationRequest,

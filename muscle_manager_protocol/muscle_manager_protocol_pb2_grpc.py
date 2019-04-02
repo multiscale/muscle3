@@ -19,6 +19,11 @@ class MuscleManagerStub(object):
         request_serializer=muscle__manager__protocol__pb2.LogMessage.SerializeToString,
         response_deserializer=muscle__manager__protocol__pb2.LogResult.FromString,
         )
+    self.SubmitProfileEvents = channel.unary_unary(
+        '/muscle_manager_protocol.MuscleManager/SubmitProfileEvents',
+        request_serializer=muscle__manager__protocol__pb2.Profile.SerializeToString,
+        response_deserializer=muscle__manager__protocol__pb2.ProfileResult.FromString,
+        )
     self.RequestConfiguration = channel.unary_unary(
         '/muscle_manager_protocol.MuscleManager/RequestConfiguration',
         request_serializer=muscle__manager__protocol__pb2.ConfigurationRequest.SerializeToString,
@@ -47,6 +52,13 @@ class MuscleManagerServicer(object):
 
   def SubmitLogMessage(self, request, context):
     """Sends a logged message to the Manager
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def SubmitProfileEvents(self, request, context):
+    """Sends a batch of profiling events to the Manager
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
@@ -87,6 +99,11 @@ def add_MuscleManagerServicer_to_server(servicer, server):
           servicer.SubmitLogMessage,
           request_deserializer=muscle__manager__protocol__pb2.LogMessage.FromString,
           response_serializer=muscle__manager__protocol__pb2.LogResult.SerializeToString,
+      ),
+      'SubmitProfileEvents': grpc.unary_unary_rpc_method_handler(
+          servicer.SubmitProfileEvents,
+          request_deserializer=muscle__manager__protocol__pb2.Profile.FromString,
+          response_serializer=muscle__manager__protocol__pb2.ProfileResult.SerializeToString,
       ),
       'RequestConfiguration': grpc.unary_unary_rpc_method_handler(
           servicer.RequestConfiguration,

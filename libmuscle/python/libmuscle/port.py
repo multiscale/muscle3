@@ -19,6 +19,12 @@ def port_to_grpc(port: ymmsl.Port) -> mmp.Port:
             operator=operator_to_grpc(port.operator))
 
 
+def optional_port_to_grpc(port: Optional[ymmsl.Port]) -> Optional[mmp.Port]:
+    if port is None:
+        return None
+    return port_to_grpc(port)
+
+
 class Port(ymmsl.Port):
     """Represents a gateway to the outside world.
 

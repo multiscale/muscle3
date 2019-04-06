@@ -1,6 +1,6 @@
 from random import uniform
 from time import perf_counter, sleep
-from typing import Dict, List, Tuple
+from typing import Dict, Iterable, List, Tuple
 
 import grpc
 from ymmsl import Conduit, Port, Reference
@@ -10,6 +10,7 @@ import muscle_manager_protocol.muscle_manager_protocol_pb2_grpc as mmp_grpc
 
 from libmuscle.configuration import Configuration
 from libmuscle.port import port_to_grpc
+from libmuscle.profiling import ProfileEvent
 from libmuscle.logging import LogMessage
 
 
@@ -64,6 +65,15 @@ class MMPClient():
             message: The message to send.
         """
         self.__client.SubmitLogMessage(message.to_grpc())
+
+    def submit_profile_events(self, events: Iterable[ProfileEvent]) -> None:
+        """Sends profiling events to the manager.
+
+        Args:
+            events: The events to send.
+        """
+        self.__client.SubmitProfileEvents(mmp.Profile(events=[
+            e.to_grpc() for e in events]))
 
     def get_configuration(self) -> Configuration:
         """Get the central configuration from the manager.

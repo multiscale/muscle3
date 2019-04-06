@@ -53,6 +53,15 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
                 request.text)
         return mmp.LogResult()
 
+    def SubmitProfileEvents(
+            self,
+            request: mmp.Profile,
+            context: grpc.ServicerContext
+            ) -> mmp.ProfileResult:
+        """Forwards a submitted log message to the ProfilingStore."""
+        # TODO: store
+        return mmp.ProfileResult()
+
     def RequestConfiguration(
             self,
             request: mmp.ConfigurationRequest,

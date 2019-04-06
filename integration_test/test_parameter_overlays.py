@@ -14,7 +14,8 @@ def qmc(instance_id: str):
     """qMC implementation.
     """
     muscle = Muscle3()
-    ce = ComputeElement(instance_id, {Operator.O_F: ['parameters_out[]']})
+    ce = muscle.compute_element(instance_id,
+                                {Operator.O_F: ['parameters_out[]']})
     muscle.register(ce)
 
     while ce.reuse_instance():
@@ -37,7 +38,7 @@ def macro(instance_id: str):
     """Macro model implementation.
     """
     muscle = Muscle3()
-    ce = ComputeElement(instance_id, {
+    ce = muscle.compute_element(instance_id, {
             Operator.O_I: ['out'], Operator.S: ['in']})
     muscle.register(ce)
 
@@ -57,7 +58,7 @@ def micro(instance_id: str):
     """Micro model implementation.
     """
     muscle = Muscle3()
-    ce = ComputeElement(instance_id, {
+    ce = muscle.compute_element(instance_id, {
             Operator.F_INIT: ['in'], Operator.O_F: ['out']})
     muscle.register(ce)
 
@@ -84,7 +85,7 @@ def explicit_micro(instance_id: str):
     handle them.
     """
     muscle = Muscle3()
-    ce = ComputeElement(instance_id, {
+    ce = muscle.compute_element(instance_id, {
             Operator.F_INIT: ['in'], Operator.O_F: ['out']})
     muscle.register(ce)
 

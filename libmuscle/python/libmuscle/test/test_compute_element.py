@@ -28,7 +28,7 @@ def compute_element():
         msg = Message(0.0, 1.0, 'message', config)
         communicator.receive_message.return_value = msg
         comm_type.return_value = communicator
-        element = ComputeElement('test_element', {
+        element = ComputeElement(MagicMock(), 'test_element', {
             Operator.F_INIT: ['in', 'not_connected'],
             Operator.O_F: ['out']})
         element._f_init_cache = dict()
@@ -39,7 +39,7 @@ def compute_element():
 @pytest.fixture
 def compute_element2():
     with patch('libmuscle.compute_element.Communicator') as comm_type:
-        element = ComputeElement('test_element', {
+        element = ComputeElement(MagicMock(), 'test_element', {
             Operator.F_INIT: ['in[]'],
             Operator.O_F: ['out']})
         yield element
@@ -50,7 +50,7 @@ def test_create_compute_element(sys_argv_index):
         ports = {
             Operator.F_INIT: ['in'],
             Operator.O_F: ['out']}
-        element = ComputeElement('test_element', ports)
+        element = ComputeElement(MagicMock(), 'test_element', ports)
         assert element._name == Reference('test_element')
         assert element._index == [13, 42]
         assert element._declared_ports == ports
@@ -58,7 +58,7 @@ def test_create_compute_element(sys_argv_index):
         assert len(element._configuration_store.base) == 0
         assert len(element._configuration_store.overlay) == 0
         comm_type.assert_called_with(Reference('test_element'), [13, 42],
-                                     ports)
+                                     ports, element._profiler)
         assert element._communicator == comm_type.return_value
         assert isinstance(element._configuration_store, ConfigurationStore)
         assert len(element._configuration_store.base) == 0

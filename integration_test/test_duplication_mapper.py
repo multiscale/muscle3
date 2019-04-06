@@ -12,7 +12,7 @@ def duplication_mapper(instance_id: str):
     """Duplication mapper implementation.
     """
     muscle = Muscle3()
-    ce = ComputeElement(instance_id)
+    ce = muscle.compute_element(instance_id)
     muscle.register(ce)
 
     while ce.reuse_instance():
@@ -29,7 +29,7 @@ def receiver(instance_id: str):
     """Receiver for messages from dm.
     """
     muscle = Muscle3()
-    ce = ComputeElement(instance_id, {Operator.F_INIT: ['in']})
+    ce = muscle.compute_element(instance_id, {Operator.F_INIT: ['in']})
     muscle.register(ce)
 
     while ce.reuse_instance():

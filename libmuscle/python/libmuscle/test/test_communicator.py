@@ -41,7 +41,7 @@ def test_endpoint_instance() -> None:
 @pytest.fixture
 def communicator() -> Communicator:
     instance_id = Reference('kernel')
-    communicator = Communicator(instance_id, [13], None)
+    communicator = Communicator(instance_id, [13], None, MagicMock())
     communicator._Communicator__peers = {
             'kernel.out': Reference('other.in'),
             'kernel.in': Reference('other.out')
@@ -59,7 +59,7 @@ def communicator() -> Communicator:
 @pytest.fixture
 def communicator2() -> Communicator:
     instance_id = Reference('other')
-    communicator = Communicator(instance_id, [], None)
+    communicator = Communicator(instance_id, [], None, MagicMock())
     communicator._Communicator__peers = {
             'other.out': Reference('kernel.in'),
             'other.in': Reference('kernel.out')
@@ -75,7 +75,7 @@ def communicator2() -> Communicator:
 @pytest.fixture
 def communicator3() -> Communicator:
     instance_id = Reference('kernel')
-    communicator = Communicator(instance_id, [], None)
+    communicator = Communicator(instance_id, [], None, MagicMock())
     communicator._Communicator__peers = {
             'kernel.out': Reference('other.in'),
             'kernel.in': Reference('other.out')}
@@ -109,7 +109,7 @@ def test_connect() -> None:
     peer_dims = {ref('other'): [1]}
     peer_locations = {ref('other'): ['direct:test']}
 
-    communicator = Communicator(instance_id, [13], None)
+    communicator = Communicator(instance_id, [13], None, MagicMock())
     communicator.connect(conduits, peer_dims, peer_locations)
 
     assert (str(communicator._Communicator__peers['kernel.out']) ==
@@ -333,6 +333,7 @@ def test_receive_message(communicator) -> None:
             msgpack.packb(b'test', use_bin_type=True))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
+    communicator._Communicator__profiler = MagicMock()
 
     msg = communicator.receive_message('in')
 
@@ -369,6 +370,7 @@ def test_receive_msgpack(communicator) -> None:
             msgpack.packb({'test': 13}))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
+    communicator._Communicator__profiler = MagicMock()
 
     msg = communicator.receive_message('in')
 
@@ -385,6 +387,7 @@ def test_receive_with_slot(communicator2) -> None:
             msgpack.packb(b'test', use_bin_type=True))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator2._Communicator__get_client = get_client_mock
+    communicator2._Communicator__profiler = MagicMock()
 
     msg = communicator2.receive_message('in', 13)
 
@@ -402,6 +405,7 @@ def test_receive_message_resizable(communicator3) -> None:
             msgpack.packb(b'test', use_bin_type=True))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator3._Communicator__get_client = get_client_mock
+    communicator3._Communicator__profiler = MagicMock()
 
     msg = communicator3.receive_message('in', 13)
 
@@ -419,6 +423,7 @@ def test_receive_with_parameters(communicator) -> None:
             msgpack.packb(b'test', use_bin_type=True))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
+    communicator._Communicator__profiler = MagicMock()
 
     msg = communicator.receive_message('in')
 
@@ -436,6 +441,7 @@ def test_receive_msgpack_with_slot_and_parameters(communicator2) -> None:
             msgpack.packb({'test': 'testing'}), msgpack.packb('test'))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator2._Communicator__get_client = get_client_mock
+    communicator2._Communicator__profiler = MagicMock()
 
     msg = communicator2.receive_message('in', 13)
 
@@ -456,6 +462,7 @@ def test_receive_configuration(communicator) -> None:
             msgpack.packb(config_data))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
+    communicator._Communicator__profiler = MagicMock()
 
     msg = communicator.receive_message('in')
 
@@ -474,6 +481,7 @@ def test_receive_close_port(communicator) -> None:
             None, 0.0, None, config_data, msgpack.packb(sentinel))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
+    communicator._Communicator__profiler = MagicMock()
 
     msg = communicator.receive_message('in')
 

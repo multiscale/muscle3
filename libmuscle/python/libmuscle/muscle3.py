@@ -1,3 +1,4 @@
+import copy
 import logging
 import multiprocessing as mp
 from pathlib import Path
@@ -24,10 +25,24 @@ class Muscle3:
         Creating an object of type Muscle initialises MUSCLE3 and
         makes its functionality available.
         """
-        self.__manager = None  # type: Optional[MMPClient]
         mmp_location = self.__extract_manager_location()
-        if mmp_location is not None:
-            self.__manager = MMPClient(mmp_location)
+        self.__manager = MMPClient(mmp_location)
+
+    def compute_element(self, instance_id: str,
+                        ports: Optional[Dict[Operator, List[str]]]=None
+                        ) -> ComputeElement:
+        """Creates a new ComputeElement object.
+
+        Args:
+            instance_id: Id of this instance, e.g. "macro" or
+                    "micro[3]".
+            ports: The ports that this ComputeElement has, as a list
+                    of port descripions per operator.
+
+        Returns:
+            A new ComputeElement with the given id and ports.
+        """
+        return ComputeElement(self.__manager, instance_id, ports)
 
     def register(self, elements: Union[ComputeElement, List[ComputeElement]]
                  ) -> None:
@@ -41,32 +56,22 @@ class Muscle3:
 
         self.__set_up_logging(elements)
 
-        self.__instances = list()   # type: List[Reference]
+        self.__instances = list()   # type: List[ComputeElement]
         if self.__manager is not None:
+            # register
             for element in elements:
-                locations = element._communicator.get_locations()
-                port_list = self.__port_list_from_ports(
-                        element._declared_ports)
-                instance_name = element._name + element._index
-                self.__manager.register_instance(instance_name, locations,
-                                                 port_list)
-                self.__instances.append(instance_name)
+                element._register()
+                self.__instances.append(element)
 
-            configuration = self.__manager.get_configuration()
-
+            # connect
             for element in elements:
-                instance_name = element._name + element._index
-                conduits, dims, locs = self.__manager.request_peers(
-                        element._instance_name())
-                element._connect(conduits, dims, locs)
-                element._configuration_store.base = configuration
+                element._connect()
 
     def close(self) -> None:
         """Deregister all registered instances.
         """
-        if self.__manager is not None:
-            for instance in self.__instances:
-                self.__manager.deregister_instance(instance)
+        for instance in self.__instances:
+            instance._deregister()
 
     def __port_list_from_ports(self, ports: Optional[Dict[Operator, List[str]]]
                                ) -> List[Port]:
@@ -103,14 +108,13 @@ class Muscle3:
             logging.getLogger().addHandler(mmp_handler)
 
     @staticmethod
-    def __extract_manager_location() -> Optional[str]:
+    def __extract_manager_location() -> str:
         """Gets the manager network location from the command line.
 
         We use a --muscle-manager=<host:port> argument to tell the
         MUSCLE library how to connect to the manager. This function
         will extract this argument from the command line arguments,
-        if it is present. Since we want to be able to run without
-        a manager, it is optional.
+        if it is present.
 
         Returns:
             A connection string, or None.
@@ -123,7 +127,7 @@ class Muscle3:
             if arg.startswith(prefix):
                 return arg[len(prefix):]
 
-        return None
+        return 'localhost:9000'
 
     @staticmethod
     def __extract_log_file_location(filename: str) -> Optional[Path]:

@@ -2,11 +2,15 @@ from copy import copy
 import sys
 from typing import cast, Dict, List, Optional, Tuple, Type, Union
 
-from ymmsl import Conduit, Identifier, Operator, ParameterValue, Reference
+from ymmsl import (Conduit, Identifier, Operator, ParameterValue, Port,
+                   Reference)
 
 from libmuscle.communicator import _ClosePort, Communicator, Message
 from libmuscle.configuration import Configuration
 from libmuscle.configuration_store import ConfigurationStore
+from libmuscle.mmp_client import MMPClient
+from libmuscle.profiler import Profiler
+from libmuscle.profiling import ProfileEvent, ProfileEventType
 
 
 class ComputeElement:
@@ -15,12 +19,13 @@ class ComputeElement:
     This class provides a low-level send/receive API for the instance
     to use.
     """
-    def __init__(self, instance: str,
+    def __init__(self, manager: MMPClient, instance: str,
                  ports: Optional[Dict[Operator, List[str]]]=None
                  ) -> None:
         """Create a ComputeElement.
 
         Args:
+            manager: The client to use to talk to the manager.
             name: The name of the instance represented by this object.
             ports: A list of port names for each operator of this
                 compute element.
@@ -29,7 +34,14 @@ class ComputeElement:
         self._name, self._index = self.__make_full_name(Reference(instance))
         """Name and index of this compute element."""
 
-        self._communicator = Communicator(self._name, self._index, ports)
+        self._manager = manager
+        """Client object for talking to the manager."""
+
+        self._profiler = Profiler(manager)
+        """Profiler for this instance."""
+
+        self._communicator = Communicator(
+                self._name, self._index, ports, self._profiler)
         """Communicator for this instance."""
 
         self._declared_ports = ports
@@ -44,19 +56,34 @@ class ComputeElement:
         FInitCacheType = Dict[Tuple[str, Optional[int]], Message]
         self._f_init_cache = dict()     # type: FInitCacheType
 
-    def _connect(self, conduits: List[Conduit],
-                 peer_dims: Dict[Reference, List[int]],
-                 peer_locations: Dict[Reference, List[str]]) -> None:
-        """Connect this compute element to the given peers / conduits.
-
-        Args:
-            conduits: A list of conduits attached to this compute
-                element.
-            peer_dims: For each peer, the dimensions of the instance
-                set.
-            peer_locations: A list of locations for each peer instance.
+    def _register(self) -> None:
+        """Register this compute element with the manager.
         """
+        register_event = self._profiler.start(
+                self._instance_name(), ProfileEventType.REGISTER)
+        locations = self._communicator.get_locations()
+        port_list = self.__list_declared_ports()
+        self._manager.register_instance(self._instance_name(), locations,
+                                        port_list)
+        register_event.stop()
+
+    def _connect(self) -> None:
+        """Connect this compute element to the given peers / conduits.
+        """
+        conduits, peer_dims, peer_locations = self._manager.request_peers(
+                self._instance_name())
         self._communicator.connect(conduits, peer_dims, peer_locations)
+        self._configuration_store.base = self._manager.get_configuration()
+
+    def _deregister(self) -> None:
+        """Deregister this instance from the manager.
+        """
+        deregister_event = self._profiler.start(
+                self._instance_name(), ProfileEventType.DEREGISTER)
+        self._manager.deregister_instance(self._instance_name())
+        deregister_event.stop()
+        # this is the last thing we'll profile, so flush messages
+        self._profiler.shutdown()
 
     def reuse_instance(self, apply_overlay: bool=True) -> bool:
         """Decide whether to run this instance again.
@@ -394,6 +421,21 @@ class ComputeElement:
             i += 1
 
         return kernel, index
+
+    def __list_declared_ports(self) -> List[Port]:
+        """Returns a list of declared ports.
+
+        This returns a list of ymmsl.Port objects, which have only the
+        name and the operator, not libmuscle.Port, which has more.
+        """
+        result = list()
+        if self._declared_ports is not None:
+            for operator, port_names in self._declared_ports.items():
+                for name in port_names:
+                    if name.endswith('[]'):
+                        name = name[:-2]
+                    result.append(Port(Identifier(name), operator))
+        return result
 
     def _instance_name(self) -> Reference:
         """Returns the full instance name.

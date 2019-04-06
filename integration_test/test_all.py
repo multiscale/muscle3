@@ -14,7 +14,7 @@ def macro(instance_id: str):
     """
     muscle = Muscle3()
 
-    ce = ComputeElement(instance_id, {
+    ce = muscle.compute_element(instance_id, {
             Operator.O_I: ['out[]'],
             Operator.S: ['in[]']})
 
@@ -42,7 +42,7 @@ def micro(instance_id: str):
     """
     muscle = Muscle3()
 
-    ce = ComputeElement(instance_id, {
+    ce = muscle.compute_element(instance_id, {
             Operator.F_INIT: ['in'],
             Operator.O_F: ['out']})
 

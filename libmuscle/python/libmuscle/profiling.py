@@ -110,34 +110,6 @@ class ProfileEvent:
         self.slot = slot
         self.message_size = message_size
 
-    @staticmethod
-    def start(instance_id: Reference, event_type: ProfileEventType,
-              port: Optional[Port]=None, port_length: Optional[int]=None,
-              slot: Optional[int]=None, message_size: Optional[int]=None
-              ) -> 'ProfileEvent':
-        """Create a ProfileEvent and start timing.
-
-        This fills the start_time and stop_time attributes with the
-        current time. Use stop() on the returned object to record the
-        stop time.
-
-        Args:
-            instance_id: The identifier of the instance that generated \
-                    this message.
-            start_time: When the event started (real-world, not \
-                    simulation time).
-            stop_time: When the event ended (real-world, not simulation \
-                    time).
-            event_type: Type of event that was measured.
-            port: Port used for sending or receiving, if applicable.
-            port_length: Length of that port, if a vector.
-            slot: Slot that was sent or received on, if applicable.
-            message_size: Size of the message involved, if applicable.
-        """
-        now = Timestamp(time.time())
-        return ProfileEvent(instance_id, now, now, event_type, port,
-                            port_length, slot, message_size)
-
     def stop(self) -> None:
         """Sets stop_time to the current time.
         """

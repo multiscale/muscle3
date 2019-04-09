@@ -12,19 +12,20 @@ from libmuscle.timestamp import Timestamp
 class Profiler:
     """Collects profiling events and sends them to the manager.
     """
-    def __init__(self, manager: MMPClient) -> None:
+    def __init__(self, instance_id: Reference, manager: MMPClient) -> None:
         """Create a Profiler.
 
         Args:
             manager: The client used to submit data to the manager.
         """
         # TODO: use a background thread for flushing
+        self._instance_id = instance_id
         self._manager = manager
         self._events = list()   # type: List[ProfileEvent]
 
-    def start(self, instance_id: Reference, event_type: ProfileEventType,
-              port: Optional[Port]=None, port_length: Optional[int]=None,
-              slot: Optional[int]=None, message_size: Optional[int]=None
+    def start(self, event_type: ProfileEventType, port: Optional[Port]=None,
+              port_length: Optional[int]=None, slot: Optional[int]=None,
+              message_size: Optional[int]=None
               ) -> ProfileEvent:
         """Start measuring an event.
 
@@ -46,7 +47,7 @@ class Profiler:
             self.__flush()
 
         now = Timestamp(time())
-        event = ProfileEvent(instance_id, now, now, event_type, port,
+        event = ProfileEvent(self._instance_id, now, now, event_type, port,
                              port_length, slot, message_size)
         self._events.append(event)
         return event

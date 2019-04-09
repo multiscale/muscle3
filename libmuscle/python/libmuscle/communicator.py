@@ -338,9 +338,8 @@ class Communicator(PostOffice):
             return
 
         port = self.__ports[port_name]
-        profile_event = self.__profiler.start(
-                self.__instance_id(), ProfileEventType.SEND, port,
-                None, slot, None)
+        profile_event = self.__profiler.start(ProfileEventType.SEND, port,
+                                              None, slot, None)
 
         recv_endpoint = self.__get_peer_endpoint(snd_endpoint.port, slot_list)
 
@@ -416,9 +415,8 @@ class Communicator(PostOffice):
             # other built-in automatic ports.
             port = self.__muscle_parameters_in
 
-        profile_event = self.__profiler.start(
-                self.__instance_id(), ProfileEventType.RECEIVE, port, None,
-                slot, None)
+        profile_event = self.__profiler.start(ProfileEventType.RECEIVE, port,
+                                              None, slot, None)
 
         snd_endpoint = self.__get_peer_endpoint(recv_endpoint.port, slot_list)
         client = self.__get_client(snd_endpoint.instance())

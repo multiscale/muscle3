@@ -37,7 +37,7 @@ class ComputeElement:
         self._manager = manager
         """Client object for talking to the manager."""
 
-        self._profiler = Profiler(manager)
+        self._profiler = Profiler(self._instance_name(), manager)
         """Profiler for this instance."""
 
         self._communicator = Communicator(
@@ -59,8 +59,7 @@ class ComputeElement:
     def _register(self) -> None:
         """Register this compute element with the manager.
         """
-        register_event = self._profiler.start(
-                self._instance_name(), ProfileEventType.REGISTER)
+        register_event = self._profiler.start(ProfileEventType.REGISTER)
         locations = self._communicator.get_locations()
         port_list = self.__list_declared_ports()
         self._manager.register_instance(self._instance_name(), locations,
@@ -78,8 +77,7 @@ class ComputeElement:
     def _deregister(self) -> None:
         """Deregister this instance from the manager.
         """
-        deregister_event = self._profiler.start(
-                self._instance_name(), ProfileEventType.DEREGISTER)
+        deregister_event = self._profiler.start(ProfileEventType.DEREGISTER)
         self._manager.deregister_instance(self._instance_name())
         deregister_event.stop()
         # this is the last thing we'll profile, so flush messages

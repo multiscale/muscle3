@@ -69,10 +69,12 @@ class ComputeElement:
     def _connect(self) -> None:
         """Connect this compute element to the given peers / conduits.
         """
+        connect_event = self._profiler.start(ProfileEventType.CONNECT)
         conduits, peer_dims, peer_locations = self._manager.request_peers(
                 self._instance_name())
         self._communicator.connect(conduits, peer_dims, peer_locations)
         self._configuration_store.base = self._manager.get_configuration()
+        connect_event.stop()
 
     def _deregister(self) -> None:
         """Deregister this instance from the manager.

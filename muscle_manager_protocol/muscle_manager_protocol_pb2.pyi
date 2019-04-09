@@ -96,6 +96,7 @@ class ProfileEventType(int):
     @classmethod
     def items(cls) -> typing___List[typing___Tuple[str, int]]: ...
 PROFILE_EVENT_TYPE_REGISTER = typing___cast(ProfileEventType, 0)
+PROFILE_EVENT_TYPE_CONNECT = typing___cast(ProfileEventType, 4)
 PROFILE_EVENT_TYPE_DEREGISTER = typing___cast(ProfileEventType, 1)
 PROFILE_EVENT_TYPE_SEND = typing___cast(ProfileEventType, 2)
 PROFILE_EVENT_TYPE_RECEIVE = typing___cast(ProfileEventType, 3)

@@ -74,6 +74,7 @@ message Port {
 // Event type for profiling
 enum ProfileEventType {
     PROFILE_EVENT_TYPE_REGISTER = 0;
+    PROFILE_EVENT_TYPE_CONNECT = 4;
     PROFILE_EVENT_TYPE_DEREGISTER = 1;
     PROFILE_EVENT_TYPE_SEND = 2;
     PROFILE_EVENT_TYPE_RECEIVE = 3;

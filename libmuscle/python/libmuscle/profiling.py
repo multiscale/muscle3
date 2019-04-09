@@ -19,6 +19,7 @@ class ProfileEventType(Enum):
     """
     REGISTER = 0
     DEREGISTER = 1
+    CONNECT = 4
     SEND = 2
     RECEIVE = 3
 

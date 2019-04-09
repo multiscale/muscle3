@@ -92,7 +92,7 @@ def test_create_communicator(communicator) -> None:
     assert communicator._Communicator__index == [13]
     assert len(communicator._Communicator__servers) == 2
     assert communicator._Communicator__clients == {}
-    assert communicator._Communicator__outboxes == {}
+    assert communicator._outboxes == {}
 
 
 def test_get_locations(communicator) -> None:
@@ -219,8 +219,8 @@ def test_connect_inferred_ports(communicator) -> None:
 def test_send_message(communicator, message) -> None:
     communicator.send_message('out', message)
 
-    assert 'other.in[13]' in communicator._Communicator__outboxes
-    msg = communicator._Communicator__outboxes[
+    assert 'other.in[13]' in communicator._outboxes
+    msg = communicator._outboxes[
             'other.in[13]']._Outbox__queue.get()
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
@@ -242,8 +242,8 @@ def test_send_on_invalid_port(communicator, message) -> None:
 def test_send_msgpack(communicator, message2) -> None:
     communicator.send_message('out', message2)
 
-    assert 'other.in[13]' in communicator._Communicator__outboxes
-    msg = communicator._Communicator__outboxes[
+    assert 'other.in[13]' in communicator._outboxes
+    msg = communicator._outboxes[
             'other.in[13]']._Outbox__queue.get()
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
@@ -254,8 +254,8 @@ def test_send_msgpack(communicator, message2) -> None:
 def test_send_message_with_slot(communicator2, message) -> None:
     communicator2.send_message('out', message, 13)
 
-    assert 'kernel[13].in' in communicator2._Communicator__outboxes
-    msg = communicator2._Communicator__outboxes[
+    assert 'kernel[13].in' in communicator2._outboxes
+    msg = communicator2._outboxes[
             'kernel[13].in']._Outbox__queue.get()
     assert msg.sender == 'other.out[13]'
     assert msg.receiver == 'kernel[13].in'
@@ -270,8 +270,8 @@ def test_send_message_resizable(communicator3, message) -> None:
     communicator3.get_port('out').set_length(20)
     communicator3.send_message('out', message, 13)
 
-    assert 'other.in[13]' in communicator3._Communicator__outboxes
-    msg = communicator3._Communicator__outboxes[
+    assert 'other.in[13]' in communicator3._outboxes
+    msg = communicator3._outboxes[
             'other.in[13]']._Outbox__queue.get()
     assert msg.sender == 'kernel.out[13]'
     assert msg.receiver == 'other.in[13]'
@@ -282,8 +282,8 @@ def test_send_message_with_parameters(communicator, message) -> None:
     message.configuration['test2'] = 'testing'
     communicator.send_message('out', message)
 
-    assert 'other.in[13]' in communicator._Communicator__outboxes
-    msg = communicator._Communicator__outboxes[
+    assert 'other.in[13]' in communicator._outboxes
+    msg = communicator._outboxes[
             'other.in[13]']._Outbox__queue.get()
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
@@ -297,8 +297,8 @@ def test_send_configuration(communicator, message) -> None:
     message.data['test1'] = 'testing'
     communicator.send_message('out', message)
 
-    assert 'other.in[13]' in communicator._Communicator__outboxes
-    msg = communicator._Communicator__outboxes[
+    assert 'other.in[13]' in communicator._outboxes
+    msg = communicator._outboxes[
             'other.in[13]']._Outbox__queue.get()
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
@@ -312,8 +312,8 @@ def test_send_configuration(communicator, message) -> None:
 def test_close_port(communicator) -> None:
     communicator.close_port('out')
 
-    assert 'other.in[13]' in communicator._Communicator__outboxes
-    msg = communicator._Communicator__outboxes[
+    assert 'other.in[13]' in communicator._outboxes
+    msg = communicator._outboxes[
             'other.in[13]']._Outbox__queue.get()
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'

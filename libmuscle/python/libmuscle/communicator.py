@@ -1,7 +1,5 @@
 from enum import IntEnum
 import msgpack
-from threading import Lock
-import time
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 from ymmsl import (ComputeElementDecl, Conduit, Identifier, Operator,
                    Reference)
@@ -12,7 +10,6 @@ from libmuscle.mcp.message import Message as MCPMessage
 from libmuscle.mcp.client import Client as MCPClient
 from libmuscle.mcp.server import Server as MCPServer, ServerNotSupported
 from libmuscle.mcp.type_registry import client_types, server_types
-from libmuscle.outbox import Outbox
 from libmuscle.post_office import PostOffice
 from libmuscle.port import Port
 from libmuscle.profiler import Profiler
@@ -196,6 +193,8 @@ class Communicator(PostOffice):
             profiler: The profiler to use for recording sends and
                     receives.
         """
+        super().__init__()
+
         self.__kernel = kernel
         self.__index = index
         self.__declared_ports = declared_ports
@@ -208,11 +207,6 @@ class Communicator(PostOffice):
 
         # peer port ids, indexed by local kernel.port id
         self.__peers = dict()  # type: Dict[Reference, Reference]
-
-        # indexed by receiving endpoint id
-        self.__outboxes = dict()  # type: Dict[Reference, Outbox]
-
-        self.__outbox_lock = Lock()
 
         for server_type in server_types:
             try:
@@ -356,8 +350,7 @@ class Communicator(PostOffice):
                                  port_length,
                                  message.timestamp, message.next_timestamp,
                                  packed_overlay, packed_message)
-        self.__ensure_outbox_exists(recv_endpoint.ref())
-        self.__outboxes[recv_endpoint.ref()].deposit(mcp_message)
+        self._deposit(recv_endpoint.ref(), mcp_message)
         profile_event.stop()
         if port.is_vector():
             profile_event.port_length = port.get_length()
@@ -454,19 +447,6 @@ class Communicator(PostOffice):
         message = Message(float('inf'), None, _ClosePort(), Configuration())
         self.send_message(port_name, message, slot)
 
-    def get_message(self, receiver: Reference) -> MCPMessage:
-        """Get a message from a receiver's outbox.
-
-        Used by servers to get messages that have been sent to another
-        instance.
-
-        Args:
-            receiver: The receiver of the message, a reference to an
-                    instance.
-        """
-        self.__ensure_outbox_exists(receiver)
-        return self.__outboxes[receiver].retrieve()
-
     def shutdown(self) -> None:
         """Shuts down the Communicator, closing ports and connections.
         """
@@ -475,9 +455,7 @@ class Communicator(PostOffice):
         for client_type in client_types:
             client_type.shutdown(self.__instance_id())
 
-        for outbox in self.__outboxes.values():
-            while not outbox.is_empty():
-                time.sleep(0.1)
+        self._wait_for_receivers()
 
         for server in self.__servers:
             server.close()
@@ -577,21 +555,6 @@ class Communicator(PostOffice):
                     return client
         raise RuntimeError('Could not find a matching protocol for {}'.format(
                 instance))
-
-    def __ensure_outbox_exists(self, receiver: Reference) -> None:
-        """Ensure that an outbox exists.
-
-        Outboxes are created dynamically, the first time a message is
-        sent to a receiver. This function checks that an outbox exists
-        for a receiver, and if not, creates one.
-
-        Args:
-            receiver: The receiver that should have an outbox.
-        """
-        self.__outbox_lock.acquire()
-        if receiver not in self.__outboxes:
-            self.__outboxes[receiver] = Outbox()
-        self.__outbox_lock.release()
 
     def __split_peer(self, full_port: Reference
                      ) -> Tuple[Reference, Identifier]:

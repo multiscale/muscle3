@@ -6,10 +6,12 @@ from ymmsl import (ComputeElementDecl, Conduit, Identifier, Operator,
 
 from libmuscle.configuration import Configuration
 from libmuscle.configuration_store import ConfigurationStore
+from libmuscle.endpoint import Endpoint
 from libmuscle.mcp.message import Message as MCPMessage
 from libmuscle.mcp.client import Client as MCPClient
 from libmuscle.mcp.server import Server as MCPServer, ServerNotSupported
 from libmuscle.mcp.type_registry import client_types, server_types
+from libmuscle.peer_manager import PeerManager
 from libmuscle.post_office import PostOffice
 from libmuscle.port import Port
 from libmuscle.profiler import Profiler
@@ -17,97 +19,6 @@ from libmuscle.profiling import ProfileEvent, ProfileEventType
 
 
 MessageObject = Any
-
-
-class Endpoint:
-    """Place that a message is sent from and to.
-
-    In the model description, we have kernels with ports connected by
-    conduits. However, these kernels may be replicated, in which case
-    there are many instances of them at run time. Thus, at run time
-    there also need to be many conduit instances to connect the many
-    kernel instances.
-
-    A conduit always connects a port on a kernel to another port on
-    another kernel. A conduit instance connects an endpoint to another
-    endpoint. An endpoint has the name of a kernel, its index, the name
-    of a port on that kernel, and a *slot*. The kernel and port name
-    of a sender or receiver of a conduit instance come from the
-    corresponding conduit.
-
-    When a kernel is instantiated multiple times, the instances each
-    have a unique index, which is a list of integers, to distinguish
-    them from each other. Since a conduit instance connects kernel
-    instances, each side will have an index to supply to the endpoint.
-    The slot is an optional integer, like the index, and is passed when
-    sending or receiving a message, and gives additional information
-    on where to send the message.
-
-    For example, assume a single kernel named ``abc`` with port ``p1``
-    which is connected to a port ``p2`` on kernel ``def`` by a conduit,
-    and of kernel ``def`` there are 10 instances. A message sent by
-    ``abc`` on ``p1`` to the fourth instance of ``def`` port ``p2`` is
-    sent from an endpoint with kernel ``abc``, index ``[]``, port
-    ``p1`` and slot ``3``, and received on an endpoint with kernel
-    ``def``, index ``[3]``, port ``p2`` and slot ``None``.
-
-    Conduit instances are never actually created in the code, but
-    Endpoints are.
-    """
-    def __init__(self, kernel: Reference, index: List[int], port: Identifier,
-                 slot: List[int]) -> None:
-        """Create an Endpoint
-
-        Note: kernel is a Reference, not an Identifier, because it may
-        have namespace parts.
-
-        Args:
-            kernel: Name of an instance's kernel.
-            index: Index of the kernel instance.
-            port: Name of the port used.
-            slot: Slot on which to send or receive.
-        """
-        self.kernel = kernel  # type: Reference
-        self.index = index    # type: List[int]
-        self.port = port      # type: Identifier
-        self.slot = slot      # type: List[int]
-
-    def ref(self) -> Reference:
-        """Express as Reference.
-
-        This yields a valid Reference of the form
-        kernel[index].port[slot], with index and port omitted if they
-        are zero-length.
-
-        Returns:
-            A Reference to this Endpoint.
-        """
-        ret = self.kernel
-        if self.index:
-            ret += self.index
-        ret += self.port
-        if self.slot:
-            ret += self.slot
-        return ret
-
-    def __str__(self) -> str:
-        """Convert to string.
-
-        Returns this Endpoint as the string for of a Reference to it.
-        See :meth:ref().
-
-        Returns:
-            The string representation of this Endpoint.
-        """
-        return str(self.ref())
-
-    def instance(self) -> Reference:
-        """Get a Reference to the instance this endpoint is on.
-        """
-        ret = self.kernel
-        if self.index:
-            ret += self.index
-        return ret
 
 
 class ExtTypeId(IntEnum):
@@ -205,9 +116,6 @@ class Communicator(PostOffice):
         # indexed by remote instance id
         self.__clients = dict()  # type: Dict[Reference, MCPClient]
 
-        # peer port ids, indexed by local kernel.port id
-        self.__peers = dict()  # type: Dict[Reference, Reference]
-
         for server_type in server_types:
             try:
                 server = server_type(self.__instance_id(), self)
@@ -248,16 +156,9 @@ class Communicator(PostOffice):
             peer_locations: A list of locations for each peer instance
                     we share a conduit with.
         """
-        for conduit in conduits:
-            if str(conduit.sending_compute_element()) == str(self.__kernel):
-                # we send on the port this conduit attaches to
-                self.__peers[conduit.sender] = conduit.receiver
-            if str(conduit.receiving_compute_element()) == str(self.__kernel):
-                # we receive on the port this conduit attaches to
-                self.__peers[conduit.receiver] = conduit.sender
-
-        self.__peer_dims = peer_dims    # indexed by kernel id
-        self.__peer_locations = peer_locations  # indexed by instance id
+        self.__peer_manager = PeerManager(
+                self.__kernel, self.__index, conduits, peer_dims,
+                peer_locations)
 
         if self.__declared_ports is not None:
             self.__ports = self.__ports_from_declared()
@@ -327,7 +228,7 @@ class Communicator(PostOffice):
                                     ).format(slot, port_name, slot_length))
 
         snd_endpoint = self.__get_endpoint(port_name, slot_list)
-        if not self.__is_connected(snd_endpoint.port):
+        if not self.__peer_manager.is_connected(snd_endpoint.port):
             # log sending on disconnected port
             return
 
@@ -335,7 +236,8 @@ class Communicator(PostOffice):
         profile_event = self.__profiler.start(ProfileEventType.SEND, port,
                                               None, slot, None)
 
-        recv_endpoint = self.__get_peer_endpoint(snd_endpoint.port, slot_list)
+        recv_endpoint = self.__peer_manager.get_peer_endpoint(
+                snd_endpoint.port, slot_list)
 
         packed_overlay = self.__pack_object(
                 cast(Configuration, message.configuration).as_plain_dict())
@@ -391,7 +293,7 @@ class Communicator(PostOffice):
 
         recv_endpoint = self.__get_endpoint(port_name, slot_list)
 
-        if not self.__is_connected(recv_endpoint.port):
+        if not self.__peer_manager.is_connected(recv_endpoint.port):
             if default is None:
                 raise RuntimeError(('Tried to receive on port "{}", which is'
                                     ' disconnected, and no default value was'
@@ -411,7 +313,8 @@ class Communicator(PostOffice):
         profile_event = self.__profiler.start(ProfileEventType.RECEIVE, port,
                                               None, slot, None)
 
-        snd_endpoint = self.__get_peer_endpoint(recv_endpoint.port, slot_list)
+        snd_endpoint = self.__peer_manager.get_peer_endpoint(
+                recv_endpoint.port, slot_list)
         client = self.__get_client(snd_endpoint.instance())
         mcp_message = client.receive(recv_endpoint.ref())
 
@@ -477,12 +380,13 @@ class Communicator(PostOffice):
                     raise RuntimeError(('Port names starting with "muscle_"'
                                         ' are reserved for MUSCLE, please'
                                         ' rename port "{}"'.format(port_name)))
-                is_connected = self.__is_connected(Identifier(port_name))
+                is_connected = self.__peer_manager.is_connected(
+                        Identifier(port_name))
                 if is_connected:
                     port_ref = self.__kernel + Identifier(port_name)
-                    peer_port = self.__peers[port_ref]
+                    peer_port = self.__peer_manager.get_peer_port(port_ref)
                     peer_ce = peer_port[:-1]
-                    port_peer_dims = self.__peer_dims[peer_ce]
+                    port_peer_dims = self.__peer_manager.get_peer_dims(peer_ce)
                 else:
                     port_peer_dims = []
                 ports[port_name] = Port(
@@ -502,16 +406,16 @@ class Communicator(PostOffice):
             if conduit.sending_compute_element() == self.__kernel:
                 port_id = conduit.sending_port()
                 operator = Operator.O_F
-                port_peer_dims = self.__peer_dims[
-                        conduit.receiving_compute_element()]
+                port_peer_dims = self.__peer_manager.get_peer_dims(
+                        conduit.receiving_compute_element())
             elif conduit.receiving_compute_element() == self.__kernel:
                 port_id = conduit.receiving_port()
                 operator = Operator.F_INIT
-                port_peer_dims = self.__peer_dims[
-                        conduit.sending_compute_element()]
+                port_peer_dims = self.__peer_manager.get_peer_dims(
+                        conduit.sending_compute_element())
             ndims = max(0, len(port_peer_dims) - len(self.__index))
             is_vector = (ndims == 1)
-            is_connected = self.__is_connected(port_id)
+            is_connected = self.__peer_manager.is_connected(port_id)
             if not str(port_id).startswith('muscle_'):
                 ports[str(port_id)] = Port(
                         str(port_id), operator, is_vector, is_connected,
@@ -529,9 +433,10 @@ class Communicator(PostOffice):
                 port_id = conduit.receiving_port()
                 if str(port_id) == 'muscle_parameters_in':
                     return Port(str(port_id), Operator.F_INIT, False,
-                                self.__is_connected(port_id),
-                                len(self.__index), self.__peer_dims[
-                                    conduit.sending_compute_element()])
+                                self.__peer_manager.is_connected(port_id),
+                                len(self.__index),
+                                self.__peer_manager.get_peer_dims(
+                                    conduit.sending_compute_element()))
         return Port('muscle_parameters_in', Operator.F_INIT, False, False,
                     len(self.__index), [])
 
@@ -548,18 +453,13 @@ class Communicator(PostOffice):
             return self.__clients[instance]
 
         for ClientType in client_types:
-            for location in self.__peer_locations[instance]:
+            for location in self.__peer_manager.get_peer_locations(instance):
                 if ClientType.can_connect_to(location):
                     client = ClientType(self.__instance_id(), location)
                     self.__clients[instance] = client
                     return client
         raise RuntimeError('Could not find a matching protocol for {}'.format(
                 instance))
-
-    def __split_peer(self, full_port: Reference
-                     ) -> Tuple[Reference, Identifier]:
-        peer = self.__peers[full_port]
-        return peer[:-1], cast(Identifier, peer[-1])
 
     def __get_endpoint(self, port_name: str, slot: List[int]) -> Endpoint:
         """Determines the endpoint on our side.
@@ -575,34 +475,6 @@ class Communicator(PostOffice):
                 port_name, e))
 
         return Endpoint(self.__kernel, self.__index, port, slot)
-
-    def __is_connected(self, port: Identifier) -> bool:
-        """Determine whether the given port is connected.
-
-        Args:
-            port: The port to check.
-        """
-        recv_port_full = self.__kernel + port
-        return recv_port_full in self.__peers
-
-    def __get_peer_endpoint(self, port: Identifier, slot: List[int]
-                            ) -> Endpoint:
-        """Determine the peer endpoint for the given port and slot.
-
-        Args:
-            port: The port on our side to send or receive on.
-            slot: The slot to send or receive on.
-
-        Returns:
-            The peer endpoint.
-        """
-        peer_kernel, peer_port = self.__split_peer(self.__kernel + port)
-        total_index = self.__index + slot
-
-        peer_dim = len(self.__peer_dims[peer_kernel])
-        peer_index = total_index[0:peer_dim]
-        peer_slot = total_index[peer_dim:]
-        return Endpoint(peer_kernel, peer_index, peer_port, peer_slot)
 
     def __split_port_desc(self, port_desc: str) -> Tuple[str, bool]:
         """Split a port description into its name and dimensionality.

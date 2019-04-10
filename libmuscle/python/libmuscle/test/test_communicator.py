@@ -42,13 +42,31 @@ def test_endpoint_instance() -> None:
 def communicator() -> Communicator:
     instance_id = Reference('kernel')
     communicator = Communicator(instance_id, [13], None, MagicMock())
-    communicator._Communicator__peers = {
-            'kernel.out': Reference('other.in'),
-            'kernel.in': Reference('other.out')
-            }
-    communicator._Communicator__peer_dims = {Reference('other'): []}
-    communicator._Communicator__peer_locations = {
-            Reference('other'): ['direct:test']}
+    communicator._Communicator__peer_manager = MagicMock()
+    pm = communicator._Communicator__peer_manager
+    pm.is_connected.return_value = True
+
+    def gpp(x) -> Reference:
+        if 'out' in str(x):
+            return Reference('in')
+        return Reference('out')
+
+    pm.get_peer_port = gpp
+
+    pm.get_peer_dims.return_value = []
+    pm.get_peer_locations.return_value = ['direct:test']
+
+    def gpe(p, s) -> Reference:
+        endpoint = MagicMock()
+        endpoint.instance.return_value = Reference('other')
+        if 'out' in str(p):
+            endpoint.ref.return_value = Reference('other.in[13]')
+        else:
+            endpoint.ref.return_value = Reference('other.out')
+        return endpoint
+
+    pm.get_peer_endpoint = gpe
+
     communicator._Communicator__ports = {
             'out': Port('out', Operator.O_I, False, True, 1, []),
             'in': Port('in', Operator.S, False, True, 1, [])}
@@ -60,11 +78,31 @@ def communicator() -> Communicator:
 def communicator2() -> Communicator:
     instance_id = Reference('other')
     communicator = Communicator(instance_id, [], None, MagicMock())
-    communicator._Communicator__peers = {
-            'other.out': Reference('kernel.in'),
-            'other.in': Reference('kernel.out')
-            }
-    communicator._Communicator__peer_dims = {Reference('kernel'): [20]}
+    communicator._Communicator__peer_manager = MagicMock()
+    pm = communicator._Communicator__peer_manager
+    pm.is_connected.return_value = True
+
+    def gpp(x: Reference) -> Reference:
+        if 'out' in str(x):
+            return Reference('in')
+        return Reference('out')
+
+    pm.get_peer_port = gpp
+
+    pm.get_peer_dims.return_value = []
+    pm.get_peer_locations.return_value = ['direct:test']
+
+    def gpe(p, s) -> Reference:
+        endpoint = MagicMock()
+        endpoint.instance.return_value = Reference('kernel[13]')
+        if 'out' in str(p):
+            endpoint.ref.return_value = Reference('kernel[13].in')
+        else:
+            endpoint.ref.return_value = Reference('kernel[13].out')
+        return endpoint
+
+    pm.get_peer_endpoint = gpe
+
     communicator._Communicator__ports = {
             'out': Port('out', Operator.O_I, True, True, 0, [20]),
             'in': Port('in', Operator.S, True, True, 0, [20])}
@@ -76,10 +114,31 @@ def communicator2() -> Communicator:
 def communicator3() -> Communicator:
     instance_id = Reference('kernel')
     communicator = Communicator(instance_id, [], None, MagicMock())
-    communicator._Communicator__peers = {
-            'kernel.out': Reference('other.in'),
-            'kernel.in': Reference('other.out')}
-    communicator._Communicator__peer_dims = {Reference('other'): []}
+    communicator._Communicator__peer_manager = MagicMock()
+    pm = communicator._Communicator__peer_manager
+    pm.is_connected.return_value = True
+
+    def gpp(x: Reference) -> Reference:
+        if 'out' in str(x):
+            return Reference('in')
+        return Reference('out')
+
+    pm.get_peer_port = gpp
+
+    pm.get_peer_dims.return_value = []
+    pm.get_peer_locations.return_value = ['direct:test']
+
+    def gpe(p, s) -> Reference:
+        endpoint = MagicMock()
+        endpoint.instance.return_value = Reference('other')
+        if 'out' in str(p):
+            endpoint.ref.return_value = Reference('other.in[13]')
+        else:
+            endpoint.ref.return_value = Reference('other.out[13]')
+        return endpoint
+
+    pm.get_peer_endpoint = gpe
+
     communicator._Communicator__ports = {
             'out': Port('out', Operator.O_I, True, True, 0, []),
             'in': Port('in', Operator.S, True, True, 0, [])}
@@ -109,27 +168,24 @@ def test_connect() -> None:
     peer_dims = {ref('other'): [1]}
     peer_locations = {ref('other'): ['direct:test']}
 
-    communicator = Communicator(instance_id, [13], None, MagicMock())
-    communicator.connect(conduits, peer_dims, peer_locations)
+    with patch('libmuscle.communicator.PeerManager') as pm_init:
+        communicator = Communicator(instance_id, [13], None, MagicMock())
 
-    assert (str(communicator._Communicator__peers['kernel.out']) ==
-            'other.in')
-    assert (str(communicator._Communicator__peers['kernel.in']) ==
-            'other.out')
+        communicator.connect(conduits, peer_dims, peer_locations)
 
-    assert communicator._Communicator__peer_dims == peer_dims
-    assert communicator._Communicator__peer_locations == peer_locations
+        pm_init.assert_called_with(instance_id, [13], conduits, peer_dims,
+                                   peer_locations)
 
-    # check inferred ports
-    ports = communicator._Communicator__ports
-    communicator.shutdown()
-    assert ports['in'].name == Identifier('in')
-    assert ports['in'].operator == Operator.F_INIT
-    assert ports['in']._length is None
+        # check inferred ports
+        ports = communicator._Communicator__ports
+        communicator.shutdown()
+        assert ports['in'].name == Identifier('in')
+        assert ports['in'].operator == Operator.F_INIT
+        assert ports['in']._length is None
 
-    assert ports['out'].name == Identifier('out')
-    assert ports['out'].operator == Operator.O_F
-    assert ports['out']._length is None
+        assert ports['out'].name == Identifier('out')
+        assert ports['out'].operator == Operator.O_F
+        assert ports['out']._length is None
 
 
 def test_connect_vector_ports(communicator) -> None:
@@ -231,6 +287,7 @@ def test_send_message(communicator, message) -> None:
 
 
 def test_send_on_disconnected_port(communicator, message) -> None:
+    communicator._Communicator__peer_manager.is_connected.return_value = False
     communicator.send_message('not_connected', message)
 
 
@@ -344,6 +401,7 @@ def test_receive_message(communicator) -> None:
 
 
 def test_receive_message_default(communicator) -> None:
+    communicator._Communicator__peer_manager.is_connected.return_value = False
     default_msg = Message(3.0, 4.0, 'test', Configuration())
     msg = communicator.receive_message('not_connected', default=default_msg)
     assert msg.timestamp == 3.0
@@ -353,6 +411,7 @@ def test_receive_message_default(communicator) -> None:
 
 
 def test_receive_message_no_default(communicator) -> None:
+    communicator._Communicator__peer_manager.is_connected.return_value = False
     with pytest.raises(RuntimeError):
         communicator.receive_message('not_connected')
 
@@ -504,7 +563,7 @@ def test_get_client(mock_servers, communicator) -> None:
     client2 = communicator._Communicator__get_client(Reference('other'))
     assert client == client2
 
-    communicator._Communicator__peer_locations[Reference('other2')] = [
-            'non_existent:test']
+    gpl = communicator._Communicator__peer_manager.get_peer_locations
+    gpl.return_value = ['non_existent:test']
     with pytest.raises(RuntimeError):
         communicator._Communicator__get_client(Reference('other2'))

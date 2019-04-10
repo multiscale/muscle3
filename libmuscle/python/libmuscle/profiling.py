@@ -18,8 +18,8 @@ class ProfileEventType(Enum):
     be kept identical to those.
     """
     REGISTER = 0
-    DEREGISTER = 1
     CONNECT = 4
+    DEREGISTER = 1
     SEND = 2
     RECEIVE = 3
 
@@ -37,6 +37,7 @@ class ProfileEventType(Enum):
         """
         event_type_map = {
                 mmp.PROFILE_EVENT_TYPE_REGISTER: ProfileEventType.REGISTER,
+                mmp.PROFILE_EVENT_TYPE_CONNECT: ProfileEventType.CONNECT,
                 mmp.PROFILE_EVENT_TYPE_DEREGISTER: ProfileEventType.DEREGISTER,
                 mmp.PROFILE_EVENT_TYPE_SEND: ProfileEventType.SEND,
                 mmp.PROFILE_EVENT_TYPE_RECEIVE: ProfileEventType.RECEIVE
@@ -51,6 +52,7 @@ class ProfileEventType(Enum):
         """
         event_type_map = {
                 ProfileEventType.REGISTER: mmp.PROFILE_EVENT_TYPE_REGISTER,
+                ProfileEventType.CONNECT: mmp.PROFILE_EVENT_TYPE_CONNECT,
                 ProfileEventType.DEREGISTER: mmp.PROFILE_EVENT_TYPE_DEREGISTER,
                 ProfileEventType.SEND: mmp.PROFILE_EVENT_TYPE_SEND,
                 ProfileEventType.RECEIVE: mmp.PROFILE_EVENT_TYPE_RECEIVE,

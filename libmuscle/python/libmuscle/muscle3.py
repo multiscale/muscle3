@@ -196,6 +196,15 @@ def run_instances(instances: Dict[str, Callable]) -> None:
     mux_process.start()
     mux.close_all_pipes()
 
+    failed_processes = list()
     for instance_process in instance_processes:
         instance_process.join()
+        if instance_process.exitcode != 0:
+            failed_processes.append(instance_process)
     mux_process.join()
+
+    if len(failed_processes) > 0:
+        failed_names = map(lambda x: x.name, failed_processes)
+        raise RuntimeError('Instances {} failed to shut down cleanly, please'
+                           ' check the logs to see what went wrong.'.format(
+                               ', '.join(failed_names)))

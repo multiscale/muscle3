@@ -1,9 +1,17 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
+# Get version from global VERSION file
+file(STRINGS "${CMAKE_CURRENT_LIST_DIR}/../../../VERSION" _VERSION_IN)
+string(REGEX REPLACE "^([0-9]+\.[0-9+]+\.[0-9]+).*" "\\1" _VERSION "${_VERSION_IN}")
+message(STATUS "Building version ${_VERSION} of libmuscle")
+
 project(muscle3_core
   LANGUAGES CXX
-  VERSION 0.1.0
+  VERSION ${_VERSION}
   )
+
+# Put the version into version.h
+configure_file(version.h.in generated/version.h @ONLY)
 
 include(GNUInstallDirs)
 set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
@@ -11,6 +19,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE ON)
 set(_MUSCLE3_PUBLIC_HEADERS
   muscle3.hpp
   tooling.hpp
+  ${CMAKE_CURRENT_BINARY_DIR}/generated/version.h
   )
 
 set(_MUSCLE3_SOURCES
@@ -35,7 +44,6 @@ target_sources(muscle3-static
   PRIVATE
     ${_MUSCLE3_SOURCES}
   )
-
 
 # Set up the dynamic build
 

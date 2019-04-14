@@ -5,7 +5,7 @@ endif()
 
 # Find the root of the MUSCLE3 installation if not set
 if(NOT MUSCLE3_ROOT)
-  find_path(_MUSCLE3_ROOT NAMES include/muscle3/muscle3.hpp)
+  find_path(_MUSCLE3_ROOT NAMES include/muscle3/version.hpp)
 else()
   set(_MUSCLE3_ROOT "${MUSCLE3_ROOT}")
 endif()

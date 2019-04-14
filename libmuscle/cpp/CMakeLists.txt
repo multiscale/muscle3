@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
-project(libmuscle
-  LANGUAGES CXX
-  VERSION 0.1.0
-  )
+project(libmuscle LANGUAGES CXX)
 
 
 # Configuration options

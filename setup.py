@@ -1,8 +1,15 @@
+import pathlib
 from setuptools import find_packages, setup
+
+
+_here = pathlib.Path(__file__).resolve().parent
+_version_file = _here / 'VERSION'
+with _version_file.open('r') as f:
+    _version = f.read().strip()
 
 setup(
     name='mmsf-muscle3',
-    version='0.0.0.dev',
+    version=_version,
     description='Version 3 of the MUltiScale Coupling Library and Environment',
     author='Lourens Veen',
     author_email='l.veen@esciencecenter.nl',

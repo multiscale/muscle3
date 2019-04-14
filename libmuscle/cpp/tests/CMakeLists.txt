@@ -1,10 +1,22 @@
-add_executable(tooling_test test_tooling.cpp)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
-target_link_libraries(tooling_test
+set(THREAD_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+find_package(GTest ${GoogleTest_MINIMUM_REQUIRED} REQUIRED)
+find_package(MUSCLE3 0.1.0 REQUIRED)
+
+add_executable(test_muscle3 test_tooling.cpp test_extra.cpp)
+
+target_include_directories(test_muscle3 BEFORE
+  PRIVATE
+    ${MUSCLE3_INCLUDE_DIRS}
+    ${GTEST_INCLUDE_DIRS}
+  )
+
+target_link_libraries(test_muscle3
   PUBLIC
-    muscle3-static
-    gtest_main
+    Threads::Threads
+    ${MUSCLE3_LIBRARIES}
+    ${GTEST_BOTH_LIBRARIES}
 )
-
-add_test(NAME tooling_test COMMAND $<TARGET_FILE:tooling_test>)
 

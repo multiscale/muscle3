@@ -1,0 +1,6 @@
+#pragma once
+
+#define MUSCLE3_VERSION_MAJOR 0
+#define MUSCLE3_VERSION_MINOR 1
+#define MUSCLE3_VERSION_PATCH 0
+

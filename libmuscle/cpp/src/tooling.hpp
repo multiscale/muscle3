@@ -1,5 +1,6 @@
 #pragma once
 
+
 /** A simple class to test the build system with.
  */
 class Tooling {

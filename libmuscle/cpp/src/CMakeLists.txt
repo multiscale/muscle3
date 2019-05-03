@@ -24,7 +24,12 @@ set(_MUSCLE3_PUBLIC_HEADERS
 
 set(_MUSCLE3_SOURCES
   ${CMAKE_CURRENT_LIST_DIR}/tooling.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/muscle_manager_protocol/muscle_manager_protocol.pb.cc
   )
+
+# Find dependencies
+find_package(Protobuf ${Protobuf_MINIMUM_REQUIRED} CONFIG)
+find_package(gRPC ${gRPC_MINIMUM_REQUIRED} CONFIG)
 
 # Set up the static build
 
@@ -43,6 +48,17 @@ set_target_properties(muscle3-static
 target_sources(muscle3-static
   PRIVATE
     ${_MUSCLE3_SOURCES}
+  )
+
+target_include_directories(muscle3-static
+  PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}
+  )
+
+target_link_libraries(muscle3-static
+  PRIVATE
+    protobuf::libprotobuf
+    gRPC::grpc++
   )
 
 # Set up the dynamic build
@@ -76,6 +92,17 @@ set_target_properties(muscle3-shared
 target_sources(muscle3-shared
   PRIVATE
     ${_MUSCLE3_SOURCES}
+  )
+
+target_include_directories(muscle3-shared
+  PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}
+  )
+
+target_link_libraries(muscle3-shared
+  PRIVATE
+    protobuf::libprotobuf
+    gRPC::grpc++
   )
 
 

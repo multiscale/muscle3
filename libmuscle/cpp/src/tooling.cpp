@@ -1,5 +1,8 @@
 #include "tooling.hpp"
 
+#include "muscle_manager_protocol/muscle_manager_protocol.pb.h"
+
+
 Tooling::Tooling()
     : test_variable_(42)
 {}

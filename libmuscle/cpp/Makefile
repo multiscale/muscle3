@@ -12,7 +12,7 @@ configure: build
 .PHONY: make
 make: build
 	cd build && cmake ..
-	cd build && cmake --build .
+	cd build && cmake --build . -- -j $(shell nproc)
 
 .PHONY: install
 install: make

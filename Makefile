@@ -33,4 +33,4 @@ grpc:
 	@echo
 	@echo "*** If you have modified the endpoints, you'll have to manually update muscle_manager_protocol/muscle_manager_protocol_pb2_grpc.pyi ***"
 	# C++
-	python -m grpc_tools.protoc -Imuscle_manager_protocol --cpp_out=libmuscle/cpp/src/muscle_manager_protocol muscle_manager_protocol/muscle_manager_protocol.proto
+	libmuscle/cpp/build/tools/protobuf/bin/protoc --cpp_out=libmuscle/cpp/src muscle_manager_protocol/muscle_manager_protocol.proto

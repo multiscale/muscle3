@@ -5,7 +5,7 @@ endif()
 
 # Find the root of the MUSCLE3 installation if not set
 if(NOT MUSCLE3_ROOT)
-  find_path(_MUSCLE3_ROOT NAMES include/muscle3/version.hpp)
+  find_path(_MUSCLE3_ROOT NAMES include/muscle3/version.h)
 else()
   set(_MUSCLE3_ROOT "${MUSCLE3_ROOT}")
 endif()
@@ -14,7 +14,7 @@ endif()
 find_path(MUSCLE3_INCLUDE_DIRS NAMES muscle3/muscle3.hpp HINTS ${_MUSCLE3_ROOT}/include)
 
 # Figure out which version this is
-set(_MUSCLE3_HPP ${MUSCLE3_INCLUDE_DIRS}/muscle3/muscle3.hpp)
+set(_MUSCLE3_HPP ${MUSCLE3_INCLUDE_DIRS}/muscle3/version.h)
 
 function(_muscle3ver_EXTRACT _MUSCLE3_VER_COMPONENT _MUSCLE3_VER_OUTPUT)
   set(CMAKE_MATCH_1 "0")

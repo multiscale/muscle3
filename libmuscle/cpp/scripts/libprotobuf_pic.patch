@@ -1,0 +1,10 @@
+--- libprotobuf.cmake	2019-03-25 17:42:48.000000000 +0100
++++ libprotobuf.cmake.new	2019-04-17 22:53:24.254286223 +0200
+@@ -131,5 +131,6 @@
+ set_target_properties(libprotobuf PROPERTIES
+     VERSION ${protobuf_VERSION}
+     OUTPUT_NAME ${LIB_PREFIX}protobuf
+-    DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")
++    DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}"
++    POSITION_INDEPENDENT_CODE 1)
+ add_library(protobuf::libprotobuf ALIAS libprotobuf)

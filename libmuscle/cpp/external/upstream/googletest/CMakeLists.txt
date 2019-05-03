@@ -5,13 +5,13 @@ if(ENABLE_UNIT_TESTS)
 
   if(GoogleTest_FOUND)
     message(STATUS "Found GoogleTest version ${GoogleTest_MAJOR_VERSION}.${GoogleTest_MINOR_VERSION}.${GoogleTest_SUBMINOR_VERSION}")
-    add_library(googletest_external INTERFACE)
+    add_library(googletest INTERFACE)
   else()
     message(STATUS "GoogleTest ${GoogleTest_MINIMUM_REQUIRED} was not found, will build it instead.")
 
     include(ExternalProject)
-    ExternalProject_Add(googletest_external
-      URL               https://github.com/google/googletest/archive/release-1.8.1.tar.gz
+    ExternalProject_Add(googletest
+      URL               https://github.com/google/googletest/archive/release-${GoogleTest_MINIMUM_REQUIRED}.tar.gz
       URL_HASH          SHA256=9bf1fe5182a604b4135edc1a425ae356c9ad15e9b23f9f12a02e80184c3a249c
       DOWNLOAD_NO_PROGRESS 1
       LOG_CONFIGURE        1

@@ -8,9 +8,6 @@ option(ENABLE_UNIT_TESTS "Enable unit tests" ON)
 message(STATUS "Enable testing: ${ENABLE_UNIT_TESTS}")
 
 # Layout of files within the install dir
-set(INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR} CACHE PATH "Installation directory for libraries")
-set(INSTALL_BINDIR ${CMAKE_INSTALL_BINDIR} CACHE PATH "Installation directory for executables")
-set(INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR} CACHE PATH "Installation directory for header files")
 set(DEF_INSTALL_CMAKEDIR share/cmake/${PROJECT_NAME})
 set(INSTALL_CMAKEDIR ${DEF_INSTALL_CMAKEDIR} CACHE PATH "Installation directory for CMake files")
 
@@ -33,6 +30,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Declare dependency versions
 set(GoogleTest_MINIMUM_REQUIRED 1.8.1)
+set(Protobuf_MINIMUM_REQUIRED 3.7.1)
+set(gRPC_MINIMUM_REQUIRED 1.17.1)
+set(ZLIB_MINIMUM_REQUIRED 1.2.8)
+set(OPENSSL_MINIMUM_REQUIRED 1.0.2)
 
 
 # Set up installation directories
@@ -53,12 +54,15 @@ set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage)
 message(STATUS "${PROJECT_NAME} staged install: ${STAGED_INSTALL_PREFIX}")
 set(TOOLS_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/tools)
 message(STATUS "${PROJECT_NAME} tools install: ${TOOLS_INSTALL_PREFIX}")
+
+# Build dependencies, if necessary
 add_subdirectory(external/upstream)
 
 include(ExternalProject)
 
 # Build libmuscle
 ExternalProject_Add(${PROJECT_NAME}_core
+  DEPENDS grpc protobuf
   SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/src
   CMAKE_ARGS
     -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
@@ -68,11 +72,16 @@ ExternalProject_Add(${PROJECT_NAME}_core
     -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
     -DCMAKE_CXX_EXTENSIONS=${CMAKE_CXX_EXTENSIONS}
     -DCMAKE_CXX_STANDARD_REQUIRED=${CMAKE_CXX_STANDARD_REQUIRED}
+    -DCMAKE_MODULE_PATH=${CMAKE_MODULE_PATH}
     -DINSTALL_LIBDIR=${INSTALL_LIBDIR}
     -DINSTALL_BINDIR=${INSTALL_BINDIR}
     -DINSTALL_INCLUDEDIR=${INSTALL_INCLUDEDIR}
   CMAKE_CACHE_ARGS
     -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
+    -Dc-ares_DIR:PATH=${c-ares_DIR}
+    -DProtobuf_DIR:PATH=${Protobuf_DIR}
+    -DZLIB_ROOT:PATH=${ZLIB_ROOT}
+    -DgRPC_DIR:PATH=${gRPC_DIR}
   BUILD_ALWAYS    1
   )
 
@@ -81,7 +90,7 @@ if(ENABLE_UNIT_TESTS)
   ExternalProject_Add(${PROJECT_NAME}_tests
     DEPENDS
       ${PROJECT_NAME}_core
-      googletest_external
+      googletest
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/tests
     CMAKE_ARGS
       -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}

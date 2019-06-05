@@ -1,4 +1,6 @@
 from copy import copy
+import logging
+from pathlib import Path
 import sys
 from typing import cast, Dict, List, Optional, Tuple, Type, Union
 
@@ -8,6 +10,7 @@ from ymmsl import (Conduit, Identifier, Operator, ParameterValue, Port,
 from libmuscle.communicator import _ClosePort, Communicator, Message
 from libmuscle.configuration import Configuration
 from libmuscle.configuration_store import ConfigurationStore
+from libmuscle.logging_handler import MuscleManagerHandler
 from libmuscle.mmp_client import MMPClient
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEvent, ProfileEventType
@@ -19,13 +22,12 @@ class ComputeElement:
     This class provides a low-level send/receive API for the instance
     to use.
     """
-    def __init__(self, manager: MMPClient, instance: str,
+    def __init__(self, instance: str,
                  ports: Optional[Dict[Operator, List[str]]]=None
                  ) -> None:
         """Create a ComputeElement.
 
         Args:
-            manager: The client to use to talk to the manager.
             name: The name of the instance represented by this object.
             ports: A list of port names for each operator of this
                 compute element.
@@ -34,10 +36,13 @@ class ComputeElement:
         self._name, self._index = self.__make_full_name(Reference(instance))
         """Name and index of this compute element."""
 
-        self._manager = manager
+        mmp_location = self.__extract_manager_location()
+        self.__manager = MMPClient(mmp_location)
         """Client object for talking to the manager."""
 
-        self._profiler = Profiler(self._instance_name(), manager)
+        self.__set_up_logging()
+
+        self._profiler = Profiler(self._instance_name(), self.__manager)
         """Profiler for this instance."""
 
         self._communicator = Communicator(
@@ -56,34 +61,8 @@ class ComputeElement:
         FInitCacheType = Dict[Tuple[str, Optional[int]], Message]
         self._f_init_cache = dict()     # type: FInitCacheType
 
-    def _register(self) -> None:
-        """Register this compute element with the manager.
-        """
-        register_event = self._profiler.start(ProfileEventType.REGISTER)
-        locations = self._communicator.get_locations()
-        port_list = self.__list_declared_ports()
-        self._manager.register_instance(self._instance_name(), locations,
-                                        port_list)
-        register_event.stop()
-
-    def _connect(self) -> None:
-        """Connect this compute element to the given peers / conduits.
-        """
-        connect_event = self._profiler.start(ProfileEventType.CONNECT)
-        conduits, peer_dims, peer_locations = self._manager.request_peers(
-                self._instance_name())
-        self._communicator.connect(conduits, peer_dims, peer_locations)
-        self._configuration_store.base = self._manager.get_configuration()
-        connect_event.stop()
-
-    def _deregister(self) -> None:
-        """Deregister this instance from the manager.
-        """
-        deregister_event = self._profiler.start(ProfileEventType.DEREGISTER)
-        self._manager.deregister_instance(self._instance_name())
-        deregister_event.stop()
-        # this is the last thing we'll profile, so flush messages
-        self._profiler.shutdown()
+        self._register()
+        self._connect()
 
     def reuse_instance(self, apply_overlay: bool=True) -> bool:
         """Decide whether to run this instance again.
@@ -141,6 +120,7 @@ class ComputeElement:
         if not do_reuse:
             self.__close_ports()
             self._communicator.shutdown()
+            self._deregister()
         return do_reuse
 
     def get_parameter_value(self, name: str,
@@ -339,6 +319,110 @@ class ComputeElement:
                     default value was given.
         """
         return self.__receive_message(port_name, slot, default, True)
+
+    def _register(self) -> None:
+        """Register this compute element with the manager.
+        """
+        register_event = self._profiler.start(ProfileEventType.REGISTER)
+        locations = self._communicator.get_locations()
+        port_list = self.__list_declared_ports()
+        self.__manager.register_instance(self._instance_name(), locations,
+                                         port_list)
+        register_event.stop()
+
+    def _connect(self) -> None:
+        """Connect this compute element to the given peers / conduits.
+        """
+        connect_event = self._profiler.start(ProfileEventType.CONNECT)
+        conduits, peer_dims, peer_locations = self.__manager.request_peers(
+                self._instance_name())
+        self._communicator.connect(conduits, peer_dims, peer_locations)
+        self._configuration_store.base = self.__manager.get_configuration()
+        connect_event.stop()
+
+    def _deregister(self) -> None:
+        """Deregister this instance from the manager.
+        """
+        deregister_event = self._profiler.start(ProfileEventType.DEREGISTER)
+        self.__manager.deregister_instance(self._instance_name())
+        deregister_event.stop()
+        # this is the last thing we'll profile, so flush messages
+        self._profiler.shutdown()
+
+    @staticmethod
+    def __extract_manager_location() -> str:
+        """Gets the manager network location from the command line.
+
+        We use a --muscle-manager=<host:port> argument to tell the
+        MUSCLE library how to connect to the manager. This function
+        will extract this argument from the command line arguments,
+        if it is present.
+
+        Returns:
+            A connection string, or None.
+        """
+        # Neither getopt, optparse, or argparse will let me pick out
+        # just one option from the command line and ignore the rest.
+        # So we do it by hand.
+        prefix = '--muscle-manager='
+        for arg in sys.argv[1:]:
+            if arg.startswith(prefix):
+                return arg[len(prefix):]
+
+        return 'localhost:9000'
+
+    def __set_up_logging(self) -> None:
+        """Adds logging handlers for one or more instances.
+        """
+        id_str = str(self._instance_name())
+
+        logfile = self.__extract_log_file_location(
+                'muscle3.{}.log'.format(id_str))
+        local_handler = logging.FileHandler(str(logfile), mode='w')
+        logging.getLogger().addHandler(local_handler)
+
+        if self.__manager is not None:
+            mmp_handler = MuscleManagerHandler(id_str, logging.WARNING,
+                                               self.__manager)
+            logging.getLogger().addHandler(mmp_handler)
+
+    @staticmethod
+    def __extract_log_file_location(filename: str) -> Optional[Path]:
+        """Gets the log file location from the command line.
+
+        Extracts the --muscle-log-file=<path> argument to tell the
+        MUSCLE library where to write the local log file. This
+        function will extract this argument from the command line
+        arguments if it is present. If the given path is to a
+        directory, <filename> will be written inside of that directory,
+        if the path is not an existing directory, then it will be used
+        as the name of the log file to write to. If no command line
+        argument is given, <filename> will be written in the current
+        directory.
+
+        Args:
+            filename: Default file name to use.
+
+        Returns:
+            Path to the log file to write.
+        """
+        # Neither getopt, optparse, or argparse will let me pick out
+        # just one option from the command line and ignore the rest.
+        # So we do it by hand.
+        prefix = '--muscle-log-file='
+        given_path_str = ''
+        for arg in sys.argv[1:]:
+            if arg.startswith(prefix):
+                given_path_str = arg[len(prefix):]
+
+        if given_path_str == '':
+            return Path('.') / filename
+
+        given_path = Path(given_path_str)
+
+        if given_path.is_dir():
+            return given_path / filename
+        return given_path
 
     def __receive_message(
             self, port_name: str, slot: Optional[int],

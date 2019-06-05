@@ -12,6 +12,22 @@ from libmuscle.configuration_store import ConfigurationStore
 
 
 @pytest.fixture
+def sys_argv_manager() -> Generator[None, None, None]:
+    old_argv = sys.argv
+    sys.argv = sys.argv + ['--muscle-manager=localhost:9000']
+    yield None
+    sys.argv = old_argv
+
+
+@pytest.fixture
+def log_file_in_tmpdir(tmpdir) -> Generator[None, None, None]:
+    old_argv = sys.argv
+    sys.argv = sys.argv + ['--muscle-log-file={}'.format(tmpdir)]
+    yield None
+    sys.argv = old_argv
+
+
+@pytest.fixture
 def sys_argv_index() -> Generator[None, None, None]:
     old_argv = sys.argv
     sys.argv = ['', '--muscle-index=13,42']
@@ -21,14 +37,20 @@ def sys_argv_index() -> Generator[None, None, None]:
 
 @pytest.fixture
 def compute_element():
-    with patch('libmuscle.compute_element.Communicator') as comm_type:
+    with patch('libmuscle.compute_element.MMPClient') as mmp_client, \
+         patch('libmuscle.compute_element.Communicator') as comm_type:
         communicator = MagicMock()
         config = Configuration()
         config['test1'] = 12
         msg = Message(0.0, 1.0, 'message', config)
         communicator.receive_message.return_value = msg
         comm_type.return_value = communicator
-        element = ComputeElement(MagicMock(), 'test_element', {
+
+        mmp_client_object = MagicMock()
+        mmp_client_object.request_peers.return_value = (None, None, None)
+        mmp_client.return_value = mmp_client_object
+
+        element = ComputeElement('test_element', {
             Operator.F_INIT: ['in', 'not_connected'],
             Operator.O_F: ['out']})
         element._f_init_cache = dict()
@@ -38,30 +60,47 @@ def compute_element():
 
 @pytest.fixture
 def compute_element2():
-    with patch('libmuscle.compute_element.Communicator') as comm_type:
-        element = ComputeElement(MagicMock(), 'test_element', {
+    with patch('libmuscle.compute_element.MMPClient') as mmp_client, \
+         patch('libmuscle.compute_element.Communicator') as comm_type:
+        mmp_client_object = MagicMock()
+        mmp_client_object.request_peers.return_value = (None, None, None)
+        mmp_client.return_value = mmp_client_object
+        element = ComputeElement('test_element', {
             Operator.F_INIT: ['in[]'],
             Operator.O_F: ['out']})
         yield element
 
 
-def test_create_compute_element(sys_argv_index):
-    with patch('libmuscle.compute_element.Communicator') as comm_type:
+def test_create_compute_element(
+        sys_argv_index, log_file_in_tmpdir, sys_argv_manager):
+    with patch('libmuscle.compute_element.MMPClient') as mmp_client, \
+         patch('libmuscle.compute_element.Communicator') as comm_type:
+        mmp_client_object = MagicMock()
+        mmp_client_object.request_peers.return_value = (None, None, None)
+        mmp_client.return_value = mmp_client_object
         ports = {
             Operator.F_INIT: ['in'],
             Operator.O_F: ['out']}
-        element = ComputeElement(MagicMock(), 'test_element', ports)
+        element = ComputeElement('test_element', ports)
         assert element._name == Reference('test_element')
         assert element._index == [13, 42]
         assert element._declared_ports == ports
         assert isinstance(element._configuration_store, ConfigurationStore)
         assert len(element._configuration_store.base) == 0
         assert len(element._configuration_store.overlay) == 0
+        mmp_client.assert_called_once_with('localhost:9000')
+        assert mmp_client_object._register.called_with()
+        assert mmp_client_object._connect.called_with()
         comm_type.assert_called_with(Reference('test_element'), [13, 42],
                                      ports, element._profiler)
         assert element._communicator == comm_type.return_value
         assert isinstance(element._configuration_store, ConfigurationStore)
         assert len(element._configuration_store.base) == 0
+
+
+def test_extract_manager_location(sys_argv_manager) -> None:
+    assert (ComputeElement._ComputeElement__extract_manager_location() ==
+            'localhost:9000')
 
 
 def test_get_parameter_value(compute_element):

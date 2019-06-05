@@ -6,19 +6,15 @@ from ymmsl import Operator, Reference
 
 from libmuscle.communicator import Message
 from libmuscle.compute_element import ComputeElement
-from libmuscle.muscle3 import Muscle3, run_instances
+from libmuscle.muscle3 import run_instances
 
 
 def macro(instance_id: str):
     """Macro model implementation.
     """
-    muscle = Muscle3()
-
-    ce = muscle.compute_element(instance_id, {
+    ce = ComputeElement(instance_id, {
             Operator.O_I: ['out[]'],
             Operator.S: ['in[]']})
-
-    muscle.register(ce)
 
     while ce.reuse_instance():
         # f_init
@@ -34,19 +30,13 @@ def macro(instance_id: str):
             msg = ce.receive_message('in', slot)
             assert msg.data == 'testing back'
 
-    muscle.close()
-
 
 def micro(instance_id: str):
     """Micro model implementation.
     """
-    muscle = Muscle3()
-
-    ce = muscle.compute_element(instance_id, {
+    ce = ComputeElement(instance_id, {
             Operator.F_INIT: ['in'],
             Operator.O_F: ['out']})
-
-    muscle.register(ce)
 
     while ce.reuse_instance():
         # f_init
@@ -58,8 +48,6 @@ def micro(instance_id: str):
 
         # o_f
         ce.send_message('out', Message(0.1, None, 'testing back'))
-
-    muscle.close()
 
 
 def test_all(log_file_in_tmpdir, mmp_server_process, sys_argv_manager):

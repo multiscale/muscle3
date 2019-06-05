@@ -7,16 +7,13 @@ from ymmsl import Operator, Reference
 from libmuscle.communicator import Message
 from libmuscle.compute_element import ComputeElement
 from libmuscle.configuration import Configuration
-from libmuscle.muscle3 import run_instances, Muscle3
+from libmuscle.muscle3 import run_instances
 
 
 def qmc(instance_id: str):
     """qMC implementation.
     """
-    muscle = Muscle3()
-    ce = muscle.compute_element(instance_id,
-                                {Operator.O_F: ['parameters_out[]']})
-    muscle.register(ce)
+    ce = ComputeElement(instance_id, {Operator.O_F: ['parameters_out[]']})
 
     while ce.reuse_instance():
         # o_f
@@ -31,16 +28,12 @@ def qmc(instance_id: str):
             ce.send_message('parameters_out',
                             Message(0.0, None, config0), slot)
 
-    muscle.close()
-
 
 def macro(instance_id: str):
     """Macro model implementation.
     """
-    muscle = Muscle3()
-    ce = muscle.compute_element(instance_id, {
+    ce = ComputeElement(instance_id, {
             Operator.O_I: ['out'], Operator.S: ['in']})
-    muscle.register(ce)
 
     while ce.reuse_instance():
         # f_init
@@ -51,16 +44,12 @@ def macro(instance_id: str):
         msg = ce.receive_message('in')
         assert msg.data == 'testing back'
 
-    muscle.close()
-
 
 def micro(instance_id: str):
     """Micro model implementation.
     """
-    muscle = Muscle3()
-    ce = muscle.compute_element(instance_id, {
+    ce = ComputeElement(instance_id, {
             Operator.F_INIT: ['in'], Operator.O_F: ['out']})
-    muscle.register(ce)
 
     assert ce.get_parameter_value('test2') == 13.3
     while ce.reuse_instance():
@@ -75,8 +64,6 @@ def micro(instance_id: str):
         # o_f
         ce.send_message('out', Message(0.1, None, 'testing back'))
 
-    muscle.close()
-
 
 def explicit_micro(instance_id: str):
     """Micro model implementation with explicit parameters.
@@ -84,10 +71,8 @@ def explicit_micro(instance_id: str):
     Receives overlay parameters explicitly, rather than having MUSCLE
     handle them.
     """
-    muscle = Muscle3()
-    ce = muscle.compute_element(instance_id, {
+    ce = ComputeElement(instance_id, {
             Operator.F_INIT: ['in'], Operator.O_F: ['out']})
-    muscle.register(ce)
 
     while ce.reuse_instance(False):
         # f_init
@@ -100,8 +85,6 @@ def explicit_micro(instance_id: str):
         # o_f
         ce.send_message(
                 'out', Message(0.1, None, 'testing back', msg.configuration))
-
-    muscle.close()
 
 
 def test_parameter_overlays(log_file_in_tmpdir, mmp_server_process_qmc,

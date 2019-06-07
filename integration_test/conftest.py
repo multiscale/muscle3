@@ -4,9 +4,8 @@ import sys
 from typing import Generator
 
 import pytest
-from ruamel import yaml
 import yatiml
-from ymmsl import loader
+import ymmsl
 
 import integration_test.include_libmuscle
 
@@ -59,17 +58,17 @@ def mmp_server_process(yatiml_log_warning):
             '    test1: 13\n'
             '    test2: 13.3\n'
             '    test3: testing\n'
-            # '    test4: True\n'
+            '    test4: True\n'
             '    test5: [2.3, 5.6]\n'
             '    test6:\n'
             '      - [1.0, 2.0]\n'
             '      - [3.0, 1.0]\n'
             )
-    ymmsl = yaml.load(ymmsl_text, Loader=loader)
+    ymmsl_doc = ymmsl.load(ymmsl_text)
 
     control_pipe = mp.Pipe()
     process = mp.Process(target=start_mmp_server,
-                         args=(control_pipe, ymmsl),
+                         args=(control_pipe, ymmsl_doc),
                          name='MMPServer')
     process.start()
     control_pipe[1].close()
@@ -101,7 +100,7 @@ def mmp_server(yatiml_log_warning):
             '    test1: 13\n'
             '    test2: 13.3\n'
             '    test3: testing\n'
-            # '    test4: True\n'
+            '    test4: True\n'
             '    test5: [2.3, 5.6]\n'
             '    test6:\n'
             '      - [1.0, 2.0]\n'
@@ -109,11 +108,11 @@ def mmp_server(yatiml_log_warning):
             )
 
     logger = Logger()
-    ymmsl = yaml.load(ymmsl_text, Loader=loader)
-    configuration = config_for_experiment(ymmsl.experiment)
-    expected_elements = elements_for_simulation(ymmsl.simulation)
+    ymmsl_doc = ymmsl.load(ymmsl_text)
+    configuration = config_for_experiment(ymmsl_doc.experiment)
+    expected_elements = elements_for_simulation(ymmsl_doc.simulation)
     instance_registry = InstanceRegistry(expected_elements)
-    topology_store = TopologyStore(ymmsl)
+    topology_store = TopologyStore(ymmsl_doc)
     server = MMPServer(logger, configuration, instance_registry,
                        topology_store)
     yield server
@@ -144,17 +143,17 @@ def mmp_server_process_qmc(yatiml_log_warning):
             '    test1: 13\n'
             '    test2: 13.3\n'
             '    test3: testing\n'
-            # '    test4: True\n'
+            '    test4: True\n'
             '    test5: [2.3, 5.6]\n'
             '    test6:\n'
             '      - [1.0, 2.0]\n'
             '      - [3.0, 1.0]\n'
             )
-    ymmsl = yaml.load(ymmsl_text, Loader=loader)
+    ymmsl_doc = ymmsl.load(ymmsl_text)
 
     control_pipe = mp.Pipe()
     process = mp.Process(target=start_mmp_server,
-                         args=(control_pipe, ymmsl),
+                         args=(control_pipe, ymmsl_doc),
                          name='MMPServer')
     process.start()
     control_pipe[1].close()
@@ -182,11 +181,11 @@ def mmp_server_dm(yatiml_log_warning):
             'experiment:\n'
             '  model: test_model\n'
             )
-    ymmsl = yaml.load(ymmsl_text, Loader=loader)
+    ymmsl_doc = ymmsl.load(ymmsl_text)
 
     control_pipe = mp.Pipe()
     process = mp.Process(target=start_mmp_server,
-                         args=(control_pipe, ymmsl),
+                         args=(control_pipe, ymmsl_doc),
                          name='MMPServer')
     process.start()
     control_pipe[1].close()

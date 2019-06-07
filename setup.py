@@ -23,7 +23,7 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6'],
 
-    # packages=['muscle_manager', 'libmuscle'],
+    # packages=['muscle_manager', 'muscle_manager_protocol', 'libmuscle', 'libmuscle.mcp'],
     packages=find_packages() + find_packages('libmuscle/python'),
     package_dir={
         'muscle_manager': 'muscle_manager',
@@ -39,7 +39,7 @@ setup(
         'msgpack',
         'protobuf',
         'ruamel.yaml<=0.15.64',
-        'ymmsl==0.5.1'          # Also in .travisrc, update there as well
+        'ymmsl==0.6.0'          # Also in .travisrc, update there as well
     ],
     setup_requires=[
         'pytest-runner',

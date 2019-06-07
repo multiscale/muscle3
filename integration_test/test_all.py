@@ -41,6 +41,7 @@ def micro(instance_id: str):
     while ce.reuse_instance():
         # f_init
         assert ce.get_parameter_value('test3', 'str') == 'testing'
+        assert ce.get_parameter_value('test4', 'bool') is True
         assert ce.get_parameter_value('test6', '[[float]]')[0][1] == 2.0
 
         msg = ce.receive_message('in')

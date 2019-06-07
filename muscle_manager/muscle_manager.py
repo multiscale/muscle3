@@ -2,7 +2,8 @@ from typing import List
 
 import click
 from ruamel import yaml
-from ymmsl import Experiment, loader, Simulation
+from ymmsl import Experiment, Simulation
+import ymmsl
 
 from libmuscle.configuration import Configuration
 
@@ -76,10 +77,15 @@ def elements_for_simulation(simulation: Simulation) -> List[str]:
 def manage_simulation(ymmsl_file: str) -> None:
 
     with open(ymmsl_file) as f:
-        ymmsl = yaml.load(f, Loader=loader)
-    topology_store = TopologyStore(ymmsl)
-    configuration = config_for_experiment(ymmsl.experiment)
-    expected_elements = elements_for_simulation(ymmsl.simulation)
+        ymmsl_doc = ymmsl.load(f)
+
+    if not ymmsl_doc.experiment or not ymmsl_doc.simulation:
+        raise RuntimeError('The yMMSL file needs to specify both an experiment'
+                           ' and a simulation for MUSCLE 3 to run it.')
+
+    topology_store = TopologyStore(ymmsl_doc)
+    configuration = config_for_experiment(ymmsl_doc.experiment)
+    expected_elements = elements_for_simulation(ymmsl_doc.simulation)
 
     logger = Logger()
     instance_registry = InstanceRegistry(expected_elements)

@@ -30,8 +30,8 @@ def test_wiring(log_file_in_tmpdir, mmp_server_process):
     conduits, peer_dims, peer_locations = client.request_peers(
             Reference('micro[0]'))
 
-    assert Conduit(Reference('macro.out'), Reference('micro.in')) in conduits
-    assert Conduit(Reference('micro.out'), Reference('macro.in')) in conduits
+    assert Conduit('macro.out', 'micro.in') in conduits
+    assert Conduit('micro.out', 'macro.in') in conduits
 
     assert peer_dims[Reference('macro')] == []
     assert peer_locations['macro'] == ['direct:macro']
@@ -61,8 +61,8 @@ def test_wiring(log_file_in_tmpdir, mmp_server_process):
     conduits, peer_dims, peer_locations = client.request_peers(
             Reference('macro'))
 
-    assert Conduit(Reference('macro.out'), Reference('micro.in')) in conduits
-    assert Conduit(Reference('micro.out'), Reference('macro.in')) in conduits
+    assert Conduit('macro.out', 'micro.in') in conduits
+    assert Conduit('micro.out', 'macro.in') in conduits
 
     assert peer_dims[Reference('micro')] == [10]
     assert peer_locations['micro[7]'] == ['direct:micro[7]']

@@ -5,12 +5,12 @@ from muscle_manager.muscle_manager import config_for_experiment
 
 def test_config_from_experiment():
     parameters = [
-            Setting(Reference('x'), 1.1),
-            Setting(Reference('y'), 3.0),
-            Setting(Reference('alpha'), 2),
-            Setting(Reference('interpolation'), 'linear'),
-            Setting(Reference('diffusion'), [[1.1, 0.9], [0.9, 1.1]])]
-    experiment = Experiment(Reference('test_model'), parameters)
+            Setting('x', 1.1),
+            Setting('y', 3.0),
+            Setting('alpha', 2),
+            Setting('interpolation', 'linear'),
+            Setting('diffusion', [[1.1, 0.9], [0.9, 1.1]])]
+    experiment = Experiment('test_model', parameters)
 
     config = config_for_experiment(experiment)
 

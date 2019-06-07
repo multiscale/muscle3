@@ -1,7 +1,6 @@
 import multiprocessing as mp
 
-from ruamel import yaml
-from ymmsl import loader
+import ymmsl
 
 from libmuscle.logging import LogLevel, LogMessage, Timestamp
 from libmuscle.mmp_client import MMPClient
@@ -42,11 +41,11 @@ def do_logging_test(caplog):
 
     # create server
     logger = Logger()
-    ymmsl = yaml.load(ymmsl_text, Loader=loader)
-    configuration = config_for_experiment(ymmsl.experiment)
-    expected_elements = elements_for_simulation(ymmsl.simulation)
+    ymmsl_doc = ymmsl.load(ymmsl_text)
+    configuration = config_for_experiment(ymmsl_doc.experiment)
+    expected_elements = elements_for_simulation(ymmsl_doc.simulation)
     instance_registry = InstanceRegistry(expected_elements)
-    topology_store = TopologyStore(ymmsl)
+    topology_store = TopologyStore(ymmsl_doc)
     server = MMPServer(logger, configuration, instance_registry,
                        topology_store)
 

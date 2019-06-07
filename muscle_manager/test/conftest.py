@@ -34,16 +34,14 @@ def topology_store() -> TopologyStore:
             'v0.1',
             None,
             Simulation(
-                Identifier('test_model'),
+                'test_model',
                 [
+                    ComputeElementDecl('macro', 'macro_implementation'),
                     ComputeElementDecl(
-                        Reference('macro'), Reference('macro_implementation')),
-                    ComputeElementDecl(
-                        Reference('micro'), Reference('micro_implementation'),
-                        [10, 10])],
+                        'micro', 'micro_implementation', [10, 10])],
                 [
-                    Conduit(Reference('macro.out'), Reference('micro.in')),
-                    Conduit(Reference('micro.out'), Reference('macro.in'))
+                    Conduit('macro.out', 'micro.in'),
+                    Conduit('micro.out', 'macro.in')
                 ]))
 
     return TopologyStore(ymmsl)
@@ -79,22 +77,18 @@ def topology_store2() -> TopologyStore:
             'v0.1',
             None,
             Simulation(
-                Identifier('test_model'),
+                'test_model',
                 [
-                    ComputeElementDecl(
-                        Reference('macro'), Reference('macro_implementation')),
-                    ComputeElementDecl(
-                        Reference('meso'), Reference('meso_implementation'),
-                        [5]),
-                    ComputeElementDecl(
-                        Reference('micro'), Reference('micro_implementation'),
-                        [5, 10])
+                    ComputeElementDecl('macro', 'macro_implementation'),
+                    ComputeElementDecl('meso', 'meso_implementation', [5]),
+                    ComputeElementDecl('micro', 'micro_implementation',
+                                       [5, 10])
                 ],
                 [
-                    Conduit(Reference('macro.out'), Reference('meso.in')),
-                    Conduit(Reference('meso.out'), Reference('micro.in')),
-                    Conduit(Reference('micro.out'), Reference('meso.in')),
-                    Conduit(Reference('meso.out'), Reference('macro.in'))
+                    Conduit('macro.out', 'meso.in'),
+                    Conduit('meso.out', 'micro.in'),
+                    Conduit('micro.out', 'meso.in'),
+                    Conduit('meso.out', 'macro.in')
                 ]))
 
     return TopologyStore(ymmsl)

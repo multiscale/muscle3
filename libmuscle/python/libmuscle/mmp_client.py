@@ -29,7 +29,7 @@ def conduit_from_grpc(conduit: mmp.Conduit) -> Conduit:
     Returns:
         The same conduit, as ymmsl.Conduit.
     """
-    return Conduit(Reference(conduit.sender), Reference(conduit.receiver))
+    return Conduit(conduit.sender, conduit.receiver)
 
 
 class MMPClient():

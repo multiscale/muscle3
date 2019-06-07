@@ -163,8 +163,8 @@ def test_connect() -> None:
     ref = Reference
 
     instance_id = Reference('kernel')
-    conduits = [Conduit(ref('kernel.out'), ref('other.in')),
-                Conduit(ref('other.out'), ref('kernel.in'))]
+    conduits = [Conduit('kernel.out', 'other.in'),
+                Conduit('other.out', 'kernel.in')]
     peer_dims = {ref('other'): [1]}
     peer_locations = {ref('other'): ['direct:test']}
 
@@ -195,9 +195,9 @@ def test_connect_vector_ports(communicator) -> None:
             Operator.F_INIT: ['in[]'],
             Operator.O_F: ['out1', 'out2[]']}
 
-    conduits = [Conduit(ref('other1.out'), ref('kernel.in')),
-                Conduit(ref('kernel.out1'), ref('other.in')),
-                Conduit(ref('kernel.out2'), ref('other3.in'))]
+    conduits = [Conduit('other1.out', 'kernel.in'),
+                Conduit('kernel.out1', 'other.in'),
+                Conduit('kernel.out2', 'other3.in')]
     peer_dims = {
             ref('other1'): [20, 7],
             ref('other'): [25],
@@ -243,9 +243,9 @@ def test_connect_inferred_ports(communicator) -> None:
 
     communicator._Communicator__declared_ports = None
 
-    conduits = [Conduit(ref('other1.out'), ref('kernel.in')),
-                Conduit(ref('kernel.out1'), ref('other.in')),
-                Conduit(ref('kernel.out3'), ref('other2.in'))]
+    conduits = [Conduit('other1.out', 'kernel.in'),
+                Conduit('kernel.out1', 'other.in'),
+                Conduit('kernel.out3', 'other2.in')]
     peer_dims = {
             ref('other1'): [20, 7],
             ref('other'): [25],

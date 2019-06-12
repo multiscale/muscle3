@@ -2,11 +2,12 @@ import sys
 from typing import List
 
 import pytest
-from ymmsl import Operator, Reference
+from ymmsl import (ComputeElementDecl, Conduit, Experiment, Operator,
+                   Reference, Setting, Simulation, YmmslDocument)
 
 from libmuscle.communicator import Message
 from libmuscle.compute_element import ComputeElement
-from libmuscle.muscle3 import run_instances
+from muscle_manager.muscle_manager import run_simulation
 
 
 def macro(instance_id: str):
@@ -51,10 +52,29 @@ def micro(instance_id: str):
         ce.send_message('out', Message(0.1, None, 'testing back'))
 
 
-def test_all(log_file_in_tmpdir, mmp_server_process, sys_argv_manager):
+def test_all(log_file_in_tmpdir):
     """A positive all-up test of everything.
     """
+    elements = [
+            ComputeElementDecl('macro', 'macro_implementation'),
+            ComputeElementDecl('micro', 'micro_implementation', [10])]
+
+    conduits = [
+            Conduit('macro.out', 'micro.in'),
+            Conduit('micro.out', 'macro.in')]
+
+    simulation = Simulation('test_model', elements, conduits)
+    settings = Experiment(
+            'test_model', [
+                Setting('test1', 13),
+                Setting('test2', 13.3),
+                Setting('test3', 'testing'),
+                Setting('test4', True),
+                Setting('test5', [2.3, 5.6]),
+                Setting('test6', [[1.0, 2.0], [3.0, 1.0]])])
+
+    experiment = YmmslDocument('v0.1', settings, simulation)
     submodels = {'macro': macro}
     for i in range(10):
         submodels['micro[{}]'.format(i)] = micro
-    run_instances(submodels)
+    run_simulation(experiment, submodels)

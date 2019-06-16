@@ -44,6 +44,35 @@ def macro(instance_id: str):
         assert msg.data == 'testing back'
 
 
+def explicit_relay(instance_id: str):
+    """Intermediate component with explicit parameters.
+
+    Sends and receives overlay parameters explicitly, rather than
+    having MUSCLE handle them. This just passes all information on.
+    """
+    instance = Instance(instance_id, {
+            Operator.F_INIT: ['in[]'], Operator.O_F: ['out[]']})
+
+    while instance.reuse_instance(False):
+        # f_init
+        assert instance.get_parameter_value('test2', 'float') == 13.3
+        assert instance.get_port_length('in') == instance.get_port_length(
+                'out')
+
+        msgs = list()
+        for slot in range(instance.get_port_length('in')):
+            msg = instance.receive_message_with_parameters('in', slot)
+            assert msg.data.startswith('testing')
+            assert msg.settings['test2'] == 14.4
+            msgs.append(msg)
+
+        assert instance.get_parameter_value('test2') == 13.3
+
+        # o_f
+        for slot in range(instance.get_port_length('out')):
+            instance.send_message('out', msgs[slot], slot)
+
+
 def micro(instance_id: str):
     """Micro model implementation.
     """
@@ -64,40 +93,22 @@ def micro(instance_id: str):
         instance.send_message('out', Message(0.1, None, 'testing back'))
 
 
-def explicit_micro(instance_id: str):
-    """Micro model implementation with explicit parameters.
-
-    Receives overlay parameters explicitly, rather than having MUSCLE
-    handle them.
-    """
-    instance = Instance(instance_id, {
-            Operator.F_INIT: ['in'], Operator.O_F: ['out']})
-
-    while instance.reuse_instance(False):
-        # f_init
-        assert instance.get_parameter_value('test2', 'float') == 13.3
-        msg = instance.receive_message_with_parameters('in')
-        assert msg.data == 'testing'
-        assert msg.settings['test2'] == 14.4
-        assert instance.get_parameter_value('test2') == 13.3
-
-        # o_f
-        instance.send_message(
-                'out', Message(0.1, None, 'testing back', msg.settings))
-
-
 def test_parameter_overlays(log_file_in_tmpdir):
     """A positive all-up test of parameter overlays.
     """
     elements = [
             ComputeElement('qmc', 'qmc'),
             ComputeElement('macro', 'macro', [10]),
+            ComputeElement('relay', 'explicit_relay'),
+            ComputeElement('relay2', 'explicit_relay'),
             ComputeElement('micro', 'micro', [10])]
 
     conduits = [
                 Conduit('qmc.parameters_out', 'macro.muscle_parameters_in'),
-                Conduit('macro.out', 'micro.in'),
-                Conduit('micro.out', 'macro.in')]
+                Conduit('macro.out', 'relay.in'),
+                Conduit('relay.out', 'micro.in'),
+                Conduit('micro.out', 'relay2.in'),
+                Conduit('relay2.out', 'macro.in')]
 
     model = Model('test_model', elements, conduits)
 
@@ -111,10 +122,8 @@ def test_parameter_overlays(log_file_in_tmpdir):
 
     experiment = YmmslDocument('v0.1', model, settings)
 
-    submodels = {'qmc': qmc}
-    for i in range(9):
+    submodels = {'qmc': qmc, 'relay': explicit_relay, 'relay2': explicit_relay}
+    for i in range(10):
         submodels['macro[{}]'.format(i)] = macro
         submodels['micro[{}]'.format(i)] = micro
-    submodels['macro[9]'] = macro
-    submodels['micro[9]'] = explicit_micro
     run_simulation(experiment, submodels)

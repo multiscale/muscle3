@@ -564,7 +564,7 @@ class Instance:
         in self._f_init_cache.
         """
         def pre_receive(port_name: str, slot: Optional[int]) -> None:
-            msg = self._communicator.receive_message(port_name)
+            msg = self._communicator.receive_message(port_name, slot)
             self._f_init_cache[(port_name, slot)] = msg
             if apply_overlay:
                 self.__apply_overlay(msg)

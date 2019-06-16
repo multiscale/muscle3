@@ -7,6 +7,7 @@ from ymmsl import Model, Reference, YmmslDocument
 import ymmsl
 
 from libmuscle.mcp import pipe_multiplexer as mux
+from libmuscle.util import generate_indices
 
 from muscle_manager.instance_registry import InstanceRegistry
 from muscle_manager.logger import Logger
@@ -188,21 +189,42 @@ def run_instances(instances: Dict[str, Callable]) -> None:
                                ', '.join(failed_names)))
 
 
-def run_simulation(experiment: YmmslDocument, instances: Dict[str, Callable]
-                   ) -> None:
+def run_simulation(
+        experiment: YmmslDocument, implementations: Dict[str, Callable]
+        ) -> None:
     """Runs a simulation with the given experiment and instances.
 
     The yMMSL document must contain both a model and settings.
 
-    The instances are described in a dictionary with their instance
-    id (e.g. 'macro' or 'micro[12]' or 'my_mapper') as the key, and
-    a function to run as the corresponding value. Each instance
-    will be run in a separate process.
+    This function will start the necessary instances described in
+    the yMMSL document. To do so, it needs the corresponding
+    implementations, which are given as a dictionary mapping the
+    implementation name to a Python function (or any callable).
 
     Args:
         experiment: A description of the model and settings.
         instances: A dictionary of instances to run.
     """
+    if not isinstance(experiment.model, Model):
+        raise ValueError('The model description does not include a model'
+                         ' definition, so the simulation can not be run.')
+
+    instances = dict()
+    for ce in experiment.model.compute_elements:
+        impl_name = str(ce.implementation)
+        if impl_name not in implementations:
+            raise ValueError(('The model specifies an implementation named'
+                              ' "{}" but the given set of implementations does'
+                              ' not include it.').format(impl_name))
+
+        impl_fn = implementations[impl_name]
+        if not ce.multiplicity:
+            instances[str(ce.name)] = impl_fn
+        else:
+            for index in generate_indices(ce.multiplicity):
+                instance_id = str(ce.name + index)
+                instances[instance_id] = impl_fn
+
     controller = start_server_process(experiment)
     run_instances(instances)
     controller.stop()

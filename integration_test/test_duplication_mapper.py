@@ -53,8 +53,7 @@ def test_duplication_mapper(log_file_in_tmpdir):
 
     experiment = YmmslDocument('v0.1', model, settings)
 
-    submodels = {
-            'dm': duplication_mapper,
-            'first': receiver,
-            'second': receiver}
-    run_simulation(experiment, submodels)
+    implementations = {
+            'muscle.duplication_mapper': duplication_mapper,
+            'receiver': receiver}
+    run_simulation(experiment, implementations)

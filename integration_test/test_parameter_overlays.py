@@ -122,8 +122,10 @@ def test_parameter_overlays(log_file_in_tmpdir):
 
     experiment = YmmslDocument('v0.1', model, settings)
 
-    submodels = {'qmc': qmc, 'relay': explicit_relay, 'relay2': explicit_relay}
-    for i in range(10):
-        submodels['macro[{}]'.format(i)] = macro
-        submodels['micro[{}]'.format(i)] = micro
-    run_simulation(experiment, submodels)
+    implementations = {
+            'qmc': qmc,
+            'macro': macro,
+            'explicit_relay': explicit_relay,
+            'micro': micro}
+
+    run_simulation(experiment, implementations)

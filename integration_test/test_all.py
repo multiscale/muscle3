@@ -57,8 +57,8 @@ def test_all(log_file_in_tmpdir):
     """A positive all-up test of everything.
     """
     elements = [
-            ComputeElement('macro', 'macro_implementation'),
-            ComputeElement('micro', 'micro_implementation', [10])]
+            ComputeElement('macro', 'macro_impl'),
+            ComputeElement('micro', 'micro_impl', [10])]
 
     conduits = [
             Conduit('macro.out', 'micro.in'),
@@ -74,7 +74,6 @@ def test_all(log_file_in_tmpdir):
                 ('test6', [[1.0, 2.0], [3.0, 1.0]])]))
 
     experiment = YmmslDocument('v0.1', model, settings)
-    submodels = {'macro': macro}
-    for i in range(10):
-        submodels['micro[{}]'.format(i)] = micro
-    run_simulation(experiment, submodels)
+
+    implementations = {'macro_impl': macro, 'micro_impl': micro}
+    run_simulation(experiment, implementations)

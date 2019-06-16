@@ -7,8 +7,8 @@ from ymmsl import Reference, Settings
 from libmuscle.port import port_from_grpc
 from libmuscle.logging import LogLevel, Timestamp
 from libmuscle.operator import operator_from_grpc
-from libmuscle.util import (conduit_to_grpc, instance_indices,
-                            instance_to_kernel)
+from libmuscle.util import (conduit_to_grpc, generate_indices,
+                            instance_indices, instance_to_kernel)
 
 from muscle_manager.instance_registry import InstanceRegistry
 from muscle_manager.logger import Logger
@@ -218,45 +218,8 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
                 yield base
             else:
 
-                for peer_indices in self.__generate_indices(
-                        peer_dims[len(dims):]):
+                for peer_indices in generate_indices(peer_dims[len(dims):]):
                     yield base + peer_indices
-
-    def __generate_indices(self, dims: List[int]
-                           ) -> Generator[List[int], None, None]:
-        """Generates all indices in a block of the given dimensions.
-
-        Args:
-            dims: The dimensions of the block.
-
-        Yields:
-            Lists of indices, one for each point in the block.
-        """
-        index = [0] * len(dims)
-        done = False
-        while not done:
-            yield index
-            done = self.__increment_index(index, dims)
-
-    def __increment_index(self, index: List[int], dims: List[int]) -> bool:
-        """Increments an index.
-
-        Args:
-            index: The index to be incremented.
-            dims: The dimensions of the block this index is in.
-
-        Returns:
-            True iff the index overflowed and is now all zeros again.
-        """
-        cur = len(index) - 1
-        index[cur] += 1
-        while index[cur] == dims[cur]:
-            index[cur] = 0
-            if cur == 0:
-                return True
-            cur -= 1
-            index[cur] += 1
-        return False
 
 
 class MMPServer():

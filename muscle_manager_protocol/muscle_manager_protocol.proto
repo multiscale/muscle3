@@ -12,8 +12,8 @@ service MuscleManager {
     // Sends a batch of profiling events to the Manager
     rpc SubmitProfileEvents(Profile) returns (ProfileResult);
 
-    // Requests the global base configuration
-    rpc RequestConfiguration(ConfigurationRequest) returns (ConfigurationResult);
+    // Requests the global base settings
+    rpc RequestSettings(SettingsRequest) returns (SettingsResult);
 
     // Registers a newly started kernel instance
     rpc RegisterInstance(RegistrationRequest) returns (RegistrationResult);
@@ -186,13 +186,13 @@ message Setting {
     ListOfListOfDouble value_list_list_float = 8;
 }
 
-// Request for the base configuration
-message ConfigurationRequest {
-    // no content, this requests the one and only base configuration
+// Request for the base settings
+message SettingsRequest {
+    // no content, this requests the one and only base settings
 }
 
-// Result of configuration request
-message ConfigurationResult {
+// Result of settings request
+message SettingsResult {
     repeated Setting parameter_values = 1;
 }
 

@@ -8,8 +8,7 @@ from libmuscle.operator import Operator
 from muscle_manager.instance_registry import InstanceRegistry
 from muscle_manager.logger import Logger
 from muscle_manager.mmp_server import MMPServer
-from muscle_manager.muscle_manager import (
-        config_for_settings, elements_for_model)
+from muscle_manager.muscle_manager import elements_for_model
 from muscle_manager.topology_store import TopologyStore
 
 
@@ -40,11 +39,10 @@ def do_logging_test(caplog):
     # create server
     logger = Logger()
     ymmsl_doc = ymmsl.load(ymmsl_text)
-    configuration = config_for_settings(ymmsl_doc.settings)
     expected_elements = elements_for_model(ymmsl_doc.model)
     instance_registry = InstanceRegistry(expected_elements)
     topology_store = TopologyStore(ymmsl_doc)
-    server = MMPServer(logger, configuration, instance_registry,
+    server = MMPServer(logger, ymmsl_doc.settings, instance_registry,
                        topology_store)
 
     # create client

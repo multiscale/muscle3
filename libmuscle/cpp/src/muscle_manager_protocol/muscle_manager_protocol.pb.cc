@@ -90,14 +90,14 @@ class SettingDefaultTypeInternal {
  public:
   ::google::protobuf::internal::ExplicitlyConstructed<Setting> _instance;
 } _Setting_default_instance_;
-class ConfigurationRequestDefaultTypeInternal {
+class SettingsRequestDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<ConfigurationRequest> _instance;
-} _ConfigurationRequest_default_instance_;
-class ConfigurationResultDefaultTypeInternal {
+  ::google::protobuf::internal::ExplicitlyConstructed<SettingsRequest> _instance;
+} _SettingsRequest_default_instance_;
+class SettingsResultDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<ConfigurationResult> _instance;
-} _ConfigurationResult_default_instance_;
+  ::google::protobuf::internal::ExplicitlyConstructed<SettingsResult> _instance;
+} _SettingsResult_default_instance_;
 class DeregistrationRequestDefaultTypeInternal {
  public:
   ::google::protobuf::internal::ExplicitlyConstructed<DeregistrationRequest> _instance;
@@ -342,33 +342,33 @@ static void InitDefaultsSetting_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5
       &scc_info_ListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
       &scc_info_ListOfListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,}};
 
-static void InitDefaultsConfigurationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+static void InitDefaultsSettingsRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::muscle_manager_protocol::_ConfigurationRequest_default_instance_;
-    new (ptr) ::muscle_manager_protocol::ConfigurationRequest();
+    void* ptr = &::muscle_manager_protocol::_SettingsRequest_default_instance_;
+    new (ptr) ::muscle_manager_protocol::SettingsRequest();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::muscle_manager_protocol::ConfigurationRequest::InitAsDefaultInstance();
+  ::muscle_manager_protocol::SettingsRequest::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<0> scc_info_ConfigurationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsConfigurationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
+::google::protobuf::internal::SCCInfo<0> scc_info_SettingsRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsSettingsRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
 
-static void InitDefaultsConfigurationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+static void InitDefaultsSettingsResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::muscle_manager_protocol::_ConfigurationResult_default_instance_;
-    new (ptr) ::muscle_manager_protocol::ConfigurationResult();
+    void* ptr = &::muscle_manager_protocol::_SettingsResult_default_instance_;
+    new (ptr) ::muscle_manager_protocol::SettingsResult();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::muscle_manager_protocol::ConfigurationResult::InitAsDefaultInstance();
+  ::muscle_manager_protocol::SettingsResult::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<1> scc_info_ConfigurationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsConfigurationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {
+::google::protobuf::internal::SCCInfo<1> scc_info_SettingsResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsSettingsResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {
       &scc_info_Setting_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,}};
 
 static void InitDefaultsDeregistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
@@ -416,8 +416,8 @@ void InitDefaults_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2epr
   ::google::protobuf::internal::InitSCC(&scc_info_ListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   ::google::protobuf::internal::InitSCC(&scc_info_ListOfListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   ::google::protobuf::internal::InitSCC(&scc_info_Setting_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_ConfigurationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_ConfigurationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_SettingsRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_SettingsResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   ::google::protobuf::internal::InitSCC(&scc_info_DeregistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   ::google::protobuf::internal::InitSCC(&scc_info_DeregistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
 }
@@ -550,16 +550,16 @@ const ::google::protobuf::uint32 TableStruct_muscle_5fmanager_5fprotocol_2fmuscl
   PROTOBUF_FIELD_OFFSET(::muscle_manager_protocol::Setting, value_list_float_),
   PROTOBUF_FIELD_OFFSET(::muscle_manager_protocol::Setting, value_list_list_float_),
   ~0u,  // no _has_bits_
-  PROTOBUF_FIELD_OFFSET(::muscle_manager_protocol::ConfigurationRequest, _internal_metadata_),
+  PROTOBUF_FIELD_OFFSET(::muscle_manager_protocol::SettingsRequest, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _has_bits_
-  PROTOBUF_FIELD_OFFSET(::muscle_manager_protocol::ConfigurationResult, _internal_metadata_),
+  PROTOBUF_FIELD_OFFSET(::muscle_manager_protocol::SettingsResult, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  PROTOBUF_FIELD_OFFSET(::muscle_manager_protocol::ConfigurationResult, parameter_values_),
+  PROTOBUF_FIELD_OFFSET(::muscle_manager_protocol::SettingsResult, parameter_values_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::muscle_manager_protocol::DeregistrationRequest, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -591,8 +591,8 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] PROTOBUF_SE
   { 97, -1, sizeof(::muscle_manager_protocol::ListOfDouble)},
   { 103, -1, sizeof(::muscle_manager_protocol::ListOfListOfDouble)},
   { 109, -1, sizeof(::muscle_manager_protocol::Setting)},
-  { 122, -1, sizeof(::muscle_manager_protocol::ConfigurationRequest)},
-  { 127, -1, sizeof(::muscle_manager_protocol::ConfigurationResult)},
+  { 122, -1, sizeof(::muscle_manager_protocol::SettingsRequest)},
+  { 127, -1, sizeof(::muscle_manager_protocol::SettingsResult)},
   { 133, -1, sizeof(::muscle_manager_protocol::DeregistrationRequest)},
   { 139, -1, sizeof(::muscle_manager_protocol::DeregistrationResult)},
 };
@@ -614,8 +614,8 @@ static ::google::protobuf::Message const * const file_default_instances[] = {
   reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_ListOfDouble_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_ListOfListOfDouble_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_Setting_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_ConfigurationRequest_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_ConfigurationResult_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_SettingsRequest_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_SettingsResult_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_DeregistrationRequest_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_DeregistrationResult_default_instance_),
 };
@@ -673,54 +673,54 @@ const char descriptor_table_protodef_muscle_5fmanager_5fprotocol_2fmuscle_5fmana
   "_bool\030\006 \001(\010\022\?\n\020value_list_float\030\007 \001(\0132%."
   "muscle_manager_protocol.ListOfDouble\022J\n\025"
   "value_list_list_float\030\010 \001(\0132+.muscle_man"
-  "ager_protocol.ListOfListOfDouble\"\026\n\024Conf"
-  "igurationRequest\"Q\n\023ConfigurationResult\022"
-  ":\n\020parameter_values\030\001 \003(\0132 .muscle_manag"
-  "er_protocol.Setting\".\n\025DeregistrationReq"
-  "uest\022\025\n\rinstance_name\030\001 \001(\t\"d\n\024Deregistr"
-  "ationResult\0225\n\006status\030\001 \001(\0162%.muscle_man"
-  "ager_protocol.ResultStatus\022\025\n\rerror_mess"
-  "age\030\002 \001(\t*]\n\014ResultStatus\022\031\n\025RESULT_STAT"
-  "US_SUCCESS\020\000\022\027\n\023RESULT_STATUS_ERROR\020\001\022\031\n"
-  "\025RESULT_STATUS_PENDING\020\002*\210\001\n\010Operator\022\021\n"
-  "\rOPERATOR_NONE\020\000\022\023\n\017OPERATOR_F_INIT\020\001\022\020\n"
-  "\014OPERATOR_O_I\020\002\022\016\n\nOPERATOR_S\020\003\022\016\n\nOPERA"
-  "TOR_B\020\004\022\020\n\014OPERATOR_O_F\020\005\022\020\n\014OPERATOR_MA"
-  "P\020\006*w\n\010LogLevel\022\023\n\017LOG_LEVEL_DEBUG\020\000\022\022\n\016"
-  "LOG_LEVEL_INFO\020\001\022\025\n\021LOG_LEVEL_WARNING\020\003\022"
-  "\023\n\017LOG_LEVEL_ERROR\020\004\022\026\n\022LOG_LEVEL_CRITIC"
-  "AL\020\005*\263\001\n\020ProfileEventType\022\037\n\033PROFILE_EVE"
-  "NT_TYPE_REGISTER\020\000\022\036\n\032PROFILE_EVENT_TYPE"
-  "_CONNECT\020\004\022!\n\035PROFILE_EVENT_TYPE_DEREGIS"
-  "TER\020\001\022\033\n\027PROFILE_EVENT_TYPE_SEND\020\002\022\036\n\032PR"
-  "OFILE_EVENT_TYPE_RECEIVE\020\003*\341\001\n\022Parameter"
-  "ValueType\022\037\n\033PARAMETER_VALUE_TYPE_STRING"
-  "\020\000\022\034\n\030PARAMETER_VALUE_TYPE_INT\020\001\022\036\n\032PARA"
-  "METER_VALUE_TYPE_FLOAT\020\002\022\035\n\031PARAMETER_VA"
-  "LUE_TYPE_BOOL\020\003\022#\n\037PARAMETER_VALUE_TYPE_"
-  "LIST_FLOAT\020\004\022(\n$PARAMETER_VALUE_TYPE_LIS"
-  "T_LIST_FLOAT\020\0052\201\005\n\rMuscleManager\022[\n\020Subm"
-  "itLogMessage\022#.muscle_manager_protocol.L"
-  "ogMessage\032\".muscle_manager_protocol.LogR"
-  "esult\022_\n\023SubmitProfileEvents\022 .muscle_ma"
-  "nager_protocol.Profile\032&.muscle_manager_"
-  "protocol.ProfileResult\022s\n\024RequestConfigu"
-  "ration\022-.muscle_manager_protocol.Configu"
-  "rationRequest\032,.muscle_manager_protocol."
-  "ConfigurationResult\022m\n\020RegisterInstance\022"
-  ",.muscle_manager_protocol.RegistrationRe"
-  "quest\032+.muscle_manager_protocol.Registra"
-  "tionResult\022Y\n\014RequestPeers\022$.muscle_mana"
-  "ger_protocol.PeerRequest\032#.muscle_manage"
-  "r_protocol.PeerResult\022s\n\022DeregisterInsta"
-  "nce\022..muscle_manager_protocol.Deregistra"
-  "tionRequest\032-.muscle_manager_protocol.De"
-  "registrationResultb\006proto3"
+  "ager_protocol.ListOfListOfDouble\"\021\n\017Sett"
+  "ingsRequest\"L\n\016SettingsResult\022:\n\020paramet"
+  "er_values\030\001 \003(\0132 .muscle_manager_protoco"
+  "l.Setting\".\n\025DeregistrationRequest\022\025\n\rin"
+  "stance_name\030\001 \001(\t\"d\n\024DeregistrationResul"
+  "t\0225\n\006status\030\001 \001(\0162%.muscle_manager_proto"
+  "col.ResultStatus\022\025\n\rerror_message\030\002 \001(\t*"
+  "]\n\014ResultStatus\022\031\n\025RESULT_STATUS_SUCCESS"
+  "\020\000\022\027\n\023RESULT_STATUS_ERROR\020\001\022\031\n\025RESULT_ST"
+  "ATUS_PENDING\020\002*\210\001\n\010Operator\022\021\n\rOPERATOR_"
+  "NONE\020\000\022\023\n\017OPERATOR_F_INIT\020\001\022\020\n\014OPERATOR_"
+  "O_I\020\002\022\016\n\nOPERATOR_S\020\003\022\016\n\nOPERATOR_B\020\004\022\020\n"
+  "\014OPERATOR_O_F\020\005\022\020\n\014OPERATOR_MAP\020\006*w\n\010Log"
+  "Level\022\023\n\017LOG_LEVEL_DEBUG\020\000\022\022\n\016LOG_LEVEL_"
+  "INFO\020\001\022\025\n\021LOG_LEVEL_WARNING\020\003\022\023\n\017LOG_LEV"
+  "EL_ERROR\020\004\022\026\n\022LOG_LEVEL_CRITICAL\020\005*\263\001\n\020P"
+  "rofileEventType\022\037\n\033PROFILE_EVENT_TYPE_RE"
+  "GISTER\020\000\022\036\n\032PROFILE_EVENT_TYPE_CONNECT\020\004"
+  "\022!\n\035PROFILE_EVENT_TYPE_DEREGISTER\020\001\022\033\n\027P"
+  "ROFILE_EVENT_TYPE_SEND\020\002\022\036\n\032PROFILE_EVEN"
+  "T_TYPE_RECEIVE\020\003*\341\001\n\022ParameterValueType\022"
+  "\037\n\033PARAMETER_VALUE_TYPE_STRING\020\000\022\034\n\030PARA"
+  "METER_VALUE_TYPE_INT\020\001\022\036\n\032PARAMETER_VALU"
+  "E_TYPE_FLOAT\020\002\022\035\n\031PARAMETER_VALUE_TYPE_B"
+  "OOL\020\003\022#\n\037PARAMETER_VALUE_TYPE_LIST_FLOAT"
+  "\020\004\022(\n$PARAMETER_VALUE_TYPE_LIST_LIST_FLO"
+  "AT\020\0052\362\004\n\rMuscleManager\022[\n\020SubmitLogMessa"
+  "ge\022#.muscle_manager_protocol.LogMessage\032"
+  "\".muscle_manager_protocol.LogResult\022_\n\023S"
+  "ubmitProfileEvents\022 .muscle_manager_prot"
+  "ocol.Profile\032&.muscle_manager_protocol.P"
+  "rofileResult\022d\n\017RequestSettings\022(.muscle"
+  "_manager_protocol.SettingsRequest\032\'.musc"
+  "le_manager_protocol.SettingsResult\022m\n\020Re"
+  "gisterInstance\022,.muscle_manager_protocol"
+  ".RegistrationRequest\032+.muscle_manager_pr"
+  "otocol.RegistrationResult\022Y\n\014RequestPeer"
+  "s\022$.muscle_manager_protocol.PeerRequest\032"
+  "#.muscle_manager_protocol.PeerResult\022s\n\022"
+  "DeregisterInstance\022..muscle_manager_prot"
+  "ocol.DeregistrationRequest\032-.muscle_mana"
+  "ger_protocol.DeregistrationResultb\006proto"
+  "3"
   ;
 ::google::protobuf::internal::DescriptorTable descriptor_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto = {
   false, InitDefaults_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto, 
   descriptor_table_protodef_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto,
-  "muscle_manager_protocol/muscle_manager_protocol.proto", &assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto, 3546,
+  "muscle_manager_protocol/muscle_manager_protocol.proto", &assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto, 3521,
 };
 
 void AddDescriptors_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
@@ -7003,49 +7003,49 @@ void Setting::InternalSwap(Setting* other) {
 
 // ===================================================================
 
-void ConfigurationRequest::InitAsDefaultInstance() {
+void SettingsRequest::InitAsDefaultInstance() {
 }
-class ConfigurationRequest::HasBitSetters {
+class SettingsRequest::HasBitSetters {
  public:
 };
 
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
-ConfigurationRequest::ConfigurationRequest()
+SettingsRequest::SettingsRequest()
   : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
-  // @@protoc_insertion_point(constructor:muscle_manager_protocol.ConfigurationRequest)
+  // @@protoc_insertion_point(constructor:muscle_manager_protocol.SettingsRequest)
 }
-ConfigurationRequest::ConfigurationRequest(const ConfigurationRequest& from)
+SettingsRequest::SettingsRequest(const SettingsRequest& from)
   : ::google::protobuf::Message(),
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  // @@protoc_insertion_point(copy_constructor:muscle_manager_protocol.ConfigurationRequest)
+  // @@protoc_insertion_point(copy_constructor:muscle_manager_protocol.SettingsRequest)
 }
 
-void ConfigurationRequest::SharedCtor() {
+void SettingsRequest::SharedCtor() {
 }
 
-ConfigurationRequest::~ConfigurationRequest() {
-  // @@protoc_insertion_point(destructor:muscle_manager_protocol.ConfigurationRequest)
+SettingsRequest::~SettingsRequest() {
+  // @@protoc_insertion_point(destructor:muscle_manager_protocol.SettingsRequest)
   SharedDtor();
 }
 
-void ConfigurationRequest::SharedDtor() {
+void SettingsRequest::SharedDtor() {
 }
 
-void ConfigurationRequest::SetCachedSize(int size) const {
+void SettingsRequest::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const ConfigurationRequest& ConfigurationRequest::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_ConfigurationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+const SettingsRequest& SettingsRequest::default_instance() {
+  ::google::protobuf::internal::InitSCC(&::scc_info_SettingsRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
-void ConfigurationRequest::Clear() {
-// @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.ConfigurationRequest)
+void SettingsRequest::Clear() {
+// @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.SettingsRequest)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -7054,9 +7054,9 @@ void ConfigurationRequest::Clear() {
 }
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* ConfigurationRequest::_InternalParse(const char* begin, const char* end, void* object,
+const char* SettingsRequest::_InternalParse(const char* begin, const char* end, void* object,
                   ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<ConfigurationRequest*>(object);
+  auto msg = static_cast<SettingsRequest*>(object);
   ::google::protobuf::int32 size; (void)size;
   int depth; (void)depth;
   ::google::protobuf::uint32 tag;
@@ -7082,11 +7082,11 @@ const char* ConfigurationRequest::_InternalParse(const char* begin, const char* 
   return ptr;
 }
 #else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool ConfigurationRequest::MergePartialFromCodedStream(
+bool SettingsRequest::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.ConfigurationRequest)
+  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.SettingsRequest)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
@@ -7099,18 +7099,18 @@ bool ConfigurationRequest::MergePartialFromCodedStream(
           input, tag, _internal_metadata_.mutable_unknown_fields()));
   }
 success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.ConfigurationRequest)
+  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.SettingsRequest)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.ConfigurationRequest)
+  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.SettingsRequest)
   return false;
 #undef DO_
 }
 #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
-void ConfigurationRequest::SerializeWithCachedSizes(
+void SettingsRequest::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.ConfigurationRequest)
+  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.SettingsRequest)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -7118,12 +7118,12 @@ void ConfigurationRequest::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.ConfigurationRequest)
+  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.SettingsRequest)
 }
 
-::google::protobuf::uint8* ConfigurationRequest::InternalSerializeWithCachedSizesToArray(
+::google::protobuf::uint8* SettingsRequest::InternalSerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.ConfigurationRequest)
+  // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.SettingsRequest)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -7131,12 +7131,12 @@ void ConfigurationRequest::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.ConfigurationRequest)
+  // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.SettingsRequest)
   return target;
 }
 
-size_t ConfigurationRequest::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.ConfigurationRequest)
+size_t SettingsRequest::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.SettingsRequest)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -7153,23 +7153,23 @@ size_t ConfigurationRequest::ByteSizeLong() const {
   return total_size;
 }
 
-void ConfigurationRequest::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.ConfigurationRequest)
+void SettingsRequest::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.SettingsRequest)
   GOOGLE_DCHECK_NE(&from, this);
-  const ConfigurationRequest* source =
-      ::google::protobuf::DynamicCastToGenerated<ConfigurationRequest>(
+  const SettingsRequest* source =
+      ::google::protobuf::DynamicCastToGenerated<SettingsRequest>(
           &from);
   if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.ConfigurationRequest)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.SettingsRequest)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.ConfigurationRequest)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.SettingsRequest)
     MergeFrom(*source);
   }
 }
 
-void ConfigurationRequest::MergeFrom(const ConfigurationRequest& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.ConfigurationRequest)
+void SettingsRequest::MergeFrom(const SettingsRequest& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.SettingsRequest)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -7177,34 +7177,34 @@ void ConfigurationRequest::MergeFrom(const ConfigurationRequest& from) {
 
 }
 
-void ConfigurationRequest::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.ConfigurationRequest)
+void SettingsRequest::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.SettingsRequest)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-void ConfigurationRequest::CopyFrom(const ConfigurationRequest& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:muscle_manager_protocol.ConfigurationRequest)
+void SettingsRequest::CopyFrom(const SettingsRequest& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:muscle_manager_protocol.SettingsRequest)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-bool ConfigurationRequest::IsInitialized() const {
+bool SettingsRequest::IsInitialized() const {
   return true;
 }
 
-void ConfigurationRequest::Swap(ConfigurationRequest* other) {
+void SettingsRequest::Swap(SettingsRequest* other) {
   if (other == this) return;
   InternalSwap(other);
 }
-void ConfigurationRequest::InternalSwap(ConfigurationRequest* other) {
+void SettingsRequest::InternalSwap(SettingsRequest* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
 
-::google::protobuf::Metadata ConfigurationRequest::GetMetadata() const {
+::google::protobuf::Metadata SettingsRequest::GetMetadata() const {
   ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
   return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
 }
@@ -7212,53 +7212,53 @@ void ConfigurationRequest::InternalSwap(ConfigurationRequest* other) {
 
 // ===================================================================
 
-void ConfigurationResult::InitAsDefaultInstance() {
+void SettingsResult::InitAsDefaultInstance() {
 }
-class ConfigurationResult::HasBitSetters {
+class SettingsResult::HasBitSetters {
  public:
 };
 
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int ConfigurationResult::kParameterValuesFieldNumber;
+const int SettingsResult::kParameterValuesFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
-ConfigurationResult::ConfigurationResult()
+SettingsResult::SettingsResult()
   : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
-  // @@protoc_insertion_point(constructor:muscle_manager_protocol.ConfigurationResult)
+  // @@protoc_insertion_point(constructor:muscle_manager_protocol.SettingsResult)
 }
-ConfigurationResult::ConfigurationResult(const ConfigurationResult& from)
+SettingsResult::SettingsResult(const SettingsResult& from)
   : ::google::protobuf::Message(),
       _internal_metadata_(nullptr),
       parameter_values_(from.parameter_values_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  // @@protoc_insertion_point(copy_constructor:muscle_manager_protocol.ConfigurationResult)
+  // @@protoc_insertion_point(copy_constructor:muscle_manager_protocol.SettingsResult)
 }
 
-void ConfigurationResult::SharedCtor() {
+void SettingsResult::SharedCtor() {
   ::google::protobuf::internal::InitSCC(
-      &scc_info_ConfigurationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+      &scc_info_SettingsResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
 }
 
-ConfigurationResult::~ConfigurationResult() {
-  // @@protoc_insertion_point(destructor:muscle_manager_protocol.ConfigurationResult)
+SettingsResult::~SettingsResult() {
+  // @@protoc_insertion_point(destructor:muscle_manager_protocol.SettingsResult)
   SharedDtor();
 }
 
-void ConfigurationResult::SharedDtor() {
+void SettingsResult::SharedDtor() {
 }
 
-void ConfigurationResult::SetCachedSize(int size) const {
+void SettingsResult::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const ConfigurationResult& ConfigurationResult::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_ConfigurationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+const SettingsResult& SettingsResult::default_instance() {
+  ::google::protobuf::internal::InitSCC(&::scc_info_SettingsResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
-void ConfigurationResult::Clear() {
-// @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.ConfigurationResult)
+void SettingsResult::Clear() {
+// @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.SettingsResult)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -7268,9 +7268,9 @@ void ConfigurationResult::Clear() {
 }
 
 #if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* ConfigurationResult::_InternalParse(const char* begin, const char* end, void* object,
+const char* SettingsResult::_InternalParse(const char* begin, const char* end, void* object,
                   ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<ConfigurationResult*>(object);
+  auto msg = static_cast<SettingsResult*>(object);
   ::google::protobuf::int32 size; (void)size;
   int depth; (void)depth;
   ::google::protobuf::uint32 tag;
@@ -7316,11 +7316,11 @@ len_delim_till_end:
                                {parser_till_end, object}, size);
 }
 #else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool ConfigurationResult::MergePartialFromCodedStream(
+bool SettingsResult::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.ConfigurationResult)
+  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.SettingsResult)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
@@ -7349,18 +7349,18 @@ bool ConfigurationResult::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.ConfigurationResult)
+  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.SettingsResult)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.ConfigurationResult)
+  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.SettingsResult)
   return false;
 #undef DO_
 }
 #endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
-void ConfigurationResult::SerializeWithCachedSizes(
+void SettingsResult::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.ConfigurationResult)
+  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.SettingsResult)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -7377,12 +7377,12 @@ void ConfigurationResult::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.ConfigurationResult)
+  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.SettingsResult)
 }
 
-::google::protobuf::uint8* ConfigurationResult::InternalSerializeWithCachedSizesToArray(
+::google::protobuf::uint8* SettingsResult::InternalSerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.ConfigurationResult)
+  // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.SettingsResult)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -7398,12 +7398,12 @@ void ConfigurationResult::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.ConfigurationResult)
+  // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.SettingsResult)
   return target;
 }
 
-size_t ConfigurationResult::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.ConfigurationResult)
+size_t SettingsResult::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.SettingsResult)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -7431,23 +7431,23 @@ size_t ConfigurationResult::ByteSizeLong() const {
   return total_size;
 }
 
-void ConfigurationResult::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.ConfigurationResult)
+void SettingsResult::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.SettingsResult)
   GOOGLE_DCHECK_NE(&from, this);
-  const ConfigurationResult* source =
-      ::google::protobuf::DynamicCastToGenerated<ConfigurationResult>(
+  const SettingsResult* source =
+      ::google::protobuf::DynamicCastToGenerated<SettingsResult>(
           &from);
   if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.ConfigurationResult)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.SettingsResult)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.ConfigurationResult)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.SettingsResult)
     MergeFrom(*source);
   }
 }
 
-void ConfigurationResult::MergeFrom(const ConfigurationResult& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.ConfigurationResult)
+void SettingsResult::MergeFrom(const SettingsResult& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.SettingsResult)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -7456,35 +7456,35 @@ void ConfigurationResult::MergeFrom(const ConfigurationResult& from) {
   parameter_values_.MergeFrom(from.parameter_values_);
 }
 
-void ConfigurationResult::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.ConfigurationResult)
+void SettingsResult::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.SettingsResult)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-void ConfigurationResult::CopyFrom(const ConfigurationResult& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:muscle_manager_protocol.ConfigurationResult)
+void SettingsResult::CopyFrom(const SettingsResult& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:muscle_manager_protocol.SettingsResult)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-bool ConfigurationResult::IsInitialized() const {
+bool SettingsResult::IsInitialized() const {
   return true;
 }
 
-void ConfigurationResult::Swap(ConfigurationResult* other) {
+void SettingsResult::Swap(SettingsResult* other) {
   if (other == this) return;
   InternalSwap(other);
 }
-void ConfigurationResult::InternalSwap(ConfigurationResult* other) {
+void SettingsResult::InternalSwap(SettingsResult* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
   CastToBase(&parameter_values_)->InternalSwap(CastToBase(&other->parameter_values_));
 }
 
-::google::protobuf::Metadata ConfigurationResult::GetMetadata() const {
+::google::protobuf::Metadata SettingsResult::GetMetadata() const {
   ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
   return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
 }
@@ -8184,11 +8184,11 @@ template<> PROTOBUF_NOINLINE ::muscle_manager_protocol::ListOfListOfDouble* Aren
 template<> PROTOBUF_NOINLINE ::muscle_manager_protocol::Setting* Arena::CreateMaybeMessage< ::muscle_manager_protocol::Setting >(Arena* arena) {
   return Arena::CreateInternal< ::muscle_manager_protocol::Setting >(arena);
 }
-template<> PROTOBUF_NOINLINE ::muscle_manager_protocol::ConfigurationRequest* Arena::CreateMaybeMessage< ::muscle_manager_protocol::ConfigurationRequest >(Arena* arena) {
-  return Arena::CreateInternal< ::muscle_manager_protocol::ConfigurationRequest >(arena);
+template<> PROTOBUF_NOINLINE ::muscle_manager_protocol::SettingsRequest* Arena::CreateMaybeMessage< ::muscle_manager_protocol::SettingsRequest >(Arena* arena) {
+  return Arena::CreateInternal< ::muscle_manager_protocol::SettingsRequest >(arena);
 }
-template<> PROTOBUF_NOINLINE ::muscle_manager_protocol::ConfigurationResult* Arena::CreateMaybeMessage< ::muscle_manager_protocol::ConfigurationResult >(Arena* arena) {
-  return Arena::CreateInternal< ::muscle_manager_protocol::ConfigurationResult >(arena);
+template<> PROTOBUF_NOINLINE ::muscle_manager_protocol::SettingsResult* Arena::CreateMaybeMessage< ::muscle_manager_protocol::SettingsResult >(Arena* arena) {
+  return Arena::CreateInternal< ::muscle_manager_protocol::SettingsResult >(arena);
 }
 template<> PROTOBUF_NOINLINE ::muscle_manager_protocol::DeregistrationRequest* Arena::CreateMaybeMessage< ::muscle_manager_protocol::DeregistrationRequest >(Arena* arena) {
   return Arena::CreateInternal< ::muscle_manager_protocol::DeregistrationRequest >(arena);

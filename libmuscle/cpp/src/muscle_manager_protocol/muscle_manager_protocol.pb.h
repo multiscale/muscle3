@@ -54,12 +54,6 @@ namespace muscle_manager_protocol {
 class Conduit;
 class ConduitDefaultTypeInternal;
 extern ConduitDefaultTypeInternal _Conduit_default_instance_;
-class ConfigurationRequest;
-class ConfigurationRequestDefaultTypeInternal;
-extern ConfigurationRequestDefaultTypeInternal _ConfigurationRequest_default_instance_;
-class ConfigurationResult;
-class ConfigurationResultDefaultTypeInternal;
-extern ConfigurationResultDefaultTypeInternal _ConfigurationResult_default_instance_;
 class DeregistrationRequest;
 class DeregistrationRequestDefaultTypeInternal;
 extern DeregistrationRequestDefaultTypeInternal _DeregistrationRequest_default_instance_;
@@ -111,12 +105,16 @@ extern RegistrationResultDefaultTypeInternal _RegistrationResult_default_instanc
 class Setting;
 class SettingDefaultTypeInternal;
 extern SettingDefaultTypeInternal _Setting_default_instance_;
+class SettingsRequest;
+class SettingsRequestDefaultTypeInternal;
+extern SettingsRequestDefaultTypeInternal _SettingsRequest_default_instance_;
+class SettingsResult;
+class SettingsResultDefaultTypeInternal;
+extern SettingsResultDefaultTypeInternal _SettingsResult_default_instance_;
 }  // namespace muscle_manager_protocol
 namespace google {
 namespace protobuf {
 template<> ::muscle_manager_protocol::Conduit* Arena::CreateMaybeMessage<::muscle_manager_protocol::Conduit>(Arena*);
-template<> ::muscle_manager_protocol::ConfigurationRequest* Arena::CreateMaybeMessage<::muscle_manager_protocol::ConfigurationRequest>(Arena*);
-template<> ::muscle_manager_protocol::ConfigurationResult* Arena::CreateMaybeMessage<::muscle_manager_protocol::ConfigurationResult>(Arena*);
 template<> ::muscle_manager_protocol::DeregistrationRequest* Arena::CreateMaybeMessage<::muscle_manager_protocol::DeregistrationRequest>(Arena*);
 template<> ::muscle_manager_protocol::DeregistrationResult* Arena::CreateMaybeMessage<::muscle_manager_protocol::DeregistrationResult>(Arena*);
 template<> ::muscle_manager_protocol::ListOfDouble* Arena::CreateMaybeMessage<::muscle_manager_protocol::ListOfDouble>(Arena*);
@@ -134,6 +132,8 @@ template<> ::muscle_manager_protocol::ProfileResult* Arena::CreateMaybeMessage<:
 template<> ::muscle_manager_protocol::RegistrationRequest* Arena::CreateMaybeMessage<::muscle_manager_protocol::RegistrationRequest>(Arena*);
 template<> ::muscle_manager_protocol::RegistrationResult* Arena::CreateMaybeMessage<::muscle_manager_protocol::RegistrationResult>(Arena*);
 template<> ::muscle_manager_protocol::Setting* Arena::CreateMaybeMessage<::muscle_manager_protocol::Setting>(Arena*);
+template<> ::muscle_manager_protocol::SettingsRequest* Arena::CreateMaybeMessage<::muscle_manager_protocol::SettingsRequest>(Arena*);
+template<> ::muscle_manager_protocol::SettingsResult* Arena::CreateMaybeMessage<::muscle_manager_protocol::SettingsResult>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 namespace muscle_manager_protocol {
@@ -2450,25 +2450,25 @@ class Setting :
 };
 // -------------------------------------------------------------------
 
-class ConfigurationRequest :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:muscle_manager_protocol.ConfigurationRequest) */ {
+class SettingsRequest :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:muscle_manager_protocol.SettingsRequest) */ {
  public:
-  ConfigurationRequest();
-  virtual ~ConfigurationRequest();
+  SettingsRequest();
+  virtual ~SettingsRequest();
 
-  ConfigurationRequest(const ConfigurationRequest& from);
+  SettingsRequest(const SettingsRequest& from);
 
-  inline ConfigurationRequest& operator=(const ConfigurationRequest& from) {
+  inline SettingsRequest& operator=(const SettingsRequest& from) {
     CopyFrom(from);
     return *this;
   }
   #if LANG_CXX11
-  ConfigurationRequest(ConfigurationRequest&& from) noexcept
-    : ConfigurationRequest() {
+  SettingsRequest(SettingsRequest&& from) noexcept
+    : SettingsRequest() {
     *this = ::std::move(from);
   }
 
-  inline ConfigurationRequest& operator=(ConfigurationRequest&& from) noexcept {
+  inline SettingsRequest& operator=(SettingsRequest&& from) noexcept {
     if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
       if (this != &from) InternalSwap(&from);
     } else {
@@ -2480,34 +2480,34 @@ class ConfigurationRequest :
   static const ::google::protobuf::Descriptor* descriptor() {
     return default_instance().GetDescriptor();
   }
-  static const ConfigurationRequest& default_instance();
+  static const SettingsRequest& default_instance();
 
   static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const ConfigurationRequest* internal_default_instance() {
-    return reinterpret_cast<const ConfigurationRequest*>(
-               &_ConfigurationRequest_default_instance_);
+  static inline const SettingsRequest* internal_default_instance() {
+    return reinterpret_cast<const SettingsRequest*>(
+               &_SettingsRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     16;
 
-  void Swap(ConfigurationRequest* other);
-  friend void swap(ConfigurationRequest& a, ConfigurationRequest& b) {
+  void Swap(SettingsRequest* other);
+  friend void swap(SettingsRequest& a, SettingsRequest& b) {
     a.Swap(&b);
   }
 
   // implements Message ----------------------------------------------
 
-  inline ConfigurationRequest* New() const final {
-    return CreateMaybeMessage<ConfigurationRequest>(nullptr);
+  inline SettingsRequest* New() const final {
+    return CreateMaybeMessage<SettingsRequest>(nullptr);
   }
 
-  ConfigurationRequest* New(::google::protobuf::Arena* arena) const final {
-    return CreateMaybeMessage<ConfigurationRequest>(arena);
+  SettingsRequest* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<SettingsRequest>(arena);
   }
   void CopyFrom(const ::google::protobuf::Message& from) final;
   void MergeFrom(const ::google::protobuf::Message& from) final;
-  void CopyFrom(const ConfigurationRequest& from);
-  void MergeFrom(const ConfigurationRequest& from);
+  void CopyFrom(const SettingsRequest& from);
+  void MergeFrom(const SettingsRequest& from);
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -2529,7 +2529,7 @@ class ConfigurationRequest :
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(ConfigurationRequest* other);
+  void InternalSwap(SettingsRequest* other);
   private:
   inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
     return nullptr;
@@ -2545,7 +2545,7 @@ class ConfigurationRequest :
 
   // accessors -------------------------------------------------------
 
-  // @@protoc_insertion_point(class_scope:muscle_manager_protocol.ConfigurationRequest)
+  // @@protoc_insertion_point(class_scope:muscle_manager_protocol.SettingsRequest)
  private:
   class HasBitSetters;
 
@@ -2555,25 +2555,25 @@ class ConfigurationRequest :
 };
 // -------------------------------------------------------------------
 
-class ConfigurationResult :
-    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:muscle_manager_protocol.ConfigurationResult) */ {
+class SettingsResult :
+    public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:muscle_manager_protocol.SettingsResult) */ {
  public:
-  ConfigurationResult();
-  virtual ~ConfigurationResult();
+  SettingsResult();
+  virtual ~SettingsResult();
 
-  ConfigurationResult(const ConfigurationResult& from);
+  SettingsResult(const SettingsResult& from);
 
-  inline ConfigurationResult& operator=(const ConfigurationResult& from) {
+  inline SettingsResult& operator=(const SettingsResult& from) {
     CopyFrom(from);
     return *this;
   }
   #if LANG_CXX11
-  ConfigurationResult(ConfigurationResult&& from) noexcept
-    : ConfigurationResult() {
+  SettingsResult(SettingsResult&& from) noexcept
+    : SettingsResult() {
     *this = ::std::move(from);
   }
 
-  inline ConfigurationResult& operator=(ConfigurationResult&& from) noexcept {
+  inline SettingsResult& operator=(SettingsResult&& from) noexcept {
     if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
       if (this != &from) InternalSwap(&from);
     } else {
@@ -2585,34 +2585,34 @@ class ConfigurationResult :
   static const ::google::protobuf::Descriptor* descriptor() {
     return default_instance().GetDescriptor();
   }
-  static const ConfigurationResult& default_instance();
+  static const SettingsResult& default_instance();
 
   static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const ConfigurationResult* internal_default_instance() {
-    return reinterpret_cast<const ConfigurationResult*>(
-               &_ConfigurationResult_default_instance_);
+  static inline const SettingsResult* internal_default_instance() {
+    return reinterpret_cast<const SettingsResult*>(
+               &_SettingsResult_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     17;
 
-  void Swap(ConfigurationResult* other);
-  friend void swap(ConfigurationResult& a, ConfigurationResult& b) {
+  void Swap(SettingsResult* other);
+  friend void swap(SettingsResult& a, SettingsResult& b) {
     a.Swap(&b);
   }
 
   // implements Message ----------------------------------------------
 
-  inline ConfigurationResult* New() const final {
-    return CreateMaybeMessage<ConfigurationResult>(nullptr);
+  inline SettingsResult* New() const final {
+    return CreateMaybeMessage<SettingsResult>(nullptr);
   }
 
-  ConfigurationResult* New(::google::protobuf::Arena* arena) const final {
-    return CreateMaybeMessage<ConfigurationResult>(arena);
+  SettingsResult* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<SettingsResult>(arena);
   }
   void CopyFrom(const ::google::protobuf::Message& from) final;
   void MergeFrom(const ::google::protobuf::Message& from) final;
-  void CopyFrom(const ConfigurationResult& from);
-  void MergeFrom(const ConfigurationResult& from);
+  void CopyFrom(const SettingsResult& from);
+  void MergeFrom(const SettingsResult& from);
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -2634,7 +2634,7 @@ class ConfigurationResult :
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(ConfigurationResult* other);
+  void InternalSwap(SettingsResult* other);
   private:
   inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
     return nullptr;
@@ -2662,7 +2662,7 @@ class ConfigurationResult :
   const ::google::protobuf::RepeatedPtrField< ::muscle_manager_protocol::Setting >&
       parameter_values() const;
 
-  // @@protoc_insertion_point(class_scope:muscle_manager_protocol.ConfigurationResult)
+  // @@protoc_insertion_point(class_scope:muscle_manager_protocol.SettingsResult)
  private:
   class HasBitSetters;
 
@@ -4570,39 +4570,39 @@ inline void Setting::set_allocated_value_list_list_float(::muscle_manager_protoc
 
 // -------------------------------------------------------------------
 
-// ConfigurationRequest
+// SettingsRequest
 
 // -------------------------------------------------------------------
 
-// ConfigurationResult
+// SettingsResult
 
 // repeated .muscle_manager_protocol.Setting parameter_values = 1;
-inline int ConfigurationResult::parameter_values_size() const {
+inline int SettingsResult::parameter_values_size() const {
   return parameter_values_.size();
 }
-inline void ConfigurationResult::clear_parameter_values() {
+inline void SettingsResult::clear_parameter_values() {
   parameter_values_.Clear();
 }
-inline ::muscle_manager_protocol::Setting* ConfigurationResult::mutable_parameter_values(int index) {
-  // @@protoc_insertion_point(field_mutable:muscle_manager_protocol.ConfigurationResult.parameter_values)
+inline ::muscle_manager_protocol::Setting* SettingsResult::mutable_parameter_values(int index) {
+  // @@protoc_insertion_point(field_mutable:muscle_manager_protocol.SettingsResult.parameter_values)
   return parameter_values_.Mutable(index);
 }
 inline ::google::protobuf::RepeatedPtrField< ::muscle_manager_protocol::Setting >*
-ConfigurationResult::mutable_parameter_values() {
-  // @@protoc_insertion_point(field_mutable_list:muscle_manager_protocol.ConfigurationResult.parameter_values)
+SettingsResult::mutable_parameter_values() {
+  // @@protoc_insertion_point(field_mutable_list:muscle_manager_protocol.SettingsResult.parameter_values)
   return &parameter_values_;
 }
-inline const ::muscle_manager_protocol::Setting& ConfigurationResult::parameter_values(int index) const {
-  // @@protoc_insertion_point(field_get:muscle_manager_protocol.ConfigurationResult.parameter_values)
+inline const ::muscle_manager_protocol::Setting& SettingsResult::parameter_values(int index) const {
+  // @@protoc_insertion_point(field_get:muscle_manager_protocol.SettingsResult.parameter_values)
   return parameter_values_.Get(index);
 }
-inline ::muscle_manager_protocol::Setting* ConfigurationResult::add_parameter_values() {
-  // @@protoc_insertion_point(field_add:muscle_manager_protocol.ConfigurationResult.parameter_values)
+inline ::muscle_manager_protocol::Setting* SettingsResult::add_parameter_values() {
+  // @@protoc_insertion_point(field_add:muscle_manager_protocol.SettingsResult.parameter_values)
   return parameter_values_.Add();
 }
 inline const ::google::protobuf::RepeatedPtrField< ::muscle_manager_protocol::Setting >&
-ConfigurationResult::parameter_values() const {
-  // @@protoc_insertion_point(field_list:muscle_manager_protocol.ConfigurationResult.parameter_values)
+SettingsResult::parameter_values() const {
+  // @@protoc_insertion_point(field_list:muscle_manager_protocol.SettingsResult.parameter_values)
   return parameter_values_;
 }
 

@@ -39,7 +39,7 @@ def test_submit_log_message(mocked_mmp_client) -> None:
     assert mocked_mmp_client[1].SubmitLogMessage.called
 
 
-def test_get_configuration(mocked_mmp_client) -> None:
+def test_get_settings(mocked_mmp_client) -> None:
     client, stub = mocked_mmp_client
 
     row0 = mmp.ListOfDouble(values=[1.2, 3.4])
@@ -70,11 +70,11 @@ def test_get_configuration(mocked_mmp_client) -> None:
                 parameter='test6',
                 value_type=mmp.PARAMETER_VALUE_TYPE_LIST_LIST_FLOAT,
                 value_list_list_float=array)]
-    config_result = mmp.ConfigurationResult(parameter_values=mmp_values)
-    stub.RequestConfiguration.return_value = config_result
-    config = client.get_configuration()
+    settings_result = mmp.SettingsResult(parameter_values=mmp_values)
+    stub.RequestSettings.return_value = settings_result
+    settings = client.get_settings()
 
-    assert len(config) == 6
+    assert len(settings) == 6
 
 
 def test_register_instance(mocked_mmp_client) -> None:

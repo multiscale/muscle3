@@ -5,10 +5,9 @@ import sys
 from typing import cast, Dict, List, Optional, Tuple, Type, Union
 
 from ymmsl import (Conduit, Identifier, Operator, ParameterValue, Port,
-                   Reference)
+                   Reference, Settings)
 
 from libmuscle.communicator import _ClosePort, Communicator, Message
-from libmuscle.configuration import Configuration
 from libmuscle.configuration_store import ConfigurationStore
 from libmuscle.logging_handler import MuscleManagerHandler
 from libmuscle.mmp_client import MMPClient
@@ -88,7 +87,7 @@ class Instance:
         decide whether to enter that loop again.
 
         Args:
-            apply_overlay: Whether to apply the received configuration
+            apply_overlay: Whether to apply the received settings
                 overlay or to save it. If you're going to use
                 :meth:`receive_with_parameters` on your F_INIT ports,
                 set this to False. If you don't know what that means,
@@ -245,9 +244,9 @@ class Instance:
             slot: The slot to send the message on, if any.
         """
         self.__check_port(port_name)
-        if message.configuration is None:
+        if message.settings is None:
             message = copy(message)
-            message.configuration = self._configuration_store.overlay
+            message.settings = self._configuration_store.overlay
 
         self._communicator.send_message(port_name, message, slot)
 
@@ -274,7 +273,7 @@ class Instance:
                     connected.
 
         Returns:
-            The received message.The configuration attribute of the
+            The received message. The settings attribute of the
             received message will be None.
 
         Raises:
@@ -311,8 +310,8 @@ class Instance:
                     connected.
 
         Returns:
-            The received message. The configuration attribute will
-            contain the received Configuration, and will not be None.
+            The received message. The settings attribute will
+            contain the received Settings, and will not be None.
 
         Raises:
             RuntimeError: If the given port is not connected and no
@@ -337,7 +336,7 @@ class Instance:
         conduits, peer_dims, peer_locations = self.__manager.request_peers(
                 self._instance_name())
         self._communicator.connect(conduits, peer_dims, peer_locations)
-        self._configuration_store.base = self.__manager.get_configuration()
+        self._configuration_store.base = self.__manager.get_settings()
         connect_event.stop()
 
     def _deregister(self) -> None:
@@ -440,7 +439,7 @@ class Instance:
             if (port_name, slot) in self._f_init_cache:
                 msg = self._f_init_cache[(port_name, slot)]
                 del(self._f_init_cache[(port_name, slot)])
-                if with_parameters and msg.configuration is None:
+                if with_parameters and msg.settings is None:
                     raise RuntimeError('If you use receive_with_parameters()'
                                        ' on an F_INIT port, then you have to'
                                        ' pass False to reuse_instance(),'
@@ -466,8 +465,8 @@ class Instance:
             msg = self._communicator.receive_message(
                     port_name, slot, default)
             if not with_parameters:
-                self.__check_compatibility(port_name, msg.configuration)
-                msg.configuration = None
+                self.__check_compatibility(port_name, msg.settings)
+                msg.settings = None
         return msg
 
     def __make_full_name(self, instance: Reference
@@ -539,23 +538,23 @@ class Instance:
         Returns:
             False iff the port is connnected and ClosePort was received.
         """
-        default_message = Message(0.0, None, Configuration(), Configuration())
+        default_message = Message(0.0, None, Settings(), Settings())
         message = self._communicator.receive_message(
                 'muscle_parameters_in', None, default_message)
         if isinstance(message.data, _ClosePort):
             return False
-        if not isinstance(message.data, Configuration):
+        if not isinstance(message.data, Settings):
             raise RuntimeError('"{}" received a message on'
                                ' muscle_parameters_in that is not a'
-                               ' Configuration. It seems that your'
+                               ' Settings. It seems that your'
                                ' simulation is miswired or the sending'
                                ' instance is broken.'.format(
                                    self._instance_name()))
 
-        configuration = cast(Configuration, message.configuration)
+        settings = cast(Settings, message.settings)
         for key, value in message.data.items():
-            configuration[key] = value
-        self._configuration_store.overlay = configuration
+            settings[key] = value
+        self._configuration_store.overlay = settings
         return True
 
     def __pre_receive_f_init(self, apply_overlay: bool) -> None:
@@ -569,8 +568,8 @@ class Instance:
             self._f_init_cache[(port_name, slot)] = msg
             if apply_overlay:
                 self.__apply_overlay(msg)
-                self.__check_compatibility(port_name, msg.configuration)
-                msg.configuration = None
+                self.__check_compatibility(port_name, msg.settings)
+                msg.settings = None
 
         self._f_init_cache = dict()
         ports = self._communicator.list_ports()
@@ -594,11 +593,11 @@ class Instance:
             message: The message to apply the overlay from.
         """
         if len(self._configuration_store.overlay) == 0:
-            if message.configuration is not None:
-                self._configuration_store.overlay = message.configuration
+            if message.settings is not None:
+                self._configuration_store.overlay = message.settings
 
     def __check_compatibility(self, port_name: str,
-                              overlay: Optional[Configuration]) -> None:
+                              overlay: Optional[Settings]) -> None:
         """Checks whether a received overlay matches the current one.
 
         Args:

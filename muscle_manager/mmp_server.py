@@ -2,9 +2,8 @@ from concurrent import futures
 from typing import cast, Generator, List
 
 import grpc
-from ymmsl import Reference
+from ymmsl import Reference, Settings
 
-from libmuscle.configuration import Configuration
 from libmuscle.port import port_from_grpc
 from libmuscle.logging import LogLevel, Timestamp
 from libmuscle.operator import operator_from_grpc
@@ -27,16 +26,19 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
 
     Args:
         logger: The Logger component to log messages to.
+        settings: The global settings to serve to instances.
+        instance_registry: The database for instances.
+        topology_store: Keeps track of how to connect things.
     """
     def __init__(
             self,
             logger: Logger,
-            configuration: Configuration,
+            settings: Settings,
             instance_registry: InstanceRegistry,
             topology_store: TopologyStore
             ) -> None:
         self.__logger = logger
-        self.__configuration = configuration
+        self.__settings = settings
         self.__instance_registry = instance_registry
         self.__topology_store = topology_store
 
@@ -62,14 +64,14 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
         # TODO: store
         return mmp.ProfileResult()
 
-    def RequestConfiguration(
+    def RequestSettings(
             self,
-            request: mmp.ConfigurationRequest,
+            request: mmp.SettingsRequest,
             context: grpc.ServicerContext
-            ) -> mmp.ConfigurationResult:
-        """Returns the central base configuration."""
+            ) -> mmp.SettingsResult:
+        """Returns the central base settings."""
         settings = list()   # type: List[mmp.Setting]
-        for parameter, value in self.__configuration.items():
+        for parameter, value in self.__settings.items():
             if isinstance(value, str):
                 setting = mmp.Setting(
                         parameter=str(parameter),
@@ -115,7 +117,7 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
                             value_list_list_float=mmp_rows)
             settings.append(setting)
 
-        return mmp.ConfigurationResult(parameter_values=settings)
+        return mmp.SettingsResult(parameter_values=settings)
 
     def RegisterInstance(
             self,
@@ -267,12 +269,12 @@ class MMPServer():
     def __init__(
             self,
             logger: Logger,
-            configuration: Configuration,
+            settings: Settings,
             instance_registry: InstanceRegistry,
             topology_store: TopologyStore
             ) -> None:
         self.__instance_registry = instance_registry
-        self.__servicer = MMPServicer(logger, configuration, instance_registry,
+        self.__servicer = MMPServicer(logger, settings, instance_registry,
                                       topology_store)
         self.__server = grpc.server(futures.ThreadPoolExecutor())
         mmp_grpc.add_MuscleManagerServicer_to_server(  # type: ignore

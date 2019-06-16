@@ -6,7 +6,6 @@ from ymmsl import (ComputeElement, Conduit, Model, Operator, Reference,
 
 from libmuscle.communicator import Message
 from libmuscle.instance import Instance
-from libmuscle.configuration import Configuration
 from muscle_manager.muscle_manager import run_simulation
 
 
@@ -17,7 +16,7 @@ def qmc(instance_id: str):
 
     while instance.reuse_instance():
         # o_f
-        config0 = Configuration.from_plain_dict({'test2': 14.4})
+        settings0 = Settings({'test2': 14.4})
 
         assert instance.is_connected('parameters_out')
         assert instance.is_vector_port('parameters_out')
@@ -26,7 +25,7 @@ def qmc(instance_id: str):
         assert length == 10
         for slot in range(length):
             instance.send_message('parameters_out',
-                                  Message(0.0, None, config0), slot)
+                                  Message(0.0, None, settings0), slot)
 
 
 def macro(instance_id: str):
@@ -79,12 +78,12 @@ def explicit_micro(instance_id: str):
         assert instance.get_parameter_value('test2', 'float') == 13.3
         msg = instance.receive_message_with_parameters('in')
         assert msg.data == 'testing'
-        assert msg.configuration['test2'] == 14.4
+        assert msg.settings['test2'] == 14.4
         assert instance.get_parameter_value('test2') == 13.3
 
         # o_f
         instance.send_message(
-                'out', Message(0.1, None, 'testing back', msg.configuration))
+                'out', Message(0.1, None, 'testing back', msg.settings))
 
 
 def test_parameter_overlays(log_file_in_tmpdir):

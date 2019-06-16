@@ -1,10 +1,9 @@
 from libmuscle.communicator import _ClosePort, Communicator, Endpoint, Message
-from libmuscle.configuration import Configuration
 from libmuscle.mcp.direct_client import DirectClient
 from libmuscle.mcp.message import Message as MCPMessage
 from libmuscle.port import Port
 
-from ymmsl import Conduit, Identifier, Operator, Reference
+from ymmsl import Conduit, Identifier, Operator, Reference, Settings
 
 import msgpack
 import pytest
@@ -336,7 +335,7 @@ def test_send_message_resizable(communicator3, message) -> None:
 
 
 def test_send_message_with_parameters(communicator, message) -> None:
-    message.configuration['test2'] = 'testing'
+    message.settings['test2'] = 'testing'
     communicator.send_message('out', message)
 
     assert 'other.in[13]' in communicator._outboxes
@@ -349,8 +348,8 @@ def test_send_message_with_parameters(communicator, message) -> None:
     assert msgpack.unpackb(msg.data).decode('utf-8') == 'test'
 
 
-def test_send_configuration(communicator, message) -> None:
-    message.data = Configuration()
+def test_send_settings(communicator, message) -> None:
+    message.data = Settings()
     message.data['test1'] = 'testing'
     communicator.send_message('out', message)
 
@@ -397,17 +396,17 @@ def test_receive_message(communicator) -> None:
     get_client_mock.assert_called_with(Reference('other'))
     client_mock.receive.assert_called_with(Reference('kernel[13].in'))
     assert msg.data == b'test'
-    assert msg.configuration['test1'] == 12
+    assert msg.settings['test1'] == 12
 
 
 def test_receive_message_default(communicator) -> None:
     communicator._Communicator__peer_manager.is_connected.return_value = False
-    default_msg = Message(3.0, 4.0, 'test', Configuration())
+    default_msg = Message(3.0, 4.0, 'test', Settings())
     msg = communicator.receive_message('not_connected', default=default_msg)
     assert msg.timestamp == 3.0
     assert msg.next_timestamp == 4.0
     assert msg.data == 'test'
-    assert len(msg.configuration) == 0
+    assert len(msg.settings) == 0
 
 
 def test_receive_message_no_default(communicator) -> None:
@@ -453,7 +452,7 @@ def test_receive_with_slot(communicator2) -> None:
     get_client_mock.assert_called_with(Reference('kernel[13]'))
     client_mock.receive.assert_called_with(Reference('other.in[13]'))
     assert msg.data == b'test'
-    assert msg.configuration['test'] == 'testing'
+    assert msg.settings['test'] == 'testing'
 
 
 def test_receive_message_resizable(communicator3) -> None:
@@ -489,7 +488,7 @@ def test_receive_with_parameters(communicator) -> None:
     get_client_mock.assert_called_with(Reference('other'))
     client_mock.receive.assert_called_with(Reference('kernel[13].in'))
     assert msg.data == b'test'
-    assert msg.configuration['test2'] == 3.1
+    assert msg.settings['test2'] == 3.1
 
 
 def test_receive_msgpack_with_slot_and_parameters(communicator2) -> None:
@@ -507,10 +506,10 @@ def test_receive_msgpack_with_slot_and_parameters(communicator2) -> None:
     get_client_mock.assert_called_with(Reference('kernel[13]'))
     client_mock.receive.assert_called_with(Reference('other.in[13]'))
     assert msg.data == 'test'
-    assert msg.configuration['test'] == 'testing'
+    assert msg.settings['test'] == 'testing'
 
 
-def test_receive_configuration(communicator) -> None:
+def test_receive_settings(communicator) -> None:
     client_mock = MagicMock()
     config_dict = {'test': 13}
     config_data = msgpack.ExtType(1, msgpack.packb(config_dict,
@@ -527,7 +526,7 @@ def test_receive_configuration(communicator) -> None:
 
     get_client_mock.assert_called_with(Reference('other'))
     client_mock.receive.assert_called_with(Reference('kernel[13].in'))
-    assert isinstance(msg.data, Configuration)
+    assert isinstance(msg.data, Settings)
     assert msg.data['test'] == 13
 
 

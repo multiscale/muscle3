@@ -5,9 +5,9 @@ from google.protobuf.timestamp_pb2 import Timestamp
 from ymmsl import Operator, Reference
 
 
-def test_create_servicer(logger, configuration, instance_registry,
+def test_create_servicer(logger, settings, instance_registry,
                          topology_store):
-    MMPServicer(logger, configuration, instance_registry, topology_store)
+    MMPServicer(logger, settings, instance_registry, topology_store)
 
 
 def test_log_message(mmp_servicer, caplog):
@@ -23,23 +23,24 @@ def test_log_message(mmp_servicer, caplog):
     assert caplog.records[0].name == 'test_instance_id'
     assert caplog.records[0].time_stamp == '1970-01-01T00:00:00Z'
     assert caplog.records[0].levelname == 'WARNING'
-    assert caplog.records[0].message == 'Testing log message'
+    assert caplog.records[0].message == (
+            'Testing log message')
 
 
-def test_request_configuration(configuration, mmp_servicer):
-    request = mmp.ConfigurationRequest()
-    result = mmp_servicer.RequestConfiguration(request, None)
+def test_request_settings(settings, mmp_servicer):
+    request = mmp.SettingsRequest()
+    result = mmp_servicer.RequestSettings(request, None)
 
     assert len(result.parameter_values) == 0
 
-    configuration['test1'] = 13
-    configuration['test2'] = 12.3
-    configuration['test3'] = 'testing'
-    configuration['test4'] = True
-    configuration['test5'] = [2.3, 7.4]
-    configuration['test6'] = [[1.0, 2.0], [2.0, 1.0]]
+    settings['test1'] = 13
+    settings['test2'] = 12.3
+    settings['test3'] = 'testing'
+    settings['test4'] = True
+    settings['test5'] = [2.3, 7.4]
+    settings['test6'] = [[1.0, 2.0], [2.0, 1.0]]
 
-    result = mmp_servicer.RequestConfiguration(request, None)
+    result = mmp_servicer.RequestSettings(request, None)
     assert len(result.parameter_values) == 6
 
     result_dict = dict()

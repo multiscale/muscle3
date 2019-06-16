@@ -3,12 +3,11 @@ from time import perf_counter, sleep
 from typing import Dict, Iterable, List, Tuple
 
 import grpc
-from ymmsl import Conduit, Port, Reference
+from ymmsl import Conduit, Port, Reference, Settings
 
 import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
 import muscle_manager_protocol.muscle_manager_protocol_pb2_grpc as mmp_grpc
 
-from libmuscle.configuration import Configuration
 from libmuscle.port import port_to_grpc
 from libmuscle.profiling import ProfileEvent
 from libmuscle.logging import LogMessage
@@ -75,33 +74,33 @@ class MMPClient():
         self.__client.SubmitProfileEvents(mmp.Profile(events=[
             e.to_grpc() for e in events]))
 
-    def get_configuration(self) -> Configuration:
-        """Get the central configuration from the manager.
+    def get_settings(self) -> Settings:
+        """Get the central settings from the manager.
 
         Returns:
-            The requested configuration.
+            The requested settings.
         """
         LLF = mmp.PARAMETER_VALUE_TYPE_LIST_LIST_FLOAT
-        result = self.__client.RequestConfiguration(mmp.ConfigurationRequest())
-        config = Configuration()
+        result = self.__client.RequestSettings(mmp.SettingsRequest())
+        settings = Settings()
         for setting in result.parameter_values:
             if setting.value_type == mmp.PARAMETER_VALUE_TYPE_STRING:
-                config[setting.parameter] = setting.value_string
+                settings[setting.parameter] = setting.value_string
             elif setting.value_type == mmp.PARAMETER_VALUE_TYPE_INT:
-                config[setting.parameter] = setting.value_int
+                settings[setting.parameter] = setting.value_int
             elif setting.value_type == mmp.PARAMETER_VALUE_TYPE_FLOAT:
-                config[setting.parameter] = setting.value_float
+                settings[setting.parameter] = setting.value_float
             elif setting.value_type == mmp.PARAMETER_VALUE_TYPE_BOOL:
-                config[setting.parameter] = setting.value_bool
+                settings[setting.parameter] = setting.value_bool
             elif setting.value_type == mmp.PARAMETER_VALUE_TYPE_LIST_FLOAT:
-                config[setting.parameter] = list(
+                settings[setting.parameter] = list(
                         setting.value_list_float.values)
             elif setting.value_type == LLF:
                 rows = list()   # type: List[List[float]]
                 for mmp_row in setting.value_list_list_float.values:
                     rows.append(list(mmp_row.values))
-                config[setting.parameter] = rows
-        return config
+                settings[setting.parameter] = rows
+        return settings
 
     def register_instance(self, name: Reference, locations: List[str],
                           ports: List[Port]) -> None:

@@ -1,7 +1,6 @@
 import pytest
-from ymmsl import Reference
+from ymmsl import Reference, Settings
 
-from libmuscle.configuration import Configuration
 from libmuscle.configuration_store import ConfigurationStore
 
 
@@ -26,7 +25,7 @@ def test_get_parameter(store):
     store.base[ref('test2')] = 'test'
     assert store.get_parameter(ref('instance'), ref('test2')) == 14
 
-    store.overlay = Configuration()
+    store.overlay = Settings()
     assert store.get_parameter(ref('instance'), ref('test2')) == 'test'
 
     store.base[ref('test3')] = 'base_test3'

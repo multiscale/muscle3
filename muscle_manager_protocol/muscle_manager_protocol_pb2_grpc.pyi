@@ -1,7 +1,7 @@
 import grpc
 
 from muscle_manager_protocol.muscle_manager_protocol_pb2 import (
-        ConfigurationRequest, ConfigurationResult, LogMessage, LogResult,
+        SettingsRequest, SettingsResult, LogMessage, LogResult,
         Profile, ProfileResult, RegistrationRequest, RegistrationResult,
         DeregistrationRequest, DeregistrationResult)
 
@@ -13,8 +13,8 @@ class MuscleManagerStub():
 
     def SubmitProfileEvents(self, request: Profile) -> ProfileResult: ...
 
-    def RequestConfiguration(self, request: ConfigurationRequest
-                             ) -> ConfigurationResult: ...
+    def RequestSettings(self, request: SettingsRequest
+                             ) -> SettingsResult: ...
 
     def RegisterInstance(self, request: RegistrationRequest
                          ) -> RegistrationResult: ...
@@ -35,9 +35,9 @@ class MuscleManagerServicer():
                             context: grpc.ServicerContext
                             ) -> ProfileResult: ...
 
-    def RequestConfiguration(self, request: ConfigurationRequest,
+    def RequestSettings(self, request: SettingsRequest,
                              context: grpc.ServicerContext
-                             ) -> ConfigurationResult: ...
+                             ) -> SettingsResult: ...
 
     def RegisterInstance(self, request: RegistrationRequest,
                          context: grpc.ServicerContext

@@ -1,8 +1,46 @@
 from typing import Optional
 
-from libmuscle.configuration import Configuration, has_parameter_type
+from ymmsl import ParameterValue, Reference, Settings
 
-from ymmsl import ParameterValue, Reference
+
+def has_parameter_type(value: ParameterValue, typ: str) -> bool:
+    """Checks whether the value has the given type.
+
+    Args:
+        value: A parameter value.
+        typ: A parameter type. Valid values are 'str', 'int', 'float',
+                'bool', '[float]', and '[[float]]'.
+
+    Returns:
+        True if the type of value matches typ.
+
+    Raises:
+        ValueError: If the type specified is not valid.
+    """
+    par_type_to_type = {
+            'str': str,
+            'int': int,
+            'float': float,
+            'bool': bool
+            }
+
+    if typ in par_type_to_type:
+        return isinstance(value, par_type_to_type[typ])
+    elif typ == '[float]':
+        if isinstance(value, list):
+            if len(value) == 0 or isinstance(value[0], float):
+                # We don't check everything here, the yMMSL loader does
+                # a full type check, so we just need to discriminate.
+                return True
+        return False
+    elif typ == '[[float]]':
+        if isinstance(value, list):
+            if len(value) == 0 or isinstance(value[0], list):
+                # We don't check everything here, the yMMSL loader does
+                # a full type check, so we just need to discriminate.
+                return True
+        return False
+    raise ValueError('Invalid parameter type specified: {}'.format(typ))
 
 
 class ConfigurationStore:
@@ -12,7 +50,7 @@ class ConfigurationStore:
         """Create a ConfigurationStore.
 
         Initialises the base and overlay layers to an empty
-        Configuration.
+        Settings object.
 
         A ConfigurationStore has two layers of configuration, a base
         layer that contains an immutable set of parameters set in the
@@ -23,8 +61,8 @@ class ConfigurationStore:
             base: The base layer.
             overlay: The overlay layer.
         """
-        self.base = Configuration()
-        self.overlay = Configuration()
+        self.base = Settings()
+        self.overlay = Settings()
 
     def get_parameter(self, instance: Reference, parameter_name: Reference,
                       typ: Optional[str] = None) -> ParameterValue:

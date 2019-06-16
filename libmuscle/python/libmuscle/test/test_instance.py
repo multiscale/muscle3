@@ -3,11 +3,10 @@ from typing import Generator, List
 from unittest.mock import MagicMock, patch
 
 import pytest
-from ymmsl import Conduit, Operator, Reference
+from ymmsl import Conduit, Operator, Reference, Settings
 
 from libmuscle.communicator import _ClosePort, Message
 from libmuscle.instance import Instance
-from libmuscle.configuration import Configuration
 from libmuscle.configuration_store import ConfigurationStore
 
 
@@ -40,9 +39,9 @@ def instance():
     with patch('libmuscle.instance.MMPClient') as mmp_client, \
          patch('libmuscle.instance.Communicator') as comm_type:
         communicator = MagicMock()
-        config = Configuration()
-        config['test1'] = 12
-        msg = Message(0.0, 1.0, 'message', config)
+        settings = Settings()
+        settings['test1'] = 12
+        msg = Message(0.0, 1.0, 'message', settings)
         communicator.receive_message.return_value = msg
         comm_type.return_value = communicator
 
@@ -105,14 +104,14 @@ def test_extract_manager_location(sys_argv_manager) -> None:
 
 def test_get_parameter_value(instance):
     ref = Reference
-    config = Configuration()
-    config[ref('test1')] = 'test'
-    config[ref('test2')] = 12
-    config[ref('test3')] = 27.1
-    config[ref('test4')] = True
-    config[ref('test5')] = [2.3, 5.6]
-    config[ref('test6')] = [[1.0, 2.0], [3.0, 4.0]]
-    instance._configuration_store.base = config
+    settings = Settings()
+    settings[ref('test1')] = 'test'
+    settings[ref('test2')] = 12
+    settings[ref('test3')] = 27.1
+    settings[ref('test4')] = True
+    settings[ref('test5')] = [2.3, 5.6]
+    settings[ref('test6')] = [[1.0, 2.0], [3.0, 4.0]]
+    instance._configuration_store.base = settings
 
     assert instance.get_parameter_value('test1') == 'test'
     assert instance.get_parameter_value('test2') == 12
@@ -209,7 +208,7 @@ def test_receive_message_with_parameters(instance):
     assert msg.timestamp == 0.0
     assert msg.next_timestamp == 1.0
     assert msg.data == 'message'
-    assert msg.configuration['test1'] == 12
+    assert msg.settings['test1'] == 12
 
 
 def test_receive_message_with_parameters_default(instance):
@@ -225,14 +224,14 @@ def test_receive_parallel_universe(instance) -> None:
 
 
 def test_reuse_instance_receive_overlay(instance):
-    instance._configuration_store.overlay = Configuration()
-    test_base_config = Configuration()
-    test_base_config['test1'] = 24
-    test_base_config['test2'] = [1.3, 2.0]
-    test_overlay = Configuration()
+    instance._configuration_store.overlay = Settings()
+    test_base_settings = Settings()
+    test_base_settings['test1'] = 24
+    test_base_settings['test2'] = [1.3, 2.0]
+    test_overlay = Settings()
     test_overlay['test2'] = 'abc'
     recv = instance._communicator.receive_message
-    recv.return_value = Message(0.0, None, test_overlay, test_base_config)
+    recv.return_value = Message(0.0, None, test_overlay, test_base_settings)
     instance.reuse_instance()
     assert instance._communicator.receive_message.called_with(
         'muscle_parameters_in')
@@ -244,9 +243,9 @@ def test_reuse_instance_receive_overlay(instance):
 def test_reuse_instance_closed_port(instance):
     def receive_message(port_name, slot=None, default=None):
         if port_name == 'muscle_parameters_in':
-            return Message(0.0, None, Configuration(), Configuration())
+            return Message(0.0, None, Settings(), Settings())
         elif port_name == 'in':
-            return Message(0.0, None, _ClosePort(), Configuration())
+            return Message(0.0, None, _ClosePort(), Settings())
         assert False    # pragma: no cover
 
     def get_port(port_name):
@@ -271,10 +270,10 @@ def test_reuse_instance_closed_port(instance):
 def test_reuse_instance_vector_port(instance2):
     def receive_message(port_name, slot=None, default=None):
         if port_name == 'muscle_parameters_in':
-            return Message(0.0, None, Configuration(), Configuration())
+            return Message(0.0, None, Settings(), Settings())
         elif port_name == 'in':
             data = 'test {}'.format(slot)
-            return Message(0.0, None, data, Configuration())
+            return Message(0.0, None, data, Settings())
         assert False    # pragma: no cover
 
     instance2._communicator.receive_message = receive_message
@@ -299,7 +298,7 @@ def test_reuse_instance_vector_port(instance2):
 
 def test_reuse_instance_no_f_init_ports(instance):
     instance._communicator.receive_message.return_value = Message(
-            0.0, None, Configuration(), Configuration())
+            0.0, None, Settings(), Settings())
     instance._communicator.list_ports.return_value = {}
     instance._communicator.parameters_in_connected.return_value = False
     do_reuse = instance.reuse_instance()

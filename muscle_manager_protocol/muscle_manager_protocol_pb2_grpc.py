@@ -24,10 +24,10 @@ class MuscleManagerStub(object):
         request_serializer=muscle__manager__protocol__pb2.Profile.SerializeToString,
         response_deserializer=muscle__manager__protocol__pb2.ProfileResult.FromString,
         )
-    self.RequestConfiguration = channel.unary_unary(
-        '/muscle_manager_protocol.MuscleManager/RequestConfiguration',
-        request_serializer=muscle__manager__protocol__pb2.ConfigurationRequest.SerializeToString,
-        response_deserializer=muscle__manager__protocol__pb2.ConfigurationResult.FromString,
+    self.RequestSettings = channel.unary_unary(
+        '/muscle_manager_protocol.MuscleManager/RequestSettings',
+        request_serializer=muscle__manager__protocol__pb2.SettingsRequest.SerializeToString,
+        response_deserializer=muscle__manager__protocol__pb2.SettingsResult.FromString,
         )
     self.RegisterInstance = channel.unary_unary(
         '/muscle_manager_protocol.MuscleManager/RegisterInstance',
@@ -64,8 +64,8 @@ class MuscleManagerServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def RequestConfiguration(self, request, context):
-    """Requests the global base configuration
+  def RequestSettings(self, request, context):
+    """Requests the global base settings
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
@@ -105,10 +105,10 @@ def add_MuscleManagerServicer_to_server(servicer, server):
           request_deserializer=muscle__manager__protocol__pb2.Profile.FromString,
           response_serializer=muscle__manager__protocol__pb2.ProfileResult.SerializeToString,
       ),
-      'RequestConfiguration': grpc.unary_unary_rpc_method_handler(
-          servicer.RequestConfiguration,
-          request_deserializer=muscle__manager__protocol__pb2.ConfigurationRequest.FromString,
-          response_serializer=muscle__manager__protocol__pb2.ConfigurationResult.SerializeToString,
+      'RequestSettings': grpc.unary_unary_rpc_method_handler(
+          servicer.RequestSettings,
+          request_deserializer=muscle__manager__protocol__pb2.SettingsRequest.FromString,
+          response_serializer=muscle__manager__protocol__pb2.SettingsResult.SerializeToString,
       ),
       'RegisterInstance': grpc.unary_unary_rpc_method_handler(
           servicer.RegisterInstance,

@@ -3,10 +3,9 @@ from typing import Callable, Dict, List, Tuple
 
 import click
 from ruamel import yaml
-from ymmsl import Model, Settings, Reference, YmmslDocument
+from ymmsl import Model, Reference, YmmslDocument
 import ymmsl
 
-from libmuscle.configuration import Configuration
 from libmuscle.mcp import pipe_multiplexer as mux
 
 from muscle_manager.instance_registry import InstanceRegistry
@@ -16,18 +15,6 @@ from muscle_manager.topology_store import TopologyStore
 
 
 Pipe = Tuple[mp.connection.Connection, mp.connection.Connection]
-
-
-def config_for_settings(settings: Settings) -> Configuration:
-    """Creates a Configuration from a yMMSL Settings.
-
-    Args:
-        settings: The settings to create a Configuration for.
-    """
-    configuration = Configuration()
-    for name, value in settings.ordered_items():
-        configuration[name] = value
-    return configuration
 
 
 def elements_for_model(model: Model) -> List[str]:
@@ -90,12 +77,12 @@ def start_server(experiment: YmmslDocument) -> MMPServer:
                          ' model to run.')
 
     topology_store = TopologyStore(experiment)
-    configuration = config_for_settings(experiment.settings)
     expected_elements = elements_for_model(experiment.model)
 
     logger = Logger()
     instance_registry = InstanceRegistry(expected_elements)
-    return MMPServer(logger, configuration, instance_registry, topology_store)
+    return MMPServer(logger, experiment.settings, instance_registry,
+                     topology_store)
 
 
 class MMPServerController:

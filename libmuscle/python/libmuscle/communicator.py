@@ -1,9 +1,8 @@
 from enum import IntEnum
 import msgpack
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
-from ymmsl import Conduit, Identifier, Operator, Reference
+from ymmsl import Conduit, Identifier, Operator, Reference, Settings
 
-from libmuscle.configuration import Configuration
 from libmuscle.configuration_store import ConfigurationStore
 from libmuscle.endpoint import Endpoint
 from libmuscle.mcp.message import Message as MCPMessage
@@ -28,7 +27,7 @@ class ExtTypeId(IntEnum):
     This class is our registry of extension type ids.
     """
     CLOSE_PORT = 0
-    CONFIGURATION = 1
+    SETTINGS = 1
 
 
 class _ClosePort:
@@ -54,14 +53,14 @@ class Message:
         next_timestamp (Optional[float]): Simulation time for the next
                 message to be transmitted through this port.
         data (MessageObject): An object to send or that was received.
-        configuration (Configuration): An overlay configuration to send
-                or that was received.
+        settings (Settings): Overlay settings to send or that was
+                received.
     """
     # Note: This is for communication with the user, it's not what
     # actually goes out on the wire, see libmuscle.mcp.Message for that.
     def __init__(self, timestamp: float, next_timestamp: Optional[float],
                  data: MessageObject,
-                 configuration: Optional[Configuration]=None
+                 settings: Optional[Settings]=None
                  ) -> None:
         """Create a Message.
 
@@ -70,13 +69,12 @@ class Message:
             next_timestamp: Simulation time for the next message to be
                     transmitted through this port.
             data: An object to send or that was received.
-            configuration: An overlay configuration to send or that
-                    was received.
+            settings: Overlay settings to send or that were received.
         """
         self.timestamp = timestamp
         self.next_timestamp = next_timestamp
         self.data = data
-        self.configuration = configuration
+        self.settings = settings
 
 
 class Communicator(PostOffice):
@@ -239,7 +237,7 @@ class Communicator(PostOffice):
                 snd_endpoint.port, slot_list)
 
         packed_overlay = self.__pack_object(
-                cast(Configuration, message.configuration).as_plain_dict())
+                cast(Settings, message.settings).as_ordered_dict())
 
         packed_message = self.__pack_object(message.data)
 
@@ -277,8 +275,8 @@ class Communicator(PostOffice):
             default: A message to return if this port is not connected.
 
         Returns:
-            The received message, with message.configuration holding
-            the parameter overlay. The configuration attribute is
+            The received message, with message.settings holding
+            the parameter overlay. The settings attribute is
             guaranteed to not be None.
 
         Raises:
@@ -317,7 +315,7 @@ class Communicator(PostOffice):
         client = self.__get_client(snd_endpoint.instance())
         mcp_message = client.receive(recv_endpoint.ref())
 
-        overlay_config = Configuration.from_plain_dict(msgpack.unpackb(
+        overlay_config = Settings(msgpack.unpackb(
             mcp_message.parameter_overlay, raw=False))
 
         if mcp_message.port_length is not None:
@@ -346,7 +344,7 @@ class Communicator(PostOffice):
         Args:
             port_name: The name of the port to close.
         """
-        message = Message(float('inf'), None, _ClosePort(), Configuration())
+        message = Message(float('inf'), None, _ClosePort(), Settings())
         self.send_message(port_name, message, slot)
 
     def shutdown(self) -> None:
@@ -510,9 +508,9 @@ class Communicator(PostOffice):
         if isinstance(data, msgpack.ExtType):
             if data.code == ExtTypeId.CLOSE_PORT:
                 return _ClosePort()
-            elif data.code == ExtTypeId.CONFIGURATION:
+            elif data.code == ExtTypeId.SETTINGS:
                 plain_dict = msgpack.unpackb(data.data, raw=False)
-                return Configuration.from_plain_dict(plain_dict)
+                return Settings(plain_dict)
         return msgpack.unpackb(mcp_message.data, raw=False)
 
     def __pack_object(self, obj: MessageObject) -> bytes:
@@ -526,8 +524,8 @@ class Communicator(PostOffice):
         """
         if isinstance(obj, _ClosePort):
             obj = msgpack.ExtType(ExtTypeId.CLOSE_PORT, bytes())
-        elif isinstance(obj, Configuration):
-            data = msgpack.packb(obj.as_plain_dict())
-            obj = msgpack.ExtType(ExtTypeId.CONFIGURATION, data)
+        elif isinstance(obj, Settings):
+            data = msgpack.packb(obj.as_ordered_dict())
+            obj = msgpack.ExtType(ExtTypeId.SETTINGS, data)
         packed_message = msgpack.packb(obj, use_bin_type=True)
         return cast(bytes, packed_message)

@@ -6,50 +6,50 @@ from ymmsl import (ComputeElementDecl, Conduit, Experiment, Operator,
                    Reference, Setting, Simulation, YmmslDocument)
 
 from libmuscle.communicator import Message
-from libmuscle.compute_element import ComputeElement
+from libmuscle.instance import Instance
 from muscle_manager.muscle_manager import run_simulation
 
 
 def macro(instance_id: str):
     """Macro model implementation.
     """
-    ce = ComputeElement(instance_id, {
+    instance = Instance(instance_id, {
             Operator.O_I: ['out[]'],
             Operator.S: ['in[]']})
 
-    while ce.reuse_instance():
+    while instance.reuse_instance():
         # f_init
-        assert ce.get_parameter_value('test1') == 13
+        assert instance.get_parameter_value('test1') == 13
 
         # o_i
-        assert ce.is_vector_port('out')
+        assert instance.is_vector_port('out')
         for slot in range(10):
-            ce.send_message('out', Message(0.0, 10.0, 'testing'), slot)
+            instance.send_message('out', Message(0.0, 10.0, 'testing'), slot)
 
         # s/b
         for slot in range(10):
-            msg = ce.receive_message('in', slot)
+            msg = instance.receive_message('in', slot)
             assert msg.data == 'testing back'
 
 
 def micro(instance_id: str):
     """Micro model implementation.
     """
-    ce = ComputeElement(instance_id, {
+    instance = Instance(instance_id, {
             Operator.F_INIT: ['in'],
             Operator.O_F: ['out']})
 
-    while ce.reuse_instance():
+    while instance.reuse_instance():
         # f_init
-        assert ce.get_parameter_value('test3', 'str') == 'testing'
-        assert ce.get_parameter_value('test4', 'bool') is True
-        assert ce.get_parameter_value('test6', '[[float]]')[0][1] == 2.0
+        assert instance.get_parameter_value('test3', 'str') == 'testing'
+        assert instance.get_parameter_value('test4', 'bool') is True
+        assert instance.get_parameter_value('test6', '[[float]]')[0][1] == 2.0
 
-        msg = ce.receive_message('in')
+        msg = instance.receive_message('in')
         assert msg.data == 'testing'
 
         # o_f
-        ce.send_message('out', Message(0.1, None, 'testing back'))
+        instance.send_message('out', Message(0.1, None, 'testing back'))
 
 
 def test_all(log_file_in_tmpdir):

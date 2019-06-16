@@ -16,8 +16,8 @@ from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEvent, ProfileEventType
 
 
-class ComputeElement:
-    """Represents a Compute Element instance in a MUSCLE3 simulation.
+class Instance:
+    """Represents a compute element instance in a MUSCLE3 simulation.
 
     This class provides a low-level send/receive API for the instance
     to use.
@@ -25,7 +25,7 @@ class ComputeElement:
     def __init__(self, instance: str,
                  ports: Optional[Dict[Operator, List[str]]]=None
                  ) -> None:
-        """Create a ComputeElement.
+        """Create an Instance.
 
         Args:
             name: The name of the instance represented by this object.
@@ -34,7 +34,7 @@ class ComputeElement:
         """
         # Note that these are accessed by Muscle3, but otherwise private.
         self._name, self._index = self.__make_full_name(Reference(instance))
-        """Name and index of this compute element."""
+        """Name and index of this instance."""
 
         mmp_location = self.__extract_manager_location()
         self.__manager = MMPClient(mmp_location)
@@ -149,7 +149,7 @@ class ComputeElement:
         """Returns a description of the ports that this CE has.
 
         Note that the result has almost the same format as the port
-        declarations you pass when making a ComputeElement. The only
+        declarations you pass when making an Instance. The only
         difference is that the port names never have `[]` at the end,
         even if the port is a vector port.
 
@@ -179,7 +179,7 @@ class ComputeElement:
         """Returns whether a port is a vector or scalar port
 
         If a port has been declared to be a vector port (i.e. the
-        name passed when creating this ComputeElement had '[]' at the
+        name passed when creating this Instance had '[]' at the
         end), then you can pass a 'slot' argument when sending or
         receiving. It's like the port is a vector of slots on which
         you can send or receive messages.
@@ -293,7 +293,7 @@ class ComputeElement:
         for use by special compute elements that are ensemble-aware and
         have to pass on overlay parameter sets explicitly.
 
-        Receiving is a blocking operaton. This function will contact
+        Receiving is a blocking operation. This function will contact
         the sender, wait for a message to be available, and receive and
         return it.
 
@@ -321,7 +321,7 @@ class ComputeElement:
         return self.__receive_message(port_name, slot, default, True)
 
     def _register(self) -> None:
-        """Register this compute element with the manager.
+        """Register this instance with the manager.
         """
         register_event = self._profiler.start(ProfileEventType.REGISTER)
         locations = self._communicator.get_locations()
@@ -331,7 +331,7 @@ class ComputeElement:
         register_event.stop()
 
     def _connect(self) -> None:
-        """Connect this compute element to the given peers / conduits.
+        """Connect this instance to the given peers / conduits.
         """
         connect_event = self._profiler.start(ProfileEventType.CONNECT)
         conduits, peer_dims, peer_locations = self.__manager.request_peers(

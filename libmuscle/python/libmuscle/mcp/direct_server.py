@@ -15,8 +15,8 @@ registered_servers = dict()  # type: Dict[str, Server]
 class DirectServer(Server):
     """A server that server within this program
 
-    This server is for connecting compute elements within the same
-    program.
+    This server is for connecting compute element instances within the
+    same process.
     """
     def __init__(self, instance_id: Reference, post_office: PostOffice
                  ) -> None:

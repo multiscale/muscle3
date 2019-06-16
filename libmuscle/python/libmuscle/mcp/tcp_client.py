@@ -26,7 +26,7 @@ class TcpClient(Client):
         """Create an MCPClient for a given location.
 
         The client will connect to this location and be able to request
-        messages from any compute element and port represented by it.
+        messages from any instance and port represented by it.
 
         Args:
             instance_id: Id of our instance.

@@ -306,8 +306,8 @@ class Communicator(PostOffice):
             port = self.__ports[port_name]
         else:
             # it's muscle_parameters_in here, because we check for unknown
-            # user ports in ComputeElement already, and we don't have any
-            # other built-in automatic ports.
+            # user ports in Instance already, and we don't have any other
+            # built-in automatic ports.
             port = self.__muscle_parameters_in
 
         profile_event = self.__profiler.start(ProfileEventType.RECEIVE, port,

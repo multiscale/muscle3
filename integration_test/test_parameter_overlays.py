@@ -6,7 +6,7 @@ from ymmsl import (ComputeElementDecl, Conduit, Experiment, Operator,
                    Reference, Setting, Simulation, YmmslDocument)
 
 from libmuscle.communicator import Message
-from libmuscle.compute_element import ComputeElement
+from libmuscle.instance import Instance
 from libmuscle.configuration import Configuration
 from muscle_manager.muscle_manager import run_simulation
 
@@ -14,56 +14,56 @@ from muscle_manager.muscle_manager import run_simulation
 def qmc(instance_id: str):
     """qMC implementation.
     """
-    ce = ComputeElement(instance_id, {Operator.O_F: ['parameters_out[]']})
+    instance = Instance(instance_id, {Operator.O_F: ['parameters_out[]']})
 
-    while ce.reuse_instance():
+    while instance.reuse_instance():
         # o_f
         config0 = Configuration.from_plain_dict({'test2': 14.4})
 
-        assert ce.is_connected('parameters_out')
-        assert ce.is_vector_port('parameters_out')
-        assert not ce.is_resizable('parameters_out')
-        length = ce.get_port_length('parameters_out')
+        assert instance.is_connected('parameters_out')
+        assert instance.is_vector_port('parameters_out')
+        assert not instance.is_resizable('parameters_out')
+        length = instance.get_port_length('parameters_out')
         assert length == 10
         for slot in range(length):
-            ce.send_message('parameters_out',
-                            Message(0.0, None, config0), slot)
+            instance.send_message('parameters_out',
+                                  Message(0.0, None, config0), slot)
 
 
 def macro(instance_id: str):
     """Macro model implementation.
     """
-    ce = ComputeElement(instance_id, {
+    instance = Instance(instance_id, {
             Operator.O_I: ['out'], Operator.S: ['in']})
 
-    while ce.reuse_instance():
+    while instance.reuse_instance():
         # f_init
-        assert ce.get_parameter_value('test2') == 14.4
+        assert instance.get_parameter_value('test2') == 14.4
         # o_i
-        ce.send_message('out', Message(0.0, 10.0, 'testing'))
+        instance.send_message('out', Message(0.0, 10.0, 'testing'))
         # s/b
-        msg = ce.receive_message('in')
+        msg = instance.receive_message('in')
         assert msg.data == 'testing back'
 
 
 def micro(instance_id: str):
     """Micro model implementation.
     """
-    ce = ComputeElement(instance_id, {
+    instance = Instance(instance_id, {
             Operator.F_INIT: ['in'], Operator.O_F: ['out']})
 
-    assert ce.get_parameter_value('test2') == 13.3
-    while ce.reuse_instance():
+    assert instance.get_parameter_value('test2') == 13.3
+    while instance.reuse_instance():
         # f_init
-        assert ce.get_parameter_value('test2', 'float') == 14.4
-        msg = ce.receive_message('in')
+        assert instance.get_parameter_value('test2', 'float') == 14.4
+        msg = instance.receive_message('in')
         assert msg.data == 'testing'
 
         # with pytest.raises(RuntimeError):
-        #     ce.receive_message_with_parameters('in')
+        #     instance.receive_message_with_parameters('in')
 
         # o_f
-        ce.send_message('out', Message(0.1, None, 'testing back'))
+        instance.send_message('out', Message(0.1, None, 'testing back'))
 
 
 def explicit_micro(instance_id: str):
@@ -72,19 +72,19 @@ def explicit_micro(instance_id: str):
     Receives overlay parameters explicitly, rather than having MUSCLE
     handle them.
     """
-    ce = ComputeElement(instance_id, {
+    instance = Instance(instance_id, {
             Operator.F_INIT: ['in'], Operator.O_F: ['out']})
 
-    while ce.reuse_instance(False):
+    while instance.reuse_instance(False):
         # f_init
-        assert ce.get_parameter_value('test2', 'float') == 13.3
-        msg = ce.receive_message_with_parameters('in')
+        assert instance.get_parameter_value('test2', 'float') == 13.3
+        msg = instance.receive_message_with_parameters('in')
         assert msg.data == 'testing'
         assert msg.configuration['test2'] == 14.4
-        assert ce.get_parameter_value('test2') == 13.3
+        assert instance.get_parameter_value('test2') == 13.3
 
         # o_f
-        ce.send_message(
+        instance.send_message(
                 'out', Message(0.1, None, 'testing back', msg.configuration))
 
 

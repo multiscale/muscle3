@@ -5,32 +5,32 @@ from ymmsl import (ComputeElementDecl, Conduit, Experiment, Operator,
                    Reference, Simulation, YmmslDocument)
 
 from libmuscle.communicator import Message
-from libmuscle.compute_element import ComputeElement
+from libmuscle.instance import Instance
 from muscle_manager.muscle_manager import run_simulation
 
 
 def duplication_mapper(instance_id: str):
     """Duplication mapper implementation.
     """
-    ce = ComputeElement(instance_id)
+    instance = Instance(instance_id)
 
-    while ce.reuse_instance():
+    while instance.reuse_instance():
         # o_f
-        out_ports = ce.list_ports()[Operator.O_F]
+        out_ports = instance.list_ports()[Operator.O_F]
 
         message = Message(0.0, None, 'testing')
         for out_port in out_ports:
-            ce.send_message(out_port, message)
+            instance.send_message(out_port, message)
 
 
 def receiver(instance_id: str):
     """Receiver for messages from dm.
     """
-    ce = ComputeElement(instance_id, {Operator.F_INIT: ['in']})
+    instance = Instance(instance_id, {Operator.F_INIT: ['in']})
 
-    while ce.reuse_instance():
+    while instance.reuse_instance():
         # f_init
-        msg = ce.receive_message('in')
+        msg = instance.receive_message('in')
         assert msg.data == 'testing'
 
 

@@ -18,7 +18,7 @@ class Message:
         """Create an MCPMessage.
 
         Senders and receivers are refered to by a Reference, which
-        contains ComputeElement[InstanceNumber].Port[Slot].
+        contains Instance[InstanceNumber].Port[Slot].
 
         The port_length field is only used if two vector ports are
         connected together. In that case the number of slots is not

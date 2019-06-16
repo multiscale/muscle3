@@ -1,7 +1,7 @@
 from collections import MutableMapping
 from typing import Any, Dict, Iterator, List, Tuple, Union
 
-from ymmsl import Experiment, ParameterValue, Reference
+from ymmsl import ParameterValue, Reference
 
 
 class Configuration(MutableMapping):

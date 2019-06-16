@@ -9,14 +9,14 @@ from muscle_manager.instance_registry import InstanceRegistry
 from muscle_manager.logger import Logger
 from muscle_manager.mmp_server import MMPServer
 from muscle_manager.muscle_manager import (
-        config_for_experiment, elements_for_simulation)
+        config_for_settings, elements_for_model)
 from muscle_manager.topology_store import TopologyStore
 
 
 def do_logging_test(caplog):
     ymmsl_text = (
             'version: v0.1\n'
-            'simulation:\n'
+            'model:\n'
             '  name: test_model\n'
             '  compute_elements:\n'
             '    macro: macro_implementation\n'
@@ -26,24 +26,22 @@ def do_logging_test(caplog):
             '  conduits:\n'
             '    macro.out: micro.in\n'
             '    micro.out: macro.in\n'
-            'experiment:\n'
-            '  model: test_model\n'
-            '  parameter_values:\n'
-            '    test1: 13\n'
-            '    test2: 13.3\n'
-            '    test3: testing\n'
-            # '    test4: True\n'
-            '    test5: [2.3, 5.6]\n'
-            '    test6:\n'
-            '      - [1.0, 2.0]\n'
-            '      - [3.0, 1.0]\n'
+            'settings:\n'
+            '  test1: 13\n'
+            '  test2: 13.3\n'
+            '  test3: testing\n'
+            '  test4: True\n'
+            '  test5: [2.3, 5.6]\n'
+            '  test6:\n'
+            '    - [1.0, 2.0]\n'
+            '    - [3.0, 1.0]\n'
             )
 
     # create server
     logger = Logger()
     ymmsl_doc = ymmsl.load(ymmsl_text)
-    configuration = config_for_experiment(ymmsl_doc.experiment)
-    expected_elements = elements_for_simulation(ymmsl_doc.simulation)
+    configuration = config_for_settings(ymmsl_doc.settings)
+    expected_elements = elements_for_model(ymmsl_doc.model)
     instance_registry = InstanceRegistry(expected_elements)
     topology_store = TopologyStore(ymmsl_doc)
     server = MMPServer(logger, configuration, instance_registry,

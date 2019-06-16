@@ -1,9 +1,8 @@
-import sys
-from typing import List
+from collections import OrderedDict
 
 import pytest
-from ymmsl import (ComputeElementDecl, Conduit, Experiment, Operator,
-                   Reference, Setting, Simulation, YmmslDocument)
+from ymmsl import (ComputeElement, Conduit, Model, Operator, Reference,
+                   Settings, YmmslDocument)
 
 from libmuscle.communicator import Message
 from libmuscle.instance import Instance
@@ -92,27 +91,26 @@ def test_parameter_overlays(log_file_in_tmpdir):
     """A positive all-up test of parameter overlays.
     """
     elements = [
-            ComputeElementDecl('qmc', 'qmc'),
-            ComputeElementDecl('macro', 'macro', [10]),
-            ComputeElementDecl('micro', 'micro', [10])]
+            ComputeElement('qmc', 'qmc'),
+            ComputeElement('macro', 'macro', [10]),
+            ComputeElement('micro', 'micro', [10])]
 
     conduits = [
                 Conduit('qmc.parameters_out', 'macro.muscle_parameters_in'),
                 Conduit('macro.out', 'micro.in'),
                 Conduit('micro.out', 'macro.in')]
 
-    simulation = Simulation('test_model', elements, conduits)
+    model = Model('test_model', elements, conduits)
 
-    settings = Experiment(
-            'test_model', [
-                Setting('test1', 13),
-                Setting('test2', 13.3),
-                Setting('test3', 'testing'),
-                Setting('test4', True),
-                Setting('test5', [2.3, 5.6]),
-                Setting('test6', [[1.0, 2.0], [3.0, 1.0]])])
+    settings = Settings(OrderedDict([
+                ('test1', 13),
+                ('test2', 13.3),
+                ('test3', 'testing'),
+                ('test4', True),
+                ('test5', [2.3, 5.6]),
+                ('test6', [[1.0, 2.0], [3.0, 1.0]])]))
 
-    experiment = YmmslDocument('v0.1', settings, simulation)
+    experiment = YmmslDocument('v0.1', model, settings)
 
     submodels = {'qmc': qmc}
     for i in range(9):

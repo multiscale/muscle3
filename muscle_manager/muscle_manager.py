@@ -3,7 +3,7 @@ from typing import Callable, Dict, List, Tuple
 
 import click
 from ruamel import yaml
-from ymmsl import Experiment, Reference, Simulation, YmmslDocument
+from ymmsl import Model, Settings, Reference, YmmslDocument
 import ymmsl
 
 from libmuscle.configuration import Configuration
@@ -18,24 +18,23 @@ from muscle_manager.topology_store import TopologyStore
 Pipe = Tuple[mp.connection.Connection, mp.connection.Connection]
 
 
-def config_for_experiment(experiment: Experiment) -> Configuration:
-    """Creates a Configuration from a yMMSL Experiment.
+def config_for_settings(settings: Settings) -> Configuration:
+    """Creates a Configuration from a yMMSL Settings.
 
     Args:
-        experiment: The experiment to create a Configuration for.
+        settings: The settings to create a Configuration for.
     """
     configuration = Configuration()
-    if experiment.parameter_values is not None:
-        for setting in experiment.parameter_values:
-            configuration[setting.parameter] = setting.value
+    for name, value in settings.ordered_items():
+        configuration[name] = value
     return configuration
 
 
-def elements_for_simulation(simulation: Simulation) -> List[str]:
+def elements_for_model(model: Model) -> List[str]:
     """Creates a list of elements to expect to register.
 
     Args:
-        simulation: The simulation to create a list for.
+        model: The model to create a list for.
     """
     def increment(index: List[int], dims: List[int]) -> None:
         # assumes index and dims are the same length > 0
@@ -68,7 +67,7 @@ def elements_for_simulation(simulation: Simulation) -> List[str]:
         return indices
 
     result = list()     # type: List[str]
-    for element in simulation.compute_elements:
+    for element in model.compute_elements:
         if len(element.multiplicity) == 0:
             result.append(str(element.name))
         else:
@@ -83,14 +82,16 @@ def start_server(experiment: YmmslDocument) -> MMPServer:
     Args;
         experiment: The experiment to run.
     """
-    if not experiment.experiment or not experiment.simulation:
-        raise RuntimeError('The yMMSL description needs to specify both an'
-                           'experiment and a simulation for MUSCLE 3 to run'
-                           ' it.')
+    if experiment.settings is None:
+        raise ValueError('The yMMSL description needs to specify the'
+                         ' settings for the simulation.')
+    if not experiment.model or not isinstance(experiment.model, Model):
+        raise ValueError('The yMMSL description needs to specify the'
+                         ' model to run.')
 
     topology_store = TopologyStore(experiment)
-    configuration = config_for_experiment(experiment.experiment)
-    expected_elements = elements_for_simulation(experiment.simulation)
+    configuration = config_for_settings(experiment.settings)
+    expected_elements = elements_for_model(experiment.model)
 
     logger = Logger()
     instance_registry = InstanceRegistry(expected_elements)
@@ -204,8 +205,7 @@ def run_simulation(experiment: YmmslDocument, instances: Dict[str, Callable]
                    ) -> None:
     """Runs a simulation with the given experiment and instances.
 
-    The yMMSL document must contain both a simulation and an
-    experiment.
+    The yMMSL document must contain both a model and settings.
 
     The instances are described in a dictionary with their instance
     id (e.g. 'macro' or 'micro[12]' or 'my_mapper') as the key, and
@@ -213,7 +213,7 @@ def run_simulation(experiment: YmmslDocument, instances: Dict[str, Callable]
     will be run in a separate process.
 
     Args:
-        experiment: A description of the simulation and experiment.
+        experiment: A description of the model and settings.
         instances: A dictionary of instances to run.
     """
     controller = start_server_process(experiment)

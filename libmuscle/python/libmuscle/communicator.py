@@ -1,8 +1,7 @@
 from enum import IntEnum
 import msgpack
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
-from ymmsl import (ComputeElementDecl, Conduit, Identifier, Operator,
-                   Reference)
+from ymmsl import Conduit, Identifier, Operator, Reference
 
 from libmuscle.configuration import Configuration
 from libmuscle.configuration_store import ConfigurationStore

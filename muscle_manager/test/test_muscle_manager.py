@@ -1,18 +1,19 @@
-from ymmsl import Experiment, Reference, Setting
+from collections import OrderedDict
 
-from muscle_manager.muscle_manager import config_for_experiment
+from ymmsl import Reference, Settings
+
+from muscle_manager.muscle_manager import config_for_settings
 
 
 def test_config_from_experiment():
-    parameters = [
-            Setting('x', 1.1),
-            Setting('y', 3.0),
-            Setting('alpha', 2),
-            Setting('interpolation', 'linear'),
-            Setting('diffusion', [[1.1, 0.9], [0.9, 1.1]])]
-    experiment = Experiment('test_model', parameters)
+    settings = Settings(OrderedDict([
+            ('x', 1.1),
+            ('y', 3.0),
+            ('alpha', 2),
+            ('interpolation', 'linear'),
+            ('diffusion', [[1.1, 0.9], [0.9, 1.1]])]))
 
-    config = config_for_experiment(experiment)
+    config = config_for_settings(settings)
 
     assert config['x'] == 1.1
     assert config['y'] == 3.0

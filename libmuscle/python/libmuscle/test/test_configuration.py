@@ -1,5 +1,5 @@
 import pytest
-from ymmsl import Experiment, Reference, Setting
+from ymmsl import Reference
 
 from libmuscle.configuration import Configuration
 

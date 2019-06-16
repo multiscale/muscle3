@@ -8,7 +8,7 @@ from ymmsl import (Conduit, Identifier, Operator, ParameterValue, Port,
                    Reference, Settings)
 
 from libmuscle.communicator import _ClosePort, Communicator, Message
-from libmuscle.configuration_store import ConfigurationStore
+from libmuscle.settings_manager import SettingsManager
 from libmuscle.logging_handler import MuscleManagerHandler
 from libmuscle.mmp_client import MMPClient
 from libmuscle.profiler import Profiler
@@ -51,8 +51,8 @@ class Instance:
         self._declared_ports = ports
         """Declared ports for this instance."""
 
-        self._configuration_store = ConfigurationStore()
-        """Configuration (parameters) for this instance."""
+        self._settings_manager = SettingsManager()
+        """Settings for this instance."""
 
         self._first_run = True
         """Keeps track of whether this is the first reuse run."""
@@ -141,7 +141,7 @@ class Instance:
             TypeError: If the type of the parameter's value was not
                     as expected.
         """
-        return self._configuration_store.get_parameter(
+        return self._settings_manager.get_parameter(
                 self._instance_name(), Reference(name), typ)
 
     def list_ports(self) -> Dict[Operator, List[str]]:
@@ -246,7 +246,7 @@ class Instance:
         self.__check_port(port_name)
         if message.settings is None:
             message = copy(message)
-            message.settings = self._configuration_store.overlay
+            message.settings = self._settings_manager.overlay
 
         self._communicator.send_message(port_name, message, slot)
 
@@ -336,7 +336,7 @@ class Instance:
         conduits, peer_dims, peer_locations = self.__manager.request_peers(
                 self._instance_name())
         self._communicator.connect(conduits, peer_dims, peer_locations)
-        self._configuration_store.base = self.__manager.get_settings()
+        self._settings_manager.base = self.__manager.get_settings()
         connect_event.stop()
 
     def _deregister(self) -> None:
@@ -554,7 +554,7 @@ class Instance:
         settings = cast(Settings, message.settings)
         for key, value in message.data.items():
             settings[key] = value
-        self._configuration_store.overlay = settings
+        self._settings_manager.overlay = settings
         return True
 
     def __pre_receive_f_init(self, apply_overlay: bool) -> None:
@@ -592,9 +592,9 @@ class Instance:
         Args:
             message: The message to apply the overlay from.
         """
-        if len(self._configuration_store.overlay) == 0:
+        if len(self._settings_manager.overlay) == 0:
             if message.settings is not None:
-                self._configuration_store.overlay = message.settings
+                self._settings_manager.overlay = message.settings
 
     def __check_compatibility(self, port_name: str,
                               overlay: Optional[Settings]) -> None:
@@ -607,13 +607,13 @@ class Instance:
         """
         if overlay is None:
             return
-        if self._configuration_store.overlay != overlay:
+        if self._settings_manager.overlay != overlay:
             raise RuntimeError(('Unexpectedly received data from a'
                                 ' parallel universe on port "{}". My'
                                 ' parameters are "{}" and I received'
                                 ' from a universe with "{}".').format(
                                     port_name,
-                                    self._configuration_store.overlay,
+                                    self._settings_manager.overlay,
                                     overlay))
 
     def __close_outgoing_ports(self) -> None:

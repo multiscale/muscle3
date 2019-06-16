@@ -43,18 +43,18 @@ def has_parameter_type(value: ParameterValue, typ: str) -> bool:
     raise ValueError('Invalid parameter type specified: {}'.format(typ))
 
 
-class ConfigurationStore:
-    """Stores the current configuration for a compute element instance.
+class SettingsManager:
+    """Manager the current settings for a compute element instance.
     """
     def __init__(self) -> None:
-        """Create a ConfigurationStore.
+        """Create a SettingsManager.
 
         Initialises the base and overlay layers to an empty
         Settings object.
 
-        A ConfigurationStore has two layers of configuration, a base
+        A SettingsManager has two layers of settings, a base
         layer that contains an immutable set of parameters set in the
-        simulation's configuration, and an overlay layer that holds
+        simulation's yMMSL description, and an overlay layer that holds
         parameter values that have been set at run-time.
 
         Attributes:

@@ -7,7 +7,7 @@ from ymmsl import Conduit, Operator, Reference, Settings
 
 from libmuscle.communicator import _ClosePort, Message
 from libmuscle.instance import Instance
-from libmuscle.configuration_store import ConfigurationStore
+from libmuscle.settings_manager import SettingsManager
 
 
 @pytest.fixture
@@ -84,17 +84,17 @@ def test_create_instance(
         assert instance._name == Reference('test_instance')
         assert instance._index == [13, 42]
         assert instance._declared_ports == ports
-        assert isinstance(instance._configuration_store, ConfigurationStore)
-        assert len(instance._configuration_store.base) == 0
-        assert len(instance._configuration_store.overlay) == 0
+        assert isinstance(instance._settings_manager, SettingsManager)
+        assert len(instance._settings_manager.base) == 0
+        assert len(instance._settings_manager.overlay) == 0
         mmp_client.assert_called_once_with('localhost:9000')
         assert mmp_client_object._register.called_with()
         assert mmp_client_object._connect.called_with()
         comm_type.assert_called_with(Reference('test_instance'), [13, 42],
                                      ports, instance._profiler)
         assert instance._communicator == comm_type.return_value
-        assert isinstance(instance._configuration_store, ConfigurationStore)
-        assert len(instance._configuration_store.base) == 0
+        assert isinstance(instance._settings_manager, SettingsManager)
+        assert len(instance._settings_manager.base) == 0
 
 
 def test_extract_manager_location(sys_argv_manager) -> None:
@@ -111,7 +111,7 @@ def test_get_parameter_value(instance):
     settings[ref('test4')] = True
     settings[ref('test5')] = [2.3, 5.6]
     settings[ref('test6')] = [[1.0, 2.0], [3.0, 4.0]]
-    instance._configuration_store.base = settings
+    instance._settings_manager.base = settings
 
     assert instance.get_parameter_value('test1') == 'test'
     assert instance.get_parameter_value('test2') == 12
@@ -218,13 +218,13 @@ def test_receive_message_with_parameters_default(instance):
 
 
 def test_receive_parallel_universe(instance) -> None:
-    instance._configuration_store.overlay['test2'] = 'test'
+    instance._settings_manager.overlay['test2'] = 'test'
     with pytest.raises(RuntimeError):
         instance.receive_message('in')
 
 
 def test_reuse_instance_receive_overlay(instance):
-    instance._configuration_store.overlay = Settings()
+    instance._settings_manager.overlay = Settings()
     test_base_settings = Settings()
     test_base_settings['test1'] = 24
     test_base_settings['test2'] = [1.3, 2.0]
@@ -235,9 +235,9 @@ def test_reuse_instance_receive_overlay(instance):
     instance.reuse_instance()
     assert instance._communicator.receive_message.called_with(
         'muscle_parameters_in')
-    assert len(instance._configuration_store.overlay) == 2
-    assert instance._configuration_store.overlay['test1'] == 24
-    assert instance._configuration_store.overlay['test2'] == 'abc'
+    assert len(instance._settings_manager.overlay) == 2
+    assert instance._settings_manager.overlay['test1'] == 24
+    assert instance._settings_manager.overlay['test2'] == 'abc'
 
 
 def test_reuse_instance_closed_port(instance):

@@ -511,13 +511,13 @@ def test_receive_msgpack_with_slot_and_parameters(communicator2) -> None:
 
 def test_receive_settings(communicator) -> None:
     client_mock = MagicMock()
-    config_dict = {'test': 13}
-    config_data = msgpack.ExtType(1, msgpack.packb(config_dict,
-                                                   use_bin_type=True))
+    settings_dict = {'test': 13}
+    settings_data = msgpack.ExtType(1, msgpack.packb(settings_dict,
+                                                     use_bin_type=True))
     client_mock.receive.return_value = MCPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
             None, 0.0, None, msgpack.packb({'test1': 12}),
-            msgpack.packb(config_data))
+            msgpack.packb(settings_data))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
     communicator._Communicator__profiler = MagicMock()
@@ -532,11 +532,11 @@ def test_receive_settings(communicator) -> None:
 
 def test_receive_close_port(communicator) -> None:
     client_mock = MagicMock()
-    config_data = msgpack.packb({}, use_bin_type=True)
+    settings_data = msgpack.packb({}, use_bin_type=True)
     sentinel = msgpack.ExtType(0, bytes())
     client_mock.receive.return_value = MCPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            None, 0.0, None, config_data, msgpack.packb(sentinel))
+            None, 0.0, None, settings_data, msgpack.packb(sentinel))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
     communicator._Communicator__profiler = MagicMock()

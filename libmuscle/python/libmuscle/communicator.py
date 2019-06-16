@@ -3,7 +3,6 @@ import msgpack
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 from ymmsl import Conduit, Identifier, Operator, Reference, Settings
 
-from libmuscle.configuration_store import ConfigurationStore
 from libmuscle.endpoint import Endpoint
 from libmuscle.mcp.message import Message as MCPMessage
 from libmuscle.mcp.client import Client as MCPClient
@@ -315,7 +314,7 @@ class Communicator(PostOffice):
         client = self.__get_client(snd_endpoint.instance())
         mcp_message = client.receive(recv_endpoint.ref())
 
-        overlay_config = Settings(msgpack.unpackb(
+        overlay_settings = Settings(msgpack.unpackb(
             mcp_message.parameter_overlay, raw=False))
 
         if mcp_message.port_length is not None:
@@ -324,7 +323,7 @@ class Communicator(PostOffice):
 
         message = Message(
                 mcp_message.timestamp, mcp_message.next_timestamp,
-                self.__extract_object(mcp_message), overlay_config)
+                self.__extract_object(mcp_message), overlay_settings)
 
         profile_event.stop()
         if port.is_vector():

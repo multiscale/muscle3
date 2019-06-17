@@ -1,9 +1,10 @@
 import multiprocessing as mp
-from typing import Callable, Dict, List, Tuple
+import sys
+from typing import Callable, Dict, List, Tuple, cast
 
 import click
 from ruamel import yaml
-from ymmsl import Model, Reference, YmmslDocument
+from ymmsl import Identifier, Model, Reference, YmmslDocument
 import ymmsl
 
 from libmuscle.mcp import pipe_multiplexer as mux
@@ -147,6 +148,107 @@ def start_server_process(experiment: YmmslDocument) -> MMPServerController:
     return MMPServerController(process, control_pipe)
 
 
+def _parse_prefix(prefix: str) -> Tuple[str, List[int]]:
+    """Parse a --muscle-prefix argument.
+
+    This is like a Reference, but not quite, because the
+    initial identifier may be omitted. That is, [1][2] is
+    also a valid prefix.
+
+    This parses an initial identifier, subsequent identifiers
+    separated by periods, then a list of square-bracketed integers.
+
+    Args:
+        prefix: The prefix to parse.
+
+    Returns:
+        The identifier sequence and the list of ints.
+    """
+    def parse_identifier(prefix: str, i: int) -> Tuple[str, int]:
+        name = str()
+        while i < len(prefix) and prefix[i] not in '[.':
+            name += prefix[i]
+            i += 1
+        return name, i
+
+    def parse_number(prefix: str, i: int) -> Tuple[int, int]:
+        number = str()
+        while i < len(prefix) and prefix[i] in '0123456789':
+            number += prefix[i]
+            i += 1
+        return int(number), i
+
+    name = str()
+    index = list()  # type: List[int]
+    i = 0
+
+    if i == len(prefix):
+        return name, index
+
+    idt, i = parse_identifier(prefix, i)
+    name += idt
+
+    while i < len(prefix) and prefix[i] == '.':
+        name += '.'
+        part, i = parse_identifier(prefix, i + 1)
+        name += part
+
+    while i < len(prefix) and prefix[i] == '[':
+        nmb, i = parse_number(prefix, i + 1)
+        index.append(nmb)
+        if prefix[i] != ']':
+            raise ValueError('Missing closing bracket in'
+                             ' --muscle-prefix.')
+        i += 1
+
+    if i < len(prefix):
+        raise ValueError(('Found invalid extra character {} in'
+                          ' --muscle-prefix.').format(prefix[i]))
+
+    return name, index
+
+
+def _split_reference(ref: Reference) -> Tuple[Reference, List[int]]:
+    index = list()     # type: List[int]
+    i = 0
+    while i < len(ref) and isinstance(ref[i], Identifier):
+        i += 1
+    name = ref[:i]
+
+    while i < len(ref) and isinstance(ref[i], int):
+        index.append(cast(int, ref[i]))
+        i += 1
+
+    return name, index
+
+
+def implementation_process(instance_id: str, implementation: Callable) -> None:
+    prefix_tag = '--muscle-prefix='
+    name_prefix = str()
+    index_prefix = list()   # type: List[int]
+
+    instance = Reference(instance_id)
+
+    for i, arg in enumerate(sys.argv):
+        if arg.startswith(prefix_tag):
+            prefix_str = arg[len(prefix_tag):]
+            name_prefix, index_prefix = _parse_prefix(prefix_str)
+
+            name, index = _split_reference(instance)
+            if len(name_prefix) > 0:
+                name = Reference(name_prefix) + name
+            index = index_prefix + index
+
+            # replace it with the combined one
+            sys.argv[i] = '--muscle-instance={}'.format(str(name + index))
+            break
+    else:
+        sys.argv.append('--muscle-instance={}'.format(instance_id))
+
+    # chain call
+    implementation()
+
+
 def run_instances(instances: Dict[str, Callable]) -> None:
     """Runs the given instances and waits for them to finish.
 
@@ -164,8 +266,8 @@ def run_instances(instances: Dict[str, Callable]) -> None:
 
     for instance_id_str, implementation in instances.items():
         instance_id = Reference(instance_id_str)
-        process = mp.Process(target=implementation,
-                             args=(instance_id_str,),
+        process = mp.Process(target=implementation_process,
+                             args=(instance_id_str, implementation),
                              name='Instance-{}'.format(instance_id))
         process.start()
         mux.close_instance_ends(instance_id)

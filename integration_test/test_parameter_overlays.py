@@ -9,10 +9,10 @@ from libmuscle.instance import Instance
 from muscle_manager.muscle_manager import run_simulation
 
 
-def qmc(instance_id: str):
+def qmc():
     """qMC implementation.
     """
-    instance = Instance(instance_id, {Operator.O_F: ['parameters_out[]']})
+    instance = Instance({Operator.O_F: ['parameters_out[]']})
 
     while instance.reuse_instance():
         # o_f
@@ -28,10 +28,10 @@ def qmc(instance_id: str):
                                   Message(0.0, None, settings0), slot)
 
 
-def macro(instance_id: str):
+def macro():
     """Macro model implementation.
     """
-    instance = Instance(instance_id, {
+    instance = Instance({
             Operator.O_I: ['out'], Operator.S: ['in']})
 
     while instance.reuse_instance():
@@ -44,13 +44,13 @@ def macro(instance_id: str):
         assert msg.data == 'testing back'
 
 
-def explicit_relay(instance_id: str):
+def explicit_relay():
     """Intermediate component with explicit parameters.
 
     Sends and receives overlay parameters explicitly, rather than
     having MUSCLE handle them. This just passes all information on.
     """
-    instance = Instance(instance_id, {
+    instance = Instance({
             Operator.F_INIT: ['in[]'], Operator.O_F: ['out[]']})
 
     while instance.reuse_instance(False):
@@ -73,11 +73,10 @@ def explicit_relay(instance_id: str):
             instance.send_message('out', msgs[slot], slot)
 
 
-def micro(instance_id: str):
+def micro():
     """Micro model implementation.
     """
-    instance = Instance(instance_id, {
-            Operator.F_INIT: ['in'], Operator.O_F: ['out']})
+    instance = Instance({Operator.F_INIT: ['in'], Operator.O_F: ['out']})
 
     assert instance.get_parameter_value('test2') == 13.3
     while instance.reuse_instance():

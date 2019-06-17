@@ -27,23 +27,15 @@ def log_file_in_tmpdir(tmpdir) -> Generator[None, None, None]:
 
 
 @pytest.fixture
-def sys_argv_prefix() -> Generator[None, None, None]:
+def sys_argv_instance() -> Generator[None, None, None]:
     old_argv = sys.argv
-    sys.argv = ['', '--muscle-prefix=[13][42]']
+    sys.argv = ['', '--muscle-instance=test_instance[13][42]']
     yield
     sys.argv = old_argv
 
 
 @pytest.fixture
-def sys_argv_prefix2() -> Generator[None, None, None]:
-    old_argv = sys.argv
-    sys.argv = ['', '--muscle-prefix=testing.test2[13][42]']
-    yield
-    sys.argv = old_argv
-
-
-@pytest.fixture
-def instance():
+def instance(sys_argv_instance):
     with patch('libmuscle.instance.MMPClient') as mmp_client, \
          patch('libmuscle.instance.Communicator') as comm_type:
         communicator = MagicMock()
@@ -57,7 +49,7 @@ def instance():
         mmp_client_object.request_peers.return_value = (None, None, None)
         mmp_client.return_value = mmp_client_object
 
-        instance = Instance('test_instance', {
+        instance = Instance({
             Operator.F_INIT: ['in', 'not_connected'],
             Operator.O_F: ['out']})
         instance._f_init_cache = dict()
@@ -66,20 +58,20 @@ def instance():
 
 
 @pytest.fixture
-def instance2():
+def instance2(sys_argv_instance):
     with patch('libmuscle.instance.MMPClient') as mmp_client, \
          patch('libmuscle.instance.Communicator') as comm_type:
         mmp_client_object = MagicMock()
         mmp_client_object.request_peers.return_value = (None, None, None)
         mmp_client.return_value = mmp_client_object
-        instance = Instance('test_instance', {
+        instance = Instance({
             Operator.F_INIT: ['in[]'],
             Operator.O_F: ['out']})
         yield instance
 
 
 def test_create_instance(
-        sys_argv_prefix, log_file_in_tmpdir, sys_argv_manager):
+        sys_argv_instance, log_file_in_tmpdir, sys_argv_manager):
     with patch('libmuscle.instance.MMPClient') as mmp_client, \
          patch('libmuscle.instance.Communicator') as comm_type:
         mmp_client_object = MagicMock()
@@ -88,7 +80,7 @@ def test_create_instance(
         ports = {
             Operator.F_INIT: ['in'],
             Operator.O_F: ['out']}
-        instance = Instance('test_instance', ports)
+        instance = Instance(ports)
         assert instance._name == Reference('test_instance')
         assert instance._index == [13, 42]
         assert instance._declared_ports == ports
@@ -103,21 +95,6 @@ def test_create_instance(
         assert instance._communicator == comm_type.return_value
         assert isinstance(instance._settings_manager, SettingsManager)
         assert len(instance._settings_manager.base) == 0
-
-
-def test_create_instance_prefix(
-        sys_argv_prefix2, log_file_in_tmpdir, sys_argv_manager):
-    with patch('libmuscle.instance.MMPClient') as mmp_client, \
-         patch('libmuscle.instance.Communicator') as comm_type:
-        mmp_client_object = MagicMock()
-        mmp_client_object.request_peers.return_value = (None, None, None)
-        mmp_client.return_value = mmp_client_object
-        ports = {
-            Operator.F_INIT: ['in'],
-            Operator.O_F: ['out']}
-        instance = Instance('test_instance[5]', ports)
-        assert instance._name == Reference('testing.test2.test_instance')
-        assert instance._index == [13, 42, 5]
 
 
 def test_extract_manager_location(sys_argv_manager) -> None:

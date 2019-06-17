@@ -11,10 +11,10 @@ from libmuscle.instance import Instance
 from muscle_manager.muscle_manager import run_simulation
 
 
-def macro(instance_id: str):
+def macro():
     """Macro model implementation.
     """
-    instance = Instance(instance_id, {
+    instance = Instance({
             Operator.O_I: ['out[]'],
             Operator.S: ['in[]']})
 
@@ -33,10 +33,10 @@ def macro(instance_id: str):
             assert msg.data == 'testing back'
 
 
-def micro(instance_id: str):
+def micro():
     """Micro model implementation.
     """
-    instance = Instance(instance_id, {
+    instance = Instance({
             Operator.F_INIT: ['in'],
             Operator.O_F: ['out']})
 

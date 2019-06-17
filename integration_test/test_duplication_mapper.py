@@ -9,10 +9,10 @@ from libmuscle.instance import Instance
 from muscle_manager.muscle_manager import run_simulation
 
 
-def duplication_mapper(instance_id: str):
+def duplication_mapper():
     """Duplication mapper implementation.
     """
-    instance = Instance(instance_id)
+    instance = Instance()
 
     while instance.reuse_instance():
         # o_f
@@ -23,10 +23,10 @@ def duplication_mapper(instance_id: str):
             instance.send_message(out_port, message)
 
 
-def receiver(instance_id: str):
+def receiver():
     """Receiver for messages from dm.
     """
-    instance = Instance(instance_id, {Operator.F_INIT: ['in']})
+    instance = Instance({Operator.F_INIT: ['in']})
 
     while instance.reuse_instance():
         # f_init

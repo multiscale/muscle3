@@ -21,18 +21,16 @@ class Instance:
     This class provides a low-level send/receive API for the instance
     to use.
     """
-    def __init__(self, instance: str,
-                 ports: Optional[Dict[Operator, List[str]]]=None
+    def __init__(self, ports: Optional[Dict[Operator, List[str]]]=None
                  ) -> None:
         """Create an Instance.
 
         Args:
-            name: The name of the instance represented by this object.
             ports: A list of port names for each operator of this
                 compute element.
         """
         # Note that these are accessed by Muscle3, but otherwise private.
-        self._name, self._index = self.__make_full_name(Reference(instance))
+        self._name, self._index = self.__make_full_name()
         """Name and index of this instance."""
 
         mmp_location = self.__extract_manager_location()
@@ -469,75 +467,12 @@ class Instance:
                 msg.settings = None
         return msg
 
-    def __parse_prefix(self, prefix: str) -> Tuple[str, List[int]]:
-        """Parse a --muscle-prefix argument.
-
-        This is like a Reference, but not quite, because the
-        initial identifier may be omitted. That is, [1][2] is
-        also a valid prefix.
-
-        This parses an initial identifier, subsequent identifiers
-        separated by periods, then a list of square-bracketed integers.
-
-        Args:
-            prefix: The prefix to parse.
-
-        Returns:
-            The identifier sequence and the list of ints.
-        """
-        def parse_identifier(prefix: str, i: int) -> Tuple[str, int]:
-            name = str()
-            while i < len(prefix) and prefix[i] not in '[.':
-                name += prefix[i]
-                i += 1
-            return name, i
-
-        def parse_number(prefix: str, i: int) -> Tuple[int, int]:
-            number = str()
-            while i < len(prefix) and prefix[i] in '0123456789':
-                number += prefix[i]
-                i += 1
-            return int(number), i
-
-        name = str()
-        index = list()  # type: List[int]
-        i = 0
-
-        if i == len(prefix):
-            return name, index
-
-        idt, i = parse_identifier(prefix, i)
-        name += idt
-
-        while i < len(prefix) and prefix[i] == '.':
-            name += '.'
-            part, i = parse_identifier(prefix, i + 1)
-            name += part
-
-        while i < len(prefix) and prefix[i] == '[':
-            nmb, i = parse_number(prefix, i + 1)
-            index.append(nmb)
-            if prefix[i] != ']':
-                raise ValueError('Missing closing bracket in'
-                                 ' --muscle-prefix.')
-            i += 1
-
-        if i < len(prefix):
-            raise ValueError(('Found invalid extra character {} in'
-                              ' --muscle-prefix.').format(prefix[i]))
-
-        return name, index
-
-    def __make_full_name(self, instance: Reference
+    def __make_full_name(self
                          ) -> Tuple[Reference, List[int]]:
         """Returns instance name and index.
 
-        The given instance string is split into a compute element and
-        an index, which are returned.
-
-        If a --muscle-prefix=name[x] is given on the command line, then
-        it is parsed, split, and prepended on the name and index
-        respectively.
+        This takes the argument to the --muscle-instance= command-line
+        option and splits it into a compute element name and an index.
         """
         def split_reference(ref: Reference) -> Tuple[Reference, List[int]]:
             index = list()     # type: List[int]
@@ -555,20 +490,17 @@ class Instance:
         # Neither getopt, optparse, or argparse will let me pick out
         # just one option from the command line and ignore the rest.
         # So we do it by hand.
-        prefix_tag = '--muscle-prefix='
-        name_prefix = str()
-        index_prefix = list()   # type: List[int]
+        prefix_tag = '--muscle-instance='
         for arg in sys.argv[1:]:
             if arg.startswith(prefix_tag):
                 prefix_str = arg[len(prefix_tag):]
-                name_prefix, index_prefix = self.__parse_prefix(prefix_str)
+                prefix_ref = Reference(prefix_str)
+                name, index = split_reference(prefix_ref)
                 break
-
-        name, index = split_reference(instance)
-        if len(name_prefix) > 0:
-            name = Reference(name_prefix) + name
-        index = index_prefix + index
-
+        else:
+            raise RuntimeError(('A --muscle-instance command line argument is'
+                                ' required to identify this instance. Please'
+                                ' add one.'))
         return name, index
 
     def __list_declared_ports(self) -> List[Port]:

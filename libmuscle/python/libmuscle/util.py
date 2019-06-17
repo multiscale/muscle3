@@ -1,4 +1,6 @@
-from typing import List, Generator, cast
+from pathlib import Path
+import sys
+from typing import Generator, List, Optional, cast
 
 from ymmsl import Conduit, Reference
 
@@ -86,3 +88,41 @@ def increment_index(index: List[int], dims: List[int]) -> bool:
         cur -= 1
         index[cur] += 1
     return False
+
+
+def extract_log_file_location(filename: str) -> Optional[Path]:
+    """Gets the log file location from the command line.
+
+    Extracts the --muscle-log-file=<path> argument to tell the
+    MUSCLE library where to write the local log file. This
+    function will extract this argument from the command line
+    arguments if it is present. If the given path is to a
+    directory, <filename> will be written inside of that directory,
+    if the path is not an existing directory, then it will be used
+    as the name of the log file to write to. If no command line
+    argument is given, <filename> will be written in the current
+    directory.
+
+    Args:
+        filename: Default file name to use.
+
+    Returns:
+        Path to the log file to write.
+    """
+    # Neither getopt, optparse, or argparse will let me pick out
+    # just one option from the command line and ignore the rest.
+    # So we do it by hand.
+    prefix = '--muscle-log-file='
+    given_path_str = ''
+    for arg in sys.argv[1:]:
+        if arg.startswith(prefix):
+            given_path_str = arg[len(prefix):]
+
+    if given_path_str == '':
+        return Path('.') / filename
+
+    given_path = Path(given_path_str)
+
+    if given_path.is_dir():
+        return given_path / filename
+    return given_path

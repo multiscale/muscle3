@@ -2,6 +2,7 @@ import logging
 
 from libmuscle.logging import LogLevel, Timestamp
 from libmuscle.operator import Operator
+from libmuscle.util import extract_log_file_location
 
 
 class Logger:
@@ -11,10 +12,12 @@ class Logger:
     standard out.
     """
     def __init__(self) -> None:
-        logging.basicConfig(
-                format='%(time_stamp)-15s: %(name)s' +
-                ' %(levelname)s: %(message)s',
-                level=logging.DEBUG)
+        logfile = extract_log_file_location('muscle3_manager.log')
+        local_handler = logging.FileHandler(str(logfile), mode='w')
+        formatter = logging.Formatter('%(time_stamp)-15s: %(name)s'
+                                      ' %(levelname)s: %(message)s')
+        local_handler.setFormatter(formatter)
+        logging.getLogger().addHandler(local_handler)
 
     def log_message(
             self,

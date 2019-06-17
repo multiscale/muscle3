@@ -1,4 +1,6 @@
 from concurrent import futures
+import logging
+import time
 from typing import cast, Generator, List
 
 import grpc
@@ -131,6 +133,8 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
                     Reference(str(request.instance_name)),
                     list(request.network_locations),
                     ports)
+            self.__log(LogLevel.WARNING, 'Registered instance {}'.format(
+                        request.instance_name))
             return mmp.RegistrationResult(status=mmp.RESULT_STATUS_SUCCESS)
         except ValueError as e:
             return mmp.RegistrationResult(
@@ -176,6 +180,8 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
                                   error_message='Waiting for kernel {}'.format(
                                       e.args[0]))
 
+        self.__log(LogLevel.WARNING, 'Sent peers to {}'.format(
+                    request.instance_name))
         return mmp.PeerResult(
                 status=mmp.RESULT_STATUS_SUCCESS,
                 conduits=mmp_conduits,
@@ -188,6 +194,8 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
         """Handles an instance deregistration request."""
         try:
             self.__instance_registry.remove(Reference(request.instance_name))
+            self.__log(LogLevel.WARNING, 'Deregistered instance {}'.format(
+                    request.instance_name))
             return mmp.DeregistrationResult(status=mmp.RESULT_STATUS_SUCCESS)
         except ValueError as e:
             return mmp.DeregistrationResult(
@@ -220,6 +228,16 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
 
                 for peer_indices in generate_indices(peer_dims[len(dims):]):
                     yield base + peer_indices
+
+    def __log(self, level: LogLevel, msg: str) -> None:
+        """Logs a message to the log file.
+
+        Args:
+            level: The level to log at.
+            msg: The message to log.
+        """
+        self.__logger.log_message('muscle3_manager', Timestamp(time.time()),
+                                  level, msg)
 
 
 class MMPServer():

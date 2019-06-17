@@ -13,6 +13,7 @@ from libmuscle.logging_handler import MuscleManagerHandler
 from libmuscle.mmp_client import MMPClient
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEvent, ProfileEventType
+from libmuscle.util import extract_log_file_location
 
 
 class Instance:
@@ -373,53 +374,17 @@ class Instance:
         """
         id_str = str(self._instance_name())
 
-        logfile = self.__extract_log_file_location(
-                'muscle3.{}.log'.format(id_str))
+        logfile = extract_log_file_location('muscle3.{}.log'.format(id_str))
         local_handler = logging.FileHandler(str(logfile), mode='w')
+        formatter = logging.Formatter('%(asctime)-15s: %(name)s'
+                                      ' %(levelname)s: %(message)s')
+        local_handler.setFormatter(formatter)
         logging.getLogger().addHandler(local_handler)
 
         if self.__manager is not None:
             mmp_handler = MuscleManagerHandler(id_str, logging.WARNING,
                                                self.__manager)
             logging.getLogger().addHandler(mmp_handler)
-
-    @staticmethod
-    def __extract_log_file_location(filename: str) -> Optional[Path]:
-        """Gets the log file location from the command line.
-
-        Extracts the --muscle-log-file=<path> argument to tell the
-        MUSCLE library where to write the local log file. This
-        function will extract this argument from the command line
-        arguments if it is present. If the given path is to a
-        directory, <filename> will be written inside of that directory,
-        if the path is not an existing directory, then it will be used
-        as the name of the log file to write to. If no command line
-        argument is given, <filename> will be written in the current
-        directory.
-
-        Args:
-            filename: Default file name to use.
-
-        Returns:
-            Path to the log file to write.
-        """
-        # Neither getopt, optparse, or argparse will let me pick out
-        # just one option from the command line and ignore the rest.
-        # So we do it by hand.
-        prefix = '--muscle-log-file='
-        given_path_str = ''
-        for arg in sys.argv[1:]:
-            if arg.startswith(prefix):
-                given_path_str = arg[len(prefix):]
-
-        if given_path_str == '':
-            return Path('.') / filename
-
-        given_path = Path(given_path_str)
-
-        if given_path.is_dir():
-            return given_path / filename
-        return given_path
 
     def __receive_message(
             self, port_name: str, slot: Optional[int],

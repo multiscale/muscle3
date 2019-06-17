@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from ymmsl import Conduit, Model, Reference, YmmslDocument
+from ymmsl import Conduit, Configuration, Model, Reference
 
 
 class TopologyStore:
@@ -12,23 +12,23 @@ class TopologyStore:
     Attributes:
         conduits (List[Conduit]): A list of conduits.
     """
-    def __init__(self, ymmsl: YmmslDocument) -> None:
+    def __init__(self, config: Configuration) -> None:
         """Creates a TopologyStore.
 
         Creates a TopologyStore containing conduits read from the given
-        yMMSL data, which must contain a 'model' key.
+        configuration data, which must contain a 'model' key.
 
         Args:
-            ymmsl: A yMMSL file, in object form.
+            configuration: A yMMSL configuration.
         """
-        if ymmsl.model is None or not isinstance(ymmsl.model, Model):
+        if config.model is None or not isinstance(config.model, Model):
             raise ValueError('The yMMSL experiment description does not'
                              ' contain a (complete) model section, so there'
                              ' is nothing to run!')
-        self.conduits = ymmsl.model.conduits
+        self.conduits = config.model.conduits
         self.kernel_dimensions = {
                 k.name: k.multiplicity
-                for k in ymmsl.model.compute_elements}
+                for k in config.model.compute_elements}
 
     def has_kernel(self, kernel: Reference) -> bool:
         """Returns True iff the given kernel is in the model.

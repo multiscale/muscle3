@@ -7,7 +7,7 @@ python:
 # So upgrade that first.
 before_install:
   - pip install --upgrade pytest
-  - pip install ymmsl==0.7.0
+  - pip install ymmsl==0.8.0
 
 install:
   - pip install codacy-coverage

@@ -14,7 +14,7 @@ from muscle_manager.topology_store import TopologyStore
 
 def do_logging_test(caplog):
     ymmsl_text = (
-            'version: v0.1\n'
+            'ymmsl_version: v0.1\n'
             'model:\n'
             '  name: test_model\n'
             '  compute_elements:\n'

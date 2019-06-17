@@ -4,7 +4,7 @@ from typing import Callable, Dict, List, Tuple, cast
 
 import click
 from ruamel import yaml
-from ymmsl import Identifier, Model, Reference, YmmslDocument
+from ymmsl import Configuration, Identifier, Model, Reference
 import ymmsl
 
 from libmuscle.mcp import pipe_multiplexer as mux
@@ -65,25 +65,25 @@ def elements_for_model(model: Model) -> List[str]:
     return result
 
 
-def start_server(experiment: YmmslDocument) -> MMPServer:
+def start_server(configuration: Configuration) -> MMPServer:
     """Creates an MMP server and starts it.
 
     Args;
-        experiment: The experiment to run.
+        configuration: The configuration to run.
     """
-    if experiment.settings is None:
+    if configuration.settings is None:
         raise ValueError('The yMMSL description needs to specify the'
                          ' settings for the simulation.')
-    if not experiment.model or not isinstance(experiment.model, Model):
+    if not configuration.model or not isinstance(configuration.model, Model):
         raise ValueError('The yMMSL description needs to specify the'
                          ' model to run.')
 
-    topology_store = TopologyStore(experiment)
-    expected_elements = elements_for_model(experiment.model)
+    topology_store = TopologyStore(configuration)
+    expected_elements = elements_for_model(configuration.model)
 
     logger = Logger()
     instance_registry = InstanceRegistry(expected_elements)
-    return MMPServer(logger, experiment.settings, instance_registry,
+    return MMPServer(logger, configuration.settings, instance_registry,
                      topology_store)
 
 
@@ -110,15 +110,15 @@ class MMPServerController:
         self._process.join()
 
 
-def manager_process(control_pipe: Pipe, experiment: YmmslDocument) -> None:
+def manager_process(control_pipe: Pipe, configuration: Configuration) -> None:
     """Run function for a separate manager process.
 
     Args:
         pipe: The pipe through which to communicate with the parent.
-        experiment: The experiment to run.
+        configuration: The configuration to run.
     """
     control_pipe[0].close()
-    server = start_server(experiment)
+    server = start_server(configuration)
     control_pipe[1].send(True)
 
     # wait for shutdown command
@@ -127,18 +127,18 @@ def manager_process(control_pipe: Pipe, experiment: YmmslDocument) -> None:
     server.stop()
 
 
-def start_server_process(experiment: YmmslDocument) -> MMPServerController:
+def start_server_process(configuration: Configuration) -> MMPServerController:
     """Starts a manager in a separate process.
 
     Args:
-        experiment: The experiment to run.
+        configuration: The configuration to run.
 
     Returns:
         A controller through which the manager can be shut down.
     """
     control_pipe = mp.Pipe()
     process = mp.Process(target=manager_process,
-                         args=(control_pipe, experiment),
+                         args=(control_pipe, configuration),
                          name='MuscleManager')
     process.start()
     control_pipe[1].close()
@@ -292,9 +292,9 @@ def run_instances(instances: Dict[str, Callable]) -> None:
 
 
 def run_simulation(
-        experiment: YmmslDocument, implementations: Dict[str, Callable]
+        configuration: Configuration, implementations: Dict[str, Callable]
         ) -> None:
-    """Runs a simulation with the given experiment and instances.
+    """Runs a simulation with the given configuration and instances.
 
     The yMMSL document must contain both a model and settings.
 
@@ -304,15 +304,15 @@ def run_simulation(
     implementation name to a Python function (or any callable).
 
     Args:
-        experiment: A description of the model and settings.
+        configuration: A description of the model and settings.
         instances: A dictionary of instances to run.
     """
-    if not isinstance(experiment.model, Model):
+    if not isinstance(configuration.model, Model):
         raise ValueError('The model description does not include a model'
                          ' definition, so the simulation can not be run.')
 
     instances = dict()
-    for ce in experiment.model.compute_elements:
+    for ce in configuration.model.compute_elements:
         impl_name = str(ce.implementation)
         if impl_name not in implementations:
             raise ValueError(('The model specifies an implementation named'
@@ -327,7 +327,7 @@ def run_simulation(
                 instance_id = str(ce.name + index)
                 instances[instance_id] = impl_fn
 
-    controller = start_server_process(experiment)
+    controller = start_server_process(configuration)
     run_instances(instances)
     controller.stop()
 
@@ -337,9 +337,9 @@ def run_simulation(
 def manage_simulation(ymmsl_file: str) -> None:
 
     with open(ymmsl_file) as f:
-        experiment = ymmsl.load(f)
+        configuration = ymmsl.load(f)
 
-    server = start_server(experiment)
+    server = start_server(configuration)
     server.wait()
 
 

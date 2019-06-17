@@ -39,7 +39,7 @@ def start_mmp_server(control_pipe, ymmsl):
 @pytest.fixture
 def mmp_server_process(yatiml_log_warning):
     ymmsl_text = (
-            'version: v0.1\n'
+            'ymmsl_version: v0.1\n'
             'model:\n'
             '  name: test_model\n'
             '  compute_elements:\n'
@@ -79,7 +79,7 @@ def mmp_server_process(yatiml_log_warning):
 @pytest.fixture
 def mmp_server(yatiml_log_warning):
     ymmsl_text = (
-            'version: v0.1\n'
+            'ymmsl_version: v0.1\n'
             'model:\n'
             '  name: test_model\n'
             '  compute_elements:\n'

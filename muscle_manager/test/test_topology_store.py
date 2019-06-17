@@ -1,7 +1,7 @@
 from muscle_manager.topology_store import TopologyStore
 
 import pytest
-from ymmsl import Reference, YmmslDocument
+from ymmsl import Configuration, Reference
 
 
 def test_create_topology_store(topology_store) -> None:
@@ -47,6 +47,6 @@ def test_get_peer_dimensions(topology_store) -> None:
 
 
 def test_data_error() -> None:
-    ymmsl = YmmslDocument('v0.1')
+    config = Configuration('v0.1')
     with pytest.raises(ValueError):
-        TopologyStore(ymmsl)
+        TopologyStore(config)

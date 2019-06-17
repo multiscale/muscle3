@@ -1,6 +1,6 @@
 import pytest
-from ymmsl import (ComputeElement, Conduit, Identifier, Model,
-                   Reference, Settings, YmmslDocument)
+from ymmsl import (ComputeElement, Conduit, Configuration, Identifier, Model,
+                   Reference, Settings)
 
 from muscle_manager.instance_registry import InstanceRegistry
 from muscle_manager.logger import Logger
@@ -28,7 +28,7 @@ def instance_registry():
 
 @pytest.fixture
 def topology_store() -> TopologyStore:
-    ymmsl = YmmslDocument(
+    config = Configuration(
             'v0.1',
             Model(
                 'test_model',
@@ -41,7 +41,7 @@ def topology_store() -> TopologyStore:
                     Conduit('micro.out', 'macro.in')
                 ]))
 
-    return TopologyStore(ymmsl)
+    return TopologyStore(config)
 
 
 @pytest.fixture
@@ -70,7 +70,7 @@ def registered_mmp_servicer(logger, settings, loaded_instance_registry,
 
 @pytest.fixture
 def topology_store2() -> TopologyStore:
-    ymmsl = YmmslDocument(
+    config = Configuration(
             'v0.1',
             Model(
                 'test_model',
@@ -86,7 +86,7 @@ def topology_store2() -> TopologyStore:
                     Conduit('meso.out', 'macro.in')
                 ]))
 
-    return TopologyStore(ymmsl)
+    return TopologyStore(config)
 
 
 @pytest.fixture

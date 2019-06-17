@@ -1,8 +1,8 @@
 from collections import OrderedDict
 
 import pytest
-from ymmsl import (ComputeElement, Conduit, Model, Operator, Reference,
-                   Settings, YmmslDocument)
+from ymmsl import (ComputeElement, Conduit, Configuration, Model, Operator,
+                   Reference, Settings)
 
 from libmuscle.communicator import Message
 from libmuscle.instance import Instance
@@ -119,7 +119,7 @@ def test_parameter_overlays(log_file_in_tmpdir):
                 ('test5', [2.3, 5.6]),
                 ('test6', [[1.0, 2.0], [3.0, 1.0]])]))
 
-    experiment = YmmslDocument('v0.1', model, settings)
+    configuration = Configuration('v0.1', model, settings)
 
     implementations = {
             'qmc': qmc,
@@ -127,4 +127,4 @@ def test_parameter_overlays(log_file_in_tmpdir):
             'explicit_relay': explicit_relay,
             'micro': micro}
 
-    run_simulation(experiment, implementations)
+    run_simulation(configuration, implementations)

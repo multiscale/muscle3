@@ -1,8 +1,8 @@
 from typing import List
 
 import pytest
-from ymmsl import (ComputeElement, Conduit, Operator, Reference, Model,
-                   Settings, YmmslDocument)
+from ymmsl import (ComputeElement, Conduit, Configuration, Operator, Reference,
+                   Model, Settings)
 
 from libmuscle.communicator import Message
 from libmuscle.instance import Instance
@@ -51,9 +51,9 @@ def test_duplication_mapper(log_file_in_tmpdir):
     model = Model('test_model', elements, conduits)
     settings = Settings()
 
-    experiment = YmmslDocument('v0.1', model, settings)
+    configuration = Configuration('v0.1', model, settings)
 
     implementations = {
             'muscle.duplication_mapper': duplication_mapper,
             'receiver': receiver}
-    run_simulation(experiment, implementations)
+    run_simulation(configuration, implementations)

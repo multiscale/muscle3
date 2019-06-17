@@ -469,6 +469,65 @@ class Instance:
                 msg.settings = None
         return msg
 
+    def __parse_prefix(self, prefix: str) -> Tuple[str, List[int]]:
+        """Parse a --muscle-prefix argument.
+
+        This is like a Reference, but not quite, because the
+        initial identifier may be omitted. That is, [1][2] is
+        also a valid prefix.
+
+        This parses an initial identifier, subsequent identifiers
+        separated by periods, then a list of square-bracketed integers.
+
+        Args:
+            prefix: The prefix to parse.
+
+        Returns:
+            The identifier sequence and the list of ints.
+        """
+        def parse_identifier(prefix: str, i: int) -> Tuple[str, int]:
+            name = str()
+            while i < len(prefix) and prefix[i] not in '[.':
+                name += prefix[i]
+                i += 1
+            return name, i
+
+        def parse_number(prefix: str, i: int) -> Tuple[int, int]:
+            number = str()
+            while i < len(prefix) and prefix[i] in '0123456789':
+                number += prefix[i]
+                i += 1
+            return int(number), i
+
+        name = str()
+        index = list()  # type: List[int]
+        i = 0
+
+        if i == len(prefix):
+            return name, index
+
+        idt, i = parse_identifier(prefix, i)
+        name += idt
+
+        while i < len(prefix) and prefix[i] == '.':
+            name += '.'
+            part, i = parse_identifier(prefix, i + 1)
+            name += part
+
+        while i < len(prefix) and prefix[i] == '[':
+            nmb, i = parse_number(prefix, i + 1)
+            index.append(nmb)
+            if prefix[i] != ']':
+                raise ValueError('Missing closing bracket in'
+                                 ' --muscle-prefix.')
+            i += 1
+
+        if i < len(prefix):
+            raise ValueError(('Found invalid extra character {} in'
+                              ' --muscle-prefix.').format(prefix[i]))
+
+        return name, index
+
     def __make_full_name(self, instance: Reference
                          ) -> Tuple[Reference, List[int]]:
         """Returns instance name and index.
@@ -476,34 +535,41 @@ class Instance:
         The given instance string is split into a compute element and
         an index, which are returned.
 
-        If a --muscle-index=x,y,z is given on the command line, then
-        it is parsed and prepended on the index. If there is no
-        --muscle-index on the command line, and instance does not
-        contain an index either, then this returns an empty list for
-        the second item.
+        If a --muscle-prefix=name[x] is given on the command line, then
+        it is parsed, split, and prepended on the name and index
+        respectively.
         """
+        def split_reference(ref: Reference) -> Tuple[Reference, List[int]]:
+            index = list()     # type: List[int]
+            i = 0
+            while i < len(ref) and isinstance(ref[i], Identifier):
+                i += 1
+            name = ref[:i]
+
+            while i < len(ref) and isinstance(ref[i], int):
+                index.append(cast(int, ref[i]))
+                i += 1
+
+            return name, index
+
         # Neither getopt, optparse, or argparse will let me pick out
         # just one option from the command line and ignore the rest.
         # So we do it by hand.
-        index = list()     # type: List[int]
-        prefix = '--muscle-index='
+        prefix_tag = '--muscle-prefix='
+        name_prefix = str()
+        index_prefix = list()   # type: List[int]
         for arg in sys.argv[1:]:
-            if arg.startswith(prefix):
-                index_str = arg[len(prefix):]
-                indices = index_str.split(',')
-                index += map(int, indices)
+            if arg.startswith(prefix_tag):
+                prefix_str = arg[len(prefix_tag):]
+                name_prefix, index_prefix = self.__parse_prefix(prefix_str)
                 break
 
-        i = 0
-        while i < len(instance) and isinstance(instance[i], Identifier):
-            i += 1
-        kernel = instance[:i]
+        name, index = split_reference(instance)
+        if len(name_prefix) > 0:
+            name = Reference(name_prefix) + name
+        index = index_prefix + index
 
-        while i < len(instance) and isinstance(instance[i], int):
-            index.append(cast(int, instance[i]))
-            i += 1
-
-        return kernel, index
+        return name, index
 
     def __list_declared_ports(self) -> List[Port]:
         """Returns a list of declared ports.

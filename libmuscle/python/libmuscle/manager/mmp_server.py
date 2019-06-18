@@ -8,13 +8,12 @@ from ymmsl import Reference, Settings
 
 from libmuscle.port import port_from_grpc
 from libmuscle.logging import LogLevel, Timestamp
+from libmuscle.manager.instance_registry import InstanceRegistry
+from libmuscle.manager.logger import Logger
+from libmuscle.manager.topology_store import TopologyStore
 from libmuscle.operator import operator_from_grpc
 from libmuscle.util import (conduit_to_grpc, generate_indices,
                             instance_indices, instance_to_kernel)
-
-from muscle_manager.instance_registry import InstanceRegistry
-from muscle_manager.logger import Logger
-from muscle_manager.topology_store import TopologyStore
 
 import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
 import muscle_manager_protocol.muscle_manager_protocol_pb2_grpc as mmp_grpc

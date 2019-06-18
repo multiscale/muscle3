@@ -1,4 +1,4 @@
-from muscle_manager.topology_store import TopologyStore
+from libmuscle.manager.topology_store import TopologyStore
 
 import pytest
 from ymmsl import Configuration, Reference

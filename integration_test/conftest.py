@@ -9,11 +9,11 @@ import ymmsl
 
 import integration_test.include_libmuscle
 
-from muscle_manager.instance_registry import InstanceRegistry
-from muscle_manager.logger import Logger
-from muscle_manager.mmp_server import MMPServer
-from muscle_manager.muscle_manager import elements_for_model
-from muscle_manager.topology_store import TopologyStore
+from libmuscle.manager.instance_registry import InstanceRegistry
+from libmuscle.manager.logger import Logger
+from libmuscle.manager.mmp_server import MMPServer
+from libmuscle.manager.manager import elements_for_model
+from libmuscle.manager.topology_store import TopologyStore
 
 
 @pytest.fixture

@@ -2,10 +2,10 @@ import pytest
 from ymmsl import (ComputeElement, Conduit, Configuration, Identifier, Model,
                    Reference, Settings)
 
-from muscle_manager.instance_registry import InstanceRegistry
-from muscle_manager.logger import Logger
-from muscle_manager.mmp_server import MMPServicer
-from muscle_manager.topology_store import TopologyStore
+from libmuscle.manager.instance_registry import InstanceRegistry
+from libmuscle.manager.logger import Logger
+from libmuscle.manager.mmp_server import MMPServicer
+from libmuscle.manager.topology_store import TopologyStore
 
 
 @pytest.fixture

@@ -2,7 +2,7 @@ import logging
 
 from libmuscle.logging import LogLevel, Timestamp
 from libmuscle.operator import Operator
-from muscle_manager.logger import Logger
+from libmuscle.manager.logger import Logger
 
 
 def test_log_level():

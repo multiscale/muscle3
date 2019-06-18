@@ -2,7 +2,7 @@ import pytest
 
 from ymmsl import Operator
 
-from muscle_manager.instance_registry import Port, InstanceRegistry
+from libmuscle.manager.instance_registry import Port, InstanceRegistry
 
 
 @pytest.fixture

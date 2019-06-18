@@ -6,8 +6,7 @@ import pytest
 from ymmsl import (ComputeElement, Conduit, Configuration, Model, Operator,
                    Reference, Settings)
 
-from libmuscle.communicator import Message
-from libmuscle.instance import Instance
+from libmuscle import Instance, Message
 from libmuscle.runner import run_simulation
 
 

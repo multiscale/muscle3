@@ -12,7 +12,7 @@ from ymmsl import Configuration, Identifier, Model, Reference
 
 from libmuscle.mcp import pipe_multiplexer as mux
 from libmuscle.util import generate_indices
-from muscle_manager.muscle_manager import start_server
+from libmuscle.manager.manager import start_server
 
 
 Pipe = Tuple[mp.connection.Connection, mp.connection.Connection]

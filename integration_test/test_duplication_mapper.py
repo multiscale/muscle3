@@ -51,7 +51,7 @@ def test_duplication_mapper(log_file_in_tmpdir):
     model = Model('test_model', elements, conduits)
     settings = Settings()
 
-    configuration = Configuration('v0.1', model, settings)
+    configuration = Configuration(model, settings)
 
     implementations = {
             'muscle.duplication_mapper': duplication_mapper,

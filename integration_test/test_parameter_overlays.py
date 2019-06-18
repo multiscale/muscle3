@@ -119,7 +119,7 @@ def test_parameter_overlays(log_file_in_tmpdir):
                 ('test5', [2.3, 5.6]),
                 ('test6', [[1.0, 2.0], [3.0, 1.0]])]))
 
-    configuration = Configuration('v0.1', model, settings)
+    configuration = Configuration(model, settings)
 
     implementations = {
             'qmc': qmc,

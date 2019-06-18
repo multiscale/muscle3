@@ -29,7 +29,6 @@ def instance_registry():
 @pytest.fixture
 def topology_store() -> TopologyStore:
     config = Configuration(
-            'v0.1',
             Model(
                 'test_model',
                 [
@@ -71,7 +70,6 @@ def registered_mmp_servicer(logger, settings, loaded_instance_registry,
 @pytest.fixture
 def topology_store2() -> TopologyStore:
     config = Configuration(
-            'v0.1',
             Model(
                 'test_model',
                 [

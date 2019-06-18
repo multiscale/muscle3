@@ -6,7 +6,7 @@ from ymmsl import (ComputeElement, Conduit, Configuration, Operator, Reference,
 
 from libmuscle.communicator import Message
 from libmuscle.instance import Instance
-from muscle_manager.muscle_manager import run_simulation
+from libmuscle.runner import run_simulation
 
 
 def duplication_mapper():

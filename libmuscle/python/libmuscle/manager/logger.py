@@ -19,6 +19,11 @@ class Logger:
         local_handler.setFormatter(formatter)
         logging.getLogger().addHandler(local_handler)
 
+        # hardwired for now
+        logging.getLogger().setLevel(logging.INFO)
+        logging.getLogger('yatiml.loader').setLevel(logging.WARNING)
+        logging.getLogger('yatiml.dumper').setLevel(logging.WARNING)
+
     def log_message(
             self,
             instance_id: str,

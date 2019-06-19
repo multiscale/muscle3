@@ -1,6 +1,7 @@
 from concurrent import futures
 import logging
 import time
+import socket
 from typing import cast, Generator, List
 
 import grpc
@@ -261,6 +262,14 @@ class MMPServer():
                 self.__servicer, self.__server)
         self.__server.add_insecure_port('[::]:9000')
         self.__server.start()
+
+    def get_location(self) -> str:
+        """Returns this server's network location.
+
+        This is a string of the form <hostname>:<port>.
+        """
+        hostname = socket.getfqdn()
+        return '{}:{}'.format(hostname, 9000)
 
     def wait(self) -> None:
         """Waits for the server to finish.

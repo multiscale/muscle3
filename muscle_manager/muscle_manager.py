@@ -12,6 +12,7 @@ def manage_simulation(ymmsl_file: str) -> None:
         configuration = ymmsl.load(f)
 
     server = start_server(configuration)
+    print(server.get_location())
     server.wait()
 
 

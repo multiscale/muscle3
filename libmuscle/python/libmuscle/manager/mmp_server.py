@@ -132,7 +132,7 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
                     Reference(str(request.instance_name)),
                     list(request.network_locations),
                     ports)
-            self.__log(LogLevel.WARNING, 'Registered instance {}'.format(
+            self.__log(LogLevel.INFO, 'Registered instance {}'.format(
                         request.instance_name))
             return mmp.RegistrationResult(status=mmp.RESULT_STATUS_SUCCESS)
         except ValueError as e:
@@ -179,7 +179,7 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
                                   error_message='Waiting for kernel {}'.format(
                                       e.args[0]))
 
-        self.__log(LogLevel.WARNING, 'Sent peers to {}'.format(
+        self.__log(LogLevel.INFO, 'Sent peers to {}'.format(
                     request.instance_name))
         return mmp.PeerResult(
                 status=mmp.RESULT_STATUS_SUCCESS,
@@ -193,7 +193,7 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
         """Handles an instance deregistration request."""
         try:
             self.__instance_registry.remove(Reference(request.instance_name))
-            self.__log(LogLevel.WARNING, 'Deregistered instance {}'.format(
+            self.__log(LogLevel.INFO, 'Deregistered instance {}'.format(
                     request.instance_name))
             return mmp.DeregistrationResult(status=mmp.RESULT_STATUS_SUCCESS)
         except ValueError as e:

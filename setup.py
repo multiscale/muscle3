@@ -13,7 +13,7 @@ with _libmuscle_version_file.open('w') as f:
     f.write('__version__ = \'{}\'\n'.format(_version))
 
 setup(
-    name='mmsf-muscle3',
+    name='muscle3',
     version=_version,
     description='Version 3 of the MUltiScale Coupling Library and Environment',
     author='Lourens Veen',

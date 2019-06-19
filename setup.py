@@ -7,6 +7,11 @@ _version_file = _here / 'VERSION'
 with _version_file.open('r') as f:
     _version = f.read().strip()
 
+# this is a hack, but it works for now and keeps the version number in a single file
+_libmuscle_version_file = _here / 'libmuscle' / 'python' / 'libmuscle' / 'version.py'
+with _libmuscle_version_file.open('w') as f:
+    f.write('__version__ = \'{}\'\n'.format(_version))
+
 setup(
     name='mmsf-muscle3',
     version=_version,
@@ -69,3 +74,6 @@ setup(
         ]
     },
 )
+
+# clean up the version file again
+_libmuscle_version_file.unlink()

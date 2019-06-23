@@ -125,6 +125,11 @@ class MMPClient():
                                  Dict[Reference, List[str]]]:
         """Request connection information about peers.
 
+        This will repeat the request at an exponentially increasing
+        query interval at first, until it reaches the interval
+        specified by PEER_INTERVAL_MIN and PEER_INTERVAL_MAX. From
+        there on, intervals are drawn randomly from that range.
+
         Args:
             name: Name of the current instance.
 
@@ -137,9 +142,17 @@ class MMPClient():
             instance, and containing for each peer instance a list of
             network location strings at which it can be reached.
         """
+        sleep_time = 0.1
         start_time = perf_counter()
         request = mmp.PeerRequest(instance_name=str(name))
         result = self.__client.RequestPeers(request)
+        while (result.status == mmp.RESULT_STATUS_PENDING and
+               perf_counter() < start_time + PEER_TIMEOUT and
+               sleep_time < PEER_INTERVAL_MIN):
+            sleep(sleep_time)
+            result = self.__client.RequestPeers(request)
+            sleep_time *= 1.5
+
         while (result.status == mmp.RESULT_STATUS_PENDING and
                perf_counter() < start_time + PEER_TIMEOUT):
             sleep(uniform(PEER_INTERVAL_MIN, PEER_INTERVAL_MAX))

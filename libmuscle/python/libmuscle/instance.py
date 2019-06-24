@@ -4,6 +4,7 @@ from pathlib import Path
 import sys
 from typing import cast, Dict, List, Optional, Tuple, Type, Union
 
+import grpc
 from ymmsl import (Conduit, Identifier, Operator, ParameterValue, Port,
                    Reference, Settings)
 
@@ -326,7 +327,13 @@ class Instance:
         port_list = self.__list_declared_ports()
         self.__manager.register_instance(self._instance_name(), locations,
                                          port_list)
-        register_event.stop()
+        try:
+            register_event.stop()
+        except grpc._channel._Rendezvous:
+            # This may happen if we're the last submodel to quit, and the
+            # manager is already gone. Nothing we can do in that case, and this
+            # final Register event will be lost, which is not a big issue.
+            pass
 
     def _connect(self) -> None:
         """Connect this instance to the given peers / conduits.

@@ -278,6 +278,8 @@ class MMPServer():
         registered and deregistered again.
         """
         self.__instance_registry.wait()
+        time.sleep(1)
+        self.__server.stop(5)
 
     def stop(self) -> None:
         """Stops the server.

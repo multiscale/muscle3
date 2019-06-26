@@ -17,6 +17,16 @@ class Logger:
         formatter = logging.Formatter('%(time_stamp)-15s: %(name)s'
                                       ' %(levelname)s: %(message)s')
         local_handler.setFormatter(formatter)
+
+        # Find and remove default handler to disable automatic console output
+        # Testing for 'stderr' in the stringified version is not nice, but
+        # seems reliable, and doesn't mess up pytest's caplog mechanism while
+        # it also doesn't introduce a runtime dependency on pytest.
+        logging.getLogger().handlers = [
+                h for h in logging.getLogger().handlers
+                if 'stderr' not in str(h)]
+
+        # add our own
         logging.getLogger().addHandler(local_handler)
 
         # hardwired for now

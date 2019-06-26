@@ -44,7 +44,7 @@ setup(
         'msgpack',
         'protobuf',
         'ruamel.yaml<=0.15.64',
-        'ymmsl==0.9.0'          # Also in .travisrc, update there as well
+        'ymmsl==0.9.1'          # Also in .travisrc, update there as well
     ],
     setup_requires=[
         'pytest-runner',

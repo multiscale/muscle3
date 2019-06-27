@@ -20,6 +20,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../libmuscle/python/'))
 
 # -- General configuration ------------------------------------------------
 
@@ -50,7 +51,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'muscle3'
-copyright = '2017 University of Amsterdam and Netherlands eScience Center'
+copyright = '2018-2019 University of Amsterdam and Netherlands eScience Center'
 author = 'Lourens Veen'
 
 # The version info for the project you're documenting, acts as replacement for

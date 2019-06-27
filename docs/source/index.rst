@@ -13,13 +13,14 @@ Environment.
    :maxdepth: 4
    :caption: Contents:
 
+   introduction
+   tutorial
+   distributed_execution
+   uncertainty_quantification
    contributing
    devtools
 
-   technical_design/index.rst
-   road_map
-
-   apidocs/modules
+   api
 
 
 Indices and tables

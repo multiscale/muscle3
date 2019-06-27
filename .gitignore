@@ -15,5 +15,6 @@ coverage.xml
 
 docs/_build
 docs/apidocs
+docs/source/examples/*.log
 
 libmuscle/python/libmuscle/version.py

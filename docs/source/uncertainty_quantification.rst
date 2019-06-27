@@ -15,6 +15,7 @@ Simulation design
 Let's start with an overview in the form of a gMMSL diagram of the set-up.
 
 .. figure:: reaction_diffusion_qmc.png
+  :scale: 40 %
 
   gMMSL diagram of the qMC reaction-diffusion simulation set-up.
 

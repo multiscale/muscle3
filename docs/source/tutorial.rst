@@ -308,6 +308,7 @@ them together. We do this by creating an object of type
 simulation. It often helps to draw a diagram first:
 
 .. figure:: reaction_diffusion.png
+  :scale: 40 %
 
   gMMSL diagram of the reaction-diffusion model.
 

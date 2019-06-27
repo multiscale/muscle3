@@ -157,22 +157,22 @@ def test_is_vector_port(instance):
     assert instance._communicator.get_port.called_with('out_port')
 
 
-def test_send_message(instance, message):
-    instance.send_message('out', message, 1)
+def test_send(instance, message):
+    instance.send('out', message, 1)
     assert instance._communicator.send_message.called_with(
             'out', message, 1)
 
 
-def test_send_message_invalid_port(instance, message):
+def test_send_invalid_port(instance, message):
     instance._communicator.port_exists.return_value = False
     with pytest.raises(ValueError):
-        instance.send_message('does_not_exist', message, 1)
+        instance.send('does_not_exist', message, 1)
 
 
-def test_receive_message(instance):
+def test_receive(instance):
     instance._communicator.get_port.return_value = MagicMock(
             operator=Operator.F_INIT)
-    msg = instance.receive_message('in')
+    msg = instance.receive('in')
     assert msg.timestamp == 0.0
     assert msg.next_timestamp == 1.0
     assert instance._communicator.receive_message.called_with(
@@ -180,29 +180,29 @@ def test_receive_message(instance):
     assert msg.data == 'message'
 
     with pytest.raises(RuntimeError):
-        instance.receive_message('in')
+        instance.receive('in')
 
 
-def test_receive_message_default(instance):
+def test_receive_default(instance):
     instance._communicator.port_exists.return_value = True
     port = instance._communicator.get_port.return_value
     port.operator = Operator.F_INIT
     port.is_connected.return_value = False
-    instance.receive_message('not_connected', 1, 'testing')
+    instance.receive('not_connected', 1, 'testing')
     assert instance._communicator.receive_message.called_with(
             'not_connected', 1, 'testing')
     with pytest.raises(RuntimeError):
-        instance.receive_message('not_connected', 1)
+        instance.receive('not_connected', 1)
 
 
-def test_receive_message_invalid_port(instance):
+def test_receive_invalid_port(instance):
     instance._communicator.port_exists.return_value = False
     with pytest.raises(ValueError):
-        instance.receive_message('does_not_exist', 1)
+        instance.receive('does_not_exist', 1)
 
 
-def test_receive_message_with_parameters(instance):
-    msg = instance.receive_message_with_parameters('in', 1)
+def test_receive_with_settings(instance):
+    msg = instance.receive_with_settings('in', 1)
     assert (instance._communicator.receive_message
             .called_with('in', 1))
     assert msg.timestamp == 0.0
@@ -211,8 +211,8 @@ def test_receive_message_with_parameters(instance):
     assert msg.settings['test1'] == 12
 
 
-def test_receive_message_with_parameters_default(instance):
-    instance.receive_message_with_parameters('not_connected', 1, 'testing')
+def test_receive_with_settings_default(instance):
+    instance.receive_with_settings('not_connected', 1, 'testing')
     assert instance._communicator.receive_message.called_with(
             'not_connected', 1, 'testing')
 
@@ -220,7 +220,7 @@ def test_receive_message_with_parameters_default(instance):
 def test_receive_parallel_universe(instance) -> None:
     instance._settings_manager.overlay['test2'] = 'test'
     with pytest.raises(RuntimeError):
-        instance.receive_message('in')
+        instance.receive('in')
 
 
 def test_reuse_instance_receive_overlay(instance):
@@ -290,7 +290,7 @@ def test_reuse_instance_vector_port(instance2):
     do_reuse = instance2.reuse_instance()
     assert do_reuse is True
 
-    msg = instance2.receive_message('in', 5)
+    msg = instance2.receive('in', 5)
     assert msg.timestamp == 0.0
     assert msg.next_timestamp is None
     assert msg.data == 'test 5'

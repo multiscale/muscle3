@@ -24,11 +24,11 @@ def macro():
         # o_i
         assert instance.is_vector_port('out')
         for slot in range(10):
-            instance.send_message('out', Message(0.0, 10.0, 'testing'), slot)
+            instance.send('out', Message(0.0, 10.0, 'testing'), slot)
 
         # s/b
         for slot in range(10):
-            msg = instance.receive_message('in', slot)
+            msg = instance.receive('in', slot)
             assert msg.data == 'testing back'
 
 
@@ -45,11 +45,11 @@ def micro():
         assert instance.get_parameter_value('test4', 'bool') is True
         assert instance.get_parameter_value('test6', '[[float]]')[0][1] == 2.0
 
-        msg = instance.receive_message('in')
+        msg = instance.receive('in')
         assert msg.data == 'testing'
 
         # o_f
-        instance.send_message('out', Message(0.1, None, 'testing back'))
+        instance.send('out', Message(0.1, None, 'testing back'))
 
 
 def test_all(log_file_in_tmpdir):

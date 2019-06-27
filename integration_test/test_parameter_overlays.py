@@ -23,8 +23,8 @@ def qmc():
         length = instance.get_port_length('parameters_out')
         assert length == 10
         for slot in range(length):
-            instance.send_message('parameters_out',
-                                  Message(0.0, None, settings0), slot)
+            instance.send('parameters_out',
+                          Message(0.0, None, settings0), slot)
 
 
 def macro():
@@ -37,9 +37,9 @@ def macro():
         # f_init
         assert instance.get_parameter_value('test2') == 14.4
         # o_i
-        instance.send_message('out', Message(0.0, 10.0, 'testing'))
+        instance.send('out', Message(0.0, 10.0, 'testing'))
         # s/b
-        msg = instance.receive_message('in')
+        msg = instance.receive('in')
         assert msg.data == 'testing back'
 
 
@@ -60,7 +60,7 @@ def explicit_relay():
 
         msgs = list()
         for slot in range(instance.get_port_length('in')):
-            msg = instance.receive_message_with_parameters('in', slot)
+            msg = instance.receive_with_settings('in', slot)
             assert msg.data.startswith('testing')
             assert msg.settings['test2'] == 14.4
             msgs.append(msg)
@@ -69,7 +69,7 @@ def explicit_relay():
 
         # o_f
         for slot in range(instance.get_port_length('out')):
-            instance.send_message('out', msgs[slot], slot)
+            instance.send('out', msgs[slot], slot)
 
 
 def micro():
@@ -81,14 +81,14 @@ def micro():
     while instance.reuse_instance():
         # f_init
         assert instance.get_parameter_value('test2', 'float') == 14.4
-        msg = instance.receive_message('in')
+        msg = instance.receive('in')
         assert msg.data == 'testing'
 
         # with pytest.raises(RuntimeError):
-        #     instance.receive_message_with_parameters('in')
+        #     instance.receive_with_settings('in')
 
         # o_f
-        instance.send_message('out', Message(0.1, None, 'testing back'))
+        instance.send('out', Message(0.1, None, 'testing back'))
 
 
 def test_parameter_overlays(log_file_in_tmpdir):

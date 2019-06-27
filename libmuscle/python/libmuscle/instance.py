@@ -89,7 +89,7 @@ class Instance:
         Args:
             apply_overlay: Whether to apply the received settings
                 overlay or to save it. If you're going to use
-                :meth:`receive_with_parameters` on your F_INIT ports,
+                :meth:`receive_with_settings` on your F_INIT ports,
                 set this to False. If you don't know what that means,
                 just call `reuse_instance()` without specifying this
                 and everything will be fine, this is only for some
@@ -231,8 +231,8 @@ class Instance:
         """
         self._communicator.get_port(port).set_length(length)
 
-    def send_message(self, port_name: str, message: Message,
-                     slot: Optional[int]=None) -> None:
+    def send(self, port_name: str, message: Message,
+             slot: Optional[int]=None) -> None:
         """Send a message to the outside world.
 
         Sending is non-blocking, a copy of the message will be made
@@ -250,9 +250,9 @@ class Instance:
 
         self._communicator.send_message(port_name, message, slot)
 
-    def receive_message(self, port_name: str, slot: Optional[int]=None,
-                        default: Optional[Message]=None
-                        ) -> Message:
+    def receive(self, port_name: str, slot: Optional[int]=None,
+                default: Optional[Message]=None
+                ) -> Message:
         """Receive a message from the outside world.
 
         Receiving is a blocking operation. This function will contact
@@ -282,7 +282,7 @@ class Instance:
         """
         return self.__receive_message(port_name, slot, default, False)
 
-    def receive_message_with_parameters(
+    def receive_with_settings(
             self, port_name: str, slot: Optional[int]=None,
             default: Optional[Message]=None
             ) -> Message:
@@ -399,8 +399,8 @@ class Instance:
             ) -> Message:
         """Receives a message on the given port.
 
-        This implements receive_message and
-        receive_message_with_parameters, see the description of those.
+        This implements receive and receive_with_settings, see the
+        description of those.
         """
         self.__check_port(port_name)
 
@@ -410,7 +410,7 @@ class Instance:
                 msg = self._f_init_cache[(port_name, slot)]
                 del(self._f_init_cache[(port_name, slot)])
                 if with_parameters and msg.settings is None:
-                    raise RuntimeError('If you use receive_with_parameters()'
+                    raise RuntimeError('If you use receive_with_settings()'
                                        ' on an F_INIT port, then you have to'
                                        ' pass False to reuse_instance(),'
                                        ' otherwise the parameters will already'

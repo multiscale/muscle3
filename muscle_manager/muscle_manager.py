@@ -7,7 +7,6 @@ from libmuscle.manager.manager import start_server
 @click.command()
 @click.argument('ymmsl_file')
 def manage_simulation(ymmsl_file: str) -> None:
-
     with open(ymmsl_file) as f:
         configuration = ymmsl.load(f)
 

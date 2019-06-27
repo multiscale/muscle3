@@ -19,7 +19,7 @@ def duplication_mapper():
 
         message = Message(0.0, None, 'testing')
         for out_port in out_ports:
-            instance.send_message(out_port, message)
+            instance.send(out_port, message)
 
 
 def receiver():
@@ -29,7 +29,7 @@ def receiver():
 
     while instance.reuse_instance():
         # f_init
-        msg = instance.receive_message('in')
+        msg = instance.receive('in')
         assert msg.data == 'testing'
 
 

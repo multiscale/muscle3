@@ -128,13 +128,14 @@ class Instance:
 
         If you detect that something is wrong (invalid input, invalid
         settings, simulation diverged, or anything else really), it's
-        good to call this method before quitting the program.
+        good to call this method instead of calling exit() or raising
+        an exception that you don't expect to catch.
 
         If you do so, the Instance will tell the rest of the simulation
         that it encountered an error and will shut down. That makes it
         easier to debug the situation (the message will be logged), and
         it reduces the chance that other parts of the simulation will
-        sit around waiting forever for something this instance was
+        sit around waiting forever for a message that this instance was
         supposed to send.
 
         Args:
@@ -144,6 +145,7 @@ class Instance:
         self.__close_ports()
         self._communicator.shutdown()
         self._deregister()
+        exit(1)
 
     def get_parameter_value(self, name: str,
                             typ: Optional[str] = None

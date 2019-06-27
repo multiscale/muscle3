@@ -1,8 +1,8 @@
-.. image:: https://readthedocs.org/projects/muscle3/badge/?version=develop
-    :target: https://muscle3.readthedocs.io/en/develop/?badge=develop
+.. image:: https://readthedocs.org/projects/muscle3/badge/?version=master
+    :target: https://muscle3.readthedocs.io/en/develop/?badge=master
     :alt: Documentation Build Status
 
-.. image:: https://api.travis-ci.org/multiscale/muscle3.svg?branch=develop
+.. image:: https://api.travis-ci.org/multiscale/muscle3.svg?branch=master
     :target: https://travis-ci.org/multiscale/muscle3
     :alt: Build Status
 
@@ -14,8 +14,8 @@
     :target: https://www.codacy.com/app/LourensVeen/muscle3
     :alt: Codacy Grade
 
-.. image:: https://requires.io/github/multiscale/muscle3/requirements.svg?branch=develop
-     :target: https://requires.io/github/multiscale/muscle3/requirements/?branch=develop
+.. image:: https://requires.io/github/multiscale/muscle3/requirements.svg?branch=master
+     :target: https://requires.io/github/multiscale/muscle3/requirements/?branch=master
      :alt: Requirements Status
 
 ========

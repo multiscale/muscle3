@@ -459,6 +459,10 @@ class Instance:
         else:
             msg = self._communicator.receive_message(
                     port_name, slot, default)
+            if isinstance(msg.data, _ClosePort):
+                raise RuntimeError(('Port {} was closed while trying to'
+                                    ' receive on it, did the peer crash?'
+                                    ).format(port_name))
             if not with_parameters:
                 self.__check_compatibility(port_name, msg.settings)
                 msg.settings = None

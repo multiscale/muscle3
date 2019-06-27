@@ -17,10 +17,11 @@ Environment.
    tutorial
    distributed_execution
    uncertainty_quantification
+   api
+
    contributing
    devtools
-
-   api
+   releasing
 
 
 Indices and tables

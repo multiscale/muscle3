@@ -257,9 +257,9 @@ class Communicator(PostOffice):
     def receive_message(self, port_name: str, slot: Optional[int]=None,
                         default: Optional[Message]=None
                         ) -> Message:
-        """Receive a message and attached parameter overlay.
+        """Receive a message and attached settings overlay.
 
-        Receiving is a blocking operaton. This function will contact
+        Receiving is a blocking operation. This function will contact
         the sender, wait for a message to be available, and receive and
         return it.
 
@@ -325,6 +325,9 @@ class Communicator(PostOffice):
                 mcp_message.timestamp, mcp_message.next_timestamp,
                 self.__extract_object(mcp_message), overlay_settings)
 
+        if isinstance(message.data, _ClosePort):
+            port.set_closed(slot)
+
         profile_event.stop()
         if port.is_vector():
             profile_event.port_length = port.get_length()
@@ -347,7 +350,7 @@ class Communicator(PostOffice):
         self.send_message(port_name, message, slot)
 
     def shutdown(self) -> None:
-        """Shuts down the Communicator, closing ports and connections.
+        """Shuts down the Communicator, closing connections.
         """
         for client in self.__clients.values():
             client.close()

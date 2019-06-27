@@ -71,6 +71,7 @@ class Port(ymmsl.Port):
                                     ' with more than one dimension more than'
                                     ' its own, which is not possible.').format(
                                         name))
+            self._is_open = [True] * self._length
         else:
             if our_ndims < len(peer_dims):
                 raise RuntimeError(('Scalar port "{}" is connected to an'
@@ -86,6 +87,7 @@ class Port(ymmsl.Port):
                                     ' dimensions, which is not possible.'
                                     ).format(name))
             self._length = None
+            self._is_open = [True]
 
         self._is_resizable = is_vector and (our_ndims == len(peer_dims))
 
@@ -100,6 +102,13 @@ class Port(ymmsl.Port):
             True if there is a peer, False if there is not.
         """
         return self._is_connected
+
+    def is_open(self, slot: Optional[int] = None) -> bool:
+        """Returns whether this port is open.
+        """
+        if slot is not None:
+            return self._is_open[slot]
+        return self._is_open[0]
 
     def is_vector(self) -> bool:
         """Returns whether this is a vector port.
@@ -139,4 +148,14 @@ class Port(ymmsl.Port):
         if not self._is_resizable:
             raise RuntimeError(('Tried to resize port {}, but it is not'
                                 ' resizable.'.format(self.name)))
-        self._length = length
+        if length != self._length:
+            self._length = length
+            self._is_open = [True] * self._length
+
+    def set_closed(self, slot: Optional[int] = None) -> None:
+        """Marks this port as closed.
+        """
+        if slot is not None:
+            self._is_open[slot] = False
+        else:
+            self._is_open = [False]

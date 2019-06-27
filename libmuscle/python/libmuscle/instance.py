@@ -435,34 +435,34 @@ class Instance:
                 msg = self._f_init_cache[(port_name, slot)]
                 del(self._f_init_cache[(port_name, slot)])
                 if with_parameters and msg.settings is None:
-                    raise RuntimeError('If you use receive_with_settings()'
-                                       ' on an F_INIT port, then you have to'
-                                       ' pass False to reuse_instance(),'
-                                       ' otherwise the parameters will already'
-                                       ' have been applied by MUSCLE.')
+                    self.exit_error('If you use receive_with_settings()'
+                                    ' on an F_INIT port, then you have to'
+                                    ' pass False to reuse_instance(),'
+                                    ' otherwise the parameters will already'
+                                    ' have been applied by MUSCLE.')
             else:
                 if port.is_connected():
-                    raise RuntimeError(('Tried to receive twice on the same'
-                                        ' port "{}", that\'s not possible.'
-                                        ' Did you forget to call'
-                                        ' reuse_instance() in your reuse loop?'
-                                        ).format(port_name))
+                    self.exit_error(('Tried to receive twice on the same'
+                                     ' port "{}", that\'s not possible.'
+                                     ' Did you forget to call'
+                                     ' reuse_instance() in your reuse loop?'
+                                     ).format(port_name))
                 else:
                     if default is not None:
                         return default
-                    raise RuntimeError(('Tried to receive on port "{}",'
-                                        ' which is not connected, and no'
-                                        ' default value was given. Please'
-                                        ' connect this port!').format(
-                                            port_name))
+                    self.exit_error(('Tried to receive on port "{}",'
+                                     ' which is not connected, and no'
+                                     ' default value was given. Please'
+                                     ' connect this port!').format(
+                                         port_name))
 
         else:
             msg = self._communicator.receive_message(
                     port_name, slot, default)
-            if isinstance(msg.data, _ClosePort):
-                raise RuntimeError(('Port {} was closed while trying to'
-                                    ' receive on it, did the peer crash?'
-                                    ).format(port_name))
+            if not port.is_open(slot):
+                self.exit_error(('Port {} was closed while trying to'
+                                 ' receive on it, did the peer crash?'
+                                 ).format(port_name))
             if not with_parameters:
                 self.__check_compatibility(port_name, msg.settings)
                 msg.settings = None
@@ -526,10 +526,10 @@ class Instance:
 
     def __check_port(self, port_name: str) -> None:
         if not self._communicator.port_exists(port_name):
-            raise ValueError(('Port "{}" does not exist on "{}". Please check'
-                              ' the name and the list of ports you gave for'
-                              ' this compute element.').format(port_name,
-                                                               self._name))
+            self.exit_error(('Port "{}" does not exist on "{}". Please check'
+                             ' the name and the list of ports you gave for'
+                             ' this compute element.').format(port_name,
+                                                              self._name))
 
     def __receive_parameters(self) -> bool:
         """Receives parameters on muscle_settings_in.
@@ -543,12 +543,12 @@ class Instance:
         if isinstance(message.data, _ClosePort):
             return False
         if not isinstance(message.data, Settings):
-            raise RuntimeError('"{}" received a message on'
-                               ' muscle_settings_in that is not a'
-                               ' Settings. It seems that your'
-                               ' simulation is miswired or the sending'
-                               ' instance is broken.'.format(
-                                   self._instance_name()))
+            self.exit_error('"{}" received a message on'
+                            ' muscle_settings_in that is not a'
+                            ' Settings. It seems that your'
+                            ' simulation is miswired or the sending'
+                            ' instance is broken.'.format(
+                                self._instance_name()))
 
         settings = cast(Settings, message.settings)
         for key, value in message.data.items():
@@ -607,13 +607,13 @@ class Instance:
         if overlay is None:
             return
         if self._settings_manager.overlay != overlay:
-            raise RuntimeError(('Unexpectedly received data from a'
-                                ' parallel universe on port "{}". My'
-                                ' parameters are "{}" and I received'
-                                ' from a universe with "{}".').format(
-                                    port_name,
-                                    self._settings_manager.overlay,
-                                    overlay))
+            self.exit_error(('Unexpectedly received data from a'
+                             ' parallel universe on port "{}". My'
+                             ' parameters are "{}" and I received'
+                             ' from a universe with "{}".').format(
+                                 port_name,
+                                 self._settings_manager.overlay,
+                                 overlay))
 
     def __close_outgoing_ports(self) -> None:
         """Closes outgoing ports.
@@ -639,52 +639,25 @@ class Instance:
         Args:
             port_name: Port to drain.
         """
-        msg = self._communicator.receive_message(port_name)
-        while not isinstance(msg.data, _ClosePort):
+        port = self._communicator.get_port(port_name)
+        while port.is_open():
             # TODO: log warning if not a ClosePort
-            msg = self._communicator.receive_message(port_name)
+            self._communicator.receive_message(port_name)
 
     def __drain_incoming_vector_port(self, port_name: str) -> None:
         """Receives messages until a ClosePort is received.
 
-        Receives at least once, and works with (resizable) vector
-        ports.
+        Works with (resizable) vector ports.
 
         Args:
             port_name: Port to drain.
         """
         port = self._communicator.get_port(port_name)
-
-        msg = self._communicator.receive_message(port_name, 0)
-        for slot in range(1, port.get_length()):
-            self._communicator.receive_message(port_name, slot)
-        while not isinstance(msg.data, _ClosePort):
-            # TODO: log warning if not a ClosePort
-            msg = self._communicator.receive_message(port_name, 0)
-            for slot in range(1, port.get_length()):
-                self._communicator.receive_message(port_name, slot)
-
-    def __drain_f_init_port(self, port_name: str) -> None:
-        """Receives messages until a ClosePort is received.
-
-        Version for F_INIT ports, which have the cache to contend with.
-
-        Args:
-            port_name: Port to drain.
-        """
-        if (port_name, None) in self._f_init_cache:
-            msg = self._f_init_cache[(port_name, None)]
-            del(self._f_init_cache[(port_name, None)])
-            if not isinstance(msg.data, _ClosePort):
-                self.__drain_incoming_port(port_name)
-        elif (port_name, 0) in self._f_init_cache:
-            port = self._communicator.get_port(port_name)
-            msg = self._f_init_cache[(port_name, 0)]
-            del(self._f_init_cache[(port_name, 0)])
+        while not all([not port.is_open(slot)
+                       for slot in range(port.get_length())]):
             for slot in range(port.get_length()):
-                del(self._f_init_cache[(port_name, slot)])
-            if not isinstance(msg.data, _ClosePort):
-                self.__drain_incoming_port(port_name)
+                if port.is_open(slot):
+                    self._communicator.receive_message(port_name, slot)
 
     def __close_incoming_ports(self) -> None:
         """Closes incoming ports.
@@ -695,9 +668,7 @@ class Instance:
         cleanly.
         """
         for operator, port_names in self._communicator.list_ports().items():
-            if operator == Operator.F_INIT:
-                pass
-            elif operator.allows_receiving():
+            if operator.allows_receiving():
                 for port_name in port_names:
                     port = self._communicator.get_port(port_name)
                     if not port.is_connected():

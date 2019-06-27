@@ -259,5 +259,7 @@ def run_simulation(
                 instances[instance_id] = impl_fn
 
     controller = start_server_process(configuration)
-    run_instances(instances)
-    controller.stop()
+    try:
+        run_instances(instances)
+    finally:
+        controller.stop()

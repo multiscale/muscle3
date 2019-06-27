@@ -79,7 +79,7 @@ class Instance:
 
         So in MUSCLE, submodels run in a *reuse loop*, which runs them
         over and over again until their work is done and they should be
-        shut down. Whether to do another F_INIT, O_I, S, B, O_F cycle
+        shut down. Whether to do another F_INIT, O_I, S, O_F cycle
         is decided by this method.
 
         This method must be called at the beginning of the reuse loop,
@@ -92,8 +92,9 @@ class Instance:
                 :meth:`receive_with_settings` on your F_INIT ports,
                 set this to False. If you don't know what that means,
                 just call `reuse_instance()` without specifying this
-                and everything will be fine, this is only for some
-                specific uses that you're probably not doing.
+                and everything will be fine. If it turns out that you
+                did need to specify False, MUSCLE 3 will tell you about
+                it in an error message and you can add it still.
         """
         do_reuse = self.__receive_parameters()
 
@@ -121,6 +122,28 @@ class Instance:
             self._communicator.shutdown()
             self._deregister()
         return do_reuse
+
+    def exit_error(self, message: str) -> None:
+        """Exits the instance with an error.
+
+        If you detect that something is wrong (invalid input, invalid
+        settings, simulation diverged, or anything else really), it's
+        good to call this method before quitting the program.
+
+        If you do so, the Instance will tell the rest of the simulation
+        that it encountered an error and will shut down. That makes it
+        easier to debug the situation (the message will be logged), and
+        it reduces the chance that other parts of the simulation will
+        sit around waiting forever for something this instance was
+        supposed to send.
+
+        Args:
+            message: An error message describing the problem.
+        """
+        logging.critical(message)
+        self.__close_ports()
+        self._communicator.shutdown()
+        self._deregister()
 
     def get_parameter_value(self, name: str,
                             typ: Optional[str] = None

@@ -18,6 +18,9 @@
      :target: https://requires.io/github/multiscale/muscle3/requirements/?branch=develop
      :alt: Requirements Status
 
+.. image:: https://zenodo.org/badge/122876985.svg
+   :target: https://zenodo.org/badge/latestdoi/122876985
+
 ========
 MUSCLE 3
 ========

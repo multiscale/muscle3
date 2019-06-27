@@ -161,12 +161,12 @@ class Communicator(PostOffice):
         else:
             self.__ports = self.__ports_from_conduits(conduits)
 
-        self.__muscle_parameters_in = self.__parameters_in_port(conduits)
+        self.__muscle_settings_in = self.__parameters_in_port(conduits)
 
     def parameters_in_connected(self) -> bool:
-        """Returns True iff muscle_parameters_in is connected.
+        """Returns True iff muscle_settings_in is connected.
         """
-        return self.__muscle_parameters_in.is_connected()
+        return self.__muscle_settings_in.is_connected()
 
     def list_ports(self) -> Dict[Operator, List[str]]:
         """Returns a description of the ports this Communicator has.
@@ -301,10 +301,10 @@ class Communicator(PostOffice):
         if port_name in self.__ports:
             port = self.__ports[port_name]
         else:
-            # it's muscle_parameters_in here, because we check for unknown
+            # it's muscle_settings_in here, because we check for unknown
             # user ports in Instance already, and we don't have any other
             # built-in automatic ports.
-            port = self.__muscle_parameters_in
+            port = self.__muscle_settings_in
 
         profile_event = self.__profiler.start(ProfileEventType.RECEIVE, port,
                                               None, slot, None)
@@ -419,7 +419,7 @@ class Communicator(PostOffice):
         return ports
 
     def __parameters_in_port(self, conduits: List[Conduit]) -> Port:
-        """Creates a Port representing muscle_parameters_in.
+        """Creates a Port representing muscle_settings_in.
 
         Args:
             conduits: The list of conduits.
@@ -427,13 +427,13 @@ class Communicator(PostOffice):
         for conduit in conduits:
             if conduit.receiving_compute_element() == self.__kernel:
                 port_id = conduit.receiving_port()
-                if str(port_id) == 'muscle_parameters_in':
+                if str(port_id) == 'muscle_settings_in':
                     return Port(str(port_id), Operator.F_INIT, False,
                                 self.__peer_manager.is_connected(port_id),
                                 len(self.__index),
                                 self.__peer_manager.get_peer_dims(
                                     conduit.sending_compute_element()))
-        return Port('muscle_parameters_in', Operator.F_INIT, False, False,
+        return Port('muscle_settings_in', Operator.F_INIT, False, False,
                     len(self.__index), [])
 
     def __get_client(self, instance: Reference) -> MCPClient:

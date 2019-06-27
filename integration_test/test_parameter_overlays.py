@@ -102,7 +102,7 @@ def test_parameter_overlays(log_file_in_tmpdir):
             ComputeElement('micro', 'micro', [10])]
 
     conduits = [
-                Conduit('qmc.parameters_out', 'macro.muscle_parameters_in'),
+                Conduit('qmc.parameters_out', 'macro.muscle_settings_in'),
                 Conduit('macro.out', 'relay.in'),
                 Conduit('relay.out', 'micro.in'),
                 Conduit('micro.out', 'relay2.in'),

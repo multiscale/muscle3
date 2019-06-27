@@ -503,19 +503,19 @@ class Instance:
                                                                self._name))
 
     def __receive_parameters(self) -> bool:
-        """Receives parameters on muscle_parameters_in.
+        """Receives parameters on muscle_settings_in.
 
         Returns:
             False iff the port is connnected and ClosePort was received.
         """
         default_message = Message(0.0, None, Settings(), Settings())
         message = self._communicator.receive_message(
-                'muscle_parameters_in', None, default_message)
+                'muscle_settings_in', None, default_message)
         if isinstance(message.data, _ClosePort):
             return False
         if not isinstance(message.data, Settings):
             raise RuntimeError('"{}" received a message on'
-                               ' muscle_parameters_in that is not a'
+                               ' muscle_settings_in that is not a'
                                ' Settings. It seems that your'
                                ' simulation is miswired or the sending'
                                ' instance is broken.'.format(

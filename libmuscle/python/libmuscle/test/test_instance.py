@@ -234,7 +234,7 @@ def test_reuse_instance_receive_overlay(instance):
     recv.return_value = Message(0.0, None, test_overlay, test_base_settings)
     instance.reuse_instance()
     assert instance._communicator.receive_message.called_with(
-        'muscle_parameters_in')
+        'muscle_settings_in')
     assert len(instance._settings_manager.overlay) == 2
     assert instance._settings_manager.overlay['test1'] == 24
     assert instance._settings_manager.overlay['test2'] == 'abc'
@@ -242,7 +242,7 @@ def test_reuse_instance_receive_overlay(instance):
 
 def test_reuse_instance_closed_port(instance):
     def receive_message(port_name, slot=None, default=None):
-        if port_name == 'muscle_parameters_in':
+        if port_name == 'muscle_settings_in':
             return Message(0.0, None, Settings(), Settings())
         elif port_name == 'in':
             return Message(0.0, None, _ClosePort(), Settings())
@@ -269,7 +269,7 @@ def test_reuse_instance_closed_port(instance):
 
 def test_reuse_instance_vector_port(instance2):
     def receive_message(port_name, slot=None, default=None):
-        if port_name == 'muscle_parameters_in':
+        if port_name == 'muscle_settings_in':
             return Message(0.0, None, Settings(), Settings())
         elif port_name == 'in':
             data = 'test {}'.format(slot)

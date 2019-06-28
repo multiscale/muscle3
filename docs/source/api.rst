@@ -1,4 +1,4 @@
-libmuscle package
+API Documentation
 =================
 
 .. automodule:: libmuscle

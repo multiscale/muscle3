@@ -121,11 +121,12 @@ Make a GitHub release
 ---------------------
 
 In order to get a DOI for this release, we need to make a release on GitHub. Go
-to the `MUSCLE 3 GitHub repository`_ and click 'Releases'. Select 'Create a new
+to the `MUSCLE 3 GitHub repository`_ and click 'Releases'. Select 'Draft a new
 release', select the x.y.z. tag that we just uploaded, and use 'Release x.y.z'
-as the title. Then copy-paste the description from the change log, and maybe
-prepend some text if there is something interesting to mention. Optionally
-select 'This is a pre-release' if it's not a final version, then publish it.
+as the title. Then copy-paste the description from the change log, convert it
+from ReStructuredText to MarkDown and maybe prepend some text if there is
+something interesting to mention. Optionally select 'This is a pre-release' if
+it's not a final version, then publish it.
 
 Build and release to PyPI
 -------------------------

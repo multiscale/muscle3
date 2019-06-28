@@ -36,7 +36,7 @@ def diffusion() -> None:
             Operator.S: ['state_in']})
 
     while instance.reuse_instance():
-        # f_init
+        # F_INIT
         t_max = instance.get_parameter_value('t_max', 'float')
         dt = instance.get_parameter_value('dt', 'float')
         x_max = instance.get_parameter_value('x_max', 'float')
@@ -51,7 +51,7 @@ def diffusion() -> None:
 
         t_cur = 0.0
         while t_cur + dt <= t_max:
-            # O_i
+            # O_I
             t_next = t_cur + dt
             if t_next + dt > t_max:
                 t_next = None

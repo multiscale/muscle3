@@ -3,7 +3,7 @@ Distributed execution
 
 In the previous section, we created a simple macro-micro multiscale model with
 MUSCLE 3, and ran it as a single Python script. This section briefly explains
-how to go from there to a distributed simulation, possibly on multiple machines.
+how to go from there to a distributed simulation, possibly on multiple nodes.
 
 Note that distributed simulations are still somewhat experimental. They need a
 bit more testing, and more development (in particular integration with a
@@ -51,8 +51,8 @@ our previous example looks like this:
 
 
 As you can see, this looks very much like the object representation. You can
-load a yMMSL file to objects using `ymmsl.load` and save it back using
-`ymmsl.save`.
+load a yMMSL file to objects using ``ymmsl.load`` and save it back using
+``ymmsl.save``.
 
 Starting the manager
 --------------------
@@ -66,8 +66,8 @@ each other, and distributes settings to them. To start the manager, run
 
 
 in an environment in which you've installed MUSCLE 3. The manager will start,
-and will print its location on standard out. This is the network address on
-which it listens for connections from instances.
+and will print its location on the standard output. This is the network address
+on which it listens for connections from instances.
 
 Starting instances
 ------------------
@@ -82,17 +82,18 @@ Starting an instance works just like starting any other Python script:
 In the original script, we made a dictionary that mapped compute element names
 to Python functions, which MUSCLE 3 used to start the submodel instances. Here,
 we need to pass the same information. Instead of a function name, we start a
-particular script, and we pass the instance name using the `--muscle-instance=`
-argument. Note that the argument parser is not very flexible, so it needs to be
-written exactly like that, and of course the instance name needs to match the
-compute element name in the yMMSL file passed to the manager.
+particular script, and we pass the instance name using the
+``--muscle-instance=`` argument. Note that the argument parser is not very
+flexible, so it needs to be written exactly like that, and of course the
+instance name needs to match the compute element name in the yMMSL file passed
+to the manager.
 
 When the instance starts, it will register with the manager. Since we didn't
-pass a location using the `--muscle-manager=<host:port>` option, MUSCLE 3 tried
-to connect to the default location (localhost:9000), which the manager was
-conveniently listening on. The `micro` instance registered, and if you have a
-look at the `muscle3_manager.log` file produced by the manager (in the directory
-in which you started it), you should find a record of this there.
+pass a location using the ``--muscle-manager=<host:port>`` option, MUSCLE 3
+tried to connect to the default location (localhost:9000), which the manager
+was conveniently listening on. The ``micro`` instance registered, and if you
+have a look at the ``muscle3_manager.log`` file produced by the manager (in the
+directory in which you started it), you should find a record of this there.
 
 Now, we need to start the second submodel in the same way:
 

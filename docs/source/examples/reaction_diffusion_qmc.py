@@ -18,7 +18,7 @@ def reaction() -> None:
             Operator.O_F: ['final_state']})         # list of float
 
     while instance.reuse_instance():
-        # f_init
+        # F_INIT
         t_max = instance.get_parameter_value('t_max', 'float')
         dt = instance.get_parameter_value('dt', 'float')
         k = instance.get_parameter_value('k', 'float')
@@ -28,13 +28,13 @@ def reaction() -> None:
 
         t_cur = msg.timestamp
         while t_cur + dt < t_max:
-            # O_i
+            # O_I
 
             # S
             U += k * U * dt
             t_cur += dt
 
-        # O_f
+        # O_F
         instance.send('final_state', Message(t_cur, None, U.tolist()))
 
 
@@ -67,7 +67,7 @@ def diffusion() -> None:
             Operator.O_F: ['final_state_out']})
 
     while instance.reuse_instance():
-        # f_init
+        # F_INIT
         t_max = instance.get_parameter_value('t_max', 'float')
         dt = instance.get_parameter_value('dt', 'float')
         x_max = instance.get_parameter_value('x_max', 'float')
@@ -82,7 +82,7 @@ def diffusion() -> None:
 
         t_cur = 0.0
         while t_cur + dt <= t_max:
-            # O_i
+            # O_I
             t_next = t_cur + dt
             if t_next + dt > t_max:
                 t_next = None
@@ -104,7 +104,7 @@ def diffusion() -> None:
             Us = np.vstack((Us, U))
             t_cur += dt
 
-        # O_f
+        # O_F
         instance.send('final_state_out', Message(t_cur, None, U.tolist()))
 
 
@@ -133,7 +133,7 @@ def load_balancer() -> None:
             Operator.O_F: ['front_out[]']})
 
     while instance.reuse_instance(False):
-        # f_init
+        # F_INIT
         started = 0     # number started and index of next to start
         done = 0        # number done and index of next to return
 
@@ -163,7 +163,7 @@ def qmc_driver() -> None:
             Operator.S: ['states_in[]']})
 
     while instance.reuse_instance():
-        # f_init
+        # F_INIT
         # get and check parameters
         n_samples = instance.get_parameter_value('n_samples', 'int')
         d_min = instance.get_parameter_value('d_min', 'float')
@@ -192,7 +192,7 @@ def qmc_driver() -> None:
 
         # run ensemble
         Us = None
-        # O_i
+        # O_I
         for sample in range(n_samples):
             uq_parameters = Settings({
                 'd': ds[sample],
@@ -210,6 +210,7 @@ def qmc_driver() -> None:
             else:
                 Us = np.vstack((Us, U))
 
+        mean = np.mean(Us, axis=0)
         plt.figure()
         plt.imshow(np.log(Us + 1e-20))
         plt.show()

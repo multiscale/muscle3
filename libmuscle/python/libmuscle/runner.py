@@ -15,6 +15,9 @@ from libmuscle.util import generate_indices
 from libmuscle.manager.manager import start_server
 
 
+__all__ = ['run_simulation']
+
+
 Pipe = Tuple[mp.connection.Connection, mp.connection.Connection]
 
 

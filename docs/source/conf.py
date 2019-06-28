@@ -22,6 +22,12 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../'))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../libmuscle/python/'))
 
+# create a libmuscle/version.py if needed (which it is on RTD)
+version_path = os.path.join(os.path.dirname(__file__), '../../libmuscle/python/libmuscle/version.py')
+if not os.path.exists(version_path):
+    with open(version_path, 'w') as f:
+        f.write("__version__ = '0.0.0'")
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.

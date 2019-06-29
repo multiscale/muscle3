@@ -17,7 +17,8 @@ Environment.
    tutorial
    distributed_execution
    uncertainty_quantification
-   api
+   python_api
+   cpp_api
 
    contributing
    devtools

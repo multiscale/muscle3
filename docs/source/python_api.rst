@@ -1,5 +1,5 @@
-API Documentation
-=================
+API Documentation for Python
+============================
 
 .. automodule:: libmuscle
    :members:

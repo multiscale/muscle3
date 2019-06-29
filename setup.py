@@ -49,6 +49,7 @@ setup(
     setup_requires=[
         'pytest-runner',
         # dependencies for `python setup.py build_sphinx`
+        'breathe',
         'sphinx',
         'recommonmark',
         'sphinx-rtd-theme'

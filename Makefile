@@ -13,6 +13,10 @@ test: all
 install: all
 	cd libmuscle/cpp && $(MAKE) install
 
+.PHONY: docs
+docs:
+	python3 setup.py build_sphinx
+
 .PHONY: clean
 clean:
 	cd libmuscle/cpp && $(MAKE) clean

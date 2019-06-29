@@ -99,6 +99,7 @@ if(ENABLE_UNIT_TESTS)
       -DCMAKE_CXX_STANDARD_REQUIRED=${CMAKE_CXX_STANDARD_REQUIRED}
       -DCMAKE_MODULE_PATH=${CMAKE_MODULE_PATH}
       -DGTEST_ROOT=${GTEST_ROOT}
+      -DYMMSL_ROOT=${STAGED_INSTALL_PREFIX}
       -DMUSCLE3_ROOT=${STAGED_INSTALL_PREFIX}
     CMAKE_CACHE_ARGS
       -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
@@ -111,6 +112,11 @@ if(ENABLE_UNIT_TESTS)
 
   # Add test target and tests
   enable_testing()
+  add_test(
+    NAME test_ymmsl
+    COMMAND test_ymmsl
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/subprojects/Build/libmuscle_tests"
+    )
   add_test(
     NAME test_muscle3
     COMMAND test_muscle3

@@ -60,4 +60,4 @@ protoc_path := $(protobuf_ROOT)/bin
 grpc: | grpc-$(grpc_VERSION) c-ares zlib openssl
 	@echo
 	@echo 'Building grpc...'
-	cd grpc-$(grpc_VERSION) && export prefix=$(CURDIR)/grpc && export PKG_CONFIG_PATH=$(deps_path) && export PATH=${PATH}:$(protoc_path) && export LDFLAGS=-L$(protobuf_ROOT)/lib && export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(protobuf_ROOT)/lib && make -j $(NCORES) && make install
+	cd grpc-$(grpc_VERSION) && export prefix=$(CURDIR)/grpc && export PKG_CONFIG_PATH=$(deps_path) && export PATH=${PATH}:$(protoc_path) && export LDFLAGS=-L$(protobuf_ROOT)/lib && export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(protobuf_ROOT)/lib && make run_dep_checks && make -j $(NCORES) && make install

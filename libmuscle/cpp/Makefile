@@ -1,31 +1,22 @@
 .PHONY: all
-all: make
+all:
+	$(MAKE) -C build
+	@echo
+	@echo 'All done, enjoy MUSCLE 3!'
 
-build:
-	mkdir build
-
-.PHONY: configure
-configure: build
-	cd build && cmake ..
-	cd build && ccmake ..
-
-.PHONY: make
-make: build
-	cd build && cmake ..
-	cd build && cmake --build . -- -j $(shell nproc)
+.PHONY: tests
+tests:
+	$(MAKE) -C build tests
 
 .PHONY: install
-install: make
-	cd build && cmake --build . --target install
-
-.PHONY: test
-test: make
-	cd build && cmake --build . --target test
+install: all
+	$(MAKE) -C build install
 
 .PHONY: clean
 clean:
-	cd build && cmake --build . --target clean
+	$(MAKE) -C build clean
 
 .PHONY: distclean
 distclean:
-	rm -rf build
+	$(MAKE) -C build distclean
+

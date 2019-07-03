@@ -1,11 +1,14 @@
+dist: xenial
 language: python
 python:
     - "3.5"
     - "3.6"
 
 # Travis comes with an old pytest that does not work with pytest-flake8
-# So upgrade that first.
+# So upgrade that first, and also install dependencies from binaries as much
+# as possible to speed things up.
 before_install:
+  - sudo apt-get install -y libssl-dev zlib1g-dev libc-ares-dev libprotobuf-dev protobuf-compiler
   - pip install --upgrade pytest
   - pip install ymmsl==0.9.1
 

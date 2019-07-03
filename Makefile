@@ -1,12 +1,8 @@
 .PHONY: all
 all: cpp
 
-.PHONY: configure
-configure:
-	cd libmuscle/cpp && $(MAKE) configure
-
 .PHONY: test
-test: all
+test: all cpp_tests
 	python3 setup.py test
 
 .PHONY: install
@@ -28,6 +24,10 @@ distclean:
 .PHONY: cpp
 cpp:
 	cd libmuscle/cpp && $(MAKE)
+
+.PHONY: cpp_tests
+cpp_tests: cpp
+	cd libmuscle/cpp && $(MAKE) tests
 
 # This rebuilds the gRPC generated code; for development only.
 .PHONY: grpc

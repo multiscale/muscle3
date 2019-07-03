@@ -16,6 +16,8 @@ CXXFLAGS += -I$(header_root)
 public_headers := libmuscle/operator.hpp
 installed_headers := $(public_headers:%=$(PREFIX)/include/%)
 
+CXXFLAGS += -Wall -pedantic -std=c++14
+
 
 .PHONY: all
 all: libmuscle.a libmuscle.so version.h
@@ -42,7 +44,7 @@ install: all $(installed_headers)
 ifneq ($(MAKECMDGOALS),clean)
 
 # Dependencies
-CXXFLAGS += $(shell PKG_CONFIG_PATH=$(protobuf_ROOT)/lib/pkgconfig ; pkg-config --cflags protobuf)
+CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(protobuf_ROOT)/lib/pkgconfig ; pkg-config --cflags protobuf)
 
 -include $(deps)
 

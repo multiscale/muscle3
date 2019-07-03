@@ -31,19 +31,19 @@ distclean: clean
 
 
 dep_name := c-ares
-dep_min_version := 1.14
+dep_min_version := 1.11.0
 dep_version := 1.15.0
 dep_pkgconfig_name := libcares
 include ../make_available.make
 
 dep_name := zlib
-dep_min_version := 1.2.11
+dep_min_version := 1.2
 dep_version := 1.2.11
 dep_pkgconfig_name := zlib
 include ../make_available.make
 
 dep_name := openssl
-dep_min_version := 1.1.0
+dep_min_version := 1.0.2
 dep_version := 1.1.1c
 dep_pkgconfig_name := openssl
 include ../make_available.make
@@ -60,4 +60,4 @@ protoc_path := $(protobuf_ROOT)/bin
 grpc: | grpc-$(grpc_VERSION) c-ares zlib openssl
 	@echo
 	@echo 'Building grpc...'
-	cd grpc-$(grpc_VERSION) && export prefix=$(CURDIR)/grpc && export PKG_CONFIG_PATH=$(deps_path) && export PATH=${PATH}:$(protoc_path) && export LDFLAGS=-L$(protobuf_ROOT)/lib && export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(protobuf_ROOT)/lib && make run_dep_checks && make -j $(NCORES) && make install
+	cd grpc-$(grpc_VERSION) && export prefix=$(CURDIR)/grpc && export PKG_CONFIG_PATH=$(deps_path) && export PATH=${PATH}:$(protoc_path) && export LDFLAGS=-L$(protobuf_ROOT)/lib && export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(protobuf_ROOT)/lib && which protoc && protoc --version && make -j $(NCORES) && make install

@@ -2,7 +2,7 @@ Uncertainty Quantification
 ==========================
 
 Only in very rare cases are the inputs and parameters of a model known exactly.
-Usually, inputs and parameter values come from measurements done in the world or
+Usually, inputs and parameter values come from measurements done in the field or
 in the lab, and those measurements are never exact. So every model is subject to
 uncertainty. Uncertainty Quantification (UQ) provides techniques for analysing
 th uncertainty in models, parameters and results. This section shows an example

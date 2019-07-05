@@ -1,7 +1,8 @@
+#include <gtest/gtest.h>
+
 #include "libmuscle/operator.hpp"
 #include "muscle_manager_protocol/muscle_manager_protocol.pb.h"
 #include "ymmsl/compute_element.hpp"
-#include "gtest/gtest.h"
 
 
 namespace mmp = muscle_manager_protocol;

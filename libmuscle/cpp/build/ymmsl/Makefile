@@ -15,7 +15,8 @@ deps := $(source_files:$(srcdir)%.cpp=$(objdir)%.d)
 public_headers := ymmsl/compute_element.hpp
 installed_headers := $(public_headers:%=$(PREFIX)/include/%)
 
-CXXFLAGS += -Wall -pedantic -std=c++14
+CXXFLAGS += -Wall -pedantic -std=c++14 -I$(hdrdir)
+export CXXFLAGS
 
 
 .PHONY: all

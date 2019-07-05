@@ -1,5 +1,6 @@
+#include <gtest/gtest.h>
+
 #include "ymmsl/compute_element.hpp"
-#include "gtest/gtest.h"
 
 
 using ymmsl::Operator;

@@ -17,6 +17,7 @@ public_headers := libmuscle/operator.hpp
 installed_headers := $(public_headers:%=$(PREFIX)/include/%)
 
 CXXFLAGS += -Wall -pedantic -std=c++14
+export CXXFLAGS
 
 
 .PHONY: all

@@ -50,6 +50,8 @@ dep_version := 1.8.1
 dep_pkgconfig_name := gtest
 include make_available.make
 
+export googletest_ROOT
+
 
 .PHONY: ymmsl
 ymmsl: grpc

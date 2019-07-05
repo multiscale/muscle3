@@ -10,12 +10,8 @@ clean:
 src_dir := $(CURDIR)/../../../src
 libmuscle_testdir := $(src_dir)/libmuscle/tests
 VPATH := $(libmuscle_testdir)
-CXXFLAGS += -I$(src_dir)
 
-gtest_dir := $(CURDIR)/../../googletest/googletest
-
-CXXFLAGS += -isystem -I$(gtest_dir)/include -pthread
-CXXFLAGS += -I$(protobuf_ROOT)/include
+CXXFLAGS += -isystem $(googletest_ROOT)/include -pthread
 
 %.o: %.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
@@ -23,5 +19,5 @@ CXXFLAGS += -I$(protobuf_ROOT)/include
 test_objects := test_operator.o
 
 test_libmuscle: $(test_objects)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< -o $@ $(gtest_dir)/lib/libgtest.a ../../ymmsl/libymmsl.a ../libmuscle.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< -o $@ $(googletest_ROOT)/lib/libgtest.a ../../ymmsl/libymmsl.a ../libmuscle.a
 

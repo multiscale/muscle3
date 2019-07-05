@@ -36,5 +36,12 @@ grpc:
 	python -m grpc_tools.protoc -Imuscle_manager_protocol --python_out=muscle_manager_protocol --grpc_python_out=muscle_manager_protocol --mypy_out=muscle_manager_protocol muscle_manager_protocol/muscle_manager_protocol.proto
 	@echo
 	@echo "*** If you have modified the endpoints, you'll have to manually update muscle_manager_protocol/muscle_manager_protocol_pb2_grpc.pyi ***"
+
 	# C++
-	libmuscle/cpp/build/tools/protobuf/bin/protoc --cpp_out=libmuscle/cpp/src muscle_manager_protocol/muscle_manager_protocol.proto
+	pb_prefix=$$(PKG_CONFIG_PATH=libmuscle/cpp/build/protobuf/protobuf/lib/pkgconfig pkg-config --variable=prefix protobuf) && \
+			grpc_prefix=$$(PKG_CONFIG_PATH=libmuscle/cpp/build/grpc/grpc/lib/pkgconfig pkg-config --variable=prefix grpc) && \
+			PATH=$${pb_prefix}/bin:$${PATH} && export LD_LIBRARY_PATH=$${pb_prefix}/lib && \
+			protoc --grpc_out=libmuscle/cpp/src --plugin=protoc-gen-grpc=$${grpc_prefix}/bin/grpc_cpp_plugin muscle_manager_protocol/muscle_manager_protocol.proto
+	pb_prefix=$$(PKG_CONFIG_PATH=libmuscle/cpp/build/protobuf/protobuf/lib/pkgconfig pkg-config --variable=prefix protobuf) && \
+			PATH=$${pb_prefix}/bin:$${PATH} && export LD_LIBRARY_PATH=$${pb_prefix}/lib && \
+			protoc --cpp_out=libmuscle/cpp/src muscle_manager_protocol/muscle_manager_protocol.proto

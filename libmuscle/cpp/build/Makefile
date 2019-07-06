@@ -2,7 +2,7 @@ include check_tools.make
 
 
 .PHONY: all
-all: ymmsl libmuscle
+all: muscle_manager_protocol ymmsl libmuscle
 
 .PHONY: install
 install: all
@@ -16,6 +16,7 @@ clean:
 	$(MAKE) -C protobuf clean
 	$(MAKE) -C grpc clean
 	$(MAKE) -C googletest clean
+	$(MAKE) -C muscle_manager_protocol clean
 	$(MAKE) -C ymmsl clean
 	$(MAKE) -C libmuscle clean
 
@@ -53,6 +54,21 @@ include make_available.make
 export googletest_ROOT
 
 
+PKG_CONFIG_EXTRA_DIRS := $(CURDIR)/protobuf/protobuf/lib/pkgconfig
+PKG_CONFIG_EXTRA_DIRS := $(PKG_CONFIG_EXTRA_DIRS):$(CURDIR)/grpc/c-ares/c-ares/lib/pkgconfig
+PKG_CONFIG_EXTRA_DIRS := $(PKG_CONFIG_EXTRA_DIRS):$(CURDIR)/grpc/openssl/openssl/lib/pkgconfig
+PKG_CONFIG_EXTRA_DIRS := $(PKG_CONFIG_EXTRA_DIRS):$(CURDIR)/grpc/zlib/zlib/lib/pkgconfig
+PKG_CONFIG_EXTRA_DIRS := $(PKG_CONFIG_EXTRA_DIRS):$(CURDIR)/grpc/grpc/lib/pkgconfig
+
+export PKG_CONFIG_EXTRA_DIRS
+
+
+.PHONY: muscle_manager_protocol
+muscle_manager_protocol:
+	@echo
+	@echo 'Building muscle manager protocol...'
+	$(MAKE) -j $(NCORES) -C muscle_manager_protocol
+
 .PHONY: ymmsl
 ymmsl: grpc
 	@echo
@@ -61,7 +77,7 @@ ymmsl: grpc
 
 
 .PHONY: libmuscle
-libmuscle: grpc ymmsl
+libmuscle: grpc ymmsl muscle_manager_protocol
 	@echo
 	@echo 'Building libmuscle...'
 	$(MAKE) -j $(NCORES) -C libmuscle

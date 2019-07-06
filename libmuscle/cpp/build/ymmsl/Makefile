@@ -57,10 +57,10 @@ $(objdir)/%.lo: %.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -fPIC -c $< -o $@
 
 libymmsl.a: $(objects)
-	ar rcs libymmsl.a $^
+	ar rcs $@ $^
 
 libymmsl.so: $(lobjects)
-	$(CXX) -shared -o libymmsl.so $^
+	$(CXX) -shared -o $@ $^
 
 $(PREFIX)/include/%.hpp: $(hdrdir)/%.hpp
 	@mkdir -p $(@D)

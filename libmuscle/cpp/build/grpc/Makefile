@@ -54,10 +54,9 @@ v$(grpc_VERSION).tar.gz:
 grpc-$(grpc_VERSION): v$(grpc_VERSION).tar.gz
 	$(TAR) xf v$(grpc_VERSION).tar.gz
 
-deps_path := $(c-ares_ROOT)/lib/pkgconfig:$(zlib_ROOT)/lib/pkgconfig:$(protobuf_ROOT)/lib/pkgconfig:$(openssl_ROOT)/lib/pkgconfig
 protoc_path := $(protobuf_ROOT)/bin
 
 grpc: | grpc-$(grpc_VERSION) c-ares zlib openssl
 	@echo
 	@echo 'Building grpc...'
-	cd grpc-$(grpc_VERSION) && export prefix=$(CURDIR)/grpc && export PKG_CONFIG_PATH=$(deps_path) && export PATH=$(protoc_path):${PATH} && export LDFLAGS=-L$(protobuf_ROOT)/lib && export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(protobuf_ROOT)/lib && export CXXFLAGS='-Wno-error' && make -j $(NCORES) && make install
+	cd grpc-$(grpc_VERSION) && export prefix=$(CURDIR)/grpc && export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) && export PATH=$(protoc_path):${PATH} && export LDFLAGS=-L$(protobuf_ROOT)/lib && export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(protobuf_ROOT)/lib && export CXXFLAGS='-Wno-error' && make -j $(NCORES) && make install

@@ -64,13 +64,13 @@ export PKG_CONFIG_EXTRA_DIRS
 
 
 .PHONY: muscle_manager_protocol
-muscle_manager_protocol:
+muscle_manager_protocol: grpc protobuf
 	@echo
 	@echo 'Building muscle manager protocol...'
 	$(MAKE) -j $(NCORES) -C muscle_manager_protocol
 
 .PHONY: ymmsl
-ymmsl: grpc
+ymmsl:
 	@echo
 	@echo 'Building ymmsl...'
 	$(MAKE) -j $(NCORES) -C ymmsl

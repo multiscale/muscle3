@@ -54,12 +54,18 @@ include make_available.make
 export googletest_ROOT
 
 
+DEP_DIRS := $(CURDIR)/protobuf/protobuf/
+DEP_DIRS += $(CURDIR)/grpc/c-ares/c-ares/
+DEP_DIRS += $(CURDIR)/grpc/openssl/openssl/
+DEP_DIRS += $(CURDIR)/grpc/zlib/zlib/
+DEP_DIRS += $(CURDIR)/grpc/grpc/
+export DEP_DIRS
+
 PKG_CONFIG_EXTRA_DIRS := $(CURDIR)/protobuf/protobuf/lib/pkgconfig
 PKG_CONFIG_EXTRA_DIRS := $(PKG_CONFIG_EXTRA_DIRS):$(CURDIR)/grpc/c-ares/c-ares/lib/pkgconfig
 PKG_CONFIG_EXTRA_DIRS := $(PKG_CONFIG_EXTRA_DIRS):$(CURDIR)/grpc/openssl/openssl/lib/pkgconfig
 PKG_CONFIG_EXTRA_DIRS := $(PKG_CONFIG_EXTRA_DIRS):$(CURDIR)/grpc/zlib/zlib/lib/pkgconfig
 PKG_CONFIG_EXTRA_DIRS := $(PKG_CONFIG_EXTRA_DIRS):$(CURDIR)/grpc/grpc/lib/pkgconfig
-
 export PKG_CONFIG_EXTRA_DIRS
 
 

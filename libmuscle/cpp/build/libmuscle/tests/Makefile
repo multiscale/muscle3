@@ -17,6 +17,8 @@ clean:
 	rm -f $(all_tests)
 
 
+EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-L $(DIR))
+
 CXXFLAGS += -isystem $(googletest_ROOT)/include -pthread
 
 LDFLAGS += $(CURDIR)/../libmuscle.a $(CURDIR)/../../ymmsl/libymmsl.a
@@ -26,6 +28,7 @@ LDFLAGS2 := $(LDFLAGS)
 LDFLAGS2 += $(CURDIR)/../../muscle_manager_protocol/libmmp.a
 LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs protobuf)
 LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs grpc grpc++)
+LDFLAGS2 += $(EXTRA_LINK_DIRS)
 
 %.o: %.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@

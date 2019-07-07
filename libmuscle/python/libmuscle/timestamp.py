@@ -36,9 +36,6 @@ class Timestamp:
     def to_grpc(self) -> pbts.Timestamp:
         """Converts a Timestamp to the gRPC type.
 
-        Args:
-            timestamp: A timestamp.
-
         Returns:
             The same timestamp, as a gRPC object.
         """

@@ -20,7 +20,7 @@ clean:
 distclean: clean
 
 
-EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-Wl,-rpath-link,$(DIR))
+EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-Wl,-rpath-link,$(DIR)/lib)
 
 CXXFLAGS += -isystem $(googletest_ROOT)/include -pthread
 

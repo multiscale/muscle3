@@ -21,6 +21,9 @@ clean:
 	rm -f libmmp.a
 	rm -f *.o
 
+.PHONY: distclean
+distclean: clean
+
 
 %.o: %.cc *.h
 	@mkdir -p $(@D)

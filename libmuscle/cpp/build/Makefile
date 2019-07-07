@@ -25,6 +25,7 @@ distclean:
 	$(MAKE) -C protobuf distclean
 	$(MAKE) -C grpc distclean
 	$(MAKE) -C googletest distclean
+	$(MAKE) -C muscle_manager_protocol distclean
 	$(MAKE) -C ymmsl distclean
 	$(MAKE) -C libmuscle distclean
 

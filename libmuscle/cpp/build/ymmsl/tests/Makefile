@@ -5,6 +5,9 @@ tests: test_ymmsl
 clean:
 	rm -f test_ymmsl *.o
 
+.PHONY: distclean
+distclean: clean
+
 
 src_dir := $(CURDIR)/../../../src
 ymmsl_testdir := $(src_dir)/ymmsl/tests

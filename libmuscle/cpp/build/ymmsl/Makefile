@@ -32,6 +32,10 @@ clean:
 	rm -rf objs
 	$(MAKE) -C tests clean
 
+.PHONY: distclean
+distclean: clean
+	$(MAKE) -C tests distclean
+
 .PHONY: install
 install: all $(installed_headers)
 	@echo

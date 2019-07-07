@@ -16,6 +16,9 @@ clean:
 	rm -f *.o
 	rm -f $(all_tests)
 
+.PHONY: distclean
+distclean: clean
+
 
 EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-L $(DIR))
 

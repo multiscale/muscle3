@@ -47,7 +47,7 @@ def do_logging_test(caplog):
     server = MMPServer(logger, ymmsl_doc.settings, instance_registry,
                        topology_store)
 
-    # create C++ client
+    # create C++ client, which sends a log message
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
     lib_paths = [
             cpp_build_dir / 'protobuf' / 'protobuf' / 'lib',
@@ -59,12 +59,11 @@ def do_logging_test(caplog):
     result = subprocess.run([cpp_test_client], env=env)
     assert result.returncode == 0
 
-    # log and check
-
-    # assert caplog.records[0].name == 'test_logging'
-    # assert caplog.records[0].time_stamp == '1970-01-01T00:00:02Z'
-    # assert caplog.records[0].levelname == 'CRITICAL'
-    # assert caplog.records[0].message == 'Integration testing'
+    # check
+    assert caplog.records[0].name == 'test_logging'
+    assert caplog.records[0].time_stamp == '1970-01-01T00:00:02Z'
+    assert caplog.records[0].levelname == 'CRITICAL'
+    assert caplog.records[0].message == 'Integration testing'
 
     server.stop()
 

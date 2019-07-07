@@ -18,8 +18,8 @@ CXXFLAGS += -isystem $(googletest_ROOT)/include -pthread
 %.o: %.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-test_objects := test_compute_element.o
+test_objects := main.o test_compute_element.o test_identity.o
 
-test_ymmsl: $(test_objects)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $< $(googletest_ROOT)/lib/libgtest.a ../libymmsl.a -o $@
+test_ymmsl: $(test_objects) ../libymmsl.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(test_objects) $(googletest_ROOT)/lib/libgtest.a ../libymmsl.a -o $@
 

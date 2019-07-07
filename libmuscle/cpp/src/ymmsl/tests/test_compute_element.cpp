@@ -6,11 +6,6 @@
 using ymmsl::Operator;
 
 
-int main(int argc, char *argv[]) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
-
 TEST(ymmsl_compute_element, operator_allows_sending) {
     Operator f_init = Operator::F_INIT;
     Operator o_i = Operator::O_I;

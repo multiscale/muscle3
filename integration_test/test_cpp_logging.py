@@ -56,7 +56,7 @@ def do_logging_test(caplog):
             'LD_LIBRARY_PATH': ':'.join(map(str, lib_paths))}
     cpp_test_dir = cpp_build_dir / 'libmuscle' / 'tests'
     cpp_test_client = cpp_test_dir / 'mmp_client_test'
-    result = subprocess.run([cpp_test_client], env=env)
+    result = subprocess.run([str(cpp_test_client)], env=env)
     assert result.returncode == 0
 
     # check

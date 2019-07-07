@@ -50,6 +50,9 @@ def do_logging_test(caplog):
     # create C++ client, which sends a log message
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
     lib_paths = [
+            cpp_build_dir / 'grpc' / 'c-ares' / 'c-ares' / 'lib',
+            cpp_build_dir / 'grpc' / 'zlib' / 'zlib' / 'lib',
+            cpp_build_dir / 'grpc' / 'openssl' / 'openssl' / 'lib',
             cpp_build_dir / 'protobuf' / 'protobuf' / 'lib',
             cpp_build_dir / 'grpc' / 'grpc' / 'lib']
     env = {

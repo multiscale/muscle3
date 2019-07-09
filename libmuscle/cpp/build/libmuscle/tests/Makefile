@@ -24,7 +24,7 @@ EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-Wl,-rpath-link,$(DIR)/lib)
 
 CXXFLAGS += -isystem $(googletest_ROOT)/include -pthread
 
-LDFLAGS += $(CURDIR)/../libmuscle.a $(CURDIR)/../../ymmsl/libymmsl.a
+LDFLAGS += $(CURDIR)/../libmuscle_d.a $(CURDIR)/../../ymmsl/libymmsl_d.a
 LDFLAGS += $(googletest_ROOT)/lib/libgtest.a -pthread
 
 LDFLAGS2 := $(LDFLAGS)
@@ -37,8 +37,8 @@ LDFLAGS2 += $(EXTRA_LINK_DIRS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 test_%: test_%.o
-	$(CXX) $^ -o $@ $(LDFLAGS)
+	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(LDFLAGS)
 
 %_test: %_test.o
-	$(CXX) $^ -o $@ $(LDFLAGS2)
+	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(LDFLAGS2)
 

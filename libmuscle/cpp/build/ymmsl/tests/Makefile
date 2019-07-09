@@ -21,5 +21,5 @@ CXXFLAGS += -isystem $(googletest_ROOT)/include -pthread
 test_objects := main.o test_compute_element.o test_identity.o
 
 test_ymmsl: $(test_objects) ../libymmsl.a
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(test_objects) $(googletest_ROOT)/lib/libgtest.a ../libymmsl.a -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) $(test_objects) $(googletest_ROOT)/lib/libgtest.a ../libymmsl_d.a -o $@
 

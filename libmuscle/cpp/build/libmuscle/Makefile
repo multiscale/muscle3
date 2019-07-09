@@ -8,6 +8,8 @@ VPATH := $(srcdir)
 source_files := $(foreach dir,$(srcdirs),$(wildcard $(dir)/*.cpp))
 objects := $(source_files:$(srcdir)%.cpp=$(objdir)%.o)
 lobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.lo)
+dobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.do)
+dlobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.dlo)
 deps := $(source_files:$(srcdir)%.cpp=$(objdir)%.d)
 
 header_root := $(CURDIR)/../../src
@@ -18,10 +20,12 @@ installed_headers := $(public_headers:%=$(PREFIX)/include/%)
 
 CXXFLAGS += -Wall -pedantic -std=c++14
 export CXXFLAGS
+DEBUGFLAGS := -g
+export DEBUGFLAGS
 
 
 .PHONY: all
-all: libmuscle.a libmuscle.so version.h
+all: libmuscle.a libmuscle.so libmuscle_d.a libmuscle_d.so version.h
 
 .PHONY: tests
 tests: libmuscle.a version.h
@@ -42,8 +46,10 @@ install: all $(installed_headers)
 	@echo
 	@echo Installing libmuscle to $(PREFIX)
 	@mkdir -p $(PREFIX)/lib
-	cp libmuscle.a $(PREFIX)/lib/
+	cp libmuscle.a $(PREFIX)/lib
+	cp libmuscle_d.a $(PREFIX)/lib
 	cp libmuscle.so $(PREFIX)/lib
+	cp libmuscle_d.so $(PREFIX)/lib
 
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -81,6 +87,14 @@ $(objdir)/%.lo: %.cpp
 	@mkdir -p $(@D)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -fPIC -c $< -o $@
 
+$(objdir)/%.do: %.cpp
+	@mkdir -p $(@D)
+	$(CXX) $(CPPFLAGS) $(DEBUGFLAGS) $(CXXFLAGS) -c $< -o $@
+
+$(objdir)/%.dlo: %.cpp
+	@mkdir -p $(@D)
+	$(CXX) $(CPPFLAGS) $(DEBUGFLAGS) $(CXXFLAGS) -fPIC -c $< -o $@
+
 version.h: $(version_template) $(version_file)
 	cp $(version_template) $@
 	sed -i -e 's/@PROJECT_VERSION_MAJOR@/$(major_version)/' $@
@@ -91,6 +105,12 @@ libmuscle.a: $(objects)
 	ar rcs $@ $^
 
 libmuscle.so: $(lobjects)
+	$(CXX) -shared -o $@ $^ $(LDFLAGS)
+
+libmuscle_d.a: $(dobjects)
+	ar rcs $@ $^
+
+libmuscle_d.so: $(dlobjects)
 	$(CXX) -shared -o $@ $^ $(LDFLAGS)
 
 $(PREFIX)/include/%.hpp: $(hdrdir)/%.hpp

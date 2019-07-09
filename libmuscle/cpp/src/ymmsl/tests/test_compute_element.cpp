@@ -22,3 +22,10 @@ TEST(ymmsl_compute_element, operator_allows_receiving) {
     ASSERT_EQ(allows_receiving(o_f), false);
 }
 
+TEST(ymmsl_compute_element, test_port) {
+    auto ep1 = ymmsl::Port(ymmsl::Identifier("test_in"), ymmsl::Operator::F_INIT);
+
+    ASSERT_EQ(ep1.name, "test_in");
+    ASSERT_EQ(ep1.oper, ymmsl::Operator::F_INIT);
+}
+

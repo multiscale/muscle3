@@ -1,5 +1,8 @@
 #pragma once
 
+#include <ymmsl/identity.hpp>
+
+
 /** @file compute_element.hpp
  *
  * Contains helper classes for defining compute elements.
@@ -35,6 +38,26 @@ bool allows_sending(Operator op);
  * @return true If and only if the operator allows receiving
  */
 bool allows_receiving(Operator op);
+
+/** A port on a compute element.
+ *
+ * Ports are used by compute elements to send or receive messages on. They are
+ * connected by conduits to enable communication between compute elements.
+ *
+ * @attribute name The name of the port.
+ * @attribute oper The MMSL operator in which this port is used.
+ */
+struct Port {
+    Identifier name;
+    Operator oper;
+
+    /** Create a Port.
+     *
+     * @param name The name of the port.
+     * @param oper The MMSL operator in which this port is used.
+     */
+    Port(Identifier const & name, Operator oper);
+};
 
 }
 

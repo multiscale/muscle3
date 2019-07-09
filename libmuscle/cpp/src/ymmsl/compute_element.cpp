@@ -16,5 +16,10 @@ bool allows_receiving(Operator op) {
            (op == Operator::B);
 }
 
+Port::Port(Identifier const & name, Operator oper)
+    : name(name)
+    , oper(oper)
+{}
+
 }
 

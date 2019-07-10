@@ -28,7 +28,7 @@ all: libymmsl.a libymmsl.so libymmsl_d.a libymmsl_d.so
 
 .PHONY: tests
 tests: libymmsl.a
-	$(MAKE) -C tests
+	$(MAKE) -C tests tests
 
 .PHONY: test
 test:

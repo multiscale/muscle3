@@ -76,6 +76,14 @@ std::ostream & operator<<(std::ostream & os, Identifier const & i) {
     return os << i.data_;
 }
 
+std::string operator+(std::string const & lhs, Identifier const & rhs) {
+    return lhs + static_cast<std::string>(rhs);
+}
+
+std::string operator+(Identifier const & lhs, std::string const & rhs) {
+    return static_cast<std::string>(lhs) + rhs;
+}
+
 ReferencePart::ReferencePart(Identifier const & i)
     : identifier_(i)
     , index_(-1)

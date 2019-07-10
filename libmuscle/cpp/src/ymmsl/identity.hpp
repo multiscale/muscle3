@@ -90,6 +90,24 @@ class Identifier {
         std::string data_;
 };
 
+/** Concatenate an Identifier onto a string.
+ *
+ * @param lhs A string.
+ * @param rhs An identifier to add onto it.
+ * @return A string containing the concatenation of the given string and the
+ *         string form of the Identifier.
+ */
+std::string operator+(std::string const & lhs, Identifier const & rhs);
+
+/** Concatenate a string onto an Identifier.
+ *
+ * @param lhs An Identifier.
+ * @param rhs A string to add onto it.
+ * @return A string containing the concatenation of the string form of the
+ *         given Identifier and the string.
+ */
+std::string operator+(Identifier const & lhs, std::string const & rhs);
+
 
 /** An item in a Reference.
  */

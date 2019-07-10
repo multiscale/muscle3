@@ -37,6 +37,14 @@ TEST(ymmsl_identity, test_compare_identifier) {
     ASSERT_NE("test2", Identifier("test"));
 }
 
+TEST(ymmsl_identity, test_concatenate_with_string) {
+    ASSERT_EQ(Identifier("test") + std::string("test"), "testtest");
+    ASSERT_EQ(std::string("test") + Identifier("test"), "testtest");
+    ASSERT_EQ(Identifier("test") + "test", "testtest");
+    ASSERT_EQ("test" + Identifier("test"), "testtest");
+}
+
+
 TEST(ymmsl_identity, test_identifier_map_key) {
     auto test_map = unordered_map<Identifier, int>{{Identifier("test"), 1}};
     ASSERT_EQ(test_map[Identifier("test")], 1);

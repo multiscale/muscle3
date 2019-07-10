@@ -30,6 +30,10 @@ all: libymmsl.a libymmsl.so libymmsl_d.a libymmsl_d.so
 tests: libymmsl.a
 	$(MAKE) -C tests
 
+.PHONY: test
+test:
+	$(MAKE) -C tests test
+
 .PHONY: clean
 clean:
 	rm -f libymmsl.a libymmsl.so

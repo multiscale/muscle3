@@ -8,6 +8,10 @@ all:
 tests:
 	$(MAKE) -C build tests
 
+.PHONY: test
+test:
+	$(MAKE) -C build test
+
 .PHONY: install
 install: all
 	$(MAKE) -C build install

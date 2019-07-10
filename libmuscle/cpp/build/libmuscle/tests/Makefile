@@ -8,6 +8,10 @@ unit_test_bins := $(unit_tests:$(libmuscle_testdir)/%.cpp=%)
 integration_test_bins := $(integration_tests:$(libmuscle_testdir)/%.cpp=%)
 all_tests := $(unit_test_bins) $(integration_test_bins)
 
+
+.PHONY: test
+test: $(foreach bin,$(unit_test_bins),run_$(bin))
+
 .PHONY: tests
 tests: $(all_tests)
 
@@ -37,8 +41,16 @@ LDFLAGS2 += $(EXTRA_LINK_DIRS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 test_%: test_%.o
-	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(LDFLAGS)
+	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(LDFLAGS2)
 
 %_test: %_test.o
 	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(LDFLAGS2)
+
+empty :=
+space := $(empty) $(empty)
+test_dep_lib_paths := $(subst $(space),:,$(foreach DIR,$(DEP_DIRS),$(DIR)/lib))
+
+.PHONY: run_test%
+run_test%: test%
+	export LD_LIBRARY_PATH=$(test_dep_lib_paths) ; ./$<
 

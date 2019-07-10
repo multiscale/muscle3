@@ -1,9 +1,18 @@
+cpp_test_files := libmuscle/cpp/build/ymmsl/tests/test_* libmuscle/cpp/build/libmuscle/tests/test_*
+
 .PHONY: all
 all: cpp
 
 .PHONY: test
-test: all cpp_tests
+test: test_python test_cpp
+
+.PHONY: test_python
+test_python: cpp_tests
 	python3 setup.py test
+
+.PHONY: test_cpp
+test_cpp:
+	cd libmuscle/cpp && $(MAKE) test
 
 .PHONY: install
 install: all

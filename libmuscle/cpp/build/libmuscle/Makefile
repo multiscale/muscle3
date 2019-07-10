@@ -29,7 +29,11 @@ all: libmuscle.a libmuscle.so libmuscle_d.a libmuscle_d.so version.h
 
 .PHONY: tests
 tests: libmuscle.a version.h
-	$(MAKE) -C tests
+	$(MAKE) -C tests tests
+
+.PHONY: test
+test:
+	$(MAKE) -C tests test
 
 .PHONY: clean
 clean:

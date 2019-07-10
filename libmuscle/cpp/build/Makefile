@@ -4,6 +4,11 @@ include check_tools.make
 .PHONY: all
 all: muscle_manager_protocol ymmsl libmuscle
 
+.PHONY: test
+test: tests
+	$(MAKE) -C ymmsl test
+	$(MAKE) -C libmuscle test
+
 .PHONY: install
 install: all
 	$(MAKE) -C ymmsl install
@@ -94,3 +99,5 @@ libmuscle: grpc ymmsl muscle_manager_protocol
 tests: ymmsl libmuscle googletest
 	$(MAKE) -C ymmsl tests
 	$(MAKE) -C libmuscle tests
+
+cpp_test_files := ymmsl/tests/test_* libmuscle/tests/test_*

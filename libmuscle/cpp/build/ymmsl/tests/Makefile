@@ -1,3 +1,7 @@
+.PHONY: test
+test: tests
+	./test_ymmsl
+
 .PHONY: tests
 tests: test_ymmsl
 

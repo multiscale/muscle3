@@ -1,4 +1,5 @@
 #include <cinttypes>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -12,6 +13,7 @@ using std::vector;
 using Vec2 = vector<vector<double>>;
 
 using ymmsl::ParameterValue;
+using ymmsl::Settings;
 
 
 TEST(ymmsl_settings, test_create_parameter_value) {
@@ -176,5 +178,107 @@ TEST(ymmsl_settings, test_move_assign_parameter_value) {
     ASSERT_FALSE(v7.is<Vec2>());
     ASSERT_TRUE(v2.is<Vec2>());
     ASSERT_EQ(v2.get<Vec2>()[1][0], 5.4);
+}
+
+TEST(ymmsl_settings, test_compare_parameter_value) {
+    ParameterValue v1(13);
+    ParameterValue v2(13.0);
+    ParameterValue v3("13");
+    ParameterValue v4("13");
+    ParameterValue v5({13.2, 14.3});
+    ParameterValue v6(std::vector<double>({13.2, 14.3}));
+    ParameterValue v7(Vec2({{7.6}, {5.4, 3.2}}));
+    ParameterValue v8({{7.6}, {5.4, 3.2}});
+
+    ASSERT_NE(v1, v2);
+    ASSERT_NE(v1, v3);
+    ASSERT_EQ(v3, v4);
+    ASSERT_EQ(v5, v6);
+    ASSERT_NE(v1, v5);
+    ASSERT_NE(v2, v6);
+    ASSERT_NE(v2, v7);
+    ASSERT_NE(v6, v7);
+    ASSERT_EQ(v7, v8);
+}
+
+TEST(ymmsl_settings, test_create_settings) {
+    Settings s1;
+}
+
+TEST(ymmsl_settings, test_compare_settings) {
+    Settings s1;
+    Settings s2;
+
+    ASSERT_TRUE(s1 == s2);
+    ASSERT_TRUE(s2 == s1);
+    ASSERT_FALSE(s1 != s2);
+    ASSERT_FALSE(s2 != s1);
+
+    s1["test"] = true;
+    s2["test"] = true;
+    ASSERT_EQ(s1, s2);
+    ASSERT_EQ(s2, s1);
+
+    s1["test2"] = 10;
+    ASSERT_NE(s1, s2);
+    ASSERT_NE(s2, s1);
+    s2["test2"] = 10;
+    ASSERT_EQ(s1, s2);
+    ASSERT_EQ(s2, s1);
+
+    s1["test2"] = "10";
+    ASSERT_NE(s1, s2);
+    ASSERT_NE(s2, s1);
+}
+
+TEST(ymmsl_settings, test_settings_size) {
+    Settings s1;
+
+    ASSERT_EQ(s1.size(), 0u);
+    ASSERT_TRUE(s1.empty());
+}
+
+TEST(ymmsl_settings, test_set_get_settings_value) {
+    Settings s1;
+
+    s1["test"] = "testing";
+    ASSERT_EQ(s1.at("test"), "testing");
+
+    s1["test2"] = 123.4;
+    ASSERT_TRUE(s1["test2"].is<double>());
+    ASSERT_EQ(s1.at("test2"), 123.4);
+
+    s1["test_list"] = {123.4, 567.8};
+    ASSERT_TRUE(s1.at("test_list").is<std::vector<double>>());
+    ASSERT_EQ(s1.at("test_list").get<std::vector<double>>()[1], 567.8);
+
+    ASSERT_THROW(s1.at("invalid^ref"), std::invalid_argument);
+    ASSERT_THROW(s1.at("0invalid"), std::invalid_argument);
+    ASSERT_THROW(s1.at("no_such_key"), std::out_of_range);
+}
+
+TEST(ymmsl_settings, test_erase) {
+    Settings s1;
+
+    ASSERT_FALSE(s1.contains("test"));
+    s1["test"] = true;
+    ASSERT_TRUE(s1.contains("test"));
+
+    s1.erase("test");
+    ASSERT_FALSE(s1.contains("test"));
+    ASSERT_THROW(s1.at("test"), std::out_of_range);
+}
+
+TEST(ymmsl_settings, test_iterate) {
+    Settings s1;
+    s1["test"] = true;
+    s1["test2"] = 123;
+
+    for (auto const & p : s1) {
+        if (p.first == "test")
+            ASSERT_EQ(p.second, true);
+        else
+            ASSERT_EQ(p.second, 123);
+    }
 }
 

@@ -2,6 +2,8 @@
 
 #include <utility>
 
+#include <ymmsl/identity.hpp>
+
 
 namespace ymmsl {
 
@@ -20,6 +22,11 @@ ParameterValue::ParameterValue(char const * value)
 {
     new (&string_value_) std::string(value);
 }
+
+ParameterValue::ParameterValue(int value)
+    : type_(ParameterValue::Type_::INT)
+    , int_value_(value)
+{}
 
 ParameterValue::ParameterValue(int64_t value)
     : type_(ParameterValue::Type_::INT)
@@ -90,6 +97,30 @@ ParameterValue const & ParameterValue::operator=(ParameterValue && other) {
 
 ParameterValue::~ParameterValue() {
     deactivate_();
+}
+
+bool ParameterValue::operator==(ParameterValue const & rhs) const {
+    switch (type_) {
+        case Type_::INACTIVE:
+            return rhs.type_ == Type_::INACTIVE;
+        case Type_::STRING:
+            return (rhs.type_ == Type_::STRING) && (string_value_ == rhs.string_value_);
+        case Type_::INT:
+            return (rhs.type_ == Type_::INT) && (int_value_ == rhs.int_value_);
+        case Type_::FLOAT:
+            return (rhs.type_ == Type_::FLOAT) && (float_value_ == rhs.float_value_);
+        case Type_::BOOL:
+            return (rhs.type_ == Type_::BOOL) && (bool_value_ == rhs.bool_value_);
+        case Type_::LIST_FLOAT:
+            return (rhs.type_ == Type_::LIST_FLOAT) && (list_value_ == rhs.list_value_);
+        case Type_::LIST_LIST_FLOAT:
+            return (rhs.type_ == Type_::LIST_LIST_FLOAT) && (list_list_value_ == rhs.list_list_value_);
+    }
+    return false;
+}
+
+bool ParameterValue::operator!=(ParameterValue const & rhs) const {
+    return !(*this == rhs);
 }
 
 template<>
@@ -217,6 +248,47 @@ void ParameterValue::move_value_from_(ParameterValue && other) {
             new (&list_list_value_) std::vector<std::vector<double>>(std::move(other.list_list_value_));
             break;
     }
+}
+
+
+bool Settings::operator==(Settings const & rhs) const {
+    return store_ == rhs.store_;
+}
+
+bool Settings::operator!=(Settings const & rhs) const {
+    return store_ != rhs.store_;
+}
+
+std::size_t Settings::size() const {
+    return store_.size();
+}
+
+bool Settings::empty() const {
+    return store_.empty();
+}
+
+bool Settings::contains(std::string const & setting) const {
+    return store_.count(Reference(setting)) != 0u;
+}
+
+ParameterValue const & Settings::at(std::string const & setting) const {
+    return store_.at(Reference(setting));
+}
+
+ParameterValue & Settings::operator[](std::string const & setting) {
+    return store_[Reference(setting)];
+}
+
+std::size_t Settings::erase(std::string const & setting) {
+    return store_.erase(Reference(setting));
+}
+
+Settings::const_iterator Settings::begin() const {
+    return store_.cbegin();
+}
+
+Settings::const_iterator Settings::end() const {
+    return store_.cend();
 }
 
 }

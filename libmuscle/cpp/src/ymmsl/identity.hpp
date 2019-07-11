@@ -215,6 +215,16 @@ class Reference {
          */
         Reference(std::string const & content);
 
+        /** Create a Reference from a ReferencePart range.
+         *
+         * *begin and *end must be of type ReferencePart.
+         *
+         * @param begin An iterator to the start of the range.
+         * @param end An iterator to the end of the range.
+         */
+        template <class ForwardIt>
+        Reference(ForwardIt begin, ForwardIt end);
+
         /** Conversion to std::string.
          *
          * @return The string representation of this Identifier.
@@ -357,5 +367,14 @@ namespace std {
             return res;
         }
     };
+}
+
+namespace ymmsl {
+
+template <class ForwardIt>
+Reference::Reference(ForwardIt begin, ForwardIt end)
+    : parts_(begin, end)
+{}
+
 }
 

@@ -271,12 +271,24 @@ bool Settings::contains(std::string const & setting) const {
     return store_.count(Reference(setting)) != 0u;
 }
 
+bool Settings::contains(Reference const & setting) const {
+    return store_.count(setting) != 0u;
+}
+
 ParameterValue const & Settings::at(std::string const & setting) const {
     return store_.at(Reference(setting));
 }
 
+ParameterValue const & Settings::at(Reference const & setting) const {
+    return store_.at(setting);
+}
+
 ParameterValue & Settings::operator[](std::string const & setting) {
     return store_[Reference(setting)];
+}
+
+ParameterValue & Settings::operator[](Reference const & setting) {
+    return store_[setting];
 }
 
 std::size_t Settings::erase(std::string const & setting) {

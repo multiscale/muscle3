@@ -125,6 +125,13 @@ class Settings {
          */
         bool contains(std::string const & setting) const;
 
+        /** Return true iff a setting with this name exists here.
+         *
+         * @param setting Name of the setting to check for.
+         * @return true iff it exists.
+         */
+        bool contains(Reference const & setting) const;
+
         /** Get the value of a given setting.
          *
          * @param setting The name of the setting to read.
@@ -133,14 +140,31 @@ class Settings {
          */
         ParameterValue const & at(std::string const & setting) const;
 
+        /** Get the value of a given setting.
+         *
+         * @param setting The name of the setting to read.
+         * @return The value of that setting.
+         * @throws std::out_of_range if there is no setting with that name.
+         */
+        ParameterValue const & at(Reference const & setting) const;
+
         /** Set the value of a given setting.
          *
          * Adds the setting first if it does not exist.
          *
-         * @param setting
+         * @param setting The name of the setting to read.
          * @return A reference to the setting's value that can be modified.
          */
         ParameterValue & operator[](std::string const & setting);
+
+        /** Set the value of a given setting.
+         *
+         * Adds the setting first if it does not exist.
+         *
+         * @param setting The name of the setting to read.
+         * @return A reference to the setting's value that can be modified.
+         */
+        ParameterValue & operator[](Reference const & setting);
 
         /** Removes setting with the given key.
          *

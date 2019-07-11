@@ -29,8 +29,9 @@ MUSCLE 3 is the third incarnation of the MUSCLE Multiscale Coupling Library and
 Environment. It is developed by the `ComPat`_ EU FP 7 project, and the e-MUSC
 project of the University of Amsterdam and the Netherlands eScience Center.
 
-MUSCLE 3 is currently in the early stages of design and development, so it's not
-usable yet.
+A first version of MUSCLE 3 is now available! This is Python-only; support for
+C++, C and Fortran is under active development. Browse to
+`the MUSCLE 3 documentation`_ to get started.
 
 
 Legal
@@ -67,6 +68,7 @@ The documentation can be built using::
   python setup.py build_sphinx
 
 
+.. _`the MUSCLE 3 documentation`: https://muscle3.readthedocs.io
 .. _`documentation on contributing`: http://muscle3.readthedocs.io/en/latest/contributing.html
 .. _`ComPat`: http://www.compat.eu
 .. _`code of conduct`: https://github.com/multiscale/muscle3/blob/develop/CODE_OF_CONDUCT.md

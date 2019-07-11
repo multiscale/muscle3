@@ -44,7 +44,7 @@ def has_parameter_type(value: ParameterValue, typ: str) -> bool:
 
 
 class SettingsManager:
-    """Manager the current settings for a compute element instance.
+    """Manages the current settings for a compute element instance.
     """
     def __init__(self) -> None:
         """Create a SettingsManager.

@@ -40,11 +40,11 @@ LDFLAGS2 += $(EXTRA_LINK_DIRS)
 %.o: %.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-test_%: test_%.o
-	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(LDFLAGS2)
+test_%: test_%.o $(CURDIR)/../libmuscle_d.a $(CURDIR)/../../ymmsl/libymmsl_d.a
+	$(CXX) $(DEBUGFLAGS) $< -o $@ $(LDFLAGS2)
 
-%_test: %_test.o
-	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(LDFLAGS2)
+%_test: %_test.o $(CURDIR)/../libmuscle_d.a $(CURDIR)/../../ymmsl/libymmsl_d.a
+	$(CXX) $(DEBUGFLAGS) $< -o $@ $(LDFLAGS2)
 
 empty :=
 space := $(empty) $(empty)

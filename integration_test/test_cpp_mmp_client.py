@@ -14,7 +14,7 @@ from libmuscle.mmp_client import MMPClient
 from libmuscle.operator import Operator
 
 
-def do_logging_test(caplog):
+def do_mmp_client_test(caplog):
     ymmsl_text = (
             'ymmsl_version: v0.1\n'
             'model:\n'
@@ -47,7 +47,9 @@ def do_logging_test(caplog):
     server = MMPServer(logger, ymmsl_doc.settings, instance_registry,
                        topology_store)
 
-    # create C++ client, which sends a log message
+    # create C++ client
+    # it receives and checks settings, and sends a log message
+    # see libmuscle/cpp/src/libmuscle/tests/mmp_client_test.cpp
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
     lib_paths = [
             cpp_build_dir / 'grpc' / 'c-ares' / 'c-ares' / 'lib',
@@ -71,8 +73,8 @@ def do_logging_test(caplog):
     server.stop()
 
 
-def test_logging(log_file_in_tmpdir, caplog):
-    process = mp.Process(target=do_logging_test, args=(caplog,))
+def test_mmp_client(log_file_in_tmpdir, caplog):
+    process = mp.Process(target=do_mmp_client_test, args=(caplog,))
     process.start()
     process.join()
     assert process.exitcode == 0

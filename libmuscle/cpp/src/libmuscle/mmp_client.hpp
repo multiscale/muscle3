@@ -5,6 +5,7 @@
 
 #include "libmuscle/logging.hpp"
 #include "muscle_manager_protocol/muscle_manager_protocol.grpc.pb.h"
+#include "ymmsl/settings.hpp"
 
 
 namespace libmuscle {
@@ -31,9 +32,14 @@ class MMPClient {
          */
         void submit_log_message(LogMessage const & message);
 
+        /** Get the global settings from the manager.
+         *
+         * @return A Settings object with the global settings.
+         */
+        ymmsl::Settings get_settings();
+
     private:
         std::unique_ptr<muscle_manager_protocol::MuscleManager::Stub> client_;
-        std::unique_ptr<grpc::ClientContext> context_;
 };
 
 }

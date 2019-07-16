@@ -7,6 +7,7 @@ integration_tests := $(wildcard $(libmuscle_testdir)/*test.cpp)
 unit_test_bins := $(unit_tests:$(libmuscle_testdir)/%.cpp=%)
 integration_test_bins := $(integration_tests:$(libmuscle_testdir)/%.cpp=%)
 all_tests := $(unit_test_bins) $(integration_test_bins)
+deps := $(all_tests:%=%.d)
 
 
 .PHONY: test
@@ -36,6 +37,12 @@ LDFLAGS2 += $(CURDIR)/../../muscle_manager_protocol/libmmp.a
 LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs protobuf)
 LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs grpc grpc++)
 LDFLAGS2 += $(EXTRA_LINK_DIRS)
+
+$(info libmuscle test deps: $(deps))
+-include $(deps)
+
+%.d: %.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -E -MM -MT $(@:.d=.o) $< -o $@
 
 %.o: %.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@

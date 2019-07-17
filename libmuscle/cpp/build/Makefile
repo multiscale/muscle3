@@ -15,9 +15,11 @@ install: all
 	$(MAKE) -C libmuscle install
 	$(MAKE) -C protobuf install
 	$(MAKE) -C grpc install
+	$(MAKE) -C msgpack install
 
 .PHONY: clean
 clean:
+	$(MAKE) -C msgpack clean
 	$(MAKE) -C protobuf clean
 	$(MAKE) -C grpc clean
 	$(MAKE) -C googletest clean
@@ -27,6 +29,7 @@ clean:
 
 .PHONY: distclean
 distclean:
+	$(MAKE) -C msgpack distclean
 	$(MAKE) -C protobuf distclean
 	$(MAKE) -C grpc distclean
 	$(MAKE) -C googletest distclean
@@ -51,6 +54,12 @@ include make_available.make
 
 grpc: protobuf
 
+dep_name := msgpack
+dep_min_version := 3.2.0
+dep_version := 3.0.0
+dep_pkgconfig_name := msgpack
+include make_available.make
+
 dep_name := googletest
 dep_min_version := 1.8.1
 dep_version := 1.8.1
@@ -65,6 +74,7 @@ DEP_DIRS += $(CURDIR)/grpc/c-ares/c-ares
 DEP_DIRS += $(CURDIR)/grpc/openssl/openssl
 DEP_DIRS += $(CURDIR)/grpc/zlib/zlib
 DEP_DIRS += $(CURDIR)/grpc/grpc
+DEP_DIRS += $(CURDIR)/msgpack/msgpack
 export DEP_DIRS
 
 PKG_CONFIG_EXTRA_DIRS := $(CURDIR)/protobuf/protobuf/lib/pkgconfig
@@ -72,6 +82,7 @@ PKG_CONFIG_EXTRA_DIRS := $(PKG_CONFIG_EXTRA_DIRS):$(CURDIR)/grpc/c-ares/c-ares/l
 PKG_CONFIG_EXTRA_DIRS := $(PKG_CONFIG_EXTRA_DIRS):$(CURDIR)/grpc/openssl/openssl/lib/pkgconfig
 PKG_CONFIG_EXTRA_DIRS := $(PKG_CONFIG_EXTRA_DIRS):$(CURDIR)/grpc/zlib/zlib/lib/pkgconfig
 PKG_CONFIG_EXTRA_DIRS := $(PKG_CONFIG_EXTRA_DIRS):$(CURDIR)/grpc/grpc/lib/pkgconfig
+PKG_CONFIG_EXTRA_DIRS := $(PKG_CONFIG_EXTRA_DIRS):$(CURDIR)/msgpack/msgpack/lib/pkgconfig
 export PKG_CONFIG_EXTRA_DIRS
 
 
@@ -89,14 +100,14 @@ ymmsl:
 
 
 .PHONY: libmuscle
-libmuscle: grpc ymmsl muscle_manager_protocol
+libmuscle: grpc ymmsl msgpack muscle_manager_protocol
 	@echo
 	@echo 'Building libmuscle...'
 	$(MAKE) -j $(NCORES) -C libmuscle
 
 
 .PHONY: tests
-tests: ymmsl libmuscle googletest
+tests: ymmsl libmuscle msgpack muscle_manager_protocol googletest
 	$(MAKE) -C ymmsl tests
 	$(MAKE) -C libmuscle tests
 

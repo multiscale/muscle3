@@ -3,6 +3,7 @@ language: python
 python:
     - "3.5"
     - "3.6"
+    - "3.7"
 
 # Travis comes with an old pytest that does not work with pytest-flake8
 # So upgrade that first, and also install dependencies from binaries as much

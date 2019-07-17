@@ -113,7 +113,7 @@ The reuse loop
 Now that we have an :class:`.Instance` object, we can start the *reuse loop*. In
 multiscale simulations, submodels often have to run multiple times, for instance
 because they're used as a micro-model or because they are part of an ensemble
-that cannot be completely parallelised. In order te accomplish this, the entire
+that cannot be completely parallelised. In order to accomplish this, the entire
 model is wrapped into a loop. Exactly when this loop ends depends on the
 behaviour of the whole model, and is not easy to determine, but fortunately
 MUSCLE will do that for us if we call the :meth:`.Instance.reuse_instance`
@@ -466,7 +466,7 @@ function:
 
 
 Here, we make a dictionary that maps implementation names to the corresponding
-Python functions, We then pass the configuration and the implementations to
+Python functions. We then pass the configuration and the implementations to
 :func:`.run_simulation`, which will start the muscle_manager and the
 implementations, and then wait for the simulation to finish.
 
@@ -486,7 +486,7 @@ If you run the script, e.g. using
 
   (venv) examples$ python3 reaction_diffusion.py
 
-it will pop up a plot showing the state of the system over time.
+it will pop up a plot showing the state of the simulated system over time.
 
 You will also find three log files in this directory: ``muscle3_manager.log``,
 ``muscle3.macro.log`` and ``muscle3.micro.log``. These contain log output for

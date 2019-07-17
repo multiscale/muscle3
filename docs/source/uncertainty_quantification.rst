@@ -25,12 +25,12 @@ At the bottom, we have the macro-micro model we saw earlier. The reaction model
 is exactly identical to the previous example. For the diffusion model we have
 removed the visualisation and instead send the final state on an output port
 ``final_state_out`` associated with the O_F operator. (It would probably have
-been good to do that to begin with, with a separate visualisation or
-save-to-disk component attached.) The only other change here is that there are
-now ten copies each of the ``macro`` and ``micro`` components. There will also
-be ten instances of the conduits between ``macro`` and ``micro``, which MUSCLE 3
-will create automatically. The instances are wired up one-on-one, so that
-``macro[i]`` connects to ``micro[i]``.
+been good to do that to begin with, using a separate visualisation or
+save-to-disk component attached via a conduit.) The only other change here is
+that there are now ten copies each of the ``macro`` and ``micro`` components.
+There will also be ten instances of the conduits between ``macro`` and
+``micro``, which MUSCLE 3 will create automatically. The instances are wired up
+one-on-one, so that ``macro[i]`` connects to ``micro[i]``.
 
 There are two new compute elements: the ``qmc`` element, which implements the
 quasi-Monte Carlo UQ algorithm, and the ``rr`` element, which distributes the
@@ -73,12 +73,12 @@ sends out sets of parameters, but ``macro`` has no F_INIT port to receive them.
 It gets its parameter values, via MUSCLE 3, from the central configuration. So
 we need a trick, and MUSCLE 3 provides one in the form of the
 ``muscle_settings_in`` port. This is a special F_INIT port that each MUSCLE 3
-compute element automatically has. If can be connected to a port on a component
+compute element automatically has. It can be connected to a port on a component
 that sends ``Settings`` objects. MUSCLE 3 will automatically receive these
 messages, and overlay the received settings on top of the base settings from the
 central configuration. When the receiving submodel then asks MUSCLE 3 for a
-setting it will be read from the overlay settings first. If it's not found there
-then MUSCLE 3 will fall back to the central base configuration.
+setting, MUSCLE 3 will look at the overlay settings first. If the setting is
+not found there, then MUSCLE 3 will fall back to the central base configuration.
 
 So, now our diffusion model will ask for the value of ``d`` as it did before,
 but this time, it will actually come from the values sent by ``qmc``, and it

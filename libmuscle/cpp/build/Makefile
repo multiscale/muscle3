@@ -55,8 +55,8 @@ include make_available.make
 grpc: protobuf
 
 dep_name := msgpack
-dep_min_version := 3.2.0
-dep_version := 3.0.0
+dep_min_version := 3.1.0
+dep_version := 3.2.0
 dep_pkgconfig_name := msgpack
 include make_available.make
 

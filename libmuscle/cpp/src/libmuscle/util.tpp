@@ -34,7 +34,7 @@ Optional<T>::Optional(Optional<T> && rhs)
 }
 
 template <typename T>
-Optional<T> const & Optional<T>::operator=(Optional<T> const & rhs) {
+Optional<T> & Optional<T>::operator=(Optional<T> const & rhs) {
     if (!is_set_ && rhs.is_set_)
         new (&t_) T (rhs.t_);
     else if (is_set_ && !rhs.is_set_)
@@ -47,7 +47,7 @@ Optional<T> const & Optional<T>::operator=(Optional<T> const & rhs) {
 }
 
 template <typename T>
-Optional<T> const & Optional<T>::operator=(Optional<T> && rhs) {
+Optional<T> & Optional<T>::operator=(Optional<T> && rhs) {
     if (!is_set_ && rhs.is_set_)
         new (&t_) T (std::move(rhs.t_));
     else if (is_set_ && !rhs.is_set_)

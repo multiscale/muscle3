@@ -45,13 +45,13 @@ class Optional {
          *
          * @param rhs The object to copy from.
          */
-        Optional const & operator=(Optional const & rhs);
+        Optional & operator=(Optional const & rhs);
 
         /** Move-assign an Optional.
          *
          * @param rhs The object to move from.
          */
-        Optional const & operator=(Optional && rhs);
+        Optional & operator=(Optional && rhs);
 
         /** Destruct an Optional.
          */

@@ -46,7 +46,7 @@ $(info libmuscle test deps: $(deps))
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -E -MM -MT $(@:.d=.o) $< -o $@
 
 %.o: %.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@
 
 test_%: test_%.o $(CURDIR)/../libmuscle_d.a $(CURDIR)/../../ymmsl/libymmsl_d.a
 	$(CXX) $(DEBUGFLAGS) $< -o $@ $(LDFLAGS2)

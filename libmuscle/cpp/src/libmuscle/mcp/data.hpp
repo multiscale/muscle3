@@ -257,13 +257,17 @@ class DataConstRef {
  * This represents a data object, which is what MUSCLE 3 sends and receives.
  *
  * Data objects refer to a simple value of a basic type, or refer to a
- * dictionary or list. It models a reference, so if you copy a Data object to
+ * dictionary or list. They model a reference, so if you copy a Data object to
  * a new Data object, you'll have two Data objects referring to the same data
- * item.
+ * item. If you assign to a Data object, you modify the referred-to item,
+ * which will be visible also via any existing copies of the Data object.
  *
  * With respect to memory management, this is like a shared_ptr, in that it
- * will automatically manage any referenced memory, and only removed the actual
- * object once all Data objects referring to it have been destructed.
+ * will automatically manage any referenced memory, and only remove any actual
+ * items once all Data objects referring to them have been destructed.
+ *
+ * Note that this publicly derives from DataConstRef, so see that class for the
+ * constructors and read-only member functions; they work on Data as well.
  *
  * See the C++ tutorial for examples of how to use this.
  */
@@ -274,7 +278,7 @@ class Data : public DataConstRef {
 
         /** Create a Data containing an empty dictionary.
          *
-         * @returns A Data containin an empty dictionary.
+         * @returns A Data containing an empty dictionary.
          */
         static Data dict();
         template <typename... Args>

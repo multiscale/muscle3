@@ -227,6 +227,15 @@ DataConstRef DataConstRef::operator[](std::size_t index) const {
 
 DataConstRef::DataConstRef(
         msgpack::object * obj,
+        std::shared_ptr<msgpack::zone> const & zone)
+    : mp_zones_()
+    , mp_obj_(obj)
+{
+    mp_zones_.push_back(zone);
+}
+
+DataConstRef::DataConstRef(
+        msgpack::object * obj,
         std::vector<std::shared_ptr<msgpack::zone>> const & zones)
     : mp_zones_(zones)
     , mp_obj_(obj)
@@ -237,13 +246,6 @@ DataConstRef::DataConstRef(std::shared_ptr<msgpack::zone> const & zone)
     , mp_obj_(zone_alloc_<msgpack::object>())
 {
     mp_obj_->type = msgpack::type::NIL;
-}
-
-DataConstRef::DataConstRef(msgpack::object_handle && oh)
-    : mp_zones_({std::move(oh.zone())})
-    , mp_obj_(zone_alloc_<msgpack::object>())
-{
-    *mp_obj_ = oh.get();
 }
 
 Data Data::dict() {

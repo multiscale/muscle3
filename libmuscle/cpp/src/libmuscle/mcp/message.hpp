@@ -1,9 +1,9 @@
 #pragma once
 
+#include <libmuscle/mcp/data.hpp>
 #include <libmuscle/util.hpp>
 #include <ymmsl/identity.hpp>
 
-#include <msgpack.hpp>
 
 
 namespace libmuscle { namespace mcp {
@@ -33,16 +33,16 @@ struct Message {
             ::ymmsl::Reference const & sender, ::ymmsl::Reference const & receiver,
             ::libmuscle::Optional<int> port_length,
             double timestamp, ::libmuscle::Optional<double> next_timestamp,
-            ::msgpack::sbuffer && parameter_overlay,
-            ::msgpack::sbuffer && data);
+            DataConstRef const & parameter_overlay,
+            DataConstRef const & data);
 
     ::ymmsl::Reference sender;
     ::ymmsl::Reference receiver;
     ::libmuscle::Optional<int> port_length;
     double timestamp;
     ::libmuscle::Optional<double> next_timestamp;
-    ::msgpack::sbuffer parameter_overlay;
-    ::msgpack::sbuffer data;
+    DataConstRef parameter_overlay;
+    DataConstRef data;
 };
 
 } }

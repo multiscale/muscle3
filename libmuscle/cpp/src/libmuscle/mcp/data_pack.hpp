@@ -2,6 +2,10 @@
 
 #include "libmuscle/mcp/data.hpp"
 
+#include <memory>
+
+#include <msgpack.hpp>
+
 
 namespace libmuscle {
 
@@ -17,7 +21,9 @@ namespace mcp {
  * @param buf Length of the buffer to read from.
  * @return A Data object with the unpacked data.
  */
-Data unpack_data(char const * begin, std::size_t length);
+Data unpack_data(
+        std::shared_ptr<msgpack::zone> const & zone,
+        char const * begin, std::size_t length);
 
 }   // namespace mcp
 

@@ -255,6 +255,11 @@ class DataConstRef {
         std::vector<std::shared_ptr<msgpack::zone>> mp_zones_;
         msgpack::object * mp_obj_;
 
+        // create DCR pointing to the given object and sharing the given zone
+        DataConstRef(
+                msgpack::object * data,
+                std::shared_ptr<msgpack::zone> const & zone);
+
         // create DCR pointing to the given object and sharing the given zones
         DataConstRef(
                 msgpack::object * data,
@@ -262,9 +267,6 @@ class DataConstRef {
 
         // create DCR sharing the given zone
         DataConstRef(std::shared_ptr<msgpack::zone> const & zone);
-
-        // create DCR from an object_handle, e.g. decoded MsgPack data
-        DataConstRef(msgpack::object_handle && oh);
 
         // allocate an object on this object's zone
         template <typename T>
@@ -444,6 +446,7 @@ class Data : public DataConstRef {
         friend struct msgpack::adaptor::pack<Data>;
         friend struct msgpack::adaptor::object_with_zone<Data>;
         friend Data libmuscle::mcp::unpack_data(
+                std::shared_ptr<msgpack::zone> const & zone,
                 char const * begin, std::size_t length);
 };
 

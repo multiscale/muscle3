@@ -171,9 +171,19 @@ class DataConstRef {
          */
         bool is_a_list() const;
 
-        /** Returns the size of a list of dict.
+        /** Return whether this references a byte array.
          *
-         * @return The number of items in a referenced list or dict value.
+         * If so, as_byte_array() can be used to obtain values, and size()
+         * to get the number of bytes in the array.
+         *
+         * @return True iff this references a byte array.
+         */
+        bool is_a_byte_array() const;
+
+        /** Returns the size of a list, dict or byte array.
+         *
+         * @return The number of items in a referenced list or dict value, or
+         *         the number of bytes in a byte array.
          */
         std::size_t size() const;
 
@@ -205,6 +215,19 @@ class DataConstRef {
          */
         template <typename T>
         T as() const;
+
+        /** Access a byte array.
+         *
+         * Use is_a_byte_array() to check whether this object represents a byte
+         * array.
+         *
+         * The returned buffer will remain valid and accessible at least until
+         * this ConstDataRef goes out of scope.
+         *
+         * @return A pointer to a the first byte of a consecutive buffer.
+         * @throws std::runtime_error if this is not a byte array.
+         */
+        char const * as_byte_array() const;
 
         /** Access an item in a dictionary.
          *
@@ -324,6 +347,18 @@ class Data : public DataConstRef {
          */
         template <typename... Args>
         static Data list(Args const &... args);
+
+        /** Create a Data referencing a byte array.
+         *
+         * The buffer passed will not be copied! This creates a Data object
+         * that refers to your buffer, and you need to make sure that that
+         * buffer exists for as long as the Data object (and/or any copies of
+         * it) is used.
+         *
+         * @param buffer A pointer to the beginning of the buffer.
+         * @param size The size of the buffer.
+         */
+        static Data byte_array(char const * buffer, uint32_t size);
 
         /** Copy-assign the given value to this Data object.
          *

@@ -309,6 +309,22 @@ TEST(libmuscle_mcp_data, list_dict) {
     ASSERT_EQ(data[2]["test2"].as<int>(), 87);
 }
 
+TEST(libmuscle_mcp_data, byte_array) {
+    std::string test_data("Test data");
+
+    auto bytes = Data::byte_array(test_data.data(), test_data.size());
+
+    msgpack::sbuffer buf;
+    msgpack::pack(buf, bytes);
+    auto zone = std::make_shared<msgpack::zone>();
+    auto data = libmuscle::mcp::unpack_data(zone, buf.data(), buf.size());
+
+    ASSERT_TRUE(data.is_a_byte_array());
+    ASSERT_EQ(data.size(), test_data.size());
+    for (std::size_t i = 0u; i < data.size(); ++i)
+        ASSERT_EQ(data.as_byte_array()[i], test_data[i]);
+}
+
 TEST(libmuscle_mcp_data, as_wrong_Type) {
     Data d(42);
 

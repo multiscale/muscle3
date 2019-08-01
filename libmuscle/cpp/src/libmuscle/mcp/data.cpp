@@ -178,14 +178,27 @@ bool DataConstRef::is_a_list() const {
     return mp_obj_->type == msgpack::type::ARRAY;
 }
 
+bool DataConstRef::is_a_byte_array() const {
+    return mp_obj_->type == msgpack::type::BIN;
+}
+
 std::size_t DataConstRef::size() const {
     if (is_a_dict())
         return mp_obj_->via.map.size;
     else if (is_a_list())
         return mp_obj_->via.array.size;
+    else if (is_a_byte_array())
+        return mp_obj_->via.bin.size;
     else
         throw std::runtime_error("DataConstRef::size() called for an object that does"
                                  " not represent a list or dict");
+}
+
+char const * DataConstRef::as_byte_array() const {
+    if (!is_a_byte_array())
+        throw std::runtime_error("Tried to access as a byte array, but this is"
+                                 " not a byte array.");
+    return mp_obj_->via.bin.ptr;
 }
 
 DataConstRef DataConstRef::operator[](std::string const & key) const {
@@ -251,6 +264,14 @@ Data Data::nils(std::size_t size) {
     for (std::size_t i = 0u; i < size; ++i)
         list.mp_obj_->via.array.ptr[i].type = msgpack::type::NIL;
     return list;
+}
+
+Data Data::byte_array(char const * buf, uint32_t size) {
+    Data bytes;
+    bytes.mp_obj_->type = msgpack::type::BIN;
+    bytes.mp_obj_->via.bin.size = size;
+    bytes.mp_obj_->via.bin.ptr = buf;
+    return bytes;
 }
 
 Data & Data::operator=(Data const & rhs) {

@@ -43,6 +43,7 @@ setup(
         'grpcio==1.17.1',
         'msgpack',
         'protobuf',
+        'pynng',
         'ruamel.yaml<=0.15.64',
         'ymmsl==0.9.1'          # Also in .travisrc, update there as well
     ],

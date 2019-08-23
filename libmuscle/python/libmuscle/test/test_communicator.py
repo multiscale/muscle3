@@ -1,5 +1,6 @@
 from libmuscle.communicator import _ClosePort, Communicator, Endpoint, Message
 from libmuscle.mcp.direct_client import DirectClient
+from libmuscle.mcp.direct_server import DirectServer
 from libmuscle.mcp.message import Message as MCPMessage
 from libmuscle.port import Port
 
@@ -39,122 +40,129 @@ def test_endpoint_instance() -> None:
 
 @pytest.fixture
 def communicator() -> Communicator:
-    instance_id = Reference('kernel')
-    communicator = Communicator(instance_id, [13], None, MagicMock())
-    communicator._Communicator__peer_manager = MagicMock()
-    pm = communicator._Communicator__peer_manager
-    pm.is_connected.return_value = True
+    # Creating a Communicator will start servers, and some servers are not
+    # fork-compatible (anything NNG-based in particular). This then crashes
+    # the later integration tests, which fork. So we disable everything
+    # except DirectServer.
+    with patch('libmuscle.communicator.server_types', [DirectServer]):
+        instance_id = Reference('kernel')
+        communicator = Communicator(instance_id, [13], None, MagicMock())
+        communicator._Communicator__peer_manager = MagicMock()
+        pm = communicator._Communicator__peer_manager
+        pm.is_connected.return_value = True
 
-    def gpp(x) -> Reference:
-        if 'out' in str(x):
-            return Reference('in')
-        return Reference('out')
+        def gpp(x) -> Reference:
+            if 'out' in str(x):
+                return Reference('in')
+            return Reference('out')
 
-    pm.get_peer_port = gpp
+        pm.get_peer_port = gpp
 
-    pm.get_peer_dims.return_value = []
-    pm.get_peer_locations.return_value = ['direct:test']
+        pm.get_peer_dims.return_value = []
+        pm.get_peer_locations.return_value = ['direct:test']
 
-    def gpe(p, s) -> Reference:
-        endpoint = MagicMock()
-        endpoint.instance.return_value = Reference('other')
-        if 'out' in str(p):
-            endpoint.ref.return_value = Reference('other.in[13]')
-        else:
-            endpoint.ref.return_value = Reference('other.out')
-        return endpoint
+        def gpe(p, s) -> Reference:
+            endpoint = MagicMock()
+            endpoint.instance.return_value = Reference('other')
+            if 'out' in str(p):
+                endpoint.ref.return_value = Reference('other.in[13]')
+            else:
+                endpoint.ref.return_value = Reference('other.out')
+            return endpoint
 
-    pm.get_peer_endpoint = gpe
+        pm.get_peer_endpoint = gpe
 
-    communicator._Communicator__ports = {
-            'out': Port('out', Operator.O_I, False, True, 1, []),
-            'in': Port('in', Operator.S, False, True, 1, [])}
-    yield communicator
-    communicator.shutdown()
+        communicator._Communicator__ports = {
+                'out': Port('out', Operator.O_I, False, True, 1, []),
+                'in': Port('in', Operator.S, False, True, 1, [])}
+        yield communicator
+        communicator.shutdown()
 
 
 @pytest.fixture
 def communicator2() -> Communicator:
-    instance_id = Reference('other')
-    communicator = Communicator(instance_id, [], None, MagicMock())
-    communicator._Communicator__peer_manager = MagicMock()
-    pm = communicator._Communicator__peer_manager
-    pm.is_connected.return_value = True
+    with patch('libmuscle.communicator.server_types', [DirectServer]):
+        instance_id = Reference('other')
+        communicator = Communicator(instance_id, [], None, MagicMock())
+        communicator._Communicator__peer_manager = MagicMock()
+        pm = communicator._Communicator__peer_manager
+        pm.is_connected.return_value = True
 
-    def gpp(x: Reference) -> Reference:
-        if 'out' in str(x):
-            return Reference('in')
-        return Reference('out')
+        def gpp(x: Reference) -> Reference:
+            if 'out' in str(x):
+                return Reference('in')
+            return Reference('out')
 
-    pm.get_peer_port = gpp
+        pm.get_peer_port = gpp
 
-    pm.get_peer_dims.return_value = []
-    pm.get_peer_locations.return_value = ['direct:test']
+        pm.get_peer_dims.return_value = []
+        pm.get_peer_locations.return_value = ['direct:test']
 
-    def gpe(p, s) -> Reference:
-        endpoint = MagicMock()
-        endpoint.instance.return_value = Reference('kernel[13]')
-        if 'out' in str(p):
-            endpoint.ref.return_value = Reference('kernel[13].in')
-        else:
-            endpoint.ref.return_value = Reference('kernel[13].out')
-        return endpoint
+        def gpe(p, s) -> Reference:
+            endpoint = MagicMock()
+            endpoint.instance.return_value = Reference('kernel[13]')
+            if 'out' in str(p):
+                endpoint.ref.return_value = Reference('kernel[13].in')
+            else:
+                endpoint.ref.return_value = Reference('kernel[13].out')
+            return endpoint
 
-    pm.get_peer_endpoint = gpe
+        pm.get_peer_endpoint = gpe
 
-    communicator._Communicator__ports = {
-            'out': Port('out', Operator.O_I, True, True, 0, [20]),
-            'in': Port('in', Operator.S, True, True, 0, [20])}
-    yield communicator
-    communicator.shutdown()
+        communicator._Communicator__ports = {
+                'out': Port('out', Operator.O_I, True, True, 0, [20]),
+                'in': Port('in', Operator.S, True, True, 0, [20])}
+        yield communicator
+        communicator.shutdown()
 
 
 @pytest.fixture
 def communicator3() -> Communicator:
-    instance_id = Reference('kernel')
-    communicator = Communicator(instance_id, [], None, MagicMock())
-    communicator._Communicator__peer_manager = MagicMock()
-    pm = communicator._Communicator__peer_manager
-    pm.is_connected.return_value = True
+    with patch('libmuscle.communicator.server_types', [DirectServer]):
+        instance_id = Reference('kernel')
+        communicator = Communicator(instance_id, [], None, MagicMock())
+        communicator._Communicator__peer_manager = MagicMock()
+        pm = communicator._Communicator__peer_manager
+        pm.is_connected.return_value = True
 
-    def gpp(x: Reference) -> Reference:
-        if 'out' in str(x):
-            return Reference('in')
-        return Reference('out')
+        def gpp(x: Reference) -> Reference:
+            if 'out' in str(x):
+                return Reference('in')
+            return Reference('out')
 
-    pm.get_peer_port = gpp
+        pm.get_peer_port = gpp
 
-    pm.get_peer_dims.return_value = []
-    pm.get_peer_locations.return_value = ['direct:test']
+        pm.get_peer_dims.return_value = []
+        pm.get_peer_locations.return_value = ['direct:test']
 
-    def gpe(p, s) -> Reference:
-        endpoint = MagicMock()
-        endpoint.instance.return_value = Reference('other')
-        if 'out' in str(p):
-            endpoint.ref.return_value = Reference('other.in[13]')
-        else:
-            endpoint.ref.return_value = Reference('other.out[13]')
-        return endpoint
+        def gpe(p, s) -> Reference:
+            endpoint = MagicMock()
+            endpoint.instance.return_value = Reference('other')
+            if 'out' in str(p):
+                endpoint.ref.return_value = Reference('other.in[13]')
+            else:
+                endpoint.ref.return_value = Reference('other.out[13]')
+            return endpoint
 
-    pm.get_peer_endpoint = gpe
+        pm.get_peer_endpoint = gpe
 
-    communicator._Communicator__ports = {
-            'out': Port('out', Operator.O_I, True, True, 0, []),
-            'in': Port('in', Operator.S, True, True, 0, [])}
-    yield communicator
-    communicator.shutdown()
+        communicator._Communicator__ports = {
+                'out': Port('out', Operator.O_I, True, True, 0, []),
+                'in': Port('in', Operator.S, True, True, 0, [])}
+        yield communicator
+        communicator.shutdown()
 
 
 def test_create_communicator(communicator) -> None:
     assert str(communicator._Communicator__kernel) == 'kernel'
     assert communicator._Communicator__index == [13]
-    assert len(communicator._Communicator__servers) == 2
+    assert len(communicator._Communicator__servers) == 1
     assert communicator._Communicator__clients == {}
     assert communicator._outboxes == {}
 
 
 def test_get_locations(communicator) -> None:
-    assert len(communicator.get_locations()) == 2
+    assert len(communicator.get_locations()) == 1
     assert communicator.get_locations()[0].startswith('direct:')
 
 
@@ -167,7 +175,8 @@ def test_connect() -> None:
     peer_dims = {ref('other'): [1]}
     peer_locations = {ref('other'): ['direct:test']}
 
-    with patch('libmuscle.communicator.PeerManager') as pm_init:
+    with patch('libmuscle.communicator.PeerManager') as pm_init, \
+            patch('libmuscle.communicator.server_types', [DirectServer]):
         communicator = Communicator(instance_id, [13], None, MagicMock())
 
         communicator.connect(conduits, peer_dims, peer_locations)

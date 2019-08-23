@@ -37,6 +37,7 @@ LDFLAGS2 += $(CURDIR)/../../muscle_manager_protocol/libmmp.a
 LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs protobuf)
 LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs grpc grpc++)
 LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs msgpack)
+LDFLAGS2 += -L$(nng_ROOT)/lib -lnng
 LDFLAGS2 += $(EXTRA_LINK_DIRS)
 
 $(info libmuscle test deps: $(deps))

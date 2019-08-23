@@ -2,6 +2,8 @@
 
 #include <libmuscle/mcp/client.hpp>
 
+#include <nng/nng.h>
+
 
 namespace libmuscle { namespace mcp {
 
@@ -77,7 +79,7 @@ class TcpClient : public Client {
         virtual void close() override;
 
     private:
-        int socket_fd_;
+        nng_socket socket_;
 };
 
 } }

@@ -60,6 +60,14 @@ dep_version := 3.2.0
 dep_pkgconfig_name := msgpack
 include make_available.make
 
+dep_name := nng
+dep_min_version := 1.1.1
+dep_version := 1.1.1
+dep_pkgconfig_name := nng
+include make_available.make
+
+export nng_ROOT
+
 dep_name := googletest
 dep_min_version := 1.8.1
 dep_version := 1.8.1
@@ -69,12 +77,14 @@ include make_available.make
 export googletest_ROOT
 
 
+# Extra search dirs for linking tests
 DEP_DIRS := $(CURDIR)/protobuf/protobuf
 DEP_DIRS += $(CURDIR)/grpc/c-ares/c-ares
 DEP_DIRS += $(CURDIR)/grpc/openssl/openssl
 DEP_DIRS += $(CURDIR)/grpc/zlib/zlib
 DEP_DIRS += $(CURDIR)/grpc/grpc
 DEP_DIRS += $(CURDIR)/msgpack/msgpack
+DEP_DIRS += $(CURDIR)/nng/nng
 export DEP_DIRS
 
 PKG_CONFIG_EXTRA_DIRS := $(CURDIR)/protobuf/protobuf/lib/pkgconfig
@@ -100,9 +110,10 @@ ymmsl:
 
 
 .PHONY: libmuscle
-libmuscle: grpc ymmsl msgpack muscle_manager_protocol
+libmuscle: grpc ymmsl msgpack muscle_manager_protocol nng
 	@echo
 	@echo 'Building libmuscle...'
+	@echo 'nng_ROOT=$(nng_ROOT)'
 	$(MAKE) -j $(NCORES) -C libmuscle
 
 

@@ -38,7 +38,7 @@ class PostOffice:
         self._ensure_outbox_exists(receiver)
         return self._outboxes[receiver].retrieve()
 
-    def _deposit(self, receiver: Reference, message: MCPMessage) -> None:
+    def deposit(self, receiver: Reference, message: MCPMessage) -> None:
         """Deposits a message into an outbox.
 
         Args:
@@ -48,7 +48,7 @@ class PostOffice:
         self._ensure_outbox_exists(receiver)
         self._outboxes[receiver].deposit(message)
 
-    def _wait_for_receivers(self) -> None:
+    def wait_for_receivers(self) -> None:
         """Waits until all outboxes are empty.
         """
         for outbox in self._outboxes.values():

@@ -47,8 +47,8 @@ def communicator() -> Communicator:
     with patch('libmuscle.communicator.server_types', [DirectServer]):
         instance_id = Reference('kernel')
         communicator = Communicator(instance_id, [13], None, MagicMock())
-        communicator._Communicator__peer_manager = MagicMock()
-        pm = communicator._Communicator__peer_manager
+        communicator._peer_manager = MagicMock()
+        pm = communicator._peer_manager
         pm.is_connected.return_value = True
 
         def gpp(x) -> Reference:
@@ -72,7 +72,7 @@ def communicator() -> Communicator:
 
         pm.get_peer_endpoint = gpe
 
-        communicator._Communicator__ports = {
+        communicator._ports = {
                 'out': Port('out', Operator.O_I, False, True, 1, []),
                 'in': Port('in', Operator.S, False, True, 1, [])}
         yield communicator
@@ -84,8 +84,8 @@ def communicator2() -> Communicator:
     with patch('libmuscle.communicator.server_types', [DirectServer]):
         instance_id = Reference('other')
         communicator = Communicator(instance_id, [], None, MagicMock())
-        communicator._Communicator__peer_manager = MagicMock()
-        pm = communicator._Communicator__peer_manager
+        communicator._peer_manager = MagicMock()
+        pm = communicator._peer_manager
         pm.is_connected.return_value = True
 
         def gpp(x: Reference) -> Reference:
@@ -109,7 +109,7 @@ def communicator2() -> Communicator:
 
         pm.get_peer_endpoint = gpe
 
-        communicator._Communicator__ports = {
+        communicator._ports = {
                 'out': Port('out', Operator.O_I, True, True, 0, [20]),
                 'in': Port('in', Operator.S, True, True, 0, [20])}
         yield communicator
@@ -121,8 +121,8 @@ def communicator3() -> Communicator:
     with patch('libmuscle.communicator.server_types', [DirectServer]):
         instance_id = Reference('kernel')
         communicator = Communicator(instance_id, [], None, MagicMock())
-        communicator._Communicator__peer_manager = MagicMock()
-        pm = communicator._Communicator__peer_manager
+        communicator._peer_manager = MagicMock()
+        pm = communicator._peer_manager
         pm.is_connected.return_value = True
 
         def gpp(x: Reference) -> Reference:
@@ -146,7 +146,7 @@ def communicator3() -> Communicator:
 
         pm.get_peer_endpoint = gpe
 
-        communicator._Communicator__ports = {
+        communicator._ports = {
                 'out': Port('out', Operator.O_I, True, True, 0, []),
                 'in': Port('in', Operator.S, True, True, 0, [])}
         yield communicator
@@ -154,11 +154,11 @@ def communicator3() -> Communicator:
 
 
 def test_create_communicator(communicator) -> None:
-    assert str(communicator._Communicator__kernel) == 'kernel'
-    assert communicator._Communicator__index == [13]
-    assert len(communicator._Communicator__servers) == 1
-    assert communicator._Communicator__clients == {}
-    assert communicator._outboxes == {}
+    assert str(communicator._kernel) == 'kernel'
+    assert communicator._index == [13]
+    assert len(communicator._servers) == 1
+    assert communicator._clients == {}
+    assert communicator._post_office._outboxes == {}
 
 
 def test_get_locations(communicator) -> None:
@@ -185,7 +185,7 @@ def test_connect() -> None:
                                    peer_locations)
 
         # check inferred ports
-        ports = communicator._Communicator__ports
+        ports = communicator._ports
         communicator.shutdown()
         assert ports['in'].name == Identifier('in')
         assert ports['in'].operator == Operator.F_INIT
@@ -199,7 +199,7 @@ def test_connect() -> None:
 def test_connect_vector_ports(communicator) -> None:
     ref = Reference
 
-    communicator._Communicator__declared_ports = {
+    communicator._declared_ports = {
             Operator.F_INIT: ['in[]'],
             Operator.O_F: ['out1', 'out2[]']}
 
@@ -217,7 +217,7 @@ def test_connect_vector_ports(communicator) -> None:
 
     communicator.connect(conduits, peer_dims, peer_locations)
 
-    ports = communicator._Communicator__ports
+    ports = communicator._ports
     assert ports['in'].name == Identifier('in')
     assert ports['in'].operator == Operator.F_INIT
     assert ports['in']._length == 7
@@ -236,7 +236,7 @@ def test_connect_vector_ports(communicator) -> None:
 def test_connect_multidimensional_ports(communicator) -> None:
     ref = Reference
 
-    communicator._Communicator__declared_ports = {
+    communicator._declared_ports = {
             Operator.F_INIT: ['in[][]']}
 
     conduits = [Conduit(ref('other.out'), ref('kernel.in'))]
@@ -249,7 +249,7 @@ def test_connect_multidimensional_ports(communicator) -> None:
 def test_connect_inferred_ports(communicator) -> None:
     ref = Reference
 
-    communicator._Communicator__declared_ports = None
+    communicator._declared_ports = None
 
     conduits = [Conduit('other1.out', 'kernel.in'),
                 Conduit('kernel.out1', 'other.in'),
@@ -265,7 +265,7 @@ def test_connect_inferred_ports(communicator) -> None:
 
     communicator.connect(conduits, peer_dims, peer_locations)
 
-    ports = communicator._Communicator__ports
+    ports = communicator._ports
     assert ports['in'].name == Identifier('in')
     assert ports['in'].operator == Operator.F_INIT
     assert ports['in']._length == 7
@@ -283,8 +283,8 @@ def test_connect_inferred_ports(communicator) -> None:
 def test_send_message(communicator, message) -> None:
     communicator.send_message('out', message)
 
-    assert 'other.in[13]' in communicator._outboxes
-    msg = communicator._outboxes[
+    assert 'other.in[13]' in communicator._post_office._outboxes
+    msg = communicator._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
@@ -295,7 +295,7 @@ def test_send_message(communicator, message) -> None:
 
 
 def test_send_on_disconnected_port(communicator, message) -> None:
-    communicator._Communicator__peer_manager.is_connected.return_value = False
+    communicator._peer_manager.is_connected.return_value = False
     communicator.send_message('not_connected', message)
 
 
@@ -307,8 +307,8 @@ def test_send_on_invalid_port(communicator, message) -> None:
 def test_send_msgpack(communicator, message2) -> None:
     communicator.send_message('out', message2)
 
-    assert 'other.in[13]' in communicator._outboxes
-    msg = communicator._outboxes[
+    assert 'other.in[13]' in communicator._post_office._outboxes
+    msg = communicator._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
@@ -319,8 +319,9 @@ def test_send_msgpack(communicator, message2) -> None:
 def test_send_message_with_slot(communicator2, message) -> None:
     communicator2.send_message('out', message, 13)
 
-    assert 'kernel[13].in' in communicator2._outboxes
-    msg = communicator2._outboxes[
+    assert 'kernel[13].in' in \
+        communicator2._post_office._outboxes
+    msg = communicator2._post_office._outboxes[
             'kernel[13].in']._Outbox__queue.get()
     assert msg.sender == 'other.out[13]'
     assert msg.receiver == 'kernel[13].in'
@@ -335,8 +336,8 @@ def test_send_message_resizable(communicator3, message) -> None:
     communicator3.get_port('out').set_length(20)
     communicator3.send_message('out', message, 13)
 
-    assert 'other.in[13]' in communicator3._outboxes
-    msg = communicator3._outboxes[
+    assert 'other.in[13]' in communicator3._post_office._outboxes
+    msg = communicator3._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
     assert msg.sender == 'kernel.out[13]'
     assert msg.receiver == 'other.in[13]'
@@ -347,8 +348,8 @@ def test_send_message_with_parameters(communicator, message) -> None:
     message.settings['test2'] = 'testing'
     communicator.send_message('out', message)
 
-    assert 'other.in[13]' in communicator._outboxes
-    msg = communicator._outboxes[
+    assert 'other.in[13]' in communicator._post_office._outboxes
+    msg = communicator._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
@@ -362,8 +363,8 @@ def test_send_settings(communicator, message) -> None:
     message.data['test1'] = 'testing'
     communicator.send_message('out', message)
 
-    assert 'other.in[13]' in communicator._outboxes
-    msg = communicator._outboxes[
+    assert 'other.in[13]' in communicator._post_office._outboxes
+    msg = communicator._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
@@ -377,8 +378,8 @@ def test_send_settings(communicator, message) -> None:
 def test_close_port(communicator) -> None:
     communicator.close_port('out')
 
-    assert 'other.in[13]' in communicator._outboxes
-    msg = communicator._outboxes[
+    assert 'other.in[13]' in communicator._post_office._outboxes
+    msg = communicator._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
@@ -398,7 +399,7 @@ def test_receive_message(communicator) -> None:
             msgpack.packb(b'test', use_bin_type=True))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
-    communicator._Communicator__profiler = MagicMock()
+    communicator._profiler = MagicMock()
 
     msg = communicator.receive_message('in')
 
@@ -409,7 +410,7 @@ def test_receive_message(communicator) -> None:
 
 
 def test_receive_message_default(communicator) -> None:
-    communicator._Communicator__peer_manager.is_connected.return_value = False
+    communicator._peer_manager.is_connected.return_value = False
     default_msg = Message(3.0, 4.0, 'test', Settings())
     msg = communicator.receive_message('not_connected', default=default_msg)
     assert msg.timestamp == 3.0
@@ -419,7 +420,7 @@ def test_receive_message_default(communicator) -> None:
 
 
 def test_receive_message_no_default(communicator) -> None:
-    communicator._Communicator__peer_manager.is_connected.return_value = False
+    communicator._peer_manager.is_connected.return_value = False
     with pytest.raises(RuntimeError):
         communicator.receive_message('not_connected')
 
@@ -437,7 +438,7 @@ def test_receive_msgpack(communicator) -> None:
             msgpack.packb({'test': 13}))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
-    communicator._Communicator__profiler = MagicMock()
+    communicator._profiler = MagicMock()
 
     msg = communicator.receive_message('in')
 
@@ -454,7 +455,7 @@ def test_receive_with_slot(communicator2) -> None:
             msgpack.packb(b'test', use_bin_type=True))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator2._Communicator__get_client = get_client_mock
-    communicator2._Communicator__profiler = MagicMock()
+    communicator2._profiler = MagicMock()
 
     msg = communicator2.receive_message('in', 13)
 
@@ -472,7 +473,7 @@ def test_receive_message_resizable(communicator3) -> None:
             msgpack.packb(b'test', use_bin_type=True))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator3._Communicator__get_client = get_client_mock
-    communicator3._Communicator__profiler = MagicMock()
+    communicator3._profiler = MagicMock()
 
     msg = communicator3.receive_message('in', 13)
 
@@ -490,7 +491,7 @@ def test_receive_with_parameters(communicator) -> None:
             msgpack.packb(b'test', use_bin_type=True))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
-    communicator._Communicator__profiler = MagicMock()
+    communicator._profiler = MagicMock()
 
     msg = communicator.receive_message('in')
 
@@ -508,7 +509,7 @@ def test_receive_msgpack_with_slot_and_parameters(communicator2) -> None:
             msgpack.packb({'test': 'testing'}), msgpack.packb('test'))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator2._Communicator__get_client = get_client_mock
-    communicator2._Communicator__profiler = MagicMock()
+    communicator2._profiler = MagicMock()
 
     msg = communicator2.receive_message('in', 13)
 
@@ -529,7 +530,7 @@ def test_receive_settings(communicator) -> None:
             msgpack.packb(settings_data))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
-    communicator._Communicator__profiler = MagicMock()
+    communicator._profiler = MagicMock()
 
     msg = communicator.receive_message('in')
 
@@ -548,7 +549,7 @@ def test_receive_close_port(communicator) -> None:
             None, 0.0, None, settings_data, msgpack.packb(sentinel))
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
-    communicator._Communicator__profiler = MagicMock()
+    communicator._profiler = MagicMock()
 
     msg = communicator.receive_message('in')
 
@@ -557,8 +558,9 @@ def test_receive_close_port(communicator) -> None:
 
 def test_get_message(communicator, message) -> None:
     communicator.send_message('out', message)
-    assert communicator.get_message('other.in[13]').data == msgpack.packb(
-            b'test', use_bin_type=True)
+    assert communicator._post_office.get_message(
+            'other.in[13]').data == msgpack.packb(
+                b'test', use_bin_type=True)
 
 
 @patch('libmuscle.mcp.direct_client.registered_servers')
@@ -571,7 +573,7 @@ def test_get_client(mock_servers, communicator) -> None:
     client2 = communicator._Communicator__get_client(Reference('other'))
     assert client == client2
 
-    gpl = communicator._Communicator__peer_manager.get_peer_locations
+    gpl = communicator._peer_manager.get_peer_locations
     gpl.return_value = ['non_existent:test']
     with pytest.raises(RuntimeError):
         communicator._Communicator__get_client(Reference('other2'))

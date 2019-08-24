@@ -4,7 +4,7 @@ namespace libmuscle {
 
 /* An optional type template.
  *
- * Since we're not doing C++17, we can't use std::optional. This is a simple,
+ * Since we're not doing C++17, we can't use std::optional. This is a simple
  * replacement. It's only used internally, and not part of the API, so once we
  * have C++17, we'll switch over.
  *

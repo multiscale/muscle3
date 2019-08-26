@@ -215,6 +215,17 @@ class Reference {
          */
         Reference(std::string const & content);
 
+        /** Create a Reference from a C string.
+         *
+         * Creates a Reference from a C string, which will be parsed.
+         *
+         * @param contents A string to parse.
+         *
+         * @throws std::invalid_argument if the argument does not define a
+         *         valid Reference.
+         */
+        Reference(char const * content);
+
         /** Create a Reference from a ReferencePart range.
          *
          * *begin and *end must be of type ReferencePart.
@@ -255,6 +266,16 @@ class Reference {
          */
         bool operator==(std::string const & rhs) const;
 
+        /** Compares for equality.
+         *
+         * Compares string representations.
+         *
+         * @param rhs The string to compare with.
+         *
+         * @return True iff this Reference matches the given string.
+         */
+        bool operator==(char const * rhs) const;
+
         /** Compares for inequality.
          *
          * Will compare part-by-part.
@@ -274,6 +295,16 @@ class Reference {
          * @return True iff this Reference does not match the given string.
          */
         bool operator!=(std::string const & rhs) const;
+
+        /** Compares for inequality.
+         *
+         * Compares string representations.
+         *
+         * @param rhs The string to compare with.
+         *
+         * @return True iff this Reference does not match the given string.
+         */
+        bool operator!=(char const * rhs) const;
 
         /** Returns a const_iterator to the beginning of the Reference.
          */

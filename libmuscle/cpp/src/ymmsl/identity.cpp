@@ -117,6 +117,10 @@ bool ReferencePart::operator==(ReferencePart const & rhs) const {
 }
 
 
+Reference::Reference(char const * content)
+    : parts_(string_to_parts_(content))
+{}
+
 Reference::Reference(std::string const & content)
     : parts_(string_to_parts_(content))
 {}
@@ -137,12 +141,20 @@ bool Reference::operator==(std::string const & rhs) const {
     return parts_to_string_(parts_) == rhs;
 }
 
+bool Reference::operator==(char const * rhs) const {
+    return parts_to_string_(parts_) == std::string(rhs);
+}
+
 bool Reference::operator!=(Reference const & rhs) const {
     return !(*this == rhs);
 }
 
 bool Reference::operator!=(std::string const & rhs) const {
     return !(*this == rhs);
+}
+
+bool Reference::operator!=(char const * rhs) const {
+    return !(*this == std::string(rhs));
 }
 
 Reference::const_iterator Reference::cbegin() const {

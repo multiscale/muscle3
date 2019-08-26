@@ -4,6 +4,7 @@
 
 #include <ymmsl/identity.hpp>
 
+#include <condition_variable>
 #include <memory>
 #include <mutex>
 #include <vector>
@@ -51,6 +52,7 @@ class Outbox {
     private:
         std::vector<std::unique_ptr<mcp::Message>> queue_;
         mutable std::mutex mutex_;
+        mutable std::condition_variable deposited_;
 };
 
 }

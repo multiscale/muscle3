@@ -23,6 +23,13 @@ class PostOffice {
          */
         PostOffice() = default;
 
+        /** Check whether a message is available for the given receiver.
+         *
+         * @param receiver The receiver to request for.
+         * @returns True iff there is at least one message waiting.
+         */
+        bool has_message(ymmsl::Reference const & receiver);
+
         /** Get a message from a receiver's outbox.
          *
          * Used by servers to get messages that have been sent to another

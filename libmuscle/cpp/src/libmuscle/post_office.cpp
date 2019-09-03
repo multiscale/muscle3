@@ -11,6 +11,10 @@ using libmuscle::mcp::Message;
 
 namespace libmuscle {
 
+bool PostOffice::has_message(Reference const & receiver) {
+    return !get_outbox_(receiver).is_empty();
+}
+
 std::unique_ptr<Message> PostOffice::get_message(Reference const & receiver) {
     auto msg = get_outbox_(receiver).retrieve();
     retrieved_.notify_one();

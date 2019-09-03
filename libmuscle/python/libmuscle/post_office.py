@@ -12,14 +12,9 @@ class PostOffice:
     """A PostOffice is an object that holds messages to be retrieved.
 
     A PostOffice holds outboxes with messages for receivers.
-
-    Attributes:
-        _outboxes: Outboxes, indexed by receiving endpoint id.
     """
     def __init__(self) -> None:
         """Create a PostOffice.
-
-        Creates the outboxes dictionary and a structure.
         """
         self._outboxes = dict()  # type: Dict[Reference, Outbox]
 
@@ -32,8 +27,7 @@ class PostOffice:
         instance.
 
         Args:
-            receiver: The receiver of the message, a reference to an
-                    instance.
+            receiver: The receiver of the message.
         """
         self._ensure_outbox_exists(receiver)
         return self._outboxes[receiver].retrieve()

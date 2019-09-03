@@ -5,7 +5,6 @@
 #include <ymmsl/identity.hpp>
 
 
-
 namespace libmuscle { namespace mcp {
 
 /** A MUSCLE Communication Protocol message.

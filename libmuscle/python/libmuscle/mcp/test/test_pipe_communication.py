@@ -38,9 +38,8 @@ def run_client(instance_id, server_location, receiver, message):
 
 
 def test_send_receive(receiver, post_office):
-    test_data = ('16 byte test str' * 10240).encode('utf-8')
     message = Message(Reference('test_sender.test_port'), receiver,
-                      None, 0.0, 1.0, bytes(), test_data)
+                      None, 0.0, 1.0, bytes(), 'message'.encode('utf-8'))
 
     # prepare post office, it's about to get forked
     post_office.outboxes[receiver].deposit(message)
@@ -72,5 +71,3 @@ def test_send_receive(receiver, post_office):
     # shut down
     client_proc.join()
     server_proc.join()
-    assert client_proc.exitcode == 0
-    assert server_proc.exitcode == 0

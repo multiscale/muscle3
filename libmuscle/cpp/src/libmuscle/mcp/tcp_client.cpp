@@ -5,11 +5,11 @@
 #include <ostream>
 #include <memory>
 #include <string>
-#include <string.h>
 #include <unistd.h>
 
-#include <nng/nng.h>
-#include <nng/protocol/reqrep0/req.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
 
 #include <msgpack.hpp>
 
@@ -25,46 +25,73 @@ bool TcpClient::can_connect_to(std::string const & location) {
 TcpClient::TcpClient(ymmsl::Reference const & instance_id, std::string const & location)
     : Client(instance_id, location)
 {
+    std::size_t host_pos = location.find(':') + 1;
+    std::size_t port_pos = location.find(':', host_pos) + 1;
+    std::string host = location.substr(host_pos, port_pos - host_pos - 1);
+    std::string port = location.substr(port_pos);
+
     int err_code;
 
-    std::string peer_loc = "tcp://" + location.substr(4);
+    // collect addresses to connect to
+    addrinfo hints;
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
 
-    if ((err_code = nng_req0_open(&socket_)) != 0)
-        throw std::runtime_error("Error opening socket for address " + peer_loc
-                + ": " + nng_strerror(err_code));
+    addrinfo *res;
+    err_code = getaddrinfo(host.c_str(), port.c_str(), &hints, &res);
+    auto address_info = std::unique_ptr<addrinfo, void (*)(addrinfo*)>(res, &freeaddrinfo);
+    if (err_code != 0)
+        throw std::runtime_error("Could not connect to " + host + " on port "
+                + port + ": " + gai_strerror(err_code));
 
-    if ((err_code = nng_dial(socket_, peer_loc.c_str(), NULL, 0)) != 0)
-        throw std::runtime_error("Could not connect to " + peer_loc + ": "
-                + nng_strerror(err_code));
+    // try to connect to each in turn until we find one that works
+    addrinfo * p;
+    for (p = address_info.get(); p != nullptr; p = p->ai_next) {
+        socket_fd_ = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+        if (socket_fd_ == -1) continue;
+        err_code = connect(socket_fd_, p->ai_addr, p->ai_addrlen);
+        if (err_code == -1) {
+            ::close(socket_fd_);
+            socket_fd_ = -1;
+            continue;
+        }
+        break;
+    }
+
+    if (p == nullptr)
+        throw std::runtime_error("Could not connect to " + host + " on port "
+                + port);
 }
 
 TcpClient::~TcpClient() {
-    close();
+    if (socket_fd_ != -1)
+        close();
 }
 
 Message TcpClient::receive(::ymmsl::Reference const & receiver) {
-    int err_code = 0;
-
     // Send receiver to get a message for
     std::string receiver_str = static_cast<std::string>(receiver);
     char const * receiver_data = receiver_str.data();
     ssize_t data_size = static_cast<ssize_t>(receiver_str.size());
 
-    if ((err_code = nng_send(socket_, (void*)receiver_data, data_size, 0)) != 0)
-        throw std::runtime_error(std::string("Error requesting message from peer: ")
-                + nng_strerror(err_code));
+    for (ssize_t sent = 0; sent < data_size; )
+        sent += send(socket_fd_,
+                receiver_data + sent, data_size - sent, 0);
+
+    // receive data length
+    unsigned char lenbuf[8];
+    recv(socket_fd_, lenbuf, 8, 0);
+    int64_t length = 0;
+    for (int i = 0; i < 8; ++i)
+        length += static_cast<int64_t>(lenbuf[i]) << (i * 8);
 
     // receive data
-    char * recv_buf = nullptr;
-    std::size_t length;
-    if ((err_code = nng_recv(socket_, &recv_buf, &length, NNG_FLAG_ALLOC)) != 0)
-        throw std::runtime_error(std::string("Error receiving message from peer: ")
-                + nng_strerror(err_code));
-
     auto zone = std::make_shared<msgpack::zone>();
     char * buf = static_cast<char *>(zone->allocate_align(length, 8u));
-    memcpy(buf, recv_buf, length);
-    nng_free(recv_buf, length);
+    for (ssize_t received = 0; received < length; )
+        received += recv(socket_fd_,
+                buf + received, length - received, 0);
 
     // decode
     DataConstRef data = unpack_data(zone, buf, length);
@@ -88,8 +115,9 @@ Message TcpClient::receive(::ymmsl::Reference const & receiver) {
             data["data"]);
 }
 
+
 void TcpClient::close() {
-    nng_close(socket_);
+    ::close(socket_fd_);
 }
 
 

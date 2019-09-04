@@ -55,8 +55,7 @@ def test_cpp_tcp_client(log_file_in_tmpdir):
             cpp_build_dir / 'grpc' / 'openssl' / 'openssl' / 'lib',
             cpp_build_dir / 'protobuf' / 'protobuf' / 'lib',
             cpp_build_dir / 'grpc' / 'grpc' / 'lib',
-            cpp_build_dir / 'msgpack' / 'msgpack' / 'lib',
-            cpp_build_dir / 'nng' / 'nng' / 'lib']
+            cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
     env = {
             'LD_LIBRARY_PATH': ':'.join(map(str, lib_paths))}
     cpp_test_dir = cpp_build_dir / 'libmuscle' / 'tests'

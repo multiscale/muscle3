@@ -41,9 +41,8 @@ def test_endpoint_instance() -> None:
 @pytest.fixture
 def communicator() -> Communicator:
     # Creating a Communicator will start servers, and some servers are not
-    # fork-compatible (anything NNG-based in particular). This then crashes
-    # the later integration tests, which fork. So we disable everything
-    # except DirectServer.
+    # fork-compatible. This then crashes the later integration tests, which
+    # fork. So we disable everything except DirectServer.
     with patch('libmuscle.communicator.server_types', [DirectServer]):
         instance_id = Reference('kernel')
         communicator = Communicator(instance_id, [13], None, MagicMock())
@@ -175,8 +174,7 @@ def test_connect() -> None:
     peer_dims = {ref('other'): [1]}
     peer_locations = {ref('other'): ['direct:test']}
 
-    with patch('libmuscle.communicator.PeerManager') as pm_init, \
-            patch('libmuscle.communicator.server_types', [DirectServer]):
+    with patch('libmuscle.communicator.PeerManager') as pm_init:
         communicator = Communicator(instance_id, [13], None, MagicMock())
 
         communicator.connect(conduits, peer_dims, peer_locations)

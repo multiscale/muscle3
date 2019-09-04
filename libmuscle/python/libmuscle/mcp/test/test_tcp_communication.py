@@ -1,4 +1,3 @@
-import multiprocessing as mp
 import time
 from ymmsl import Reference
 
@@ -9,7 +8,7 @@ from libmuscle.mcp.tcp_server import TcpServer
 from libmuscle.mcp.message import Message
 
 
-def send_receive_test(receiver, post_office):
+def test_send_receive(receiver, post_office):
     message = Message(Reference('test_sender.test_port'), receiver,
                       None, 0.0, 1.0, bytes(), 'message'.encode('utf-8'))
 
@@ -40,12 +39,3 @@ def send_receive_test(receiver, post_office):
     TcpClient.shutdown(recv_instance_id)
 
     server.close()
-
-
-def test_send_receive(receiver, post_office):
-    proc = mp.Process(
-            target=send_receive_test,
-            args=(receiver, post_office))
-    proc.start()
-    proc.join()
-    assert proc.exitcode == 0

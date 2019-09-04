@@ -1,11 +1,13 @@
 import socketserver as ss
 import threading
-from typing import cast, Tuple, Type
+from typing import cast, Optional, Tuple, Type
 
 import msgpack
 from ymmsl import Reference
 
 from libmuscle.mcp.server import Server
+from libmuscle.mcp.tcp_util import (recv_all, recv_int64, send_int64,
+                                    SocketClosed)
 from libmuscle.post_office import PostOffice
 
 
@@ -23,8 +25,9 @@ class TcpHandler(ss.BaseRequestHandler):
     def handle(self) -> None:
         """Handles requests on a socket
         """
-        receiver_id = self.request.recv(1024).decode('utf-8')
-        while len(receiver_id) > 0:
+        receiver_id = self.receive_request()
+
+        while receiver_id is not None:
             server = cast(TcpServerImpl, self.server).tcp_server
             message = server.post_office.get_message(receiver_id)
 
@@ -38,10 +41,22 @@ class TcpHandler(ss.BaseRequestHandler):
                     'data': message.data}
             packed_message = msgpack.packb(message_dict, use_bin_type=True)
 
-            length = len(packed_message).to_bytes(8, byteorder='little')
-            self.request.sendall(length)
+            send_int64(self.request, len(packed_message))
             self.request.sendall(packed_message)
-            receiver_id = self.request.recv(1024).decode('utf-8')
+            receiver_id = self.receive_request()
+
+    def receive_request(self) -> Optional[Reference]:
+        """Receives a request (receiver id).
+
+        Returns:
+            The received receiver id.
+        """
+        try:
+            length = recv_int64(self.request)
+            reqbuf = recv_all(self.request, length)
+            return Reference(reqbuf.decode('utf-8'))
+        except SocketClosed:
+            return None
 
 
 class TcpServer(Server):

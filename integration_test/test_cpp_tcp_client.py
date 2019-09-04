@@ -23,6 +23,7 @@ def tcp_server_process(control_pipe):
             10, 1.0, 2.0, settings, data)
 
     def get_message(receiver):
+        assert receiver == 'test_receiver.test_port2'
         return message
 
     post_office = MagicMock()

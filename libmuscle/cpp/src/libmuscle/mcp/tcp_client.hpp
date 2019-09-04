@@ -24,7 +24,7 @@ class TcpClient : public Client {
         /** Shut down and free any resources shared by all clients.
          *
          * This is an optional hook for communication subsystems that need it. If
-         * implemented, it must work correctly even if no clents have ever been
+         * implemented, it must work correctly even if no clients have ever been
          * instantiated.
          *
          * This will be called after all clients of this class have been closed.

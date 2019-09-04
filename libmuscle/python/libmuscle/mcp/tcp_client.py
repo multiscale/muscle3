@@ -5,6 +5,7 @@ from ymmsl import Reference
 
 from libmuscle.mcp.client import Client
 from libmuscle.mcp.message import Message
+from libmuscle.mcp.tcp_util import recv_all, recv_int64, send_int64
 
 
 class TcpClient(Client):
@@ -50,18 +51,12 @@ class TcpClient(Client):
         Returns:
             The received message.
         """
-        self._socket.sendall(str(receiver).encode('utf-8'))
+        receiver_str = str(receiver).encode('utf-8')
+        send_int64(self._socket, len(receiver_str))
+        self._socket.sendall(receiver_str)
 
-        lenbuf = bytearray(8)
-        self._socket.recv_into(lenbuf, 8)
-        length = int.from_bytes(lenbuf, 'little')
-
-        databuf = bytearray(length)
-        received_count = 0
-        while received_count < length:
-            bytes_left = length - received_count
-            received_count += self._socket.recv_into(
-                memoryview(databuf)[received_count:], bytes_left)
+        length = recv_int64(self._socket)
+        databuf = recv_all(self._socket, length)
 
         message_dict = msgpack.unpackb(databuf, raw=False)
         return Message(

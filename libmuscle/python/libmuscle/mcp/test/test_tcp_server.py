@@ -27,6 +27,8 @@ def test_request(receiver, post_office, tcp_server):
     location = tcp_server._server.server_address
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.connect(location)
+        length = len(str(receiver)).to_bytes(8, byteorder='little')
+        sock.sendall(length)
         sock.sendall(str(receiver).encode('utf-8'))
 
         lenbuf = bytearray(8)

@@ -1,8 +1,8 @@
 #include "libmuscle/mcp/tcp_client.hpp"
-#include "libmuscle/mcp/data_pack.hpp"
 
-#include <iostream>
-#include <ostream>
+#include "libmuscle/mcp/data_pack.hpp"
+#include "libmuscle/mcp/tcp_util.hpp"
+
 #include <memory>
 #include <string>
 #include <unistd.h>
@@ -16,19 +16,32 @@
 #include <ymmsl/identity.hpp>
 
 
-namespace libmuscle { namespace mcp {
+namespace {
 
-bool TcpClient::can_connect_to(std::string const & location) {
-    return location.compare(0u, 4u, "tcp:") == 0;
+/* Splits a location string of the form tcp:<address:port>,<address:port>,...
+ * into a list of addresses.
+ */
+std::vector<std::string> split_location(std::string const & location) {
+    std::vector<std::string> addresses;
+
+    // start at 4 to skip the initial tcp: bit
+    for (auto it = std::next(location.cbegin(), 4); it != location.cend(); ) {
+        auto next = std::find(it, location.cend(), ',');
+        addresses.emplace_back(it, next);
+
+        it = next;
+        if (it != location.cend())
+            ++it;
+    }
+
+    return addresses;
 }
 
-TcpClient::TcpClient(ymmsl::Reference const & instance_id, std::string const & location)
-    : Client(instance_id, location)
-{
-    std::size_t host_pos = location.find(':') + 1;
-    std::size_t port_pos = location.find(':', host_pos) + 1;
-    std::string host = location.substr(host_pos, port_pos - host_pos - 1);
-    std::string port = location.substr(port_pos);
+
+int connect(std::string const & address) {
+    std::size_t split = address.find(':');
+    std::string host = address.substr(0, split);
+    std::string port = address.substr(split + 1);
 
     int err_code;
 
@@ -47,21 +60,50 @@ TcpClient::TcpClient(ymmsl::Reference const & instance_id, std::string const & l
 
     // try to connect to each in turn until we find one that works
     addrinfo * p;
+    int socket_fd;
     for (p = address_info.get(); p != nullptr; p = p->ai_next) {
-        socket_fd_ = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
-        if (socket_fd_ == -1) continue;
-        err_code = connect(socket_fd_, p->ai_addr, p->ai_addrlen);
+        socket_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+        if (socket_fd == -1) continue;
+
+        err_code = connect(socket_fd, p->ai_addr, p->ai_addrlen);
         if (err_code == -1) {
-            ::close(socket_fd_);
-            socket_fd_ = -1;
+            ::close(socket_fd);
             continue;
         }
-        break;
+        return socket_fd;
     }
 
-    if (p == nullptr)
-        throw std::runtime_error("Could not connect to " + host + " on port "
-                + port);
+    throw std::runtime_error("Could not connect to " + host + " on port "
+            + port);
+}
+
+}
+
+
+
+namespace libmuscle { namespace mcp {
+
+bool TcpClient::can_connect_to(std::string const & location) {
+    return location.compare(0u, 4u, "tcp:") == 0;
+}
+
+TcpClient::TcpClient(ymmsl::Reference const & instance_id, std::string const & location)
+    : Client(instance_id, location)
+    , socket_fd_(-1)
+{
+    auto addresses = split_location(location);
+
+    for (auto const & address: addresses)
+        try {
+            socket_fd_ = connect(address);
+            break;
+        }
+        catch (std::runtime_error const & e) {
+            continue;
+        }
+
+    if (socket_fd_ == -1)
+        throw std::runtime_error("Could not connect to the server at location " + location);
 }
 
 TcpClient::~TcpClient() {
@@ -72,26 +114,16 @@ TcpClient::~TcpClient() {
 Message TcpClient::receive(::ymmsl::Reference const & receiver) {
     // Send receiver to get a message for
     std::string receiver_str = static_cast<std::string>(receiver);
-    char const * receiver_data = receiver_str.data();
-    ssize_t data_size = static_cast<ssize_t>(receiver_str.size());
-
-    for (ssize_t sent = 0; sent < data_size; )
-        sent += send(socket_fd_,
-                receiver_data + sent, data_size - sent, 0);
+    send_int64(socket_fd_, receiver_str.length());
+    send_all(socket_fd_, receiver_str.data(), receiver_str.length());
 
     // receive data length
-    unsigned char lenbuf[8];
-    recv(socket_fd_, lenbuf, 8, 0);
-    int64_t length = 0;
-    for (int i = 0; i < 8; ++i)
-        length += static_cast<int64_t>(lenbuf[i]) << (i * 8);
+    int64_t length = recv_int64(socket_fd_);
 
     // receive data
     auto zone = std::make_shared<msgpack::zone>();
     char * buf = static_cast<char *>(zone->allocate_align(length, 8u));
-    for (ssize_t received = 0; received < length; )
-        received += recv(socket_fd_,
-                buf + received, length - received, 0);
+    recv_all(socket_fd_, buf, length);
 
     // decode
     DataConstRef data = unpack_data(zone, buf, length);
@@ -118,8 +150,8 @@ Message TcpClient::receive(::ymmsl::Reference const & receiver) {
 
 void TcpClient::close() {
     ::close(socket_fd_);
+    socket_fd_ = -1;
 }
-
 
 } }
 

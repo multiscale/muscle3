@@ -1,7 +1,3 @@
-#include <iostream>
-#include <ostream>
-
-
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -279,7 +275,15 @@ Data Data::byte_array(char const * buf, uint32_t size) {
 Data & Data::operator=(Data const & rhs) {
     if (mp_obj_ != rhs.mp_obj_) {
         *mp_obj_ = *rhs.mp_obj_;
-        mp_zones_ = rhs.mp_zones_;
+
+        // We can't overwrite mp_zones_ here, because mp_obj_ is allocated on
+        // one of them, and we don't know which. So we just append, which is
+        // suboptimal because it may keep objects alive that are no longer
+        // reachable. Consider a separate shared_ptr to the zone that mp_obj_
+        // is on (in a separate member), so that we can safely overwrite
+        // mp_zones_.
+        mp_zones_.insert(mp_zones_.end(),
+                rhs.mp_zones_.cbegin(), rhs.mp_zones_.cend());
     }
     return *this;
 }

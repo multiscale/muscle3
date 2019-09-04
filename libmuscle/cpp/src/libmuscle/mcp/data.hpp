@@ -274,6 +274,9 @@ class DataConstRef {
 
         friend struct msgpack::adaptor::object_with_zone<DataConstRef>;
         friend struct msgpack::adaptor::pack<DataConstRef>;
+
+        // see comment at Data::init_dict_'s implementation
+        friend class Data;
 };
 
 

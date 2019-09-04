@@ -154,6 +154,7 @@ TEST(libmuscle_mcp_data, dict_errors) {
     ASSERT_THROW(d["test_not_a_map"], std::runtime_error);
 }
 
+
 TEST(libmuscle_mcp_data, dict_dict) {
     Data d(Data::dict(
             "test3", Data::dict("test1", true, "test2", 87),
@@ -215,6 +216,13 @@ TEST(libmuscle_mcp_data, dict_build) {
     ASSERT_EQ(data["test2"].as<int>(), 54);
     ASSERT_TRUE(data["test4"].is_a<int>());
     ASSERT_EQ(data["test4"].as<int>(), 23);
+}
+
+
+TEST(libmuscle_mcp_data, dict_dataconstref) {
+    // regression test
+    Data dict = Data::dict("test", DataConstRef());
+    dict = Data::dict("test", Data());
 }
 
 
@@ -316,6 +324,13 @@ TEST(libmuscle_mcp_data, list_dict) {
     ASSERT_TRUE(data[2]["test2"].is_a<int>());
     ASSERT_EQ(data[2]["test2"].as<int>(), 87);
 }
+
+TEST(libmuscle_mcp_data, list_dataconstref) {
+    // regression test
+    Data dict = Data::list(DataConstRef());
+    dict = Data::list(Data());
+}
+
 
 TEST(libmuscle_mcp_data, byte_array) {
     std::string test_data("Test data");

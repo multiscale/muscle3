@@ -1,8 +1,5 @@
 // Template implementation, do not include directly!
 
-#include <iostream>
-#include <ostream>
-
 
 namespace msgpack {
 

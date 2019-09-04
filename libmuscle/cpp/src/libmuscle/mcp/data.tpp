@@ -48,6 +48,15 @@ Data Data::list(Args const & ... args) {
     return list;
 }
 
+/* Note that we access value's mp_zones_ member here. mp_zones_ is protected,
+ * but we're not accessing it through a this-pointer, so that is illegal
+ * without a friend declaration. In order to make this exact function template
+ * a friend, we need to have Data defined before DataConstRef, but that's
+ * impossible because it's derived from DataConstRef, and so needs a definition
+ * of DataConstRef available. The solution is to just make Data as a whole a
+ * friend of DataConstRef. It's already derived from it, so that doesn't
+ * change much beyond making this work.
+*/
 template <typename... Args>
 void Data::init_dict_(uint32_t offset, std::string const & key, DataConstRef const & value,
                 Args const & ... args)

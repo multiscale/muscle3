@@ -9,8 +9,6 @@
 #include <ymmsl/identity.hpp>
 
 #include <cassert>
-#include <iostream>
-#include <ostream>
 #include <memory>
 
 #include <msgpack.hpp>

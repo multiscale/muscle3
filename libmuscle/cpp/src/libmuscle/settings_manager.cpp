@@ -4,9 +4,6 @@
 #include <stdexcept>
 #include <utility>
 
-#include <ostream>
-#include <iostream>
-
 
 using ymmsl::ParameterValue;
 using ymmsl::Reference;

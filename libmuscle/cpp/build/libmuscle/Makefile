@@ -28,11 +28,11 @@ export DEBUGFLAGS
 all: libmuscle.a libmuscle.so libmuscle_d.a libmuscle_d.so version.h
 
 .PHONY: tests
-tests: libmuscle.a version.h
+tests: libmuscle_d.a version.h
 	$(MAKE) -C tests tests
 
 .PHONY: test
-test:
+test: tests
 	$(MAKE) -C tests test
 
 .PHONY: clean
@@ -90,15 +90,18 @@ $(objdir)/%.o: %.cpp
 	@mkdir -p $(@D)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-$(objdir)/%.lo: %.cpp
+# depends on .o to daisy-chain automatic dependencies
+$(objdir)/%.lo: %.cpp $(objdir)/%.o
 	@mkdir -p $(@D)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -fPIC -c $< -o $@
 
-$(objdir)/%.do: %.cpp
+# depends on .o to daisy-chain automatic dependencies
+$(objdir)/%.do: %.cpp $(objdir)/%.o
 	@mkdir -p $(@D)
 	$(CXX) $(CPPFLAGS) $(DEBUGFLAGS) $(CXXFLAGS) -c $< -o $@
 
-$(objdir)/%.dlo: %.cpp
+# depends on .o to daisy-chain automatic dependencies
+$(objdir)/%.dlo: %.cpp $(objdir)/%.o
 	@mkdir -p $(@D)
 	$(CXX) $(CPPFLAGS) $(DEBUGFLAGS) $(CXXFLAGS) -fPIC -c $< -o $@
 

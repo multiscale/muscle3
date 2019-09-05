@@ -1,6 +1,7 @@
 import socket
 
 import msgpack
+from typing import Optional
 from ymmsl import Reference
 
 from libmuscle.mcp.client import Client
@@ -24,7 +25,7 @@ class TcpClient(Client):
         return location.startswith('tcp:')
 
     def __init__(self, instance_id: Reference, location: str) -> None:
-        """Create an MCPClient for a given location.
+        """Create a TcpClient for a given location.
 
         The client will connect to this location and be able to request
         messages from any instance and port represented by it.
@@ -35,12 +36,21 @@ class TcpClient(Client):
         """
         super().__init__(instance_id, location)
 
-        loc_parts = location.split(':')
-        host = loc_parts[1]
-        port = int(loc_parts[2])
+        addresses = location[4:].split(',')
 
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._socket.connect((host, port))
+        sock = None     # type: Optional[socket.SocketType]
+        for address in addresses:
+            try:
+                sock = self._connect(address)
+                break
+            except RuntimeError:
+                pass
+
+        if sock is None:
+            raise RuntimeError('Could not connect to the server at location'
+                               ' {}'.format(location))
+        else:
+            self._socket = sock
 
     def receive(self, receiver: Reference) -> Message:
         """Receive a message from a port this client connects to.
@@ -76,3 +86,26 @@ class TcpClient(Client):
         """
         self._socket.shutdown(socket.SHUT_RDWR)
         self._socket.close()
+
+    def _connect(self, address: str) -> socket.SocketType:
+        loc_parts = address.split(':')
+        host = loc_parts[0]
+        port = int(loc_parts[1])
+
+        addrinfo = socket.getaddrinfo(
+                host, port, 0, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+
+        for family, socktype, proto, _, sockaddr in addrinfo:
+            try:
+                sock = socket.socket(family, socktype, proto)
+            except Exception:
+                continue
+
+            try:
+                sock.connect(sockaddr)
+            except Exception:
+                sock.close()
+                continue
+            return sock
+
+        raise RuntimeError('Could not connect')

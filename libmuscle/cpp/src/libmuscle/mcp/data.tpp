@@ -5,6 +5,8 @@
 #include <string>
 #include <utility>
 
+#include <ymmsl/settings.hpp>
+
 #include <msgpack.hpp>
 
 
@@ -18,6 +20,12 @@ bool DataConstRef::is_a() const {
     return false;
 }
 
+template <>
+ymmsl::ParameterValue DataConstRef::as<ymmsl::ParameterValue>() const;
+
+template <>
+ymmsl::Settings DataConstRef::as<ymmsl::Settings>() const;
+
 template <typename T>
 T DataConstRef::as() const {
     if (!is_a<T>())
@@ -30,7 +38,7 @@ T DataConstRef::as() const {
 template <typename T>
 T * DataConstRef::zone_alloc_(uint32_t size) {
     auto num_bytes = sizeof(T) * size;
-    return static_cast<T*>(mp_zones_[0]->allocate_align(
+    return static_cast<T*>((*mp_zones_)[0]->allocate_align(
                 num_bytes, MSGPACK_ZONE_ALIGNOF(T)));
 }
 
@@ -62,9 +70,9 @@ void Data::init_dict_(uint32_t offset, std::string const & key, DataConstRef con
                 Args const & ... args)
 {
     init_dict_(offset + 1, args...);
-    mp_obj_->via.map.ptr[offset].key = msgpack::object(key, *mp_zones_[0]);
-    mp_obj_->via.map.ptr[offset].val = msgpack::object(value, *mp_zones_[0]);
-    mp_zones_.insert(mp_zones_.end(), value.mp_zones_.cbegin(), value.mp_zones_.cend());
+    mp_obj_->via.map.ptr[offset].key = msgpack::object(key, *mp_zones_->front());
+    mp_obj_->via.map.ptr[offset].val = msgpack::object(value, *mp_zones_->front());
+    mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
 }
 
 template <typename... Args>
@@ -72,9 +80,9 @@ void Data::init_dict_(uint32_t offset, std::string const & key, Data const & val
                 Args const & ... args)
 {
     init_dict_(offset + 1, args...);
-    mp_obj_->via.map.ptr[offset].key = msgpack::object(key, *mp_zones_[0]);
-    mp_obj_->via.map.ptr[offset].val = msgpack::object(value, *mp_zones_[0]);
-    mp_zones_.insert(mp_zones_.end(), value.mp_zones_.cbegin(), value.mp_zones_.cend());
+    mp_obj_->via.map.ptr[offset].key = msgpack::object(key, *mp_zones_->front());
+    mp_obj_->via.map.ptr[offset].val = msgpack::object(value, *mp_zones_->front());
+    mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
 }
 
 template <typename Arg, typename... Args>
@@ -82,31 +90,31 @@ void Data::init_dict_(uint32_t offset, std::string const & key, Arg const & valu
                 Args const & ... args)
 {
     init_dict_(offset + 1, args...);
-    mp_obj_->via.map.ptr[offset].key = msgpack::object(key, *mp_zones_[0]);
-    mp_obj_->via.map.ptr[offset].val = msgpack::object(value, *mp_zones_[0]);
+    mp_obj_->via.map.ptr[offset].key = msgpack::object(key, *mp_zones_->front());
+    mp_obj_->via.map.ptr[offset].val = msgpack::object(value, *mp_zones_->front());
 }
 
 template <typename... Args>
 void Data::init_list_(uint32_t offset, DataConstRef const & value,
                       Args const &...args) {
     init_list_(offset + 1, args...);
-    mp_obj_->via.array.ptr[offset] = msgpack::object(value, *mp_zones_[0]);
-    mp_zones_.insert(mp_zones_.end(), value.mp_zones_.cbegin(), value.mp_zones_.cend());
+    mp_obj_->via.array.ptr[offset] = msgpack::object(value, *mp_zones_->front());
+    mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
 }
 
 template <typename... Args>
 void Data::init_list_(uint32_t offset, Data const & value,
                       Args const &...args) {
     init_list_(offset + 1, args...);
-    mp_obj_->via.array.ptr[offset] = msgpack::object(value, *mp_zones_[0]);
-    mp_zones_.insert(mp_zones_.end(), value.mp_zones_.cbegin(), value.mp_zones_.cend());
+    mp_obj_->via.array.ptr[offset] = msgpack::object(value, *mp_zones_->front());
+    mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
 }
 
 template <typename Arg, typename... Args>
 void Data::init_list_(uint32_t offset, Arg const & value,
                       Args const &...args) {
     init_list_(offset + 1, args...);
-    mp_obj_->via.array.ptr[offset] = msgpack::object(value, *mp_zones_[0]);
+    mp_obj_->via.array.ptr[offset] = msgpack::object(value, *mp_zones_->front());
 }
 
 }   // namespace mcp

@@ -1,15 +1,19 @@
 #include "libmuscle/mcp/data.hpp"
 #include "libmuscle/mcp/data_pack.hpp"
 
+#include "ymmsl/settings.hpp"
+
+#include <cstdint>
 #include <string>
 
 #include <gtest/gtest.h>
 #include <msgpack.hpp>
 
 
-
 using libmuscle::mcp::Data;
 using libmuscle::mcp::DataConstRef;
+using ymmsl::ParameterValue;
+using ymmsl::Settings;
 
 
 int main(int argc, char *argv[]) {
@@ -31,8 +35,8 @@ TEST(libmuscle_mcp_data, nil_value) {
     ASSERT_FALSE(d.is_a<int>());
 }
 
-template <typename T>
-void test(T const & test_value) {
+template <typename T, typename U>
+void test2(U const & test_value) {
     Data d(test_value);
     ASSERT_TRUE(d.is_a<T>());
 
@@ -41,9 +45,14 @@ void test(T const & test_value) {
 
     auto zone = std::make_shared<msgpack::zone>();
     Data d2(libmuscle::mcp::unpack_data(zone, buf.data(), buf.size()));
-    ASSERT_TRUE(d.is_a<T>());
+    ASSERT_TRUE(d2.is_a<T>());
     T x = d2.as<T>();
     ASSERT_EQ(x, test_value);
+}
+
+template <typename T>
+void test(T const & test_value) {
+    test2<T, T>(test_value);
 }
 
 TEST(libmuscle_mcp_data, bool_value) {
@@ -112,13 +121,13 @@ TEST(libmuscle_mcp_data, float_value) {
 }
 
 TEST(libmuscle_mcp_data, double_value) {
-    test<double>(0.0f);
-    test<double>(424242.42f);
+    test<double>(0.0);
+    test<double>(424242.42);
 }
 
 TEST(libmuscle_mcp_data, string_value) {
-    test<std::string>("");
-    test<std::string>("Testing");
+    test2<std::string, char const *>("");
+    test2<std::string, char const *>("Testing");
 
     test<std::string>(std::string(""));
     test<std::string>(std::string("Testing"));
@@ -130,6 +139,7 @@ TEST(libmuscle_mcp_data, dict) {
             "test_int", 42
             ));
     ASSERT_TRUE(d.is_a_dict());
+    ASSERT_EQ(d.size(), 2);
 
     msgpack::sbuffer buf;
     msgpack::pack(buf, d);
@@ -137,10 +147,24 @@ TEST(libmuscle_mcp_data, dict) {
     auto zone = std::make_shared<msgpack::zone>();
     Data d2(libmuscle::mcp::unpack_data(zone, buf.data(), buf.size()));
     ASSERT_TRUE(d2.is_a_dict());
+    ASSERT_EQ(d2.size(), 2);
+
     double x = d2["test_double"].as<double>();
     ASSERT_EQ(x, 13.3);
     int i = d2["test_int"].as<int>();
     ASSERT_EQ(i, 42);
+
+    ASSERT_TRUE(d2.key(0u).as<std::string>() == "test_double" ||
+                d2.key(1u).as<std::string>() == "test_double");
+
+    ASSERT_TRUE(d2.key(0u).as<std::string>() == "test_int" ||
+                d2.key(1u).as<std::string>() == "test_int");
+
+    ASSERT_TRUE(d2.value(0u).is_a<double>() || d2.value(1u).is_a<double>());
+    ASSERT_TRUE(d2.value(0u).is_a<int>() || d2.value(1u).is_a<int>());
+
+    ASSERT_TRUE((d2.key(0u).as<std::string>() == "test_double" && d2.value(0u).is_a<double>()) ||
+                (d2.key(1u).as<std::string>() == "test_double" && d2.value(1u).is_a<double>()));
 }
 
 TEST(libmuscle_mcp_data, dict_errors) {
@@ -329,6 +353,138 @@ TEST(libmuscle_mcp_data, list_dataconstref) {
     // regression test
     Data dict = Data::list(DataConstRef());
     dict = Data::list(Data());
+}
+
+
+template <typename T>
+void test_parameter_value(ParameterValue const & test_value) {
+    Data d(test_value);
+    ASSERT_TRUE(d.is_a<T>());
+
+    msgpack::sbuffer buf;
+    msgpack::pack(buf, d);
+
+    auto zone = std::make_shared<msgpack::zone>();
+    Data d2(libmuscle::mcp::unpack_data(zone, buf.data(), buf.size()));
+    ASSERT_TRUE(d2.is_a<T>());
+    T x = d2.as<T>();
+    ASSERT_EQ(x, test_value.get<T>());
+}
+
+TEST(libmuscle_mcp_data, parameter_value) {
+    test_parameter_value<int64_t>(ymmsl::ParameterValue(13));
+    test_parameter_value<std::string>(ymmsl::ParameterValue("test"));
+
+    test<ymmsl::ParameterValue>(ymmsl::ParameterValue(13));
+}
+
+TEST(libmuscle_mcp_data, parameter_value_list) {
+    ParameterValue pv(std::vector<double>{1.0, 2.2, 3.1415});
+    Data d(pv);
+    ASSERT_TRUE(d.is_a_list());
+    ASSERT_EQ(d.size(), 3u);
+    ASSERT_EQ(d[0].as<double>(), 1.0);
+    ASSERT_EQ(d[1].as<double>(), 2.2);
+    ASSERT_EQ(d[2].as<double>(), 3.1415);
+
+    msgpack::sbuffer buf;
+    msgpack::pack(buf, d);
+
+    auto zone = std::make_shared<msgpack::zone>();
+    Data d2(libmuscle::mcp::unpack_data(zone, buf.data(), buf.size()));
+    ASSERT_TRUE(d.is_a_list());
+    ASSERT_EQ(d2.size(), 3u);
+    ASSERT_EQ(d2[0].as<double>(), 1.0);
+    ASSERT_EQ(d2[1].as<double>(), 2.2);
+    ASSERT_EQ(d2[2].as<double>(), 3.1415);
+}
+
+TEST(libmuscle_mcp_data, parameter_value_list_list) {
+    ParameterValue pv(std::vector<std::vector<double>>{
+            {1.0, 2.2, 3.1415}, {4.5}});
+    Data d(pv);
+    ASSERT_TRUE(d.is_a_list());
+    ASSERT_EQ(d.size(), 2u);
+
+    ASSERT_TRUE(d[0].is_a_list());
+    ASSERT_EQ(d[0].size(), 3u);
+    ASSERT_TRUE(d[1].is_a_list());
+    ASSERT_EQ(d[1].size(), 1u);
+
+    ASSERT_EQ(d[0][0].as<double>(), 1.0);
+    ASSERT_EQ(d[0][1].as<double>(), 2.2);
+    ASSERT_EQ(d[0][2].as<double>(), 3.1415);
+    ASSERT_EQ(d[1][0].as<double>(), 4.5);
+
+    msgpack::sbuffer buf;
+    msgpack::pack(buf, d);
+
+    auto zone = std::make_shared<msgpack::zone>();
+    Data d2(libmuscle::mcp::unpack_data(zone, buf.data(), buf.size()));
+    ASSERT_TRUE(d2.is_a_list());
+    ASSERT_EQ(d2.size(), 2u);
+
+    ASSERT_TRUE(d2[0].is_a_list());
+    ASSERT_EQ(d2[0].size(), 3u);
+    ASSERT_TRUE(d2[1].is_a_list());
+    ASSERT_EQ(d2[1].size(), 1u);
+
+    ASSERT_EQ(d2[0][0].as<double>(), 1.0);
+    ASSERT_EQ(d2[0][1].as<double>(), 2.2);
+    ASSERT_EQ(d2[0][2].as<double>(), 3.1415);
+    ASSERT_EQ(d2[1][0].as<double>(), 4.5);
+}
+
+TEST(libmuscle_mcp_data, parameter_value_list_pv) {
+    ParameterValue pv(std::vector<double>{1.0, 2.2, 3.1415});
+    Data d(pv);
+
+    ASSERT_TRUE(d.is_a<ParameterValue>());
+    ParameterValue pv2 = d.as<ParameterValue>();
+
+    auto vec = pv2.get<std::vector<double>>();
+    ASSERT_EQ(vec.size(), 3);
+    ASSERT_EQ(vec[0], 1.0);
+    ASSERT_EQ(vec[1], 2.2);
+    ASSERT_EQ(vec[2], 3.1415);
+}
+
+TEST(libmuscle_mcp_data, parameter_value_list_list_pv) {
+    ParameterValue pv(std::vector<std::vector<double>>{{1.0, 2.2, 3.1415}, {4.5}});
+    Data d(pv);
+
+    ASSERT_TRUE(d.is_a<ParameterValue>());
+    ParameterValue pv2 = d.as<ParameterValue>();
+
+    auto vec = pv2.get<std::vector<std::vector<double>>>();
+    ASSERT_EQ(vec.size(), 2);
+    ASSERT_EQ(vec[0].size(), 3);
+    ASSERT_EQ(vec[0][0], 1.0);
+    ASSERT_EQ(vec[0][1], 2.2);
+    ASSERT_EQ(vec[0][2], 3.1415);
+    ASSERT_EQ(vec[1].size(), 1);
+    ASSERT_EQ(vec[1][0], 4.5);
+}
+
+TEST(libmuscle_mcp_data, settings) {
+    Settings settings;
+    settings["setting1"] = 1;
+    settings["setting2"] = true;
+    settings["setting3"] = "testing";
+
+    Data d(settings);
+    ASSERT_TRUE(d.is_a<Settings>());
+
+    msgpack::sbuffer buf;
+    msgpack::pack(buf, d);
+
+    auto zone = std::make_shared<msgpack::zone>();
+    Data d2(libmuscle::mcp::unpack_data(zone, buf.data(), buf.size()));
+    ASSERT_TRUE(d2.is_a<Settings>());
+    Settings x = d2.as<Settings>();
+    ASSERT_EQ(x["setting1"], 1);
+    ASSERT_EQ(x["setting2"], true);
+    ASSERT_EQ(x["setting3"], "testing");
 }
 
 

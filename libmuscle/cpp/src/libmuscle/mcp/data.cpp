@@ -1,3 +1,4 @@
+#include <cstring>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -6,6 +7,14 @@
 #include <msgpack.hpp>
 
 #include "libmuscle/mcp/data.hpp"
+#include "libmuscle/mcp/data_pack.hpp"
+#include "libmuscle/mcp/ext_types.hpp"
+#include "ymmsl/identity.hpp"
+#include "ymmsl/settings.hpp"
+
+using ymmsl::ParameterValue;
+using ymmsl::Reference;
+using ymmsl::Settings;
 
 
 namespace libmuscle {
@@ -14,9 +23,9 @@ namespace mcp {
 
 
 DataConstRef::DataConstRef()
-    : mp_zones_()
+    : mp_zones_(new std::vector<std::shared_ptr<msgpack::zone>>())
 {
-    mp_zones_.push_back(std::make_shared<msgpack::zone>());
+    mp_zones_->push_back(std::make_shared<msgpack::zone>());
     mp_obj_ = zone_alloc_<msgpack::object>();
     mp_obj_->type = msgpack::type::NIL;
 }
@@ -30,13 +39,17 @@ DataConstRef::DataConstRef(bool value)
 DataConstRef::DataConstRef(char const * const value)
     : DataConstRef()
 {
-    *mp_obj_ << value;
+    char * buf = zone_alloc_<char>(strlen(value) + 1);
+    strcpy(buf, value);
+    *mp_obj_ << buf;
 }
 
 DataConstRef::DataConstRef(std::string const & value)
     : DataConstRef()
 {
-    *mp_obj_ << value.c_str();
+    char * buf = zone_alloc_<char>(value.length() + 1);
+    strncpy(buf, value.c_str(), value.length() + 1);
+    *mp_obj_ << buf;
 }
 
 DataConstRef::DataConstRef(int value)
@@ -85,6 +98,59 @@ DataConstRef::DataConstRef(double value)
     : DataConstRef()
 {
     *mp_obj_ << value;
+}
+
+DataConstRef::DataConstRef(ParameterValue const & value)
+    : DataConstRef()
+{
+    if (value.is<std::string>()) {
+        std::string val_str = value.get<std::string>();
+        char * buf = zone_alloc_<char>(val_str.length() + 1);
+        strncpy(buf, val_str.c_str(), val_str.length() + 1);
+        *mp_obj_ << buf;
+    }
+    else if (value.is<int64_t>())
+        *mp_obj_ << value.get<int64_t>();
+    else if (value.is<double>())
+        *mp_obj_ << value.get<double>();
+    else if (value.is<bool>())
+        *mp_obj_ << value.get<bool>();
+    else if (value.is<std::vector<double>>()) {
+        auto vec = value.get<std::vector<double>>();
+        auto list = Data::nils(vec.size());
+        for (std::size_t i = 0u; i < vec.size(); ++i)
+            list[i] = vec[i];
+        std::swap(list.mp_obj_, mp_obj_);
+        std::swap(list.mp_zones_, mp_zones_);
+    }
+    else if (value.is<std::vector<std::vector<double>>>()) {
+        auto vec = value.get<std::vector<std::vector<double>>>();
+        auto list = Data::nils(vec.size());
+        for (std::size_t i = 0u; i < vec.size(); ++i) {
+            auto list2 = Data::nils(vec[i].size());
+            for (std::size_t j = 0u; j < vec[i].size(); ++j)
+                list2[j] = vec[i][j];
+            list[i] = list2;
+        }
+        std::swap(list.mp_obj_, mp_obj_);
+        std::swap(list.mp_zones_, mp_zones_);
+    }
+}
+
+DataConstRef::DataConstRef(Settings const & settings)
+    : DataConstRef()
+{
+    auto settings_dict = Data::dict();
+    for (auto const & kv_pair: settings)
+        settings_dict[static_cast<std::string>(kv_pair.first)] = kv_pair.second;
+
+    msgpack::sbuffer buf;
+    msgpack::pack(buf, settings_dict);
+
+    char * zoned_mem = zone_alloc_<char>(buf.size() + 1);
+    zoned_mem[0] = static_cast<char>(ExtTypeId::settings);
+    memcpy(zoned_mem + 1, buf.data(), buf.size());
+    *mp_obj_ << msgpack::type::ext_ref(zoned_mem, buf.size() + 1);
 }
 
 template <>
@@ -158,6 +224,12 @@ bool DataConstRef::is_a<double>() const {
 }
 
 template <>
+bool DataConstRef::is_a<Settings>() const {
+    return (mp_obj_->type == msgpack::type::EXT) &&
+        (mp_obj_->via.ext.type() == static_cast<int8_t>(ExtTypeId::settings));
+}
+
+template <>
 bool DataConstRef::is_a<std::string>() const {
     return mp_obj_->type == msgpack::type::STR;
 }
@@ -176,6 +248,88 @@ bool DataConstRef::is_a_list() const {
 
 bool DataConstRef::is_a_byte_array() const {
     return mp_obj_->type == msgpack::type::BIN;
+}
+
+template <>
+ParameterValue DataConstRef::as<ParameterValue>() const {
+    DataConstRef const & self = *this;
+    if (is_a<std::string>())
+        return as<std::string>();
+    else if (is_a<int64_t>())
+        return as<int64_t>();
+    else if (is_a<double>())
+        return as<double>();
+    else if (is_a<bool>())
+        return as<bool>();
+    else if (is_a_list()) {
+        if (size() == 0u)
+            return std::vector<double>();
+        else if (self[0].is_a<double>())
+            return as_vec_double_();
+        else if (self[0].is_a_list()) {
+            std::vector<std::vector<double>> result;
+            for (std::size_t i = 0u; i < size(); ++i) {
+                if (self[i].is_a_list())
+                    result.push_back(self[i].as_vec_double_());
+                else
+                    throw std::runtime_error("Found a list of something else"
+                            " than lists, which I cannot convert to a"
+                            " ParameterValue.");
+            }
+            return result;
+        }
+        else
+            throw std::runtime_error("Found a list of something else than"
+                    " lists, which I cannot convert to a ParameterValue.");
+    }
+    else
+        throw std::runtime_error("Tried to convert a DataConstRef or Data to"
+                " a ParameterValue, which it isn't. Did you receive data of a"
+                " type you were not expecting?");
+}
+
+// This uses as<ParameterValue>, so has to be below it.
+template <>
+bool DataConstRef::is_a<ParameterValue>() const {
+    if (is_a<std::string>() ||
+            is_a<int64_t>() ||
+            is_a<double>() ||
+            is_a<bool>())
+        return true;
+    // cheat, just try to convert and catch the exception
+    // TODO: neater solution
+    try {
+        as<ParameterValue>();
+    }
+    catch (std::runtime_error const & e) {
+        return false;
+    }
+    return true;
+}
+
+template <>
+Settings DataConstRef::as<Settings>() const {
+    if (!is_a<Settings>())
+        throw std::runtime_error("Tried to convert a DataConstRef or Data to"
+                " a Settings, which it isn't. Did you receive data of a type"
+                " you were not expecting?");
+
+    auto ext = mp_obj_->as<msgpack::type::ext>();
+    auto oh = msgpack::unpack(ext.data(), ext.size());
+
+    if (oh.get().type != msgpack::type::MAP)
+        throw std::runtime_error("Invalid Settings format. Bug in MUSCLE 3?");
+
+    Settings settings;
+    auto zone = std::make_shared<msgpack::zone>();
+    Data settings_dict(unpack_data(zone, ext.data(), ext.size()));
+
+    for (std::size_t i = 0u; i < settings_dict.size(); ++i) {
+        Reference key(settings_dict.key(i).as<std::string>());
+        auto val = settings_dict.value(i).as<ParameterValue>();
+        settings[key] = val;
+    }
+    return settings;
 }
 
 std::size_t DataConstRef::size() const {
@@ -211,6 +365,26 @@ DataConstRef DataConstRef::operator[](std::string const & key) const {
     throw std::runtime_error("Tried to look up a key, but this object is not a map.");
 }
 
+DataConstRef DataConstRef::key(std::size_t i) const {
+    if (mp_obj_->type == msgpack::type::MAP) {
+        if (i < size())
+            return DataConstRef(&(mp_obj_->via.map.ptr[i].key), mp_zones_);
+        else
+            throw std::out_of_range("Index too large for this map.");
+    }
+    throw std::runtime_error("Tried to look up a key, but this object is not a map.");
+}
+
+DataConstRef DataConstRef::value(std::size_t i) const {
+    if (mp_obj_->type == msgpack::type::MAP) {
+        if (i < size())
+            return DataConstRef(&(mp_obj_->via.map.ptr[i].val), mp_zones_);
+        else
+            throw std::out_of_range("Index too large for this map.");
+    }
+    throw std::runtime_error("Tried to look up a value, but this object is not a map.");
+}
+
 DataConstRef DataConstRef::operator[](std::size_t index) const {
     if (mp_obj_->type == msgpack::type::ARRAY)
         if (index < mp_obj_->via.array.size)
@@ -224,25 +398,39 @@ DataConstRef DataConstRef::operator[](std::size_t index) const {
 DataConstRef::DataConstRef(
         msgpack::object * obj,
         std::shared_ptr<msgpack::zone> const & zone)
-    : mp_zones_()
+    : mp_zones_(new std::vector<std::shared_ptr<msgpack::zone>>())
     , mp_obj_(obj)
 {
-    mp_zones_.push_back(zone);
+    mp_zones_->push_back(zone);
 }
 
 DataConstRef::DataConstRef(
         msgpack::object * obj,
-        std::vector<std::shared_ptr<msgpack::zone>> const & zones)
+        Zones_ const & zones)
     : mp_zones_(zones)
     , mp_obj_(obj)
 {}
 
 DataConstRef::DataConstRef(std::shared_ptr<msgpack::zone> const & zone)
-    : mp_zones_({zone})
+    : mp_zones_(new std::vector<std::shared_ptr<msgpack::zone>>{zone})
     , mp_obj_(zone_alloc_<msgpack::object>())
 {
     mp_obj_->type = msgpack::type::NIL;
 }
+
+std::vector<double> DataConstRef::as_vec_double_() const {
+    std::vector<double> result;
+    DataConstRef const & self = *this;
+    for (std::size_t i = 0u; i < size(); ++i) {
+        if (self[i].is_a<double>())
+            result.push_back(self[i].as<double>());
+        else
+            throw std::runtime_error("Found a list containing"
+                    " something else than a double.");
+    }
+    return result;
+}
+
 
 Data Data::dict() {
     Data dict;
@@ -282,8 +470,9 @@ Data & Data::operator=(Data const & rhs) {
         // reachable. Consider a separate shared_ptr to the zone that mp_obj_
         // is on (in a separate member), so that we can safely overwrite
         // mp_zones_.
-        mp_zones_.insert(mp_zones_.end(),
-                rhs.mp_zones_.cbegin(), rhs.mp_zones_.cend());
+        if (mp_zones_ != rhs.mp_zones_)
+            mp_zones_->insert(mp_zones_->end(),
+                    rhs.mp_zones_->cbegin(), rhs.mp_zones_->cend());
     }
     return *this;
 }
@@ -307,7 +496,7 @@ Data Data::operator[](std::string const & key) {
 
         // add new key
         auto & new_kv = mp_obj_->via.map.ptr[mp_obj_->via.map.size - 1];
-        new_kv.key = msgpack::object(key, *mp_zones_[0]);
+        new_kv.key = msgpack::object(key, *mp_zones_->front());
         new_kv.val = msgpack::object();
         return Data(&new_kv.val, mp_zones_);
     }

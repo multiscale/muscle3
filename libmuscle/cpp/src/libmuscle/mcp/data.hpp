@@ -8,6 +8,8 @@
 
 #include <msgpack.hpp>
 
+#include <ymmsl/settings.hpp>
+
 
 namespace libmuscle {
 
@@ -106,6 +108,21 @@ class DataConstRef {
          */
         DataConstRef(double value);
 
+        /** Create a DataConstRef object from a ParameterValue's value.
+         *
+         * Note that this will decode to whichever type is stored in the
+         * ParameterValue, not to a ParameterValue object.
+         *
+         * @param value The value to represent.
+         */
+        DataConstRef(::ymmsl::ParameterValue const & value);
+
+        /** Create a DataConstRef object representing a Settings object.
+         *
+         * @param value The value to represent.
+         */
+        DataConstRef(::ymmsl::Settings const & settings);
+
         /** Copy-construct a DataConstRef object.
          */
         DataConstRef(DataConstRef const &) = default;
@@ -140,6 +157,8 @@ class DataConstRef {
          * - unsigned long long int
          * - float
          * - double
+         * - ymmsl::ParameterValue
+         * - ymmsl::Settings
          *
          * For checking nil, list and dict, see is_nil(), is_list() and
          * is_dict().
@@ -208,6 +227,8 @@ class DataConstRef {
          * - unsigned long long int
          * - float
          * - double
+         * - ymmsl::ParameterValue
+         * - ymmsl::Settings
          *
          * @tparam T The type to access, as above.
          * @return The referenced value, as the given type.
@@ -229,7 +250,7 @@ class DataConstRef {
          */
         char const * as_byte_array() const;
 
-        /** Access an item in a dictionary.
+        /** Access an item in a dictionary by key.
          *
          * Use only if is_dict() returns true.
          *
@@ -238,6 +259,34 @@ class DataConstRef {
          * @throws std::domain_error if the key does not exist.
          */
         DataConstRef operator[](std::string const & key) const;
+
+        /** Access a key in a dictionary by index.
+         *
+         * Use only if is_dict() returns true.
+         *
+         * Indices match those of value(), so value(i) will give you the value
+         * corresponding to key(i).
+         *
+         * @param i The index of the key to retrieve.
+         * @throws std::runtime_error if the object is not a map.
+         * @throws std::domain_error if the index is out of bounds.
+         * @see size()
+         */
+        DataConstRef key(std::size_t i) const;
+
+        /** Access a value in a dictionary by index.
+         *
+         * Use only if is_dict() returns true.
+         *
+         * Indices match those of key(), so value(i) will give you the value
+         * corresponding to key(i).
+         *
+         * @param i The index of the value to retrieve.
+         * @throws std::runtime_error if the object is not a map.
+         * @throws std::domain_error if the index is out of bounds.
+         * @see size()
+         */
+        DataConstRef value(std::size_t i) const;
 
         /** Access an item in a list.
          *
@@ -252,7 +301,8 @@ class DataConstRef {
         DataConstRef operator[](std::size_t index) const;
 
     protected:
-        std::vector<std::shared_ptr<msgpack::zone>> mp_zones_;
+        using Zones_ = std::shared_ptr<std::vector<std::shared_ptr<msgpack::zone>>>;
+        Zones_ mp_zones_;
         msgpack::object * mp_obj_;
 
         // create DCR pointing to the given object and sharing the given zone
@@ -263,7 +313,7 @@ class DataConstRef {
         // create DCR pointing to the given object and sharing the given zones
         DataConstRef(
                 msgpack::object * data,
-                std::vector<std::shared_ptr<msgpack::zone>> const & zone);
+                Zones_ const & zones);
 
         // create DCR sharing the given zone
         DataConstRef(std::shared_ptr<msgpack::zone> const & zone);
@@ -271,6 +321,8 @@ class DataConstRef {
         // allocate an object on this object's zone
         template <typename T>
         T * zone_alloc_(uint32_t size = 1u);
+
+        std::vector<double> as_vec_double_() const;
 
         friend struct msgpack::adaptor::object_with_zone<DataConstRef>;
         friend struct msgpack::adaptor::pack<DataConstRef>;

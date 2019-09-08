@@ -62,18 +62,18 @@ class ParameterValue {
          *          std::vector<std::vector<double>>.
          */
         template <typename T>
-        bool is() const;
+        bool is_a() const;
 
-        /** Return the value of the given type.
+        /** Return the value as the given type.
          *
          * @param T A valid type, being one of std::string, int64_t, double,
          *          bool, std::vector<double>, or
          *          std::vector<std::vector<double>>.
          *
-         * Only call if is<T>() returns true.
+         * Only call if is_a<T>() returns true.
          */
         template <typename T>
-        T get() const;
+        T as() const;
 
     private:
         void deactivate_() noexcept;

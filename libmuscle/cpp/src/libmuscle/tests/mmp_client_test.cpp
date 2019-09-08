@@ -23,7 +23,7 @@ bool settings_ok(Settings const & settings) {
         return false;
     if (settings.at("test5") != std::vector<double>({2.3, 5.6}))
         return false;
-    auto test6 = settings.at("test6").get<std::vector<std::vector<double>>>();
+    auto test6 = settings.at("test6").as<std::vector<std::vector<double>>>();
     if (test6[0][0] != 1.0 || test6[0][1] != 2.0 || test6[1][0] != 3.0 || test6[1][1] != 1.0)
         return false;
     return true;

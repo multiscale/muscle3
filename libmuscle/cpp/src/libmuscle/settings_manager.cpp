@@ -46,11 +46,11 @@ T const & SettingsManager::get_parameter_as(
 {
     ParameterValue value(get_parameter(instance, parameter_name));
 
-    if (!value.is<T>())
+    if (!value.is_a<T>())
         throw std::runtime_error("Value for parameter "
                                  + static_cast<std::string>(parameter_name)
                                  + " is the wrong type.");
-    return value.get<T>();
+    return value.as<T>();
 }
 
 }

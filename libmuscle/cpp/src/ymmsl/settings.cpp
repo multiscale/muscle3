@@ -124,62 +124,62 @@ bool ParameterValue::operator!=(ParameterValue const & rhs) const {
 }
 
 template<>
-bool ParameterValue::is<std::string>() const {
+bool ParameterValue::is_a<std::string>() const {
     return type_ == Type_::STRING;
 }
 
 template<>
-bool ParameterValue::is<int64_t>() const {
+bool ParameterValue::is_a<int64_t>() const {
     return type_ == Type_::INT;
 }
 
 template<>
-bool ParameterValue::is<double>() const {
+bool ParameterValue::is_a<double>() const {
     return type_ == Type_::FLOAT;
 }
 
 template<>
-bool ParameterValue::is<bool>() const {
+bool ParameterValue::is_a<bool>() const {
     return type_ == Type_::BOOL;
 }
 
 template<>
-bool ParameterValue::is<std::vector<double>>() const {
+bool ParameterValue::is_a<std::vector<double>>() const {
     return type_ == Type_::LIST_FLOAT;
 }
 
 template<>
-bool ParameterValue::is<std::vector<std::vector<double>>>() const {
+bool ParameterValue::is_a<std::vector<std::vector<double>>>() const {
     return type_ == Type_::LIST_LIST_FLOAT;
 }
 
 template<>
-std::string ParameterValue::get<std::string>() const {
+std::string ParameterValue::as<std::string>() const {
     return string_value_;
 }
 
 template<>
-int64_t ParameterValue::get<int64_t>() const {
+int64_t ParameterValue::as<int64_t>() const {
     return int_value_;
 }
 
 template<>
-double ParameterValue::get<double>() const {
+double ParameterValue::as<double>() const {
     return float_value_;
 }
 
 template<>
-bool ParameterValue::get<bool>() const {
+bool ParameterValue::as<bool>() const {
     return bool_value_;
 }
 
 template<>
-std::vector<double> ParameterValue::get<std::vector<double>>() const {
+std::vector<double> ParameterValue::as<std::vector<double>>() const {
     return list_value_;
 }
 
 template<>
-std::vector<std::vector<double>> ParameterValue::get<std::vector<std::vector<double>>>() const {
+std::vector<std::vector<double>> ParameterValue::as<std::vector<std::vector<double>>>() const {
     return list_list_value_;
 }
 

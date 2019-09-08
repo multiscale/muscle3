@@ -103,28 +103,28 @@ DataConstRef::DataConstRef(double value)
 DataConstRef::DataConstRef(ParameterValue const & value)
     : DataConstRef()
 {
-    if (value.is<std::string>()) {
-        std::string val_str = value.get<std::string>();
+    if (value.is_a<std::string>()) {
+        std::string val_str = value.as<std::string>();
         char * buf = zone_alloc_<char>(val_str.length() + 1);
         strncpy(buf, val_str.c_str(), val_str.length() + 1);
         *mp_obj_ << buf;
     }
-    else if (value.is<int64_t>())
-        *mp_obj_ << value.get<int64_t>();
-    else if (value.is<double>())
-        *mp_obj_ << value.get<double>();
-    else if (value.is<bool>())
-        *mp_obj_ << value.get<bool>();
-    else if (value.is<std::vector<double>>()) {
-        auto vec = value.get<std::vector<double>>();
+    else if (value.is_a<int64_t>())
+        *mp_obj_ << value.as<int64_t>();
+    else if (value.is_a<double>())
+        *mp_obj_ << value.as<double>();
+    else if (value.is_a<bool>())
+        *mp_obj_ << value.as<bool>();
+    else if (value.is_a<std::vector<double>>()) {
+        auto vec = value.as<std::vector<double>>();
         auto list = Data::nils(vec.size());
         for (std::size_t i = 0u; i < vec.size(); ++i)
             list[i] = vec[i];
         std::swap(list.mp_obj_, mp_obj_);
         std::swap(list.mp_zones_, mp_zones_);
     }
-    else if (value.is<std::vector<std::vector<double>>>()) {
-        auto vec = value.get<std::vector<std::vector<double>>>();
+    else if (value.is_a<std::vector<std::vector<double>>>()) {
+        auto vec = value.as<std::vector<std::vector<double>>>();
         auto list = Data::nils(vec.size());
         for (std::size_t i = 0u; i < vec.size(); ++i) {
             auto list2 = Data::nils(vec[i].size());

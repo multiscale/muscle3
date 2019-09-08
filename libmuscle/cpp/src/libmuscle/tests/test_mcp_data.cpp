@@ -368,7 +368,7 @@ void test_parameter_value(ParameterValue const & test_value) {
     Data d2(libmuscle::mcp::unpack_data(zone, buf.data(), buf.size()));
     ASSERT_TRUE(d2.is_a<T>());
     T x = d2.as<T>();
-    ASSERT_EQ(x, test_value.get<T>());
+    ASSERT_EQ(x, test_value.as<T>());
 }
 
 TEST(libmuscle_mcp_data, parameter_value) {
@@ -442,7 +442,7 @@ TEST(libmuscle_mcp_data, parameter_value_list_pv) {
     ASSERT_TRUE(d.is_a<ParameterValue>());
     ParameterValue pv2 = d.as<ParameterValue>();
 
-    auto vec = pv2.get<std::vector<double>>();
+    auto vec = pv2.as<std::vector<double>>();
     ASSERT_EQ(vec.size(), 3);
     ASSERT_EQ(vec[0], 1.0);
     ASSERT_EQ(vec[1], 2.2);
@@ -456,7 +456,7 @@ TEST(libmuscle_mcp_data, parameter_value_list_list_pv) {
     ASSERT_TRUE(d.is_a<ParameterValue>());
     ParameterValue pv2 = d.as<ParameterValue>();
 
-    auto vec = pv2.get<std::vector<std::vector<double>>>();
+    auto vec = pv2.as<std::vector<std::vector<double>>>();
     ASSERT_EQ(vec.size(), 2);
     ASSERT_EQ(vec[0].size(), 3);
     ASSERT_EQ(vec[0][0], 1.0);

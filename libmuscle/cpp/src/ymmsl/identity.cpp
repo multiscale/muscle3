@@ -177,6 +177,16 @@ ReferencePart const & Reference::operator[](int i) const {
     return parts_[i];
 }
 
+Reference const & Reference::operator+=(ReferencePart const & rhs) {
+    parts_.push_back(rhs);
+    return *this;
+}
+
+Reference const & Reference::operator+=(std::vector<int> const & rhs) {
+    std::copy(rhs.cbegin(), rhs.cend(), std::back_inserter(parts_));
+    return *this;
+}
+
 Reference Reference::operator+(Reference const & rhs) const {
     std::vector<ReferencePart> new_parts(parts_);
     std::copy(rhs.cbegin(), rhs.cend(), std::back_inserter(new_parts));

@@ -141,6 +141,16 @@ TEST(ymmsl_identity, test_reference_concatenation) {
     ASSERT_EQ(Reference("test[5]") + Reference("test2[3]"), "test[5].test2[3]");
     ASSERT_EQ(Reference("test[5]") + Identifier("test2"), "test[5].test2");
     ASSERT_EQ(Reference("test[5]") + 3, "test[5][3]");
+
+    Reference ref1("test");
+    ref1 += 10;
+    ASSERT_EQ(ref1, "test[10]");
+    ref1 += Identifier("test2");
+    ASSERT_EQ(ref1, "test[10].test2");
+
+    std::vector<int> indexes{1, 2, 3};
+    ref1 += indexes;
+    ASSERT_EQ(ref1, "test[10].test2[1][2][3]");
 }
 
 TEST(ymmsl_identity, identifier_serialisation) {

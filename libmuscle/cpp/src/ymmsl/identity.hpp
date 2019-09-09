@@ -329,6 +329,21 @@ class Reference {
          */
         ReferencePart const & operator[](int i) const;
 
+        /** Append a part to this Reference.
+         *
+         * @param rhs The part to append.
+         * @return A reference to this (updated) object.
+         */
+        Reference const & operator+=(ReferencePart const & rhs);
+
+        /** Append a list of indexes to this Reference.
+         *
+         * @param rhs The indexes to append.
+         *
+         * @return A reference to this (updated) object.
+         */
+        Reference const & operator+=(std::vector<int> const & rhs);
+
         /** Concatenate two References.
          *
          * @param rhs The Reference to append to this one to produce the new

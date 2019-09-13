@@ -1,4 +1,5 @@
 .. image:: https://github.com/multiscale/muscle3/raw/develop/docs/source/muscle3_logo_readme.png
+    :alt: MUSCLE 3
 
 .. image:: https://readthedocs.org/projects/muscle3/badge/?version=develop
     :target: https://muscle3.readthedocs.io/en/develop/?badge=develop
@@ -22,10 +23,6 @@
 
 .. image:: https://zenodo.org/badge/122876985.svg
    :target: https://zenodo.org/badge/latestdoi/122876985
-
-========
-MUSCLE 3
-========
 
 MUSCLE 3 is the third incarnation of the MUSCLE Multiscale Coupling Library and
 Environment. It is developed by the e-MUSC project of the University of

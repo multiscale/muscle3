@@ -24,6 +24,8 @@
 .. image:: https://zenodo.org/badge/122876985.svg
    :target: https://zenodo.org/badge/latestdoi/122876985
 
+|
+
 MUSCLE 3 is the third incarnation of the MUSCLE Multiscale Coupling Library and
 Environment. It is developed by the e-MUSC project of the University of
 Amsterdam and the Netherlands eScience Center.

@@ -1,3 +1,5 @@
+.. image:: https://github.com/multiscale/muscle3/raw/develop/docs/source/muscle3_logo_readme.png
+
 .. image:: https://readthedocs.org/projects/muscle3/badge/?version=develop
     :target: https://muscle3.readthedocs.io/en/develop/?badge=develop
     :alt: Documentation Build Status
@@ -26,8 +28,8 @@ MUSCLE 3
 ========
 
 MUSCLE 3 is the third incarnation of the MUSCLE Multiscale Coupling Library and
-Environment. It is developed by the `ComPat`_ EU FP 7 project, and the e-MUSC
-project of the University of Amsterdam and the Netherlands eScience Center.
+Environment. It is developed by the e-MUSC project of the University of
+Amsterdam and the Netherlands eScience Center.
 
 A first version of MUSCLE 3 is now available! This is Python-only; support for
 C++, C and Fortran is under active development. Browse to
@@ -37,8 +39,8 @@ C++, C and Fortran is under active development. Browse to
 Legal
 =====
 
-MUSCLE 3 is Copyright 2018 University of Amsterdam, Brunel University, and
-Netherlands eScience Center. It is licensed under the Apache License 2.0.
+MUSCLE 3 is Copyright 2018 University of Amsterdam and Netherlands eScience
+Center. It is licensed under the Apache License 2.0.
 
 
 Contributing
@@ -70,5 +72,4 @@ The documentation can be built using::
 
 .. _`the MUSCLE 3 documentation`: https://muscle3.readthedocs.io
 .. _`documentation on contributing`: http://muscle3.readthedocs.io/en/latest/contributing.html
-.. _`ComPat`: http://www.compat.eu
 .. _`code of conduct`: https://github.com/multiscale/muscle3/blob/develop/CODE_OF_CONDUCT.md

@@ -149,6 +149,10 @@ class Settings {
          */
         std::size_t erase(std::string const & setting);
 
+        /** Removes all settings.
+         */
+        void clear();
+
         /** Return an iterator to the first setting.
          *
          * The iterator dereferences to a std::pair<Reference, ParameterValue>.

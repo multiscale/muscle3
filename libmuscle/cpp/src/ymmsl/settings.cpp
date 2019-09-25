@@ -283,6 +283,10 @@ std::size_t Settings::erase(std::string const & setting) {
     return store_.erase(Reference(setting));
 }
 
+void Settings::clear() {
+    store_.clear();
+}
+
 Settings::const_iterator Settings::begin() const {
     return store_.cbegin();
 }

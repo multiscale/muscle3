@@ -269,6 +269,22 @@ TEST(ymmsl_settings, test_erase) {
     ASSERT_THROW(s1.at("test"), std::out_of_range);
 }
 
+TEST(ymmsl_settings, test_clear) {
+    Settings s1;
+
+    s1["test"] = true;
+    s1["test2"] = 1;
+
+    ASSERT_TRUE(s1.contains("test"));
+    ASSERT_TRUE(s1.contains("test2"));
+
+    s1.clear();
+
+    ASSERT_FALSE(s1.contains("test"));
+    ASSERT_FALSE(s1.contains("test2"));
+}
+
+
 TEST(ymmsl_settings, test_iterate) {
     Settings s1;
     s1["test"] = true;

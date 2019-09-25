@@ -354,7 +354,7 @@ TEST(libmuscle_communicator, send_message) {
     reset_mocks();
     auto comm = connected_communicator();
 
-    Message message(0.0, {}, "test", Settings());
+    Message message(0.0, "test");
     comm->send_message("out", message);
 
     ASSERT_EQ(MockPostOffice::last_receiver, "other.in[13]");
@@ -373,7 +373,7 @@ TEST(libmuscle_communicator, send_on_disconnected_port) {
 
     MockPeerManager::is_connected_return_value = false;
 
-    Message message(0.0, {}, "test", Settings());
+    Message message(0.0, "test");
     comm->send_message("not_connected", message);
 }
 
@@ -381,7 +381,7 @@ TEST(libmuscle_communicator, send_on_invalid_port) {
     reset_mocks();
 
     auto comm = connected_communicator();
-    Message message(0.0, {}, "test", Settings());
+    Message message(0.0, "test", Settings());
     ASSERT_THROW(comm->send_message("[$Invalid_id", message), std::invalid_argument);
 }
 
@@ -389,7 +389,7 @@ TEST(libmuscle_communicator, send_msgpack) {
     reset_mocks();
     auto comm = connected_communicator();
 
-    Message message(0.0, {}, Data::dict("test", 17), Settings());
+    Message message(0.0, Data::dict("test", 17), Settings());
     comm->send_message("out", message);
 
     ASSERT_EQ(MockPostOffice::last_receiver, "other.in[13]");
@@ -405,7 +405,7 @@ TEST(libmuscle_communicator, send_message_with_slot) {
     reset_mocks();
     auto comm = connected_communicator2();
 
-    Message message(0.0, {}, "test", Settings());
+    Message message(0.0, "test");
     comm->send_message("out", message, 13);
 
     ASSERT_EQ(MockPostOffice::last_receiver, "kernel[13].in");
@@ -420,7 +420,7 @@ TEST(libmuscle_communicator, send_message_with_slot) {
 TEST(libmuscle_communicator, send_message_resizable) {
     reset_mocks();
     auto comm = connected_communicator3();
-    Message message(0.0, {}, "test", Settings());
+    Message message(0.0, "test");
 
     ASSERT_THROW(comm->send_message("out", message, 13), std::runtime_error);
 
@@ -444,7 +444,7 @@ TEST(libmuscle_communicator, send_with_parameters) {
 
     Settings settings;
     settings["test2"] = "testing";
-    Message message(0.0, {}, "test", settings);
+    Message message(0.0, "test", settings);
     comm->send_message("out", message);
 
     ASSERT_EQ(MockPostOffice::last_receiver, "other.in[13]");
@@ -463,7 +463,7 @@ TEST(libmuscle_communicator, send_settings) {
 
     Settings settings;
     settings["test1"] = "testing";
-    Message message(0.0, {}, settings, Settings());
+    Message message(0.0, settings);
     comm->send_message("out", message);
 
     ASSERT_EQ(MockPostOffice::last_receiver, "other.in[13]");
@@ -501,22 +501,22 @@ TEST(libmuscle_communicator, receive_message) {
     Message msg = comm->receive_message("in");
 
     ASSERT_EQ(MockTcpClient::last_receiver, "kernel[13].in");
-    ASSERT_TRUE(msg.data.is_a_dict());
-    ASSERT_EQ(msg.data["test1"].as<int>(), 12);
+    ASSERT_TRUE(msg.data().is_a_dict());
+    ASSERT_EQ(msg.data()["test1"].as<int>(), 12);
 }
 
 TEST(libmuscle_communicator, receive_message_default) {
     reset_mocks();
     MockPeerManager::is_connected_return_value = false;
 
-    Message default_msg(3.0, 4.0, "test", Settings());
+    Message default_msg(3.0, 4.0, "test");
     auto comm = connected_communicator();
     Message msg = comm->receive_message("not_connected", {}, default_msg);
 
-    ASSERT_EQ(msg.timestamp, 3.0);
-    ASSERT_EQ(msg.next_timestamp, 4.0);
-    ASSERT_EQ(msg.data.as<std::string>(), "test");
-    ASSERT_TRUE(msg.settings.get().empty());
+    ASSERT_EQ(msg.timestamp(), 3.0);
+    ASSERT_EQ(msg.next_timestamp(), 4.0);
+    ASSERT_EQ(msg.data().as<std::string>(), "test");
+    ASSERT_TRUE(msg.settings().empty());
 }
 
 TEST(libmuscle_communicator, receive_message_no_default) {
@@ -543,8 +543,8 @@ TEST(libmuscle_communicator, receive_message_with_slot) {
     Message msg = comm->receive_message("in", 13);
 
     ASSERT_EQ(MockTcpClient::last_receiver, "other.in[13]");
-    ASSERT_TRUE(msg.data.is_a_dict());
-    ASSERT_EQ(msg.data["test1"].as<int>(), 12);
+    ASSERT_TRUE(msg.data().is_a_dict());
+    ASSERT_EQ(msg.data()["test1"].as<int>(), 12);
 }
 
 TEST(libmuscle_communicator, receive_message_resizable) {
@@ -557,8 +557,8 @@ TEST(libmuscle_communicator, receive_message_resizable) {
     Message msg = comm->receive_message("in", 13);
 
     ASSERT_EQ(MockTcpClient::last_receiver, "kernel.in[13]");
-    ASSERT_TRUE(msg.data.is_a_dict());
-    ASSERT_EQ(msg.data["test1"].as<int>(), 12);
+    ASSERT_TRUE(msg.data().is_a_dict());
+    ASSERT_EQ(msg.data()["test1"].as<int>(), 12);
     ASSERT_EQ(comm->get_port("in").get_length(), 20);
 }
 
@@ -571,9 +571,9 @@ TEST(libmuscle_communicator, receive_with_parameters) {
     Message msg = comm->receive_message("in");
 
     ASSERT_EQ(MockTcpClient::last_receiver, "kernel[13].in");
-    ASSERT_TRUE(msg.data.is_a_dict());
-    ASSERT_EQ(msg.data["test1"].as<int>(), 12);
-    ASSERT_EQ(msg.settings.get()["test2"], 3.1);
+    ASSERT_TRUE(msg.data().is_a_dict());
+    ASSERT_EQ(msg.data()["test1"].as<int>(), 12);
+    ASSERT_EQ(msg.settings().at("test2"), 3.1);
 }
 
 TEST(libmuscle_communicator, receive_message_with_slot_and_parameters) {
@@ -585,12 +585,8 @@ TEST(libmuscle_communicator, receive_message_with_slot_and_parameters) {
     Message msg = comm->receive_message("in", 13);
 
     ASSERT_EQ(MockTcpClient::last_receiver, "other.in[13]");
-    ASSERT_TRUE(msg.data.is_a_dict());
-    ASSERT_EQ(msg.data["test1"].as<int>(), 12);
-    ASSERT_EQ(msg.settings.get()["test2"], 3.1);
+    ASSERT_TRUE(msg.data().is_a_dict());
+    ASSERT_EQ(msg.data()["test1"].as<int>(), 12);
+    ASSERT_EQ(msg.settings().at("test2"), 3.1);
 }
-
-
-
-
 

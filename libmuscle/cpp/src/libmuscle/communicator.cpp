@@ -235,8 +235,11 @@ void Communicator::send_message(
 
     auto mcp_message = std::make_unique<mcp::Message>(
             snd_endpoint.ref(), recv_endpoint.ref(),
-            port_length, message.timestamp(), message.next_timestamp(),
+            port_length, message.timestamp(), Optional<double>(),
             settings_overlay, message.data());
+
+    if (message.has_next_timestamp())
+        mcp_message->next_timestamp = message.next_timestamp();
 
     post_office_.deposit(recv_endpoint.ref(), std::move(mcp_message));
 
@@ -304,7 +307,7 @@ void Communicator::close_port(
         std::string const & port_name, Optional<int> slot) {
     Message message(
             std::numeric_limits<double>::infinity(),
-            ClosePort_());
+            ClosePort_(), Settings());
     send_message(port_name, message, slot);
 }
 

@@ -375,6 +375,8 @@ Communicator::Ports_ Communicator::ports_from_conduits_(
             port_peer_dims = peer_manager_->get_peer_dims(
                     conduit.sending_compute_element());
         }
+        else
+            continue;
         int ndims = std::max(std::vector<int>::size_type(0u), port_peer_dims.size() - index_.size());
         bool is_vector = (ndims == 1);
         bool is_connected = peer_manager_->is_connected(port_id);

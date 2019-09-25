@@ -410,6 +410,9 @@ class Communicator:
                 operator = Operator.F_INIT
                 port_peer_dims = self._peer_manager.get_peer_dims(
                         conduit.sending_compute_element())
+            else:
+                continue
+
             ndims = max(0, len(port_peer_dims) - len(self._index))
             is_vector = (ndims == 1)
             is_connected = self._peer_manager.is_connected(port_id)

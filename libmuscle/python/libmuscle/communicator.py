@@ -378,11 +378,10 @@ class Communicator:
                     raise RuntimeError(('Port names starting with "muscle_"'
                                         ' are reserved for MUSCLE, please'
                                         ' rename port "{}"'.format(port_name)))
-                is_connected = self._peer_manager.is_connected(
-                        Identifier(port_name))
+                port_id = Identifier(port_name)
+                is_connected = self._peer_manager.is_connected(port_id)
                 if is_connected:
-                    port_ref = self._kernel + Identifier(port_name)
-                    peer_port = self._peer_manager.get_peer_port(port_ref)
+                    peer_port = self._peer_manager.get_peer_port(port_id)
                     peer_ce = peer_port[:-1]
                     port_peer_dims = self._peer_manager.get_peer_dims(peer_ce)
                 else:

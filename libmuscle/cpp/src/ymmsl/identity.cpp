@@ -44,6 +44,10 @@ Identifier::Identifier(std::string const & contents)
     }
 }
 
+Identifier::Identifier(char const * const contents)
+    : Identifier(std::string(contents))
+{}
+
 Identifier::operator std::string() const {
     return data_;
 }
@@ -56,11 +60,19 @@ bool Identifier::operator==(std::string const & rhs) const {
     return data_ == rhs;
 }
 
+bool Identifier::operator==(char const * const rhs) const {
+    return data_ == rhs;
+}
+
 bool Identifier::operator!=(Identifier const & rhs) const {
     return data_ != rhs.data_;
 }
 
 bool Identifier::operator!=(std::string const & rhs) const {
+    return data_ != rhs;
+}
+
+bool Identifier::operator!=(char const * const rhs) const {
     return data_ != rhs;
 }
 
@@ -196,6 +208,12 @@ Reference Reference::operator+(Reference const & rhs) const {
 Reference Reference::operator+(ReferencePart const & rhs) const {
     std::vector<ReferencePart> new_parts(parts_);
     new_parts.push_back(rhs);
+    return Reference(std::move(new_parts));
+}
+
+Reference Reference::operator+(std::vector<int> const & rhs) const {
+    std::vector<ReferencePart> new_parts(parts_);
+    std::copy(rhs.cbegin(), rhs.cend(), std::back_inserter(new_parts));
     return Reference(std::move(new_parts));
 }
 

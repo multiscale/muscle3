@@ -31,14 +31,23 @@ class Identifier {
     public:
         /** Create an Identifier.
          *
-         * This creates a new identifier object, using the string
-         * representation of whichever object you pass.
+         * This creates a new identifier object, using the given string.
          *
          * @param contents The contents of the identifier.
          *
          * @throws std::invalid_argument if contents is not a valid identifier.
          */
         Identifier(std::string const & contents);
+
+        /** Create an Identifier.
+         *
+         * This creates a new identifier object, using the given C-style string.
+         *
+         * @param contents The contents of the identifier.
+         *
+         * @throws std::invalid_argument if contents is not a valid identifier.
+         */
+        Identifier(char const * const contents);
 
         /** Implicit conversion to std::string.
          *
@@ -64,6 +73,14 @@ class Identifier {
          */
         bool operator==(std::string const & rhs) const;
 
+        /** Compare for equality against a C-style string.
+         *
+         * @param rhs The string to compare against.
+         *
+         * @return True iff the Identifier matches the string.
+         */
+        bool operator==(char const * const rhs) const;
+
         /** Compare for inequality.
          *
          * @param rhs The Identifier to compare against.
@@ -80,6 +97,13 @@ class Identifier {
          */
         bool operator!=(std::string const & rhs) const;
 
+        /** Compare for inequality against a C-style string.
+         *
+         * @param rhs The string to compare against.
+         *
+         * @return True iff the Identifier is different from the string.
+         */
+        bool operator!=(char const * const rhs) const;
 
     private:
         friend bool operator==(std::string const & lhs, Identifier const & rhs);
@@ -357,6 +381,12 @@ class Reference {
          *        new Reference.
          */
         Reference operator+(ReferencePart const & rhs) const;
+
+        /** Append a list of indexes to this Reference.
+         *
+         * @param rhs The indexes to append.
+         */
+        Reference operator+(std::vector<int> const & rhs) const;
 
     private:
         friend std::ostream & operator<<(std::ostream & os, Reference const & r);

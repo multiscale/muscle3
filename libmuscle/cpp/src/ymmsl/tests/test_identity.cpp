@@ -31,6 +31,11 @@ TEST(ymmsl_identity, test_compare_identifier) {
     ASSERT_EQ(Identifier("test"), Identifier("test"));
     ASSERT_NE(Identifier("test1"), Identifier("test2"));
 
+    ASSERT_EQ(Identifier("test"), std::string("test"));
+    ASSERT_EQ(std::string("test"), Identifier("test"));
+    ASSERT_NE(Identifier("test"), std::string("test2"));
+    ASSERT_NE(std::string("test2"), Identifier("test"));
+
     ASSERT_EQ(Identifier("test"), "test");
     ASSERT_EQ("test", Identifier("test"));
     ASSERT_NE(Identifier("test"), "test2");

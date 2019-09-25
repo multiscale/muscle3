@@ -1,5 +1,10 @@
 #pragma once
 
+#ifdef LIBMUSCLE_MOCK_POST_OFFICE
+#include LIBMUSCLE_MOCK_POST_OFFICE
+#else
+
+
 #include <ymmsl/identity.hpp>
 
 #include "libmuscle/mcp/message.hpp"
@@ -64,4 +69,6 @@ class PostOffice {
 };
 
 }
+
+#endif
 

@@ -13,6 +13,14 @@
 
 namespace libmuscle {
 
+// TODO remove when moving this to libmuscle
+namespace mcp {
+class DataConstRef;
+}
+
+// TODO remove when moving this to libmuscle
+bool is_close_port(mcp::DataConstRef const &);
+
 namespace mcp {
 
 class Data;
@@ -329,6 +337,7 @@ class DataConstRef {
 
         // see comment at Data::init_dict_'s implementation
         friend class Data;
+        friend bool ::libmuscle::is_close_port(DataConstRef const &);
 };
 
 

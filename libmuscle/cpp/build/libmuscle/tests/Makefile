@@ -27,7 +27,7 @@ distclean: clean
 
 EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-Wl,-rpath-link,$(DIR)/lib)
 
-CXXFLAGS += -isystem $(googletest_ROOT)/include -pthread
+CXXFLAGS += -I$(libmuscle_testdir) -isystem $(googletest_ROOT)/include -pthread
 
 LDFLAGS += $(CURDIR)/../libmuscle_d.a $(CURDIR)/../../ymmsl/libymmsl_d.a
 LDFLAGS += $(googletest_ROOT)/lib/libgtest.a -pthread
@@ -53,6 +53,12 @@ test_%: test_%.o $(CURDIR)/../libmuscle_d.a $(CURDIR)/../../ymmsl/libymmsl_d.a
 
 %_test: %_test.o $(CURDIR)/../libmuscle_d.a $(CURDIR)/../../ymmsl/libymmsl_d.a
 	$(CXX) $(DEBUGFLAGS) $< -o $@ $(LDFLAGS2)
+
+test_communicator.o: test_communicator.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@ -pthread
+
+test_communicator: test_communicator.o
+	$(CXX) $(DEBUGFLAGS) $< -o $@ $(googletest_ROOT)/lib/libgtest.a -pthread
 
 empty :=
 space := $(empty) $(empty)

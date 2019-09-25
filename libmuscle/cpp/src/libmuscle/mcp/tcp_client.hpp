@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef LIBMUSCLE_MOCK_MCP_TCP_CLIENT
+#include LIBMUSCLE_MOCK_MCP_TCP_CLIENT
+#else
+
 #include <libmuscle/mcp/client.hpp>
 
 
@@ -81,4 +85,6 @@ class TcpClient : public Client {
 };
 
 } }
+
+#endif
 

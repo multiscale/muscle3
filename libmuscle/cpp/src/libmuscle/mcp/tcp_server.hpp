@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef LIBMUSCLE_MOCK_MCP_TCP_SERVER
+#include LIBMUSCLE_MOCK_MCP_TCP_SERVER
+#else
+
 #include <libmuscle/mcp/server.hpp>
 
 #include <thread>
@@ -60,4 +64,6 @@ class TcpServer : public Server {
 };
 
 } }
+
+#endif
 

@@ -56,7 +56,8 @@ install: all $(installed_headers)
 	cp libmuscle_d.so $(PREFIX)/lib
 
 
-ifneq ($(MAKECMDGOALS),clean)
+cleantargets := clean distclean
+ifeq "$(filter $(MAKECMDGOALS),$(cleantargets))" ""
 
 # Dependencies
 $(info pcextra: $(PKG_CONFIG_EXTRA_DIRS))

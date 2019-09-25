@@ -55,8 +55,12 @@ install: all $(installed_headers)
 	cp libymmsl_d.so $(PREFIX)/lib
 
 
+cleantargets := clean distclean
+ifeq "$(filter $(MAKECMDGOALS),$(cleantargets))" ""
 
 -include $(deps)
+
+endif
 
 $(objdir)/%.d: %.cpp
 	@mkdir -p $(@D)

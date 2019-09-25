@@ -18,12 +18,15 @@ tests: $(all_tests)
 
 .PHONY: clean
 clean:
+	rm -f *.d
 	rm -f *.o
 	rm -f $(all_tests)
 
 .PHONY: distclean
 distclean: clean
 
+cleantargets := clean distclean
+ifeq "$(filter $(MAKECMDGOALS),$(cleantargets))" ""
 
 EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-Wl,-rpath-link,$(DIR)/lib)
 
@@ -41,6 +44,8 @@ LDFLAGS2 += $(EXTRA_LINK_DIRS)
 
 $(info libmuscle test deps: $(deps))
 -include $(deps)
+
+endif
 
 %.d: %.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -E -MM -MT $(@:.d=.o) $< -o $@

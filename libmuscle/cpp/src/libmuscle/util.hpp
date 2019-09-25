@@ -1,12 +1,13 @@
 #pragma once
 
+#include <ostream>
+
 namespace libmuscle {
 
 /* An optional type template.
  *
  * Since we're not doing C++17, we can't use std::optional. This is a simple
- * replacement. It's only used internally, and not part of the API, so once we
- * have C++17, we'll switch over.
+ * replacement.
  *
  * I didn't make it compatible because std::optional is quite complex, and this
  * was much quicker to implement.
@@ -81,6 +82,12 @@ class Optional {
          */
         T const & get() const;
 
+        /** Get the contained value.
+         *
+         * Use only if is_set() returns true!
+         */
+        T & get();
+
     private:
         void destruct_();
 
@@ -89,6 +96,9 @@ class Optional {
             T t_;
         };
 };
+
+template <typename T>
+std::ostream & operator<<(std::ostream & os, Optional<T> const & t);
 
 }
 

@@ -89,10 +89,24 @@ T const & Optional<T>::get() const {
 }
 
 template <typename T>
+T & Optional<T>::get() {
+    return t_;
+}
+
+template <typename T>
 void Optional<T>::destruct_() {
     if (is_set_)
         t_.~T();
     is_set_ = false;
+}
+
+template <typename T>
+std::ostream & operator<<(std::ostream & os, Optional<T> const & t) {
+    if (t.is_set())
+        os << t.get();
+    else
+        os << "nil";
+    return os;
 }
 
 }

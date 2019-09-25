@@ -25,7 +25,7 @@ Port::Port(
     if (is_vector) {
         if (our_ndims == static_cast<int>(peer_dims.size()))
             length_ = 0;
-        else if (our_ndims + 1 == static_cast<int>(peer_dims.size()))
+        else if ((our_ndims + 1) == static_cast<int>(peer_dims.size()))
             length_ = peer_dims.back();
         else if (our_ndims > static_cast<int>(peer_dims.size()))
             throw std::runtime_error("Vector port '"s + name + "' is connected"

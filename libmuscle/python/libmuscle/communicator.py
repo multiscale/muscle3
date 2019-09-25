@@ -274,7 +274,7 @@ class Communicator:
 
         Returns:
             The received message, with message.settings holding
-            the parameter overlay. The settings attribute is
+            the settings overlay. The settings attribute is
             guaranteed to not be None.
 
         Raises:
@@ -339,7 +339,7 @@ class Communicator:
         """Closes the given port.
 
         This signals to any connected instance that no more messages
-        will be sent on this port, which it can use to decided whether
+        will be sent on this port, which it can use to decide whether
         to shut down or continue running.
 
         Args:

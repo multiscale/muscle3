@@ -466,7 +466,7 @@ def test_receive_with_slot(communicator2) -> None:
 def test_receive_message_resizable(communicator3) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MCPMessage(
-            Reference('kernel.out[13]'), Reference('other.in[13]'),
+            Reference('other.out[13]'), Reference('kernel.in[13]'),
             20, 0.0, None, msgpack.packb({'test': 'testing'}),
             msgpack.packb(b'test', use_bin_type=True))
     get_client_mock = MagicMock(return_value=client_mock)

@@ -6,7 +6,7 @@ from libmuscle.endpoint import Endpoint
 
 
 class PeerManager:
-    """Manager information about peers for a Communicator
+    """Manages information about peers for a Communicator
     """
     def __init__(self, kernel: Reference, index: List[int],
                  conduits: List[Conduit],

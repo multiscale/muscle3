@@ -237,8 +237,10 @@ class Communicator {
          * Sending is non-blocking, a copy of the message will be made and
          * stored until the receiver is ready to receive it.
          *
+         * Message must have its settings attribute set.
+         *
          * @param port_name The port on which this message is to be sent.
-         * @param message The message to send
+         * @param message The message to send.
          * @param slot The slot to send the message on.
          */
         void send_message(

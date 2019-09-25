@@ -354,7 +354,7 @@ TEST(libmuscle_communicator, send_message) {
     reset_mocks();
     auto comm = connected_communicator();
 
-    Message message(0.0, "test");
+    Message message(0.0, "test", Settings());
     comm->send_message("out", message);
 
     ASSERT_EQ(MockPostOffice::last_receiver, "other.in[13]");
@@ -373,7 +373,7 @@ TEST(libmuscle_communicator, send_on_disconnected_port) {
 
     MockPeerManager::is_connected_return_value = false;
 
-    Message message(0.0, "test");
+    Message message(0.0, "test", Settings());
     comm->send_message("not_connected", message);
 }
 
@@ -405,7 +405,7 @@ TEST(libmuscle_communicator, send_message_with_slot) {
     reset_mocks();
     auto comm = connected_communicator2();
 
-    Message message(0.0, "test");
+    Message message(0.0, "test", Settings());
     comm->send_message("out", message, 13);
 
     ASSERT_EQ(MockPostOffice::last_receiver, "kernel[13].in");
@@ -420,14 +420,13 @@ TEST(libmuscle_communicator, send_message_with_slot) {
 TEST(libmuscle_communicator, send_message_resizable) {
     reset_mocks();
     auto comm = connected_communicator3();
-    Message message(0.0, "test");
+    Message message(0.0, "test", Settings());
 
     ASSERT_THROW(comm->send_message("out", message, 13), std::runtime_error);
 
     comm->get_port("out").set_length(20);
     comm->send_message("out", message, 13);
 
-    std::cerr << "rec: " << MockPostOffice::last_receiver;
     ASSERT_EQ(MockPostOffice::last_receiver, "other.in[13]");
     ASSERT_EQ(MockPostOffice::last_message->sender, "kernel.out[13]");
     ASSERT_EQ(MockPostOffice::last_message->receiver, "other.in[13]");
@@ -463,7 +462,7 @@ TEST(libmuscle_communicator, send_settings) {
 
     Settings settings;
     settings["test1"] = "testing";
-    Message message(0.0, settings);
+    Message message(0.0, settings, Settings());
     comm->send_message("out", message);
 
     ASSERT_EQ(MockPostOffice::last_receiver, "other.in[13]");
@@ -516,7 +515,7 @@ TEST(libmuscle_communicator, receive_message_default) {
     ASSERT_EQ(msg.timestamp(), 3.0);
     ASSERT_EQ(msg.next_timestamp(), 4.0);
     ASSERT_EQ(msg.data().as<std::string>(), "test");
-    ASSERT_TRUE(msg.settings().empty());
+    ASSERT_FALSE(msg.has_settings());
 }
 
 TEST(libmuscle_communicator, receive_message_no_default) {

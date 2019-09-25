@@ -12,9 +12,6 @@
 
 namespace libmuscle {
 
-namespace mcp {
-
-
 template <typename T>
 bool DataConstRef::is_a() const {
     return false;
@@ -116,8 +113,6 @@ void Data::init_list_(uint32_t offset, Arg const & value,
     init_list_(offset + 1, args...);
     mp_obj_->via.array.ptr[offset] = msgpack::object(value, *mp_zones_->front());
 }
-
-}   // namespace mcp
 
 }   // namespace libmuscle
 

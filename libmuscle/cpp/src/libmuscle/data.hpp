@@ -13,17 +13,14 @@
 
 namespace libmuscle {
 
-// TODO remove when moving this to libmuscle
-namespace mcp {
-class DataConstRef;
-}
-
-// TODO remove when moving this to libmuscle
-bool is_close_port(mcp::DataConstRef const &);
-
-namespace mcp {
-
 class Data;
+
+namespace mcp {
+    // forward-declare this so it can be a friend
+    Data unpack_data(
+            std::shared_ptr<msgpack::zone> const & zone,
+            char const * begin, std::size_t length);
+}
 
 
 /** A const reference to some kind of data.
@@ -514,9 +511,7 @@ class Data : public DataConstRef {
                 char const * begin, std::size_t length);
 };
 
-}   // namespace mcp
-
 }   // namespace libmuscle
 
-#include <libmuscle/mcp/data.tpp>
+#include <libmuscle/data.tpp>
 

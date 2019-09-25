@@ -1,7 +1,7 @@
 /* This is a part of the integration test suite, and is run from a Python
  * test in /integration_test. It is not a unit test.
  */
-#include <libmuscle/mcp/data.hpp>
+#include <libmuscle/data.hpp>
 #include <libmuscle/mcp/data_pack.hpp>
 #include <libmuscle/mcp/message.hpp>
 #include <libmuscle/mcp/client.hpp>
@@ -14,7 +14,7 @@
 #include <msgpack.hpp>
 
 
-using libmuscle::mcp::DataConstRef;
+using libmuscle::DataConstRef;
 using libmuscle::mcp::Message;
 using libmuscle::mcp::Client;
 using libmuscle::mcp::TcpClient;

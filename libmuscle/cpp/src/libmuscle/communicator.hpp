@@ -1,7 +1,7 @@
 #pragma once
 
 #include <libmuscle/mcp/client.hpp>
-#include <libmuscle/mcp/data.hpp>
+#include <libmuscle/data.hpp>
 #include <libmuscle/mcp/server.hpp>
 #include <libmuscle/peer_manager.hpp>
 #include <libmuscle/port.hpp>
@@ -33,7 +33,7 @@ class Message {
     public:
         double timestamp;
         Optional<double> next_timestamp;
-        mcp::DataConstRef data;
+        DataConstRef data;
         Optional<ymmsl::Settings> settings;
 
         /** Create a Message.
@@ -46,7 +46,7 @@ class Message {
          */
         Message(double timestamp,
                 Optional<double> next_timestamp,
-                mcp::DataConstRef const & data,
+                DataConstRef const & data,
                 Optional<ymmsl::Settings> const & settings);
 };
 

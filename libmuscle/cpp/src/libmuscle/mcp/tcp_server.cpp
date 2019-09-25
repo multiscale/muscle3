@@ -1,6 +1,6 @@
 #include <libmuscle/mcp/tcp_server.hpp>
 
-#include <libmuscle/mcp/data.hpp>
+#include <libmuscle/data.hpp>
 #include <libmuscle/mcp/data_pack.hpp>
 #include <libmuscle/mcp/tcp_util.hpp>
 
@@ -11,8 +11,8 @@
 
 using namespace std::string_literals;
 
+using libmuscle::Data;
 using libmuscle::PostOffice;
-using libmuscle::mcp::Data;
 using libmuscle::mcp::recv_all;
 using libmuscle::mcp::send_all;
 using libmuscle::mcp::recv_int64;

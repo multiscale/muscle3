@@ -3,14 +3,14 @@
 
 #include "libmuscle/mcp/message.hpp"
 
-#include "libmuscle/mcp/data.hpp"
+#include "libmuscle/data.hpp"
 #include "libmuscle/util.hpp"
 #include "ymmsl/identity.hpp"
 
 #include <utility>
 
 
-using libmuscle::mcp::Data;
+using libmuscle::Data;
 using libmuscle::mcp::Message;
 using ymmsl::Reference;
 

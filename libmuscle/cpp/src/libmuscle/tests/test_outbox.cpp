@@ -5,12 +5,12 @@
 #include <gtest/gtest.h>
 
 #include "libmuscle/util.hpp"
-#include "libmuscle/mcp/data.hpp"
+#include "libmuscle/data.hpp"
 #include "libmuscle/mcp/message.hpp"
 #include <ymmsl/identity.hpp>
 
 
-using libmuscle::mcp::DataConstRef;
+using libmuscle::DataConstRef;
 using libmuscle::Optional;
 using libmuscle::Outbox;
 using libmuscle::mcp::Message;

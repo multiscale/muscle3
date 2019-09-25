@@ -6,21 +6,19 @@
 
 #include <msgpack.hpp>
 
-#include "libmuscle/mcp/data.hpp"
+#include "libmuscle/data.hpp"
 #include "libmuscle/mcp/data_pack.hpp"
 #include "libmuscle/mcp/ext_types.hpp"
 #include "ymmsl/identity.hpp"
 #include "ymmsl/settings.hpp"
 
+using libmuscle::mcp::ExtTypeId;
 using ymmsl::ParameterValue;
 using ymmsl::Reference;
 using ymmsl::Settings;
 
 
 namespace libmuscle {
-
-namespace mcp {
-
 
 DataConstRef::DataConstRef()
     : mp_zones_(new std::vector<std::shared_ptr<msgpack::zone>>())
@@ -322,7 +320,7 @@ Settings DataConstRef::as<Settings>() const {
 
     Settings settings;
     auto zone = std::make_shared<msgpack::zone>();
-    Data settings_dict(unpack_data(zone, ext.data(), ext.size()));
+    Data settings_dict(mcp::unpack_data(zone, ext.data(), ext.size()));
 
     for (std::size_t i = 0u; i < settings_dict.size(); ++i) {
         Reference key(settings_dict.key(i).as<std::string>());
@@ -525,8 +523,6 @@ void Data::init_list_(uint32_t size) {
     mp_obj_->via.array.size = size;
     mp_obj_->via.array.ptr = zone_alloc_<msgpack::object>(size);
 }
-
-}   // namespace mcp
 
 }   // namespace libmuscle
 

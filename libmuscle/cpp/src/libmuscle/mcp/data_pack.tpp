@@ -8,11 +8,11 @@ MSGPACK_API_VERSION_NAMESPACE(MSGPACK_DEFAULT_API_NS) {
 namespace adaptor {
 
 template<>
-struct pack<::libmuscle::mcp::DataConstRef> {
+struct pack<::libmuscle::DataConstRef> {
     template <typename Stream>
     packer<Stream>& operator()(
             msgpack::packer<Stream>& o,
-            ::libmuscle::mcp::DataConstRef const& v) const
+            ::libmuscle::DataConstRef const& v) const
     {
         o.pack(*v.mp_obj_);
         return o;
@@ -20,11 +20,11 @@ struct pack<::libmuscle::mcp::DataConstRef> {
 };
 
 template<>
-struct pack<::libmuscle::mcp::Data> {
+struct pack<::libmuscle::Data> {
     template <typename Stream>
     packer<Stream>& operator()(
             msgpack::packer<Stream>& o,
-            ::libmuscle::mcp::Data const& v) const
+            ::libmuscle::Data const& v) const
     {
         o.pack(*v.mp_obj_);
         return o;
@@ -32,10 +32,10 @@ struct pack<::libmuscle::mcp::Data> {
 };
 
 template <>
-struct object_with_zone<::libmuscle::mcp::DataConstRef> {
+struct object_with_zone<::libmuscle::DataConstRef> {
     void operator()(
             msgpack::object::with_zone & obj,
-            ::libmuscle::mcp::DataConstRef const & d) const
+            ::libmuscle::DataConstRef const & d) const
     {
         obj.type = d.mp_obj_->type;
         obj.via = d.mp_obj_->via;
@@ -43,10 +43,10 @@ struct object_with_zone<::libmuscle::mcp::DataConstRef> {
 };
 
 template <>
-struct object_with_zone<::libmuscle::mcp::Data> {
+struct object_with_zone<::libmuscle::Data> {
     void operator()(
             msgpack::object::with_zone & obj,
-            ::libmuscle::mcp::Data const & d) const
+            ::libmuscle::Data const & d) const
     {
         obj.type = d.mp_obj_->type;
         obj.via = d.mp_obj_->via;

@@ -4,7 +4,7 @@
 #include "libmuscle/mcp/tcp_client.hpp"
 #include "libmuscle/mcp/tcp_server.hpp"
 
-#include "libmuscle/mcp/data.hpp"
+#include "libmuscle/data.hpp"
 #include "libmuscle/post_office.hpp"
 #include "libmuscle/util.hpp"
 #include "ymmsl/identity.hpp"
@@ -13,7 +13,7 @@
 #include <utility>
 
 
-using libmuscle::mcp::Data;
+using libmuscle::Data;
 using libmuscle::mcp::Message;
 using libmuscle::mcp::TcpClient;
 using libmuscle::mcp::TcpServer;

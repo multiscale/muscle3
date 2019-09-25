@@ -1,6 +1,6 @@
 #pragma once
 
-#include "libmuscle/mcp/data.hpp"
+#include "libmuscle/data.hpp"
 
 #include <memory>
 

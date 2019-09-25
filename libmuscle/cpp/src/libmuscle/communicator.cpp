@@ -1,6 +1,6 @@
 #include <libmuscle/communicator.hpp>
 
-#include <libmuscle/mcp/data.hpp>
+#include <libmuscle/data.hpp>
 #include <libmuscle/mcp/ext_types.hpp>
 #include <libmuscle/mcp/tcp_client.hpp>
 #include <libmuscle/mcp/tcp_server.hpp>
@@ -8,8 +8,8 @@
 #include <limits>
 
 
-using libmuscle::mcp::Data;
-using libmuscle::mcp::DataConstRef;
+using libmuscle::Data;
+using libmuscle::DataConstRef;
 using libmuscle::mcp::ExtTypeId;
 using libmuscle::mcp::TcpClient;
 using libmuscle::mcp::TcpServer;

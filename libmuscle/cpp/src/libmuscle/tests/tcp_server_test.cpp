@@ -1,7 +1,7 @@
 /* This is a part of the integration test suite, and is run from a Python
  * test in /integration_test. It is not a unit test.
  */
-#include <libmuscle/mcp/data.hpp>
+#include <libmuscle/data.hpp>
 #include <libmuscle/mcp/data_pack.hpp>
 #include <libmuscle/mcp/message.hpp>
 #include <libmuscle/mcp/server.hpp>
@@ -18,7 +18,7 @@
 
 
 using libmuscle::PostOffice;
-using libmuscle::mcp::Data;
+using libmuscle::Data;
 using libmuscle::mcp::Message;
 using libmuscle::mcp::Server;
 using libmuscle::mcp::TcpServer;

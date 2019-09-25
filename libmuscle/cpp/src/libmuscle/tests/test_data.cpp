@@ -1,4 +1,4 @@
-#include "libmuscle/mcp/data.hpp"
+#include "libmuscle/data.hpp"
 #include "libmuscle/mcp/data_pack.hpp"
 
 #include "ymmsl/settings.hpp"
@@ -10,8 +10,8 @@
 #include <msgpack.hpp>
 
 
-using libmuscle::mcp::Data;
-using libmuscle::mcp::DataConstRef;
+using libmuscle::Data;
+using libmuscle::DataConstRef;
 using ymmsl::ParameterValue;
 using ymmsl::Settings;
 

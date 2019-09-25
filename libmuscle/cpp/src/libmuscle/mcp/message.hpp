@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libmuscle/mcp/data.hpp>
+#include <libmuscle/data.hpp>
 #include <libmuscle/util.hpp>
 #include <ymmsl/identity.hpp>
 

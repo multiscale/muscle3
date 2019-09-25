@@ -11,9 +11,9 @@
 #include <ymmsl/settings.cpp>
 
 #include <libmuscle/communicator.cpp>
+#include <libmuscle/data.cpp>
 #include <libmuscle/endpoint.cpp>
 #include <libmuscle/operator.cpp>
-#include <libmuscle/mcp/data.cpp>
 #include <libmuscle/mcp/data_pack.cpp>
 #include <libmuscle/mcp/message.cpp>
 #include <libmuscle/mcp/client.cpp>
@@ -37,6 +37,7 @@
 #include <mocks/mock_peer_manager.hpp>
 
 using libmuscle::Communicator;
+using libmuscle::Data;
 using libmuscle::Endpoint;
 using libmuscle::Optional;
 using libmuscle::PeerDims;

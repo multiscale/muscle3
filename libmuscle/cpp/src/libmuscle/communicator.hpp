@@ -169,7 +169,7 @@ class Communicator {
         void send_message(
                 std::string const & port_name,
                 Message const & message,
-                Optional<int> slot = Optional<int>());
+                Optional<int> slot = {});
 
         /** Receive a message and attached settings overlay.
          *
@@ -196,8 +196,8 @@ class Communicator {
          */
         Message receive_message(
                 std::string const & port_name,
-                Optional<int> slot = Optional<int>(),
-                Optional<Message> const & default_msg = Optional<Message>()
+                Optional<int> slot = {},
+                Optional<Message> const & default_msg = {}
                 );
 
         /** Closes the given port.
@@ -208,7 +208,7 @@ class Communicator {
          *
          * @param port_name The name of the port to close.
          */
-        void close_port(std::string const & port_name, Optional<int> slot=Optional<int>());
+        void close_port(std::string const & port_name, Optional<int> slot = {});
 
         /** Shuts down the Communicator, closing connections.
          */

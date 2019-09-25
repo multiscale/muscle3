@@ -11,6 +11,16 @@ Optional<T>::Optional()
 {}
 
 template <typename T>
+Optional<T>::Optional(std::initializer_list<T> l)
+    : is_set_(false)
+{
+    if (l.begin() != l.end()) {
+        new (&t_) T(*l.begin());
+        is_set_ = true;
+    }
+}
+
+template <typename T>
 Optional<T>::Optional(T const & t)
     : is_set_(true)
 {

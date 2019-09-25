@@ -45,8 +45,8 @@ TEST(test_mcp_message, create_mcp_message_minimal) {
 
     Message m(
             Reference("sender.port"), Reference("receiver.port"),
-            ::libmuscle::Optional<int>(),
-            100.1, ::libmuscle::Optional<double>(),
+            {},
+            100.1, {},
             test, abc
             );
 

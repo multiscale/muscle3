@@ -85,7 +85,7 @@ void reset_mocks() {
 
 std::unique_ptr<Communicator> connected_communicator() {
     std::unique_ptr<Communicator> comm(new Communicator(
-            Reference("kernel"), {13}, Optional<PortsDescription>(), 0));
+            Reference("kernel"), {13}, {}, 0));
 
     std::vector<Conduit> conduits({
         Conduit("kernel.out", "other.in"),
@@ -106,7 +106,7 @@ std::unique_ptr<Communicator> connected_communicator() {
 
 std::unique_ptr<Communicator> connected_communicator2() {
     std::unique_ptr<Communicator> comm(new Communicator(
-            Reference("other"), {}, Optional<PortsDescription>(), 0));
+            Reference("other"), {}, {}, 0));
 
     std::vector<Conduit> conduits({
         Conduit("kernel.out", "other.in"),
@@ -157,7 +157,7 @@ std::unique_ptr<Communicator> connected_communicator3() {
 TEST(libmuscle_communicator, create_communicator) {
     reset_mocks();
     Communicator comm(
-            Reference("kernel"), {13}, Optional<PortsDescription>(), 0);
+            Reference("kernel"), {13}, {}, 0);
     ASSERT_EQ(MockTcpServer::num_constructed, 1);
     ASSERT_EQ(MockTcpServer::last_instance_id, "kernel[13]");
     ASSERT_EQ(MockTcpClient::num_constructed, 0);
@@ -166,7 +166,7 @@ TEST(libmuscle_communicator, create_communicator) {
 TEST(libmuscle_communicator, get_locations) {
     reset_mocks();
     Communicator comm(
-            Reference("kernel"), {13}, Optional<PortsDescription>(), 0);
+            Reference("kernel"), {13}, {}, 0);
     ASSERT_EQ(comm.get_locations().size(), 1);
     ASSERT_EQ(comm.get_locations()[0], "tcp:test_location");
 }
@@ -174,7 +174,7 @@ TEST(libmuscle_communicator, get_locations) {
 TEST(libmuscle_communicator, test_connect) {
     reset_mocks();
     Communicator comm(
-            Reference("kernel"), {13}, Optional<PortsDescription>(), 0);
+            Reference("kernel"), {13}, {}, 0);
 
     std::vector<Conduit> conduits({
         Conduit("kernel.out", "other.in"),
@@ -299,7 +299,7 @@ TEST(libmuscle_communicator, test_connect_inferred_ports) {
     reset_mocks();
 
     Communicator comm(
-            Reference("kernel"), {13}, Optional<PortsDescription>(), 0);
+            Reference("kernel"), {13}, {}, 0);
 
     std::vector<Conduit> conduits({
         Conduit("other1.out", "kernel.in"),
@@ -354,7 +354,7 @@ TEST(libmuscle_communicator, send_message) {
     reset_mocks();
     auto comm = connected_communicator();
 
-    Message message(0.0, Optional<double>(), "test", Settings());
+    Message message(0.0, {}, "test", Settings());
     comm->send_message("out", message);
 
     ASSERT_EQ(MockPostOffice::last_receiver, "other.in[13]");
@@ -373,7 +373,7 @@ TEST(libmuscle_communicator, send_on_disconnected_port) {
 
     MockPeerManager::is_connected_return_value = false;
 
-    Message message(0.0, Optional<double>(), "test", Settings());
+    Message message(0.0, {}, "test", Settings());
     comm->send_message("not_connected", message);
 }
 
@@ -381,7 +381,7 @@ TEST(libmuscle_communicator, send_on_invalid_port) {
     reset_mocks();
 
     auto comm = connected_communicator();
-    Message message(0.0, Optional<double>(), "test", Settings());
+    Message message(0.0, {}, "test", Settings());
     ASSERT_THROW(comm->send_message("[$Invalid_id", message), std::invalid_argument);
 }
 
@@ -389,7 +389,7 @@ TEST(libmuscle_communicator, send_msgpack) {
     reset_mocks();
     auto comm = connected_communicator();
 
-    Message message(0.0, Optional<double>(), Data::dict("test", 17), Settings());
+    Message message(0.0, {}, Data::dict("test", 17), Settings());
     comm->send_message("out", message);
 
     ASSERT_EQ(MockPostOffice::last_receiver, "other.in[13]");
@@ -405,7 +405,7 @@ TEST(libmuscle_communicator, send_message_with_slot) {
     reset_mocks();
     auto comm = connected_communicator2();
 
-    Message message(0.0, Optional<double>(), "test", Settings());
+    Message message(0.0, {}, "test", Settings());
     comm->send_message("out", message, 13);
 
     ASSERT_EQ(MockPostOffice::last_receiver, "kernel[13].in");
@@ -420,7 +420,7 @@ TEST(libmuscle_communicator, send_message_with_slot) {
 TEST(libmuscle_communicator, send_message_resizable) {
     reset_mocks();
     auto comm = connected_communicator3();
-    Message message(0.0, Optional<double>(), "test", Settings());
+    Message message(0.0, {}, "test", Settings());
 
     ASSERT_THROW(comm->send_message("out", message, 13), std::runtime_error);
 
@@ -444,7 +444,7 @@ TEST(libmuscle_communicator, send_with_parameters) {
 
     Settings settings;
     settings["test2"] = "testing";
-    Message message(0.0, Optional<double>(), "test", settings);
+    Message message(0.0, {}, "test", settings);
     comm->send_message("out", message);
 
     ASSERT_EQ(MockPostOffice::last_receiver, "other.in[13]");
@@ -463,7 +463,7 @@ TEST(libmuscle_communicator, send_settings) {
 
     Settings settings;
     settings["test1"] = "testing";
-    Message message(0.0, Optional<double>(), settings, Settings());
+    Message message(0.0, {}, settings, Settings());
     comm->send_message("out", message);
 
     ASSERT_EQ(MockPostOffice::last_receiver, "other.in[13]");
@@ -511,7 +511,7 @@ TEST(libmuscle_communicator, receive_message_default) {
 
     Message default_msg(3.0, 4.0, "test", Settings());
     auto comm = connected_communicator();
-    Message msg = comm->receive_message("not_connected", Optional<int>(), default_msg);
+    Message msg = comm->receive_message("not_connected", {}, default_msg);
 
     ASSERT_EQ(msg.timestamp, 3.0);
     ASSERT_EQ(msg.next_timestamp, 4.0);

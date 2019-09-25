@@ -236,8 +236,8 @@ Message Communicator::receive_message(
 void Communicator::close_port(
         std::string const & port_name, Optional<int> slot) {
     Message message(
-            std::numeric_limits<double>::infinity(),
-            Optional<double>(), ClosePort_(), Settings());
+            std::numeric_limits<double>::infinity(), {},
+            ClosePort_(), Settings());
     send_message(port_name, message, slot);
 }
 

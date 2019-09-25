@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <ostream>
 
 namespace libmuscle {
@@ -20,6 +21,13 @@ class Optional {
          * is_set() will return false for this object.
          */
         Optional();
+
+        /** Create a nil optional.
+         *
+         * This allows you to write {} instead of
+         * Optional<LengthyTypeName>() when you need a nil optional.
+         */
+        Optional(std::initializer_list<T>);
 
         /** Create a non-nil optional with the given value.
          *

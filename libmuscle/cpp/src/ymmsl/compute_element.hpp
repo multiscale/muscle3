@@ -61,3 +61,14 @@ struct Port {
 
 }
 
+// Older compilers (GCC < 6) do not have std::hash defined for enum classes.
+// This was a defect in C++14, and took some time to get fixed. To make things
+// compile on older compilers, we add a custom overload here.
+namespace std {
+    template <> struct hash<::ymmsl::Operator> {
+        size_t operator()(::ymmsl::Operator const & op) const {
+            return hash<int>()(static_cast<int>(op));
+        }
+    };
+}
+

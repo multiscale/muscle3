@@ -2,10 +2,14 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
+#include <unordered_map>
+#include <vector>
 
 #include "libmuscle/logging.hpp"
 #include "muscle_manager_protocol/muscle_manager_protocol.grpc.pb.h"
 #include <ymmsl/compute_element.hpp>
+#include <ymmsl/model.hpp>
 #include <ymmsl/identity.hpp>
 #include "ymmsl/settings.hpp"
 
@@ -50,6 +54,29 @@ class MMPClient {
                 ::ymmsl::Reference const & name,
                 std::vector<std::string> const & locations,
                 std::vector<::ymmsl::Port> const & ports);
+
+        /** Request connection information about peers.
+         *
+         * This will repeat the request at an exponentially increasing query
+         * interval at first, until it reaches the interval specified by
+         * peer_interval_min and peer_interval_max. From there on, intervals
+         * are drawn randomly from that range.
+         *
+         * @param name Name of the current instance.
+         * @return A tuple containng a list of conduits that this instance is
+         *      attached to, a dictionary of peer dimensions, which is indexed
+         *      by Reference to the peer kernel and specifies how many
+         *      instances of the kernel there are, and a dictionary of peer
+         *      instance locations, indexed by Reference to a peer instance and
+         *      containing for each peer instance a list of network location
+         *      strings at which it can be reached.
+         */
+        auto request_peers(::ymmsl::Reference const & name) ->
+            std::tuple<
+                std::vector<::ymmsl::Conduit>,
+                std::unordered_map<::ymmsl::Reference, std::vector<int>>,
+                std::unordered_map<::ymmsl::Reference, std::vector<std::string>>
+            >;
 
     private:
         std::unique_ptr<muscle_manager_protocol::MuscleManager::Stub> client_;

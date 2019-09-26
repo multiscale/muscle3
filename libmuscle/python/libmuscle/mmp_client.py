@@ -108,7 +108,7 @@ class MMPClient():
 
         Args:
             name: Name of the instance in the simulation.
-            location: String describing where the instance can be
+            locations: List of places where the instance can be
                     reached.
             ports: List of ports of this instance.
         """

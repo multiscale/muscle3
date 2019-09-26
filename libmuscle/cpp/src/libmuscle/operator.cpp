@@ -31,6 +31,13 @@ ymmsl::Operator operator_from_grpc(mmp::Operator op) {
         case mmp::OPERATOR_MAP:
             result = ymmsl::Operator::NONE;
             break;
+        default:
+            // https://www.xkcd.com/2200
+            throw std::runtime_error(
+                    "ERROR: We've reached an unreachable state."
+                    " Anything is possible."
+                    " The limits were in our heads all along."
+                    " Follow your dreams.");
     }
     return result;
 }

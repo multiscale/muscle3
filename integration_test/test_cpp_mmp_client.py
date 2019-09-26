@@ -63,14 +63,25 @@ def do_mmp_client_test(caplog):
     cpp_test_dir = cpp_build_dir / 'libmuscle' / 'tests'
     cpp_test_client = cpp_test_dir / 'mmp_client_test'
     result = subprocess.run([str(cpp_test_client)], env=env)
+
+    # check that C++-side checks were successful
     print(result.stderr, flush=True)
     assert result.returncode == 0
 
-    # check
+    # check submit_log_message
     assert caplog.records[0].name == 'test_logging'
     assert caplog.records[0].time_stamp == '1970-01-01T00:00:02Z'
     assert caplog.records[0].levelname == 'CRITICAL'
     assert caplog.records[0].message == 'Integration testing'
+
+    # check register_instance
+    assert (instance_registry.get_locations("kernel[13]") ==
+            ["tcp:test1", "tcp:test2"])
+    ports = instance_registry.get_ports("kernel[13]")
+    assert ports[0].name == "out"
+    assert ports[0].operator == Operator.O_I
+    assert ports[1].name == "in"
+    assert ports[1].operator == Operator.S
 
     server.stop()
 

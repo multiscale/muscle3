@@ -1,16 +1,22 @@
 #include <chrono>
 #include <memory>
+#include <string>
 #include <thread>
 #include <utility>
+#include <vector>
 
 #include <grpc++/grpc++.h>
 
 #include "libmuscle/mmp_client.hpp"
+#include <libmuscle/port_grpc.hpp>
 #include "muscle_manager_protocol/muscle_manager_protocol.grpc.pb.h"
 #include "muscle_manager_protocol/muscle_manager_protocol.pb.h"
+#include <ymmsl/identity.hpp>
 #include "ymmsl/settings.hpp"
 
 namespace mmp = muscle_manager_protocol;
+
+using ymmsl::Reference;
 
 
 namespace {
@@ -45,10 +51,31 @@ void MMPClient::submit_log_message(LogMessage const & message) {
     auto request = message.to_grpc();
     mmp::LogResult response;
     client_->SubmitLogMessage(&context, request, &response);
+    // TODO: check status
 }
 
+void MMPClient::register_instance(
+        Reference const & name,
+        std::vector<std::string> const & locations,
+        std::vector<::ymmsl::Port> const & ports)
+{
+    std::vector<mmp::Port> grpc_ports;
+    std::transform(
+            ports.cbegin(), ports.cend(),
+            std::back_inserter(grpc_ports), port_to_grpc);
 
+    mmp::RegistrationRequest request;
+    request.set_instance_name(static_cast<std::string>(name));
+    for (auto const & loc : locations)
+        request.add_network_locations(loc);
+    for (auto const & port : grpc_ports)
+        *request.add_ports() = port;
 
+    grpc::ClientContext context;
+    mmp::RegistrationResult response;
+    client_->RegisterInstance(&context, request, &response);
+    // TODO: check status
+}
 
 ymmsl::Settings MMPClient::get_settings() {
     grpc::ClientContext context;

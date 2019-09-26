@@ -18,7 +18,7 @@ namespace libmuscle {
  * @param port The port to convert.
  * @return The same port, as the gRPC type.
  */
-::muscle_manager_protocol::Port port_from_grpc(::ymmsl::Port const & port);
+::muscle_manager_protocol::Port port_to_grpc(::ymmsl::Port const & port);
 
 }
 

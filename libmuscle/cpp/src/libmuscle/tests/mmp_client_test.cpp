@@ -3,6 +3,8 @@
  */
 #include <libmuscle/logging.hpp>
 #include <libmuscle/mmp_client.hpp>
+#include <ymmsl/compute_element.hpp>
+#include <ymmsl/identity.hpp>
 #include <ymmsl/settings.hpp>
 
 #include <cassert>
@@ -11,6 +13,9 @@ using libmuscle::LogLevel;
 using libmuscle::LogMessage;
 using libmuscle::MMPClient;
 using libmuscle::Timestamp;
+using ymmsl::Operator;
+using ymmsl::Port;
+using ymmsl::Reference;
 using ymmsl::Settings;
 
 
@@ -35,12 +40,18 @@ void test_submit_log_message(MMPClient & client) {
                 LogLevel::CRITICAL, "Integration testing"));
 }
 
+void test_register_instance(MMPClient & client) {
+    client.register_instance(
+            Reference("kernel[13]"), {"tcp:test1", "tcp:test2"},
+            {Port("out", Operator::O_I), Port("in", Operator::S)});
+}
 
 int main(int argc, char *argv[]) {
     auto client = MMPClient("localhost:9000");
 
     test_get_settings(client);
     test_submit_log_message(client);
+    test_register_instance(client);
 
     return 0;
 }

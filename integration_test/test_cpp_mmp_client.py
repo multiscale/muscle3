@@ -63,6 +63,7 @@ def do_mmp_client_test(caplog):
     cpp_test_dir = cpp_build_dir / 'libmuscle' / 'tests'
     cpp_test_client = cpp_test_dir / 'mmp_client_test'
     result = subprocess.run([str(cpp_test_client)], env=env)
+    print(result.stderr, flush=True)
     assert result.returncode == 0
 
     # check

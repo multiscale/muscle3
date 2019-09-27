@@ -47,8 +47,13 @@ def do_mmp_client_test(caplog):
     server = MMPServer(logger, ymmsl_doc.settings, instance_registry,
                        topology_store)
 
+    # add some peers
+    instance_registry.add(
+            Reference('macro'), ['tcp:test3', 'tcp:test4'],
+            [Port('out', Operator.O_I), Port('in', Operator.S)])
+
     # create C++ client
-    # it receives and checks settings, and sends a log message
+    # it runs through the various RPC calls
     # see libmuscle/cpp/src/libmuscle/tests/mmp_client_test.cpp
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
     lib_paths = [
@@ -75,13 +80,13 @@ def do_mmp_client_test(caplog):
     assert caplog.records[0].message == 'Integration testing'
 
     # check register_instance
-    assert (instance_registry.get_locations("kernel[13]") ==
-            ["tcp:test1", "tcp:test2"])
-    ports = instance_registry.get_ports("kernel[13]")
-    assert ports[0].name == "out"
-    assert ports[0].operator == Operator.O_I
-    assert ports[1].name == "in"
-    assert ports[1].operator == Operator.S
+    assert (instance_registry.get_locations('micro[3]') ==
+            ['tcp:test1', 'tcp:test2'])
+    ports = instance_registry.get_ports('micro[3]')
+    assert ports[0].name == 'out'
+    assert ports[0].operator == Operator.O_F
+    assert ports[1].name == 'in'
+    assert ports[1].operator == Operator.F_INIT
 
     server.stop()
 

@@ -78,6 +78,8 @@ class MMPClient {
                 std::unordered_map<::ymmsl::Reference, std::vector<std::string>>
             >;
 
+        void deregister_instance(::ymmsl::Reference const & name);
+
     private:
         std::unique_ptr<muscle_manager_protocol::MuscleManager::Stub> client_;
 };

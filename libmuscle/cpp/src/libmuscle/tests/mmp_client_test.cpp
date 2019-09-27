@@ -65,12 +65,17 @@ void test_request_peers(MMPClient & client) {
     assert(std::get<2>(result).at("macro")[1] == "tcp:test4");
 }
 
+void test_deregister_instance(MMPClient & client) {
+    client.deregister_instance(Reference("micro[3]"));
+}
+
 int main(int argc, char *argv[]) {
     auto client = MMPClient("localhost:9000");
 
     test_get_settings(client);
     test_submit_log_message(client);
     test_register_instance(client);
+    test_deregister_instance(client);
 
     return 0;
 }

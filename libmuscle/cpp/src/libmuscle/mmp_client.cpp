@@ -213,6 +213,13 @@ auto MMPClient::request_peers(Reference const & name) ->
             std::move(peer_locations));
 }
 
+void MMPClient::deregister_instance(Reference const & name) {
+    grpc::ClientContext context;
+    mmp::DeregistrationRequest request;
+    request.set_instance_name(static_cast<std::string>(name));
+    mmp::DeregistrationResult response;
+    client_->DeregisterInstance(&context, request, &response);
+}
 
 }
 

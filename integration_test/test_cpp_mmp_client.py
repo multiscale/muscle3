@@ -3,6 +3,7 @@ from pathlib import Path
 import subprocess
 
 import ymmsl
+from ymmsl import Port, Reference
 
 from libmuscle.logging import LogLevel, LogMessage, Timestamp
 from libmuscle.manager.instance_registry import InstanceRegistry
@@ -47,6 +48,15 @@ def do_mmp_client_test(caplog):
     server = MMPServer(logger, ymmsl_doc.settings, instance_registry,
                        topology_store)
 
+    # mock the deregistration
+    removed_instance = None
+
+    def mock_remove(name: Reference):
+        nonlocal removed_instance
+        removed_instance = name
+
+    instance_registry.remove = mock_remove
+
     # add some peers
     instance_registry.add(
             Reference('macro'), ['tcp:test3', 'tcp:test4'],
@@ -87,6 +97,9 @@ def do_mmp_client_test(caplog):
     assert ports[0].operator == Operator.O_F
     assert ports[1].name == 'in'
     assert ports[1].operator == Operator.F_INIT
+
+    # check deregister_instance
+    assert removed_instance == 'micro[3]'
 
     server.stop()
 

@@ -18,6 +18,7 @@
 #include <libmuscle/mcp/message.cpp>
 #include <libmuscle/mcp/client.cpp>
 #include <libmuscle/mcp/server.cpp>
+#include <libmuscle/message.cpp>
 #include <libmuscle/port.cpp>
 
 // then add mock implementations as needed.

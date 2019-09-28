@@ -40,6 +40,9 @@ class MockMMPClient {
 
         static int num_constructed;
         static std::string last_location;
+        static ::ymmsl::Reference last_registered_name;
+        static std::vector<std::string> last_registered_locations;
+        static std::vector<::ymmsl::Port> last_registered_ports;
 };
 
 using MMPClient = MockMMPClient;

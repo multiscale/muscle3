@@ -41,10 +41,19 @@ class Instance {
     private:
         ::ymmsl::Reference instance_name_;
         MMPClient manager_;
+        Communicator communicator_;
+        PortsDescription declared_ports_;
         SettingsManager settings_manager_;
+        bool first_run_;
+        std::unordered_map<::ymmsl::Reference, Message> f_init_cache_;
 
         ::ymmsl::Reference make_full_name_(int argc, char const * const argv[]) const;
         std::string extract_manager_location_(int argc, char const * const argv[]) const;
+        ::ymmsl::Reference name_() const;
+        std::vector<int> index_() const;
+        std::vector<::ymmsl::Port> list_declared_ports_() const;
+        void register_();
+        void connect_();
 
         friend class TestInstance;
 };

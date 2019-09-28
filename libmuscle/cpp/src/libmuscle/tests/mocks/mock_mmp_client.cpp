@@ -22,10 +22,16 @@ void MockMMPClient::register_instance(
         Reference const & name,
         std::vector<std::string> const & locations,
         std::vector<::ymmsl::Port> const & ports)
-{}
+{
+    last_registered_name = name;
+    last_registered_locations = locations;
+    last_registered_ports = ports;
+}
 
 ymmsl::Settings MockMMPClient::get_settings() {
     ymmsl::Settings settings;
+    settings["test_int"] = 10;
+    settings["test_string"] = "testing";
     return settings;
 }
 
@@ -53,11 +59,19 @@ void MockMMPClient::deregister_instance(Reference const & name) {}
 void MockMMPClient::reset() {
     num_constructed = 0;
     last_location = "";
+    last_registered_name = "_none";
+    last_registered_locations.clear();
+    last_registered_ports.clear();
 }
 
 int MockMMPClient::num_constructed = 0;
 
 std::string MockMMPClient::last_location("");
 
+::ymmsl::Reference MockMMPClient::last_registered_name("_none");
+
+std::vector<std::string> MockMMPClient::last_registered_locations({});
+
+std::vector<::ymmsl::Port> MockMMPClient::last_registered_ports({});
 }
 

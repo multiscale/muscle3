@@ -28,11 +28,11 @@ MockCommunicator::MockCommunicator(
         Optional<PortsDescription> const & declared_ports,
         int profiler)
 {
+    ++num_constructed;
 }
 
 std::vector<std::string> MockCommunicator::get_locations() const {
-    std::vector<std::string> result;
-    return result;
+    return std::vector<std::string>({"tcp:test1,test2", "tcp:test3"});
 }
 
 void MockCommunicator::connect(

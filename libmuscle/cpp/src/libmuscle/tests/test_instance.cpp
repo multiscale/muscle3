@@ -32,6 +32,7 @@
 using libmuscle::Instance;
 using libmuscle::MockCommunicator;
 using libmuscle::MockMMPClient;
+using libmuscle::PortsDescription;
 
 using ymmsl::Reference;
 
@@ -65,6 +66,7 @@ using libmuscle::TestInstance;
  */
 void reset_mocks() {
     MockCommunicator::reset();
+    MockMMPClient::reset();
 }
 
 std::vector<char const *> test_argv() {
@@ -79,10 +81,22 @@ TEST(libmuscle_instance, create_instance) {
     reset_mocks();
 
     auto argv = test_argv();
-    Instance instance(argv.size(), argv.data());
+    Instance instance(argv.size(), argv.data(),
+            PortsDescription({
+                {Operator::F_INIT, {"in1"}},
+                {Operator::O_F, {"out1", "out2[]"}}
+                }));
 
     ASSERT_EQ(TestInstance::instance_name_(instance), "test_instance[13][42]");
     ASSERT_EQ(MockMMPClient::num_constructed, 1);
     ASSERT_EQ(MockMMPClient::last_location, "node042:9000");
+    ASSERT_EQ(MockCommunicator::num_constructed, 1);
+    ASSERT_EQ(MockMMPClient::last_registered_name, "test_instance[13][42]");
+    ASSERT_EQ(MockMMPClient::last_registered_locations.at(0), "tcp:test1,test2");
+    ASSERT_EQ(MockMMPClient::last_registered_locations.at(1), "tcp:test3");
+    ASSERT_EQ(MockMMPClient::last_registered_ports.size(), 3);
+    auto & settings = TestInstance::settings_manager_(instance).base;
+    ASSERT_EQ(settings["test_int"], 10);
+    ASSERT_EQ(settings["test_string"], "testing");
 }
 

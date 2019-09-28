@@ -1,6 +1,7 @@
 #pragma once
 
 #include <libmuscle/communicator.hpp>
+#include <libmuscle/mmp_client.hpp>
 #include <libmuscle/settings_manager.hpp>
 
 #include <ymmsl/identity.hpp>
@@ -39,9 +40,11 @@ class Instance {
 
     private:
         ::ymmsl::Reference instance_name_;
+        MMPClient manager_;
         SettingsManager settings_manager_;
 
         ::ymmsl::Reference make_full_name_(int argc, char const * const argv[]) const;
+        std::string extract_manager_location_(int argc, char const * const argv[]) const;
 
         friend class TestInstance;
 };

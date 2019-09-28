@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include <libmuscle/logging.hpp>
+
 #include <ymmsl/model.hpp>
 #include <ymmsl/identity.hpp>
 #include "ymmsl/settings.hpp"
@@ -14,7 +16,7 @@ namespace libmuscle {
 
 class MockMMPClient {
     public:
-        MMPClient(std::string const & location);
+        MockMMPClient(std::string const & location);
 
         void submit_log_message(LogMessage const & message);
 
@@ -34,7 +36,10 @@ class MockMMPClient {
 
         void deregister_instance(::ymmsl::Reference const & name);
 
-    private:
+        static void reset();
+
+        static int num_constructed;
+        static std::string last_location;
 };
 
 using MMPClient = MockMMPClient;

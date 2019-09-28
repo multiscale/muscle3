@@ -1,5 +1,10 @@
 #pragma once
 
+#ifdef LIBMUSCLE_MOCK_MMP_CLIENT
+#include LIBMUSCLE_MOCK_MMP_CLIENT
+#else
+
+
 #include <memory>
 #include <string>
 #include <tuple>
@@ -85,4 +90,6 @@ class MMPClient {
 };
 
 }
+
+#endif
 

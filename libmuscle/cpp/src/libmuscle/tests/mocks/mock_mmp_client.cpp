@@ -1,15 +1,4 @@
-#include "libmuscle/mmp_client.hpp"
-
-#include <chrono>
-#include <iterator>
-#include <memory>
-#include <random>
-#include <sstream>
-#include <string>
-#include <thread>
-#include <tuple>
-#include <utility>
-#include <vector>
+#include "mocks/mock_mmp_client.hpp"
 
 #include <ymmsl/identity.hpp>
 #include <ymmsl/model.hpp>
@@ -22,22 +11,25 @@ using ymmsl::Reference;
 
 namespace libmuscle {
 
-MMPClient::MMPClient(std::string const & location) {}
+MockMMPClient::MockMMPClient(std::string const & location) {
+    ++num_constructed;
+    last_location = location;
+}
 
-void MMPClient::submit_log_message(LogMessage const & message) {}
+void MockMMPClient::submit_log_message(LogMessage const & message) {}
 
-void MMPClient::register_instance(
+void MockMMPClient::register_instance(
         Reference const & name,
         std::vector<std::string> const & locations,
         std::vector<::ymmsl::Port> const & ports)
 {}
 
-ymmsl::Settings MMPClient::get_settings() {
+ymmsl::Settings MockMMPClient::get_settings() {
     ymmsl::Settings settings;
     return settings;
 }
 
-auto MMPClient::request_peers(Reference const & name) ->
+auto MockMMPClient::request_peers(Reference const & name) ->
         std::tuple<
             std::vector<::ymmsl::Conduit>,
             std::unordered_map<::ymmsl::Reference, std::vector<int>>,
@@ -56,7 +48,16 @@ auto MMPClient::request_peers(Reference const & name) ->
             std::move(peer_locations));
 }
 
-void MMPClient::deregister_instance(Reference const & name) {}
+void MockMMPClient::deregister_instance(Reference const & name) {}
+
+void MockMMPClient::reset() {
+    num_constructed = 0;
+    last_location = "";
+}
+
+int MockMMPClient::num_constructed = 0;
+
+std::string MockMMPClient::last_location("");
 
 }
 

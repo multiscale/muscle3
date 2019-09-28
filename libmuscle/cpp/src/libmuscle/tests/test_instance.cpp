@@ -31,6 +31,7 @@
 
 using libmuscle::Instance;
 using libmuscle::MockCommunicator;
+using libmuscle::MockMMPClient;
 
 using ymmsl::Reference;
 
@@ -67,8 +68,10 @@ void reset_mocks() {
 }
 
 std::vector<char const *> test_argv() {
-    char const * args = "\0--muscle-instance=test_instance[13][42]";
-    return std::vector<char const *>({args, args + 1});
+    char const * arg0 = "\0";
+    char const * arg1 = "--muscle-instance=test_instance[13][42]";
+    char const * arg2 = "--muscle-manager=node042:9000";
+    return std::vector<char const *>({arg0, arg1, arg2});
 }
 
 
@@ -79,6 +82,7 @@ TEST(libmuscle_instance, create_instance) {
     Instance instance(argv.size(), argv.data());
 
     ASSERT_EQ(TestInstance::instance_name_(instance), "test_instance[13][42]");
-    //ASSERT_EQ(MockCommunicator::num_constructed, 1);
+    ASSERT_EQ(MockMMPClient::num_constructed, 1);
+    ASSERT_EQ(MockMMPClient::last_location, "node042:9000");
 }
 

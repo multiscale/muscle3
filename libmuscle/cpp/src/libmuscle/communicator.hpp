@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef LIBMUSCLE_MOCK_COMMUNICATOR
+#include LIBMUSCLE_MOCK_COMMUNICATOR
+#else
+
 #include <libmuscle/mcp/client.hpp>
 #include <libmuscle/data.hpp>
 #include <libmuscle/mcp/server.hpp>
@@ -22,7 +26,7 @@ namespace libmuscle {
  *
  * You can create one like this:
  *
- * Ports ports({
+ * PortsDescription ports({
  *     {Operator::F_INIT, {"port1", "port2"}},
  *     {Operator::O_F, {"port3[]"}}
  *     });
@@ -31,7 +35,7 @@ namespace libmuscle {
  *
  * ports[Operator::F_INIT][0] == "port1";
  *
- * or for a const reference to a Ports
+ * or for a const reference to a PortsDescription
  *
  * ports.at(Operator::F_INIT)[1] == "port2";
  */
@@ -216,4 +220,6 @@ class Communicator {
 };
 
 }
+
+#endif
 

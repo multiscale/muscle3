@@ -65,6 +65,12 @@ test_communicator.o: test_communicator.cpp
 test_communicator: test_communicator.o
 	$(CXX) $(DEBUGFLAGS) $< -o $@ $(googletest_ROOT)/lib/libgtest.a -pthread
 
+test_instance.o: test_instance.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@ -pthread
+
+test_instance: test_instance.o
+	$(CXX) $(DEBUGFLAGS) $< -o $@ $(googletest_ROOT)/lib/libgtest.a -pthread
+
 empty :=
 space := $(empty) $(empty)
 test_dep_lib_paths := $(subst $(space),:,$(foreach DIR,$(DEP_DIRS),$(DIR)/lib))

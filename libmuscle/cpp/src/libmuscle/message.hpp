@@ -12,11 +12,6 @@ namespace libmuscle {
  *
  * This class describes a message to be sent or that has been received.
  *
- * @attribute timestamp Simulation time for which this data is valid.
- * @attribute next_timestamp Simulation time for the next message to be
- *      transmitted through this port.
- * @attribute data An object to send or that was received.
- * @attribute settings Overlay settings to send or that were received.
  */
 // Note: This is for communication with the user, it's not what actually goes
 // out on the wire. See libmuscle::mcp::Message for that.
@@ -63,6 +58,22 @@ class Message {
                 DataConstRef const & data,
                 ymmsl::Settings const & settings);
 
+        /** Copy constructor.
+         */
+        Message(Message const & message);
+
+        /** Move constructor.
+         */
+        Message(Message && message);
+
+        /** Copy assignment.
+         */
+        Message & operator=(Message const & message);
+
+        /** Move assignment.
+         */
+        Message & operator=(Message && message);
+
         /** Returns the timestamp of the message.
          */
         double timestamp() const;
@@ -99,6 +110,12 @@ class Message {
          */
         DataConstRef const & data() const;
 
+        /** Sets data to the given value.
+         *
+         * @param data The new data to set.
+         */
+        void set_data(DataConstRef const & data);
+
         /** Returns whether the message carries settings.
          */
         bool has_settings() const;
@@ -108,6 +125,18 @@ class Message {
          * Only call if has_settings() returns true.
          */
         ::ymmsl::Settings const & settings() const;
+
+        /** Sets settings to the given value.
+         *
+         * This overwrites the entire Settings object, not a single value.
+         *
+         * @param settings The new settings to use.
+         */
+        void set_settings(::ymmsl::Settings const & settings);
+
+        /** Unsets the settings of the message.
+         */
+        void unset_settings();
 
     private:
         double timestamp_;

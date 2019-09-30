@@ -505,6 +505,42 @@ TEST(libmuscle_mcp_data, byte_array) {
 }
 
 
+TEST(libmuscle_mcp_data, reseat) {
+    Data d1(1);
+    ASSERT_TRUE(d1.is_a<int>());
+    ASSERT_EQ(d1.as<int>(), 1);
+
+    DataConstRef r1(d1);
+    ASSERT_TRUE(r1.is_a<int>());
+    ASSERT_EQ(r1.as<int>(), 1);
+
+    d1 = 2;
+    ASSERT_TRUE(r1.is_a<int>());
+    ASSERT_EQ(r1.as<int>(), 2);
+
+    Data d2(3.0);
+    r1.reseat(d2);
+    ASSERT_TRUE(r1.is_a<double>());
+    ASSERT_EQ(r1.as<double>(), 3.0);
+    ASSERT_TRUE(d1.is_a<int>());
+    ASSERT_EQ(d1.as<int>(), 2);
+
+    d1 = "test";
+    ASSERT_TRUE(r1.is_a<double>());
+    ASSERT_EQ(r1.as<double>(), 3.0);
+    ASSERT_TRUE(d1.is_a<std::string>());
+    ASSERT_EQ(d1.as<std::string>(), "test");
+
+    d2 = true;
+    ASSERT_TRUE(d2.is_a<bool>());
+    ASSERT_EQ(d2.as<bool>(), true);
+    ASSERT_TRUE(r1.is_a<bool>());
+    ASSERT_EQ(r1.as<bool>(), true);
+    ASSERT_TRUE(d1.is_a<std::string>());
+    ASSERT_EQ(d1.as<std::string>(), "test");
+}
+
+
 TEST(libmuscle_mcp_data, as_wrong_type) {
     Data d(42);
 

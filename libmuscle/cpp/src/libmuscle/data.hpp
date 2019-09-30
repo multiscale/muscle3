@@ -144,6 +144,15 @@ class DataConstRef {
          */
         DataConstRef & operator=(DataConstRef &&) = delete;
 
+        /** Reseat the reference.
+         *
+         * This makes this DataConstRef object refer to the object referred to
+         * by the argument.
+         *
+         * @param target The object to refer to.
+         */
+        void reseat(DataConstRef const & target);
+
         /** Determine the type of the referenced data.
          *
          * This works for the following types:

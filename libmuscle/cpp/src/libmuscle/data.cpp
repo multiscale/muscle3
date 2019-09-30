@@ -151,6 +151,11 @@ DataConstRef::DataConstRef(Settings const & settings)
     *mp_obj_ << msgpack::type::ext_ref(zoned_mem, buf.size() + 1);
 }
 
+void DataConstRef::reseat(DataConstRef const & target) {
+    mp_zones_ = target.mp_zones_;
+    mp_obj_ = target.mp_obj_;
+}
+
 template <>
 bool DataConstRef::is_a<bool>() const {
     return mp_obj_->type == msgpack::type::BOOLEAN;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <libmuscle/operator.hpp>
+#include <libmuscle/util.hpp>
 #include <ymmsl/compute_element.hpp>
 
 
@@ -53,6 +54,16 @@ class Port : public ::ymmsl::Port {
          * @return False iff the slot has been closed.
          */
         bool is_open(int slot) const;
+
+        /** Returns whether this slot/port is open.
+         *
+         * If slot is set, then this port must be a vector port, else it must
+         * be a scalar port.
+         *
+         * @param slot An optional slot to check.
+         * @return False iff the port/slot has been closed.
+         */
+        bool is_open(Optional<int> slot) const;
 
         /** Returns whether this is a vector port.
          */

@@ -69,6 +69,12 @@ bool Port::is_open(int slot) const {
     return is_open_.at(slot);
 }
 
+bool Port::is_open(Optional<int> slot) const {
+    if (slot.is_set())
+        return is_open(slot.get());
+    return is_open();
+}
+
 bool Port::is_vector() const {
     return length_ >= 0;
 }

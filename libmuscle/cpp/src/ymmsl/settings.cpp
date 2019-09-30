@@ -1,5 +1,6 @@
 #include <ymmsl/settings.hpp>
 
+#include <typeinfo>
 #include <utility>
 
 #include <ymmsl/identity.hpp>
@@ -123,66 +124,6 @@ bool ParameterValue::operator!=(ParameterValue const & rhs) const {
     return !(*this == rhs);
 }
 
-template<>
-bool ParameterValue::is_a<std::string>() const {
-    return type_ == Type_::STRING;
-}
-
-template<>
-bool ParameterValue::is_a<int64_t>() const {
-    return type_ == Type_::INT;
-}
-
-template<>
-bool ParameterValue::is_a<double>() const {
-    return type_ == Type_::FLOAT;
-}
-
-template<>
-bool ParameterValue::is_a<bool>() const {
-    return type_ == Type_::BOOL;
-}
-
-template<>
-bool ParameterValue::is_a<std::vector<double>>() const {
-    return type_ == Type_::LIST_FLOAT;
-}
-
-template<>
-bool ParameterValue::is_a<std::vector<std::vector<double>>>() const {
-    return type_ == Type_::LIST_LIST_FLOAT;
-}
-
-template<>
-std::string ParameterValue::as<std::string>() const {
-    return string_value_;
-}
-
-template<>
-int64_t ParameterValue::as<int64_t>() const {
-    return int_value_;
-}
-
-template<>
-double ParameterValue::as<double>() const {
-    return float_value_;
-}
-
-template<>
-bool ParameterValue::as<bool>() const {
-    return bool_value_;
-}
-
-template<>
-std::vector<double> ParameterValue::as<std::vector<double>>() const {
-    return list_value_;
-}
-
-template<>
-std::vector<std::vector<double>> ParameterValue::as<std::vector<std::vector<double>>>() const {
-    return list_list_value_;
-}
-
 void ParameterValue::deactivate_() noexcept {
     switch (type_) {
         case Type_::STRING:
@@ -250,6 +191,47 @@ void ParameterValue::move_value_from_(ParameterValue && other) {
     }
 }
 
+namespace {
+
+void write_vec_double(std::ostream & os, std::vector<double> const & val) {
+    bool first = true;
+    os << "[";
+    for (double d : val) {
+        if (!first)
+            os << ", ";
+        os << d;
+        first = false;
+    }
+    os << "]";
+}
+
+}
+
+std::ostream & operator<<(std::ostream & os, ymmsl::ParameterValue const & val) {
+    if (val.is_a<std::string>())
+        os << "\"" << val.as<std::string>() << "\"";
+    else if (val.is_a<int64_t>())
+        os << val.as<int64_t>();
+    else if (val.is_a<double>())
+        os << val.as<double>();
+    else if (val.is_a<bool>())
+        os << std::boolalpha << val.as<bool>();
+    else if (val.is_a<std::vector<double>>())
+        write_vec_double(os, val.as<std::vector<double>>());
+    else if (val.is_a<std::vector<std::vector<double>>>()) {
+        bool first = true;
+        os << "[";
+        for (auto const & vec : val.as<std::vector<std::vector<double>>>()) {
+            if (!first)
+                os << ", ";
+            write_vec_double(os, vec);
+            first = false;
+        }
+        os << "]";
+    }
+    return os;
+}
+
 
 bool Settings::operator==(Settings const & rhs) const {
     return store_ == rhs.store_;
@@ -293,6 +275,19 @@ Settings::const_iterator Settings::begin() const {
 
 Settings::const_iterator Settings::end() const {
     return store_.cend();
+}
+
+std::ostream & operator<<(std::ostream & os, ymmsl::Settings const & settings) {
+    bool first = true;
+    os << "Settings(";
+    for (auto const & setting : settings) {
+        if (!first)
+            os << ",";
+        os << setting.first << ": " << setting.second;
+        first = false;
+    }
+    os << ")";
+    return os;
 }
 
 }

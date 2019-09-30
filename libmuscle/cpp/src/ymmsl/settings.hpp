@@ -66,11 +66,14 @@ class ParameterValue {
 
         /** Return the value as the given type.
          *
+         * Only call if is_a<T>() returns true.
+         *
          * @param T A valid type, being one of std::string, int64_t, double,
          *          bool, std::vector<double>, or
          *          std::vector<std::vector<double>>.
          *
-         * Only call if is_a<T>() returns true.
+         * @throw std::bad_cast if the type of this value does not match the
+         *      template parameter.
          */
         template <typename T>
         T as() const;
@@ -94,6 +97,8 @@ class ParameterValue {
             std::vector<std::vector<double>> list_list_value_;
         };
 };
+
+std::ostream & operator<<(std::ostream & os, ymmsl::ParameterValue const & val);
 
 
 /** Settings for doing an experiment.
@@ -167,6 +172,9 @@ class Settings {
         MapType_ store_;
 };
 
+std::ostream & operator<<(std::ostream & os, ymmsl::Settings const & settings);
+
 }
 
+#include <ymmsl/settings.tpp>
 

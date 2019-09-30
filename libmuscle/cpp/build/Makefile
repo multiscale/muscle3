@@ -108,7 +108,7 @@ libmuscle: grpc ymmsl msgpack muscle_manager_protocol
 
 .PHONY: tests
 tests: ymmsl libmuscle msgpack muscle_manager_protocol googletest
-	$(MAKE) -C ymmsl tests
-	$(MAKE) -C libmuscle tests
+	$(MAKE) -j $(NCORES) -C ymmsl tests
+	$(MAKE) -j $(NCORES) -C libmuscle tests
 
 cpp_test_files := ymmsl/tests/test_* libmuscle/tests/test_*

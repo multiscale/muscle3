@@ -9,6 +9,7 @@
 #include <ymmsl/model.hpp>
 #include <ymmsl/settings.hpp>
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -61,7 +62,14 @@ class MockCommunicator {
 
         static void reset();
         static int num_constructed;
-        static Port get_port_return_value;
+        static bool parameters_in_connected_return_value;
+        static std::unordered_map<std::string, Port> get_port_return_value;
+        static std::unordered_map<Reference, std::unique_ptr<Message>>
+            next_received_message;
+        static PortsDescription list_ports_return_value;
+        static std::string last_sent_port;
+        static Message last_sent_message;
+        static Optional<int> last_sent_slot;
 
     private:
         friend class TestCommunicator;

@@ -3,6 +3,7 @@
 #include <libmuscle/data.hpp>
 #include <ymmsl/model.hpp>
 
+#include <cassert>
 
 using libmuscle::Data;
 using libmuscle::DataConstRef;
@@ -16,11 +17,6 @@ using ymmsl::Settings;
 
 
 namespace libmuscle {
-
-bool is_close_port(DataConstRef const & data) {
-    return true;
-}
-
 
 MockCommunicator::MockCommunicator(
         ymmsl::Reference const & kernel,
@@ -43,12 +39,11 @@ void MockCommunicator::connect(
 }
 
 bool MockCommunicator::parameters_in_connected() const {
-    return true;
+    return parameters_in_connected_return_value;
 }
 
 PortsDescription MockCommunicator::list_ports() const {
-    PortsDescription result;
-    return result;
+    return list_ports_return_value;
 }
 
 bool MockCommunicator::port_exists(std::string const & port_name) const {
@@ -56,11 +51,11 @@ bool MockCommunicator::port_exists(std::string const & port_name) const {
 }
 
 Port const & MockCommunicator::get_port(std::string const & port_name) const {
-    return get_port_return_value;
+    return get_port_return_value.at(port_name);
 }
 
 Port & MockCommunicator::get_port(std::string const & port_name) {
-    return get_port_return_value;
+    return get_port_return_value.at(port_name);
 }
 
 void MockCommunicator::send_message(
@@ -68,6 +63,9 @@ void MockCommunicator::send_message(
         Message const & message,
         Optional<int> slot)
 {
+    last_sent_port = port_name;
+    last_sent_message = message;
+    last_sent_slot = slot;
 }
 
 Message MockCommunicator::receive_message(
@@ -75,8 +73,14 @@ Message MockCommunicator::receive_message(
         Optional<int> slot,
         Optional<Message> const & default_msg)
 {
-    Message message(0.0, 1.0, Data());
-    return message;
+    Reference key(port_name);
+    if (slot.is_set())
+        key += slot.get();
+    if (next_received_message.count(key) == 0) {
+        assert(default_msg.is_set());
+        return default_msg.get();
+    }
+    return *next_received_message.at(key);
 }
 
 void MockCommunicator::close_port(
@@ -90,13 +94,31 @@ void MockCommunicator::shutdown() {
 
 void MockCommunicator::reset() {
     num_constructed = 0;
-    get_port_return_value.set_length(10);
+    parameters_in_connected_return_value = false;
+    get_port_return_value.clear();
+    next_received_message.clear();
+    list_ports_return_value.clear();
+    last_sent_port = "";
+    last_sent_message = Message(0.0, Data());
+    last_sent_slot = {};
 }
 
 int MockCommunicator::num_constructed = 0;
 
-Port MockCommunicator::get_port_return_value(
-        "out", Operator::O_F, true, true, 0, {});
+bool MockCommunicator::parameters_in_connected_return_value = false;
+
+std::unordered_map<std::string, Port> MockCommunicator::get_port_return_value;
+
+std::unordered_map<Reference, std::unique_ptr<Message>>
+    MockCommunicator::next_received_message;
+
+PortsDescription MockCommunicator::list_ports_return_value;
+
+std::string MockCommunicator::last_sent_port;
+
+Message MockCommunicator::last_sent_message(0.0, Data());
+
+Optional<int> MockCommunicator::last_sent_slot;
 
 }
 

@@ -1,5 +1,6 @@
 #include <libmuscle/communicator.hpp>
 
+#include <libmuscle/close_port.hpp>
 #include <libmuscle/data.hpp>
 #include <libmuscle/mcp/ext_types.hpp>
 #include <libmuscle/mcp/tcp_client.hpp>
@@ -8,6 +9,7 @@
 #include <limits>
 
 
+using libmuscle::ClosePort;
 using libmuscle::Data;
 using libmuscle::DataConstRef;
 using libmuscle::mcp::ExtTypeId;
@@ -22,41 +24,6 @@ using ymmsl::Settings;
 
 
 namespace libmuscle {
-
-/* Represents a ClosePort_ message.
- *
- * We need to be able to send a ClosePort_ message just like we send user data
- * and settings. Adding support for it to the Data class would expose it to
- * the user, while it's an internal sentinel object. We could also go full-OO
- * and create interfaces for external, internal and read-only use of the Data
- * class, add some factories, teach users about shared pointers, and so on,
- * but I'm not sure it would make anyone's life easier either. So we'll go with
- * this, it's a bit ugly, but it works.
- */
-class ClosePort_ : public Data {
-    public:
-        /* Create a ClosePort_ object.
-         *
-         * The ClosePort_ object itself is the message, so it has no attributes
-         * and doesn't contain any information other than its MessagePack
-         * extension type id.
-         */
-        ClosePort_()
-            :  Data()
-        {
-            char * zoned_mem = zone_alloc_<char>(1);
-            zoned_mem[0] = static_cast<char>(ExtTypeId::close_port);
-            *mp_obj_ << msgpack::type::ext_ref(zoned_mem, 1);
-        }
-};
-
-
-bool is_close_port(DataConstRef const & data) {
-    return (data.mp_obj_->type == msgpack::type::EXT &&
-            data.mp_obj_->via.ext.type() ==
-                static_cast<int8_t>(ExtTypeId::close_port));
-}
-
 
 Communicator::Communicator(
         ymmsl::Reference const & kernel,
@@ -230,7 +197,7 @@ void Communicator::close_port(
         std::string const & port_name, Optional<int> slot) {
     Message message(
             std::numeric_limits<double>::infinity(),
-            ClosePort_(), Settings());
+            ClosePort(), Settings());
     send_message(port_name, message, slot);
 }
 

@@ -10,6 +10,7 @@
 #include <ymmsl/model.cpp>
 #include <ymmsl/settings.cpp>
 
+#include <libmuscle/close_port.cpp>
 #include <libmuscle/communicator.cpp>
 #include <libmuscle/data.cpp>
 #include <libmuscle/endpoint.cpp>

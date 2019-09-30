@@ -177,9 +177,6 @@ class Instance:
         difference is that the port names never have `[]` at the end,
         even if the port is a vector port.
 
-        This method will return an empty dictionary if _connect() has
-        not yet been called.
-
         Returns:
             A dictionary, indexed by Operator, containing lists of
             port names. Operators with no associated ports are not
@@ -459,12 +456,13 @@ class Instance:
         else:
             msg = self._communicator.receive_message(
                     port_name, slot, default)
-            if not port.is_open(slot):
+            if port.is_connected and not port.is_open(slot):
                 self.exit_error(('Port {} was closed while trying to'
                                  ' receive on it, did the peer crash?'
                                  ).format(port_name))
-            if not with_parameters:
+            if port.is_connected and not with_parameters:
                 self.__check_compatibility(port_name, msg.settings)
+            if not with_parameters:
                 msg.settings = None
         return msg
 

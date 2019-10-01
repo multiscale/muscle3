@@ -47,7 +47,7 @@ PortsDescription MockCommunicator::list_ports() const {
 }
 
 bool MockCommunicator::port_exists(std::string const & port_name) const {
-    return true;
+    return port_exists_return_value;
 }
 
 Port const & MockCommunicator::get_port(std::string const & port_name) const {
@@ -95,6 +95,7 @@ void MockCommunicator::shutdown() {
 void MockCommunicator::reset() {
     num_constructed = 0;
     parameters_in_connected_return_value = false;
+    port_exists_return_value = true;
     get_port_return_value.clear();
     next_received_message.clear();
     list_ports_return_value.clear();
@@ -106,6 +107,8 @@ void MockCommunicator::reset() {
 int MockCommunicator::num_constructed = 0;
 
 bool MockCommunicator::parameters_in_connected_return_value = false;
+
+bool MockCommunicator::port_exists_return_value = true;
 
 std::unordered_map<std::string, Port> MockCommunicator::get_port_return_value;
 

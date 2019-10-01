@@ -282,7 +282,7 @@ std::ostream & operator<<(std::ostream & os, ymmsl::Settings const & settings) {
     os << "Settings(";
     for (auto const & setting : settings) {
         if (!first)
-            os << ",";
+            os << ", ";
         os << setting.first << ": " << setting.second;
         first = false;
     }

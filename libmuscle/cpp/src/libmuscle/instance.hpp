@@ -403,6 +403,7 @@ class Instance {
         SettingsManager settings_manager_;
         bool first_run_;
         std::unordered_map<::ymmsl::Reference, Message> f_init_cache_;
+        bool is_shut_down_;
 
         void register_();
         void connect_();
@@ -433,6 +434,7 @@ class Instance {
         void drain_incoming_vector_port_(std::string const & port_name);
         void close_incoming_ports_();
         void close_ports_();
+        void shutdown_();
 
         friend class TestInstance;
 };

@@ -23,6 +23,7 @@ Instance::Instance(int argc, char const * const argv[])
     , settings_manager_()
     , first_run_(true)
     , f_init_cache_()
+    , is_shut_down_(false)
 {
     register_();
     connect_();
@@ -37,6 +38,7 @@ Instance::Instance(int argc, char const * const argv[],
     , settings_manager_()
     , first_run_(true)
     , f_init_cache_()
+    , is_shut_down_(false)
 {
     register_();
     connect_();
@@ -75,9 +77,7 @@ bool Instance::reuse_instance(bool apply_overlay) {
 }
 
 void Instance::exit_error(std::string const & message) {
-    close_ports_();
-    communicator_.shutdown();
-    deregister_();
+    shutdown_();
     exit(1);
 }
 
@@ -233,11 +233,14 @@ Message Instance::receive_message_(
             Message msg(f_init_cache_.at(port_ref));
             f_init_cache_.erase(port_ref);
 
-            if (with_parameters && !msg.has_settings())
-                exit_error("If you use receive_with_settings() on an F_INIT"
+            if (with_parameters && !msg.has_settings()) {
+                shutdown_();
+                throw std::logic_error(
+                        "If you use receive_with_settings() on an F_INIT"
                         " port, then you have to pass false to"
                         " reuse_instance(), otherwise the parameters will"
                         " already have been applied by MUSCLE.");
+            }
             return msg;
         }
         else {
@@ -247,7 +250,8 @@ Message Instance::receive_message_(
                 oss << port_ref << "' in a single F_INIT, that's not possible.";
                 oss << " Did you forget to call reuse_instance() in your reuse";
                 oss << " loop?";
-                exit_error(oss.str());
+                shutdown_();
+                throw std::logic_error(oss.str());
             }
             else {
                 if (default_msg.is_set())
@@ -257,7 +261,8 @@ Message Instance::receive_message_(
                 oss << "Tried to receive on port '" << port_ref << "', which";
                 oss << " is not connected, and no default value was given.";
                 oss << " Please connect this port!";
-                exit_error(oss.str());
+                shutdown_();
+                throw std::logic_error(oss.str());
             }
         }
     }
@@ -267,7 +272,8 @@ Message Instance::receive_message_(
             std::ostringstream oss;
             oss << "Port '" << port_ref << "' is closed, but we're trying to";
             oss << " receive on it. Did the peer crash?";
-            exit_error(oss.str());
+            shutdown_();
+            throw std::runtime_error(oss.str());
         }
         if (port.is_connected() && !with_parameters)
             check_compatibility_(port_name, msg.settings());
@@ -367,7 +373,8 @@ void Instance::check_port_(std::string const & port_name) {
         oss << "Port '" << port_name << "' does not exist on '";
         oss << instance_name_ << "'. Please check the name and the list of";
         oss << " ports you gave for this compute element.";
-        exit_error(oss.str());
+        shutdown_();
+        throw std::logic_error(oss.str());
     }
 }
 
@@ -386,7 +393,8 @@ bool Instance::receive_parameters_() {
         oss << "'" << instance_name_ << "' received a message on";
         oss << " muscle_settings_in that is not a Settings. It seems that the";
         oss << " simulation is miswired or the sending instance is broken.";
-        exit_error(oss.str());
+        shutdown_();
+        throw std::logic_error(oss.str());
     }
 
     Settings settings(msg.settings());
@@ -467,7 +475,8 @@ void Instance::check_compatibility_(
         oss << " '" << port_name << "'. My parameters are '";
         oss << settings_manager_.overlay << "' and I received from a";
         oss << " universe with '" << overlay << "'.";
-        exit_error(oss.str());
+        shutdown_();
+        throw std::logic_error(oss.str());
     }
 }
 
@@ -559,6 +568,17 @@ void Instance::close_incoming_ports_() {
 void Instance::close_ports_() {
     close_outgoing_ports_();
     close_incoming_ports_();
+}
+
+/* Shuts down communication with the outside world and deregisters.
+ */
+void Instance::shutdown_() {
+    if (!is_shut_down_) {
+        close_ports_();
+        communicator_.shutdown();
+        deregister_();
+        is_shut_down_ = true;
+    }
 }
 
 }

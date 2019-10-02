@@ -31,6 +31,8 @@ class Instance:
             ports: A list of port names for each operator of this
                 compute element.
         """
+        self.__is_shut_down = False
+
         # Note that these are accessed by Muscle3, but otherwise private.
         self._name, self._index = self.__make_full_name()
         """Name and index of this instance."""
@@ -141,10 +143,7 @@ class Instance:
         Args:
             message: An error message describing the problem.
         """
-        logging.critical(message)
-        self.__close_ports()
-        self._communicator.shutdown()
-        self._deregister()
+        self.__shutdown(message)
         exit(1)
 
     def get_parameter_value(self, name: str,
@@ -432,34 +431,41 @@ class Instance:
                 msg = self._f_init_cache[(port_name, slot)]
                 del(self._f_init_cache[(port_name, slot)])
                 if with_parameters and msg.settings is None:
-                    self.exit_error('If you use receive_with_settings()'
-                                    ' on an F_INIT port, then you have to'
-                                    ' pass False to reuse_instance(),'
-                                    ' otherwise the parameters will already'
-                                    ' have been applied by MUSCLE.')
+                    err_msg = ('If you use receive_with_settings()'
+                               ' on an F_INIT port, then you have to'
+                               ' pass False to reuse_instance(),'
+                               ' otherwise the parameters will already'
+                               ' have been applied by MUSCLE.')
+                    self.__shutdown(err_msg)
+                    raise RuntimeError(err_msg)
             else:
                 if port.is_connected():
-                    self.exit_error(('Tried to receive twice on the same'
-                                     ' port "{}", that\'s not possible.'
-                                     ' Did you forget to call'
-                                     ' reuse_instance() in your reuse loop?'
-                                     ).format(port_name))
+                    err_msg = (('Tried to receive twice on the same'
+                                ' port "{}", that\'s not possible.'
+                                ' Did you forget to call'
+                                ' reuse_instance() in your reuse loop?'
+                                ).format(port_name))
+                    self.__shutdown(err_msg)
+                    raise RuntimeError(err_msg)
                 else:
                     if default is not None:
                         return default
-                    self.exit_error(('Tried to receive on port "{}",'
-                                     ' which is not connected, and no'
-                                     ' default value was given. Please'
-                                     ' connect this port!').format(
-                                         port_name))
+                    err_msg = (('Tried to receive on port "{}",'
+                                ' which is not connected, and no'
+                                ' default value was given. Please'
+                                ' connect this port!').format(port_name))
+                    self.__shutdown(err_msg)
+                    raise RuntimeError(err_msg)
 
         else:
             msg = self._communicator.receive_message(
                     port_name, slot, default)
             if port.is_connected and not port.is_open(slot):
-                self.exit_error(('Port {} was closed while trying to'
-                                 ' receive on it, did the peer crash?'
-                                 ).format(port_name))
+                err_msg = (('Port {} was closed while trying to'
+                            ' receive on it, did the peer crash?'
+                            ).format(port_name))
+                self.__shutdown(err_msg)
+                raise RuntimeError(err_msg)
             if port.is_connected and not with_parameters:
                 self.__check_compatibility(port_name, msg.settings)
             if not with_parameters:
@@ -524,10 +530,12 @@ class Instance:
 
     def __check_port(self, port_name: str) -> None:
         if not self._communicator.port_exists(port_name):
-            self.exit_error(('Port "{}" does not exist on "{}". Please check'
-                             ' the name and the list of ports you gave for'
-                             ' this compute element.').format(port_name,
-                                                              self._name))
+            err_msg = (('Port "{}" does not exist on "{}". Please check'
+                        ' the name and the list of ports you gave for'
+                        ' this compute element.').format(port_name,
+                                                         self._name))
+            self.__shutdown(err_msg)
+            raise RuntimeError(err_msg)
 
     def __receive_parameters(self) -> bool:
         """Receives parameters on muscle_settings_in.
@@ -541,12 +549,13 @@ class Instance:
         if isinstance(message.data, _ClosePort):
             return False
         if not isinstance(message.data, Settings):
-            self.exit_error('"{}" received a message on'
-                            ' muscle_settings_in that is not a'
-                            ' Settings. It seems that your'
-                            ' simulation is miswired or the sending'
-                            ' instance is broken.'.format(
-                                self._instance_name()))
+            err_msg = ('"{}" received a message on'
+                       ' muscle_settings_in that is not a'
+                       ' Settings. It seems that your'
+                       ' simulation is miswired or the sending'
+                       ' instance is broken.'.format(self._instance_name()))
+            self.__shutdown(err_msg)
+            raise RuntimeError(err_msg)
 
         settings = cast(Settings, message.settings)
         for key, value in message.data.items():
@@ -605,13 +614,14 @@ class Instance:
         if overlay is None:
             return
         if self._settings_manager.overlay != overlay:
-            self.exit_error(('Unexpectedly received data from a'
-                             ' parallel universe on port "{}". My'
-                             ' parameters are "{}" and I received'
-                             ' from a universe with "{}".').format(
-                                 port_name,
-                                 self._settings_manager.overlay,
-                                 overlay))
+            err_msg = (('Unexpectedly received data from a'
+                        ' parallel universe on port "{}". My'
+                        ' parameters are "{}" and I received'
+                        ' from a universe with "{}".').format(
+                            port_name, self._settings_manager.overlay,
+                            overlay))
+            self.__shutdown(err_msg)
+            raise RuntimeError(err_msg)
 
     def __close_outgoing_ports(self) -> None:
         """Closes outgoing ports.
@@ -684,3 +694,16 @@ class Instance:
         """
         self.__close_outgoing_ports()
         self.__close_incoming_ports()
+
+    def __shutdown(self, message: str) -> None:
+        """Shuts down simulation.
+
+        This logs the given error message, communicates to the peers
+        that we're shutting down, and deregisters from the manager.
+        """
+        if not self.__is_shut_down:
+            logging.critical(message)
+            self.__close_ports()
+            self._communicator.shutdown()
+            self._deregister()
+            self.__is_shut_down = True

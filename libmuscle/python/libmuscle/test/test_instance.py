@@ -70,10 +70,6 @@ def instance2(sys_argv_instance):
         yield instance
 
 
-def exit_handler(instance, message):
-    raise RuntimeError(message)
-
-
 def test_create_instance(
         sys_argv_instance, log_file_in_tmpdir, sys_argv_manager):
     with patch('libmuscle.instance.MMPClient') as mmp_client, \
@@ -169,9 +165,8 @@ def test_send(instance, message):
 
 def test_send_invalid_port(instance, message):
     instance._communicator.port_exists.return_value = False
-    with patch('libmuscle.instance.Instance.exit_error', exit_handler):
-        with pytest.raises(RuntimeError):
-            instance.send('does_not_exist', message, 1)
+    with pytest.raises(RuntimeError):
+        instance.send('does_not_exist', message, 1)
 
 
 def test_receive(instance):
@@ -184,9 +179,8 @@ def test_receive(instance):
             'in', None)
     assert msg.data == 'message'
 
-    with patch('libmuscle.instance.Instance.exit_error', exit_handler):
-        with pytest.raises(RuntimeError):
-            instance.receive('in')
+    with pytest.raises(RuntimeError):
+        instance.receive('in')
 
 
 def test_receive_default(instance):
@@ -197,16 +191,14 @@ def test_receive_default(instance):
     instance.receive('not_connected', 1, 'testing')
     assert instance._communicator.receive_message.called_with(
             'not_connected', 1, 'testing')
-    with patch('libmuscle.instance.Instance.exit_error', exit_handler):
-        with pytest.raises(RuntimeError):
-            instance.receive('not_connected', 1)
+    with pytest.raises(RuntimeError):
+        instance.receive('not_connected', 1)
 
 
 def test_receive_invalid_port(instance):
     instance._communicator.port_exists.return_value = False
-    with patch('libmuscle.instance.Instance.exit_error', exit_handler):
-        with pytest.raises(RuntimeError):
-            instance.receive('does_not_exist', 1)
+    with pytest.raises(RuntimeError):
+        instance.receive('does_not_exist', 1)
 
 
 def test_receive_with_settings(instance):
@@ -227,9 +219,8 @@ def test_receive_with_settings_default(instance):
 
 def test_receive_parallel_universe(instance) -> None:
     instance._settings_manager.overlay['test2'] = 'test'
-    with patch('libmuscle.instance.Instance.exit_error', exit_handler):
-        with pytest.raises(RuntimeError):
-            instance.receive('in')
+    with pytest.raises(RuntimeError):
+        instance.receive('in')
 
 
 def test_reuse_instance_receive_overlay(instance):
@@ -318,6 +309,5 @@ def test_reuse_instance_no_f_init_ports(instance):
 
 
 def test_reuse_instance_miswired(instance):
-    with patch('libmuscle.instance.Instance.exit_error', exit_handler):
-        with pytest.raises(RuntimeError):
-            instance.reuse_instance()
+    with pytest.raises(RuntimeError):
+        instance.reuse_instance()

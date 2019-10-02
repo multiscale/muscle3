@@ -11,7 +11,8 @@ def test_log_level():
 
 
 def test_create_logger():
-    Logger()
+    logger = Logger()
+    logger.close()
 
 
 def test_log_message(logger, caplog):

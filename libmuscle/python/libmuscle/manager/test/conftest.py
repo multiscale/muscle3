@@ -10,7 +10,9 @@ from libmuscle.manager.topology_store import TopologyStore
 
 @pytest.fixture
 def logger():
-    return Logger()
+    test_logger = Logger()
+    yield test_logger
+    test_logger.close()
 
 
 @pytest.fixture

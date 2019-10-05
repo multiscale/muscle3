@@ -42,6 +42,7 @@ setup(
         'click',
         'grpcio==1.17.1',
         'msgpack',
+        'netifaces',
         'protobuf',
         'ruamel.yaml<=0.15.64',
         'ymmsl==0.10.0'          # Also in .travisrc, update there as well

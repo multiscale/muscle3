@@ -1,8 +1,9 @@
 import socketserver as ss
 import threading
-from typing import cast, Optional, Tuple, Type
+from typing import cast, List, Optional, Tuple, Type
 
 import msgpack
+import netifaces
 from ymmsl import Reference
 
 from libmuscle.mcp.server import Server
@@ -84,7 +85,11 @@ class TcpServer(Server):
             A string containing the location.
         """
         host, port = self._server.server_address
-        return 'tcp:{}:{}'.format(host, port)
+
+        locs = list()   # type: List[str]
+        for address in self._get_if_addresses():
+            locs.append('{}:{}'.format(address, port))
+        return 'tcp:{}'.format(','.join(locs))
 
     def close(self) -> None:
         """Closes this server.
@@ -100,3 +105,16 @@ class TcpServer(Server):
         """Export this so the server thread can use it.
         """
         return self._post_office
+
+    def _get_if_addresses(self) -> List[str]:
+        all_addresses = list()  # type: List[str]
+        ifs = netifaces.interfaces()
+        for interface in ifs:
+            addrs = netifaces.ifaddresses(interface)
+            for props in addrs.get(netifaces.AF_INET, []):
+                all_addresses.append(props['addr'])
+            for props in addrs.get(netifaces.AF_INET6, []):
+                # filter out link-local addresses with a scope id
+                if '%' not in props['addr']:
+                    all_addresses.append('[' + props['addr'] + ']')
+        return all_addresses

@@ -110,20 +110,20 @@ ymmsl::Settings MMPClient::get_settings() {
         auto const & cur = response.setting_values(i);
         switch (cur.value_type()) {
             case mmp::SETTING_VALUE_TYPE_STRING:
-                settings[cur.setting()] = cur.value_string();
+                settings[cur.name()] = cur.value_string();
                 break;
             case mmp::SETTING_VALUE_TYPE_INT:
-                settings[cur.setting()] = cur.value_int();
+                settings[cur.name()] = cur.value_int();
                 break;
             case mmp::SETTING_VALUE_TYPE_FLOAT:
-                settings[cur.setting()] = cur.value_float();
+                settings[cur.name()] = cur.value_float();
                 break;
             case mmp::SETTING_VALUE_TYPE_BOOL:
-                settings[cur.setting()] = cur.value_bool();
+                settings[cur.name()] = cur.value_bool();
                 break;
             case mmp::SETTING_VALUE_TYPE_LIST_FLOAT: {
                 auto mmp_list = cur.value_list_float();
-                settings[cur.setting()] = list_from_grpc(mmp_list);
+                settings[cur.name()] = list_from_grpc(mmp_list);
                 break;
             }
             case mmp::SETTING_VALUE_TYPE_LIST_LIST_FLOAT: {
@@ -132,7 +132,7 @@ ymmsl::Settings MMPClient::get_settings() {
                 Vec2 our_list;
                 for (int j = 0; j < mmp_list.values_size(); ++j)
                     our_list.push_back(list_from_grpc(mmp_list.values(j)));
-                settings[cur.setting()] = std::move(our_list);
+                settings[cur.name()] = std::move(our_list);
                 break;
             }
             default:

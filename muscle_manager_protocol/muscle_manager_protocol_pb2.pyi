@@ -402,7 +402,7 @@ class ListOfListOfDouble(google___protobuf___message___Message):
         def ClearField(self, field_name: typing_extensions___Literal[b"values"]) -> None: ...
 
 class Setting(google___protobuf___message___Message):
-    setting = ... # type: typing___Text
+    name = ... # type: typing___Text
     value_type = ... # type: SettingValueType
     value_string = ... # type: typing___Text
     value_int = ... # type: int
@@ -416,7 +416,7 @@ class Setting(google___protobuf___message___Message):
     def value_list_list_float(self) -> ListOfListOfDouble: ...
 
     def __init__(self,
-        setting : typing___Optional[typing___Text] = None,
+        name : typing___Optional[typing___Text] = None,
         value_type : typing___Optional[SettingValueType] = None,
         value_string : typing___Optional[typing___Text] = None,
         value_int : typing___Optional[int] = None,
@@ -431,10 +431,10 @@ class Setting(google___protobuf___message___Message):
     def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
     if sys.version_info >= (3,):
         def HasField(self, field_name: typing_extensions___Literal[u"value_list_float",u"value_list_list_float"]) -> bool: ...
-        def ClearField(self, field_name: typing_extensions___Literal[u"setting",u"value_bool",u"value_float",u"value_int",u"value_list_float",u"value_list_list_float",u"value_string",u"value_type"]) -> None: ...
+        def ClearField(self, field_name: typing_extensions___Literal[u"name",u"value_bool",u"value_float",u"value_int",u"value_list_float",u"value_list_list_float",u"value_string",u"value_type"]) -> None: ...
     else:
         def HasField(self, field_name: typing_extensions___Literal[u"value_list_float",b"value_list_float",u"value_list_list_float",b"value_list_list_float"]) -> bool: ...
-        def ClearField(self, field_name: typing_extensions___Literal[b"setting",b"value_bool",b"value_float",b"value_int",b"value_list_float",b"value_list_list_float",b"value_string",b"value_type"]) -> None: ...
+        def ClearField(self, field_name: typing_extensions___Literal[b"name",b"value_bool",b"value_float",b"value_int",b"value_list_float",b"value_list_list_float",b"value_string",b"value_type"]) -> None: ...
 
 class SettingsRequest(google___protobuf___message___Message):
 

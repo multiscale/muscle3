@@ -45,7 +45,7 @@ def test_request_settings(settings, mmp_servicer):
 
     result_dict = dict()
     for mmp_setting in result.setting_values:
-        result_dict[mmp_setting.setting] = (
+        result_dict[mmp_setting.name] = (
                 mmp_setting.value_type, mmp_setting.value_string,
                 mmp_setting.value_int, mmp_setting.value_float,
                 mmp_setting.value_bool, mmp_setting.value_list_float,

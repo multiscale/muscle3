@@ -85,21 +85,21 @@ class MMPClient():
         settings = Settings()
         for setting in result.setting_values:
             if setting.value_type == mmp.SETTING_VALUE_TYPE_STRING:
-                settings[setting.setting] = setting.value_string
+                settings[setting.name] = setting.value_string
             elif setting.value_type == mmp.SETTING_VALUE_TYPE_INT:
-                settings[setting.setting] = setting.value_int
+                settings[setting.name] = setting.value_int
             elif setting.value_type == mmp.SETTING_VALUE_TYPE_FLOAT:
-                settings[setting.setting] = setting.value_float
+                settings[setting.name] = setting.value_float
             elif setting.value_type == mmp.SETTING_VALUE_TYPE_BOOL:
-                settings[setting.setting] = setting.value_bool
+                settings[setting.name] = setting.value_bool
             elif setting.value_type == mmp.SETTING_VALUE_TYPE_LIST_FLOAT:
-                settings[setting.setting] = list(
+                settings[setting.name] = list(
                         setting.value_list_float.values)
             elif setting.value_type == LLF:
                 rows = list()   # type: List[List[float]]
                 for mmp_row in setting.value_list_list_float.values:
                     rows.append(list(mmp_row.values))
-                settings[setting.setting] = rows
+                settings[setting.name] = rows
         return settings
 
     def register_instance(self, name: Reference, locations: List[str],

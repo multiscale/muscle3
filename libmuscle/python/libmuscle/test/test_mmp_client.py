@@ -47,27 +47,27 @@ def test_get_settings(mocked_mmp_client) -> None:
     array = mmp.ListOfListOfDouble(values=[row0, row1])
     mmp_values = [
             mmp.Setting(
-                setting='test1',
+                name='test1',
                 value_type=mmp.SETTING_VALUE_TYPE_STRING,
                 value_string='test'),
             mmp.Setting(
-                setting='test2',
+                name='test2',
                 value_type=mmp.SETTING_VALUE_TYPE_INT,
                 value_int=12),
             mmp.Setting(
-                setting='test3',
+                name='test3',
                 value_type=mmp.SETTING_VALUE_TYPE_FLOAT,
                 value_float=3.14),
             mmp.Setting(
-                setting='test4',
+                name='test4',
                 value_type=mmp.SETTING_VALUE_TYPE_BOOL,
                 value_bool=True),
             mmp.Setting(
-                setting='test5',
+                name='test5',
                 value_type=mmp.SETTING_VALUE_TYPE_LIST_FLOAT,
                 value_list_float=mmp.ListOfDouble(values=[1.2, 3.4])),
             mmp.Setting(
-                setting='test6',
+                name='test6',
                 value_type=mmp.SETTING_VALUE_TYPE_LIST_LIST_FLOAT,
                 value_list_list_float=array)]
     settings_result = mmp.SettingsResult(setting_values=mmp_values)

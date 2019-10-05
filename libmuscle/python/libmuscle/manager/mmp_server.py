@@ -76,24 +76,24 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
         for name, value in self.__settings.items():
             if isinstance(value, str):
                 setting = mmp.Setting(
-                        setting=str(name),
+                        name=str(name),
                         value_type=mmp.SETTING_VALUE_TYPE_STRING,
                         value_string=value)
             elif isinstance(value, bool):
                 # a bool is an int in Python, so this needs to go before the
                 # branch for int
                 setting = mmp.Setting(
-                        setting=str(name),
+                        name=str(name),
                         value_type=mmp.SETTING_VALUE_TYPE_BOOL,
                         value_bool=value)
             elif isinstance(value, int):
                 setting = mmp.Setting(
-                        setting=str(name),
+                        name=str(name),
                         value_type=mmp.SETTING_VALUE_TYPE_INT,
                         value_int=value)
             elif isinstance(value, float):
                 setting = mmp.Setting(
-                        setting=str(name),
+                        name=str(name),
                         value_type=mmp.SETTING_VALUE_TYPE_FLOAT,
                         value_float=value)
             elif isinstance(value, list):
@@ -101,7 +101,7 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
                     value = cast(List[float], value)
                     mmp_values = mmp.ListOfDouble(values=value)
                     setting = mmp.Setting(
-                            setting=str(name),
+                            name=str(name),
                             value_type=mmp.SETTING_VALUE_TYPE_LIST_FLOAT,
                             value_list_float=mmp_values)
                 elif isinstance(value[0], list):
@@ -114,7 +114,7 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
 
                     LLF = mmp.SETTING_VALUE_TYPE_LIST_LIST_FLOAT
                     setting = mmp.Setting(
-                            setting=str(name),
+                            name=str(name),
                             value_type=LLF,
                             value_list_list_float=mmp_rows)
             settings.append(setting)

@@ -541,7 +541,7 @@ const ::google::protobuf::uint32 TableStruct_muscle_5fmanager_5fprotocol_2fmuscl
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  PROTOBUF_FIELD_OFFSET(::muscle_manager_protocol::Setting, setting_),
+  PROTOBUF_FIELD_OFFSET(::muscle_manager_protocol::Setting, name_),
   PROTOBUF_FIELD_OFFSET(::muscle_manager_protocol::Setting, value_type_),
   PROTOBUF_FIELD_OFFSET(::muscle_manager_protocol::Setting, value_string_),
   PROTOBUF_FIELD_OFFSET(::muscle_manager_protocol::Setting, value_int_),
@@ -665,61 +665,61 @@ const char descriptor_table_protodef_muscle_5fmanager_5fprotocol_2fmuscle_5fmana
   "ns\022\025\n\rinstance_name\030\001 \001(\t\022\021\n\tlocations\030\002"
   " \003(\t\"\036\n\014ListOfDouble\022\016\n\006values\030\001 \003(\001\"K\n\022"
   "ListOfListOfDouble\0225\n\006values\030\001 \003(\0132%.mus"
-  "cle_manager_protocol.ListOfDouble\"\270\002\n\007Se"
-  "tting\022\017\n\007setting\030\001 \001(\t\022=\n\nvalue_type\030\002 \001"
-  "(\0162).muscle_manager_protocol.SettingValu"
-  "eType\022\024\n\014value_string\030\003 \001(\t\022\021\n\tvalue_int"
-  "\030\004 \001(\003\022\023\n\013value_float\030\005 \001(\001\022\022\n\nvalue_boo"
-  "l\030\006 \001(\010\022\?\n\020value_list_float\030\007 \001(\0132%.musc"
-  "le_manager_protocol.ListOfDouble\022J\n\025valu"
-  "e_list_list_float\030\010 \001(\0132+.muscle_manager"
-  "_protocol.ListOfListOfDouble\"\021\n\017Settings"
-  "Request\"J\n\016SettingsResult\0228\n\016setting_val"
-  "ues\030\001 \003(\0132 .muscle_manager_protocol.Sett"
-  "ing\".\n\025DeregistrationRequest\022\025\n\rinstance"
-  "_name\030\001 \001(\t\"d\n\024DeregistrationResult\0225\n\006s"
-  "tatus\030\001 \001(\0162%.muscle_manager_protocol.Re"
-  "sultStatus\022\025\n\rerror_message\030\002 \001(\t*]\n\014Res"
-  "ultStatus\022\031\n\025RESULT_STATUS_SUCCESS\020\000\022\027\n\023"
-  "RESULT_STATUS_ERROR\020\001\022\031\n\025RESULT_STATUS_P"
-  "ENDING\020\002*\210\001\n\010Operator\022\021\n\rOPERATOR_NONE\020\000"
-  "\022\023\n\017OPERATOR_F_INIT\020\001\022\020\n\014OPERATOR_O_I\020\002\022"
-  "\016\n\nOPERATOR_S\020\003\022\016\n\nOPERATOR_B\020\004\022\020\n\014OPERA"
-  "TOR_O_F\020\005\022\020\n\014OPERATOR_MAP\020\006*w\n\010LogLevel\022"
-  "\023\n\017LOG_LEVEL_DEBUG\020\000\022\022\n\016LOG_LEVEL_INFO\020\001"
-  "\022\025\n\021LOG_LEVEL_WARNING\020\003\022\023\n\017LOG_LEVEL_ERR"
-  "OR\020\004\022\026\n\022LOG_LEVEL_CRITICAL\020\005*\263\001\n\020Profile"
-  "EventType\022\037\n\033PROFILE_EVENT_TYPE_REGISTER"
-  "\020\000\022\036\n\032PROFILE_EVENT_TYPE_CONNECT\020\004\022!\n\035PR"
-  "OFILE_EVENT_TYPE_DEREGISTER\020\001\022\033\n\027PROFILE"
-  "_EVENT_TYPE_SEND\020\002\022\036\n\032PROFILE_EVENT_TYPE"
-  "_RECEIVE\020\003*\323\001\n\020SettingValueType\022\035\n\031SETTI"
-  "NG_VALUE_TYPE_STRING\020\000\022\032\n\026SETTING_VALUE_"
-  "TYPE_INT\020\001\022\034\n\030SETTING_VALUE_TYPE_FLOAT\020\002"
-  "\022\033\n\027SETTING_VALUE_TYPE_BOOL\020\003\022!\n\035SETTING"
-  "_VALUE_TYPE_LIST_FLOAT\020\004\022&\n\"SETTING_VALU"
-  "E_TYPE_LIST_LIST_FLOAT\020\0052\362\004\n\rMuscleManag"
-  "er\022[\n\020SubmitLogMessage\022#.muscle_manager_"
-  "protocol.LogMessage\032\".muscle_manager_pro"
-  "tocol.LogResult\022_\n\023SubmitProfileEvents\022 "
-  ".muscle_manager_protocol.Profile\032&.muscl"
-  "e_manager_protocol.ProfileResult\022d\n\017Requ"
-  "estSettings\022(.muscle_manager_protocol.Se"
-  "ttingsRequest\032\'.muscle_manager_protocol."
-  "SettingsResult\022m\n\020RegisterInstance\022,.mus"
-  "cle_manager_protocol.RegistrationRequest"
-  "\032+.muscle_manager_protocol.RegistrationR"
-  "esult\022Y\n\014RequestPeers\022$.muscle_manager_p"
-  "rotocol.PeerRequest\032#.muscle_manager_pro"
-  "tocol.PeerResult\022s\n\022DeregisterInstance\022."
-  ".muscle_manager_protocol.DeregistrationR"
-  "equest\032-.muscle_manager_protocol.Deregis"
-  "trationResultb\006proto3"
+  "cle_manager_protocol.ListOfDouble\"\265\002\n\007Se"
+  "tting\022\014\n\004name\030\001 \001(\t\022=\n\nvalue_type\030\002 \001(\0162"
+  ").muscle_manager_protocol.SettingValueTy"
+  "pe\022\024\n\014value_string\030\003 \001(\t\022\021\n\tvalue_int\030\004 "
+  "\001(\003\022\023\n\013value_float\030\005 \001(\001\022\022\n\nvalue_bool\030\006"
+  " \001(\010\022\?\n\020value_list_float\030\007 \001(\0132%.muscle_"
+  "manager_protocol.ListOfDouble\022J\n\025value_l"
+  "ist_list_float\030\010 \001(\0132+.muscle_manager_pr"
+  "otocol.ListOfListOfDouble\"\021\n\017SettingsReq"
+  "uest\"J\n\016SettingsResult\0228\n\016setting_values"
+  "\030\001 \003(\0132 .muscle_manager_protocol.Setting"
+  "\".\n\025DeregistrationRequest\022\025\n\rinstance_na"
+  "me\030\001 \001(\t\"d\n\024DeregistrationResult\0225\n\006stat"
+  "us\030\001 \001(\0162%.muscle_manager_protocol.Resul"
+  "tStatus\022\025\n\rerror_message\030\002 \001(\t*]\n\014Result"
+  "Status\022\031\n\025RESULT_STATUS_SUCCESS\020\000\022\027\n\023RES"
+  "ULT_STATUS_ERROR\020\001\022\031\n\025RESULT_STATUS_PEND"
+  "ING\020\002*\210\001\n\010Operator\022\021\n\rOPERATOR_NONE\020\000\022\023\n"
+  "\017OPERATOR_F_INIT\020\001\022\020\n\014OPERATOR_O_I\020\002\022\016\n\n"
+  "OPERATOR_S\020\003\022\016\n\nOPERATOR_B\020\004\022\020\n\014OPERATOR"
+  "_O_F\020\005\022\020\n\014OPERATOR_MAP\020\006*w\n\010LogLevel\022\023\n\017"
+  "LOG_LEVEL_DEBUG\020\000\022\022\n\016LOG_LEVEL_INFO\020\001\022\025\n"
+  "\021LOG_LEVEL_WARNING\020\003\022\023\n\017LOG_LEVEL_ERROR\020"
+  "\004\022\026\n\022LOG_LEVEL_CRITICAL\020\005*\263\001\n\020ProfileEve"
+  "ntType\022\037\n\033PROFILE_EVENT_TYPE_REGISTER\020\000\022"
+  "\036\n\032PROFILE_EVENT_TYPE_CONNECT\020\004\022!\n\035PROFI"
+  "LE_EVENT_TYPE_DEREGISTER\020\001\022\033\n\027PROFILE_EV"
+  "ENT_TYPE_SEND\020\002\022\036\n\032PROFILE_EVENT_TYPE_RE"
+  "CEIVE\020\003*\323\001\n\020SettingValueType\022\035\n\031SETTING_"
+  "VALUE_TYPE_STRING\020\000\022\032\n\026SETTING_VALUE_TYP"
+  "E_INT\020\001\022\034\n\030SETTING_VALUE_TYPE_FLOAT\020\002\022\033\n"
+  "\027SETTING_VALUE_TYPE_BOOL\020\003\022!\n\035SETTING_VA"
+  "LUE_TYPE_LIST_FLOAT\020\004\022&\n\"SETTING_VALUE_T"
+  "YPE_LIST_LIST_FLOAT\020\0052\362\004\n\rMuscleManager\022"
+  "[\n\020SubmitLogMessage\022#.muscle_manager_pro"
+  "tocol.LogMessage\032\".muscle_manager_protoc"
+  "ol.LogResult\022_\n\023SubmitProfileEvents\022 .mu"
+  "scle_manager_protocol.Profile\032&.muscle_m"
+  "anager_protocol.ProfileResult\022d\n\017Request"
+  "Settings\022(.muscle_manager_protocol.Setti"
+  "ngsRequest\032\'.muscle_manager_protocol.Set"
+  "tingsResult\022m\n\020RegisterInstance\022,.muscle"
+  "_manager_protocol.RegistrationRequest\032+."
+  "muscle_manager_protocol.RegistrationResu"
+  "lt\022Y\n\014RequestPeers\022$.muscle_manager_prot"
+  "ocol.PeerRequest\032#.muscle_manager_protoc"
+  "ol.PeerResult\022s\n\022DeregisterInstance\022..mu"
+  "scle_manager_protocol.DeregistrationRequ"
+  "est\032-.muscle_manager_protocol.Deregistra"
+  "tionResultb\006proto3"
   ;
 ::google::protobuf::internal::DescriptorTable descriptor_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto = {
   false, InitDefaults_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto, 
   descriptor_table_protodef_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto,
-  "muscle_manager_protocol/muscle_manager_protocol.proto", &assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto, 3501,
+  "muscle_manager_protocol/muscle_manager_protocol.proto", &assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto, 3498,
 };
 
 void AddDescriptors_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
@@ -6345,7 +6345,7 @@ Setting::HasBitSetters::value_list_list_float(const Setting* msg) {
   return *msg->value_list_list_float_;
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Setting::kSettingFieldNumber;
+const int Setting::kNameFieldNumber;
 const int Setting::kValueTypeFieldNumber;
 const int Setting::kValueStringFieldNumber;
 const int Setting::kValueIntFieldNumber;
@@ -6364,9 +6364,9 @@ Setting::Setting(const Setting& from)
   : ::google::protobuf::Message(),
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  setting_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.setting().size() > 0) {
-    setting_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.setting_);
+  name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.name().size() > 0) {
+    name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_);
   }
   value_string_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.value_string().size() > 0) {
@@ -6391,7 +6391,7 @@ Setting::Setting(const Setting& from)
 void Setting::SharedCtor() {
   ::google::protobuf::internal::InitSCC(
       &scc_info_Setting_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  setting_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   value_string_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&value_list_float_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&value_float_) -
@@ -6404,7 +6404,7 @@ Setting::~Setting() {
 }
 
 void Setting::SharedDtor() {
-  setting_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   value_string_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (this != internal_default_instance()) delete value_list_float_;
   if (this != internal_default_instance()) delete value_list_list_float_;
@@ -6425,7 +6425,7 @@ void Setting::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  setting_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   value_string_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (GetArenaNoVirtual() == nullptr && value_list_float_ != nullptr) {
     delete value_list_float_;
@@ -6454,13 +6454,13 @@ const char* Setting::_InternalParse(const char* begin, const char* end, void* ob
     ptr = ::google::protobuf::io::Parse32(ptr, &tag);
     GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
     switch (tag >> 3) {
-      // string setting = 1;
+      // string name = 1;
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
         ptr = ::google::protobuf::io::ReadSize(ptr, &size);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("muscle_manager_protocol.Setting.setting");
-        object = msg->mutable_setting();
+        ctx->extra_parse_data().SetFieldName("muscle_manager_protocol.Setting.name");
+        object = msg->mutable_name();
         if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
           parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8;
           goto string_till_end;
@@ -6575,15 +6575,15 @@ bool Setting::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // string setting = 1;
+      // string name = 1;
       case 1: {
         if (static_cast< ::google::protobuf::uint8>(tag) == (10 & 0xFF)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_setting()));
+                input, this->mutable_name()));
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->setting().data(), static_cast<int>(this->setting().length()),
+            this->name().data(), static_cast<int>(this->name().length()),
             ::google::protobuf::internal::WireFormatLite::PARSE,
-            "muscle_manager_protocol.Setting.setting"));
+            "muscle_manager_protocol.Setting.name"));
         } else {
           goto handle_unusual;
         }
@@ -6707,14 +6707,14 @@ void Setting::SerializeWithCachedSizes(
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // string setting = 1;
-  if (this->setting().size() > 0) {
+  // string name = 1;
+  if (this->name().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->setting().data(), static_cast<int>(this->setting().length()),
+      this->name().data(), static_cast<int>(this->name().length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "muscle_manager_protocol.Setting.setting");
+      "muscle_manager_protocol.Setting.name");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      1, this->setting(), output);
+      1, this->name(), output);
   }
 
   // .muscle_manager_protocol.SettingValueType value_type = 2;
@@ -6773,15 +6773,15 @@ void Setting::SerializeWithCachedSizes(
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // string setting = 1;
-  if (this->setting().size() > 0) {
+  // string name = 1;
+  if (this->name().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->setting().data(), static_cast<int>(this->setting().length()),
+      this->name().data(), static_cast<int>(this->name().length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "muscle_manager_protocol.Setting.setting");
+      "muscle_manager_protocol.Setting.name");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        1, this->setting(), target);
+        1, this->name(), target);
   }
 
   // .muscle_manager_protocol.SettingValueType value_type = 2;
@@ -6851,11 +6851,11 @@ size_t Setting::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // string setting = 1;
-  if (this->setting().size() > 0) {
+  // string name = 1;
+  if (this->name().size() > 0) {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->setting());
+        this->name());
   }
 
   // string value_string = 3;
@@ -6929,9 +6929,9 @@ void Setting::MergeFrom(const Setting& from) {
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (from.setting().size() > 0) {
+  if (from.name().size() > 0) {
 
-    setting_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.setting_);
+    name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_);
   }
   if (from.value_string().size() > 0) {
 
@@ -6982,7 +6982,7 @@ void Setting::Swap(Setting* other) {
 void Setting::InternalSwap(Setting* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
-  setting_.Swap(&other->setting_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  name_.Swap(&other->name_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   value_string_.Swap(&other->value_string_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());

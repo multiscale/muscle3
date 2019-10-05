@@ -176,7 +176,7 @@ message ListOfListOfDouble {
 }
 
 message Setting {
-    string setting = 1;
+    string name = 1;
     SettingValueType value_type = 2;
     string value_string = 3;
     int64 value_int = 4;

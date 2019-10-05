@@ -2362,19 +2362,19 @@ class Setting :
 
   // accessors -------------------------------------------------------
 
-  // string setting = 1;
-  void clear_setting();
-  static const int kSettingFieldNumber = 1;
-  const ::std::string& setting() const;
-  void set_setting(const ::std::string& value);
+  // string name = 1;
+  void clear_name();
+  static const int kNameFieldNumber = 1;
+  const ::std::string& name() const;
+  void set_name(const ::std::string& value);
   #if LANG_CXX11
-  void set_setting(::std::string&& value);
+  void set_name(::std::string&& value);
   #endif
-  void set_setting(const char* value);
-  void set_setting(const char* value, size_t size);
-  ::std::string* mutable_setting();
-  ::std::string* release_setting();
-  void set_allocated_setting(::std::string* setting);
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  ::std::string* mutable_name();
+  ::std::string* release_name();
+  void set_allocated_name(::std::string* name);
 
   // string value_string = 3;
   void clear_value_string();
@@ -2437,7 +2437,7 @@ class Setting :
   class HasBitSetters;
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::internal::ArenaStringPtr setting_;
+  ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::internal::ArenaStringPtr value_string_;
   ::muscle_manager_protocol::ListOfDouble* value_list_float_;
   ::muscle_manager_protocol::ListOfListOfDouble* value_list_list_float_;
@@ -4304,57 +4304,57 @@ ListOfListOfDouble::values() const {
 
 // Setting
 
-// string setting = 1;
-inline void Setting::clear_setting() {
-  setting_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+// string name = 1;
+inline void Setting::clear_name() {
+  name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline const ::std::string& Setting::setting() const {
-  // @@protoc_insertion_point(field_get:muscle_manager_protocol.Setting.setting)
-  return setting_.GetNoArena();
+inline const ::std::string& Setting::name() const {
+  // @@protoc_insertion_point(field_get:muscle_manager_protocol.Setting.name)
+  return name_.GetNoArena();
 }
-inline void Setting::set_setting(const ::std::string& value) {
+inline void Setting::set_name(const ::std::string& value) {
   
-  setting_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:muscle_manager_protocol.Setting.setting)
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:muscle_manager_protocol.Setting.name)
 }
 #if LANG_CXX11
-inline void Setting::set_setting(::std::string&& value) {
+inline void Setting::set_name(::std::string&& value) {
   
-  setting_.SetNoArena(
+  name_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:muscle_manager_protocol.Setting.setting)
+  // @@protoc_insertion_point(field_set_rvalue:muscle_manager_protocol.Setting.name)
 }
 #endif
-inline void Setting::set_setting(const char* value) {
+inline void Setting::set_name(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   
-  setting_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:muscle_manager_protocol.Setting.setting)
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:muscle_manager_protocol.Setting.name)
 }
-inline void Setting::set_setting(const char* value, size_t size) {
+inline void Setting::set_name(const char* value, size_t size) {
   
-  setting_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:muscle_manager_protocol.Setting.setting)
+  // @@protoc_insertion_point(field_set_pointer:muscle_manager_protocol.Setting.name)
 }
-inline ::std::string* Setting::mutable_setting() {
+inline ::std::string* Setting::mutable_name() {
   
-  // @@protoc_insertion_point(field_mutable:muscle_manager_protocol.Setting.setting)
-  return setting_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  // @@protoc_insertion_point(field_mutable:muscle_manager_protocol.Setting.name)
+  return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::std::string* Setting::release_setting() {
-  // @@protoc_insertion_point(field_release:muscle_manager_protocol.Setting.setting)
+inline ::std::string* Setting::release_name() {
+  // @@protoc_insertion_point(field_release:muscle_manager_protocol.Setting.name)
   
-  return setting_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void Setting::set_allocated_setting(::std::string* setting) {
-  if (setting != nullptr) {
+inline void Setting::set_allocated_name(::std::string* name) {
+  if (name != nullptr) {
     
   } else {
     
   }
-  setting_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), setting);
-  // @@protoc_insertion_point(field_set_allocated:muscle_manager_protocol.Setting.setting)
+  name_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name);
+  // @@protoc_insertion_point(field_set_allocated:muscle_manager_protocol.Setting.name)
 }
 
 // .muscle_manager_protocol.SettingValueType value_type = 2;

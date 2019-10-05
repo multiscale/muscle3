@@ -39,8 +39,8 @@ represent an MMSL model description. It supports loading a yMMSL file and
 converting it to objects, and saving objects to a yMMSL file. Input is validated
 and a clear error message is provided in case of errors, and output is formatted
 for good readability, courtesy of the `YAtiML <https://yatiml.readthedocs.io>`_
-library.  yMMSL files can also contain parameter settings, so that all the
-information needed for a simulation run can be described in a single file.
+library.  yMMSL files can also contain settings, so that all the information
+needed for a simulation run can be described in a single file.
 
 **muscle_manager** is the central run-time component of MUSCLE 3. It is started
 together with the compute element intances, and provides a central coordination

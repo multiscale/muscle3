@@ -61,10 +61,10 @@ void Communicator::connect(
     else
         ports_ = ports_from_conduits_(conduits);
 
-    muscle_settings_in_ = parameters_in_port_(conduits);
+    muscle_settings_in_ = settings_in_port_(conduits);
 }
 
-bool Communicator::parameters_in_connected() const {
+bool Communicator::settings_in_connected() const {
     return muscle_settings_in_.get().is_connected();
 }
 
@@ -169,7 +169,7 @@ Message Communicator::receive_message(
     mcp::Client & client = get_client_(snd_endpoint.instance());
     mcp::Message mcp_message = client.receive(recv_endpoint.ref());
 
-    Settings overlay_settings(mcp_message.parameter_overlay.as<Settings>());
+    Settings overlay_settings(mcp_message.settings_overlay.as<Settings>());
 
     if (mcp_message.port_length.is_set())
         if (port.is_resizable())
@@ -279,7 +279,7 @@ Communicator::Ports_ Communicator::ports_from_conduits_(
     return ports;
 }
 
-Port Communicator::parameters_in_port_(std::vector<Conduit> const & conduits) const {
+Port Communicator::settings_in_port_(std::vector<Conduit> const & conduits) const {
     for (auto const & conduit : conduits) {
         if (conduit.receiving_compute_element() == kernel_) {
             Identifier port_id = conduit.receiving_port();

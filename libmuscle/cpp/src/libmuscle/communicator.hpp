@@ -101,7 +101,7 @@ class Communicator {
 
         /** Returns true iff muscle_settings_in is connected.
          */
-        bool parameters_in_connected() const;
+        bool settings_in_connected() const;
 
         /** Returns a description of the ports this Communicator has.
          *
@@ -128,7 +128,7 @@ class Communicator {
          */
         Port & get_port(std::string const & port_name);
 
-        /** Send a message and parameters to the outside world.
+        /** Send a message and settings to the outside world.
          *
          * Sending is non-blocking, a copy of the message will be made and
          * stored until the receiver is ready to receive it.
@@ -194,7 +194,7 @@ class Communicator {
         Ports_ ports_from_declared_();
         Ports_ ports_from_conduits_(
                 std::vector<ymmsl::Conduit> const & conduits) const;
-        Port parameters_in_port_(std::vector<ymmsl::Conduit> const & conduits) const;
+        Port settings_in_port_(std::vector<ymmsl::Conduit> const & conduits) const;
         mcp::Client & get_client_(ymmsl::Reference const & instance);
 
         Endpoint get_endpoint_(

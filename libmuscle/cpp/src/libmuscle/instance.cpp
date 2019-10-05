@@ -45,7 +45,7 @@ Instance::Instance(int argc, char const * const argv[],
 }
 
 bool Instance::reuse_instance(bool apply_overlay) {
-    bool do_reuse = receive_parameters_();
+    bool do_reuse = receive_settings_();
 
     // TODO: f_init_cache_ should be empty here, or the user didn't receive
     // something that was sent on the last go-around. At least emit a warning.
@@ -61,9 +61,9 @@ bool Instance::reuse_instance(bool apply_overlay) {
                 break;
             }
 
-    bool no_parameters_in = !communicator_.parameters_in_connected();
+    bool no_settings_in = !communicator_.settings_in_connected();
 
-    if (f_init_not_connected && no_parameters_in) {
+    if (f_init_not_connected && no_settings_in) {
         do_reuse = first_run_;
         first_run_ = false;
     }
@@ -81,8 +81,8 @@ void Instance::exit_error(std::string const & message) {
     exit(1);
 }
 
-::ymmsl::ParameterValue Instance::get_parameter_value(std::string const & name) const {
-    return settings_manager_.get_parameter(instance_name_, name);
+::ymmsl::SettingValue Instance::get_setting_value(std::string const & name) const {
+    return settings_manager_.get_setting(instance_name_, name);
 }
 
 std::unordered_map<::ymmsl::Operator, std::vector<std::string>>
@@ -219,7 +219,7 @@ Message Instance::receive_message_(
                 std::string const & port_name,
                 Optional<int> slot,
                 Optional<Message> default_msg,
-                bool with_parameters)
+                bool with_settings)
 {
     check_port_(port_name);
 
@@ -233,12 +233,12 @@ Message Instance::receive_message_(
             Message msg(f_init_cache_.at(port_ref));
             f_init_cache_.erase(port_ref);
 
-            if (with_parameters && !msg.has_settings()) {
+            if (with_settings && !msg.has_settings()) {
                 shutdown_();
                 throw std::logic_error(
                         "If you use receive_with_settings() on an F_INIT"
                         " port, then you have to pass false to"
-                        " reuse_instance(), otherwise the parameters will"
+                        " reuse_instance(), otherwise the settings will"
                         " already have been applied by MUSCLE.");
             }
             return msg;
@@ -275,9 +275,9 @@ Message Instance::receive_message_(
             shutdown_();
             throw std::runtime_error(oss.str());
         }
-        if (port.is_connected() && !with_parameters)
+        if (port.is_connected() && !with_settings)
             check_compatibility_(port_name, msg.settings());
-        if (!with_parameters)
+        if (!with_settings)
             msg.unset_settings();
         return msg;
     }
@@ -378,11 +378,11 @@ void Instance::check_port_(std::string const & port_name) {
     }
 }
 
-/* Receives parameters on muscle_settings_in.
+/* Receives settings on muscle_settings_in.
  *
  * @return false iff the port is connected and ClosePort was received.
  */
-bool Instance::receive_parameters_() {
+bool Instance::receive_settings_() {
     Message default_message(0.0, Settings(), Settings());
     auto msg = communicator_.receive_message("muscle_settings_in", {}, default_message);
     if (is_close_port(msg.data()))
@@ -472,7 +472,7 @@ void Instance::check_compatibility_(
     if (settings_manager_.overlay != overlay.get()) {
         std::ostringstream oss;
         oss << "Unexpectedly received data from a parallel universe on port";
-        oss << " '" << port_name << "'. My parameters are '";
+        oss << " '" << port_name << "'. My settings are '";
         oss << settings_manager_.overlay << "' and I received from a";
         oss << " universe with '" << overlay << "'.";
         shutdown_();

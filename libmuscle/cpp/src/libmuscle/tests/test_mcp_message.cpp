@@ -36,7 +36,7 @@ TEST(test_mcp_message, create_mcp_message) {
     ASSERT_EQ(m.port_length, 10);
     ASSERT_EQ(m.timestamp, 100.1);
     ASSERT_EQ(m.next_timestamp, 101.0);
-    ASSERT_EQ(m.parameter_overlay.as<std::string>(), "test");
+    ASSERT_EQ(m.settings_overlay.as<std::string>(), "test");
     ASSERT_EQ(m.data.as<std::string>(), "abc");
 }
 
@@ -55,7 +55,7 @@ TEST(test_mcp_message, create_mcp_message_minimal) {
     ASSERT_FALSE(m.port_length.is_set());
     ASSERT_EQ(m.timestamp, 100.1);
     ASSERT_FALSE(m.next_timestamp.is_set());
-    ASSERT_TRUE(m.parameter_overlay.is_nil());
+    ASSERT_TRUE(m.settings_overlay.is_nil());
     ASSERT_TRUE(m.data.is_nil());
 }
 

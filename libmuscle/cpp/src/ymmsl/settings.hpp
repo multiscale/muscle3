@@ -11,51 +11,51 @@
 
 namespace ymmsl {
 
-/** Holds the value of a parameter.
+/** Holds the value of a setting.
  *
  * This is a discriminated union containing any of a number of types. If
  * HPC machines had support for C++17, then I could use std::variant.
  */
-class ParameterValue {
+class SettingValue {
     public:
-        ParameterValue();
-        ParameterValue(std::string const & value);
+        SettingValue();
+        SettingValue(std::string const & value);
         // will take bool overload if not explicitly specified!
-        ParameterValue(char const * value);
-        ParameterValue(int value);
-        ParameterValue(int64_t value);
-        ParameterValue(double value);
-        ParameterValue(bool value);
-        ParameterValue(std::initializer_list<double> value);
-        ParameterValue(std::vector<double> const & value);
-        ParameterValue(std::initializer_list<std::vector<double>> const & value);
-        ParameterValue(std::vector<std::vector<double>> const & value);
+        SettingValue(char const * value);
+        SettingValue(int value);
+        SettingValue(int64_t value);
+        SettingValue(double value);
+        SettingValue(bool value);
+        SettingValue(std::initializer_list<double> value);
+        SettingValue(std::vector<double> const & value);
+        SettingValue(std::initializer_list<std::vector<double>> const & value);
+        SettingValue(std::vector<std::vector<double>> const & value);
 
-        ParameterValue(ParameterValue const & other);
-        ParameterValue(ParameterValue && other);
+        SettingValue(SettingValue const & other);
+        SettingValue(SettingValue && other);
 
-        ParameterValue const & operator=(ParameterValue const & other);
-        ParameterValue const & operator=(ParameterValue && other);
+        SettingValue const & operator=(SettingValue const & other);
+        SettingValue const & operator=(SettingValue && other);
 
-        ~ParameterValue();
+        ~SettingValue();
 
-        /** Compare against another ParameterValue.
+        /** Compare against another SettingValue.
          *
          * Returns true iff both type and value are the same.
          *
          * @param rhs The value to compare with.
          */
-        bool operator==(ParameterValue const & rhs) const;
+        bool operator==(SettingValue const & rhs) const;
 
-        /** Compare against another ParameterValue.
+        /** Compare against another SettingValue.
          *
          * Returns true iff both type and value are the same.
          *
          * @param rhs The value to compare with.
          */
-        bool operator!=(ParameterValue const & rhs) const;
+        bool operator!=(SettingValue const & rhs) const;
 
-        /** Return whether this ParameterValue holds a value of the given type.
+        /** Return whether this SettingValue holds a value of the given type.
          *
          * @param T A valid type, being one of std::string, int64_t, double,
          *          bool, std::vector<double>, or
@@ -80,8 +80,8 @@ class ParameterValue {
 
     private:
         void deactivate_() noexcept;
-        void copy_value_from_(ParameterValue const & other);
-        void move_value_from_(ParameterValue && other);
+        void copy_value_from_(SettingValue const & other);
+        void move_value_from_(SettingValue && other);
 
         enum class Type_ {
             INACTIVE, STRING, INT, FLOAT, BOOL, LIST_FLOAT, LIST_LIST_FLOAT
@@ -98,16 +98,16 @@ class ParameterValue {
         };
 };
 
-std::ostream & operator<<(std::ostream & os, ymmsl::ParameterValue const & val);
+std::ostream & operator<<(std::ostream & os, ymmsl::SettingValue const & val);
 
 
 /** Settings for doing an experiment.
  *
- * An experiment is done by running a model with particular settings, for
- * the submodel scales and other parameters.
+ * An experiment is done by running a model with particular settings, e.g.
+ * the submodel scales, model parameters, and any other settings.
  */
 class Settings {
-    using MapType_ = std::unordered_map<Reference, ParameterValue>;
+    using MapType_ = std::unordered_map<Reference, SettingValue>;
     public:
         // No, not going to type-erase this.
         using const_iterator = MapType_::const_iterator;
@@ -136,7 +136,7 @@ class Settings {
          * @return The value of that setting.
          * @throws std::out_of_range if there is no setting with that name.
          */
-        ParameterValue const & at(Reference const & setting) const;
+        SettingValue const & at(Reference const & setting) const;
 
         /** Set the value of a given setting.
          *
@@ -145,7 +145,7 @@ class Settings {
          * @param setting The name of the setting to read.
          * @return A reference to the setting's value that can be modified.
          */
-        ParameterValue & operator[](Reference const & setting);
+        SettingValue & operator[](Reference const & setting);
 
         /** Removes setting with the given key.
          *
@@ -160,7 +160,7 @@ class Settings {
 
         /** Return an iterator to the first setting.
          *
-         * The iterator dereferences to a std::pair<Reference, ParameterValue>.
+         * The iterator dereferences to a std::pair<Reference, SettingValue>.
          */
         const_iterator begin() const;
 

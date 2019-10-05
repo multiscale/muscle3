@@ -11,7 +11,7 @@ python:
 before_install:
   - sudo apt-get install -y libssl-dev zlib1g-dev
   - pip install --upgrade pytest
-  - pip install ymmsl==0.9.1
+  - pip install ymmsl==0.10.0
 
 install:
   - pip install codacy-coverage

@@ -13,7 +13,7 @@
 #include "ymmsl/settings.hpp"
 
 using libmuscle::mcp::ExtTypeId;
-using ymmsl::ParameterValue;
+using ymmsl::SettingValue;
 using ymmsl::Reference;
 using ymmsl::Settings;
 
@@ -98,7 +98,7 @@ DataConstRef::DataConstRef(double value)
     *mp_obj_ << value;
 }
 
-DataConstRef::DataConstRef(ParameterValue const & value)
+DataConstRef::DataConstRef(SettingValue const & value)
     : DataConstRef()
 {
     if (value.is_a<std::string>()) {
@@ -254,7 +254,7 @@ bool DataConstRef::is_a_byte_array() const {
 }
 
 template <>
-ParameterValue DataConstRef::as<ParameterValue>() const {
+SettingValue DataConstRef::as<SettingValue>() const {
     DataConstRef const & self = *this;
     if (is_a<std::string>())
         return as<std::string>();
@@ -277,23 +277,23 @@ ParameterValue DataConstRef::as<ParameterValue>() const {
                 else
                     throw std::runtime_error("Found a list of something else"
                             " than lists, which I cannot convert to a"
-                            " ParameterValue.");
+                            " SettingValue.");
             }
             return result;
         }
         else
             throw std::runtime_error("Found a list of something else than"
-                    " lists, which I cannot convert to a ParameterValue.");
+                    " lists, which I cannot convert to a SettingValue.");
     }
     else
         throw std::runtime_error("Tried to convert a DataConstRef or Data to"
-                " a ParameterValue, which it isn't. Did you receive data of a"
+                " a SettingValue, which it isn't. Did you receive data of a"
                 " type you were not expecting?");
 }
 
-// This uses as<ParameterValue>, so has to be below it.
+// This uses as<SettingValue>, so has to be below it.
 template <>
-bool DataConstRef::is_a<ParameterValue>() const {
+bool DataConstRef::is_a<SettingValue>() const {
     if (is_a<std::string>() ||
             is_a<int64_t>() ||
             is_a<double>() ||
@@ -302,7 +302,7 @@ bool DataConstRef::is_a<ParameterValue>() const {
     // cheat, just try to convert and catch the exception
     // TODO: neater solution
     try {
-        as<ParameterValue>();
+        as<SettingValue>();
     }
     catch (std::runtime_error const & e) {
         return false;
@@ -329,7 +329,7 @@ Settings DataConstRef::as<Settings>() const {
 
     for (std::size_t i = 0u; i < settings_dict.size(); ++i) {
         Reference key(settings_dict.key(i).as<std::string>());
-        auto val = settings_dict.value(i).as<ParameterValue>();
+        auto val = settings_dict.value(i).as<SettingValue>();
         settings[key] = val;
     }
     return settings;

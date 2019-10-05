@@ -32,7 +32,7 @@ struct Message {
             ::ymmsl::Reference const & sender, ::ymmsl::Reference const & receiver,
             ::libmuscle::Optional<int> port_length,
             double timestamp, ::libmuscle::Optional<double> next_timestamp,
-            DataConstRef const & parameter_overlay,
+            DataConstRef const & settings_overlay,
             DataConstRef const & data);
 
     ::ymmsl::Reference sender;
@@ -40,7 +40,7 @@ struct Message {
     ::libmuscle::Optional<int> port_length;
     double timestamp;
     ::libmuscle::Optional<double> next_timestamp;
-    DataConstRef parameter_overlay;
+    DataConstRef settings_overlay;
     DataConstRef data;
 };
 

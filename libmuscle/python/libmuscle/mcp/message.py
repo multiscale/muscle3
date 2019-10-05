@@ -13,7 +13,7 @@ class Message:
     def __init__(self, sender: Reference, receiver: Reference,
                  port_length: Optional[int],
                  timestamp: float, next_timestamp: Optional[float],
-                 parameter_overlay: bytes, data: bytes
+                 settings_overlay: bytes, data: bytes
                  ) -> None:
         """Create an MCPMessage.
 
@@ -30,7 +30,7 @@ class Message:
             sender: The sending endpoint.
             receiver: The receiving endpoint.
             port_length: Length of the slot, where applicable.
-            parameter_overlay: The serialised overlay parameters.
+            settings_overlay: The serialised overlay settings.
             data: The serialised contents of the message.
         """
         self.sender = sender
@@ -38,5 +38,5 @@ class Message:
         self.port_length = port_length
         self.timestamp = timestamp
         self.next_timestamp = next_timestamp
-        self.parameter_overlay = parameter_overlay
+        self.settings_overlay = settings_overlay
         self.data = data

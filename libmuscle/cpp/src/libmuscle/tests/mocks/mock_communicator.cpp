@@ -38,8 +38,8 @@ void MockCommunicator::connect(
 {
 }
 
-bool MockCommunicator::parameters_in_connected() const {
-    return parameters_in_connected_return_value;
+bool MockCommunicator::settings_in_connected() const {
+    return settings_in_connected_return_value;
 }
 
 PortsDescription MockCommunicator::list_ports() const {
@@ -94,7 +94,7 @@ void MockCommunicator::shutdown() {
 
 void MockCommunicator::reset() {
     num_constructed = 0;
-    parameters_in_connected_return_value = false;
+    settings_in_connected_return_value = false;
     port_exists_return_value = true;
     get_port_return_value.clear();
     next_received_message.clear();
@@ -106,7 +106,7 @@ void MockCommunicator::reset() {
 
 int MockCommunicator::num_constructed = 0;
 
-bool MockCommunicator::parameters_in_connected_return_value = false;
+bool MockCommunicator::settings_in_connected_return_value = false;
 
 bool MockCommunicator::port_exists_return_value = true;
 

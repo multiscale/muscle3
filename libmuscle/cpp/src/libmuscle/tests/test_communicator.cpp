@@ -365,7 +365,7 @@ TEST(libmuscle_communicator, send_message) {
     ASSERT_EQ(MockPostOffice::last_message->timestamp, 0.0);
     ASSERT_FALSE(MockPostOffice::last_message->next_timestamp.is_set());
     ASSERT_EQ(MockPostOffice::last_message->data.as<std::string>(), "test");
-    ASSERT_TRUE(MockPostOffice::last_message->parameter_overlay.is_a<Settings>());
+    ASSERT_TRUE(MockPostOffice::last_message->settings_overlay.is_a<Settings>());
 }
 
 TEST(libmuscle_communicator, send_on_disconnected_port) {
@@ -400,7 +400,7 @@ TEST(libmuscle_communicator, send_msgpack) {
     ASSERT_EQ(MockPostOffice::last_message->timestamp, 0.0);
     ASSERT_FALSE(MockPostOffice::last_message->next_timestamp.is_set());
     ASSERT_EQ(MockPostOffice::last_message->data["test"].as<int>(), 17);
-    ASSERT_TRUE(MockPostOffice::last_message->parameter_overlay.is_a<Settings>());
+    ASSERT_TRUE(MockPostOffice::last_message->settings_overlay.is_a<Settings>());
 }
 
 TEST(libmuscle_communicator, send_message_with_slot) {
@@ -416,7 +416,7 @@ TEST(libmuscle_communicator, send_message_with_slot) {
     ASSERT_EQ(MockPostOffice::last_message->timestamp, 0.0);
     ASSERT_FALSE(MockPostOffice::last_message->next_timestamp.is_set());
     ASSERT_EQ(MockPostOffice::last_message->data.as<std::string>(), "test");
-    ASSERT_TRUE(MockPostOffice::last_message->parameter_overlay.is_a<Settings>());
+    ASSERT_TRUE(MockPostOffice::last_message->settings_overlay.is_a<Settings>());
 }
 
 TEST(libmuscle_communicator, send_message_resizable) {
@@ -436,10 +436,10 @@ TEST(libmuscle_communicator, send_message_resizable) {
     ASSERT_EQ(MockPostOffice::last_message->timestamp, 0.0);
     ASSERT_FALSE(MockPostOffice::last_message->next_timestamp.is_set());
     ASSERT_EQ(MockPostOffice::last_message->data.as<std::string>(), "test");
-    ASSERT_TRUE(MockPostOffice::last_message->parameter_overlay.is_a<Settings>());
+    ASSERT_TRUE(MockPostOffice::last_message->settings_overlay.is_a<Settings>());
 }
 
-TEST(libmuscle_communicator, send_with_parameters) {
+TEST(libmuscle_communicator, send_with_settings) {
     reset_mocks();
     auto comm = connected_communicator();
 
@@ -454,8 +454,8 @@ TEST(libmuscle_communicator, send_with_parameters) {
     ASSERT_EQ(MockPostOffice::last_message->timestamp, 0.0);
     ASSERT_FALSE(MockPostOffice::last_message->next_timestamp.is_set());
     ASSERT_EQ(MockPostOffice::last_message->data.as<std::string>(), "test");
-    ASSERT_TRUE(MockPostOffice::last_message->parameter_overlay.is_a<Settings>());
-    ASSERT_EQ(MockPostOffice::last_message->parameter_overlay.as<Settings>()["test2"], "testing");
+    ASSERT_TRUE(MockPostOffice::last_message->settings_overlay.is_a<Settings>());
+    ASSERT_EQ(MockPostOffice::last_message->settings_overlay.as<Settings>()["test2"], "testing");
 }
 
 TEST(libmuscle_communicator, send_settings) {
@@ -474,7 +474,7 @@ TEST(libmuscle_communicator, send_settings) {
     ASSERT_FALSE(MockPostOffice::last_message->next_timestamp.is_set());
     ASSERT_TRUE(MockPostOffice::last_message->data.is_a<Settings>());
     ASSERT_EQ(MockPostOffice::last_message->data.as<Settings>()["test1"], "testing");
-    ASSERT_TRUE(MockPostOffice::last_message->parameter_overlay.is_a<Settings>());
+    ASSERT_TRUE(MockPostOffice::last_message->settings_overlay.is_a<Settings>());
 }
 
 TEST(libmuscle_communicator, close_port) {
@@ -563,7 +563,7 @@ TEST(libmuscle_communicator, receive_message_resizable) {
     ASSERT_EQ(comm->get_port("in").get_length(), 20);
 }
 
-TEST(libmuscle_communicator, receive_with_parameters) {
+TEST(libmuscle_communicator, receive_with_settings) {
     reset_mocks();
     MockTcpClient::next_receive_message.sender = "other.out[13]";
     MockTcpClient::next_receive_message.receiver = "kernel[13].in";
@@ -577,7 +577,7 @@ TEST(libmuscle_communicator, receive_with_parameters) {
     ASSERT_EQ(msg.settings().at("test2"), 3.1);
 }
 
-TEST(libmuscle_communicator, receive_message_with_slot_and_parameters) {
+TEST(libmuscle_communicator, receive_message_with_slot_and_settings) {
     reset_mocks();
     MockTcpClient::next_receive_message.sender = "kernel[13].out";
     MockTcpClient::next_receive_message.receiver = "other.in[13]";

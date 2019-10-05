@@ -49,7 +49,7 @@ TEST(test_tcp_communication, send_receive) {
     ASSERT_EQ(m.port_length, 10);
     ASSERT_EQ(m.timestamp, 0.0);
     ASSERT_EQ(m.next_timestamp, 1.0);
-    ASSERT_EQ(m.parameter_overlay["par1"].as<int>(), 13);
+    ASSERT_EQ(m.settings_overlay["par1"].as<int>(), 13);
     ASSERT_EQ(m.data["var1"].as<int>(), 1);
     ASSERT_EQ(m.data["var2"].as<double>(), 2.0);
     ASSERT_EQ(m.data["var3"].as<std::string>(), "3");

@@ -46,8 +46,8 @@ def test_cpp_tcp_server(log_file_in_tmpdir):
     assert msg.timestamp == 0.0
     assert msg.next_timestamp == 1.0
 
-    parameter_overlay = msgpack.unpackb(msg.parameter_overlay, raw=False)
-    assert parameter_overlay == {'par1': 13}
+    settings_overlay = msgpack.unpackb(msg.settings_overlay, raw=False)
+    assert settings_overlay == {'par1': 13}
 
     data = msgpack.unpackb(msg.data, raw=False)
     assert data == {'var1': 1, 'var2': 2.0, 'var3': '3'}

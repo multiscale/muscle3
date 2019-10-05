@@ -5,23 +5,23 @@
 #include <utility>
 
 
-using ymmsl::ParameterValue;
+using ymmsl::SettingValue;
 using ymmsl::Reference;
 using ymmsl::Settings;
 
 
 namespace libmuscle {
 
-ParameterValue const & SettingsManager::get_parameter(
+SettingValue const & SettingsManager::get_setting(
         Reference const & instance,
-        Reference const & parameter_name
+        Reference const & setting_name
         ) const
 {
     auto it = instance.cend();
     do {
         Reference name = (it == instance.cbegin())
-            ? parameter_name
-            : Reference(instance.cbegin(), it) + parameter_name;
+            ? setting_name
+            : Reference(instance.cbegin(), it) + setting_name;
 
         if (overlay.contains(name))
             return overlay.at(name);
@@ -33,22 +33,22 @@ ParameterValue const & SettingsManager::get_parameter(
         --it;
     }
     while (true);
-    throw std::out_of_range("Parameter value for parameter "
-                            + static_cast<std::string>(parameter_name)
+    throw std::out_of_range("Value for setting "
+                            + static_cast<std::string>(setting_name)
                             + " was not set");
 }
 
 template <typename T>
-T const & SettingsManager::get_parameter_as(
+T const & SettingsManager::get_setting_as(
         Reference const & instance,
-        Reference const & parameter_name
+        Reference const & setting_name
         ) const
 {
-    ParameterValue value(get_parameter(instance, parameter_name));
+    SettingValue value(get_setting(instance, setting_name));
 
     if (!value.is_a<T>())
-        throw std::runtime_error("Value for parameter "
-                                 + static_cast<std::string>(parameter_name)
+        throw std::runtime_error("Value for Setting "
+                                 + static_cast<std::string>(setting_name)
                                  + " is the wrong type.");
     return value.as<T>();
 }

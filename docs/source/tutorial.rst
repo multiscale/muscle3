@@ -126,9 +126,9 @@ Initialisation: Settings and receiving messages
 
   while instance.reuse_instance():
       # F_INIT
-      t_max = instance.get_parameter_value('t_max', 'float')
-      dt = instance.get_parameter_value('dt', 'float')
-      k = instance.get_parameter_value('k', 'float')
+      t_max = instance.get_setting_value('t_max', 'float')
+      dt = instance.get_setting_value('dt', 'float')
+      k = instance.get_setting_value('k', 'float')
 
       msg = instance.receive('initial_state')
       U = np.array(msg.data)
@@ -144,8 +144,8 @@ values of some settings that we're going to need later, in particular the total
 time to simulate, the time step to use, and the model parameter ``k``. The
 second argument, which specifies the expected type, is optional. If it's given,
 MUSCLE will check that the user specified a value of the correct type, and if
-not raise an exception. Note that getting parameter values needs to happen
-*within* the reuse loop; doing it before can lead to incorrect results.
+not raise an exception. Note that getting settings needs to happen *within* the
+reuse loop; doing it before can lead to incorrect results.
 
 After getting our settings, we receive the initial state on the
 ``initial_state`` port. Note that we have declared that port above, and declared
@@ -437,7 +437,7 @@ compatibility with older versions, we'll use an OrderedDict here.)
 
 Note that there are two duplicated names between the two models: ``t_max`` and
 ``dt``. With MUSCLE 3, you can create a global setting with that name to set it
-to the same value everywhere (handy for parameters that are used by multiple
+to the same value everywhere (handy for settings that are used by multiple
 compute elements), or you can prepend the name of the compute element to set the
 value for a specific one. Specific settings go before generic ones, so if you
 specify both ``micro.t_max`` and ``t_max``, then the ``micro`` compute element

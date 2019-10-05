@@ -160,9 +160,9 @@ class Communicator:
         else:
             self._ports = self.__ports_from_conduits(conduits)
 
-        self._muscle_settings_in = self.__parameters_in_port(conduits)
+        self._muscle_settings_in = self.__settings_in_port(conduits)
 
-    def parameters_in_connected(self) -> bool:
+    def settings_in_connected(self) -> bool:
         """Returns True iff muscle_settings_in is connected.
         """
         return self._muscle_settings_in.is_connected()
@@ -201,7 +201,7 @@ class Communicator:
     def send_message(
             self, port_name: str, message: Message,
             slot: Optional[int]=None) -> None:
-        """Send a message and parameters to the outside world.
+        """Send a message and settings to the outside world.
 
         Sending is non-blocking, a copy of the message will be made
         and stored until the receiver is ready to receive it.
@@ -314,7 +314,7 @@ class Communicator:
         mcp_message = client.receive(recv_endpoint.ref())
 
         overlay_settings = Settings(msgpack.unpackb(
-            mcp_message.parameter_overlay, raw=False))
+            mcp_message.settings_overlay, raw=False))
 
         if mcp_message.port_length is not None:
             if port.is_resizable():
@@ -422,7 +422,7 @@ class Communicator:
                         len(self._index), port_peer_dims)
         return ports
 
-    def __parameters_in_port(self, conduits: List[Conduit]) -> Port:
+    def __settings_in_port(self, conduits: List[Conduit]) -> Port:
         """Creates a Port representing muscle_settings_in.
 
         Args:

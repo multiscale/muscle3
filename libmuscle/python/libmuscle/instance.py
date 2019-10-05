@@ -5,7 +5,7 @@ import sys
 from typing import cast, Dict, List, Optional, Tuple, Type, Union
 
 import grpc
-from ymmsl import (Conduit, Identifier, Operator, ParameterValue, Port,
+from ymmsl import (Conduit, Identifier, Operator, SettingValue, Port,
                    Reference, Settings)
 
 from libmuscle.communicator import _ClosePort, Communicator, Message
@@ -98,7 +98,7 @@ class Instance:
                 did need to specify False, MUSCLE 3 will tell you about
                 it in an error message and you can add it still.
         """
-        do_reuse = self.__receive_parameters()
+        do_reuse = self.__receive_settings()
 
         # TODO: _f_init_cache should be empty here, or the user didn't
         # receive something that was sent on the last go-around.
@@ -109,9 +109,9 @@ class Instance:
         f_init_not_connected = all(
                 [not self.is_connected(port)
                  for port in ports.get(Operator.F_INIT, [])])
-        no_parameters_in = not self._communicator.parameters_in_connected()
+        no_settings_in = not self._communicator.settings_in_connected()
 
-        if f_init_not_connected and no_parameters_in:
+        if f_init_not_connected and no_settings_in:
             do_reuse = self._first_run
             self._first_run = False
         else:
@@ -146,13 +146,13 @@ class Instance:
         self.__shutdown(message)
         exit(1)
 
-    def get_parameter_value(self, name: str,
-                            typ: Optional[str] = None
-                            ) -> ParameterValue:
-        """Returns the value of a model parameter.
+    def get_setting_value(self, name: str,
+                          typ: Optional[str] = None
+                          ) -> SettingValue:
+        """Returns the value of a model setting.
 
         Args:
-            name: The name of the parameter, without any instance
+            name: The name of the setting, without any instance
                     prefix.
             typ: The expected type of the value. If the value does
                     not match this type, a TypeError will be raised.
@@ -161,11 +161,11 @@ class Instance:
                     what you got yourself.
 
         Raises:
-            KeyError: If no value was set for this parameter.
-            TypeError: If the type of the parameter's value was not
+            KeyError: If no value was set for this setting.
+            TypeError: If the type of the setting's value was not
                     as expected.
         """
-        return self._settings_manager.get_parameter(
+        return self._settings_manager.get_setting(
                 self._instance_name(), Reference(name), typ)
 
     def list_ports(self) -> Dict[Operator, List[str]]:
@@ -307,11 +307,11 @@ class Instance:
             self, port_name: str, slot: Optional[int]=None,
             default: Optional[Message]=None
             ) -> Message:
-        """Receive a message with attached parameter overlay.
+        """Receive a message with attached settings overlay.
 
         This function should not be used in submodels. It is intended
         for use by special compute elements that are ensemble-aware and
-        have to pass on overlay parameter sets explicitly.
+        have to pass on overlay settings explicitly.
 
         Receiving is a blocking operation. This function will contact
         the sender, wait for a message to be available, and receive and
@@ -416,7 +416,7 @@ class Instance:
 
     def __receive_message(
             self, port_name: str, slot: Optional[int],
-            default: Optional[Message], with_parameters: bool
+            default: Optional[Message], with_settings: bool
             ) -> Message:
         """Receives a message on the given port.
 
@@ -430,11 +430,11 @@ class Instance:
             if (port_name, slot) in self._f_init_cache:
                 msg = self._f_init_cache[(port_name, slot)]
                 del(self._f_init_cache[(port_name, slot)])
-                if with_parameters and msg.settings is None:
+                if with_settings and msg.settings is None:
                     err_msg = ('If you use receive_with_settings()'
                                ' on an F_INIT port, then you have to'
                                ' pass False to reuse_instance(),'
-                               ' otherwise the parameters will already'
+                               ' otherwise the settings will already'
                                ' have been applied by MUSCLE.')
                     self.__shutdown(err_msg)
                     raise RuntimeError(err_msg)
@@ -466,9 +466,9 @@ class Instance:
                             ).format(port_name))
                 self.__shutdown(err_msg)
                 raise RuntimeError(err_msg)
-            if port.is_connected and not with_parameters:
+            if port.is_connected and not with_settings:
                 self.__check_compatibility(port_name, msg.settings)
-            if not with_parameters:
+            if not with_settings:
                 msg.settings = None
         return msg
 
@@ -537,8 +537,8 @@ class Instance:
             self.__shutdown(err_msg)
             raise RuntimeError(err_msg)
 
-    def __receive_parameters(self) -> bool:
-        """Receives parameters on muscle_settings_in.
+    def __receive_settings(self) -> bool:
+        """Receives settings on muscle_settings_in.
 
         Returns:
             False iff the port is connnected and ClosePort was received.
@@ -616,7 +616,7 @@ class Instance:
         if self._settings_manager.overlay != overlay:
             err_msg = (('Unexpectedly received data from a'
                         ' parallel universe on port "{}". My'
-                        ' parameters are "{}" and I received'
+                        ' settings are "{}" and I received'
                         ' from a universe with "{}".').format(
                             port_name, self._settings_manager.overlay,
                             overlay))

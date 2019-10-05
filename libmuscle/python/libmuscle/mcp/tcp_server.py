@@ -37,7 +37,7 @@ class TcpHandler(ss.BaseRequestHandler):
                     'port_length': message.port_length,
                     'timestamp': message.timestamp,
                     'next_timestamp': message.next_timestamp,
-                    'parameter_overlay': message.parameter_overlay,
+                    'settings_overlay': message.settings_overlay,
                     'data': message.data}
             packed_message = msgpack.packb(message_dict, use_bin_type=True)
 

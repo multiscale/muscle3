@@ -175,7 +175,7 @@ class TcpServerWorker {
                                 "port_length", port_length,
                                 "timestamp", msg->timestamp,
                                 "next_timestamp", next_timestamp,
-                                "parameter_overlay", msg->parameter_overlay,
+                                "settings_overlay", msg->settings_overlay,
                                 "data", msg->data
                                 );
 

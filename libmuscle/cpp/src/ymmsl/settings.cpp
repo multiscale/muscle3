@@ -8,87 +8,87 @@
 
 namespace ymmsl {
 
-ParameterValue::ParameterValue()
-    : type_(ParameterValue::Type_::INACTIVE)
+SettingValue::SettingValue()
+    : type_(SettingValue::Type_::INACTIVE)
 {}
 
-ParameterValue::ParameterValue(std::string const & value)
-    : type_(ParameterValue::Type_::STRING)
+SettingValue::SettingValue(std::string const & value)
+    : type_(SettingValue::Type_::STRING)
 {
     new (&string_value_) std::string(value);
 }
 
-ParameterValue::ParameterValue(char const * value)
-    : type_(ParameterValue::Type_::STRING)
+SettingValue::SettingValue(char const * value)
+    : type_(SettingValue::Type_::STRING)
 {
     new (&string_value_) std::string(value);
 }
 
-ParameterValue::ParameterValue(int value)
-    : type_(ParameterValue::Type_::INT)
+SettingValue::SettingValue(int value)
+    : type_(SettingValue::Type_::INT)
     , int_value_(value)
 {}
 
-ParameterValue::ParameterValue(int64_t value)
-    : type_(ParameterValue::Type_::INT)
+SettingValue::SettingValue(int64_t value)
+    : type_(SettingValue::Type_::INT)
     , int_value_(value)
 {}
 
-ParameterValue::ParameterValue(double value)
-    : type_(ParameterValue::Type_::FLOAT)
+SettingValue::SettingValue(double value)
+    : type_(SettingValue::Type_::FLOAT)
     , float_value_(value)
 {}
 
-ParameterValue::ParameterValue(bool value)
-    : type_(ParameterValue::Type_::BOOL)
+SettingValue::SettingValue(bool value)
+    : type_(SettingValue::Type_::BOOL)
     , bool_value_(value)
 {}
 
-ParameterValue::ParameterValue(std::initializer_list<double> value)
-    : type_(ParameterValue::Type_::LIST_FLOAT)
+SettingValue::SettingValue(std::initializer_list<double> value)
+    : type_(SettingValue::Type_::LIST_FLOAT)
 {
     new (&list_value_) std::vector<double>(value);
 }
 
-ParameterValue::ParameterValue(std::vector<double> const & value)
-    : type_(ParameterValue::Type_::LIST_FLOAT)
+SettingValue::SettingValue(std::vector<double> const & value)
+    : type_(SettingValue::Type_::LIST_FLOAT)
 {
     new (&list_value_) std::vector<double>(value);
 }
 
-ParameterValue::ParameterValue(std::initializer_list<std::vector<double>> const & value)
-    : type_(ParameterValue::Type_::LIST_LIST_FLOAT)
+SettingValue::SettingValue(std::initializer_list<std::vector<double>> const & value)
+    : type_(SettingValue::Type_::LIST_LIST_FLOAT)
 {
     new (&list_list_value_) std::vector<std::vector<double>>(value);
 }
 
-ParameterValue::ParameterValue(std::vector<std::vector<double>> const & value)
-    : type_(ParameterValue::Type_::LIST_LIST_FLOAT)
+SettingValue::SettingValue(std::vector<std::vector<double>> const & value)
+    : type_(SettingValue::Type_::LIST_LIST_FLOAT)
 {
     new (&list_list_value_) std::vector<std::vector<double>>(value);
 }
 
-ParameterValue::ParameterValue(ParameterValue const & other)
+SettingValue::SettingValue(SettingValue const & other)
     : type_(other.type_)
 {
     copy_value_from_(other);
 }
 
-ParameterValue::ParameterValue(ParameterValue && other)
+SettingValue::SettingValue(SettingValue && other)
     : type_(other.type_)
 {
     move_value_from_(std::move(other));
     other.deactivate_();
 }
 
-ParameterValue const & ParameterValue::operator=(ParameterValue const & other) {
+SettingValue const & SettingValue::operator=(SettingValue const & other) {
     deactivate_();
     copy_value_from_(other);
     type_ = other.type_;
     return *this;
 }
 
-ParameterValue const & ParameterValue::operator=(ParameterValue && other) {
+SettingValue const & SettingValue::operator=(SettingValue && other) {
     deactivate_();
     move_value_from_(std::move(other));
     type_ = other.type_;
@@ -96,11 +96,11 @@ ParameterValue const & ParameterValue::operator=(ParameterValue && other) {
     return *this;
 }
 
-ParameterValue::~ParameterValue() {
+SettingValue::~SettingValue() {
     deactivate_();
 }
 
-bool ParameterValue::operator==(ParameterValue const & rhs) const {
+bool SettingValue::operator==(SettingValue const & rhs) const {
     switch (type_) {
         case Type_::INACTIVE:
             return rhs.type_ == Type_::INACTIVE;
@@ -120,11 +120,11 @@ bool ParameterValue::operator==(ParameterValue const & rhs) const {
     return false;
 }
 
-bool ParameterValue::operator!=(ParameterValue const & rhs) const {
+bool SettingValue::operator!=(SettingValue const & rhs) const {
     return !(*this == rhs);
 }
 
-void ParameterValue::deactivate_() noexcept {
+void SettingValue::deactivate_() noexcept {
     switch (type_) {
         case Type_::STRING:
             string_value_.~basic_string();
@@ -141,7 +141,7 @@ void ParameterValue::deactivate_() noexcept {
     type_ = Type_::INACTIVE;
 }
 
-void ParameterValue::copy_value_from_(ParameterValue const & other) {
+void SettingValue::copy_value_from_(SettingValue const & other) {
     switch (other.type_) {
         case Type_::INACTIVE:
             break;
@@ -166,7 +166,7 @@ void ParameterValue::copy_value_from_(ParameterValue const & other) {
     }
 }
 
-void ParameterValue::move_value_from_(ParameterValue && other) {
+void SettingValue::move_value_from_(SettingValue && other) {
     switch (other.type_) {
         case Type_::INACTIVE:
             break;
@@ -207,7 +207,7 @@ void write_vec_double(std::ostream & os, std::vector<double> const & val) {
 
 }
 
-std::ostream & operator<<(std::ostream & os, ymmsl::ParameterValue const & val) {
+std::ostream & operator<<(std::ostream & os, ymmsl::SettingValue const & val) {
     if (val.is_a<std::string>())
         os << "\"" << val.as<std::string>() << "\"";
     else if (val.is_a<int64_t>())
@@ -253,11 +253,11 @@ bool Settings::contains(Reference const & setting) const {
     return store_.count(setting) != 0u;
 }
 
-ParameterValue const & Settings::at(Reference const & setting) const {
+SettingValue const & Settings::at(Reference const & setting) const {
     return store_.at(setting);
 }
 
-ParameterValue & Settings::operator[](Reference const & setting) {
+SettingValue & Settings::operator[](Reference const & setting) {
     return store_[setting];
 }
 

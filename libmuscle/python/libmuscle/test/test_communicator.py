@@ -288,7 +288,7 @@ def test_send_message(communicator, message) -> None:
     assert msg.receiver == 'other.in[13]'
     assert msg.timestamp == 0.0
     assert msg.next_timestamp is None
-    assert msg.parameter_overlay == msgpack.packb({}, use_bin_type=True)
+    assert msg.settings_overlay == msgpack.packb({}, use_bin_type=True)
     assert msg.data == msgpack.packb(b'test', use_bin_type=True)
 
 
@@ -310,7 +310,7 @@ def test_send_msgpack(communicator, message2) -> None:
             'other.in[13]']._Outbox__queue.get()
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
-    assert msg.parameter_overlay == msgpack.packb({}, use_bin_type=True)
+    assert msg.settings_overlay == msgpack.packb({}, use_bin_type=True)
     assert msg.data == msgpack.packb({'test': 17}, use_bin_type=True)
 
 
@@ -323,7 +323,7 @@ def test_send_message_with_slot(communicator2, message) -> None:
             'kernel[13].in']._Outbox__queue.get()
     assert msg.sender == 'other.out[13]'
     assert msg.receiver == 'kernel[13].in'
-    assert msg.parameter_overlay == msgpack.packb({}, use_bin_type=True)
+    assert msg.settings_overlay == msgpack.packb({}, use_bin_type=True)
     assert msgpack.unpackb(msg.data).decode('utf-8') == 'test'
 
 
@@ -342,7 +342,7 @@ def test_send_message_resizable(communicator3, message) -> None:
     assert msg.port_length == 20
 
 
-def test_send_message_with_parameters(communicator, message) -> None:
+def test_send_message_with_settings(communicator, message) -> None:
     message.settings['test2'] = 'testing'
     communicator.send_message('out', message)
 
@@ -351,7 +351,7 @@ def test_send_message_with_parameters(communicator, message) -> None:
             'other.in[13]']._Outbox__queue.get()
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
-    assert msgpack.unpackb(msg.parameter_overlay, raw=False) == {
+    assert msgpack.unpackb(msg.settings_overlay, raw=False) == {
             'test2': 'testing'}
     assert msgpack.unpackb(msg.data).decode('utf-8') == 'test'
 
@@ -366,7 +366,7 @@ def test_send_settings(communicator, message) -> None:
             'other.in[13]']._Outbox__queue.get()
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
-    assert msg.parameter_overlay == msgpack.packb({})
+    assert msg.settings_overlay == msgpack.packb({})
     assert msg.data == msgpack.packb(
             msgpack.ExtType(1, msgpack.packb({'test1': 'testing'},
                                              use_bin_type=True)),
@@ -383,7 +383,7 @@ def test_close_port(communicator) -> None:
     assert msg.receiver == 'other.in[13]'
     assert msg.timestamp == float('inf')
     assert msg.next_timestamp is None
-    assert msg.parameter_overlay == msgpack.packb({}, use_bin_type=True)
+    assert msg.settings_overlay == msgpack.packb({}, use_bin_type=True)
     unpacked = msgpack.unpackb(msg.data, raw=False)
     assert isinstance(unpacked, msgpack.ExtType)
     assert unpacked[0] == 0
@@ -481,7 +481,7 @@ def test_receive_message_resizable(communicator3) -> None:
     assert communicator3.get_port('in').get_length() == 20
 
 
-def test_receive_with_parameters(communicator) -> None:
+def test_receive_with_settings(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MCPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
@@ -499,7 +499,7 @@ def test_receive_with_parameters(communicator) -> None:
     assert msg.settings['test2'] == 3.1
 
 
-def test_receive_msgpack_with_slot_and_parameters(communicator2) -> None:
+def test_receive_msgpack_with_slot_and_settings(communicator2) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MCPMessage(
             Reference('kernel[13].out'), Reference('other.in[13]'),

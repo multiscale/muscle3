@@ -93,26 +93,26 @@ class Instance {
          */
         void exit_error(std::string const & message);
 
-        /** Returns the value of a model parameter.
+        /** Returns the value of a model setting.
          *
-         * @param name The name of the parameter, without any instance prefix.
+         * @param name The name of the setting, without any instance prefix.
          *
-         * @throw std::out_of_range if no parameter with the given name exists.
+         * @throw std::out_of_range if no setting with the given name exists.
          */
-        ::ymmsl::ParameterValue get_parameter_value(std::string const & name) const;
+        ::ymmsl::SettingValue get_setting_value(std::string const & name) const;
 
-        /** Returns the value of a model parameter.
+        /** Returns the value of a model setting.
          *
-         * @tparam ValueType The (expected) type of the parameter. Needs to
+         * @tparam ValueType The (expected) type of the setting. Needs to
          *      match exactly or an exception will be thrown, this will not
          *      convert e.g. an integer into a string.
-         * @param name The name of the parameter, without any instance prefix.
+         * @param name The name of the setting, without any instance prefix.
          *
-         * @throw std::out_of_range if no parameter with the given name exists.
+         * @throw std::out_of_range if no setting with the given name exists.
          * @throw std::bad_cast if the value is not of the specified type.
          */
         template <typename ValueType>
-        ValueType get_parameter_value_as(std::string const & name) const;
+        ValueType get_setting_value_as(std::string const & name) const;
 
         /** Returns a description of the ports that this CE has.
          *
@@ -290,7 +290,7 @@ class Instance {
                 std::string const & port_name, int slot,
                 Message const & default_msg);
 
-        /** Receive a message with attached parameter overlay.
+        /** Receive a message with attached settings overlay.
          *
          * This function should not be used in submodels. It is intended for
          * use by special compute elements that are ensemble-aware and have to
@@ -312,7 +312,7 @@ class Instance {
          */
         Message receive_with_settings(std::string const & port_name);
 
-        /** Receive a message with attached parameter overlay.
+        /** Receive a message with attached settings overlay.
          *
          * This function should not be used in submodels. It is intended for
          * use by special compute elements that are ensemble-aware and have to
@@ -335,7 +335,7 @@ class Instance {
          */
         Message receive_with_settings(std::string const & port_name, int slot);
 
-        /** Receive a message with attached parameter overlay.
+        /** Receive a message with attached settings overlay.
          *
          * This function should not be used in submodels. It is intended for
          * use by special compute elements that are ensemble-aware and have to
@@ -364,7 +364,7 @@ class Instance {
         Message receive_with_settings(
                 std::string const & port_name, Message const & default_msg);
 
-        /** Receive a message with attached parameter overlay.
+        /** Receive a message with attached settings overlay.
          *
          * This function should not be used in submodels. It is intended for
          * use by special compute elements that are ensemble-aware and have to
@@ -412,7 +412,7 @@ class Instance {
                 std::string const & port_name,
                 Optional<int> slot,
                 Optional<Message> default_msg,
-                bool with_parameters);
+                bool with_settings);
 
         ::ymmsl::Reference make_full_name_(int argc, char const * const argv[]) const;
         std::string extract_manager_location_(int argc, char const * const argv[]) const;
@@ -420,7 +420,7 @@ class Instance {
         std::vector<int> index_() const;
         std::vector<::ymmsl::Port> list_declared_ports_() const;
         void check_port_(std::string const & port_name);
-        bool receive_parameters_();
+        bool receive_settings_();
         void pre_receive_(
                 std::string const & port_name,
                 Optional<int> slot, bool apply_overlay);

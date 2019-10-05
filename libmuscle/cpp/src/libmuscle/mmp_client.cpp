@@ -106,33 +106,33 @@ ymmsl::Settings MMPClient::get_settings() {
     client_->RequestSettings(&context, mmp::SettingsRequest(), &response);
 
     ymmsl::Settings settings;
-    for (int i = 0; i < response.parameter_values_size(); ++i) {
-        auto const & cur = response.parameter_values(i);
+    for (int i = 0; i < response.setting_values_size(); ++i) {
+        auto const & cur = response.setting_values(i);
         switch (cur.value_type()) {
-            case mmp::PARAMETER_VALUE_TYPE_STRING:
-                settings[cur.parameter()] = cur.value_string();
+            case mmp::SETTING_VALUE_TYPE_STRING:
+                settings[cur.setting()] = cur.value_string();
                 break;
-            case mmp::PARAMETER_VALUE_TYPE_INT:
-                settings[cur.parameter()] = cur.value_int();
+            case mmp::SETTING_VALUE_TYPE_INT:
+                settings[cur.setting()] = cur.value_int();
                 break;
-            case mmp::PARAMETER_VALUE_TYPE_FLOAT:
-                settings[cur.parameter()] = cur.value_float();
+            case mmp::SETTING_VALUE_TYPE_FLOAT:
+                settings[cur.setting()] = cur.value_float();
                 break;
-            case mmp::PARAMETER_VALUE_TYPE_BOOL:
-                settings[cur.parameter()] = cur.value_bool();
+            case mmp::SETTING_VALUE_TYPE_BOOL:
+                settings[cur.setting()] = cur.value_bool();
                 break;
-            case mmp::PARAMETER_VALUE_TYPE_LIST_FLOAT: {
+            case mmp::SETTING_VALUE_TYPE_LIST_FLOAT: {
                 auto mmp_list = cur.value_list_float();
-                settings[cur.parameter()] = list_from_grpc(mmp_list);
+                settings[cur.setting()] = list_from_grpc(mmp_list);
                 break;
             }
-            case mmp::PARAMETER_VALUE_TYPE_LIST_LIST_FLOAT: {
+            case mmp::SETTING_VALUE_TYPE_LIST_LIST_FLOAT: {
                 using Vec2 = std::vector<std::vector<double>>;
                 auto mmp_list = cur.value_list_list_float();
                 Vec2 our_list;
                 for (int j = 0; j < mmp_list.values_size(); ++j)
                     our_list.push_back(list_from_grpc(mmp_list.values(j)));
-                settings[cur.parameter()] = std::move(our_list);
+                settings[cur.setting()] = std::move(our_list);
                 break;
             }
             default:

@@ -135,7 +135,7 @@ in the future, opinions welcome!) We will send parameter sets on vector port
 ``parameters_out``, and receive final states on vector port ``states_in``.
 
 Next, we enter the reuse loop as before, except that we pass ``False`` as an
-argument, which will be explained shortly. We read and check parameters in
+argument, which will be explained shortly. We read and check settings in
 F_INIT as before, and calculate a set of parameter values using a quasi-random
 Sobol sequence.
 
@@ -212,7 +212,7 @@ For each sample, we receive the result on our ``states_in`` port, passing the
 sample number as the slot to receive on. We're using a slightly different
 receive function here. Rather than :meth:`.Instance.receive`, we call
 :meth:`.Instance.receive_with_settings`.  The difference has to do with the
-parameter overlays.
+settings overlays.
 
 Recall that each compute element instance has a settings overlay, which can be
 set through the ``muscle_settings_in`` port and is automatically propagated to

@@ -45,8 +45,8 @@ int main(int argc, char *argv[]) {
 
     auto zone = std::make_shared<msgpack::zone>();
     DataConstRef overlay = ::libmuscle::mcp::unpack_data(
-            zone, message.parameter_overlay.as_byte_array(),
-            message.parameter_overlay.size());
+            zone, message.settings_overlay.as_byte_array(),
+            message.settings_overlay.size());
 
     assert(overlay.is_a_dict());
     assert(overlay["test_setting"].is_a<int>());

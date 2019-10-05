@@ -11,7 +11,7 @@ Message::Message(
             ::ymmsl::Reference const & receiver,
             ::libmuscle::Optional<int> port_length,
             double timestamp, ::libmuscle::Optional<double> next_timestamp,
-            DataConstRef const & parameter_overlay,
+            DataConstRef const & settings_overlay,
             DataConstRef const & data
             )
         : sender(sender)
@@ -19,7 +19,7 @@ Message::Message(
         , port_length(port_length)
         , timestamp(timestamp)
         , next_timestamp(next_timestamp)
-        , parameter_overlay(parameter_overlay)
+        , settings_overlay(settings_overlay)
         , data(data)
     {}
 

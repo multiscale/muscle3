@@ -113,14 +113,14 @@ class DataConstRef {
          */
         DataConstRef(double value);
 
-        /** Create a DataConstRef object from a ParameterValue's value.
+        /** Create a DataConstRef object from a SettingValue's value.
          *
          * Note that this will decode to whichever type is stored in the
-         * ParameterValue, not to a ParameterValue object.
+         * SettingValue, not to a SettingValue object.
          *
          * @param value The value to represent.
          */
-        DataConstRef(::ymmsl::ParameterValue const & value);
+        DataConstRef(::ymmsl::SettingValue const & value);
 
         /** Create a DataConstRef object representing a Settings object.
          *
@@ -171,7 +171,7 @@ class DataConstRef {
          * - unsigned long long int
          * - float
          * - double
-         * - ymmsl::ParameterValue
+         * - ymmsl::SettingValue
          * - ymmsl::Settings
          *
          * For checking nil, list and dict, see is_nil(), is_list() and
@@ -241,7 +241,7 @@ class DataConstRef {
          * - unsigned long long int
          * - float
          * - double
-         * - ymmsl::ParameterValue
+         * - ymmsl::SettingValue
          * - ymmsl::Settings
          *
          * @tparam T The type to access, as above.

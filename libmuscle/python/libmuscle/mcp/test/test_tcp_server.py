@@ -48,5 +48,5 @@ def test_request(receiver, post_office, tcp_server):
     assert message_dict['port_length'] is None
     assert message_dict['timestamp'] == 0.0
     assert message_dict['next_timestamp'] == 1.0
-    assert message_dict['parameter_overlay'] == bytes()
+    assert message_dict['settings_overlay'] == bytes()
     assert message_dict['data'] == bytes()

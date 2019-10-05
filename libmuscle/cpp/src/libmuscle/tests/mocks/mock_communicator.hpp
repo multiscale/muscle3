@@ -35,7 +35,7 @@ class MockCommunicator {
                 PeerDims const & peer_dims,
                 PeerLocations const & peer_locations);
 
-        bool parameters_in_connected() const;
+        bool settings_in_connected() const;
 
         PortsDescription list_ports() const;
 
@@ -62,7 +62,7 @@ class MockCommunicator {
 
         static void reset();
         static int num_constructed;
-        static bool parameters_in_connected_return_value;
+        static bool settings_in_connected_return_value;
         static bool port_exists_return_value;
         static std::unordered_map<std::string, Port> get_port_return_value;
         static std::unordered_map<Reference, std::unique_ptr<Message>>

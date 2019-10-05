@@ -103,24 +103,24 @@ PROFILE_EVENT_TYPE_DEREGISTER = typing___cast(ProfileEventType, 1)
 PROFILE_EVENT_TYPE_SEND = typing___cast(ProfileEventType, 2)
 PROFILE_EVENT_TYPE_RECEIVE = typing___cast(ProfileEventType, 3)
 
-class ParameterValueType(int):
+class SettingValueType(int):
     DESCRIPTOR: google___protobuf___descriptor___EnumDescriptor = ...
     @classmethod
     def Name(cls, number: int) -> str: ...
     @classmethod
-    def Value(cls, name: str) -> ParameterValueType: ...
+    def Value(cls, name: str) -> SettingValueType: ...
     @classmethod
     def keys(cls) -> typing___List[str]: ...
     @classmethod
-    def values(cls) -> typing___List[ParameterValueType]: ...
+    def values(cls) -> typing___List[SettingValueType]: ...
     @classmethod
-    def items(cls) -> typing___List[typing___Tuple[str, ParameterValueType]]: ...
-PARAMETER_VALUE_TYPE_STRING = typing___cast(ParameterValueType, 0)
-PARAMETER_VALUE_TYPE_INT = typing___cast(ParameterValueType, 1)
-PARAMETER_VALUE_TYPE_FLOAT = typing___cast(ParameterValueType, 2)
-PARAMETER_VALUE_TYPE_BOOL = typing___cast(ParameterValueType, 3)
-PARAMETER_VALUE_TYPE_LIST_FLOAT = typing___cast(ParameterValueType, 4)
-PARAMETER_VALUE_TYPE_LIST_LIST_FLOAT = typing___cast(ParameterValueType, 5)
+    def items(cls) -> typing___List[typing___Tuple[str, SettingValueType]]: ...
+SETTING_VALUE_TYPE_STRING = typing___cast(SettingValueType, 0)
+SETTING_VALUE_TYPE_INT = typing___cast(SettingValueType, 1)
+SETTING_VALUE_TYPE_FLOAT = typing___cast(SettingValueType, 2)
+SETTING_VALUE_TYPE_BOOL = typing___cast(SettingValueType, 3)
+SETTING_VALUE_TYPE_LIST_FLOAT = typing___cast(SettingValueType, 4)
+SETTING_VALUE_TYPE_LIST_LIST_FLOAT = typing___cast(SettingValueType, 5)
 
 class LogMessage(google___protobuf___message___Message):
     instance_id = ... # type: typing___Text
@@ -402,8 +402,8 @@ class ListOfListOfDouble(google___protobuf___message___Message):
         def ClearField(self, field_name: typing_extensions___Literal[b"values"]) -> None: ...
 
 class Setting(google___protobuf___message___Message):
-    parameter = ... # type: typing___Text
-    value_type = ... # type: ParameterValueType
+    setting = ... # type: typing___Text
+    value_type = ... # type: SettingValueType
     value_string = ... # type: typing___Text
     value_int = ... # type: int
     value_float = ... # type: float
@@ -416,8 +416,8 @@ class Setting(google___protobuf___message___Message):
     def value_list_list_float(self) -> ListOfListOfDouble: ...
 
     def __init__(self,
-        parameter : typing___Optional[typing___Text] = None,
-        value_type : typing___Optional[ParameterValueType] = None,
+        setting : typing___Optional[typing___Text] = None,
+        value_type : typing___Optional[SettingValueType] = None,
         value_string : typing___Optional[typing___Text] = None,
         value_int : typing___Optional[int] = None,
         value_float : typing___Optional[float] = None,
@@ -431,10 +431,10 @@ class Setting(google___protobuf___message___Message):
     def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
     if sys.version_info >= (3,):
         def HasField(self, field_name: typing_extensions___Literal[u"value_list_float",u"value_list_list_float"]) -> bool: ...
-        def ClearField(self, field_name: typing_extensions___Literal[u"parameter",u"value_bool",u"value_float",u"value_int",u"value_list_float",u"value_list_list_float",u"value_string",u"value_type"]) -> None: ...
+        def ClearField(self, field_name: typing_extensions___Literal[u"setting",u"value_bool",u"value_float",u"value_int",u"value_list_float",u"value_list_list_float",u"value_string",u"value_type"]) -> None: ...
     else:
         def HasField(self, field_name: typing_extensions___Literal[u"value_list_float",b"value_list_float",u"value_list_list_float",b"value_list_list_float"]) -> bool: ...
-        def ClearField(self, field_name: typing_extensions___Literal[b"parameter",b"value_bool",b"value_float",b"value_int",b"value_list_float",b"value_list_list_float",b"value_string",b"value_type"]) -> None: ...
+        def ClearField(self, field_name: typing_extensions___Literal[b"setting",b"value_bool",b"value_float",b"value_int",b"value_list_float",b"value_list_list_float",b"value_string",b"value_type"]) -> None: ...
 
 class SettingsRequest(google___protobuf___message___Message):
 
@@ -448,19 +448,19 @@ class SettingsRequest(google___protobuf___message___Message):
 class SettingsResult(google___protobuf___message___Message):
 
     @property
-    def parameter_values(self) -> google___protobuf___internal___containers___RepeatedCompositeFieldContainer[Setting]: ...
+    def setting_values(self) -> google___protobuf___internal___containers___RepeatedCompositeFieldContainer[Setting]: ...
 
     def __init__(self,
-        parameter_values : typing___Optional[typing___Iterable[Setting]] = None,
+        setting_values : typing___Optional[typing___Iterable[Setting]] = None,
         ) -> None: ...
     @classmethod
     def FromString(cls, s: bytes) -> SettingsResult: ...
     def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
     def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
     if sys.version_info >= (3,):
-        def ClearField(self, field_name: typing_extensions___Literal[u"parameter_values"]) -> None: ...
+        def ClearField(self, field_name: typing_extensions___Literal[u"setting_values"]) -> None: ...
     else:
-        def ClearField(self, field_name: typing_extensions___Literal[b"parameter_values"]) -> None: ...
+        def ClearField(self, field_name: typing_extensions___Literal[b"setting_values"]) -> None: ...
 
 class DeregistrationRequest(google___protobuf___message___Message):
     instance_name = ... # type: typing___Text

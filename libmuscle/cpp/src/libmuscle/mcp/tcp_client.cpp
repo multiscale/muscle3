@@ -143,7 +143,7 @@ Message TcpClient::receive(::ymmsl::Reference const & receiver) {
             port_length,
             data["timestamp"].as<double>(),
             next_timestamp,
-            data["parameter_overlay"],
+            data["settings_overlay"],
             data["data"]);
 }
 

@@ -144,7 +144,7 @@ TEST(libmuscle_instance, send_invalid_port) {
     ASSERT_THROW(instance.send("out", msg), std::logic_error);
 }
 
-TEST(libmuscle_instance, get_parameter_value) {
+TEST(libmuscle_instance, get_setting_value) {
     reset_mocks();
     auto argv = test_argv();
     Instance instance(argv.size(), argv.data());
@@ -154,13 +154,13 @@ TEST(libmuscle_instance, get_parameter_value) {
     settings["test2"] = {1.0, 2.0};
     TestInstance::settings_manager_(instance).base = settings;
 
-    ASSERT_TRUE(instance.get_parameter_value("test1").is_a<std::string>());
-    ASSERT_EQ(instance.get_parameter_value("test1").as<std::string>(), "test");
-    ASSERT_EQ(instance.get_parameter_value_as<std::string>("test1"), "test");
-    ASSERT_EQ(instance.get_parameter_value_as<std::vector<double>>("test2"), std::vector<double>({1.0, 2.0}));
+    ASSERT_TRUE(instance.get_setting_value("test1").is_a<std::string>());
+    ASSERT_EQ(instance.get_setting_value("test1").as<std::string>(), "test");
+    ASSERT_EQ(instance.get_setting_value_as<std::string>("test1"), "test");
+    ASSERT_EQ(instance.get_setting_value_as<std::vector<double>>("test2"), std::vector<double>({1.0, 2.0}));
 
-    ASSERT_THROW(instance.get_parameter_value("testx"), std::out_of_range);
-    ASSERT_THROW(instance.get_parameter_value_as<int64_t>("test1"), std::bad_cast);
+    ASSERT_THROW(instance.get_setting_value("testx"), std::out_of_range);
+    ASSERT_THROW(instance.get_setting_value_as<int64_t>("test1"), std::bad_cast);
 }
 
 TEST(libmuscle_instance, receive) {
@@ -363,7 +363,7 @@ TEST(libmuscle_instance, reuse_instance_receive_overlay) {
     Settings test_overlay;
     test_overlay["test2"] = "abc";
 
-    MockCommunicator::parameters_in_connected_return_value = true;
+    MockCommunicator::settings_in_connected_return_value = true;
     MockCommunicator::next_received_message["muscle_settings_in"] =
         std::make_unique<Message>(0.0, test_overlay, test_base_settings);
 
@@ -383,7 +383,7 @@ TEST(libmuscle_instance, reuse_instance_closed_port) {
                 {Operator::O_F, {"out"}}
                 }));
 
-    MockCommunicator::parameters_in_connected_return_value = true;
+    MockCommunicator::settings_in_connected_return_value = true;
     MockCommunicator::next_received_message["muscle_settings_in"] =
         std::make_unique<Message>(0.0, Settings(), Settings());
     MockCommunicator::next_received_message["in"] =
@@ -417,7 +417,7 @@ TEST(libmuscle_instance, reuse_instance_vector_port) {
                 {Operator::O_F, {"out"}}
                 }));
 
-    MockCommunicator::parameters_in_connected_return_value = true;
+    MockCommunicator::settings_in_connected_return_value = true;
     MockCommunicator::next_received_message["muscle_settings_in"] =
         std::make_unique<Message>(0.0, Settings(), Settings());
 
@@ -452,7 +452,7 @@ TEST(libmuscle_instance, reuse_instance_no_f_init_ports) {
     Instance instance(argv.size(), argv.data(),
             PortsDescription({}));
 
-    MockCommunicator::parameters_in_connected_return_value = false;
+    MockCommunicator::settings_in_connected_return_value = false;
 
     ASSERT_TRUE(instance.reuse_instance());
     ASSERT_FALSE(instance.reuse_instance());

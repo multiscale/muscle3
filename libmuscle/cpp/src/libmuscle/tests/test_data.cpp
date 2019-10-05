@@ -12,7 +12,7 @@
 
 using libmuscle::Data;
 using libmuscle::DataConstRef;
-using ymmsl::ParameterValue;
+using ymmsl::SettingValue;
 using ymmsl::Settings;
 
 
@@ -357,7 +357,7 @@ TEST(libmuscle_mcp_data, list_dataconstref) {
 
 
 template <typename T>
-void test_parameter_value(ParameterValue const & test_value) {
+void test_setting_value(SettingValue const & test_value) {
     Data d(test_value);
     ASSERT_TRUE(d.is_a<T>());
 
@@ -371,15 +371,15 @@ void test_parameter_value(ParameterValue const & test_value) {
     ASSERT_EQ(x, test_value.as<T>());
 }
 
-TEST(libmuscle_mcp_data, parameter_value) {
-    test_parameter_value<int64_t>(ymmsl::ParameterValue(13));
-    test_parameter_value<std::string>(ymmsl::ParameterValue("test"));
+TEST(libmuscle_mcp_data, setting_value) {
+    test_setting_value<int64_t>(ymmsl::SettingValue(13));
+    test_setting_value<std::string>(ymmsl::SettingValue("test"));
 
-    test<ymmsl::ParameterValue>(ymmsl::ParameterValue(13));
+    test<ymmsl::SettingValue>(ymmsl::SettingValue(13));
 }
 
-TEST(libmuscle_mcp_data, parameter_value_list) {
-    ParameterValue pv(std::vector<double>{1.0, 2.2, 3.1415});
+TEST(libmuscle_mcp_data, setting_value_list) {
+    SettingValue pv(std::vector<double>{1.0, 2.2, 3.1415});
     Data d(pv);
     ASSERT_TRUE(d.is_a_list());
     ASSERT_EQ(d.size(), 3u);
@@ -399,8 +399,8 @@ TEST(libmuscle_mcp_data, parameter_value_list) {
     ASSERT_EQ(d2[2].as<double>(), 3.1415);
 }
 
-TEST(libmuscle_mcp_data, parameter_value_list_list) {
-    ParameterValue pv(std::vector<std::vector<double>>{
+TEST(libmuscle_mcp_data, setting_value_list_list) {
+    SettingValue pv(std::vector<std::vector<double>>{
             {1.0, 2.2, 3.1415}, {4.5}});
     Data d(pv);
     ASSERT_TRUE(d.is_a_list());
@@ -435,12 +435,12 @@ TEST(libmuscle_mcp_data, parameter_value_list_list) {
     ASSERT_EQ(d2[1][0].as<double>(), 4.5);
 }
 
-TEST(libmuscle_mcp_data, parameter_value_list_pv) {
-    ParameterValue pv(std::vector<double>{1.0, 2.2, 3.1415});
+TEST(libmuscle_mcp_data, setting_value_list_pv) {
+    SettingValue pv(std::vector<double>{1.0, 2.2, 3.1415});
     Data d(pv);
 
-    ASSERT_TRUE(d.is_a<ParameterValue>());
-    ParameterValue pv2 = d.as<ParameterValue>();
+    ASSERT_TRUE(d.is_a<SettingValue>());
+    SettingValue pv2 = d.as<SettingValue>();
 
     auto vec = pv2.as<std::vector<double>>();
     ASSERT_EQ(vec.size(), 3);
@@ -449,12 +449,12 @@ TEST(libmuscle_mcp_data, parameter_value_list_pv) {
     ASSERT_EQ(vec[2], 3.1415);
 }
 
-TEST(libmuscle_mcp_data, parameter_value_list_list_pv) {
-    ParameterValue pv(std::vector<std::vector<double>>{{1.0, 2.2, 3.1415}, {4.5}});
+TEST(libmuscle_mcp_data, setting_value_list_list_pv) {
+    SettingValue pv(std::vector<std::vector<double>>{{1.0, 2.2, 3.1415}, {4.5}});
     Data d(pv);
 
-    ASSERT_TRUE(d.is_a<ParameterValue>());
-    ParameterValue pv2 = d.as<ParameterValue>();
+    ASSERT_TRUE(d.is_a<SettingValue>());
+    SettingValue pv2 = d.as<SettingValue>();
 
     auto vec = pv2.as<std::vector<std::vector<double>>>();
     ASSERT_EQ(vec.size(), 2);

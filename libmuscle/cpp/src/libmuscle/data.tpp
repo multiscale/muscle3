@@ -18,7 +18,7 @@ bool DataConstRef::is_a() const {
 }
 
 template <>
-ymmsl::ParameterValue DataConstRef::as<ymmsl::ParameterValue>() const;
+ymmsl::SettingValue DataConstRef::as<ymmsl::SettingValue>() const;
 
 template <>
 ymmsl::Settings DataConstRef::as<ymmsl::Settings>() const;

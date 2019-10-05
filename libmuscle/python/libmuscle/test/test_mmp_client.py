@@ -47,30 +47,30 @@ def test_get_settings(mocked_mmp_client) -> None:
     array = mmp.ListOfListOfDouble(values=[row0, row1])
     mmp_values = [
             mmp.Setting(
-                parameter='test1',
-                value_type=mmp.PARAMETER_VALUE_TYPE_STRING,
+                setting='test1',
+                value_type=mmp.SETTING_VALUE_TYPE_STRING,
                 value_string='test'),
             mmp.Setting(
-                parameter='test2',
-                value_type=mmp.PARAMETER_VALUE_TYPE_INT,
+                setting='test2',
+                value_type=mmp.SETTING_VALUE_TYPE_INT,
                 value_int=12),
             mmp.Setting(
-                parameter='test3',
-                value_type=mmp.PARAMETER_VALUE_TYPE_FLOAT,
+                setting='test3',
+                value_type=mmp.SETTING_VALUE_TYPE_FLOAT,
                 value_float=3.14),
             mmp.Setting(
-                parameter='test4',
-                value_type=mmp.PARAMETER_VALUE_TYPE_BOOL,
+                setting='test4',
+                value_type=mmp.SETTING_VALUE_TYPE_BOOL,
                 value_bool=True),
             mmp.Setting(
-                parameter='test5',
-                value_type=mmp.PARAMETER_VALUE_TYPE_LIST_FLOAT,
+                setting='test5',
+                value_type=mmp.SETTING_VALUE_TYPE_LIST_FLOAT,
                 value_list_float=mmp.ListOfDouble(values=[1.2, 3.4])),
             mmp.Setting(
-                parameter='test6',
-                value_type=mmp.PARAMETER_VALUE_TYPE_LIST_LIST_FLOAT,
+                setting='test6',
+                value_type=mmp.SETTING_VALUE_TYPE_LIST_LIST_FLOAT,
                 value_list_list_float=array)]
-    settings_result = mmp.SettingsResult(parameter_values=mmp_values)
+    settings_result = mmp.SettingsResult(setting_values=mmp_values)
     stub.RequestSettings.return_value = settings_result
     settings = client.get_settings()
 

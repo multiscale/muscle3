@@ -144,7 +144,7 @@ TEST(libmuscle_instance, send_invalid_port) {
     ASSERT_THROW(instance.send("out", msg), std::logic_error);
 }
 
-TEST(libmuscle_instance, get_setting_value) {
+TEST(libmuscle_instance, get_setting) {
     reset_mocks();
     auto argv = test_argv();
     Instance instance(argv.size(), argv.data());
@@ -154,13 +154,13 @@ TEST(libmuscle_instance, get_setting_value) {
     settings["test2"] = {1.0, 2.0};
     TestInstance::settings_manager_(instance).base = settings;
 
-    ASSERT_TRUE(instance.get_setting_value("test1").is_a<std::string>());
-    ASSERT_EQ(instance.get_setting_value("test1").as<std::string>(), "test");
-    ASSERT_EQ(instance.get_setting_value_as<std::string>("test1"), "test");
-    ASSERT_EQ(instance.get_setting_value_as<std::vector<double>>("test2"), std::vector<double>({1.0, 2.0}));
+    ASSERT_TRUE(instance.get_setting("test1").is_a<std::string>());
+    ASSERT_EQ(instance.get_setting("test1").as<std::string>(), "test");
+    ASSERT_EQ(instance.get_setting_as<std::string>("test1"), "test");
+    ASSERT_EQ(instance.get_setting_as<std::vector<double>>("test2"), std::vector<double>({1.0, 2.0}));
 
-    ASSERT_THROW(instance.get_setting_value("testx"), std::out_of_range);
-    ASSERT_THROW(instance.get_setting_value_as<int64_t>("test1"), std::bad_cast);
+    ASSERT_THROW(instance.get_setting("testx"), std::out_of_range);
+    ASSERT_THROW(instance.get_setting_as<int64_t>("test1"), std::bad_cast);
 }
 
 TEST(libmuscle_instance, receive) {

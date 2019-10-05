@@ -102,7 +102,7 @@ def test_extract_manager_location(sys_argv_manager) -> None:
             'localhost:9000')
 
 
-def test_get_setting_value(instance):
+def test_get_setting(instance):
     ref = Reference
     settings = Settings()
     settings[ref('test1')] = 'test'
@@ -113,34 +113,34 @@ def test_get_setting_value(instance):
     settings[ref('test6')] = [[1.0, 2.0], [3.0, 4.0]]
     instance._settings_manager.base = settings
 
-    assert instance.get_setting_value('test1') == 'test'
-    assert instance.get_setting_value('test2') == 12
-    assert instance.get_setting_value('test3') == 27.1
-    assert instance.get_setting_value('test4') is True
-    assert instance.get_setting_value('test5') == [2.3, 5.6]
-    assert instance.get_setting_value('test6') == [
+    assert instance.get_setting('test1') == 'test'
+    assert instance.get_setting('test2') == 12
+    assert instance.get_setting('test3') == 27.1
+    assert instance.get_setting('test4') is True
+    assert instance.get_setting('test5') == [2.3, 5.6]
+    assert instance.get_setting('test6') == [
             [1.0, 2.0], [3.0, 4.0]]
 
-    assert instance.get_setting_value('test1', 'str') == 'test'
-    assert instance.get_setting_value('test2', 'int') == 12
-    assert instance.get_setting_value('test3', 'float') == 27.1
-    assert instance.get_setting_value('test4', 'bool') is True
-    assert (instance.get_setting_value('test5', '[float]') ==
+    assert instance.get_setting('test1', 'str') == 'test'
+    assert instance.get_setting('test2', 'int') == 12
+    assert instance.get_setting('test3', 'float') == 27.1
+    assert instance.get_setting('test4', 'bool') is True
+    assert (instance.get_setting('test5', '[float]') ==
             [2.3, 5.6])
-    assert (instance.get_setting_value('test6', '[[float]]') ==
+    assert (instance.get_setting('test6', '[[float]]') ==
             [[1.0, 2.0], [3.0, 4.0]])
 
     with pytest.raises(KeyError):
-        instance.get_setting_value('testx')
+        instance.get_setting('testx')
 
     with pytest.raises(TypeError):
-        instance.get_setting_value('test1', 'int')
+        instance.get_setting('test1', 'int')
     with pytest.raises(TypeError):
-        instance.get_setting_value('test6', '[float]')
+        instance.get_setting('test6', '[float]')
     with pytest.raises(TypeError):
-        instance.get_setting_value('test5', '[[float]]')
+        instance.get_setting('test5', '[[float]]')
     with pytest.raises(ValueError):
-        instance.get_setting_value('test2', 'nonexistenttype')
+        instance.get_setting('test2', 'nonexistenttype')
 
 
 def test_list_ports(instance):

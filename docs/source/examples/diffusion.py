@@ -37,11 +37,11 @@ def diffusion() -> None:
 
     while instance.reuse_instance():
         # F_INIT
-        t_max = instance.get_setting_value('t_max', 'float')
-        dt = instance.get_setting_value('dt', 'float')
-        x_max = instance.get_setting_value('x_max', 'float')
-        dx = instance.get_setting_value('dx', 'float')
-        d = instance.get_setting_value('d', 'float')
+        t_max = instance.get_setting('t_max', 'float')
+        dt = instance.get_setting('dt', 'float')
+        x_max = instance.get_setting('x_max', 'float')
+        dx = instance.get_setting('dx', 'float')
+        d = instance.get_setting('d', 'float')
 
         U = np.zeros(int(round(x_max / dx)))
         U[25] = 2.0

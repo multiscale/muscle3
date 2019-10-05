@@ -126,9 +126,9 @@ Initialisation: Settings and receiving messages
 
   while instance.reuse_instance():
       # F_INIT
-      t_max = instance.get_setting_value('t_max', 'float')
-      dt = instance.get_setting_value('dt', 'float')
-      k = instance.get_setting_value('k', 'float')
+      t_max = instance.get_setting('t_max', 'float')
+      dt = instance.get_setting('dt', 'float')
+      k = instance.get_setting('k', 'float')
 
       msg = instance.receive('initial_state')
       U = np.array(msg.data)

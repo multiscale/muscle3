@@ -35,7 +35,7 @@ def macro():
 
     while instance.reuse_instance():
         # f_init
-        assert instance.get_setting_value('test2') == 14.4
+        assert instance.get_setting('test2') == 14.4
         # o_i
         instance.send('out', Message(0.0, 10.0, 'testing'))
         # s/b
@@ -54,7 +54,7 @@ def explicit_relay():
 
     while instance.reuse_instance(False):
         # f_init
-        assert instance.get_setting_value('test2', 'float') == 13.3
+        assert instance.get_setting('test2', 'float') == 13.3
         assert instance.get_port_length('in') == instance.get_port_length(
                 'out')
 
@@ -65,7 +65,7 @@ def explicit_relay():
             assert msg.settings['test2'] == 14.4
             msgs.append(msg)
 
-        assert instance.get_setting_value('test2') == 13.3
+        assert instance.get_setting('test2') == 13.3
 
         # o_f
         for slot in range(instance.get_port_length('out')):
@@ -77,10 +77,10 @@ def micro():
     """
     instance = Instance({Operator.F_INIT: ['in'], Operator.O_F: ['out']})
 
-    assert instance.get_setting_value('test2') == 13.3
+    assert instance.get_setting('test2') == 13.3
     while instance.reuse_instance():
         # f_init
-        assert instance.get_setting_value('test2', 'float') == 14.4
+        assert instance.get_setting('test2', 'float') == 14.4
         msg = instance.receive('in')
         assert msg.data == 'testing'
 

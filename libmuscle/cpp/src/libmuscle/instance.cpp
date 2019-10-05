@@ -81,7 +81,7 @@ void Instance::exit_error(std::string const & message) {
     exit(1);
 }
 
-::ymmsl::SettingValue Instance::get_setting_value(std::string const & name) const {
+::ymmsl::SettingValue Instance::get_setting(std::string const & name) const {
     return settings_manager_.get_setting(instance_name_, name);
 }
 

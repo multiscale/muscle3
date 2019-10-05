@@ -99,7 +99,7 @@ class Instance {
          *
          * @throw std::out_of_range if no setting with the given name exists.
          */
-        ::ymmsl::SettingValue get_setting_value(std::string const & name) const;
+        ::ymmsl::SettingValue get_setting(std::string const & name) const;
 
         /** Returns the value of a model setting.
          *
@@ -112,7 +112,7 @@ class Instance {
          * @throw std::bad_cast if the value is not of the specified type.
          */
         template <typename ValueType>
-        ValueType get_setting_value_as(std::string const & name) const;
+        ValueType get_setting_as(std::string const & name) const;
 
         /** Returns a description of the ports that this CE has.
          *

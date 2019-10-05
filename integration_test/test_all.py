@@ -19,7 +19,7 @@ def macro():
 
     while instance.reuse_instance():
         # f_init
-        assert instance.get_setting_value('test1') == 13
+        assert instance.get_setting('test1') == 13
 
         # o_i
         assert instance.is_vector_port('out')
@@ -41,9 +41,9 @@ def micro():
 
     while instance.reuse_instance():
         # f_init
-        assert instance.get_setting_value('test3', 'str') == 'testing'
-        assert instance.get_setting_value('test4', 'bool') is True
-        assert instance.get_setting_value('test6', '[[float]]')[0][1] == 2.0
+        assert instance.get_setting('test3', 'str') == 'testing'
+        assert instance.get_setting('test4', 'bool') is True
+        assert instance.get_setting('test6', '[[float]]')[0][1] == 2.0
 
         msg = instance.receive('in')
         assert msg.data == 'testing'

@@ -146,9 +146,8 @@ class Instance:
         self.__shutdown(message)
         exit(1)
 
-    def get_setting_value(self, name: str,
-                          typ: Optional[str] = None
-                          ) -> SettingValue:
+    def get_setting(self, name: str, typ: Optional[str] = None
+                    ) -> SettingValue:
         """Returns the value of a model setting.
 
         Args:

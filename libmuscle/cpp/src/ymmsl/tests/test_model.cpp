@@ -1,13 +1,13 @@
 #include <gtest/gtest.h>
 
-#include "ymmsl/model.hpp"
+#include <ymmsl/model.hpp>
 
-#include "ymmsl/identity.hpp"
+#include <ymmsl/identity.hpp>
 
 
-using ymmsl::Conduit;
-using ymmsl::Identifier;
-using ymmsl::ReferencePart;
+using ymmsl::impl::Conduit;
+using ymmsl::impl::Identifier;
+using ymmsl::impl::ReferencePart;
 
 
 TEST(ymmsl_model, conduit) {

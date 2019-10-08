@@ -4,7 +4,7 @@
 #include <sstream>
 
 
-namespace ymmsl {
+namespace ymmsl { namespace impl {
 
 Conduit::Conduit(std::string const & sender, std::string const & receiver)
     : sender(sender)
@@ -110,5 +110,5 @@ Reference Conduit::stem_(Reference const & reference) const {
     return Reference(reference.cbegin(), i);
 }
 
-}
+} }
 

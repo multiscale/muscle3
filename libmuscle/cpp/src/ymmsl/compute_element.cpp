@@ -1,7 +1,7 @@
-#include "compute_element.hpp"
+#include <ymmsl/compute_element.hpp>
 
 
-namespace ymmsl {
+namespace ymmsl { namespace impl {
 
 bool allows_sending(Operator op) {
     return (op == Operator::NONE) ||
@@ -21,5 +21,5 @@ Port::Port(Identifier const & name, Operator oper)
     , oper(oper)
 {}
 
-}
+} }
 

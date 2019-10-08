@@ -104,6 +104,8 @@ breathe_projects = { 'libmuscle': str(_rootpath / 'docs' / 'doxygen' / 'xml') }
 
 breathe_default_project = 'libmuscle'
 
+breathe_default_members = ('members', 'undoc-members')
+
 # -- Run doxygen manually, as readthedocs doesn't support it --
 import subprocess
 subprocess.call('cd ../.. ; doxygen', shell=True)

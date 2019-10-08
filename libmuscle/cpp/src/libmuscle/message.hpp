@@ -3,7 +3,7 @@
 #include <libmuscle/data.hpp>
 #include <libmuscle/util.hpp>
 
-#include <ymmsl/settings.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 
 namespace libmuscle {

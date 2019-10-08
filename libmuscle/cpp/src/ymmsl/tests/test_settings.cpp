@@ -6,14 +6,14 @@
 
 #include <gtest/gtest.h>
 
-#include "ymmsl/settings.hpp"
+#include <ymmsl/settings.hpp>
 
 
 using std::vector;
 using Vec2 = vector<vector<double>>;
 
-using ymmsl::SettingValue;
-using ymmsl::Settings;
+using ymmsl::impl::SettingValue;
+using ymmsl::impl::Settings;
 
 
 TEST(ymmsl_settings, test_create_setting_value) {

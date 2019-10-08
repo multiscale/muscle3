@@ -5,7 +5,7 @@
 #include <vector>
 
 
-namespace ymmsl {
+namespace ymmsl { namespace impl {
 
 /** A conduit transports data between compute elements.
  *
@@ -86,5 +86,5 @@ class Conduit {
         Reference stem_(Reference const & reference) const;
 };
 
-}
+} }
 

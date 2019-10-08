@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include <ymmsl/identity.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 
 namespace libmuscle {

@@ -9,7 +9,7 @@
  */
 
 /** The global ymmsl namespace. */
-namespace ymmsl {
+namespace ymmsl { namespace impl {
 
 /** An operator of a Compute Element.
  *
@@ -43,13 +43,10 @@ bool allows_receiving(Operator op);
  *
  * Ports are used by compute elements to send or receive messages on. They are
  * connected by conduits to enable communication between compute elements.
- *
- * @attribute name The name of the port.
- * @attribute oper The MMSL operator in which this port is used.
  */
 struct Port {
-    Identifier name;
-    Operator oper;
+    Identifier name;    /// The name of the port.
+    Operator oper;      /// The MMSL operator in which this port is used.
 
     /** Create a Port.
      *
@@ -59,14 +56,14 @@ struct Port {
     Port(Identifier const & name, Operator oper);
 };
 
-}
+} }
 
 // Older compilers (GCC < 6) do not have std::hash defined for enum classes.
 // This was a defect in C++14, and took some time to get fixed. To make things
 // compile on older compilers, we add a custom overload here.
 namespace std {
-    template <> struct hash<::ymmsl::Operator> {
-        size_t operator()(::ymmsl::Operator const & op) const {
+    template <> struct hash<::ymmsl::impl::Operator> {
+        size_t operator()(::ymmsl::impl::Operator const & op) const {
             return hash<int>()(static_cast<int>(op));
         }
     };

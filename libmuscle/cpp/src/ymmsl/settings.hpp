@@ -6,10 +6,10 @@
 #include <utility>
 #include <vector>
 
-#include "ymmsl/identity.hpp"
+#include <ymmsl/identity.hpp>
 
 
-namespace ymmsl {
+namespace ymmsl { namespace impl {
 
 /** Holds the value of a setting.
  *
@@ -98,7 +98,7 @@ class SettingValue {
         };
 };
 
-std::ostream & operator<<(std::ostream & os, ymmsl::SettingValue const & val);
+std::ostream & operator<<(std::ostream & os, ymmsl::impl::SettingValue const & val);
 
 
 /** Settings for doing an experiment.
@@ -172,9 +172,9 @@ class Settings {
         MapType_ store_;
 };
 
-std::ostream & operator<<(std::ostream & os, ymmsl::Settings const & settings);
+std::ostream & operator<<(std::ostream & os, ymmsl::impl::Settings const & settings);
 
-}
+} }
 
 #include <ymmsl/settings.tpp>
 

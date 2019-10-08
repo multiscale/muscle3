@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ymmsl/settings.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 
 namespace libmuscle {

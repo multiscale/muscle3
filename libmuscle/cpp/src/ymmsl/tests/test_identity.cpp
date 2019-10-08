@@ -7,8 +7,8 @@
 #include "ymmsl/identity.hpp"
 
 
-using ymmsl::Identifier;
-using ymmsl::Reference;
+using ymmsl::impl::Identifier;
+using ymmsl::impl::Reference;
 using std::unordered_map;
 
 

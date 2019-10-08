@@ -11,12 +11,9 @@
 #include <unordered_map>
 #include <vector>
 
-#include "libmuscle/logging.hpp"
-#include "muscle_manager_protocol/muscle_manager_protocol.grpc.pb.h"
-#include <ymmsl/compute_element.hpp>
-#include <ymmsl/model.hpp>
-#include <ymmsl/identity.hpp>
-#include "ymmsl/settings.hpp"
+#include <libmuscle/logging.hpp>
+#include <muscle_manager_protocol/muscle_manager_protocol.grpc.pb.h>
+#include <ymmsl/ymmsl.hpp>
 
 
 namespace libmuscle {

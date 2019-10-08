@@ -14,11 +14,9 @@
 #include <grpc++/grpc++.h>
 
 #include <libmuscle/port_grpc.hpp>
-#include "muscle_manager_protocol/muscle_manager_protocol.grpc.pb.h"
-#include "muscle_manager_protocol/muscle_manager_protocol.pb.h"
-#include <ymmsl/identity.hpp>
-#include <ymmsl/model.hpp>
-#include "ymmsl/settings.hpp"
+#include <muscle_manager_protocol/muscle_manager_protocol.grpc.pb.h>
+#include <muscle_manager_protocol/muscle_manager_protocol.pb.h>
+#include <ymmsl/ymmsl.hpp>
 
 namespace mmp = muscle_manager_protocol;
 

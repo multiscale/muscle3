@@ -6,21 +6,21 @@
 #include <vector>
 
 
-namespace ymmsl {
+namespace ymmsl { namespace impl {
     class Identifier;
-}
+} }
 
 namespace std {
-    template<> struct hash<::ymmsl::Identifier> {
-        typedef ::ymmsl::Identifier argument_type;
+    template<> struct hash<::ymmsl::impl::Identifier> {
+        typedef ::ymmsl::impl::Identifier argument_type;
         typedef size_t result_type;
 
-        std::size_t operator()(::ymmsl::Identifier const &) const noexcept;
+        std::size_t operator()(::ymmsl::impl::Identifier const &) const noexcept;
     };
 }
 
 
-namespace ymmsl {
+namespace ymmsl { namespace impl {
 
 /** A custom string type that represents an identifier.
  *
@@ -109,8 +109,8 @@ class Identifier {
         friend bool operator==(std::string const & lhs, Identifier const & rhs);
         friend bool operator!=(std::string const & lhs, Identifier const & rhs);
         friend std::ostream & operator<<(std::ostream & os, Identifier const & i);
-        friend ::std::size_t ::std::hash<::ymmsl::Identifier>::operator()(
-                ::ymmsl::Identifier const & id) const;
+        friend ::std::size_t ::std::hash<::ymmsl::impl::Identifier>::operator()(
+                ::ymmsl::impl::Identifier const & id) const;
         std::string data_;
 };
 
@@ -232,7 +232,7 @@ class Reference {
          *
          * Creates a Reference from a string, which will be parsed.
          *
-         * @param contents A string to parse.
+         * @param content A string to parse.
          *
          * @throws std::invalid_argument if the argument does not define a
          *         valid Reference.
@@ -243,7 +243,7 @@ class Reference {
          *
          * Creates a Reference from a C string, which will be parsed.
          *
-         * @param contents A string to parse.
+         * @param content A string to parse.
          *
          * @throws std::invalid_argument if the argument does not define a
          *         valid Reference.
@@ -418,39 +418,39 @@ bool operator==(std::string const & lhs, Reference const & rhs);
  */
 bool operator!=(std::string const & lhs, Reference const & rhs);
 
-}
+} }
 
 namespace std {
-    template<> struct hash<::ymmsl::ReferencePart> {
-        typedef ::ymmsl::ReferencePart argument_type;
+    template<> struct hash<::ymmsl::impl::ReferencePart> {
+        typedef ::ymmsl::impl::ReferencePart argument_type;
         typedef size_t result_type;
 
         result_type operator()(argument_type const & refpart) const noexcept {
             if (refpart.is_identifier())
-                return hash<::ymmsl::Identifier>()(refpart.identifier());
+                return hash<::ymmsl::impl::Identifier>()(refpart.identifier());
             return hash<int>()(refpart.index());
         }
     };
 
-    template<> struct hash<::ymmsl::Reference> {
-        typedef ::ymmsl::Reference argument_type;
+    template<> struct hash<::ymmsl::impl::Reference> {
+        typedef ::ymmsl::impl::Reference argument_type;
         typedef size_t result_type;
 
         result_type operator()(argument_type const & ref) const noexcept {
             result_type res = 0ul;
             for (auto const & part : ref)
-                res ^= hash<::ymmsl::ReferencePart>()(part) + 0x9e3779b9 + (res << 6) + (res >> 2);
+                res ^= hash<::ymmsl::impl::ReferencePart>()(part) + 0x9e3779b9 + (res << 6) + (res >> 2);
             return res;
         }
     };
 }
 
-namespace ymmsl {
+namespace ymmsl { namespace impl {
 
 template <class ForwardIt>
 Reference::Reference(ForwardIt begin, ForwardIt end)
     : parts_(begin, end)
 {}
 
-}
+} }
 

@@ -6,7 +6,7 @@
 #include <ymmsl/identity.hpp>
 
 
-namespace ymmsl {
+namespace ymmsl { namespace impl {
 
 SettingValue::SettingValue()
     : type_(SettingValue::Type_::INACTIVE)
@@ -207,7 +207,7 @@ void write_vec_double(std::ostream & os, std::vector<double> const & val) {
 
 }
 
-std::ostream & operator<<(std::ostream & os, ymmsl::SettingValue const & val) {
+std::ostream & operator<<(std::ostream & os, ymmsl::impl::SettingValue const & val) {
     if (val.is_a<std::string>())
         os << "\"" << val.as<std::string>() << "\"";
     else if (val.is_a<int64_t>())
@@ -277,7 +277,7 @@ Settings::const_iterator Settings::end() const {
     return store_.cend();
 }
 
-std::ostream & operator<<(std::ostream & os, ymmsl::Settings const & settings) {
+std::ostream & operator<<(std::ostream & os, ymmsl::impl::Settings const & settings) {
     bool first = true;
     os << "Settings(";
     for (auto const & setting : settings) {
@@ -290,5 +290,5 @@ std::ostream & operator<<(std::ostream & os, ymmsl::Settings const & settings) {
     return os;
 }
 
-}
+} }
 

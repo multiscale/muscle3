@@ -8,7 +8,7 @@
 
 #include <msgpack.hpp>
 
-#include <ymmsl/settings.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 
 namespace libmuscle {

@@ -1,6 +1,6 @@
 // Template implementation. Do not include directly!
 
-namespace ymmsl {
+namespace ymmsl { namespace impl {
 
 template<>
 inline bool SettingValue::is_a<std::string>() const {
@@ -86,5 +86,5 @@ T SettingValue::as() const {
     return T(); // remove warning
 }
 
-}
+} }
 

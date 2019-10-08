@@ -10,13 +10,13 @@
 using namespace std::string_literals;
 
 
-::std::size_t ::std::hash<::ymmsl::Identifier>::operator()(
+::std::size_t ::std::hash<::ymmsl::impl::Identifier>::operator()(
         argument_type const & id) const noexcept
 {
     return hash<std::string>()(id.data_);
 }
 
-namespace ymmsl {
+namespace ymmsl { namespace impl {
 
 Identifier::Identifier(std::string const & contents)
     : data_(contents)
@@ -301,5 +301,5 @@ bool operator!=(::std::string const & lhs, Reference const & rhs) {
     return rhs != lhs;
 }
 
-}
+} }
 

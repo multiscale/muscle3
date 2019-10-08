@@ -1,7 +1,7 @@
 #pragma once
 
-#include "muscle_manager_protocol/muscle_manager_protocol.pb.h"
-#include "ymmsl/compute_element.hpp"
+#include <muscle_manager_protocol/muscle_manager_protocol.pb.h>
+#include <ymmsl/ymmsl.hpp>
 
 
 namespace libmuscle {

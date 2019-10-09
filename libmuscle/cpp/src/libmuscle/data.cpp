@@ -12,13 +12,13 @@
 #include "ymmsl/identity.hpp"
 #include "ymmsl/settings.hpp"
 
-using libmuscle::mcp::ExtTypeId;
+using libmuscle::impl::mcp::ExtTypeId;
 using ymmsl::SettingValue;
 using ymmsl::Reference;
 using ymmsl::Settings;
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 DataConstRef::DataConstRef()
     : mp_zones_(new std::vector<std::shared_ptr<msgpack::zone>>())
@@ -529,5 +529,5 @@ void Data::init_list_(uint32_t size) {
     mp_obj_->via.array.ptr = zone_alloc_<msgpack::object>(size);
 }
 
-}   // namespace libmuscle
+} }  // namespace libmuscle::impl
 

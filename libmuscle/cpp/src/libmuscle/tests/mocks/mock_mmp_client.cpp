@@ -9,7 +9,7 @@ using ymmsl::Conduit;
 using ymmsl::Reference;
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 MockMMPClient::MockMMPClient(std::string const & location) {
     ++num_constructed;
@@ -73,5 +73,6 @@ std::string MockMMPClient::last_location("");
 std::vector<std::string> MockMMPClient::last_registered_locations({});
 
 std::vector<::ymmsl::Port> MockMMPClient::last_registered_ports({});
-}
+
+} }
 

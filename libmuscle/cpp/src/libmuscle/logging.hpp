@@ -1,10 +1,10 @@
 #pragma once
 
-#include "libmuscle/timestamp.hpp"
-#include "muscle_manager_protocol/muscle_manager_protocol.pb.h"
+#include <libmuscle/timestamp.hpp>
+#include <muscle_manager_protocol/muscle_manager_protocol.pb.h>
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 /** Log levels for MUSCLE 3.
  *
@@ -69,5 +69,6 @@ class LogMessage {
         muscle_manager_protocol::LogMessage to_grpc() const;
 };
 
-}
+} }
+
 

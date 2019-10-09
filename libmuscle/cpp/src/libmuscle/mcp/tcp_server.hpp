@@ -10,7 +10,7 @@
 #include <netdb.h>
 
 
-namespace libmuscle { namespace mcp {
+namespace libmuscle { namespace impl { namespace mcp {
 
 /** A server that accepts TCP connections.
  */
@@ -63,7 +63,7 @@ class TcpServer : public Server {
         std::string location_;
 };
 
-} }
+} } }
 
 #endif
 

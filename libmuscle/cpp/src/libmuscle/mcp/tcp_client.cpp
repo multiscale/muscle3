@@ -81,7 +81,7 @@ int connect(std::string const & address) {
 
 
 
-namespace libmuscle { namespace mcp {
+namespace libmuscle { namespace impl { namespace mcp {
 
 bool TcpClient::can_connect_to(std::string const & location) {
     return location.compare(0u, 4u, "tcp:") == 0;
@@ -129,11 +129,11 @@ Message TcpClient::receive(::ymmsl::Reference const & receiver) {
     DataConstRef data = unpack_data(zone, buf, length);
 
     // create message
-    libmuscle::Optional<int> port_length;
+    libmuscle::impl::Optional<int> port_length;
     if (data["port_length"].is_a<int>())
         port_length = data["port_length"].as<int>();
 
-    libmuscle::Optional<double> next_timestamp;
+    libmuscle::impl::Optional<double> next_timestamp;
     if (data["next_timestamp"].is_a<double>())
         next_timestamp = data["next_timestamp"].as<double>();
 
@@ -153,5 +153,5 @@ void TcpClient::close() {
     socket_fd_ = -1;
 }
 
-} }
+} } }
 

@@ -5,7 +5,7 @@
 #include <ymmsl/compute_element.hpp>
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 /** Represents a gateway to the outside world.
  *
@@ -112,7 +112,5 @@ class Port : public ::ymmsl::Port {
         std::vector<bool> is_open_;
 };
 
-
-
-}
+} }
 

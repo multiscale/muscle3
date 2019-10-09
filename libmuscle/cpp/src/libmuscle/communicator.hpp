@@ -20,7 +20,7 @@
 #include <vector>
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 /** A description of which ports a compute element has.
  *
@@ -219,7 +219,7 @@ class Communicator {
         friend class TestCommunicator;
 };
 
-}
+} }
 
 #endif
 

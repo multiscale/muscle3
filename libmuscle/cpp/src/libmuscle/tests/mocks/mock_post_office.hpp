@@ -6,7 +6,7 @@
 #include "libmuscle/outbox.hpp"
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 
 class MockPostOffice {
@@ -33,5 +33,5 @@ class MockPostOffice {
 
 using PostOffice = MockPostOffice;
 
-}
+} }
 

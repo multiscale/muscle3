@@ -6,7 +6,7 @@
 #include <ymmsl/ymmsl.hpp>
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 /** A message to be sent or received.
  *
@@ -145,5 +145,5 @@ class Message {
         Optional<ymmsl::Settings> settings_;
 };
 
-}
+} }
 

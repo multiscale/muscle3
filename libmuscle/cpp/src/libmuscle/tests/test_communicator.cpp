@@ -38,19 +38,19 @@
 #include <mocks/mcp/mock_tcp_server.hpp>
 #include <mocks/mock_peer_manager.hpp>
 
-using libmuscle::Communicator;
-using libmuscle::Data;
-using libmuscle::Endpoint;
-using libmuscle::Optional;
-using libmuscle::PeerDims;
-using libmuscle::PeerLocations;
-using libmuscle::MockPeerManager;
-using libmuscle::MockPostOffice;
-using libmuscle::Port;
-using libmuscle::PortsDescription;
-using libmuscle::Message;
-using libmuscle::mcp::MockTcpClient;
-using libmuscle::mcp::MockTcpServer;
+using libmuscle::impl::Communicator;
+using libmuscle::impl::Data;
+using libmuscle::impl::Endpoint;
+using libmuscle::impl::Optional;
+using libmuscle::impl::PeerDims;
+using libmuscle::impl::PeerLocations;
+using libmuscle::impl::MockPeerManager;
+using libmuscle::impl::MockPostOffice;
+using libmuscle::impl::Port;
+using libmuscle::impl::PortsDescription;
+using libmuscle::impl::Message;
+using libmuscle::impl::mcp::MockTcpClient;
+using libmuscle::impl::mcp::MockTcpServer;
 
 using ymmsl::Conduit;
 using ymmsl::Reference;
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
 
 
 // Helpers for accessing internal state
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 struct TestCommunicator {
     static std::unordered_map<std::string, Port> const & ports_(
@@ -73,7 +73,10 @@ struct TestCommunicator {
     }
 };
 
-}
+} }
+
+using libmuscle::impl::TestCommunicator;
+
 
 /* Mocks have internal state, which needs to be reset before each test. This
  * means that the tests are not reentrant, and cannot be run in parallel.
@@ -192,7 +195,7 @@ TEST(libmuscle_communicator, test_connect) {
     ASSERT_EQ(MockPeerManager::last_constructed_index, std::vector<int>({13}));
 
     // check inferred ports
-    auto const & ports = libmuscle::TestCommunicator::ports_(comm);
+    auto const & ports = TestCommunicator::ports_(comm);
 
     ASSERT_EQ(ports.at("in").name, "in");
     ASSERT_EQ(ports.at("in").oper, Operator::F_INIT);
@@ -244,7 +247,7 @@ TEST(libmuscle_communicator, test_connect_vector_ports) {
     ASSERT_EQ(MockPeerManager::last_constructed_peer_dims, peer_dims);
     ASSERT_EQ(MockPeerManager::last_constructed_peer_locations, peer_locations);
 
-    auto const & ports = libmuscle::TestCommunicator::ports_(comm);
+    auto const & ports = TestCommunicator::ports_(comm);
 
     ASSERT_EQ(ports.at("in").name, "in");
     ASSERT_EQ(ports.at("in").oper, Operator::F_INIT);
@@ -335,7 +338,7 @@ TEST(libmuscle_communicator, test_connect_inferred_ports) {
     ASSERT_EQ(MockPeerManager::last_constructed_peer_dims, peer_dims);
     ASSERT_EQ(MockPeerManager::last_constructed_peer_locations, peer_locations);
 
-    auto const & ports = libmuscle::TestCommunicator::ports_(comm);
+    auto const & ports = TestCommunicator::ports_(comm);
 
     ASSERT_EQ(ports.at("in").name, "in");
     ASSERT_EQ(ports.at("in").oper, Operator::F_INIT);
@@ -490,7 +493,7 @@ TEST(libmuscle_communicator, close_port) {
             MockPostOffice::last_message->timestamp,
             std::numeric_limits<double>::infinity());
     ASSERT_FALSE(MockPostOffice::last_message->next_timestamp.is_set());
-    ASSERT_TRUE(libmuscle::is_close_port(MockPostOffice::last_message->data));
+    ASSERT_TRUE(libmuscle::impl::is_close_port(MockPostOffice::last_message->data));
 }
 
 TEST(libmuscle_communicator, receive_message) {

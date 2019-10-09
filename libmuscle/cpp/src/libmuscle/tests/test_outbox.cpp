@@ -10,10 +10,10 @@
 #include <ymmsl/identity.hpp>
 
 
-using libmuscle::DataConstRef;
-using libmuscle::Optional;
-using libmuscle::Outbox;
-using libmuscle::mcp::Message;
+using libmuscle::impl::DataConstRef;
+using libmuscle::impl::Optional;
+using libmuscle::impl::Outbox;
+using libmuscle::impl::mcp::Message;
 using ymmsl::Reference;
 
 

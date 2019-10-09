@@ -10,10 +10,10 @@
 #include <cassert>
 #include <tuple>
 
-using libmuscle::LogLevel;
-using libmuscle::LogMessage;
-using libmuscle::MMPClient;
-using libmuscle::Timestamp;
+using libmuscle::impl::LogLevel;
+using libmuscle::impl::LogMessage;
+using libmuscle::impl::MMPClient;
+using libmuscle::impl::Timestamp;
 using ymmsl::Operator;
 using ymmsl::Port;
 using ymmsl::Reference;

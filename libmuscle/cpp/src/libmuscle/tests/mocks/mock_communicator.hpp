@@ -15,7 +15,7 @@
 #include <vector>
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 using PortsDescription = std::unordered_map<ymmsl::Operator, std::vector<std::string>>;
 
@@ -78,5 +78,5 @@ class MockCommunicator {
 
 using Communicator = MockCommunicator;
 
-}
+} }
 

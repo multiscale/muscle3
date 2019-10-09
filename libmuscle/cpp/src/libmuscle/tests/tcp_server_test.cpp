@@ -17,11 +17,11 @@
 #include <msgpack.hpp>
 
 
-using libmuscle::PostOffice;
-using libmuscle::Data;
-using libmuscle::mcp::Message;
-using libmuscle::mcp::Server;
-using libmuscle::mcp::TcpServer;
+using libmuscle::impl::PostOffice;
+using libmuscle::impl::Data;
+using libmuscle::impl::mcp::Message;
+using libmuscle::impl::mcp::Server;
+using libmuscle::impl::mcp::TcpServer;
 using ymmsl::Reference;
 
 

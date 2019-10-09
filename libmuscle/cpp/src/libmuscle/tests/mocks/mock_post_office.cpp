@@ -1,6 +1,6 @@
 #include <mocks/mock_post_office.hpp>
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 bool MockPostOffice::has_message(ymmsl::Reference const & receiver) {
     return false;
@@ -31,5 +31,5 @@ void MockPostOffice::reset() {
 Reference MockPostOffice::last_receiver("_none");
 std::unique_ptr<mcp::Message> MockPostOffice::last_message;
 
-}
+} }
 

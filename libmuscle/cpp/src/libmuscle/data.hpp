@@ -11,7 +11,7 @@
 #include <ymmsl/ymmsl.hpp>
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 class Data;
 
@@ -21,7 +21,6 @@ namespace mcp {
             std::shared_ptr<msgpack::zone> const & zone,
             char const * begin, std::size_t length);
 }
-
 
 /** A const reference to some kind of data.
  *
@@ -343,7 +342,7 @@ class DataConstRef {
 
         // see comment at Data::init_dict_'s implementation
         friend class Data;
-        friend bool ::libmuscle::is_close_port(DataConstRef const &);
+        friend bool ::libmuscle::impl::is_close_port(DataConstRef const &);
 };
 
 
@@ -515,12 +514,12 @@ class Data : public DataConstRef {
 
         friend struct msgpack::adaptor::pack<Data>;
         friend struct msgpack::adaptor::object_with_zone<Data>;
-        friend Data libmuscle::mcp::unpack_data(
+        friend Data libmuscle::impl::mcp::unpack_data(
                 std::shared_ptr<msgpack::zone> const & zone,
                 char const * begin, std::size_t length);
 };
 
-}   // namespace libmuscle
+} }   // namespace libmuscle::impl
 
 #include <libmuscle/data.tpp>
 

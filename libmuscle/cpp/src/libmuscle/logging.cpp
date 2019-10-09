@@ -5,7 +5,7 @@
 
 namespace mmp = muscle_manager_protocol;
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 LogLevel log_level_from_grpc(mmp::LogLevel level) {
     LogLevel result;
@@ -75,5 +75,5 @@ mmp::LogMessage LogMessage::to_grpc() const {
     return result;
 }
 
-}
+} }
 

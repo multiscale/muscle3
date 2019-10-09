@@ -3,7 +3,7 @@
 #include <sys/types.h>
 
 
-namespace libmuscle { namespace mcp {
+namespace libmuscle { namespace impl { namespace mcp {
 
 /* Send a message on a socket.
  *
@@ -38,5 +38,5 @@ void send_int64(int fd, int64_t data);
  */
 int64_t recv_int64(int fd);
 
-} }
+} } }
 

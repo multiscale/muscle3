@@ -3,7 +3,7 @@
 #include <ymmsl/ymmsl.hpp>
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 /** Manages the current settings for a compute element instance.
  */
@@ -39,5 +39,5 @@ class SettingsManager {
                 ymmsl::Reference const & setting_name) const;
 };
 
-}
+} }
 

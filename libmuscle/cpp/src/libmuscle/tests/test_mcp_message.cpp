@@ -10,8 +10,8 @@
 #include <utility>
 
 
-using libmuscle::Data;
-using libmuscle::mcp::Message;
+using libmuscle::impl::Data;
+using libmuscle::impl::mcp::Message;
 using ymmsl::Reference;
 
 

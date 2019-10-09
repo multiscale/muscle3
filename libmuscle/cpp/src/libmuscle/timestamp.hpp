@@ -2,8 +2,8 @@
 
 #include <muscle_manager_protocol/muscle_manager_protocol.pb.h>
 
-namespace libmuscle {
 
+namespace libmuscle { namespace impl {
 
 /** A timestamp, as the number of seconds since the UNIX epoch.
  */
@@ -33,5 +33,5 @@ class Timestamp {
         double seconds_;
 };
 
-}
+} }
 

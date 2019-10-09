@@ -5,9 +5,9 @@
 #include <gtest/gtest.h>
 
 
-using libmuscle::PeerDims;
-using libmuscle::PeerLocations;
-using libmuscle::PeerManager;
+using libmuscle::impl::PeerDims;
+using libmuscle::impl::PeerLocations;
+using libmuscle::impl::PeerManager;
 using ymmsl::Conduit;
 using ymmsl::Reference;
 

@@ -3,10 +3,10 @@
 #include <libmuscle/mcp/ext_types.hpp>
 
 
-using libmuscle::mcp::ExtTypeId;
+using libmuscle::impl::mcp::ExtTypeId;
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 ClosePort::ClosePort()
     :  Data()
@@ -22,5 +22,5 @@ bool is_close_port(DataConstRef const & data) {
                 static_cast<int8_t>(ExtTypeId::close_port));
 }
 
-}
+} }
 

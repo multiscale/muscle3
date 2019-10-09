@@ -9,12 +9,12 @@
 #include <limits>
 
 
-using libmuscle::ClosePort;
-using libmuscle::Data;
-using libmuscle::DataConstRef;
-using libmuscle::mcp::ExtTypeId;
-using libmuscle::mcp::TcpClient;
-using libmuscle::mcp::TcpServer;
+using libmuscle::impl::ClosePort;
+using libmuscle::impl::Data;
+using libmuscle::impl::DataConstRef;
+using libmuscle::impl::mcp::ExtTypeId;
+using libmuscle::impl::mcp::TcpClient;
+using libmuscle::impl::mcp::TcpServer;
 
 using ymmsl::Conduit;
 using ymmsl::Identifier;
@@ -23,7 +23,7 @@ using ymmsl::Reference;
 using ymmsl::Settings;
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 Communicator::Communicator(
         ymmsl::Reference const & kernel,
@@ -341,5 +341,5 @@ std::tuple<std::string, bool> Communicator::split_port_desc_(
     return std::make_tuple(port_name, is_vector);
 }
 
-}
+} }
 

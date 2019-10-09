@@ -6,7 +6,7 @@
 #include <string>
 
 
-namespace libmuscle { namespace mcp {
+namespace libmuscle { namespace impl { namespace mcp {
 
 /** A client that connects to an MCP server.
  *
@@ -83,5 +83,5 @@ class Client {
         virtual void close() = 0;
 };
 
-} }
+} } }
 

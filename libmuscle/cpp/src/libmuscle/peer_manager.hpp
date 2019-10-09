@@ -14,7 +14,7 @@
 #include <vector>
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 using PeerDims = std::unordered_map<ymmsl::Reference, std::vector<int>>;
 using PeerLocations = std::unordered_map<
@@ -95,7 +95,7 @@ class PeerManager {
         PeerLocations peer_locations_;
 };
 
-}
+} }
 
 #endif
 

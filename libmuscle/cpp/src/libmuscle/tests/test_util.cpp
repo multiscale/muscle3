@@ -1,9 +1,11 @@
-#include "libmuscle/util.hpp"
+#include <libmuscle/util.hpp>
 
 #include <utility>
 
 #include <gtest/gtest.h>
 
+
+using libmuscle::impl::Optional;
 
 
 // Note: do not run in parallel, OptMock has static members that are reused
@@ -95,7 +97,7 @@ int OptMock::destructed = -32768;       // random weird number
 
 TEST(libmuscle_util, create_unset_optional) {
     OptMock::reset();
-    libmuscle::Optional<OptMock> o1;
+    Optional<OptMock> o1;
     ASSERT_FALSE(o1.is_set());
 }
 
@@ -103,7 +105,7 @@ TEST(libmuscle_util, create_set_optional) {
     OptMock::reset();
     OptMock mock;
     ASSERT_TRUE(mock.default_constructed);
-    libmuscle::Optional<OptMock> o1(mock);
+    Optional<OptMock> o1(mock);
     ASSERT_FALSE(o1.get().default_constructed);
     ASSERT_TRUE(o1.get().copy_constructed);
     ASSERT_EQ(mock.copy_constructed_from, 1);
@@ -111,8 +113,8 @@ TEST(libmuscle_util, create_set_optional) {
 
 TEST(libmuscle_util, copy_construct_from_unset_optional) {
     OptMock::reset();
-    libmuscle::Optional<OptMock> o1;
-    libmuscle::Optional<OptMock> o2(o1);
+    Optional<OptMock> o1;
+    Optional<OptMock> o2(o1);
     ASSERT_FALSE(o1.is_set());
     ASSERT_FALSE(o2.is_set());
 }
@@ -120,8 +122,8 @@ TEST(libmuscle_util, copy_construct_from_unset_optional) {
 TEST(libmuscle_util, copy_construct_from_set_optional) {
     OptMock::reset();
     OptMock mock;
-    libmuscle::Optional<OptMock> o1(mock);
-    libmuscle::Optional<OptMock> o2(o1);
+    Optional<OptMock> o1(mock);
+    Optional<OptMock> o2(o1);
     ASSERT_TRUE(o2.get().copy_constructed);
     ASSERT_EQ(o1.get().copy_constructed_from, 1);
 }
@@ -129,8 +131,8 @@ TEST(libmuscle_util, copy_construct_from_set_optional) {
 TEST(libmuscle_util, move_construct_from_unset_optional) {
     OptMock::reset();
     {
-        libmuscle::Optional<OptMock> o1;
-        libmuscle::Optional<OptMock> o2(std::move(o1));
+        Optional<OptMock> o1;
+        Optional<OptMock> o2(std::move(o1));
         ASSERT_FALSE(o2.is_set());
     }
     ASSERT_EQ(OptMock::destructed, 0);
@@ -140,8 +142,8 @@ TEST(libmuscle_util, move_construct_from_set_optional) {
     OptMock::reset();
     {
         OptMock mock;
-        libmuscle::Optional<OptMock> o1(mock);
-        libmuscle::Optional<OptMock> o2(std::move(o1));
+        Optional<OptMock> o1(mock);
+        Optional<OptMock> o2(std::move(o1));
         ASSERT_EQ(o1.get().move_constructed_from, 1);
         ASSERT_TRUE(o2.get().move_constructed);
     }
@@ -150,8 +152,8 @@ TEST(libmuscle_util, move_construct_from_set_optional) {
 
 TEST(libmuscle_util, copy_assign_from_unset_to_unset_optional) {
     OptMock::reset();
-    libmuscle::Optional<OptMock> o1;
-    libmuscle::Optional<OptMock> o2;
+    Optional<OptMock> o1;
+    Optional<OptMock> o2;
     o2 = o1;
     ASSERT_FALSE(o2.is_set());
 }
@@ -159,11 +161,11 @@ TEST(libmuscle_util, copy_assign_from_unset_to_unset_optional) {
 TEST(libmuscle_util, copy_assign_from_set_to_unset_optional) {
     OptMock::reset();
     OptMock mock;
-    libmuscle::Optional<OptMock> o1(mock);
+    Optional<OptMock> o1(mock);
     ASSERT_EQ(mock.copy_constructed_from, 1);
     ASSERT_TRUE(o1.get().copy_constructed);
 
-    libmuscle::Optional<OptMock> o2;
+    Optional<OptMock> o2;
     o2 = o1;
     ASSERT_TRUE(o2.get().copy_constructed);
     ASSERT_EQ(o1.get().copy_constructed_from, 1);
@@ -173,8 +175,8 @@ TEST(libmuscle_util, copy_assign_from_set_to_set_optional) {
     OptMock::reset();
     {
         OptMock mock;
-        libmuscle::Optional<OptMock> o1(mock);
-        libmuscle::Optional<OptMock> o2(mock);
+        Optional<OptMock> o1(mock);
+        Optional<OptMock> o2(mock);
         ASSERT_TRUE(o2.get().copy_constructed);
 
         o2 = o1;
@@ -189,8 +191,8 @@ TEST(libmuscle_util, copy_assign_from_unset_to_set_optional) {
     OptMock::reset();
     {
         OptMock mock;
-        libmuscle::Optional<OptMock> o1;
-        libmuscle::Optional<OptMock> o2(mock);
+        Optional<OptMock> o1;
+        Optional<OptMock> o2(mock);
         ASSERT_TRUE(o2.get().copy_constructed);
 
         o2 = o1;
@@ -202,8 +204,8 @@ TEST(libmuscle_util, copy_assign_from_unset_to_set_optional) {
 TEST(libmuscle_util, move_assign_from_unset_to_unset_optional) {
     OptMock::reset();
     {
-        libmuscle::Optional<OptMock> o1;
-        libmuscle::Optional<OptMock> o2;
+        Optional<OptMock> o1;
+        Optional<OptMock> o2;
         o2 = std::move(o1);
         ASSERT_FALSE(o1.is_set());
         ASSERT_FALSE(o2.is_set());
@@ -215,8 +217,8 @@ TEST(libmuscle_util, move_assign_from_set_to_unset_optional) {
     OptMock::reset();
     {
         OptMock mock;
-        libmuscle::Optional<OptMock> o1(mock);
-        libmuscle::Optional<OptMock> o2;
+        Optional<OptMock> o1(mock);
+        Optional<OptMock> o2;
         o2 = std::move(o1);
         ASSERT_TRUE(o1.get().copy_constructed);
         ASSERT_EQ(o1.get().move_constructed_from, 1);
@@ -229,8 +231,8 @@ TEST(libmuscle_util, move_assign_from_set_to_set_optional) {
     OptMock::reset();
     {
         OptMock mock;
-        libmuscle::Optional<OptMock> o1(mock);
-        libmuscle::Optional<OptMock> o2(mock);
+        Optional<OptMock> o1(mock);
+        Optional<OptMock> o2(mock);
         o2 = std::move(o1);
         ASSERT_EQ(o2.get().move_assigned_to, 1);
         ASSERT_EQ(o1.get().move_assigned_from, 1);
@@ -239,7 +241,7 @@ TEST(libmuscle_util, move_assign_from_set_to_set_optional) {
 }
 
 TEST(libmuscle_util, equality_comparison) {
-    libmuscle::Optional<int> o1, o2, o3(10), o4(10), o5(11);
+    Optional<int> o1, o2, o3(10), o4(10), o5(11);
     ASSERT_TRUE(o1 == o2);
     ASSERT_FALSE(o1 == o3);
     ASSERT_FALSE(o3 == o1);
@@ -248,7 +250,7 @@ TEST(libmuscle_util, equality_comparison) {
 }
 
 TEST(libmuscle_util, inequality_comparison) {
-    libmuscle::Optional<int> o1, o2, o3(10), o4(10), o5(11);
+    Optional<int> o1, o2, o3(10), o4(10), o5(11);
     ASSERT_FALSE(o1 != o2);
     ASSERT_TRUE(o1 != o3);
     ASSERT_TRUE(o3 != o1);

@@ -51,7 +51,7 @@ namespace {
     }
 }
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 MMPClient::MMPClient(std::string const & location) {
     std::shared_ptr<grpc::Channel> channel = grpc::CreateChannel(
@@ -219,5 +219,5 @@ void MMPClient::deregister_instance(Reference const & name) {
     client_->DeregisterInstance(&context, request, &response);
 }
 
-}
+} }
 

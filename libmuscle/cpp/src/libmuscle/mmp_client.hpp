@@ -16,7 +16,7 @@
 #include <ymmsl/ymmsl.hpp>
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 /** The client for the MUSCLE Manager Protocol.
  *
@@ -86,7 +86,7 @@ class MMPClient {
         std::unique_ptr<muscle_manager_protocol::MuscleManager::Stub> client_;
 };
 
-}
+} }
 
 #endif
 

@@ -7,7 +7,7 @@
 #include <libmuscle/mcp/client.hpp>
 
 
-namespace libmuscle { namespace mcp {
+namespace libmuscle { namespace impl { namespace mcp {
 
 /** A client that connects to an MCP server.
  *
@@ -84,7 +84,7 @@ class TcpClient : public Client {
         int socket_fd_;
 };
 
-} }
+} } }
 
 #endif
 

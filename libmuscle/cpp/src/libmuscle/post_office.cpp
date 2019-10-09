@@ -6,10 +6,10 @@
 
 
 using ymmsl::Reference;
-using libmuscle::mcp::Message;
+using libmuscle::impl::mcp::Message;
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 bool PostOffice::has_message(Reference const & receiver) {
     return !get_outbox_(receiver).is_empty();
@@ -40,5 +40,5 @@ Outbox & PostOffice::get_outbox_(Reference const & receiver) {
     return *outboxes_[receiver].get();
 }
 
-}
+} }
 

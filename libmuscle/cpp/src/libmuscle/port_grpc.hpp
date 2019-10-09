@@ -4,7 +4,7 @@
 #include <ymmsl/ymmsl.hpp>
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 /** Convert a gRPC Port to a ymmsl port.
  *
@@ -20,5 +20,5 @@ namespace libmuscle {
  */
 ::muscle_manager_protocol::Port port_to_grpc(::ymmsl::Port const & port);
 
-}
+} }
 

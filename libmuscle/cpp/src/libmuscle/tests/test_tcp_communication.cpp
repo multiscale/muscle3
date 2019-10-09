@@ -13,11 +13,11 @@
 #include <utility>
 
 
-using libmuscle::Data;
-using libmuscle::mcp::Message;
-using libmuscle::mcp::TcpClient;
-using libmuscle::mcp::TcpServer;
-using libmuscle::PostOffice;
+using libmuscle::impl::Data;
+using libmuscle::impl::mcp::Message;
+using libmuscle::impl::mcp::TcpClient;
+using libmuscle::impl::mcp::TcpServer;
+using libmuscle::impl::PostOffice;
 
 using ymmsl::Reference;
 

@@ -6,7 +6,7 @@
 #include <string>
 
 
-namespace libmuscle { namespace mcp {
+namespace libmuscle { namespace impl { namespace mcp {
 
 /** A server that accepts MCP connections.
  *
@@ -38,8 +38,8 @@ class Server {
 
     protected:
         ymmsl::Reference instance_id_;
-        ::libmuscle::PostOffice & post_office_;
+        ::libmuscle::impl::PostOffice & post_office_;
 };
 
-} }
+} } }
 

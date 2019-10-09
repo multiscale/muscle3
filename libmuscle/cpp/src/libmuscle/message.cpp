@@ -4,7 +4,7 @@
 using ymmsl::Settings;
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 Message::Message(
         double timestamp,
@@ -126,5 +126,5 @@ void Message::unset_settings() {
     settings_ = {};
 }
 
-}
+} }
 

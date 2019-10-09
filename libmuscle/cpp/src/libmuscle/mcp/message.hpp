@@ -5,7 +5,7 @@
 #include <ymmsl/identity.hpp>
 
 
-namespace libmuscle { namespace mcp {
+namespace libmuscle { namespace impl { namespace mcp {
 
 /** A MUSCLE Communication Protocol message.
  *
@@ -30,19 +30,19 @@ struct Message {
      */
     Message(
             ::ymmsl::Reference const & sender, ::ymmsl::Reference const & receiver,
-            ::libmuscle::Optional<int> port_length,
-            double timestamp, ::libmuscle::Optional<double> next_timestamp,
+            ::libmuscle::impl::Optional<int> port_length,
+            double timestamp, ::libmuscle::impl::Optional<double> next_timestamp,
             DataConstRef const & settings_overlay,
             DataConstRef const & data);
 
     ::ymmsl::Reference sender;
     ::ymmsl::Reference receiver;
-    ::libmuscle::Optional<int> port_length;
+    ::libmuscle::impl::Optional<int> port_length;
     double timestamp;
-    ::libmuscle::Optional<double> next_timestamp;
+    ::libmuscle::impl::Optional<double> next_timestamp;
     DataConstRef settings_overlay;
     DataConstRef data;
 };
 
-} }
+} } }
 

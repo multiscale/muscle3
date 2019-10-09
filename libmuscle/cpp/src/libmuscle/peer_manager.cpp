@@ -6,7 +6,7 @@ using ymmsl::Identifier;
 using ymmsl::Reference;
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 PeerManager::PeerManager(
         Reference const & kernel,
@@ -69,5 +69,5 @@ Endpoint PeerManager::get_peer_endpoint(
     return Endpoint(peer_kernel, peer_index, peer_port, peer_slot);
 }
 
-}
+} }
 

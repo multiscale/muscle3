@@ -13,7 +13,7 @@ using ymmsl::Identifier;
 using ymmsl::Operator;
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 Port::Port(
         std::string const & name, Operator oper,
@@ -107,5 +107,5 @@ void Port::set_closed(int slot) {
     is_open_[slot] = false;
 }
 
-}
+} }
 

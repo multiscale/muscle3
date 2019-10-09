@@ -10,7 +10,7 @@
 #include <msgpack.hpp>
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 template <typename T>
 bool DataConstRef::is_a() const {
@@ -114,5 +114,5 @@ void Data::init_list_(uint32_t offset, Arg const & value,
     mp_obj_->via.array.ptr[offset] = msgpack::object(value, *mp_zones_->front());
 }
 
-}   // namespace libmuscle
+} }   // namespace libmuscle::impl
 

@@ -11,7 +11,7 @@
 #include <memory>
 #include <string>
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 /** Represents a compute element instance in a MUSCLE3 simulation.
  *
@@ -439,7 +439,7 @@ class Instance {
         friend class TestInstance;
 };
 
-}
+} }
 
 #include <libmuscle/instance.tpp>
 

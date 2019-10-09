@@ -8,7 +8,7 @@
 
 
 using namespace std::string_literals;
-using libmuscle::SettingsManager;
+using libmuscle::impl::SettingsManager;
 using ymmsl::Reference;
 using ymmsl::Settings;
 

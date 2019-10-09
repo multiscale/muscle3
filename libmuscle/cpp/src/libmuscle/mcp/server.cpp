@@ -4,7 +4,7 @@
 using ymmsl::Reference;
 
 
-namespace libmuscle { namespace mcp {
+namespace libmuscle { namespace impl {namespace mcp {
 
 Server::Server(
         Reference const & instance_id, PostOffice & post_office)
@@ -13,5 +13,5 @@ Server::Server(
 {}
 
 
-} }
+} } }
 

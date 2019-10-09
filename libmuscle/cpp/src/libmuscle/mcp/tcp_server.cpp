@@ -11,12 +11,12 @@
 
 using namespace std::string_literals;
 
-using libmuscle::Data;
-using libmuscle::PostOffice;
-using libmuscle::mcp::recv_all;
-using libmuscle::mcp::send_all;
-using libmuscle::mcp::recv_int64;
-using libmuscle::mcp::send_int64;
+using libmuscle::impl::Data;
+using libmuscle::impl::PostOffice;
+using libmuscle::impl::mcp::recv_all;
+using libmuscle::impl::mcp::send_all;
+using libmuscle::impl::mcp::recv_int64;
+using libmuscle::impl::mcp::send_int64;
 
 using ymmsl::Reference;
 
@@ -246,7 +246,7 @@ class TcpServerWorker {
 }
 
 
-namespace libmuscle { namespace mcp {
+namespace libmuscle { namespace impl { namespace mcp {
 
 TcpServer::TcpServer(Reference const & instance_id, PostOffice & post_office)
     : Server(instance_id, post_office)
@@ -445,5 +445,5 @@ void TcpServer::server_thread_(TcpServer * self) {
         worker->shutdown();
 }
 
-} }
+} } }
 

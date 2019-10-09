@@ -13,7 +13,7 @@ using ymmsl::Reference;
 using ymmsl::Settings;
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 Instance::Instance(int argc, char const * const argv[])
     : instance_name_(make_full_name_(argc, argv))
@@ -581,5 +581,5 @@ void Instance::shutdown_() {
     }
 }
 
-}
+} }
 

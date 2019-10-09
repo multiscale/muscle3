@@ -3,7 +3,7 @@
 #include <libmuscle/mcp/server.hpp>
 
 
-namespace libmuscle { namespace mcp {
+namespace libmuscle { namespace impl { namespace mcp {
 
 class MockTcpServer : public Server {
     public:
@@ -24,5 +24,5 @@ class MockTcpServer : public Server {
 
 using TcpServer = MockTcpServer;
 
-} }
+} } }
 

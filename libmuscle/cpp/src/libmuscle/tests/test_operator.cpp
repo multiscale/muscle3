@@ -16,12 +16,12 @@ int main(int argc, char *argv[]) {
 TEST(libmuscle_operator, operator_from_grpc) {
     mmp::Operator mmp_op1 = mmp::OPERATOR_F_INIT;
 
-    ASSERT_EQ(libmuscle::operator_from_grpc(mmp_op1), ymmsl::Operator::F_INIT);
+    ASSERT_EQ(libmuscle::impl::operator_from_grpc(mmp_op1), ymmsl::Operator::F_INIT);
 }
 
 TEST(libmuscle_operator, operator_to_grpc) {
     auto op = ymmsl::Operator::S;
 
-    ASSERT_EQ(libmuscle::operator_to_grpc(op), mmp::OPERATOR_S);
+    ASSERT_EQ(libmuscle::impl::operator_to_grpc(op), mmp::OPERATOR_S);
 }
 

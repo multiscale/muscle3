@@ -4,7 +4,7 @@
 #include <mutex>
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 bool Outbox::is_empty() const {
     std::unique_lock<std::mutex> lock(mutex_);
@@ -28,5 +28,5 @@ std::unique_ptr<mcp::Message> Outbox::retrieve() {
     return result;
 }
 
-}
+} }
 

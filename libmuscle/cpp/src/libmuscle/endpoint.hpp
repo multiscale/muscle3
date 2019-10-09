@@ -6,7 +6,7 @@
 #include <ymmsl/ymmsl.hpp>
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 /* Place that a message is sent from and to.
  *
@@ -95,5 +95,5 @@ class Endpoint {
         std::vector<int> slot;
 };
 
-}
+} }
 

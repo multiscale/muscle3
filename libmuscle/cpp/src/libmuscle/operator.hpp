@@ -4,7 +4,7 @@
 #include <ymmsl/ymmsl.hpp>
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 /** Convert an operator from the gRPC to the ymmsl type.
  *
@@ -18,5 +18,5 @@ ymmsl::Operator operator_from_grpc(muscle_manager_protocol::Operator op);
  */
 muscle_manager_protocol::Operator operator_to_grpc(ymmsl::Operator op);
 
-}
+} }
 

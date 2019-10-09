@@ -10,7 +10,7 @@ using ymmsl::Reference;
 using ymmsl::Settings;
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 SettingValue const & SettingsManager::get_setting(
         Reference const & instance,
@@ -53,5 +53,5 @@ T const & SettingsManager::get_setting_as(
     return value.as<T>();
 }
 
-}
+} }
 

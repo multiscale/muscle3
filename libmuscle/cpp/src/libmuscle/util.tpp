@@ -3,7 +3,7 @@
 #include <utility>
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 template <typename T>
 Optional<T>::Optional()
@@ -119,5 +119,5 @@ std::ostream & operator<<(std::ostream & os, Optional<T> const & t) {
     return os;
 }
 
-}
+} }
 

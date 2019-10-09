@@ -4,13 +4,13 @@
 #include <utility>
 
 
-namespace libmuscle { namespace mcp {
+namespace libmuscle { namespace impl { namespace mcp {
 
 Message::Message(
             ::ymmsl::Reference const & sender,
             ::ymmsl::Reference const & receiver,
-            ::libmuscle::Optional<int> port_length,
-            double timestamp, ::libmuscle::Optional<double> next_timestamp,
+            ::libmuscle::impl::Optional<int> port_length,
+            double timestamp, ::libmuscle::impl::Optional<double> next_timestamp,
             DataConstRef const & settings_overlay,
             DataConstRef const & data
             )
@@ -23,5 +23,5 @@ Message::Message(
         , data(data)
     {}
 
-} }
+} } }
 

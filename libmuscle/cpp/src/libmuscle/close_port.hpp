@@ -3,7 +3,7 @@
 #include <libmuscle/data.hpp>
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 /** Represents a ClosePort message.
  *
@@ -26,5 +26,5 @@ class ClosePort : public Data {
         ClosePort();
 };
 
-}
+} }
 

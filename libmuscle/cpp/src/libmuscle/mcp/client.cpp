@@ -3,7 +3,7 @@
 #include "ymmsl/identity.hpp"
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 namespace mcp {
 
@@ -21,5 +21,5 @@ Client::~Client() {}
 
 }   // namespace mcp
 
-}   // namespace libmuscle
+} }   // namespace libmuscle::impl
 

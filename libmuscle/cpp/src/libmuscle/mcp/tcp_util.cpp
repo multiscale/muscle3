@@ -5,7 +5,7 @@
 #include <sys/socket.h>
 
 
-namespace libmuscle { namespace mcp {
+namespace libmuscle { namespace impl { namespace mcp {
 
 ssize_t send_all(int fd, char const * data, ssize_t length) {
     for (ssize_t sent = 0; sent < length; ) {
@@ -43,5 +43,5 @@ int64_t recv_int64(int fd) {
     return data;
 }
 
-} }
+} } }
 

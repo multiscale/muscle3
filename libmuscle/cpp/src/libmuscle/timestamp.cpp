@@ -2,11 +2,11 @@
 #include <cmath>
 #include <memory>
 
-#include "libmuscle/timestamp.hpp"
-#include "muscle_manager_protocol/muscle_manager_protocol.pb.h"
+#include <libmuscle/timestamp.hpp>
+#include <muscle_manager_protocol/muscle_manager_protocol.pb.h>
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 Timestamp::Timestamp(double seconds)
     : seconds_(seconds)
@@ -27,5 +27,5 @@ std::unique_ptr<::google::protobuf::Timestamp> Timestamp::to_grpc() const {
     return result;
 }
 
-}
+} }
 

@@ -9,7 +9,7 @@
 #include <mutex>
 #include <vector>
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 
 /** Stores messages to be sent to a particular receiver.
@@ -55,5 +55,5 @@ class Outbox {
         mutable std::condition_variable deposited_;
 };
 
-}
+} }
 

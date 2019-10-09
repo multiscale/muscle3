@@ -9,7 +9,7 @@ namespace mmp = ::muscle_manager_protocol;
 using ymmsl::Identifier;
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 ::ymmsl::Port port_from_grpc(mmp::Port const & port) {
     return ::ymmsl::Port(
@@ -24,5 +24,5 @@ mmp::Port port_to_grpc(::ymmsl::Port const & port) {
     return result;
 }
 
-}
+} }
 

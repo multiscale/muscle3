@@ -4,7 +4,7 @@
 namespace mmp = muscle_manager_protocol;
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 ymmsl::Operator operator_from_grpc(mmp::Operator op) {
     ymmsl::Operator result;
@@ -68,5 +68,5 @@ muscle_manager_protocol::Operator operator_to_grpc(ymmsl::Operator op) {
     return result;
 }
 
-}
+} }
 

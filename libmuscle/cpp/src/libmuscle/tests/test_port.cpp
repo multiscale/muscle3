@@ -2,14 +2,14 @@
 
 #include <gtest/gtest.h>
 
-#include "libmuscle/port.hpp"
-#include "muscle_manager_protocol/muscle_manager_protocol.pb.h"
+#include <libmuscle/port.hpp>
+#include <muscle_manager_protocol/muscle_manager_protocol.pb.h>
 #include <ymmsl/identity.hpp>
 
 
 namespace mmp = muscle_manager_protocol;
 
-using libmuscle::Port;
+using libmuscle::impl::Port;
 using ymmsl::Identifier;
 using ymmsl::Operator;
 

@@ -7,15 +7,15 @@
 
 #include <ymmsl/identity.hpp>
 
-#include "libmuscle/mcp/message.hpp"
-#include "libmuscle/outbox.hpp"
+#include <libmuscle/mcp/message.hpp>
+#include <libmuscle/outbox.hpp>
 
 #include <condition_variable>
 #include <memory>
 #include <mutex>
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 
 /** Holds messages to be retrieved.
@@ -68,7 +68,7 @@ class PostOffice {
         std::unordered_map<ymmsl::Reference, std::unique_ptr<Outbox>> outboxes_;
 };
 
-}
+} }
 
 #endif
 

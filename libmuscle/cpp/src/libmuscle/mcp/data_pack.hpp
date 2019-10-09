@@ -7,7 +7,7 @@
 #include <msgpack.hpp>
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 namespace mcp {
 
@@ -27,7 +27,7 @@ Data unpack_data(
 
 }   // namespace mcp
 
-}   // namespace libmuscle
+} }   // namespace libmuscle::impl
 
 #include "libmuscle/mcp/data_pack.tpp"
 

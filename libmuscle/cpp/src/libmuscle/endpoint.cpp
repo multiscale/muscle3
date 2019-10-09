@@ -5,7 +5,7 @@ using ymmsl::Identifier;
 using ymmsl::Reference;
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 Endpoint::Endpoint(
         Reference const & kernel,
@@ -39,5 +39,5 @@ Reference Endpoint::instance() const {
     return ret;
 }
 
-}
+} }
 

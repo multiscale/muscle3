@@ -6,7 +6,7 @@ using ymmsl::Identifier;
 using ymmsl::Reference;
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 MockPeerManager::MockPeerManager(
         Reference const & kernel,
@@ -78,5 +78,5 @@ std::unordered_map<Identifier, Reference> MockPeerManager::get_peer_port_table;
 std::unordered_map<Reference, std::vector<int>> MockPeerManager::get_peer_dims_table;
 std::unordered_map<Reference, Endpoint> MockPeerManager::get_peer_endpoint_table;
 
-}
+} }
 

@@ -14,10 +14,11 @@
 #include <msgpack.hpp>
 
 
-using libmuscle::DataConstRef;
-using libmuscle::mcp::Message;
-using libmuscle::mcp::Client;
-using libmuscle::mcp::TcpClient;
+using libmuscle::impl::DataConstRef;
+using libmuscle::impl::mcp::Message;
+using libmuscle::impl::mcp::Client;
+using libmuscle::impl::mcp::TcpClient;
+using libmuscle::impl::mcp::unpack_data;
 using ymmsl::Reference;
 
 
@@ -44,7 +45,7 @@ int main(int argc, char *argv[]) {
     assert(message.next_timestamp == 2.0);
 
     auto zone = std::make_shared<msgpack::zone>();
-    DataConstRef overlay = ::libmuscle::mcp::unpack_data(
+    DataConstRef overlay = unpack_data(
             zone, message.settings_overlay.as_byte_array(),
             message.settings_overlay.size());
 
@@ -52,7 +53,7 @@ int main(int argc, char *argv[]) {
     assert(overlay["test_setting"].is_a<int>());
     assert(overlay["test_setting"].as<int>() == 42);
 
-    DataConstRef data = ::libmuscle::mcp::unpack_data(
+    DataConstRef data = unpack_data(
             zone, message.data.as_byte_array(),
             message.data.size());
 

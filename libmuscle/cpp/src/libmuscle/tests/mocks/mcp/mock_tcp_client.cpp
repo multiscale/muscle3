@@ -1,7 +1,7 @@
 #include <mocks/mcp/mock_tcp_client.hpp>
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 namespace mcp {
 
@@ -52,5 +52,5 @@ Reference MockTcpClient::last_receiver("_none");
 
 }
 
-}
+} }
 

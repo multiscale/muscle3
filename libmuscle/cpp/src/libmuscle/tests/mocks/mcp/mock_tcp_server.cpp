@@ -2,7 +2,7 @@
 
 #include <ymmsl/identity.hpp>
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 namespace mcp {
 
@@ -33,5 +33,5 @@ ymmsl::Reference MockTcpServer::last_instance_id("_none");
 
 }
 
-}
+} }
 

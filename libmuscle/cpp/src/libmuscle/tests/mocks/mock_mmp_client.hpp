@@ -12,7 +12,7 @@
 #include "ymmsl/settings.hpp"
 
 
-namespace libmuscle {
+namespace libmuscle { namespace impl {
 
 class MockMMPClient {
     public:
@@ -47,5 +47,5 @@ class MockMMPClient {
 
 using MMPClient = MockMMPClient;
 
-}
+} }
 

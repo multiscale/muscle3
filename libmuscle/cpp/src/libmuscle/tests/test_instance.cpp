@@ -52,11 +52,11 @@ namespace libmuscle { namespace impl {
 
 struct TestInstance {
     static Reference & instance_name_(Instance & instance) {
-        return instance.instance_name_;
+        return instance.impl_()->instance_name_;
     }
 
     static SettingsManager & settings_manager_(Instance & instance) {
-        return instance.settings_manager_;
+        return instance.impl_()->settings_manager_;
     }
 };
 

@@ -1,12 +1,8 @@
 #pragma once
 
 #include <libmuscle/communicator.hpp>
-#include <libmuscle/mmp_client.hpp>
-#include <libmuscle/settings_manager.hpp>
-#include <libmuscle/util.hpp>
 
-#include <ymmsl/identity.hpp>
-#include <ymmsl/settings.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 #include <memory>
 #include <string>
@@ -396,50 +392,14 @@ class Instance {
                 Message const & default_msg);
 
     private:
-        ::ymmsl::Reference instance_name_;
-        MMPClient manager_;
-        Communicator communicator_;
-        PortsDescription declared_ports_;
-        SettingsManager settings_manager_;
-        bool first_run_;
-        std::unordered_map<::ymmsl::Reference, Message> f_init_cache_;
-        bool is_shut_down_;
+        class Impl;
+        std::unique_ptr<Impl> pimpl_;
 
-        void register_();
-        void connect_();
-        void deregister_();
-        Message receive_message_(
-                std::string const & port_name,
-                Optional<int> slot,
-                Optional<Message> default_msg,
-                bool with_settings);
-
-        ::ymmsl::Reference make_full_name_(int argc, char const * const argv[]) const;
-        std::string extract_manager_location_(int argc, char const * const argv[]) const;
-        ::ymmsl::Reference name_() const;
-        std::vector<int> index_() const;
-        std::vector<::ymmsl::Port> list_declared_ports_() const;
-        void check_port_(std::string const & port_name);
-        bool receive_settings_();
-        void pre_receive_(
-                std::string const & port_name,
-                Optional<int> slot, bool apply_overlay);
-        void pre_receive_f_init_(bool apply_overlay);
-        void apply_overlay_(Message const & message);
-        void check_compatibility_(
-                std::string const & port_name,
-                Optional<::ymmsl::Settings> const & overlay);
-        void close_outgoing_ports_();
-        void drain_incoming_port_(std::string const & port_name);
-        void drain_incoming_vector_port_(std::string const & port_name);
-        void close_incoming_ports_();
-        void close_ports_();
-        void shutdown_();
+        Impl const * impl_() const;
+        Impl * impl_();
 
         friend class TestInstance;
 };
 
 } }
-
-#include <libmuscle/instance.tpp>
 

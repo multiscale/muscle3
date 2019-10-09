@@ -1,10 +1,13 @@
 #include <libmuscle/instance.hpp>
 
+#include <libmuscle/communicator.hpp>
 #include <libmuscle/mmp_client.hpp>
-#include <ymmsl/compute_element.hpp>
-#include <ymmsl/identity.hpp>
-#include <ymmsl/settings.hpp>
+#include <libmuscle/peer_manager.hpp>
+#include <libmuscle/settings_manager.hpp>
 
+#include <ymmsl/ymmsl.hpp>
+
+#include <cstdint>
 #include <stdexcept>
 
 
@@ -15,7 +18,86 @@ using ymmsl::Settings;
 
 namespace libmuscle { namespace impl {
 
-Instance::Instance(int argc, char const * const argv[])
+class Instance::Impl {
+    public:
+        Impl(int argc, char const * const argv[]);
+        Impl(int argc, char const * const argv[],
+                PortsDescription const & ports);
+        bool reuse_instance(bool apply_overlay = true);
+        void exit_error(std::string const & message);
+        ::ymmsl::SettingValue get_setting(std::string const & name) const;
+        template <typename ValueType>
+        ValueType get_setting_as(std::string const & name) const;
+        std::unordered_map<::ymmsl::Operator, std::vector<std::string>>
+        list_ports() const;
+        bool is_connected(std::string const & port) const;
+        bool is_vector_port(std::string const & port) const;
+        bool is_resizable(std::string const & port) const;
+        int get_port_length(std::string const & port) const;
+        void set_port_length(std::string const & port, int length);
+        void send(std::string const & port_name, Message const & message);
+        void send(std::string const & port_name, Message const & message,
+                int slot);
+        Message receive(std::string const & port_name);
+        Message receive(
+                std::string const & port_name, Message const & default_msg);
+        Message receive(std::string const & port_name, int slot);
+        Message receive(
+                std::string const & port_name, int slot,
+                Message const & default_msg);
+        Message receive_with_settings(std::string const & port_name);
+        Message receive_with_settings(std::string const & port_name, int slot);
+        Message receive_with_settings(
+                std::string const & port_name, Message const & default_msg);
+        Message receive_with_settings(
+                std::string const & port_name, int slot,
+                Message const & default_msg);
+
+    private:
+        ::ymmsl::Reference instance_name_;
+        MMPClient manager_;
+        Communicator communicator_;
+        PortsDescription declared_ports_;
+        SettingsManager settings_manager_;
+        bool first_run_;
+        std::unordered_map<::ymmsl::Reference, Message> f_init_cache_;
+        bool is_shut_down_;
+
+        void register_();
+        void connect_();
+        void deregister_();
+        Message receive_message_(
+                std::string const & port_name,
+                Optional<int> slot,
+                Optional<Message> default_msg,
+                bool with_settings);
+
+        ::ymmsl::Reference make_full_name_(int argc, char const * const argv[]) const;
+        std::string extract_manager_location_(int argc, char const * const argv[]) const;
+        ::ymmsl::Reference name_() const;
+        std::vector<int> index_() const;
+        std::vector<::ymmsl::Port> list_declared_ports_() const;
+        void check_port_(std::string const & port_name);
+        bool receive_settings_();
+        void pre_receive_(
+                std::string const & port_name,
+                Optional<int> slot, bool apply_overlay);
+        void pre_receive_f_init_(bool apply_overlay);
+        void apply_overlay_(Message const & message);
+        void check_compatibility_(
+                std::string const & port_name,
+                Optional<::ymmsl::Settings> const & overlay);
+        void close_outgoing_ports_();
+        void drain_incoming_port_(std::string const & port_name);
+        void drain_incoming_vector_port_(std::string const & port_name);
+        void close_incoming_ports_();
+        void close_ports_();
+        void shutdown_();
+
+        friend class TestInstance;
+};
+
+Instance::Impl::Impl(int argc, char const * const argv[])
     : instance_name_(make_full_name_(argc, argv))
     , manager_(extract_manager_location_(argc, argv))
     , communicator_(name_(), index_(), {}, 0)
@@ -29,7 +111,7 @@ Instance::Instance(int argc, char const * const argv[])
     connect_();
 }
 
-Instance::Instance(int argc, char const * const argv[],
+Instance::Impl::Impl(int argc, char const * const argv[],
                    PortsDescription const & ports)
     : instance_name_(make_full_name_(argc, argv))
     , manager_(extract_manager_location_(argc, argv))
@@ -44,7 +126,7 @@ Instance::Instance(int argc, char const * const argv[],
     connect_();
 }
 
-bool Instance::reuse_instance(bool apply_overlay) {
+bool Instance::Impl::reuse_instance(bool apply_overlay) {
     bool do_reuse = receive_settings_();
 
     // TODO: f_init_cache_ should be empty here, or the user didn't receive
@@ -76,41 +158,50 @@ bool Instance::reuse_instance(bool apply_overlay) {
     return do_reuse;
 }
 
-void Instance::exit_error(std::string const & message) {
+void Instance::Impl::exit_error(std::string const & message) {
     shutdown_();
     exit(1);
 }
 
-::ymmsl::SettingValue Instance::get_setting(std::string const & name) const {
+::ymmsl::SettingValue Instance::Impl::get_setting(std::string const & name) const {
     return settings_manager_.get_setting(instance_name_, name);
 }
 
+/* This is a template, but it's only ever instantiated in this file,
+ * namely below in the public version that calls this. So it doesn't need
+ * to be in a .tpp file.
+ */
+template <typename ValueType>
+ValueType Instance::Impl::get_setting_as(std::string const & name) const {
+    return settings_manager_.get_setting(instance_name_, name).as<ValueType>();
+}
+
 std::unordered_map<::ymmsl::Operator, std::vector<std::string>>
-Instance::list_ports() const {
+Instance::Impl::list_ports() const {
     return communicator_.list_ports();
 }
 
-bool Instance::is_connected(std::string const & port) const {
+bool Instance::Impl::is_connected(std::string const & port) const {
     return communicator_.get_port(port).is_connected();
 }
 
-bool Instance::is_vector_port(std::string const & port) const {
+bool Instance::Impl::is_vector_port(std::string const & port) const {
     return communicator_.get_port(port).is_vector();
 }
 
-bool Instance::is_resizable(std::string const & port) const {
+bool Instance::Impl::is_resizable(std::string const & port) const {
     return communicator_.get_port(port).is_resizable();
 }
 
-int Instance::get_port_length(std::string const & port) const {
+int Instance::Impl::get_port_length(std::string const & port) const {
     return communicator_.get_port(port).get_length();
 }
 
-void Instance::set_port_length(std::string const & port, int length) {
+void Instance::Impl::set_port_length(std::string const & port, int length) {
     return communicator_.get_port(port).set_length(length);
 }
 
-void Instance::send(std::string const & port_name, Message const & message) {
+void Instance::Impl::send(std::string const & port_name, Message const & message) {
     check_port_(port_name);
     if (!message.has_settings()) {
         Message msg(message);
@@ -121,7 +212,7 @@ void Instance::send(std::string const & port_name, Message const & message) {
         communicator_.send_message(port_name, message);
 }
 
-void Instance::send(
+void Instance::Impl::send(
         std::string const & port_name, Message const & message, int slot)
 {
     check_port_(port_name);
@@ -134,24 +225,24 @@ void Instance::send(
         communicator_.send_message(port_name, message, slot);
 }
 
-Message Instance::receive(std::string const & port_name) {
+Message Instance::Impl::receive(std::string const & port_name) {
     return receive_message_(port_name, {}, {}, false);
 }
 
-Message Instance::receive(
+Message Instance::Impl::receive(
         std::string const & port_name,
         int slot)
 {
     return receive_message_(port_name, slot, {}, false);
 }
 
-Message Instance::receive(
+Message Instance::Impl::receive(
         std::string const & port_name, Message const & default_msg)
 {
     return receive_message_(port_name, {}, default_msg, false);
 }
 
-Message Instance::receive(
+Message Instance::Impl::receive(
         std::string const & port_name,
         int slot,
         Message const & default_msg)
@@ -159,25 +250,25 @@ Message Instance::receive(
     return receive_message_(port_name, slot, default_msg, false);
 }
 
-Message Instance::receive_with_settings(std::string const & port_name) {
+Message Instance::Impl::receive_with_settings(std::string const & port_name) {
     return receive_message_(port_name, {}, {}, true);
 }
 
-Message Instance::receive_with_settings(
+Message Instance::Impl::receive_with_settings(
         std::string const & port_name,
         int slot)
 {
     return receive_message_(port_name, slot, {}, false);
 }
 
-Message Instance::receive_with_settings(
+Message Instance::Impl::receive_with_settings(
         std::string const & port_name, Message const & default_msg)
 {
     return receive_message_(port_name, {}, default_msg, true);
 }
 
 
-Message Instance::receive_with_settings(
+Message Instance::Impl::receive_with_settings(
         std::string const & port_name,
         int slot,
         Message const & default_msg)
@@ -187,7 +278,7 @@ Message Instance::receive_with_settings(
 
 /* Register this instance with the manager.
  */
-void Instance::register_() {
+void Instance::Impl::register_() {
     // TODO: profile this
     auto locations = communicator_.get_locations();
     auto port_list = list_declared_ports_();
@@ -197,7 +288,7 @@ void Instance::register_() {
 
 /* Connect this instance to the given peers / conduits.
  */
-void Instance::connect_() {
+void Instance::Impl::connect_() {
     // TODO: profile this
     auto peer_info = manager_.request_peers(instance_name_);
     communicator_.connect(std::get<0>(peer_info), std::get<1>(peer_info), std::get<2>(peer_info));
@@ -207,7 +298,7 @@ void Instance::connect_() {
 
 /* Deregister this instance from the manager.
  */
-void Instance::deregister_() {
+void Instance::Impl::deregister_() {
     // TODO: profile this
     manager_.deregister_instance(instance_name_);
     // TODO: stop profile
@@ -215,7 +306,7 @@ void Instance::deregister_() {
     // TODO: shut down profiler
 }
 
-Message Instance::receive_message_(
+Message Instance::Impl::receive_message_(
                 std::string const & port_name,
                 Optional<int> slot,
                 Optional<Message> default_msg,
@@ -291,7 +382,7 @@ Message Instance::receive_message_(
  * This takes the argument to the --muscle-instance= command-line option and
  * returns it as a Reference.
  */
-Reference Instance::make_full_name_(int argc, char const * const argv[]) const {
+Reference Instance::Impl::make_full_name_(int argc, char const * const argv[]) const {
     std::string prefix_tag("--muscle-instance=");
     for (int i = 1; i < argc; ++i) {
         if (strncmp(argv[i], prefix_tag.c_str(), prefix_tag.size()) == 0) {
@@ -309,7 +400,7 @@ Reference Instance::make_full_name_(int argc, char const * const argv[]) const {
  * how to connect to the manager. This function will extract this argument
  * from the command line arguments, if it is present.
  */
-std::string Instance::extract_manager_location_(
+std::string Instance::Impl::extract_manager_location_(
         int argc, char const * const argv[]) const
 {
     std::string prefix_tag("--muscle-manager=");
@@ -322,7 +413,7 @@ std::string Instance::extract_manager_location_(
 
 /* Returns the compute element name of this instance, i.e. without the index.
  */
-Reference Instance::name_() const {
+Reference Instance::Impl::name_() const {
     auto it = instance_name_.cbegin();
     while (it != instance_name_.cend() && it->is_identifier())
         ++it;
@@ -332,7 +423,7 @@ Reference Instance::name_() const {
 
 /* Returns the index of this instance, i.e. without the compute element.
  */
-std::vector<int> Instance::index_() const {
+std::vector<int> Instance::Impl::index_() const {
     std::vector<int> result;
     auto it = instance_name_.cbegin();
     while (it != instance_name_.cend() && it->is_identifier())
@@ -350,7 +441,7 @@ std::vector<int> Instance::index_() const {
  * This returns a list of ymmsl::Port objects, which have only the name and
  * operator, not libmuscle::Port, which has more.
  */
-std::vector<::ymmsl::Port> Instance::list_declared_ports_() const {
+std::vector<::ymmsl::Port> Instance::Impl::list_declared_ports_() const {
     std::vector<::ymmsl::Port> result;
     for (auto const & oper_ports : declared_ports_) {
         for (auto const & fullname : oper_ports.second) {
@@ -367,7 +458,7 @@ std::vector<::ymmsl::Port> Instance::list_declared_ports_() const {
  *
  * @param port_name The name of the port to check.
  */
-void Instance::check_port_(std::string const & port_name) {
+void Instance::Impl::check_port_(std::string const & port_name) {
     if (!communicator_.port_exists(port_name)) {
         std::ostringstream oss;
         oss << "Port '" << port_name << "' does not exist on '";
@@ -382,7 +473,7 @@ void Instance::check_port_(std::string const & port_name) {
  *
  * @return false iff the port is connected and ClosePort was received.
  */
-bool Instance::receive_settings_() {
+bool Instance::Impl::receive_settings_() {
     Message default_message(0.0, Settings(), Settings());
     auto msg = communicator_.receive_message("muscle_settings_in", {}, default_message);
     if (is_close_port(msg.data()))
@@ -406,7 +497,7 @@ bool Instance::receive_settings_() {
 
 /* Pre-receive on the given port and slot, if any.
  */
-void Instance::pre_receive_(
+void Instance::Impl::pre_receive_(
         std::string const & port_name, Optional<int> slot,
         bool apply_overlay) {
     Reference port_ref(port_name);
@@ -427,7 +518,7 @@ void Instance::pre_receive_(
  * This receives all incoming messages on F_INIT and stores them in
  * f_init_cache_.
  */
-void Instance::pre_receive_f_init_(bool apply_overlay) {
+void Instance::Impl::pre_receive_f_init_(bool apply_overlay) {
     f_init_cache_.clear();
     auto ports = communicator_.list_ports();
     if (ports.count(Operator::F_INIT) == 1) {
@@ -452,7 +543,7 @@ void Instance::pre_receive_f_init_(bool apply_overlay) {
  *
  * @param message The message to apply the overlay from.
  */
-void Instance::apply_overlay_(Message const & message) {
+void Instance::Impl::apply_overlay_(Message const & message) {
     if (settings_manager_.overlay.empty())
         if (message.has_settings())
             settings_manager_.overlay = message.settings();
@@ -463,7 +554,7 @@ void Instance::apply_overlay_(Message const & message) {
  * @param port_name Name of the port on which the overlay was received.
  * @param overlay The received overlay.
  */
-void Instance::check_compatibility_(
+void Instance::Impl::check_compatibility_(
         std::string const & port_name,
         Optional<Settings> const & overlay)
 {
@@ -485,7 +576,7 @@ void Instance::check_compatibility_(
  *
  * This sends a close port message on all slots of all outgoing ports.
  */
-void Instance::close_outgoing_ports_() {
+void Instance::Impl::close_outgoing_ports_() {
     for (auto const & oper_ports : communicator_.list_ports()) {
         if (allows_sending(oper_ports.first)) {
             for (auto const & port_name : oper_ports.second) {
@@ -507,7 +598,7 @@ void Instance::close_outgoing_ports_() {
  *
  * @param port_name Port to drain.
  */
-void Instance::drain_incoming_port_(std::string const & port_name) {
+void Instance::Impl::drain_incoming_port_(std::string const & port_name) {
     auto const & port = communicator_.get_port(port_name);
     while (port.is_open())
         communicator_.receive_message(port_name);
@@ -519,7 +610,7 @@ void Instance::drain_incoming_port_(std::string const & port_name) {
  *
  * @param port_name Port to drain.
  */
-void Instance::drain_incoming_vector_port_(std::string const & port_name) {
+void Instance::Impl::drain_incoming_vector_port_(std::string const & port_name) {
     auto const & port = communicator_.get_port(port_name);
 
     bool all_closed = true;
@@ -544,7 +635,7 @@ void Instance::drain_incoming_vector_port_(std::string const & port_name) {
  * signaling that there will be no more messages, and allowing the sending
  * instance to shut down cleanly.
  */
-void Instance::close_incoming_ports_() {
+void Instance::Impl::close_incoming_ports_() {
     for (auto const & oper_ports : communicator_.list_ports()) {
         if (allows_receiving(oper_ports.first)) {
             for (auto const & port_name : oper_ports.second) {
@@ -565,20 +656,159 @@ void Instance::close_incoming_ports_() {
  * This sends a close port message on all slots of all outgoing ports, then
  * receives one on all incoming ports.
  */
-void Instance::close_ports_() {
+void Instance::Impl::close_ports_() {
     close_outgoing_ports_();
     close_incoming_ports_();
 }
 
 /* Shuts down communication with the outside world and deregisters.
  */
-void Instance::shutdown_() {
+void Instance::Impl::shutdown_() {
     if (!is_shut_down_) {
         close_ports_();
         communicator_.shutdown();
         deregister_();
         is_shut_down_ = true;
     }
+}
+
+
+/* Below is the implementation of the public interface.
+ *
+ * These just forward to the hidden implementations above.
+ */
+
+Instance::Instance(int argc, char const * const argv[])
+    : pimpl_(new Impl(argc, argv))
+{}
+
+Instance::Instance(int argc, char const * const argv[],
+                   PortsDescription const & ports)
+    : pimpl_(new Impl(argc, argv, ports))
+{}
+
+bool Instance::reuse_instance(bool apply_overlay) {
+    return impl_()->reuse_instance(apply_overlay);
+}
+
+void Instance::exit_error(std::string const & message) {
+    impl_()->exit_error(message);
+}
+
+::ymmsl::SettingValue Instance::get_setting(std::string const & name) const {
+    return impl_()->get_setting(name);
+}
+
+/* This is instantiated explicitly, it's the only way to do this with a
+ * pImpl. Fortunately, we don't allow arbitrary types for settings, so it
+ * works this way.
+ */
+template <typename ValueType>
+ValueType Instance::get_setting_as(std::string const & name) const {
+    return impl_()->get_setting_as<ValueType>(name);
+}
+
+template std::string Instance::get_setting_as<std::string>(std::string const & name) const;
+template int64_t Instance::get_setting_as<int64_t>(std::string const & name) const;
+template double Instance::get_setting_as<double>(std::string const & name) const;
+template bool Instance::get_setting_as<bool>(std::string const & name) const;
+template std::vector<double> Instance::get_setting_as<std::vector<double>>(
+        std::string const & name) const;
+template std::vector<std::vector<double>> Instance::get_setting_as<std::vector<std::vector<double>>>(
+        std::string const & name) const;
+
+std::unordered_map<::ymmsl::Operator, std::vector<std::string>>
+Instance::list_ports() const {
+    return impl_()->list_ports();
+}
+
+bool Instance::is_connected(std::string const & port) const {
+    return impl_()->is_connected(port);
+}
+
+bool Instance::is_vector_port(std::string const & port) const {
+    return impl_()->is_vector_port(port);
+}
+
+bool Instance::is_resizable(std::string const & port) const {
+    return impl_()->is_resizable(port);
+}
+
+int Instance::get_port_length(std::string const & port) const {
+    return impl_()->get_port_length(port);
+}
+
+void Instance::set_port_length(std::string const & port, int length) {
+    impl_()->set_port_length(port, length);
+}
+
+void Instance::send(std::string const & port_name, Message const & message) {
+    impl_()->send(port_name, message);
+}
+
+void Instance::send(
+        std::string const & port_name, Message const & message, int slot)
+{
+    impl_()->send(port_name, message, slot);
+}
+
+Message Instance::receive(std::string const & port_name) {
+    return impl_()->receive(port_name);
+}
+
+Message Instance::receive(
+        std::string const & port_name,
+        int slot)
+{
+    return impl_()->receive(port_name, slot);
+}
+
+Message Instance::receive(
+        std::string const & port_name, Message const & default_msg)
+{
+    return impl_()->receive(port_name, default_msg);
+}
+
+Message Instance::receive(
+        std::string const & port_name,
+        int slot,
+        Message const & default_msg)
+{
+    return impl_()->receive(port_name, slot, default_msg);
+}
+
+Message Instance::receive_with_settings(std::string const & port_name) {
+    return impl_()->receive_with_settings(port_name);
+}
+
+Message Instance::receive_with_settings(
+        std::string const & port_name,
+        int slot)
+{
+    return impl_()->receive_with_settings(port_name, slot);
+}
+
+Message Instance::receive_with_settings(
+        std::string const & port_name, Message const & default_msg)
+{
+    return impl_()->receive_with_settings(port_name, default_msg);
+}
+
+
+Message Instance::receive_with_settings(
+        std::string const & port_name,
+        int slot,
+        Message const & default_msg)
+{
+    return impl_()->receive_with_settings(port_name, slot, default_msg);
+}
+
+Instance::Impl const * Instance::impl_() const {
+    return pimpl_.get();
+}
+
+Instance::Impl * Instance::impl_() {
+    return pimpl_.get();
 }
 
 } }

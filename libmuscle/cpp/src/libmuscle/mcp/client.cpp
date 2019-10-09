@@ -1,6 +1,6 @@
 #include "libmuscle/mcp/client.hpp"
 
-#include "ymmsl/identity.hpp"
+#include <ymmsl/ymmsl.hpp>
 
 
 namespace libmuscle { namespace impl {

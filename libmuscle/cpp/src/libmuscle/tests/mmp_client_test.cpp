@@ -3,9 +3,7 @@
  */
 #include <libmuscle/logging.hpp>
 #include <libmuscle/mmp_client.hpp>
-#include <ymmsl/compute_element.hpp>
-#include <ymmsl/identity.hpp>
-#include <ymmsl/settings.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 #include <cassert>
 #include <tuple>

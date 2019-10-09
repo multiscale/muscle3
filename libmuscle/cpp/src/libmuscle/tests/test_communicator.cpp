@@ -5,10 +5,7 @@
 #define LIBMUSCLE_MOCK_POST_OFFICE <mocks/mock_post_office.hpp>
 
 // into the real implementation,
-#include <ymmsl/compute_element.cpp>
-#include <ymmsl/identity.cpp>
-#include <ymmsl/model.cpp>
-#include <ymmsl/settings.cpp>
+#include <ymmsl/ymmsl.hpp>
 
 #include <libmuscle/close_port.cpp>
 #include <libmuscle/communicator.cpp>

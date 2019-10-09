@@ -1,8 +1,6 @@
 #include "mocks/mock_mmp_client.hpp"
 
-#include <ymmsl/identity.hpp>
-#include <ymmsl/model.hpp>
-#include "ymmsl/settings.hpp"
+#include <ymmsl/ymmsl.hpp>
 
 
 using ymmsl::Conduit;

@@ -2,7 +2,7 @@
 
 #include "libmuscle/operator.hpp"
 #include "muscle_manager_protocol/muscle_manager_protocol.pb.h"
-#include "ymmsl/compute_element.hpp"
+#include <ymmsl/ymmsl.hpp>
 
 
 namespace mmp = muscle_manager_protocol;

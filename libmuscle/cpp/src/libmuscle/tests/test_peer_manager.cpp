@@ -1,5 +1,7 @@
 #include "libmuscle/peer_manager.hpp"
 
+#include <ymmsl/ymmsl.hpp>
+
 #include <memory>
 
 #include <gtest/gtest.h>

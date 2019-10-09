@@ -9,7 +9,7 @@
 #include "libmuscle/util.hpp"
 #include "libmuscle/data.hpp"
 #include "libmuscle/mcp/message.hpp"
-#include <ymmsl/identity.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 
 using libmuscle::impl::DataConstRef;

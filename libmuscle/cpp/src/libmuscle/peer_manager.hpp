@@ -4,8 +4,7 @@
 #include LIBMUSCLE_MOCK_PEER_MANAGER
 #else
 
-#include <ymmsl/identity.hpp>
-#include <ymmsl/model.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 #include <libmuscle/endpoint.hpp>
 

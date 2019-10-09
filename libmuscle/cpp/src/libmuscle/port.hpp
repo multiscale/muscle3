@@ -2,7 +2,7 @@
 
 #include <libmuscle/operator.hpp>
 #include <libmuscle/util.hpp>
-#include <ymmsl/compute_element.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 
 namespace libmuscle { namespace impl {

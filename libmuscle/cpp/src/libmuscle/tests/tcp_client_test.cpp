@@ -6,7 +6,7 @@
 #include <libmuscle/mcp/message.hpp>
 #include <libmuscle/mcp/client.hpp>
 #include <libmuscle/mcp/tcp_client.hpp>
-#include <ymmsl/identity.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 #include <cassert>
 #include <memory>

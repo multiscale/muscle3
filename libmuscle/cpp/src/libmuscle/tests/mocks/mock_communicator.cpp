@@ -1,7 +1,7 @@
 #include <mocks/mock_communicator.hpp>
 
 #include <libmuscle/data.hpp>
-#include <ymmsl/model.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 #include <cassert>
 

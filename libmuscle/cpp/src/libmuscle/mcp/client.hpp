@@ -1,7 +1,7 @@
 #pragma once
 
 #include <libmuscle/mcp/message.hpp>
-#include <ymmsl/identity.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 #include <string>
 

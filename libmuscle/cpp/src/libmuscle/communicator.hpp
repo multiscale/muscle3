@@ -13,7 +13,7 @@
 #include <libmuscle/post_office.hpp>
 #include <libmuscle/util.hpp>
 
-#include <ymmsl/settings.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 #include <string>
 #include <unordered_map>

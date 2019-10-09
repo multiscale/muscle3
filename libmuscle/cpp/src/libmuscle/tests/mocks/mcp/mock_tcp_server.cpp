@@ -1,6 +1,6 @@
 #include <mocks/mcp/mock_tcp_server.hpp>
 
-#include <ymmsl/identity.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 namespace libmuscle { namespace impl {
 

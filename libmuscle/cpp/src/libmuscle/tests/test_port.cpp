@@ -4,7 +4,7 @@
 
 #include <libmuscle/port.hpp>
 #include <muscle_manager_protocol/muscle_manager_protocol.pb.h>
-#include <ymmsl/identity.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 
 namespace mmp = muscle_manager_protocol;

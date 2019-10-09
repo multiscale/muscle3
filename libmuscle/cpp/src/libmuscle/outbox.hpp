@@ -2,7 +2,7 @@
 
 #include <libmuscle/mcp/message.hpp>
 
-#include <ymmsl/identity.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 #include <condition_variable>
 #include <memory>

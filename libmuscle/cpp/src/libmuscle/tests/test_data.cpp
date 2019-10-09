@@ -1,7 +1,7 @@
 #include "libmuscle/data.hpp"
 #include "libmuscle/mcp/data_pack.hpp"
 
-#include "ymmsl/settings.hpp"
+#include <ymmsl/ymmsl.hpp>
 
 #include <cstdint>
 #include <string>

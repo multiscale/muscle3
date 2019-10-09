@@ -3,9 +3,7 @@
 #define LIBMUSCLE_MOCK_MMP_CLIENT <mocks/mock_mmp_client.hpp>
 
 // into the real implementation,
-#include <ymmsl/compute_element.cpp>
-#include <ymmsl/identity.cpp>
-#include <ymmsl/settings.cpp>
+#include <ymmsl/ymmsl.hpp>
 
 #include <libmuscle/close_port.cpp>
 #include <libmuscle/data.cpp>

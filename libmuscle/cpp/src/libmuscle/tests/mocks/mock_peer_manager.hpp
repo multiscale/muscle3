@@ -1,7 +1,6 @@
 #pragma once
 
-#include <ymmsl/identity.hpp>
-#include <ymmsl/model.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 #include <libmuscle/endpoint.hpp>
 

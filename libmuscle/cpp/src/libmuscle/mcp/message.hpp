@@ -2,7 +2,7 @@
 
 #include <libmuscle/data.hpp>
 #include <libmuscle/util.hpp>
-#include <ymmsl/identity.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 
 namespace libmuscle { namespace impl { namespace mcp {

@@ -62,14 +62,14 @@ test_%: test_%.o $(CURDIR)/../libmuscle_d.a $(CURDIR)/../../ymmsl/libymmsl_d.a
 test_communicator.o: test_communicator.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@ -pthread
 
-test_communicator: test_communicator.o
-	$(CXX) $(DEBUGFLAGS) $< -o $@ $(googletest_ROOT)/lib/libgtest.a -pthread
+test_communicator: test_communicator.o $(CURDIR)/../../ymmsl/libymmsl_d.a
+	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_ROOT)/lib/libgtest.a -pthread
 
 test_instance.o: test_instance.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@ -pthread
 
-test_instance: test_instance.o
-	$(CXX) $(DEBUGFLAGS) $< -o $@ $(googletest_ROOT)/lib/libgtest.a -pthread
+test_instance: test_instance.o $(CURDIR)/../../ymmsl/libymmsl_d.a
+	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_ROOT)/lib/libgtest.a -pthread
 
 empty :=
 space := $(empty) $(empty)

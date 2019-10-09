@@ -4,8 +4,7 @@
 #include <string>
 
 #include "libmuscle/operator.hpp"
-#include <ymmsl/compute_element.hpp>
-#include <ymmsl/identity.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 
 using namespace std::string_literals;

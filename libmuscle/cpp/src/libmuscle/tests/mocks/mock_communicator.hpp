@@ -6,8 +6,7 @@
 #include <libmuscle/port.hpp>
 #include <libmuscle/util.hpp>
 
-#include <ymmsl/model.hpp>
-#include <ymmsl/settings.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 #include <memory>
 #include <string>

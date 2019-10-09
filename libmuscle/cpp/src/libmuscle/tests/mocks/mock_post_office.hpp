@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ymmsl/identity.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 #include "libmuscle/mcp/message.hpp"
 #include "libmuscle/outbox.hpp"

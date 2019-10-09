@@ -7,7 +7,7 @@
 #include <libmuscle/mcp/server.hpp>
 #include <libmuscle/mcp/tcp_server.hpp>
 #include <libmuscle/post_office.hpp>
-#include <ymmsl/identity.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 #include <cassert>
 #include <iostream>

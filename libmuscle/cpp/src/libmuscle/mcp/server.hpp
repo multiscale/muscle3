@@ -1,7 +1,7 @@
 #pragma once
 
 #include <libmuscle/post_office.hpp>
-#include <ymmsl/identity.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 #include <string>
 

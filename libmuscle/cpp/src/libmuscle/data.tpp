@@ -5,7 +5,7 @@
 #include <string>
 #include <utility>
 
-#include <ymmsl/settings.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 #include <msgpack.hpp>
 

@@ -7,9 +7,7 @@
 
 #include <libmuscle/logging.hpp>
 
-#include <ymmsl/model.hpp>
-#include <ymmsl/identity.hpp>
-#include "ymmsl/settings.hpp"
+#include <ymmsl/ymmsl.hpp>
 
 
 namespace libmuscle { namespace impl {

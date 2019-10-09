@@ -37,7 +37,7 @@ test: tests
 
 .PHONY: clean
 clean:
-	rm -f libmuscle.a libmuscle.so version.h
+	rm -f libmuscle.a libmuscle.so libmuscle_d.a libmuscle_d.so version.h
 	rm -rf $(objdir)
 	$(MAKE) -C tests clean
 

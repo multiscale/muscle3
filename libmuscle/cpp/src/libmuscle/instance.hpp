@@ -1,6 +1,7 @@
 #pragma once
 
-#include <libmuscle/communicator.hpp>
+#include <libmuscle/message.hpp>
+#include <libmuscle/ports_description.hpp>
 
 #include <ymmsl/ymmsl.hpp>
 

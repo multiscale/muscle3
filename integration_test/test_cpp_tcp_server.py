@@ -7,7 +7,7 @@ import msgpack
 from libmuscle.mcp.tcp_client import TcpClient
 from libmuscle.mcp.message import Message
 
-from ymmsl import Reference
+from ymmsl import Reference, Settings
 
 
 def test_cpp_tcp_server(log_file_in_tmpdir):
@@ -37,7 +37,7 @@ def test_cpp_tcp_server(log_file_in_tmpdir):
     assert TcpClient.can_connect_to(location)
 
     client = TcpClient(Reference('test_receiver'), location)
-    msg = client.receive(Reference('test_receiver.port'))
+    msg = Message.from_bytes(client.receive(Reference('test_receiver.port')))
     client.close()
 
     # assert stuff
@@ -45,12 +45,8 @@ def test_cpp_tcp_server(log_file_in_tmpdir):
     assert msg.receiver == 'test_receiver.port'
     assert msg.timestamp == 0.0
     assert msg.next_timestamp == 1.0
-
-    settings_overlay = msgpack.unpackb(msg.settings_overlay, raw=False)
-    assert settings_overlay == {'par1': 13}
-
-    data = msgpack.unpackb(msg.data, raw=False)
-    assert data == {'var1': 1, 'var2': 2.0, 'var3': '3'}
+    assert msg.settings_overlay == Settings({'par1': 13})
+    assert msg.data == {'var1': 1, 'var2': 2.0, 'var3': '3'}
 
     server.stdout.close()
     server.wait()

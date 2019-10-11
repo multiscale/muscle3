@@ -2,7 +2,6 @@ from typing import cast
 
 from ymmsl import Reference
 
-from libmuscle.mcp.message import Message
 from libmuscle.mcp.client import Client
 from libmuscle.mcp.direct_server import DirectServer, registered_servers
 
@@ -42,7 +41,7 @@ class DirectClient(Client):
         server_id = location[7:]
         self.__server = cast(DirectServer, registered_servers[server_id])
 
-    def receive(self, receiver: Reference) -> Message:
+    def receive(self, receiver: Reference) -> bytes:
         """Receive a message from a port this client connects to.
 
         Args:

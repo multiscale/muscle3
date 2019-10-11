@@ -4,7 +4,6 @@ import uuid
 from ymmsl import Reference
 
 from libmuscle.post_office import PostOffice
-from libmuscle.mcp.message import Message
 from libmuscle.mcp.server import Server
 
 
@@ -40,7 +39,7 @@ class DirectServer(Server):
         """
         return 'direct:{}'.format(self.__id)
 
-    def request(self, receiver: Reference) -> Message:
+    def request(self, receiver: Reference) -> bytes:
         """Gets the next message for this receiver from its outbox.
 
         This will block until a message is available.

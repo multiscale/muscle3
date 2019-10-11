@@ -32,18 +32,8 @@ class TcpHandler(ss.BaseRequestHandler):
             server = cast(TcpServerImpl, self.server).tcp_server
             message = server.post_office.get_message(receiver_id)
 
-            message_dict = {
-                    'sender': str(message.sender),
-                    'receiver': str(message.receiver),
-                    'port_length': message.port_length,
-                    'timestamp': message.timestamp,
-                    'next_timestamp': message.next_timestamp,
-                    'settings_overlay': message.settings_overlay,
-                    'data': message.data}
-            packed_message = msgpack.packb(message_dict, use_bin_type=True)
-
-            send_int64(self.request, len(packed_message))
-            self.request.sendall(packed_message)
+            send_int64(self.request, len(message))
+            self.request.sendall(message)
             receiver_id = self.receive_request()
 
     def receive_request(self) -> Optional[Reference]:

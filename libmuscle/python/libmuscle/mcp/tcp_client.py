@@ -5,7 +5,6 @@ from typing import Optional
 from ymmsl import Reference
 
 from libmuscle.mcp.client import Client
-from libmuscle.mcp.message import Message
 from libmuscle.mcp.tcp_util import recv_all, recv_int64, send_int64
 
 
@@ -52,7 +51,7 @@ class TcpClient(Client):
         else:
             self._socket = sock
 
-    def receive(self, receiver: Reference) -> Message:
+    def receive(self, receiver: Reference) -> bytes:
         """Receive a message from a port this client connects to.
 
         Args:
@@ -66,17 +65,7 @@ class TcpClient(Client):
         self._socket.sendall(receiver_str)
 
         length = recv_int64(self._socket)
-        databuf = recv_all(self._socket, length)
-
-        message_dict = msgpack.unpackb(databuf, raw=False)
-        return Message(
-                Reference(message_dict['sender']),
-                Reference(message_dict['receiver']),
-                message_dict['port_length'],
-                message_dict['timestamp'],
-                message_dict['next_timestamp'],
-                message_dict['settings_overlay'],
-                message_dict['data'])
+        return recv_all(self._socket, length)
 
     def close(self) -> None:
         """Closes this client.

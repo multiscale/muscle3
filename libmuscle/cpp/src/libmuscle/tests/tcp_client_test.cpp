@@ -20,6 +20,7 @@ using libmuscle::impl::mcp::Client;
 using libmuscle::impl::mcp::TcpClient;
 using libmuscle::impl::mcp::unpack_data;
 using ymmsl::Reference;
+using ymmsl::Settings;
 
 
 int main(int argc, char *argv[]) {
@@ -44,26 +45,17 @@ int main(int argc, char *argv[]) {
     assert(message.timestamp == 1.0);
     assert(message.next_timestamp == 2.0);
 
-    auto zone = std::make_shared<msgpack::zone>();
-    DataConstRef overlay = unpack_data(
-            zone, message.settings_overlay.as_byte_array(),
-            message.settings_overlay.size());
+    auto overlay = message.settings_overlay.as<Settings>();
+    assert(overlay["test_setting"].is_a<int64_t>());
+    assert(overlay["test_setting"].as<int64_t>() == 42);
 
-    assert(overlay.is_a_dict());
-    assert(overlay["test_setting"].is_a<int>());
-    assert(overlay["test_setting"].as<int>() == 42);
-
-    DataConstRef data = unpack_data(
-            zone, message.data.as_byte_array(),
-            message.data.size());
-
-    assert(data.is_a_dict());
-    assert(data["test1"].is_a<int>());
-    assert(data["test1"].as<int>() == 10);
-    assert(data["test2"].is_a_list());
-    assert(data["test2"][0].is_nil());
-    assert(data["test2"][1].as<bool>() == true);
-    assert(data["test2"][2].as<std::string>() == "testing");
+    assert(message.data.is_a_dict());
+    assert(message.data["test1"].is_a<int>());
+    assert(message.data["test1"].as<int>() == 10);
+    assert(message.data["test2"].is_a_list());
+    assert(message.data["test2"][0].is_nil());
+    assert(message.data["test2"][1].as<bool>() == true);
+    assert(message.data["test2"][2].as<std::string>() == "testing");
 
     return 0;
 }

@@ -1,10 +1,9 @@
-from enum import IntEnum
 import msgpack
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 from ymmsl import Conduit, Identifier, Operator, Reference, Settings
 
 from libmuscle.endpoint import Endpoint
-from libmuscle.mcp.message import Message as MCPMessage
+from libmuscle.mcp.message import ClosePort, Message as MCPMessage
 from libmuscle.mcp.client import Client as MCPClient
 from libmuscle.mcp.server import Server as MCPServer, ServerNotSupported
 from libmuscle.mcp.type_registry import client_types, server_types
@@ -16,29 +15,6 @@ from libmuscle.profiling import ProfileEvent, ProfileEventType
 
 
 MessageObject = Any
-
-
-class ExtTypeId(IntEnum):
-    """MessagePack extension type ids.
-
-    MessagePack lets you define your own types as an extension to the
-    built-in ones. These are distinguished by a number from 0 to 127.
-    This class is our registry of extension type ids.
-    """
-    CLOSE_PORT = 0
-    SETTINGS = 1
-
-
-class _ClosePort:
-    """Sentinel value to send when closing a port.
-
-    Sending an object of this class on a port/conduit conveys to the
-    receiver the message that no further messages will be sent on this
-    port during the simulation.
-
-    All information is carried by the type, this has no attributes.
-    """
-    pass
 
 
 class Message:
@@ -234,11 +210,6 @@ class Communicator:
         recv_endpoint = self._peer_manager.get_peer_endpoint(
                 snd_endpoint.port, slot_list)
 
-        packed_overlay = self.__pack_object(
-                cast(Settings, message.settings).as_ordered_dict())
-
-        packed_message = self.__pack_object(message.data)
-
         port_length = None
         if self._ports[port_name].is_resizable():
             port_length = self._ports[port_name].get_length()
@@ -246,12 +217,14 @@ class Communicator:
         mcp_message = MCPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
                                  port_length,
                                  message.timestamp, message.next_timestamp,
-                                 packed_overlay, packed_message)
-        self._post_office.deposit(recv_endpoint.ref(), mcp_message)
+                                 cast(Settings, message.settings),
+                                 message.data)
+        encoded_message = mcp_message.encoded()
+        self._post_office.deposit(recv_endpoint.ref(), encoded_message)
         profile_event.stop()
         if port.is_vector():
             profile_event.port_length = port.get_length()
-        profile_event.message_size = len(mcp_message.data)
+        profile_event.message_size = len(encoded_message)
 
     def receive_message(self, port_name: str, slot: Optional[int]=None,
                         default: Optional[Message]=None
@@ -311,26 +284,24 @@ class Communicator:
         snd_endpoint = self._peer_manager.get_peer_endpoint(
                 recv_endpoint.port, slot_list)
         client = self.__get_client(snd_endpoint.instance())
-        mcp_message = client.receive(recv_endpoint.ref())
-
-        overlay_settings = Settings(msgpack.unpackb(
-            mcp_message.settings_overlay, raw=False))
+        mcp_message_bytes = client.receive(recv_endpoint.ref())
+        mcp_message = MCPMessage.from_bytes(mcp_message_bytes)
 
         if mcp_message.port_length is not None:
             if port.is_resizable():
                 port.set_length(mcp_message.port_length)
 
+        if isinstance(mcp_message.data, ClosePort):
+            port.set_closed(slot)
+
         message = Message(
                 mcp_message.timestamp, mcp_message.next_timestamp,
-                self.__extract_object(mcp_message), overlay_settings)
-
-        if isinstance(message.data, _ClosePort):
-            port.set_closed(slot)
+                mcp_message.data, mcp_message.settings_overlay)
 
         profile_event.stop()
         if port.is_vector():
             profile_event.port_length = port.get_length()
-        profile_event.message_size = len(mcp_message.data)
+        profile_event.message_size = len(mcp_message_bytes)
 
         return message
 
@@ -345,7 +316,7 @@ class Communicator:
         Args:
             port_name: The name of the port to close.
         """
-        message = Message(float('inf'), None, _ClosePort(), Settings())
+        message = Message(float('inf'), None, ClosePort(), Settings())
         self.send_message(port_name, message, slot)
 
     def shutdown(self) -> None:
@@ -497,38 +468,3 @@ class Communicator:
                                   port_desc))
 
         return port_desc, is_vector
-
-    def __extract_object(self, mcp_message: MCPMessage) -> MessageObject:
-        """Extract object from a received message.
-
-        Args:
-            mcp_message: The received message.
-
-        Returns:
-            The object that was received.
-        """
-        data = msgpack.unpackb(mcp_message.data, raw=False)
-        if isinstance(data, msgpack.ExtType):
-            if data.code == ExtTypeId.CLOSE_PORT:
-                return _ClosePort()
-            elif data.code == ExtTypeId.SETTINGS:
-                plain_dict = msgpack.unpackb(data.data, raw=False)
-                return Settings(plain_dict)
-        return msgpack.unpackb(mcp_message.data, raw=False)
-
-    def __pack_object(self, obj: MessageObject) -> bytes:
-        """MessagePack-encode an object for transmission.
-
-        Args:
-            obj: The object to pack.
-
-        Returns:
-            MessagePack-encoded bytes.
-        """
-        if isinstance(obj, _ClosePort):
-            obj = msgpack.ExtType(ExtTypeId.CLOSE_PORT, bytes())
-        elif isinstance(obj, Settings):
-            data = msgpack.packb(obj.as_ordered_dict())
-            obj = msgpack.ExtType(ExtTypeId.SETTINGS, data)
-        packed_message = msgpack.packb(obj, use_bin_type=True)
-        return cast(bytes, packed_message)

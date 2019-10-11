@@ -8,9 +8,10 @@ import grpc
 from ymmsl import (Conduit, Identifier, Operator, SettingValue, Port,
                    Reference, Settings)
 
-from libmuscle.communicator import _ClosePort, Communicator, Message
+from libmuscle.communicator import Communicator, Message
 from libmuscle.settings_manager import SettingsManager
 from libmuscle.logging_handler import MuscleManagerHandler
+from libmuscle.mcp.message import ClosePort
 from libmuscle.mmp_client import MMPClient
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEvent, ProfileEventType
@@ -116,7 +117,7 @@ class Instance:
             self._first_run = False
         else:
             for message in self._f_init_cache.values():
-                if isinstance(message.data, _ClosePort):
+                if isinstance(message.data, ClosePort):
                     do_reuse = False
 
         if not do_reuse:
@@ -545,7 +546,7 @@ class Instance:
         default_message = Message(0.0, None, Settings(), Settings())
         message = self._communicator.receive_message(
                 'muscle_settings_in', None, default_message)
-        if isinstance(message.data, _ClosePort):
+        if isinstance(message.data, ClosePort):
             return False
         if not isinstance(message.data, Settings):
             err_msg = ('"{}" received a message on'

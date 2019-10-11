@@ -20,8 +20,7 @@ def test_location(tcp_server):
 
 
 def test_request(receiver, post_office, tcp_server):
-    message = Message(Reference('test_sender.test_port'), receiver,
-                      None, 0.0, 1.0, bytes(), bytes())
+    message = b'testing'
     post_office.outboxes[receiver].deposit(message)
 
     location = tcp_server._server.server_address
@@ -42,11 +41,4 @@ def test_request(receiver, post_office, tcp_server):
             received_count += sock.recv_into(
                     memoryview(databuf)[received_count:], bytes_left)
 
-    message_dict = msgpack.unpackb(databuf, raw=False)
-    assert message_dict['sender'] == 'test_sender.test_port'
-    assert message_dict['receiver'] == str(receiver)
-    assert message_dict['port_length'] is None
-    assert message_dict['timestamp'] == 0.0
-    assert message_dict['next_timestamp'] == 1.0
-    assert message_dict['settings_overlay'] == bytes()
-    assert message_dict['data'] == bytes()
+    assert databuf == message

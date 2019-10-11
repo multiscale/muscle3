@@ -9,18 +9,18 @@ from libmuscle.mcp.tcp_server import TcpServer
 from libmuscle.mcp.message import Message
 from libmuscle.post_office import PostOffice
 
-from ymmsl import Reference
+from ymmsl import Reference, Settings
 
 
 def tcp_server_process(control_pipe):
     control_pipe[0].close()
-    settings = msgpack.packb({'test_setting': 42})
-    data = msgpack.packb({'test1': 10, 'test2': [None, True, 'testing']})
+    settings = Settings({'test_setting': 42})
+    data = {'test1': 10, 'test2': [None, True, 'testing']}
     receiver = Reference('test_receiver.test_port2')
     message = Message(
             Reference('test_sender.test_port'),
             receiver,
-            10, 1.0, 2.0, settings, data)
+            10, 1.0, 2.0, settings, data).encoded()
 
     def get_message(receiver):
         assert receiver == 'test_receiver.test_port2'

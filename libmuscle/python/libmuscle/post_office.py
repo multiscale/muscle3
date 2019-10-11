@@ -4,7 +4,6 @@ from typing import Dict
 
 from ymmsl import Reference
 
-from libmuscle.mcp.message import Message as MCPMessage
 from libmuscle.outbox import Outbox
 
 
@@ -20,7 +19,7 @@ class PostOffice:
 
         self._outbox_lock = Lock()
 
-    def get_message(self, receiver: Reference) -> MCPMessage:
+    def get_message(self, receiver: Reference) -> bytes:
         """Get a message from a receiver's outbox.
 
         Used by servers to get messages that have been sent to another
@@ -32,7 +31,7 @@ class PostOffice:
         self._ensure_outbox_exists(receiver)
         return self._outboxes[receiver].retrieve()
 
-    def deposit(self, receiver: Reference, message: MCPMessage) -> None:
+    def deposit(self, receiver: Reference, message: bytes) -> None:
         """Deposits a message into an outbox.
 
         Args:

@@ -9,8 +9,7 @@ from libmuscle.mcp.message import Message
 
 
 def test_send_receive(receiver, post_office):
-    message = Message(Reference('test_sender.test_port'), receiver,
-                      None, 0.0, 1.0, bytes(), 'message'.encode('utf-8'))
+    message = b'testing'
 
     # prepare post office
     post_office.outboxes[receiver].deposit(message)
@@ -27,13 +26,7 @@ def test_send_receive(receiver, post_office):
     client = TcpClient(recv_instance_id, server_location)
 
     message2 = client.receive(receiver)
-    assert message.sender == message2.sender
-    assert message.receiver == message2.receiver
-    assert message.port_length == message2.port_length
-    assert message.timestamp == message2.timestamp
-    assert message.next_timestamp == message2.next_timestamp
-    assert message.settings_overlay == message2.settings_overlay
-    assert message.data == message2.data
+    assert message == message2
 
     client.close()
     TcpClient.shutdown(recv_instance_id)

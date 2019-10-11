@@ -23,25 +23,23 @@ using libmuscle::impl::mcp::Message;
 using libmuscle::impl::mcp::Server;
 using libmuscle::impl::mcp::TcpServer;
 using ymmsl::Reference;
+using ymmsl::Settings;
 
 
 int main(int argc, char *argv[]) {
     PostOffice post_office;
     Reference receiver("test_receiver.port");
 
-    auto overlay_dict = Data::dict("par1", 13);
-    msgpack::sbuffer overlay_buf;
-    msgpack::pack(overlay_buf, overlay_dict);
+    Settings overlay_settings;
+    overlay_settings["par1"] = 13;
 
     auto data_dict = Data::dict("var1", 1, "var2", 2.0, "var3", "3");
-    msgpack::sbuffer data_buf;
-    msgpack::pack(data_buf, data_dict);
 
     auto msg = std::make_unique<Message>(
             "test_sender.port", receiver, 10,
             0.0, 1.0,
-            Data::byte_array(overlay_buf.data(), overlay_buf.size()),
-            Data::byte_array(data_buf.data(), data_buf.size()));
+            overlay_settings,
+            data_dict);
     post_office.deposit(receiver, std::move(msg));
 
     TcpServer server("test_sender", post_office);

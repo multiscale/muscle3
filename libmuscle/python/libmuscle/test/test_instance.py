@@ -5,8 +5,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 from ymmsl import Conduit, Operator, Reference, Settings
 
-from libmuscle.communicator import _ClosePort, Message
+from libmuscle.communicator import Message
 from libmuscle.instance import Instance
+from libmuscle.mcp.message import ClosePort
 from libmuscle.settings_manager import SettingsManager
 
 
@@ -245,7 +246,7 @@ def test_reuse_instance_closed_port(instance):
         if port_name == 'muscle_settings_in':
             return Message(0.0, None, Settings(), Settings())
         elif port_name == 'in':
-            return Message(0.0, None, _ClosePort(), Settings())
+            return Message(0.0, None, ClosePort(), Settings())
         assert False    # pragma: no cover
 
     def get_port(port_name):

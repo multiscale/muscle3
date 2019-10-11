@@ -1,7 +1,7 @@
-from libmuscle.communicator import _ClosePort, Communicator, Endpoint, Message
+from libmuscle.communicator import Communicator, Endpoint, Message
 from libmuscle.mcp.direct_client import DirectClient
 from libmuscle.mcp.direct_server import DirectServer
-from libmuscle.mcp.message import Message as MCPMessage
+from libmuscle.mcp.message import ClosePort, Message as MCPMessage
 from libmuscle.port import Port
 
 from ymmsl import Conduit, Identifier, Operator, Reference, Settings
@@ -282,14 +282,15 @@ def test_send_message(communicator, message) -> None:
     communicator.send_message('out', message)
 
     assert 'other.in[13]' in communicator._post_office._outboxes
-    msg = communicator._post_office._outboxes[
+    msg_bytes = communicator._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
+    msg = MCPMessage.from_bytes(msg_bytes)
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
     assert msg.timestamp == 0.0
     assert msg.next_timestamp is None
-    assert msg.settings_overlay == msgpack.packb({}, use_bin_type=True)
-    assert msg.data == msgpack.packb(b'test', use_bin_type=True)
+    assert msg.settings_overlay == Settings()
+    assert msg.data == b'test'
 
 
 def test_send_on_disconnected_port(communicator, message) -> None:
@@ -306,12 +307,13 @@ def test_send_msgpack(communicator, message2) -> None:
     communicator.send_message('out', message2)
 
     assert 'other.in[13]' in communicator._post_office._outboxes
-    msg = communicator._post_office._outboxes[
+    msg_bytes = communicator._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
+    msg = MCPMessage.from_bytes(msg_bytes)
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
-    assert msg.settings_overlay == msgpack.packb({}, use_bin_type=True)
-    assert msg.data == msgpack.packb({'test': 17}, use_bin_type=True)
+    assert msg.settings_overlay == Settings()
+    assert msg.data == {'test': 17}
 
 
 def test_send_message_with_slot(communicator2, message) -> None:
@@ -319,12 +321,13 @@ def test_send_message_with_slot(communicator2, message) -> None:
 
     assert 'kernel[13].in' in \
         communicator2._post_office._outboxes
-    msg = communicator2._post_office._outboxes[
+    msg_bytes = communicator2._post_office._outboxes[
             'kernel[13].in']._Outbox__queue.get()
+    msg = MCPMessage.from_bytes(msg_bytes)
     assert msg.sender == 'other.out[13]'
     assert msg.receiver == 'kernel[13].in'
-    assert msg.settings_overlay == msgpack.packb({}, use_bin_type=True)
-    assert msgpack.unpackb(msg.data).decode('utf-8') == 'test'
+    assert msg.settings_overlay == Settings()
+    assert msg.data == b'test'
 
 
 def test_send_message_resizable(communicator3, message) -> None:
@@ -335,8 +338,9 @@ def test_send_message_resizable(communicator3, message) -> None:
     communicator3.send_message('out', message, 13)
 
     assert 'other.in[13]' in communicator3._post_office._outboxes
-    msg = communicator3._post_office._outboxes[
+    msg_bytes = communicator3._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
+    msg = MCPMessage.from_bytes(msg_bytes)
     assert msg.sender == 'kernel.out[13]'
     assert msg.receiver == 'other.in[13]'
     assert msg.port_length == 20
@@ -347,13 +351,13 @@ def test_send_message_with_settings(communicator, message) -> None:
     communicator.send_message('out', message)
 
     assert 'other.in[13]' in communicator._post_office._outboxes
-    msg = communicator._post_office._outboxes[
+    msg_bytes = communicator._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
+    msg = MCPMessage.from_bytes(msg_bytes)
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
-    assert msgpack.unpackb(msg.settings_overlay, raw=False) == {
-            'test2': 'testing'}
-    assert msgpack.unpackb(msg.data).decode('utf-8') == 'test'
+    assert msg.settings_overlay.as_ordered_dict() == {'test2': 'testing'}
+    assert msg.data == b'test'
 
 
 def test_send_settings(communicator, message) -> None:
@@ -362,39 +366,36 @@ def test_send_settings(communicator, message) -> None:
     communicator.send_message('out', message)
 
     assert 'other.in[13]' in communicator._post_office._outboxes
-    msg = communicator._post_office._outboxes[
+    msg_bytes = communicator._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
+    msg = MCPMessage.from_bytes(msg_bytes)
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
-    assert msg.settings_overlay == msgpack.packb({})
-    assert msg.data == msgpack.packb(
-            msgpack.ExtType(1, msgpack.packb({'test1': 'testing'},
-                                             use_bin_type=True)),
-            use_bin_type=True)
+    assert msg.settings_overlay == Settings()
+    assert msg.data == Settings({'test1': 'testing'})
 
 
 def test_close_port(communicator) -> None:
     communicator.close_port('out')
 
     assert 'other.in[13]' in communicator._post_office._outboxes
-    msg = communicator._post_office._outboxes[
+    msg_bytes = communicator._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
+    msg = MCPMessage.from_bytes(msg_bytes)
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
     assert msg.timestamp == float('inf')
     assert msg.next_timestamp is None
-    assert msg.settings_overlay == msgpack.packb({}, use_bin_type=True)
-    unpacked = msgpack.unpackb(msg.data, raw=False)
-    assert isinstance(unpacked, msgpack.ExtType)
-    assert unpacked[0] == 0
+    assert msg.settings_overlay == Settings()
+    assert isinstance(msg.data, ClosePort)
 
 
 def test_receive_message(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MCPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            None, 0.0, None, msgpack.packb({'test1': 12}),
-            msgpack.packb(b'test', use_bin_type=True))
+            None, 0.0, None, Settings({'test1': 12}),
+            b'test').encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
     communicator._profiler = MagicMock()
@@ -432,8 +433,8 @@ def test_receive_msgpack(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MCPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            None, 0.0, None, msgpack.packb({'test1': 12}),
-            msgpack.packb({'test': 13}))
+            None, 0.0, None, Settings({'test1': 12}),
+            {'test': 13}).encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
     communicator._profiler = MagicMock()
@@ -449,8 +450,8 @@ def test_receive_with_slot(communicator2) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MCPMessage(
             Reference('kernel[13].out'), Reference('other.in[13]'),
-            None, 0.0, None, msgpack.packb({'test': 'testing'}),
-            msgpack.packb(b'test', use_bin_type=True))
+            None, 0.0, None, Settings({'test': 'testing'}),
+            b'test').encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator2._Communicator__get_client = get_client_mock
     communicator2._profiler = MagicMock()
@@ -467,8 +468,8 @@ def test_receive_message_resizable(communicator3) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MCPMessage(
             Reference('other.out[13]'), Reference('kernel.in[13]'),
-            20, 0.0, None, msgpack.packb({'test': 'testing'}),
-            msgpack.packb(b'test', use_bin_type=True))
+            20, 0.0, None, Settings({'test': 'testing'}),
+            b'test').encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator3._Communicator__get_client = get_client_mock
     communicator3._profiler = MagicMock()
@@ -485,8 +486,8 @@ def test_receive_with_settings(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MCPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            None, 0.0, None, msgpack.packb({'test2': 3.1}),
-            msgpack.packb(b'test', use_bin_type=True))
+            None, 0.0, None, Settings({'test2': 3.1}),
+            b'test').encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
     communicator._profiler = MagicMock()
@@ -504,7 +505,7 @@ def test_receive_msgpack_with_slot_and_settings(communicator2) -> None:
     client_mock.receive.return_value = MCPMessage(
             Reference('kernel[13].out'), Reference('other.in[13]'),
             None, 0.0, 1.0,
-            msgpack.packb({'test': 'testing'}), msgpack.packb('test'))
+            Settings({'test': 'testing'}), 'test').encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator2._Communicator__get_client = get_client_mock
     communicator2._profiler = MagicMock()
@@ -519,13 +520,10 @@ def test_receive_msgpack_with_slot_and_settings(communicator2) -> None:
 
 def test_receive_settings(communicator) -> None:
     client_mock = MagicMock()
-    settings_dict = {'test': 13}
-    settings_data = msgpack.ExtType(1, msgpack.packb(settings_dict,
-                                                     use_bin_type=True))
     client_mock.receive.return_value = MCPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            None, 0.0, None, msgpack.packb({'test1': 12}),
-            msgpack.packb(settings_data))
+            None, 0.0, None, Settings({'test1': 12}),
+            Settings({'test': 13})).encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
     communicator._profiler = MagicMock()
@@ -540,25 +538,25 @@ def test_receive_settings(communicator) -> None:
 
 def test_receive_close_port(communicator) -> None:
     client_mock = MagicMock()
-    settings_data = msgpack.packb({}, use_bin_type=True)
-    sentinel = msgpack.ExtType(0, bytes())
     client_mock.receive.return_value = MCPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            None, 0.0, None, settings_data, msgpack.packb(sentinel))
+            None, 0.0, None, Settings(), ClosePort()).encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
     communicator._profiler = MagicMock()
 
     msg = communicator.receive_message('in')
 
-    assert isinstance(msg.data, _ClosePort)
+    assert isinstance(msg.data, ClosePort)
 
 
 def test_get_message(communicator, message) -> None:
     communicator.send_message('out', message)
+    ref_message = MCPMessage(
+            Reference('kernel[13].out'), Reference('other.in[13]'),
+            None, 0.0, None, Settings(), b'test').encoded()
     assert communicator._post_office.get_message(
-            'other.in[13]').data == msgpack.packb(
-                b'test', use_bin_type=True)
+            'other.in[13]') == ref_message
 
 
 @patch('libmuscle.mcp.direct_client.registered_servers')

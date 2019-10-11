@@ -39,6 +39,12 @@ class Instance {
         Instance(int argc, char const * const argv[],
                 PortsDescription const & ports);
 
+        ~Instance();
+        Instance(Instance const &);
+        Instance(Instance &&);
+        Instance & operator=(Instance const &);
+        Instance & operator=(Instance &&);
+
         /** Decide whether to run this instance again.
          *
          * In a multiscale simulation, instances get reused all the time.

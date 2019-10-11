@@ -23,6 +23,7 @@ class Instance::Impl {
         Impl(int argc, char const * const argv[]);
         Impl(int argc, char const * const argv[],
                 PortsDescription const & ports);
+
         bool reuse_instance(bool apply_overlay = true);
         void exit_error(std::string const & message);
         ::ymmsl::SettingValue get_setting(std::string const & name) const;
@@ -686,6 +687,8 @@ Instance::Instance(int argc, char const * const argv[],
                    PortsDescription const & ports)
     : pimpl_(new Impl(argc, argv, ports))
 {}
+
+Instance::~Instance() = default;
 
 bool Instance::reuse_instance(bool apply_overlay) {
     return impl_()->reuse_instance(apply_overlay);

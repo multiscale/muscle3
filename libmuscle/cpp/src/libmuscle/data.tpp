@@ -12,11 +12,6 @@
 
 namespace libmuscle { namespace impl {
 
-template <typename T>
-bool DataConstRef::is_a() const {
-    return false;
-}
-
 template <>
 ymmsl::SettingValue DataConstRef::as<ymmsl::SettingValue>() const;
 

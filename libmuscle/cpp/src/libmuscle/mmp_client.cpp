@@ -163,6 +163,7 @@ auto MMPClient::request_peers(Reference const & name) ->
            (steady_clock::now() < start_time + peer_timeout) &&
            (sleep_time < peer_interval_min)) {
         std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time));
+        grpc::ClientContext context;
         client_->RequestPeers(&context, request, &result);
         sleep_time += sleep_time / 2;
     }
@@ -170,6 +171,7 @@ auto MMPClient::request_peers(Reference const & name) ->
     while ((result.status() == mmp::RESULT_STATUS_PENDING) &&
            (steady_clock::now() < start_time + peer_timeout)) {
         std::this_thread::sleep_for(random_sleep_time());
+        grpc::ClientContext context;
         client_->RequestPeers(&context, request, &result);
     }
 

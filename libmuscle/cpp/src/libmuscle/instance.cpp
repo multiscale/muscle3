@@ -116,7 +116,7 @@ Instance::Impl::Impl(int argc, char const * const argv[],
                    PortsDescription const & ports)
     : instance_name_(make_full_name_(argc, argv))
     , manager_(extract_manager_location_(argc, argv))
-    , communicator_(name_(), index_(), {}, 0)
+    , communicator_(name_(), index_(), ports, 0)
     , declared_ports_(ports)
     , settings_manager_()
     , first_run_(true)

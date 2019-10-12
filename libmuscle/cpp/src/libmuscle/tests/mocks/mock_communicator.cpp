@@ -80,6 +80,8 @@ Message MockCommunicator::receive_message(
         assert(default_msg.is_set());
         return default_msg.get();
     }
+    if (is_close_port(next_received_message.at(key)->data()))
+        get_port_return_value.at(port_name).set_closed();
     return *next_received_message.at(key);
 }
 

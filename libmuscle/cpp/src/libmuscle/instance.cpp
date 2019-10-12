@@ -156,6 +156,12 @@ bool Instance::Impl::reuse_instance(bool apply_overlay) {
                     do_reuse = false;
     }
 
+    if (!do_reuse) {
+        close_ports_();
+        communicator_.shutdown();
+        deregister_();
+    }
+
     return do_reuse;
 }
 

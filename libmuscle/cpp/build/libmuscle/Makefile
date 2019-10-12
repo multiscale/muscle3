@@ -15,7 +15,9 @@ deps := $(source_files:$(srcdir)%.cpp=$(objdir)%.d)
 header_root := $(CURDIR)/../../src
 CXXFLAGS += -I$(header_root)
 
-public_headers := libmuscle/operator.hpp
+public_headers := libmuscle/data.hpp libmuscle/data.tpp libmuscle/instance.hpp
+public_headers += libmuscle/libmuscle.hpp libmuscle/message.hpp
+public_headers += libmuscle/ports_description.hpp libmuscle/util.hpp libmuscle/util.tpp
 installed_headers := $(public_headers:%=$(PREFIX)/include/%)
 
 CXXFLAGS += -Wall -pedantic -std=c++14
@@ -125,6 +127,10 @@ libmuscle_d.so: $(dlobjects)
 	$(CXX) -shared -o $@ $^ $(LDFLAGS)
 
 $(PREFIX)/include/%.hpp: $(hdrdir)/%.hpp
+	@mkdir -p $(@D)
+	cp $< $@
+
+$(PREFIX)/include/%.tpp: $(hdrdir)/%.tpp
 	@mkdir -p $(@D)
 	cp $< $@
 

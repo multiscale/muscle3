@@ -6,6 +6,8 @@ ifdef msgpack_VERSION
 install: msgpack
 	mkdir -p $(PREFIX)/lib
 	cp -ra msgpack/lib/* $(PREFIX)/lib/
+	mkdir -p $(PREFIX)/include
+	cp -ra msgpack/include/* $(PREFIX)/include/
 else
 install:
 endif

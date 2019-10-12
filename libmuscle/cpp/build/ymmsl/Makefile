@@ -14,7 +14,8 @@ dobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.do)
 dlobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.dlo)
 deps := $(source_files:$(srcdir)%.cpp=$(objdir)%.d)
 
-public_headers := ymmsl/compute_element.hpp
+public_headers := ymmsl/compute_element.hpp ymmsl/identity.hpp ymmsl/model.hpp
+public_headers += ymmsl/settings.hpp ymmsl/settings.tpp ymmsl/ymmsl.hpp
 installed_headers := $(public_headers:%=$(PREFIX)/include/%)
 
 CXXFLAGS += -Wall -pedantic -std=c++14 -I$(hdrdir)
@@ -95,6 +96,10 @@ libymmsl_d.so: $(dlobjects)
 	$(CXX) -shared -o $@ $^
 
 $(PREFIX)/include/%.hpp: $(hdrdir)/%.hpp
+	@mkdir -p $(@D)
+	cp $< $@
+
+$(PREFIX)/include/%.tpp: $(hdrdir)/%.tpp
 	@mkdir -p $(@D)
 	cp $< $@
 

@@ -16,6 +16,8 @@
 #include <ymmsl/ymmsl.hpp>
 
 
+using ymmsl::Reference;
+
 namespace {
 
 /* Splits a location string of the form tcp:<address:port>,<address:port>,...
@@ -86,6 +88,8 @@ namespace libmuscle { namespace impl { namespace mcp {
 bool TcpClient::can_connect_to(std::string const & location) {
     return location.compare(0u, 4u, "tcp:") == 0;
 }
+
+void TcpClient::shutdown(Reference const & instance_id) {}
 
 TcpClient::TcpClient(ymmsl::Reference const & instance_id, std::string const & location)
     : Client(instance_id, location)

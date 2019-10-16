@@ -282,11 +282,13 @@ std::vector<std::string> TcpServer::get_interfaces_() const {
 
     for (ifaddrs * p = interfaces; p != nullptr; p = p->ifa_next) {
         auto addr = reinterpret_cast<sockaddr_in *>(p->ifa_addr);
-        int family = p->ifa_addr->sa_family;
-        if ((family == AF_INET) || (family == AF_INET6)) {
-            char addr_buf[INET6_ADDRSTRLEN];
-            inet_ntop(family, &(addr->sin_addr), addr_buf, INET6_ADDRSTRLEN);
-            addresses.push_back(addr_buf);
+        if (addr) {
+            int family = addr->sin_family;
+            if ((family == AF_INET) || (family == AF_INET6)) {
+                char addr_buf[INET6_ADDRSTRLEN];
+                inet_ntop(family, &(addr->sin_addr), addr_buf, INET6_ADDRSTRLEN);
+                addresses.push_back(addr_buf);
+            }
         }
     }
     freeifaddrs(interfaces);

@@ -5,18 +5,18 @@ In this section, we'll look at a few examples of how to use MUSCLE 3 to create a
 multiscale simulation in Python.
 
 `The source code for these examples is here
-<https://github.com/multiscale/muscle3/tree/master/docs/source/examples>`_. You
-can also clone the repository and go to ``docs/source/examples``, or copy-paste
-the code from here.
+<https://github.com/multiscale/muscle3/tree/master/docs/source/examples/python>`_. You
+can also clone the repository and go to ``docs/source/examples/python``, or
+copy-paste the code from here.
 
 The easiest way to get set up is to create a virtualenv and then install MUSCLE
 3 and the additional requirements inside it:
 
 .. code-block:: bash
 
-  examples$ python3 -m venv venv                    # create venv
-  examples$ . venv/bin/activate                     # activate it
-  examples$ pip3 install -r requirements.txt        # install dependencies
+  python$ python3 -m venv venv                    # create venv
+  python$ . venv/bin/activate                     # activate it
+  python$ pip3 install -r requirements.txt        # install dependencies
 
 
 Our first example is a reaction-diffusion model on a 1D grid. It consists of a
@@ -30,8 +30,8 @@ current state and using its output as an input for the state update operation.
 Here's how to implement that with MUSCLE 3. (A detailed explanation follows
 below the code.)
 
-.. literalinclude:: examples/reaction_diffusion.py
-  :caption: ``docs/source/examples/reaction_diffusion.py``
+.. literalinclude:: examples/python/reaction_diffusion.py
+  :caption: ``docs/source/examples/python/reaction_diffusion.py``
   :language: python
 
 Let's take it step by step.
@@ -485,7 +485,7 @@ If you run the script, e.g. using
 
 .. code-block:: bash
 
-  (venv) examples$ python3 reaction_diffusion.py
+  (venv) python$ python3 reaction_diffusion.py
 
 it will pop up a plot showing the state of the simulated system over time.
 

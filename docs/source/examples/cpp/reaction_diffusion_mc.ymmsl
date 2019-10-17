@@ -1,0 +1,34 @@
+ymmsl_version: v0.1
+
+model:
+  name: reaction_diffusion_mc
+  compute_elements:
+    mc: mc_driver
+    rr: load_balancer
+    macro:
+      implementation: diffusion
+      multiplicity: 2
+    micro:
+      implementation: reaction
+      multiplicity: 2
+  conduits:
+    mc.parameters_out: rr.front_in
+    rr.front_out: mc.states_in
+    rr.back_out: macro.muscle_settings_in
+    macro.final_state_out: rr.back_in
+    macro.state_out: micro.initial_state
+    micro.final_state: macro.state_in
+
+settings:
+  muscle_remote_log_level: WARNING
+  micro.t_max: 2.469136e-06
+  micro.dt: 2.469136e-08
+  macro.t_max: 0.0001234568
+  macro.dt: 2.469136e-06
+  x_max: 1.01
+  dx: 0.01
+  k_min: -4.455e4
+  k_max: -3.645e4
+  d_min: 0.03645
+  d_max: 0.04455
+  n_samples: 10

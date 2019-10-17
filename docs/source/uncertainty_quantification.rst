@@ -98,8 +98,8 @@ Implementation
 
 The full Python program implementing this looks like this:
 
-.. literalinclude:: examples/reaction_diffusion_qmc.py
-  :caption: ``docs/source/examples/reaction_diffusion_qmc.py``
+.. literalinclude:: examples/python/reaction_diffusion_qmc.py
+  :caption: ``docs/source/examples/python/reaction_diffusion_qmc.py``
   :language: python
 
 

@@ -1,0 +1,5 @@
+*.log
+reaction
+diffusion
+mc_driver
+load_balancer

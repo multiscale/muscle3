@@ -322,7 +322,7 @@ Message Instance::Impl::receive_message_(
     check_port_(port_name);
 
     Reference port_ref(port_name);
-    auto port = communicator_.get_port(port_name);
+    auto const & port = communicator_.get_port(port_name);
     if (port.oper == Operator::F_INIT) {
         if (slot.is_set())
             port_ref += slot.get();
@@ -530,7 +530,7 @@ void Instance::Impl::pre_receive_f_init_(bool apply_overlay) {
     auto ports = communicator_.list_ports();
     if (ports.count(Operator::F_INIT) == 1) {
         for (auto const & port_name : ports.at(Operator::F_INIT)) {
-            auto port = communicator_.get_port(port_name);
+            auto const & port = communicator_.get_port(port_name);
             if (!port.is_connected())
                 continue;
             if (!port.is_vector())

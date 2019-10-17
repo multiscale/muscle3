@@ -11,6 +11,8 @@ class MockLogger {
         MockLogger();
         MockLogger(std::string const & instance_id, MMPClient & manager);
 
+        void set_remote_level(LogLevel level) {}
+
         template <typename... Args>
         void log(LogLevel level, Args... args) {}
 

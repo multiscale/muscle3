@@ -62,3 +62,41 @@ TEST(libmuscle_logging, test_logger) {
     ASSERT_EQ(msg.text, "Testing: 10 == 10");
 }
 
+TEST(libmuscle_logging, test_set_level) {
+    reset_mocks();
+    MockMMPClient manager("");
+    Logger logger("test_instance", manager);
+
+    // default is WARNING
+    logger.log(LogLevel::WARNING, "WARNING");
+    ASSERT_EQ(MockMMPClient::last_submitted_log_message.text, "WARNING");
+
+    logger.log(LogLevel::INFO, "INFO");
+    ASSERT_EQ(MockMMPClient::last_submitted_log_message.text, "WARNING");
+
+    logger.log(LogLevel::WARNING, "WARNING2");
+    ASSERT_EQ(MockMMPClient::last_submitted_log_message.text, "WARNING2");
+
+    logger.log(LogLevel::DEBUG, "DEBUG");
+    ASSERT_EQ(MockMMPClient::last_submitted_log_message.text, "WARNING2");
+
+    logger.log(LogLevel::CRITICAL, "CRITICAL");
+    ASSERT_EQ(MockMMPClient::last_submitted_log_message.text, "CRITICAL");
+
+    logger.set_remote_level(LogLevel::DEBUG);
+
+    logger.log(LogLevel::DEBUG, "DEBUG");
+    ASSERT_EQ(MockMMPClient::last_submitted_log_message.text, "DEBUG");
+
+    logger.log(LogLevel::CRITICAL, "CRITICAL");
+    ASSERT_EQ(MockMMPClient::last_submitted_log_message.text, "CRITICAL");
+
+    logger.set_remote_level(LogLevel::CRITICAL);
+
+    logger.log(LogLevel::ERROR, "ERROR");
+    ASSERT_EQ(MockMMPClient::last_submitted_log_message.text, "CRITICAL");
+
+    logger.log(LogLevel::CRITICAL, "CRITICAL2");
+    ASSERT_EQ(MockMMPClient::last_submitted_log_message.text, "CRITICAL2");
+}
+

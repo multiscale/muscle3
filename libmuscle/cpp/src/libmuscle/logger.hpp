@@ -20,6 +20,10 @@ class Logger {
          */
         Logger(std::string const & instance_id, MMPClient & manager);
 
+        /** Set the minimum log level for a message to be sent to the manager.
+         */
+        void set_remote_level(LogLevel level);
+
         /** Send a log message at the given level.
          *
          * The arguments will be pushed into a std::ostream using operator<<,
@@ -73,6 +77,7 @@ class Logger {
     private:
         std::string instance_id_;
         MMPClient & manager_;
+        LogLevel remote_level_;
 
         template <typename Arg, typename... Args>
         void append_args_(std::ostringstream & s, Arg arg, Args... args);

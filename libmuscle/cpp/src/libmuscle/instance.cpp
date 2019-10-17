@@ -86,6 +86,7 @@ class Instance::Impl {
                 std::string const & port_name,
                 Optional<int> slot, bool apply_overlay);
         void pre_receive_f_init_(bool apply_overlay);
+        void set_log_level_();
         void apply_overlay_(Message const & message);
         void check_compatibility_(
                 std::string const & port_name,
@@ -137,6 +138,8 @@ bool Instance::Impl::reuse_instance(bool apply_overlay) {
     // TODO: f_init_cache_ should be empty here, or the user didn't receive
     // something that was sent on the last go-around. At least emit a warning.
     pre_receive_f_init_(apply_overlay);
+
+    set_log_level_();
 
     auto ports = communicator_.list_ports();
 
@@ -556,6 +559,38 @@ void Instance::Impl::pre_receive_f_init_(bool apply_overlay) {
                     pre_receive_(port_name, slot, apply_overlay);
             }
         }
+    }
+}
+
+/* Sets the level a log message must have to be sent to the manager.
+ *
+ * It gets this from the muscle_remote_log_level setting.
+ */
+void Instance::Impl::set_log_level_() {
+    try {
+        std::string log_level_str = settings_manager_.get_setting(
+               instance_name_, "muscle_remote_log_level").as<std::string>();
+
+        // convert to upper case (ASCII/UTF-8 only, which is fine here)
+        std::string log_level(log_level_str);
+        for (char & c : log_level)
+            if (('a' <= c) && (c <= 'z')) c += ('A' - 'a');
+
+        // convert to LogLevel
+        LogLevel level;
+        if (log_level == "CRITICAL") level = LogLevel::CRITICAL;
+        else if (log_level == "ERROR") level = LogLevel::ERROR;
+        else if (log_level == "WARNING") level = LogLevel::WARNING;
+        else if (log_level == "INFO") level = LogLevel::INFO;
+        else if (log_level == "DEBUG") level = LogLevel::DEBUG;
+        else {
+            logger_.error("Invalid log level ", log_level_str," in muscle_remote_log_level");
+            return;
+        }
+        logger_.set_remote_level(level);
+    }
+    catch (std::out_of_range const &) {
+        // muscle_remote_log_level not set, do nothing and keep the default
     }
 }
 

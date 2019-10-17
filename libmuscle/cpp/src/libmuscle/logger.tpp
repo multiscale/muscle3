@@ -4,10 +4,12 @@ namespace libmuscle { namespace impl {
 
 template <typename... Args>
 void Logger::log(LogLevel level, Args... args) {
-    std::ostringstream oss;
-    append_args_(oss, args...);
-    LogMessage msg(instance_id_, Timestamp::now(), level, oss.str());
-    manager_.submit_log_message(msg);
+    if (level >= remote_level_) {
+        std::ostringstream oss;
+        append_args_(oss, args...);
+        LogMessage msg(instance_id_, Timestamp::now(), level, oss.str());
+        manager_.submit_log_message(msg);
+    }
 }
 
 template <typename... Args>

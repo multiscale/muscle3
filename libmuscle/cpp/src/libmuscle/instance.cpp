@@ -265,7 +265,7 @@ Message Instance::Impl::receive_with_settings(
         std::string const & port_name,
         int slot)
 {
-    return receive_message_(port_name, slot, {}, false);
+    return receive_message_(port_name, slot, {}, true);
 }
 
 Message Instance::Impl::receive_with_settings(

@@ -22,7 +22,7 @@ MockCommunicator::MockCommunicator(
         ymmsl::Reference const & kernel,
         std::vector<int> const & index,
         Optional<PortsDescription> const & declared_ports,
-        int profiler)
+        Logger & logger, int profiler)
 {
     ++num_constructed;
 }

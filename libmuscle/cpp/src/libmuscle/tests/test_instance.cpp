@@ -1,5 +1,6 @@
 // Inject mocks
 #define LIBMUSCLE_MOCK_COMMUNICATOR <mocks/mock_communicator.hpp>
+#define LIBMUSCLE_MOCK_LOGGER <mocks/mock_logger.hpp>
 #define LIBMUSCLE_MOCK_MMP_CLIENT <mocks/mock_mmp_client.hpp>
 
 // into the real implementation,
@@ -8,13 +9,16 @@
 #include <libmuscle/close_port.cpp>
 #include <libmuscle/data.cpp>
 #include <libmuscle/instance.cpp>
+#include <libmuscle/logging.cpp>
 #include <libmuscle/mcp/data_pack.cpp>
 #include <libmuscle/message.cpp>
 #include <libmuscle/port.cpp>
 #include <libmuscle/settings_manager.cpp>
+#include <libmuscle/timestamp.cpp>
 
 // then add mock implementations as needed.
 #include <mocks/mock_communicator.cpp>
+#include <mocks/mock_logger.cpp>
 #include <mocks/mock_mmp_client.cpp>
 
 
@@ -395,9 +399,6 @@ TEST(libmuscle_instance, reuse_instance_closed_port) {
     MockCommunicator::get_port_return_value.emplace(
             "not_connected",
             Port("not_connected", Operator::F_INIT, false, false, 0, {}));
-
-    MockCommunicator::get_port_return_value.emplace(
-            "not_connected", Port("not_connected", Operator::F_INIT, false, false, 0, {}));
     MockCommunicator::get_port_return_value.emplace(
             "in", Port("in", Operator::F_INIT, false, true, 0, {}));
     MockCommunicator::get_port_return_value.emplace(

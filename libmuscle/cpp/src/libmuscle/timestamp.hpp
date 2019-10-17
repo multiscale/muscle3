@@ -15,6 +15,10 @@ class Timestamp {
          */
         Timestamp(double seconds);
 
+        /** Create a Timestamp representing the current time.
+         */
+        static Timestamp now();
+
         /** Create a Timestamp from a gRPC Timestamp message.
          *
          * @param timestamp A gRPC Timestamp from a gRPC call.
@@ -31,6 +35,8 @@ class Timestamp {
 
     private:
         double seconds_;
+
+        friend class TestTimestamp;
 };
 
 } }

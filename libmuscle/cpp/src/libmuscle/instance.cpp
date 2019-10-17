@@ -1,6 +1,7 @@
 #include <libmuscle/instance.hpp>
 
 #include <libmuscle/communicator.hpp>
+#include <libmuscle/logger.hpp>
 #include <libmuscle/mmp_client.hpp>
 #include <libmuscle/peer_manager.hpp>
 #include <libmuscle/settings_manager.hpp>
@@ -57,6 +58,7 @@ class Instance::Impl {
     private:
         ::ymmsl::Reference instance_name_;
         MMPClient manager_;
+        Logger logger_;
         Communicator communicator_;
         PortsDescription declared_ports_;
         SettingsManager settings_manager_;
@@ -101,7 +103,8 @@ class Instance::Impl {
 Instance::Impl::Impl(int argc, char const * const argv[])
     : instance_name_(make_full_name_(argc, argv))
     , manager_(extract_manager_location_(argc, argv))
-    , communicator_(name_(), index_(), {}, 0)
+    , logger_(static_cast<std::string>(instance_name_), manager_)
+    , communicator_(name_(), index_(), {}, logger_, 0)
     , declared_ports_()
     , settings_manager_()
     , first_run_(true)
@@ -116,7 +119,8 @@ Instance::Impl::Impl(int argc, char const * const argv[],
                    PortsDescription const & ports)
     : instance_name_(make_full_name_(argc, argv))
     , manager_(extract_manager_location_(argc, argv))
-    , communicator_(name_(), index_(), ports, 0)
+    , logger_(static_cast<std::string>(instance_name_), manager_)
+    , communicator_(name_(), index_(), ports, logger_, 0)
     , declared_ports_(ports)
     , settings_manager_()
     , first_run_(true)
@@ -166,6 +170,7 @@ bool Instance::Impl::reuse_instance(bool apply_overlay) {
 }
 
 void Instance::Impl::exit_error(std::string const & message) {
+    logger_.critical("Exiting with error: ", message);
     shutdown_();
     exit(1);
 }
@@ -332,12 +337,14 @@ Message Instance::Impl::receive_message_(
             f_init_cache_.erase(port_ref);
 
             if (with_settings && !msg.has_settings()) {
-                shutdown_();
-                throw std::logic_error(
+                std::string msg(
                         "If you use receive_with_settings() on an F_INIT"
                         " port, then you have to pass false to"
                         " reuse_instance(), otherwise the settings will"
                         " already have been applied by MUSCLE.");
+                logger_.critical(msg);
+                shutdown_();
+                throw std::logic_error(msg);
             }
             return msg;
         }
@@ -348,6 +355,7 @@ Message Instance::Impl::receive_message_(
                 oss << port_ref << "' in a single F_INIT, that's not possible.";
                 oss << " Did you forget to call reuse_instance() in your reuse";
                 oss << " loop?";
+                logger_.critical(oss.str());
                 shutdown_();
                 throw std::logic_error(oss.str());
             }
@@ -359,6 +367,7 @@ Message Instance::Impl::receive_message_(
                 oss << "Tried to receive on port '" << port_ref << "', which";
                 oss << " is not connected, and no default value was given.";
                 oss << " Please connect this port!";
+                logger_.critical(oss.str());
                 shutdown_();
                 throw std::logic_error(oss.str());
             }
@@ -370,6 +379,7 @@ Message Instance::Impl::receive_message_(
             std::ostringstream oss;
             oss << "Port '" << port_ref << "' is closed, but we're trying to";
             oss << " receive on it. Did the peer crash?";
+            logger_.critical(oss.str());
             shutdown_();
             throw std::runtime_error(oss.str());
         }
@@ -471,6 +481,7 @@ void Instance::Impl::check_port_(std::string const & port_name) {
         oss << "Port '" << port_name << "' does not exist on '";
         oss << instance_name_ << "'. Please check the name and the list of";
         oss << " ports you gave for this compute element.";
+        logger_.critical(oss.str());
         shutdown_();
         throw std::logic_error(oss.str());
     }
@@ -491,6 +502,7 @@ bool Instance::Impl::receive_settings_() {
         oss << "'" << instance_name_ << "' received a message on";
         oss << " muscle_settings_in that is not a Settings. It seems that the";
         oss << " simulation is miswired or the sending instance is broken.";
+        logger_.critical(oss.str());
         shutdown_();
         throw std::logic_error(oss.str());
     }
@@ -530,6 +542,7 @@ void Instance::Impl::pre_receive_f_init_(bool apply_overlay) {
     auto ports = communicator_.list_ports();
     if (ports.count(Operator::F_INIT) == 1) {
         for (auto const & port_name : ports.at(Operator::F_INIT)) {
+            logger_.info("Pre-receiving on port ", port_name);
             auto const & port = communicator_.get_port(port_name);
             if (!port.is_connected())
                 continue;
@@ -539,7 +552,7 @@ void Instance::Impl::pre_receive_f_init_(bool apply_overlay) {
                 pre_receive_(port_name, 0, apply_overlay);
                 // The above receives the length, if needed, so now we can get
                 // the rest.
-                for (int slot = 0; slot < port.get_length(); ++slot)
+                for (int slot = 1; slot < port.get_length(); ++slot)
                     pre_receive_(port_name, slot, apply_overlay);
             }
         }
@@ -573,6 +586,7 @@ void Instance::Impl::check_compatibility_(
         oss << " '" << port_name << "'. My settings are '";
         oss << settings_manager_.overlay << "' and I received from a";
         oss << " universe with '" << overlay << "'.";
+        logger_.critical(oss.str());
         shutdown_();
         throw std::logic_error(oss.str());
     }

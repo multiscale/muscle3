@@ -6,6 +6,7 @@
 
 #include <libmuscle/mcp/client.hpp>
 #include <libmuscle/data.hpp>
+#include <libmuscle/logger.hpp>
 #include <libmuscle/mcp/server.hpp>
 #include <libmuscle/message.hpp>
 #include <libmuscle/peer_manager.hpp>
@@ -40,6 +41,7 @@ class Communicator {
          * @param kernel The kernel this is the Communicator for.
          * @param index The index for this instance.
          * @param declared_ports The declared ports for this instance.
+         * @param logger The logger for this instance.
          * @param profiler The profiler to use for recording sends and receives.
          */
         // TODO: use actual Profiler
@@ -47,7 +49,7 @@ class Communicator {
                 ymmsl::Reference const & kernel,
                 std::vector<int> const & index,
                 Optional<PortsDescription> const & declared_ports,
-                int profiler);
+                Logger & logger, int profiler);
 
 
         /** Returns a list of locations that we can be reached at.
@@ -190,6 +192,7 @@ class Communicator {
         std::vector<int> index_;
         Optional<PortsDescription> declared_ports_;
         PostOffice post_office_;
+        Logger & logger_;
         int profiler_;
         std::vector<std::unique_ptr<mcp::Server>> servers_;
         std::unordered_map<ymmsl::Reference, std::unique_ptr<mcp::Client>> clients_;

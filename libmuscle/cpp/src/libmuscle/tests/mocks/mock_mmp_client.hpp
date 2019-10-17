@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <libmuscle/logging.hpp>
+#include <libmuscle/timestamp.hpp>
 
 #include <ymmsl/ymmsl.hpp>
 
@@ -41,6 +42,7 @@ class MockMMPClient {
         static ::ymmsl::Reference last_registered_name;
         static std::vector<std::string> last_registered_locations;
         static std::vector<::ymmsl::Port> last_registered_ports;
+        static LogMessage last_submitted_log_message;
 };
 
 using MMPClient = MockMMPClient;

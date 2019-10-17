@@ -14,7 +14,9 @@ MockMMPClient::MockMMPClient(std::string const & location) {
     last_location = location;
 }
 
-void MockMMPClient::submit_log_message(LogMessage const & message) {}
+void MockMMPClient::submit_log_message(LogMessage const & message) {
+    last_submitted_log_message = message;
+}
 
 void MockMMPClient::register_instance(
         Reference const & name,
@@ -60,6 +62,10 @@ void MockMMPClient::reset() {
     last_registered_name = "_none";
     last_registered_locations.clear();
     last_registered_ports.clear();
+    last_submitted_log_message.instance_id = "";
+    last_submitted_log_message.timestamp = Timestamp(-1.0);
+    last_submitted_log_message.level = LogLevel::DEBUG;
+    last_submitted_log_message.text = "";
 }
 
 int MockMMPClient::num_constructed = 0;
@@ -71,6 +77,9 @@ std::string MockMMPClient::last_location("");
 std::vector<std::string> MockMMPClient::last_registered_locations({});
 
 std::vector<::ymmsl::Port> MockMMPClient::last_registered_ports({});
+
+LogMessage MockMMPClient::last_submitted_log_message(
+        "", Timestamp(-1.0), LogLevel::DEBUG, "");
 
 } }
 

@@ -29,10 +29,11 @@ Communicator::Communicator(
         ymmsl::Reference const & kernel,
         std::vector<int> const & index,
         Optional<PortsDescription> const & declared_ports,
-        int profiler)
+        Logger & logger, int profiler)
     : kernel_(kernel)
     , index_(index)
     , declared_ports_(declared_ports)
+    , logger_(logger)
     , profiler_(profiler)
     , servers_()
     , clients_()
@@ -92,6 +93,10 @@ void Communicator::send_message(
         Message const & message,
         Optional<int> slot)
 {
+    if (slot.is_set())
+        logger_.info("Sending message on ", port_name, "[", slot.get(), "]");
+    else
+        logger_.info("Sending message on ", port_name);
     std::vector<int> slot_list;
     if (slot.is_set()) {
         slot_list.push_back(slot.get());
@@ -141,6 +146,10 @@ Message Communicator::receive_message(
         Optional<int> slot,
         Optional<Message> const & default_msg)
 {
+    if (slot.is_set())
+        logger_.info("Waiting for message on ", port_name, "[", slot.get(), "]");
+    else
+        logger_.info("Waiting for message on ", port_name);
     std::vector<int> slot_list;
     if (slot.is_set())
         slot_list.emplace_back(slot.get());
@@ -156,8 +165,10 @@ Message Communicator::receive_message(
             oss << " this port.";
             throw std::runtime_error(oss.str());
         }
-        else
+        else {
+            logger_.info("No message received on ", port_name, " as it is not connected");
             return default_msg.get();
+        }
     }
 
     Port & port = (ports_.count(port_name)) ? (ports_.at(port_name)) : muscle_settings_in_.get();
@@ -190,6 +201,17 @@ Message Communicator::receive_message(
 
     // TODO stop and finalise profile event
 
+    if (slot.is_set())
+        logger_.info("Received message on ", port_name, "[", slot.get(), "]");
+    else
+        logger_.info("Received message on ", port_name);
+
+    if (is_close_port(message.data())) {
+        if (slot.is_set())
+            logger_.info("Port ", port_name, "[", slot.get(), "] is now closed");
+        else
+            logger_.info("Port ", port_name, " is now closed");
+    }
     return message;
 }
 
@@ -198,6 +220,10 @@ void Communicator::close_port(
     Message message(
             std::numeric_limits<double>::infinity(),
             ClosePort(), Settings());
+    if (slot.is_set())
+        logger_.info("Closing port ", port_name, "[", slot.get(), "]");
+    else
+        logger_.info("Closing port ", port_name);
     send_message(port_name, message, slot);
 }
 

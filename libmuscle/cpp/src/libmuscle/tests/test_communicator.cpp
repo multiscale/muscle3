@@ -1,4 +1,5 @@
 // Inject mocks
+#define LIBMUSCLE_MOCK_LOGGER <mocks/mock_logger.hpp>
 #define LIBMUSCLE_MOCK_MCP_TCP_CLIENT <mocks/mcp/mock_tcp_client.hpp>
 #define LIBMUSCLE_MOCK_MCP_TCP_SERVER <mocks/mcp/mock_tcp_server.hpp>
 #define LIBMUSCLE_MOCK_PEER_MANAGER <mocks/mock_peer_manager.hpp>
@@ -20,6 +21,7 @@
 #include <libmuscle/port.cpp>
 
 // then add mock implementations as needed.
+#include <mocks/mock_logger.cpp>
 #include <mocks/mock_peer_manager.cpp>
 #include <mocks/mock_post_office.cpp>
 #include <mocks/mcp/mock_tcp_client.cpp>
@@ -33,6 +35,7 @@
 #include <libmuscle/communicator.hpp>
 #include <mocks/mcp/mock_tcp_client.hpp>
 #include <mocks/mcp/mock_tcp_server.hpp>
+#include <mocks/mock_logger.hpp>
 #include <mocks/mock_peer_manager.hpp>
 
 using libmuscle::impl::Communicator;
@@ -41,6 +44,7 @@ using libmuscle::impl::Endpoint;
 using libmuscle::impl::Optional;
 using libmuscle::impl::PeerDims;
 using libmuscle::impl::PeerLocations;
+using libmuscle::impl::MockLogger;
 using libmuscle::impl::MockPeerManager;
 using libmuscle::impl::MockPostOffice;
 using libmuscle::impl::Port;
@@ -85,9 +89,14 @@ void reset_mocks() {
     MockTcpServer::reset();
 }
 
+MockLogger & mock_logger() {
+    static MockLogger logger;
+    return logger;
+}
+
 std::unique_ptr<Communicator> connected_communicator() {
     std::unique_ptr<Communicator> comm(new Communicator(
-            Reference("kernel"), {13}, {}, 0));
+            Reference("kernel"), {13}, {}, mock_logger(), 0));
 
     std::vector<Conduit> conduits({
         Conduit("kernel.out", "other.in"),
@@ -108,7 +117,7 @@ std::unique_ptr<Communicator> connected_communicator() {
 
 std::unique_ptr<Communicator> connected_communicator2() {
     std::unique_ptr<Communicator> comm(new Communicator(
-            Reference("other"), {}, {}, 0));
+            Reference("other"), {}, {}, mock_logger(), 0));
 
     std::vector<Conduit> conduits({
         Conduit("kernel.out", "other.in"),
@@ -134,7 +143,7 @@ std::unique_ptr<Communicator> connected_communicator3() {
             });
 
     std::unique_ptr<Communicator> comm(new Communicator(
-            Reference("kernel"), {}, desc, 0));
+            Reference("kernel"), {}, desc, mock_logger(), 0));
 
     std::vector<Conduit> conduits({
         Conduit("kernel.out", "other.in"),
@@ -159,7 +168,7 @@ std::unique_ptr<Communicator> connected_communicator3() {
 TEST(libmuscle_communicator, create_communicator) {
     reset_mocks();
     Communicator comm(
-            Reference("kernel"), {13}, {}, 0);
+            Reference("kernel"), {13}, {}, mock_logger(), 0);
     ASSERT_EQ(MockTcpServer::num_constructed, 1);
     ASSERT_EQ(MockTcpServer::last_instance_id, "kernel[13]");
     ASSERT_EQ(MockTcpClient::num_constructed, 0);
@@ -168,7 +177,7 @@ TEST(libmuscle_communicator, create_communicator) {
 TEST(libmuscle_communicator, get_locations) {
     reset_mocks();
     Communicator comm(
-            Reference("kernel"), {13}, {}, 0);
+            Reference("kernel"), {13}, {}, mock_logger(), 0);
     ASSERT_EQ(comm.get_locations().size(), 1);
     ASSERT_EQ(comm.get_locations()[0], "tcp:test_location");
 }
@@ -176,7 +185,7 @@ TEST(libmuscle_communicator, get_locations) {
 TEST(libmuscle_communicator, test_connect) {
     reset_mocks();
     Communicator comm(
-            Reference("kernel"), {13}, {}, 0);
+            Reference("kernel"), {13}, {}, mock_logger(), 0);
 
     std::vector<Conduit> conduits({
         Conduit("kernel.out", "other.in"),
@@ -212,7 +221,7 @@ TEST(libmuscle_communicator, test_connect_vector_ports) {
             });
 
     Communicator comm(
-            Reference("kernel"), {13}, desc, 0);
+            Reference("kernel"), {13}, desc, mock_logger(), 0);
 
     std::vector<Conduit> conduits({
         Conduit("other1.out", "kernel.in"),
@@ -271,7 +280,7 @@ TEST(libmuscle_communicator, test_connect_multidimensional_ports) {
             });
 
     Communicator comm(
-            Reference("kernel"), {13}, desc, 0);
+            Reference("kernel"), {13}, desc, mock_logger(), 0);
 
     std::vector<Conduit> conduits({
         Conduit("other.out", "kernel.in")
@@ -301,7 +310,7 @@ TEST(libmuscle_communicator, test_connect_inferred_ports) {
     reset_mocks();
 
     Communicator comm(
-            Reference("kernel"), {13}, {}, 0);
+            Reference("kernel"), {13}, {}, mock_logger(), 0);
 
     std::vector<Conduit> conduits({
         Conduit("other1.out", "kernel.in"),

@@ -69,6 +69,12 @@ test_instance.o: test_instance.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@ -pthread
 
 test_instance: test_instance.o $(CURDIR)/../../ymmsl/libymmsl_d.a
+	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_ROOT)/lib/libgtest.a -pthread $(LDFLAGS2)
+
+test_logging.o: test_logging.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@ -pthread
+
+test_logging: test_logging.o $(CURDIR)/../../ymmsl/libymmsl_d.a
 	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_ROOT)/lib/libgtest.a -pthread
 
 empty :=

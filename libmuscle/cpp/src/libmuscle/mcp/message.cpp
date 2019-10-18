@@ -1,8 +1,10 @@
 #include <libmuscle/mcp/message.hpp>
+#include <libmuscle/mcp/data_pack.hpp>
 #include <ymmsl/identity.hpp>
 
 #include <msgpack.hpp>
 
+#include <cstring>
 #include <utility>
 
 
@@ -47,6 +49,34 @@ Message Message::from_bytes(DataConstRef const & data) {
             next_timestamp,
             dict["settings_overlay"],
             dict["data"]);
+}
+
+DataConstRef Message::encoded() const {
+    Data port_length_data;
+    if (port_length.is_set())
+        port_length_data = port_length.get();
+
+    Data next_timestamp_data;
+    if (next_timestamp.is_set())
+        next_timestamp_data = next_timestamp.get();
+
+    Data msg_dict = Data::dict(
+            "sender", std::string(sender),
+            "receiver", std::string(receiver),
+            "port_length", port_length_data,
+            "timestamp", timestamp,
+            "next_timestamp", next_timestamp_data,
+            "settings_overlay", settings_overlay,
+            "data", data
+            );
+
+    msgpack::sbuffer sbuf;
+    msgpack::pack(sbuf, msg_dict);
+
+    auto bytes = Data::byte_array(sbuf.size());
+    memcpy(bytes.as_byte_array(), sbuf.data(), sbuf.size());
+
+    return bytes;
 }
 
 } } }

@@ -160,29 +160,9 @@ class TcpServerWorker {
                 if (!req.second.empty()) {
                     if (post_office_.has_message(req.second)) {
                         auto msg = post_office_.get_message(req.second);
-
-                        Data port_length;
-                        if (msg->port_length.is_set())
-                            port_length = msg->port_length.get();
-
-                        Data next_timestamp;
-                        if (msg->next_timestamp.is_set())
-                            next_timestamp = msg->next_timestamp.get();
-
-                        Data msg_dict = Data::dict(
-                                "sender", std::string(msg->sender),
-                                "receiver", std::string(msg->receiver),
-                                "port_length", port_length,
-                                "timestamp", msg->timestamp,
-                                "next_timestamp", next_timestamp,
-                                "settings_overlay", msg->settings_overlay,
-                                "data", msg->data
-                                );
-
-                        msgpack::sbuffer sbuf;
-                        msgpack::pack(sbuf, msg_dict);
-                        send_int64(req.first, sbuf.size());
-                        send_all(req.first, sbuf.data(), sbuf.size());
+                        auto msg_bytes = msg->encoded();
+                        send_int64(req.first, msg_bytes.size());
+                        send_all(req.first, msg_bytes.as_byte_array(), msg_bytes.size());
 
                         req.second.clear();
                     }

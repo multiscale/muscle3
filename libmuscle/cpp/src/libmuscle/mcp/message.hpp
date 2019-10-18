@@ -35,7 +35,17 @@ struct Message {
             DataConstRef const & settings_overlay,
             DataConstRef const & data);
 
+    /** Create an MCP Message from an encoded buffer.
+     *
+     * @param data A DataConstRef containing a byte array with encoded data.
+     */
     static Message from_bytes(DataConstRef const & data);
+
+    /** Encode the message and return as a byte buffer.
+     *
+     * Returns a byte_array in a DataConstRef.
+     */
+    DataConstRef encoded() const;
 
     ::ymmsl::Reference sender;
     ::ymmsl::Reference receiver;

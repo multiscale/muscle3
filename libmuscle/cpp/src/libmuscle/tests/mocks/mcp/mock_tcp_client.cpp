@@ -3,6 +3,8 @@
 #include <libmuscle/data.hpp>
 #include <libmuscle/mcp/data_pack.hpp>
 
+#include <cstring>
+
 
 namespace libmuscle { namespace impl {
 
@@ -25,31 +27,7 @@ void MockTcpClient::shutdown(::ymmsl::Reference const & instance_id) {}
 DataConstRef MockTcpClient::receive(::ymmsl::Reference const & receiver) {
     last_receiver = receiver;
 
-    Data port_length;
-    if (next_receive_message.port_length.is_set())
-        port_length = next_receive_message.port_length.get();
-
-    Data next_timestamp;
-    if (next_receive_message.next_timestamp.is_set())
-        next_timestamp = next_receive_message.next_timestamp.get();
-
-    Data msg_dict = Data::dict(
-            "sender", std::string(next_receive_message.sender),
-            "receiver", std::string(next_receive_message.receiver),
-            "port_length", port_length,
-            "timestamp", next_receive_message.timestamp,
-            "next_timestamp", next_timestamp,
-            "settings_overlay", next_receive_message.settings_overlay,
-            "data", next_receive_message.data
-            );
-
-    msgpack::sbuffer sbuf;
-    msgpack::pack(sbuf, msg_dict);
-
-    auto bytes = Data::byte_array(sbuf.size());
-    memcpy(bytes.as_byte_array(), sbuf.data(), sbuf.size());
-
-    return bytes;
+    return next_receive_message.encoded();
 }
 
 void MockTcpClient::close() {}

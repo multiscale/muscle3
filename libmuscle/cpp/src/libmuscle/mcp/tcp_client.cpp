@@ -1,7 +1,7 @@
-#include "libmuscle/mcp/tcp_client.hpp"
+#include <libmuscle/mcp/tcp_client.hpp>
 
-#include "libmuscle/mcp/data_pack.hpp"
-#include "libmuscle/mcp/tcp_util.hpp"
+#include <libmuscle/mcp/data_pack.hpp>
+#include <libmuscle/mcp/tcp_util.hpp>
 
 #include <memory>
 #include <string>
@@ -115,7 +115,7 @@ TcpClient::~TcpClient() {
         close();
 }
 
-Message TcpClient::receive(::ymmsl::Reference const & receiver) {
+DataConstRef TcpClient::receive(::ymmsl::Reference const & receiver) {
     // Send receiver to get a message for
     std::string receiver_str = static_cast<std::string>(receiver);
     send_int64(socket_fd_, receiver_str.length());
@@ -125,30 +125,10 @@ Message TcpClient::receive(::ymmsl::Reference const & receiver) {
     int64_t length = recv_int64(socket_fd_);
 
     // receive data
-    auto zone = std::make_shared<msgpack::zone>();
-    char * buf = static_cast<char *>(zone->allocate_align(length, 8u));
-    recv_all(socket_fd_, buf, length);
+    Data buf = Data::byte_array(length);
+    recv_all(socket_fd_, buf.as_byte_array(), length);
 
-    // decode
-    DataConstRef data = unpack_data(zone, buf, length);
-
-    // create message
-    libmuscle::impl::Optional<int> port_length;
-    if (data["port_length"].is_a<int>())
-        port_length = data["port_length"].as<int>();
-
-    libmuscle::impl::Optional<double> next_timestamp;
-    if (data["next_timestamp"].is_a<double>())
-        next_timestamp = data["next_timestamp"].as<double>();
-
-    return Message(
-            data["sender"].as<std::string>(),
-            data["receiver"].as<std::string>(),
-            port_length,
-            data["timestamp"].as<double>(),
-            next_timestamp,
-            data["settings_overlay"],
-            data["data"]);
+    return buf;
 }
 
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <libmuscle/mcp/client.hpp>
+#include <libmuscle/mcp/message.hpp>
 
 
 namespace libmuscle { namespace impl { namespace mcp {
@@ -18,7 +19,7 @@ class MockTcpClient : public Client {
         MockTcpClient & operator=(MockTcpClient && rhs) = delete;
         virtual ~MockTcpClient() override;
 
-        virtual Message receive(::ymmsl::Reference const & receiver) override;
+        virtual DataConstRef receive(::ymmsl::Reference const & receiver) override;
 
         virtual void close() override;
 

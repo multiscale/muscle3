@@ -14,6 +14,7 @@
 
 
 using libmuscle::impl::Data;
+using libmuscle::impl::DataConstRef;
 using libmuscle::impl::mcp::Message;
 using libmuscle::impl::mcp::TcpClient;
 using libmuscle::impl::mcp::TcpServer;
@@ -42,7 +43,8 @@ TEST(test_tcp_communication, send_receive) {
     std::string location = server.get_location();
     ASSERT_TRUE(TcpClient::can_connect_to(location));
     TcpClient client("test_receiver", location);
-    Message m = client.receive(receiver);
+    DataConstRef bytes = client.receive(receiver);
+    Message m = Message::from_bytes(bytes);
 
     ASSERT_EQ(m.sender, "test_sender.port");
     ASSERT_EQ(m.receiver, "test_receiver.port");

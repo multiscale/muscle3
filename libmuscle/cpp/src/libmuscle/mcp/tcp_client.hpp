@@ -69,9 +69,9 @@ class TcpClient : public Client {
          *
          * @param The receiving (local) port.
          *
-         * @return The recived message.
+         * @return The received message.
          */
-        virtual Message receive(::ymmsl::Reference const & receiver) override;
+        virtual DataConstRef receive(::ymmsl::Reference const & receiver) override;
 
         /** Closes this client.
          *

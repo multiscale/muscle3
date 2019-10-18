@@ -1,4 +1,4 @@
-#include "libmuscle/mcp/client.hpp"
+#include <libmuscle/mcp/client.hpp>
 
 #include <ymmsl/ymmsl.hpp>
 

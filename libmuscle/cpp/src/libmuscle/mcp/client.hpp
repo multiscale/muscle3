@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libmuscle/mcp/message.hpp>
+#include <libmuscle/data.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 #include <string>
@@ -69,11 +69,14 @@ class Client {
 
         /** Receive a message from a port this client connects to.
          *
+         * This returns a DataConstRef holding a byte array with the received
+         * data.
+         *
          * @param The receiving (local) port.
          *
-         * @return The recived message.
+         * @return The received message.
          */
-        virtual Message receive(::ymmsl::Reference const & receiver) = 0;
+        virtual DataConstRef receive(::ymmsl::Reference const & receiver) = 0;
 
         /** Closes this client.
          *

@@ -178,7 +178,8 @@ Message Communicator::receive_message(
     Endpoint snd_endpoint = peer_manager_->get_peer_endpoint(
             recv_endpoint.port, slot_list);
     mcp::Client & client = get_client_(snd_endpoint.instance());
-    mcp::Message mcp_message = client.receive(recv_endpoint.ref());
+    auto mcp_message = mcp::Message::from_bytes(
+            client.receive(recv_endpoint.ref()));
 
     Settings overlay_settings(mcp_message.settings_overlay.as<Settings>());
 

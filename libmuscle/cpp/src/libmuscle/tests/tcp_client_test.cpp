@@ -36,7 +36,8 @@ int main(int argc, char *argv[]) {
 
     // receive a message
     Reference receiver("test_receiver.test_port2");
-    Message message = client->receive(receiver);
+    DataConstRef bytes = client->receive(receiver);
+    Message message = Message::from_bytes(bytes);
 
     // check message
     assert(message.sender == Reference("test_sender.test_port"));

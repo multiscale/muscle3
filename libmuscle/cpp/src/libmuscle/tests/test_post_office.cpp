@@ -6,9 +6,9 @@
 
 #include <gtest/gtest.h>
 
-#include "libmuscle/util.hpp"
-#include "libmuscle/data.hpp"
-#include "libmuscle/mcp/message.hpp"
+#include <libmuscle/util.hpp>
+#include <libmuscle/data.hpp>
+#include <libmuscle/mcp/message.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 
@@ -25,12 +25,13 @@ int main(int argc, char *argv[]) {
     return RUN_ALL_TESTS();
 }
 
-std::unique_ptr<Message> make_message() {
-    return std::make_unique<Message>(
+std::unique_ptr<DataConstRef> make_message() {
+    Message msg(
             "test_sender.port", "test_receiver.port",
             Optional<int>(),
             0.0, 1.0,
             DataConstRef(), DataConstRef());
+    return std::make_unique<DataConstRef>(msg.encoded());
 }
 
 TEST(libmuscle_post_office, test_deposit_get_message) {
@@ -60,8 +61,9 @@ TEST(libmuscle_post_office, test_individual_slots) {
 
 
 void get_message(PostOffice * po) {
-    auto msg = po->get_message("test_receiver.port");
-    ASSERT_EQ(msg->sender, "test_sender.port");
+    auto msg_data = po->get_message("test_receiver.port");
+    auto msg = Message::from_bytes(*msg_data);
+    ASSERT_EQ(msg.sender, "test_sender.port");
 }
 
 
@@ -78,7 +80,7 @@ TEST(libmuscle_post_office, test_get_before_deposit) {
 void get_messages(
         PostOffice * po,
         std::string receiver,
-        std::vector<Message*> const & expected)
+        std::vector<DataConstRef*> const & expected)
 {
     for (int i = 0; i < 10; ++i) {
         auto msg = po->get_message(receiver);
@@ -90,7 +92,7 @@ void get_messages(
 
 TEST(libmuscle_post_office, test_wait_for_receivers) {
     PostOffice po;
-    std::vector<Message*> expected1, expected2;
+    std::vector<DataConstRef*> expected1, expected2;
     for (int i = 0; i < 10; ++i) {
         auto msg1 = make_message();
         expected1.push_back(msg1.get());

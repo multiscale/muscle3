@@ -1,12 +1,13 @@
 #include <gtest/gtest.h>
 #include <msgpack.hpp>
 
-#include "libmuscle/mcp/tcp_client.hpp"
-#include "libmuscle/mcp/tcp_server.hpp"
+#include <libmuscle/mcp/message.hpp>
+#include <libmuscle/mcp/tcp_client.hpp>
+#include <libmuscle/mcp/tcp_server.hpp>
 
-#include "libmuscle/data.hpp"
-#include "libmuscle/post_office.hpp"
-#include "libmuscle/util.hpp"
+#include <libmuscle/data.hpp>
+#include <libmuscle/post_office.hpp>
+#include <libmuscle/util.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 #include <string>
@@ -32,12 +33,13 @@ TEST(test_tcp_communication, send_receive) {
     PostOffice post_office;
     Reference receiver("test_receiver.port");
 
-    auto msg = std::make_unique<Message>(
+    Message msg(
             "test_sender.port", receiver, 10,
             0.0, 1.0,
             Data::dict("par1", 13),
             Data::dict("var1", 1, "var2", 2.0, "var3", "3"));
-    post_office.deposit(receiver, std::move(msg));
+    auto msg_data = std::make_unique<DataConstRef>(msg.encoded());
+    post_office.deposit(receiver, std::move(msg_data));
 
     TcpServer server("test_sender", post_office);
     std::string location = server.get_location();

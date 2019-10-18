@@ -7,7 +7,7 @@
 
 #include <ymmsl/ymmsl.hpp>
 
-#include <libmuscle/mcp/message.hpp>
+#include <libmuscle/data.hpp>
 #include <libmuscle/outbox.hpp>
 
 #include <condition_variable>
@@ -41,19 +41,22 @@ class PostOffice {
          * instance. This dequeues the message, the next call will return
          * the next message.
          *
+         * The returned object holds a byte array with received data.
+         *
          * @param receiver The receiver of the message.
          */
-        std::unique_ptr<mcp::Message> get_message(
-                ymmsl::Reference const & receiver);
+        std::unique_ptr<DataConstRef> get_message(ymmsl::Reference const & receiver);
 
         /** Deposit a message into an outbox.
+         *
+         * The message object should hold a byte array with encoded data.
          *
          * @param receiver Receiver of the message.
          * @param message The message to deposit.
          */
         void deposit(
                 ymmsl::Reference const & receiver,
-                std::unique_ptr<mcp::Message> message);
+                std::unique_ptr<DataConstRef> message);
 
         /** Waits until all outboxes are empty.
          */

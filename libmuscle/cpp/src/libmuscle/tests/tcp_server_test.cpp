@@ -19,6 +19,7 @@
 
 using libmuscle::impl::PostOffice;
 using libmuscle::impl::Data;
+using libmuscle::impl::DataConstRef;
 using libmuscle::impl::mcp::Message;
 using libmuscle::impl::mcp::Server;
 using libmuscle::impl::mcp::TcpServer;
@@ -35,12 +36,13 @@ int main(int argc, char *argv[]) {
 
     auto data_dict = Data::dict("var1", 1, "var2", 2.0, "var3", "3");
 
-    auto msg = std::make_unique<Message>(
+    Message msg(
             "test_sender.port", receiver, 10,
             0.0, 1.0,
             overlay_settings,
             data_dict);
-    post_office.deposit(receiver, std::move(msg));
+    auto msg_data = std::make_unique<DataConstRef>(msg.encoded());
+    post_office.deposit(receiver, std::move(msg_data));
 
     TcpServer server("test_sender", post_office);
     std::cout << server.get_location() << std::endl;

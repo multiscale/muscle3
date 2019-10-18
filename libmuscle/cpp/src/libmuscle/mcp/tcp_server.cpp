@@ -159,10 +159,9 @@ class TcpServerWorker {
             for (auto & req: requests_) {
                 if (!req.second.empty()) {
                     if (post_office_.has_message(req.second)) {
-                        auto msg = post_office_.get_message(req.second);
-                        auto msg_bytes = msg->encoded();
-                        send_int64(req.first, msg_bytes.size());
-                        send_all(req.first, msg_bytes.as_byte_array(), msg_bytes.size());
+                        auto msg_bytes = post_office_.get_message(req.second);
+                        send_int64(req.first, msg_bytes->size());
+                        send_all(req.first, msg_bytes->as_byte_array(), msg_bytes->size());
 
                         req.second.clear();
                     }

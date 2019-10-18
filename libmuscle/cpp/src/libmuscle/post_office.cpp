@@ -6,7 +6,6 @@
 
 
 using ymmsl::Reference;
-using libmuscle::impl::mcp::Message;
 
 
 namespace libmuscle { namespace impl {
@@ -15,14 +14,14 @@ bool PostOffice::has_message(Reference const & receiver) {
     return !get_outbox_(receiver).is_empty();
 }
 
-std::unique_ptr<Message> PostOffice::get_message(Reference const & receiver) {
+std::unique_ptr<DataConstRef> PostOffice::get_message(Reference const & receiver) {
     auto msg = get_outbox_(receiver).retrieve();
     retrieved_.notify_one();
     return std::move(msg);
 }
 
 void PostOffice::deposit(
-        Reference const & receiver, std::unique_ptr<Message> message) {
+        Reference const & receiver, std::unique_ptr<DataConstRef> message) {
     get_outbox_(receiver).deposit(std::move(message));
 }
 

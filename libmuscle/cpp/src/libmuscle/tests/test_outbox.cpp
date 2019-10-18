@@ -4,9 +4,9 @@
 
 #include <gtest/gtest.h>
 
-#include "libmuscle/util.hpp"
-#include "libmuscle/data.hpp"
-#include "libmuscle/mcp/message.hpp"
+#include <libmuscle/util.hpp>
+#include <libmuscle/data.hpp>
+#include <libmuscle/mcp/message.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 
@@ -31,16 +31,18 @@ TEST(libmuscle_outbox, test_create_outbox) {
 TEST(libmuscle_outbox, test_deposit_retrieve_message) {
     Outbox box;
 
-    auto message = std::make_unique<Message>(
+    Message message(
             Reference("sender.out"), Reference("receiver.in"),
             Optional<int>(),
             0.0, 1.0,
             DataConstRef(),
             DataConstRef("testing"));
 
-    auto msg_ptr = message.get();
+    auto message_data = std::make_unique<DataConstRef>(message.encoded());
 
-    box.deposit(std::move(message));
+    auto msg_ptr = message_data.get();
+
+    box.deposit(std::move(message_data));
     ASSERT_FALSE(box.is_empty());
 
     auto message2 = box.retrieve();

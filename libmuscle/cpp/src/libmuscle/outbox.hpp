@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libmuscle/mcp/message.hpp>
+#include <libmuscle/data.hpp>
 
 #include <ymmsl/ymmsl.hpp>
 
@@ -37,7 +37,7 @@ class Outbox {
          *
          * @param message The message to store.
          */
-        void deposit(std::unique_ptr<mcp::Message> message);
+        void deposit(std::unique_ptr<DataConstRef> message);
 
         /** Retrieve a message from the Outbox.
          *
@@ -47,10 +47,10 @@ class Outbox {
          *
          * @return The next message.
          */
-        std::unique_ptr<mcp::Message> retrieve();
+        std::unique_ptr<DataConstRef> retrieve();
 
     private:
-        std::vector<std::unique_ptr<mcp::Message>> queue_;
+        std::vector<std::unique_ptr<DataConstRef>> queue_;
         mutable std::mutex mutex_;
         mutable std::condition_variable deposited_;
 };

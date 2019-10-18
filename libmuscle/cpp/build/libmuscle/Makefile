@@ -118,13 +118,13 @@ libmuscle.a: $(objects)
 	ar rcs $@ $^
 
 libmuscle.so: $(lobjects)
-	$(CXX) -shared -o $@ $^ $(LDFLAGS)
+	$(CXX) -shared -Wl,--version-script=libmuscle.version -o $@ $^ $(LDFLAGS)
 
 libmuscle_d.a: $(dobjects)
 	ar rcs $@ $^
 
 libmuscle_d.so: $(dlobjects)
-	$(CXX) -shared -o $@ $^ $(LDFLAGS)
+	$(CXX) -shared -Wl,--version-script=libmuscle.version -o $@ $^ $(LDFLAGS)
 
 $(PREFIX)/include/%.hpp: $(hdrdir)/%.hpp
 	@mkdir -p $(@D)

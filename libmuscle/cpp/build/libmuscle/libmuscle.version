@@ -72,12 +72,14 @@
             "libmuscle::impl::DataConstRef::value(unsigned long) const";
 
             "libmuscle::impl::Data::byte_array(char const*, unsigned int)";
+            "libmuscle::impl::Data::byte_array(unsigned int)";
             "libmuscle::impl::Data::dict()";
             "libmuscle::impl::Data::list()";
             "libmuscle::impl::Data::nils(unsigned long)";
             "libmuscle::impl::Data::operator=(libmuscle::impl::Data const&)";
             "libmuscle::impl::Data::operator[](unsigned long)";
             "libmuscle::impl::Data::operator[](std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)";
+            "libmuscle::impl::Data::as_byte_array()";
         };
 
     local: *;

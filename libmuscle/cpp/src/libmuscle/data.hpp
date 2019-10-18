@@ -253,7 +253,7 @@ class DataConstRef {
         /** Access a byte array.
          *
          * Use is_a_byte_array() to check whether this object represents a byte
-         * array.
+         * array. Use size() to get the size.
          *
          * The returned buffer will remain valid and accessible at least until
          * this ConstDataRef goes out of scope.
@@ -419,6 +419,13 @@ class Data : public DataConstRef {
         template <typename... Args>
         static Data list(Args const &... args);
 
+        /** Create a byte array of a given size.
+         *
+         * The buffer will be owned by this Data object. Use byte_array() to
+         * get a pointer to put data into it.
+         */
+        static Data byte_array(uint32_t size);
+
         /** Create a Data referencing a byte array.
          *
          * The buffer passed will not be copied! This creates a Data object
@@ -473,6 +480,19 @@ class Data : public DataConstRef {
          * @throws std::out_of_range if the index is beyond the end of the list.
          */
         Data operator[](std::size_t index);
+
+        /** Access a byte array.
+         *
+         * Use is_a_byte_array() to check whether this object represents a byte
+         * array. Use size() to get the size in bytes.
+         *
+         * The returned buffer will remain valid and accessible at least until
+         * this Data goes out of scope.
+         *
+         * @return A pointer to a the first byte of a consecutive buffer.
+         * @throws std::runtime_error if this is not a byte array.
+         */
+        char * as_byte_array();
 
     private:
         void init_dict_(uint32_t size);

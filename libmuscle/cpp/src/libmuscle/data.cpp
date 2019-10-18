@@ -455,6 +455,14 @@ Data Data::nils(std::size_t size) {
     return list;
 }
 
+Data Data::byte_array(uint32_t size) {
+    Data bytes;
+    bytes.mp_obj_->type = msgpack::type::BIN;
+    bytes.mp_obj_->via.bin.size = size;
+    bytes.mp_obj_->via.bin.ptr = bytes.zone_alloc_<char>(size);
+    return bytes;
+}
+
 Data Data::byte_array(char const * buf, uint32_t size) {
     Data bytes;
     bytes.mp_obj_->type = msgpack::type::BIN;
@@ -515,6 +523,16 @@ Data Data::operator[](std::size_t index) {
                                 + std::to_string(mp_obj_->via.array.size));
     }
     throw std::runtime_error("Tried to index an object that is not a list.");
+}
+
+char * Data::as_byte_array() {
+    if (!is_a_byte_array())
+        throw std::runtime_error("Tried to access as a byte array, but this is"
+                                 " not a byte array.");
+    // MessagePack defines this const, probably because it doesn't need to
+    // modify the data. We use this for our own purposes however, and need to
+    // be able to write data into the buffer. So we cast the const away.
+    return const_cast<char *>(mp_obj_->via.bin.ptr);
 }
 
 void Data::init_dict_(uint32_t size) {

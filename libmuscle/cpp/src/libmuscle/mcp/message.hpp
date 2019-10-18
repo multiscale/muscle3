@@ -35,6 +35,8 @@ struct Message {
             DataConstRef const & settings_overlay,
             DataConstRef const & data);
 
+    static Message from_bytes(DataConstRef const & data);
+
     ::ymmsl::Reference sender;
     ::ymmsl::Reference receiver;
     ::libmuscle::impl::Optional<int> port_length;

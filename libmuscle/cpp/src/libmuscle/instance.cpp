@@ -57,9 +57,9 @@ class Instance::Impl {
 
     private:
         ::ymmsl::Reference instance_name_;
-        MMPClient manager_;
-        Logger logger_;
-        Communicator communicator_;
+        std::unique_ptr<MMPClient> manager_;
+        std::unique_ptr<Logger> logger_;
+        std::unique_ptr<Communicator> communicator_;
         PortsDescription declared_ports_;
         SettingsManager settings_manager_;
         bool first_run_;
@@ -103,9 +103,9 @@ class Instance::Impl {
 
 Instance::Impl::Impl(int argc, char const * const argv[])
     : instance_name_(make_full_name_(argc, argv))
-    , manager_(extract_manager_location_(argc, argv))
-    , logger_(static_cast<std::string>(instance_name_), manager_)
-    , communicator_(name_(), index_(), {}, logger_, 0)
+    , manager_(new MMPClient(extract_manager_location_(argc, argv)))
+    , logger_(new Logger(static_cast<std::string>(instance_name_), *manager_))
+    , communicator_(new Communicator(name_(), index_(), {}, *logger_, 0))
     , declared_ports_()
     , settings_manager_()
     , first_run_(true)
@@ -119,9 +119,9 @@ Instance::Impl::Impl(int argc, char const * const argv[])
 Instance::Impl::Impl(int argc, char const * const argv[],
                    PortsDescription const & ports)
     : instance_name_(make_full_name_(argc, argv))
-    , manager_(extract_manager_location_(argc, argv))
-    , logger_(static_cast<std::string>(instance_name_), manager_)
-    , communicator_(name_(), index_(), ports, logger_, 0)
+    , manager_(new MMPClient(extract_manager_location_(argc, argv)))
+    , logger_(new Logger(static_cast<std::string>(instance_name_), *manager_))
+    , communicator_(new Communicator(name_(), index_(), ports, *logger_, 0))
     , declared_ports_(ports)
     , settings_manager_()
     , first_run_(true)
@@ -141,17 +141,17 @@ bool Instance::Impl::reuse_instance(bool apply_overlay) {
 
     set_log_level_();
 
-    auto ports = communicator_.list_ports();
+    auto ports = communicator_->list_ports();
 
     bool f_init_not_connected = true;
     if (ports.count(Operator::F_INIT) != 0)
         for (auto const & port : ports.at(Operator::F_INIT))
-            if (communicator_.get_port(port).is_connected()) {
+            if (communicator_->get_port(port).is_connected()) {
                 f_init_not_connected = false;
                 break;
             }
 
-    bool no_settings_in = !communicator_.settings_in_connected();
+    bool no_settings_in = !communicator_->settings_in_connected();
 
     if (f_init_not_connected && no_settings_in) {
         do_reuse = first_run_;
@@ -165,7 +165,7 @@ bool Instance::Impl::reuse_instance(bool apply_overlay) {
 
     if (!do_reuse) {
         close_ports_();
-        communicator_.shutdown();
+        communicator_->shutdown();
         deregister_();
     }
 
@@ -173,7 +173,7 @@ bool Instance::Impl::reuse_instance(bool apply_overlay) {
 }
 
 void Instance::Impl::error_shutdown(std::string const & message) {
-    logger_.critical("Exiting with error: ", message);
+    logger_->critical("Exiting with error: ", message);
     shutdown_();
 }
 
@@ -192,27 +192,27 @@ ValueType Instance::Impl::get_setting_as(std::string const & name) const {
 
 std::unordered_map<::ymmsl::Operator, std::vector<std::string>>
 Instance::Impl::list_ports() const {
-    return communicator_.list_ports();
+    return communicator_->list_ports();
 }
 
 bool Instance::Impl::is_connected(std::string const & port) const {
-    return communicator_.get_port(port).is_connected();
+    return communicator_->get_port(port).is_connected();
 }
 
 bool Instance::Impl::is_vector_port(std::string const & port) const {
-    return communicator_.get_port(port).is_vector();
+    return communicator_->get_port(port).is_vector();
 }
 
 bool Instance::Impl::is_resizable(std::string const & port) const {
-    return communicator_.get_port(port).is_resizable();
+    return communicator_->get_port(port).is_resizable();
 }
 
 int Instance::Impl::get_port_length(std::string const & port) const {
-    return communicator_.get_port(port).get_length();
+    return communicator_->get_port(port).get_length();
 }
 
 void Instance::Impl::set_port_length(std::string const & port, int length) {
-    return communicator_.get_port(port).set_length(length);
+    return communicator_->get_port(port).set_length(length);
 }
 
 void Instance::Impl::send(std::string const & port_name, Message const & message) {
@@ -220,10 +220,10 @@ void Instance::Impl::send(std::string const & port_name, Message const & message
     if (!message.has_settings()) {
         Message msg(message);
         msg.set_settings(settings_manager_.overlay);
-        communicator_.send_message(port_name, msg);
+        communicator_->send_message(port_name, msg);
     }
     else
-        communicator_.send_message(port_name, message);
+        communicator_->send_message(port_name, message);
 }
 
 void Instance::Impl::send(
@@ -233,10 +233,10 @@ void Instance::Impl::send(
     if (!message.has_settings()) {
         Message msg(message);
         msg.set_settings(settings_manager_.overlay);
-        communicator_.send_message(port_name, msg, slot);
+        communicator_->send_message(port_name, msg, slot);
     }
     else
-        communicator_.send_message(port_name, message, slot);
+        communicator_->send_message(port_name, message, slot);
 }
 
 Message Instance::Impl::receive(std::string const & port_name) {
@@ -294,9 +294,9 @@ Message Instance::Impl::receive_with_settings(
  */
 void Instance::Impl::register_() {
     // TODO: profile this
-    auto locations = communicator_.get_locations();
+    auto locations = communicator_->get_locations();
     auto port_list = list_declared_ports_();
-    manager_.register_instance(instance_name_, locations, port_list);
+    manager_->register_instance(instance_name_, locations, port_list);
     // TODO: stop profile
 }
 
@@ -304,9 +304,9 @@ void Instance::Impl::register_() {
  */
 void Instance::Impl::connect_() {
     // TODO: profile this
-    auto peer_info = manager_.request_peers(instance_name_);
-    communicator_.connect(std::get<0>(peer_info), std::get<1>(peer_info), std::get<2>(peer_info));
-    settings_manager_.base = manager_.get_settings();
+    auto peer_info = manager_->request_peers(instance_name_);
+    communicator_->connect(std::get<0>(peer_info), std::get<1>(peer_info), std::get<2>(peer_info));
+    settings_manager_.base = manager_->get_settings();
     // TODO: stop profile
 }
 
@@ -314,7 +314,7 @@ void Instance::Impl::connect_() {
  */
 void Instance::Impl::deregister_() {
     // TODO: profile this
-    manager_.deregister_instance(instance_name_);
+    manager_->deregister_instance(instance_name_);
     // TODO: stop profile
     // This is the last thing we'll profile, so flush messages
     // TODO: shut down profiler
@@ -329,7 +329,7 @@ Message Instance::Impl::receive_message_(
     check_port_(port_name);
 
     Reference port_ref(port_name);
-    auto const & port = communicator_.get_port(port_name);
+    auto const & port = communicator_->get_port(port_name);
     if (port.oper == Operator::F_INIT) {
         if (slot.is_set())
             port_ref += slot.get();
@@ -344,7 +344,7 @@ Message Instance::Impl::receive_message_(
                         " port, then you have to pass false to"
                         " reuse_instance(), otherwise the settings will"
                         " already have been applied by MUSCLE.");
-                logger_.critical(msg);
+                logger_->critical(msg);
                 shutdown_();
                 throw std::logic_error(msg);
             }
@@ -357,7 +357,7 @@ Message Instance::Impl::receive_message_(
                 oss << port_ref << "' in a single F_INIT, that's not possible.";
                 oss << " Did you forget to call reuse_instance() in your reuse";
                 oss << " loop?";
-                logger_.critical(oss.str());
+                logger_->critical(oss.str());
                 shutdown_();
                 throw std::logic_error(oss.str());
             }
@@ -369,19 +369,19 @@ Message Instance::Impl::receive_message_(
                 oss << "Tried to receive on port '" << port_ref << "', which";
                 oss << " is not connected, and no default value was given.";
                 oss << " Please connect this port!";
-                logger_.critical(oss.str());
+                logger_->critical(oss.str());
                 shutdown_();
                 throw std::logic_error(oss.str());
             }
         }
     }
     else {
-        Message msg(communicator_.receive_message(port_name, slot, default_msg));
+        Message msg(communicator_->receive_message(port_name, slot, default_msg));
         if (port.is_connected() && !port.is_open(slot)) {
             std::ostringstream oss;
             oss << "Port '" << port_ref << "' is closed, but we're trying to";
             oss << " receive on it. Did the peer crash?";
-            logger_.critical(oss.str());
+            logger_->critical(oss.str());
             shutdown_();
             throw std::runtime_error(oss.str());
         }
@@ -478,12 +478,12 @@ std::vector<::ymmsl::Port> Instance::Impl::list_declared_ports_() const {
  * @param port_name The name of the port to check.
  */
 void Instance::Impl::check_port_(std::string const & port_name) {
-    if (!communicator_.port_exists(port_name)) {
+    if (!communicator_->port_exists(port_name)) {
         std::ostringstream oss;
         oss << "Port '" << port_name << "' does not exist on '";
         oss << instance_name_ << "'. Please check the name and the list of";
         oss << " ports you gave for this compute element.";
-        logger_.critical(oss.str());
+        logger_->critical(oss.str());
         shutdown_();
         throw std::logic_error(oss.str());
     }
@@ -495,7 +495,7 @@ void Instance::Impl::check_port_(std::string const & port_name) {
  */
 bool Instance::Impl::receive_settings_() {
     Message default_message(0.0, Settings(), Settings());
-    auto msg = communicator_.receive_message("muscle_settings_in", {}, default_message);
+    auto msg = communicator_->receive_message("muscle_settings_in", {}, default_message);
     if (is_close_port(msg.data()))
         return false;
 
@@ -504,7 +504,7 @@ bool Instance::Impl::receive_settings_() {
         oss << "'" << instance_name_ << "' received a message on";
         oss << " muscle_settings_in that is not a Settings. It seems that the";
         oss << " simulation is miswired or the sending instance is broken.";
-        logger_.critical(oss.str());
+        logger_->critical(oss.str());
         shutdown_();
         throw std::logic_error(oss.str());
     }
@@ -525,7 +525,7 @@ void Instance::Impl::pre_receive_(
     if (slot.is_set())
         port_ref += slot.get();
 
-    Message msg = communicator_.receive_message(port_name, slot);
+    Message msg = communicator_->receive_message(port_name, slot);
     if (apply_overlay) {
         apply_overlay_(msg);
         check_compatibility_(port_name, msg.settings());
@@ -541,11 +541,11 @@ void Instance::Impl::pre_receive_(
  */
 void Instance::Impl::pre_receive_f_init_(bool apply_overlay) {
     f_init_cache_.clear();
-    auto ports = communicator_.list_ports();
+    auto ports = communicator_->list_ports();
     if (ports.count(Operator::F_INIT) == 1) {
         for (auto const & port_name : ports.at(Operator::F_INIT)) {
-            logger_.info("Pre-receiving on port ", port_name);
-            auto const & port = communicator_.get_port(port_name);
+            logger_->info("Pre-receiving on port ", port_name);
+            auto const & port = communicator_->get_port(port_name);
             if (!port.is_connected())
                 continue;
             if (!port.is_vector())
@@ -583,10 +583,10 @@ void Instance::Impl::set_log_level_() {
         else if (log_level == "INFO") level = LogLevel::INFO;
         else if (log_level == "DEBUG") level = LogLevel::DEBUG;
         else {
-            logger_.error("Invalid log level ", log_level_str," in muscle_remote_log_level");
+            logger_->error("Invalid log level ", log_level_str," in muscle_remote_log_level");
             return;
         }
-        logger_.set_remote_level(level);
+        logger_->set_remote_level(level);
     }
     catch (std::out_of_range const &) {
         // muscle_remote_log_level not set, do nothing and keep the default
@@ -620,7 +620,7 @@ void Instance::Impl::check_compatibility_(
         oss << " '" << port_name << "'. My settings are '";
         oss << settings_manager_.overlay << "' and I received from a";
         oss << " universe with '" << overlay << "'.";
-        logger_.critical(oss.str());
+        logger_->critical(oss.str());
         shutdown_();
         throw std::logic_error(oss.str());
     }
@@ -632,16 +632,16 @@ void Instance::Impl::check_compatibility_(
  * This sends a close port message on all slots of all outgoing ports.
  */
 void Instance::Impl::close_outgoing_ports_() {
-    for (auto const & oper_ports : communicator_.list_ports()) {
+    for (auto const & oper_ports : communicator_->list_ports()) {
         if (allows_sending(oper_ports.first)) {
             for (auto const & port_name : oper_ports.second) {
-                auto const & port = communicator_.get_port(port_name);
+                auto const & port = communicator_->get_port(port_name);
                 if (port.is_vector()) {
                     for (int slot = 0; slot < port.get_length(); ++slot)
-                        communicator_.close_port(port_name, slot);
+                        communicator_->close_port(port_name, slot);
                 }
                 else
-                    communicator_.close_port(port_name);
+                    communicator_->close_port(port_name);
             }
         }
     }
@@ -654,9 +654,9 @@ void Instance::Impl::close_outgoing_ports_() {
  * @param port_name Port to drain.
  */
 void Instance::Impl::drain_incoming_port_(std::string const & port_name) {
-    auto const & port = communicator_.get_port(port_name);
+    auto const & port = communicator_->get_port(port_name);
     while (port.is_open())
-        communicator_.receive_message(port_name);
+        communicator_->receive_message(port_name);
 }
 
 /* Receives messages until a ClosePort is received.
@@ -666,7 +666,7 @@ void Instance::Impl::drain_incoming_port_(std::string const & port_name) {
  * @param port_name Port to drain.
  */
 void Instance::Impl::drain_incoming_vector_port_(std::string const & port_name) {
-    auto const & port = communicator_.get_port(port_name);
+    auto const & port = communicator_->get_port(port_name);
 
     bool all_closed = true;
     for (int slot = 0; slot < port.get_length(); ++slot)
@@ -677,7 +677,7 @@ void Instance::Impl::drain_incoming_vector_port_(std::string const & port_name) 
         all_closed = true;
         for (int slot = 0; slot < port.get_length(); ++slot) {
             if (port.is_open(slot))
-                communicator_.receive_message(port_name, slot);
+                communicator_->receive_message(port_name, slot);
             if (port.is_open(slot))
                 all_closed = false;
         }
@@ -691,10 +691,10 @@ void Instance::Impl::drain_incoming_vector_port_(std::string const & port_name) 
  * instance to shut down cleanly.
  */
 void Instance::Impl::close_incoming_ports_() {
-    for (auto const & oper_ports : communicator_.list_ports()) {
+    for (auto const & oper_ports : communicator_->list_ports()) {
         if (allows_receiving(oper_ports.first)) {
             for (auto const & port_name : oper_ports.second) {
-                auto const & port = communicator_.get_port(port_name);
+                auto const & port = communicator_->get_port(port_name);
                 if (!port.is_connected())
                     continue;
                 if (port.is_vector())
@@ -721,7 +721,7 @@ void Instance::Impl::close_ports_() {
 void Instance::Impl::shutdown_() {
     if (!is_shut_down_) {
         close_ports_();
-        communicator_.shutdown();
+        communicator_->shutdown();
         deregister_();
         is_shut_down_ = true;
     }

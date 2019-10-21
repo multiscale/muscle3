@@ -21,11 +21,11 @@ int main(int argc, char *argv[]) {
     MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    if (rank == 0) {
-
     Instance instance(argc, argv, {
             {Operator::F_INIT, {"in"}},
             {Operator::O_F, {"out"}}});
+
+    if (rank == 0) {
 
     int i = 0;
     while (instance.reuse_instance()) {

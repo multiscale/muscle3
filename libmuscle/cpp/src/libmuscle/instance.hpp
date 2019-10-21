@@ -3,6 +3,11 @@
 #include <libmuscle/message.hpp>
 #include <libmuscle/ports_description.hpp>
 
+#ifdef MUSCLE_ENABLE_MPI
+#include <mpi.h>
+#include <libmuscle/mpi_tcp_barrier.hpp>
+#endif
+
 #include <ymmsl/ymmsl.hpp>
 
 #include <memory>
@@ -20,8 +25,17 @@ class Instance {
          *
          * @param argc The number of command-line arguments.
          * @param argv Command line arguments.
+         * @param communicator MPI communicator containing all processes in
+         *      this instance (MPI only).
+         * @param root The designated root process (MPI only).
          */
-        Instance(int argc, char const * const argv[]);
+        Instance(
+                int argc, char const * const argv[]
+#ifdef MUSCLE_ENABLE_MPI
+                , MPI_Comm const & communicator = MPI_COMM_WORLD
+                , int root = 0
+#endif
+                );
 
         /** Create an instance.
          *
@@ -35,9 +49,18 @@ class Instance {
          * @param argc The number of command-line arguments.
          * @param argv Command line arguments.
          * @param ports A description of the ports that this instance has.
+         * @param communicator MPI communicator containing all processes in
+         *      this instance (MPI only).
+         * @param root The designated root process (MPI only).
          */
-        Instance(int argc, char const * const argv[],
-                PortsDescription const & ports);
+        Instance(
+                int argc, char const * const argv[],
+                PortsDescription const & ports
+#ifdef MUSCLE_ENABLE_MPI
+                , MPI_Comm const & communicator = MPI_COMM_WORLD
+                , int root = 0
+#endif
+                );
 
         ~Instance();
         Instance(Instance const &);

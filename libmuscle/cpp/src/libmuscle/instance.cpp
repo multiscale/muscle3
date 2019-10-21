@@ -11,6 +11,10 @@
 #include <cstdint>
 #include <stdexcept>
 
+#ifdef MUSCLE_ENABLE_MPI
+#include <libmuscle/mpi_tcp_barrier.hpp>
+#endif
+
 
 using ymmsl::Operator;
 using ymmsl::Reference;
@@ -21,9 +25,21 @@ namespace libmuscle { namespace impl {
 
 class Instance::Impl {
     public:
-        Impl(int argc, char const * const argv[]);
-        Impl(int argc, char const * const argv[],
-                PortsDescription const & ports);
+        Impl(
+                int argc, char const * const argv[]
+#ifdef MUSCLE_ENABLE_MPI
+                , MPI_Comm const & communicator
+                , int root
+#endif
+                );
+        Impl(
+                int argc, char const * const argv[],
+                PortsDescription const & ports
+#ifdef MUSCLE_ENABLE_MPI
+                , MPI_Comm const & communicator
+                , int root
+#endif
+                );
 
         bool reuse_instance(bool apply_overlay = true);
         void error_shutdown(std::string const & message);
@@ -60,6 +76,9 @@ class Instance::Impl {
         std::unique_ptr<MMPClient> manager_;
         std::unique_ptr<Logger> logger_;
         std::unique_ptr<Communicator> communicator_;
+#ifdef MUSCLE_ENABLE_MPI
+        MPITcpBarrier mpi_barrier_;
+#endif
         PortsDescription declared_ports_;
         SettingsManager settings_manager_;
         bool first_run_;
@@ -101,35 +120,68 @@ class Instance::Impl {
         friend class TestInstance;
 };
 
-Instance::Impl::Impl(int argc, char const * const argv[])
+Instance::Impl::Impl(
+        int argc, char const * const argv[]
+#ifdef MUSCLE_ENABLE_MPI
+        , MPI_Comm const & communicator
+        , int root
+#endif
+        )
     : instance_name_(make_full_name_(argc, argv))
     , manager_(new MMPClient(extract_manager_location_(argc, argv)))
     , logger_(new Logger(static_cast<std::string>(instance_name_), *manager_))
     , communicator_(new Communicator(name_(), index_(), {}, *logger_, 0))
+#ifdef MUSCLE_ENABLE_MPI
+    , mpi_barrier_(communicator, root)
+#endif
     , declared_ports_()
     , settings_manager_()
     , first_run_(true)
     , f_init_cache_()
     , is_shut_down_(false)
 {
-    register_();
-    connect_();
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
+        manager_.reset(new MMPClient(extract_manager_location_(argc, argv)));
+        logger_.reset(new Logger(static_cast<std::string>(instance_name_), *manager_));
+        communicator_.reset(new Communicator(name_(), index_(), {}, *logger_, 0));
+        register_();
+        connect_();
+#ifdef MUSCLE_ENABLE_MPI
+    }
+#endif
 }
 
-Instance::Impl::Impl(int argc, char const * const argv[],
-                   PortsDescription const & ports)
+Instance::Impl::Impl(
+        int argc, char const * const argv[],
+        PortsDescription const & ports
+#ifdef MUSCLE_ENABLE_MPI
+        , MPI_Comm const & communicator
+        , int root
+#endif
+        )
     : instance_name_(make_full_name_(argc, argv))
-    , manager_(new MMPClient(extract_manager_location_(argc, argv)))
-    , logger_(new Logger(static_cast<std::string>(instance_name_), *manager_))
-    , communicator_(new Communicator(name_(), index_(), ports, *logger_, 0))
+#ifdef MUSCLE_ENABLE_MPI
+    , mpi_barrier_(communicator, root)
+#endif
     , declared_ports_(ports)
     , settings_manager_()
     , first_run_(true)
     , f_init_cache_()
     , is_shut_down_(false)
 {
-    register_();
-    connect_();
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
+        manager_.reset(new MMPClient(extract_manager_location_(argc, argv)));
+        logger_.reset(new Logger(static_cast<std::string>(instance_name_), *manager_));
+        communicator_.reset(new Communicator(name_(), index_(), {}, *logger_, 0));
+        register_();
+        connect_();
+#ifdef MUSCLE_ENABLE_MPI
+    }
+#endif
 }
 
 bool Instance::Impl::reuse_instance(bool apply_overlay) {
@@ -733,13 +785,35 @@ void Instance::Impl::shutdown_() {
  * These just forward to the hidden implementations above.
  */
 
-Instance::Instance(int argc, char const * const argv[])
-    : pimpl_(new Impl(argc, argv))
+Instance::Instance(
+        int argc, char const * const argv[]
+#ifdef MUSCLE_ENABLE_MPI
+        , MPI_Comm const & communicator
+        , int root
+#endif
+        )
+    : pimpl_(new Impl(
+                argc, argv
+#ifdef MUSCLE_ENABLE_MPI
+                , communicator, root
+#endif
+                ))
 {}
 
-Instance::Instance(int argc, char const * const argv[],
-                   PortsDescription const & ports)
-    : pimpl_(new Impl(argc, argv, ports))
+Instance::Instance(
+        int argc, char const * const argv[],
+        PortsDescription const & ports
+#ifdef MUSCLE_ENABLE_MPI
+        , MPI_Comm const & communicator
+        , int root
+#endif
+        )
+    : pimpl_(new Impl(
+                argc, argv, ports
+#ifdef MUSCLE_ENABLE_MPI
+                , communicator, root
+#endif
+                ))
 {}
 
 Instance::~Instance() = default;

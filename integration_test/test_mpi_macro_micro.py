@@ -54,7 +54,7 @@ def test_cpp_macro_micro(mmp_server_process_simple):
     cpp_test_dir = cpp_build_dir / 'libmuscle' / 'tests'
     mpi_test_micro = cpp_test_dir / 'mpi_micro_model_test'
     micro_result = subprocess.Popen(
-            ['mpirun', '-np', '2',
+            ['mpirun', '-np', '2', '--output-filename', 'mpi_micro.log',
              str(mpi_test_micro), '--muscle-instance=micro'], env=env)
 
     # run macro model

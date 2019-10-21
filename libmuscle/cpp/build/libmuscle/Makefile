@@ -10,7 +10,22 @@ objects := $(source_files:$(srcdir)%.cpp=$(objdir)%.o)
 lobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.lo)
 dobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.do)
 dlobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.dlo)
+mobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.mo)
+mlobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.mlo)
+mdobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.mdo)
+mdlobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.mdlo)
+
 deps := $(source_files:$(srcdir)%.cpp=$(objdir)%.d)
+
+prod_libs := libmuscle.a libmuscle.so
+debug_libs := libmuscle_d.a libmuscle_d.so
+
+ifdef MUSCLE_ENABLE_MPI
+prod_libs += libmuscle_mpi.a libmuscle_mpi.so
+debug_libs += libmuscle_mpi_d.a libmuscle_mpi_d.so
+endif
+
+all_libs := $(prod_libs) $(debug_libs)
 
 header_root := $(CURDIR)/../../src
 CXXFLAGS += -I$(header_root)
@@ -22,12 +37,16 @@ installed_headers := $(public_headers:%=$(PREFIX)/include/%)
 
 CXXFLAGS += -Wall -pedantic -std=c++14
 export CXXFLAGS
+MPICXX := mpic++
+export MPICXX
+MPIFLAGS := -DMUSCLE_ENABLE_MPI
+export MPIFLAGS
 DEBUGFLAGS := -g
 export DEBUGFLAGS
 
 
 .PHONY: all
-all: libmuscle.a libmuscle.so libmuscle_d.a libmuscle_d.so version.h
+all: $(all_libs) version.h
 
 .PHONY: tests
 tests: libmuscle_d.a version.h
@@ -40,6 +59,7 @@ test: tests
 .PHONY: clean
 clean:
 	rm -f libmuscle.a libmuscle.so libmuscle_d.a libmuscle_d.so version.h
+	rm -f libmuscle_mpi.a libmuscle_mpi.so libmuscle_mpi_d.a libmuscle_mpi_d.so
 	rm -rf $(objdir)
 	$(MAKE) -C tests clean
 
@@ -66,6 +86,7 @@ $(info pcextra: $(PKG_CONFIG_EXTRA_DIRS))
 CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --cflags protobuf)
 CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --cflags grpc grpc++)
 CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --cflags msgpack)
+
 LDFLAGS += -L$(CURDIR)/../muscle_manager_protocol -lmmp -L$(CURDIR)/../ymmsl -lymmsl
 LDFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs protobuf)
 LDFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs grpc grpc++)
@@ -108,6 +129,23 @@ $(objdir)/%.dlo: %.cpp $(objdir)/%.o
 	@mkdir -p $(@D)
 	$(CXX) $(CPPFLAGS) $(DEBUGFLAGS) $(CXXFLAGS) -fPIC -c $< -o $@
 
+$(objdir)/%.mo: %.cpp
+	@mkdir -p $(@D)
+	$(MPICXX) $(CPPFLAGS) $(CXXFLAGS) $(MPIFLAGS) -c $< -o $@
+
+$(objdir)/%.mlo: %.cpp
+	@mkdir -p $(@D)
+	$(MPICXX) $(CPPFLAGS) $(CXXFLAGS) $(MPIFLAGS) -fPIC -c $< -o $@
+
+$(objdir)/%.mdo: %.cpp
+	@mkdir -p $(@D)
+	$(MPICXX) $(CPPFLAGS) $(DEBUGFLAGS) $(CXXFLAGS) $(MPIFLAGS) -c $< -o $@
+
+$(objdir)/%.mdlo: %.cpp
+	@mkdir -p $(@D)
+	$(MPICXX) $(CPPFLAGS) $(DEBUGFLAGS) $(CXXFLAGS) $(MPIFLAGS) -fPIC -c $< -o $@
+
+
 version.h: $(version_template) $(version_file)
 	cp $(version_template) $@
 	sed -i -e 's/@PROJECT_VERSION_MAJOR@/$(major_version)/' $@
@@ -124,6 +162,18 @@ libmuscle_d.a: $(dobjects)
 	ar rcs $@ $^
 
 libmuscle_d.so: $(dlobjects)
+	$(CXX) -shared -Wl,--version-script=libmuscle.version -o $@ $^ $(LDFLAGS)
+
+libmuscle_mpi.a: $(mobjects)
+	ar rcs $@ $^
+
+libmuscle_mpi.so: $(mlobjects)
+	$(CXX) -shared -Wl,--version-script=libmuscle.version -o $@ $^ $(LDFLAGS)
+
+libmuscle_mpi_d.a: $(mdobjects)
+	ar rcs $@ $^
+
+libmuscle_mpi_d.so: $(mdlobjects)
 	$(CXX) -shared -Wl,--version-script=libmuscle.version -o $@ $^ $(LDFLAGS)
 
 $(PREFIX)/include/%.hpp: $(hdrdir)/%.hpp

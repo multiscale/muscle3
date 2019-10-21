@@ -6,6 +6,12 @@ unit_tests := $(wildcard $(libmuscle_testdir)/test*.cpp)
 integration_tests := $(wildcard $(libmuscle_testdir)/*test.cpp)
 unit_test_bins := $(unit_tests:$(libmuscle_testdir)/%.cpp=%)
 integration_test_bins := $(integration_tests:$(libmuscle_testdir)/%.cpp=%)
+
+ifndef MUSCLE_ENABLE_MPI
+integration_tests := $(filter-out mpi%,$(integration_tests))
+integration_test_bins := $(filter-out mpi%,$(integration_test_bins))
+endif
+
 all_tests := $(unit_test_bins) $(integration_test_bins)
 deps := $(all_tests:%=%.d)
 
@@ -76,6 +82,9 @@ test_logging.o: test_logging.cpp
 
 test_logging: test_logging.o $(CURDIR)/../../ymmsl/libymmsl_d.a
 	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_ROOT)/lib/libgtest.a -pthread
+
+mpi_micro_model_test: mpi_micro_model_test.cpp $(CURDIR)/../../ymmsl/libymmsl_d.a $(CURDIR)/../../libmuscle/libmuscle_mpi_d.a
+	$(MPICXX) $(CXXFLAGS) $(DEBUGFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS2)
 
 empty :=
 space := $(empty) $(empty)

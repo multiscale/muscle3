@@ -1,6 +1,8 @@
 #include <libmuscle/instance.hpp>
 
 #include <libmuscle/communicator.hpp>
+#include <libmuscle/data.hpp>
+#include <libmuscle/mcp/data_pack.hpp>
 #include <libmuscle/logger.hpp>
 #include <libmuscle/mmp_client.hpp>
 #include <libmuscle/peer_manager.hpp>
@@ -26,13 +28,6 @@ namespace libmuscle { namespace impl {
 class Instance::Impl {
     public:
         Impl(
-                int argc, char const * const argv[]
-#ifdef MUSCLE_ENABLE_MPI
-                , MPI_Comm const & communicator
-                , int root
-#endif
-                );
-        Impl(
                 int argc, char const * const argv[],
                 PortsDescription const & ports
 #ifdef MUSCLE_ENABLE_MPI
@@ -40,6 +35,7 @@ class Instance::Impl {
                 , int root
 #endif
                 );
+        ~Impl();
 
         bool reuse_instance(bool apply_overlay = true);
         void error_shutdown(std::string const & message);
@@ -56,20 +52,11 @@ class Instance::Impl {
         void send(std::string const & port_name, Message const & message);
         void send(std::string const & port_name, Message const & message,
                 int slot);
-        Message receive(std::string const & port_name);
-        Message receive(
-                std::string const & port_name, Message const & default_msg);
-        Message receive(std::string const & port_name, int slot);
-        Message receive(
-                std::string const & port_name, int slot,
-                Message const & default_msg);
-        Message receive_with_settings(std::string const & port_name);
-        Message receive_with_settings(std::string const & port_name, int slot);
-        Message receive_with_settings(
-                std::string const & port_name, Message const & default_msg);
-        Message receive_with_settings(
-                std::string const & port_name, int slot,
-                Message const & default_msg);
+        Message receive_message(
+                std::string const & port_name,
+                Optional<int> slot,
+                Optional<Message> default_msg,
+                bool with_settings);
 
     private:
         ::ymmsl::Reference instance_name_;
@@ -77,6 +64,8 @@ class Instance::Impl {
         std::unique_ptr<Logger> logger_;
         std::unique_ptr<Communicator> communicator_;
 #ifdef MUSCLE_ENABLE_MPI
+        int mpi_root_;
+        MPI_Comm mpi_comm_;
         MPITcpBarrier mpi_barrier_;
 #endif
         PortsDescription declared_ports_;
@@ -88,11 +77,6 @@ class Instance::Impl {
         void register_();
         void connect_();
         void deregister_();
-        Message receive_message_(
-                std::string const & port_name,
-                Optional<int> slot,
-                Optional<Message> default_msg,
-                bool with_settings);
 
         ::ymmsl::Reference make_full_name_(int argc, char const * const argv[]) const;
         std::string extract_manager_location_(int argc, char const * const argv[]) const;
@@ -121,39 +105,6 @@ class Instance::Impl {
 };
 
 Instance::Impl::Impl(
-        int argc, char const * const argv[]
-#ifdef MUSCLE_ENABLE_MPI
-        , MPI_Comm const & communicator
-        , int root
-#endif
-        )
-    : instance_name_(make_full_name_(argc, argv))
-    , manager_(new MMPClient(extract_manager_location_(argc, argv)))
-    , logger_(new Logger(static_cast<std::string>(instance_name_), *manager_))
-    , communicator_(new Communicator(name_(), index_(), {}, *logger_, 0))
-#ifdef MUSCLE_ENABLE_MPI
-    , mpi_barrier_(communicator, root)
-#endif
-    , declared_ports_()
-    , settings_manager_()
-    , first_run_(true)
-    , f_init_cache_()
-    , is_shut_down_(false)
-{
-#ifdef MUSCLE_ENABLE_MPI
-    if (mpi_barrier_.is_root()) {
-#endif
-        manager_.reset(new MMPClient(extract_manager_location_(argc, argv)));
-        logger_.reset(new Logger(static_cast<std::string>(instance_name_), *manager_));
-        communicator_.reset(new Communicator(name_(), index_(), {}, *logger_, 0));
-        register_();
-        connect_();
-#ifdef MUSCLE_ENABLE_MPI
-    }
-#endif
-}
-
-Instance::Impl::Impl(
         int argc, char const * const argv[],
         PortsDescription const & ports
 #ifdef MUSCLE_ENABLE_MPI
@@ -163,6 +114,7 @@ Instance::Impl::Impl(
         )
     : instance_name_(make_full_name_(argc, argv))
 #ifdef MUSCLE_ENABLE_MPI
+    , mpi_root_(root)
     , mpi_barrier_(communicator, root)
 #endif
     , declared_ports_(ports)
@@ -172,6 +124,7 @@ Instance::Impl::Impl(
     , is_shut_down_(false)
 {
 #ifdef MUSCLE_ENABLE_MPI
+    MPI_Comm_dup(communicator, &mpi_comm_);
     if (mpi_barrier_.is_root()) {
 #endif
         manager_.reset(new MMPClient(extract_manager_location_(argc, argv)));
@@ -180,53 +133,115 @@ Instance::Impl::Impl(
         register_();
         connect_();
 #ifdef MUSCLE_ENABLE_MPI
+        auto sbase_data = Data(settings_manager_.base);
+        msgpack::sbuffer sbuf;
+        msgpack::pack(sbuf, sbase_data);
+        int size = sbuf.size();
+        MPI_Bcast(&size, 1, MPI_INT, mpi_root_, mpi_comm_);
+        MPI_Bcast(sbuf.data(), size, MPI_CHAR, mpi_root_, mpi_comm_);
+    }
+    else {
+        int size;
+        MPI_Bcast(&size, 1, MPI_INT, mpi_root_, mpi_comm_);
+        std::vector<char> buf(size);
+        MPI_Bcast(&buf[0], size, MPI_CHAR, mpi_root_, mpi_comm_);
+        auto zone = std::make_shared<msgpack::zone>();
+        DataConstRef sbase_data = mcp::unpack_data(zone, &buf[0], size);
+        settings_manager_.base = sbase_data.as<Settings>();
     }
 #endif
 }
 
+Instance::Impl::~Impl() {
+    // This communicates if we did not shut down cleanly, and therefore risks
+    // an exception and a crash. Since we're already going down abnormally,
+    // trying to not hurt the rest of the simulation seems worth it.
+    shutdown_();
+}
+
 bool Instance::Impl::reuse_instance(bool apply_overlay) {
-    bool do_reuse = receive_settings_();
+    bool do_reuse;
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
+        do_reuse = receive_settings_();
 
-    // TODO: f_init_cache_ should be empty here, or the user didn't receive
-    // something that was sent on the last go-around. At least emit a warning.
-    pre_receive_f_init_(apply_overlay);
+        // TODO: f_init_cache_ should be empty here, or the user didn't receive
+        // something that was sent on the last go-around. At least emit a warning.
+        pre_receive_f_init_(apply_overlay);
 
-    set_log_level_();
+        set_log_level_();
 
-    auto ports = communicator_->list_ports();
+        auto ports = communicator_->list_ports();
 
-    bool f_init_not_connected = true;
-    if (ports.count(Operator::F_INIT) != 0)
-        for (auto const & port : ports.at(Operator::F_INIT))
-            if (communicator_->get_port(port).is_connected()) {
-                f_init_not_connected = false;
-                break;
-            }
+        bool f_init_not_connected = true;
+        if (ports.count(Operator::F_INIT) != 0)
+            for (auto const & port : ports.at(Operator::F_INIT))
+                if (communicator_->get_port(port).is_connected()) {
+                    f_init_not_connected = false;
+                    break;
+                }
 
-    bool no_settings_in = !communicator_->settings_in_connected();
+        bool no_settings_in = !communicator_->settings_in_connected();
 
-    if (f_init_not_connected && no_settings_in) {
-        do_reuse = first_run_;
-        first_run_ = false;
+        if (f_init_not_connected && no_settings_in) {
+            do_reuse = first_run_;
+            first_run_ = false;
+        }
+        else {
+            for (auto const & ref_msg : f_init_cache_)
+                if (is_close_port(ref_msg.second.data()))
+                        do_reuse = false;
+        }
+
+#ifdef MUSCLE_ENABLE_MPI
+        mpi_barrier_.signal();
+        int do_reuse_mpi = do_reuse;
+        MPI_Bcast(&do_reuse_mpi, 1, MPI_INT, mpi_root_, mpi_comm_);
     }
     else {
-        for (auto const & ref_msg : f_init_cache_)
-            if (is_close_port(ref_msg.second.data()))
-                    do_reuse = false;
+        mpi_barrier_.wait();
+        int do_reuse_mpi;
+        MPI_Bcast(&do_reuse_mpi, 1, MPI_INT, mpi_root_, mpi_comm_);
+        do_reuse = do_reuse_mpi;
     }
+#endif
 
-    if (!do_reuse) {
-        close_ports_();
-        communicator_->shutdown();
-        deregister_();
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+        auto soverlay_data = Data(settings_manager_.overlay);
+        msgpack::sbuffer sbuf;
+        msgpack::pack(sbuf, soverlay_data);
+        int size = sbuf.size();
+        MPI_Bcast(&size, 1, MPI_INT, mpi_root_, mpi_comm_);
+        MPI_Bcast(sbuf.data(), size, MPI_CHAR, mpi_root_, mpi_comm_);
     }
+    else {
+        int size;
+        MPI_Bcast(&size, 1, MPI_INT, mpi_root_, mpi_comm_);
+        std::vector<char> buf(size);
+        MPI_Bcast(&buf[0], size, MPI_CHAR, mpi_root_, mpi_comm_);
+        auto zone = std::make_shared<msgpack::zone>();
+        DataConstRef soverlay_data = mcp::unpack_data(zone, &buf[0], size);
+        settings_manager_.overlay = soverlay_data.as<Settings>();
+    }
+#endif
+
+    if (!do_reuse)
+        shutdown_();
 
     return do_reuse;
 }
 
 void Instance::Impl::error_shutdown(std::string const & message) {
-    logger_->critical("Exiting with error: ", message);
-    shutdown_();
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
+        logger_->critical("Exiting with error: ", message);
+        shutdown_();
+#ifdef MUSCLE_ENABLE_MPI
+    }
+#endif
 }
 
 ::ymmsl::SettingValue Instance::Impl::get_setting(std::string const & name) const {
@@ -244,102 +259,111 @@ ValueType Instance::Impl::get_setting_as(std::string const & name) const {
 
 std::unordered_map<::ymmsl::Operator, std::vector<std::string>>
 Instance::Impl::list_ports() const {
-    return communicator_->list_ports();
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
+        return communicator_->list_ports();
+#ifdef MUSCLE_ENABLE_MPI
+    }
+    else
+        throw std::runtime_error("list_ports can only be called from the MPI root process");
+#endif
 }
 
 bool Instance::Impl::is_connected(std::string const & port) const {
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
     return communicator_->get_port(port).is_connected();
+#ifdef MUSCLE_ENABLE_MPI
+    }
+    else
+        throw std::runtime_error("is_connected can only be called from the MPI root process");
+#endif
 }
 
 bool Instance::Impl::is_vector_port(std::string const & port) const {
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
     return communicator_->get_port(port).is_vector();
+#ifdef MUSCLE_ENABLE_MPI
+    }
+    else
+        throw std::runtime_error("is_vector_port can only be called from the MPI root process");
+#endif
 }
 
 bool Instance::Impl::is_resizable(std::string const & port) const {
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
     return communicator_->get_port(port).is_resizable();
+#ifdef MUSCLE_ENABLE_MPI
+    }
+    else
+        throw std::runtime_error("is_resizable can only be called from the MPI root process");
+#endif
 }
 
 int Instance::Impl::get_port_length(std::string const & port) const {
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
     return communicator_->get_port(port).get_length();
+#ifdef MUSCLE_ENABLE_MPI
+    }
+    else
+        throw std::runtime_error("get_port_length can only be called from the MPI root process");
+#endif
 }
 
 void Instance::Impl::set_port_length(std::string const & port, int length) {
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
     return communicator_->get_port(port).set_length(length);
+#ifdef MUSCLE_ENABLE_MPI
+    }
+    else
+        throw std::runtime_error("set_port_length can only be called from the MPI root process");
+#endif
 }
 
 void Instance::Impl::send(std::string const & port_name, Message const & message) {
-    check_port_(port_name);
-    if (!message.has_settings()) {
-        Message msg(message);
-        msg.set_settings(settings_manager_.overlay);
-        communicator_->send_message(port_name, msg);
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
+        check_port_(port_name);
+        if (!message.has_settings()) {
+            Message msg(message);
+            msg.set_settings(settings_manager_.overlay);
+            communicator_->send_message(port_name, msg);
+        }
+        else
+            communicator_->send_message(port_name, message);
+#ifdef MUSCLE_ENABLE_MPI
     }
-    else
-        communicator_->send_message(port_name, message);
+#endif
 }
 
 void Instance::Impl::send(
         std::string const & port_name, Message const & message, int slot)
 {
-    check_port_(port_name);
-    if (!message.has_settings()) {
-        Message msg(message);
-        msg.set_settings(settings_manager_.overlay);
-        communicator_->send_message(port_name, msg, slot);
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
+        check_port_(port_name);
+        if (!message.has_settings()) {
+            Message msg(message);
+            msg.set_settings(settings_manager_.overlay);
+            communicator_->send_message(port_name, msg, slot);
+        }
+        else
+            communicator_->send_message(port_name, message, slot);
+#ifdef MUSCLE_ENABLE_MPI
     }
-    else
-        communicator_->send_message(port_name, message, slot);
-}
-
-Message Instance::Impl::receive(std::string const & port_name) {
-    return receive_message_(port_name, {}, {}, false);
-}
-
-Message Instance::Impl::receive(
-        std::string const & port_name,
-        int slot)
-{
-    return receive_message_(port_name, slot, {}, false);
-}
-
-Message Instance::Impl::receive(
-        std::string const & port_name, Message const & default_msg)
-{
-    return receive_message_(port_name, {}, default_msg, false);
-}
-
-Message Instance::Impl::receive(
-        std::string const & port_name,
-        int slot,
-        Message const & default_msg)
-{
-    return receive_message_(port_name, slot, default_msg, false);
-}
-
-Message Instance::Impl::receive_with_settings(std::string const & port_name) {
-    return receive_message_(port_name, {}, {}, true);
-}
-
-Message Instance::Impl::receive_with_settings(
-        std::string const & port_name,
-        int slot)
-{
-    return receive_message_(port_name, slot, {}, true);
-}
-
-Message Instance::Impl::receive_with_settings(
-        std::string const & port_name, Message const & default_msg)
-{
-    return receive_message_(port_name, {}, default_msg, true);
-}
-
-
-Message Instance::Impl::receive_with_settings(
-        std::string const & port_name,
-        int slot,
-        Message const & default_msg)
-{
-    return receive_message_(port_name, slot, default_msg, true);
+#endif
 }
 
 /* Register this instance with the manager.
@@ -372,79 +396,87 @@ void Instance::Impl::deregister_() {
     // TODO: shut down profiler
 }
 
-Message Instance::Impl::receive_message_(
+Message Instance::Impl::receive_message(
                 std::string const & port_name,
                 Optional<int> slot,
                 Optional<Message> default_msg,
                 bool with_settings)
 {
-    check_port_(port_name);
+    Message result(-1.0, Data());
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
+        check_port_(port_name);
 
-    Reference port_ref(port_name);
-    auto const & port = communicator_->get_port(port_name);
-    if (port.oper == Operator::F_INIT) {
-        if (slot.is_set())
-            port_ref += slot.get();
+        Reference port_ref(port_name);
+        auto const & port = communicator_->get_port(port_name);
+        if (port.oper == Operator::F_INIT) {
+            if (slot.is_set())
+                port_ref += slot.get();
 
-        if (f_init_cache_.count(port_ref) == 1) {
-            Message msg(f_init_cache_.at(port_ref));
-            f_init_cache_.erase(port_ref);
+            if (f_init_cache_.count(port_ref) == 1) {
+                result = f_init_cache_.at(port_ref);
+                f_init_cache_.erase(port_ref);
 
-            if (with_settings && !msg.has_settings()) {
-                std::string msg(
-                        "If you use receive_with_settings() on an F_INIT"
-                        " port, then you have to pass false to"
-                        " reuse_instance(), otherwise the settings will"
-                        " already have been applied by MUSCLE.");
-                logger_->critical(msg);
-                shutdown_();
-                throw std::logic_error(msg);
-            }
-            return msg;
-        }
-        else {
-            if (port.is_connected()) {
-                std::ostringstream oss;
-                oss << "Tried to receive twice on the same port '";
-                oss << port_ref << "' in a single F_INIT, that's not possible.";
-                oss << " Did you forget to call reuse_instance() in your reuse";
-                oss << " loop?";
-                logger_->critical(oss.str());
-                shutdown_();
-                throw std::logic_error(oss.str());
+                if (with_settings && !result.has_settings()) {
+                    std::string msg(
+                            "If you use receive_with_settings() on an F_INIT"
+                            " port, then you have to pass false to"
+                            " reuse_instance(), otherwise the settings will"
+                            " already have been applied by MUSCLE.");
+                    logger_->critical(msg);
+                    shutdown_();
+                    throw std::logic_error(msg);
+                }
             }
             else {
-                if (default_msg.is_set())
-                    return default_msg.get();
-
-                std::ostringstream oss;
-                oss << "Tried to receive on port '" << port_ref << "', which";
-                oss << " is not connected, and no default value was given.";
-                oss << " Please connect this port!";
-                logger_->critical(oss.str());
-                shutdown_();
-                throw std::logic_error(oss.str());
+                if (port.is_connected()) {
+                    std::ostringstream oss;
+                    oss << "Tried to receive twice on the same port '";
+                    oss << port_ref << "' in a single F_INIT, that's not possible.";
+                    oss << " Did you forget to call reuse_instance() in your reuse";
+                    oss << " loop?";
+                    logger_->critical(oss.str());
+                    shutdown_();
+                    throw std::logic_error(oss.str());
+                }
+                else {
+                    if (default_msg.is_set())
+                        result = default_msg.get();
+                    else {
+                        std::ostringstream oss;
+                        oss << "Tried to receive on port '" << port_ref << "', which";
+                        oss << " is not connected, and no default value was given.";
+                        oss << " Please connect this port!";
+                        logger_->critical(oss.str());
+                        shutdown_();
+                        throw std::logic_error(oss.str());
+                    }
+                }
             }
         }
-    }
-    else {
-        Message msg(communicator_->receive_message(port_name, slot, default_msg));
-        if (port.is_connected() && !port.is_open(slot)) {
-            std::ostringstream oss;
-            oss << "Port '" << port_ref << "' is closed, but we're trying to";
-            oss << " receive on it. Did the peer crash?";
-            logger_->critical(oss.str());
-            shutdown_();
-            throw std::runtime_error(oss.str());
+        else {
+            result = communicator_->receive_message(port_name, slot, default_msg);
+            if (port.is_connected() && !port.is_open(slot)) {
+                std::ostringstream oss;
+                oss << "Port '" << port_ref << "' is closed, but we're trying to";
+                oss << " receive on it. Did the peer crash?";
+                logger_->critical(oss.str());
+                shutdown_();
+                throw std::runtime_error(oss.str());
+            }
+            if (port.is_connected() && !with_settings)
+                check_compatibility_(port_name, result.settings());
+            if (!with_settings)
+                result.unset_settings();
         }
-        if (port.is_connected() && !with_settings)
-            check_compatibility_(port_name, msg.settings());
-        if (!with_settings)
-            msg.unset_settings();
-        return msg;
+#ifdef MUSCLE_ENABLE_MPI
+        mpi_barrier_.signal();
     }
-    // unreachable, this just to avoid a compiler warning
-    return Message(0.0, "Unreachable code, please report a bug in MUSCLE 3.");
+    else
+        mpi_barrier_.wait();
+#endif
+    return result;
 }
 
 
@@ -772,9 +804,17 @@ void Instance::Impl::close_ports_() {
  */
 void Instance::Impl::shutdown_() {
     if (!is_shut_down_) {
-        close_ports_();
-        communicator_->shutdown();
-        deregister_();
+#ifdef MUSCLE_ENABLE_MPI
+        if (mpi_barrier_.is_root()) {
+#endif
+            close_ports_();
+            communicator_->shutdown();
+            deregister_();
+#ifdef MUSCLE_ENABLE_MPI
+        }
+        mpi_barrier_.shutdown();
+        MPI_Comm_free(&mpi_comm_);
+#endif
         is_shut_down_ = true;
     }
 }
@@ -793,7 +833,7 @@ Instance::Instance(
 #endif
         )
     : pimpl_(new Impl(
-                argc, argv
+                argc, argv, {}
 #ifdef MUSCLE_ENABLE_MPI
                 , communicator, root
 #endif
@@ -884,20 +924,20 @@ void Instance::send(
 }
 
 Message Instance::receive(std::string const & port_name) {
-    return impl_()->receive(port_name);
+    return impl_()->receive_message(port_name, {}, {}, false);
 }
 
 Message Instance::receive(
         std::string const & port_name,
         int slot)
 {
-    return impl_()->receive(port_name, slot);
+    return impl_()->receive_message(port_name, slot, {}, false);
 }
 
 Message Instance::receive(
         std::string const & port_name, Message const & default_msg)
 {
-    return impl_()->receive(port_name, default_msg);
+    return impl_()->receive_message(port_name, {}, default_msg, false);
 }
 
 Message Instance::receive(
@@ -905,24 +945,24 @@ Message Instance::receive(
         int slot,
         Message const & default_msg)
 {
-    return impl_()->receive(port_name, slot, default_msg);
+    return impl_()->receive_message(port_name, slot, default_msg, false);
 }
 
 Message Instance::receive_with_settings(std::string const & port_name) {
-    return impl_()->receive_with_settings(port_name);
+    return impl_()->receive_message(port_name, {}, {}, true);
 }
 
 Message Instance::receive_with_settings(
         std::string const & port_name,
         int slot)
 {
-    return impl_()->receive_with_settings(port_name, slot);
+    return impl_()->receive_message(port_name, slot, {}, true);
 }
 
 Message Instance::receive_with_settings(
         std::string const & port_name, Message const & default_msg)
 {
-    return impl_()->receive_with_settings(port_name, default_msg);
+    return impl_()->receive_message(port_name, {}, default_msg, true);
 }
 
 
@@ -931,7 +971,7 @@ Message Instance::receive_with_settings(
         int slot,
         Message const & default_msg)
 {
-    return impl_()->receive_with_settings(port_name, slot, default_msg);
+    return impl_()->receive_message(port_name, slot, default_msg, true);
 }
 
 Instance::Impl const * Instance::impl_() const {

@@ -28,6 +28,10 @@ class MPITcpBarrier {
          */
         MPITcpBarrier(MPI_Comm const & communicator = MPI_COMM_WORLD, int root = 0);
 
+        /** Shuts down the barrier, closing connections.
+         */
+        void shutdown();
+
         /** Whether this process is the root process, according to this barrier.
          *
          * @returns True if we're the root process.

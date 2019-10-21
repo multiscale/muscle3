@@ -188,6 +188,10 @@ TEST(libmuscle_instance, receive) {
     ASSERT_EQ(msg.next_timestamp(), 2.0);
     ASSERT_TRUE(msg.data().is_a<std::string>());
     ASSERT_EQ(msg.data().as<std::string>(), "Testing receive");
+
+    // make sure Instance shuts down cleanly
+    MockCommunicator::next_received_message["in"] =
+        std::make_unique<Message>(0.0, ClosePort(), Settings());
 }
 
 TEST(libmuscle_instance, receive_f_init) {
@@ -292,6 +296,10 @@ TEST(libmuscle_instance, receive_with_settings) {
     ASSERT_EQ(msg.data().as<std::string>(), "Testing with settings");
     ASSERT_TRUE(msg.has_settings());
     ASSERT_EQ(msg.settings().at("test1"), 12);
+
+    // make sure Instance shuts down cleanly
+    MockCommunicator::next_received_message["in"] =
+        std::make_unique<Message>(0.0, ClosePort(), Settings());
 }
 
 TEST(libmuscle_instance, receive_parallel_universe) {
@@ -412,8 +420,7 @@ TEST(libmuscle_instance, reuse_instance_vector_port) {
     auto argv = test_argv();
     Instance instance(argv.size(), argv.data(),
             PortsDescription({
-                {Operator::F_INIT, {"in[]"}},
-                {Operator::O_F, {"out"}}
+                {Operator::F_INIT, {"in[]"}}
                 }));
 
     MockCommunicator::settings_in_connected_return_value = true;
@@ -430,8 +437,7 @@ TEST(libmuscle_instance, reuse_instance_vector_port) {
     }
 
     MockCommunicator::list_ports_return_value = PortsDescription({
-                {Operator::F_INIT, {"in"}},
-                {Operator::O_F, {"out"}}
+                {Operator::F_INIT, {"in"}}
                 });
 
     MockCommunicator::get_port_return_value.emplace(
@@ -443,6 +449,14 @@ TEST(libmuscle_instance, reuse_instance_vector_port) {
     ASSERT_EQ(msg.timestamp(), 0.0);
     ASSERT_FALSE(msg.has_next_timestamp());
     ASSERT_EQ(msg.data().as<std::string>(), "test 5");
+
+    // make sure Instance shuts down cleanly
+    for (int i = 0; i < 10; ++i) {
+        Reference port_slot("in");
+        port_slot += i;
+        MockCommunicator::next_received_message[port_slot] =
+            std::make_unique<Message>(0.0, ClosePort(), Settings());
+    }
 }
 
 TEST(libmuscle_instance, reuse_instance_no_f_init_ports) {

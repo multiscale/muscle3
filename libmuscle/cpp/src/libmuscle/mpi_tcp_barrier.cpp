@@ -8,6 +8,7 @@
 #include <mpi.h>
 
 #include <memory>
+#include <sstream>
 #include <string>
 
 
@@ -41,6 +42,14 @@ MPITcpBarrier::MPITcpBarrier(MPI_Comm const & communicator, int root)
     }
 }
 
+void MPITcpBarrier::shutdown() {
+    if (is_root())
+        server_->close();
+    else
+        client_->close();
+    MPI_Comm_free(&mpi_comm_);
+}
+
 bool MPITcpBarrier::is_root() const {
     int rank;
     MPI_Comm_rank(mpi_comm_, &rank);
@@ -50,7 +59,9 @@ bool MPITcpBarrier::is_root() const {
 void MPITcpBarrier::wait() {
     int rank;
     MPI_Comm_rank(mpi_comm_, &rank);
-    client_->receive(std::to_string(rank));
+    std::ostringstream oss;
+    oss << "rank[" << rank << "]";
+    client_->receive(oss.str());
 }
 
 void MPITcpBarrier::signal() {
@@ -58,8 +69,10 @@ void MPITcpBarrier::signal() {
     MPI_Comm_size(mpi_comm_, &num_ranks);
     for (int i = 0; i < num_ranks; ++i)
         if (i != root_) {
+            std::ostringstream oss;
+            oss << "rank[" << i << "]";
             auto msg = Data::byte_array(0);
-            post_office_->deposit(std::to_string(i), std::make_unique<DataConstRef>(msg));
+            post_office_->deposit(oss.str(), std::make_unique<DataConstRef>(msg));
         }
 }
 

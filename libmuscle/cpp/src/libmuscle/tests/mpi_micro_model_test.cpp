@@ -25,8 +25,6 @@ int main(int argc, char *argv[]) {
             {Operator::F_INIT, {"in"}},
             {Operator::O_F, {"out"}}});
 
-    if (rank == 0) {
-
     int i = 0;
     while (instance.reuse_instance()) {
         // F_INIT
@@ -40,13 +38,13 @@ int main(int argc, char *argv[]) {
         if (rank == 0) {
             message = msg.data().as<std::string>();
             size = message.size();
-            // MPI_Bcast(&size, 1, MPI_INT, 0, MPI_COMM_WORLD);
-            // MPI_Bcast(&message[0], size, MPI_SIGNED_CHAR, 0, MPI_COMM_WORLD);
+            MPI_Bcast(&size, 1, MPI_INT, 0, MPI_COMM_WORLD);
+            MPI_Bcast(&message[0], size, MPI_SIGNED_CHAR, 0, MPI_COMM_WORLD);
         }
         else {
-            // MPI_Bcast(&size, 1, MPI_INT, 0, MPI_COMM_WORLD);
+            MPI_Bcast(&size, 1, MPI_INT, 0, MPI_COMM_WORLD);
             message = std::string(size, ' ');
-            // MPI_Bcast(&message[0], size, MPI_SIGNED_CHAR, 0, MPI_COMM_WORLD);
+            MPI_Bcast(&message[0], size, MPI_SIGNED_CHAR, 0, MPI_COMM_WORLD);
         }
 
         assert(message == "testing");
@@ -58,9 +56,6 @@ int main(int argc, char *argv[]) {
         ++i;
     }
 
-    }
-
-    MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize();
     return 0;
 }

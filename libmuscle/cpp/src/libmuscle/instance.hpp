@@ -78,11 +78,11 @@ class Instance {
          */
         bool reuse_instance(bool apply_overlay = true);
 
-        /** Exits the instance with an error.
+        /** Logs and error and shuts down the Instance.
          *
          * If you detect that something is wrong (invalid input, invalid
-         * settings, simulation diverged, or anything else really), it's
-         * good to call this method instead of calling exit() or raising
+         * settings, simulation diverged, or anything else really), you
+         * should call this method before calling exit() or raising
          * an exception that you don't expect to catch.
          *
          * If you do so, the Instance will tell the rest of the simulation
@@ -94,7 +94,7 @@ class Instance {
          *
          * @param message An error message describing the problem.
          */
-        void exit_error(std::string const & message);
+        void error_shutdown(std::string const & message);
 
         /** Returns the value of a model setting.
          *

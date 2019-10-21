@@ -26,7 +26,7 @@ class Instance::Impl {
                 PortsDescription const & ports);
 
         bool reuse_instance(bool apply_overlay = true);
-        void exit_error(std::string const & message);
+        void error_shutdown(std::string const & message);
         ::ymmsl::SettingValue get_setting(std::string const & name) const;
         template <typename ValueType>
         ValueType get_setting_as(std::string const & name) const;
@@ -172,10 +172,9 @@ bool Instance::Impl::reuse_instance(bool apply_overlay) {
     return do_reuse;
 }
 
-void Instance::Impl::exit_error(std::string const & message) {
+void Instance::Impl::error_shutdown(std::string const & message) {
     logger_.critical("Exiting with error: ", message);
     shutdown_();
-    exit(1);
 }
 
 ::ymmsl::SettingValue Instance::Impl::get_setting(std::string const & name) const {
@@ -749,8 +748,8 @@ bool Instance::reuse_instance(bool apply_overlay) {
     return impl_()->reuse_instance(apply_overlay);
 }
 
-void Instance::exit_error(std::string const & message) {
-    impl_()->exit_error(message);
+void Instance::error_shutdown(std::string const & message) {
+    impl_()->error_shutdown(message);
 }
 
 ::ymmsl::SettingValue Instance::get_setting(std::string const & name) const {

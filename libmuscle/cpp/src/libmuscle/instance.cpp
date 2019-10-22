@@ -879,6 +879,9 @@ ValueType Instance::get_setting_as(std::string const & name) const {
     return impl_()->get_setting_as<ValueType>(name);
 }
 
+/** This keeps Doxygen from getting confused.
+ * \cond
+ */
 template std::string Instance::get_setting_as<std::string>(std::string const & name) const;
 template int64_t Instance::get_setting_as<int64_t>(std::string const & name) const;
 template double Instance::get_setting_as<double>(std::string const & name) const;
@@ -887,6 +890,8 @@ template std::vector<double> Instance::get_setting_as<std::vector<double>>(
         std::string const & name) const;
 template std::vector<std::vector<double>> Instance::get_setting_as<std::vector<std::vector<double>>>(
         std::string const & name) const;
+/** \endcond
+ */
 
 std::unordered_map<::ymmsl::Operator, std::vector<std::string>>
 Instance::list_ports() const {

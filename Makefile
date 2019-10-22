@@ -22,6 +22,10 @@ install: all
 docs:
 	python3 setup.py build_sphinx
 
+.PHONY: docsclean
+docsclean:
+	rm -rf docs/build/*
+
 .PHONY: clean
 clean:
 	cd libmuscle/cpp && $(MAKE) clean

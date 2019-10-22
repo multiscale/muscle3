@@ -11,7 +11,7 @@ namespace libmuscle { namespace impl {
 
 namespace mcp {
 
-/** Helper function that unpacks data.
+/* Helper function that unpacks data.
  *
  * This has friend access to Data, so that it can create one from a msgpack
  * object_handle. That keeps MessagePack out of the public API, and avoids the

@@ -173,8 +173,8 @@ class DataConstRef {
          * - ymmsl::SettingValue
          * - ymmsl::Settings
          *
-         * For checking nil, list and dict, see is_nil(), is_list() and
-         * is_dict().
+         * For checking nil, list and dict, see is_nil(), is_a_list() and
+         * is_a_dict().
          *
          * @tparam T The type to check.
          */
@@ -256,7 +256,7 @@ class DataConstRef {
          * array. Use size() to get the size.
          *
          * The returned buffer will remain valid and accessible at least until
-         * this ConstDataRef goes out of scope.
+         * this DataConstRef goes out of scope.
          *
          * @return A pointer to a the first byte of a consecutive buffer.
          * @throws std::runtime_error if this is not a byte array.
@@ -265,7 +265,7 @@ class DataConstRef {
 
         /** Access an item in a dictionary by key.
          *
-         * Use only if is_dict() returns true.
+         * Use only if is_a_dict() returns true.
          *
          * @param key The key whose value to retrieve.
          * @throws std::runtime_error if the object is not a map.
@@ -275,7 +275,7 @@ class DataConstRef {
 
         /** Access a key in a dictionary by index.
          *
-         * Use only if is_dict() returns true.
+         * Use only if is_a_dict() returns true.
          *
          * Indices match those of value(), so value(i) will give you the value
          * corresponding to key(i).
@@ -289,7 +289,7 @@ class DataConstRef {
 
         /** Access a value in a dictionary by index.
          *
-         * Use only if is_dict() returns true.
+         * Use only if is_a_dict() returns true.
          *
          * Indices match those of key(), so value(i) will give you the value
          * corresponding to key(i).
@@ -303,7 +303,7 @@ class DataConstRef {
 
         /** Access an item in a list.
          *
-         * Use only if is_list() returns true.
+         * Use only if is_a_list() returns true.
          *
          * Indexes are zero-based, use size() to find the valid range.
          *
@@ -386,10 +386,12 @@ class Data : public DataConstRef {
          *
          * Example:
          *
+         * \code{.cpp}
          * auto mydict = Data::dict(
          *     "id", "element1",
          *     "stress", 12.3,
          *     "strain", 1.23);
+         * \endcode
          *
          * @returns A Data containing a dictionary with the given keys and
          *          values.
@@ -453,7 +455,9 @@ class Data : public DataConstRef {
          * Returns a Data object referring to the value for the given key.
          * Assign to that object to modify a value, as in
          *
+         * \code{.cpp}
          * mydict["stress"] = 12.4;
+         * \endcode
          *
          * If no key with the given name exists, a new entry is added to the
          * dictionary with the given key and a nil value, and a reference to
@@ -471,8 +475,10 @@ class Data : public DataConstRef {
          * Returns a Data object referring to the value at the given index.
          * Assign to that object to modify a value, as in
          *
+         * \code{.cpp}
          * mylist[3] = 12.4;
          * mylist[4] = "MUSCLE 3";
+         * \endcode
          *
          * @param index The index to refer to.
          * @return A writable reference to the requested value.

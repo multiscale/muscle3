@@ -172,9 +172,11 @@ def qmc_driver() -> None:
         k_max = instance.get_setting('k_max', 'float')
 
         if d_max < d_min:
-            instance.exit_error('Invalid settings: d_max < d_min')
+            instance.error_shutdown('Invalid settings: d_max < d_min')
+            exit(1)
         if k_max < k_min:
-            instance.exit_error('Invalid settings: k_max < k_min')
+            instance.error_shutdown('Invalid settings: k_max < k_min')
+            exit(1)
 
         # generate UQ parameter values
         sobol_sqn = sobol_seq.i4_sobol_generate(2, n_samples)
@@ -183,10 +185,11 @@ def qmc_driver() -> None:
 
         # configure output port
         if not instance.is_resizable('parameters_out'):
-            instance.exit_error('This component needs a resizable'
+            instance.error_shutdown('This component needs a resizable'
                                 ' parameters_out port, but it is connected to'
                                 ' something that cannot be resized. Maybe try'
                                 ' adding a load balancer.')
+            exit(1)
 
         instance.set_port_length('parameters_out', n_samples)
 

@@ -43,10 +43,14 @@ void mc_driver(int argc, char * argv[]) {
         double k_min = instance.get_setting_as<double>("k_min");
         double k_max = instance.get_setting_as<double>("k_max");
 
-        if (d_max < d_min)
-            instance.exit_error("Invalid settings: d_max < d_min");
-        if (k_max < k_min)
-            instance.exit_error("Invalid settings: k_max < k_min");
+        if (d_max < d_min) {
+            instance.error_shutdown("Invalid settings: d_max < d_min");
+            exit(1);
+        }
+        if (k_max < k_min) {
+            instance.error_shutdown("Invalid settings: k_max < k_min");
+            exit(1);
+        }
 
         // generate UQ parameter values
         std::uniform_real_distribution<double> d_dist(d_min, d_max);
@@ -59,11 +63,13 @@ void mc_driver(int argc, char * argv[]) {
         }
 
         // configure output port
-        if (!instance.is_resizable("parameters_out"))
-                instance.exit_error("This component needs a resizable"
+        if (!instance.is_resizable("parameters_out")) {
+                instance.error_shutdown("This component needs a resizable"
                     " parameters_out port, but it is connected to something"
                     " that cannot be resized. Maybe try adding a load"
                     " balancer.");
+                exit(1);
+        }
 
         instance.set_port_length("parameters_out", n_samples);
 

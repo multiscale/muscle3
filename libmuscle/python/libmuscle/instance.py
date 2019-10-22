@@ -126,7 +126,7 @@ class Instance:
             self._deregister()
         return do_reuse
 
-    def exit_error(self, message: str) -> None:
+    def error_shutdown(self, message: str) -> None:
         """Logs an error and shuts down the Instance.
 
         If you detect that something is wrong (invalid input, invalid

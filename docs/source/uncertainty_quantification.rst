@@ -143,10 +143,11 @@ Sobol sequence.
 
   # configure output port
   if not instance.is_resizable('parameters_out'):
-      instance.exit_error('This component needs a resizable'
+      instance.error_shutdown('This component needs a resizable'
                           ' parameters_out port, but it is connected to'
                           ' something that cannot be resized. Maybe try'
                           ' adding a load balancer.')
+      exit(1)
 
   instance.set_port_length('parameters_out', n_samples)
 
@@ -160,13 +161,13 @@ compute element as little as possible about what is on the other side of a port,
 but you can ask it whether the port has a fixed size or not.
 
 So that is what we do here, and we generate an error message if the port's
-length is fixed. We use the function :meth:`libmuscle.Instance.exit_error()`
-for this.  This function will log the error, tell the rest of the simulation
-that we are shutting down, and then call ``exit()``. Doing this instead of
-raising an exception reduces the chance that any part of the simulation will
-sit around waiting forever for a message we will never send, and the log will
-show the origin of the problem for easier debugging. In this case, the port
-will be resizable and it will work as intended.
+length is fixed. We use the function
+:meth:`libmuscle.Instance.error_shutdown()` for this.  This function will log
+the error, and then tell the rest of the simulation that we are shutting down.
+Doing this instead of raising an exception reduces the chance that any part of
+the simulation will sit around waiting forever for a message we will never
+send, and the log will show the origin of the problem for easier debugging. In
+this case, the port will be resizable and it will work as intended.
 
 .. code-block:: python
 

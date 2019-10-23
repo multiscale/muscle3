@@ -833,7 +833,7 @@ Instance::Instance(
 #endif
         )
     : pimpl_(new Impl(
-                argc, argv, {}
+                argc, argv, {{}}
 #ifdef MUSCLE_ENABLE_MPI
                 , communicator, root
 #endif

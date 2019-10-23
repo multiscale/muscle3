@@ -129,7 +129,7 @@ Instance::Impl::Impl(
 #endif
         manager_.reset(new MMPClient(extract_manager_location_(argc, argv)));
         logger_.reset(new Logger(static_cast<std::string>(instance_name_), *manager_));
-        communicator_.reset(new Communicator(name_(), index_(), {}, *logger_, 0));
+        communicator_.reset(new Communicator(name_(), index_(), ports, *logger_, 0));
         register_();
         connect_();
 #ifdef MUSCLE_ENABLE_MPI

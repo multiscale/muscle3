@@ -280,6 +280,58 @@ different ways of creating a ``Message``, depending on whether you set the next
 timestamp, or are using an explicit settings overlay. See the API documentation
 for details.
 
+``Data`` is quite versatile, and makes it easier to send data of various
+types between submodels. Here are some other examples of creating ``Data``
+objects containing different kinds of data:
+
+.. code-block:: cpp
+
+    // create a Data containing a nil value (None in Python)
+    Data d1;
+
+    // strings, booleans
+    Data d2("String data");
+    Data d3(true);
+
+    // various kinds of numbers
+    Data d4(0);         // int
+    Data d5(10u);       // unsigned int
+    Data d6(100l);      // long int
+    Data d7(3.141592f); // float
+    Data d8(1.4142);    // double
+
+    // constant list
+    auto d9 = Data::list("String data", true, 0, 10u, 1.4142);
+
+    // dictionary
+    auto d10 = Data::dict(
+            "x", x,
+            "y", y,
+            "note", "Keys must be strings",
+            "why_not", Data::list(10, 3.141592, "that's fine"),
+            "existing_object", d4
+            );
+
+    // byte array
+    std::vector<char> bytes;
+    auto d11 = Data::byte_array(bytes.data(), bytes.size());
+
+    // simple types are created automatically when making a Message
+    instance.send("output_port", Message(t_cur, 1.0));
+
+    std::string text("A text message");
+    instance.send("output_port", Message(t_cur, text));
+
+    // but you have to name dicts, lists, and byte arrays
+    instance.send("output_port", Message(t_cur, Data::list("a", 10)));
+
+
+As you can see, sending complex data types with MUSCLE is almost as easy in C++
+as it is in Python. One thing that's still missing is sending and receiving
+multidimensional arrays of numbers. We hope to add that in a future version; for
+now you'll need to put them into a list of numbers manually.
+
+
 .. code-block:: cpp
 
     int main(int argc, char * argv[]) {

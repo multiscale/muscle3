@@ -27,9 +27,9 @@ void reaction(int argc, char * argv[]) {
 
         auto msg = instance.receive("initial_state");
         DataConstRef data(msg.data());
-        std::vector<double> U(msg.data().size());
-        for (int i = 0; i < msg.data().size(); ++i)
-            U[i] = msg.data()[i].as<double>();
+        std::vector<double> U(data.size());
+        for (int i = 0; i < data.size(); ++i)
+            U[i] = data[i].as<double>();
 
         double t_cur = msg.timestamp();
         while (t_cur + dt < t_max) {

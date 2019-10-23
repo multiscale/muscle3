@@ -1,5 +1,5 @@
 CXX ?= g++
-CXXFLAGS += -g -I$(MUSCLE3_HOME)/include
+CXXFLAGS += -std=c++14 -g -I$(MUSCLE3_HOME)/include
 LDFLAGS += -L$(MUSCLE3_HOME)/lib -lymmsl -lmuscle
 
 

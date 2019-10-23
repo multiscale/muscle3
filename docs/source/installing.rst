@@ -57,7 +57,7 @@ To build libmuscle, we're going to need some tools. In particular, we need a C++
 compiler and GNU make. MUSCLE 3 uses C++14, so you need at least g++ 4.9.3.
 Clang is expected to work, but that's not been tested, nor has any other
 compiler. If you want to try, go right ahead, we'd love to have feedback on
-this.
+this. Building has been tested with gmake 3.82 and 4.1.
 
 If you're doing C++ development on a reasonably modern Linux, then you probably
 already have a suitable compiler installed. If not, on a Debian (or Ubuntu)

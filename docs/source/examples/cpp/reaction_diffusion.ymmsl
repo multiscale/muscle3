@@ -10,7 +10,6 @@ model:
     micro.final_state: macro.state_in
 
 settings:
-  muscle_remote_log_level: DEBUG
   micro.t_max: 2.469136e-06
   micro.dt: 2.469136e-08
   macro.t_max: 0.0001234568

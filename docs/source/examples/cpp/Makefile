@@ -1,6 +1,6 @@
 CXX ?= g++
 CXXFLAGS += -g -I$(MUSCLE3_HOME)/include
-LDFLAGS += -L$(MUSCLE3_HOME)/lib -lymmsl -lmuscle_d
+LDFLAGS += -L$(MUSCLE3_HOME)/lib -lymmsl -lmuscle
 
 
 binaries := reaction diffusion mc_driver load_balancer

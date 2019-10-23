@@ -25,7 +25,11 @@ prod_libs += libmuscle_mpi.a libmuscle_mpi.so
 debug_libs += libmuscle_mpi_d.a libmuscle_mpi_d.so
 endif
 
-all_libs := $(prod_libs) $(debug_libs)
+all_libs := $(prod_libs)
+
+ifdef MUSCLE_ENABLE_DEBUG
+all_libs += $(debug_libs)
+endif
 
 header_root := $(CURDIR)/../../src
 CXXFLAGS += -I$(header_root)
@@ -72,10 +76,8 @@ install: all $(installed_headers)
 	@echo
 	@echo Installing libmuscle to $(PREFIX)
 	@mkdir -p $(PREFIX)/lib
-	cp libmuscle.a $(PREFIX)/lib
-	cp libmuscle_d.a $(PREFIX)/lib
-	cp libmuscle.so $(PREFIX)/lib
-	cp libmuscle_d.so $(PREFIX)/lib
+	cp libmuscle*.a $(PREFIX)/lib
+	cp libmuscle*.so $(PREFIX)/lib
 
 
 cleantargets := clean distclean

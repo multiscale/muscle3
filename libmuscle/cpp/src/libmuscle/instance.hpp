@@ -5,7 +5,6 @@
 
 #ifdef MUSCLE_ENABLE_MPI
 #include <mpi.h>
-#include <libmuscle/mpi_tcp_barrier.hpp>
 #endif
 
 #include <ymmsl/ymmsl.hpp>

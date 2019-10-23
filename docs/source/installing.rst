@@ -108,7 +108,7 @@ archive and enter the main directory:
 
   ~$ mkdir muscle3_source
   ~$ cd muscle3_source
-  ~/muscle3_source$ wget https://github.com/multiscale/muscle3/archive/0.2.0.tar.gz
+  ~/muscle3_source$ wget https://github.com/multiscale/muscle3/archive/0.2.0/muscle3-0.2.0.tar.gz
   ~/muscle3_source$ tar xf muscle3-0.2.0.tar.gz
   ~/muscle3_source$ cd muscle3-0.2.0
 

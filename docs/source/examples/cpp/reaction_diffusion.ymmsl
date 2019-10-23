@@ -14,7 +14,7 @@ settings:
   micro.dt: 2.469136e-08
   macro.t_max: 0.0001234568
   macro.dt: 2.469136e-06
-  x_max: 1.01
+  x_max: 1.0
   dx: 0.01
   k: -40500.0
   d: 0.0405

@@ -68,9 +68,8 @@ endif
 
 # Check number of cores
 ifndef NCORES
-	NCORES != nproc 2>/dev/null || echo 2
-	export NCORES
+    NCORES := $(shell nproc 2>/dev/null || echo 2)
+    export NCORES
 endif
 $(info Using $(NCORES) cores to build; set NCORES to override.)
-
 

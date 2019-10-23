@@ -22,7 +22,7 @@ $(info Checking for $(dep_name) >= $(dep_min_version)...)
 _pkg_config := export PKG_CONFIG_PATH=$($(dep_name)_ROOT) && pkg-config
 _pkg = '$(dep_pkgconfig_name) >= $(dep_min_version)'
 
-_exists != $(_pkg_config) --exists $(_pkg) || echo NOTFOUND
+_exists := $(shell $(_pkg_config) --exists $(_pkg) || echo NOTFOUND)
 
 ifneq ($(_exists), NOTFOUND)
     $(info - $(dep_name) found at $(shell $(_pkg_config) --variable=prefix $(_pkg)))

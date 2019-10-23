@@ -48,8 +48,10 @@ void reaction(int argc, char * argv[]) {
             t_end = t_cur + t_max;
 
             U_size = U_all.size() / num_ranks;
-            if (U_size * num_ranks != U_all.size())
+            if (U_size * num_ranks != U_all.size()) {
+                instance.error_shutdown("State does not divide evenly");
                 throw std::runtime_error("State does not divide evenly");
+            }
         }
         MPI_Bcast(&U_size, 1, MPI_INT, root_rank, MPI_COMM_WORLD);
         U.resize(U_size);

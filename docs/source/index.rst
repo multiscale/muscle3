@@ -19,6 +19,7 @@ Environment.
    tutorial
    distributed_execution
    cplusplus
+   mpi
    uncertainty_quantification
    python_api
    cpp_api

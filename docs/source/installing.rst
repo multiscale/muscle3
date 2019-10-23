@@ -163,8 +163,8 @@ do:
   ~/muscle3_source/muscle3-0.2.0$ MUSCLE_ENABLE_MPI=1 NCORES=2 make
 
 
-This will take a few minutes, depending on the speed of your machine; cluster
-nodes may be much faster.
+This will take ten minutes or so (including building the dependencies),
+depending on the speed of your machine.
 
 Installing libmuscle C++
 ````````````````````````

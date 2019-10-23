@@ -25,6 +25,8 @@ docs:
 .PHONY: docsclean
 docsclean:
 	rm -rf docs/build/*
+	rm -rf docs/doxygen/html/*
+	rm -rf docs/doxygen/xml/*
 
 .PHONY: clean
 clean:

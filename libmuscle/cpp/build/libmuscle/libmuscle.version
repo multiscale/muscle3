@@ -4,7 +4,7 @@
             libmuscle::impl::Instance::Instance*;
             "libmuscle::impl::Instance::~Instance()";
             libmuscle::impl::Instance::reuse_instance*;
-            libmuscle::impl::Instance::exit_error*;
+            libmuscle::impl::Instance::error_shutdown*;
             libmuscle::impl::Instance::set_port_length*;
             libmuscle::impl::Instance::get_port_length*;
             libmuscle::impl::Instance::is_connected*;

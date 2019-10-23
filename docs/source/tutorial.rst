@@ -1,12 +1,13 @@
-Tutorial
-========
+Tutorial with Python
+====================
 
 In this section, we'll look at a few examples of how to use MUSCLE 3 to create a
 multiscale simulation in Python.
 
 `The source code for these examples is here
-<https://github.com/multiscale/muscle3/tree/master/docs/source/examples/python>`_. You
-can also clone the repository and go to ``docs/source/examples/python``, or
+<https://github.com/multiscale/muscle3/tree/master/docs/source/examples/python>`_.
+You can also clone the repository or download the source (see the C++ part of
+the Installation section) and go to ``docs/source/examples/python``, or
 copy-paste the code from here.
 
 The easiest way to get set up is to create a virtualenv and then install MUSCLE
@@ -14,16 +15,16 @@ The easiest way to get set up is to create a virtualenv and then install MUSCLE
 
 .. code-block:: bash
 
-  python$ python3 -m venv venv                    # create venv
-  python$ . venv/bin/activate                     # activate it
-  python$ pip3 install -r requirements.txt        # install dependencies
+  example/python$ python3 -m venv venv                    # create venv
+  example/python$ . venv/bin/activate                     # activate it
+  example/python$ pip3 install -r requirements.txt        # install dependencies
 
 
 Our first example is a reaction-diffusion model on a 1D grid. It consists of a
 reaction model coupled to a diffusion model in a macro-micro fashion, with the
 diffusion model the macro-model and the reaction model the micro-model. In a
-macro-micro model with timescale separation, the micro model does a full run (to
-convergence) for every timestep of the macro-model. Thus, the macro-model
+macro-micro model with timescale separation, the micro model does a full run (of
+many timesteps) for every timestep of the macro-model. Thus, the macro-model
 effectively calls the micro-model before each state update, sending it the
 current state and using its output as an input for the state update operation.
 

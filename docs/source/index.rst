@@ -14,8 +14,11 @@ Environment.
    :caption: Contents:
 
    introduction
+   current_status
+   installing
    tutorial
    distributed_execution
+   cplusplus
    uncertainty_quantification
    python_api
    cpp_api

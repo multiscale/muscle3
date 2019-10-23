@@ -5,6 +5,7 @@
 
 
 using libmuscle::Data;
+using libmuscle::DataConstRef;
 using libmuscle::Instance;
 using libmuscle::Message;
 using ymmsl::Operator;
@@ -14,16 +15,18 @@ using ymmsl::Operator;
  */
 void reaction(int argc, char * argv[]) {
     Instance instance(argc, argv, {
-            {Operator::F_INIT, {"initial_state"}},  // list of float
-            {Operator::O_F, {"final_state"}}});     // list of float
+            {Operator::F_INIT, {"initial_state"}},  // list of double
+            {Operator::O_F, {"final_state"}}});     // list of double
 
     while (instance.reuse_instance()) {
+
         // F_INIT
         double t_max = instance.get_setting_as<double>("t_max");
         double dt = instance.get_setting_as<double>("dt");
         double k = instance.get_setting_as<double>("k");
 
         auto msg = instance.receive("initial_state");
+        DataConstRef data(msg.data());
         std::vector<double> U(msg.data().size());
         for (int i = 0; i < msg.data().size(); ++i)
             U[i] = msg.data()[i].as<double>();

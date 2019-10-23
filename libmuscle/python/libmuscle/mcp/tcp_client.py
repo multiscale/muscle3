@@ -77,8 +77,13 @@ class TcpClient(Client):
         self._socket.close()
 
     def _connect(self, address: str) -> socket.SocketType:
-        loc_parts = address.split(':')
+        loc_parts = address.rsplit(':', 1)
         host = loc_parts[0]
+        if host.startswith('['):
+            if host.endswith(']'):
+                host = host[1:-1]
+            else:
+                raise RuntimeError('Invalid address')
         port = int(loc_parts[1])
 
         addrinfo = socket.getaddrinfo(

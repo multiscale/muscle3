@@ -41,8 +41,14 @@ std::vector<std::string> split_location(std::string const & location) {
 
 
 int connect(std::string const & address) {
-    std::size_t split = address.find(':');
+    std::size_t split = address.rfind(':');
     std::string host = address.substr(0, split);
+    if (host.front() == '[') {
+        if (host.back() == ']')
+            host = host.substr(1, host.size() - 2);
+        else
+            throw std::runtime_error("Invalid address");
+    }
     std::string port = address.substr(split + 1);
 
     int err_code;

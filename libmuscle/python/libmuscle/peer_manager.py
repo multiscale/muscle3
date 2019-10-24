@@ -6,7 +6,7 @@ from libmuscle.endpoint import Endpoint
 
 
 class PeerManager:
-    """Manager information about peers for a Communicator
+    """Manages information about peers for a Communicator
     """
     def __init__(self, kernel: Reference, index: List[int],
                  conduits: List[Conduit],
@@ -56,13 +56,13 @@ class PeerManager:
         recv_port_full = self.__kernel + port
         return recv_port_full in self.__peers
 
-    def get_peer_port(self, port: Reference) -> Reference:
+    def get_peer_port(self, port: Identifier) -> Reference:
         """Get a reference for the peer port.
 
         Args:
-            port: Reference to the port on this side.
+            port: Name of the port on this side.
         """
-        return self.__peers[port]
+        return self.__peers[self.__kernel + port]
 
     def get_peer_dims(self, peer_kernel: Reference) -> List[int]:
         """Get the dimensions of a peer kernel.

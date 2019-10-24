@@ -1,10 +1,9 @@
-from enum import IntEnum
 import msgpack
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 from ymmsl import Conduit, Identifier, Operator, Reference, Settings
 
 from libmuscle.endpoint import Endpoint
-from libmuscle.mcp.message import Message as MCPMessage
+from libmuscle.mcp.message import ClosePort, Message as MCPMessage
 from libmuscle.mcp.client import Client as MCPClient
 from libmuscle.mcp.server import Server as MCPServer, ServerNotSupported
 from libmuscle.mcp.type_registry import client_types, server_types
@@ -16,29 +15,6 @@ from libmuscle.profiling import ProfileEvent, ProfileEventType
 
 
 MessageObject = Any
-
-
-class ExtTypeId(IntEnum):
-    """MessagePack extension type ids.
-
-    MessagePack lets you define your own types as an extension to the
-    built-in ones. These are distinguished by a number from 0 to 127.
-    This class is our registry of extension type ids.
-    """
-    CLOSE_PORT = 0
-    SETTINGS = 1
-
-
-class _ClosePort:
-    """Sentinel value to send when closing a port.
-
-    Sending an object of this class on a port/conduit conveys to the
-    receiver the message that no further messages will be sent on this
-    port during the simulation.
-
-    All information is carried by the type, this has no attributes.
-    """
-    pass
 
 
 class Message:
@@ -76,7 +52,7 @@ class Message:
         self.settings = settings
 
 
-class Communicator(PostOffice):
+class Communicator:
     """Communication engine for MUSCLE 3.
 
     This class is the mailroom for a kernel that uses MUSCLE 3. It
@@ -100,26 +76,25 @@ class Communicator(PostOffice):
             profiler: The profiler to use for recording sends and
                     receives.
         """
-        super().__init__()
+        self._kernel = kernel
+        self._index = index
+        self._declared_ports = declared_ports
+        self._post_office = PostOffice()
+        self._profiler = profiler
 
-        self.__kernel = kernel
-        self.__index = index
-        self.__declared_ports = declared_ports
-        self.__profiler = profiler
-
-        self.__servers = list()  # type: List[MCPServer]
+        self._servers = list()  # type: List[MCPServer]
 
         # indexed by remote instance id
-        self.__clients = dict()  # type: Dict[Reference, MCPClient]
+        self._clients = dict()  # type: Dict[Reference, MCPClient]
 
         for server_type in server_types:
             try:
-                server = server_type(self.__instance_id(), self)
-                self.__servers.append(server)
+                server = server_type(self.__instance_id(), self._post_office)
+                self._servers.append(server)
             except ServerNotSupported:
                 pass
 
-        self.__ports = dict()   # type: Dict[str, Port]
+        self._ports = dict()   # type: Dict[str, Port]
 
     def get_locations(self) -> List[str]:
         """Returns a list of locations that we can be reached at.
@@ -131,7 +106,7 @@ class Communicator(PostOffice):
         Returns:
             A list of strings describing network locations.
         """
-        return [server.get_location() for server in self.__servers]
+        return [server.get_location() for server in self._servers]
 
     def connect(self, conduits: List[Conduit],
                 peer_dims: Dict[Reference, List[int]],
@@ -152,21 +127,21 @@ class Communicator(PostOffice):
             peer_locations: A list of locations for each peer instance
                     we share a conduit with.
         """
-        self.__peer_manager = PeerManager(
-                self.__kernel, self.__index, conduits, peer_dims,
+        self._peer_manager = PeerManager(
+                self._kernel, self._index, conduits, peer_dims,
                 peer_locations)
 
-        if self.__declared_ports is not None:
-            self.__ports = self.__ports_from_declared()
+        if self._declared_ports is not None:
+            self._ports = self.__ports_from_declared()
         else:
-            self.__ports = self.__ports_from_conduits(conduits)
+            self._ports = self.__ports_from_conduits(conduits)
 
-        self.__muscle_settings_in = self.__parameters_in_port(conduits)
+        self._muscle_settings_in = self.__settings_in_port(conduits)
 
-    def parameters_in_connected(self) -> bool:
+    def settings_in_connected(self) -> bool:
         """Returns True iff muscle_settings_in is connected.
         """
-        return self.__muscle_settings_in.is_connected()
+        return self._muscle_settings_in.is_connected()
 
     def list_ports(self) -> Dict[Operator, List[str]]:
         """Returns a description of the ports this Communicator has.
@@ -177,7 +152,7 @@ class Communicator(PostOffice):
             included.
         """
         result = dict()     # type: Dict[Operator, List[str]]
-        for port_name, port in self.__ports.items():
+        for port_name, port in self._ports.items():
             if port.operator not in result:
                 result[port.operator] = list()
             result[port.operator].append(port_name)
@@ -189,7 +164,7 @@ class Communicator(PostOffice):
         Args:
             port_name: Port name to check.
         """
-        return port_name in self.__ports
+        return port_name in self._ports
 
     def get_port(self, port_name: str) -> Port:
         """Returns a Port object describing a port with the given name.
@@ -197,12 +172,12 @@ class Communicator(PostOffice):
         Args:
             port: The port to retrieve.
         """
-        return self.__ports[port_name]
+        return self._ports[port_name]
 
     def send_message(
             self, port_name: str, message: Message,
             slot: Optional[int]=None) -> None:
-        """Send a message and parameters to the outside world.
+        """Send a message and settings to the outside world.
 
         Sending is non-blocking, a copy of the message will be made
         and stored until the receiver is ready to receive it.
@@ -216,7 +191,7 @@ class Communicator(PostOffice):
             slot_list = []  # type: List[int]
         else:
             slot_list = [slot]
-            slot_length = self.__ports[port_name].get_length()
+            slot_length = self._ports[port_name].get_length()
             if slot_length <= slot:
                 raise RuntimeError(('Slot out of bounds. You are sending on'
                                     ' slot {} of port "{}", which is of length'
@@ -224,35 +199,32 @@ class Communicator(PostOffice):
                                     ).format(slot, port_name, slot_length))
 
         snd_endpoint = self.__get_endpoint(port_name, slot_list)
-        if not self.__peer_manager.is_connected(snd_endpoint.port):
+        if not self._peer_manager.is_connected(snd_endpoint.port):
             # log sending on disconnected port
             return
 
-        port = self.__ports[port_name]
-        profile_event = self.__profiler.start(ProfileEventType.SEND, port,
-                                              None, slot, None)
+        port = self._ports[port_name]
+        profile_event = self._profiler.start(ProfileEventType.SEND, port,
+                                             None, slot, None)
 
-        recv_endpoint = self.__peer_manager.get_peer_endpoint(
+        recv_endpoint = self._peer_manager.get_peer_endpoint(
                 snd_endpoint.port, slot_list)
 
-        packed_overlay = self.__pack_object(
-                cast(Settings, message.settings).as_ordered_dict())
-
-        packed_message = self.__pack_object(message.data)
-
         port_length = None
-        if self.__ports[port_name].is_resizable():
-            port_length = self.__ports[port_name].get_length()
+        if self._ports[port_name].is_resizable():
+            port_length = self._ports[port_name].get_length()
 
         mcp_message = MCPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
                                  port_length,
                                  message.timestamp, message.next_timestamp,
-                                 packed_overlay, packed_message)
-        self._deposit(recv_endpoint.ref(), mcp_message)
+                                 cast(Settings, message.settings),
+                                 message.data)
+        encoded_message = mcp_message.encoded()
+        self._post_office.deposit(recv_endpoint.ref(), encoded_message)
         profile_event.stop()
         if port.is_vector():
             profile_event.port_length = port.get_length()
-        profile_event.message_size = len(mcp_message.data)
+        profile_event.message_size = len(encoded_message)
 
     def receive_message(self, port_name: str, slot: Optional[int]=None,
                         default: Optional[Message]=None
@@ -275,7 +247,7 @@ class Communicator(PostOffice):
 
         Returns:
             The received message, with message.settings holding
-            the parameter overlay. The settings attribute is
+            the settings overlay. The settings attribute is
             guaranteed to not be None.
 
         Raises:
@@ -289,7 +261,7 @@ class Communicator(PostOffice):
 
         recv_endpoint = self.__get_endpoint(port_name, slot_list)
 
-        if not self.__peer_manager.is_connected(recv_endpoint.port):
+        if not self._peer_manager.is_connected(recv_endpoint.port):
             if default is None:
                 raise RuntimeError(('Tried to receive on port "{}", which is'
                                     ' disconnected, and no default value was'
@@ -298,40 +270,38 @@ class Communicator(PostOffice):
                                     ' port.').format(port_name))
             return default
 
-        if port_name in self.__ports:
-            port = self.__ports[port_name]
+        if port_name in self._ports:
+            port = self._ports[port_name]
         else:
             # it's muscle_settings_in here, because we check for unknown
             # user ports in Instance already, and we don't have any other
             # built-in automatic ports.
-            port = self.__muscle_settings_in
+            port = self._muscle_settings_in
 
-        profile_event = self.__profiler.start(ProfileEventType.RECEIVE, port,
-                                              None, slot, None)
+        profile_event = self._profiler.start(ProfileEventType.RECEIVE, port,
+                                             None, slot, None)
 
-        snd_endpoint = self.__peer_manager.get_peer_endpoint(
+        snd_endpoint = self._peer_manager.get_peer_endpoint(
                 recv_endpoint.port, slot_list)
         client = self.__get_client(snd_endpoint.instance())
-        mcp_message = client.receive(recv_endpoint.ref())
-
-        overlay_settings = Settings(msgpack.unpackb(
-            mcp_message.parameter_overlay, raw=False))
+        mcp_message_bytes = client.receive(recv_endpoint.ref())
+        mcp_message = MCPMessage.from_bytes(mcp_message_bytes)
 
         if mcp_message.port_length is not None:
             if port.is_resizable():
                 port.set_length(mcp_message.port_length)
 
+        if isinstance(mcp_message.data, ClosePort):
+            port.set_closed(slot)
+
         message = Message(
                 mcp_message.timestamp, mcp_message.next_timestamp,
-                self.__extract_object(mcp_message), overlay_settings)
-
-        if isinstance(message.data, _ClosePort):
-            port.set_closed(slot)
+                mcp_message.data, mcp_message.settings_overlay)
 
         profile_event.stop()
         if port.is_vector():
             profile_event.port_length = port.get_length()
-        profile_event.message_size = len(mcp_message.data)
+        profile_event.message_size = len(mcp_message_bytes)
 
         return message
 
@@ -340,38 +310,38 @@ class Communicator(PostOffice):
         """Closes the given port.
 
         This signals to any connected instance that no more messages
-        will be sent on this port, which it can use to decided whether
+        will be sent on this port, which it can use to decide whether
         to shut down or continue running.
 
         Args:
             port_name: The name of the port to close.
         """
-        message = Message(float('inf'), None, _ClosePort(), Settings())
+        message = Message(float('inf'), None, ClosePort(), Settings())
         self.send_message(port_name, message, slot)
 
     def shutdown(self) -> None:
         """Shuts down the Communicator, closing connections.
         """
-        for client in self.__clients.values():
+        for client in self._clients.values():
             client.close()
         for client_type in client_types:
             client_type.shutdown(self.__instance_id())
 
-        self._wait_for_receivers()
+        self._post_office.wait_for_receivers()
 
-        for server in self.__servers:
+        for server in self._servers:
             server.close()
 
     def __instance_id(self) -> Reference:
         """Returns our complete instance id.
         """
-        return self.__kernel + self.__index
+        return self._kernel + self._index
 
     def __ports_from_declared(self) -> Dict[str, Port]:
         """Derives port definitions from supplied declaration.
         """
         ports = dict()
-        declared_ports = cast(Dict[Operator, List[str]], self.__declared_ports)
+        declared_ports = cast(Dict[Operator, List[str]], self._declared_ports)
         for operator, port_list in declared_ports.items():
             for port_desc in port_list:
                 port_name, is_vector = self.__split_port_desc(port_desc)
@@ -379,18 +349,17 @@ class Communicator(PostOffice):
                     raise RuntimeError(('Port names starting with "muscle_"'
                                         ' are reserved for MUSCLE, please'
                                         ' rename port "{}"'.format(port_name)))
-                is_connected = self.__peer_manager.is_connected(
-                        Identifier(port_name))
+                port_id = Identifier(port_name)
+                is_connected = self._peer_manager.is_connected(port_id)
                 if is_connected:
-                    port_ref = self.__kernel + Identifier(port_name)
-                    peer_port = self.__peer_manager.get_peer_port(port_ref)
+                    peer_port = self._peer_manager.get_peer_port(port_id)
                     peer_ce = peer_port[:-1]
-                    port_peer_dims = self.__peer_manager.get_peer_dims(peer_ce)
+                    port_peer_dims = self._peer_manager.get_peer_dims(peer_ce)
                 else:
                     port_peer_dims = []
                 ports[port_name] = Port(
                         port_name, operator, is_vector, is_connected,
-                        len(self.__index), port_peer_dims)
+                        len(self._index), port_peer_dims)
         return ports
 
     def __ports_from_conduits(self, conduits: List[Conduit]
@@ -402,42 +371,45 @@ class Communicator(PostOffice):
         """
         ports = dict()
         for conduit in conduits:
-            if conduit.sending_compute_element() == self.__kernel:
+            if conduit.sending_compute_element() == self._kernel:
                 port_id = conduit.sending_port()
                 operator = Operator.O_F
-                port_peer_dims = self.__peer_manager.get_peer_dims(
+                port_peer_dims = self._peer_manager.get_peer_dims(
                         conduit.receiving_compute_element())
-            elif conduit.receiving_compute_element() == self.__kernel:
+            elif conduit.receiving_compute_element() == self._kernel:
                 port_id = conduit.receiving_port()
                 operator = Operator.F_INIT
-                port_peer_dims = self.__peer_manager.get_peer_dims(
+                port_peer_dims = self._peer_manager.get_peer_dims(
                         conduit.sending_compute_element())
-            ndims = max(0, len(port_peer_dims) - len(self.__index))
+            else:
+                continue
+
+            ndims = max(0, len(port_peer_dims) - len(self._index))
             is_vector = (ndims == 1)
-            is_connected = self.__peer_manager.is_connected(port_id)
+            is_connected = self._peer_manager.is_connected(port_id)
             if not str(port_id).startswith('muscle_'):
                 ports[str(port_id)] = Port(
                         str(port_id), operator, is_vector, is_connected,
-                        len(self.__index), port_peer_dims)
+                        len(self._index), port_peer_dims)
         return ports
 
-    def __parameters_in_port(self, conduits: List[Conduit]) -> Port:
+    def __settings_in_port(self, conduits: List[Conduit]) -> Port:
         """Creates a Port representing muscle_settings_in.
 
         Args:
             conduits: The list of conduits.
         """
         for conduit in conduits:
-            if conduit.receiving_compute_element() == self.__kernel:
+            if conduit.receiving_compute_element() == self._kernel:
                 port_id = conduit.receiving_port()
                 if str(port_id) == 'muscle_settings_in':
                     return Port(str(port_id), Operator.F_INIT, False,
-                                self.__peer_manager.is_connected(port_id),
-                                len(self.__index),
-                                self.__peer_manager.get_peer_dims(
+                                self._peer_manager.is_connected(port_id),
+                                len(self._index),
+                                self._peer_manager.get_peer_dims(
                                     conduit.sending_compute_element()))
         return Port('muscle_settings_in', Operator.F_INIT, False, False,
-                    len(self.__index), [])
+                    len(self._index), [])
 
     def __get_client(self, instance: Reference) -> MCPClient:
         """Get or create a client to connect to the given instance.
@@ -448,14 +420,14 @@ class Communicator(PostOffice):
         Returns:
             An existing or new MCP client.
         """
-        if instance in self.__clients:
-            return self.__clients[instance]
+        if instance in self._clients:
+            return self._clients[instance]
 
         for ClientType in client_types:
-            for location in self.__peer_manager.get_peer_locations(instance):
+            for location in self._peer_manager.get_peer_locations(instance):
                 if ClientType.can_connect_to(location):
                     client = ClientType(self.__instance_id(), location)
-                    self.__clients[instance] = client
+                    self._clients[instance] = client
                     return client
         raise RuntimeError('Could not find a matching protocol for {}'.format(
                 instance))
@@ -473,7 +445,7 @@ class Communicator(PostOffice):
             raise ValueError('"{}" is not a valid port name: {}'.format(
                 port_name, e))
 
-        return Endpoint(self.__kernel, self.__index, port, slot)
+        return Endpoint(self._kernel, self._index, port, slot)
 
     def __split_port_desc(self, port_desc: str) -> Tuple[str, bool]:
         """Split a port description into its name and dimensionality.
@@ -496,38 +468,3 @@ class Communicator(PostOffice):
                                   port_desc))
 
         return port_desc, is_vector
-
-    def __extract_object(self, mcp_message: MCPMessage) -> MessageObject:
-        """Extract object from a received message.
-
-        Args:
-            mcp_message: The received message.
-
-        Returns:
-            The object that was received.
-        """
-        data = msgpack.unpackb(mcp_message.data, raw=False)
-        if isinstance(data, msgpack.ExtType):
-            if data.code == ExtTypeId.CLOSE_PORT:
-                return _ClosePort()
-            elif data.code == ExtTypeId.SETTINGS:
-                plain_dict = msgpack.unpackb(data.data, raw=False)
-                return Settings(plain_dict)
-        return msgpack.unpackb(mcp_message.data, raw=False)
-
-    def __pack_object(self, obj: MessageObject) -> bytes:
-        """MessagePack-encode an object for transmission.
-
-        Args:
-            obj: The object to pack.
-
-        Returns:
-            MessagePack-encoded bytes.
-        """
-        if isinstance(obj, _ClosePort):
-            obj = msgpack.ExtType(ExtTypeId.CLOSE_PORT, bytes())
-        elif isinstance(obj, Settings):
-            data = msgpack.packb(obj.as_ordered_dict())
-            obj = msgpack.ExtType(ExtTypeId.SETTINGS, data)
-        packed_message = msgpack.packb(obj, use_bin_type=True)
-        return cast(bytes, packed_message)

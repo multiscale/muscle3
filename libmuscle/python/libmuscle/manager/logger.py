@@ -13,10 +13,10 @@ class Logger:
     """
     def __init__(self) -> None:
         logfile = extract_log_file_location('muscle3_manager.log')
-        local_handler = logging.FileHandler(str(logfile), mode='w')
+        self._local_handler = logging.FileHandler(str(logfile), mode='w')
         formatter = logging.Formatter('%(time_stamp)-15s: %(name)s'
                                       ' %(levelname)s: %(message)s')
-        local_handler.setFormatter(formatter)
+        self._local_handler.setFormatter(formatter)
 
         # Find and remove default handler to disable automatic console output
         # Testing for 'stderr' in the stringified version is not nice, but
@@ -27,12 +27,15 @@ class Logger:
                 if 'stderr' not in str(h)]
 
         # add our own
-        logging.getLogger().addHandler(local_handler)
+        logging.getLogger().addHandler(self._local_handler)
 
         # hardwired for now
         logging.getLogger().setLevel(logging.INFO)
         logging.getLogger('yatiml.loader').setLevel(logging.WARNING)
         logging.getLogger('yatiml.dumper').setLevel(logging.WARNING)
+
+    def close(self) -> None:
+        logging.getLogger().removeHandler(self._local_handler)
 
     def log_message(
             self,

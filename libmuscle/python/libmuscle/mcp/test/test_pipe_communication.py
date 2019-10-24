@@ -30,7 +30,7 @@ def run_client(instance_id, server_location, receiver, message):
     assert message.port_length == message2.port_length
     assert message.timestamp == message2.timestamp
     assert message.next_timestamp == message2.next_timestamp
-    assert message.parameter_overlay == message2.parameter_overlay
+    assert message.settings_overlay == message2.settings_overlay
     assert message.data == message2.data
 
     client.close()

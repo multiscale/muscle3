@@ -1,0 +1,5 @@
+*
+!.gitignore
+!Makefile
+!libmuscle.version
+!tests

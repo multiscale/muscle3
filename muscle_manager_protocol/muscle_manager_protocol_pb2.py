@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='muscle_manager_protocol',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x1dmuscle_manager_protocol.proto\x12\x17muscle_manager_protocol\x1a\x1fgoogle/protobuf/timestamp.proto\"\x90\x01\n\nLogMessage\x12\x13\n\x0binstance_id\x18\x01 \x01(\t\x12-\n\ttimestamp\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x30\n\x05level\x18\x04 \x01(\x0e\x32!.muscle_manager_protocol.LogLevel\x12\x0c\n\x04text\x18\x05 \x01(\t\"\x0b\n\tLogResult\"I\n\x04Port\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x33\n\x08operator\x18\x02 \x01(\x0e\x32!.muscle_manager_protocol.Operator\"\xa7\x02\n\x0cProfileEvent\x12\x13\n\x0binstance_id\x18\x01 \x01(\t\x12.\n\nstart_time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12-\n\tstop_time\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12=\n\nevent_type\x18\x04 \x01(\x0e\x32).muscle_manager_protocol.ProfileEventType\x12+\n\x04port\x18\x05 \x01(\x0b\x32\x1d.muscle_manager_protocol.Port\x12\x13\n\x0bport_length\x18\x06 \x01(\x05\x12\x0c\n\x04slot\x18\x07 \x01(\x05\x12\x14\n\x0cmessage_size\x18\x08 \x01(\x03\"@\n\x07Profile\x12\x35\n\x06\x65vents\x18\x01 \x03(\x0b\x32%.muscle_manager_protocol.ProfileEvent\"\x0f\n\rProfileResult\"u\n\x13RegistrationRequest\x12\x15\n\rinstance_name\x18\x01 \x01(\t\x12\x19\n\x11network_locations\x18\x02 \x03(\t\x12,\n\x05ports\x18\x03 \x03(\x0b\x32\x1d.muscle_manager_protocol.Port\"b\n\x12RegistrationResult\x12\x35\n\x06status\x18\x01 \x01(\x0e\x32%.muscle_manager_protocol.ResultStatus\x12\x15\n\rerror_message\x18\x02 \x01(\t\"+\n\x07\x43onduit\x12\x0e\n\x06sender\x18\x01 \x01(\t\x12\x10\n\x08receiver\x18\x02 \x01(\t\"$\n\x0bPeerRequest\x12\x15\n\rinstance_name\x18\x01 \x01(\t\"\x9a\x03\n\nPeerResult\x12\x35\n\x06status\x18\x01 \x01(\x0e\x32%.muscle_manager_protocol.ResultStatus\x12\x15\n\rerror_message\x18\x02 \x01(\t\x12\x32\n\x08\x63onduits\x18\x03 \x03(\x0b\x32 .muscle_manager_protocol.Conduit\x12K\n\x0fpeer_dimensions\x18\x04 \x03(\x0b\x32\x32.muscle_manager_protocol.PeerResult.PeerDimensions\x12I\n\x0epeer_locations\x18\x05 \x03(\x0b\x32\x31.muscle_manager_protocol.PeerResult.PeerLocations\x1a\x37\n\x0ePeerDimensions\x12\x11\n\tpeer_name\x18\x01 \x01(\t\x12\x12\n\ndimensions\x18\x02 \x03(\x05\x1a\x39\n\rPeerLocations\x12\x15\n\rinstance_name\x18\x01 \x01(\t\x12\x11\n\tlocations\x18\x02 \x03(\t\"\x1e\n\x0cListOfDouble\x12\x0e\n\x06values\x18\x01 \x03(\x01\"K\n\x12ListOfListOfDouble\x12\x35\n\x06values\x18\x01 \x03(\x0b\x32%.muscle_manager_protocol.ListOfDouble\"\xbc\x02\n\x07Setting\x12\x11\n\tparameter\x18\x01 \x01(\t\x12?\n\nvalue_type\x18\x02 \x01(\x0e\x32+.muscle_manager_protocol.ParameterValueType\x12\x14\n\x0cvalue_string\x18\x03 \x01(\t\x12\x11\n\tvalue_int\x18\x04 \x01(\x03\x12\x13\n\x0bvalue_float\x18\x05 \x01(\x01\x12\x12\n\nvalue_bool\x18\x06 \x01(\x08\x12?\n\x10value_list_float\x18\x07 \x01(\x0b\x32%.muscle_manager_protocol.ListOfDouble\x12J\n\x15value_list_list_float\x18\x08 \x01(\x0b\x32+.muscle_manager_protocol.ListOfListOfDouble\"\x11\n\x0fSettingsRequest\"L\n\x0eSettingsResult\x12:\n\x10parameter_values\x18\x01 \x03(\x0b\x32 .muscle_manager_protocol.Setting\".\n\x15\x44\x65registrationRequest\x12\x15\n\rinstance_name\x18\x01 \x01(\t\"d\n\x14\x44\x65registrationResult\x12\x35\n\x06status\x18\x01 \x01(\x0e\x32%.muscle_manager_protocol.ResultStatus\x12\x15\n\rerror_message\x18\x02 \x01(\t*]\n\x0cResultStatus\x12\x19\n\x15RESULT_STATUS_SUCCESS\x10\x00\x12\x17\n\x13RESULT_STATUS_ERROR\x10\x01\x12\x19\n\x15RESULT_STATUS_PENDING\x10\x02*\x88\x01\n\x08Operator\x12\x11\n\rOPERATOR_NONE\x10\x00\x12\x13\n\x0fOPERATOR_F_INIT\x10\x01\x12\x10\n\x0cOPERATOR_O_I\x10\x02\x12\x0e\n\nOPERATOR_S\x10\x03\x12\x0e\n\nOPERATOR_B\x10\x04\x12\x10\n\x0cOPERATOR_O_F\x10\x05\x12\x10\n\x0cOPERATOR_MAP\x10\x06*w\n\x08LogLevel\x12\x13\n\x0fLOG_LEVEL_DEBUG\x10\x00\x12\x12\n\x0eLOG_LEVEL_INFO\x10\x01\x12\x15\n\x11LOG_LEVEL_WARNING\x10\x03\x12\x13\n\x0fLOG_LEVEL_ERROR\x10\x04\x12\x16\n\x12LOG_LEVEL_CRITICAL\x10\x05*\xb3\x01\n\x10ProfileEventType\x12\x1f\n\x1bPROFILE_EVENT_TYPE_REGISTER\x10\x00\x12\x1e\n\x1aPROFILE_EVENT_TYPE_CONNECT\x10\x04\x12!\n\x1dPROFILE_EVENT_TYPE_DEREGISTER\x10\x01\x12\x1b\n\x17PROFILE_EVENT_TYPE_SEND\x10\x02\x12\x1e\n\x1aPROFILE_EVENT_TYPE_RECEIVE\x10\x03*\xe1\x01\n\x12ParameterValueType\x12\x1f\n\x1bPARAMETER_VALUE_TYPE_STRING\x10\x00\x12\x1c\n\x18PARAMETER_VALUE_TYPE_INT\x10\x01\x12\x1e\n\x1aPARAMETER_VALUE_TYPE_FLOAT\x10\x02\x12\x1d\n\x19PARAMETER_VALUE_TYPE_BOOL\x10\x03\x12#\n\x1fPARAMETER_VALUE_TYPE_LIST_FLOAT\x10\x04\x12(\n$PARAMETER_VALUE_TYPE_LIST_LIST_FLOAT\x10\x05\x32\xf2\x04\n\rMuscleManager\x12[\n\x10SubmitLogMessage\x12#.muscle_manager_protocol.LogMessage\x1a\".muscle_manager_protocol.LogResult\x12_\n\x13SubmitProfileEvents\x12 .muscle_manager_protocol.Profile\x1a&.muscle_manager_protocol.ProfileResult\x12\x64\n\x0fRequestSettings\x12(.muscle_manager_protocol.SettingsRequest\x1a\'.muscle_manager_protocol.SettingsResult\x12m\n\x10RegisterInstance\x12,.muscle_manager_protocol.RegistrationRequest\x1a+.muscle_manager_protocol.RegistrationResult\x12Y\n\x0cRequestPeers\x12$.muscle_manager_protocol.PeerRequest\x1a#.muscle_manager_protocol.PeerResult\x12s\n\x12\x44\x65registerInstance\x12..muscle_manager_protocol.DeregistrationRequest\x1a-.muscle_manager_protocol.DeregistrationResultb\x06proto3')
+  serialized_pb=_b('\n\x1dmuscle_manager_protocol.proto\x12\x17muscle_manager_protocol\x1a\x1fgoogle/protobuf/timestamp.proto\"\x90\x01\n\nLogMessage\x12\x13\n\x0binstance_id\x18\x01 \x01(\t\x12-\n\ttimestamp\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x30\n\x05level\x18\x04 \x01(\x0e\x32!.muscle_manager_protocol.LogLevel\x12\x0c\n\x04text\x18\x05 \x01(\t\"\x0b\n\tLogResult\"I\n\x04Port\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x33\n\x08operator\x18\x02 \x01(\x0e\x32!.muscle_manager_protocol.Operator\"\xa7\x02\n\x0cProfileEvent\x12\x13\n\x0binstance_id\x18\x01 \x01(\t\x12.\n\nstart_time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12-\n\tstop_time\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12=\n\nevent_type\x18\x04 \x01(\x0e\x32).muscle_manager_protocol.ProfileEventType\x12+\n\x04port\x18\x05 \x01(\x0b\x32\x1d.muscle_manager_protocol.Port\x12\x13\n\x0bport_length\x18\x06 \x01(\x05\x12\x0c\n\x04slot\x18\x07 \x01(\x05\x12\x14\n\x0cmessage_size\x18\x08 \x01(\x03\"@\n\x07Profile\x12\x35\n\x06\x65vents\x18\x01 \x03(\x0b\x32%.muscle_manager_protocol.ProfileEvent\"\x0f\n\rProfileResult\"u\n\x13RegistrationRequest\x12\x15\n\rinstance_name\x18\x01 \x01(\t\x12\x19\n\x11network_locations\x18\x02 \x03(\t\x12,\n\x05ports\x18\x03 \x03(\x0b\x32\x1d.muscle_manager_protocol.Port\"b\n\x12RegistrationResult\x12\x35\n\x06status\x18\x01 \x01(\x0e\x32%.muscle_manager_protocol.ResultStatus\x12\x15\n\rerror_message\x18\x02 \x01(\t\"+\n\x07\x43onduit\x12\x0e\n\x06sender\x18\x01 \x01(\t\x12\x10\n\x08receiver\x18\x02 \x01(\t\"$\n\x0bPeerRequest\x12\x15\n\rinstance_name\x18\x01 \x01(\t\"\x9a\x03\n\nPeerResult\x12\x35\n\x06status\x18\x01 \x01(\x0e\x32%.muscle_manager_protocol.ResultStatus\x12\x15\n\rerror_message\x18\x02 \x01(\t\x12\x32\n\x08\x63onduits\x18\x03 \x03(\x0b\x32 .muscle_manager_protocol.Conduit\x12K\n\x0fpeer_dimensions\x18\x04 \x03(\x0b\x32\x32.muscle_manager_protocol.PeerResult.PeerDimensions\x12I\n\x0epeer_locations\x18\x05 \x03(\x0b\x32\x31.muscle_manager_protocol.PeerResult.PeerLocations\x1a\x37\n\x0ePeerDimensions\x12\x11\n\tpeer_name\x18\x01 \x01(\t\x12\x12\n\ndimensions\x18\x02 \x03(\x05\x1a\x39\n\rPeerLocations\x12\x15\n\rinstance_name\x18\x01 \x01(\t\x12\x11\n\tlocations\x18\x02 \x03(\t\"\x1e\n\x0cListOfDouble\x12\x0e\n\x06values\x18\x01 \x03(\x01\"K\n\x12ListOfListOfDouble\x12\x35\n\x06values\x18\x01 \x03(\x0b\x32%.muscle_manager_protocol.ListOfDouble\"\xb5\x02\n\x07Setting\x12\x0c\n\x04name\x18\x01 \x01(\t\x12=\n\nvalue_type\x18\x02 \x01(\x0e\x32).muscle_manager_protocol.SettingValueType\x12\x14\n\x0cvalue_string\x18\x03 \x01(\t\x12\x11\n\tvalue_int\x18\x04 \x01(\x03\x12\x13\n\x0bvalue_float\x18\x05 \x01(\x01\x12\x12\n\nvalue_bool\x18\x06 \x01(\x08\x12?\n\x10value_list_float\x18\x07 \x01(\x0b\x32%.muscle_manager_protocol.ListOfDouble\x12J\n\x15value_list_list_float\x18\x08 \x01(\x0b\x32+.muscle_manager_protocol.ListOfListOfDouble\"\x11\n\x0fSettingsRequest\"J\n\x0eSettingsResult\x12\x38\n\x0esetting_values\x18\x01 \x03(\x0b\x32 .muscle_manager_protocol.Setting\".\n\x15\x44\x65registrationRequest\x12\x15\n\rinstance_name\x18\x01 \x01(\t\"d\n\x14\x44\x65registrationResult\x12\x35\n\x06status\x18\x01 \x01(\x0e\x32%.muscle_manager_protocol.ResultStatus\x12\x15\n\rerror_message\x18\x02 \x01(\t*]\n\x0cResultStatus\x12\x19\n\x15RESULT_STATUS_SUCCESS\x10\x00\x12\x17\n\x13RESULT_STATUS_ERROR\x10\x01\x12\x19\n\x15RESULT_STATUS_PENDING\x10\x02*\x88\x01\n\x08Operator\x12\x11\n\rOPERATOR_NONE\x10\x00\x12\x13\n\x0fOPERATOR_F_INIT\x10\x01\x12\x10\n\x0cOPERATOR_O_I\x10\x02\x12\x0e\n\nOPERATOR_S\x10\x03\x12\x0e\n\nOPERATOR_B\x10\x04\x12\x10\n\x0cOPERATOR_O_F\x10\x05\x12\x10\n\x0cOPERATOR_MAP\x10\x06*w\n\x08LogLevel\x12\x13\n\x0fLOG_LEVEL_DEBUG\x10\x00\x12\x12\n\x0eLOG_LEVEL_INFO\x10\x01\x12\x15\n\x11LOG_LEVEL_WARNING\x10\x03\x12\x13\n\x0fLOG_LEVEL_ERROR\x10\x04\x12\x16\n\x12LOG_LEVEL_CRITICAL\x10\x05*\xb3\x01\n\x10ProfileEventType\x12\x1f\n\x1bPROFILE_EVENT_TYPE_REGISTER\x10\x00\x12\x1e\n\x1aPROFILE_EVENT_TYPE_CONNECT\x10\x04\x12!\n\x1dPROFILE_EVENT_TYPE_DEREGISTER\x10\x01\x12\x1b\n\x17PROFILE_EVENT_TYPE_SEND\x10\x02\x12\x1e\n\x1aPROFILE_EVENT_TYPE_RECEIVE\x10\x03*\xd3\x01\n\x10SettingValueType\x12\x1d\n\x19SETTING_VALUE_TYPE_STRING\x10\x00\x12\x1a\n\x16SETTING_VALUE_TYPE_INT\x10\x01\x12\x1c\n\x18SETTING_VALUE_TYPE_FLOAT\x10\x02\x12\x1b\n\x17SETTING_VALUE_TYPE_BOOL\x10\x03\x12!\n\x1dSETTING_VALUE_TYPE_LIST_FLOAT\x10\x04\x12&\n\"SETTING_VALUE_TYPE_LIST_LIST_FLOAT\x10\x05\x32\xf2\x04\n\rMuscleManager\x12[\n\x10SubmitLogMessage\x12#.muscle_manager_protocol.LogMessage\x1a\".muscle_manager_protocol.LogResult\x12_\n\x13SubmitProfileEvents\x12 .muscle_manager_protocol.Profile\x1a&.muscle_manager_protocol.ProfileResult\x12\x64\n\x0fRequestSettings\x12(.muscle_manager_protocol.SettingsRequest\x1a\'.muscle_manager_protocol.SettingsResult\x12m\n\x10RegisterInstance\x12,.muscle_manager_protocol.RegistrationRequest\x1a+.muscle_manager_protocol.RegistrationResult\x12Y\n\x0cRequestPeers\x12$.muscle_manager_protocol.PeerRequest\x1a#.muscle_manager_protocol.PeerResult\x12s\n\x12\x44\x65registerInstance\x12..muscle_manager_protocol.DeregistrationRequest\x1a-.muscle_manager_protocol.DeregistrationResultb\x06proto3')
   ,
   dependencies=[google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,])
 
@@ -46,8 +46,8 @@ _RESULTSTATUS = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2097,
-  serialized_end=2190,
+  serialized_start=2088,
+  serialized_end=2181,
 )
 _sym_db.RegisterEnumDescriptor(_RESULTSTATUS)
 
@@ -89,8 +89,8 @@ _OPERATOR = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2193,
-  serialized_end=2329,
+  serialized_start=2184,
+  serialized_end=2320,
 )
 _sym_db.RegisterEnumDescriptor(_OPERATOR)
 
@@ -124,8 +124,8 @@ _LOGLEVEL = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2331,
-  serialized_end=2450,
+  serialized_start=2322,
+  serialized_end=2441,
 )
 _sym_db.RegisterEnumDescriptor(_LOGLEVEL)
 
@@ -159,51 +159,51 @@ _PROFILEEVENTTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2453,
-  serialized_end=2632,
+  serialized_start=2444,
+  serialized_end=2623,
 )
 _sym_db.RegisterEnumDescriptor(_PROFILEEVENTTYPE)
 
 ProfileEventType = enum_type_wrapper.EnumTypeWrapper(_PROFILEEVENTTYPE)
-_PARAMETERVALUETYPE = _descriptor.EnumDescriptor(
-  name='ParameterValueType',
-  full_name='muscle_manager_protocol.ParameterValueType',
+_SETTINGVALUETYPE = _descriptor.EnumDescriptor(
+  name='SettingValueType',
+  full_name='muscle_manager_protocol.SettingValueType',
   filename=None,
   file=DESCRIPTOR,
   values=[
     _descriptor.EnumValueDescriptor(
-      name='PARAMETER_VALUE_TYPE_STRING', index=0, number=0,
+      name='SETTING_VALUE_TYPE_STRING', index=0, number=0,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='PARAMETER_VALUE_TYPE_INT', index=1, number=1,
+      name='SETTING_VALUE_TYPE_INT', index=1, number=1,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='PARAMETER_VALUE_TYPE_FLOAT', index=2, number=2,
+      name='SETTING_VALUE_TYPE_FLOAT', index=2, number=2,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='PARAMETER_VALUE_TYPE_BOOL', index=3, number=3,
+      name='SETTING_VALUE_TYPE_BOOL', index=3, number=3,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='PARAMETER_VALUE_TYPE_LIST_FLOAT', index=4, number=4,
+      name='SETTING_VALUE_TYPE_LIST_FLOAT', index=4, number=4,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='PARAMETER_VALUE_TYPE_LIST_LIST_FLOAT', index=5, number=5,
+      name='SETTING_VALUE_TYPE_LIST_LIST_FLOAT', index=5, number=5,
       serialized_options=None,
       type=None),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2635,
-  serialized_end=2860,
+  serialized_start=2626,
+  serialized_end=2837,
 )
-_sym_db.RegisterEnumDescriptor(_PARAMETERVALUETYPE)
+_sym_db.RegisterEnumDescriptor(_SETTINGVALUETYPE)
 
-ParameterValueType = enum_type_wrapper.EnumTypeWrapper(_PARAMETERVALUETYPE)
+SettingValueType = enum_type_wrapper.EnumTypeWrapper(_SETTINGVALUETYPE)
 RESULT_STATUS_SUCCESS = 0
 RESULT_STATUS_ERROR = 1
 RESULT_STATUS_PENDING = 2
@@ -224,12 +224,12 @@ PROFILE_EVENT_TYPE_CONNECT = 4
 PROFILE_EVENT_TYPE_DEREGISTER = 1
 PROFILE_EVENT_TYPE_SEND = 2
 PROFILE_EVENT_TYPE_RECEIVE = 3
-PARAMETER_VALUE_TYPE_STRING = 0
-PARAMETER_VALUE_TYPE_INT = 1
-PARAMETER_VALUE_TYPE_FLOAT = 2
-PARAMETER_VALUE_TYPE_BOOL = 3
-PARAMETER_VALUE_TYPE_LIST_FLOAT = 4
-PARAMETER_VALUE_TYPE_LIST_LIST_FLOAT = 5
+SETTING_VALUE_TYPE_STRING = 0
+SETTING_VALUE_TYPE_INT = 1
+SETTING_VALUE_TYPE_FLOAT = 2
+SETTING_VALUE_TYPE_BOOL = 3
+SETTING_VALUE_TYPE_LIST_FLOAT = 4
+SETTING_VALUE_TYPE_LIST_LIST_FLOAT = 5
 
 
 
@@ -837,7 +837,7 @@ _SETTING = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='parameter', full_name='muscle_manager_protocol.Setting.parameter', index=0,
+      name='name', full_name='muscle_manager_protocol.Setting.name', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -905,7 +905,7 @@ _SETTING = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=1532,
-  serialized_end=1848,
+  serialized_end=1841,
 )
 
 
@@ -928,8 +928,8 @@ _SETTINGSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1850,
-  serialized_end=1867,
+  serialized_start=1843,
+  serialized_end=1860,
 )
 
 
@@ -941,7 +941,7 @@ _SETTINGSRESULT = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='parameter_values', full_name='muscle_manager_protocol.SettingsResult.parameter_values', index=0,
+      name='setting_values', full_name='muscle_manager_protocol.SettingsResult.setting_values', index=0,
       number=1, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -959,8 +959,8 @@ _SETTINGSRESULT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1869,
-  serialized_end=1945,
+  serialized_start=1862,
+  serialized_end=1936,
 )
 
 
@@ -990,8 +990,8 @@ _DEREGISTRATIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1947,
-  serialized_end=1993,
+  serialized_start=1938,
+  serialized_end=1984,
 )
 
 
@@ -1028,8 +1028,8 @@ _DEREGISTRATIONRESULT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1995,
-  serialized_end=2095,
+  serialized_start=1986,
+  serialized_end=2086,
 )
 
 _LOGMESSAGE.fields_by_name['timestamp'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
@@ -1049,10 +1049,10 @@ _PEERRESULT.fields_by_name['conduits'].message_type = _CONDUIT
 _PEERRESULT.fields_by_name['peer_dimensions'].message_type = _PEERRESULT_PEERDIMENSIONS
 _PEERRESULT.fields_by_name['peer_locations'].message_type = _PEERRESULT_PEERLOCATIONS
 _LISTOFLISTOFDOUBLE.fields_by_name['values'].message_type = _LISTOFDOUBLE
-_SETTING.fields_by_name['value_type'].enum_type = _PARAMETERVALUETYPE
+_SETTING.fields_by_name['value_type'].enum_type = _SETTINGVALUETYPE
 _SETTING.fields_by_name['value_list_float'].message_type = _LISTOFDOUBLE
 _SETTING.fields_by_name['value_list_list_float'].message_type = _LISTOFLISTOFDOUBLE
-_SETTINGSRESULT.fields_by_name['parameter_values'].message_type = _SETTING
+_SETTINGSRESULT.fields_by_name['setting_values'].message_type = _SETTING
 _DEREGISTRATIONRESULT.fields_by_name['status'].enum_type = _RESULTSTATUS
 DESCRIPTOR.message_types_by_name['LogMessage'] = _LOGMESSAGE
 DESCRIPTOR.message_types_by_name['LogResult'] = _LOGRESULT
@@ -1076,7 +1076,7 @@ DESCRIPTOR.enum_types_by_name['ResultStatus'] = _RESULTSTATUS
 DESCRIPTOR.enum_types_by_name['Operator'] = _OPERATOR
 DESCRIPTOR.enum_types_by_name['LogLevel'] = _LOGLEVEL
 DESCRIPTOR.enum_types_by_name['ProfileEventType'] = _PROFILEEVENTTYPE
-DESCRIPTOR.enum_types_by_name['ParameterValueType'] = _PARAMETERVALUETYPE
+DESCRIPTOR.enum_types_by_name['SettingValueType'] = _SETTINGVALUETYPE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 LogMessage = _reflection.GeneratedProtocolMessageType('LogMessage', (_message.Message,), dict(
@@ -1229,8 +1229,8 @@ _MUSCLEMANAGER = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=2863,
-  serialized_end=3489,
+  serialized_start=2840,
+  serialized_end=3466,
   methods=[
   _descriptor.MethodDescriptor(
     name='SubmitLogMessage',

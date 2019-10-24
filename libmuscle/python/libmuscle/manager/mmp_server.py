@@ -73,36 +73,36 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
             ) -> mmp.SettingsResult:
         """Returns the central base settings."""
         settings = list()   # type: List[mmp.Setting]
-        for parameter, value in self.__settings.items():
+        for name, value in self.__settings.items():
             if isinstance(value, str):
                 setting = mmp.Setting(
-                        parameter=str(parameter),
-                        value_type=mmp.PARAMETER_VALUE_TYPE_STRING,
+                        name=str(name),
+                        value_type=mmp.SETTING_VALUE_TYPE_STRING,
                         value_string=value)
             elif isinstance(value, bool):
                 # a bool is an int in Python, so this needs to go before the
                 # branch for int
                 setting = mmp.Setting(
-                        parameter=str(parameter),
-                        value_type=mmp.PARAMETER_VALUE_TYPE_BOOL,
+                        name=str(name),
+                        value_type=mmp.SETTING_VALUE_TYPE_BOOL,
                         value_bool=value)
             elif isinstance(value, int):
                 setting = mmp.Setting(
-                        parameter=str(parameter),
-                        value_type=mmp.PARAMETER_VALUE_TYPE_INT,
+                        name=str(name),
+                        value_type=mmp.SETTING_VALUE_TYPE_INT,
                         value_int=value)
             elif isinstance(value, float):
                 setting = mmp.Setting(
-                        parameter=str(parameter),
-                        value_type=mmp.PARAMETER_VALUE_TYPE_FLOAT,
+                        name=str(name),
+                        value_type=mmp.SETTING_VALUE_TYPE_FLOAT,
                         value_float=value)
             elif isinstance(value, list):
                 if len(value) == 0 or isinstance(value[0], float):
                     value = cast(List[float], value)
                     mmp_values = mmp.ListOfDouble(values=value)
                     setting = mmp.Setting(
-                            parameter=str(parameter),
-                            value_type=mmp.PARAMETER_VALUE_TYPE_LIST_FLOAT,
+                            name=str(name),
+                            value_type=mmp.SETTING_VALUE_TYPE_LIST_FLOAT,
                             value_list_float=mmp_values)
                 elif isinstance(value[0], list):
                     value = cast(List[List[float]], value)
@@ -112,14 +112,14 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
                         rows.append(mmp_row)
                     mmp_rows = mmp.ListOfListOfDouble(values=rows)
 
-                    LLF = mmp.PARAMETER_VALUE_TYPE_LIST_LIST_FLOAT
+                    LLF = mmp.SETTING_VALUE_TYPE_LIST_LIST_FLOAT
                     setting = mmp.Setting(
-                            parameter=str(parameter),
+                            name=str(name),
                             value_type=LLF,
                             value_list_list_float=mmp_rows)
             settings.append(setting)
 
-        return mmp.SettingsResult(parameter_values=settings)
+        return mmp.SettingsResult(setting_values=settings)
 
     def RegisterInstance(
             self,

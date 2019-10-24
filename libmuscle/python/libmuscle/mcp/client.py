@@ -1,7 +1,5 @@
 from ymmsl import Reference
 
-from libmuscle.mcp.message import Message
-
 
 class Client:
     """A client that connects to an MCP server.
@@ -47,7 +45,7 @@ class Client:
         """
         self._location = location
 
-    def receive(self, receiver: Reference) -> Message:
+    def receive(self, receiver: Reference) -> bytes:
         """Receive a message from a port this client connects to.
 
         Args:

@@ -5,8 +5,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 from ymmsl import Conduit, Operator, Reference, Settings
 
-from libmuscle.communicator import _ClosePort, Message
+from libmuscle.communicator import Message
 from libmuscle.instance import Instance
+from libmuscle.mcp.message import ClosePort
 from libmuscle.settings_manager import SettingsManager
 
 
@@ -70,10 +71,6 @@ def instance2(sys_argv_instance):
         yield instance
 
 
-def exit_handler(instance, message):
-    raise RuntimeError(message)
-
-
 def test_create_instance(
         sys_argv_instance, log_file_in_tmpdir, sys_argv_manager):
     with patch('libmuscle.instance.MMPClient') as mmp_client, \
@@ -106,7 +103,7 @@ def test_extract_manager_location(sys_argv_manager) -> None:
             'localhost:9000')
 
 
-def test_get_parameter_value(instance):
+def test_get_setting(instance):
     ref = Reference
     settings = Settings()
     settings[ref('test1')] = 'test'
@@ -117,34 +114,34 @@ def test_get_parameter_value(instance):
     settings[ref('test6')] = [[1.0, 2.0], [3.0, 4.0]]
     instance._settings_manager.base = settings
 
-    assert instance.get_parameter_value('test1') == 'test'
-    assert instance.get_parameter_value('test2') == 12
-    assert instance.get_parameter_value('test3') == 27.1
-    assert instance.get_parameter_value('test4') is True
-    assert instance.get_parameter_value('test5') == [2.3, 5.6]
-    assert instance.get_parameter_value('test6') == [
+    assert instance.get_setting('test1') == 'test'
+    assert instance.get_setting('test2') == 12
+    assert instance.get_setting('test3') == 27.1
+    assert instance.get_setting('test4') is True
+    assert instance.get_setting('test5') == [2.3, 5.6]
+    assert instance.get_setting('test6') == [
             [1.0, 2.0], [3.0, 4.0]]
 
-    assert instance.get_parameter_value('test1', 'str') == 'test'
-    assert instance.get_parameter_value('test2', 'int') == 12
-    assert instance.get_parameter_value('test3', 'float') == 27.1
-    assert instance.get_parameter_value('test4', 'bool') is True
-    assert (instance.get_parameter_value('test5', '[float]') ==
+    assert instance.get_setting('test1', 'str') == 'test'
+    assert instance.get_setting('test2', 'int') == 12
+    assert instance.get_setting('test3', 'float') == 27.1
+    assert instance.get_setting('test4', 'bool') is True
+    assert (instance.get_setting('test5', '[float]') ==
             [2.3, 5.6])
-    assert (instance.get_parameter_value('test6', '[[float]]') ==
+    assert (instance.get_setting('test6', '[[float]]') ==
             [[1.0, 2.0], [3.0, 4.0]])
 
     with pytest.raises(KeyError):
-        instance.get_parameter_value('testx')
+        instance.get_setting('testx')
 
     with pytest.raises(TypeError):
-        instance.get_parameter_value('test1', 'int')
+        instance.get_setting('test1', 'int')
     with pytest.raises(TypeError):
-        instance.get_parameter_value('test6', '[float]')
+        instance.get_setting('test6', '[float]')
     with pytest.raises(TypeError):
-        instance.get_parameter_value('test5', '[[float]]')
+        instance.get_setting('test5', '[[float]]')
     with pytest.raises(ValueError):
-        instance.get_parameter_value('test2', 'nonexistenttype')
+        instance.get_setting('test2', 'nonexistenttype')
 
 
 def test_list_ports(instance):
@@ -169,9 +166,8 @@ def test_send(instance, message):
 
 def test_send_invalid_port(instance, message):
     instance._communicator.port_exists.return_value = False
-    with patch('libmuscle.instance.Instance.exit_error', exit_handler):
-        with pytest.raises(RuntimeError):
-            instance.send('does_not_exist', message, 1)
+    with pytest.raises(RuntimeError):
+        instance.send('does_not_exist', message, 1)
 
 
 def test_receive(instance):
@@ -184,9 +180,8 @@ def test_receive(instance):
             'in', None)
     assert msg.data == 'message'
 
-    with patch('libmuscle.instance.Instance.exit_error', exit_handler):
-        with pytest.raises(RuntimeError):
-            instance.receive('in')
+    with pytest.raises(RuntimeError):
+        instance.receive('in')
 
 
 def test_receive_default(instance):
@@ -197,16 +192,14 @@ def test_receive_default(instance):
     instance.receive('not_connected', 1, 'testing')
     assert instance._communicator.receive_message.called_with(
             'not_connected', 1, 'testing')
-    with patch('libmuscle.instance.Instance.exit_error', exit_handler):
-        with pytest.raises(RuntimeError):
-            instance.receive('not_connected', 1)
+    with pytest.raises(RuntimeError):
+        instance.receive('not_connected', 1)
 
 
 def test_receive_invalid_port(instance):
     instance._communicator.port_exists.return_value = False
-    with patch('libmuscle.instance.Instance.exit_error', exit_handler):
-        with pytest.raises(RuntimeError):
-            instance.receive('does_not_exist', 1)
+    with pytest.raises(RuntimeError):
+        instance.receive('does_not_exist', 1)
 
 
 def test_receive_with_settings(instance):
@@ -227,9 +220,8 @@ def test_receive_with_settings_default(instance):
 
 def test_receive_parallel_universe(instance) -> None:
     instance._settings_manager.overlay['test2'] = 'test'
-    with patch('libmuscle.instance.Instance.exit_error', exit_handler):
-        with pytest.raises(RuntimeError):
-            instance.receive('in')
+    with pytest.raises(RuntimeError):
+        instance.receive('in')
 
 
 def test_reuse_instance_receive_overlay(instance):
@@ -254,7 +246,7 @@ def test_reuse_instance_closed_port(instance):
         if port_name == 'muscle_settings_in':
             return Message(0.0, None, Settings(), Settings())
         elif port_name == 'in':
-            return Message(0.0, None, _ClosePort(), Settings())
+            return Message(0.0, None, ClosePort(), Settings())
         assert False    # pragma: no cover
 
     def get_port(port_name):
@@ -310,7 +302,7 @@ def test_reuse_instance_no_f_init_ports(instance):
     instance._communicator.receive_message.return_value = Message(
             0.0, None, Settings(), Settings())
     instance._communicator.list_ports.return_value = {}
-    instance._communicator.parameters_in_connected.return_value = False
+    instance._communicator.settings_in_connected.return_value = False
     do_reuse = instance.reuse_instance()
     assert do_reuse is True
     do_reuse = instance.reuse_instance()
@@ -318,6 +310,5 @@ def test_reuse_instance_no_f_init_ports(instance):
 
 
 def test_reuse_instance_miswired(instance):
-    with patch('libmuscle.instance.Instance.exit_error', exit_handler):
-        with pytest.raises(RuntimeError):
-            instance.reuse_instance()
+    with pytest.raises(RuntimeError):
+        instance.reuse_instance()

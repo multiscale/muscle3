@@ -42,13 +42,15 @@ setup(
         'click',
         'grpcio==1.17.1',
         'msgpack',
+        'netifaces',
         'protobuf',
         'ruamel.yaml<=0.15.64',
-        'ymmsl==0.9.1'          # Also in .travisrc, update there as well
+        'ymmsl==0.10.0'          # Also in .travisrc, update there as well
     ],
     setup_requires=[
         'pytest-runner',
         # dependencies for `python setup.py build_sphinx`
+        'breathe',
         'sphinx',
         'recommonmark',
         'sphinx-rtd-theme'
@@ -58,7 +60,6 @@ setup(
         'mypy',
         'pytest>=3.5',
         'pytest-cov',
-        'pytest-cpp',
         'pytest-pep8',
         'pytest-flake8',
         'pytest-mypy'

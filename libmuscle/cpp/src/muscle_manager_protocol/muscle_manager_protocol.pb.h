@@ -234,30 +234,30 @@ inline bool ProfileEventType_Parse(
   return ::google::protobuf::internal::ParseNamedEnum<ProfileEventType>(
     ProfileEventType_descriptor(), name, value);
 }
-enum ParameterValueType {
-  PARAMETER_VALUE_TYPE_STRING = 0,
-  PARAMETER_VALUE_TYPE_INT = 1,
-  PARAMETER_VALUE_TYPE_FLOAT = 2,
-  PARAMETER_VALUE_TYPE_BOOL = 3,
-  PARAMETER_VALUE_TYPE_LIST_FLOAT = 4,
-  PARAMETER_VALUE_TYPE_LIST_LIST_FLOAT = 5,
-  ParameterValueType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::google::protobuf::int32>::min(),
-  ParameterValueType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::google::protobuf::int32>::max()
+enum SettingValueType {
+  SETTING_VALUE_TYPE_STRING = 0,
+  SETTING_VALUE_TYPE_INT = 1,
+  SETTING_VALUE_TYPE_FLOAT = 2,
+  SETTING_VALUE_TYPE_BOOL = 3,
+  SETTING_VALUE_TYPE_LIST_FLOAT = 4,
+  SETTING_VALUE_TYPE_LIST_LIST_FLOAT = 5,
+  SettingValueType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::google::protobuf::int32>::min(),
+  SettingValueType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::google::protobuf::int32>::max()
 };
-bool ParameterValueType_IsValid(int value);
-const ParameterValueType ParameterValueType_MIN = PARAMETER_VALUE_TYPE_STRING;
-const ParameterValueType ParameterValueType_MAX = PARAMETER_VALUE_TYPE_LIST_LIST_FLOAT;
-const int ParameterValueType_ARRAYSIZE = ParameterValueType_MAX + 1;
+bool SettingValueType_IsValid(int value);
+const SettingValueType SettingValueType_MIN = SETTING_VALUE_TYPE_STRING;
+const SettingValueType SettingValueType_MAX = SETTING_VALUE_TYPE_LIST_LIST_FLOAT;
+const int SettingValueType_ARRAYSIZE = SettingValueType_MAX + 1;
 
-const ::google::protobuf::EnumDescriptor* ParameterValueType_descriptor();
-inline const ::std::string& ParameterValueType_Name(ParameterValueType value) {
+const ::google::protobuf::EnumDescriptor* SettingValueType_descriptor();
+inline const ::std::string& SettingValueType_Name(SettingValueType value) {
   return ::google::protobuf::internal::NameOfEnum(
-    ParameterValueType_descriptor(), value);
+    SettingValueType_descriptor(), value);
 }
-inline bool ParameterValueType_Parse(
-    const ::std::string& name, ParameterValueType* value) {
-  return ::google::protobuf::internal::ParseNamedEnum<ParameterValueType>(
-    ParameterValueType_descriptor(), name, value);
+inline bool SettingValueType_Parse(
+    const ::std::string& name, SettingValueType* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<SettingValueType>(
+    SettingValueType_descriptor(), name, value);
 }
 // ===================================================================
 
@@ -2362,19 +2362,19 @@ class Setting :
 
   // accessors -------------------------------------------------------
 
-  // string parameter = 1;
-  void clear_parameter();
-  static const int kParameterFieldNumber = 1;
-  const ::std::string& parameter() const;
-  void set_parameter(const ::std::string& value);
+  // string name = 1;
+  void clear_name();
+  static const int kNameFieldNumber = 1;
+  const ::std::string& name() const;
+  void set_name(const ::std::string& value);
   #if LANG_CXX11
-  void set_parameter(::std::string&& value);
+  void set_name(::std::string&& value);
   #endif
-  void set_parameter(const char* value);
-  void set_parameter(const char* value, size_t size);
-  ::std::string* mutable_parameter();
-  ::std::string* release_parameter();
-  void set_allocated_parameter(::std::string* parameter);
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  ::std::string* mutable_name();
+  ::std::string* release_name();
+  void set_allocated_name(::std::string* name);
 
   // string value_string = 3;
   void clear_value_string();
@@ -2414,11 +2414,11 @@ class Setting :
   ::google::protobuf::int64 value_int() const;
   void set_value_int(::google::protobuf::int64 value);
 
-  // .muscle_manager_protocol.ParameterValueType value_type = 2;
+  // .muscle_manager_protocol.SettingValueType value_type = 2;
   void clear_value_type();
   static const int kValueTypeFieldNumber = 2;
-  ::muscle_manager_protocol::ParameterValueType value_type() const;
-  void set_value_type(::muscle_manager_protocol::ParameterValueType value);
+  ::muscle_manager_protocol::SettingValueType value_type() const;
+  void set_value_type(::muscle_manager_protocol::SettingValueType value);
 
   // bool value_bool = 6;
   void clear_value_bool();
@@ -2437,7 +2437,7 @@ class Setting :
   class HasBitSetters;
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::internal::ArenaStringPtr parameter_;
+  ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::internal::ArenaStringPtr value_string_;
   ::muscle_manager_protocol::ListOfDouble* value_list_float_;
   ::muscle_manager_protocol::ListOfListOfDouble* value_list_list_float_;
@@ -2650,24 +2650,24 @@ class SettingsResult :
 
   // accessors -------------------------------------------------------
 
-  // repeated .muscle_manager_protocol.Setting parameter_values = 1;
-  int parameter_values_size() const;
-  void clear_parameter_values();
-  static const int kParameterValuesFieldNumber = 1;
-  ::muscle_manager_protocol::Setting* mutable_parameter_values(int index);
+  // repeated .muscle_manager_protocol.Setting setting_values = 1;
+  int setting_values_size() const;
+  void clear_setting_values();
+  static const int kSettingValuesFieldNumber = 1;
+  ::muscle_manager_protocol::Setting* mutable_setting_values(int index);
   ::google::protobuf::RepeatedPtrField< ::muscle_manager_protocol::Setting >*
-      mutable_parameter_values();
-  const ::muscle_manager_protocol::Setting& parameter_values(int index) const;
-  ::muscle_manager_protocol::Setting* add_parameter_values();
+      mutable_setting_values();
+  const ::muscle_manager_protocol::Setting& setting_values(int index) const;
+  ::muscle_manager_protocol::Setting* add_setting_values();
   const ::google::protobuf::RepeatedPtrField< ::muscle_manager_protocol::Setting >&
-      parameter_values() const;
+      setting_values() const;
 
   // @@protoc_insertion_point(class_scope:muscle_manager_protocol.SettingsResult)
  private:
   class HasBitSetters;
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::RepeatedPtrField< ::muscle_manager_protocol::Setting > parameter_values_;
+  ::google::protobuf::RepeatedPtrField< ::muscle_manager_protocol::Setting > setting_values_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto;
 };
@@ -4304,68 +4304,68 @@ ListOfListOfDouble::values() const {
 
 // Setting
 
-// string parameter = 1;
-inline void Setting::clear_parameter() {
-  parameter_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+// string name = 1;
+inline void Setting::clear_name() {
+  name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline const ::std::string& Setting::parameter() const {
-  // @@protoc_insertion_point(field_get:muscle_manager_protocol.Setting.parameter)
-  return parameter_.GetNoArena();
+inline const ::std::string& Setting::name() const {
+  // @@protoc_insertion_point(field_get:muscle_manager_protocol.Setting.name)
+  return name_.GetNoArena();
 }
-inline void Setting::set_parameter(const ::std::string& value) {
+inline void Setting::set_name(const ::std::string& value) {
   
-  parameter_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:muscle_manager_protocol.Setting.parameter)
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:muscle_manager_protocol.Setting.name)
 }
 #if LANG_CXX11
-inline void Setting::set_parameter(::std::string&& value) {
+inline void Setting::set_name(::std::string&& value) {
   
-  parameter_.SetNoArena(
+  name_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:muscle_manager_protocol.Setting.parameter)
+  // @@protoc_insertion_point(field_set_rvalue:muscle_manager_protocol.Setting.name)
 }
 #endif
-inline void Setting::set_parameter(const char* value) {
+inline void Setting::set_name(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   
-  parameter_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:muscle_manager_protocol.Setting.parameter)
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:muscle_manager_protocol.Setting.name)
 }
-inline void Setting::set_parameter(const char* value, size_t size) {
+inline void Setting::set_name(const char* value, size_t size) {
   
-  parameter_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:muscle_manager_protocol.Setting.parameter)
+  // @@protoc_insertion_point(field_set_pointer:muscle_manager_protocol.Setting.name)
 }
-inline ::std::string* Setting::mutable_parameter() {
+inline ::std::string* Setting::mutable_name() {
   
-  // @@protoc_insertion_point(field_mutable:muscle_manager_protocol.Setting.parameter)
-  return parameter_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  // @@protoc_insertion_point(field_mutable:muscle_manager_protocol.Setting.name)
+  return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::std::string* Setting::release_parameter() {
-  // @@protoc_insertion_point(field_release:muscle_manager_protocol.Setting.parameter)
+inline ::std::string* Setting::release_name() {
+  // @@protoc_insertion_point(field_release:muscle_manager_protocol.Setting.name)
   
-  return parameter_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void Setting::set_allocated_parameter(::std::string* parameter) {
-  if (parameter != nullptr) {
+inline void Setting::set_allocated_name(::std::string* name) {
+  if (name != nullptr) {
     
   } else {
     
   }
-  parameter_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), parameter);
-  // @@protoc_insertion_point(field_set_allocated:muscle_manager_protocol.Setting.parameter)
+  name_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name);
+  // @@protoc_insertion_point(field_set_allocated:muscle_manager_protocol.Setting.name)
 }
 
-// .muscle_manager_protocol.ParameterValueType value_type = 2;
+// .muscle_manager_protocol.SettingValueType value_type = 2;
 inline void Setting::clear_value_type() {
   value_type_ = 0;
 }
-inline ::muscle_manager_protocol::ParameterValueType Setting::value_type() const {
+inline ::muscle_manager_protocol::SettingValueType Setting::value_type() const {
   // @@protoc_insertion_point(field_get:muscle_manager_protocol.Setting.value_type)
-  return static_cast< ::muscle_manager_protocol::ParameterValueType >(value_type_);
+  return static_cast< ::muscle_manager_protocol::SettingValueType >(value_type_);
 }
-inline void Setting::set_value_type(::muscle_manager_protocol::ParameterValueType value) {
+inline void Setting::set_value_type(::muscle_manager_protocol::SettingValueType value) {
   
   value_type_ = value;
   // @@protoc_insertion_point(field_set:muscle_manager_protocol.Setting.value_type)
@@ -4576,34 +4576,34 @@ inline void Setting::set_allocated_value_list_list_float(::muscle_manager_protoc
 
 // SettingsResult
 
-// repeated .muscle_manager_protocol.Setting parameter_values = 1;
-inline int SettingsResult::parameter_values_size() const {
-  return parameter_values_.size();
+// repeated .muscle_manager_protocol.Setting setting_values = 1;
+inline int SettingsResult::setting_values_size() const {
+  return setting_values_.size();
 }
-inline void SettingsResult::clear_parameter_values() {
-  parameter_values_.Clear();
+inline void SettingsResult::clear_setting_values() {
+  setting_values_.Clear();
 }
-inline ::muscle_manager_protocol::Setting* SettingsResult::mutable_parameter_values(int index) {
-  // @@protoc_insertion_point(field_mutable:muscle_manager_protocol.SettingsResult.parameter_values)
-  return parameter_values_.Mutable(index);
+inline ::muscle_manager_protocol::Setting* SettingsResult::mutable_setting_values(int index) {
+  // @@protoc_insertion_point(field_mutable:muscle_manager_protocol.SettingsResult.setting_values)
+  return setting_values_.Mutable(index);
 }
 inline ::google::protobuf::RepeatedPtrField< ::muscle_manager_protocol::Setting >*
-SettingsResult::mutable_parameter_values() {
-  // @@protoc_insertion_point(field_mutable_list:muscle_manager_protocol.SettingsResult.parameter_values)
-  return &parameter_values_;
+SettingsResult::mutable_setting_values() {
+  // @@protoc_insertion_point(field_mutable_list:muscle_manager_protocol.SettingsResult.setting_values)
+  return &setting_values_;
 }
-inline const ::muscle_manager_protocol::Setting& SettingsResult::parameter_values(int index) const {
-  // @@protoc_insertion_point(field_get:muscle_manager_protocol.SettingsResult.parameter_values)
-  return parameter_values_.Get(index);
+inline const ::muscle_manager_protocol::Setting& SettingsResult::setting_values(int index) const {
+  // @@protoc_insertion_point(field_get:muscle_manager_protocol.SettingsResult.setting_values)
+  return setting_values_.Get(index);
 }
-inline ::muscle_manager_protocol::Setting* SettingsResult::add_parameter_values() {
-  // @@protoc_insertion_point(field_add:muscle_manager_protocol.SettingsResult.parameter_values)
-  return parameter_values_.Add();
+inline ::muscle_manager_protocol::Setting* SettingsResult::add_setting_values() {
+  // @@protoc_insertion_point(field_add:muscle_manager_protocol.SettingsResult.setting_values)
+  return setting_values_.Add();
 }
 inline const ::google::protobuf::RepeatedPtrField< ::muscle_manager_protocol::Setting >&
-SettingsResult::parameter_values() const {
-  // @@protoc_insertion_point(field_list:muscle_manager_protocol.SettingsResult.parameter_values)
-  return parameter_values_;
+SettingsResult::setting_values() const {
+  // @@protoc_insertion_point(field_list:muscle_manager_protocol.SettingsResult.setting_values)
+  return setting_values_;
 }
 
 // -------------------------------------------------------------------
@@ -4803,10 +4803,10 @@ template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::muscle_manager_protocol::ProfileEventType>() {
   return ::muscle_manager_protocol::ProfileEventType_descriptor();
 }
-template <> struct is_proto_enum< ::muscle_manager_protocol::ParameterValueType> : ::std::true_type {};
+template <> struct is_proto_enum< ::muscle_manager_protocol::SettingValueType> : ::std::true_type {};
 template <>
-inline const EnumDescriptor* GetEnumDescriptor< ::muscle_manager_protocol::ParameterValueType>() {
-  return ::muscle_manager_protocol::ParameterValueType_descriptor();
+inline const EnumDescriptor* GetEnumDescriptor< ::muscle_manager_protocol::SettingValueType>() {
+  return ::muscle_manager_protocol::SettingValueType_descriptor();
 }
 
 }  // namespace protobuf

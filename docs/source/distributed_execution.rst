@@ -20,8 +20,8 @@ needs to be split up. Doing that is very simple: just copy the model function
 (and anything it depends on) to a new file, and add a main clause that runs it.
 For the reaction model of the previous example, that looks like this:
 
-.. literalinclude:: examples/reaction.py
-  :caption: ``docs/source/examples/reaction.py``
+.. literalinclude:: examples/python/reaction.py
+  :caption: ``docs/source/examples/python/reaction.py``
   :language: python
 
 
@@ -29,8 +29,8 @@ Note that the code is exactly the same, we've just removed everything related to
 the diffusion model and to the coupling between them. We can do the same to the
 diffusion model:
 
-.. literalinclude:: examples/diffusion.py
-  :caption: ``docs/source/examples/diffusion.py``
+.. literalinclude:: examples/python/diffusion.py
+  :caption: ``docs/source/examples/python/diffusion.py``
   :language: python
 
 
@@ -45,8 +45,8 @@ communicating via the network. To make this work, the manager is started first,
 with a yMMSL file that describes the simulation. The yMMSL file corresponding to
 our previous example looks like this:
 
-.. literalinclude:: examples/reaction_diffusion.ymmsl
-  :caption: ``docs/source/examples/reaction_diffusion.ymmsl``
+.. literalinclude:: examples/python/reaction_diffusion.ymmsl
+  :caption: ``docs/source/examples/python/reaction_diffusion.ymmsl``
   :language: yaml
 
 

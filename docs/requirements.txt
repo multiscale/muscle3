@@ -1,8 +1,8 @@
+breathe
 grpcio==1.17.1
 grpcio-tools==1.17.1
 msgpack==0.6.1
+netifaces
 protobuf==3.8.0
-ruamel.yaml==0.15.64
 typing==3.6.6
-yatiml==0.4.2
-ymmsl==0.9.0
+ymmsl

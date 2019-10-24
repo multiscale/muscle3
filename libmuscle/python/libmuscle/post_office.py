@@ -4,7 +4,6 @@ from typing import Dict
 
 from ymmsl import Reference
 
-from libmuscle.mcp.message import Message as MCPMessage
 from libmuscle.outbox import Outbox
 
 
@@ -12,33 +11,27 @@ class PostOffice:
     """A PostOffice is an object that holds messages to be retrieved.
 
     A PostOffice holds outboxes with messages for receivers.
-
-    Attributes:
-        _outboxes: Outboxes, indexed by receiving endpoint id.
     """
     def __init__(self) -> None:
         """Create a PostOffice.
-
-        Creates the outboxes dictionary and a structure.
         """
         self._outboxes = dict()  # type: Dict[Reference, Outbox]
 
         self._outbox_lock = Lock()
 
-    def get_message(self, receiver: Reference) -> MCPMessage:
+    def get_message(self, receiver: Reference) -> bytes:
         """Get a message from a receiver's outbox.
 
         Used by servers to get messages that have been sent to another
         instance.
 
         Args:
-            receiver: The receiver of the message, a reference to an
-                    instance.
+            receiver: The receiver of the message.
         """
         self._ensure_outbox_exists(receiver)
         return self._outboxes[receiver].retrieve()
 
-    def _deposit(self, receiver: Reference, message: MCPMessage) -> None:
+    def deposit(self, receiver: Reference, message: bytes) -> None:
         """Deposits a message into an outbox.
 
         Args:
@@ -48,7 +41,7 @@ class PostOffice:
         self._ensure_outbox_exists(receiver)
         self._outboxes[receiver].deposit(message)
 
-    def _wait_for_receivers(self) -> None:
+    def wait_for_receivers(self) -> None:
         """Waits until all outboxes are empty.
         """
         for outbox in self._outboxes.values():

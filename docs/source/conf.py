@@ -18,9 +18,15 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+import pathlib
 import sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../'))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../libmuscle/python/'))
+
+_rootpath = pathlib.Path(__file__).parents[2]
+print('Project root path: {}'.format(_rootpath))
+
+sys.path.insert(0, str(_rootpath))
+sys.path.insert(0, str(_rootpath / 'libmuscle/python/'))
+sys.path.append(str(_rootpath / 'docs/ext/breathe'))
 
 # create a libmuscle/version.py if needed (which it is on RTD)
 version_path = os.path.join(os.path.dirname(__file__), '../../libmuscle/python/libmuscle/version.py')
@@ -40,6 +46,7 @@ if not os.path.exists(version_path):
 extensions = [
         'sphinx.ext.autodoc',
         'sphinx.ext.napoleon',
+        'breathe',
         'sphinx.ext.todo',
         'sphinx.ext.viewcode']
 
@@ -92,6 +99,16 @@ todo_include_todos = True
 # Also document constructors.
 autoclass_content = 'both'
 
+# Configure breathe (Doxygen plug-in)
+breathe_projects = { 'libmuscle': str(_rootpath / 'docs' / 'doxygen' / 'xml') }
+
+breathe_default_project = 'libmuscle'
+
+breathe_default_members = ('members',)
+
+# -- Run doxygen manually, as readthedocs doesn't support it --
+import subprocess
+subprocess.call('cd ../.. ; doxygen', shell=True)
 
 # -- Run apidoc plug-in manually, as readthedocs doesn't support it -------
 # See https://github.com/rtfd/readthedocs.org/issues/1139
@@ -116,7 +133,6 @@ def run_apidoc(_):
         from sphinx import apidoc
         argv.insert(0, apidoc.__file__)
         apidoc.main(argv)
-
 
 def setup(app):
     app.connect('builder-inited', run_apidoc)

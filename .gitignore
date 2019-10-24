@@ -2,8 +2,8 @@
 *.egg-info
 *.eggs
 
-dist
-build
+/dist
+/build
 .cache
 .pytest_cache
 .mypy_cache
@@ -13,7 +13,7 @@ htmlcov
 .coverage
 coverage.xml
 
-docs/_build
+docs/doxygen
 docs/apidocs
 docs/source/examples/*.log
 

@@ -1,6 +1,32 @@
-from typing import Optional
+from enum import IntEnum
+from typing import Any, cast, Optional
 
-from ymmsl import Reference
+import msgpack
+
+from ymmsl import Reference, Settings
+
+
+class ExtTypeId(IntEnum):
+    """MessagePack extension type ids.
+
+    MessagePack lets you define your own types as an extension to the
+    built-in ones. These are distinguished by a number from 0 to 127.
+    This class is our registry of extension type ids.
+    """
+    CLOSE_PORT = 0
+    SETTINGS = 1
+
+
+class ClosePort:
+    """Sentinel value to send when closing a port.
+
+    Sending an object of this class on a port/conduit conveys to the
+    receiver the message that no further messages will be sent on this
+    port during the simulation.
+
+    All information is carried by the type, this has no attributes.
+    """
+    pass
 
 
 class Message:
@@ -13,7 +39,7 @@ class Message:
     def __init__(self, sender: Reference, receiver: Reference,
                  port_length: Optional[int],
                  timestamp: float, next_timestamp: Optional[float],
-                 parameter_overlay: bytes, data: bytes
+                 settings_overlay: Settings, data: Any
                  ) -> None:
         """Create an MCPMessage.
 
@@ -30,7 +56,7 @@ class Message:
             sender: The sending endpoint.
             receiver: The receiving endpoint.
             port_length: Length of the slot, where applicable.
-            parameter_overlay: The serialised overlay parameters.
+            settings_overlay: The serialised overlay settings.
             data: The serialised contents of the message.
         """
         self.sender = sender
@@ -38,5 +64,65 @@ class Message:
         self.port_length = port_length
         self.timestamp = timestamp
         self.next_timestamp = next_timestamp
-        self.parameter_overlay = parameter_overlay
+        self.settings_overlay = settings_overlay
         self.data = data
+
+    @staticmethod
+    def from_bytes(message: bytes) -> 'Message':
+        """Create an MCP Message from an encoded buffer.
+
+        Args:
+            message: MessagePack encoded message data.
+        """
+        message_dict = msgpack.unpackb(message, raw=False)
+        sender = Reference(message_dict["sender"])
+        receiver = Reference(message_dict["receiver"])
+        port_length = message_dict["port_length"]
+        timestamp = message_dict["timestamp"]
+        next_timestamp = message_dict["next_timestamp"]
+
+        settings_dict = msgpack.unpackb(message_dict["settings_overlay"].data,
+                                        raw=False)
+        settings_overlay = Settings(settings_dict)
+
+        data = message_dict["data"]
+        if isinstance(data, msgpack.ExtType):
+            if data.code == ExtTypeId.CLOSE_PORT:
+                data = ClosePort()
+            elif data.code == ExtTypeId.SETTINGS:
+                plain_dict = msgpack.unpackb(data.data, raw=False)
+                data = Settings(plain_dict)
+
+        return Message(sender, receiver, port_length, timestamp,
+                       next_timestamp, settings_overlay, data)
+
+    def encoded(self) -> bytes:
+        """Encode the message and return as a bytes buffer.
+        """
+        # pack overlay
+        packed_overlay = msgpack.packb(self.settings_overlay.as_ordered_dict(),
+                                       use_bin_type=True)
+        overlay = msgpack.ExtType(ExtTypeId.SETTINGS, packed_overlay)
+
+        # pack data
+        if isinstance(self.data, ClosePort):
+            data = msgpack.ExtType(ExtTypeId.CLOSE_PORT, bytes())
+        elif isinstance(self.data, Settings):
+            packed_data = msgpack.packb(self.data.as_ordered_dict(),
+                                        use_bin_type=True)
+            data = msgpack.ExtType(ExtTypeId.SETTINGS, packed_data)
+        else:
+            data = self.data
+
+        # pack message
+        message_dict = {
+                'sender': str(self.sender),
+                'receiver': str(self.receiver),
+                'port_length': self.port_length,
+                'timestamp': self.timestamp,
+                'next_timestamp': self.next_timestamp,
+                'settings_overlay': overlay,
+                'data': data
+                }
+
+        return cast(bytes, msgpack.packb(message_dict, use_bin_type=True))

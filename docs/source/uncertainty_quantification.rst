@@ -2,7 +2,7 @@ Uncertainty Quantification
 ==========================
 
 Only in very rare cases are the inputs and parameters of a model known exactly.
-Usually, inputs and parameter values come from measurements done in the world or
+Usually, inputs and parameter values come from measurements done in the field or
 in the lab, and those measurements are never exact. So every model is subject to
 uncertainty. Uncertainty Quantification (UQ) provides techniques for analysing
 th uncertainty in models, parameters and results. This section shows an example
@@ -25,12 +25,12 @@ At the bottom, we have the macro-micro model we saw earlier. The reaction model
 is exactly identical to the previous example. For the diffusion model we have
 removed the visualisation and instead send the final state on an output port
 ``final_state_out`` associated with the O_F operator. (It would probably have
-been good to do that to begin with, with a separate visualisation or
-save-to-disk component attached.) The only other change here is that there are
-now ten copies each of the ``macro`` and ``micro`` components. There will also
-be ten instances of the conduits between ``macro`` and ``micro``, which MUSCLE 3
-will create automatically. The instances are wired up one-on-one, so that
-``macro[i]`` connects to ``micro[i]``.
+been good to do that to begin with, using a separate visualisation or
+save-to-disk component attached via a conduit.) The only other change here is
+that there are now ten copies each of the ``macro`` and ``micro`` components.
+There will also be ten instances of the conduits between ``macro`` and
+``micro``, which MUSCLE 3 will create automatically. The instances are wired up
+one-on-one, so that ``macro[i]`` connects to ``micro[i]``.
 
 There are two new compute elements: the ``qmc`` element, which implements the
 quasi-Monte Carlo UQ algorithm, and the ``rr`` element, which distributes the
@@ -73,12 +73,12 @@ sends out sets of parameters, but ``macro`` has no F_INIT port to receive them.
 It gets its parameter values, via MUSCLE 3, from the central configuration. So
 we need a trick, and MUSCLE 3 provides one in the form of the
 ``muscle_settings_in`` port. This is a special F_INIT port that each MUSCLE 3
-compute element automatically has. If can be connected to a port on a component
+compute element automatically has. It can be connected to a port on a component
 that sends ``Settings`` objects. MUSCLE 3 will automatically receive these
 messages, and overlay the received settings on top of the base settings from the
 central configuration. When the receiving submodel then asks MUSCLE 3 for a
-setting it will be read from the overlay settings first. If it's not found there
-then MUSCLE 3 will fall back to the central base configuration.
+setting, MUSCLE 3 will look at the overlay settings first. If the setting is
+not found there, then MUSCLE 3 will fall back to the central base configuration.
 
 So, now our diffusion model will ask for the value of ``d`` as it did before,
 but this time, it will actually come from the values sent by ``qmc``, and it
@@ -98,8 +98,8 @@ Implementation
 
 The full Python program implementing this looks like this:
 
-.. literalinclude:: examples/reaction_diffusion_qmc.py
-  :caption: ``docs/source/examples/reaction_diffusion_qmc.py``
+.. literalinclude:: examples/python/reaction_diffusion_qmc.py
+  :caption: ``docs/source/examples/python/reaction_diffusion_qmc.py``
   :language: python
 
 
@@ -135,7 +135,7 @@ in the future, opinions welcome!) We will send parameter sets on vector port
 ``parameters_out``, and receive final states on vector port ``states_in``.
 
 Next, we enter the reuse loop as before, except that we pass ``False`` as an
-argument, which will be explained shortly. We read and check parameters in
+argument, which will be explained shortly. We read and check settings in
 F_INIT as before, and calculate a set of parameter values using a quasi-random
 Sobol sequence.
 
@@ -143,10 +143,11 @@ Sobol sequence.
 
   # configure output port
   if not instance.is_resizable('parameters_out'):
-      instance.exit_error('This component needs a resizable'
+      instance.error_shutdown('This component needs a resizable'
                           ' parameters_out port, but it is connected to'
                           ' something that cannot be resized. Maybe try'
                           ' adding a load balancer.')
+      exit(1)
 
   instance.set_port_length('parameters_out', n_samples)
 
@@ -160,13 +161,13 @@ compute element as little as possible about what is on the other side of a port,
 but you can ask it whether the port has a fixed size or not.
 
 So that is what we do here, and we generate an error message if the port's
-length is fixed. We use the function :meth:`.Instance.exit_error()` for this.
-This function will log the error, tell the rest of the simulation that we are
-shutting down, and then call ``exit()``. Doing this instead of raising an
-exception reduces the chance that any part of the simulation will sit around
-waiting forever for a message we will never send, and the log will show the
-origin of the problem for easier debugging. In this case, the port will be
-resizable and it will work as intended.
+length is fixed. We use the function
+:meth:`libmuscle.Instance.error_shutdown()` for this.  This function will log
+the error, and then tell the rest of the simulation that we are shutting down.
+Doing this instead of raising an exception reduces the chance that any part of
+the simulation will sit around waiting forever for a message we will never
+send, and the log will show the origin of the problem for easier debugging. In
+this case, the port will be resizable and it will work as intended.
 
 .. code-block:: python
 
@@ -187,11 +188,12 @@ configuration. Here, we only have ``d`` and ``k`` in there, since those are the
 only ones we need to set per ensemble member; the rest is identical and defined
 in the central configuration.
 
-Next, we create a :class:`.Message` object to send. Since our models will start
-at time 0, we'll set that as the timestamp, and since we're only running them
-once each, the next timestamp is ``None``. For the data, we send the
-``Settings`` object. (MUSCLE 3 contains special support for sending ``Settings``
-objects, since being objects they're not normally MessagePack-serialisable.)
+Next, we create a :class:`libmuscle.Message` object to send. Since our models
+will start at time 0, we'll set that as the timestamp, and since we're only
+running them once each, the next timestamp is ``None``. For the data, we send
+the ``Settings`` object. (MUSCLE 3 contains special support for sending
+``Settings`` objects, since being objects they're not normally
+MessagePack-serialisable.)
 
 We then send our message as normal, except that we pass an extra argument, the
 *slot number*. Vector ports connect to sets of instances, and the slot number
@@ -210,9 +212,9 @@ When the reaction-diffusion models are done, they will send their final states
 back to us, so we need to receive those now. This is effectively our S operator.
 For each sample, we receive the result on our ``states_in`` port, passing the
 sample number as the slot to receive on. We're using a slightly different
-receive function here. Rather than :meth:`.Instance.receive`, we call
-:meth:`.Instance.receive_with_settings`.  The difference has to do with the
-parameter overlays.
+receive function here. Rather than :meth:`libmuscle.Instance.receive`, we call
+:meth:`libmuscle.Instance.receive_with_settings`.  The difference has to do
+with the settings overlays.
 
 Recall that each compute element instance has a settings overlay, which can be
 set through the ``muscle_settings_in`` port and is automatically propagated to
@@ -229,12 +231,12 @@ question arises what the settings overlay for ``qmc`` should look like.
 As there is no general answer to this, MUSCLE 3 cannot automatically propagate
 the overlay from the different ``macro`` instances to ``qmc``, and it will give
 an error message if you try to have it do this by receiving as usual with
-:meth:`.Instance.receive`. The :meth:`.Instance.receive_with_settings` function
-solves this problem, and is in a way the counterpart of sending a message to
-``muscle_settings_in``. It will not try to merge the incoming settings overlay
-into the overlay for ``qmc``, but simply return it as the ``settings`` attribute
-of the received message. It is then up to the receiver to decide what to do with
-it.
+:meth:`libmuscle.Instance.receive`. The
+:meth:`libmuscle.Instance.receive_with_settings` function solves this problem,
+and is in a way the counterpart of sending a message to ``muscle_settings_in``.
+It will not try to merge the incoming settings overlay into the overlay for
+``qmc``, but simply return it as the ``settings`` attribute of the received
+message. It is then up to the receiver to decide what to do with it.
 
 In this case, we ignore the settings, concatenate all the received states
 together, plot them, and calculate the mean final state. You will probably want
@@ -283,16 +285,16 @@ making sure that for each message we send on ``back_out``, we receive one on
 ``back_in``. (We could actually send multiple messages on the same slot before
 receiving a result, they'll be queued up and processed in order.)
 
-We use :meth:`.Instance.receive_with_settings` everywhere, in order to
+We use :meth:`libmuscle.Instance.receive_with_settings` everywhere, in order to
 correctly pass on any settings overlays. Since we are using
-:meth:`.Instance.receive_with_settings` on an F_INIT port, we passed ``False``
-to :meth:`.Instance.reuse_instance`. It is a technical requirement of MUSCLE 3
-to do this, and MUSCLE will give an error message if you call
-:meth:`.Instance.receive_with_settings` without having passed ``False`` to
-:meth:`.Instance.reuse_instance`. (There's just no other way to implement this,
-or rather, all other options can lead to potentially difficult-to-debug
-situations, while this can be checked and a clear error message shown if it
-goes wrong. So we chose this as the preferable option.)
+:meth:`libmuscle.Instance.receive_with_settings` on an F_INIT port, we passed
+``False`` to :meth:`libmuscle.Instance.reuse_instance`. It is a technical
+requirement of MUSCLE 3 to do this, and MUSCLE will give an error message if
+you call :meth:`libmuscle.Instance.receive_with_settings` without having passed
+``False`` to :meth:`libmuscle.Instance.reuse_instance`. (There's just no other
+way to implement this, or rather, all other options can lead to potentially
+difficult-to-debug situations, while this can be checked and a clear error
+message shown if it goes wrong. So we chose this as the preferable option.)
 
 Discussion
 ----------

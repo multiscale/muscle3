@@ -1,37 +1,38 @@
-Tutorial
-========
+Tutorial with Python
+====================
 
 In this section, we'll look at a few examples of how to use MUSCLE 3 to create a
 multiscale simulation in Python.
 
 `The source code for these examples is here
-<https://github.com/multiscale/muscle3/tree/master/docs/source/examples>`_. You
-can also clone the repository and go to ``docs/source/examples``, or copy-paste
-the code from here.
+<https://github.com/multiscale/muscle3/tree/master/docs/source/examples/python>`_.
+You can also clone the repository or download the source (see the C++ part of
+the Installation section) and go to ``docs/source/examples/python``, or
+copy-paste the code from here.
 
 The easiest way to get set up is to create a virtualenv and then install MUSCLE
 3 and the additional requirements inside it:
 
 .. code-block:: bash
 
-  examples$ python3 -m venv venv                    # create venv
-  examples$ . venv/bin/activate                     # activate it
-  examples$ pip3 install -r requirements.txt        # install dependencies
+  example/python$ python3 -m venv venv                    # create venv
+  example/python$ . venv/bin/activate                     # activate it
+  example/python$ pip3 install -r requirements.txt        # install dependencies
 
 
 Our first example is a reaction-diffusion model on a 1D grid. It consists of a
 reaction model coupled to a diffusion model in a macro-micro fashion, with the
 diffusion model the macro-model and the reaction model the micro-model. In a
-macro-micro model with timescale separation, the micro model does a full run (to
-convergence) for every timestep of the macro-model. Thus, the macro-model
+macro-micro model with timescale separation, the micro model does a full run (of
+many timesteps) for every timestep of the macro-model. Thus, the macro-model
 effectively calls the micro-model before each state update, sending it the
 current state and using its output as an input for the state update operation.
 
 Here's how to implement that with MUSCLE 3. (A detailed explanation follows
 below the code.)
 
-.. literalinclude:: examples/reaction_diffusion.py
-  :caption: ``docs/source/examples/reaction_diffusion.py``
+.. literalinclude:: examples/python/reaction_diffusion.py
+  :caption: ``docs/source/examples/python/reaction_diffusion.py``
   :language: python
 
 Let's take it step by step.
@@ -54,15 +55,14 @@ Importing headers
                      Settings)
 
 
-As usual, we begin by importing some required libraries. OrderedDict and logging
-come from the Python standard library, and NumPy and MatplotLib provide matrix
-math and plotting functionality. From libmuscle, we import
-:class:`.Instance`,
-which will represent a model instance in the larger simulation, and
-:class:`.Message`, which represents a MUSCLE message as passed between instances.
-The :func:`.run_simulation` function allows us to run a complete simulation from
-a single Python file, as opposed to having to start the different instances and
-the manager separately.
+As usual, we begin by importing some required libraries. OrderedDict and
+logging come from the Python standard library, and NumPy and MatplotLib provide
+matrix math and plotting functionality. From libmuscle, we import
+:class:`libmuscle.Instance`, which will represent a model instance in the
+larger simulation, and :class:`libmuscle.Message`, which represents a MUSCLE
+message as passed between instances.  The :func:`libmuscle.run_simulation`
+function allows us to run a complete simulation from a single Python file, as
+opposed to having to start the different instances and the manager separately.
 
 In order to describe our model, we use a number of definitions from
 `ymmsl-python`. More about those below.
@@ -76,7 +76,8 @@ show the types of function arguments and return values. These are ignored by the
 Python interpreter, and also by MUSCLE 3, so you don't have to use them if you
 don't want to.)
 
-The first step in a MUSCLE model is to create an :class:`.Instance` object:
+The first step in a MUSCLE model is to create an :class:`libmuscle.Instance`
+object:
 
 .. code-block:: python
 
@@ -110,14 +111,14 @@ The reuse loop
       # State update loop
       # O_F
 
-Now that we have an :class:`.Instance` object, we can start the *reuse loop*. In
-multiscale simulations, submodels often have to run multiple times, for instance
-because they're used as a micro-model or because they are part of an ensemble
-that cannot be completely parallelised. In order te accomplish this, the entire
-model is wrapped into a loop. Exactly when this loop ends depends on the
-behaviour of the whole model, and is not easy to determine, but fortunately
-MUSCLE will do that for us if we call the :meth:`.Instance.reuse_instance`
-method.
+Now that we have an :class:`libmuscle.Instance` object, we can start the *reuse
+loop*. In multiscale simulations, submodels often have to run multiple times,
+for instance because they're used as a micro-model or because they are part of
+an ensemble that cannot be completely parallelised. In order to accomplish
+this, the entire model is wrapped into a loop. Exactly when this loop ends
+depends on the behaviour of the whole model, and is not easy to determine, but
+fortunately MUSCLE will do that for us if we call the
+:meth:`libmuscle.Instance.reuse_instance` method.
 
 Initialisation: Settings and receiving messages
 -----------------------------------------------
@@ -126,9 +127,9 @@ Initialisation: Settings and receiving messages
 
   while instance.reuse_instance():
       # F_INIT
-      t_max = instance.get_parameter_value('t_max', 'float')
-      dt = instance.get_parameter_value('dt', 'float')
-      k = instance.get_parameter_value('k', 'float')
+      t_max = instance.get_setting('t_max', 'float')
+      dt = instance.get_setting('dt', 'float')
+      k = instance.get_setting('k', 'float')
 
       msg = instance.receive('initial_state')
       U = np.array(msg.data)
@@ -144,8 +145,8 @@ values of some settings that we're going to need later, in particular the total
 time to simulate, the time step to use, and the model parameter ``k``. The
 second argument, which specifies the expected type, is optional. If it's given,
 MUSCLE will check that the user specified a value of the correct type, and if
-not raise an exception. Note that getting parameter values needs to happen
-*within* the reuse loop; doing it before can lead to incorrect results.
+not raise an exception. Note that getting settings needs to happen *within* the
+reuse loop; doing it before can lead to incorrect results.
 
 After getting our settings, we receive the initial state on the
 ``initial_state`` port. Note that we have declared that port above, and declared
@@ -181,7 +182,7 @@ code should look familiar: we loop until we reach our maximum time, and on each
 iteration update the state according to the model equation. This update is
 called operator S in the Submodel Execution Loop, and in this model, it is
 determined entirely by the current state.  Since no information from outside is
-needed, we do not receive any messages, and in our :class:`.Instance`
+needed, we do not receive any messages, and in our :class:`libmuscle.Instance`
 declaration above, we did not declare any ports associated with ``Operator.S``.
 
 The Submodel Execution Loop specifies another operator within the state update
@@ -208,7 +209,7 @@ finish up by sharing that final state with the outside world, by sending it on
 the ``final_state`` port. The part of the code after the state update loop (but
 still within the reuse loop) is known as the O_F operator in the Submodel
 Execution Loop, so that is where we declared this port to live in our
-:class:`.Instance` declaration above.
+:class:`libmuscle.Instance` declaration above.
 
 To send a message, we specify the port on which to send (which must match the
 declaration by name and operator), and a Message object containing the current
@@ -267,12 +268,12 @@ Since the diffusion model is the macro-submodel in this model, it needs to send
 its state to the outside world on every timestep. This is done in the O_I
 operator. The message simply contains the state, converted to a standard Python
 list, and it is sent on the ``state_out`` port, which was declared for the O_I
-operator when we made the :class:`.Instance` for this model. The message is
-sent with the current simulation time, and a second timestamp that gives the
-simulation time for the next message that will be sent on this port. Since our
-time steps are fixed, this is easy to calculate. We do need to take care to
-send ``None`` if this is the final message on this port however, since there
-won't be another message in that case.
+operator when we made the :class:`libmuscle.Instance` for this model. The
+message is sent with the current simulation time, and a second timestamp that
+gives the simulation time for the next message that will be sent on this port.
+Since our time steps are fixed, this is easy to calculate. We do need to take
+care to send ``None`` if this is the final message on this port however, since
+there won't be another message in that case.
 
 This deserves a bit more explanation. First, MUSCLE 3 does not use the
 timestamps that are attached to the messages for anything, and in this
@@ -309,12 +310,13 @@ Receiving messages with a default
 
 The diffusion model being the macro-model, it will need to receive input for its
 state update from the micro-model, which it does by calling
-:meth:`.Instance.receive`. This receive is a bit special in that we are
-passing a default message. The default message is returned if this port is not
-connected. We are cleverly passing the message containing our current state, so
-that if this port is not connected, the model continues from its current state.
-Since MUSCLE 3 will simply ignore a send command on a disconnected port, this
-makes it possible to run the diffusion model without a micro-model attached.
+:meth:`libmuscle.Instance.receive`. This receive is a bit special in that we
+are passing a default message. The default message is returned if this port is
+not connected. We are cleverly passing the message containing our current
+state, so that if this port is not connected, the model continues from its
+current state.  Since MUSCLE 3 will simply ignore a send command on a
+disconnected port, this makes it possible to run the diffusion model without a
+micro-model attached.
 
 Of course, a sensible default value will not be available in all cases, but if
 there is one, using it like this is a good idea.
@@ -437,7 +439,7 @@ compatibility with older versions, we'll use an OrderedDict here.)
 
 Note that there are two duplicated names between the two models: ``t_max`` and
 ``dt``. With MUSCLE 3, you can create a global setting with that name to set it
-to the same value everywhere (handy for parameters that are used by multiple
+to the same value everywhere (handy for settings that are used by multiple
 compute elements), or you can prepend the name of the compute element to set the
 value for a specific one. Specific settings go before generic ones, so if you
 specify both ``micro.t_max`` and ``t_max``, then the ``micro`` compute element
@@ -456,8 +458,8 @@ which primarily does coordination (helping instances find each other) and
 communication (sending messages between them). However, for testing,
 experimentation, learning, and small scale production use, having some means of
 running a whole simulation from a single Python file is very nice. So MUSCLE 3
-has a small facility for this in the form of the :func:`.run_simulation`
-function:
+has a small facility for this in the form of the
+:func:`libmuscle.run_simulation` function:
 
 .. code-block:: python
 
@@ -466,8 +468,8 @@ function:
 
 
 Here, we make a dictionary that maps implementation names to the corresponding
-Python functions, We then pass the configuration and the implementations to
-:func:`.run_simulation`, which will start the muscle_manager and the
+Python functions. We then pass the configuration and the implementations to
+:func:`libmuscle.run_simulation`, which will start the muscle_manager and the
 implementations, and then wait for the simulation to finish.
 
 Note that this will actually fork off a separate process for the manager and for
@@ -484,9 +486,9 @@ If you run the script, e.g. using
 
 .. code-block:: bash
 
-  (venv) examples$ python3 reaction_diffusion.py
+  (venv) python$ python3 reaction_diffusion.py
 
-it will pop up a plot showing the state of the system over time.
+it will pop up a plot showing the state of the simulated system over time.
 
 You will also find three log files in this directory: ``muscle3_manager.log``,
 ``muscle3.macro.log`` and ``muscle3.micro.log``. These contain log output for

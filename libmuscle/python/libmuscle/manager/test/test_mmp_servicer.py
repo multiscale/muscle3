@@ -31,7 +31,7 @@ def test_request_settings(settings, mmp_servicer):
     request = mmp.SettingsRequest()
     result = mmp_servicer.RequestSettings(request, None)
 
-    assert len(result.parameter_values) == 0
+    assert len(result.setting_values) == 0
 
     settings['test1'] = 13
     settings['test2'] = 12.3
@@ -41,11 +41,11 @@ def test_request_settings(settings, mmp_servicer):
     settings['test6'] = [[1.0, 2.0], [2.0, 1.0]]
 
     result = mmp_servicer.RequestSettings(request, None)
-    assert len(result.parameter_values) == 6
+    assert len(result.setting_values) == 6
 
     result_dict = dict()
-    for mmp_setting in result.parameter_values:
-        result_dict[mmp_setting.parameter] = (
+    for mmp_setting in result.setting_values:
+        result_dict[mmp_setting.name] = (
                 mmp_setting.value_type, mmp_setting.value_string,
                 mmp_setting.value_int, mmp_setting.value_float,
                 mmp_setting.value_bool, mmp_setting.value_list_float,
@@ -54,23 +54,23 @@ def test_request_settings(settings, mmp_servicer):
     no_list = mmp.ListOfDouble()
     no_list2 = mmp.ListOfListOfDouble()
     assert result_dict['test1'] == (
-            mmp.PARAMETER_VALUE_TYPE_INT, '', 13, 0.0, False, no_list,
+            mmp.SETTING_VALUE_TYPE_INT, '', 13, 0.0, False, no_list,
             no_list2)
     assert result_dict['test2'] == (
-            mmp.PARAMETER_VALUE_TYPE_FLOAT, '', 0, 12.3, False, no_list,
+            mmp.SETTING_VALUE_TYPE_FLOAT, '', 0, 12.3, False, no_list,
             no_list2)
     assert result_dict['test3'] == (
-            mmp.PARAMETER_VALUE_TYPE_STRING, 'testing', 0, 0.0, False, no_list,
+            mmp.SETTING_VALUE_TYPE_STRING, 'testing', 0, 0.0, False, no_list,
             no_list2)
     assert result_dict['test4'] == (
-            mmp.PARAMETER_VALUE_TYPE_BOOL, '', 0, 0.0, True, no_list, no_list2)
+            mmp.SETTING_VALUE_TYPE_BOOL, '', 0, 0.0, True, no_list, no_list2)
     assert result_dict['test5'] == (
-            mmp.PARAMETER_VALUE_TYPE_LIST_FLOAT, '', 0, 0.0, False,
+            mmp.SETTING_VALUE_TYPE_LIST_FLOAT, '', 0, 0.0, False,
             mmp.ListOfDouble(values=[2.3, 7.4]), no_list2)
     row0 = mmp.ListOfDouble(values=[1.0, 2.0])
     row1 = mmp.ListOfDouble(values=[2.0, 1.0])
     assert result_dict['test6'] == (
-            mmp.PARAMETER_VALUE_TYPE_LIST_LIST_FLOAT, '', 0, 0.0, False,
+            mmp.SETTING_VALUE_TYPE_LIST_LIST_FLOAT, '', 0, 0.0, False,
             no_list, mmp.ListOfListOfDouble(values=[row0, row1]))
 
 

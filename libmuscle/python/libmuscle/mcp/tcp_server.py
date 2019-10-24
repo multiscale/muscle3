@@ -1,11 +1,14 @@
 import socketserver as ss
 import threading
-from typing import cast, Tuple, Type
+from typing import cast, List, Optional, Tuple, Type
 
 import msgpack
+import netifaces
 from ymmsl import Reference
 
 from libmuscle.mcp.server import Server
+from libmuscle.mcp.tcp_util import (recv_all, recv_int64, send_int64,
+                                    SocketClosed)
 from libmuscle.post_office import PostOffice
 
 
@@ -23,25 +26,28 @@ class TcpHandler(ss.BaseRequestHandler):
     def handle(self) -> None:
         """Handles requests on a socket
         """
-        receiver_id = self.request.recv(1024).decode('utf-8')
-        while len(receiver_id) > 0:
+        receiver_id = self.receive_request()
+
+        while receiver_id is not None:
             server = cast(TcpServerImpl, self.server).tcp_server
             message = server.post_office.get_message(receiver_id)
 
-            message_dict = {
-                    'sender': str(message.sender),
-                    'receiver': str(message.receiver),
-                    'port_length': message.port_length,
-                    'timestamp': message.timestamp,
-                    'next_timestamp': message.next_timestamp,
-                    'parameter_overlay': message.parameter_overlay,
-                    'data': message.data}
-            packed_message = msgpack.packb(message_dict, use_bin_type=True)
+            send_int64(self.request, len(message))
+            self.request.sendall(message)
+            receiver_id = self.receive_request()
 
-            length = len(packed_message).to_bytes(8, byteorder='little')
-            self.request.sendall(length)
-            self.request.sendall(packed_message)
-            receiver_id = self.request.recv(1024).decode('utf-8')
+    def receive_request(self) -> Optional[Reference]:
+        """Receives a request (receiver id).
+
+        Returns:
+            The received receiver id.
+        """
+        try:
+            length = recv_int64(self.request)
+            reqbuf = recv_all(self.request, length)
+            return Reference(reqbuf.decode('utf-8'))
+        except SocketClosed:
+            return None
 
 
 class TcpServer(Server):
@@ -69,7 +75,11 @@ class TcpServer(Server):
             A string containing the location.
         """
         host, port = self._server.server_address
-        return 'tcp:{}:{}'.format(host, port)
+
+        locs = list()   # type: List[str]
+        for address in self._get_if_addresses():
+            locs.append('{}:{}'.format(address, port))
+        return 'tcp:{}'.format(','.join(locs))
 
     def close(self) -> None:
         """Closes this server.
@@ -85,3 +95,16 @@ class TcpServer(Server):
         """Export this so the server thread can use it.
         """
         return self._post_office
+
+    def _get_if_addresses(self) -> List[str]:
+        all_addresses = list()  # type: List[str]
+        ifs = netifaces.interfaces()
+        for interface in ifs:
+            addrs = netifaces.ifaddresses(interface)
+            for props in addrs.get(netifaces.AF_INET, []):
+                all_addresses.append(props['addr'])
+            for props in addrs.get(netifaces.AF_INET6, []):
+                # filter out link-local addresses with a scope id
+                if '%' not in props['addr']:
+                    all_addresses.append('[' + props['addr'] + ']')
+        return all_addresses

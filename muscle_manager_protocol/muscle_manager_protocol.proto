@@ -156,17 +156,17 @@ message PeerResult {
 }
 
 
-// Supported parameter value types (from yMMSL)
-enum ParameterValueType {
-    PARAMETER_VALUE_TYPE_STRING = 0;
-    PARAMETER_VALUE_TYPE_INT = 1;
-    PARAMETER_VALUE_TYPE_FLOAT = 2;
-    PARAMETER_VALUE_TYPE_BOOL = 3;
-    PARAMETER_VALUE_TYPE_LIST_FLOAT = 4;
-    PARAMETER_VALUE_TYPE_LIST_LIST_FLOAT = 5;
+// Supported setting value types (from yMMSL)
+enum SettingValueType {
+    SETTING_VALUE_TYPE_STRING = 0;
+    SETTING_VALUE_TYPE_INT = 1;
+    SETTING_VALUE_TYPE_FLOAT = 2;
+    SETTING_VALUE_TYPE_BOOL = 3;
+    SETTING_VALUE_TYPE_LIST_FLOAT = 4;
+    SETTING_VALUE_TYPE_LIST_LIST_FLOAT = 5;
 }
 
-// Parameter setting
+// Settings
 message ListOfDouble {
     repeated double values = 1;
 }
@@ -176,8 +176,8 @@ message ListOfListOfDouble {
 }
 
 message Setting {
-    string parameter = 1;
-    ParameterValueType value_type = 2;
+    string name = 1;
+    SettingValueType value_type = 2;
     string value_string = 3;
     int64 value_int = 4;
     double value_float = 5;
@@ -193,7 +193,7 @@ message SettingsRequest {
 
 // Result of settings request
 message SettingsResult {
-    repeated Setting parameter_values = 1;
+    repeated Setting setting_values = 1;
 }
 
 

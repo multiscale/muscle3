@@ -110,9 +110,32 @@ breathe_default_members = ('members',)
 import subprocess
 subprocess.call('cd ../.. ; doxygen', shell=True)
 
+# -- Run apidoc plug-in manually, as readthedocs doesn't support it -------
+# See https://github.com/rtfd/readthedocs.org/issues/1139
+def run_apidoc(_):
+    here = os.path.dirname(__file__)
+    out = os.path.abspath(os.path.join(here, 'apidocs'))
+    src = os.path.abspath(os.path.join(here, '..', '..', 'libmuscle', 'python'))
+
+    ignore_paths = [
+            '*/test',
+            'muscle_manager/protocol/*',
+            'libmuscle/python/libmuscle/managere_protocol/*']
+
+    argv = ['-f', '-T', '-e', '-M', '-o', out, src] + ignore_paths
+
+    try:
+        # Sphinx 1.7+
+        from sphinx.ext import apidoc
+        apidoc.main(argv)
+    except ImportError:
+        # Sphinx 1.6 (and earlier)
+        from sphinx import apidoc
+        argv.insert(0, apidoc.__file__)
+        apidoc.main(argv)
 
 def setup(app):
-    pass
+    app.connect('builder-inited', run_apidoc)
 
 # -- Options for HTML output ----------------------------------------------
 

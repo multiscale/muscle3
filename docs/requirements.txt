@@ -2,6 +2,7 @@ breathe
 grpcio==1.17.1
 grpcio-tools==1.17.1
 msgpack==0.6.1
+netifaces
 protobuf==3.8.0
 typing==3.6.6
 ymmsl

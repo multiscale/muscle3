@@ -5,10 +5,21 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_.
 
-Next
-****
+0.2.0
+*****
 
-Changed
+Added
+-----
+
+* Support for C++
+* Support for MPI in C++
+
+Improved
+--------
+
+* Cluster/HPC networking
+
+Incompatible Changes
 -------
 
 * Fatal logic errors now throw instead of exiting, so that you have a chance
@@ -17,10 +28,6 @@ Changed
   longer exits the process, it just shuts down the Instance.
 * Central MUSCLE 3-managed settings are called settings everywhere now, not
   parameters. As a result, the API has changed in several places.
-
-
-Added
------
 
 
 0.1.0

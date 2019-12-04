@@ -14,6 +14,10 @@ test_python: cpp_tests
 test_cpp:
 	cd libmuscle/cpp && $(MAKE) test
 
+.PHONY: test_scripts
+test_scripts:
+	cd scripts && $(MAKE) test
+
 .PHONY: install
 install: all
 	cd libmuscle/cpp && $(MAKE) install

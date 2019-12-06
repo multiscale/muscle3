@@ -48,7 +48,8 @@ extensions = [
         'sphinx.ext.napoleon',
         'breathe',
         'sphinx.ext.todo',
-        'sphinx.ext.viewcode']
+        'sphinx.ext.viewcode',
+        'sphinxfortran.fortran_domain']
 
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ['_templates']

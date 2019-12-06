@@ -70,6 +70,7 @@ setup(
             'mypy-protobuf',
             'sphinx',
             'sphinx_rtd_theme',
+            'sphinx-fortran',
             'yapf',
             'isort'
         ]

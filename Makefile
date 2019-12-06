@@ -62,3 +62,9 @@ grpc:
 	pb_prefix=$$(PKG_CONFIG_PATH=libmuscle/cpp/build/protobuf/protobuf/lib/pkgconfig pkg-config --variable=prefix protobuf) && \
 			PATH=$${pb_prefix}/bin:$${PATH} && export LD_LIBRARY_PATH=$${pb_prefix}/lib && \
 			protoc --cpp_out=libmuscle/cpp/src muscle_manager_protocol/muscle_manager_protocol.proto
+
+# This rebuilds the auto-generated native bindings; for development only.
+.PHONY: bindings
+bindings:
+	scripts/make_muscle_api.py --fortran-c-wrappers >libmuscle/cpp/src/libmuscle/bindings/libmuscle_fortran_c.cpp
+	scripts/make_muscle_api.py --fortran-module >libmuscle/fortran/src/libmuscle.f03

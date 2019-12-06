@@ -95,6 +95,12 @@
             "libmuscle::impl::Data::as_byte_array()";
         };
 
+        LIBMUSCLE_Data_create_;
+        LIBMUSCLE_Data_free_;
+        LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_;
+        LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_;
+        LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg_;
+
     local: *;
 };
 

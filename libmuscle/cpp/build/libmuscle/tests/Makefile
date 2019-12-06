@@ -4,20 +4,22 @@ VPATH := $(libmuscle_testdir)
 
 unit_tests := $(wildcard $(libmuscle_testdir)/test*.cpp)
 integration_tests := $(wildcard $(libmuscle_testdir)/*test.cpp)
+api_tests := $(libmuscle_testdir)/test_fortran_api.f03
 unit_test_bins := $(unit_tests:$(libmuscle_testdir)/%.cpp=%)
 integration_test_bins := $(integration_tests:$(libmuscle_testdir)/%.cpp=%)
+api_test_bins := test_fortran_api
 
 ifndef MUSCLE_ENABLE_MPI
 integration_tests := $(filter-out mpi%,$(integration_tests))
 integration_test_bins := $(filter-out mpi%,$(integration_test_bins))
 endif
 
-all_tests := $(unit_test_bins) $(integration_test_bins)
+all_tests := $(unit_test_bins) $(integration_test_bins) $(api_test_bins)
 deps := $(all_tests:%=%.d)
 
 
 .PHONY: test
-test: $(foreach bin,$(unit_test_bins),run_$(bin))
+test: $(foreach bin,$(unit_test_bins),run_$(bin)) $(foreach bin,$(api_test_bins),run_$(bin))
 
 .PHONY: tests
 tests: $(all_tests)
@@ -82,6 +84,9 @@ test_logging.o: test_logging.cpp
 
 test_logging: test_logging.o $(CURDIR)/../../ymmsl/libymmsl_d.a
 	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_ROOT)/lib/libgtest.a -pthread
+
+test_fortran_api: $(CURDIR)/../../../../fortran/src/libmuscle/libmuscle.f03 test_fortran_api.f03
+	$(FC) -std=f2003 $(FFLAGS) $(DEBUGFLAGS) $^ -o $@ $(LDFLAGS2) -lstdc++
 
 mpi_micro_model_test: mpi_micro_model_test.cpp $(CURDIR)/../../ymmsl/libymmsl_d.a $(CURDIR)/../../libmuscle/libmuscle_mpi_d.a
 	$(MPICXX) $(CXXFLAGS) $(DEBUGFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS2)

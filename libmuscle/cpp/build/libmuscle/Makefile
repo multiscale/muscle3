@@ -1,7 +1,7 @@
 # Get source paths
 hdrdir := $(CURDIR)/../../src
 srcdir := $(CURDIR)/../../src/libmuscle
-srcdirs := $(srcdir) $(srcdir)/mcp
+srcdirs := $(srcdir) $(srcdir)/mcp $(srcdir)/bindings
 objdir := $(CURDIR)/objs
 
 VPATH := $(srcdir)

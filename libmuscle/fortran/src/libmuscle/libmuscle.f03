@@ -16,6 +16,13 @@ module libmuscle
     end type LIBMUSCLE_Data
     public :: LIBMUSCLE_Data
 
+    public :: LIBMUSCLE_Data_create_nil
+    public :: LIBMUSCLE_Data_create_bool
+    public :: LIBMUSCLE_Data_create_string
+    public :: LIBMUSCLE_Data_create_int
+    public :: LIBMUSCLE_Data_create_int64t
+    public :: LIBMUSCLE_Data_create_float
+    public :: LIBMUSCLE_Data_create_double
     public :: LIBMUSCLE_Data_create
     public :: LIBMUSCLE_Data_free
 
@@ -31,12 +38,61 @@ module libmuscle
 
     interface
 
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_( &
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_nil_( &
                 ) &
-                bind(C, name="LIBMUSCLE_Data_create_")
+                bind(C, name="LIBMUSCLE_Data_create_nil_")
 
             use iso_c_binding
-        end function LIBMUSCLE_Data_create_
+        end function LIBMUSCLE_Data_create_nil_
+
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_bool_( &
+                value) &
+                bind(C, name="LIBMUSCLE_Data_create_bool_")
+
+            use iso_c_binding
+            integer (c_int), value, intent(in) :: value
+        end function LIBMUSCLE_Data_create_bool_
+
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_string_( &
+                value, value_size) &
+                bind(C, name="LIBMUSCLE_Data_create_string_")
+
+            use iso_c_binding
+            character, intent(in) :: value
+            integer (c_size_t), value, intent(in) :: value_size
+        end function LIBMUSCLE_Data_create_string_
+
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_int_( &
+                value) &
+                bind(C, name="LIBMUSCLE_Data_create_int_")
+
+            use iso_c_binding
+            integer (c_int), value, intent(in) :: value
+        end function LIBMUSCLE_Data_create_int_
+
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_int64t_( &
+                value) &
+                bind(C, name="LIBMUSCLE_Data_create_int64t_")
+
+            use iso_c_binding
+            integer (c_int64_t), value, intent(in) :: value
+        end function LIBMUSCLE_Data_create_int64t_
+
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_float_( &
+                value) &
+                bind(C, name="LIBMUSCLE_Data_create_float_")
+
+            use iso_c_binding
+            real (selected_real_kind(6)), value, intent(in) :: value
+        end function LIBMUSCLE_Data_create_float_
+
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_double_( &
+                value) &
+                bind(C, name="LIBMUSCLE_Data_create_double_")
+
+            use iso_c_binding
+            real (selected_real_kind(15)), value, intent(in) :: value
+        end function LIBMUSCLE_Data_create_double_
 
         subroutine LIBMUSCLE_Data_free_( &
                 self) &
@@ -46,6 +102,17 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end subroutine LIBMUSCLE_Data_free_
 
+    end interface
+
+    interface LIBMUSCLE_Data_create
+        module procedure &
+            LIBMUSCLE_Data_create_nil, &
+            LIBMUSCLE_Data_create_bool, &
+            LIBMUSCLE_Data_create_string, &
+            LIBMUSCLE_Data_create_int, &
+            LIBMUSCLE_Data_create_int64t, &
+            LIBMUSCLE_Data_create_float, &
+            LIBMUSCLE_Data_create_double
     end interface
 
 
@@ -83,17 +150,95 @@ module libmuscle
 
 contains
 
-    function LIBMUSCLE_Data_create()
+    function LIBMUSCLE_Data_create_nil()
         implicit none
-        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_nil
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_( &
+        ret_val = LIBMUSCLE_Data_create_nil_( &
     )
 
-        LIBMUSCLE_Data_create%ptr = ret_val
-    end function LIBMUSCLE_Data_create
+        LIBMUSCLE_Data_create_nil%ptr = ret_val
+    end function LIBMUSCLE_Data_create_nil
+
+    function LIBMUSCLE_Data_create_bool(value)
+        implicit none
+        logical, intent(in) :: value
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_bool
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_bool_( &
+            merge(1, 0, value))
+
+        LIBMUSCLE_Data_create_bool%ptr = ret_val
+    end function LIBMUSCLE_Data_create_bool
+
+    function LIBMUSCLE_Data_create_string(value)
+        implicit none
+        character (len=*), intent(in) :: value
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_string
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_string_( &
+            value, int(len(value), c_size_t))
+
+        LIBMUSCLE_Data_create_string%ptr = ret_val
+    end function LIBMUSCLE_Data_create_string
+
+    function LIBMUSCLE_Data_create_int(value)
+        implicit none
+        integer, intent(in) :: value
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_int
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_int_( &
+            value)
+
+        LIBMUSCLE_Data_create_int%ptr = ret_val
+    end function LIBMUSCLE_Data_create_int
+
+    function LIBMUSCLE_Data_create_int64t(value)
+        implicit none
+        integer (selected_int_kind(18)), intent(in) :: value
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_int64t
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_int64t_( &
+            value)
+
+        LIBMUSCLE_Data_create_int64t%ptr = ret_val
+    end function LIBMUSCLE_Data_create_int64t
+
+    function LIBMUSCLE_Data_create_float(value)
+        implicit none
+        real (selected_real_kind(6)), intent(in) :: value
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_float
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_float_( &
+            value)
+
+        LIBMUSCLE_Data_create_float%ptr = ret_val
+    end function LIBMUSCLE_Data_create_float
+
+    function LIBMUSCLE_Data_create_double(value)
+        implicit none
+        real (selected_real_kind(15)), intent(in) :: value
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_double
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_double_( &
+            value)
+
+        LIBMUSCLE_Data_create_double%ptr = ret_val
+    end function LIBMUSCLE_Data_create_double
 
     subroutine LIBMUSCLE_Data_free(self)
         implicit none

@@ -23,6 +23,47 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :r obj: The new Data object
     :rtype obj: LIBMUSCLE_Data
 
+.. f:function:: LIBMUSCLE_Data_create(value)
+
+    Creates a Data object representing a logical value.
+
+    :p logical value: The value to represent.
+    :r obj: The new Data object
+    :rtype obj: LIBMUSCLE_Data
+
+.. f:function:: LIBMUSCLE_Data_create(value)
+
+    Creates a Data object representing a character value.
+
+    :p character value: The value to represent.
+    :r obj: The new Data object
+    :rtype obj: LIBMUSCLE_Data
+
+.. f:function:: LIBMUSCLE_Data_create(value)
+
+    Creates a Data object representing an integer value. Supported kinds are
+    the default ``integer`` kind, and ``selected_int_kind(18)`` (a 64-bit
+    signed integer).
+
+    Note that while libmuscle supports unsigned integers, these don't exist
+    in Fortran. They will be mapped to the corresponding signed type, which
+    may cause a silent overflow if the number is out of the signed type's
+    range.
+
+    :p integer value: The value to represent.
+    :r obj: The new Data object
+    :rtype obj: LIBMUSCLE_Data
+
+.. f:function:: LIBMUSCLE_Data_create(value)
+
+    Creates a Data object representing a real value. Supported kinds are
+    ``selected_real_kind(6)`` and ``selected_int_kind(15)`` (32-bit single and
+    64-bit double precision).
+
+    :p real value: The value to represent.
+    :r obj: The new Data object
+    :rtype obj: LIBMUSCLE_Data
+
 .. f:subroutine:: LIBMUSCLE_DATA_free(self)
 
     Frees a Data object.

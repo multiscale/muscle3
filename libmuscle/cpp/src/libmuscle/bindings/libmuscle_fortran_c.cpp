@@ -13,8 +13,39 @@ using libmuscle::impl::bindings::CmdLineArgs;
 
 extern "C" {
 
-std::intptr_t LIBMUSCLE_Data_create_() {
+std::intptr_t LIBMUSCLE_Data_create_nil_() {
     Data * result = new Data();
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_bool_(int value) {
+    Data * result = new Data(value != 0);
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_string_(char * value, std::size_t value_size) {
+    std::string value_s(value, value_size);
+    Data * result = new Data(value_s);
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_int_(int value) {
+    Data * result = new Data(value);
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_int64t_(int64_t value) {
+    Data * result = new Data(value);
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_float_(float value) {
+    Data * result = new Data(value);
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_double_(double value) {
+    Data * result = new Data(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 

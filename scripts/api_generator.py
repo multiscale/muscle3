@@ -624,6 +624,43 @@ class Int64t(Par):
         return '    return result;\n'
 
 
+class Float(Par):
+    """Represents a single precision float parameter.
+    """
+    def tname(self) -> str:
+        return 'float'
+
+    def fc_cpp_type(self) -> str:
+        return 'float'
+
+    def f_type(self) -> str:
+        return self._regular_type('real (selected_real_kind(6))')
+
+    def f_ret_type(self) -> str:
+        return True, self._regular_type('real (selected_real_kind(6))')
+
+    def fi_type(self) -> str:
+        return self._regular_type('real (selected_real_kind(6)), value')
+
+    def fi_ret_type(self) -> str:
+        return self._regular_type('real (selected_real_kind(6))')
+
+    def fc_type(self) -> str:
+        return self._regular_type('float')
+
+    def fc_ret_type(self) -> str:
+        return self._regular_type('float')
+
+    def fc_cpp_arg(self) -> str:
+        return self.name
+
+    def fc_get_result(self, cpp_chain_call: str) -> str:
+        return 'float result = {}'.format(cpp_chain_call)
+
+    def fc_return(self) -> str:
+        return '    return result;\n'
+
+
 class Double(Par):
     """Represents a double precision float parameter.
     """
@@ -1020,8 +1057,9 @@ class Constructor(MemFun):
     This generates code suitable for a constructor, rather than
     the default code.
     """
-    def __init__(self, params: List[Par] = list(), **args) -> None:
-        super().__init__(Obj('<deferred>'), 'create', params, **args)
+    def __init__(self, params: List[Par] = list(), name: str = 'create', **args
+            ) -> None:
+        super().__init__(Obj('<deferred>'), name, params, **args)
 
     def set_class_name(self, class_name: str) -> None:
         # Don't add self parameter

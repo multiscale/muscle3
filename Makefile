@@ -67,4 +67,4 @@ grpc:
 .PHONY: bindings
 bindings:
 	scripts/make_muscle_api.py --fortran-c-wrappers >libmuscle/cpp/src/libmuscle/bindings/libmuscle_fortran_c.cpp
-	scripts/make_muscle_api.py --fortran-module >libmuscle/fortran/src/libmuscle.f03
+	scripts/make_muscle_api.py --fortran-module >libmuscle/fortran/src/libmuscle/libmuscle.f03

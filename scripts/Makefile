@@ -6,4 +6,4 @@ FORTRAN?=gfortran
 
 .PHONY: test
 test:
-	cd test && $(MAKE) test
+	cd tests && $(MAKE) test

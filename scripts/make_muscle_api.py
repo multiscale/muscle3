@@ -5,23 +5,30 @@ import argparse
 import api_generator
 
 from api_generator import (
-        API, Bool, Bytes, Class, Constructor, Destructor, Double, Enum,
-        EnumVal, Float, Int, Int64t, MemFun, MemFunTmpl, Namespace, Obj,
-        OverloadSet, String, T, VecDbl, Vec2Dbl, Void)
+        API, Bool, Bytes, Char, Class, Constructor, Destructor, Double, Enum,
+        EnumVal, Float, Int, Int16t, Int64t, MemFun, MemFunTmpl, Namespace,
+        Obj, OverloadSet, String, T, VecDbl, Vec2Dbl, Void)
 
 
 data_desc = Class('Data', [
     Constructor([], 'create_nil'),
     Constructor([Bool('value')], 'create_bool'),
     Constructor([String('value')], 'create_string'),
+    Constructor([Char('value')], 'create_char'),
     Constructor([Int('value')], 'create_int'),
+    Constructor([Int16t('value')], 'create_int16t'),
     Constructor([Int64t('value')], 'create_int64t'),
     Constructor([Float('value')], 'create_float'),
     Constructor([Double('value')], 'create_double'),
     OverloadSet('create', [
-        'create_nil', 'create_bool', 'create_string', 'create_int',
-        'create_int64t', 'create_float', 'create_double']),
-    Destructor()
+        'create_nil', 'create_bool', 'create_string', 'create_char',
+        'create_int', 'create_int16t', 'create_int64t', 'create_float',
+        'create_double']),
+    Destructor(),
+    MemFunTmpl(
+        [Bool(), String(), Char(), Int(), Int16t(), Int64t(), Float(),
+            Double()],
+        Bool(), 'is_a', [], True)
     ])
 
 

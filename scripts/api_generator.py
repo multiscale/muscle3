@@ -587,6 +587,80 @@ class Int(Par):
         return '    return result;\n'
 
 
+class Char(Par):
+    """Represents an char-typed parameter.
+    """
+    def tname(self) -> str:
+        return 'char'
+
+    def fc_cpp_type(self) -> str:
+        return 'char'
+
+    def f_type(self) -> str:
+        return self._regular_type('integer (selected_int_kind(2))')
+
+    def f_ret_type(self) -> str:
+        return True, self._regular_type('integer (selected_int_kind(2))')
+
+    def fi_type(self) -> str:
+        return self._regular_type('integer (c_int8_t), value')
+
+    def fi_ret_type(self) -> str:
+        return self._regular_type('integer (c_int8_t)')
+
+    def fc_type(self) -> str:
+        return self._regular_type('char')
+
+    def fc_ret_type(self) -> str:
+        return self._regular_type('char')
+
+    def fc_cpp_arg(self) -> str:
+        return self.name
+
+    def fc_get_result(self, cpp_chain_call: str) -> str:
+        return 'char result = {}'.format(cpp_chain_call)
+
+    def fc_return(self) -> str:
+        return '    return result;\n'
+
+
+class Int16t(Par):
+    """Represents an int16_t-typed parameter.
+    """
+    def tname(self) -> str:
+        return 'int16'
+
+    def fc_cpp_type(self) -> str:
+        return 'int16_t'
+
+    def f_type(self) -> str:
+        return self._regular_type('integer (selected_int_kind(4))')
+
+    def f_ret_type(self) -> str:
+        return True, self._regular_type('integer (selected_int_kind(4))')
+
+    def fi_type(self) -> str:
+        return self._regular_type('integer (c_short), value')
+
+    def fi_ret_type(self) -> str:
+        return self._regular_type('integer (c_short)')
+
+    def fc_type(self) -> str:
+        return self._regular_type('short int')
+
+    def fc_ret_type(self) -> str:
+        return self._regular_type('short int')
+
+    def fc_cpp_arg(self) -> str:
+        return self.name
+
+    def fc_get_result(self, cpp_chain_call: str) -> str:
+        return 'short int result = {}'.format(cpp_chain_call)
+
+    def fc_return(self) -> str:
+        return '    return result;\n'
+
+
 class Int64t(Par):
     """Represents an int64_t-typed parameter.
     """

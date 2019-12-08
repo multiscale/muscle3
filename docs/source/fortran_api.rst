@@ -42,8 +42,8 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 .. f:function:: LIBMUSCLE_Data_create(value)
 
     Creates a Data object representing an integer value. Supported kinds are
-    the default ``integer`` kind, and ``selected_int_kind(18)`` (a 64-bit
-    signed integer).
+    the default ``integer`` kind, and ``selected_int_kind(n)`` with ``n`` equal
+    to 2, 4 or 18 (8, 16 and 64-bit signed integers respectively).
 
     Note that while libmuscle supports unsigned integers, these don't exist
     in Fortran. They will be mapped to the corresponding signed type, which
@@ -72,3 +72,69 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     the object for anything after calling this, because it will be invalid.
 
     :p LIBMUSCLE_Data self: The Data object to free.
+
+.. f:function:: LIBMUSCLE_DATA_is_a_bool(self)
+
+    Determine whether the Data object contains a boolean (logical) value.
+
+    :p LIBMUSCLE_Data self: The Data object to inspect.
+    :r is: True if the object contains a logical value.
+    :rtype is: logical
+
+.. f:function:: LIBMUSCLE_DATA_is_a_string(self)
+
+    Determine whether the Data object contains a string (character) value.
+
+    :p LIBMUSCLE_Data self: The Data object to inspect.
+    :r is: True if the object contains a character value.
+    :rtype is: logical
+
+.. f:function:: LIBMUSCLE_DATA_is_a_char(self)
+
+    Determine whether the Data object contains an integer value.
+
+    :p LIBMUSCLE_Data self: The Data object to inspect.
+    :r is: True if the object contains an integer value.
+    :rtype is: logical
+
+.. f:function:: LIBMUSCLE_DATA_is_a_int(self)
+
+    Determine whether the Data object contains an integer value.
+
+    :p LIBMUSCLE_Data self: The Data object to inspect.
+    :r is: True if the object contains an integer value.
+    :rtype is: logical
+
+.. f:function:: LIBMUSCLE_DATA_is_a_int16(self)
+
+    Determine whether the Data object contains an integer value.
+
+    :p LIBMUSCLE_Data self: The Data object to inspect.
+    :r is: True if the object contains an integer value.
+    :rtype is: logical
+
+.. f:function:: LIBMUSCLE_DATA_is_a_int64(self)
+
+    Determine whether the Data object contains an integer value.
+
+    :p LIBMUSCLE_Data self: The Data object to inspect.
+    :r is: True if the object contains an integer value.
+    :rtype is: logical
+
+.. f:function:: LIBMUSCLE_DATA_is_a_float(self)
+
+    Determine whether the Data object contains a single precision floating
+    point value.
+
+    :p LIBMUSCLE_Data self: The Data object to inspect.
+    :r is: True if the object contains a single precision float value.
+    :rtype is: logical
+
+.. f:function:: LIBMUSCLE_DATA_is_a_double(self)
+
+    Determine whether the Data object contains a double precision floating
+    point value.
+
+    :p LIBMUSCLE_Data self: The Data object to inspect.
+    :r is: True if the object contains a double precision float value.
+    :rtype is: logical

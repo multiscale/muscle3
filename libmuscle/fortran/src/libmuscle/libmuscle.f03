@@ -25,6 +25,7 @@ module libmuscle
     public :: LIBMUSCLE_Data_create_int64t
     public :: LIBMUSCLE_Data_create_float
     public :: LIBMUSCLE_Data_create_double
+    public :: LIBMUSCLE_Data_create_copy
     public :: LIBMUSCLE_Data_create
     public :: LIBMUSCLE_Data_free
     public :: LIBMUSCLE_Data_is_a_bool
@@ -119,6 +120,14 @@ module libmuscle
             use iso_c_binding
             real (selected_real_kind(15)), value, intent(in) :: value
         end function LIBMUSCLE_Data_create_double_
+
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_copy_( &
+                value) &
+                bind(C, name="LIBMUSCLE_Data_create_copy_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: value
+        end function LIBMUSCLE_Data_create_copy_
 
         subroutine LIBMUSCLE_Data_free_( &
                 self) &
@@ -228,7 +237,8 @@ module libmuscle
             LIBMUSCLE_Data_create_int16t, &
             LIBMUSCLE_Data_create_int64t, &
             LIBMUSCLE_Data_create_float, &
-            LIBMUSCLE_Data_create_double
+            LIBMUSCLE_Data_create_double, &
+            LIBMUSCLE_Data_create_copy
     end interface
 
 
@@ -381,6 +391,19 @@ contains
 
         LIBMUSCLE_Data_create_double%ptr = ret_val
     end function LIBMUSCLE_Data_create_double
+
+    function LIBMUSCLE_Data_create_copy(value)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: value
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_copy
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_copy_( &
+            value%ptr)
+
+        LIBMUSCLE_Data_create_copy%ptr = ret_val
+    end function LIBMUSCLE_Data_create_copy
 
     subroutine LIBMUSCLE_Data_free(self)
         implicit none

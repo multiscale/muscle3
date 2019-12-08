@@ -20,10 +20,11 @@ data_desc = Class('Data', [
     Constructor([Int64t('value')], 'create_int64t'),
     Constructor([Float('value')], 'create_float'),
     Constructor([Double('value')], 'create_double'),
+    Constructor([Obj('Data', 'value')], 'create_copy'),
     OverloadSet('create', [
         'create_nil', 'create_bool', 'create_string', 'create_char',
         'create_int', 'create_int16t', 'create_int64t', 'create_float',
-        'create_double']),
+        'create_double', 'create_copy']),
     Destructor(),
     MemFunTmpl(
         [Bool(), String(), Char(), Int(), Int16t(), Int64t(), Float(),

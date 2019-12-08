@@ -18,7 +18,7 @@ subroutine assert_false(x)
     end if
 end subroutine assert_false
 
-program test_fortran_api
+subroutine test_data_constructors
     use libmuscle
 
     implicit none
@@ -26,10 +26,7 @@ program test_fortran_api
     integer, parameter :: byte = selected_int_kind(2)
     integer, parameter :: short_int = selected_int_kind(4)
     integer, parameter :: long_int = selected_int_kind(18)
-    type(LIBMUSCLE_Data) :: d1
-
-    print *, ''
-    print *, '[==========] Fortran API test'
+    type(LIBMUSCLE_Data) :: d1, d2
 
     print *, '[  RUN     ] data.nil'
     d1 = LIBMUSCLE_Data_create()
@@ -52,6 +49,7 @@ program test_fortran_api
 
     print *, '[  RUN     ] data.int8'
     d1 = LIBMUSCLE_Data_create(121_byte)
+    call assert_true(LIBMUSCLE_Data_is_a_char(d1))
     call assert_true(LIBMUSCLE_Data_is_a_int(d1))
     call assert_false(LIBMUSCLE_Data_is_a_string(d1))
     call LIBMUSCLE_Data_free(d1)
@@ -59,7 +57,7 @@ program test_fortran_api
 
     print *, '[  RUN     ] data.int16'
     d1 = LIBMUSCLE_Data_create(1313_short_int)
-    call assert_true(LIBMUSCLE_Data_is_a_int(d1))
+    call assert_true(LIBMUSCLE_Data_is_a_int16(d1))
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.int16'
 
@@ -73,6 +71,7 @@ program test_fortran_api
     print *, '[  RUN     ] data.integer64'
     d1 = LIBMUSCLE_Data_create(131313131313131313_long_int)
     call assert_true(LIBMUSCLE_Data_is_a_int64(d1))
+    call assert_false(LIBMUSCLE_Data_is_a_string(d1))
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.integer64'
 
@@ -90,9 +89,27 @@ program test_fortran_api
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.double'
 
+    print *, '[  RUN     ] data.copy_constructor'
+    d1 = LIBMUSCLE_Data_create(42.0d0)
+    d2 = LIBMUSCLE_Data_create(d1)
+    call LIBMUSCLE_Data_free(d1)
+    call assert_true(LIBMUSCLE_Data_is_a_double(d2))
+    call assert_false(LIBMUSCLE_Data_is_a_float(d2))
+    call LIBMUSCLE_Data_free(d2)
+    print *, '[       OK ] data.copy_constructor'
+end subroutine test_data_constructors
+
+
+program test_fortran_api
+    implicit none
+
+    print *, ''
+    print *, '[==========] Fortran API test'
+
+    call test_data_constructors
+
     print *, '[==========] Fortran API test'
     print *, '[  PASSED  ] Fortran API test'
     print *, ''
-
 end program test_fortran_api
 

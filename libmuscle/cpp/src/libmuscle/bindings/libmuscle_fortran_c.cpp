@@ -59,6 +59,12 @@ std::intptr_t LIBMUSCLE_Data_create_double_(double value) {
     return reinterpret_cast<std::intptr_t>(result);
 }
 
+std::intptr_t LIBMUSCLE_Data_create_copy_(std::intptr_t value) {
+    Data * value_p = reinterpret_cast<Data *>(value);
+    Data * result = new Data(*value_p);
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
 void LIBMUSCLE_Data_free_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     delete self_p;

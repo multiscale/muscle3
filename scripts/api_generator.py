@@ -1150,6 +1150,35 @@ class Constructor(MemFun):
         return '    return reinterpret_cast<std::intptr_t>(result);\n'
 
 
+class NamedConstructor(Constructor):
+    """Represents a named class constructor.
+
+    This generates code suitable for a named constructor, which is a
+    static function, rather than the default code.
+
+    For name, pass the name of the static function, the Fortran name
+    will then be create_<name>.
+    """
+    def __init__(self, params: List[Par], name: str, **args
+            ) -> None:
+        super().__init__(params, 'create_' + name, **args)
+        self.func_name = name
+
+    def set_class_name(self, class_name: str) -> None:
+        # Don't add self parameter
+        self.class_name = class_name
+        self.ret_type.class_name = class_name
+
+    def _fc_cpp_call(self) -> str:
+        # Create object instead of calling something
+        cpp_args = [par.fc_cpp_arg() for par in self.params]
+        return '    {0} * result = new {0}({0}::{1}({2}));\n'.format(
+                self.class_name, self.func_name, ', '.join(cpp_args))
+
+    def _fc_return(self) -> str:
+        return '    return reinterpret_cast<std::intptr_t>(result);\n'
+
+
 class Destructor(MemFun):
     def __init__(self, **args) -> None:
         super().__init__(Void(), 'free', **args)

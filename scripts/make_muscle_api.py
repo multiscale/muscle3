@@ -6,8 +6,9 @@ import api_generator
 
 from api_generator import (
         API, Bool, Bytes, Char, Class, Constructor, Destructor, Double, Enum,
-        EnumVal, Float, Int, Int16t, Int64t, MemFun, MemFunTmpl, Namespace,
-        Obj, OverloadSet, String, T, VecDbl, Vec2Dbl, Void)
+        EnumVal, Float, Int, Int16t, Int64t, MemFun, MemFunTmpl,
+        NamedConstructor, Namespace, Obj, OverloadSet, String, T, VecDbl,
+        Vec2Dbl, Void)
 
 
 data_desc = Class('Data', [
@@ -26,10 +27,12 @@ data_desc = Class('Data', [
         'create_int', 'create_int16t', 'create_int64t', 'create_float',
         'create_double', 'create_copy']),
     Destructor(),
+    NamedConstructor([], 'dict'),
     MemFunTmpl(
         [Bool(), String(), Char(), Int(), Int16t(), Int64t(), Float(),
             Double()],
-        Bool(), 'is_a', [], True)
+        Bool(), 'is_a', [], True),
+    MemFun(Bool(), 'is_a_dict')
     ])
 
 

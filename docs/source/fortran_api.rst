@@ -64,6 +64,13 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :r obj: The new Data object
     :rtype obj: LIBMUSCLE_Data
 
+.. f:function:: LIBMUSCLE_Data_create_dict(value)
+
+    Creates a Data object containing an empty dictionary.
+
+    :r obj: The new Data object
+    :rtype obj: LIBMUSCLE_Data
+
 .. f:subroutine:: LIBMUSCLE_DATA_free(self)
 
     Frees a Data object.
@@ -137,4 +144,12 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     :p LIBMUSCLE_Data self: The Data object to inspect.
     :r is: True if the object contains a double precision float value.
+    :rtype is: logical
+
+.. f:function:: LIBMUSCLE_Data_is_a_dict(self)
+
+    Determine whether the Data object contains a dictionary value.
+
+    :p LIBMUSCLE_Data self: The Data object to inspect.
+    :r is: True if the object contains a dictionary.
     :rtype is: logical

@@ -71,6 +71,11 @@ void LIBMUSCLE_Data_free_(std::intptr_t self) {
 return;
 }
 
+std::intptr_t LIBMUSCLE_Data_create_dict_() {
+    Data * result = new Data(Data::dict());
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
 int LIBMUSCLE_Data_is_a_bool_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
@@ -333,6 +338,12 @@ int LIBMUSCLE_Data_is_a_double_(std::intptr_t self, int * err_code, char ** err_
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+}
+
+int LIBMUSCLE_Data_is_a_dict_(std::intptr_t self) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    bool result = self_p->is_a_dict();
+    return result ? 1 : 0;
 }
 
 std::intptr_t LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(int count) {

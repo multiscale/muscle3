@@ -97,6 +97,12 @@ subroutine test_data_constructors
     call assert_false(LIBMUSCLE_Data_is_a_float(d2))
     call LIBMUSCLE_Data_free(d2)
     print *, '[       OK ] data.copy_constructor'
+
+    print *, '[  RUN     ] data.dict'
+    d1 = LIBMUSCLE_Data_create_dict()
+    call assert_true(LIBMUSCLE_Data_is_a_dict(d1))
+    call LIBMUSCLE_Data_free(d1)
+    print *, '[       OK ] data.dict'
 end subroutine test_data_constructors
 
 

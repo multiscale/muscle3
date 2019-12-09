@@ -28,6 +28,7 @@ module libmuscle
     public :: LIBMUSCLE_Data_create_copy
     public :: LIBMUSCLE_Data_create
     public :: LIBMUSCLE_Data_free
+    public :: LIBMUSCLE_Data_create_dict
     public :: LIBMUSCLE_Data_is_a_bool
     public :: LIBMUSCLE_Data_is_a_string
     public :: LIBMUSCLE_Data_is_a_char
@@ -36,6 +37,7 @@ module libmuscle
     public :: LIBMUSCLE_Data_is_a_int64
     public :: LIBMUSCLE_Data_is_a_float
     public :: LIBMUSCLE_Data_is_a_double
+    public :: LIBMUSCLE_Data_is_a_dict
 
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_runtime_error = 1
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_domain_error = 2
@@ -137,6 +139,13 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end subroutine LIBMUSCLE_Data_free_
 
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_dict_( &
+                ) &
+                bind(C, name="LIBMUSCLE_Data_create_dict_")
+
+            use iso_c_binding
+        end function LIBMUSCLE_Data_create_dict_
+
         integer (c_int) function LIBMUSCLE_Data_is_a_bool_( &
                 self, err_code, err_msg, err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_is_a_bool_")
@@ -224,6 +233,14 @@ module libmuscle
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Data_is_a_double_
+
+        integer (c_int) function LIBMUSCLE_Data_is_a_dict_( &
+                self) &
+                bind(C, name="LIBMUSCLE_Data_is_a_dict_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_Data_is_a_dict_
 
     end interface
 
@@ -412,6 +429,18 @@ contains
         call LIBMUSCLE_Data_free_( &
             self%ptr)
     end subroutine LIBMUSCLE_Data_free
+
+    function LIBMUSCLE_Data_create_dict()
+        implicit none
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_dict
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_dict_( &
+    )
+
+        LIBMUSCLE_Data_create_dict%ptr = ret_val
+    end function LIBMUSCLE_Data_create_dict
 
     function LIBMUSCLE_Data_is_a_bool(self, err_code, err_msg)
         implicit none
@@ -780,6 +809,19 @@ contains
 
         LIBMUSCLE_Data_is_a_double = ret_val .ne. 0
     end function LIBMUSCLE_Data_is_a_double
+
+    function LIBMUSCLE_Data_is_a_dict(self)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        logical :: LIBMUSCLE_Data_is_a_dict
+
+        integer (c_int) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_is_a_dict_( &
+            self%ptr)
+
+        LIBMUSCLE_Data_is_a_dict = ret_val .ne. 0
+    end function LIBMUSCLE_Data_is_a_dict
 
 
     function LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create(count)

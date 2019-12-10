@@ -76,6 +76,16 @@ std::intptr_t LIBMUSCLE_Data_create_dict_() {
     return reinterpret_cast<std::intptr_t>(result);
 }
 
+std::intptr_t LIBMUSCLE_Data_create_list_() {
+    Data * result = new Data(Data::list());
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_nils_(std::size_t size) {
+    Data * result = new Data(Data::nils(size));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
 int LIBMUSCLE_Data_is_a_bool_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
@@ -343,6 +353,12 @@ int LIBMUSCLE_Data_is_a_double_(std::intptr_t self, int * err_code, char ** err_
 int LIBMUSCLE_Data_is_a_dict_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a_dict();
+    return result ? 1 : 0;
+}
+
+int LIBMUSCLE_Data_is_a_list_(std::intptr_t self) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    bool result = self_p->is_a_list();
     return result ? 1 : 0;
 }
 

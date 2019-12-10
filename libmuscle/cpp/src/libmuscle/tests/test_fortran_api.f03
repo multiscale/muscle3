@@ -103,6 +103,13 @@ subroutine test_data_constructors
     call assert_true(LIBMUSCLE_Data_is_a_dict(d1))
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.dict'
+
+    print *, '[  RUN     ] data.list'
+    d1 = LIBMUSCLE_Data_create_list()
+    call assert_true(LIBMUSCLE_Data_is_a_list(d1))
+    call assert_false(LIBMUSCLE_Data_is_a_float(d1))
+    call LIBMUSCLE_Data_free(d1)
+    print *, '[       OK ] data.list'
 end subroutine test_data_constructors
 
 

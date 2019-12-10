@@ -698,6 +698,43 @@ class Int64t(Par):
         return '    return result;\n'
 
 
+class Sizet(Par):
+    """Represents an size_t-typed parameter.
+    """
+    def tname(self) -> str:
+        return 'size_t'
+
+    def fc_cpp_type(self) -> str:
+        return 'std::size_t'
+
+    def f_type(self) -> str:
+        return self._regular_type('integer (selected_int_kind(18))')
+
+    def f_ret_type(self) -> str:
+        return True, self._regular_type('integer (selected_int_kind(18))')
+
+    def fi_type(self) -> str:
+        return self._regular_type('integer (c_size_t), value')
+
+    def fi_ret_type(self) -> str:
+        return self._regular_type('integer (c_size_t)')
+
+    def fc_type(self) -> str:
+        return self._regular_type('std::size_t')
+
+    def fc_ret_type(self) -> str:
+        return self._regular_type('std::size_t')
+
+    def fc_cpp_arg(self) -> str:
+        return self.name
+
+    def fc_get_result(self, cpp_chain_call: str) -> str:
+        return 'std::size_t result = {}'.format(cpp_chain_call)
+
+    def fc_return(self) -> str:
+        return '    return result;\n'
+
+
 class Float(Par):
     """Represents a single precision float parameter.
     """

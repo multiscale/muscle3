@@ -64,14 +64,29 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :r obj: The new Data object
     :rtype obj: LIBMUSCLE_Data
 
-.. f:function:: LIBMUSCLE_Data_create_dict(value)
+.. f:function:: LIBMUSCLE_Data_create_dict()
 
     Creates a Data object containing an empty dictionary.
 
     :r obj: The new Data object
     :rtype obj: LIBMUSCLE_Data
 
-.. f:subroutine:: LIBMUSCLE_DATA_free(self)
+.. f:function:: LIBMUSCLE_Data_create_list()
+
+    Creates a Data object containing an empty list.
+
+    :r obj: The new Data object
+    :rtype obj: LIBMUSCLE_Data
+
+.. f:function:: LIBMUSCLE_Data_create_nils(size)
+
+    Creates a Data object containing a list of ``size`` nil values..
+
+    :p integer size: The number of nil values to put into the list.
+    :r obj: The new Data object
+    :rtype obj: LIBMUSCLE_Data
+
+.. f:subroutine:: LIBMUSCLE_Data_free(self)
 
     Frees a Data object.
 
@@ -80,7 +95,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     :p LIBMUSCLE_Data self: The Data object to free.
 
-.. f:function:: LIBMUSCLE_DATA_is_a_bool(self)
+.. f:function:: LIBMUSCLE_Data_is_a_bool(self)
 
     Determine whether the Data object contains a boolean (logical) value.
 
@@ -88,7 +103,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :r is: True if the object contains a logical value.
     :rtype is: logical
 
-.. f:function:: LIBMUSCLE_DATA_is_a_string(self)
+.. f:function:: LIBMUSCLE_Data_is_a_string(self)
 
     Determine whether the Data object contains a string (character) value.
 
@@ -96,7 +111,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :r is: True if the object contains a character value.
     :rtype is: logical
 
-.. f:function:: LIBMUSCLE_DATA_is_a_char(self)
+.. f:function:: LIBMUSCLE_Data_is_a_char(self)
 
     Determine whether the Data object contains an integer value.
 
@@ -104,7 +119,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :r is: True if the object contains an integer value.
     :rtype is: logical
 
-.. f:function:: LIBMUSCLE_DATA_is_a_int(self)
+.. f:function:: LIBMUSCLE_Data_is_a_int(self)
 
     Determine whether the Data object contains an integer value.
 
@@ -112,7 +127,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :r is: True if the object contains an integer value.
     :rtype is: logical
 
-.. f:function:: LIBMUSCLE_DATA_is_a_int16(self)
+.. f:function:: LIBMUSCLE_Data_is_a_int16(self)
 
     Determine whether the Data object contains an integer value.
 
@@ -120,7 +135,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :r is: True if the object contains an integer value.
     :rtype is: logical
 
-.. f:function:: LIBMUSCLE_DATA_is_a_int64(self)
+.. f:function:: LIBMUSCLE_Data_is_a_int64(self)
 
     Determine whether the Data object contains an integer value.
 
@@ -128,7 +143,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :r is: True if the object contains an integer value.
     :rtype is: logical
 
-.. f:function:: LIBMUSCLE_DATA_is_a_float(self)
+.. f:function:: LIBMUSCLE_Data_is_a_float(self)
 
     Determine whether the Data object contains a single precision floating
     point value.
@@ -137,7 +152,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :r is: True if the object contains a single precision float value.
     :rtype is: logical
 
-.. f:function:: LIBMUSCLE_DATA_is_a_double(self)
+.. f:function:: LIBMUSCLE_Data_is_a_double(self)
 
     Determine whether the Data object contains a double precision floating
     point value.
@@ -152,4 +167,12 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     :p LIBMUSCLE_Data self: The Data object to inspect.
     :r is: True if the object contains a dictionary.
+    :rtype is: logical
+
+.. f:function:: LIBMUSCLE_Data_is_a_list(self)
+
+    Determine whether the Data object contains a list value.
+
+    :p LIBMUSCLE_Data self: The Data object to inspect.
+    :r is: True if the object contains a list.
     :rtype is: logical

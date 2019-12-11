@@ -110,6 +110,13 @@ subroutine test_data_constructors
     call assert_false(LIBMUSCLE_Data_is_a_float(d1))
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.list'
+
+    print *, '[  RUN     ] data.byte_array'
+    d1 = LIBMUSCLE_Data_create_byte_array(1024_long_int)
+    call assert_true(LIBMUSCLE_Data_is_a_byte_array(d1))
+    call assert_false(LIBMUSCLE_Data_is_a_int(d1))
+    call LIBMUSCLE_Data_free(d1)
+    print *, '[       OK ] data.byte_array'
 end subroutine test_data_constructors
 
 

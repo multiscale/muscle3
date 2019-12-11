@@ -29,6 +29,7 @@ data_desc = Class('Data', [
     Destructor(),
     NamedConstructor([], 'dict'),
     NamedConstructor([], 'list'),
+    NamedConstructor([Sizet('size')], 'byte_array'),
     NamedConstructor([Sizet('size')], 'nils'),
     MemFunTmpl(
         [Bool(), String(), Char(), Int(), Int16t(), Int64t(), Float(),
@@ -36,6 +37,7 @@ data_desc = Class('Data', [
         Bool(), 'is_a', [], True),
     MemFun(Bool(), 'is_a_dict'),
     MemFun(Bool(), 'is_a_list'),
+    MemFun(Bool(), 'is_a_byte_array'),
     ])
 
 

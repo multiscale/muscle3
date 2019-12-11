@@ -80,9 +80,17 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
 .. f:function:: LIBMUSCLE_Data_create_nils(size)
 
-    Creates a Data object containing a list of ``size`` nil values..
+    Creates a Data object containing a list of ``size`` nil values.
 
     :p integer size: The number of nil values to put into the list.
+    :r obj: The new Data object
+    :rtype obj: LIBMUSCLE_Data
+
+.. f:function:: LIBMUSCLE_Data_create_byte_array(size)
+
+    Creates a Data object containing a byte array of the given number of bytes.
+
+    :p integer size: The number of bytes to allocate for the array.
     :r obj: The new Data object
     :rtype obj: LIBMUSCLE_Data
 
@@ -175,4 +183,12 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     :p LIBMUSCLE_Data self: The Data object to inspect.
     :r is: True if the object contains a list.
+    :rtype is: logical
+
+.. f:function:: LIBMUSCLE_Data_is_a_byte_array(self)
+
+    Determine whether the Data object contains a byte array value.
+
+    :p LIBMUSCLE_Data self: The Data object to inspect.
+    :r is: True if the object contains a byte array.
     :rtype is: logical

@@ -81,6 +81,11 @@ std::intptr_t LIBMUSCLE_Data_create_list_() {
     return reinterpret_cast<std::intptr_t>(result);
 }
 
+std::intptr_t LIBMUSCLE_Data_create_byte_array_(std::size_t size) {
+    Data * result = new Data(Data::byte_array(size));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
 std::intptr_t LIBMUSCLE_Data_create_nils_(std::size_t size) {
     Data * result = new Data(Data::nils(size));
     return reinterpret_cast<std::intptr_t>(result);
@@ -359,6 +364,12 @@ int LIBMUSCLE_Data_is_a_dict_(std::intptr_t self) {
 int LIBMUSCLE_Data_is_a_list_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a_list();
+    return result ? 1 : 0;
+}
+
+int LIBMUSCLE_Data_is_a_byte_array_(std::intptr_t self) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    bool result = self_p->is_a_byte_array();
     return result ? 1 : 0;
 }
 

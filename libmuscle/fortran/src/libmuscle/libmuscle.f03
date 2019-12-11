@@ -30,6 +30,7 @@ module libmuscle
     public :: LIBMUSCLE_Data_free
     public :: LIBMUSCLE_Data_create_dict
     public :: LIBMUSCLE_Data_create_list
+    public :: LIBMUSCLE_Data_create_byte_array
     public :: LIBMUSCLE_Data_create_nils
     public :: LIBMUSCLE_Data_is_a_bool
     public :: LIBMUSCLE_Data_is_a_string
@@ -41,6 +42,7 @@ module libmuscle
     public :: LIBMUSCLE_Data_is_a_double
     public :: LIBMUSCLE_Data_is_a_dict
     public :: LIBMUSCLE_Data_is_a_list
+    public :: LIBMUSCLE_Data_is_a_byte_array
 
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_runtime_error = 1
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_domain_error = 2
@@ -156,6 +158,14 @@ module libmuscle
             use iso_c_binding
         end function LIBMUSCLE_Data_create_list_
 
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_byte_array_( &
+                size) &
+                bind(C, name="LIBMUSCLE_Data_create_byte_array_")
+
+            use iso_c_binding
+            integer (c_size_t), value, intent(in) :: size
+        end function LIBMUSCLE_Data_create_byte_array_
+
         integer (c_intptr_t) function LIBMUSCLE_Data_create_nils_( &
                 size) &
                 bind(C, name="LIBMUSCLE_Data_create_nils_")
@@ -267,6 +277,14 @@ module libmuscle
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_list_
+
+        integer (c_int) function LIBMUSCLE_Data_is_a_byte_array_( &
+                self) &
+                bind(C, name="LIBMUSCLE_Data_is_a_byte_array_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_Data_is_a_byte_array_
 
     end interface
 
@@ -479,6 +497,19 @@ contains
 
         LIBMUSCLE_Data_create_list%ptr = ret_val
     end function LIBMUSCLE_Data_create_list
+
+    function LIBMUSCLE_Data_create_byte_array(size)
+        implicit none
+        integer (selected_int_kind(18)), intent(in) :: size
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_byte_array
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_byte_array_( &
+            size)
+
+        LIBMUSCLE_Data_create_byte_array%ptr = ret_val
+    end function LIBMUSCLE_Data_create_byte_array
 
     function LIBMUSCLE_Data_create_nils(size)
         implicit none
@@ -886,6 +917,19 @@ contains
 
         LIBMUSCLE_Data_is_a_list = ret_val .ne. 0
     end function LIBMUSCLE_Data_is_a_list
+
+    function LIBMUSCLE_Data_is_a_byte_array(self)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        logical :: LIBMUSCLE_Data_is_a_byte_array
+
+        integer (c_int) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_is_a_byte_array_( &
+            self%ptr)
+
+        LIBMUSCLE_Data_is_a_byte_array = ret_val .ne. 0
+    end function LIBMUSCLE_Data_is_a_byte_array
 
 
     function LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create(count)

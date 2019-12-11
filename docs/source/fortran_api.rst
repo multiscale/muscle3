@@ -222,3 +222,12 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :p LIBMUSCLE_Data self: The Data object to inspect.
     :r is: True if the object contains a byte array.
     :rtype is: logical
+
+.. f:function:: LIBMUSCLE_Data_size(self)
+
+    Returns the size of a list (number of items), dict (number of key/value
+    pairs), or byte array (number of bytes).
+
+    :p LIBMUSCLE_Data self: The Data object to get the size of.
+    :r size: The size of the object.
+    :rtype size: integer (selected_int_kind(18))

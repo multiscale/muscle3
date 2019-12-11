@@ -385,6 +385,12 @@ int LIBMUSCLE_Data_is_nil_(std::intptr_t self) {
     return result ? 1 : 0;
 }
 
+int64_t LIBMUSCLE_Data_size_(std::intptr_t self) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    int64_t result = self_p->size();
+    return result;
+}
+
 std::intptr_t LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(int count) {
     CmdLineArgs * result = new CmdLineArgs(count);
     return reinterpret_cast<std::intptr_t>(result);

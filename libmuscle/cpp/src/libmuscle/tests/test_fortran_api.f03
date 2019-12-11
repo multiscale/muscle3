@@ -18,6 +18,16 @@ subroutine assert_false(x)
     end if
 end subroutine assert_false
 
+subroutine assert_eq(x, y)
+    implicit none
+    integer (selected_int_kind(18)) :: x, y
+
+    if (x .ne. y) then
+        print *, 'Assertion failed'
+        stop
+    end if
+end subroutine assert_eq
+
 subroutine test_data_constructors
     use libmuscle
 
@@ -113,10 +123,19 @@ subroutine test_data_constructors
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.list'
 
+    print *, '[  RUN     ] data.nils'
+    d1 = LIBMUSCLE_Data_create_nils(100_long_int)
+    call assert_true(LIBMUSCLE_Data_is_a_list(d1))
+    call assert_false(LIBMUSCLE_Data_is_a_float(d1))
+    call assert_eq(LIBMUSCLE_Data_size(d1), 100_long_int)
+    call LIBMUSCLE_Data_free(d1)
+    print *, '[       OK ] data.nils'
+
     print *, '[  RUN     ] data.byte_array'
     d1 = LIBMUSCLE_Data_create_byte_array(1024_long_int)
     call assert_true(LIBMUSCLE_Data_is_a_byte_array(d1))
     call assert_false(LIBMUSCLE_Data_is_a_int(d1))
+    call assert_eq(LIBMUSCLE_Data_size(d1), 1024_long_int)
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.byte_array'
 

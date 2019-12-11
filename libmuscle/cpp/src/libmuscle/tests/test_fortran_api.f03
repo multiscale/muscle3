@@ -28,7 +28,7 @@ subroutine assert_eq(x, y)
     end if
 end subroutine assert_eq
 
-subroutine test_data_constructors
+subroutine test_data_basic_types
     use libmuscle
 
     implicit none
@@ -101,6 +101,14 @@ subroutine test_data_constructors
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.double'
 
+end subroutine test_data_basic_types
+
+subroutine test_data_copy_assign
+    use libmuscle
+
+    implicit none
+    type(LIBMUSCLE_Data) :: d1, d2
+
     print *, '[  RUN     ] data.copy_constructor'
     d1 = LIBMUSCLE_Data_create(42.0d0)
     d2 = LIBMUSCLE_Data_create(d1)
@@ -110,11 +118,38 @@ subroutine test_data_constructors
     call LIBMUSCLE_Data_free(d2)
     print *, '[       OK ] data.copy_constructor'
 
+    print *, '[  RUN     ] data.assign'
+    d1 = LIBMUSCLE_Data_create(42.0d0)
+    d2 = LIBMUSCLE_Data_create()
+    call LIBMUSCLE_Data_assign(d2, d1)
+    call LIBMUSCLE_Data_free(d1)
+    call assert_true(LIBMUSCLE_Data_is_a_double(d2))
+    call assert_false(LIBMUSCLE_Data_is_a_float(d2))
+    call LIBMUSCLE_Data_free(d2)
+    print *, '[       OK ] data.assign'
+end subroutine test_data_copy_assign
+
+
+subroutine test_data_dict
+    use libmuscle
+
+    implicit none
+    type(LIBMUSCLE_Data) :: d1, d2
+
     print *, '[  RUN     ] data.dict'
     d1 = LIBMUSCLE_Data_create_dict()
     call assert_true(LIBMUSCLE_Data_is_a_dict(d1))
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.dict'
+end subroutine test_data_dict
+
+
+subroutine test_data_list
+    use libmuscle
+
+    implicit none
+    integer, parameter :: long_int = selected_int_kind(18)
+    type(LIBMUSCLE_Data) :: d1, d2
 
     print *, '[  RUN     ] data.list'
     d1 = LIBMUSCLE_Data_create_list()
@@ -130,6 +165,14 @@ subroutine test_data_constructors
     call assert_eq(LIBMUSCLE_Data_size(d1), 100_long_int)
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.nils'
+end subroutine test_data_list
+
+subroutine test_data_byte_array
+    use libmuscle
+
+    implicit none
+    integer, parameter :: long_int = selected_int_kind(18)
+    type(LIBMUSCLE_Data) :: d1
 
     print *, '[  RUN     ] data.byte_array'
     d1 = LIBMUSCLE_Data_create_byte_array(1024_long_int)
@@ -138,18 +181,16 @@ subroutine test_data_constructors
     call assert_eq(LIBMUSCLE_Data_size(d1), 1024_long_int)
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.byte_array'
+end subroutine test_data_byte_array
 
-    print *, '[  RUN     ] data.assign'
-    d1 = LIBMUSCLE_Data_create(42.0d0)
-    d2 = LIBMUSCLE_Data_create()
-    call LIBMUSCLE_Data_assign(d2, d1)
-    call LIBMUSCLE_Data_free(d1)
-    call assert_true(LIBMUSCLE_Data_is_a_double(d2))
-    call assert_false(LIBMUSCLE_Data_is_a_float(d2))
-    call LIBMUSCLE_Data_free(d2)
-    print *, '[       OK ] data.assign'
 
-end subroutine test_data_constructors
+subroutine test_data
+    call test_data_basic_types
+    call test_data_copy_assign
+    call test_data_dict
+    call test_data_list
+    call test_data_byte_array
+end subroutine
 
 
 program test_fortran_api
@@ -158,7 +199,7 @@ program test_fortran_api
     print *, ''
     print *, '[==========] Fortran API test'
 
-    call test_data_constructors
+    call test_data
 
     print *, '[==========] Fortran API test'
     print *, '[  PASSED  ] Fortran API test'

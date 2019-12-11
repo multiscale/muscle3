@@ -31,6 +31,16 @@ data_desc = Class('Data', [
     NamedConstructor([], 'list'),
     NamedConstructor([Sizet('size')], 'byte_array'),
     NamedConstructor([Sizet('size')], 'nils'),
+    MemFun(Void(), 'assign', [Obj('Data', 'value')],
+        fc_override=(
+            'void LIBMUSCLE_Data_assign_(std::intptr_t self, std::intptr_t value) {\n'
+            '    Data * self_p = reinterpret_cast<Data *>(self);\n'
+            '    Data * value_p = reinterpret_cast<Data *>(value);\n'
+            '    *self_p = *value_p;\n'
+            '    return;\n'
+            '}\n'
+            )
+        ),
     MemFunTmpl(
         [Bool(), String(), Char(), Int(), Int16t(), Int64t(), Float(),
             Double()],

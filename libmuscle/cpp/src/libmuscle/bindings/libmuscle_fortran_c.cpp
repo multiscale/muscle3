@@ -91,6 +91,12 @@ std::intptr_t LIBMUSCLE_Data_create_nils_(std::size_t size) {
     return reinterpret_cast<std::intptr_t>(result);
 }
 
+void LIBMUSCLE_Data_assign_(std::intptr_t self, std::intptr_t value) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    Data * value_p = reinterpret_cast<Data *>(value);
+    *self_p = *value_p;
+    return;
+}
 int LIBMUSCLE_Data_is_a_bool_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {

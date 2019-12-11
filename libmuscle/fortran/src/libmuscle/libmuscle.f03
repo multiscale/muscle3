@@ -32,6 +32,7 @@ module libmuscle
     public :: LIBMUSCLE_Data_create_list
     public :: LIBMUSCLE_Data_create_byte_array
     public :: LIBMUSCLE_Data_create_nils
+    public :: LIBMUSCLE_Data_assign
     public :: LIBMUSCLE_Data_is_a_bool
     public :: LIBMUSCLE_Data_is_a_string
     public :: LIBMUSCLE_Data_is_a_char
@@ -173,6 +174,15 @@ module libmuscle
             use iso_c_binding
             integer (c_size_t), value, intent(in) :: size
         end function LIBMUSCLE_Data_create_nils_
+
+        subroutine LIBMUSCLE_Data_assign_( &
+                self, value) &
+                bind(C, name="LIBMUSCLE_Data_assign_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_intptr_t), value, intent(in) :: value
+        end subroutine LIBMUSCLE_Data_assign_
 
         integer (c_int) function LIBMUSCLE_Data_is_a_bool_( &
                 self, err_code, err_msg, err_msg_len) &
@@ -523,6 +533,16 @@ contains
 
         LIBMUSCLE_Data_create_nils%ptr = ret_val
     end function LIBMUSCLE_Data_create_nils
+
+    subroutine LIBMUSCLE_Data_assign(self, value)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        type(LIBMUSCLE_Data), intent(in) :: value
+
+        call LIBMUSCLE_Data_assign_( &
+            self%ptr, &
+            value%ptr)
+    end subroutine LIBMUSCLE_Data_assign
 
     function LIBMUSCLE_Data_is_a_bool(self, err_code, err_msg)
         implicit none

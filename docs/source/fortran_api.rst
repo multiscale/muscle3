@@ -103,6 +103,23 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     :p LIBMUSCLE_Data self: The Data object to free.
 
+.. f:subroutine:: LIBMUSCLE_Data_assign(self, value)
+
+    Assigns the value of ``value`` to ``self``. Both ``value`` and ``self``
+    must have a value (nil is okay, but an uninitialised ``LIBMUSCLE_Data`` is
+    not). If ``value`` holds a basic type, then the value will be copied into
+    ``self``, overwriting any previous value in ``self``. If ``value`` holds a
+    list, dict, or byte array, then ``self`` will end up referring to the same
+    object as ``value``.
+
+    If you haven't created ``self`` yet, then it's shorter to use
+    ``LIBMUSCLE_Data_create(value)``.
+
+    This is the equivalent of ``self = value`` in C++ or Python.
+
+    :p LIBMUSCLE_Data self: The Data object to assign to.
+    :p LIBMUSCLE_Data value: The Data object to assign from.
+
 .. f:function:: LIBMUSCLE_Data_is_a_bool(self)
 
     Determine whether the Data object contains a boolean (logical) value.

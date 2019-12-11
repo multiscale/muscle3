@@ -379,6 +379,12 @@ int LIBMUSCLE_Data_is_a_byte_array_(std::intptr_t self) {
     return result ? 1 : 0;
 }
 
+int LIBMUSCLE_Data_is_nil_(std::intptr_t self) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    bool result = self_p->is_nil();
+    return result ? 1 : 0;
+}
+
 std::intptr_t LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(int count) {
     CmdLineArgs * result = new CmdLineArgs(count);
     return reinterpret_cast<std::intptr_t>(result);

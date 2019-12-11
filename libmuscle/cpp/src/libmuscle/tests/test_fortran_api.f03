@@ -30,6 +30,8 @@ subroutine test_data_constructors
 
     print *, '[  RUN     ] data.nil'
     d1 = LIBMUSCLE_Data_create()
+    call assert_true(LIBMUSCLE_Data_is_nil(d1))
+    call assert_false(LIBMUSCLE_Data_is_a_int(d1))
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.nil'
 

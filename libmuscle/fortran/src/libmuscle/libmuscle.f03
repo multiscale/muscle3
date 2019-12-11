@@ -44,6 +44,7 @@ module libmuscle
     public :: LIBMUSCLE_Data_is_a_dict
     public :: LIBMUSCLE_Data_is_a_list
     public :: LIBMUSCLE_Data_is_a_byte_array
+    public :: LIBMUSCLE_Data_is_nil
 
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_runtime_error = 1
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_domain_error = 2
@@ -295,6 +296,14 @@ module libmuscle
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_byte_array_
+
+        integer (c_int) function LIBMUSCLE_Data_is_nil_( &
+                self) &
+                bind(C, name="LIBMUSCLE_Data_is_nil_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_Data_is_nil_
 
     end interface
 
@@ -950,6 +959,19 @@ contains
 
         LIBMUSCLE_Data_is_a_byte_array = ret_val .ne. 0
     end function LIBMUSCLE_Data_is_a_byte_array
+
+    function LIBMUSCLE_Data_is_nil(self)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        logical :: LIBMUSCLE_Data_is_nil
+
+        integer (c_int) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_is_nil_( &
+            self%ptr)
+
+        LIBMUSCLE_Data_is_nil = ret_val .ne. 0
+    end function LIBMUSCLE_Data_is_nil
 
 
     function LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create(count)

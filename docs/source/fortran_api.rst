@@ -14,6 +14,11 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     returned from and passed to libmuscle functions, but does not contain any
     directly accessible members.
 
+    With respect to creation, assignment and copying, ``LIBMUSCLE_Data`` objects
+    act like Python objects: basic values (logicals, strings, integers and
+    reals) get copied, while for lists, dictionaries, and byte arrays, the
+    variable contains a reference which gets copied.
+
 .. f:function:: LIBMUSCLE_Data_create()
 
     Creates a Data object representing nil.
@@ -184,6 +189,14 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     :p LIBMUSCLE_Data self: The Data object to inspect.
     :r is: True if the object contains a double precision float value.
+    :rtype is: logical
+
+.. f:function:: LIBMUSCLE_Data_is_nil(self)
+
+    Determine whether the Data object contains a nil value.
+
+    :p LIBMUSCLE_Data self: The Data object to inspect.
+    :r is: True if the object contains a nil value.
     :rtype is: logical
 
 .. f:function:: LIBMUSCLE_Data_is_a_dict(self)

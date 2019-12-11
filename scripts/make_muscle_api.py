@@ -48,6 +48,7 @@ data_desc = Class('Data', [
     MemFun(Bool(), 'is_a_dict'),
     MemFun(Bool(), 'is_a_list'),
     MemFun(Bool(), 'is_a_byte_array'),
+    MemFun(Bool(), 'is_nil'),
     ])
 
 

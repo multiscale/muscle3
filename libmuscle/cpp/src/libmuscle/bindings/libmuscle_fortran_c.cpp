@@ -97,268 +97,52 @@ void LIBMUSCLE_Data_assign_(std::intptr_t self, std::intptr_t value) {
     *self_p = *value_p;
     return;
 }
-int LIBMUSCLE_Data_is_a_bool_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+int LIBMUSCLE_Data_is_a_bool_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
-    try {
-        *err_code = 0;
-        bool result = self_p->is_a<bool>();
-        return result ? 1 : 0;
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 1;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 2;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 3;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 4;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
+    bool result = self_p->is_a<bool>();
+    return result ? 1 : 0;
 }
 
-int LIBMUSCLE_Data_is_a_string_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+int LIBMUSCLE_Data_is_a_string_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
-    try {
-        *err_code = 0;
-        bool result = self_p->is_a<std::string>();
-        return result ? 1 : 0;
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 1;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 2;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 3;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 4;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
+    bool result = self_p->is_a<std::string>();
+    return result ? 1 : 0;
 }
 
-int LIBMUSCLE_Data_is_a_char_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+int LIBMUSCLE_Data_is_a_char_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
-    try {
-        *err_code = 0;
-        bool result = self_p->is_a<char>();
-        return result ? 1 : 0;
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 1;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 2;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 3;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 4;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
+    bool result = self_p->is_a<char>();
+    return result ? 1 : 0;
 }
 
-int LIBMUSCLE_Data_is_a_int_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+int LIBMUSCLE_Data_is_a_int_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
-    try {
-        *err_code = 0;
-        bool result = self_p->is_a<int>();
-        return result ? 1 : 0;
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 1;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 2;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 3;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 4;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
+    bool result = self_p->is_a<int>();
+    return result ? 1 : 0;
 }
 
-int LIBMUSCLE_Data_is_a_int16_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+int LIBMUSCLE_Data_is_a_int16_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
-    try {
-        *err_code = 0;
-        bool result = self_p->is_a<int16_t>();
-        return result ? 1 : 0;
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 1;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 2;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 3;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 4;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
+    bool result = self_p->is_a<int16_t>();
+    return result ? 1 : 0;
 }
 
-int LIBMUSCLE_Data_is_a_int64_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+int LIBMUSCLE_Data_is_a_int64_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
-    try {
-        *err_code = 0;
-        bool result = self_p->is_a<int64_t>();
-        return result ? 1 : 0;
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 1;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 2;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 3;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 4;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
+    bool result = self_p->is_a<int64_t>();
+    return result ? 1 : 0;
 }
 
-int LIBMUSCLE_Data_is_a_float_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+int LIBMUSCLE_Data_is_a_float_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
-    try {
-        *err_code = 0;
-        bool result = self_p->is_a<float>();
-        return result ? 1 : 0;
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 1;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 2;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 3;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 4;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
+    bool result = self_p->is_a<float>();
+    return result ? 1 : 0;
 }
 
-int LIBMUSCLE_Data_is_a_double_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+int LIBMUSCLE_Data_is_a_double_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
-    try {
-        *err_code = 0;
-        bool result = self_p->is_a<double>();
-        return result ? 1 : 0;
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 1;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 2;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 3;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 4;
-        static std::string msg(e.what());
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
+    bool result = self_p->is_a<double>();
+    return result ? 1 : 0;
 }
 
 int LIBMUSCLE_Data_is_a_dict_(std::intptr_t self) {

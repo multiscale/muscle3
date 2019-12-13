@@ -44,7 +44,7 @@ data_desc = Class('Data', [
     MemFunTmpl(
         [Bool(), String(), Char(), Int(), Int16t(), Int64t(), Float(),
             Double()],
-        Bool(), 'is_a', [], True),
+        Bool(), 'is_a', [], False),
     MemFun(Bool(), 'is_a_dict'),
     MemFun(Bool(), 'is_a_list'),
     MemFun(Bool(), 'is_a_byte_array'),

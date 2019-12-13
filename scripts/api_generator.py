@@ -6,6 +6,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 
 error_codes = {
+        'success': 0,
         'runtime_error': 1,
         'domain_error': 2,
         'out_of_range': 3,
@@ -905,12 +906,15 @@ class MemFun(Member):
             result += textwrap.indent(self._fc_return(), 4*' ')
             result += '    }\n'
             for exception, code in error_codes.items():
-                result += '    catch (std::{} const & e) {{\n'.format(exception)
-                result += '        *err_code = {};\n'.format(code)
-                result += '        static std::string msg(e.what());\n'
-                result += '        *err_msg = const_cast<char*>(msg.data());\n'
-                result += '        *err_msg_len = msg.size();\n'
-                result += '    }\n'
+                if code != 0:
+                    catch = ''
+                    catch += 'catch (std::{} const & e) {{\n'.format(exception)
+                    catch += '    *err_code = {};\n'.format(code)
+                    catch += '    static std::string msg(e.what());\n'
+                    catch += '    *err_msg = const_cast<char*>(msg.data());\n'
+                    catch += '    *err_msg_len = msg.size();\n'
+                    catch += '}\n'
+                    result += textwrap.indent(catch, 4*' ')
         else:
             result += self._fc_cpp_call()
             result += self._fc_return()

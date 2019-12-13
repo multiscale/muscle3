@@ -55,6 +55,7 @@ module libmuscle
     public :: LIBMUSCLE_Data_as_int64
     public :: LIBMUSCLE_Data_as_float
     public :: LIBMUSCLE_Data_as_double
+    public :: LIBMUSCLE_Data_as_byte_array
 
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_success = 0
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_runtime_error = 1
@@ -389,6 +390,19 @@ module libmuscle
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Data_as_double_
+
+        subroutine LIBMUSCLE_Data_as_byte_array_( &
+                self, ret_val, ret_val_size, err_code, err_msg, err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_as_byte_array_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_size_t), intent(out) :: ret_val_size
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_Data_as_byte_array_
 
     end interface
 
@@ -847,6 +861,10 @@ contains
                 print *, err_msg_p
                 stop
             end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
         end if
 
         LIBMUSCLE_Data_as_bool = ret_val .ne. 0
@@ -898,6 +916,10 @@ contains
                 print *, err_msg_p
                 stop
             end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
         end if
 
         call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
@@ -947,6 +969,10 @@ contains
                 print *, err_msg_p
                 stop
             end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
         end if
 
         LIBMUSCLE_Data_as_char = ret_val
@@ -991,6 +1017,10 @@ contains
                 end do
                 print *, err_msg_p
                 stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
             end if
         end if
 
@@ -1037,6 +1067,10 @@ contains
                 print *, err_msg_p
                 stop
             end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
         end if
 
         LIBMUSCLE_Data_as_int = ret_val
@@ -1081,6 +1115,10 @@ contains
                 end do
                 print *, err_msg_p
                 stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
             end if
         end if
 
@@ -1127,6 +1165,10 @@ contains
                 print *, err_msg_p
                 stop
             end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
         end if
 
         LIBMUSCLE_Data_as_float = ret_val
@@ -1172,10 +1214,69 @@ contains
                 print *, err_msg_p
                 stop
             end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
         end if
 
         LIBMUSCLE_Data_as_double = ret_val
     end function LIBMUSCLE_Data_as_double
+
+    subroutine LIBMUSCLE_Data_as_byte_array(self, data, err_code, err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        character(len=1), dimension(:), intent(out) :: data
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t) :: ret_val_size
+        character(len=1), pointer, dimension(:) :: f_ret_ptr
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_as_byte_array_( &
+            self%ptr, &
+            ret_val, &
+            ret_val_size, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
+        data = f_ret_ptr
+    end subroutine LIBMUSCLE_Data_as_byte_array
 
 
     function LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create(count)

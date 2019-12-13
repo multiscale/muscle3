@@ -441,6 +441,25 @@ double LIBMUSCLE_Data_as_double_(std::intptr_t self, int * err_code, char ** err
     }
 }
 
+void LIBMUSCLE_Data_as_byte_array_(
+        std::intptr_t self,
+        char ** data, std::size_t * data_size,
+        int * err_code, char ** err_msg, std::size_t * err_msg_len
+) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        *data = self_p->as_byte_array();
+        *data_size = self_p->size();
+        return;
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 1;
+        static std::string msg(e.what());
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
 std::intptr_t LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(int count) {
     CmdLineArgs * result = new CmdLineArgs(count);
     return reinterpret_cast<std::intptr_t>(result);

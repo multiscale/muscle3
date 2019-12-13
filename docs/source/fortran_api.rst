@@ -311,7 +311,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         type(LIBMUSCLE_Data) :: mydata
         character(len=:), allocatable :: str
 
-        ! Create a data object containing a logical value
+        ! Create a data object containing a string value
         mydata = LIBMUSCLE_Data_create('Example')
         ! Retrieve the value
         str = LIBMUSCLE_Data_as_string(mydata)
@@ -527,7 +527,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         type(LIBMUSCLE_Data) :: mydata
         real(kind=selected_real_kind(6)) :: number
 
-        ! Create a data object containing an integer value
+        ! Create a data object containing a real value
         mydata = LIBMUSCLE_Data_create(42.0)
         ! Retrieve the value
         number = LIBMUSCLE_Data_as_single(mydata)
@@ -571,7 +571,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         type(LIBMUSCLE_Data) :: mydata
         real(kind=selected_real_kind(15)) :: number
 
-        ! Create a data object containing an integer value
+        ! Create a data object containing a real value
         mydata = LIBMUSCLE_Data_create(42.0d0)
         ! Retrieve the value
         number = LIBMUSCLE_Data_as_double(mydata)
@@ -587,8 +587,52 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :r value: The value.
     :rtype value: real(kind=selected_real_kind(15))
 
+.. f:subroutine:: LIBMUSCLE_Data_as_byte_array(self, buf, err_code, err_msg)
 
+    Access a byte array value.
 
+    You can use ``LIBMUSCLE_Data_is_a_byte_array()`` to ascertain that the Data
+    object contains a byte array value. You can use ``LIBMUSCLE_Data_size()`` to
+    get the number of bytes stored.
 
+    If the Data object does not contain a byte array (character array) value,
+    then an error message will be printed and execution will be halted.
 
+    Alternatively, you can pass an argument for ``err_code``, or for both
+    ``err_code`` and ``err_msg``, to catch the error.
 
+    If ``err_code`` equals ``LIBMUSCLE_success`` after the call, then the
+    contents of this variable will have been copied into ``buf``. If it equals
+    ``LIBMUSCLE_runtime_error``, the Data value did not contain a byte array
+    value. If you passed an ``err_msg`` argument as well, then the passed
+    variable will contain an appropriate error message in case of error, and
+    needs to be deallocated (using ``deallocate()``) when you're done with it.
+
+    Example:
+
+    .. code-block:: fortran
+
+        integer, parameter :: long = selected_int_kind(18)
+        type(LIBMUSCLE_Data) :: mydata
+        character(len=1), dimension(:), allocatable : buf
+
+        ! Create a data object containing a byte array value
+        mydata = LIBMUSCLE_Data_create_byte_array(1024_long)
+
+        ! Allocate some space
+        allocate(buf(LIBMUSCLE_Data_size(mydata)))
+        ! Retrieve the value
+        number = LIBMUSCLE_Data_as_byte_array(mydata, buf)
+
+        ! Free the data object
+        call LIBMUSCLE_Data_free(mydata)
+        ! Free the buffer
+        deallocate(buf)
+
+    See ``LIBMUSCLE_Data_is_a_bool()`` for an example of error handling.
+
+    :p LIBMUSCLE_Data self: The Data object to get a byte array out of.
+    :p character buf: A buffer large enough to hold the contents of the data
+            object.
+    :p integer err_code: An error code output (optional)
+    :p character err_msg: An error message output (allocatable, optional).

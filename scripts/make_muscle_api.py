@@ -54,6 +54,29 @@ data_desc = Class('Data', [
         [Bool(), String(), Char(), Int16t(), Int(), Int64t(), Float(),
             Double()],
         T(), 'as', [], True),
+    MemFun(Bytes('data'), 'as_byte_array', [], True,
+        fc_override=(
+            'void LIBMUSCLE_Data_as_byte_array_(\n'
+            '        std::intptr_t self,\n'
+            '        char ** data, std::size_t * data_size,\n'
+            '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
+            ') {\n'
+            '    Data * self_p = reinterpret_cast<Data *>(self);\n'
+            '    try {\n'
+            '        *err_code = 0;\n'
+            '        *data = self_p->as_byte_array();\n'
+            '        *data_size = self_p->size();\n'
+            '        return;\n'
+            '    }\n'
+            '    catch (std::runtime_error const & e) {\n'
+            '        *err_code = 1;\n'
+            '        static std::string msg(e.what());\n'
+            '        *err_msg = const_cast<char*>(msg.data());\n'
+            '        *err_msg_len = msg.size();\n'
+            '    }\n'
+            '}\n'
+            )
+        ),
     ])
 
 

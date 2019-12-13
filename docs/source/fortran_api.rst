@@ -108,7 +108,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     :p LIBMUSCLE_Data self: The Data object to free.
 
-.. f:subroutine:: LIBMUSCLE_Data_assign(self, value)
+.. f:subroutine:: LIBMUSCLE_Data_set_data(self, value)
 
     Assigns the value of ``value`` to ``self``. Both ``value`` and ``self``
     must have a value (nil is okay, but an uninitialised ``LIBMUSCLE_Data`` is

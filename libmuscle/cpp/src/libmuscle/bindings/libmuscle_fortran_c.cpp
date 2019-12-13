@@ -68,7 +68,7 @@ std::intptr_t LIBMUSCLE_Data_create_copy_(std::intptr_t value) {
 void LIBMUSCLE_Data_free_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     delete self_p;
-return;
+    return;
 }
 
 std::intptr_t LIBMUSCLE_Data_create_dict_() {
@@ -91,12 +91,13 @@ std::intptr_t LIBMUSCLE_Data_create_nils_(std::size_t size) {
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-void LIBMUSCLE_Data_assign_(std::intptr_t self, std::intptr_t value) {
+void LIBMUSCLE_Data_set_data_(std::intptr_t self, std::intptr_t value) {
     Data * self_p = reinterpret_cast<Data *>(self);
     Data * value_p = reinterpret_cast<Data *>(value);
     *self_p = *value_p;
     return;
 }
+
 int LIBMUSCLE_Data_is_a_bool_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<bool>();
@@ -468,14 +469,14 @@ std::intptr_t LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(int count) {
 void LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_(std::intptr_t self) {
     CmdLineArgs * self_p = reinterpret_cast<CmdLineArgs *>(self);
     delete self_p;
-return;
+    return;
 }
 
 void LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg_(std::intptr_t self, int i, char * arg, std::size_t arg_size) {
     CmdLineArgs * self_p = reinterpret_cast<CmdLineArgs *>(self);
     std::string arg_s(arg, arg_size);
     self_p->set_arg(i, arg_s);
-return;
+    return;
 }
 
 }

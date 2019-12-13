@@ -107,7 +107,7 @@ class Void(Par):
         return cpp_chain_call
 
     def fc_return(self) -> str:
-        return 'return;\n'
+        return '    return;\n'
 
     def f_call_c(self, result_name: str, call: str) -> str:
         return '    call {}\n'.format(call)
@@ -1193,6 +1193,25 @@ class Constructor(MemFun):
 
     def _fc_return(self) -> str:
         return '    return reinterpret_cast<std::intptr_t>(result);\n'
+
+
+class AssignmentOperator(MemFun):
+    """Represents an assignment operator.
+
+    This generates code suitable for an assignment operator, rather than
+    the default code.
+    """
+    def __init__(self,
+                 name: str,
+                 param: Par = None,
+                 **args
+                 ) -> None:
+        super().__init__(Void(), name, [param], False, **args)
+
+    def _fc_cpp_call(self) -> str:
+        # Create object instead of calling something
+        cpp_args = [par.fc_cpp_arg() for par in self.params]
+        return '    *self_p = {};\n'.format(cpp_args[1])
 
 
 class NamedConstructor(Constructor):

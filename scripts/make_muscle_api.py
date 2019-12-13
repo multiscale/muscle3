@@ -50,6 +50,10 @@ data_desc = Class('Data', [
     MemFun(Bool(), 'is_a_byte_array'),
     MemFun(Bool(), 'is_nil'),
     MemFun(Int64t(), 'size'),
+    MemFunTmpl(
+        [Bool(), String(), Char(), Int16t(), Int(), Int64t(), Float(),
+            Double()],
+        T(), 'as', [], True),
     ])
 
 

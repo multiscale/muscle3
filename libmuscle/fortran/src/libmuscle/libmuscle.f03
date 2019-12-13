@@ -6,6 +6,7 @@ module libmuscle
     use iso_c_binding
     private
 
+    integer, parameter, public :: LIBMUSCLE_success = 0
     integer, parameter, public :: LIBMUSCLE_runtime_error = 1
     integer, parameter, public :: LIBMUSCLE_domain_error = 2
     integer, parameter, public :: LIBMUSCLE_out_of_range = 3
@@ -46,7 +47,16 @@ module libmuscle
     public :: LIBMUSCLE_Data_is_a_byte_array
     public :: LIBMUSCLE_Data_is_nil
     public :: LIBMUSCLE_Data_size
+    public :: LIBMUSCLE_Data_as_bool
+    public :: LIBMUSCLE_Data_as_string
+    public :: LIBMUSCLE_Data_as_char
+    public :: LIBMUSCLE_Data_as_int16
+    public :: LIBMUSCLE_Data_as_int
+    public :: LIBMUSCLE_Data_as_int64
+    public :: LIBMUSCLE_Data_as_float
+    public :: LIBMUSCLE_Data_as_double
 
+    integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_success = 0
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_runtime_error = 1
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_domain_error = 2
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_out_of_range = 3
@@ -313,6 +323,96 @@ module libmuscle
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_size_
+
+        integer (c_int) function LIBMUSCLE_Data_as_bool_( &
+                self, err_code, err_msg, err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_as_bool_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end function LIBMUSCLE_Data_as_bool_
+
+        subroutine LIBMUSCLE_Data_as_string_( &
+                self, ret_val, ret_val_size, err_code, err_msg, err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_as_string_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_size_t), intent(out) :: ret_val_size
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_Data_as_string_
+
+        integer (c_int8_t) function LIBMUSCLE_Data_as_char_( &
+                self, err_code, err_msg, err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_as_char_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end function LIBMUSCLE_Data_as_char_
+
+        integer (c_short) function LIBMUSCLE_Data_as_int16_( &
+                self, err_code, err_msg, err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_as_int16_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end function LIBMUSCLE_Data_as_int16_
+
+        integer (c_int) function LIBMUSCLE_Data_as_int_( &
+                self, err_code, err_msg, err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_as_int_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end function LIBMUSCLE_Data_as_int_
+
+        integer (c_int64_t) function LIBMUSCLE_Data_as_int64_( &
+                self, err_code, err_msg, err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_as_int64_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end function LIBMUSCLE_Data_as_int64_
+
+        real (selected_real_kind(6)) function LIBMUSCLE_Data_as_float_( &
+                self, err_code, err_msg, err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_as_float_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end function LIBMUSCLE_Data_as_float_
+
+        real (selected_real_kind(15)) function LIBMUSCLE_Data_as_double_( &
+                self, err_code, err_msg, err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_as_double_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end function LIBMUSCLE_Data_as_double_
 
     end interface
 
@@ -993,6 +1093,377 @@ contains
             self%ptr)
         LIBMUSCLE_Data_size = ret_val
     end function LIBMUSCLE_Data_size
+
+    function LIBMUSCLE_Data_as_bool(self, err_code, err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        logical :: LIBMUSCLE_Data_as_bool
+
+        integer (c_int) :: ret_val
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        ret_val = LIBMUSCLE_Data_as_bool_( &
+            self%ptr, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        end if
+
+        LIBMUSCLE_Data_as_bool = ret_val .ne. 0
+    end function LIBMUSCLE_Data_as_bool
+
+    function LIBMUSCLE_Data_as_string(self, err_code, err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        character(:), allocatable :: LIBMUSCLE_Data_as_string
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t) :: ret_val_size
+        character (c_char), dimension(:), pointer :: f_ret_ptr
+        integer :: i
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_as_string_( &
+            self%ptr, &
+            ret_val, &
+            ret_val_size, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        end if
+
+        call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
+        allocate (character(ret_val_size) :: LIBMUSCLE_Data_as_string)
+        do i = 1, ret_val_size
+            LIBMUSCLE_Data_as_string(i:i) = f_ret_ptr(i)
+        end do
+    end function LIBMUSCLE_Data_as_string
+
+    function LIBMUSCLE_Data_as_char(self, err_code, err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        integer (selected_int_kind(2)) :: LIBMUSCLE_Data_as_char
+
+        integer (c_int8_t) :: ret_val
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        ret_val = LIBMUSCLE_Data_as_char_( &
+            self%ptr, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        end if
+
+        LIBMUSCLE_Data_as_char = ret_val
+    end function LIBMUSCLE_Data_as_char
+
+    function LIBMUSCLE_Data_as_int16(self, err_code, err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        integer (selected_int_kind(4)) :: LIBMUSCLE_Data_as_int16
+
+        integer (c_short) :: ret_val
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        ret_val = LIBMUSCLE_Data_as_int16_( &
+            self%ptr, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        end if
+
+        LIBMUSCLE_Data_as_int16 = ret_val
+    end function LIBMUSCLE_Data_as_int16
+
+    function LIBMUSCLE_Data_as_int(self, err_code, err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        integer :: LIBMUSCLE_Data_as_int
+
+        integer (c_int) :: ret_val
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        ret_val = LIBMUSCLE_Data_as_int_( &
+            self%ptr, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        end if
+
+        LIBMUSCLE_Data_as_int = ret_val
+    end function LIBMUSCLE_Data_as_int
+
+    function LIBMUSCLE_Data_as_int64(self, err_code, err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        integer (selected_int_kind(18)) :: LIBMUSCLE_Data_as_int64
+
+        integer (c_int64_t) :: ret_val
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        ret_val = LIBMUSCLE_Data_as_int64_( &
+            self%ptr, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        end if
+
+        LIBMUSCLE_Data_as_int64 = ret_val
+    end function LIBMUSCLE_Data_as_int64
+
+    function LIBMUSCLE_Data_as_float(self, err_code, err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        real (selected_real_kind(6)) :: LIBMUSCLE_Data_as_float
+
+        real (selected_real_kind(6)) :: ret_val
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        ret_val = LIBMUSCLE_Data_as_float_( &
+            self%ptr, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        end if
+
+        LIBMUSCLE_Data_as_float = ret_val
+    end function LIBMUSCLE_Data_as_float
+
+    function LIBMUSCLE_Data_as_double(self, err_code, err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        real (selected_real_kind(15)) :: LIBMUSCLE_Data_as_double
+
+        real (selected_real_kind(15)) :: ret_val
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        ret_val = LIBMUSCLE_Data_as_double_( &
+            self%ptr, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        end if
+
+        LIBMUSCLE_Data_as_double = ret_val
+    end function LIBMUSCLE_Data_as_double
 
 
     function LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create(count)

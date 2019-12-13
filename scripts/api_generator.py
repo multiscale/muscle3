@@ -1056,6 +1056,10 @@ class MemFun(Member):
             result += '            print *, err_msg_p\n'
             result += '            stop\n'
             result += '        end if\n'
+            result += '    else\n'
+            result += '        if (present(err_code)) then\n'
+            result += '            err_code = 0\n'
+            result += '        end if\n'
             result += '    end if\n\n'
 
         # convert and return result

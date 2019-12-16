@@ -172,7 +172,8 @@ class String(Par):
         return self.name + '_s'
 
     def fc_get_result(self, cpp_chain_call: str) -> str:
-        return 'static std::string result = {}'.format(cpp_chain_call)
+        return ('static std::string result;\n'
+                'result = {}').format(cpp_chain_call)
 
     def fc_return(self) -> str:
         return ('    *{0} = const_cast<char*>(result.c_str());\n'
@@ -235,7 +236,8 @@ class VecDbl(Par):
         return self.name + '_v'
 
     def fc_get_result(self, cpp_chain_call: str) -> str:
-        return 'static std::vector<double> result = {}'.format(cpp_chain_call)
+        return ('static std::vector<double> result;\n'
+                'result = {}').format(cpp_chain_call)
 
     def fc_return(self) -> str:
         return ('    *{0} = result.data();\n'
@@ -314,7 +316,8 @@ class Vec2Dbl(Par):
                 'for (auto const & v : result)\n'
                 '    max_len = std::max(max_len, v.size());\n'
                 '\n'
-                'static std::vector<double> ret(result.size() * max_len);\n'
+                'static std::vector<double> ret;\n'
+                'ret.resize(result.size() * max_len);\n'
                 'for (std::size_t i = 0; i < result.size(); ++i)\n'
                 '    for (std::size_t j = 0; j < result[i].size(); ++j)\n'
                 '        ret[j * result.size() + i] = result[i][j];\n'
@@ -383,7 +386,8 @@ class Bytes(Par):
         return self.name + '_v'
 
     def fc_get_result(self, cpp_chain_call: str) -> str:
-        return 'static std::vector<char> result = {}'.format(cpp_chain_call)
+        return ('static std::vector<char> result;\n'
+                'result = {}').format(cpp_chain_call)
 
     def fc_return(self) -> str:
         return ('    *{0} = result.data();\n'
@@ -910,7 +914,8 @@ class MemFun(Member):
                     catch = ''
                     catch += 'catch (std::{} const & e) {{\n'.format(exception)
                     catch += '    *err_code = {};\n'.format(code)
-                    catch += '    static std::string msg(e.what());\n'
+                    catch += '    static std::string msg;\n'
+                    catch += '    msg = e.what();\n'
                     catch += '    *err_msg = const_cast<char*>(msg.data());\n'
                     catch += '    *err_msg_len = msg.size();\n'
                     catch += '}\n'

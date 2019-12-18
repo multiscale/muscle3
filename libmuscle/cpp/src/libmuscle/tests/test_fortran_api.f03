@@ -70,7 +70,7 @@ end subroutine assert_eq_logical
 
 subroutine assert_eq_character(x, y)
     implicit none
-    character :: x, y
+    character(len=*) :: x, y
 
     if (x .ne. y) then
         print *, 'Assertion failed'
@@ -120,6 +120,10 @@ subroutine test_data_basic_types
     d1 = LIBMUSCLE_Data_create()
     call assert_true(LIBMUSCLE_Data_is_nil(d1))
     call assert_false(LIBMUSCLE_Data_is_a_int(d1))
+    call LIBMUSCLE_Data_set(d1, 10)
+    call assert_false(LIBMUSCLE_Data_is_nil(d1))
+    call LIBMUSCLE_Data_set_nil(d1)
+    call assert_true(LIBMUSCLE_Data_is_nil(d1))
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.nil'
 
@@ -132,6 +136,8 @@ subroutine test_data_basic_types
     s1 = LIBMUSCLE_Data_as_string(d1, err_code, err_msg)
     call assert_eq_integer(err_code, LIBMUSCLE_runtime_error)
     deallocate(err_msg)
+    call LIBMUSCLE_Data_set(d1, .false.)
+    call assert_eq_logical(LIBMUSCLE_Data_as_bool(d1), .false.)
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.logical'
 
@@ -144,6 +150,9 @@ subroutine test_data_basic_types
     deallocate(s1)
     i1 = LIBMUSCLE_Data_as_int(d1, err_code)
     call assert_eq_integer(err_code, LIBMUSCLE_runtime_error)
+    call LIBMUSCLE_Data_set(d1, 'Something else')
+    s1 = LIBMUSCLE_Data_as_string(d1)
+    call assert_eq_character(LIBMUSCLE_Data_as_string(d1), 'Something else')
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.string'
 
@@ -154,6 +163,8 @@ subroutine test_data_basic_types
     call assert_false(LIBMUSCLE_Data_is_a_string(d1))
     bi1 = LIBMUSCLE_Data_as_char(d1)
     call assert_eq_byte(bi1, 121_byte)
+    call LIBMUSCLE_Data_set(d1, 43_byte)
+    call assert_eq_byte(LIBMUSCLE_Data_as_char(d1), 43_byte)
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.int8'
 
@@ -162,6 +173,8 @@ subroutine test_data_basic_types
     call assert_true(LIBMUSCLE_Data_is_a_int16(d1))
     si1 = LIBMUSCLE_Data_as_int16(d1)
     call assert_eq_int16(si1, 1313_short_int)
+    call LIBMUSCLE_Data_set(d1, 24242_short_int)
+    call assert_eq_int16(LIBMUSCLE_Data_as_int16(d1), 24242_short_int)
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.int16'
 
@@ -171,6 +184,8 @@ subroutine test_data_basic_types
     call assert_false(LIBMUSCLE_Data_is_a_bool(d1))
     i1 = LIBMUSCLE_Data_as_int(d1)
     call assert_eq_integer(i1, 13)
+    call LIBMUSCLE_Data_set(d1, 242424)
+    call assert_eq_integer(LIBMUSCLE_Data_as_int(d1), 242424)
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.integer'
 
@@ -180,6 +195,8 @@ subroutine test_data_basic_types
     call assert_false(LIBMUSCLE_Data_is_a_string(d1))
     li1 = LIBMUSCLE_Data_as_int64(d1)
     call assert_eq_long_int(li1, 131313131313131313_long_int)
+    call LIBMUSCLE_Data_set(d1, 242424242424242424_long_int)
+    call assert_eq_long_int(LIBMUSCLE_Data_as_int64(d1), 242424242424242424_long_int)
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.integer64'
 
@@ -189,6 +206,8 @@ subroutine test_data_basic_types
     call assert_false(LIBMUSCLE_Data_is_a_int(d1))
     sr1 = LIBMUSCLE_Data_as_float(d1)
     call assert_eq_single(sr1, 42.0)
+    call LIBMUSCLE_Data_set(d1, 3.1415926536)
+    call assert_eq_single(LIBMUSCLE_Data_as_float(d1), 3.1415926536)
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.single'
 
@@ -198,6 +217,8 @@ subroutine test_data_basic_types
     call assert_false(LIBMUSCLE_Data_is_a_float(d1))
     dr1 = LIBMUSCLE_Data_as_double(d1)
     call assert_eq_double(dr1, 42.0d0)
+    call LIBMUSCLE_Data_set(d1, 3.1415926536d0)
+    call assert_eq_double(LIBMUSCLE_Data_as_double(d1), 3.1415926536d0)
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.double'
 
@@ -221,7 +242,7 @@ subroutine test_data_copy_assign
     print *, '[  RUN     ] data.assign'
     d1 = LIBMUSCLE_Data_create(42.0d0)
     d2 = LIBMUSCLE_Data_create()
-    call LIBMUSCLE_Data_set_data(d2, d1)
+    call LIBMUSCLE_Data_set(d2, d1)
     call LIBMUSCLE_Data_free(d1)
     call assert_true(LIBMUSCLE_Data_is_a_double(d2))
     call assert_false(LIBMUSCLE_Data_is_a_float(d2))

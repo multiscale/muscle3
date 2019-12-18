@@ -31,7 +31,26 @@ data_desc = Class('Data', [
     NamedConstructor([], 'list'),
     NamedConstructor([Sizet('size')], 'byte_array'),
     NamedConstructor([Sizet('size')], 'nils'),
+    AssignmentOperator('set_bool', Bool('value')),
+    AssignmentOperator('set_string', String('value')),
+    AssignmentOperator('set_char', Char('value')),
+    AssignmentOperator('set_int16', Int16t('value')),
+    AssignmentOperator('set_int', Int('value')),
+    AssignmentOperator('set_int64', Int64t('value')),
+    AssignmentOperator('set_float', Float('value')),
+    AssignmentOperator('set_double', Double('value')),
     AssignmentOperator('set_data', Obj('Data', 'value')),
+    OverloadSet('set', [
+        'set_bool', 'set_string', 'set_char', 'set_int16', 'set_int',
+        'set_int64', 'set_float', 'set_double', 'set_data']),
+    MemFun(Void(), 'set_nil', [], False,
+        fc_override=(
+            'void LIBMUSCLE_Data_set_nil_(std::intptr_t self) {\n'
+            '    Data * self_p = reinterpret_cast<Data *>(self);\n'
+            '    *self_p = Data();\n'
+            '}\n\n'
+            )
+        ),
     MemFunTmpl(
         [Bool(), String(), Char(), Int(), Int16t(), Int64t(), Float(),
             Double()],

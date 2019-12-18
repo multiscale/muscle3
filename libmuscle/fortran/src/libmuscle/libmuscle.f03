@@ -33,7 +33,17 @@ module libmuscle
     public :: LIBMUSCLE_Data_create_list
     public :: LIBMUSCLE_Data_create_byte_array
     public :: LIBMUSCLE_Data_create_nils
+    public :: LIBMUSCLE_Data_set_bool
+    public :: LIBMUSCLE_Data_set_string
+    public :: LIBMUSCLE_Data_set_char
+    public :: LIBMUSCLE_Data_set_int16
+    public :: LIBMUSCLE_Data_set_int
+    public :: LIBMUSCLE_Data_set_int64
+    public :: LIBMUSCLE_Data_set_float
+    public :: LIBMUSCLE_Data_set_double
     public :: LIBMUSCLE_Data_set_data
+    public :: LIBMUSCLE_Data_set
+    public :: LIBMUSCLE_Data_set_nil
     public :: LIBMUSCLE_Data_is_a_bool
     public :: LIBMUSCLE_Data_is_a_string
     public :: LIBMUSCLE_Data_is_a_char
@@ -188,6 +198,79 @@ module libmuscle
             integer (c_size_t), value, intent(in) :: size
         end function LIBMUSCLE_Data_create_nils_
 
+        subroutine LIBMUSCLE_Data_set_bool_( &
+                self, value) &
+                bind(C, name="LIBMUSCLE_Data_set_bool_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_int), value, intent(in) :: value
+        end subroutine LIBMUSCLE_Data_set_bool_
+
+        subroutine LIBMUSCLE_Data_set_string_( &
+                self, value, value_size) &
+                bind(C, name="LIBMUSCLE_Data_set_string_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            character, intent(in) :: value
+            integer (c_size_t), value, intent(in) :: value_size
+        end subroutine LIBMUSCLE_Data_set_string_
+
+        subroutine LIBMUSCLE_Data_set_char_( &
+                self, value) &
+                bind(C, name="LIBMUSCLE_Data_set_char_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_int8_t), value, intent(in) :: value
+        end subroutine LIBMUSCLE_Data_set_char_
+
+        subroutine LIBMUSCLE_Data_set_int16_( &
+                self, value) &
+                bind(C, name="LIBMUSCLE_Data_set_int16_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_short), value, intent(in) :: value
+        end subroutine LIBMUSCLE_Data_set_int16_
+
+        subroutine LIBMUSCLE_Data_set_int_( &
+                self, value) &
+                bind(C, name="LIBMUSCLE_Data_set_int_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_int), value, intent(in) :: value
+        end subroutine LIBMUSCLE_Data_set_int_
+
+        subroutine LIBMUSCLE_Data_set_int64_( &
+                self, value) &
+                bind(C, name="LIBMUSCLE_Data_set_int64_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_int64_t), value, intent(in) :: value
+        end subroutine LIBMUSCLE_Data_set_int64_
+
+        subroutine LIBMUSCLE_Data_set_float_( &
+                self, value) &
+                bind(C, name="LIBMUSCLE_Data_set_float_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            real (selected_real_kind(6)), value, intent(in) :: value
+        end subroutine LIBMUSCLE_Data_set_float_
+
+        subroutine LIBMUSCLE_Data_set_double_( &
+                self, value) &
+                bind(C, name="LIBMUSCLE_Data_set_double_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            real (selected_real_kind(15)), value, intent(in) :: value
+        end subroutine LIBMUSCLE_Data_set_double_
+
         subroutine LIBMUSCLE_Data_set_data_( &
                 self, value) &
                 bind(C, name="LIBMUSCLE_Data_set_data_")
@@ -196,6 +279,14 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
             integer (c_intptr_t), value, intent(in) :: value
         end subroutine LIBMUSCLE_Data_set_data_
+
+        subroutine LIBMUSCLE_Data_set_nil_( &
+                self) &
+                bind(C, name="LIBMUSCLE_Data_set_nil_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end subroutine LIBMUSCLE_Data_set_nil_
 
         integer (c_int) function LIBMUSCLE_Data_is_a_bool_( &
                 self) &
@@ -420,6 +511,19 @@ module libmuscle
             LIBMUSCLE_Data_create_copy
     end interface
 
+    interface LIBMUSCLE_Data_set
+        module procedure &
+            LIBMUSCLE_Data_set_bool, &
+            LIBMUSCLE_Data_set_string, &
+            LIBMUSCLE_Data_set_char, &
+            LIBMUSCLE_Data_set_int16, &
+            LIBMUSCLE_Data_set_int, &
+            LIBMUSCLE_Data_set_int64, &
+            LIBMUSCLE_Data_set_float, &
+            LIBMUSCLE_Data_set_double, &
+            LIBMUSCLE_Data_set_data
+    end interface
+
 
     interface
 
@@ -642,6 +746,86 @@ contains
         LIBMUSCLE_Data_create_nils%ptr = ret_val
     end function LIBMUSCLE_Data_create_nils
 
+    subroutine LIBMUSCLE_Data_set_bool(self, value)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        logical, intent(in) :: value
+
+        call LIBMUSCLE_Data_set_bool_( &
+            self%ptr, &
+            merge(1, 0, value))
+    end subroutine LIBMUSCLE_Data_set_bool
+
+    subroutine LIBMUSCLE_Data_set_string(self, value)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        character (len=*), intent(in) :: value
+
+        call LIBMUSCLE_Data_set_string_( &
+            self%ptr, &
+            value, int(len(value), c_size_t))
+    end subroutine LIBMUSCLE_Data_set_string
+
+    subroutine LIBMUSCLE_Data_set_char(self, value)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer (selected_int_kind(2)), intent(in) :: value
+
+        call LIBMUSCLE_Data_set_char_( &
+            self%ptr, &
+            value)
+    end subroutine LIBMUSCLE_Data_set_char
+
+    subroutine LIBMUSCLE_Data_set_int16(self, value)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer (selected_int_kind(4)), intent(in) :: value
+
+        call LIBMUSCLE_Data_set_int16_( &
+            self%ptr, &
+            value)
+    end subroutine LIBMUSCLE_Data_set_int16
+
+    subroutine LIBMUSCLE_Data_set_int(self, value)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer, intent(in) :: value
+
+        call LIBMUSCLE_Data_set_int_( &
+            self%ptr, &
+            value)
+    end subroutine LIBMUSCLE_Data_set_int
+
+    subroutine LIBMUSCLE_Data_set_int64(self, value)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer (selected_int_kind(18)), intent(in) :: value
+
+        call LIBMUSCLE_Data_set_int64_( &
+            self%ptr, &
+            value)
+    end subroutine LIBMUSCLE_Data_set_int64
+
+    subroutine LIBMUSCLE_Data_set_float(self, value)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        real (selected_real_kind(6)), intent(in) :: value
+
+        call LIBMUSCLE_Data_set_float_( &
+            self%ptr, &
+            value)
+    end subroutine LIBMUSCLE_Data_set_float
+
+    subroutine LIBMUSCLE_Data_set_double(self, value)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        real (selected_real_kind(15)), intent(in) :: value
+
+        call LIBMUSCLE_Data_set_double_( &
+            self%ptr, &
+            value)
+    end subroutine LIBMUSCLE_Data_set_double
+
     subroutine LIBMUSCLE_Data_set_data(self, value)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
@@ -651,6 +835,14 @@ contains
             self%ptr, &
             value%ptr)
     end subroutine LIBMUSCLE_Data_set_data
+
+    subroutine LIBMUSCLE_Data_set_nil(self)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+
+        call LIBMUSCLE_Data_set_nil_( &
+            self%ptr)
+    end subroutine LIBMUSCLE_Data_set_nil
 
     function LIBMUSCLE_Data_is_a_bool(self)
         implicit none

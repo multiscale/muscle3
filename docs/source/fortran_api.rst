@@ -335,7 +335,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
-    See ``LIBMUSCLE_Data_is_a_bool()`` for an example of error handling.
+    See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
 
     :p LIBMUSCLE_Data self The Data object to get a string out of.
     :p integer err_code: An error code output (optional)
@@ -378,7 +378,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
-    See ``LIBMUSCLE_Data_is_a_bool()`` for an example of error handling.
+    See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
 
     :p LIBMUSCLE_Data self The Data object to get an integer value out of.
     :p integer err_code: An error code output (optional)
@@ -421,7 +421,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
-    See ``LIBMUSCLE_Data_is_a_bool()`` for an example of error handling.
+    See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
 
     :p LIBMUSCLE_Data self The Data object to get an integer value out of.
     :p integer err_code: An error code output (optional)
@@ -463,7 +463,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
-    See ``LIBMUSCLE_Data_is_a_bool()`` for an example of error handling.
+    See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
 
     :p LIBMUSCLE_Data self The Data object to get an integer value out of.
     :p integer err_code: An error code output (optional)
@@ -506,7 +506,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
-    See ``LIBMUSCLE_Data_is_a_bool()`` for an example of error handling.
+    See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
 
     :p LIBMUSCLE_Data self The Data object to get an integer value out of.
     :p integer err_code: An error code output (optional)
@@ -549,7 +549,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
-    See ``LIBMUSCLE_Data_is_a_bool()`` for an example of error handling.
+    See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
 
     :p LIBMUSCLE_Data self The Data object to get a single-precision real value
             out of.
@@ -593,7 +593,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
-    See ``LIBMUSCLE_Data_is_a_bool()`` for an example of error handling.
+    See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
 
     :p LIBMUSCLE_Data self The Data object to get a double-precision real value
             out of.
@@ -644,7 +644,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         ! Free the buffer
         deallocate(buf)
 
-    See ``LIBMUSCLE_Data_is_a_bool()`` for an example of error handling.
+    See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
 
     :p LIBMUSCLE_Data self: The Data object to get a byte array out of.
     :p character buf: A buffer large enough to hold the contents of the data

@@ -66,6 +66,17 @@ module libmuscle
     public :: LIBMUSCLE_Data_as_float
     public :: LIBMUSCLE_Data_as_double
     public :: LIBMUSCLE_Data_as_byte_array
+    public :: LIBMUSCLE_Data_get_item
+    public :: LIBMUSCLE_Data_set_item_key_bool
+    public :: LIBMUSCLE_Data_set_item_key_string
+    public :: LIBMUSCLE_Data_set_item_key_char
+    public :: LIBMUSCLE_Data_set_item_key_int16
+    public :: LIBMUSCLE_Data_set_item_key_int
+    public :: LIBMUSCLE_Data_set_item_key_int64
+    public :: LIBMUSCLE_Data_set_item_key_float
+    public :: LIBMUSCLE_Data_set_item_key_double
+    public :: LIBMUSCLE_Data_set_item_key_data
+    public :: LIBMUSCLE_Data_set_item
 
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_success = 0
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_runtime_error = 1
@@ -495,6 +506,146 @@ module libmuscle
             integer (c_size_t), intent(out) :: err_msg_len
         end subroutine LIBMUSCLE_Data_as_byte_array_
 
+        integer (c_intptr_t) function LIBMUSCLE_Data_get_item_( &
+                self, key, key_size, err_code, err_msg, err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_get_item_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            character, intent(in) :: key
+            integer (c_size_t), value, intent(in) :: key_size
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end function LIBMUSCLE_Data_get_item_
+
+        subroutine LIBMUSCLE_Data_set_item_key_bool_( &
+                self, key, key_size, value, err_code, err_msg, err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_set_item_key_bool_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            character, intent(in) :: key
+            integer (c_size_t), value, intent(in) :: key_size
+            integer (c_int), value, intent(in) :: value
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_Data_set_item_key_bool_
+
+        subroutine LIBMUSCLE_Data_set_item_key_string_( &
+                self, key, key_size, value, value_size, err_code, err_msg, err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_set_item_key_string_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            character, intent(in) :: key
+            integer (c_size_t), value, intent(in) :: key_size
+            character, intent(in) :: value
+            integer (c_size_t), value, intent(in) :: value_size
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_Data_set_item_key_string_
+
+        subroutine LIBMUSCLE_Data_set_item_key_char_( &
+                self, key, key_size, value, err_code, err_msg, err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_set_item_key_char_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            character, intent(in) :: key
+            integer (c_size_t), value, intent(in) :: key_size
+            integer (c_int8_t), value, intent(in) :: value
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_Data_set_item_key_char_
+
+        subroutine LIBMUSCLE_Data_set_item_key_int16_( &
+                self, key, key_size, value, err_code, err_msg, err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_set_item_key_int16_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            character, intent(in) :: key
+            integer (c_size_t), value, intent(in) :: key_size
+            integer (c_short), value, intent(in) :: value
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_Data_set_item_key_int16_
+
+        subroutine LIBMUSCLE_Data_set_item_key_int_( &
+                self, key, key_size, value, err_code, err_msg, err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_set_item_key_int_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            character, intent(in) :: key
+            integer (c_size_t), value, intent(in) :: key_size
+            integer (c_int), value, intent(in) :: value
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_Data_set_item_key_int_
+
+        subroutine LIBMUSCLE_Data_set_item_key_int64_( &
+                self, key, key_size, value, err_code, err_msg, err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_set_item_key_int64_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            character, intent(in) :: key
+            integer (c_size_t), value, intent(in) :: key_size
+            integer (c_int64_t), value, intent(in) :: value
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_Data_set_item_key_int64_
+
+        subroutine LIBMUSCLE_Data_set_item_key_float_( &
+                self, key, key_size, value, err_code, err_msg, err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_set_item_key_float_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            character, intent(in) :: key
+            integer (c_size_t), value, intent(in) :: key_size
+            real (selected_real_kind(6)), value, intent(in) :: value
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_Data_set_item_key_float_
+
+        subroutine LIBMUSCLE_Data_set_item_key_double_( &
+                self, key, key_size, value, err_code, err_msg, err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_set_item_key_double_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            character, intent(in) :: key
+            integer (c_size_t), value, intent(in) :: key_size
+            real (selected_real_kind(15)), value, intent(in) :: value
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_Data_set_item_key_double_
+
+        subroutine LIBMUSCLE_Data_set_item_key_data_( &
+                self, key, key_size, value, err_code, err_msg, err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_set_item_key_data_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            character, intent(in) :: key
+            integer (c_size_t), value, intent(in) :: key_size
+            integer (c_intptr_t), value, intent(in) :: value
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_Data_set_item_key_data_
+
     end interface
 
     interface LIBMUSCLE_Data_create
@@ -522,6 +673,19 @@ module libmuscle
             LIBMUSCLE_Data_set_float, &
             LIBMUSCLE_Data_set_double, &
             LIBMUSCLE_Data_set_data
+    end interface
+
+    interface LIBMUSCLE_Data_set_item
+        module procedure &
+            LIBMUSCLE_Data_set_item_key_bool, &
+            LIBMUSCLE_Data_set_item_key_string, &
+            LIBMUSCLE_Data_set_item_key_char, &
+            LIBMUSCLE_Data_set_item_key_int16, &
+            LIBMUSCLE_Data_set_item_key_int, &
+            LIBMUSCLE_Data_set_item_key_int64, &
+            LIBMUSCLE_Data_set_item_key_float, &
+            LIBMUSCLE_Data_set_item_key_double, &
+            LIBMUSCLE_Data_set_item_key_data
     end interface
 
 
@@ -1469,6 +1633,508 @@ contains
         call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
         data = f_ret_ptr
     end subroutine LIBMUSCLE_Data_as_byte_array
+
+    function LIBMUSCLE_Data_get_item(self, key, err_code, err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        character (len=*), intent(in) :: key
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_get_item
+
+        integer (c_intptr_t) :: ret_val
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        ret_val = LIBMUSCLE_Data_get_item_( &
+            self%ptr, &
+            key, int(len(key), c_size_t), &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        LIBMUSCLE_Data_get_item%ptr = ret_val
+    end function LIBMUSCLE_Data_get_item
+
+    subroutine LIBMUSCLE_Data_set_item_key_bool(self, key, value, err_code, err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        character (len=*), intent(in) :: key
+        logical, intent(in) :: value
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_set_item_key_bool_( &
+            self%ptr, &
+            key, int(len(key), c_size_t), &
+            merge(1, 0, value), &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+    end subroutine LIBMUSCLE_Data_set_item_key_bool
+
+    subroutine LIBMUSCLE_Data_set_item_key_string(self, key, value, err_code, err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        character (len=*), intent(in) :: key
+        character (len=*), intent(in) :: value
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_set_item_key_string_( &
+            self%ptr, &
+            key, int(len(key), c_size_t), &
+            value, int(len(value), c_size_t), &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+    end subroutine LIBMUSCLE_Data_set_item_key_string
+
+    subroutine LIBMUSCLE_Data_set_item_key_char(self, key, value, err_code, err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        character (len=*), intent(in) :: key
+        integer (selected_int_kind(2)), intent(in) :: value
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_set_item_key_char_( &
+            self%ptr, &
+            key, int(len(key), c_size_t), &
+            value, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+    end subroutine LIBMUSCLE_Data_set_item_key_char
+
+    subroutine LIBMUSCLE_Data_set_item_key_int16(self, key, value, err_code, err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        character (len=*), intent(in) :: key
+        integer (selected_int_kind(4)), intent(in) :: value
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_set_item_key_int16_( &
+            self%ptr, &
+            key, int(len(key), c_size_t), &
+            value, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+    end subroutine LIBMUSCLE_Data_set_item_key_int16
+
+    subroutine LIBMUSCLE_Data_set_item_key_int(self, key, value, err_code, err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        character (len=*), intent(in) :: key
+        integer, intent(in) :: value
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_set_item_key_int_( &
+            self%ptr, &
+            key, int(len(key), c_size_t), &
+            value, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+    end subroutine LIBMUSCLE_Data_set_item_key_int
+
+    subroutine LIBMUSCLE_Data_set_item_key_int64(self, key, value, err_code, err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        character (len=*), intent(in) :: key
+        integer (selected_int_kind(18)), intent(in) :: value
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_set_item_key_int64_( &
+            self%ptr, &
+            key, int(len(key), c_size_t), &
+            value, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+    end subroutine LIBMUSCLE_Data_set_item_key_int64
+
+    subroutine LIBMUSCLE_Data_set_item_key_float(self, key, value, err_code, err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        character (len=*), intent(in) :: key
+        real (selected_real_kind(6)), intent(in) :: value
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_set_item_key_float_( &
+            self%ptr, &
+            key, int(len(key), c_size_t), &
+            value, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+    end subroutine LIBMUSCLE_Data_set_item_key_float
+
+    subroutine LIBMUSCLE_Data_set_item_key_double(self, key, value, err_code, err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        character (len=*), intent(in) :: key
+        real (selected_real_kind(15)), intent(in) :: value
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_set_item_key_double_( &
+            self%ptr, &
+            key, int(len(key), c_size_t), &
+            value, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+    end subroutine LIBMUSCLE_Data_set_item_key_double
+
+    subroutine LIBMUSCLE_Data_set_item_key_data(self, key, value, err_code, err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        character (len=*), intent(in) :: key
+        type(LIBMUSCLE_Data), intent(in) :: value
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_set_item_key_data_( &
+            self%ptr, &
+            key, int(len(key), c_size_t), &
+            value%ptr, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+    end subroutine LIBMUSCLE_Data_set_item_key_data
 
 
     function LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create(count)

@@ -408,7 +408,7 @@ class Obj(Par):
         self.ns_prefix = ns_for_name[self.class_name]
 
     def tname(self) -> str:
-        return self.name.tolower()
+        return self.name.lower()
 
     def fc_cpp_type(self) -> str:
         return self.class_name
@@ -1219,6 +1219,22 @@ class AssignmentOperator(MemFun):
         return '    *self_p = {};\n'.format(cpp_args[1])
 
 
+class IndexAssignmentOperator(MemFun):
+    """Assigns to an indexed item
+
+    This generates code suitable for assigning to a subobject accessed
+    via the square brackets operator, i.e. self[key] = value.
+    """
+    def __init__(self, name: str, param: Par, may_throw: bool
+                 ) -> None:
+        super().__init__(Void(), name, param, may_throw)
+
+    def _fc_cpp_call(self) -> str:
+        # Call operator[] instead of a function
+        cpp_args = [par.fc_cpp_arg() for par in self.params]
+        return '    (*self_p)[{}] = {};\n'.format(cpp_args[1], cpp_args[2])
+
+
 class NamedConstructor(Constructor):
     """Represents a named class constructor.
 
@@ -1284,7 +1300,6 @@ class MemFunTmplInstance(MemFun):
 
         self.tpl_name = name
         self.targ = targ
-
 
     def _fc_cpp_call(self) -> str:
         cpp_args = ', '.join([par.fc_cpp_arg() for par in self.params[1:]])

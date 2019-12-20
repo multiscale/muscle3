@@ -6,9 +6,9 @@ import api_generator
 
 from api_generator import (
         API, AssignmentOperator, Bool, Bytes, Char, Class, Constructor,
-        Destructor, Double, Enum, EnumVal, Float, Int, Int16t, Int64t, MemFun,
-        MemFunTmpl, NamedConstructor, Namespace, Obj, OverloadSet, Sizet,
-        String, T, VecDbl, Vec2Dbl, Void)
+        Destructor, Double, Enum, EnumVal, Float, IndexAssignmentOperator, Int,
+        Int16t, Int64t, MemFun, MemFunTmpl, NamedConstructor, Namespace, Obj,
+        OverloadSet, Sizet, String, T, VecDbl, Vec2Dbl, Void)
 
 
 data_desc = Class('Data', [
@@ -87,6 +87,50 @@ data_desc = Class('Data', [
             '}\n'
             )
         ),
+    MemFun(Obj('Data', 'value'), 'get_item', [String('key')], True,
+            fc_override=(
+                'std::intptr_t LIBMUSCLE_Data_get_item_(\n'
+                '        std::intptr_t self,\n'
+                '        char * key, std::size_t key_size,\n'
+                '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
+                ') {\n'
+                '    Data * self_p = reinterpret_cast<Data *>(self);\n'
+                '    std::string key_s(key, key_size);\n'
+                '    try {\n'
+                '        *err_code = 0;\n'
+                '        Data * result = new Data((*self_p)[key_s]);\n'
+                '        return reinterpret_cast<std::intptr_t>(result);\n'
+                '    }\n'
+                '    catch (std::runtime_error const & e) {\n'
+                '        *err_code = 1;\n'
+                '        static std::string msg;\n'
+                '        msg = e.what();\n'
+                '        *err_msg = const_cast<char*>(msg.data());\n'
+                '        *err_msg_len = msg.size();\n'
+                '    }\n'
+                '    catch (std::out_of_range const & e) {\n'
+                '        *err_code = 3;\n'
+                '        static std::string msg;\n'
+                '        msg = e.what();\n'
+                '        *err_msg = const_cast<char*>(msg.data());\n'
+                '        *err_msg_len = msg.size();\n'
+                '    }\n'
+                '}\n\n')
+            ),
+    IndexAssignmentOperator('set_item_key_bool', [String('key'), Bool('value')], True),
+    IndexAssignmentOperator('set_item_key_string', [String('key'), String('value')], True),
+    IndexAssignmentOperator('set_item_key_char', [String('key'), Char('value')], True),
+    IndexAssignmentOperator('set_item_key_int16', [String('key'), Int16t('value')], True),
+    IndexAssignmentOperator('set_item_key_int', [String('key'), Int('value')], True),
+    IndexAssignmentOperator('set_item_key_int64', [String('key'), Int64t('value')], True),
+    IndexAssignmentOperator('set_item_key_float', [String('key'), Float('value')], True),
+    IndexAssignmentOperator('set_item_key_double', [String('key'), Double('value')], True),
+    IndexAssignmentOperator('set_item_key_data', [String('key'), Obj('Data', 'value')], True),
+    OverloadSet('set_item', [
+        'set_item_key_bool', 'set_item_key_string', 'set_item_key_char',
+        'set_item_key_int16', 'set_item_key_int', 'set_item_key_int64',
+        'set_item_key_float', 'set_item_key_double', 'set_item_key_data'
+        ]),
     ])
 
 

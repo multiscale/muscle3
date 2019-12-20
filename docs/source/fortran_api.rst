@@ -319,6 +319,10 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     and needs to be deallocated (using ``deallocate()``) when you're done with
     it.
 
+    Note that the result variable will be allocated (unless an error occurs),
+    and must be deallocated when you're done with the resulting string, or
+    you'll have a memory leak.
+
     Example:
 
     .. code-block:: fortran
@@ -649,5 +653,72 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :p LIBMUSCLE_Data self: The Data object to get a byte array out of.
     :p character buf: A buffer large enough to hold the contents of the data
             object.
-    :p integer err_code: An error code output (optional)
+    :p integer err_code: An error code output (optional).
     :p character err_msg: An error message output (allocatable, optional).
+
+.. f:function:: LIBMUSCLE_Data_get_item(self, key, err_code, err_msg)
+
+    Access an item in a dictionary.
+
+    This function is only valid for Data objects containing a dictionary. You
+    can use ``LIBMUSCLE_Data_is_dict`` to check whether that is the case.
+
+    This returns a ``LIBMUSCLE_Data`` object containing the value associated
+    with the given key in the dictionary object. If ``self`` does not contain a
+    dictionary, the result will be invalid, and ``err_code`` will be set to
+    ``LIBMUSCLE_runtime_error``. If ``key`` does not exist in this dictionary,
+    ``err_code`` will be set to ``LIBMUSCLE_out_of_range``, and the result will
+    be invalid.
+
+    As with any returned ``LIBMUSCLE_Data`` object, the result needs to be freed
+    via ``LIBMUSCLE_Data_free`` once you're done with it. Note that the returned
+    object will be invalidated if a new key is added to the dictionary.
+    Assigning to the returned object will update the dictionary, but it's easier
+    and safer to use ``LIBMUSCLE_Data_set_item`` instead.
+
+    Example:
+
+    .. code-block:: fortran
+
+        type(LIBMUSCLE_Data) :: d1, d2, d3
+        character(len=:), allocatable :: s1
+
+        d1 = LIBMUSCLE_Data_create_dict()
+        call LIBMUSCLE_Data_set_item(d1, 'key1', 'value1')
+        d3 = LIBMUSCLE_Data_get_item(d1, 'key1')
+        s1 = LIBMUSCLE_Data_as_string(d3)
+        print *, s1     ! prints 'value1'
+        call LIBMUSCLE_Data_free(s1)
+        call LIBMUSCLE_Data_free(d3)
+        call LIBMUSCLE_Data_free(d2)
+        call LIBMUSCLE_Data_free(d1)
+
+    See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
+
+    :p LIBMUSCLE_Data self: The Data object to get an item out of.
+    :p character key: The key to get the value for.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+
+.. f:subroutine:: LIBMUSCLE_Data_set_item(self, key, value, err_code, err_msg)
+
+    Set an item in a dictionary.
+
+    This function is only valid for Data objects containing a dictionary. You
+    can use ``LIBMUSCLE_Data_is_dict`` to check whether that is the case.
+
+    This subroutine sets the value stored under ``key`` to ``value``. If a value
+    is already stored under this key, then it will be replaced. If the Data
+    object does not contain a dictionary, ``err_code`` will be set to
+    ``LIBMUSCLE_runtime_error``.
+
+    ``value`` may be of type logical, character, integer, real, or Data. See
+    ``LIBMUSCLE_Data_get_item`` for an example. See ``LIBMUSCLE_Data_as_bool()``
+    for an example of error handling.
+
+    :p LIBMUSCLE_Data self: The Data object to set an item value on.
+    :p character key: The key to set the value for.
+    :p see_above value: The value to set.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional)
+

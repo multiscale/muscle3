@@ -699,6 +699,8 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :p character key: The key to get the value for.
     :p integer err_code: An error code output (optional).
     :p character err_msg: An error message output (allocatable, optional).
+    :r value: The value corresponding to the selected key.
+    :rtype value: LIBMUSCLE_Data
 
 .. f:subroutine:: LIBMUSCLE_Data_set_item(self, key, value, err_code, err_msg)
 
@@ -722,3 +724,73 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :p integer err_code: An error code output (optional).
     :p character err_msg: An error message output (allocatable, optional)
 
+.. f:function:: LIBMUSCLE_Data_key(self, i, err_code, err_msg)
+
+    Get the i'th key in the dictionary.
+
+    This function is only valid for Data objects containing a dictionary. You
+    can use ``LIBMUSCLE_Data_is_dict`` to check whether that is the case.
+
+    The indices range from 1 to the number of items in the dictionary
+    (inclusive), as usual in Fortran. Use ``LIBMUSCLE_Data_size`` to get the
+    number of items. Note that changes to the dictionary (e.g. inserting a new
+    key) may change the order in which the key-value pairs are retrieved by this
+    function. It's best to not change the dictionary while iterating through it.
+
+    As always when a character value is returned by MUSCLE, the variable it ends
+    up in must be allocatable, and must be deallocated after use.
+
+    The corresponding value may be obtained via ``LIBMUSCLE_Data_value(i)``.
+
+    .. code-block:: fortran
+
+        type(LIBMUSCLE_Data) :: d1, val
+        character(len=:), allocatable :: key, cval
+        integer (kind=selected_int_kind(18)) :: i
+        integer intval
+
+        d1 = LIBMUSCLE_Data_create_dict()
+        call LIBMUSCLE_Data_set_item(d1, 'key1', 'value1')
+        call LIBMUSCLE_Data_set_item(d1, 'key2', 'value2')
+
+        do i = 1, LIBMUSCLE_Data_size(d1)
+            key = LIBMUSCLE_Data_key(d1, i)
+            val = LIBMUSCLE_Data_value(d1, i)
+            cval = LIBMUSCLE_Data_as_string(val)
+            print '(a8, a8)', key, cval
+            deallocate(key)
+            deallocate(cval)
+            LIBMUSCLE_Data_free(val)
+        end do
+
+        call LIBMUSCLE_Data_free(d1)
+
+    :p LIBMUSCLE_Data self: The Data object to get a key for.
+    :p integer i: The index of the key to retrieve (``selected_int_kind(18)``)
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r key: The key at the given index.
+    :rtype key: character (allocatable)
+
+.. f:function:: LIBMUSCLE_Data_value(self, i, err_code, err_msg)
+
+    Get the i'th value in the dictionary.
+
+    This function is only valid for Data objects containing a dictionary. You
+    can use ``LIBMUSCLE_Data_is_dict`` to check whether that is the case.
+
+    The indices range from 1 to the number of items in the dictionary
+    (inclusive), as usual in Fortran. Use ``LIBMUSCLE_Data_size`` to get the
+    number of items. Note that changes to the dictionary (e.g. inserting a new
+    key) may change the order in which the key-value pairs are retrieved by this
+    function. It's best to not change the dictionary while iterating through it.
+
+    The corresponding key may be obtained via ``LIBMUSCLE_Data_key(i)``. See
+    there for an example as well.
+
+    :p LIBMUSCLE_Data self: The Data object to get a value for.
+    :p integer i: The index of the key to retrieve (``selected_int_kind(18)``)
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The value at the given index
+    :rtype value: LIBMUSCLE_Data

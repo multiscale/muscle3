@@ -259,13 +259,13 @@ subroutine test_data_dict
     integer, parameter :: short_int = selected_int_kind(4)
     integer, parameter :: long_int = selected_int_kind(18)
     type(LIBMUSCLE_Data) :: d1, d2
+    integer (kind=long_int) :: i
 
     print *, '[  RUN     ] data.dict'
     d1 = LIBMUSCLE_Data_create_dict()
     call assert_true(LIBMUSCLE_Data_is_a_dict(d1))
     call LIBMUSCLE_Data_set_item(d1, 'key1', 1)
     call assert_eq_long_int(LIBMUSCLE_Data_size(d1), 1_long_int)
-    call LIBMUSCLE_Data_free(d2)
 
     call LIBMUSCLE_Data_set_item(d1, 'key1', .true.)
     d2 = LIBMUSCLE_Data_get_item(d1, 'key1')
@@ -289,6 +289,16 @@ subroutine test_data_dict
 
     call LIBMUSCLE_Data_set_item(d1, 'key2', 1000030000)
     d2 = LIBMUSCLE_Data_get_item(d1, 'key2')
+    call assert_eq_integer(LIBMUSCLE_Data_as_int(d2), 1000030000)
+    call LIBMUSCLE_Data_free(d2)
+
+    call assert_eq_character(LIBMUSCLE_Data_key(d1, 1_long_int), 'key1')
+    d2 = LIBMUSCLE_Data_value(d1, 1_long_int)
+    call assert_eq_int16(LIBMUSCLE_Data_as_int16(d2), 30000_short_int)
+    call LIBMUSCLE_Data_free(d2)
+
+    call assert_eq_character(LIBMUSCLE_Data_key(d1, 2_long_int), 'key2')
+    d2 = LIBMUSCLE_Data_value(d1, 2_long_int)
     call assert_eq_integer(LIBMUSCLE_Data_as_int(d2), 1000030000)
     call LIBMUSCLE_Data_free(d2)
 

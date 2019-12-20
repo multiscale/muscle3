@@ -131,6 +131,68 @@ data_desc = Class('Data', [
         'set_item_key_int16', 'set_item_key_int', 'set_item_key_int64',
         'set_item_key_float', 'set_item_key_double', 'set_item_key_data'
         ]),
+    MemFun(String(), 'key', [Sizet('i')], True,
+            fc_override=(
+                'void LIBMUSCLE_Data_key_(\n'
+                '        std::intptr_t self, std::size_t i,\n'
+                '        char ** ret_val, std::size_t * ret_val_size,\n'
+                '        int * err_code,\n'
+                '        char ** err_msg, std::size_t * err_msg_len\n'
+                ') {\n'
+                '    try {\n'
+                '        *err_code = 0;\n'
+                '        Data * self_p = reinterpret_cast<Data *>(self);\n'
+                '        static std::string result;\n'
+                '        result = self_p->key(i - 1);\n'
+                '        *ret_val = const_cast<char*>(result.c_str());\n'
+                '        *ret_val_size = result.size();\n'
+                '        return;\n'
+                '    }\n'
+                '    catch (std::runtime_error const & e) {\n'
+                '        *err_code = 1;\n'
+                '        static std::string msg;\n'
+                '        msg = e.what();\n'
+                '        *err_msg = const_cast<char*>(msg.data());\n'
+                '        *err_msg_len = msg.size();\n'
+                '    }\n'
+                '    catch (std::out_of_range const & e) {\n'
+                '        *err_code = 3;\n'
+                '        static std::string msg;\n'
+                '        msg = e.what();\n'
+                '        *err_msg = const_cast<char*>(msg.data());\n'
+                '        *err_msg_len = msg.size();\n'
+                '    }\n'
+                '}\n\n')
+            ),
+    MemFun(Obj('Data'), 'value', [Sizet('i')], True,
+            fc_override=(
+                'std::intptr_t LIBMUSCLE_Data_value_(\n'
+                '        std::intptr_t self, std::size_t i,\n'
+                '        int * err_code,\n'
+                '        char ** err_msg, std::size_t * err_msg_len\n'
+                ') {\n'
+                '    try {\n'
+                '        *err_code = 0;\n'
+                '        Data * self_p = reinterpret_cast<Data *>(self);\n'
+                '        Data * result = new Data(self_p->value(i - 1));\n'
+                '        return reinterpret_cast<std::intptr_t>(result);\n'
+                '    }\n'
+                '    catch (std::runtime_error const & e) {\n'
+                '        *err_code = 1;\n'
+                '        static std::string msg;\n'
+                '        msg = e.what();\n'
+                '        *err_msg = const_cast<char*>(msg.data());\n'
+                '        *err_msg_len = msg.size();\n'
+                '    }\n'
+                '    catch (std::out_of_range const & e) {\n'
+                '        *err_code = 3;\n'
+                '        static std::string msg;\n'
+                '        msg = e.what();\n'
+                '        *err_msg = const_cast<char*>(msg.data());\n'
+                '        *err_msg_len = msg.size();\n'
+                '    }\n'
+                '}\n\n')
+            ),
     ])
 
 

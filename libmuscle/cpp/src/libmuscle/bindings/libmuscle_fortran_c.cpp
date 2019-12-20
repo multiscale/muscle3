@@ -272,7 +272,7 @@ void LIBMUSCLE_Data_as_string_(std::intptr_t self, char ** ret_val, std::size_t 
     try {
         *err_code = 0;
         static std::string result;
-    result = self_p->as<std::string>();
+        result = self_p->as<std::string>();
         *ret_val = const_cast<char*>(result.c_str());
         *ret_val_size = result.size();
         return;
@@ -913,6 +913,64 @@ void LIBMUSCLE_Data_set_item_key_data_(std::intptr_t self, char * key, std::size
     }
     catch (std::logic_error const & e) {
         *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_key_(
+        std::intptr_t self, std::size_t i,
+        char ** ret_val, std::size_t * ret_val_size,
+        int * err_code,
+        char ** err_msg, std::size_t * err_msg_len
+) {
+    try {
+        *err_code = 0;
+        Data * self_p = reinterpret_cast<Data *>(self);
+        static std::string result;
+        result = self_p->key(i - 1);
+        *ret_val = const_cast<char*>(result.c_str());
+        *ret_val_size = result.size();
+        return;
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+std::intptr_t LIBMUSCLE_Data_value_(
+        std::intptr_t self, std::size_t i,
+        int * err_code,
+        char ** err_msg, std::size_t * err_msg_len
+) {
+    try {
+        *err_code = 0;
+        Data * self_p = reinterpret_cast<Data *>(self);
+        Data * result = new Data(self_p->value(i - 1));
+        return reinterpret_cast<std::intptr_t>(result);
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());

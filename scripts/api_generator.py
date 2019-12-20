@@ -133,7 +133,7 @@ class String(Par):
 
     def f_aux_variables(self) -> List[Tuple[str, str]]:
         return [('character (c_char), dimension(:), pointer', 'f_ret_ptr'),
-                ('integer', 'i')]
+                ('integer', 'i_loop')]
 
     def f_chain_arg(self) -> str:
         return '{}, int(len({}), c_size_t)'.format(self.name, self.name)
@@ -144,8 +144,8 @@ class String(Par):
     def f_return_result(self, return_name: str, result_name: str) -> str:
         return ('    call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))\n'
                 '    allocate (character(ret_val_size) :: {0})\n'
-                '    do i = 1, ret_val_size\n'
-                '        {0}(i:i) = f_ret_ptr(i)\n'
+                '    do i_loop = 1, ret_val_size\n'
+                '        {0}(i_loop:i_loop) = f_ret_ptr(i_loop)\n'
                 '    end do\n').format(return_name)
 
     def fi_type(self) -> str:
@@ -173,7 +173,7 @@ class String(Par):
 
     def fc_get_result(self, cpp_chain_call: str) -> str:
         return ('static std::string result;\n'
-                'result = {}').format(cpp_chain_call)
+                '    result = {}').format(cpp_chain_call)
 
     def fc_return(self) -> str:
         return ('    *{0} = const_cast<char*>(result.c_str());\n'
@@ -237,7 +237,7 @@ class VecDbl(Par):
 
     def fc_get_result(self, cpp_chain_call: str) -> str:
         return ('static std::vector<double> result;\n'
-                'result = {}').format(cpp_chain_call)
+                '    result = {}').format(cpp_chain_call)
 
     def fc_return(self) -> str:
         return ('    *{0} = result.data();\n'

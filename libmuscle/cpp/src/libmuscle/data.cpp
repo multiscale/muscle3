@@ -328,7 +328,7 @@ Settings DataConstRef::as<Settings>() const {
     Data settings_dict(mcp::unpack_data(zone, ext.data(), ext.size()));
 
     for (std::size_t i = 0u; i < settings_dict.size(); ++i) {
-        Reference key(settings_dict.key(i).as<std::string>());
+        Reference key(settings_dict.key(i));
         auto val = settings_dict.value(i).as<SettingValue>();
         settings[key] = val;
     }
@@ -368,10 +368,10 @@ DataConstRef DataConstRef::operator[](std::string const & key) const {
     throw std::runtime_error("Tried to look up a key, but this object is not a map.");
 }
 
-DataConstRef DataConstRef::key(std::size_t i) const {
+std::string DataConstRef::key(std::size_t i) const {
     if (mp_obj_->type == msgpack::type::MAP) {
         if (i < size())
-            return DataConstRef(&(mp_obj_->via.map.ptr[i].key), mp_zones_);
+            return DataConstRef(&(mp_obj_->via.map.ptr[i].key), mp_zones_).as<std::string>();
         else
             throw std::out_of_range("Index too large for this map.");
     }
@@ -512,6 +512,16 @@ Data Data::operator[](std::string const & key) {
         return Data(&new_kv.val, mp_zones_);
     }
     throw std::runtime_error("Tried to look up a key, but this object is not a map.");
+}
+
+Data Data::value(std::size_t i) const {
+    if (mp_obj_->type == msgpack::type::MAP) {
+        if (i < size())
+            return Data(&(mp_obj_->via.map.ptr[i].val), mp_zones_);
+        else
+            throw std::out_of_range("Index too large for this map.");
+    }
+    throw std::runtime_error("Tried to look up a value, but this object is not a map.");
 }
 
 Data Data::operator[](std::size_t index) {

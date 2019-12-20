@@ -155,17 +155,17 @@ TEST(libmuscle_mcp_data, dict) {
     int i = d2["test_int"].as<int>();
     ASSERT_EQ(i, 42);
 
-    ASSERT_TRUE(d2.key(0u).as<std::string>() == "test_double" ||
-                d2.key(1u).as<std::string>() == "test_double");
+    ASSERT_TRUE(d2.key(0u) == "test_double" ||
+                d2.key(1u) == "test_double");
 
-    ASSERT_TRUE(d2.key(0u).as<std::string>() == "test_int" ||
-                d2.key(1u).as<std::string>() == "test_int");
+    ASSERT_TRUE(d2.key(0u) == "test_int" ||
+                d2.key(1u) == "test_int");
 
     ASSERT_TRUE(d2.value(0u).is_a<double>() || d2.value(1u).is_a<double>());
     ASSERT_TRUE(d2.value(0u).is_a<int>() || d2.value(1u).is_a<int>());
 
-    ASSERT_TRUE((d2.key(0u).as<std::string>() == "test_double" && d2.value(0u).is_a<double>()) ||
-                (d2.key(1u).as<std::string>() == "test_double" && d2.value(1u).is_a<double>()));
+    ASSERT_TRUE((d2.key(0u) == "test_double" && d2.value(0u).is_a<double>()) ||
+                (d2.key(1u) == "test_double" && d2.value(1u).is_a<double>()));
 }
 
 TEST(libmuscle_mcp_data, dict_errors) {

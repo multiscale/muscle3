@@ -328,6 +328,14 @@ subroutine test_data_list
     call assert_eq_long_int(LIBMUSCLE_Data_size(d1), 100_long_int)
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.nils'
+
+    print *, '[  RUN     ] data.get_item'
+    d1 = LIBMUSCLE_Data_create_nils(10_long_int)
+    d2 = LIBMUSCLE_Data_get_item(d1, 1_long_int)
+    call assert_true(LIBMUSCLE_Data_is_nil(d2))
+    call LIBMUSCLE_Data_free(d1)
+    call LIBMUSCLE_Data_free(d2)
+    print *, '[       OK ] data.get_item'
 end subroutine test_data_list
 
 subroutine test_data_byte_array

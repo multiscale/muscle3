@@ -87,9 +87,9 @@ data_desc = Class('Data', [
             '}\n'
             )
         ),
-    MemFun(Obj('Data', 'value'), 'get_item', [String('key')], True,
+    MemFun(Obj('Data', 'value'), 'get_item_by_key', [String('key')], True,
             fc_override=(
-                'std::intptr_t LIBMUSCLE_Data_get_item_(\n'
+                'std::intptr_t LIBMUSCLE_Data_get_item_by_key_(\n'
                 '        std::intptr_t self,\n'
                 '        char * key, std::size_t key_size,\n'
                 '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
@@ -117,6 +117,38 @@ data_desc = Class('Data', [
                 '    }\n'
                 '}\n\n')
             ),
+    MemFun(Obj('Data', 'value'), 'get_item_by_index', [Sizet('i')], True,
+            fc_override=(
+                'std::intptr_t LIBMUSCLE_Data_get_item_by_index_(\n'
+                '        std::intptr_t self,\n'
+                '        std::size_t i,\n'
+                '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
+                ') {\n'
+                '        Data * self_p = reinterpret_cast<Data *>(self);\n'
+                '        try {\n'
+                '            *err_code = 0;\n'
+                '            Data * result = new Data((*self_p)[i-1u]);\n'
+                '            return reinterpret_cast<std::intptr_t>(result);\n'
+                '    }\n'
+                '    catch (std::runtime_error const & e) {\n'
+                '        *err_code = 1;\n'
+                '        static std::string msg;\n'
+                '        msg = e.what();\n'
+                '        *err_msg = const_cast<char*>(msg.data());\n'
+                '        *err_msg_len = msg.size();\n'
+                '    }\n'
+                '    catch (std::out_of_range const & e) {\n'
+                '        *err_code = 3;\n'
+                '        static std::string msg;\n'
+                '        msg = e.what();\n'
+                '        *err_msg = const_cast<char*>(msg.data());\n'
+                '        *err_msg_len = msg.size();\n'
+                '    }\n'
+                '}\n\n')
+            ),
+    OverloadSet('get_item', [
+        'get_item_by_key', 'get_item_by_index'
+        ]),
     IndexAssignmentOperator('set_item_key_bool', [String('key'), Bool('value')], True),
     IndexAssignmentOperator('set_item_key_string', [String('key'), String('value')], True),
     IndexAssignmentOperator('set_item_key_char', [String('key'), Char('value')], True),

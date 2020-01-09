@@ -548,7 +548,7 @@ void LIBMUSCLE_Data_as_byte_array_(
         *err_msg_len = msg.size();
     }
 }
-std::intptr_t LIBMUSCLE_Data_get_item_(
+std::intptr_t LIBMUSCLE_Data_get_item_by_key_(
         std::intptr_t self,
         char * key, std::size_t key_size,
         int * err_code, char ** err_msg, std::size_t * err_msg_len
@@ -559,6 +559,33 @@ std::intptr_t LIBMUSCLE_Data_get_item_(
         *err_code = 0;
         Data * result = new Data((*self_p)[key_s]);
         return reinterpret_cast<std::intptr_t>(result);
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+std::intptr_t LIBMUSCLE_Data_get_item_by_index_(
+        std::intptr_t self,
+        std::size_t i,
+        int * err_code, char ** err_msg, std::size_t * err_msg_len
+) {
+        Data * self_p = reinterpret_cast<Data *>(self);
+        try {
+            *err_code = 0;
+            Data * result = new Data((*self_p)[i-1u]);
+            return reinterpret_cast<std::intptr_t>(result);
     }
     catch (std::runtime_error const & e) {
         *err_code = 1;

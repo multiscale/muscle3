@@ -656,6 +656,48 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :p integer err_code: An error code output (optional).
     :p character err_msg: An error message output (allocatable, optional).
 
+.. f:function:: LIBMUSCLE_Data_get_item(self, i, err_code, err_msg)
+
+    Access an item in a list.
+
+    This function is only valid for Data objects containing a list. You
+    can use ``LIBMUSCLE_Data_is_list`` to check whether that is the case.
+
+    This returns a ``LIBMUSCLE_Data`` object containing the value at the given
+    index in the list object. If ``self`` does not contain a list, the result
+    will be invalid, and ``err_code`` will be set to
+    ``LIBMUSCLE_runtime_error``. If ``i`` is negative, zero, or larger than
+    the number of items in the list (see ``LIBMUSCLE_Data_size``), ``err_code``
+    will be set to ``LIBMUSCLE_out_of_range``, and the result will be invalid.
+
+    As with any returned ``LIBMUSCLE_Data`` object, the result needs to be freed
+    via ``LIBMUSCLE_Data_free`` once you're done with it.
+    Assigning to the returned object will update the list, but it's easier
+    and safer to use ``LIBMUSCLE_Data_set_item`` instead.
+
+    Example:
+
+    .. code-block:: fortran
+
+        integer, parameter :: size_kind = selected_int_kind(18)
+        type(LIBMUSCLE_Data) :: d1, d2
+        character(len=:), allocatable :: s1
+
+        d1 = LIBMUSCLE_Data_create_nils(10_size_kind)
+        d2 = LIBMUSCLE_Data_get_item(d1, 5_size_kind)
+        ! LIBMUSCLE_Data_is_nil(d2) returns .true. here
+        call LIBMUSCLE_Data_free(d2)
+        call LIBMUSCLE_Data_free(d1)
+
+    See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
+
+    :p LIBMUSCLE_Data self: The Data object to get an item out of.
+    :p integer i: The index to get the value at, in range [1..size]
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The value at the corresponding index.
+    :rtype value: LIBMUSCLE_Data
+
 .. f:function:: LIBMUSCLE_Data_get_item(self, key, err_code, err_msg)
 
     Access an item in a dictionary.

@@ -857,6 +857,7 @@ class MemFun(Member):
         self.may_throw = may_throw
         self.fc_override = args.get('fc_override')
         self.f_override = args.get('f_override')
+        self.cpp_func_name = args.get('cpp_func_name', name)
 
     def set_class_name(self, class_name: str) -> None:
         self.class_name = class_name
@@ -1086,7 +1087,7 @@ class MemFun(Member):
 
     def _fc_cpp_call(self) -> str:
         cpp_args = ', '.join([par.fc_cpp_arg() for par in self.params[1:]])
-        cpp_chain_call = 'self_p->{}({})'.format(self.name, cpp_args)
+        cpp_chain_call = 'self_p->{}({})'.format(self.cpp_func_name, cpp_args)
         result = self.ret_type.fc_get_result(cpp_chain_call)
         return '    {};\n'.format(result)
 
@@ -1262,8 +1263,9 @@ class NamedConstructor(Constructor):
     """
     def __init__(self, params: List[Par], name: str, **args
             ) -> None:
+        if 'cpp_func_name' not in args:
+            args['cpp_func_name'] = name
         super().__init__(params, 'create_' + name, **args)
-        self.func_name = name
 
     def set_class_name(self, class_name: str) -> None:
         # Don't add self parameter
@@ -1274,7 +1276,7 @@ class NamedConstructor(Constructor):
         # Create object instead of calling something
         cpp_args = [par.fc_cpp_arg() for par in self.params]
         return '    {0} * result = new {0}({0}::{1}({2}));\n'.format(
-                self.class_name, self.func_name, ', '.join(cpp_args))
+                self.class_name, self.cpp_func_name, ', '.join(cpp_args))
 
     def _fc_return(self) -> str:
         return '    return reinterpret_cast<std::intptr_t>(result);\n'

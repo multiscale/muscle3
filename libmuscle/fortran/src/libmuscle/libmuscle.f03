@@ -31,6 +31,8 @@ module libmuscle
     public :: LIBMUSCLE_Data_free
     public :: LIBMUSCLE_Data_create_dict
     public :: LIBMUSCLE_Data_create_list
+    public :: LIBMUSCLE_Data_create_byte_array_empty
+    public :: LIBMUSCLE_Data_create_byte_array_from_buf
     public :: LIBMUSCLE_Data_create_byte_array
     public :: LIBMUSCLE_Data_create_nils
     public :: LIBMUSCLE_Data_set_bool
@@ -206,13 +208,22 @@ module libmuscle
             use iso_c_binding
         end function LIBMUSCLE_Data_create_list_
 
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_byte_array_( &
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_byte_array_empty_( &
                 size) &
-                bind(C, name="LIBMUSCLE_Data_create_byte_array_")
+                bind(C, name="LIBMUSCLE_Data_create_byte_array_empty_")
 
             use iso_c_binding
             integer (c_size_t), value, intent(in) :: size
-        end function LIBMUSCLE_Data_create_byte_array_
+        end function LIBMUSCLE_Data_create_byte_array_empty_
+
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_byte_array_from_buf_( &
+                buf, buf_size) &
+                bind(C, name="LIBMUSCLE_Data_create_byte_array_from_buf_")
+
+            use iso_c_binding
+            character(len=1), dimension(*), intent(in) :: buf
+            integer (c_size_t), value, intent(in) :: buf_size
+        end function LIBMUSCLE_Data_create_byte_array_from_buf_
 
         integer (c_intptr_t) function LIBMUSCLE_Data_create_nils_( &
                 size) &
@@ -831,6 +842,12 @@ module libmuscle
             LIBMUSCLE_Data_create_copy
     end interface
 
+    interface LIBMUSCLE_Data_create_byte_array
+        module procedure &
+            LIBMUSCLE_Data_create_byte_array_empty, &
+            LIBMUSCLE_Data_create_byte_array_from_buf
+    end interface
+
     interface LIBMUSCLE_Data_set
         module procedure &
             LIBMUSCLE_Data_set_bool, &
@@ -1068,18 +1085,31 @@ contains
         LIBMUSCLE_Data_create_list%ptr = ret_val
     end function LIBMUSCLE_Data_create_list
 
-    function LIBMUSCLE_Data_create_byte_array(size)
+    function LIBMUSCLE_Data_create_byte_array_empty(size)
         implicit none
         integer (selected_int_kind(18)), intent(in) :: size
-        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_byte_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_byte_array_empty
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_byte_array_( &
+        ret_val = LIBMUSCLE_Data_create_byte_array_empty_( &
             size)
 
-        LIBMUSCLE_Data_create_byte_array%ptr = ret_val
-    end function LIBMUSCLE_Data_create_byte_array
+        LIBMUSCLE_Data_create_byte_array_empty%ptr = ret_val
+    end function LIBMUSCLE_Data_create_byte_array_empty
+
+    function LIBMUSCLE_Data_create_byte_array_from_buf(buf)
+        implicit none
+        character(len=1), dimension(:), intent(in) :: buf
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_byte_array_from_buf
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_byte_array_from_buf_( &
+            buf, int(size(buf), c_size_t))
+
+        LIBMUSCLE_Data_create_byte_array_from_buf%ptr = ret_val
+    end function LIBMUSCLE_Data_create_byte_array_from_buf
 
     function LIBMUSCLE_Data_create_nils(size)
         implicit none

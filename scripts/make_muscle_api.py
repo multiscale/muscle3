@@ -30,7 +30,21 @@ data_desc = Class('Data', [
     Destructor(),
     NamedConstructor([], 'dict'),
     NamedConstructor([], 'list'),
-    NamedConstructor([Sizet('size')], 'byte_array'),
+    NamedConstructor([Sizet('size')], 'byte_array_empty',
+        cpp_func_name='byte_array'),
+    NamedConstructor([Bytes('buf')], 'byte_array_from_buf',
+        cpp_func_name='byte_array',
+        fc_override=(
+            'std::intptr_t LIBMUSCLE_Data_create_byte_array_from_buf_(\n'
+            '       char * buf, std::size_t buf_size\n'
+            ') {\n'
+            '   Data * result = new Data(Data::byte_array(buf, buf_size));\n'
+            '   return reinterpret_cast<std::intptr_t>(result);\n'
+            '}\n\n'
+            )
+        ),
+    OverloadSet('create_byte_array', [
+        'create_byte_array_empty', 'create_byte_array_from_buf']),
     NamedConstructor([Sizet('size')], 'nils'),
     AssignmentOperator('set_bool', Bool('value')),
     AssignmentOperator('set_string', String('value')),

@@ -401,8 +401,9 @@ subroutine test_data_byte_array
 
     implicit none
     integer, parameter :: long_int = selected_int_kind(18)
+    character(len=1), dimension(1024) :: bytes
     character(len=1), dimension(:), allocatable :: buf
-    integer :: err_code
+    integer :: i, err_code
     type(LIBMUSCLE_Data) :: d1
 
     print *, '[  RUN     ] data.byte_array'
@@ -414,8 +415,30 @@ subroutine test_data_byte_array
     allocate(buf(LIBMUSCLE_Data_size(d1)))
     call LIBMUSCLE_Data_as_byte_array(d1, buf, err_code)
     call assert_eq_integer(err_code, LIBMUSCLE_success)
-    call LIBMUSCLE_Data_free(d1)
     deallocate(buf)
+
+    call LIBMUSCLE_Data_free(d1)
+
+    do i = 1, 1024
+        bytes(i) = achar(mod(i, 256))
+    end do
+
+    d1 = LIBMUSCLE_Data_create_byte_array(bytes)
+    call assert_true(LIBMUSCLE_Data_is_a_byte_array(d1))
+    call assert_false(LIBMUSCLE_Data_is_a_int(d1))
+    call assert_eq_long_int(LIBMUSCLE_Data_size(d1), 1024_long_int)
+
+    allocate(buf(LIBMUSCLE_Data_size(d1)))
+    call LIBMUSCLE_Data_as_byte_array(d1, buf, err_code)
+    call assert_eq_integer(err_code, LIBMUSCLE_success)
+
+    do i = 1, 1024
+        call assert_eq_integer(mod(i, 256), ichar(buf(i)))
+    end do
+    deallocate(buf)
+
+    call LIBMUSCLE_Data_free(d1)
+
     print *, '[       OK ] data.byte_array'
 end subroutine test_data_byte_array
 

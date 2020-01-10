@@ -99,6 +99,44 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :r obj: The new Data object
     :rtype obj: LIBMUSCLE_Data
 
+.. f:function:: LIBMUSCLE_Data_create_byte_array(buf)
+
+    Creates a Data object referring to the given data.
+
+    The buffer passed will not be copied! This creates a Data object that refers
+    to your buffer, and you need to make sure that that buffer exists for as
+    long as the Data object (and/or any copies of it) is used.
+
+    Example:
+
+    .. code-block:: fortran
+
+        type(LIBMUSCLE_Data) :: d1
+        character(len=1), dimension(1024) :: bytes
+        character(len=1), dimension(:), allocatable :: buf
+
+        ! Create some data
+        do i = 1, 1024
+            bytes(i) = achar(mod(i, 256))
+        end do
+
+        ! Create a Data object referring to it
+        d1 = LIBMUSCLE_Data_create_byte_array(bytes)
+        ! Now d1 contains a byte array of size 1024
+
+        ! Extract the data again, into a new buffer
+        allocate(buf(LIBMUSCLE_Data_size(d1)))
+        call LIBMUSCLE_Data_as_byte_array(d1, buf)
+        ! Now, ichar(buf(i)) equals mod(i, 256)
+
+        ! Clean up the buffer and the Data object
+        deallocate(buf)
+        call LIBMUSCLE_Data_free(d1)
+
+    :p character buf: An array of characters to refer to.
+    :r obj: The new Data object
+    :rtype obj: LIBMUSCLE_Data
+
 .. f:subroutine:: LIBMUSCLE_Data_free(self)
 
     Frees a Data object.
@@ -625,28 +663,9 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     variable will contain an appropriate error message in case of error, and
     needs to be deallocated (using ``deallocate()``) when you're done with it.
 
-    Example:
-
-    .. code-block:: fortran
-
-        integer, parameter :: long = selected_int_kind(18)
-        type(LIBMUSCLE_Data) :: mydata
-        character(len=1), dimension(:), allocatable : buf
-
-        ! Create a data object containing a byte array value
-        mydata = LIBMUSCLE_Data_create_byte_array(1024_long)
-
-        ! Allocate some space
-        allocate(buf(LIBMUSCLE_Data_size(mydata)))
-        ! Retrieve the value
-        number = LIBMUSCLE_Data_as_byte_array(mydata, buf)
-
-        ! Free the data object
-        call LIBMUSCLE_Data_free(mydata)
-        ! Free the buffer
-        deallocate(buf)
-
-    See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
+    See ``LIBMUSCLE_Data_create_byte_array(buf)`` for an example of creating and
+    extracting byte array values. See ``LIBMUSCLE_Data_as_bool()`` for an
+    example of error handling.
 
     :p LIBMUSCLE_Data self: The Data object to get a byte array out of.
     :p character buf: A buffer large enough to hold the contents of the data

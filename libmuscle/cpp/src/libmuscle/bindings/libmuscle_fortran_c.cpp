@@ -81,9 +81,16 @@ std::intptr_t LIBMUSCLE_Data_create_list_() {
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_byte_array_(std::size_t size) {
+std::intptr_t LIBMUSCLE_Data_create_byte_array_empty_(std::size_t size) {
     Data * result = new Data(Data::byte_array(size));
     return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_byte_array_from_buf_(
+       char * buf, std::size_t buf_size
+) {
+   Data * result = new Data(Data::byte_array(buf, buf_size));
+   return reinterpret_cast<std::intptr_t>(result);
 }
 
 std::intptr_t LIBMUSCLE_Data_create_nils_(std::size_t size) {

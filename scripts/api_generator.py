@@ -1235,6 +1235,22 @@ class IndexAssignmentOperator(MemFun):
         return '    (*self_p)[{}] = {};\n'.format(cpp_args[1], cpp_args[2])
 
 
+class ShiftedIndexAssignmentOperator(IndexAssignmentOperator):
+    """Assigns to an indexed item, shifting the index by 1.
+
+    This generates cod suitable for assigning to a subobject accessed
+    via the square brackets operator, i.e. self[i] / value.
+
+    The index is shifted as necessary, e.g. to make it 1-based in
+    Fortran and 0-based in C++.
+    """
+    def _fc_cpp_call(self) -> str:
+        # Call operator[] instead of a function
+        cpp_args = [par.fc_cpp_arg() for par in self.params]
+        return '    (*self_p)[{} - 1u] = {};\n'.format(
+                cpp_args[1], cpp_args[2])
+
+
 class NamedConstructor(Constructor):
     """Represents a named class constructor.
 

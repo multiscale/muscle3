@@ -555,8 +555,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
 
-    :p LIBMUSCLE_Data self The Data object to get a single-precision real value
-            out of.
+    :p LIBMUSCLE_Data self: The Data object to get a single-precision real value out of.
     :p integer err_code: An error code output (optional)
     :p character err_msg: An error message output (allocatable, optional).
     :r value: The value.
@@ -599,8 +598,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
 
-    :p LIBMUSCLE_Data self The Data object to get a double-precision real value
-            out of.
+    :p LIBMUSCLE_Data self: The Data object to get a double-precision real value out of.
     :p integer err_code: An error code output (optional)
     :p character err_msg: An error message output (allocatable, optional).
     :r value: The value.
@@ -743,6 +741,30 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :p character err_msg: An error message output (allocatable, optional).
     :r value: The value corresponding to the selected key.
     :rtype value: LIBMUSCLE_Data
+
+.. f:subroutine:: LIBMUSCLE_Data_set_item(self, i, value, err_code, err_msg)
+
+    Set an item in a list.
+
+    This function is only valid for Data objects containing a list. You can
+    use ``LIBMUSCLE_Data_is_a_list`` to check whether that is the case.
+
+    This subroutine sets the ``i``'th value in the list to ``value``. If a value
+    is already stored at this position, then it will be replaced. If the Data
+    object does not contain a list, ``err_code`` will be set to
+    ``LIBMUSCLE_runtime_error``. If the position ``i`` is zero, negative, or
+    larger than the size of the list, ``err_code`` will be set to
+    ``LIBMUSCLE_out_of_range``.
+
+    ``value`` may be of type logical, character, integer, real, or Data. See
+    ``LIBMUSCLE_Data_get_item`` for an example. See ``LIBMUSCLE_Data_as_bool()``
+    for an example of error handling.
+
+    :p LIBMUSCLE_Data self: The Data object to set an item value on.
+    :p integer i: The position to set the value for, in range [1..size].
+    :p see_above value: The value to set.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional)
 
 .. f:subroutine:: LIBMUSCLE_Data_set_item(self, key, value, err_code, err_msg)
 

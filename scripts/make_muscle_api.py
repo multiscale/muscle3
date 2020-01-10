@@ -8,7 +8,8 @@ from api_generator import (
         API, AssignmentOperator, Bool, Bytes, Char, Class, Constructor,
         Destructor, Double, Enum, EnumVal, Float, IndexAssignmentOperator, Int,
         Int16t, Int64t, MemFun, MemFunTmpl, NamedConstructor, Namespace, Obj,
-        OverloadSet, Sizet, String, T, VecDbl, Vec2Dbl, Void)
+        OverloadSet, ShiftedIndexAssignmentOperator, Sizet, String, T, VecDbl,
+        Vec2Dbl, Void)
 
 
 data_desc = Class('Data', [
@@ -158,10 +159,22 @@ data_desc = Class('Data', [
     IndexAssignmentOperator('set_item_key_float', [String('key'), Float('value')], True),
     IndexAssignmentOperator('set_item_key_double', [String('key'), Double('value')], True),
     IndexAssignmentOperator('set_item_key_data', [String('key'), Obj('Data', 'value')], True),
+    ShiftedIndexAssignmentOperator('set_item_index_bool', [Sizet('i'), Bool('value')], True),
+    ShiftedIndexAssignmentOperator('set_item_index_string', [Sizet('i'), String('value')], True),
+    ShiftedIndexAssignmentOperator('set_item_index_char', [Sizet('i'), Char('value')], True),
+    ShiftedIndexAssignmentOperator('set_item_index_int16', [Sizet('i'), Int16t('value')], True),
+    ShiftedIndexAssignmentOperator('set_item_index_int', [Sizet('i'), Int('value')], True),
+    ShiftedIndexAssignmentOperator('set_item_index_int64', [Sizet('i'), Int64t('value')], True),
+    ShiftedIndexAssignmentOperator('set_item_index_float', [Sizet('i'), Float('value')], True),
+    ShiftedIndexAssignmentOperator('set_item_index_double', [Sizet('i'), Double('value')], True),
+    ShiftedIndexAssignmentOperator('set_item_index_data', [Sizet('i'), Obj('Data', 'value')], True),
     OverloadSet('set_item', [
         'set_item_key_bool', 'set_item_key_string', 'set_item_key_char',
         'set_item_key_int16', 'set_item_key_int', 'set_item_key_int64',
-        'set_item_key_float', 'set_item_key_double', 'set_item_key_data'
+        'set_item_key_float', 'set_item_key_double', 'set_item_key_data',
+        'set_item_index_bool', 'set_item_index_string', 'set_item_index_char',
+        'set_item_index_int16', 'set_item_index_int', 'set_item_index_int64',
+        'set_item_index_float', 'set_item_index_double', 'set_item_index_data'
         ]),
     MemFun(String(), 'key', [Sizet('i')], True,
             fc_override=(

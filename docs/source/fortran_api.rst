@@ -14,9 +14,9 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     returned from and passed to libmuscle functions, but does not contain any
     directly accessible members.
 
-    With respect to creation, assignment and copying, ``LIBMUSCLE_Data`` objects
-    act like Python objects: basic values (logicals, strings, integers and
-    reals) get copied, while for lists, dictionaries, and byte arrays, the
+    With respect to creation, assignment and copying, :f:type:`LIBMUSCLE_Data`
+    objects act like Python objects: basic values (logicals, strings, integers
+    and reals) get copied, while for lists, dictionaries, and byte arrays, the
     variable contains a reference which gets copied.
 
 .. f:function:: LIBMUSCLE_Data_create()
@@ -149,14 +149,14 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 .. f:subroutine:: LIBMUSCLE_Data_set(self, value)
 
     Assigns the value of ``value`` to ``self``. Both ``value`` and ``self``
-    must have a value (nil is okay, but an uninitialised ``LIBMUSCLE_Data`` is
-    not). If ``value`` holds a basic type, then the value will be copied into
-    ``self``, overwriting any previous value in ``self``. If ``value`` holds a
-    list, dict, or byte array, then ``self`` will end up referring to the same
-    object as ``value``.
+    must have a value (nil is okay, but an uninitialised
+    :f:type:`LIBMUSCLE_Data` is not). If ``value`` holds a basic type, then the
+    value will be copied into ``self``, overwriting any previous value in
+    ``self``. If ``value`` holds a list, dict, or byte array, then ``self`` will
+    end up referring to the same object as ``value``.
 
     If you haven't created ``self`` yet, then it's shorter to use
-    ``LIBMUSCLE_Data_create(value)``.
+    :f:func:`LIBMUSCLE_Data_create`.
 
     This is the equivalent of ``self = value`` in C++ or Python.
 
@@ -166,8 +166,8 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 .. f:subroutine:: LIBMUSCLE_Data_set(self, value)
 
     Assigns the value of ``value`` to ``self``. ``self`` must be an initialised
-    ``LIBMUSCLE_Data`` object. If your target ``LIBMUSCLE_Data`` object does not
-    exist yet, use ``LIBMUSCLE_Data_create`` instead.
+    :f:type:`LIBMUSCLE_Data` object. If your target :f:type:`LIBMUSCLE_Data`
+    object does not exist yet, use :f:func:`LIBMUSCLE_Data_create` instead.
 
     This is the equivalent of ``self = value`` in C++ or Python.
 
@@ -289,8 +289,8 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     Access a bool value.
 
-    You can use ``LIBMUSCLE_Data_is_a_bool()`` to ascertain that the Data object
-    contains a bool value.
+    You can use :f:func:`LIBMUSCLE_Data_is_a_bool` to ascertain that the Data
+    object contains a bool value.
 
     If the Data object does not contain a bool (logical) value, then an error
     message will be printed and execution will be halted.
@@ -340,7 +340,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     Access a string value.
 
-    You can use ``LIBMUSCLE_Data_is_a_string()`` to ascertain that the Data
+    You can use :f:func:`LIBMUSCLE_Data_is_a_string` to ascertain that the Data
     object contains a string value.
 
     If the Data object does not contain a string (character) value, then an
@@ -377,7 +377,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
-    See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
+    See :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
 
     :p LIBMUSCLE_Data self The Data object to get a string out of.
     :p integer err_code: An error code output (optional)
@@ -389,7 +389,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     Access an int value that fits in 8 bits.
 
-    You can use ``LIBMUSCLE_Data_is_a_char()`` to ascertain that the Data
+    You can use :f:func:`LIBMUSCLE_Data_is_a_char` to ascertain that the Data
     object contains a char value.
 
     If the Data object does not contain an char (integer with
@@ -420,7 +420,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
-    See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
+    See :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
 
     :p LIBMUSCLE_Data self The Data object to get an integer value out of.
     :p integer err_code: An error code output (optional)
@@ -432,7 +432,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     Access an int value that fits in 16 bits.
 
-    You can use ``LIBMUSCLE_Data_is_a_int16()`` to ascertain that the Data
+    You can use :f:func:`LIBMUSCLE_Data_is_a_int16` to ascertain that the Data
     object contains an integer value.
 
     If the Data object does not contain an int16 (integer with
@@ -463,7 +463,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
-    See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
+    See :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
 
     :p LIBMUSCLE_Data self The Data object to get an integer value out of.
     :p integer err_code: An error code output (optional)
@@ -475,7 +475,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     Access an integer value.
 
-    You can use ``LIBMUSCLE_Data_is_a_int()`` to ascertain that the Data
+    You can use :f:func:`LIBMUSCLE_Data_is_a_int` to ascertain that the Data
     object contains an integer value.
 
     If the Data object does not contain an int (integer) value, then an error
@@ -505,7 +505,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
-    See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
+    See :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
 
     :p LIBMUSCLE_Data self The Data object to get an integer value out of.
     :p integer err_code: An error code output (optional)
@@ -517,7 +517,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     Access an integer value.
 
-    You can use ``LIBMUSCLE_Data_is_a_int()`` to ascertain that the Data
+    You can use :f:func:`LIBMUSCLE_Data_is_a_int` to ascertain that the Data
     object contains an integer value.
 
     If the Data object does not contain an int (integer with
@@ -548,7 +548,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
-    See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
+    See :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
 
     :p LIBMUSCLE_Data self The Data object to get an integer value out of.
     :p integer err_code: An error code output (optional)
@@ -560,7 +560,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     Access a single-precision real value.
 
-    You can use ``LIBMUSCLE_Data_is_a_float()`` to ascertain that the Data
+    You can use :f:func:`LIBMUSCLE_Data_is_a_float` to ascertain that the Data
     object contains a single-precision real value.
 
     If the Data object does not contain a float (real with
@@ -591,7 +591,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
-    See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
+    See :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
 
     :p LIBMUSCLE_Data self: The Data object to get a single-precision real value out of.
     :p integer err_code: An error code output (optional)
@@ -603,7 +603,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     Access a double-precision real value.
 
-    You can use ``LIBMUSCLE_Data_is_a_double()`` to ascertain that the Data
+    You can use :f:func:`LIBMUSCLE_Data_is_a_double` to ascertain that the Data
     object contains a double-precision real value.
 
     If the Data object does not contain a double (real with
@@ -634,7 +634,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
-    See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
+    See :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
 
     :p LIBMUSCLE_Data self: The Data object to get a double-precision real value out of.
     :p integer err_code: An error code output (optional)
@@ -646,9 +646,9 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     Access a byte array value.
 
-    You can use ``LIBMUSCLE_Data_is_a_byte_array()`` to ascertain that the Data
-    object contains a byte array value. You can use ``LIBMUSCLE_Data_size()`` to
-    get the number of bytes stored.
+    You can use :f:func:`LIBMUSCLE_Data_is_a_byte_array` to ascertain that the
+    Data object contains a byte array value. You can use
+    :f:func:`LIBMUSCLE_Data_size` to get the number of bytes stored.
 
     If the Data object does not contain a byte array (character array) value,
     then an error message will be printed and execution will be halted.
@@ -663,9 +663,9 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     variable will contain an appropriate error message in case of error, and
     needs to be deallocated (using ``deallocate()``) when you're done with it.
 
-    See ``LIBMUSCLE_Data_create_byte_array(buf)`` for an example of creating and
-    extracting byte array values. See ``LIBMUSCLE_Data_as_bool()`` for an
-    example of error handling.
+    See :f:func:`LIBMUSCLE_Data_create_byte_array` for an example of
+    creating and extracting byte array values. See
+    :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
 
     :p LIBMUSCLE_Data self: The Data object to get a byte array out of.
     :p character buf: A buffer large enough to hold the contents of the data
@@ -678,19 +678,21 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     Access an item in a list.
 
     This function is only valid for Data objects containing a list. You
-    can use ``LIBMUSCLE_Data_is_list`` to check whether that is the case.
+    can use :f:func:`LIBMUSCLE_Data_is_a_list` to check whether that is the
+    case.
 
-    This returns a ``LIBMUSCLE_Data`` object containing the value at the given
-    index in the list object. If ``self`` does not contain a list, the result
-    will be invalid, and ``err_code`` will be set to
-    ``LIBMUSCLE_runtime_error``. If ``i`` is negative, zero, or larger than
-    the number of items in the list (see ``LIBMUSCLE_Data_size``), ``err_code``
-    will be set to ``LIBMUSCLE_out_of_range``, and the result will be invalid.
+    This returns a :f:type:`LIBMUSCLE_Data` object containing the value at the
+    given index in the list object. If ``self`` does not contain a list, the
+    result will be invalid, and ``err_code`` will be set to
+    ``LIBMUSCLE_runtime_error``. If ``i`` is negative, zero, or larger than the
+    number of items in the list (see :f:func:`LIBMUSCLE_Data_size`),
+    ``err_code`` will be set to ``LIBMUSCLE_out_of_range``, and the result will
+    be invalid.
 
-    As with any returned ``LIBMUSCLE_Data`` object, the result needs to be freed
-    via ``LIBMUSCLE_Data_free`` once you're done with it.
-    Assigning to the returned object will update the list, but it's easier
-    and safer to use ``LIBMUSCLE_Data_set_item`` instead.
+    As with any returned :f:type:`LIBMUSCLE_Data` object, the result needs to be
+    freed via :f:func:`LIBMUSCLE_Data_free` once you're done with it. Setting
+    the value of the returned object will update the list, but it's easier and
+    safer to use :f:func:`LIBMUSCLE_Data_set_item` instead.
 
     Example:
 
@@ -706,7 +708,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         call LIBMUSCLE_Data_free(d2)
         call LIBMUSCLE_Data_free(d1)
 
-    See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
+    See :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
 
     :p LIBMUSCLE_Data self: The Data object to get an item out of.
     :p integer i: The index to get the value at, in range [1..size]
@@ -720,20 +722,21 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     Access an item in a dictionary.
 
     This function is only valid for Data objects containing a dictionary. You
-    can use ``LIBMUSCLE_Data_is_dict`` to check whether that is the case.
+    can use :f:func:`LIBMUSCLE_Data_is_a_dict` to check whether that is the
+    case.
 
-    This returns a ``LIBMUSCLE_Data`` object containing the value associated
-    with the given key in the dictionary object. If ``self`` does not contain a
-    dictionary, the result will be invalid, and ``err_code`` will be set to
-    ``LIBMUSCLE_runtime_error``. If ``key`` does not exist in this dictionary,
-    ``err_code`` will be set to ``LIBMUSCLE_out_of_range``, and the result will
-    be invalid.
+    This returns a :f:type:`LIBMUSCLE_Data` object containing the value
+    associated with the given key in the dictionary object. If ``self`` does not
+    contain a dictionary, the result will be invalid, and ``err_code`` will be
+    set to ``LIBMUSCLE_runtime_error``. If ``key`` does not exist in this
+    dictionary, ``err_code`` will be set to ``LIBMUSCLE_out_of_range``, and the
+    result will be invalid.
 
-    As with any returned ``LIBMUSCLE_Data`` object, the result needs to be freed
-    via ``LIBMUSCLE_Data_free`` once you're done with it. Note that the returned
-    object will be invalidated if a new key is added to the dictionary.
-    Assigning to the returned object will update the dictionary, but it's easier
-    and safer to use ``LIBMUSCLE_Data_set_item`` instead.
+    As with any returned :f:type:`LIBMUSCLE_Data` object, the result needs to be
+    freed via :f:func:`LIBMUSCLE_Data_free` once you're done with it. Note that
+    the returned object will be invalidated if a new key is added to the
+    dictionary.  Assigning to the returned object will update the dictionary,
+    but it's easier and safer to use :f:func:`LIBMUSCLE_Data_set_item` instead.
 
     Example:
 
@@ -752,7 +755,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         call LIBMUSCLE_Data_free(d2)
         call LIBMUSCLE_Data_free(d1)
 
-    See ``LIBMUSCLE_Data_as_bool()`` for an example of error handling.
+    See :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
 
     :p LIBMUSCLE_Data self: The Data object to get an item out of.
     :p character key: The key to get the value for.
@@ -766,7 +769,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     Set an item in a list.
 
     This function is only valid for Data objects containing a list. You can
-    use ``LIBMUSCLE_Data_is_a_list`` to check whether that is the case.
+    use :f:func:`LIBMUSCLE_Data_is_a_list` to check whether that is the case.
 
     This subroutine sets the ``i``'th value in the list to ``value``. If a value
     is already stored at this position, then it will be replaced. If the Data
@@ -776,8 +779,8 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     ``LIBMUSCLE_out_of_range``.
 
     ``value`` may be of type logical, character, integer, real, or Data. See
-    ``LIBMUSCLE_Data_get_item`` for an example. See ``LIBMUSCLE_Data_as_bool()``
-    for an example of error handling.
+    :f:func:`LIBMUSCLE_Data_get_item` for an example. See
+    :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
 
     :p LIBMUSCLE_Data self: The Data object to set an item value on.
     :p integer i: The position to set the value for, in range [1..size].
@@ -790,7 +793,8 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     Set an item in a dictionary.
 
     This function is only valid for Data objects containing a dictionary. You
-    can use ``LIBMUSCLE_Data_is_dict`` to check whether that is the case.
+    can use :f:func:`LIBMUSCLE_Data_is_a_dict` to check whether that is the
+    case.
 
     This subroutine sets the value stored under ``key`` to ``value``. If a value
     is already stored under this key, then it will be replaced. If the Data
@@ -798,8 +802,8 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     ``LIBMUSCLE_runtime_error``.
 
     ``value`` may be of type logical, character, integer, real, or Data. See
-    ``LIBMUSCLE_Data_get_item`` for an example. See ``LIBMUSCLE_Data_as_bool()``
-    for an example of error handling.
+    :f:func:`LIBMUSCLE_Data_get_item` for an example. See
+    :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
 
     :p LIBMUSCLE_Data self: The Data object to set an item value on.
     :p character key: The key to set the value for.
@@ -812,18 +816,21 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     Get the i'th key in the dictionary.
 
     This function is only valid for Data objects containing a dictionary. You
-    can use ``LIBMUSCLE_Data_is_dict`` to check whether that is the case.
+    can use :f:func:`LIBMUSCLE_Data_is_a_dict` to check whether that is the
+    case.
 
     The indices range from 1 to the number of items in the dictionary
-    (inclusive), as usual in Fortran. Use ``LIBMUSCLE_Data_size`` to get the
-    number of items. Note that changes to the dictionary (e.g. inserting a new
-    key) may change the order in which the key-value pairs are retrieved by this
-    function. It's best to not change the dictionary while iterating through it.
+    (inclusive), as usual in Fortran. Use :f:func:`LIBMUSCLE_Data_size` to get
+    the number of items. Note that changes to the dictionary (e.g. inserting a
+    new key) may change the order in which the key-value pairs are retrieved by
+    this function. It's best to not change the dictionary while iterating
+    through it.
 
     As always when a character value is returned by MUSCLE, the variable it ends
     up in must be allocatable, and must be deallocated after use.
 
-    The corresponding value may be obtained via ``LIBMUSCLE_Data_value(i)``.
+    The corresponding value may be obtained via
+    :f:func:`LIBMUSCLE_Data_value(i)`.
 
     .. code-block:: fortran
 
@@ -860,15 +867,17 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     Get the i'th value in the dictionary.
 
     This function is only valid for Data objects containing a dictionary. You
-    can use ``LIBMUSCLE_Data_is_dict`` to check whether that is the case.
+    can use :f:func:`LIBMUSCLE_Data_is_a_dict` to check whether that is the
+    case.
 
     The indices range from 1 to the number of items in the dictionary
-    (inclusive), as usual in Fortran. Use ``LIBMUSCLE_Data_size`` to get the
-    number of items. Note that changes to the dictionary (e.g. inserting a new
-    key) may change the order in which the key-value pairs are retrieved by this
-    function. It's best to not change the dictionary while iterating through it.
+    (inclusive), as usual in Fortran. Use :f:func:`LIBMUSCLE_Data_size` to get
+    the number of items. Note that changes to the dictionary (e.g. inserting a
+    new key) may change the order in which the key-value pairs are retrieved by
+    this function. It's best to not change the dictionary while iterating
+    through it.
 
-    The corresponding key may be obtained via ``LIBMUSCLE_Data_key(i)``. See
+    The corresponding key may be obtained via :f:func:`LIBMUSCLE_Data_key`. See
     there for an example as well.
 
     :p LIBMUSCLE_Data self: The Data object to get a value for.

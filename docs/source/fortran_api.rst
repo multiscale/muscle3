@@ -3,6 +3,65 @@ API Documentation for Fortran
 
 This page provides full documentation for the Fortran API of MUSCLE 3.
 
+A note on types
+---------------
+
+Fortran variables have a type and a kind. The type specifies a broad category,
+i.e. whether it is a logical value, text, or an integer or floating point
+number. The kind further subdivides the numbers into kinds with different
+precision or size. Traditional Fortran does not standardise which kinds are
+available, and so this may vary from compiler to compiler and from machine to
+machine. When Fortran was invented, number representations were much less
+standardised than today, and so the language designers left it to the
+implementation to avoid making the language impossible to implement on
+particular hardware.
+
+Sincle the libmuscle API uses integers and floating point numbers all over the
+place, we need to be able to declare these kinds. Also, the type and/or kind
+sometimes shows up in a function name, so we need some consistent naming to
+avoid confusion.
+
+This is complicated somewhat by the lack of guarantees on which types will be
+available. However, these days, all hardware that is relevant to MUSCLE 3 uses
+two's complement integers with sizes of 8, 16, 32 and 64 bits, and IEEE 754
+floating point numbers using 32 and 64-bit precision. So we can standardise on
+these without excluding anyone.
+
+In many compilers, integer types of size n bytes can be written ``integer*n``.
+This is not standard however, so it's not guaranteed to work. In Fortran 2003,
+a standardised way of selecting a kind with at least a given precision became
+available in the form of the ``selected_int_kind`` and ``selected_real_kind``
+functions. These work, but they're a pain to write out all the time.
+
+So, for each of the above mentioned integer and floating point types, libmuscle
+has a unique name, which is used in function names, and a parameter using the
+same name which defines the corresponding kind. You can use these to declare
+variables which you use with the libmuscle API, or you can write the same
+type/kind in another way that your compiler supports and it should work as well.
+The names and types are as follows:
+
++---------+-----------------+----------------------------------------+
+|  Name   | Kind parameter  | Description                            |
++---------+-----------------+----------------------------------------+
+|  int1   | LIBMUSCLE_int1  | 8-bit signed 2's complement integer.   |
+|  int2   | LIBMUSCLE_int2  | 16-bit signed 2's complement integer.  |
+|  int4   | LIBMUSCLE_int4  | 32-bit signed 2's complement integer.  |
+|  int8   | LIBMUSCLE_int8  | 64-bit signed 2's complement integer.  |
+| integer |                 | Default integer.                       |
+|  size   | LIBMUSCLE_size  | Used for array indiced and sizes.      |
+|  real4  | LIBMUSCLE_real4 | 32-bit IEEE 754 floating point.        |
+|  real8  | LIBMUSCLE_real8 | 64-bit IEEE 754 floating point.        |
++---------+-----------------+----------------------------------------+
+
+As said above, if you are used to ``integer*n`` and ``real*n`` style types, then
+you can use those, using e.g. ``integer*2`` where the API expects a
+``LIBMUSCLE_int2``. For ``LIBMUSCLE_size``, ``integer*8`` will probably work,
+otherwise try ``integer*4``.
+
+
+API
+---
+
 .. f:module:: libmuscle
     :synopsis: Fortran module for libmuscle
 
@@ -47,23 +106,24 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 .. f:function:: LIBMUSCLE_Data_create(value)
 
     Creates a Data object representing an integer value. Supported kinds are
-    the default ``integer`` kind, and ``selected_int_kind(n)`` with ``n`` equal
-    to 2, 4 or 18 (8, 16 and 64-bit signed integers respectively).
+    the default ``integer`` kind, and ``LIBMUSCLE_intN`` with N set to 1, 2, 4
+    or 8. See the note at the top of this page for more on integer types in
+    libmuscle.
 
     Note that while libmuscle supports unsigned integers, these don't exist
     in Fortran. They will be mapped to the corresponding signed type, which
     may cause a silent overflow if the number is out of the signed type's
     range.
 
-    :p integer value: The value to represent.
+    :p integer value: The value to represent (see above).
     :r obj: The new Data object
     :rtype obj: LIBMUSCLE_Data
 
 .. f:function:: LIBMUSCLE_Data_create(value)
 
     Creates a Data object representing a real value. Supported kinds are
-    ``selected_real_kind(6)`` and ``selected_int_kind(15)`` (32-bit single and
-    64-bit double precision).
+    ``LIBMUSCLE_real4`` and ``LIBMUSCLE_real8``. See the note at the top of this
+    page for more on real types in libmuscle.
 
     :p real value: The value to represent.
     :r obj: The new Data object
@@ -87,7 +147,8 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     Creates a Data object containing a list of ``size`` nil values.
 
-    :p integer size: The number of nil values to put into the list.
+    :p integer size: The number of nil values to put into the list
+        (kind=LIBMUSCLE_size).
     :r obj: The new Data object
     :rtype obj: LIBMUSCLE_Data
 
@@ -95,8 +156,9 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     Creates a Data object containing a byte array of the given number of bytes.
 
-    :p integer size: The number of bytes to allocate for the array.
-    :r obj: The new Data object
+    :p integer size: The number of bytes to allocate for the array
+            (LIBMUSCLE_size).
+    :r obj: The new Data object.
     :rtype obj: LIBMUSCLE_Data
 
 .. f:function:: LIBMUSCLE_Data_create_byte_array(buf)
@@ -141,15 +203,15 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     Frees a Data object.
 
-    This frees the resources associated wit the given Data object. Do not use
+    This frees the resources associated with the given Data object. Do not use
     the object for anything after calling this, because it will be invalid.
 
     :p LIBMUSCLE_Data self: The Data object to free.
 
 .. f:subroutine:: LIBMUSCLE_Data_set(self, value)
 
-    Assigns the value of ``value`` to ``self``. Both ``value`` and ``self``
-    must have a value (nil is okay, but an uninitialised
+    Assigns the value of Data object ``value`` to Data object ``self``. Both
+    ``value`` and ``self`` must have a value (nil is okay, but an uninitialised
     :f:type:`LIBMUSCLE_Data` is not). If ``value`` holds a basic type, then the
     value will be copied into ``self``, overwriting any previous value in
     ``self``. If ``value`` holds a list, dict, or byte array, then ``self`` will
@@ -178,28 +240,20 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :p LIBMUSCLE_Data self: The Data object to assign to.
     :p ``see_above`` value: The value to assign from.
 
-.. f:function:: LIBMUSCLE_Data_is_a_bool(self)
+.. f:function:: LIBMUSCLE_Data_is_a_logical(self)
 
-    Determine whether the Data object contains a boolean (logical) value.
+    Determine whether the Data object contains a logical (boolean) value.
 
     :p LIBMUSCLE_Data self: The Data object to inspect.
     :r is: True if the object contains a logical value.
     :rtype is: logical
 
-.. f:function:: LIBMUSCLE_Data_is_a_string(self)
+.. f:function:: LIBMUSCLE_Data_is_a_character(self)
 
-    Determine whether the Data object contains a string (character) value.
+    Determine whether the Data object contains a character (string) value.
 
     :p LIBMUSCLE_Data self: The Data object to inspect.
     :r is: True if the object contains a character value.
-    :rtype is: logical
-
-.. f:function:: LIBMUSCLE_Data_is_a_char(self)
-
-    Determine whether the Data object contains an integer value.
-
-    :p LIBMUSCLE_Data self: The Data object to inspect.
-    :r is: True if the object contains an integer value.
     :rtype is: logical
 
 .. f:function:: LIBMUSCLE_Data_is_a_int(self)
@@ -210,7 +264,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :r is: True if the object contains an integer value.
     :rtype is: logical
 
-.. f:function:: LIBMUSCLE_Data_is_a_int16(self)
+.. f:function:: LIBMUSCLE_Data_is_a_int1(self)
 
     Determine whether the Data object contains an integer value.
 
@@ -218,7 +272,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :r is: True if the object contains an integer value.
     :rtype is: logical
 
-.. f:function:: LIBMUSCLE_Data_is_a_int64(self)
+.. f:function:: LIBMUSCLE_Data_is_a_int2(self)
 
     Determine whether the Data object contains an integer value.
 
@@ -226,7 +280,15 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :r is: True if the object contains an integer value.
     :rtype is: logical
 
-.. f:function:: LIBMUSCLE_Data_is_a_float(self)
+.. f:function:: LIBMUSCLE_Data_is_a_int4(self)
+
+    Determine whether the Data object contains an integer value.
+
+    :p LIBMUSCLE_Data self: The Data object to inspect.
+    :r is: True if the object contains an integer value.
+    :rtype is: logical
+
+.. f:function:: LIBMUSCLE_Data_is_a_real4(self)
 
     Determine whether the Data object contains a single precision floating
     point value.
@@ -235,7 +297,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :r is: True if the object contains a single precision float value.
     :rtype is: logical
 
-.. f:function:: LIBMUSCLE_Data_is_a_double(self)
+.. f:function:: LIBMUSCLE_Data_is_a_real8(self)
 
     Determine whether the Data object contains a double precision floating
     point value.
@@ -283,16 +345,16 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     :p LIBMUSCLE_Data self: The Data object to get the size of.
     :r size: The size of the object.
-    :rtype size: integer (selected_int_kind(18))
+    :rtype size: integer (kind=LIBMUSCLE_size)
 
-.. f:function:: LIBMUSCLE_Data_as_bool(self, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Data_as_logical(self, err_code, err_msg)
 
-    Access a bool value.
+    Access a logical value.
 
-    You can use :f:func:`LIBMUSCLE_Data_is_a_bool` to ascertain that the Data
-    object contains a bool value.
+    You can use :f:func:`LIBMUSCLE_Data_is_a_logical` to ascertain that the Data
+    object contains a logical value.
 
-    If the Data object does not contain a bool (logical) value, then an error
+    If the Data object does not contain a logical (boolean) value, then an error
     message will be printed and execution will be halted.
 
     Alternatively, you can pass an argument for ``err_code``, or for both
@@ -300,8 +362,8 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     If ``err_code`` equals ``LIBMUSCLE_success`` after the call, then the
     returned value is the logical value held in this Data object. If it equals
-    ``LIBMUSCLE_runtime_error``, the Data value did not contain a boolean
-    (logical) value. If you passed an ``err_msg`` argument as well, then the
+    ``LIBMUSCLE_runtime_error``, the Data value did not contain a logical
+    (boolean) value. If you passed an ``err_msg`` argument as well, then the
     passed variable will contain an appropriate error message in case of error,
     and needs to be deallocated (using ``deallocate()``) when you're done with
     it.
@@ -318,10 +380,10 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         ! Create data object containing a logical value
         mydata = LIBMUSCLE_Data_create(.true.)
         ! Retrieve the value
-        val = LIBMUSCLE_Data_as_bool(mydata)
+        val = LIBMUSCLE_Data_as_logical(mydata)
         ! val equals .true. here
-        ! Attempt to (incorrectly) retrieve a string
-        str = LIBMUSCLE_Data_as_string(mydata, err_code, err_msg)
+        ! Attempt to (incorrectly) retrieve a character value
+        str = LIBMUSCLE_Data_as_character(mydata, err_code, err_msg)
         if (err_code .ne. LIBMUSCLE_success)
             print *, err_msg
             ! Need to free the memory if an error message was returned
@@ -330,29 +392,29 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
-    :p LIBMUSCLE_Data self: The Data object to get a bool value out of.
+    :p LIBMUSCLE_Data self: The Data object to get a logical value out of.
     :p integer err_code: An error code output (optional).
     :p character err_msg: An error message output (allocatable, optional).
     :r value: The value.
     :rtype value: logical
 
-.. f:function:: LIBMUSCLE_Data_as_string(self, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Data_as_character(self, err_code, err_msg)
 
-    Access a string value.
+    Access a character (string) value.
 
-    You can use :f:func:`LIBMUSCLE_Data_is_a_string` to ascertain that the Data
-    object contains a string value.
+    You can use :f:func:`LIBMUSCLE_Data_is_a_character` to ascertain that the
+    Data object contains a character value.
 
-    If the Data object does not contain a string (character) value, then an
+    If the Data object does not contain a character (string) value, then an
     error message will be printed and execution will be halted.
 
     Alternatively, you can pass an argument for ``err_code``, or for both
     ``err_code`` and ``err_msg``, to catch the error.
 
     If ``err_code`` equals ``LIBMUSCLE_success`` after the call, then the
-    returned value is the string value held in this Data object. If it equals
-    ``LIBMUSCLE_runtime_error``, the Data value did not contain a string
-    (character) value. If you passed an ``err_msg`` argument as well, then the
+    returned value is the character value held in this Data object. If it equals
+    ``LIBMUSCLE_runtime_error``, the Data value did not contain a character
+    (string) value. If you passed an ``err_msg`` argument as well, then the
     passed variable will contain an appropriate error message in case of error,
     and needs to be deallocated (using ``deallocate()``) when you're done with
     it.
@@ -368,117 +430,31 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         type(LIBMUSCLE_Data) :: mydata
         character(len=:), allocatable :: str
 
-        ! Create a data object containing a string value
+        ! Create a data object containing a character value
         mydata = LIBMUSCLE_Data_create('Example')
         ! Retrieve the value
-        str = LIBMUSCLE_Data_as_string(mydata)
-        ! Free the retrieved copy of the string
+        str = LIBMUSCLE_Data_as_character(mydata)
+        ! Free the retrieved copy of the character
         deallocate(str)
         ! Free the data object
-        call LIBMUSCLE_Data_free(mydata)
+        call LIBMUSCLE_Data_free(mydat
 
-    See :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
+    See :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
 
-    :p LIBMUSCLE_Data self The Data object to get a string out of.
+    :p LIBMUSCLE_Data self The Data object to get a character out of.
     :p integer err_code: An error code output (optional)
     :p character err_msg: An error message output (allocatable, optional).
     :r value: The value.
     :rtype value: character(len=:), allocatable
 
-.. f:function:: LIBMUSCLE_Data_as_char(self, err_code, err_msg)
-
-    Access an int value that fits in 8 bits.
-
-    You can use :f:func:`LIBMUSCLE_Data_is_a_char` to ascertain that the Data
-    object contains a char value.
-
-    If the Data object does not contain an char (integer with
-    ``selected_int_kind(2)``) value, then an error message will be printed and
-    execution will be halted.
-
-    Alternatively, you can pass an argument for ``err_code``, or for both
-    ``err_code`` and ``err_msg``, to catch the error.
-
-    If ``err_code`` equals ``LIBMUSCLE_success`` after the call, then the
-    returned value is the integer value held in this Data object. If it equals
-    ``LIBMUSCLE_runtime_error``, the Data value did not contain an integer
-    value. If you passed an ``err_msg`` argument as well, then the passed
-    variable will contain an appropriate error message in case of error, and
-    needs to be deallocated (using ``deallocate()``) when you're done with it.
-
-    Example:
-
-    .. code-block:: fortran
-
-        type(LIBMUSCLE_Data) :: mydata
-        integer(kind=selected_int_kind(2)) :: number
-
-        ! Create a data object containing an integer value
-        mydata = LIBMUSCLE_Data_create(42)
-        ! Retrieve the value
-        number = LIBMUSCLE_Data_as_char(mydata)
-        ! Free the data object
-        call LIBMUSCLE_Data_free(mydata)
-
-    See :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
-
-    :p LIBMUSCLE_Data self The Data object to get an integer value out of.
-    :p integer err_code: An error code output (optional)
-    :p character err_msg: An error message output (allocatable, optional).
-    :r value: The value.
-    :rtype value: integer(kind=selected_int_kind(2))
-
-.. f:function:: LIBMUSCLE_Data_as_int16(self, err_code, err_msg)
-
-    Access an int value that fits in 16 bits.
-
-    You can use :f:func:`LIBMUSCLE_Data_is_a_int16` to ascertain that the Data
-    object contains an integer value.
-
-    If the Data object does not contain an int16 (integer with
-    ``selected_int_kind(4)``) value, then an error message will be printed and
-    execution will be halted.
-
-    Alternatively, you can pass an argument for ``err_code``, or for both
-    ``err_code`` and ``err_msg``, to catch the error.
-
-    If ``err_code`` equals ``LIBMUSCLE_success`` after the call, then the
-    returned value is the integer value held in this Data object. If it equals
-    ``LIBMUSCLE_runtime_error``, the Data value did not contain an integer
-    value. If you passed an ``err_msg`` argument as well, then the passed
-    variable will contain an appropriate error message in case of error, and
-    needs to be deallocated (using ``deallocate()``) when you're done with it.
-
-    Example:
-
-    .. code-block:: fortran
-
-        type(LIBMUSCLE_Data) :: mydata
-        integer(kind=selected_int_kind(4)) :: number
-
-        ! Create a data object containing an integer value
-        mydata = LIBMUSCLE_Data_create(4242)
-        ! Retrieve the value
-        number = LIBMUSCLE_Data_as_int16(mydata)
-        ! Free the data object
-        call LIBMUSCLE_Data_free(mydata)
-
-    See :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
-
-    :p LIBMUSCLE_Data self The Data object to get an integer value out of.
-    :p integer err_code: An error code output (optional)
-    :p character err_msg: An error message output (allocatable, optional).
-    :r value: The value.
-    :rtype value: integer(kind=selected_int_kind(4))
-
 .. f:function:: LIBMUSCLE_Data_as_int(self, err_code, err_msg)
 
-    Access an integer value.
+    Access an integer value of default kind.
 
     You can use :f:func:`LIBMUSCLE_Data_is_a_int` to ascertain that the Data
-    object contains an integer value.
+    object contains a default integer value.
 
-    If the Data object does not contain an int (integer) value, then an error
+    If the Data object does not contain an integer value, then an error
     message will be printed and execution will be halted.
 
     Alternatively, you can pass an argument for ``err_code``, or for both
@@ -505,7 +481,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
-    See :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
+    See :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
 
     :p LIBMUSCLE_Data self The Data object to get an integer value out of.
     :p integer err_code: An error code output (optional)
@@ -513,14 +489,142 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     :r value: The value.
     :rtype value: integer
 
-.. f:function:: LIBMUSCLE_Data_as_int64(self, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Data_as_int1(self, err_code, err_msg)
+
+    Access an int value that fits in 8 bits.
+
+    You can use :f:func:`LIBMUSCLE_Data_is_a_int1` to ascertain that the Data
+    object contains an ``int1`` value.
+
+    If the Data object does not contain a ``LIBMUSCLE_int1`` (integer with
+    ``selected_int_kind(2)``) value, then an error message will be printed and
+    execution will be halted.
+
+    Alternatively, you can pass an argument for ``err_code``, or for both
+    ``err_code`` and ``err_msg``, to catch the error.
+
+    If ``err_code`` equals ``LIBMUSCLE_success`` after the call, then the
+    returned value is the integer value held in this Data object. If it equals
+    ``LIBMUSCLE_runtime_error``, the Data value did not contain an integer
+    value. If you passed an ``err_msg`` argument as well, then the passed
+    variable will contain an appropriate error message in case of error, and
+    needs to be deallocated (using ``deallocate()``) when you're done with it.
+
+    Example:
+
+    .. code-block:: fortran
+
+        type(LIBMUSCLE_Data) :: mydata
+        integer(kind=LIBMUSCLE_int1) :: number
+
+        ! Create a data object containing an integer value
+        mydata = LIBMUSCLE_Data_create(42_LIBMUSCLE_int1)
+        ! Retrieve the value
+        number = LIBMUSCLE_Data_as_int1(mydata)
+        ! Free the data object
+        call LIBMUSCLE_Data_free(mydata)
+
+    See :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
+
+    :p LIBMUSCLE_Data self The Data object to get an integer value out of.
+    :p integer err_code: An error code output (optional)
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The value.
+    :rtype value: integer(kind=LIBMUSCLE_int1)
+
+.. f:function:: LIBMUSCLE_Data_as_int2(self, err_code, err_msg)
+
+    Access an int value that fits in 16 bits.
+
+    You can use :f:func:`LIBMUSCLE_Data_is_a_int2` to ascertain that the Data
+    object contains an integer value.
+
+    If the Data object does not contain a ``LIBMUSCLE_int2`` (integer with
+    ``selected_int_kind(4)``) value, then an error message will be printed and
+    execution will be halted.
+
+    Alternatively, you can pass an argument for ``err_code``, or for both
+    ``err_code`` and ``err_msg``, to catch the error.
+
+    If ``err_code`` equals ``LIBMUSCLE_success`` after the call, then the
+    returned value is the integer value held in this Data object. If it equals
+    ``LIBMUSCLE_runtime_error``, the Data value did not contain an integer
+    value. If you passed an ``err_msg`` argument as well, then the passed
+    variable will contain an appropriate error message in case of error, and
+    needs to be deallocated (using ``deallocate()``) when you're done with it.
+
+    Example:
+
+    .. code-block:: fortran
+
+        type(LIBMUSCLE_Data) :: mydata
+        integer(kind=LIBMUSCLE_int2) :: number
+
+        ! Create a data object containing an integer value
+        mydata = LIBMUSCLE_Data_create(4242_LIBMUSCLE_int2)
+        ! Retrieve the value
+        number = LIBMUSCLE_Data_as_int2(mydata)
+        ! Free the data object
+        call LIBMUSCLE_Data_free(mydata)
+
+    See :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
+
+    :p LIBMUSCLE_Data self The Data object to get an integer value out of.
+    :p integer err_code: An error code output (optional)
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The value.
+    :rtype value: integer(kind=LIBMUSCLE_int2)
+
+.. f:function:: LIBMUSCLE_Data_as_int4(self, err_code, err_msg)
 
     Access an integer value.
 
-    You can use :f:func:`LIBMUSCLE_Data_is_a_int` to ascertain that the Data
-    object contains an integer value.
+    You can use :f:func:`LIBMUSCLE_Data_is_a_int4` to ascertain that the Data
+    object contains an integer value of kind ``LIBMUSCLE_int4``.
 
-    If the Data object does not contain an int (integer with
+    If the Data object does not contain an int (integer) value, then an error
+    message will be printed and execution will be halted.
+
+    Alternatively, you can pass an argument for ``err_code``, or for both
+    ``err_code`` and ``err_msg``, to catch the error.
+
+    If ``err_code`` equals ``LIBMUSCLE_success`` after the call, then the
+    returned value is the integer value held in this Data object. If it equals
+    ``LIBMUSCLE_runtime_error``, the Data value did not contain an integer
+    value. If you passed an ``err_msg`` argument as well, then the passed
+    variable will contain an appropriate error message in case of error, and
+    needs to be deallocated (using ``deallocate()``) when you're done with it.
+
+    Example:
+
+    .. code-block:: fortran
+
+        type(LIBMUSCLE_Data) :: mydata
+        integer(LIBMUSCLE_int4) :: number
+
+        ! Create a data object containing an integer value
+        mydata = LIBMUSCLE_Data_create(42424242_LIBMUSCLE_int4)
+        ! Retrieve the value
+        number = LIBMUSCLE_Data_as_int4(mydata)
+        ! Free the data object
+        call LIBMUSCLE_Data_free(mydata)
+
+    See :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
+
+    :p LIBMUSCLE_Data self The Data object to get an integer value out of.
+    :p integer err_code: An error code output (optional)
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The value.
+    :rtype value: integer(LIBMUSCLE_int4)
+
+.. f:function:: LIBMUSCLE_Data_as_int8(self, err_code, err_msg)
+
+    Access an integer value of kind ``LIBMUSCLE_int8``..
+
+    You can use :f:func:`LIBMUSCLE_Data_is_a_int8` to ascertain that the Data
+    object contains a 64-bit integer value.
+
+    If the Data object does not contain a ``LIBMUSCLE_int8`` (integer with
     ``selected_int_kind(18)``) value, then an error message will be printed and
     execution will be halted.
 
@@ -539,31 +643,31 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     .. code-block:: fortran
 
         type(LIBMUSCLE_Data) :: mydata
-        integer(kind=selected_int_kind(18)) :: number
+        integer(kind=LIBMUSCLE_int8) :: number
 
         ! Create a data object containing an integer value
-        mydata = LIBMUSCLE_Data_create(123456789123456789)
+        mydata = LIBMUSCLE_Data_create(123456789123456789_LIBMUSCLE_int8)
         ! Retrieve the value
-        number = LIBMUSCLE_Data_as_int64(mydata)
+        number = LIBMUSCLE_Data_as_int8(mydata)
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
-    See :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
+    See :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
 
     :p LIBMUSCLE_Data self The Data object to get an integer value out of.
     :p integer err_code: An error code output (optional)
     :p character err_msg: An error message output (allocatable, optional).
     :r value: The value.
-    :rtype value: integer(kind=selected_int_kind(18))
+    :rtype value: integer(kind=LIBMUSCLE_int8)
 
-.. f:function:: LIBMUSCLE_Data_as_float(self, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Data_as_real4(self, err_code, err_msg)
 
-    Access a single-precision real value.
+    Access a single-precision (4 byte) real value.
 
-    You can use :f:func:`LIBMUSCLE_Data_is_a_float` to ascertain that the Data
+    You can use :f:func:`LIBMUSCLE_Data_is_a_real4` to ascertain that the Data
     object contains a single-precision real value.
 
-    If the Data object does not contain a float (real with
+    If the Data object does not contain a ``LIBMUSCLE_real4`` (real with
     ``selected_real_kind(6)``) value, then an error message will be printed and
     execution will be halted.
 
@@ -582,31 +686,32 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     .. code-block:: fortran
 
         type(LIBMUSCLE_Data) :: mydata
-        real(kind=selected_real_kind(6)) :: number
+        real(kind=LIBMUSCLE_real4) :: number
 
         ! Create a data object containing a real value
         mydata = LIBMUSCLE_Data_create(42.0)
         ! Retrieve the value
-        number = LIBMUSCLE_Data_as_single(mydata)
+        number = LIBMUSCLE_Data_as_real4(mydata)
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
-    See :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
+    See :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
 
-    :p LIBMUSCLE_Data self: The Data object to get a single-precision real value out of.
+    :p LIBMUSCLE_Data self: The Data object to get a single-precision real
+            value out of.
     :p integer err_code: An error code output (optional)
     :p character err_msg: An error message output (allocatable, optional).
     :r value: The value.
-    :rtype value: real(kind=selected_real_kind(6))
+    :rtype value: real(kind=LIBMUSCLE_real4)
 
-.. f:function:: LIBMUSCLE_Data_as_double(self, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Data_as_real8(self, err_code, err_msg)
 
-    Access a double-precision real value.
+    Access a double-precision (8 byte) real value.
 
-    You can use :f:func:`LIBMUSCLE_Data_is_a_double` to ascertain that the Data
+    You can use :f:func:`LIBMUSCLE_Data_is_a_real8` to ascertain that the Data
     object contains a double-precision real value.
 
-    If the Data object does not contain a double (real with
+    If the Data object does not contain a ``LIBMUSCLE_real8`` (real with
     ``selected_real_kind(15)``) value, then an error message will be printed and
     execution will be halted.
 
@@ -625,26 +730,27 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     .. code-block:: fortran
 
         type(LIBMUSCLE_Data) :: mydata
-        real(kind=selected_real_kind(15)) :: number
+        real(kind=LIBMUSCLE_real8) :: number
 
         ! Create a data object containing a real value
         mydata = LIBMUSCLE_Data_create(42.0d0)
         ! Retrieve the value
-        number = LIBMUSCLE_Data_as_double(mydata)
+        number = LIBMUSCLE_Data_as_real8(mydata)
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
-    See :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
+    See :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
 
-    :p LIBMUSCLE_Data self: The Data object to get a double-precision real value out of.
+    :p LIBMUSCLE_Data self: The Data object to get a double-precision real value
+            out of.
     :p integer err_code: An error code output (optional)
     :p character err_msg: An error message output (allocatable, optional).
     :r value: The value.
-    :rtype value: real(kind=selected_real_kind(15))
+    :rtype value: real(kind=LIBMUSCLE_real8)
 
 .. f:subroutine:: LIBMUSCLE_Data_as_byte_array(self, buf, err_code, err_msg)
 
-    Access a byte array value.
+    Access a byte array value by copying it into ``buf``.
 
     You can use :f:func:`LIBMUSCLE_Data_is_a_byte_array` to ascertain that the
     Data object contains a byte array value. You can use
@@ -665,7 +771,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     See :f:func:`LIBMUSCLE_Data_create_byte_array` for an example of
     creating and extracting byte array values. See
-    :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
+    :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
 
     :p LIBMUSCLE_Data self: The Data object to get a byte array out of.
     :p character buf: A buffer large enough to hold the contents of the data
@@ -698,20 +804,20 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     .. code-block:: fortran
 
-        integer, parameter :: size_kind = selected_int_kind(18)
         type(LIBMUSCLE_Data) :: d1, d2
         character(len=:), allocatable :: s1
 
-        d1 = LIBMUSCLE_Data_create_nils(10_size_kind)
-        d2 = LIBMUSCLE_Data_get_item(d1, 5_size_kind)
+        d1 = LIBMUSCLE_Data_create_nils(10_LIBMUSCLE_size)
+        d2 = LIBMUSCLE_Data_get_item(d1, 5_LIBMUSCLE_size)
         ! LIBMUSCLE_Data_is_nil(d2) returns .true. here
         call LIBMUSCLE_Data_free(d2)
         call LIBMUSCLE_Data_free(d1)
 
-    See :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
+    See :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
 
     :p LIBMUSCLE_Data self: The Data object to get an item out of.
     :p integer i: The index to get the value at, in range [1..size]
+            (kind=LIBMUSCLE_size)
     :p integer err_code: An error code output (optional).
     :p character err_msg: An error message output (allocatable, optional).
     :r value: The value at the corresponding index.
@@ -748,14 +854,14 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         d1 = LIBMUSCLE_Data_create_dict()
         call LIBMUSCLE_Data_set_item(d1, 'key1', 'value1')
         d3 = LIBMUSCLE_Data_get_item(d1, 'key1')
-        s1 = LIBMUSCLE_Data_as_string(d3)
+        s1 = LIBMUSCLE_Data_as_character(d3)
         print *, s1     ! prints 'value1'
         call LIBMUSCLE_Data_free(s1)
         call LIBMUSCLE_Data_free(d3)
         call LIBMUSCLE_Data_free(d2)
         call LIBMUSCLE_Data_free(d1)
 
-    See :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
+    See :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
 
     :p LIBMUSCLE_Data self: The Data object to get an item out of.
     :p character key: The key to get the value for.
@@ -780,10 +886,11 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     ``value`` may be of type logical, character, integer, real, or Data. See
     :f:func:`LIBMUSCLE_Data_get_item` for an example. See
-    :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
+    :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
 
     :p LIBMUSCLE_Data self: The Data object to set an item value on.
-    :p integer i: The position to set the value for, in range [1..size].
+    :p integer i: The position to set the value for, in range [1..size]
+            (kind=LIBMUSCLE_size).
     :p see_above value: The value to set.
     :p integer err_code: An error code output (optional).
     :p character err_msg: An error message output (allocatable, optional)
@@ -803,7 +910,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
     ``value`` may be of type logical, character, integer, real, or Data. See
     :f:func:`LIBMUSCLE_Data_get_item` for an example. See
-    :f:func:`LIBMUSCLE_Data_as_bool` for an example of error handling.
+    :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
 
     :p LIBMUSCLE_Data self: The Data object to set an item value on.
     :p character key: The key to set the value for.
@@ -836,7 +943,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
 
         type(LIBMUSCLE_Data) :: d1, val
         character(len=:), allocatable :: key, cval
-        integer (kind=selected_int_kind(18)) :: i
+        integer (kind=LIBMUSCLE_size) :: i
         integer intval
 
         d1 = LIBMUSCLE_Data_create_dict()
@@ -846,7 +953,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         do i = 1, LIBMUSCLE_Data_size(d1)
             key = LIBMUSCLE_Data_key(d1, i)
             val = LIBMUSCLE_Data_value(d1, i)
-            cval = LIBMUSCLE_Data_as_string(val)
+            cval = LIBMUSCLE_Data_as_character(val)
             print '(a8, a8)', key, cval
             deallocate(key)
             deallocate(cval)
@@ -856,7 +963,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
         call LIBMUSCLE_Data_free(d1)
 
     :p LIBMUSCLE_Data self: The Data object to get a key for.
-    :p integer i: The index of the key to retrieve (``selected_int_kind(18)``)
+    :p integer i: The index of the key to retrieve (LIBMUSCLE_size)
     :p integer err_code: An error code output (optional).
     :p character err_msg: An error message output (allocatable, optional).
     :r key: The key at the given index.
@@ -881,7 +988,7 @@ This page provides full documentation for the Fortran API of MUSCLE 3.
     there for an example as well.
 
     :p LIBMUSCLE_Data self: The Data object to get a value for.
-    :p integer i: The index of the key to retrieve (``selected_int_kind(18)``)
+    :p integer i: The index of the key to retrieve (LIBMUSCLE_size)
     :p integer err_code: An error code output (optional).
     :p character err_msg: An error message output (allocatable, optional).
     :r value: The value at the given index

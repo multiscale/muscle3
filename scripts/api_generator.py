@@ -14,6 +14,17 @@ error_codes = {
         }
 
 
+kinds = {
+        'int1': 'selected_int_kind(2)',
+        'int2': 'selected_int_kind(4)',
+        'int4': 'selected_int_kind(9)',
+        'int8': 'selected_int_kind(18)',
+        'size': 'c_size_t',
+        'real4': 'selected_real_kind(6)',
+        'real8': 'selected_real_kind(15)'
+        }
+
+
 def banner(comment_mark: str) -> str:
     """Generate a warning banner.
     """
@@ -120,7 +131,7 @@ class String(Par):
     """Represents a string-typed parameter.
     """
     def tname(self) -> str:
-        return 'string'
+        return 'character'
 
     def fc_cpp_type(self) -> str:
         return 'std::string'
@@ -461,7 +472,7 @@ class Bool(Par):
     """Represents a bool-typed parameter.
     """
     def tname(self) -> str:
-        return 'bool'
+        return 'logical'
 
     def fc_cpp_type(self) -> str:
         return 'bool'
@@ -596,16 +607,16 @@ class Char(Par):
     """Represents an char-typed parameter.
     """
     def tname(self) -> str:
-        return 'char'
+        return 'int1'
 
     def fc_cpp_type(self) -> str:
         return 'char'
 
     def f_type(self) -> str:
-        return self._regular_type('integer (selected_int_kind(2))')
+        return self._regular_type('integer (LIBMUSCLE_int1)')
 
     def f_ret_type(self) -> str:
-        return True, self._regular_type('integer (selected_int_kind(2))')
+        return True, self._regular_type('integer (LIBMUSCLE_int1)')
 
     def fi_type(self) -> str:
         return self._regular_type('integer (c_int8_t), value')
@@ -633,7 +644,7 @@ class Int16t(Par):
     """Represents an int16_t-typed parameter.
     """
     def tname(self) -> str:
-        return 'int16'
+        return 'int2'
 
     def fc_cpp_type(self) -> str:
         return 'int16_t'
@@ -666,11 +677,48 @@ class Int16t(Par):
         return '    return result;\n'
 
 
+class Int32t(Par):
+    """Represents an int32_t-typed parameter.
+    """
+    def tname(self) -> str:
+        return 'int4'
+
+    def fc_cpp_type(self) -> str:
+        return 'int32_t'
+
+    def f_type(self) -> str:
+        return self._regular_type('integer (LIBMUSCLE_int4)')
+
+    def f_ret_type(self) -> str:
+        return True, self._regular_type('integer (LIBMUSCLE_int4)')
+
+    def fi_type(self) -> str:
+        return self._regular_type('integer (c_int32_t), value')
+
+    def fi_ret_type(self) -> str:
+        return self._regular_type('integer (c_int32_t)')
+
+    def fc_type(self) -> str:
+        return self._regular_type('int32_t')
+
+    def fc_ret_type(self) -> str:
+        return self._regular_type('int32_t')
+
+    def fc_cpp_arg(self) -> str:
+        return self.name
+
+    def fc_get_result(self, cpp_chain_call: str) -> str:
+        return 'int32_t result = {}'.format(cpp_chain_call)
+
+    def fc_return(self) -> str:
+        return '    return result;\n'
+
+
 class Int64t(Par):
     """Represents an int64_t-typed parameter.
     """
     def tname(self) -> str:
-        return 'int64'
+        return 'int8'
 
     def fc_cpp_type(self) -> str:
         return 'int64_t'
@@ -707,16 +755,16 @@ class Sizet(Par):
     """Represents an size_t-typed parameter.
     """
     def tname(self) -> str:
-        return 'size_t'
+        return 'size'
 
     def fc_cpp_type(self) -> str:
         return 'std::size_t'
 
     def f_type(self) -> str:
-        return self._regular_type('integer (selected_int_kind(18))')
+        return self._regular_type('integer (LIBMUSCLE_size)')
 
     def f_ret_type(self) -> str:
-        return True, self._regular_type('integer (selected_int_kind(18))')
+        return True, self._regular_type('integer (LIBMUSCLE_size)')
 
     def fi_type(self) -> str:
         return self._regular_type('integer (c_size_t), value')
@@ -744,22 +792,22 @@ class Float(Par):
     """Represents a single precision float parameter.
     """
     def tname(self) -> str:
-        return 'float'
+        return 'real4'
 
     def fc_cpp_type(self) -> str:
         return 'float'
 
     def f_type(self) -> str:
-        return self._regular_type('real (selected_real_kind(6))')
+        return self._regular_type('real (LIBMUSCLE_real4)')
 
     def f_ret_type(self) -> str:
-        return True, self._regular_type('real (selected_real_kind(6))')
+        return True, self._regular_type('real (LIBMUSCLE_real4)')
 
     def fi_type(self) -> str:
-        return self._regular_type('real (selected_real_kind(6)), value')
+        return self._regular_type('real (c_float), value')
 
     def fi_ret_type(self) -> str:
-        return self._regular_type('real (selected_real_kind(6))')
+        return self._regular_type('real (c_float)')
 
     def fc_type(self) -> str:
         return self._regular_type('float')
@@ -781,22 +829,22 @@ class Double(Par):
     """Represents a double precision float parameter.
     """
     def tname(self) -> str:
-        return 'double'
+        return 'real8'
 
     def fc_cpp_type(self) -> str:
         return 'double'
 
     def f_type(self) -> str:
-        return self._regular_type('real (selected_real_kind(15))')
+        return self._regular_type('real (LIBMUSCLE_real8)')
 
     def f_ret_type(self) -> str:
-        return True, self._regular_type('real (selected_real_kind(15))')
+        return True, self._regular_type('real (LIBMUSCLE_real8)')
 
     def fi_type(self) -> str:
-        return self._regular_type('real (selected_real_kind(15)), value')
+        return self._regular_type('real (c_double), value')
 
     def fi_ret_type(self) -> str:
-        return self._regular_type('real (selected_real_kind(15))')
+        return self._regular_type('real (c_double)')
 
     def fc_type(self) -> str:
         return self._regular_type('double')
@@ -1680,6 +1728,11 @@ class Namespace:
         for err_name, err_code in error_codes.items():
             result += '    integer, parameter{} :: {}_{} = {}\n'.format(
                     public, self.prefix, err_name, err_code)
+        result += '\n'
+
+        for kind_name, kind_def in kinds.items():
+            result += '    integer, parameter{} :: {}_{} = {}\n'.format(
+                    public, self.prefix, kind_name, kind_def)
         result += '\n'
 
         for enum in self.enums:

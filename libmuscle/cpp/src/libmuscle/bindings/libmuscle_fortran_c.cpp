@@ -18,43 +18,43 @@ std::intptr_t LIBMUSCLE_Data_create_nil_() {
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_bool_(int value) {
+std::intptr_t LIBMUSCLE_Data_create_logical_(int value) {
     Data * result = new Data(value != 0);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_string_(char * value, std::size_t value_size) {
+std::intptr_t LIBMUSCLE_Data_create_character_(char * value, std::size_t value_size) {
     std::string value_s(value, value_size);
     Data * result = new Data(value_s);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_char_(char value) {
+std::intptr_t LIBMUSCLE_Data_create_int1_(char value) {
     Data * result = new Data(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_int_(int value) {
+std::intptr_t LIBMUSCLE_Data_create_int2_(short int value) {
     Data * result = new Data(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_int16t_(short int value) {
+std::intptr_t LIBMUSCLE_Data_create_int4_(int32_t value) {
     Data * result = new Data(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_int64t_(int64_t value) {
+std::intptr_t LIBMUSCLE_Data_create_int8_(int64_t value) {
     Data * result = new Data(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_float_(float value) {
+std::intptr_t LIBMUSCLE_Data_create_real4_(float value) {
     Data * result = new Data(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_double_(double value) {
+std::intptr_t LIBMUSCLE_Data_create_real8_(double value) {
     Data * result = new Data(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
@@ -98,50 +98,50 @@ std::intptr_t LIBMUSCLE_Data_create_nils_(std::size_t size) {
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-void LIBMUSCLE_Data_set_bool_(std::intptr_t self, int value) {
+void LIBMUSCLE_Data_set_logical_(std::intptr_t self, int value) {
     Data * self_p = reinterpret_cast<Data *>(self);
     *self_p = value != 0;
     return;
 }
 
-void LIBMUSCLE_Data_set_string_(std::intptr_t self, char * value, std::size_t value_size) {
+void LIBMUSCLE_Data_set_character_(std::intptr_t self, char * value, std::size_t value_size) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string value_s(value, value_size);
     *self_p = value_s;
     return;
 }
 
-void LIBMUSCLE_Data_set_char_(std::intptr_t self, char value) {
+void LIBMUSCLE_Data_set_int1_(std::intptr_t self, char value) {
     Data * self_p = reinterpret_cast<Data *>(self);
     *self_p = value;
     return;
 }
 
-void LIBMUSCLE_Data_set_int16_(std::intptr_t self, short int value) {
+void LIBMUSCLE_Data_set_int2_(std::intptr_t self, short int value) {
     Data * self_p = reinterpret_cast<Data *>(self);
     *self_p = value;
     return;
 }
 
-void LIBMUSCLE_Data_set_int_(std::intptr_t self, int value) {
+void LIBMUSCLE_Data_set_int4_(std::intptr_t self, int32_t value) {
     Data * self_p = reinterpret_cast<Data *>(self);
     *self_p = value;
     return;
 }
 
-void LIBMUSCLE_Data_set_int64_(std::intptr_t self, int64_t value) {
+void LIBMUSCLE_Data_set_int8_(std::intptr_t self, int64_t value) {
     Data * self_p = reinterpret_cast<Data *>(self);
     *self_p = value;
     return;
 }
 
-void LIBMUSCLE_Data_set_float_(std::intptr_t self, float value) {
+void LIBMUSCLE_Data_set_real4_(std::intptr_t self, float value) {
     Data * self_p = reinterpret_cast<Data *>(self);
     *self_p = value;
     return;
 }
 
-void LIBMUSCLE_Data_set_double_(std::intptr_t self, double value) {
+void LIBMUSCLE_Data_set_real8_(std::intptr_t self, double value) {
     Data * self_p = reinterpret_cast<Data *>(self);
     *self_p = value;
     return;
@@ -159,21 +159,15 @@ void LIBMUSCLE_Data_set_nil_(std::intptr_t self) {
     *self_p = Data();
 }
 
-int LIBMUSCLE_Data_is_a_bool_(std::intptr_t self) {
+int LIBMUSCLE_Data_is_a_logical_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<bool>();
     return result ? 1 : 0;
 }
 
-int LIBMUSCLE_Data_is_a_string_(std::intptr_t self) {
+int LIBMUSCLE_Data_is_a_character_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<std::string>();
-    return result ? 1 : 0;
-}
-
-int LIBMUSCLE_Data_is_a_char_(std::intptr_t self) {
-    Data * self_p = reinterpret_cast<Data *>(self);
-    bool result = self_p->is_a<char>();
     return result ? 1 : 0;
 }
 
@@ -183,25 +177,37 @@ int LIBMUSCLE_Data_is_a_int_(std::intptr_t self) {
     return result ? 1 : 0;
 }
 
-int LIBMUSCLE_Data_is_a_int16_(std::intptr_t self) {
+int LIBMUSCLE_Data_is_a_int1_(std::intptr_t self) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    bool result = self_p->is_a<char>();
+    return result ? 1 : 0;
+}
+
+int LIBMUSCLE_Data_is_a_int2_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<int16_t>();
     return result ? 1 : 0;
 }
 
-int LIBMUSCLE_Data_is_a_int64_(std::intptr_t self) {
+int LIBMUSCLE_Data_is_a_int4_(std::intptr_t self) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    bool result = self_p->is_a<int32_t>();
+    return result ? 1 : 0;
+}
+
+int LIBMUSCLE_Data_is_a_int8_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<int64_t>();
     return result ? 1 : 0;
 }
 
-int LIBMUSCLE_Data_is_a_float_(std::intptr_t self) {
+int LIBMUSCLE_Data_is_a_real4_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<float>();
     return result ? 1 : 0;
 }
 
-int LIBMUSCLE_Data_is_a_double_(std::intptr_t self) {
+int LIBMUSCLE_Data_is_a_real8_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<double>();
     return result ? 1 : 0;
@@ -231,13 +237,13 @@ int LIBMUSCLE_Data_is_nil_(std::intptr_t self) {
     return result ? 1 : 0;
 }
 
-int64_t LIBMUSCLE_Data_size_(std::intptr_t self) {
+std::size_t LIBMUSCLE_Data_size_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
-    int64_t result = self_p->size();
+    std::size_t result = self_p->size();
     return result;
 }
 
-int LIBMUSCLE_Data_as_bool_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+int LIBMUSCLE_Data_as_logical_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -274,7 +280,7 @@ int LIBMUSCLE_Data_as_bool_(std::intptr_t self, int * err_code, char ** err_msg,
     }
 }
 
-void LIBMUSCLE_Data_as_string_(std::intptr_t self, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_Data_as_character_(std::intptr_t self, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -283,80 +289,6 @@ void LIBMUSCLE_Data_as_string_(std::intptr_t self, char ** ret_val, std::size_t 
         *ret_val = const_cast<char*>(result.c_str());
         *ret_val_size = result.size();
         return;
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 1;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 2;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 3;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 4;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-}
-
-char LIBMUSCLE_Data_as_char_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
-    Data * self_p = reinterpret_cast<Data *>(self);
-    try {
-        *err_code = 0;
-        char result = self_p->as<char>();
-        return result;
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 1;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 2;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 3;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 4;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-}
-
-short int LIBMUSCLE_Data_as_int16_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
-    Data * self_p = reinterpret_cast<Data *>(self);
-    try {
-        *err_code = 0;
-        short int result = self_p->as<int16_t>();
-        return result;
     }
     catch (std::runtime_error const & e) {
         *err_code = 1;
@@ -425,7 +357,118 @@ int LIBMUSCLE_Data_as_int_(std::intptr_t self, int * err_code, char ** err_msg, 
     }
 }
 
-int64_t LIBMUSCLE_Data_as_int64_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+char LIBMUSCLE_Data_as_int1_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        char result = self_p->as<char>();
+        return result;
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+short int LIBMUSCLE_Data_as_int2_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        short int result = self_p->as<int16_t>();
+        return result;
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+int32_t LIBMUSCLE_Data_as_int4_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        int32_t result = self_p->as<int32_t>();
+        return result;
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+int64_t LIBMUSCLE_Data_as_int8_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -462,7 +505,7 @@ int64_t LIBMUSCLE_Data_as_int64_(std::intptr_t self, int * err_code, char ** err
     }
 }
 
-float LIBMUSCLE_Data_as_float_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+float LIBMUSCLE_Data_as_real4_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -499,7 +542,7 @@ float LIBMUSCLE_Data_as_float_(std::intptr_t self, int * err_code, char ** err_m
     }
 }
 
-double LIBMUSCLE_Data_as_double_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+double LIBMUSCLE_Data_as_real8_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -610,7 +653,7 @@ std::intptr_t LIBMUSCLE_Data_get_item_by_index_(
     }
 }
 
-void LIBMUSCLE_Data_set_item_key_bool_(std::intptr_t self, char * key, std::size_t key_size, int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_Data_set_item_key_logical_(std::intptr_t self, char * key, std::size_t key_size, int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string key_s(key, key_size);
     try {
@@ -648,7 +691,7 @@ void LIBMUSCLE_Data_set_item_key_bool_(std::intptr_t self, char * key, std::size
     }
 }
 
-void LIBMUSCLE_Data_set_item_key_string_(std::intptr_t self, char * key, std::size_t key_size, char * value, std::size_t value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_Data_set_item_key_character_(std::intptr_t self, char * key, std::size_t key_size, char * value, std::size_t value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string key_s(key, key_size);
     std::string value_s(value, value_size);
@@ -687,7 +730,7 @@ void LIBMUSCLE_Data_set_item_key_string_(std::intptr_t self, char * key, std::si
     }
 }
 
-void LIBMUSCLE_Data_set_item_key_char_(std::intptr_t self, char * key, std::size_t key_size, char value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_Data_set_item_key_int1_(std::intptr_t self, char * key, std::size_t key_size, char value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string key_s(key, key_size);
     try {
@@ -725,7 +768,7 @@ void LIBMUSCLE_Data_set_item_key_char_(std::intptr_t self, char * key, std::size
     }
 }
 
-void LIBMUSCLE_Data_set_item_key_int16_(std::intptr_t self, char * key, std::size_t key_size, short int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_Data_set_item_key_int2_(std::intptr_t self, char * key, std::size_t key_size, short int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string key_s(key, key_size);
     try {
@@ -763,7 +806,7 @@ void LIBMUSCLE_Data_set_item_key_int16_(std::intptr_t self, char * key, std::siz
     }
 }
 
-void LIBMUSCLE_Data_set_item_key_int_(std::intptr_t self, char * key, std::size_t key_size, int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_Data_set_item_key_int4_(std::intptr_t self, char * key, std::size_t key_size, int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string key_s(key, key_size);
     try {
@@ -801,7 +844,7 @@ void LIBMUSCLE_Data_set_item_key_int_(std::intptr_t self, char * key, std::size_
     }
 }
 
-void LIBMUSCLE_Data_set_item_key_int64_(std::intptr_t self, char * key, std::size_t key_size, int64_t value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_Data_set_item_key_int8_(std::intptr_t self, char * key, std::size_t key_size, int64_t value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string key_s(key, key_size);
     try {
@@ -839,7 +882,7 @@ void LIBMUSCLE_Data_set_item_key_int64_(std::intptr_t self, char * key, std::siz
     }
 }
 
-void LIBMUSCLE_Data_set_item_key_float_(std::intptr_t self, char * key, std::size_t key_size, float value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_Data_set_item_key_real4_(std::intptr_t self, char * key, std::size_t key_size, float value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string key_s(key, key_size);
     try {
@@ -877,7 +920,7 @@ void LIBMUSCLE_Data_set_item_key_float_(std::intptr_t self, char * key, std::siz
     }
 }
 
-void LIBMUSCLE_Data_set_item_key_double_(std::intptr_t self, char * key, std::size_t key_size, double value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_Data_set_item_key_real8_(std::intptr_t self, char * key, std::size_t key_size, double value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string key_s(key, key_size);
     try {
@@ -954,7 +997,7 @@ void LIBMUSCLE_Data_set_item_key_data_(std::intptr_t self, char * key, std::size
     }
 }
 
-void LIBMUSCLE_Data_set_item_index_bool_(std::intptr_t self, std::size_t i, int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_Data_set_item_index_logical_(std::intptr_t self, std::size_t i, int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -991,7 +1034,7 @@ void LIBMUSCLE_Data_set_item_index_bool_(std::intptr_t self, std::size_t i, int 
     }
 }
 
-void LIBMUSCLE_Data_set_item_index_string_(std::intptr_t self, std::size_t i, char * value, std::size_t value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_Data_set_item_index_character_(std::intptr_t self, std::size_t i, char * value, std::size_t value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string value_s(value, value_size);
     try {
@@ -1029,7 +1072,7 @@ void LIBMUSCLE_Data_set_item_index_string_(std::intptr_t self, std::size_t i, ch
     }
 }
 
-void LIBMUSCLE_Data_set_item_index_char_(std::intptr_t self, std::size_t i, char value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_Data_set_item_index_int1_(std::intptr_t self, std::size_t i, char value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -1066,7 +1109,7 @@ void LIBMUSCLE_Data_set_item_index_char_(std::intptr_t self, std::size_t i, char
     }
 }
 
-void LIBMUSCLE_Data_set_item_index_int16_(std::intptr_t self, std::size_t i, short int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_Data_set_item_index_int2_(std::intptr_t self, std::size_t i, short int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -1103,7 +1146,7 @@ void LIBMUSCLE_Data_set_item_index_int16_(std::intptr_t self, std::size_t i, sho
     }
 }
 
-void LIBMUSCLE_Data_set_item_index_int_(std::intptr_t self, std::size_t i, int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_Data_set_item_index_int4_(std::intptr_t self, std::size_t i, int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -1140,7 +1183,7 @@ void LIBMUSCLE_Data_set_item_index_int_(std::intptr_t self, std::size_t i, int v
     }
 }
 
-void LIBMUSCLE_Data_set_item_index_int64_(std::intptr_t self, std::size_t i, int64_t value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_Data_set_item_index_int8_(std::intptr_t self, std::size_t i, int64_t value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -1177,7 +1220,7 @@ void LIBMUSCLE_Data_set_item_index_int64_(std::intptr_t self, std::size_t i, int
     }
 }
 
-void LIBMUSCLE_Data_set_item_index_float_(std::intptr_t self, std::size_t i, float value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_Data_set_item_index_real4_(std::intptr_t self, std::size_t i, float value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -1214,7 +1257,7 @@ void LIBMUSCLE_Data_set_item_index_float_(std::intptr_t self, std::size_t i, flo
     }
 }
 
-void LIBMUSCLE_Data_set_item_index_double_(std::intptr_t self, std::size_t i, double value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_Data_set_item_index_real8_(std::intptr_t self, std::size_t i, double value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;

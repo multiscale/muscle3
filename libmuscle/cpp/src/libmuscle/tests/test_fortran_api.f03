@@ -18,27 +18,8 @@ subroutine assert_false(x)
     end if
 end subroutine assert_false
 
-subroutine assert_eq_byte(x, y)
-    implicit none
-    integer(kind=selected_int_kind(2)) :: x, y
-
-    if (x .ne. y) then
-        print *, 'Assertion failed'
-        stop
-    end if
-end subroutine assert_eq_byte
-
-subroutine assert_eq_int16(x, y)
-    implicit none
-    integer(kind=selected_int_kind(4)) :: x, y
-
-    if (x .ne. y) then
-        print *, 'Assertion failed'
-        stop
-    end if
-end subroutine assert_eq_int16
-
 subroutine assert_eq_integer(x, y)
+    use libmuscle
     implicit none
     integer :: x, y
 
@@ -48,15 +29,60 @@ subroutine assert_eq_integer(x, y)
     end if
 end subroutine assert_eq_integer
 
-subroutine assert_eq_long_int(x, y)
+subroutine assert_eq_int1(x, y)
+    use libmuscle
     implicit none
-    integer (selected_int_kind(18)) :: x, y
+    integer(kind=LIBMUSCLE_int1) :: x, y
 
     if (x .ne. y) then
         print *, 'Assertion failed'
         stop
     end if
-end subroutine assert_eq_long_int
+end subroutine assert_eq_int1
+
+subroutine assert_eq_int2(x, y)
+    use libmuscle
+    implicit none
+    integer(kind=LIBMUSCLE_int2) :: x, y
+
+    if (x .ne. y) then
+        print *, 'Assertion failed'
+        stop
+    end if
+end subroutine assert_eq_int2
+
+subroutine assert_eq_int4(x, y)
+    use libmuscle
+    implicit none
+    integer(kind=LIBMUSCLE_int4) :: x, y
+
+    if (x .ne. y) then
+        print *, 'Assertion failed'
+        stop
+    end if
+end subroutine assert_eq_int4
+
+subroutine assert_eq_int8(x, y)
+    use libmuscle
+    implicit none
+    integer (LIBMUSCLE_int8) :: x, y
+
+    if (x .ne. y) then
+        print *, 'Assertion failed'
+        stop
+    end if
+end subroutine assert_eq_int8
+
+subroutine assert_eq_size(x, y)
+    use libmuscle
+    implicit none
+    integer (LIBMUSCLE_size) :: x, y
+
+    if (x .ne. y) then
+        print *, 'Assertion failed'
+        stop
+    end if
+end subroutine assert_eq_size
 
 subroutine assert_eq_logical(x, y)
     implicit none
@@ -78,48 +104,52 @@ subroutine assert_eq_character(x, y)
     end if
 end subroutine assert_eq_character
 
-subroutine assert_eq_single(x, y)
+subroutine assert_eq_real4(x, y)
+    use libmuscle
     implicit none
-    real (selected_real_kind(6)) :: x, y
+    real (LIBMUSCLE_real4) :: x, y
 
     if (x .ne. y) then
         print *, 'Assertion failed'
         stop
     end if
-end subroutine assert_eq_single
+end subroutine assert_eq_real4
 
-subroutine assert_eq_double(x, y)
+subroutine assert_eq_real8(x, y)
+    use libmuscle
     implicit none
-    real (selected_real_kind(15)) :: x, y
+    real (LIBMUSCLE_real8) :: x, y
 
     if (x .ne. y) then
         print *, 'Assertion failed'
         stop
     end if
-end subroutine assert_eq_double
+end subroutine assert_eq_real8
 
 subroutine test_data_basic_types
     use libmuscle
 
     implicit none
 
-    integer, parameter :: byte = selected_int_kind(2)
-    integer, parameter :: short_int = selected_int_kind(4)
-    integer, parameter :: long_int = selected_int_kind(18)
+    integer, parameter :: int1 = LIBMUSCLE_int1
+    integer, parameter :: int2 = LIBMUSCLE_int2
+    integer, parameter :: int4 = LIBMUSCLE_int4
+    integer, parameter :: int8 = LIBMUSCLE_int8
     type(LIBMUSCLE_Data) :: d1, d2
-    integer :: i1, err_code
+    integer :: xi, err_code
     logical :: l1
-    character(len=:), allocatable :: s1, err_msg
-    integer (kind=byte) :: bi1
-    integer (kind=short_int) :: si1
-    integer (kind=long_int) :: li1
-    real (selected_real_kind(6)) :: sr1
-    real (selected_real_kind(15)) :: dr1
+    character(len=:), allocatable :: c1, err_msg
+    integer (int1) :: xi1
+    integer (int2) :: xi2
+    integer (int4) :: xi4
+    integer (int8) :: xi8
+    real (LIBMUSCLE_real4) :: xr4
+    real (LIBMUSCLE_real8) :: xr8
 
     print *, '[  RUN     ] data.nil'
     d1 = LIBMUSCLE_Data_create()
     call assert_true(LIBMUSCLE_Data_is_nil(d1))
-    call assert_false(LIBMUSCLE_Data_is_a_int(d1))
+    call assert_false(LIBMUSCLE_Data_is_a_int4(d1))
     call LIBMUSCLE_Data_set(d1, 10)
     call assert_false(LIBMUSCLE_Data_is_nil(d1))
     call LIBMUSCLE_Data_set_nil(d1)
@@ -129,98 +159,98 @@ subroutine test_data_basic_types
 
     print *, '[  RUN     ] data.logical'
     d1 = LIBMUSCLE_Data_create(.true.)
-    call assert_true(LIBMUSCLE_Data_is_a_bool(d1))
-    call assert_false(LIBMUSCLE_Data_is_a_int(d1))
-    l1 = LIBMUSCLE_Data_as_bool(d1)
+    call assert_true(LIBMUSCLE_Data_is_a_logical(d1))
+    call assert_false(LIBMUSCLE_Data_is_a_int4(d1))
+    l1 = LIBMUSCLE_Data_as_logical(d1)
     call assert_eq_logical(l1, .true.)
-    s1 = LIBMUSCLE_Data_as_string(d1, err_code, err_msg)
+    c1 = LIBMUSCLE_Data_as_character(d1, err_code, err_msg)
     call assert_eq_integer(err_code, LIBMUSCLE_runtime_error)
     deallocate(err_msg)
     call LIBMUSCLE_Data_set(d1, .false.)
-    call assert_eq_logical(LIBMUSCLE_Data_as_bool(d1), .false.)
+    call assert_eq_logical(LIBMUSCLE_Data_as_logical(d1), .false.)
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.logical'
 
-    print *, '[  RUN     ] data.string'
+    print *, '[  RUN     ] data.character'
     d1 = LIBMUSCLE_Data_create('Testing')
-    call assert_true(LIBMUSCLE_Data_is_a_string(d1))
-    call assert_false(LIBMUSCLE_Data_is_a_bool(d1))
-    s1 = LIBMUSCLE_Data_as_string(d1)
-    call assert_eq_character(s1, 'Testing')
-    deallocate(s1)
-    i1 = LIBMUSCLE_Data_as_int(d1, err_code)
-    call assert_eq_integer(err_code, LIBMUSCLE_runtime_error)
+    call assert_true(LIBMUSCLE_Data_is_a_character(d1))
+    call assert_false(LIBMUSCLE_Data_is_a_logical(d1))
+    c1 = LIBMUSCLE_Data_as_character(d1)
+    call assert_eq_character(c1, 'Testing')
+    deallocate(c1)
+    xi4 = LIBMUSCLE_Data_as_int4(d1, err_code)
+    call assert_eq_int4(err_code, LIBMUSCLE_runtime_error)
     call LIBMUSCLE_Data_set(d1, 'Something else')
-    s1 = LIBMUSCLE_Data_as_string(d1)
-    call assert_eq_character(LIBMUSCLE_Data_as_string(d1), 'Something else')
+    c1 = LIBMUSCLE_Data_as_character(d1)
+    call assert_eq_character(LIBMUSCLE_Data_as_character(d1), 'Something else')
     call LIBMUSCLE_Data_free(d1)
-    print *, '[       OK ] data.string'
-
-    print *, '[  RUN     ] data.int8'
-    d1 = LIBMUSCLE_Data_create(121_byte)
-    call assert_true(LIBMUSCLE_Data_is_a_char(d1))
-    call assert_true(LIBMUSCLE_Data_is_a_int(d1))
-    call assert_false(LIBMUSCLE_Data_is_a_string(d1))
-    bi1 = LIBMUSCLE_Data_as_char(d1)
-    call assert_eq_byte(bi1, 121_byte)
-    call LIBMUSCLE_Data_set(d1, 43_byte)
-    call assert_eq_byte(LIBMUSCLE_Data_as_char(d1), 43_byte)
-    call LIBMUSCLE_Data_free(d1)
-    print *, '[       OK ] data.int8'
-
-    print *, '[  RUN     ] data.int16'
-    d1 = LIBMUSCLE_Data_create(1313_short_int)
-    call assert_true(LIBMUSCLE_Data_is_a_int16(d1))
-    si1 = LIBMUSCLE_Data_as_int16(d1)
-    call assert_eq_int16(si1, 1313_short_int)
-    call LIBMUSCLE_Data_set(d1, 24242_short_int)
-    call assert_eq_int16(LIBMUSCLE_Data_as_int16(d1), 24242_short_int)
-    call LIBMUSCLE_Data_free(d1)
-    print *, '[       OK ] data.int16'
+    print *, '[       OK ] data.character'
 
     print *, '[  RUN     ] data.integer'
     d1 = LIBMUSCLE_Data_create(13)
     call assert_true(LIBMUSCLE_Data_is_a_int(d1))
-    call assert_false(LIBMUSCLE_Data_is_a_bool(d1))
-    i1 = LIBMUSCLE_Data_as_int(d1)
-    call assert_eq_integer(i1, 13)
+    call assert_false(LIBMUSCLE_Data_is_a_logical(d1))
+    xi = LIBMUSCLE_Data_as_int(d1)
+    call assert_eq_integer(xi, 13)
     call LIBMUSCLE_Data_set(d1, 242424)
     call assert_eq_integer(LIBMUSCLE_Data_as_int(d1), 242424)
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.integer'
 
-    print *, '[  RUN     ] data.integer64'
-    d1 = LIBMUSCLE_Data_create(131313131313131313_long_int)
-    call assert_true(LIBMUSCLE_Data_is_a_int64(d1))
-    call assert_false(LIBMUSCLE_Data_is_a_string(d1))
-    li1 = LIBMUSCLE_Data_as_int64(d1)
-    call assert_eq_long_int(li1, 131313131313131313_long_int)
-    call LIBMUSCLE_Data_set(d1, 242424242424242424_long_int)
-    call assert_eq_long_int(LIBMUSCLE_Data_as_int64(d1), 242424242424242424_long_int)
+    print *, '[  RUN     ] data.int1'
+    d1 = LIBMUSCLE_Data_create(121_int1)
+    call assert_true(LIBMUSCLE_Data_is_a_int1(d1))
+    call assert_true(LIBMUSCLE_Data_is_a_int4(d1))
+    call assert_false(LIBMUSCLE_Data_is_a_character(d1))
+    xi1 = LIBMUSCLE_Data_as_int1(d1)
+    call assert_eq_int1(xi1, 121_int1)
+    call LIBMUSCLE_Data_set(d1, 43_int1)
+    call assert_eq_int1(LIBMUSCLE_Data_as_int1(d1), 43_int1)
     call LIBMUSCLE_Data_free(d1)
-    print *, '[       OK ] data.integer64'
+    print *, '[       OK ] data.int1'
 
-    print *, '[  RUN     ] data.single'
+    print *, '[  RUN     ] data.int2'
+    d1 = LIBMUSCLE_Data_create(1313_int2)
+    call assert_true(LIBMUSCLE_Data_is_a_int2(d1))
+    xi2 = LIBMUSCLE_Data_as_int2(d1)
+    call assert_eq_int2(xi2, 1313_int2)
+    call LIBMUSCLE_Data_set(d1, 24242_int2)
+    call assert_eq_int2(LIBMUSCLE_Data_as_int2(d1), 24242_int2)
+    call LIBMUSCLE_Data_free(d1)
+    print *, '[       OK ] data.int2'
+
+    print *, '[  RUN     ] data.int8'
+    d1 = LIBMUSCLE_Data_create(131313131313131313_int8)
+    call assert_true(LIBMUSCLE_Data_is_a_int8(d1))
+    call assert_false(LIBMUSCLE_Data_is_a_character(d1))
+    xi8 = LIBMUSCLE_Data_as_int8(d1)
+    call assert_eq_int8(xi8, 131313131313131313_int8)
+    call LIBMUSCLE_Data_set(d1, 242424242424242424_int8)
+    call assert_eq_int8(LIBMUSCLE_Data_as_int8(d1), 242424242424242424_int8)
+    call LIBMUSCLE_Data_free(d1)
+    print *, '[       OK ] data.int8'
+
+    print *, '[  RUN     ] data.real4'
     d1 = LIBMUSCLE_Data_create(42.0)
-    call assert_true(LIBMUSCLE_Data_is_a_float(d1))
+    call assert_true(LIBMUSCLE_Data_is_a_real4(d1))
     call assert_false(LIBMUSCLE_Data_is_a_int(d1))
-    sr1 = LIBMUSCLE_Data_as_float(d1)
-    call assert_eq_single(sr1, 42.0)
+    xr4 = LIBMUSCLE_Data_as_real4(d1)
+    call assert_eq_real4(xr4, 42.0)
     call LIBMUSCLE_Data_set(d1, 3.1415926536)
-    call assert_eq_single(LIBMUSCLE_Data_as_float(d1), 3.1415926536)
+    call assert_eq_real4(LIBMUSCLE_Data_as_real4(d1), 3.1415926536)
     call LIBMUSCLE_Data_free(d1)
-    print *, '[       OK ] data.single'
+    print *, '[       OK ] data.real4'
 
-    print *, '[  RUN     ] data.double'
+    print *, '[  RUN     ] data.real8'
     d1 = LIBMUSCLE_Data_create(42.0d0)
-    call assert_true(LIBMUSCLE_Data_is_a_double(d1))
-    call assert_false(LIBMUSCLE_Data_is_a_float(d1))
-    dr1 = LIBMUSCLE_Data_as_double(d1)
-    call assert_eq_double(dr1, 42.0d0)
+    call assert_true(LIBMUSCLE_Data_is_a_real8(d1))
+    call assert_false(LIBMUSCLE_Data_is_a_real4(d1))
+    xr8 = LIBMUSCLE_Data_as_real8(d1)
+    call assert_eq_real8(xr8, 42.0d0)
     call LIBMUSCLE_Data_set(d1, 3.1415926536d0)
-    call assert_eq_double(LIBMUSCLE_Data_as_double(d1), 3.1415926536d0)
+    call assert_eq_real8(LIBMUSCLE_Data_as_real8(d1), 3.1415926536d0)
     call LIBMUSCLE_Data_free(d1)
-    print *, '[       OK ] data.double'
+    print *, '[       OK ] data.real8'
 
 end subroutine test_data_basic_types
 
@@ -234,8 +264,8 @@ subroutine test_data_copy_assign
     d1 = LIBMUSCLE_Data_create(42.0d0)
     d2 = LIBMUSCLE_Data_create(d1)
     call LIBMUSCLE_Data_free(d1)
-    call assert_true(LIBMUSCLE_Data_is_a_double(d2))
-    call assert_false(LIBMUSCLE_Data_is_a_float(d2))
+    call assert_true(LIBMUSCLE_Data_is_a_real8(d2))
+    call assert_false(LIBMUSCLE_Data_is_a_real4(d2))
     call LIBMUSCLE_Data_free(d2)
     print *, '[       OK ] data.copy_constructor'
 
@@ -244,8 +274,8 @@ subroutine test_data_copy_assign
     d2 = LIBMUSCLE_Data_create()
     call LIBMUSCLE_Data_set(d2, d1)
     call LIBMUSCLE_Data_free(d1)
-    call assert_true(LIBMUSCLE_Data_is_a_double(d2))
-    call assert_false(LIBMUSCLE_Data_is_a_float(d2))
+    call assert_true(LIBMUSCLE_Data_is_a_real8(d2))
+    call assert_false(LIBMUSCLE_Data_is_a_real4(d2))
     call LIBMUSCLE_Data_free(d2)
     print *, '[       OK ] data.assign'
 end subroutine test_data_copy_assign
@@ -255,51 +285,52 @@ subroutine test_data_dict
     use libmuscle
 
     implicit none
-    integer, parameter :: byte = selected_int_kind(2)
-    integer, parameter :: short_int = selected_int_kind(4)
-    integer, parameter :: long_int = selected_int_kind(18)
+    integer, parameter :: int1 = LIBMUSCLE_int1
+    integer, parameter :: int2 = LIBMUSCLE_int2
+    integer, parameter :: int4 = LIBMUSCLE_int4
+    integer, parameter :: int8 = LIBMUSCLE_int8
+    integer, parameter :: sz = LIBMUSCLE_size
     type(LIBMUSCLE_Data) :: d1, d2
-    integer (kind=long_int) :: i
 
     print *, '[  RUN     ] data.dict'
     d1 = LIBMUSCLE_Data_create_dict()
     call assert_true(LIBMUSCLE_Data_is_a_dict(d1))
     call LIBMUSCLE_Data_set_item(d1, 'key1', 1)
-    call assert_eq_long_int(LIBMUSCLE_Data_size(d1), 1_long_int)
+    call assert_eq_size(LIBMUSCLE_Data_size(d1), 1_sz)
 
     call LIBMUSCLE_Data_set_item(d1, 'key1', .true.)
     d2 = LIBMUSCLE_Data_get_item(d1, 'key1')
-    call assert_true(LIBMUSCLE_Data_as_bool(d2))
+    call assert_true(LIBMUSCLE_Data_as_logical(d2))
     call LIBMUSCLE_Data_free(d2)
 
     call LIBMUSCLE_Data_set_item(d1, 'key2', 'test')
     d2 = LIBMUSCLE_Data_get_item(d1, 'key2')
-    call assert_eq_character(LIBMUSCLE_Data_as_string(d2), 'test')
+    call assert_eq_character(LIBMUSCLE_Data_as_character(d2), 'test')
     call LIBMUSCLE_Data_free(d2)
 
-    call LIBMUSCLE_Data_set_item(d1, 'key1', 63_byte)
+    call LIBMUSCLE_Data_set_item(d1, 'key1', 63_int1)
     d2 = LIBMUSCLE_Data_get_item(d1, 'key1')
-    call assert_eq_byte(LIBMUSCLE_Data_as_char(d2), 63_byte)
+    call assert_eq_int1(LIBMUSCLE_Data_as_int1(d2), 63_int1)
     call LIBMUSCLE_Data_free(d2)
 
-    call LIBMUSCLE_Data_set_item(d1, 'key1', 30000_short_int)
+    call LIBMUSCLE_Data_set_item(d1, 'key1', 30000_int2)
     d2 = LIBMUSCLE_Data_get_item(d1, 'key1')
-    call assert_eq_int16(LIBMUSCLE_Data_as_int16(d2), 30000_short_int)
+    call assert_eq_int2(LIBMUSCLE_Data_as_int2(d2), 30000_int2)
     call LIBMUSCLE_Data_free(d2)
 
-    call LIBMUSCLE_Data_set_item(d1, 'key2', 1000030000)
+    call LIBMUSCLE_Data_set_item(d1, 'key2', 1000030000_int4)
     d2 = LIBMUSCLE_Data_get_item(d1, 'key2')
-    call assert_eq_integer(LIBMUSCLE_Data_as_int(d2), 1000030000)
+    call assert_eq_int4(LIBMUSCLE_Data_as_int4(d2), 1000030000_int4)
     call LIBMUSCLE_Data_free(d2)
 
-    call assert_eq_character(LIBMUSCLE_Data_key(d1, 1_long_int), 'key1')
-    d2 = LIBMUSCLE_Data_value(d1, 1_long_int)
-    call assert_eq_int16(LIBMUSCLE_Data_as_int16(d2), 30000_short_int)
+    call assert_eq_character(LIBMUSCLE_Data_key(d1, 1_sz), 'key1')
+    d2 = LIBMUSCLE_Data_value(d1, 1_sz)
+    call assert_eq_int2(LIBMUSCLE_Data_as_int2(d2), 30000_int2)
     call LIBMUSCLE_Data_free(d2)
 
-    call assert_eq_character(LIBMUSCLE_Data_key(d1, 2_long_int), 'key2')
-    d2 = LIBMUSCLE_Data_value(d1, 2_long_int)
-    call assert_eq_integer(LIBMUSCLE_Data_as_int(d2), 1000030000)
+    call assert_eq_character(LIBMUSCLE_Data_key(d1, 2_sz), 'key2')
+    d2 = LIBMUSCLE_Data_value(d1, 2_sz)
+    call assert_eq_int4(LIBMUSCLE_Data_as_int(d2), 1000030000_int4)
     call LIBMUSCLE_Data_free(d2)
 
     call LIBMUSCLE_Data_free(d1)
@@ -311,9 +342,11 @@ subroutine test_data_list
     use libmuscle
 
     implicit none
-    integer, parameter :: byte = selected_int_kind(2)
-    integer, parameter :: short_int = selected_int_kind(4)
-    integer, parameter :: long_int = selected_int_kind(18)
+    integer, parameter :: int1 = LIBMUSCLE_int1
+    integer, parameter :: int2 = LIBMUSCLE_int2
+    integer, parameter :: int4 = LIBMUSCLE_int4
+    integer, parameter :: int8 = LIBMUSCLE_int8
+    integer, parameter :: sz = LIBMUSCLE_size
     integer, parameter :: real4 = selected_real_kind(6)
     integer, parameter :: real8 = selected_real_kind(15)
     type(LIBMUSCLE_Data) :: d1, d2
@@ -321,75 +354,75 @@ subroutine test_data_list
     print *, '[  RUN     ] data.list'
     d1 = LIBMUSCLE_Data_create_list()
     call assert_true(LIBMUSCLE_Data_is_a_list(d1))
-    call assert_false(LIBMUSCLE_Data_is_a_float(d1))
+    call assert_false(LIBMUSCLE_Data_is_a_real4(d1))
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.list'
 
     print *, '[  RUN     ] data.nils'
-    d1 = LIBMUSCLE_Data_create_nils(100_long_int)
+    d1 = LIBMUSCLE_Data_create_nils(100_sz)
     call assert_true(LIBMUSCLE_Data_is_a_list(d1))
-    call assert_false(LIBMUSCLE_Data_is_a_float(d1))
-    call assert_eq_long_int(LIBMUSCLE_Data_size(d1), 100_long_int)
+    call assert_false(LIBMUSCLE_Data_is_a_real4(d1))
+    call assert_eq_size(LIBMUSCLE_Data_size(d1), 100_sz)
     call LIBMUSCLE_Data_free(d1)
     print *, '[       OK ] data.nils'
 
     print *, '[  RUN     ] data.list_get_item'
-    d1 = LIBMUSCLE_Data_create_nils(10_long_int)
-    d2 = LIBMUSCLE_Data_get_item(d1, 1_long_int)
+    d1 = LIBMUSCLE_Data_create_nils(10_sz)
+    d2 = LIBMUSCLE_Data_get_item(d1, 1_sz)
     call assert_true(LIBMUSCLE_Data_is_nil(d2))
     call LIBMUSCLE_Data_free(d1)
     call LIBMUSCLE_Data_free(d2)
     print *, '[       OK ] data.list_get_item'
 
     print *, '[  RUN     ] data.list_set_item'
-    d1 = LIBMUSCLE_Data_create_nils(9_long_int)
-    call LIBMUSCLE_Data_set_item(d1, 1_long_int, .true.)
-    call LIBMUSCLE_Data_set_item(d1, 2_long_int, 'Testing')
-    call LIBMUSCLE_Data_set_item(d1, 3_long_int, 42_byte)
-    call LIBMUSCLE_Data_set_item(d1, 4_long_int, 6565_short_int)
-    call LIBMUSCLE_Data_set_item(d1, 5_long_int, 1313131313)
-    call LIBMUSCLE_Data_set_item(d1, 6_long_int, 100100100100100_long_int)
-    call LIBMUSCLE_Data_set_item(d1, 7_long_int, 12.34_real4)
-    call LIBMUSCLE_Data_set_item(d1, 8_long_int, 56.78901234_real8)
+    d1 = LIBMUSCLE_Data_create_nils(9_sz)
+    call LIBMUSCLE_Data_set_item(d1, 1_sz, .true.)
+    call LIBMUSCLE_Data_set_item(d1, 2_sz, 'Testing')
+    call LIBMUSCLE_Data_set_item(d1, 3_sz, 42_int1)
+    call LIBMUSCLE_Data_set_item(d1, 4_sz, 6565_int2)
+    call LIBMUSCLE_Data_set_item(d1, 5_sz, 1313131313_int4)
+    call LIBMUSCLE_Data_set_item(d1, 6_sz, 100100100100100_int8)
+    call LIBMUSCLE_Data_set_item(d1, 7_sz, 12.34_real4)
+    call LIBMUSCLE_Data_set_item(d1, 8_sz, 56.78901234_real8)
     d2 = LIBMUSCLE_Data_create_dict()
-    call LIBMUSCLE_Data_set_item(d1, 9_long_int, d2)
+    call LIBMUSCLE_Data_set_item(d1, 9_sz, d2)
     call LIBMUSCLE_Data_free(d2)
 
-    d2 = LIBMUSCLE_Data_get_item(d1, 1_long_int)
-    call assert_true(LIBMUSCLE_Data_as_bool(d2))
+    d2 = LIBMUSCLE_Data_get_item(d1, 1_sz)
+    call assert_true(LIBMUSCLE_Data_as_logical(d2))
     call LIBMUSCLE_Data_free(d2)
 
-    d2 = LIBMUSCLE_Data_get_item(d1, 2_long_int)
-    call assert_eq_character(LIBMUSCLE_Data_as_string(d2), 'Testing')
+    d2 = LIBMUSCLE_Data_get_item(d1, 2_sz)
+    call assert_eq_character(LIBMUSCLE_Data_as_character(d2), 'Testing')
     call LIBMUSCLE_Data_free(d2)
 
-    d2 = LIBMUSCLE_Data_get_item(d1, 3_long_int)
-    call assert_eq_byte(LIBMUSCLE_Data_as_char(d2), 42_byte)
+    d2 = LIBMUSCLE_Data_get_item(d1, 3_sz)
+    call assert_eq_int1(LIBMUSCLE_Data_as_int1(d2), 42_int1)
     call LIBMUSCLE_Data_free(d2)
 
-    d2 = LIBMUSCLE_Data_get_item(d1, 4_long_int)
-    call assert_eq_int16(LIBMUSCLE_Data_as_int16(d2), 6565_short_int)
+    d2 = LIBMUSCLE_Data_get_item(d1, 4_sz)
+    call assert_eq_int2(LIBMUSCLE_Data_as_int2(d2), 6565_int2)
     call LIBMUSCLE_Data_free(d2)
 
-    d2 = LIBMUSCLE_Data_get_item(d1, 5_long_int)
-    call assert_eq_integer(LIBMUSCLE_Data_as_int(d2), 1313131313)
+    d2 = LIBMUSCLE_Data_get_item(d1, 5_sz)
+    call assert_eq_int4(LIBMUSCLE_Data_as_int4(d2), 1313131313_int4)
     call LIBMUSCLE_Data_free(d2)
 
-    d2 = LIBMUSCLE_Data_get_item(d1, 6_long_int)
-    call assert_eq_long_int(LIBMUSCLE_Data_as_int64(d2), 100100100100100_long_int)
+    d2 = LIBMUSCLE_Data_get_item(d1, 6_sz)
+    call assert_eq_int8(LIBMUSCLE_Data_as_int8(d2), 100100100100100_int8)
     call LIBMUSCLE_Data_free(d2)
 
-    d2 = LIBMUSCLE_Data_get_item(d1, 7_long_int)
-    call assert_eq_single(LIBMUSCLE_Data_as_float(d2), 12.34_real4)
+    d2 = LIBMUSCLE_Data_get_item(d1, 7_sz)
+    call assert_eq_real4(LIBMUSCLE_Data_as_real4(d2), 12.34_real4)
     call LIBMUSCLE_Data_free(d2)
 
-    d2 = LIBMUSCLE_Data_get_item(d1, 8_long_int)
-    call assert_eq_double(LIBMUSCLE_Data_as_double(d2), 56.78901234_real8)
+    d2 = LIBMUSCLE_Data_get_item(d1, 8_sz)
+    call assert_eq_real8(LIBMUSCLE_Data_as_real8(d2), 56.78901234_real8)
     call LIBMUSCLE_Data_free(d2)
 
-    d2 = LIBMUSCLE_Data_get_item(d1, 9_long_int)
+    d2 = LIBMUSCLE_Data_get_item(d1, 9_sz)
     call assert_true(LIBMUSCLE_Data_is_a_dict(d2))
-    call assert_eq_long_int(LIBMUSCLE_Data_size(d2), 0_long_int)
+    call assert_eq_int8(LIBMUSCLE_Data_size(d2), 0_sz)
     call LIBMUSCLE_Data_free(d2)
 
     call LIBMUSCLE_Data_free(d1)
@@ -400,17 +433,17 @@ subroutine test_data_byte_array
     use libmuscle
 
     implicit none
-    integer, parameter :: long_int = selected_int_kind(18)
+    integer, parameter :: sz = LIBMUSCLE_size
     character(len=1), dimension(1024) :: bytes
     character(len=1), dimension(:), allocatable :: buf
     integer :: i, err_code
     type(LIBMUSCLE_Data) :: d1
 
     print *, '[  RUN     ] data.byte_array'
-    d1 = LIBMUSCLE_Data_create_byte_array(1024_long_int)
+    d1 = LIBMUSCLE_Data_create_byte_array(1024_sz)
     call assert_true(LIBMUSCLE_Data_is_a_byte_array(d1))
     call assert_false(LIBMUSCLE_Data_is_a_int(d1))
-    call assert_eq_long_int(LIBMUSCLE_Data_size(d1), 1024_long_int)
+    call assert_eq_size(LIBMUSCLE_Data_size(d1), 1024_sz)
 
     allocate(buf(LIBMUSCLE_Data_size(d1)))
     call LIBMUSCLE_Data_as_byte_array(d1, buf, err_code)
@@ -426,7 +459,7 @@ subroutine test_data_byte_array
     d1 = LIBMUSCLE_Data_create_byte_array(bytes)
     call assert_true(LIBMUSCLE_Data_is_a_byte_array(d1))
     call assert_false(LIBMUSCLE_Data_is_a_int(d1))
-    call assert_eq_long_int(LIBMUSCLE_Data_size(d1), 1024_long_int)
+    call assert_eq_size(LIBMUSCLE_Data_size(d1), 1024_sz)
 
     allocate(buf(LIBMUSCLE_Data_size(d1)))
     call LIBMUSCLE_Data_as_byte_array(d1, buf, err_code)

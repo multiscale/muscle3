@@ -45,13 +45,15 @@ class Par:
         """
         self.name = name
 
-    def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
+    def set_ns_prefix(self, ns_for_name: Dict[str, str], ns: str) -> None:
         """Sets the namespace prefix correctly for all members.
 
         Args:
             ns_for_name: A map from type names to namespace names.
+            ns: Name of the namespace that this parameter's member function's
+                    class is in.
         """
-        pass
+        self.ns_prefix = ns
 
     def fc_convert_input(self) -> str:
         return ''
@@ -415,7 +417,7 @@ class Obj(Par):
         self.class_name = class_name
         self.ns_prefix = None
 
-    def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
+    def set_ns_prefix(self, ns_for_name: Dict[str, str], ns: str) -> None:
         self.ns_prefix = ns_for_name[self.class_name]
 
     def tname(self) -> str:
@@ -523,7 +525,7 @@ class EnumVal(Par):
         self.class_name = class_name
         self.ns_prefix = None
 
-    def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
+    def set_ns_prefix(self, ns_for_name: Dict[str, str], ns: str) -> None:
         self.ns_prefix = ns_for_name[self.class_name]
 
     def tname(self) -> str:
@@ -613,10 +615,11 @@ class Char(Par):
         return 'char'
 
     def f_type(self) -> str:
-        return self._regular_type('integer (LIBMUSCLE_int1)')
+        return self._regular_type('integer ({}_int1)'.format(self.ns_prefix))
 
     def f_ret_type(self) -> str:
-        return True, self._regular_type('integer (LIBMUSCLE_int1)')
+        return True, self._regular_type('integer ({}_int1)'.format(
+                self.ns_prefix))
 
     def fi_type(self) -> str:
         return self._regular_type('integer (c_int8_t), value')
@@ -687,10 +690,11 @@ class Int32t(Par):
         return 'int32_t'
 
     def f_type(self) -> str:
-        return self._regular_type('integer (LIBMUSCLE_int4)')
+        return self._regular_type('integer ({}_int4)'.format(self.ns_prefix))
 
     def f_ret_type(self) -> str:
-        return True, self._regular_type('integer (LIBMUSCLE_int4)')
+        return True, self._regular_type('integer ({}_int4)'.format(
+                self.ns_prefix))
 
     def fi_type(self) -> str:
         return self._regular_type('integer (c_int32_t), value')
@@ -761,10 +765,11 @@ class Sizet(Par):
         return 'std::size_t'
 
     def f_type(self) -> str:
-        return self._regular_type('integer (LIBMUSCLE_size)')
+        return self._regular_type('integer ({}_size)'.format(self.ns_prefix))
 
     def f_ret_type(self) -> str:
-        return True, self._regular_type('integer (LIBMUSCLE_size)')
+        return True, self._regular_type('integer ({}_size)'.format(
+                self.ns_prefix))
 
     def fi_type(self) -> str:
         return self._regular_type('integer (c_size_t), value')
@@ -798,10 +803,11 @@ class Float(Par):
         return 'float'
 
     def f_type(self) -> str:
-        return self._regular_type('real (LIBMUSCLE_real4)')
+        return self._regular_type('real ({}_real4)'.format(self.ns_prefix))
 
     def f_ret_type(self) -> str:
-        return True, self._regular_type('real (LIBMUSCLE_real4)')
+        return True, self._regular_type('real ({}_real4)'.format(
+                self.ns_prefix))
 
     def fi_type(self) -> str:
         return self._regular_type('real (c_float), value')
@@ -835,10 +841,11 @@ class Double(Par):
         return 'double'
 
     def f_type(self) -> str:
-        return self._regular_type('real (LIBMUSCLE_real8)')
+        return self._regular_type('real ({}_real8)'.format(self.ns_prefix))
 
     def f_ret_type(self) -> str:
-        return True, self._regular_type('real (LIBMUSCLE_real8)')
+        return True, self._regular_type('real ({}_real8)'.format(
+                self.ns_prefix))
 
     def fi_type(self) -> str:
         return self._regular_type('real (c_double), value')
@@ -918,9 +925,9 @@ class MemFun(Member):
             ns_for_name: A map from type names to namespace names.
         """
         self.ns_prefix = ns_for_name[self.class_name]
-        self.ret_type.set_ns_prefix(ns_for_name)
+        self.ret_type.set_ns_prefix(ns_for_name, self.ns_prefix)
         for param in self.params:
-            param.set_ns_prefix(ns_for_name)
+            param.set_ns_prefix(ns_for_name, self.ns_prefix)
 
     def set_public(self, public: bool) -> None:
         self.public = public
@@ -1459,9 +1466,9 @@ class MemFunTmpl(Member):
             ns_for_name: A map from type names to namespace names.
         """
         self.ns_prefix = ns_for_name[self.class_name]
-        self.ret_type.set_ns_prefix(ns_for_name)
+        self.ret_type.set_ns_prefix(ns_for_name, self.ns_prefix)
         for param in self.params:
-            param.set_ns_prefix(ns_for_name)
+            param.set_ns_prefix(ns_for_name, self.ns_prefix)
 
         for instance in self.instances:
             instance.set_ns_prefix(ns_for_name)

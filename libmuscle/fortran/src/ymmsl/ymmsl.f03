@@ -28,6 +28,7 @@ module ymmsl
     public :: YMMSL_Settings_create
     public :: YMMSL_Settings_free
     public :: YMMSL_Settings_equals
+    public :: YMMSL_Settings_size
 
     interface
 
@@ -54,6 +55,14 @@ module ymmsl
             integer (c_intptr_t), value, intent(in) :: self
             integer (c_intptr_t), value, intent(in) :: other
         end function YMMSL_Settings_equals_
+
+        integer (c_size_t) function YMMSL_Settings_size_( &
+                self) &
+                bind(C, name="YMMSL_Settings_size_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function YMMSL_Settings_size_
 
     end interface
 
@@ -94,6 +103,18 @@ contains
 
         YMMSL_Settings_equals = ret_val .ne. 0
     end function YMMSL_Settings_equals
+
+    function YMMSL_Settings_size(self)
+        implicit none
+        type(YMMSL_Settings), intent(in) :: self
+        integer (YMMSL_size) :: YMMSL_Settings_size
+
+        integer (c_size_t) :: ret_val
+
+        ret_val = YMMSL_Settings_size_( &
+            self%ptr)
+        YMMSL_Settings_size = ret_val
+    end function YMMSL_Settings_size
 
 
 end module ymmsl

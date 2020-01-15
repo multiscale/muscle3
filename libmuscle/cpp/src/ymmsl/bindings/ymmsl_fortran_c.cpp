@@ -29,6 +29,12 @@ int YMMSL_Settings_equals_(std::intptr_t self, std::intptr_t other) {
     return result ? 1 : 0;
 }
 
+std::size_t YMMSL_Settings_size_(std::intptr_t self) {
+    Settings * self_p = reinterpret_cast<Settings *>(self);
+    std::size_t result = self_p->size();
+    return result;
+}
+
 }
 
 

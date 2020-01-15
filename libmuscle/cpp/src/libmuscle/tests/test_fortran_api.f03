@@ -485,13 +485,27 @@ subroutine test_data
 end subroutine test_data
 
 
-subroutine test_settings
+subroutine test_settings_create
+    use ymmsl
+    implicit none
+
+    type(YMMSL_Settings) :: s1
+
+    print *, '[  RUN     ] settings.create'
+    s1 = YMMSL_Settings_create()
+
+    call YMMSL_Settings_free(s1)
+    print *, '[       OK ] settings.create'
+end subroutine test_settings_create
+
+
+subroutine test_settings_equals
     use ymmsl
     implicit none
 
     type(YMMSL_Settings) :: s1, s2
 
-    print *, '[  RUN     ] ymmsl.settings'
+    print *, '[  RUN     ] settings.equals'
     s1 = YMMSL_Settings_create()
     s2 = YMMSL_Settings_create()
 
@@ -499,7 +513,30 @@ subroutine test_settings
 
     call YMMSL_Settings_free(s1)
     call YMMSL_Settings_free(s2)
-    print *, '[       OK ] ymmsl.settings'
+    print *, '[       OK ] settings.equals'
+end subroutine test_settings_equals
+
+
+subroutine test_settings_size
+    use ymmsl
+    implicit none
+
+    type(YMMSL_Settings) :: s1
+
+    print *, '[  RUN     ] settings.size'
+    s1 = YMMSL_Settings_create()
+
+    call assert_eq_size(YMMSL_Settings_size(s1), 0_YMMSL_size)
+
+    call YMMSL_Settings_free(s1)
+    print *, '[       OK ] settings.size'
+end subroutine test_settings_size
+
+
+subroutine test_settings
+    call test_settings_create
+    call test_settings_equals
+    call test_settings_size
 end subroutine test_settings
 
 

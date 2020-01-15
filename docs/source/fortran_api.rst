@@ -1041,3 +1041,12 @@ Namespace YMMSL
     :p YMMSL_Settings other: The object to compare to.
     :r equal: ``.true.`` if the objects are equal.
     :rtype equal: logical
+
+.. f:function:: YMMSL_Settings_size(self)
+
+    Returns the number of settings in this object.
+
+    :p YMMSL_Settings self: The object to inspect.
+    :r count: The number of key-value pairs in this Settings object
+            (kind=YMMSL_size).
+    :rtype count: integer

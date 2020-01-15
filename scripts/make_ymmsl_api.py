@@ -17,6 +17,7 @@ settings_desc = Class('Settings', [
     Constructor(),
     Destructor(),
     EqualsOperator(Obj('Settings', 'other')),
+    MemFun(Sizet('size'), 'size'),
     ])
 
 

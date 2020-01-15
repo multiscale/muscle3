@@ -489,11 +489,16 @@ subroutine test_settings
     use ymmsl
     implicit none
 
-    type(YMMSL_Settings) :: s1
+    type(YMMSL_Settings) :: s1, s2
 
     print *, '[  RUN     ] ymmsl.settings'
     s1 = YMMSL_Settings_create()
+    s2 = YMMSL_Settings_create()
+
+    call assert_true(YMMSL_Settings_equals(s1, s2))
+
     call YMMSL_Settings_free(s1)
+    call YMMSL_Settings_free(s2)
     print *, '[       OK ] ymmsl.settings'
 end subroutine test_settings
 
@@ -505,6 +510,7 @@ program test_fortran_api
     print *, '[==========] Fortran API test'
 
     call test_data
+    call test_settings
 
     print *, '[==========] Fortran API test'
     print *, '[  PASSED  ] Fortran API test'

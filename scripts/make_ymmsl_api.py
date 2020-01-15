@@ -6,15 +6,17 @@ import api_generator
 
 from api_generator import (
         API, AssignmentOperator, Bool, Bytes, Char, Class, Constructor,
-        Destructor, Double, Enum, EnumVal, Float, IndexAssignmentOperator, Int,
-        Int16t, Int32t, Int64t, MemFun, MemFunTmpl, NamedConstructor, Namespace,
-        Obj, OverloadSet, ShiftedIndexAssignmentOperator, Sizet, String, T,
-        VecDbl, Vec2Dbl, Void)
+        Destructor, Double, Enum, EnumVal, EqualsOperator, Float,
+        IndexAssignmentOperator, Int, Int16t, Int32t, Int64t, MemFun,
+        MemFunTmpl, NamedConstructor, Namespace, Obj, OverloadSet,
+        ShiftedIndexAssignmentOperator, Sizet, String, T, VecDbl, Vec2Dbl,
+        Void)
 
 
 settings_desc = Class('Settings', [
     Constructor(),
     Destructor(),
+    EqualsOperator(Obj('Settings', 'other')),
     ])
 
 

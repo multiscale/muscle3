@@ -22,6 +22,13 @@ void YMMSL_Settings_free_(std::intptr_t self) {
     return;
 }
 
+int YMMSL_Settings_equals_(std::intptr_t self, std::intptr_t other) {
+    Settings * self_p = reinterpret_cast<Settings *>(self);
+    Settings * other_p = reinterpret_cast<Settings *>(other);
+    bool result = ((*self_p) == *other_p);
+    return result ? 1 : 0;
+}
+
 }
 
 

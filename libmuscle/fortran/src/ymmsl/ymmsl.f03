@@ -27,6 +27,7 @@ module ymmsl
 
     public :: YMMSL_Settings_create
     public :: YMMSL_Settings_free
+    public :: YMMSL_Settings_equals
 
     interface
 
@@ -44,6 +45,15 @@ module ymmsl
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end subroutine YMMSL_Settings_free_
+
+        integer (c_int) function YMMSL_Settings_equals_( &
+                self, other) &
+                bind(C, name="YMMSL_Settings_equals_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_intptr_t), value, intent(in) :: other
+        end function YMMSL_Settings_equals_
 
     end interface
 
@@ -69,6 +79,21 @@ contains
         call YMMSL_Settings_free_( &
             self%ptr)
     end subroutine YMMSL_Settings_free
+
+    function YMMSL_Settings_equals(self, other)
+        implicit none
+        type(YMMSL_Settings), intent(in) :: self
+        type(YMMSL_Settings), intent(in) :: other
+        logical :: YMMSL_Settings_equals
+
+        integer (c_int) :: ret_val
+
+        ret_val = YMMSL_Settings_equals_( &
+            self%ptr, &
+            other%ptr)
+
+        YMMSL_Settings_equals = ret_val .ne. 0
+    end function YMMSL_Settings_equals
 
 
 end module ymmsl

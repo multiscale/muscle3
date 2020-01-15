@@ -1249,6 +1249,23 @@ class Constructor(MemFun):
         return '    return reinterpret_cast<std::intptr_t>(result);\n'
 
 
+class EqualsOperator(MemFun):
+    """Represents an equality operator.
+
+    This generates code suitable for an equality comparison operator, rather
+    than the default code.
+    """
+    def __init__(self, param: Par, name: str = 'equals', **args) -> None:
+        super().__init__(Bool(), name, [param], False, **args)
+
+    def _fc_cpp_call(self) -> str:
+        # Call operator instead of function
+        rhs = self.params[1].fc_cpp_arg()
+        cpp_chain_call = '((*self_p) == {})'.format(rhs)
+        result = self.ret_type.fc_get_result(cpp_chain_call)
+        return '    {};\n'.format(result)
+
+
 class AssignmentOperator(MemFun):
     """Represents an assignment operator.
 

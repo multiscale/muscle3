@@ -1021,7 +1021,7 @@ Namespace YMMSL
     :r obj: The new Settings object
     :rtype obj: YMMSL_Settings
 
-.. f:subroutine:: YMMSL_Settings_free()
+.. f:subroutine:: YMMSL_Settings_free(self)
 
     Frees a Settings object.
 
@@ -1029,3 +1029,15 @@ Namespace YMMSL
     use the object for anything after calling this, because it will be invalid.
 
     :p YMMSL_Settings self: The Settings object to free.
+
+.. f:function:: YMMSL_Settings_equals(self, other)
+
+    Compares two Settings objects for equality.
+
+    This returns ``.true.`` if and only if the two `YMMSL_Settings`_ objects
+    contain the same keys and values.
+
+    :p YMMSL_Settings self: The object to compare.
+    :p YMMSL_Settings other: The object to compare to.
+    :r equal: ``.true.`` if the objects are equal.
+    :rtype equal: logical

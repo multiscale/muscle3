@@ -3,7 +3,7 @@ PREFIX ?= /usr/local
 # Get source paths
 hdrdir := $(CURDIR)/../../src
 srcdir := $(CURDIR)/../../src/ymmsl
-srcdirs := $(srcdir)
+srcdirs := $(srcdir) $(srcdir)/bindings
 objdir := $(CURDIR)/objs
 
 VPATH := $(srcdir)

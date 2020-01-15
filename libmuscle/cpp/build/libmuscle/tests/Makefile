@@ -50,6 +50,9 @@ LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config
 LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs msgpack)
 LDFLAGS2 += $(EXTRA_LINK_DIRS)
 
+FORTRAN_API_MODULES = $(CURDIR)/../../../../fortran/src/libmuscle/libmuscle.f03
+FORTRAN_API_MODULES += $(CURDIR)/../../../../fortran/src/ymmsl/ymmsl.f03
+
 $(info libmuscle test deps: $(deps))
 -include $(deps)
 
@@ -85,7 +88,7 @@ test_logging.o: test_logging.cpp
 test_logging: test_logging.o $(CURDIR)/../../ymmsl/libymmsl_d.a
 	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_ROOT)/lib/libgtest.a -pthread
 
-test_fortran_api: $(CURDIR)/../../../../fortran/src/libmuscle/libmuscle.f03 test_fortran_api.f03
+test_fortran_api: $(FORTRAN_API_MODULES) test_fortran_api.f03
 	$(FC) -std=f2003 $(FFLAGS) $(DEBUGFLAGS) $^ -o $@ $(LDFLAGS2) -lstdc++
 
 mpi_micro_model_test: mpi_micro_model_test.cpp $(CURDIR)/../../ymmsl/libymmsl_d.a $(CURDIR)/../../libmuscle/libmuscle_mpi_d.a

@@ -66,5 +66,7 @@ grpc:
 # This rebuilds the auto-generated native bindings; for development only.
 .PHONY: bindings
 bindings:
-	scripts/make_muscle_api.py --fortran-c-wrappers >libmuscle/cpp/src/libmuscle/bindings/libmuscle_fortran_c.cpp
-	scripts/make_muscle_api.py --fortran-module >libmuscle/fortran/src/libmuscle/libmuscle.f03
+	scripts/make_ymmsl_api.py --fortran-c-wrappers >libmuscle/cpp/src/ymmsl/bindings/ymmsl_fortran_c.cpp
+	scripts/make_ymmsl_api.py --fortran-module >libmuscle/fortran/src/ymmsl/ymmsl.f03
+	scripts/make_libmuscle_api.py --fortran-c-wrappers >libmuscle/cpp/src/libmuscle/bindings/libmuscle_fortran_c.cpp
+	scripts/make_libmuscle_api.py --fortran-module >libmuscle/fortran/src/libmuscle/libmuscle.f03

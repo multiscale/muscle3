@@ -59,8 +59,8 @@ you can use those, using e.g. ``integer*2`` where the API expects a
 otherwise try ``integer*4``.
 
 
-API
----
+Namespace LIBMUSCLE
+-------------------
 
 .. f:module:: libmuscle
     :synopsis: Fortran module for libmuscle
@@ -993,3 +993,39 @@ API
     :p character err_msg: An error message output (allocatable, optional).
     :r value: The value at the given index
     :rtype value: LIBMUSCLE_Data
+
+
+Namespace YMMSL
+-------------------
+
+.. f:module:: ymmsl
+    :synopsis: Fortran module for ymmsl
+
+.. f:currentmodule:: ymmsl
+
+.. f:type:: YMMSL_Settings
+
+    Represents a libmuscle Settings object. These are used to send and receive
+    Settings objects to other compute elements. This is an opaque object that
+    may be returned from and passed to libmuscle functions, but does not contain
+    any directly accessible members.
+
+    A Settings object is a dictionary-like object which is indexed by a string,
+    and whose values can be strings, logicals, 8-byte integers, 8-byte real
+    numbers, and one- and two-dimensional arrays of 8-byte real numbers.
+
+.. f:function:: YMMSL_Settings_create()
+
+    Creates an empty Settings object.
+
+    :r obj: The new Settings object
+    :rtype obj: YMMSL_Settings
+
+.. f:subroutine:: YMMSL_Settings_free()
+
+    Frees a Settings object.
+
+    This frees the resources associated with the given Settings object. Do not
+    use the object for anything after calling this, because it will be invalid.
+
+    :p YMMSL_Settings self: The Settings object to free.

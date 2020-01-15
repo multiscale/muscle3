@@ -482,7 +482,20 @@ subroutine test_data
     call test_data_dict
     call test_data_list
     call test_data_byte_array
-end subroutine
+end subroutine test_data
+
+
+subroutine test_settings
+    use ymmsl
+    implicit none
+
+    type(YMMSL_Settings) :: s1
+
+    print *, '[  RUN     ] ymmsl.settings'
+    s1 = YMMSL_Settings_create()
+    call YMMSL_Settings_free(s1)
+    print *, '[       OK ] ymmsl.settings'
+end subroutine test_settings
 
 
 program test_fortran_api

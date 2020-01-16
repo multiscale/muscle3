@@ -1041,7 +1041,7 @@ Namespace YMMSL
 
     Compares two Settings objects for equality.
 
-    This returns ``.true.`` if and only if the two f:type:`YMMSL_Settings`_
+    This returns ``.true.`` if and only if the two :f:type:`YMMSL_Settings`
     objects contain the same keys and values.
 
     :p YMMSL_Settings self: The object to compare.
@@ -1172,3 +1172,20 @@ Namespace YMMSL
     :p character err_msg: An error message output (allocatable, optional).
     :r value: The value at the given index (dimension(:,:))
     :rtype value: YMMSL_real8
+
+.. f:function:: YMMSL_Settings_erase(self, key)
+
+    Remove a setting from the Settings object.
+
+    :p YMMSL_Settings self: The Settings object to modify.
+    :p character key: The name of the setting to remove.
+    :r removed: The number of settings removed (0 or 1; YMMSL_size)
+    :rtype removed: integer
+
+.. f:subroutine:: YMMSL_Settings_clear(self)
+
+    Remove all settings from the Settings object.
+
+    After calling this subroutine, the Settings object will be empty.
+
+    :p YMMSL_Settings self: The Settings object to modify.

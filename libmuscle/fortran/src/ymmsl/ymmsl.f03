@@ -45,6 +45,8 @@ module ymmsl
     public :: YMMSL_Settings_get_as_real8array
     public :: YMMSL_Settings_get_as_real8array2
     public :: YMMSL_Settings_contains
+    public :: YMMSL_Settings_erase
+    public :: YMMSL_Settings_clear
 
     interface
 
@@ -250,6 +252,24 @@ module ymmsl
             character, intent(in) :: key
             integer (c_size_t), value, intent(in) :: key_size
         end function YMMSL_Settings_contains_
+
+        integer (c_size_t) function YMMSL_Settings_erase_( &
+                self, key, key_size) &
+                bind(C, name="YMMSL_Settings_erase_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            character, intent(in) :: key
+            integer (c_size_t), value, intent(in) :: key_size
+        end function YMMSL_Settings_erase_
+
+        subroutine YMMSL_Settings_clear_( &
+                self) &
+                bind(C, name="YMMSL_Settings_clear_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end subroutine YMMSL_Settings_clear_
 
     end interface
 
@@ -741,6 +761,28 @@ contains
 
         YMMSL_Settings_contains = ret_val .ne. 0
     end function YMMSL_Settings_contains
+
+    function YMMSL_Settings_erase(self, key)
+        implicit none
+        type(YMMSL_Settings), intent(in) :: self
+        character (len=*), intent(in) :: key
+        integer (YMMSL_size) :: YMMSL_Settings_erase
+
+        integer (c_size_t) :: ret_val
+
+        ret_val = YMMSL_Settings_erase_( &
+            self%ptr, &
+            key, int(len(key), c_size_t))
+        YMMSL_Settings_erase = ret_val
+    end function YMMSL_Settings_erase
+
+    subroutine YMMSL_Settings_clear(self)
+        implicit none
+        type(YMMSL_Settings), intent(in) :: self
+
+        call YMMSL_Settings_clear_( &
+            self%ptr)
+    end subroutine YMMSL_Settings_clear
 
 
 end module ymmsl

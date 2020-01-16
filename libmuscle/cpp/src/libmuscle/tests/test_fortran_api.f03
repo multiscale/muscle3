@@ -613,11 +613,54 @@ contains
     end subroutine test_settings_set_get_as
 
 
+    subroutine test_settings_erase
+        use ymmsl
+        implicit none
+
+        type(YMMSL_Settings) :: s1
+
+        print *, '[  RUN     ] settings.erase'
+        s1 = YMMSL_Settings_create()
+        call YMMSL_Settings_set(s1, 'key', 'value')
+        call assert_true(YMMSL_Settings_contains(s1, 'key'))
+        call assert_eq_size(YMMSL_Settings_erase(s1, 'key'), 1_YMMSL_size)
+        call assert_false(YMMSL_Settings_contains(s1, 'key'))
+        call assert_eq_size(YMMSL_Settings_erase(s1, 'key'), 0_YMMSL_size)
+        call YMMSL_Settings_free(s1)
+        print *, '[       OK ] settings.erase'
+    end subroutine test_settings_erase
+
+    subroutine test_settings_clear
+        use ymmsl
+        implicit none
+
+        type(YMMSL_Settings) :: s1
+
+        print *, '[  RUN     ] settings.clear'
+        s1 = YMMSL_Settings_create()
+        call YMMSL_Settings_set(s1, 'key1', 'value')
+        call YMMSL_Settings_set(s1, 'key2', 42_YMMSL_int8)
+
+        call assert_true(YMMSL_Settings_contains(s1, 'key1'))
+        call assert_true(YMMSL_Settings_contains(s1, 'key2'))
+
+        call YMMSL_Settings_clear(s1)
+
+        call assert_false(YMMSL_Settings_contains(s1, 'key1'))
+        call assert_false(YMMSL_Settings_contains(s1, 'key2'))
+        call assert_eq_size(YMMSL_Settings_size(s1), 0_YMMSL_size)
+
+        call YMMSL_Settings_free(s1)
+        print *, '[       OK ] settings.clear'
+    end subroutine test_settings_clear
+
     subroutine test_settings
         call test_settings_create
         call test_settings_equals
         call test_settings_size
         call test_settings_set_get_as
+        call test_settings_erase
+        call test_settings_clear
     end subroutine test_settings
 end module tests
 

@@ -386,6 +386,19 @@ int YMMSL_Settings_contains_(std::intptr_t self, char * key, std::size_t key_siz
     return result ? 1 : 0;
 }
 
+std::size_t YMMSL_Settings_erase_(std::intptr_t self, char * key, std::size_t key_size) {
+    Settings * self_p = reinterpret_cast<Settings *>(self);
+    std::string key_s(key, key_size);
+    std::size_t result = self_p->erase(key_s);
+    return result;
+}
+
+void YMMSL_Settings_clear_(std::intptr_t self) {
+    Settings * self_p = reinterpret_cast<Settings *>(self);
+    self_p->clear();
+    return;
+}
+
 }
 
 

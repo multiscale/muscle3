@@ -106,13 +106,13 @@ program use_echolib
         deallocate(err_msg)
     end if
 
-    double_echo = ECHO_Echo_echo_template_double(e, 1.0000000001_double, err_code, err_msg)
+    double_echo = ECHO_Echo_echo_template_real8(e, 1.0000000001_double, err_code, err_msg)
     if (double_echo .ne. 1.0000000001_double) then
         print *, 'Error in double_echo: ', double_echo
         stop 1
     end if
 
-    string_echo = ECHO_Echo_echo_template_string(e, 'Testing', err_code, err_msg)
+    string_echo = ECHO_Echo_echo_template_character(e, 'Testing', err_code, err_msg)
     if (string_echo .ne. 'Testing') then
         print *, 'Error in string_echo: ', string_echo
         stop 1

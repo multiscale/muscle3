@@ -1050,3 +1050,11 @@ Namespace YMMSL
     :r count: The number of key-value pairs in this Settings object
             (kind=YMMSL_size).
     :rtype count: integer
+
+.. f:function:: YMMSL_Settings_empty(self)
+
+    Returns ``.true.`` if and only if the Settings object has no items.
+
+    :p YMMSL_Settings self: The object to inspect.
+    :r empty: Whether the object is empty.
+    :rtype empty: logical

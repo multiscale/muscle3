@@ -35,6 +35,12 @@ std::size_t YMMSL_Settings_size_(std::intptr_t self) {
     return result;
 }
 
+int YMMSL_Settings_empty_(std::intptr_t self) {
+    Settings * self_p = reinterpret_cast<Settings *>(self);
+    bool result = self_p->empty();
+    return result ? 1 : 0;
+}
+
 }
 
 

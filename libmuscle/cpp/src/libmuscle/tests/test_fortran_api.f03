@@ -493,7 +493,7 @@ subroutine test_settings_create
 
     print *, '[  RUN     ] settings.create'
     s1 = YMMSL_Settings_create()
-
+    call assert_true(YMMSL_Settings_empty(s1))
     call YMMSL_Settings_free(s1)
     print *, '[       OK ] settings.create'
 end subroutine test_settings_create

@@ -1066,6 +1066,14 @@ Namespace YMMSL
     :r empty: Whether the object is empty.
     :rtype empty: logical
 
+.. f:function:: YMMSL_Settings_contains(self, key)
+
+    Returns ``.true.`` if the Settings object contains the given key.
+
+    :p YMMSL_Settings self: The object to inspect.
+    :r contains: Whether the given key exists in this Settings object.
+    :rtype contains: logical
+
 .. f:subroutine:: YMMSL_Settings_set(self, key, value)
 
     Sets a setting to the given value.

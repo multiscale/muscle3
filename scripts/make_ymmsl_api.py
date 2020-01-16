@@ -35,6 +35,7 @@ settings_desc = Class('Settings', [
         T(), 'get_as', [String('key')], True,
         cpp_chain_call=lambda **kwargs: 'self_p->at({}).as<{}>()'.format(
             kwargs['cpp_args'], kwargs['tpl_type'])),
+    MemFun(Bool(), 'contains', [String('key')]),
     ])
 
 

@@ -44,6 +44,7 @@ module ymmsl
     public :: YMMSL_Settings_get_as_logical
     public :: YMMSL_Settings_get_as_real8array
     public :: YMMSL_Settings_get_as_real8array2
+    public :: YMMSL_Settings_contains
 
     interface
 
@@ -239,6 +240,16 @@ module ymmsl
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
         end subroutine YMMSL_Settings_get_as_real8array2_
+
+        integer (c_int) function YMMSL_Settings_contains_( &
+                self, key, key_size) &
+                bind(C, name="YMMSL_Settings_contains_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            character, intent(in) :: key
+            integer (c_size_t), value, intent(in) :: key_size
+        end function YMMSL_Settings_contains_
 
     end interface
 
@@ -715,6 +726,21 @@ contains
         call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
         value = f_ret_ptr
     end subroutine YMMSL_Settings_get_as_real8array2
+
+    function YMMSL_Settings_contains(self, key)
+        implicit none
+        type(YMMSL_Settings), intent(in) :: self
+        character (len=*), intent(in) :: key
+        logical :: YMMSL_Settings_contains
+
+        integer (c_int) :: ret_val
+
+        ret_val = YMMSL_Settings_contains_( &
+            self%ptr, &
+            key, int(len(key), c_size_t))
+
+        YMMSL_Settings_contains = ret_val .ne. 0
+    end function YMMSL_Settings_contains
 
 
 end module ymmsl

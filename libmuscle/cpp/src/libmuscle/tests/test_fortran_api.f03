@@ -591,6 +591,14 @@ contains
         call YMMSL_Settings_set(s1, 'key5', ra1)
         call YMMSL_Settings_set(s1, 'key6', ra3)
 
+        call assert_true(YMMSL_Settings_contains(s1, 'key1'))
+        call assert_true(YMMSL_Settings_contains(s1, 'key2'))
+        call assert_true(YMMSL_Settings_contains(s1, 'key3'))
+        call assert_true(YMMSL_Settings_contains(s1, 'key4'))
+        call assert_true(YMMSL_Settings_contains(s1, 'key5'))
+        call assert_true(YMMSL_Settings_contains(s1, 'key6'))
+        call assert_false(YMMSL_Settings_contains(s1, 'nokey'))
+
         call assert_eq_character(YMMSL_Settings_get_as_character(s1, 'key1'), 'value1')
         call assert_eq_int8(YMMSL_Settings_get_as_int8(s1, 'key2'), 42424242424242_YMMSL_int8)
         call assert_eq_logical(YMMSL_Settings_get_as_logical(s1, 'key3'), .false.)

@@ -379,6 +379,13 @@ void YMMSL_Settings_get_as_real8array2_(std::intptr_t self, char * key, std::siz
     }
 }
 
+int YMMSL_Settings_contains_(std::intptr_t self, char * key, std::size_t key_size) {
+    Settings * self_p = reinterpret_cast<Settings *>(self);
+    std::string key_s(key, key_size);
+    bool result = self_p->contains(key_s);
+    return result ? 1 : 0;
+}
+
 }
 
 

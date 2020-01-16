@@ -19,6 +19,11 @@ settings_desc = Class('Settings', [
     EqualsOperator(Obj('Settings', 'other')),
     MemFun(Sizet('size'), 'size'),
     MemFun(Bool('empty'), 'empty'),
+    MemFunTmpl(
+        [String(), Int64t(), Double(), Bool(), VecDbl(), Vec2Dbl()],
+        Bool(), 'is_a', [String('key')], True,
+        cpp_chain_call=lambda **kwargs: 'self_p->at({}).is_a<{}>()'.format(
+            kwargs['cpp_args'], kwargs['tpl_type'])),
     IndexAssignmentOperator('set_character', [String('key'), String('value')]),
     IndexAssignmentOperator('set_int8', [String('key'), Int64t('value')]),
     IndexAssignmentOperator('set_real8', [String('key'), Double('value')]),

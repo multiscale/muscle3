@@ -1074,6 +1074,90 @@ Namespace YMMSL
     :r contains: Whether the given key exists in this Settings object.
     :rtype contains: logical
 
+.. f:function:: YMMSL_Settings_is_a_character(self, key, err_code, err_msg)
+
+    Return whether a value is of type character.
+
+    If the given key does not exist, then ``err_code`` will be set to
+    ``YMMSL_out_of_bounds`` and the result will be invalid.
+
+    :p YMMSL_Settings self: The Settings object to inspect.
+    :p character key: The name of the setting to check.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r is: ``.true.`` if the value is of type character.
+    :rtype is: logical
+
+.. f:function:: YMMSL_Settings_is_a_logical(self, key, err_code, err_msg)
+
+    Return whether a value is of type logical.
+
+    If the given key does not exist, then ``err_code`` will be set to
+    ``YMMSL_out_of_bounds`` and the result will be invalid.
+
+    :p YMMSL_Settings self: The Settings object to inspect.
+    :p character key: The name of the setting to check.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r is: ``.true.`` if the value is of type logical.
+    :rtype is: logical
+
+.. f:function:: YMMSL_Settings_is_a_int8(self, key, err_code, err_msg)
+
+    Return whether a value is of type ``YMMSL_int8``.
+
+    If the given key does not exist, then ``err_code`` will be set to
+    ``YMMSL_out_of_bounds`` and the result will be invalid.
+
+    :p YMMSL_Settings self: The Settings object to inspect.
+    :p character key: The name of the setting to check.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r is: ``.true.`` if the value is of type ``YMMSL_int8``.
+    :rtype is: logical
+
+.. f:function:: YMMSL_Settings_is_a_real8(self, key, err_code, err_msg)
+
+    Return whether a value is of type ``YMMSL_real8``.
+
+    If the given key does not exist, then ``err_code`` will be set to
+    ``YMMSL_out_of_bounds`` and the result will be invalid.
+
+    :p YMMSL_Settings self: The Settings object to inspect.
+    :p character key: The name of the setting to check.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r is: ``.true.`` if the value is of type ``YMMSL_real8``.
+    :rtype is: logical
+
+.. f:function:: YMMSL_Settings_is_a_real8array(self, key, err_code, err_msg)
+
+    Return whether a value is a 1D array of type ``YMMSL_real8``.
+
+    If the given key does not exist, then ``err_code`` will be set to
+    ``YMMSL_out_of_bounds`` and the result will be invalid.
+
+    :p YMMSL_Settings self: The Settings object to inspect.
+    :p character key: The name of the setting to check.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r is: ``.true.`` if the value is a 1D array of type ``YMMSL_real8``.
+    :rtype is: logical
+
+.. f:function:: YMMSL_Settings_is_a_real8array2(self, key, err_code, err_msg)
+
+    Return whether a value is a 2D array of type ``YMMSL_real8``.
+
+    If the given key does not exist, then ``err_code`` will be set to
+    ``YMMSL_out_of_bounds`` and the result will be invalid.
+
+    :p YMMSL_Settings self: The Settings object to inspect.
+    :p character key: The name of the setting to check.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r is: ``.true.`` if the value is a 2D array of type ``YMMSL_real8``.
+    :rtype is: logical
+
 .. f:subroutine:: YMMSL_Settings_set(self, key, value)
 
     Sets a setting to the given value.

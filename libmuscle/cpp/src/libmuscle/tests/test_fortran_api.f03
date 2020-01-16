@@ -613,6 +613,49 @@ contains
     end subroutine test_settings_set_get_as
 
 
+    subroutine test_settings_is_a
+        use ymmsl
+        implicit none
+
+        type(YMMSL_Settings) :: s1
+        real(YMMSL_real8), dimension(2) :: ra1
+        real(YMMSL_real8), dimension(3, 2) :: ra2
+        logical :: l1
+        integer :: err_code
+
+        print *, '[  RUN     ] settings.is_a'
+        s1 = YMMSL_Settings_create()
+        ra1 = (/1.0d0, 2.0d0/)
+        ra2 = reshape((/1.0d0, 2.0d0, 3.0d0, 4.0d0, 5.0d0, 6.0d0/), (/3, 2/))
+
+        call YMMSL_Settings_set(s1, 'key1', 'value1')
+        call YMMSL_Settings_set(s1, 'key2', 42424242424242_YMMSL_int8)
+        call YMMSL_Settings_set(s1, 'key3', .false.)
+        call YMMSL_Settings_set(s1, 'key4', 13.13d0)
+        call YMMSL_Settings_set(s1, 'key5', ra1)
+        call YMMSL_Settings_set(s1, 'key6', ra2)
+
+        call assert_true(YMMSL_Settings_is_a_character(s1, 'key1'))
+        call assert_true(YMMSL_Settings_is_a_int8(s1, 'key2'))
+        call assert_true(YMMSL_Settings_is_a_logical(s1, 'key3'))
+        call assert_true(YMMSL_Settings_is_a_real8(s1, 'key4'))
+        call assert_true(YMMSL_Settings_is_a_real8array(s1, 'key5'))
+        call assert_true(YMMSL_Settings_is_a_real8array2(s1, 'key6'))
+
+        call assert_false(YMMSL_Settings_is_a_int8(s1, 'key1'))
+        call assert_false(YMMSL_Settings_is_a_logical(s1, 'key1'))
+        call assert_false(YMMSL_Settings_is_a_real8(s1, 'key1'))
+        call assert_false(YMMSL_Settings_is_a_real8array(s1, 'key1'))
+        call assert_false(YMMSL_Settings_is_a_real8array2(s1, 'key1'))
+
+        l1 = YMMSL_Settings_is_a_logical(s1, 'nokey', err_code)
+        call assert_eq_integer(err_code, YMMSL_out_of_range)
+
+        call YMMSL_Settings_free(s1)
+        print *, '[       OK ] settings.is_a'
+    end subroutine test_settings_is_a
+
+
     subroutine test_settings_erase
         use ymmsl
         implicit none
@@ -661,6 +704,7 @@ contains
         call test_settings_set_get_as
         call test_settings_erase
         call test_settings_clear
+        call test_settings_is_a
     end subroutine test_settings
 end module tests
 

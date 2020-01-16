@@ -2,7 +2,7 @@
 
 from copy import copy
 import textwrap
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 
 error_codes = {
@@ -10,7 +10,8 @@ error_codes = {
         'runtime_error': 1,
         'domain_error': 2,
         'out_of_range': 3,
-        'logic_error': 4
+        'logic_error': 4,
+        'bad_cast': 5
         }
 
 
@@ -198,22 +199,24 @@ class VecDbl(Par):
     """Represents a vector of double parameter.
     """
     def tname(self) -> str:
-        return 'vecdbl'
+        return 'real8array'
 
     def fc_cpp_type(self) -> str:
         return 'std::vector<double>'
 
     def f_type(self) -> str:
         return self._regular_type(
-                'real (selected_real_kind(15)), dimension(:)')
+                'real ({}_real8), dimension(:)'.format(self.ns_prefix))
 
     def f_ret_type(self) -> str:
         return False, self._regular_type(
-                [('real (selected_real_kind(15)), dimension(:)', self.name)])
+                [('real ({}_real8), dimension(:)'.format(self.ns_prefix),
+                  self.name)])
 
     def f_aux_variables(self) -> List[Tuple[str, str]]:
-        return [('real (selected_real_kind(15)), pointer, dimension(:)',
-                 'f_ret_ptr')]
+        return [(
+            'real ({}_real8), pointer, dimension(:)'.format(self.ns_prefix),
+            'f_ret_ptr')]
 
     def f_chain_arg(self) -> str:
         return '{}, int(size({}), c_size_t)'.format(self.name, self.name)
@@ -227,7 +230,7 @@ class VecDbl(Par):
 
     def fi_type(self) -> str:
         return self._regular_type(
-                ['real (selected_real_kind(15)), dimension(*)',
+                ['real (c_double), dimension(*)'.format(self.ns_prefix),
                  ('integer (c_size_t), value', '_size')])
 
     def fi_ret_type(self) -> str:
@@ -262,22 +265,23 @@ class Vec2Dbl(Par):
     """Represents a vector of vector of double parameter.
     """
     def tname(self) -> str:
-        return 'vec2dbl'
+        return 'real8array2'
 
     def fc_cpp_type(self) -> str:
         return 'std::vector<std::vector<double>>'
 
     def f_type(self) -> str:
         return self._regular_type(
-                'real (selected_real_kind(15)), dimension(:,:)')
+                'real ({}_real8), dimension(:,:)'.format(self.ns_prefix))
 
     def f_ret_type(self) -> str:
         return False, self._regular_type(
-                [('real (selected_real_kind(15)), dimension(:,:)', self.name)])
+                [('real ({}_real8), dimension(:,:)'.format(self.ns_prefix),
+                  self.name)])
 
     def f_aux_variables(self) -> List[Tuple[str, str]]:
-        return [('real (selected_real_kind(15)), pointer, dimension(:,:)',
-                 'f_ret_ptr')]
+        return [('real ({}_real8), pointer, dimension(:,:)'.format(
+                self.ns_prefix), 'f_ret_ptr')]
 
     def f_chain_arg(self) -> str:
         return '{}, int(shape({}), c_size_t)'.format(self.name, self.name)
@@ -291,7 +295,7 @@ class Vec2Dbl(Par):
 
     def fi_type(self) -> str:
         return self._regular_type(
-                ['real (selected_real_kind(15)), dimension(*)',
+                ['real (c_double), dimension(*)',
                  ('integer (c_size_t), dimension(2)', '_shape')])
 
     def fi_ret_type(self) -> str:
@@ -895,11 +899,21 @@ class MemFun(Member):
         The _override arguments are for overriding the automatic code
         generation, which is sometimes needed for odd functions.
 
+        The ``cpp_chain_call`` argument takes a function. This function
+        will be passed ``cpp_func_name`` and ``cpp_args`` parameters of
+        type ``str``, containing the name of the C++ function to call
+        and a comma-separated list of arguments to use. Note that
+        ``cpp_func_name`` can be overridden using the argument of the
+        same name. If ``cpp_chain_call`` is not specified, a plain
+        member function call will be generated, so this is an override.
+
         Args:
             ret_type: Description of the return value.
             name: Name of the member.
             params: List of in/out parameters.
             may_throw: True iff this function can throw an exception.
+            cpp_func_name: Name of C++ member function to call.
+            cpp_chain_call: Function that produces the C++ chain call.
             fc_override: Custom Fortran-C wrapper function.
             f_override: Custom Fortran function.
         """
@@ -910,6 +924,8 @@ class MemFun(Member):
         self.name = name
         self.params = params if params else list()  # type: List[Par]
         self.may_throw = may_throw
+        self.cpp_chain_call = args.get(
+                'cpp_chain_call', self._default_cpp_chain_call)
         self.fc_override = args.get('fc_override')
         self.f_override = args.get('f_override')
         self.cpp_func_name = args.get('cpp_func_name', name)
@@ -1140,9 +1156,17 @@ class MemFun(Member):
                 self.ns_prefix, self.class_name, self.name)
         return '    public :: {}\n'.format(func_name)
 
+    @staticmethod
+    def _default_cpp_chain_call(**kwargs):
+        return 'self_p->{cpp_func_name}({cpp_args})'.format(**kwargs)
+
     def _fc_cpp_call(self) -> str:
         cpp_args = ', '.join([par.fc_cpp_arg() for par in self.params[1:]])
-        cpp_chain_call = 'self_p->{}({})'.format(self.cpp_func_name, cpp_args)
+        chain_args = {
+                'cpp_func_name': self.cpp_func_name,
+                'cpp_args': cpp_args
+                }
+        cpp_chain_call = self.cpp_chain_call(**chain_args)
         result = self.ret_type.fc_get_result(cpp_chain_call)
         return '    {};\n'.format(result)
 
@@ -1298,7 +1322,7 @@ class IndexAssignmentOperator(MemFun):
     This generates code suitable for assigning to a subobject accessed
     via the square brackets operator, i.e. self[key] = value.
     """
-    def __init__(self, name: str, param: Par, may_throw: bool
+    def __init__(self, name: str, param: Par, may_throw: bool=False
                  ) -> None:
         super().__init__(Void(), name, param, may_throw)
 
@@ -1377,11 +1401,22 @@ class MemFunTmplInstance(MemFun):
         The _override arguments are for overriding the automatic code
         generation, which is sometimes needed for odd functions.
 
+        The ``cpp_chain_call`` argument takes a function. This function
+        will be passed ``cpp_func_name``, ``tpl_type``, ``cpp_args``
+        parameters of type ``str``, containing the name of the C++
+        function to call and a comma-separated list of arguments to use.
+        Note that ``cpp_func_name`` can be overridden using the
+        argument of the same name. If ``cpp_chain_call`` is not
+        specified, a plain member function template call will be
+        generated, so this is an override.
+
         Args:
             ret_type: Description of the return value.
             name: Name of the template.
             targ: Template argument type.
             params: List of parameters.
+            cpp_func_name: Name of C++ member function to call.
+            cpp_chain_call: Function that produces the C++ chain call.
             fc_override: Custom Fortran-C wrapper function.
             f_override: Custom Fortran function.
         """
@@ -1391,10 +1426,19 @@ class MemFunTmplInstance(MemFun):
         self.tpl_name = name
         self.targ = targ
 
+    @staticmethod
+    def _default_cpp_chain_call(**kwargs):
+        return 'self_p->{cpp_func_name}<{tpl_type}>({cpp_args})'.format(
+                **kwargs)
+
     def _fc_cpp_call(self) -> str:
         cpp_args = ', '.join([par.fc_cpp_arg() for par in self.params[1:]])
-        cpp_chain_call = 'self_p->{}<{}>({})'.format(
-                self.tpl_name, self.targ.fc_cpp_type(), cpp_args)
+        chain_args = {
+                'cpp_func_name': self.tpl_name,
+                'cpp_args': cpp_args,
+                'tpl_type': self.targ.fc_cpp_type()
+                }
+        cpp_chain_call = self.cpp_chain_call(**chain_args)
         result = self.ret_type.fc_get_result(cpp_chain_call)
         return '    {};\n'.format(result)
 
@@ -1405,7 +1449,8 @@ class MemFunTmpl(Member):
                  ret_type: Par,
                  name: str,
                  params: Optional[List[Par]] = None,
-                 may_throw: bool = False
+                 may_throw: bool = False,
+                 **args
                  ) -> None:
         """Create a member function template description.
 
@@ -1413,11 +1458,22 @@ class MemFunTmpl(Member):
         parameter, designated by the special class T in the return
         value and/or parameters.
 
+        The ``cpp_chain_call`` argument takes a function. This function
+        will be passed ``cpp_func_name``, ``tpl_type``, ``cpp_args``
+        parameters of type ``str``, containing the name of the C++
+        function to call and a comma-separated list of arguments to use.
+        Note that ``cpp_func_name`` can be overridden using the
+        argument of the same name. If ``cpp_chain_call`` is not
+        specified, a plain member function template call will be
+        generated, so this is an override.
+
         Args:
             types: Types for which this template can be instantiated.
             ret_type: Description of the return value.
             name: Name of the member.
             params: List of in/out parameters.
+            cpp_func_name: Name of C++ member function to call.
+            cpp_chain_call: Function that produces the C++ chain call.
         """
         self.ns_prefix = None       # type: Optional[str]
         self.public = None          # type: Optional[bool]
@@ -1428,6 +1484,8 @@ class MemFunTmpl(Member):
         self.params = params if params else list()  # type: List[Par]
         self.may_throw = may_throw
         self.instances = list()     # type: List[MemFun]
+
+        fc_cpp_call = args.get('fc_cpp_call')
 
         # generate instances
         for typ in self.types:
@@ -1445,7 +1503,8 @@ class MemFunTmpl(Member):
                     instance_params.append(param)
 
             self.instances.append(MemFunTmplInstance(
-                instance_ret_type, name, typ, instance_params, may_throw))
+                instance_ret_type, name, typ, instance_params, may_throw,
+                **args))
 
 
     def set_class_name(self, class_name: str) -> None:

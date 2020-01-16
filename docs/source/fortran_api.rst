@@ -42,14 +42,21 @@ The names and types are as follows:
 
 +---------+-----------------+----------------------------------------+
 |  Name   | Kind parameter  | Description                            |
-+---------+-----------------+----------------------------------------+
++=========+=================+========================================+
 |  int1   | LIBMUSCLE_int1  | 8-bit signed 2's complement integer.   |
++---------+-----------------+----------------------------------------+
 |  int2   | LIBMUSCLE_int2  | 16-bit signed 2's complement integer.  |
++---------+-----------------+----------------------------------------+
 |  int4   | LIBMUSCLE_int4  | 32-bit signed 2's complement integer.  |
++---------+-----------------+----------------------------------------+
 |  int8   | LIBMUSCLE_int8  | 64-bit signed 2's complement integer.  |
++---------+-----------------+----------------------------------------+
 | integer |                 | Default integer.                       |
++---------+-----------------+----------------------------------------+
 |  size   | LIBMUSCLE_size  | Used for array indiced and sizes.      |
++---------+-----------------+----------------------------------------+
 |  real4  | LIBMUSCLE_real4 | 32-bit IEEE 754 floating point.        |
++---------+-----------------+----------------------------------------+
 |  real8  | LIBMUSCLE_real8 | 64-bit IEEE 754 floating point.        |
 +---------+-----------------+----------------------------------------+
 
@@ -1034,8 +1041,8 @@ Namespace YMMSL
 
     Compares two Settings objects for equality.
 
-    This returns ``.true.`` if and only if the two `YMMSL_Settings`_ objects
-    contain the same keys and values.
+    This returns ``.true.`` if and only if the two f:type:`YMMSL_Settings`_
+    objects contain the same keys and values.
 
     :p YMMSL_Settings self: The object to compare.
     :p YMMSL_Settings other: The object to compare to.
@@ -1058,3 +1065,102 @@ Namespace YMMSL
     :p YMMSL_Settings self: The object to inspect.
     :r empty: Whether the object is empty.
     :rtype empty: logical
+
+.. f:subroutine:: YMMSL_Settings_set(self, key, value)
+
+    Sets a setting to the given value.
+
+    If no setting with the given key exists, one is added, if one does,
+    it is overwritten.
+
+    ``value`` may be a character (string), a logical, an 8-byte integer (e.g.
+    ``YMMSL_int8``), an 8-byte real number (``YMMSL_real8``), or a one- or
+    two-dimensional arrays of 8-byte real numbers.
+
+    :p YMMSL_Settings self: The Settings object to modify.
+    :p character key: The name of the setting.
+    :p see_above value: The value to set the setting to.
+
+.. f:function:: YMMSL_Settings_get_as_character(self, key, err_code, err_msg)
+
+    Return the value of a character-typed setting.
+
+    If this setting is not currently set to a character-typed value,
+    then ``err_code`` will be set to ``YMMSL_bad_cast`` and the result
+    will be invalid.
+
+    :p character key: The name of the setting to get.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The value at the given index
+    :rtype value: character
+
+.. f:function:: YMMSL_Settings_get_as_logical(self, key, err_code, err_msg)
+
+    Return the value of a logical-typed setting.
+
+    If this setting is not currently set to a logical-typed value,
+    then ``err_code`` will be set to ``YMMSL_bad_cast`` and the result
+    will be invalid.
+
+    :p character key: The name of the setting to get.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The value at the given index
+    :rtype value: logical
+
+.. f:function:: YMMSL_Settings_get_as_int8(self, key, err_code, err_msg)
+
+    Return the value of an integer-typed setting.
+
+    If this setting is not currently set to a integer-typed value,
+    then ``err_code`` will be set to ``YMMSL_bad_cast`` and the result
+    will be invalid.
+
+    :p character key: The name of the setting to get.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The value at the given index (YMMSL_int8)
+    :rtype value: integer
+
+.. f:function:: YMMSL_Settings_get_as_real8(self, key, err_code, err_msg)
+
+    Return the value of a real-typed setting.
+
+    If this setting is not currently set to a real-typed value,
+    then ``err_code`` will be set to ``YMMSL_bad_cast`` and the result
+    will be invalid.
+
+    :p character key: The name of the setting to get.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The value at the given index (YMMSL_real8)
+    :rtype value: real
+
+.. f:subroutine:: YMMSL_Settings_get_as_real8array(self, key, value, err_code, err_msg)
+
+    Return the value of a setting that is a 1D array of reals.
+
+    If this setting is not currently set to a 1D array of reals-typed value,
+    then ``err_code`` will be set to ``YMMSL_bad_cast`` and ``value``
+    will be invalid.
+
+    :p character key: The name of the setting to get.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The value at the given index (dimension(:))
+    :rtype value: YMMSL_real8
+
+.. f:subroutine:: YMMSL_Settings_get_as_real8array2(self, key, value, err_code, err_msg)
+
+    Return the value of a setting that is a 2D array of reals.
+
+    If this setting is not currently set to a 2D array of reals-typed value,
+    then ``err_code`` will be set to ``YMMSL_bad_cast`` and ``value``
+    will be invalid.
+
+    :p character key: The name of the setting to get.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The value at the given index (dimension(:,:))
+    :rtype value: YMMSL_real8

@@ -74,6 +74,8 @@ Namespace LIBMUSCLE
 
 .. f:currentmodule:: libmuscle
 
+LIBMUSCLE_Data
+``````````````
 .. f:type:: LIBMUSCLE_Data
 
     Represents a libmuscle Data object. This is an opaque object that may be
@@ -1063,15 +1065,64 @@ Namespace LIBMUSCLE
     :r value: The value at the given index
     :rtype value: LIBMUSCLE_Data
 
+LIBMUSCLE_Message
+`````````````````
+.. f:type:: LIBMUSCLE_Message
+
+    Represents a message to be sent or that has been received.
+
+.. f:function:: LIBMUSCLE_Message_create(timestamp, data)
+
+    Create a new Message object.
+
+    :p LIBMUSCLE_real8 timestamp: The simulated time to which the data in this
+            message applies.
+    :p LIBMUSCLE_Data data: An object to send or that was received
+
+
+.. f:function:: LIBMUSCLE_Message_create(timestamp, next_timestamp, data)
+
+    Create a new Message object.
+
+    :p LIBMUSCLE_real8 timestamp: The simulated time to which the data in this
+            message applies.
+    :p LIBMUSCLE_real8 next_timestamp: Simulation time of the next message to
+            be transmitted.
+    :p LIBMUSCLE_Data data: An object to send or that was received
+
+
+.. f:function:: LIBMUSCLE_Message_create(timestamp, data, settings)
+
+    Create a new Message object.
+
+    :p LIBMUSCLE_real8 timestamp: The simulated time to which the data in this
+            message applies.
+    :p LIBMUSCLE_Data data: An object to send or that was received
+    :p YMMSL_Settings settings: Overlay settings to send or that were received.
+
+
+.. f:function:: LIBMUSCLE_Message_create(timestamp, next_timestamp, data, settings)
+
+    Create a new Message object.
+
+    :p LIBMUSCLE_real8 timestamp: The simulated time to which the data in this
+            message applies.
+    :p LIBMUSCLE_real8 next_timestamp: Simulation time of the next message to
+            be transmitted.
+    :p LIBMUSCLE_Data data: An object to send or that was received
+    :p YMMSL_Settings settings: Overlay settings to send or that were received.
+
 
 Namespace YMMSL
--------------------
+---------------
 
 .. f:module:: ymmsl
     :synopsis: Fortran module for ymmsl
 
 .. f:currentmodule:: ymmsl
 
+YMMSL_Settings
+``````````````
 .. f:type:: YMMSL_Settings
 
     Represents a libmuscle Settings object. These are used to send and receive

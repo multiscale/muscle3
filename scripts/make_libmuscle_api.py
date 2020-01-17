@@ -260,6 +260,24 @@ data_desc = Class('Data', [
     ])
 
 
+message_desc = Class('Message', [
+    Constructor([Double('timestamp'), Obj('Data', 'data')], 'create_td'),
+    Constructor(
+        [Double('timestamp'), Double('next_timestamp'), Obj('Data', 'data')],
+        'create_tnd'),
+    Constructor(
+        [Double('timestamp'), Obj('Data', 'data'), Obj('Settings', 'settings')],
+        'create_tds'),
+    Constructor(
+        [Double('timestamp'), Double('next_timestamp'), Obj('Data', 'data'),
+            Obj('Settings', 'settings')],
+        'create_tnds'),
+    OverloadSet('create', [
+        'create_td', 'create_tnd', 'create_tds', 'create_tnds']),
+    Destructor(),
+    ])
+
+
 cmdlineargs_desc = Class('CmdLineArgs', [
         Constructor([Int('count')]),
         Destructor(),
@@ -280,7 +298,8 @@ libmuscle_api_description = API(
         [
             'ymmsl'],
         [
-            Namespace('libmuscle', True, 'LIBMUSCLE', [], [data_desc]),
+            Namespace('libmuscle', True, 'LIBMUSCLE', [], [
+                data_desc, message_desc]),
             Namespace('libmuscle::impl::bindings', False,
                       'LIBMUSCLE_IMPL_BINDINGS', [], [cmdlineargs_desc]),
             Namespace('ymmsl', None, 'YMMSL', [], ymmsl_forward)

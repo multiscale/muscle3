@@ -9,6 +9,7 @@
 
 
 using libmuscle::Data;
+using libmuscle::Message;
 using libmuscle::impl::bindings::CmdLineArgs;
 using ymmsl::Settings;
 
@@ -1635,6 +1636,38 @@ std::intptr_t LIBMUSCLE_Data_value_(
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+}
+
+std::intptr_t LIBMUSCLE_Message_create_td_(double timestamp, std::intptr_t data) {
+    Data * data_p = reinterpret_cast<Data *>(data);
+    Message * result = new Message(timestamp, *data_p);
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Message_create_tnd_(double timestamp, double next_timestamp, std::intptr_t data) {
+    Data * data_p = reinterpret_cast<Data *>(data);
+    Message * result = new Message(timestamp, next_timestamp, *data_p);
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Message_create_tds_(double timestamp, std::intptr_t data, std::intptr_t settings) {
+    Data * data_p = reinterpret_cast<Data *>(data);
+    Settings * settings_p = reinterpret_cast<Settings *>(settings);
+    Message * result = new Message(timestamp, *data_p, *settings_p);
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Message_create_tnds_(double timestamp, double next_timestamp, std::intptr_t data, std::intptr_t settings) {
+    Data * data_p = reinterpret_cast<Data *>(data);
+    Settings * settings_p = reinterpret_cast<Settings *>(settings);
+    Message * result = new Message(timestamp, next_timestamp, *data_p, *settings_p);
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+void LIBMUSCLE_Message_free_(std::intptr_t self) {
+    Message * self_p = reinterpret_cast<Message *>(self);
+    delete self_p;
+    return;
 }
 
 std::intptr_t LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(int count) {

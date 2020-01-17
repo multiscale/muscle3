@@ -776,6 +776,43 @@ contains
         call test_settings_is_a
         call test_settings_key
     end subroutine test_settings
+
+    subroutine test_message_create
+        use libmuscle
+        use ymmsl
+        implicit none
+
+        type(LIBMUSCLE_Data) :: d1
+        type(LIBMUSCLE_Message) :: m1
+        type(YMMSL_Settings) :: s1
+
+        print *, '[  RUN     ] message.create'
+        d1 = LIBMUSCLE_Data_create()
+
+        m1 = LIBMUSCLE_Message_create(0.0d0, d1)
+        call LIBMUSCLE_Message_free(m1)
+
+        m1 = LIBMUSCLE_Message_create(0.0d0, 1.0d0, d1)
+        call LIBMUSCLE_Message_free(m1)
+
+        s1 = YMMSL_Settings_create()
+        m1 = LIBMUSCLE_Message_create(0.0d0, d1, s1)
+        call LIBMUSCLE_Message_free(m1)
+        call YMMSL_Settings_free(s1)
+
+        s1 = YMMSL_Settings_create()
+        m1 = LIBMUSCLE_Message_create(0.0d0, 10.0d0, d1, s1)
+        call LIBMUSCLE_Message_free(m1)
+        call YMMSL_Settings_free(s1)
+
+        call LIBMUSCLE_Data_free(d1)
+        print *, '[       OK ] message.create'
+    end subroutine test_message_create
+
+    subroutine test_message
+        call test_message_create
+    end subroutine test_message
+
 end module tests
 
 program test_fortran_api
@@ -787,6 +824,7 @@ program test_fortran_api
 
     call test_data
     call test_settings
+    call test_message
 
     print *, '[==========] Fortran API test'
     print *, '[  PASSED  ] Fortran API test'

@@ -108,6 +108,17 @@ module libmuscle
     public :: LIBMUSCLE_Data_set_item
     public :: LIBMUSCLE_Data_key
     public :: LIBMUSCLE_Data_value
+    type LIBMUSCLE_Message
+        integer (c_intptr_t) :: ptr
+    end type LIBMUSCLE_Message
+    public :: LIBMUSCLE_Message
+
+    public :: LIBMUSCLE_Message_create_td
+    public :: LIBMUSCLE_Message_create_tnd
+    public :: LIBMUSCLE_Message_create_tds
+    public :: LIBMUSCLE_Message_create_tnds
+    public :: LIBMUSCLE_Message_create
+    public :: LIBMUSCLE_Message_free
 
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_success = 0
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_runtime_error = 1
@@ -898,6 +909,54 @@ module libmuscle
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Data_value_
 
+        integer (c_intptr_t) function LIBMUSCLE_Message_create_td_( &
+                timestamp, data) &
+                bind(C, name="LIBMUSCLE_Message_create_td_")
+
+            use iso_c_binding
+            real (c_double), value, intent(in) :: timestamp
+            integer (c_intptr_t), value, intent(in) :: data
+        end function LIBMUSCLE_Message_create_td_
+
+        integer (c_intptr_t) function LIBMUSCLE_Message_create_tnd_( &
+                timestamp, next_timestamp, data) &
+                bind(C, name="LIBMUSCLE_Message_create_tnd_")
+
+            use iso_c_binding
+            real (c_double), value, intent(in) :: timestamp
+            real (c_double), value, intent(in) :: next_timestamp
+            integer (c_intptr_t), value, intent(in) :: data
+        end function LIBMUSCLE_Message_create_tnd_
+
+        integer (c_intptr_t) function LIBMUSCLE_Message_create_tds_( &
+                timestamp, data, settings) &
+                bind(C, name="LIBMUSCLE_Message_create_tds_")
+
+            use iso_c_binding
+            real (c_double), value, intent(in) :: timestamp
+            integer (c_intptr_t), value, intent(in) :: data
+            integer (c_intptr_t), value, intent(in) :: settings
+        end function LIBMUSCLE_Message_create_tds_
+
+        integer (c_intptr_t) function LIBMUSCLE_Message_create_tnds_( &
+                timestamp, next_timestamp, data, settings) &
+                bind(C, name="LIBMUSCLE_Message_create_tnds_")
+
+            use iso_c_binding
+            real (c_double), value, intent(in) :: timestamp
+            real (c_double), value, intent(in) :: next_timestamp
+            integer (c_intptr_t), value, intent(in) :: data
+            integer (c_intptr_t), value, intent(in) :: settings
+        end function LIBMUSCLE_Message_create_tnds_
+
+        subroutine LIBMUSCLE_Message_free_( &
+                self) &
+                bind(C, name="LIBMUSCLE_Message_free_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end subroutine LIBMUSCLE_Message_free_
+
     end interface
 
     interface LIBMUSCLE_Data_create
@@ -960,6 +1019,14 @@ module libmuscle
             LIBMUSCLE_Data_set_item_index_real4, &
             LIBMUSCLE_Data_set_item_index_real8, &
             LIBMUSCLE_Data_set_item_index_data
+    end interface
+
+    interface LIBMUSCLE_Message_create
+        module procedure &
+            LIBMUSCLE_Message_create_td, &
+            LIBMUSCLE_Message_create_tnd, &
+            LIBMUSCLE_Message_create_tds, &
+            LIBMUSCLE_Message_create_tnds
     end interface
 
 
@@ -3176,6 +3243,82 @@ contains
 
         LIBMUSCLE_Data_value%ptr = ret_val
     end function LIBMUSCLE_Data_value
+
+    function LIBMUSCLE_Message_create_td(timestamp, data)
+        implicit none
+        real (LIBMUSCLE_real8), intent(in) :: timestamp
+        type(LIBMUSCLE_Data), intent(in) :: data
+        type(LIBMUSCLE_Message) :: LIBMUSCLE_Message_create_td
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Message_create_td_( &
+            timestamp, &
+            data%ptr)
+
+        LIBMUSCLE_Message_create_td%ptr = ret_val
+    end function LIBMUSCLE_Message_create_td
+
+    function LIBMUSCLE_Message_create_tnd(timestamp, next_timestamp, data)
+        implicit none
+        real (LIBMUSCLE_real8), intent(in) :: timestamp
+        real (LIBMUSCLE_real8), intent(in) :: next_timestamp
+        type(LIBMUSCLE_Data), intent(in) :: data
+        type(LIBMUSCLE_Message) :: LIBMUSCLE_Message_create_tnd
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Message_create_tnd_( &
+            timestamp, &
+            next_timestamp, &
+            data%ptr)
+
+        LIBMUSCLE_Message_create_tnd%ptr = ret_val
+    end function LIBMUSCLE_Message_create_tnd
+
+    function LIBMUSCLE_Message_create_tds(timestamp, data, settings)
+        implicit none
+        real (LIBMUSCLE_real8), intent(in) :: timestamp
+        type(LIBMUSCLE_Data), intent(in) :: data
+        type(YMMSL_Settings), intent(in) :: settings
+        type(LIBMUSCLE_Message) :: LIBMUSCLE_Message_create_tds
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Message_create_tds_( &
+            timestamp, &
+            data%ptr, &
+            settings%ptr)
+
+        LIBMUSCLE_Message_create_tds%ptr = ret_val
+    end function LIBMUSCLE_Message_create_tds
+
+    function LIBMUSCLE_Message_create_tnds(timestamp, next_timestamp, data, settings)
+        implicit none
+        real (LIBMUSCLE_real8), intent(in) :: timestamp
+        real (LIBMUSCLE_real8), intent(in) :: next_timestamp
+        type(LIBMUSCLE_Data), intent(in) :: data
+        type(YMMSL_Settings), intent(in) :: settings
+        type(LIBMUSCLE_Message) :: LIBMUSCLE_Message_create_tnds
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Message_create_tnds_( &
+            timestamp, &
+            next_timestamp, &
+            data%ptr, &
+            settings%ptr)
+
+        LIBMUSCLE_Message_create_tnds%ptr = ret_val
+    end function LIBMUSCLE_Message_create_tnds
+
+    subroutine LIBMUSCLE_Message_free(self)
+        implicit none
+        type(LIBMUSCLE_Message), intent(in) :: self
+
+        call LIBMUSCLE_Message_free_( &
+            self%ptr)
+    end subroutine LIBMUSCLE_Message_free
 
 
     function LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create(count)

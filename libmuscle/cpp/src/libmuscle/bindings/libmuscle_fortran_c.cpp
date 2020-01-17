@@ -4,11 +4,13 @@
 
 #include <libmuscle/libmuscle.hpp>
 #include <libmuscle/bindings/cmdlineargs.hpp>
+#include <ymmsl/ymmsl.hpp>
 #include <stdexcept>
 
 
 using libmuscle::Data;
 using libmuscle::impl::bindings::CmdLineArgs;
+using ymmsl::Settings;
 
 
 extern "C" {
@@ -56,6 +58,12 @@ std::intptr_t LIBMUSCLE_Data_create_real4_(float value) {
 
 std::intptr_t LIBMUSCLE_Data_create_real8_(double value) {
     Data * result = new Data(value);
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_settings_(std::intptr_t value) {
+    Settings * value_p = reinterpret_cast<Settings *>(value);
+    Data * result = new Data(*value_p);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
@@ -234,6 +242,12 @@ int LIBMUSCLE_Data_is_a_byte_array_(std::intptr_t self) {
 int LIBMUSCLE_Data_is_nil_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_nil();
+    return result ? 1 : 0;
+}
+
+int LIBMUSCLE_Data_is_a_settings_(std::intptr_t self) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    bool result = self_p->is_a<Settings>();
     return result ? 1 : 0;
 }
 
@@ -604,6 +618,50 @@ double LIBMUSCLE_Data_as_real8_(std::intptr_t self, int * err_code, char ** err_
         *err_code = 0;
         double result = self_p->as<double>();
         return result;
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+std::intptr_t LIBMUSCLE_Data_as_settings_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        Settings * result = new Settings(self_p->as<Settings>());
+        return reinterpret_cast<std::intptr_t>(result);
     }
     catch (std::runtime_error const & e) {
         *err_code = 1;

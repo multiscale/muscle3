@@ -1767,14 +1767,15 @@ class Enum:
 
 
 class Namespace:
-    def __init__(self, name: str, public: bool, prefix: str, enums: List[Enum],
-                 classes: List[Class]) -> None:
+    def __init__(self, name: str, public: Optional[bool], prefix: str,
+                 enums: List[Enum], classes: List[Class]) -> None:
         """Create a namespace description.
 
         Args:
             name: Name of the namespace, full C++ name if nested.
             public: Whether to put the symbols in this namespace in the
-                    generated public API.
+                    generated public API. If None, do not generate at
+                    all.
             prefix: Short prefix to use in C/Fortran function names.
             enums: List of enums in this namespace.
             classes: List of classes in this namespace.
@@ -1806,6 +1807,8 @@ class Namespace:
         """
         result = ''
         public = ''
+        if self.public is None:
+            return result
         if self.public:
             public = ', public'
         for err_name, err_code in error_codes.items():
@@ -1833,6 +1836,9 @@ class Namespace:
         The interface block declares the C functions created by
         fortran_c_wrapper() so that Fortran can call them.
         """
+        if self.public is None:
+            return ''
+
         result = '    interface\n\n'
         for cls in self.classes:
             result += cls.fortran_interface()
@@ -1847,13 +1853,18 @@ class Namespace:
         """Generates the public Fortran functions for the module.
         """
         result = ''
+        if self.public is None:
+            return result
+
         for cls in self.classes:
             result += cls.fortran_functions()
         return result
 
 
 class API:
-    def __init__(self, name: str, headers: List[str], namespaces: List[Namespace]) -> None:
+    def __init__(
+            self, name: str, headers: List[str], uses: List[str],
+            namespaces: List[Namespace]) -> None:
         """Create an API description.
 
         The API name will be used as module name in Fortran.
@@ -1861,10 +1872,12 @@ class API:
         Args:
             name: Name of the API.
             headers: Headers to include in the Fortran C wrapper file.
+            uses: List of Fortran modules used by this module.
             namespaces: Namespaces making up the API.
         """
         self.name = name
         self.headers = headers
+        self.uses = uses
         self.namespaces = namespaces
 
         # set ns_prefix throughout the description
@@ -1900,6 +1913,9 @@ class API:
         result = banner('!')
         result += 'module {}\n'.format(self.name)
         result += '    use iso_c_binding\n'
+        for dep in self.uses:
+            result += '    use {}\n'.format(dep)
+        result += '\n'
         result += '    private\n\n'
 
         for ns in self.namespaces:

@@ -22,11 +22,12 @@ data_desc = Class('Data', [
     Constructor([Int64t('value')], 'create_int8'),
     Constructor([Float('value')], 'create_real4'),
     Constructor([Double('value')], 'create_real8'),
+    Constructor([Obj('Settings', 'value')], 'create_settings'),
     Constructor([Obj('Data', 'value')], 'create_copy'),
     OverloadSet('create', [
         'create_nil', 'create_logical', 'create_character', 'create_int1',
         'create_int2', 'create_int4', 'create_int8', 'create_real4',
-        'create_real8', 'create_copy']),
+        'create_real8', 'create_settings', 'create_copy']),
     Destructor(),
     NamedConstructor([], 'dict'),
     NamedConstructor([], 'list'),
@@ -74,11 +75,15 @@ data_desc = Class('Data', [
     MemFun(Bool(), 'is_a_list'),
     MemFun(Bool(), 'is_a_byte_array'),
     MemFun(Bool(), 'is_nil'),
+    MemFun(Bool(), 'is_a_settings', [], False,
+            cpp_chain_call=lambda **kwargs: 'self_p->is_a<Settings>()'),
     MemFun(Sizet(), 'size'),
     MemFunTmpl(
         [Bool(), String(), Int(), Char(), Int16t(), Int32t(), Int64t(),
             Float(), Double()],
         T(), 'as', [], True),
+    MemFun(Obj('Settings', 'value'), 'as_settings', [], True,
+            cpp_chain_call=lambda **kwargs: 'self_p->as<Settings>()'),
     MemFun(Bytes('data'), 'as_byte_array', [], True,
         fc_override=(
             'void LIBMUSCLE_Data_as_byte_array_(\n'
@@ -262,16 +267,24 @@ cmdlineargs_desc = Class('CmdLineArgs', [
         ])
 
 
+ymmsl_forward = [Class('Settings', [])]
+
+
 libmuscle_api_description = API(
         'libmuscle',
         [
             'libmuscle/libmuscle.hpp',
             'libmuscle/bindings/cmdlineargs.hpp',
+            'ymmsl/ymmsl.hpp',
             'stdexcept'],
+        [
+            'ymmsl'],
         [
             Namespace('libmuscle', True, 'LIBMUSCLE', [], [data_desc]),
             Namespace('libmuscle::impl::bindings', False,
-                      'LIBMUSCLE_IMPL_BINDINGS', [], [cmdlineargs_desc])])
+                      'LIBMUSCLE_IMPL_BINDINGS', [], [cmdlineargs_desc]),
+            Namespace('ymmsl', None, 'YMMSL', [], ymmsl_forward)
+        ])
 
 
 if __name__ == '__main__':

@@ -287,6 +287,37 @@ contains
 
     end subroutine test_data_basic_types
 
+    subroutine test_data_settings
+        use ymmsl
+        use libmuscle
+
+        implicit none
+        integer :: err_code
+        type(YMMSL_Settings) :: s1, s2, s3
+        type(LIBMUSCLE_Data) :: d1, d2
+
+        print *, '[  RUN     ] data.settings'
+        s1 = YMMSL_Settings_create()
+        call YMMSL_Settings_set(s1, 'key', 'value')
+        d1 = LIBMUSCLE_Data_create(s1)
+        d2 = LIBMUSCLE_Data_create(1000)
+
+        call assert_true(LIBMUSCLE_Data_is_a_settings(d1))
+        call assert_false(LIBMUSCLE_Data_is_a_settings(d2))
+
+        s2 = LIBMUSCLE_Data_as_settings(d1, err_code)
+        call assert_eq_integer(err_code, LIBMUSCLE_success)
+        call assert_eq_character(YMMSL_Settings_get_as_character(s2, 'key'), 'value')
+
+        s3 = LIBMUSCLE_Data_as_settings(d2, err_code)
+        call assert_eq_integer(err_code, LIBMUSCLE_runtime_error)
+
+        call YMMSL_Settings_free(s1)
+        call YMMSL_Settings_free(s2)
+        call LIBMUSCLE_Data_free(d1)
+        print *, '[       OK ] data.settings'
+    end subroutine test_data_settings
+
     subroutine test_data_copy_assign
         use libmuscle
 
@@ -515,6 +546,7 @@ contains
         call test_data_dict
         call test_data_list
         call test_data_byte_array
+        call test_data_settings
     end subroutine test_data
 
 

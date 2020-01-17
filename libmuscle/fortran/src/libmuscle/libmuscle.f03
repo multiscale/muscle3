@@ -4,6 +4,8 @@
 
 module libmuscle
     use iso_c_binding
+    use ymmsl
+
     private
 
     integer, parameter, public :: LIBMUSCLE_success = 0
@@ -35,6 +37,7 @@ module libmuscle
     public :: LIBMUSCLE_Data_create_int8
     public :: LIBMUSCLE_Data_create_real4
     public :: LIBMUSCLE_Data_create_real8
+    public :: LIBMUSCLE_Data_create_settings
     public :: LIBMUSCLE_Data_create_copy
     public :: LIBMUSCLE_Data_create
     public :: LIBMUSCLE_Data_free
@@ -68,6 +71,7 @@ module libmuscle
     public :: LIBMUSCLE_Data_is_a_list
     public :: LIBMUSCLE_Data_is_a_byte_array
     public :: LIBMUSCLE_Data_is_nil
+    public :: LIBMUSCLE_Data_is_a_settings
     public :: LIBMUSCLE_Data_size
     public :: LIBMUSCLE_Data_as_logical
     public :: LIBMUSCLE_Data_as_character
@@ -78,6 +82,7 @@ module libmuscle
     public :: LIBMUSCLE_Data_as_int8
     public :: LIBMUSCLE_Data_as_real4
     public :: LIBMUSCLE_Data_as_real8
+    public :: LIBMUSCLE_Data_as_settings
     public :: LIBMUSCLE_Data_as_byte_array
     public :: LIBMUSCLE_Data_get_item_by_key
     public :: LIBMUSCLE_Data_get_item_by_index
@@ -122,6 +127,7 @@ module libmuscle
     type LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs
         integer (c_intptr_t) :: ptr
     end type LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs
+
 
 
     interface
@@ -197,6 +203,14 @@ module libmuscle
             use iso_c_binding
             real (c_double), value, intent(in) :: value
         end function LIBMUSCLE_Data_create_real8_
+
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_settings_( &
+                value) &
+                bind(C, name="LIBMUSCLE_Data_create_settings_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: value
+        end function LIBMUSCLE_Data_create_settings_
 
         integer (c_intptr_t) function LIBMUSCLE_Data_create_copy_( &
                 value) &
@@ -447,6 +461,14 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_nil_
 
+        integer (c_int) function LIBMUSCLE_Data_is_a_settings_( &
+                self) &
+                bind(C, name="LIBMUSCLE_Data_is_a_settings_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_Data_is_a_settings_
+
         integer (c_size_t) function LIBMUSCLE_Data_size_( &
                 self) &
                 bind(C, name="LIBMUSCLE_Data_size_")
@@ -555,6 +577,17 @@ module libmuscle
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Data_as_real8_
+
+        integer (c_intptr_t) function LIBMUSCLE_Data_as_settings_( &
+                self, err_code, err_msg, err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_as_settings_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end function LIBMUSCLE_Data_as_settings_
 
         subroutine LIBMUSCLE_Data_as_byte_array_( &
                 self, ret_val, ret_val_size, err_code, err_msg, err_msg_len) &
@@ -878,6 +911,7 @@ module libmuscle
             LIBMUSCLE_Data_create_int8, &
             LIBMUSCLE_Data_create_real4, &
             LIBMUSCLE_Data_create_real8, &
+            LIBMUSCLE_Data_create_settings, &
             LIBMUSCLE_Data_create_copy
     end interface
 
@@ -959,6 +993,7 @@ module libmuscle
         end subroutine LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg_
 
     end interface
+
 
 
 contains
@@ -1078,6 +1113,19 @@ contains
 
         LIBMUSCLE_Data_create_real8%ptr = ret_val
     end function LIBMUSCLE_Data_create_real8
+
+    function LIBMUSCLE_Data_create_settings(value)
+        implicit none
+        type(YMMSL_Settings), intent(in) :: value
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_settings
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_settings_( &
+            value%ptr)
+
+        LIBMUSCLE_Data_create_settings%ptr = ret_val
+    end function LIBMUSCLE_Data_create_settings
 
     function LIBMUSCLE_Data_create_copy(value)
         implicit none
@@ -1429,6 +1477,19 @@ contains
 
         LIBMUSCLE_Data_is_nil = ret_val .ne. 0
     end function LIBMUSCLE_Data_is_nil
+
+    function LIBMUSCLE_Data_is_a_settings(self)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        logical :: LIBMUSCLE_Data_is_a_settings
+
+        integer (c_int) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_is_a_settings_( &
+            self%ptr)
+
+        LIBMUSCLE_Data_is_a_settings = ret_val .ne. 0
+    end function LIBMUSCLE_Data_is_a_settings
 
     function LIBMUSCLE_Data_size(self)
         implicit none
@@ -1893,6 +1954,56 @@ contains
 
         LIBMUSCLE_Data_as_real8 = ret_val
     end function LIBMUSCLE_Data_as_real8
+
+    function LIBMUSCLE_Data_as_settings(self, err_code, err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        type(YMMSL_Settings) :: LIBMUSCLE_Data_as_settings
+
+        integer (c_intptr_t) :: ret_val
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        ret_val = LIBMUSCLE_Data_as_settings_( &
+            self%ptr, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        LIBMUSCLE_Data_as_settings%ptr = ret_val
+    end function LIBMUSCLE_Data_as_settings
 
     subroutine LIBMUSCLE_Data_as_byte_array(self, data, err_code, err_msg)
         implicit none
@@ -3099,6 +3210,7 @@ contains
             i, &
             arg, int(len(arg), c_size_t))
     end subroutine LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg
+
 
 
 end module libmuscle

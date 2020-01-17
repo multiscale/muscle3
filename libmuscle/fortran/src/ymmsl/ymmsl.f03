@@ -4,6 +4,7 @@
 
 module ymmsl
     use iso_c_binding
+
     private
 
     integer, parameter, public :: YMMSL_success = 0

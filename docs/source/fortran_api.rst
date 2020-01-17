@@ -136,6 +136,14 @@ Namespace LIBMUSCLE
     :r obj: The new Data object
     :rtype obj: LIBMUSCLE_Data
 
+.. f:function:: LIBMUSCLE_Data_create(value)
+
+    Creates a Data object containing a :f:type:`YMMSL_Settings` object.
+
+    :p YMMSL_Settings value: The Settings value to represent.
+    :r obj: The new Data object.
+    :rtype obj: LIBMUSCLE_Data
+
 .. f:function:: LIBMUSCLE_Data_create_dict()
 
     Creates a Data object containing an empty dictionary.
@@ -311,6 +319,14 @@ Namespace LIBMUSCLE
 
     :p LIBMUSCLE_Data self: The Data object to inspect.
     :r is: True if the object contains a double precision float value.
+    :rtype is: logical
+
+.. f:function:: LIBMUSCLE_Data_is_a_settings(self)
+
+    Determine whether the Data object contains a Settings value.
+
+    :p LIBMUSCLE_Data self: The Data object to inspect.
+    :r is: True if the object contains a Settings value.
     :rtype is: logical
 
 .. f:function:: LIBMUSCLE_Data_is_nil(self)
@@ -754,6 +770,52 @@ Namespace LIBMUSCLE
     :p character err_msg: An error message output (allocatable, optional).
     :r value: The value.
     :rtype value: real(kind=LIBMUSCLE_real8)
+
+.. f:function:: LIBMUSCLE_Data_as_settings(self, err_code, err_msg)
+
+    Access a :f:type:`YMMSL_Settings` value.
+
+    You can use :f:func:`LIBMUSCLE_Data_is_a_settings` to ascertain that the
+    Data object contains a Settings-type value.
+
+    If the Data object does not contain a :f:type:`YMMSL_Settings` value, then
+    an error message will be printed and execution will be halted.
+
+    Alternatively, you can pass an argument for ``err_code``, or for both
+    ``err_code`` and ``err_msg``, to catch the error.
+
+    If ``err_code`` equals ``LIBMUSCLE_success`` after the call, then the
+    returned value is the value held in this Data object. If it equals
+    ``LIBMUSCLE_runtime_error``, the Data value did not contain a Settings
+    value. If you passed an ``err_msg`` argument as well, then the passed
+    variable will contain an appropriate error message in case of error, and
+    needs to be deallocated (using ``deallocate()``) when you're done with it.
+
+    Example:
+
+    .. code-block:: fortran
+
+        type(LIBMUSCLE_Data) :: mydata
+        type(YMMSL_Settings) :: settings1, settings2
+
+        ! Create a Settings object
+        settings1 = YMMSL_Settings_create()
+        ! Create a data object containing the Settings value
+        mydata = LIBMUSCLE_Data_create(settings1)
+        ! Retrieve the value
+        settings2 = LIBMUSCLE_Data_as_settings(mydata)
+        ! Free the data object and the settings objects
+        call YMMSL_Settings_free(settings1)
+        call YMMSL_Settings_free(settings2)
+        call LIBMUSCLE_Data_free(mydata)
+
+    See :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
+
+    :p LIBMUSCLE_Data self: The Data object to get a Settings value out of.
+    :p integer err_code: An error code output (optional)
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The value.
+    :rtype value: type(YMMSL_Settings)
 
 .. f:subroutine:: LIBMUSCLE_Data_as_byte_array(self, buf, err_code, err_msg)
 

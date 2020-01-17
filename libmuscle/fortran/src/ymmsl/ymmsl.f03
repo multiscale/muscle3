@@ -53,6 +53,7 @@ module ymmsl
     public :: YMMSL_Settings_contains
     public :: YMMSL_Settings_erase
     public :: YMMSL_Settings_clear
+    public :: YMMSL_Settings_key
 
     interface
 
@@ -354,6 +355,20 @@ module ymmsl
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end subroutine YMMSL_Settings_clear_
+
+        subroutine YMMSL_Settings_key_( &
+                self, i, ret_val, ret_val_size, err_code, err_msg, err_msg_len) &
+                bind(C, name="YMMSL_Settings_key_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_size_t), value, intent(in) :: i
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_size_t), intent(out) :: ret_val_size
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine YMMSL_Settings_key_
 
     end interface
 
@@ -1179,6 +1194,67 @@ contains
         call YMMSL_Settings_clear_( &
             self%ptr)
     end subroutine YMMSL_Settings_clear
+
+    function YMMSL_Settings_key(self, i, err_code, err_msg)
+        implicit none
+        type(YMMSL_Settings), intent(in) :: self
+        integer (YMMSL_size), intent(in) :: i
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        character(:), allocatable :: YMMSL_Settings_key
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t) :: ret_val_size
+        character (c_char), dimension(:), pointer :: f_ret_ptr
+        integer :: i_loop
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call YMMSL_Settings_key_( &
+            self%ptr, &
+            i, &
+            ret_val, &
+            ret_val_size, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
+        allocate (character(ret_val_size) :: YMMSL_Settings_key)
+        do i_loop = 1, ret_val_size
+            YMMSL_Settings_key(i_loop:i_loop) = f_ret_ptr(i_loop)
+        end do
+    end function YMMSL_Settings_key
 
 
 end module ymmsl

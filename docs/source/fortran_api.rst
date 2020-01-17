@@ -1273,3 +1273,18 @@ Namespace YMMSL
     After calling this subroutine, the Settings object will be empty.
 
     :p YMMSL_Settings self: The Settings object to modify.
+
+.. f:function:: YMMSL_Settings_key(self, i, err_code, err_msg)
+
+    Get the i'th key in this Settings object.
+
+    Note that any changes to the Settings object may change the order of the
+    keys, so this is only stable if the Settings object is not changed.
+
+    Parameter ``i`` must be in the range [1..N], where N is the number of items
+    in the Settings object (see :f:func:`YMMSL_Settings_size`).
+
+    :p YMMSL_Settings self: The Settings object to get a key of.
+    :p YMMSL_size i: The index of the key to retrieve.
+    :r key: The name of the i'th key (allocatable)
+    :rtype key: character

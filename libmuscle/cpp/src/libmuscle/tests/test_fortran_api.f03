@@ -673,6 +673,7 @@ contains
         print *, '[       OK ] settings.erase'
     end subroutine test_settings_erase
 
+
     subroutine test_settings_clear
         use ymmsl
         implicit none
@@ -697,6 +698,42 @@ contains
         print *, '[       OK ] settings.clear'
     end subroutine test_settings_clear
 
+
+    subroutine test_settings_key
+        use ymmsl
+        implicit none
+
+        type(YMMSL_Settings) :: s1
+        character(len=:), allocatable :: c1, c2, err_msg
+        integer :: err_code
+
+        print *, '[  RUN     ] settings.key'
+        s1 = YMMSL_Settings_create()
+        call YMMSL_Settings_set(s1, 'key1', 'value')
+        call YMMSL_Settings_set(s1, 'key2', 42_YMMSL_int8)
+
+        c1 = YMMSL_Settings_key(s1, 1_YMMSL_size, err_code)
+        call assert_eq_integer(err_code, YMMSL_success)
+        c2 = YMMSL_Settings_key(s1, 2_YMMSL_size, err_code)
+        call assert_eq_integer(err_code, YMMSL_success)
+
+        call assert_true((c1 .eq. 'key1') .or. (c1 .eq. 'key2'))
+        call assert_true((c2 .eq. 'key1') .or. (c2 .eq. 'key2'))
+        call assert_true(c1 .ne. c2)
+
+        c1 = YMMSL_Settings_key(s1, 0_YMMSL_size, err_code, err_msg)
+        call assert_eq_integer(err_code, YMMSL_out_of_range)
+
+        c1 = YMMSL_Settings_key(s1, 3_YMMSL_size, err_code)
+        call assert_eq_integer(err_code, YMMSL_out_of_range)
+
+        deallocate(c1)
+        deallocate(c2)
+        call YMMSL_Settings_free(s1)
+        print *, '[       OK ] settings.key'
+    end subroutine test_settings_key
+
+
     subroutine test_settings
         call test_settings_create
         call test_settings_equals
@@ -705,6 +742,7 @@ contains
         call test_settings_erase
         call test_settings_clear
         call test_settings_is_a
+        call test_settings_key
     end subroutine test_settings
 end module tests
 

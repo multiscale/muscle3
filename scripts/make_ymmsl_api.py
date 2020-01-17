@@ -43,6 +43,30 @@ settings_desc = Class('Settings', [
     MemFun(Bool(), 'contains', [String('key')]),
     MemFun(Sizet('removed'), 'erase', [String('key')]),
     MemFun(Void(), 'clear'),
+    MemFun(String(), 'key', [Sizet('i')], True,
+        fc_override=(
+            'void YMMSL_Settings_key_(\n'
+            '        std::intptr_t self, std::size_t i,\n'
+            '        char ** ret_val, std::size_t * ret_val_size,\n'
+            '        int * err_code,\n'
+            '        char ** err_msg, std::size_t * err_msg_len\n'
+            ') {\n'
+            '    Settings * self_p = reinterpret_cast<Settings *>(self);\n'
+            '    if (i == 0 || i > self_p->size()) {\n'
+            '       *err_code = 3;\n'
+            '       *err_msg = const_cast<char*>("Key index out of range.");\n'
+            '       *err_msg_len = strlen(*err_msg);\n'
+            '       return;\n'
+            '    }\n'
+            '    *err_code = 0;\n'
+            '    static std::string result;\n'
+            '    result = std::string(std::next(self_p->begin(), i-1)->first);\n'
+            '    *ret_val = const_cast<char*>(result.c_str());\n'
+            '    *ret_val_size = result.size();\n'
+            '    return;\n'
+            '}\n\n'
+            )
+        ),
     ])
 
 
@@ -50,6 +74,7 @@ ymmsl_api_description = API(
         'ymmsl',
         [
             'ymmsl/ymmsl.hpp',
+            'cstring',
             'stdexcept'],
         [
             Namespace('ymmsl', True, 'YMMSL', [], [settings_desc]),

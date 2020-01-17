@@ -3,6 +3,7 @@
 
 
 #include <ymmsl/ymmsl.hpp>
+#include <cstring>
 #include <stdexcept>
 
 
@@ -666,6 +667,27 @@ std::size_t YMMSL_Settings_erase_(std::intptr_t self, char * key, std::size_t ke
 void YMMSL_Settings_clear_(std::intptr_t self) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     self_p->clear();
+    return;
+}
+
+void YMMSL_Settings_key_(
+        std::intptr_t self, std::size_t i,
+        char ** ret_val, std::size_t * ret_val_size,
+        int * err_code,
+        char ** err_msg, std::size_t * err_msg_len
+) {
+    Settings * self_p = reinterpret_cast<Settings *>(self);
+    if (i == 0 || i > self_p->size()) {
+       *err_code = 3;
+       *err_msg = const_cast<char*>("Key index out of range.");
+       *err_msg_len = strlen(*err_msg);
+       return;
+    }
+    *err_code = 0;
+    static std::string result;
+    result = std::string(std::next(self_p->begin(), i-1)->first);
+    *ret_val = const_cast<char*>(result.c_str());
+    *ret_val_size = result.size();
     return;
 }
 

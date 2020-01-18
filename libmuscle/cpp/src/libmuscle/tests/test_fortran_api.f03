@@ -809,8 +809,36 @@ contains
         print *, '[       OK ] message.create'
     end subroutine test_message_create
 
+    subroutine test_message_timestamps
+        use libmuscle
+        implicit none
+
+        type(LIBMUSCLE_Data) :: d1
+        type(LIBMUSCLE_Message) :: m1
+
+        print *, '[  RUN     ] message.timestamps'
+        d1 = LIBMUSCLE_Data_create()
+        m1 = LIBMUSCLE_Message_create(23.4d0, d1)
+
+        call assert_eq_real8(LIBMUSCLE_Message_timestamp(m1), 23.4d0)
+        call LIBMUSCLE_Message_set_timestamp(m1, 12.8d0)
+        call assert_eq_real8(LIBMUSCLE_Message_timestamp(m1), 12.8d0)
+
+        call assert_false(LIBMUSCLE_Message_has_next_timestamp(m1))
+        call LIBMUSCLE_Message_set_next_timestamp(m1, 101.0d0)
+        call assert_true(LIBMUSCLE_Message_has_next_timestamp(m1))
+        call assert_eq_real8(LIBMUSCLE_Message_next_timestamp(m1), 101.0d0)
+        call LIBMUSCLE_Message_unset_next_timestamp(m1)
+        call assert_false(LIBMUSCLE_Message_has_next_timestamp(m1))
+
+        call LIBMUSCLE_Message_free(m1)
+        call LIBMUSCLE_Data_free(d1)
+        print *, '[       OK ] message.timestamps'
+    end subroutine test_message_timestamps
+
     subroutine test_message
         call test_message_create
+        call test_message_timestamps
     end subroutine test_message
 
 end module tests

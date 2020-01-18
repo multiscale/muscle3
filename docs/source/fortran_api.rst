@@ -1071,6 +1071,17 @@ LIBMUSCLE_Message
 
     Represents a message to be sent or that has been received.
 
+    Messages have four attributes: A timestamp, an optional next timestamp,
+    some data, and optional overlay settings.
+
+    The timestamp holds the simulation time (not wallclock time) to which the
+    data in this message corresponds. If a next timestamp is set, then that
+    represents the simulation time of the next timestap of the model that
+    generated the message. The data is the content of the message, and is
+    model-specific. Overlay settings may be passed along with a message, and
+    will be overlaid onto the receiving model's settings; this is normally only
+    used by special simulation components.
+
 .. f:function:: LIBMUSCLE_Message_create(timestamp, data)
 
     Create a new Message object.
@@ -1078,7 +1089,6 @@ LIBMUSCLE_Message
     :p LIBMUSCLE_real8 timestamp: The simulated time to which the data in this
             message applies.
     :p LIBMUSCLE_Data data: An object to send or that was received
-
 
 .. f:function:: LIBMUSCLE_Message_create(timestamp, next_timestamp, data)
 
@@ -1090,7 +1100,6 @@ LIBMUSCLE_Message
             be transmitted.
     :p LIBMUSCLE_Data data: An object to send or that was received
 
-
 .. f:function:: LIBMUSCLE_Message_create(timestamp, data, settings)
 
     Create a new Message object.
@@ -1099,7 +1108,6 @@ LIBMUSCLE_Message
             message applies.
     :p LIBMUSCLE_Data data: An object to send or that was received
     :p YMMSL_Settings settings: Overlay settings to send or that were received.
-
 
 .. f:function:: LIBMUSCLE_Message_create(timestamp, next_timestamp, data, settings)
 
@@ -1111,6 +1119,61 @@ LIBMUSCLE_Message
             be transmitted.
     :p LIBMUSCLE_Data data: An object to send or that was received
     :p YMMSL_Settings settings: Overlay settings to send or that were received.
+
+.. f:function:: LIBMUSCLE_Message_timestamp(self)
+
+    Returns the timestamp associated with the message.
+
+    This is the simulated time to which the data in this message applies.
+
+    :r timestamp: The timestamp.
+    :rtype timestamp: LIBMUSCLE_real8
+
+.. f:subroutine:: LIBMUSCLE_Message_set_timestamp(self, timestamp)
+
+    Sets the timestamp associated with this message.
+
+    This should be the simulated time to which the data in this message applies.
+
+    :p LIBMUSCLE_Message self: The Message object to modify.
+    :p timestamp: The timestamp to set.
+
+.. f:function:: LIBMUSCLE_Message_has_next_timestamp(self)
+
+    Returns whether the message has a next timestamp set.
+
+    :p LIBMUSCLE_Message self: The Message object to inspect.
+    :r has_next_timestamp: ``.true.`` if there's a next timestamp.
+    :rtype has_next_timestamp: logical
+
+.. f:function:: LIBMUSCLE_Message_next_timestamp(self)
+
+    Returns the message's next timestamp.
+
+    Only call if :f:func:`LIBMUSCLE_Message_has_next_timestamp` returns
+    ``.true.``.
+
+    :p LIBMUSCLE_Message self: The Message object to inspect.
+    :r next_timestamp: The next timestamp for this message.
+    :rtype next_timestamp: LIBMUSCLE_real8
+
+.. f:subroutine:: LIBMUSCLE_Message_set_next_timestamp(self, timestamp)
+
+    Sets the next timestamp associated with this message.
+
+    This should be the simulated time of the next timestep of the model.
+
+    :p LIBMUSCLE_Message self: The Message object to modify.
+    :p timestamp: The timestamp to set.
+
+.. f:subroutine:: LIBMUSCLE_Message_unset_next_timestamp(self)
+
+    Unsets the next timestamp associated with this message.
+
+    After calling this, :f:func:`LIBMUSCLE_Message_has_next_timestamp` will
+    return ``.false.``.
+
+    :p LIBMUSCLE_Message self: The Message object to modify.
 
 
 Namespace YMMSL

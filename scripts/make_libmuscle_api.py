@@ -275,6 +275,12 @@ message_desc = Class('Message', [
     OverloadSet('create', [
         'create_td', 'create_tnd', 'create_tds', 'create_tnds']),
     Destructor(),
+    MemFun(Double(), 'timestamp'),
+    MemFun(Void(), 'set_timestamp', [Double('timestamp')]),
+    MemFun(Bool(), 'has_next_timestamp'),
+    MemFun(Double(), 'next_timestamp'),
+    MemFun(Void(), 'set_next_timestamp', [Double('next_timestamp')]),
+    MemFun(Void(), 'unset_next_timestamp')
     ])
 
 

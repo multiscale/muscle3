@@ -119,6 +119,12 @@ module libmuscle
     public :: LIBMUSCLE_Message_create_tnds
     public :: LIBMUSCLE_Message_create
     public :: LIBMUSCLE_Message_free
+    public :: LIBMUSCLE_Message_timestamp
+    public :: LIBMUSCLE_Message_set_timestamp
+    public :: LIBMUSCLE_Message_has_next_timestamp
+    public :: LIBMUSCLE_Message_next_timestamp
+    public :: LIBMUSCLE_Message_set_next_timestamp
+    public :: LIBMUSCLE_Message_unset_next_timestamp
 
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_success = 0
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_runtime_error = 1
@@ -956,6 +962,56 @@ module libmuscle
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end subroutine LIBMUSCLE_Message_free_
+
+        real (c_double) function LIBMUSCLE_Message_timestamp_( &
+                self) &
+                bind(C, name="LIBMUSCLE_Message_timestamp_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_Message_timestamp_
+
+        subroutine LIBMUSCLE_Message_set_timestamp_( &
+                self, timestamp) &
+                bind(C, name="LIBMUSCLE_Message_set_timestamp_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            real (c_double), value, intent(in) :: timestamp
+        end subroutine LIBMUSCLE_Message_set_timestamp_
+
+        integer (c_int) function LIBMUSCLE_Message_has_next_timestamp_( &
+                self) &
+                bind(C, name="LIBMUSCLE_Message_has_next_timestamp_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_Message_has_next_timestamp_
+
+        real (c_double) function LIBMUSCLE_Message_next_timestamp_( &
+                self) &
+                bind(C, name="LIBMUSCLE_Message_next_timestamp_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_Message_next_timestamp_
+
+        subroutine LIBMUSCLE_Message_set_next_timestamp_( &
+                self, next_timestamp) &
+                bind(C, name="LIBMUSCLE_Message_set_next_timestamp_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            real (c_double), value, intent(in) :: next_timestamp
+        end subroutine LIBMUSCLE_Message_set_next_timestamp_
+
+        subroutine LIBMUSCLE_Message_unset_next_timestamp_( &
+                self) &
+                bind(C, name="LIBMUSCLE_Message_unset_next_timestamp_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end subroutine LIBMUSCLE_Message_unset_next_timestamp_
 
     end interface
 
@@ -3319,6 +3375,71 @@ contains
         call LIBMUSCLE_Message_free_( &
             self%ptr)
     end subroutine LIBMUSCLE_Message_free
+
+    function LIBMUSCLE_Message_timestamp(self)
+        implicit none
+        type(LIBMUSCLE_Message), intent(in) :: self
+        real (LIBMUSCLE_real8) :: LIBMUSCLE_Message_timestamp
+
+        real (c_double) :: ret_val
+
+        ret_val = LIBMUSCLE_Message_timestamp_( &
+            self%ptr)
+        LIBMUSCLE_Message_timestamp = ret_val
+    end function LIBMUSCLE_Message_timestamp
+
+    subroutine LIBMUSCLE_Message_set_timestamp(self, timestamp)
+        implicit none
+        type(LIBMUSCLE_Message), intent(in) :: self
+        real (LIBMUSCLE_real8), intent(in) :: timestamp
+
+        call LIBMUSCLE_Message_set_timestamp_( &
+            self%ptr, &
+            timestamp)
+    end subroutine LIBMUSCLE_Message_set_timestamp
+
+    function LIBMUSCLE_Message_has_next_timestamp(self)
+        implicit none
+        type(LIBMUSCLE_Message), intent(in) :: self
+        logical :: LIBMUSCLE_Message_has_next_timestamp
+
+        integer (c_int) :: ret_val
+
+        ret_val = LIBMUSCLE_Message_has_next_timestamp_( &
+            self%ptr)
+
+        LIBMUSCLE_Message_has_next_timestamp = ret_val .ne. 0
+    end function LIBMUSCLE_Message_has_next_timestamp
+
+    function LIBMUSCLE_Message_next_timestamp(self)
+        implicit none
+        type(LIBMUSCLE_Message), intent(in) :: self
+        real (LIBMUSCLE_real8) :: LIBMUSCLE_Message_next_timestamp
+
+        real (c_double) :: ret_val
+
+        ret_val = LIBMUSCLE_Message_next_timestamp_( &
+            self%ptr)
+        LIBMUSCLE_Message_next_timestamp = ret_val
+    end function LIBMUSCLE_Message_next_timestamp
+
+    subroutine LIBMUSCLE_Message_set_next_timestamp(self, next_timestamp)
+        implicit none
+        type(LIBMUSCLE_Message), intent(in) :: self
+        real (LIBMUSCLE_real8), intent(in) :: next_timestamp
+
+        call LIBMUSCLE_Message_set_next_timestamp_( &
+            self%ptr, &
+            next_timestamp)
+    end subroutine LIBMUSCLE_Message_set_next_timestamp
+
+    subroutine LIBMUSCLE_Message_unset_next_timestamp(self)
+        implicit none
+        type(LIBMUSCLE_Message), intent(in) :: self
+
+        call LIBMUSCLE_Message_unset_next_timestamp_( &
+            self%ptr)
+    end subroutine LIBMUSCLE_Message_unset_next_timestamp
 
 
     function LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create(count)

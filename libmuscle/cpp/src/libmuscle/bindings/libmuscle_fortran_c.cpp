@@ -1670,6 +1670,42 @@ void LIBMUSCLE_Message_free_(std::intptr_t self) {
     return;
 }
 
+double LIBMUSCLE_Message_timestamp_(std::intptr_t self) {
+    Message * self_p = reinterpret_cast<Message *>(self);
+    double result = self_p->timestamp();
+    return result;
+}
+
+void LIBMUSCLE_Message_set_timestamp_(std::intptr_t self, double timestamp) {
+    Message * self_p = reinterpret_cast<Message *>(self);
+    self_p->set_timestamp(timestamp);
+    return;
+}
+
+int LIBMUSCLE_Message_has_next_timestamp_(std::intptr_t self) {
+    Message * self_p = reinterpret_cast<Message *>(self);
+    bool result = self_p->has_next_timestamp();
+    return result ? 1 : 0;
+}
+
+double LIBMUSCLE_Message_next_timestamp_(std::intptr_t self) {
+    Message * self_p = reinterpret_cast<Message *>(self);
+    double result = self_p->next_timestamp();
+    return result;
+}
+
+void LIBMUSCLE_Message_set_next_timestamp_(std::intptr_t self, double next_timestamp) {
+    Message * self_p = reinterpret_cast<Message *>(self);
+    self_p->set_next_timestamp(next_timestamp);
+    return;
+}
+
+void LIBMUSCLE_Message_unset_next_timestamp_(std::intptr_t self) {
+    Message * self_p = reinterpret_cast<Message *>(self);
+    self_p->unset_next_timestamp();
+    return;
+}
+
 std::intptr_t LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(int count) {
     CmdLineArgs * result = new CmdLineArgs(count);
     return reinterpret_cast<std::intptr_t>(result);

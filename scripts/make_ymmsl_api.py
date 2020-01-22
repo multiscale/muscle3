@@ -13,7 +13,7 @@ from api_generator import (
         Void)
 
 
-settings_desc = Class('Settings', [
+settings_desc = Class('Settings', None, [
     Constructor(),
     Destructor(),
     EqualsOperator(Obj('Settings', 'other')),

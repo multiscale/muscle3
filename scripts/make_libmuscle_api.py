@@ -12,7 +12,7 @@ from api_generator import (
         VecDbl, Vec2Dbl, Void)
 
 
-data_desc = Class('Data', [
+dataconstref_desc = Class('DataConstRef', None, [
     Constructor([], 'create_nil'),
     Constructor([Bool('value')], 'create_logical'),
     Constructor([String('value')], 'create_character'),
@@ -23,50 +23,12 @@ data_desc = Class('Data', [
     Constructor([Float('value')], 'create_real4'),
     Constructor([Double('value')], 'create_real8'),
     Constructor([Obj('Settings', 'value')], 'create_settings'),
-    Constructor([Obj('Data', 'value')], 'create_copy'),
+    Constructor([Obj('DataConstRef', 'value')], 'create_copy'),
     OverloadSet('create', [
         'create_nil', 'create_logical', 'create_character', 'create_int1',
         'create_int2', 'create_int4', 'create_int8', 'create_real4',
         'create_real8', 'create_settings', 'create_copy']),
     Destructor(),
-    NamedConstructor([], 'dict'),
-    NamedConstructor([], 'list'),
-    NamedConstructor([Sizet('size')], 'byte_array_empty',
-        cpp_func_name='byte_array'),
-    NamedConstructor([Bytes('buf')], 'byte_array_from_buf',
-        cpp_func_name='byte_array',
-        fc_override=(
-            'std::intptr_t LIBMUSCLE_Data_create_byte_array_from_buf_(\n'
-            '       char * buf, std::size_t buf_size\n'
-            ') {\n'
-            '   Data * result = new Data(Data::byte_array(buf, buf_size));\n'
-            '   return reinterpret_cast<std::intptr_t>(result);\n'
-            '}\n\n'
-            )
-        ),
-    OverloadSet('create_byte_array', [
-        'create_byte_array_empty', 'create_byte_array_from_buf']),
-    NamedConstructor([Sizet('size')], 'nils'),
-    AssignmentOperator('set_logical', Bool('value')),
-    AssignmentOperator('set_character', String('value')),
-    AssignmentOperator('set_int1', Char('value')),
-    AssignmentOperator('set_int2', Int16t('value')),
-    AssignmentOperator('set_int4', Int32t('value')),
-    AssignmentOperator('set_int8', Int64t('value')),
-    AssignmentOperator('set_real4', Float('value')),
-    AssignmentOperator('set_real8', Double('value')),
-    AssignmentOperator('set_data', Obj('Data', 'value')),
-    OverloadSet('set', [
-        'set_logical', 'set_character', 'set_int1', 'set_int2', 'set_int4',
-        'set_int8', 'set_real4', 'set_real8', 'set_data']),
-    MemFun(Void(), 'set_nil', [], False,
-        fc_override=(
-            'void LIBMUSCLE_Data_set_nil_(std::intptr_t self) {\n'
-            '    Data * self_p = reinterpret_cast<Data *>(self);\n'
-            '    *self_p = Data();\n'
-            '}\n\n'
-            )
-        ),
     MemFunTmpl(
         [Bool(), String(), Int(), Char(), Int16t(), Int32t(), Int64t(),
             Float(), Double()],
@@ -84,6 +46,115 @@ data_desc = Class('Data', [
         T(), 'as', [], True),
     MemFun(Obj('Settings', 'value'), 'as_settings', [], True,
             cpp_chain_call=lambda **kwargs: 'self_p->as<Settings>()'),
+    MemFun(Bytes('data'), 'as_byte_array', [], True,
+        fc_override=(
+            'void LIBMUSCLE_DataConstRef_as_byte_array_(\n'
+            '        std::intptr_t self,\n'
+            '        char ** data, std::size_t * data_size,\n'
+            '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
+            ') {\n'
+            '    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);\n'
+            '    try {\n'
+            '        *err_code = 0;\n'
+            '        *data = const_cast<char*>(self_p->as_byte_array());\n'
+            '        *data_size = self_p->size();\n'
+            '        return;\n'
+            '    }\n'
+            '    catch (std::runtime_error const & e) {\n'
+            '        *err_code = 1;\n'
+            '        static std::string msg(e.what());\n'
+            '        *err_msg = const_cast<char*>(msg.data());\n'
+            '        *err_msg_len = msg.size();\n'
+            '    }\n'
+            '}\n'
+            )
+        ),
+    MemFun(Obj('DataConstRef', 'value'), 'get_item_by_key', [String('key')], True,
+            fc_override=(
+                'std::intptr_t LIBMUSCLE_DataConstRef_get_item_by_key_(\n'
+                '        std::intptr_t self,\n'
+                '        char * key, std::size_t key_size,\n'
+                '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
+                ') {\n'
+                '    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);\n'
+                '    std::string key_s(key, key_size);\n'
+                '    try {\n'
+                '        *err_code = 0;\n'
+                '        DataConstRef * result = new DataConstRef((*self_p)[key_s]);\n'
+                '        return reinterpret_cast<std::intptr_t>(result);\n'
+                '    }\n'
+                '    catch (std::runtime_error const & e) {\n'
+                '        *err_code = 1;\n'
+                '        static std::string msg;\n'
+                '        msg = e.what();\n'
+                '        *err_msg = const_cast<char*>(msg.data());\n'
+                '        *err_msg_len = msg.size();\n'
+                '    }\n'
+                '    catch (std::out_of_range const & e) {\n'
+                '        *err_code = 3;\n'
+                '        static std::string msg;\n'
+                '        msg = e.what();\n'
+                '        *err_msg = const_cast<char*>(msg.data());\n'
+                '        *err_msg_len = msg.size();\n'
+                '    }\n'
+                '}\n\n')
+            ),
+    MemFun(Obj('DataConstRef', 'value'), 'get_item_by_index', [Sizet('i')], True,
+            fc_override=(
+                'std::intptr_t LIBMUSCLE_DataConstRef_get_item_by_index_(\n'
+                '        std::intptr_t self,\n'
+                '        std::size_t i,\n'
+                '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
+                ') {\n'
+                '    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);\n'
+                '    try {\n'
+                '        *err_code = 0;\n'
+                '        DataConstRef * result = new DataConstRef((*self_p)[i-1u]);\n'
+                '        return reinterpret_cast<std::intptr_t>(result);\n'
+                '    }\n'
+                '    catch (std::runtime_error const & e) {\n'
+                '        *err_code = 1;\n'
+                '        static std::string msg;\n'
+                '        msg = e.what();\n'
+                '        *err_msg = const_cast<char*>(msg.data());\n'
+                '        *err_msg_len = msg.size();\n'
+                '    }\n'
+                '    catch (std::out_of_range const & e) {\n'
+                '        *err_code = 3;\n'
+                '        static std::string msg;\n'
+                '        msg = e.what();\n'
+                '        *err_msg = const_cast<char*>(msg.data());\n'
+                '        *err_msg_len = msg.size();\n'
+                '    }\n'
+                '}\n\n')
+            ),
+    OverloadSet('get_item', [
+        'get_item_by_key', 'get_item_by_index'
+        ]),
+    ])
+
+
+data_desc = Class('Data', dataconstref_desc, [
+    Constructor([Obj('Data', 'value')], 'create_copy'),
+    NamedConstructor([], 'dict'),
+    NamedConstructor([], 'list'),
+    NamedConstructor([Sizet('size')], 'nils'),
+    NamedConstructor([Sizet('size')], 'byte_array_empty',
+        cpp_func_name='byte_array'),
+    NamedConstructor([Bytes('buf')], 'byte_array_from_buf',
+        cpp_func_name='byte_array',
+        fc_override=(
+            'std::intptr_t LIBMUSCLE_Data_create_byte_array_from_buf_(\n'
+            '       char * buf, std::size_t buf_size\n'
+            ') {\n'
+            '   Data * result = new Data(Data::byte_array(buf, buf_size));\n'
+            '   return reinterpret_cast<std::intptr_t>(result);\n'
+            '}\n\n'
+            )
+        ),
+    OverloadSet('create_byte_array', [
+        'create_byte_array_empty', 'create_byte_array_from_buf']),
+
     MemFun(Bytes('data'), 'as_byte_array', [], True,
         fc_override=(
             'void LIBMUSCLE_Data_as_byte_array_(\n'
@@ -107,6 +178,87 @@ data_desc = Class('Data', [
             '}\n'
             )
         ),
+    MemFun(Obj('Data', 'value'), 'get_item_by_key', [String('key')], True,
+            fc_override=(
+                'std::intptr_t LIBMUSCLE_Data_get_item_by_key_(\n'
+                '        std::intptr_t self,\n'
+                '        char * key, std::size_t key_size,\n'
+                '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
+                ') {\n'
+                '    Data * self_p = reinterpret_cast<Data *>(self);\n'
+                '    std::string key_s(key, key_size);\n'
+                '    try {\n'
+                '        *err_code = 0;\n'
+                '        Data * result = new Data((*self_p)[key_s]);\n'
+                '        return reinterpret_cast<std::intptr_t>(result);\n'
+                '    }\n'
+                '    catch (std::runtime_error const & e) {\n'
+                '        *err_code = 1;\n'
+                '        static std::string msg;\n'
+                '        msg = e.what();\n'
+                '        *err_msg = const_cast<char*>(msg.data());\n'
+                '        *err_msg_len = msg.size();\n'
+                '    }\n'
+                '    catch (std::out_of_range const & e) {\n'
+                '        *err_code = 3;\n'
+                '        static std::string msg;\n'
+                '        msg = e.what();\n'
+                '        *err_msg = const_cast<char*>(msg.data());\n'
+                '        *err_msg_len = msg.size();\n'
+                '    }\n'
+                '}\n\n')
+            ),
+    MemFun(Obj('Data', 'value'), 'get_item_by_index', [Sizet('i')], True,
+            fc_override=(
+                'std::intptr_t LIBMUSCLE_Data_get_item_by_index_(\n'
+                '        std::intptr_t self,\n'
+                '        std::size_t i,\n'
+                '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
+                ') {\n'
+                '        Data * self_p = reinterpret_cast<DataConstRef *>(self);\n'
+                '        try {\n'
+                '            *err_code = 0;\n'
+                '            Data * result = new Data((*self_p)[i-1u]);\n'
+                '            return reinterpret_cast<std::intptr_t>(result);\n'
+                '    }\n'
+                '    catch (std::runtime_error const & e) {\n'
+                '        *err_code = 1;\n'
+                '        static std::string msg;\n'
+                '        msg = e.what();\n'
+                '        *err_msg = const_cast<char*>(msg.data());\n'
+                '        *err_msg_len = msg.size();\n'
+                '    }\n'
+                '    catch (std::out_of_range const & e) {\n'
+                '        *err_code = 3;\n'
+                '        static std::string msg;\n'
+                '        msg = e.what();\n'
+                '        *err_msg = const_cast<char*>(msg.data());\n'
+                '        *err_msg_len = msg.size();\n'
+                '    }\n'
+                '}\n\n')
+            ),
+
+    AssignmentOperator('set_logical', Bool('value')),
+    AssignmentOperator('set_character', String('value')),
+    AssignmentOperator('set_int1', Char('value')),
+    AssignmentOperator('set_int2', Int16t('value')),
+    AssignmentOperator('set_int4', Int32t('value')),
+    AssignmentOperator('set_int8', Int64t('value')),
+    AssignmentOperator('set_real4', Float('value')),
+    AssignmentOperator('set_real8', Double('value')),
+    AssignmentOperator('set_data', Obj('Data', 'value')),
+    OverloadSet('set', [
+        'set_logical', 'set_character', 'set_int1', 'set_int2', 'set_int4',
+        'set_int8', 'set_real4', 'set_real8', 'set_data']),
+    MemFun(Void(), 'set_nil', [], False,
+        fc_override=(
+            'void LIBMUSCLE_Data_set_nil_(std::intptr_t self) {\n'
+            '    Data * self_p = reinterpret_cast<Data *>(self);\n'
+            '    *self_p = Data();\n'
+            '}\n\n'
+            )
+        ),
+
     MemFun(Obj('Data', 'value'), 'get_item_by_key', [String('key')], True,
             fc_override=(
                 'std::intptr_t LIBMUSCLE_Data_get_item_by_key_(\n'
@@ -260,7 +412,7 @@ data_desc = Class('Data', [
     ])
 
 
-message_desc = Class('Message', [
+message_desc = Class('Message', None, [
     Constructor([Double('timestamp'), Obj('Data', 'data')], 'create_td'),
     Constructor(
         [Double('timestamp'), Double('next_timestamp'), Obj('Data', 'data')],
@@ -280,18 +432,18 @@ message_desc = Class('Message', [
     MemFun(Bool(), 'has_next_timestamp'),
     MemFun(Double(), 'next_timestamp'),
     MemFun(Void(), 'set_next_timestamp', [Double('next_timestamp')]),
-    MemFun(Void(), 'unset_next_timestamp')
+    MemFun(Void(), 'unset_next_timestamp'),
     ])
 
 
-cmdlineargs_desc = Class('CmdLineArgs', [
+cmdlineargs_desc = Class('CmdLineArgs', None, [
         Constructor([Int('count')]),
         Destructor(),
         MemFun(Void(), 'set_arg', [Int('i'), String('arg')]),
         ])
 
 
-ymmsl_forward = [Class('Settings', [])]
+ymmsl_forward = [Class('Settings', None, [])]
 
 
 libmuscle_api_description = API(
@@ -305,7 +457,7 @@ libmuscle_api_description = API(
             'ymmsl'],
         [
             Namespace('libmuscle', True, 'LIBMUSCLE', [], [
-                data_desc, message_desc]),
+                dataconstref_desc, data_desc, message_desc]),
             Namespace('libmuscle::impl::bindings', False,
                       'LIBMUSCLE_IMPL_BINDINGS', [], [cmdlineargs_desc]),
             Namespace('ymmsl', None, 'YMMSL', [], ymmsl_forward)

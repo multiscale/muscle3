@@ -87,6 +87,20 @@ LIBMUSCLE_Data
     and reals) get copied, while for lists, dictionaries, and byte arrays, the
     variable contains a reference which gets copied.
 
+.. f:type:: LIBMUSCLE_DataConstRef
+
+    Represents a read-only reference to a libmuscle Data object. This is an
+    opaque object like :f:type:`LIBMUSCLE_Data`. DataConstRef objects work
+    exactly the same as Data objects, except that the names of the corresponding
+    functions start with ``LIBMUSCLE_DataConstRef``, and that only creation,
+    freeing, and non-modifying operations are supported. Since these functions
+    are otherwise identical, they are not documented separately here. If you
+    want to know how to use say ``LIBMUSCLE_DataConstRef_as_int8``, look
+    up :f:func:`LIBMUSCLE_Data_as_int8`.
+
+    This class is mainly used to represent received messages, which should not
+    be modified.
+
 .. f:function:: LIBMUSCLE_Data_create()
 
     Creates a Data object representing nil.

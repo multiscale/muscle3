@@ -930,9 +930,27 @@ class MemFun(Member):
         self.f_override = args.get('f_override')
         self.cpp_func_name = args.get('cpp_func_name', name)
 
+    def __copy__(self) -> 'MemFun':
+        result = MemFun(
+                self.ret_type, self.name, copy(self.params), self.may_throw)
+        result.ns_prefix = self.ns_prefix
+        result.public = self.public
+        result.class_name = self.class_name
+        result.cpp_chain_call = self.cpp_chain_call
+        result.fc_override = self.fc_override
+        result.f_override = self.f_override
+        result.cpp_func_name = self.cpp_func_name
+        return result
+
     def set_class_name(self, class_name: str) -> None:
         self.class_name = class_name
         self.params.insert(0, Obj(class_name, 'self'))
+
+    def reset_class_name(self, class_name: str) -> None:
+        self.class_name = class_name
+        if len(self.params) > 0:
+            if self.params[0].name == 'self':
+                self.params[0] = Obj(class_name, 'self')
 
     def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
         """Sets the namespace prefix correctly for all members.
@@ -1265,10 +1283,27 @@ class Constructor(MemFun):
             ) -> None:
         super().__init__(Obj('<deferred>'), name, params, **args)
 
+    def __copy__(self) -> 'Constructor':
+        result = Constructor(copy(self.params), self.name)
+        result.ns_prefix = self.ns_prefix
+        result.public = self.public
+        result.class_name = self.class_name
+        result.ret_type = self.ret_type
+        result.may_throw = self.may_throw
+        result.cpp_chain_call = self.cpp_chain_call
+        result.fc_override = self.fc_override
+        result.f_override = self.f_override
+        result.cpp_func_name = self.cpp_func_name
+        return result
+
     def set_class_name(self, class_name: str) -> None:
         # Don't add self parameter
         self.class_name = class_name
         self.ret_type.class_name = class_name
+
+    def reset_class_name(self, class_name: str) -> None:
+        self.class_name = class_name
+        self.ret_type = Obj(class_name)
 
     def _fc_cpp_call(self) -> str:
         # Create object instead of calling something
@@ -1288,6 +1323,19 @@ class EqualsOperator(MemFun):
     """
     def __init__(self, param: Par, name: str = 'equals', **args) -> None:
         super().__init__(Bool(), name, [param], False, **args)
+
+    def __copy__(self) -> 'EqualsOperator':
+        result = EqualsOperator(copy(self.params[0]), self.name)
+        result.ns_prefix = self.ns_prefix
+        result.public = self.public
+        result.class_name = self.class_name
+        result.ret_type = self.ret_type
+        result.may_throw = self.may_throw
+        result.cpp_chain_call = self.cpp_chain_call
+        result.fc_override = self.fc_override
+        result.f_override = self.f_override
+        result.cpp_func_name = self.cpp_func_name
+        return result
 
     def _fc_cpp_call(self) -> str:
         # Call operator instead of function
@@ -1310,6 +1358,19 @@ class AssignmentOperator(MemFun):
                  ) -> None:
         super().__init__(Void(), name, [param], False, **args)
 
+    def __copy__(self) -> 'AssignmentOperator':
+        result = AssignmentOperator(self.name, copy(self.params[0]))
+        result.ns_prefix = self.ns_prefix
+        result.public = self.public
+        result.class_name = self.class_name
+        result.ret_type = self.ret_type
+        result.may_throw = self.may_throw
+        result.cpp_chain_call = self.cpp_chain_call
+        result.fc_override = self.fc_override
+        result.f_override = self.f_override
+        result.cpp_func_name = self.cpp_func_name
+        return result
+
     def _fc_cpp_call(self) -> str:
         # Create object instead of calling something
         cpp_args = [par.fc_cpp_arg() for par in self.params]
@@ -1326,6 +1387,19 @@ class IndexAssignmentOperator(MemFun):
                  ) -> None:
         super().__init__(Void(), name, param, may_throw)
 
+    def __copy__(self) -> 'IndexAssignmentOperator':
+        result = IndexAssignmentOperator(self.name, copy(self.params[0]),
+                self.may_throw)
+        result.ns_prefix = self.ns_prefix
+        result.public = self.public
+        result.class_name = self.class_name
+        result.ret_type = self.ret_type
+        result.cpp_chain_call = self.cpp_chain_call
+        result.fc_override = self.fc_override
+        result.f_override = self.f_override
+        result.cpp_func_name = self.cpp_func_name
+        return result
+
     def _fc_cpp_call(self) -> str:
         # Call operator[] instead of a function
         cpp_args = [par.fc_cpp_arg() for par in self.params]
@@ -1335,12 +1409,25 @@ class IndexAssignmentOperator(MemFun):
 class ShiftedIndexAssignmentOperator(IndexAssignmentOperator):
     """Assigns to an indexed item, shifting the index by 1.
 
-    This generates cod suitable for assigning to a subobject accessed
+    This generates code suitable for assigning to a subobject accessed
     via the square brackets operator, i.e. self[i] / value.
 
     The index is shifted as necessary, e.g. to make it 1-based in
     Fortran and 0-based in C++.
     """
+    def __copy__(self) -> 'ShiftedIndexAssignmentOperator':
+        result = ShiftedIndexAssignmentOperator(
+                self.name, copy(self.params[0]), self.may_throw)
+        result.ns_prefix = self.ns_prefix
+        result.public = self.public
+        result.class_name = self.class_name
+        result.ret_type = self.ret_type
+        result.cpp_chain_call = self.cpp_chain_call
+        result.fc_override = self.fc_override
+        result.f_override = self.f_override
+        result.cpp_func_name = self.cpp_func_name
+        return result
+
     def _fc_cpp_call(self) -> str:
         # Call operator[] instead of a function
         cpp_args = [par.fc_cpp_arg() for par in self.params]
@@ -1363,10 +1450,19 @@ class NamedConstructor(Constructor):
             args['cpp_func_name'] = name
         super().__init__(params, 'create_' + name, **args)
 
-    def set_class_name(self, class_name: str) -> None:
-        # Don't add self parameter
-        self.class_name = class_name
-        self.ret_type.class_name = class_name
+    def __copy__(self) -> 'NamedConstructor':
+        result = NamedConstructor(copy(self.params), self.name)
+        result.ns_prefix = self.ns_prefix
+        result.public = self.public
+        result.class_name = self.class_name
+        result.name = self.name
+        result.ret_type = self.ret_type
+        result.may_throw = self.may_throw
+        result.cpp_chain_call = self.cpp_chain_call
+        result.fc_override = self.fc_override
+        result.f_override = self.f_override
+        result.cpp_func_name = self.cpp_func_name
+        return result
 
     def _fc_cpp_call(self) -> str:
         # Create object instead of calling something
@@ -1381,6 +1477,21 @@ class NamedConstructor(Constructor):
 class Destructor(MemFun):
     def __init__(self, **args) -> None:
         super().__init__(Void(), 'free', **args)
+
+    def __copy__(self) -> 'MemFun':
+        result = Destructor()
+        result.ns_prefix = self.ns_prefix
+        result.public = self.public
+        result.class_name = self.class_name
+        result.ret_type = self.ret_type
+        result.name = self.name
+        result.params = copy(self.params)
+        result.may_throw = self.may_throw
+        result.cpp_chain_call = self.cpp_chain_call
+        result.fc_override = self.fc_override
+        result.f_override = self.f_override
+        result.cpp_func_name = self.cpp_func_name
+        return result
 
     def _fc_cpp_call(self) -> str:
         # Destroy object instead of calling something
@@ -1425,6 +1536,21 @@ class MemFunTmplInstance(MemFun):
 
         self.tpl_name = name
         self.targ = targ
+
+    def __copy__(self) -> 'MemFunTmplInstance':
+        result = MemFunTmplInstance(
+                self.ret_type, self.tpl_name, self.targ, copy(self.params),
+                self.may_throw)
+
+        result.ns_prefix = self.ns_prefix
+        result.public = self.public
+        result.name = self.name
+        result.class_name = self.class_name
+        result.cpp_chain_call = self.cpp_chain_call
+        result.fc_override = self.fc_override
+        result.f_override = self.f_override
+        result.cpp_func_name = self.cpp_func_name
+        return result
 
     @staticmethod
     def _default_cpp_chain_call(**kwargs):
@@ -1485,8 +1611,6 @@ class MemFunTmpl(Member):
         self.may_throw = may_throw
         self.instances = list()     # type: List[MemFun]
 
-        fc_cpp_call = args.get('fc_cpp_call')
-
         # generate instances
         for typ in self.types:
             instance_ret_type = self.ret_type
@@ -1506,12 +1630,27 @@ class MemFunTmpl(Member):
                 instance_ret_type, name, typ, instance_params, may_throw,
                 **args))
 
+    def __copy__(self) -> 'MemFunTmpl':
+        result = MemFunTmpl(
+                self.types, self.ret_type, self.name, copy(self.params),
+                self.may_throw)
+        result.ns_prefix = self.ns_prefix
+        result.public = self.public
+        result.set_class_name(self.class_name)
+        result.instances = [copy(instance) for instance in self.instances]
+        return result
 
     def set_class_name(self, class_name: str) -> None:
         self.class_name = class_name
         self.params.insert(0, Obj(class_name, 'self'))
         for instance in self.instances:
             instance.set_class_name(class_name)
+
+    def reset_class_name(self, class_name: str) -> None:
+        self.class_name = class_name
+        self.params[0] = Obj(class_name, 'self')
+        for instance in self.instances:
+            instance.reset_class_name(class_name)
 
     def set_public(self, public: bool) -> None:
         self.public = public
@@ -1589,7 +1728,17 @@ class OverloadSet(Member):
         self.name = name
         self.names = names
 
+    def __copy__(self) -> 'OverloadSet':
+        result = OverloadSet(self.name, self.names)
+        result.ns_prefix = self.ns_prefix
+        result.class_name = self.class_name
+        result.public = self.public
+        return result
+
     def set_class_name(self, class_name: str) -> None:
+        self.class_name = class_name
+
+    def reset_class_name(self, class_name: str) -> None:
         self.class_name = class_name
 
     def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
@@ -1629,7 +1778,11 @@ class OverloadSet(Member):
 
 
 class Class:
-    def __init__(self, name: str, members: List[Member]) -> None:
+    def __init__(
+            self,
+            name: str, parent: Optional['Class'],
+            members: List[Member]
+            ) -> None:
         """Create a class description.
 
         Args:
@@ -1637,12 +1790,26 @@ class Class:
             members: List of member functions.
         """
         self.ns_prefix = None       # type: Optional[str]
-        self.public = None          # type: Optional[bool
+        self.public = None          # type: Optional[bool]
         self.name = name
-        self.members = members
 
-        for member in members:
-            member.set_class_name(name)
+        if parent is None:
+            self.members = members
+            for member in self.members:
+                member.set_class_name(name)
+        else:
+            self.members = [copy(member) for member in parent.members]
+            for member in self.members:
+                member.reset_class_name(name)
+
+            for member in members:
+                member.set_class_name(name)
+                for i in range(len(self.members)):
+                    if self.members[i].name == member.name:
+                        self.members[i] = member
+                        break
+                else:
+                    self.members.append(member)
 
     def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
         """Sets the namespace prefix correctly for all members.

@@ -2378,6 +2378,26 @@ void LIBMUSCLE_Message_unset_next_timestamp_(std::intptr_t self) {
     return;
 }
 
+std::intptr_t LIBMUSCLE_Message_get_data_(std::intptr_t self) {
+    Message * self_p = reinterpret_cast<Message *>(self);
+    DataConstRef * result = new DataConstRef(self_p->data());
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+void LIBMUSCLE_Message_set_data_d_(std::intptr_t self, std::intptr_t data) {
+    Message * self_p = reinterpret_cast<Message *>(self);
+    Data * data_p = reinterpret_cast<Data *>(data);
+    self_p->set_data(*data_p);
+    return;
+}
+
+void LIBMUSCLE_Message_set_data_dcr_(std::intptr_t self, std::intptr_t data) {
+    Message * self_p = reinterpret_cast<Message *>(self);
+    DataConstRef * data_p = reinterpret_cast<DataConstRef *>(data);
+    self_p->set_data(*data_p);
+    return;
+}
+
 std::intptr_t LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(int count) {
     CmdLineArgs * result = new CmdLineArgs(count);
     return reinterpret_cast<std::intptr_t>(result);

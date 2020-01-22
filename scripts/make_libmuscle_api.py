@@ -433,6 +433,15 @@ message_desc = Class('Message', None, [
     MemFun(Double(), 'next_timestamp'),
     MemFun(Void(), 'set_next_timestamp', [Double('next_timestamp')]),
     MemFun(Void(), 'unset_next_timestamp'),
+    MemFun(Obj('DataConstRef', 'data'), 'get_data',
+        cpp_chain_call=lambda **kwargs: 'self_p->data()'),
+    MemFun(Void(), 'set_data_d', [Obj('Data', 'data')],
+        cpp_chain_call=lambda **kwargs: 'self_p->set_data({})'.format(
+            kwargs['cpp_args'])),
+    MemFun(Void(), 'set_data_dcr', [Obj('DataConstRef', 'data')],
+        cpp_chain_call=lambda **kwargs: 'self_p->set_data({})'.format(
+            kwargs['cpp_args'])),
+    OverloadSet('set_data', ['set_data_d', 'set_data_dcr']),
     ])
 
 

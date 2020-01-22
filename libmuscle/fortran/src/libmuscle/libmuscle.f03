@@ -172,6 +172,10 @@ module libmuscle
     public :: LIBMUSCLE_Message_next_timestamp
     public :: LIBMUSCLE_Message_set_next_timestamp
     public :: LIBMUSCLE_Message_unset_next_timestamp
+    public :: LIBMUSCLE_Message_get_data
+    public :: LIBMUSCLE_Message_set_data_d
+    public :: LIBMUSCLE_Message_set_data_dcr
+    public :: LIBMUSCLE_Message_set_data
 
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_success = 0
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_runtime_error = 1
@@ -1426,6 +1430,32 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end subroutine LIBMUSCLE_Message_unset_next_timestamp_
 
+        integer (c_intptr_t) function LIBMUSCLE_Message_get_data_( &
+                self) &
+                bind(C, name="LIBMUSCLE_Message_get_data_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_Message_get_data_
+
+        subroutine LIBMUSCLE_Message_set_data_d_( &
+                self, data) &
+                bind(C, name="LIBMUSCLE_Message_set_data_d_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_intptr_t), value, intent(in) :: data
+        end subroutine LIBMUSCLE_Message_set_data_d_
+
+        subroutine LIBMUSCLE_Message_set_data_dcr_( &
+                self, data) &
+                bind(C, name="LIBMUSCLE_Message_set_data_dcr_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_intptr_t), value, intent(in) :: data
+        end subroutine LIBMUSCLE_Message_set_data_dcr_
+
     end interface
 
     interface LIBMUSCLE_DataConstRef_create
@@ -1517,6 +1547,12 @@ module libmuscle
             LIBMUSCLE_Message_create_tnd, &
             LIBMUSCLE_Message_create_tds, &
             LIBMUSCLE_Message_create_tnds
+    end interface
+
+    interface LIBMUSCLE_Message_set_data
+        module procedure &
+            LIBMUSCLE_Message_set_data_d, &
+            LIBMUSCLE_Message_set_data_dcr
     end interface
 
 
@@ -4879,6 +4915,39 @@ contains
         call LIBMUSCLE_Message_unset_next_timestamp_( &
             self%ptr)
     end subroutine LIBMUSCLE_Message_unset_next_timestamp
+
+    function LIBMUSCLE_Message_get_data(self)
+        implicit none
+        type(LIBMUSCLE_Message), intent(in) :: self
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_Message_get_data
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Message_get_data_( &
+            self%ptr)
+
+        LIBMUSCLE_Message_get_data%ptr = ret_val
+    end function LIBMUSCLE_Message_get_data
+
+    subroutine LIBMUSCLE_Message_set_data_d(self, data)
+        implicit none
+        type(LIBMUSCLE_Message), intent(in) :: self
+        type(LIBMUSCLE_Data), intent(in) :: data
+
+        call LIBMUSCLE_Message_set_data_d_( &
+            self%ptr, &
+            data%ptr)
+    end subroutine LIBMUSCLE_Message_set_data_d
+
+    subroutine LIBMUSCLE_Message_set_data_dcr(self, data)
+        implicit none
+        type(LIBMUSCLE_Message), intent(in) :: self
+        type(LIBMUSCLE_DataConstRef), intent(in) :: data
+
+        call LIBMUSCLE_Message_set_data_dcr_( &
+            self%ptr, &
+            data%ptr)
+    end subroutine LIBMUSCLE_Message_set_data_dcr
 
 
     function LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create(count)

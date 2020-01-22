@@ -1189,6 +1189,34 @@ LIBMUSCLE_Message
 
     :p LIBMUSCLE_Message self: The Message object to modify.
 
+.. f:function:: LIBMUSCLE_Message_get_data(self)
+
+    Returns the data contained in the message.
+
+    :p LIBMUSCLE_Message self: The Message object to inspect.
+    :r data: The data contained in this message
+    :rtype data: LIBMUSCLE_DataConstRef
+
+.. f:subroutine:: LIBMUSCLE_Message_set_data(self, data)
+
+    Sets the data contained by the message.
+
+    Note that this will not transfer ownership of the data object, you still
+    need to free it.
+
+    :p LIBMUSCLE_Message self: The Message object to modify.
+    :p LIBMUSCLE_Data data: The data object to take the value from.
+
+.. f:subroutine:: LIBMUSCLE_Message_set_data(self, data)
+
+    Sets the data contained by the message.
+
+    Note that this will not transfer ownership of the data object, you still
+    need to free it.
+
+    :p LIBMUSCLE_Message self: The Message object to modify.
+    :p LIBMUSCLE_DataConstRef data: The data object to take the value from.
+
 
 Namespace YMMSL
 ---------------

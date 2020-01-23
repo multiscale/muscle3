@@ -873,10 +873,55 @@ contains
         print *, '[       OK ] message.data'
     end subroutine test_message_data
 
+    subroutine test_message_settings
+        use libmuscle
+        use ymmsl
+        implicit none
+
+        type(LIBMUSCLE_Data) :: d1
+        type(YMMSL_Settings) :: s1, s2
+        type(LIBMUSCLE_Message) :: m1
+
+        print *, '[  RUN     ] message.settings'
+        d1 = LIBMUSCLE_Data_create()
+        m1 = LIBMUSCLE_Message_create(0.0d0, d1)
+        call assert_false(LIBMUSCLE_Message_has_settings(m1))
+        call LIBMUSCLE_Message_free(m1)
+        call LIBMUSCLE_Data_free(d1)
+
+        d1 = LIBMUSCLE_Data_create()
+        s1 = YMMSL_Settings_create()
+        call YMMSL_Settings_set(s1, 'key', 'value')
+        m1 = LIBMUSCLE_Message_create(0.0d0, d1, s1)
+        call YMMSL_Settings_free(s1)
+        call LIBMUSCLE_Data_free(d1)
+
+        call assert_true(LIBMUSCLE_Message_has_settings(m1))
+        s2 = LIBMUSCLE_Message_get_settings(m1)
+        call assert_eq_character(YMMSL_Settings_get_as_character(s2, 'key'), 'value')
+        call YMMSL_Settings_free(s2)
+
+        s1 = YMMSL_Settings_create()
+        call YMMSL_Settings_set(s1, 'key2', 'value2')
+        call LIBMUSCLE_Message_set_settings(m1, s1)
+        call YMMSL_Settings_free(s1)
+
+        s2 = LIBMUSCLE_Message_get_settings(m1)
+        call assert_eq_character(YMMSL_Settings_get_as_character(s2, 'key2'), 'value2')
+        call YMMSL_Settings_free(s2)
+
+        call LIBMUSCLE_Message_unset_settings(m1)
+        call assert_false(LIBMUSCLE_Message_has_settings(m1))
+
+        call LIBMUSCLE_Message_free(m1)
+        print *, '[       OK ] message.settings'
+    end subroutine test_message_settings
+
     subroutine test_message
         call test_message_create
         call test_message_timestamps
         call test_message_data
+        call test_message_settings
     end subroutine test_message
 
 end module tests

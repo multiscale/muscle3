@@ -1217,6 +1217,45 @@ LIBMUSCLE_Message
     :p LIBMUSCLE_Message self: The Message object to modify.
     :p LIBMUSCLE_DataConstRef data: The data object to take the value from.
 
+.. f:function:: LIBMUSCLE_Message_has_settings(self)
+
+    Returns whether the message has an associated Settings object.
+
+    :p LIBMUSCLE_Message self: The Message object to inspect.
+    :r has: ``.true.`` iff the message has settings.
+    :rtype has: LIBMUSCLE_DataConstRef
+
+.. f:function:: LIBMUSCLE_Message_get_settings(self)
+
+    Returns the message's associated Settings object.
+
+    Only call if :f:func:`LIBMUSCLE_Message_has_settings` returns ``.true.``.
+
+    :p LIBMUSCLE_Message self: The Message object to inspect.
+    :r settings: (A copy of) the associated settings object.
+    :rtype settings: YMMSL_Settings
+
+.. f:subroutine:: LIBMUSCLE_Message_set_settings(self, settings)
+
+    Sets the message's associated Settings object.
+
+    If the message has settings already, then they will be replaced by the new
+    settings. After calling this, :f:func:`LIBMUSCLE_Message_has_settings` will
+    return ``.true.``.
+
+    :p LIBMUSCLE_Message self: The Message object to modify.
+    :p YMMSL_Settings settings: The new settings.
+
+.. f:subroutine:: LIBMUSCLE_Message_unset_settings(self)
+
+    Removes any associated settings object from the message.
+
+    This may be called whether the message currently has associated settings or
+    not. After calling this function, :f:func:`LIBMUSCLE_Message_has_settings`
+    will return ``.false.``.
+
+    :p LIBMUSCLE_Message self: The Message object to modify.
+
 
 Namespace YMMSL
 ---------------

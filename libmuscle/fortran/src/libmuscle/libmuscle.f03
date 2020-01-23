@@ -176,6 +176,10 @@ module libmuscle
     public :: LIBMUSCLE_Message_set_data_d
     public :: LIBMUSCLE_Message_set_data_dcr
     public :: LIBMUSCLE_Message_set_data
+    public :: LIBMUSCLE_Message_has_settings
+    public :: LIBMUSCLE_Message_get_settings
+    public :: LIBMUSCLE_Message_set_settings
+    public :: LIBMUSCLE_Message_unset_settings
 
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_success = 0
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_runtime_error = 1
@@ -1455,6 +1459,39 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
             integer (c_intptr_t), value, intent(in) :: data
         end subroutine LIBMUSCLE_Message_set_data_dcr_
+
+        integer (c_int) function LIBMUSCLE_Message_has_settings_( &
+                self) &
+                bind(C, name="LIBMUSCLE_Message_has_settings_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_Message_has_settings_
+
+        integer (c_intptr_t) function LIBMUSCLE_Message_get_settings_( &
+                self) &
+                bind(C, name="LIBMUSCLE_Message_get_settings_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_Message_get_settings_
+
+        subroutine LIBMUSCLE_Message_set_settings_( &
+                self, settings) &
+                bind(C, name="LIBMUSCLE_Message_set_settings_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_intptr_t), value, intent(in) :: settings
+        end subroutine LIBMUSCLE_Message_set_settings_
+
+        subroutine LIBMUSCLE_Message_unset_settings_( &
+                self) &
+                bind(C, name="LIBMUSCLE_Message_unset_settings_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end subroutine LIBMUSCLE_Message_unset_settings_
 
     end interface
 
@@ -4948,6 +4985,50 @@ contains
             self%ptr, &
             data%ptr)
     end subroutine LIBMUSCLE_Message_set_data_dcr
+
+    function LIBMUSCLE_Message_has_settings(self)
+        implicit none
+        type(LIBMUSCLE_Message), intent(in) :: self
+        logical :: LIBMUSCLE_Message_has_settings
+
+        integer (c_int) :: ret_val
+
+        ret_val = LIBMUSCLE_Message_has_settings_( &
+            self%ptr)
+
+        LIBMUSCLE_Message_has_settings = ret_val .ne. 0
+    end function LIBMUSCLE_Message_has_settings
+
+    function LIBMUSCLE_Message_get_settings(self)
+        implicit none
+        type(LIBMUSCLE_Message), intent(in) :: self
+        type(YMMSL_Settings) :: LIBMUSCLE_Message_get_settings
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Message_get_settings_( &
+            self%ptr)
+
+        LIBMUSCLE_Message_get_settings%ptr = ret_val
+    end function LIBMUSCLE_Message_get_settings
+
+    subroutine LIBMUSCLE_Message_set_settings(self, settings)
+        implicit none
+        type(LIBMUSCLE_Message), intent(in) :: self
+        type(YMMSL_Settings), intent(in) :: settings
+
+        call LIBMUSCLE_Message_set_settings_( &
+            self%ptr, &
+            settings%ptr)
+    end subroutine LIBMUSCLE_Message_set_settings
+
+    subroutine LIBMUSCLE_Message_unset_settings(self)
+        implicit none
+        type(LIBMUSCLE_Message), intent(in) :: self
+
+        call LIBMUSCLE_Message_unset_settings_( &
+            self%ptr)
+    end subroutine LIBMUSCLE_Message_unset_settings
 
 
     function LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create(count)

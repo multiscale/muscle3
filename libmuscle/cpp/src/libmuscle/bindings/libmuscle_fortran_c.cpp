@@ -2398,6 +2398,31 @@ void LIBMUSCLE_Message_set_data_dcr_(std::intptr_t self, std::intptr_t data) {
     return;
 }
 
+int LIBMUSCLE_Message_has_settings_(std::intptr_t self) {
+    Message * self_p = reinterpret_cast<Message *>(self);
+    bool result = self_p->has_settings();
+    return result ? 1 : 0;
+}
+
+std::intptr_t LIBMUSCLE_Message_get_settings_(std::intptr_t self) {
+    Message * self_p = reinterpret_cast<Message *>(self);
+    Settings * result = new Settings(self_p->settings());
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+void LIBMUSCLE_Message_set_settings_(std::intptr_t self, std::intptr_t settings) {
+    Message * self_p = reinterpret_cast<Message *>(self);
+    Settings * settings_p = reinterpret_cast<Settings *>(settings);
+    self_p->set_settings(*settings_p);
+    return;
+}
+
+void LIBMUSCLE_Message_unset_settings_(std::intptr_t self) {
+    Message * self_p = reinterpret_cast<Message *>(self);
+    self_p->unset_settings();
+    return;
+}
+
 std::intptr_t LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(int count) {
     CmdLineArgs * result = new CmdLineArgs(count);
     return reinterpret_cast<std::intptr_t>(result);

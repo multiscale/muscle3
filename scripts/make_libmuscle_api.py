@@ -442,6 +442,11 @@ message_desc = Class('Message', None, [
         cpp_chain_call=lambda **kwargs: 'self_p->set_data({})'.format(
             kwargs['cpp_args'])),
     OverloadSet('set_data', ['set_data_d', 'set_data_dcr']),
+    MemFun(Bool(), 'has_settings'),
+    MemFun(Obj('Settings'), 'get_settings',
+        cpp_chain_call=lambda **kwargs: 'self_p->settings()'),
+    MemFun(Void(), 'set_settings', [Obj('Settings', 'settings')]),
+    MemFun(Void(), 'unset_settings'),
     ])
 
 

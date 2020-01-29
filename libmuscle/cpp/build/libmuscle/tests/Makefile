@@ -50,8 +50,8 @@ LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config
 LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs msgpack)
 LDFLAGS2 += $(EXTRA_LINK_DIRS)
 
-FORTRAN_API_MODULES = $(CURDIR)/../../../../fortran/src/libmuscle/libmuscle.f03
-FORTRAN_API_MODULES += $(CURDIR)/../../../../fortran/src/ymmsl/ymmsl.f03
+FORTRAN_API_MODULES = $(CURDIR)/../../../../fortran/src/ymmsl/ymmsl.f03
+FORTRAN_API_MODULES += $(CURDIR)/../../../../fortran/src/libmuscle/libmuscle.f03
 
 $(info libmuscle test deps: $(deps))
 -include $(deps)

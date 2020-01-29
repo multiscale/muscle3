@@ -13,14 +13,14 @@ from api_generator import (
 color_desc = Enum('Color', [('RED', 1), ('GREEN', 2), ('BLUE', 3)])
 
 
-cmdlineargs_desc = Class('CmdLineArgs', [
+cmdlineargs_desc = Class('CmdLineArgs', None, [
         Constructor([Int('count')]),
         Destructor(),
         MemFun(Void(), 'set_arg', [Int('i'), String('arg')]),
         ])
 
 
-echo_desc = Class('Echo', [
+echo_desc = Class('Echo', None, [
         Constructor([Obj('CmdLineArgs', 'cla')], fc_override=(
             'std::intptr_t ECHO_Echo_create_(std::intptr_t cla) {\n'
             '    CmdLineArgs * cla_p = reinterpret_cast<CmdLineArgs *>(\n'
@@ -81,6 +81,7 @@ test_api_description = API(
             'stdexcept',
             'string',
             'vector'],
+        [],
         [
             Namespace('echolib', True, 'ECHO', [color_desc], [echo_desc]),
             Namespace('echolib::impl', False, 'ECHO_impl', [],

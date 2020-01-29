@@ -4,7 +4,7 @@ cpp_test_files := libmuscle/cpp/build/ymmsl/tests/test_* libmuscle/cpp/build/lib
 all: cpp
 
 .PHONY: test
-test: test_python test_cpp
+test: test_python test_scripts test_cpp
 
 .PHONY: test_python
 test_python: cpp_tests
@@ -35,6 +35,7 @@ docsclean:
 .PHONY: clean
 clean:
 	cd libmuscle/cpp && $(MAKE) clean
+	cd scripts && $(MAKE) clean
 
 .PHONY: distclean
 distclean:

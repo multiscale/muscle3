@@ -1,8 +1,12 @@
-all: use_echolib
+all:
 
 CXX?=g++
 FORTRAN?=gfortran
 
+
+.PHONY: clean
+clean:
+	cd tests && $(MAKE) clean
 
 .PHONY: test
 test:

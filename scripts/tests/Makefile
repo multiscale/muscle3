@@ -8,10 +8,10 @@ FORTRAN?=gfortran
 clean:
 	rm -f echolib_fortran_c.cpp echolib.f03 libecholib.so echolib.mod test_use_echolib
 
-echolib_fortran_c.cpp:
+echolib_fortran_c.cpp: ../api_generator.py make_echolib_api.py
 	PYTHONPATH=$(PWD)/../ ./make_echolib_api.py --fortran-c-wrappers >echolib_fortran_c.cpp
 
-echolib.f03:
+echolib.f03: ../api_generator.py make_echolib_api.py
 	PYTHONPATH=$(PWD)/../ ./make_echolib_api.py --fortran-module >echolib.f03
 
 libecholib.so: echolib.hpp echolib.cpp echolib_fortran_c.cpp cmdlineargs.cpp

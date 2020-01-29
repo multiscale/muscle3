@@ -490,7 +490,8 @@ libmuscle_api_description = API(
             'libmuscle/libmuscle.hpp',
             'libmuscle/bindings/cmdlineargs.hpp',
             'ymmsl/ymmsl.hpp',
-            'stdexcept'],
+            'stdexcept',
+            'typeinfo'],
         [
             'ymmsl'],
         [

@@ -6,6 +6,7 @@
 #include <libmuscle/bindings/cmdlineargs.hpp>
 #include <ymmsl/ymmsl.hpp>
 #include <stdexcept>
+#include <typeinfo>
 
 
 using libmuscle::DataConstRef;

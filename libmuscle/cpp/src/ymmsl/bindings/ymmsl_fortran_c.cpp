@@ -5,6 +5,7 @@
 #include <ymmsl/ymmsl.hpp>
 #include <cstring>
 #include <stdexcept>
+#include <typeinfo>
 
 
 using ymmsl::Operator;

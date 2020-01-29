@@ -86,7 +86,8 @@ ymmsl_api_description = API(
         [
             'ymmsl/ymmsl.hpp',
             'cstring',
-            'stdexcept'],
+            'stdexcept',
+            'typeinfo'],
         [],
         [
             Namespace(

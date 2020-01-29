@@ -155,6 +155,16 @@ module libmuscle
     public :: LIBMUSCLE_Data_set_item
     public :: LIBMUSCLE_Data_key
     public :: LIBMUSCLE_Data_value
+    type LIBMUSCLE_PortsDescription
+        integer (c_intptr_t) :: ptr
+    end type LIBMUSCLE_PortsDescription
+    public :: LIBMUSCLE_PortsDescription
+
+    public :: LIBMUSCLE_PortsDescription_create
+    public :: LIBMUSCLE_PortsDescription_free
+    public :: LIBMUSCLE_PortsDescription_add
+    public :: LIBMUSCLE_PortsDescription_num_ports
+    public :: LIBMUSCLE_PortsDescription_get
     type LIBMUSCLE_Message
         integer (c_intptr_t) :: ptr
     end type LIBMUSCLE_Message
@@ -1335,6 +1345,56 @@ module libmuscle
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Data_value_
+
+        integer (c_intptr_t) function LIBMUSCLE_PortsDescription_create_( &
+                ) &
+                bind(C, name="LIBMUSCLE_PortsDescription_create_")
+
+            use iso_c_binding
+        end function LIBMUSCLE_PortsDescription_create_
+
+        subroutine LIBMUSCLE_PortsDescription_free_( &
+                self) &
+                bind(C, name="LIBMUSCLE_PortsDescription_free_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end subroutine LIBMUSCLE_PortsDescription_free_
+
+        subroutine LIBMUSCLE_PortsDescription_add_( &
+                self, op, port, port_size) &
+                bind(C, name="LIBMUSCLE_PortsDescription_add_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_int), value, intent(in) :: op
+            character, intent(in) :: port
+            integer (c_size_t), value, intent(in) :: port_size
+        end subroutine LIBMUSCLE_PortsDescription_add_
+
+        integer (c_size_t) function LIBMUSCLE_PortsDescription_num_ports_( &
+                self, op) &
+                bind(C, name="LIBMUSCLE_PortsDescription_num_ports_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_int), value, intent(in) :: op
+        end function LIBMUSCLE_PortsDescription_num_ports_
+
+        subroutine LIBMUSCLE_PortsDescription_get_( &
+                self, op, i, ret_val, ret_val_size, err_code, err_msg, err_msg_len) &
+                bind(C, name="LIBMUSCLE_PortsDescription_get_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_int), value, intent(in) :: op
+            integer (c_size_t), value, intent(in) :: i
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_size_t), intent(out) :: ret_val_size
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_PortsDescription_get_
 
         integer (c_intptr_t) function LIBMUSCLE_Message_create_td_( &
                 timestamp, data) &
@@ -4811,6 +4871,115 @@ contains
 
         LIBMUSCLE_Data_value%ptr = ret_val
     end function LIBMUSCLE_Data_value
+
+    function LIBMUSCLE_PortsDescription_create()
+        implicit none
+        type(LIBMUSCLE_PortsDescription) :: LIBMUSCLE_PortsDescription_create
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_PortsDescription_create_( &
+    )
+
+        LIBMUSCLE_PortsDescription_create%ptr = ret_val
+    end function LIBMUSCLE_PortsDescription_create
+
+    subroutine LIBMUSCLE_PortsDescription_free(self)
+        implicit none
+        type(LIBMUSCLE_PortsDescription), intent(in) :: self
+
+        call LIBMUSCLE_PortsDescription_free_( &
+            self%ptr)
+    end subroutine LIBMUSCLE_PortsDescription_free
+
+    subroutine LIBMUSCLE_PortsDescription_add(self, op, port)
+        implicit none
+        type(LIBMUSCLE_PortsDescription), intent(in) :: self
+        integer(YMMSL_Operator), intent(in) :: op
+        character (len=*), intent(in) :: port
+
+        call LIBMUSCLE_PortsDescription_add_( &
+            self%ptr, &
+            op, &
+            port, int(len(port), c_size_t))
+    end subroutine LIBMUSCLE_PortsDescription_add
+
+    function LIBMUSCLE_PortsDescription_num_ports(self, op)
+        implicit none
+        type(LIBMUSCLE_PortsDescription), intent(in) :: self
+        integer(YMMSL_Operator), intent(in) :: op
+        integer (LIBMUSCLE_size) :: LIBMUSCLE_PortsDescription_num_ports
+
+        integer (c_size_t) :: ret_val
+
+        ret_val = LIBMUSCLE_PortsDescription_num_ports_( &
+            self%ptr, &
+            op)
+        LIBMUSCLE_PortsDescription_num_ports = ret_val
+    end function LIBMUSCLE_PortsDescription_num_ports
+
+    function LIBMUSCLE_PortsDescription_get(self, op, i, err_code, err_msg)
+        implicit none
+        type(LIBMUSCLE_PortsDescription), intent(in) :: self
+        integer(YMMSL_Operator), intent(in) :: op
+        integer (LIBMUSCLE_size), intent(in) :: i
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        character(:), allocatable :: LIBMUSCLE_PortsDescription_get
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t) :: ret_val_size
+        character (c_char), dimension(:), pointer :: f_ret_ptr
+        integer :: i_loop
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_PortsDescription_get_( &
+            self%ptr, &
+            op, &
+            i, &
+            ret_val, &
+            ret_val_size, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
+        allocate (character(ret_val_size) :: LIBMUSCLE_PortsDescription_get)
+        do i_loop = 1, ret_val_size
+            LIBMUSCLE_PortsDescription_get(i_loop:i_loop) = f_ret_ptr(i_loop)
+        end do
+    end function LIBMUSCLE_PortsDescription_get
 
     function LIBMUSCLE_Message_create_td(timestamp, data)
         implicit none

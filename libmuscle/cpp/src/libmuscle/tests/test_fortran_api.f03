@@ -939,6 +939,23 @@ contains
         print *, '[       OK ] operator.use'
     end subroutine test_operator
 
+    subroutine test_ports_description
+        use libmuscle
+        use ymmsl
+        implicit none
+
+        type(LIBMUSCLE_PortsDescription) :: pd
+
+        print *, '[  RUN     ] ports_description.use'
+        pd = LIBMUSCLE_PortsDescription_create()
+        call assert_eq_size(LIBMUSCLE_PortsDescription_num_ports(pd, YMMSL_Operator_F_INIT), 0_LIBMUSCLE_size)
+        call LIBMUSCLE_PortsDescription_add(pd, YMMSL_Operator_F_INIT, 'init_state')
+        call assert_eq_size(LIBMUSCLE_PortsDescription_num_ports(pd, YMMSL_Operator_F_INIT), 1_LIBMUSCLE_size)
+        call assert_eq_character(LIBMUSCLE_PortsDescription_get(pd, YMMSL_Operator_F_INIT, 1_LIBMUSCLE_size), 'init_state')
+        call LIBMUSCLE_PortsDescription_free(pd)
+        print *, '[       OK ] ports_description.use'
+    end subroutine test_ports_description
+
 end module tests
 
 program test_fortran_api
@@ -952,6 +969,7 @@ program test_fortran_api
     call test_settings
     call test_operator
     call test_message
+    call test_ports_description
 
     print *, '[==========] Fortran API test'
     print *, '[  PASSED  ] Fortran API test'

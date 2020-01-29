@@ -10,8 +10,10 @@
 
 using libmuscle::DataConstRef;
 using libmuscle::Data;
+using libmuscle::PortsDescription;
 using libmuscle::Message;
 using libmuscle::impl::bindings::CmdLineArgs;
+using ymmsl::Operator;
 using ymmsl::Settings;
 
 
@@ -2303,6 +2305,82 @@ std::intptr_t LIBMUSCLE_Data_value_(
     }
     catch (std::out_of_range const & e) {
         *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+std::intptr_t LIBMUSCLE_PortsDescription_create_() {
+    PortsDescription * result = new PortsDescription();
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+void LIBMUSCLE_PortsDescription_free_(std::intptr_t self) {
+    PortsDescription * self_p = reinterpret_cast<PortsDescription *>(self);
+    delete self_p;
+    return;
+}
+
+void LIBMUSCLE_PortsDescription_add_(std::intptr_t self, int op, char * port, std::size_t port_size) {
+    PortsDescription * self_p = reinterpret_cast<PortsDescription *>(self);
+    Operator op_e = static_cast<Operator>(op);
+    std::string port_s(port, port_size);
+    (*self_p)[op_e].push_back(port_s);
+    return;
+}
+
+std::size_t LIBMUSCLE_PortsDescription_num_ports_(std::intptr_t self, int op) {
+    PortsDescription * self_p = reinterpret_cast<PortsDescription *>(self);
+    Operator op_e = static_cast<Operator>(op);
+    std::size_t result = 0u;
+    if (self_p->count(op_e))
+        result = (*self_p)[op_e].size();
+    return result;
+}
+
+void LIBMUSCLE_PortsDescription_get_(std::intptr_t self, int op, std::size_t i, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    PortsDescription * self_p = reinterpret_cast<PortsDescription *>(self);
+    Operator op_e = static_cast<Operator>(op);
+    try {
+        *err_code = 0;
+        static std::string result;
+        result = (*self_p)[op_e].at(i - 1);
+        *ret_val = const_cast<char*>(result.c_str());
+        *ret_val_size = result.size();
+        return;
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());

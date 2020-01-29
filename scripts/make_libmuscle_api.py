@@ -450,6 +450,27 @@ message_desc = Class('Message', None, [
     ])
 
 
+portsdescription_desc = Class('PortsDescription', None, [
+    Constructor(),
+    Destructor(),
+    MemFun(Void(), 'add', [EnumVal('Operator', 'op'), String('port')],
+        cpp_chain_call=lambda **kwargs: '(*self_p)[op_e].push_back(port_s)'),
+    MemFun(Sizet(), 'num_ports', [EnumVal('Operator', 'op')],
+        fc_override=(
+            'std::size_t LIBMUSCLE_PortsDescription_num_ports_(std::intptr_t self, int op) {\n'
+            '    PortsDescription * self_p = reinterpret_cast<PortsDescription *>(self);\n'
+            '    Operator op_e = static_cast<Operator>(op);\n'
+            '    std::size_t result = 0u;\n'
+            '    if (self_p->count(op_e))\n'
+            '        result = (*self_p)[op_e].size();\n'
+            '    return result;\n'
+            '}\n\n')
+        ),
+    MemFun(String(), 'get', [EnumVal('Operator', 'op'), Sizet('i')], True,
+        cpp_chain_call=lambda **kwargs: '(*self_p)[op_e].at(i - 1)'),
+    ])
+
+
 cmdlineargs_desc = Class('CmdLineArgs', None, [
         Constructor([Int('count')]),
         Destructor(),
@@ -457,7 +478,10 @@ cmdlineargs_desc = Class('CmdLineArgs', None, [
         ])
 
 
-ymmsl_forward = [Class('Settings', None, [])]
+ymmsl_forward_enums = [Enum('Operator', [])]
+
+
+ymmsl_forward_classes = [Class('Settings', None, [])]
 
 
 libmuscle_api_description = API(
@@ -471,10 +495,12 @@ libmuscle_api_description = API(
             'ymmsl'],
         [
             Namespace('libmuscle', True, 'LIBMUSCLE', [], [
-                dataconstref_desc, data_desc, message_desc]),
+                dataconstref_desc, data_desc, portsdescription_desc,
+                message_desc]),
             Namespace('libmuscle::impl::bindings', False,
                       'LIBMUSCLE_IMPL_BINDINGS', [], [cmdlineargs_desc]),
-            Namespace('ymmsl', None, 'YMMSL', [], ymmsl_forward)
+            Namespace('ymmsl', None, 'YMMSL',
+                      ymmsl_forward_enums, ymmsl_forward_classes)
         ])
 
 

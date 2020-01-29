@@ -890,7 +890,6 @@ LIBMUSCLE_Data
     .. code-block:: fortran
 
         type(LIBMUSCLE_Data) :: d1, d2
-        character(len=:), allocatable :: s1
 
         d1 = LIBMUSCLE_Data_create_nils(10_LIBMUSCLE_size)
         d2 = LIBMUSCLE_Data_get_item(d1, 5_LIBMUSCLE_size)
@@ -941,7 +940,7 @@ LIBMUSCLE_Data
         d3 = LIBMUSCLE_Data_get_item(d1, 'key1')
         s1 = LIBMUSCLE_Data_as_character(d3)
         print *, s1     ! prints 'value1'
-        call LIBMUSCLE_Data_free(s1)
+        deallocate(s1)
         call LIBMUSCLE_Data_free(d3)
         call LIBMUSCLE_Data_free(d2)
         call LIBMUSCLE_Data_free(d1)
@@ -1255,6 +1254,69 @@ LIBMUSCLE_Message
     will return ``.false.``.
 
     :p LIBMUSCLE_Message self: The Message object to modify.
+
+LIBMUSCLE_PortsDescription
+``````````````````````````
+.. f:type:: LIBMUSCLE_PortsDescription
+
+    Describes the ports of a compute element.
+
+    This data structure is passed to libmuscle to describe how a
+    compute element connects to the outside world, or it can be
+    obtained from libmuscle in order to find out how a compute
+    element with flexible ports was used.
+
+    A PortsDescription contains a list of port names for each
+    :f:type:`YMMSL_Operator`.
+
+.. f:function:: LIBMUSCLE_PortsDescription_create()
+
+    Create a PortsDescription containing no port names.
+
+    :r ports_description: A new PortsDescription object.
+    :rtype ports_description: LIBMUSCLE_PortsDescription
+
+.. f:subroutine:: LIBMUSCLE_PortsDescription_free(self)
+
+    Frees a PortsDescription object.
+
+    This deallocates all resources associated with the object, and
+    should be called for every PortsDescription object when you're
+    done using it.
+
+    :p LIBMUSCLE_PortsDescription self: The object to free.
+
+.. f:subroutine:: LIBMUSCLE_PortsDescription_add(self, operator, port)
+
+    Add a port name to a PortsDescription object.
+
+    :p LIBMUSCLE_PortsDescription self: The object to modify.
+    :p YMMSL_Operator operator: The operator under which to put the port.
+    :p character port: The name of the port to add.
+
+.. f:function:: LIBMUSCLE_PortsDescription_num_ports(self, operator)
+
+    Get the number of ports in this object for the given operator.
+
+    :p LIBMUSCLE_PortsDescription self: The object to inspect.
+    :p YMMSL_Operator operator: A chosen operator.
+    :r num_ports: The number of ports for this operator (of kind
+            LIBMUSCLE_size).
+    :rtype num_ports: integer
+
+.. f:function:: LIBMUSCLE_PortsDescription_get(self, operator, i)
+
+    Get the i'th port name for the given operator.
+
+    Parameter ``i`` must be in the range 1..num_ports inclusive, where
+    num_ports is the result of calling
+    :f:func:`LIBMUSCLE_PortsDescription_num_ports` with the same
+    object and operator.
+
+    :p LIBMUSCLE_PortsDescription self: The object to inspect.
+    :p YMMSL_Operator operator: A chosen operator.
+    :r port_name: The name of the given port.
+    :rtype port_name: character
 
 
 Namespace YMMSL

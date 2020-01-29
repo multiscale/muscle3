@@ -924,6 +924,21 @@ contains
         call test_message_settings
     end subroutine test_message
 
+    subroutine test_operator
+        use ymmsl
+
+        integer(YMMSL_Operator) :: o1
+
+        print *, '[  RUN     ] operator.use'
+        o1 = YMMSL_Operator_NONE
+        o1 = YMMSL_Operator_F_INIT
+        o1 = YMMSL_Operator_O_I
+        o1 = YMMSL_Operator_S
+        o1 = YMMSL_Operator_B
+        o1 = YMMSL_Operator_O_F
+        print *, '[       OK ] operator.use'
+    end subroutine test_operator
+
 end module tests
 
 program test_fortran_api
@@ -935,6 +950,7 @@ program test_fortran_api
 
     call test_data
     call test_settings
+    call test_operator
     call test_message
 
     print *, '[==========] Fortran API test'

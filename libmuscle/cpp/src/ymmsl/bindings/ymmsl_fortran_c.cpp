@@ -7,6 +7,7 @@
 #include <stdexcept>
 
 
+using ymmsl::Operator;
 using ymmsl::Settings;
 
 

@@ -22,6 +22,14 @@ module ymmsl
     integer, parameter, public :: YMMSL_real4 = selected_real_kind(6)
     integer, parameter, public :: YMMSL_real8 = selected_real_kind(15)
 
+    integer, parameter, public :: YMMSL_Operator_NONE = 0
+    integer, parameter, public :: YMMSL_Operator_F_INIT = 1
+    integer, parameter, public :: YMMSL_Operator_O_I = 2
+    integer, parameter, public :: YMMSL_Operator_S = 3
+    integer, parameter, public :: YMMSL_Operator_B = 4
+    integer, parameter, public :: YMMSL_Operator_O_F = 5
+    integer, parameter, public :: YMMSL_Operator = selected_int_kind(9)
+
     type YMMSL_Settings
         integer (c_intptr_t) :: ptr
     end type YMMSL_Settings

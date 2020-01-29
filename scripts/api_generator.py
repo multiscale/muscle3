@@ -1383,9 +1383,9 @@ class IndexAssignmentOperator(MemFun):
     This generates code suitable for assigning to a subobject accessed
     via the square brackets operator, i.e. self[key] = value.
     """
-    def __init__(self, name: str, param: Par, may_throw: bool=False
+    def __init__(self, name: str, params: List[Par], may_throw: bool=False
                  ) -> None:
-        super().__init__(Void(), name, param, may_throw)
+        super().__init__(Void(), name, params, may_throw)
 
     def __copy__(self) -> 'IndexAssignmentOperator':
         result = IndexAssignmentOperator(self.name, copy(self.params[0]),
@@ -1928,7 +1928,7 @@ class Enum:
         for val_name, val_value in self.values:
             result += 'integer, parameter{} :: {}_{}_{} = {}\n'.format(
                     public, self.ns_prefix, self.name, val_name, val_value)
-        result += ('integer, parameter{0} :: {1}_{2} = kind(2)\n\n'
+        result += ('integer, parameter{0} :: {1}_{2} = selected_int_kind(9)\n\n'
                 ).format(public, self.ns_prefix, self.name)
         return textwrap.indent(result, 4*' ')
 

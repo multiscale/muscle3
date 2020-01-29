@@ -1265,6 +1265,28 @@ Namespace YMMSL
 
 .. f:currentmodule:: ymmsl
 
+YMMSL_Operator
+``````````````
+
+YMMSL operators are represented in Python by integer constants of kind
+``YMMSL_Operator``. The following values are available:
+
++----------+-----------------------+
+| Operator | Constant              |
++==========+=======================+
+|   None   | YMMSL_Operator_NONE   |
++----------+-----------------------+
+|  f_init  | YMMSL_Operator_F_INIT |
++----------+-----------------------+
+|   O_i    | YMMSL_Operator_O_I    |
++----------+-----------------------+
+|    S     | YMMSL_Operator_S      |
++----------+-----------------------+
+|    B     | YMMSL_Operator_B      |
++----------+-----------------------+
+|   O_f    | YMMSL_Operator_O_F    |
++----------+-----------------------+
+
 YMMSL_Settings
 ``````````````
 .. f:type:: YMMSL_Settings

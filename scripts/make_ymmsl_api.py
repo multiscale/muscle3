@@ -13,6 +13,17 @@ from api_generator import (
         Void)
 
 
+# These need to kept in sync with the values in the C++ implementation
+operator_desc = Enum('Operator', [
+        ('NONE', '0'),
+        ('F_INIT', '1'),
+        ('O_I', '2'),
+        ('S', '3'),
+        ('B', '4'),
+        ('O_F', '5')
+        ])
+
+
 settings_desc = Class('Settings', None, [
     Constructor(),
     Destructor(),
@@ -78,7 +89,9 @@ ymmsl_api_description = API(
             'stdexcept'],
         [],
         [
-            Namespace('ymmsl', True, 'YMMSL', [], [settings_desc]),
+            Namespace(
+                'ymmsl', True, 'YMMSL',
+                [operator_desc], [settings_desc]),
         ])
 
 

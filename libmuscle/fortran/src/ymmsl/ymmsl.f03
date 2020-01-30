@@ -8,10 +8,10 @@ module ymmsl
     private
 
     integer, parameter, public :: YMMSL_success = 0
-    integer, parameter, public :: YMMSL_runtime_error = 1
-    integer, parameter, public :: YMMSL_domain_error = 2
-    integer, parameter, public :: YMMSL_out_of_range = 3
-    integer, parameter, public :: YMMSL_logic_error = 4
+    integer, parameter, public :: YMMSL_domain_error = 1
+    integer, parameter, public :: YMMSL_out_of_range = 2
+    integer, parameter, public :: YMMSL_logic_error = 3
+    integer, parameter, public :: YMMSL_runtime_error = 4
     integer, parameter, public :: YMMSL_bad_cast = 5
 
     integer, parameter, public :: YMMSL_int1 = selected_int_kind(2)

@@ -7,10 +7,10 @@ from typing import Callable, Dict, List, Optional, Tuple, Union
 
 error_codes = {
         'success': 0,
-        'runtime_error': 1,
-        'domain_error': 2,
-        'out_of_range': 3,
-        'logic_error': 4,
+        'domain_error': 1,
+        'out_of_range': 2,
+        'logic_error': 3,
+        'runtime_error': 4,
         'bad_cast': 5
         }
 

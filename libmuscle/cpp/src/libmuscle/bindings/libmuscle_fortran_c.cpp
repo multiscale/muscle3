@@ -181,28 +181,28 @@ int LIBMUSCLE_DataConstRef_as_logical_(std::intptr_t self, int * err_code, char 
         bool result = self_p->as<bool>();
         return result ? 1 : 0;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -228,28 +228,28 @@ void LIBMUSCLE_DataConstRef_as_character_(std::intptr_t self, char ** ret_val, s
         *ret_val_size = result.size();
         return;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -272,28 +272,28 @@ int LIBMUSCLE_DataConstRef_as_int_(std::intptr_t self, int * err_code, char ** e
         int result = self_p->as<int>();
         return result;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -316,28 +316,28 @@ char LIBMUSCLE_DataConstRef_as_int1_(std::intptr_t self, int * err_code, char **
         char result = self_p->as<char>();
         return result;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -360,28 +360,28 @@ short int LIBMUSCLE_DataConstRef_as_int2_(std::intptr_t self, int * err_code, ch
         short int result = self_p->as<int16_t>();
         return result;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -404,28 +404,28 @@ int32_t LIBMUSCLE_DataConstRef_as_int4_(std::intptr_t self, int * err_code, char
         int32_t result = self_p->as<int32_t>();
         return result;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -448,28 +448,28 @@ int64_t LIBMUSCLE_DataConstRef_as_int8_(std::intptr_t self, int * err_code, char
         int64_t result = self_p->as<int64_t>();
         return result;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -492,28 +492,28 @@ float LIBMUSCLE_DataConstRef_as_real4_(std::intptr_t self, int * err_code, char 
         float result = self_p->as<float>();
         return result;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -536,28 +536,28 @@ double LIBMUSCLE_DataConstRef_as_real8_(std::intptr_t self, int * err_code, char
         double result = self_p->as<double>();
         return result;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -580,28 +580,28 @@ std::intptr_t LIBMUSCLE_DataConstRef_as_settings_(std::intptr_t self, int * err_
         Settings * result = new Settings(self_p->as<Settings>());
         return reinterpret_cast<std::intptr_t>(result);
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -852,28 +852,28 @@ int LIBMUSCLE_Data_as_logical_(std::intptr_t self, int * err_code, char ** err_m
         bool result = self_p->as<bool>();
         return result ? 1 : 0;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -899,28 +899,28 @@ void LIBMUSCLE_Data_as_character_(std::intptr_t self, char ** ret_val, std::size
         *ret_val_size = result.size();
         return;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -943,28 +943,28 @@ int LIBMUSCLE_Data_as_int_(std::intptr_t self, int * err_code, char ** err_msg, 
         int result = self_p->as<int>();
         return result;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -987,28 +987,28 @@ char LIBMUSCLE_Data_as_int1_(std::intptr_t self, int * err_code, char ** err_msg
         char result = self_p->as<char>();
         return result;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -1031,28 +1031,28 @@ short int LIBMUSCLE_Data_as_int2_(std::intptr_t self, int * err_code, char ** er
         short int result = self_p->as<int16_t>();
         return result;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -1075,28 +1075,28 @@ int32_t LIBMUSCLE_Data_as_int4_(std::intptr_t self, int * err_code, char ** err_
         int32_t result = self_p->as<int32_t>();
         return result;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -1119,28 +1119,28 @@ int64_t LIBMUSCLE_Data_as_int8_(std::intptr_t self, int * err_code, char ** err_
         int64_t result = self_p->as<int64_t>();
         return result;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -1163,28 +1163,28 @@ float LIBMUSCLE_Data_as_real4_(std::intptr_t self, int * err_code, char ** err_m
         float result = self_p->as<float>();
         return result;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -1207,28 +1207,28 @@ double LIBMUSCLE_Data_as_real8_(std::intptr_t self, int * err_code, char ** err_
         double result = self_p->as<double>();
         return result;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -1251,28 +1251,28 @@ std::intptr_t LIBMUSCLE_Data_as_settings_(std::intptr_t self, int * err_code, ch
         Settings * result = new Settings(self_p->as<Settings>());
         return reinterpret_cast<std::intptr_t>(result);
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -1458,28 +1458,28 @@ void LIBMUSCLE_Data_set_item_key_logical_(std::intptr_t self, char * key, std::s
         (*self_p)[key_s] = value != 0;
         return;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -1504,28 +1504,28 @@ void LIBMUSCLE_Data_set_item_key_character_(std::intptr_t self, char * key, std:
         (*self_p)[key_s] = value_s;
         return;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -1549,28 +1549,28 @@ void LIBMUSCLE_Data_set_item_key_int1_(std::intptr_t self, char * key, std::size
         (*self_p)[key_s] = value;
         return;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -1594,28 +1594,28 @@ void LIBMUSCLE_Data_set_item_key_int2_(std::intptr_t self, char * key, std::size
         (*self_p)[key_s] = value;
         return;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -1639,28 +1639,28 @@ void LIBMUSCLE_Data_set_item_key_int4_(std::intptr_t self, char * key, std::size
         (*self_p)[key_s] = value;
         return;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -1684,28 +1684,28 @@ void LIBMUSCLE_Data_set_item_key_int8_(std::intptr_t self, char * key, std::size
         (*self_p)[key_s] = value;
         return;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -1729,28 +1729,28 @@ void LIBMUSCLE_Data_set_item_key_real4_(std::intptr_t self, char * key, std::siz
         (*self_p)[key_s] = value;
         return;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -1774,28 +1774,28 @@ void LIBMUSCLE_Data_set_item_key_real8_(std::intptr_t self, char * key, std::siz
         (*self_p)[key_s] = value;
         return;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -1820,28 +1820,28 @@ void LIBMUSCLE_Data_set_item_key_data_(std::intptr_t self, char * key, std::size
         (*self_p)[key_s] = *value_p;
         return;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -1864,28 +1864,28 @@ void LIBMUSCLE_Data_set_item_index_logical_(std::intptr_t self, std::size_t i, i
         (*self_p)[i - 1u] = value != 0;
         return;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -1909,28 +1909,28 @@ void LIBMUSCLE_Data_set_item_index_character_(std::intptr_t self, std::size_t i,
         (*self_p)[i - 1u] = value_s;
         return;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -1953,28 +1953,28 @@ void LIBMUSCLE_Data_set_item_index_int1_(std::intptr_t self, std::size_t i, char
         (*self_p)[i - 1u] = value;
         return;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -1997,28 +1997,28 @@ void LIBMUSCLE_Data_set_item_index_int2_(std::intptr_t self, std::size_t i, shor
         (*self_p)[i - 1u] = value;
         return;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -2041,28 +2041,28 @@ void LIBMUSCLE_Data_set_item_index_int4_(std::intptr_t self, std::size_t i, int 
         (*self_p)[i - 1u] = value;
         return;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -2085,28 +2085,28 @@ void LIBMUSCLE_Data_set_item_index_int8_(std::intptr_t self, std::size_t i, int6
         (*self_p)[i - 1u] = value;
         return;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -2129,28 +2129,28 @@ void LIBMUSCLE_Data_set_item_index_real4_(std::intptr_t self, std::size_t i, flo
         (*self_p)[i - 1u] = value;
         return;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -2173,28 +2173,28 @@ void LIBMUSCLE_Data_set_item_index_real8_(std::intptr_t self, std::size_t i, dou
         (*self_p)[i - 1u] = value;
         return;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -2218,28 +2218,28 @@ void LIBMUSCLE_Data_set_item_index_data_(std::intptr_t self, std::size_t i, std:
         (*self_p)[i - 1u] = *value_p;
         return;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();
@@ -2352,28 +2352,28 @@ void LIBMUSCLE_PortsDescription_get_(std::intptr_t self, int op, std::size_t i, 
         *ret_val_size = result.size();
         return;
     }
-    catch (std::runtime_error const & e) {
+    catch (std::domain_error const & e) {
         *err_code = 1;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::domain_error const & e) {
+    catch (std::out_of_range const & e) {
         *err_code = 2;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::out_of_range const & e) {
+    catch (std::logic_error const & e) {
         *err_code = 3;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
-    catch (std::logic_error const & e) {
+    catch (std::runtime_error const & e) {
         *err_code = 4;
         static std::string msg;
         msg = e.what();

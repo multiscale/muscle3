@@ -64,7 +64,7 @@ settings_desc = Class('Settings', None, [
             ') {\n'
             '    Settings * self_p = reinterpret_cast<Settings *>(self);\n'
             '    if (i == 0 || i > self_p->size()) {\n'
-            '       *err_code = 3;\n'
+            '       *err_code = 2;\n'
             '       *err_msg = const_cast<char*>("Key index out of range.");\n'
             '       *err_msg_len = strlen(*err_msg);\n'
             '       return;\n'

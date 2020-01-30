@@ -9,10 +9,10 @@ module libmuscle
     private
 
     integer, parameter, public :: LIBMUSCLE_success = 0
-    integer, parameter, public :: LIBMUSCLE_runtime_error = 1
-    integer, parameter, public :: LIBMUSCLE_domain_error = 2
-    integer, parameter, public :: LIBMUSCLE_out_of_range = 3
-    integer, parameter, public :: LIBMUSCLE_logic_error = 4
+    integer, parameter, public :: LIBMUSCLE_domain_error = 1
+    integer, parameter, public :: LIBMUSCLE_out_of_range = 2
+    integer, parameter, public :: LIBMUSCLE_logic_error = 3
+    integer, parameter, public :: LIBMUSCLE_runtime_error = 4
     integer, parameter, public :: LIBMUSCLE_bad_cast = 5
 
     integer, parameter, public :: LIBMUSCLE_int1 = selected_int_kind(2)
@@ -192,10 +192,10 @@ module libmuscle
     public :: LIBMUSCLE_Message_unset_settings
 
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_success = 0
-    integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_runtime_error = 1
-    integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_domain_error = 2
-    integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_out_of_range = 3
-    integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_logic_error = 4
+    integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_domain_error = 1
+    integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_out_of_range = 2
+    integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_logic_error = 3
+    integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_runtime_error = 4
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_bad_cast = 5
 
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_int1 = selected_int_kind(2)

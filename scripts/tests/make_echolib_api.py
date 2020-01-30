@@ -80,6 +80,7 @@ test_api_description = API(
             'cstdint',
             'stdexcept',
             'string',
+            'typeinfo',
             'vector'],
         [],
         [

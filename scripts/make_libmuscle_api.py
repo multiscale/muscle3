@@ -471,6 +471,160 @@ portsdescription_desc = Class('PortsDescription', None, [
     ])
 
 
+instance_desc = Class('Instance', None, [
+    Constructor([Obj('CmdLineArgs', 'cla')], 'create_autoports', fc_override=(
+        'std::intptr_t LIBMUSCLE_Instance_create_autoports_(std::intptr_t cla) {\n'
+        '    CmdLineArgs * cla_p = reinterpret_cast<CmdLineArgs *>(cla);\n'
+        '    Instance * result = new Instance(cla_p->argc(), cla_p->argv());\n'
+        '    return reinterpret_cast<std::intptr_t>(result);\n'
+        '}\n\n'),
+        f_override=(
+            'type(LIBMUSCLE_Instance) function LIBMUSCLE_Instance_create_autoports()\n'
+            '    implicit none\n'
+            '\n'
+            '    integer :: num_args, i, arg_len\n'
+            '    integer (c_intptr_t) :: cla\n'
+            '    character (kind=c_char, len=:), allocatable :: cur_arg\n'
+            '\n'
+            '    num_args = command_argument_count()\n'
+            '    cla = LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(num_args + 1)\n'
+            '    do i = 0, num_args\n'
+            '        call get_Command_argument(i, length=arg_len)\n'
+            '        allocate (character(arg_len+1) :: cur_arg)\n'
+            '        call get_command_argument(i, value=cur_arg)\n'
+            '        cur_arg(arg_len+1:arg_len+1) = c_null_char\n'
+            '        call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg_( &\n'
+            '               cla, i, cur_arg, int(len(cur_arg), c_size_t))\n'
+            '        deallocate(cur_arg)\n'
+            '    end do\n'
+            '    LIBMUSCLE_Instance_create_autoports%ptr = &\n'
+            '        LIBMUSCLE_Instance_create_autoports_(cla)\n'
+            '    call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_(cla)\n'
+            'end function LIBMUSCLE_Instance_create_autoports\n'
+            '\n')),
+    Constructor(
+        [Obj('CmdLineArgs', 'cla'), Obj('PortsDescription', 'ports')],
+        'create_with_ports',
+        fc_override=(
+            'std::intptr_t LIBMUSCLE_Instance_create_with_ports_(\n'
+            '        std::intptr_t cla,\n'
+            '        std::intptr_t ports\n'
+            ') {\n'
+            '    CmdLineArgs * cla_p = reinterpret_cast<CmdLineArgs *>(cla);\n'
+            '    PortsDescription * ports_p = reinterpret_cast<PortsDescription *>(\n'
+            '            ports);\n'
+            '    Instance * result = new Instance(\n'
+            '        cla_p->argc(), cla_p->argv(), *ports_p);\n'
+            '    return reinterpret_cast<std::intptr_t>(result);\n'
+            '}\n\n'),
+        f_override=(
+            'type(LIBMUSCLE_Instance) function LIBMUSCLE_Instance_create_with_ports(ports)\n'
+            '    implicit none\n'
+            '\n'
+            '    type(LIBMUSCLE_PortsDescription) :: ports\n'
+            '    integer :: num_args, i, arg_len\n'
+            '    integer (c_intptr_t) :: cla\n'
+            '    character (kind=c_char, len=:), allocatable :: cur_arg\n'
+            '\n'
+            '    num_args = command_argument_count()\n'
+            '    cla = LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(num_args + 1)\n'
+            '    do i = 0, num_args\n'
+            '        call get_Command_argument(i, length=arg_len)\n'
+            '        allocate (character(arg_len+1) :: cur_arg)\n'
+            '        call get_command_argument(i, value=cur_arg)\n'
+            '        cur_arg(arg_len+1:arg_len+1) = c_null_char\n'
+            '        call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg_( &\n'
+            '               cla, i, cur_arg, int(len(cur_arg), c_size_t))\n'
+            '        deallocate(cur_arg)\n'
+            '    end do\n'
+            '    LIBMUSCLE_Instance_create_with_ports%ptr = LIBMUSCLE_Instance_create_with_ports_(cla, ports%ptr)\n'
+            '    call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_(cla)\n'
+            'end function LIBMUSCLE_Instance_create_with_ports\n'
+            '\n')),
+    OverloadSet('create', ['create_autoports', 'create_with_ports']),
+    Destructor(),
+    MemFun(
+            Bool(), 'reuse_instance_default',
+            cpp_chain_call=lambda **kwargs: 'self_p->reuse_instance()'),
+    MemFun(
+            Bool(), 'reuse_instance_apply', [Bool('apply_overlay')],
+            cpp_chain_call=lambda **kwargs: (
+                'self_p->reuse_instance({})'.format(kwargs['cpp_args']))
+            ),
+    OverloadSet(
+            'reuse_instance',
+            ['reuse_instance_default', 'reuse_instance_apply']),
+    MemFun(Void(), 'error_shutdown', [String('message')]),
+    MemFunTmpl(
+        [String(), Int64t(), Double(), Bool(), VecDbl('value'),
+            Vec2Dbl('value')],
+        T(), 'get_setting_as', [String('name')], True),
+    MemFun(Obj('PortsDescription'), 'list_ports'),
+    MemFun(Bool(), 'is_connected', [String('port')]),
+    MemFun(Bool(), 'is_vector_port', [String('port')]),
+    MemFun(Bool(), 'is_resizable', [String('port')]),
+    MemFun(Int(), 'get_port_length', [String('port')]),
+    MemFun(Void(), 'set_port_length', [String('port'), Int('length')]),
+
+    MemFun(Void(), 'send_pm',
+           [String('port_name'), Obj('Message', 'message')],
+           cpp_chain_call=lambda **kwargs: 'self_p->send({})'.format(
+               kwargs['cpp_args'])),
+    MemFun(Void(), 'send_pms',
+           [String('port_name'), Obj('Message', 'message'), Int('slot')],
+           cpp_chain_call=lambda **kwargs: 'self_p->send({})'.format(
+               kwargs['cpp_args'])),
+    OverloadSet('send', ['send_pm', 'send_pms']),
+
+    MemFun(Obj('Message'), 'receive_p', [String('port_name')], True,
+           cpp_chain_call=lambda **kwargs: 'self_p->receive({})'.format(
+               kwargs['cpp_args'])),
+    MemFun(Obj('Message'), 'receive_pd',
+           [String('port_name'), Obj('Message', 'default_msg')], True,
+           cpp_chain_call=lambda **kwargs: 'self_p->receive({})'.format(
+               kwargs['cpp_args'])),
+    OverloadSet('receive', ['receive_p', 'receive_pd']),
+
+    MemFun(Obj('Message'), 'receive_ps', [String('port_name'), Int('slot')],
+           True,
+           cpp_chain_call=lambda **kwargs: 'self_p->receive({})'.format(
+               kwargs['cpp_args'])),
+    MemFun(Obj('Message'), 'receive_psd',
+           [String('port_name'), Int('slot'), Obj('Message', 'default_message')],
+           True,
+           cpp_chain_call=lambda **kwargs: 'self_p->receive({})'.format(
+               kwargs['cpp_args'])),
+    OverloadSet('receive_on_slot', ['receive_ps', 'receive_psd']),
+
+    MemFun(Obj('Message'), 'receive_with_settings_p',
+           [String('port_name')], True,
+           cpp_chain_call=lambda **kwargs: (
+               'self_p->receive_with_settings({})'.format(
+               kwargs['cpp_args']))),
+    MemFun(Obj('Message'), 'receive_with_settings_pd',
+           [String('port_name'), Obj('Message', 'default_msg')], True,
+           cpp_chain_call=lambda **kwargs: (
+               'self_p->receive_with_settings({})'.format(
+               kwargs['cpp_args']))),
+    OverloadSet('receive_with_settings',
+                ['receive_with_settings_p', 'receive_with_settings_pd']),
+
+    MemFun(Obj('Message'), 'receive_with_settings_ps',
+           [String('port_name'), Int('slot')], True,
+           cpp_chain_call=lambda **kwargs: (
+               'self_p->receive_with_settings({})'.format(
+               kwargs['cpp_args']))),
+    MemFun(Obj('Message'), 'receive_with_settings_psd',
+           [String('port_name'), Int('slot'), Obj('Message', 'default_msg')],
+           True,
+           cpp_chain_call=lambda **kwargs: (
+               'self_p->receive_with_settings({})'.format(
+               kwargs['cpp_args']))),
+    OverloadSet('receive_with_settings_on_slot',
+                ['receive_with_settings_ps', 'receive_with_settings_psd'])
+    ])
+
+
 cmdlineargs_desc = Class('CmdLineArgs', None, [
         Constructor([Int('count')]),
         Destructor(),
@@ -497,7 +651,7 @@ libmuscle_api_description = API(
         [
             Namespace('libmuscle', True, 'LIBMUSCLE', [], [
                 dataconstref_desc, data_desc, portsdescription_desc,
-                message_desc]),
+                message_desc, instance_desc]),
             Namespace('libmuscle::impl::bindings', False,
                       'LIBMUSCLE_IMPL_BINDINGS', [], [cmdlineargs_desc]),
             Namespace('ymmsl', None, 'YMMSL',

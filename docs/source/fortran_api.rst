@@ -1318,6 +1318,443 @@ LIBMUSCLE_PortsDescription
     :r port_name: The name of the given port.
     :rtype port_name: character
 
+LIBMUSCLE_Instance
+``````````````````````````
+.. f:type:: LIBMUSCLE_Instance
+
+    The Instance class represents a compute element instance in a
+    MUSCLE3 simulation. This class provides a low-level send/receive API for the
+    instance to use.
+
+.. f:function:: LIBMUSCLE_Instance_create()
+
+    Create a new Instance object with ports from the configuration.
+
+    This object must be freed when you're done with it using
+    :f:func:`LIBMUSCLE_Instance_free`.
+
+    :r instance: The newly created instance object.
+    :rtype instance: LIBMUSCLE_Instance
+
+.. f:function:: LIBMUSCLE_Instance_create(ports)
+
+    Create a new Instance object with the given ports.
+
+    This object must be freed when you're done with it using
+    :f:func:`LIBMUSCLE_Instance_free`.
+
+    :p LIBMUSCLE_PortsDescription ports: The ports of the new instance.
+    :r instance: The newly created instance object.
+    :rtype instance: LIBMUSCLE_Instance
+
+.. f:subroutine:: LIBMUSCLE_Instance_free(self)
+
+    Free resources associated with the given Instance object.
+
+    :p LIBMUSCLE_Instance self: The object to free.
+
+.. f:function:: LIBMUSCLE_Instance_reuse_instance(self)
+
+    Checks whether to reuse this instance.
+
+    This method must be called at the beginning of the reuse loop, i.e. before
+    the F_INIT operator, and its return value should decide whether to enter
+    that loop again.
+
+    :p LIBMUSCLE_Instance self: The object to check for reuse.
+    :r reuse: Whether to enter the reuse loop another time.
+    :rtype reuse: logical
+
+.. f:function:: LIBMUSCLE_Instance_reuse_instance(self, apply_overlay)
+
+    Checks whether to reuse this instance.
+
+    This method must be called at the beginning of the reuse loop, i.e. before
+    the F_INIT operator, and its return value should decide whether to enter
+    that loop again.
+
+    This version of this function lets you choose whether to apply the received
+    settings overlay or to return it with the message. If you're going to use
+    :f:func:`LIBMUSCLE_Instance_receive_with_settings` on your F_INIT ports, set
+    this to ``.false.``. If you don't know what that means, just call
+    ``LIBMUSCLE_Instance_reuse_instance()`` with no arguments and all will be
+    fine. If it turns out that you did need to specify ``.false.`` here, MUSCLE
+    3 will tell you in an error message, and you can add it.
+
+    :p LIBMUSCLE_Instance self: The object to check for reuse.
+    :p logical apply_overlay: Whether to apply the received settings overlay.
+    :r reuse: Whether to enter the reuse loop another time.
+    :rtype reuse: logical
+
+.. :f:subroutine:: LIBMUSCLE_Instance_error_shutdown(self, message)
+
+    Logs an error and shuts down the Instance.
+
+    If you detect that something is wrong and want to stop this instance, then
+    you should call this function to shut down the instance before stopping the
+    program. This makes debugging easier.
+
+    :p LIBMUSCLE_Instance self: The instance to shut down.
+    :p character message: An error message describing the problem encountered.
+
+.. :f:function:: LIBMUSCLE_Instance_get_setting_as_character(self, name, err_code, err_msg)
+
+    Returns the value of a character-valued model setting.
+
+    If no setting with the given name exists, ``err_code`` will be set to
+    ``LIBMUSCLE_out_of_range``. If the value is not of type character, then
+    ``err_code`` will be set to ``LIBMUSCLE_bad_cast``. See
+    :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
+
+    :p LIBMUSCLE_Instance self: The instance to get the setting from.
+    :p character name: The name of the setting to retrieve.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The setting's value.
+    :rtype value: character
+
+.. :f:function:: LIBMUSCLE_Instance_get_setting_as_int8(self, name, err_code, err_msg)
+
+    Returns the value of an integer-valued model setting.
+
+    If no setting with the given name exists, ``err_code`` will be set to
+    ``LIBMUSCLE_out_of_range``. If the value is not of type integer, then
+    ``err_code`` will be set to ``LIBMUSCLE_bad_cast``. See
+    :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
+
+    :p LIBMUSCLE_Instance self: The instance to get the setting from.
+    :p character name: The name of the setting to retrieve.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The setting's value (kind=LIBMUSCLE_int8).
+    :rtype value: integer
+
+.. :f:function:: LIBMUSCLE_Instance_get_setting_as_real8(self, name, err_code, err_msg)
+
+    Returns the value of a real-valued model setting.
+
+    If no setting with the given name exists, ``err_code`` will be set to
+    ``LIBMUSCLE_out_of_range``. If the value is not of type integer, then
+    ``err_code`` will be set to ``LIBMUSCLE_bad_cast``. See
+    :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
+
+    :p LIBMUSCLE_Instance self: The instance to get the setting from.
+    :p character name: The name of the setting to retrieve.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The setting's value (kind=LIBMUSCLE_real8).
+    :rtype value: real
+
+.. :f:function:: LIBMUSCLE_Instance_get_setting_as_logical(self, name, err_code, err_msg)
+
+    Returns the value of a logical-valued model setting.
+
+    If no setting with the given name exists, ``err_code`` will be set to
+    ``LIBMUSCLE_out_of_range``. If the value is not of type integer, then
+    ``err_code`` will be set to ``LIBMUSCLE_bad_cast``. See
+    :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
+
+    :p LIBMUSCLE_Instance self: The instance to get the setting from.
+    :p character name: The name of the setting to retrieve.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The setting's value.
+    :rtype value: logical
+
+.. :f:subroutine:: LIBMUSCLE_Instance_get_setting_as_real8array(self, name, value, err_code, err_msg)
+
+    Returns the value of an array-of-real8-valued model setting.
+
+    Note that there is currently no way to get the size of the array in advance.
+    This feature is intended to be used for small fixed arrays, in which case
+    the size will be known in advance to the programmer.
+
+    If no setting with the given name exists, ``err_code`` will be set to
+    ``LIBMUSCLE_out_of_range``. If the value is not a 1D array of real8, then
+    ``err_code`` will be set to ``LIBMUSCLE_bad_cast``. See
+    :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
+
+    :p LIBMUSCLE_Instance self: The instance to get the setting from.
+    :p character name: The name of the setting to retrieve.
+    :p LIBMUSCLE_real8: The returned value (out, dimension(:))
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+
+.. :f:subroutine:: LIBMUSCLE_Instance_get_setting_as_real8array2(self, name, value, err_code, err_msg)
+
+    Returns the value of a 2D-array-of-real8-valued model setting.
+
+    Note that there is currently no way to get the size of the array in advance.
+    This feature is intended to be used for small fixed arrays, in which case
+    the size will be known in advance to the programmer.
+
+    If no setting with the given name exists, ``err_code`` will be set to
+    ``LIBMUSCLE_out_of_range``. If the value is not a 2D array of real8, then
+    ``err_code`` will be set to ``LIBMUSCLE_bad_cast``. See
+    :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
+
+    :p LIBMUSCLE_Instance self: The instance to get the setting from.
+    :p character name: The name of the setting to retrieve.
+    :p LIBMUSCLE_real8: The returned value (out, dimension(:,:))
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+
+.. :f:function:: LIBMUSCLE_Instance_list_ports(self)
+
+    Returns a description of the ports of this instance.
+
+    :p LIBMUSCLE_Instance self: The instance whose ports to describe.
+    :r ports: A description of the ports, organised by operator.
+    :rtype ports: LIBMUSCLE_PortsDescription
+
+.. :f:function:: LIBMUSCLE_Instance_is_connected(self, port)
+
+    Returns whether the given port is connected.
+
+    :p LIBMUSCLE_Instance self: The instance to inspect.
+    :p character port: The name of the port to inspect
+    :r connected: ``.true.`` if the port is connected.
+    :rtype connected: logical
+
+.. :f:function:: LIBMUSCLE_Instance_is_vector_port(self, port)
+
+    Returns whether the given port is a vector port.
+
+    :p LIBMUSCLE_Instance self: The instance to inspect.
+    :p character port: The name of the port to inspect
+    :r connected: ``.true.`` if the port is a vector port.
+    :rtype connected: logical
+
+.. :f:function:: LIBMUSCLE_Instance_is_resizable(self, port, err_code, err_msg)
+
+    Returns whether the port is resizable.
+
+    This function must only be called on vector ports. If the port is a scalar
+    port, ``err_code`` will be set to ``LIBMUSCLE_runtime_error`` and the return
+    value will be invalid.
+
+    :p LIBMUSCLE_Instance self: The instance to inspect.
+    :p character port: The name of the port to inspect
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r connected: ``.true.`` if the port is a vector port.
+    :rtype connected: logical
+
+.. :f:function:: LIBMUSCLE_Instance_get_port_length(self, port, err_code, err_msg)
+
+    Returns the current length of a vector port.
+
+    This function must only be called on vector ports. If the port is a scalar
+    port, ``err_code`` will be set to ``LIBMUSCLE_runtime_error`` and the return
+    value will be invalid.
+
+    :p LIBMUSCLE_Instance self: The instance to inspect.
+    :p character port: The name of the port to inspect
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r connected: ``.true.`` if the port is a vector port.
+    :rtype connected: logical
+
+.. :f:subroutine:: LIBMUSCLE_Instance_set_port_length(self, port, length)
+
+    Sets the current length of a vector port.
+
+    This function must only be called on resizable vector ports. If the port is
+    a scalar port or a non-resizable vector port, ``err_code`` will be set to
+    ``LIBMUSCLE_runtime_error`` and the return value will be invalid.
+
+    :p LIBMUSCLE_Instance self: The instance to change a port on.
+    :p character port: The name of the port to modify.
+    :p integer length: The new length of the port.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+
+.. :f:subroutine:: LIBMUSCLE_Instance_send(self, port_name, message)
+
+    Send a message to the outside world via a port.
+
+    Sending is non-blocking, a copy of the message will be made and stored until
+    the receiver is ready to receive it.
+
+    :p LIBMUSCLE_Instance self: The instance to send a message from.
+    :p character port_name: The name of the port to send on.
+    :p LIBMUSCLE_Message message: The message to send.
+
+.. :f:subroutine:: LIBMUSCLE_Instance_send(self, port_name, message, slot)
+
+    Send a message to the outside world via a slot on a port.
+
+    Sending is non-blocking, a copy of the message will be made and stored until
+    the receiver is ready to receive it.
+
+    :p LIBMUSCLE_Instance self: The instance to send a message from.
+    :p character port_name: The name of the port to send on.
+    :p int slot: The slot to send on.
+    :p LIBMUSCLE_Message message: The message to send.
+
+.. :f:function:: LIBMUSCLE_Instance_receive(self, port_name, err_code, err_msg)
+
+    Receive a message from the outside world via a port.
+
+    Receiving is a blocking operation. This function will contact the sender,
+    wait for a message to be available, and receive and return it. Note that you
+    must free the returned :f:type:`LIBMUSCLE_Message` object when you're done
+    with it.
+
+    If the port you are receiving on is not connected, then err_code will be set
+    to ``LIBMUSCLE_runtime_error``.
+
+    :p LIBMUSCLE_Instance self: The instance to receive a message for.
+    :p character port_name: The name of the port to receive on.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r message: The received message.
+    :rtype message: LIBMUSCLE_Message
+
+.. :f:function:: LIBMUSCLE_Instance_receive(self, port_name, default_msg, err_code, err_msg)
+
+    Receive a message from the outside world via a port.
+
+    Receiving is a blocking operation. This function will contact the sender,
+    wait for a message to be available, and receive and return it. Note that you
+    must free the returned :f:type:`LIBMUSCLE_Message` object when you're done
+    with it.
+
+    If the port you are receiving on is not connected, then a copy of
+    ``default_msg`` will be returned.
+
+    :p LIBMUSCLE_Instance self: The instance to receive a message for.
+    :p character port_name: The name of the port to receive on.
+    :p LIBMUSCLE_Message default_msg: A default message in case the port is not
+            connected.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r message: The received message.
+    :rtype message: LIBMUSCLE_Message
+
+.. :f:function:: LIBMUSCLE_Instance_receive_on_slot(self, port_name, slot, err_code, err_msg)
+
+    Receive a message from the outside world via a slot on a vector port.
+
+    Receiving is a blocking operation. This function will contact the sender,
+    wait for a message to be available, and receive and return it. Note that you
+    must free the returned :f:type:`LIBMUSCLE_Message` object when you're done
+    with it.
+
+    If the port you are receiving on is not connected, then err_code will be set
+    to ``LIBMUSCLE_runtime_error``.
+
+    :p LIBMUSCLE_Instance self: The instance to receive a message for.
+    :p character port_name: The name of the vector port to receive on.
+    :p integer slot: The slot to receive on.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r message: The received message.
+    :rtype message: LIBMUSCLE_Message
+
+.. :f:function:: LIBMUSCLE_Instance_receive_on_slot(self, port_name, slot, default_msg, err_code, err_msg)
+
+    Receive a message from the outside world via a slot on a vector port.
+
+    Receiving is a blocking operation. This function will contact the sender,
+    wait for a message to be available, and receive and return it. Note that you
+    must free the returned :f:type:`LIBMUSCLE_Message` object when you're done
+    with it.
+
+    If the port you are receiving on is not connected, then a copy of
+    ``default_msg`` will be returned.
+
+    :p LIBMUSCLE_Instance self: The instance to receive a message for.
+    :p character port_name: The name of the port to receive on.
+    :p integer slot: The slot to receive on.
+    :p LIBMUSCLE_Message default_msg: A default message in case the port is not
+            connected.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r message: The received message.
+    :rtype message: LIBMUSCLE_Message
+
+.. :f:function:: LIBMUSCLE_Instance_receive_with_settings(self, port_name, err_code, err_msg)
+
+    Receive a message with attached settings overlay.
+
+    Receiving is a blocking operation. This function will contact the sender,
+    wait for a message to be available, and receive and return it. Note that you
+    must free the returned :f:type:`LIBMUSCLE_Message` object when you're done
+    with it.
+
+    If the port you are receiving on is not connected, then err_code will be set
+    to ``LIBMUSCLE_runtime_error``.
+
+    :p LIBMUSCLE_Instance self: The instance to receive a message for.
+    :p character port_name: The name of the port to receive on.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r message: The received message.
+    :rtype message: LIBMUSCLE_Message
+
+.. :f:function:: LIBMUSCLE_Instance_receive_with_settings(self, port_name, default_msg, err_code, err_msg)
+
+    Receive a message with attached settings overlay.
+
+    Receiving is a blocking operation. This function will contact the sender,
+    wait for a message to be available, and receive and return it. Note that you
+    must free the returned :f:type:`LIBMUSCLE_Message` object when you're done
+    with it.
+
+    If the port you are receiving on is not connected, then a copy of
+    ``default_msg`` will be returned.
+
+    :p LIBMUSCLE_Instance self: The instance to receive a message for.
+    :p character port_name: The name of the port to receive on.
+    :p LIBMUSCLE_Message default_msg: A default message in case the port is not
+            connected.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r message: The received message.
+    :rtype message: LIBMUSCLE_Message
+
+.. :f:function:: LIBMUSCLE_Instance_receive_with_settings_on_slot(self, port_name, slot, err_code, err_msg)
+
+    Receive a message with attached settings overlay.
+
+    Receiving is a blocking operation. This function will contact the sender,
+    wait for a message to be available, and receive and return it. Note that you
+    must free the returned :f:type:`LIBMUSCLE_Message` object when you're done
+    with it.
+
+    If the port you are receiving on is not connected, then err_code will be set
+    to ``LIBMUSCLE_runtime_error``.
+
+    :p LIBMUSCLE_Instance self: The instance to receive a message for.
+    :p character port_name: The name of the vector port to receive on.
+    :p integer slot: The slot to receive on.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r message: The received message.
+    :rtype message: LIBMUSCLE_Message
+
+.. :f:function:: LIBMUSCLE_Instance_receive_with_settings_on_slot(self, port_name, slot, default_msg, err_code, err_msg)
+
+    Receive a message with attached settings overlay.
+
+    Receiving is a blocking operation. This function will contact the sender,
+    wait for a message to be available, and receive and return it. Note that you
+    must free the returned :f:type:`LIBMUSCLE_Message` object when you're done
+    with it.
+
+    If the port you are receiving on is not connected, then a copy of
+    ``default_msg`` will be returned.
+
+    :p LIBMUSCLE_Instance self: The instance to receive a message for.
+    :p character port_name: The name of the port to receive on.
+    :p integer slot: The slot to receive on.
+    :p LIBMUSCLE_Message default_msg: A default message in case the port is not
+            connected.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r message: The received message.
+    :rtype message: LIBMUSCLE_Message
 
 Namespace YMMSL
 ---------------

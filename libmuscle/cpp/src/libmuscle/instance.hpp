@@ -112,7 +112,7 @@ class Instance {
          */
         bool reuse_instance(bool apply_overlay = true);
 
-        /** Logs and error and shuts down the Instance.
+        /** Logs an error and shuts down the Instance.
          *
          * If you detect that something is wrong (invalid input, invalid
          * settings, simulation diverged, or anything else really), you
@@ -269,7 +269,7 @@ class Instance {
          *
          * MPI-based compute elements may call this function either in all
          * processes, or only in the root process. In both cases, the message
-         * given by the root process will be sent, the others ignore. You may
+         * given by the root process will be sent, the others ignored. You may
          * want to do a gather operation first to collect all the information
          * that is to be sent in the root process.
          *

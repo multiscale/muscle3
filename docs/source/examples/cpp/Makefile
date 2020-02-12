@@ -7,7 +7,7 @@ MPI_LDFLAGS := $(LDFLAGS) -L$(MUSCLE3_HOME)/lib -lymmsl -lmuscle_mpi -lmpi
 LDFLAGS += -L$(MUSCLE3_HOME)/lib -lymmsl -lmuscle
 
 
-binaries := reaction diffusion mc_driver load_balancer
+binaries := reaction diffusion mc_driver load_balancer reaction_mpi
 
 ifdef MUSCLE_ENABLE_MPI
     binaries += reaction_mpi

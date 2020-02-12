@@ -1174,6 +1174,12 @@ class MemFun(Member):
                 self.ns_prefix, self.class_name, self.name)
         return '    public :: {}\n'.format(func_name)
 
+    def fortran_exports(self) -> List[str]:
+        """Generates a list of linker exports for the Fortran symbols.
+        """
+        return ['{}_{}_{}_;'.format(
+                self.ns_prefix, self.class_name, self.name)]
+
     @staticmethod
     def _default_cpp_chain_call(**kwargs):
         return 'self_p->{cpp_func_name}({cpp_args})'.format(**kwargs)
@@ -1703,6 +1709,14 @@ class MemFunTmpl(Member):
             result += instance.fortran_public_declaration()
         return result
 
+    def fortran_exports(self) -> List[str]:
+        """Generates a list of linker exports for the Fortran symbols.
+        """
+        result = list()     # type: List[str]
+        for instance in self.instances:
+            result += instance.fortran_exports()
+        return result
+
 
 class OverloadSet(Member):
     """Represents a set of overloaded functions.
@@ -1775,6 +1789,11 @@ class OverloadSet(Member):
             return '    public :: {}_{}_{}\n'.format(
                     self.ns_prefix, self.class_name, self.name)
         return ''
+
+    def fortran_exports(self) -> List[str]:
+        """Generates a list of linker exports for the Fortran symbols.
+        """
+        return []
 
 
 class Class:
@@ -1886,6 +1905,14 @@ class Class:
             result += member.fortran_function()
         return result
 
+    def fortran_exports(self) -> List[str]:
+        """Generates a list of linker exports for the Fortran symbols.
+        """
+        result = list()     # type: List[str]
+        for member in self.members:
+            result += member.fortran_exports()
+        return result
+
 
 class Enum:
     def __init__(self, name: str, values: List[Tuple[str, int]]) -> None:
@@ -1942,7 +1969,7 @@ class Namespace:
             name: Name of the namespace, full C++ name if nested.
             public: Whether to put the symbols in this namespace in the
                     generated public API. If None, do not generate at
-                    all.
+                    all (used for forward declarations).
             prefix: Short prefix to use in C/Fortran function names.
             enums: List of enums in this namespace.
             classes: List of classes in this namespace.
@@ -2027,6 +2054,17 @@ class Namespace:
             result += cls.fortran_functions()
         return result
 
+    def fortran_exports(self) -> List[str]:
+        """Generates a list of linker exports for the Fortran symbols.
+        """
+        if self.public is None:
+            return list()
+
+        result = list()     # type: List[str]
+        for cls in self.classes:
+            result += cls.fortran_exports()
+        return result
+
 
 class API:
     def __init__(
@@ -2098,6 +2136,18 @@ class API:
             result += ns.fortran_functions()
             result += '\n'
         result += 'end module {}\n'.format(self.name)
+        return result
+
+    def fortran_exports(self) -> List[str]:
+        """Generates a list of linker exports for the Fortran symbols.
+
+        These should be inserted into the version script sent to the
+        linker when creating the shared object file, so that the
+        Fortran-C ABI is exported correctly.
+        """
+        result = list()     # type: List[str]
+        for ns in self.namespaces:
+            result += ns.fortran_exports()
         return result
 
     def _fc_includes(self) -> str:

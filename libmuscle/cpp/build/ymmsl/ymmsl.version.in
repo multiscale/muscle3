@@ -1,0 +1,123 @@
+{
+    global:
+        extern "C++" {
+            ymmsl::impl::Identifier::Identifier*;
+            "ymmsl::impl::Identifier::Identifier(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)";
+            "ymmsl::impl::Identifier::Identifier(std::string const&)";
+            "ymmsl::impl::Identifier::Identifier(char const*)";
+            "ymmsl::impl::Identifier::operator std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >[abi:cxx11]() const";
+            "ymmsl::impl::Identifier::operator std::string[abi:cxx11]() const";
+            "ymmsl::impl::Identifier::operator std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >() const";
+            "ymmsl::impl::Identifier::operator std::string() const";
+            "ymmsl::impl::Identifier::operator==(ymmsl::impl::Identifier const&) const";
+            "ymmsl::impl::Identifier::operator==(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const";
+            "ymmsl::impl::Identifier::operator==(std::string const&) const";
+            "ymmsl::impl::Identifier::operator==(char const*) const";
+            "ymmsl::impl::Identifier::operator!=(ymmsl::impl::Identifier const&) const";
+            "ymmsl::impl::Identifier::operator!=(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const";
+            "ymmsl::impl::Identifier::operator!=(std::string const&) const";
+            "ymmsl::impl::Identifier::operator!=(char const*) const";
+            "ymmsl::impl::operator==(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, ymmsl::impl::Identifier const&)";
+            "ymmsl::impl::operator==(std::string const&, ymmsl::impl::Identifier const&)";
+            "ymmsl::impl::operator!=(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, ymmsl::impl::Identifier const&)";
+            "ymmsl::impl::operator!=(std::string const&, ymmsl::impl::Identifier const&)";
+            "ymmsl::impl::operator<<(std::ostream&, ymmsl::impl::Identifier const&)";
+            "ymmsl::impl::operator+(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, ymmsl::impl::Identifier const&)";
+            "ymmsl::impl::operator+(std::string const&, ymmsl::impl::Identifier const&)";
+            "ymmsl::impl::operator+(ymmsl::impl::Identifier const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)";
+            "ymmsl::impl::operator+(ymmsl::impl::Identifier const&, std::string const&)";
+            "std::hash<ymmsl::impl::Identifier>::operator()(ymmsl::impl::Identifier const&) const";
+
+            ymmsl::impl::ReferencePart::ReferencePart*;
+            "ymmsl::impl::ReferencePart::is_identifier() const";
+            "ymmsl::impl::ReferencePart::is_index() const";
+            "ymmsl::impl::ReferencePart::identifier() const";
+            "ymmsl::impl::ReferencePart::index() const";
+            "ymmsl::impl::ReferencePart::operator==(ymmsl::impl::ReferencePart const&) const";
+
+            "ymmsl::impl::Reference::Reference(char const*)";
+            "ymmsl::impl::Reference::Reference(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)";
+            "ymmsl::impl::Reference::Reference(std::string const&)";
+            "ymmsl::impl::Reference::operator std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >[abi:cxx11]() const";
+            "ymmsl::impl::Reference::operator std::string[abi:cxx11]() const";
+            "ymmsl::impl::Reference::operator std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >() const";
+            "ymmsl::impl::Reference::operator std::string() const";
+            "ymmsl::impl::Reference::length() const";
+            "ymmsl::impl::Reference::operator==(ymmsl::impl::Reference const&) const";
+            "ymmsl::impl::Reference::operator==(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const";
+            "ymmsl::impl::Reference::operator==(std::string const&) const";
+            "ymmsl::impl::Reference::operator==(char const*) const";
+            "ymmsl::impl::Reference::operator!=(ymmsl::impl::Reference const&) const";
+            "ymmsl::impl::Reference::operator!=(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const";
+            "ymmsl::impl::Reference::operator!=(std::string const&) const";
+            "ymmsl::impl::Reference::operator!=(char const*) const";
+            "ymmsl::impl::Reference::cbegin() const";
+            "ymmsl::impl::Reference::cend() const";
+            "ymmsl::impl::Reference::begin() const";
+            "ymmsl::impl::Reference::end() const";
+            "ymmsl::impl::Reference::operator[](int) const";
+            "ymmsl::impl::Reference::operator+=(ymmsl::impl::ReferencePart const&)";
+            "ymmsl::impl::Reference::operator+=(std::vector<int, std::allocator<int> > const&)";
+            "ymmsl::impl::Reference::operator+(ymmsl::impl::Reference const&) const";
+            "ymmsl::impl::Reference::operator+(ymmsl::impl::ReferencePart const&) const";
+            "ymmsl::impl::Reference::operator+(std::vector<int, std::allocator<int> > const&) const";
+            "ymmsl::impl::operator<<(std::ostream&, ymmsl::impl::Reference const&)";
+            "ymmsl::impl::Reference::Reference(std::vector<ymmsl::impl::ReferencePart, std::allocator<ymmsl::impl::ReferencePart> >&&)";
+            "ymmsl::impl::operator==(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, ymmsl::impl::Reference const&)";
+            "ymmsl::impl::operator==(std::string const&, ymmsl::impl::Reference const&)";
+            "ymmsl::impl::operator!=(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, ymmsl::impl::Reference const&)";
+            "ymmsl::impl::operator!=(std::string const&, ymmsl::impl::Reference const&)";
+
+            ymmsl::impl::SettingValue::SettingValue*;
+            "ymmsl::impl::SettingValue::SettingValue(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)";
+            "ymmsl::impl::SettingValue::SettingValue(std::string const&)";
+            "ymmsl::impl::SettingValue::~SettingValue()";
+            "ymmsl::impl::SettingValue::operator=(ymmsl::impl::SettingValue const&)";
+            "ymmsl::impl::SettingValue::operator=(ymmsl::impl::SettingValue&&)";
+            "ymmsl::impl::SettingValue::operator==(ymmsl::impl::SettingValue const&) const";
+            "ymmsl::impl::SettingValue::operator!=(ymmsl::impl::SettingValue const&) const";
+            "ymmsl::impl::operator<<(std::ostream&, ymmsl::impl::SettingValue const&)";
+
+            "ymmsl::impl::Settings::operator==(ymmsl::impl::Settings const&) const";
+            "ymmsl::impl::Settings::operator!=(ymmsl::impl::Settings const&) const";
+            ymmsl::impl::Settings::size*;
+            ymmsl::impl::Settings::empty*;
+            ymmsl::impl::Settings::contains*;
+            ymmsl::impl::Settings::at*;
+            "ymmsl::impl::Settings::operator[](ymmsl::impl::Reference const&)";
+            ymmsl::impl::Settings::erase*;
+            "ymmsl::impl::Settings::erase(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)";
+            "ymmsl::impl::Settings::erase(std::string const&)";
+            ymmsl::impl::Settings::clear*;
+            ymmsl::impl::Settings::begin*;
+            ymmsl::impl::Settings::end*;
+            "ymmsl::impl::operator<<(std::ostream&, ymmsl::impl::Settings const&)";
+
+            ymmsl::impl::allows_sending*;
+            ymmsl::impl::allows_receiving*;
+
+            ymmsl::impl::Port::Port*;
+
+            "ymmsl::impl::Conduit::Conduit(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)";
+            "ymmsl::impl::Conduit::Conduit(std::string const&, std::string const&)";
+            "ymmsl::impl::Conduit::operator std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >[abi:cxx11]() const";
+            "ymmsl::impl::Conduit::operator std::string[abi:cxx11]() const";
+            "ymmsl::impl::Conduit::operator std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >() const";
+            "ymmsl::impl::Conduit::operator std::string() const";
+            "ymmsl::impl::Conduit::operator==(ymmsl::impl::Conduit const&) const";
+            "ymmsl::impl::Conduit::sending_compute_element() const";
+            "ymmsl::impl::Conduit::sending_port() const";
+            "ymmsl::impl::Conduit::sending_slot() const";
+            "ymmsl::impl::Conduit::receiving_compute_element() const";
+            "ymmsl::impl::Conduit::receiving_port() const";
+            "ymmsl::impl::Conduit::receiving_slot() const";
+            "ymmsl::impl::Conduit::check_reference_(ymmsl::impl::Reference const&) const";
+            "ymmsl::impl::Conduit::slot_(ymmsl::impl::Reference const&) const";
+            "ymmsl::impl::Conduit::stem_(ymmsl::impl::Reference const&) const";
+        };
+
+        /* FORTRAN ABI */
+
+    local: *;
+};
+

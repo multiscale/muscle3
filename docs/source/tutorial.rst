@@ -20,6 +20,10 @@ The easiest way to get set up is to create a virtualenv and then install MUSCLE
   example/python$ pip3 install -r requirements.txt        # install dependencies
 
 
+If you get an error message saying amongst others ``error: invalid command
+'bdist_wheel'``, try running ``pip3 install wheel`` and then ``pip3 install -r
+requirements.txt`` again to fix it.
+
 Our first example is a reaction-diffusion model on a 1D grid. It consists of a
 reaction model coupled to a diffusion model in a macro-micro fashion, with the
 diffusion model the macro-model and the reaction model the micro-model. In a

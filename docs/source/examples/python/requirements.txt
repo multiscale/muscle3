@@ -2,3 +2,4 @@ matplotlib
 muscle3
 numpy
 sobol_seq
+wheel

@@ -236,7 +236,7 @@ containing a ``double`` value that we can extract using ``as()``.
 .. code-block:: cpp
 
         double t_cur = msg.timestamp();
-        while (t_cur + dt < t_max) {
+        while (t_cur + dt < msg.timestamp() + t_max) {
             // O_I
 
             // S
@@ -247,7 +247,8 @@ containing a ``double`` value that we can extract using ``as()``.
 
 The main loop of the model is almost unchanged, we just get the starting time
 from the received message's timestamp so as to synchronise with the overall
-simulation time correctly.
+simulation time correctly, and the stopping time is adjusted accordingly as
+well.
 
 Sending messages and Data
 `````````````````````````

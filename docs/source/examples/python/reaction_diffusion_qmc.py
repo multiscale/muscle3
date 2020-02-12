@@ -27,7 +27,7 @@ def reaction() -> None:
         U = np.array(msg.data)
 
         t_cur = msg.timestamp
-        while t_cur + dt < t_max:
+        while t_cur + dt < msg.timestamp + t_max:
             # O_I
 
             # S

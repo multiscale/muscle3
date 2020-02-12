@@ -168,7 +168,7 @@ The state update loop
 
   # F_INIT
 
-  while t_cur + dt < t_max:
+  while t_cur + dt < msg.timestamp + t_max:
       # O_I
 
       # S
@@ -178,12 +178,13 @@ The state update loop
   # O_F
 
 Having initialised the model, it is now time for the state update loop. This
-code should look familiar: we loop until we reach our maximum time, and on each
-iteration update the state according to the model equation. This update is
-called operator S in the Submodel Execution Loop, and in this model, it is
-determined entirely by the current state.  Since no information from outside is
-needed, we do not receive any messages, and in our :class:`libmuscle.Instance`
-declaration above, we did not declare any ports associated with ``Operator.S``.
+code should look familiar: we loop until we reach our maximum time (now
+relative to when we started), and on each iteration update the state according
+to the model equation. This update is called operator S in the Submodel
+Execution Loop, and in this model, it is determined entirely by the current
+state.  Since no information from outside is needed, we do not receive any
+messages, and in our :class:`libmuscle.Instance` declaration above, we did not
+declare any ports associated with ``Operator.S``.
 
 The Submodel Execution Loop specifies another operator within the state update
 loop, which is called O_I and comes before S. This operator provides for

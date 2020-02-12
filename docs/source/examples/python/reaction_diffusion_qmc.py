@@ -1,6 +1,6 @@
 from collections import OrderedDict
+import os
 
-from matplotlib import pyplot as plt
 import numpy as np
 import sobol_seq
 
@@ -214,10 +214,32 @@ def qmc_driver() -> None:
                 Us = np.vstack((Us, U))
 
         mean = np.mean(Us, axis=0)
-        plt.figure()
-        plt.imshow(np.log(Us + 1e-20))
-        plt.show()
 
+        # O_F
+        if 'DONTPLOT' not in os.environ:
+            from matplotlib import pyplot as plt
+
+            t_max = instance.get_setting('t_max', 'float')
+            dt = instance.get_setting('dt', 'float')
+            x_max = instance.get_setting('x_max', 'float')
+            dx = instance.get_setting('dx', 'float')
+
+            plt.figure()
+            plt.imshow(
+                    np.log(Us + 1e-20),
+                    origin='upper',
+                    extent=[
+                        -0.5*dx, x_max - 0.5*dx,
+                        n_samples-0.5, -0.5],
+                    interpolation='none',
+                    aspect='auto'
+                    )
+            cbar = plt.colorbar()
+            cbar.set_label('log(Concentration)', rotation=270, labelpad=20)
+            plt.xlabel('x')
+            plt.ylabel('Sample')
+            plt.title('Final states')
+            plt.show()
 
 
 if __name__ == '__main__':
@@ -242,6 +264,8 @@ if __name__ == '__main__':
                 ('micro.dt', 2.469136e-8),
                 ('macro.t_max', 1.234568e-4),
                 ('macro.dt', 2.469136e-6),
+                ('qmc.t_max', 1.234568e-4),
+                ('qmc.dt', 2.469136e-6),
                 ('x_max', 1.01),
                 ('dx', 0.01),
                 ('k_min', -4.455e4),

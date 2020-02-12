@@ -45,8 +45,8 @@ Importing headers
 
   from collections import OrderedDict
   import logging
+  import os
 
-  from matplotlib import pyplot as plt
   import numpy as np
 
   from libmuscle import Instance, Message
@@ -489,7 +489,14 @@ If you run the script, e.g. using
 
   (venv) python$ python3 reaction_diffusion.py
 
-it will pop up a plot showing the state of the simulated system over time.
+it will pop up a plot showing the state of the simulated system over time. If
+you are on a machine without graphics support, then you will get an error
+message if you run the above, saying something like ``couldn't connect to
+display``. In that case, try the below command to disable graphical output:
+
+.. code-block:: bash
+
+  (venv) python$ DONTPLOT=1 python3 reaction_diffusion.py
 
 You will also find three log files in this directory: ``muscle3_manager.log``,
 ``muscle3.macro.log`` and ``muscle3.micro.log``. These contain log output for

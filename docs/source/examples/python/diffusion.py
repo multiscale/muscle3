@@ -1,6 +1,6 @@
 import logging
+import os
 
-from matplotlib import pyplot as plt
 import numpy as np
 
 from libmuscle import Instance, Message
@@ -73,9 +73,11 @@ def diffusion() -> None:
             Us = np.vstack((Us, U))
             t_cur += dt
 
-        plt.figure()
-        plt.imshow(np.log(Us + 1e-20))
-        plt.show()
+        if 'DONTPLOT' not in os.environ:
+            from matplotlib import pyplot as plt
+            plt.figure()
+            plt.imshow(np.log(Us + 1e-20))
+            plt.show()
 
 
 if __name__ == '__main__':

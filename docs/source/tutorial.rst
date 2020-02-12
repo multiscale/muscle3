@@ -158,8 +158,8 @@ The message that we receive contains several bits of information. Here, we are
 interested in the ``data`` attribute, which we assume to be an array of floats
 containing our initial state, which we'll call ``U``. We'll initialise our
 simulation time to the time at which that state is valid, which is contained in
-the ``timestamp`` attribute. This is a float containing the number of seconds
-since the whole simulation started.
+the ``timestamp`` attribute. This is a double-precision float containing the
+number of simulated (not wall-clock) seconds since the whole simulation started.
 
 The state update loop
 ---------------------

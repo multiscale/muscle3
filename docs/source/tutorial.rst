@@ -55,14 +55,14 @@ Importing headers
                      Settings)
 
 
-As usual, we begin by importing some required libraries. OrderedDict and
-logging come from the Python standard library, and NumPy and MatplotLib provide
-matrix math and plotting functionality. From libmuscle, we import
-:class:`libmuscle.Instance`, which will represent a model instance in the
-larger simulation, and :class:`libmuscle.Message`, which represents a MUSCLE
-message as passed between instances.  The :func:`libmuscle.run_simulation`
-function allows us to run a complete simulation from a single Python file, as
-opposed to having to start the different instances and the manager separately.
+As usual, we begin by importing some required libraries. OrderedDict and logging
+come from the Python standard library, and NumPy provides matrix math
+functionality. From libmuscle, we import :class:`libmuscle.Instance`, which will
+represent a model instance in the larger simulation, and
+:class:`libmuscle.Message`, which represents a MUSCLE message as passed between
+instances.  The :func:`libmuscle.run_simulation` function allows us to run a
+complete simulation from a single Python file, as opposed to having to start the
+different instances and the manager separately.
 
 In order to describe our model, we use a number of definitions from
 `ymmsl-python`. More about those below.

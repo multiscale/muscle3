@@ -44,8 +44,10 @@ def test_cpp_macro_micro(mmp_server_process_simple):
             cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
     env = {
             'LD_LIBRARY_PATH': ':'.join(map(str, lib_paths))}
-    cpp_test_dir = cpp_build_dir / 'libmuscle' / 'tests'
-    fortran_test_micro = cpp_test_dir / 'fortran_micro_model_test'
+    fortran_test_dir = (
+            Path(__file__).parents[1] / 'libmuscle' / 'fortran' / 'build' /
+            'libmuscle' / 'tests')
+    fortran_test_micro = fortran_test_dir / 'fortran_micro_model_test'
     micro_result = subprocess.Popen(
             [str(fortran_test_micro), '--muscle-instance=micro'], env=env)
 

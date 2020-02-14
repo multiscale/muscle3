@@ -3,23 +3,17 @@ libmuscle_testdir := $(src_dir)/libmuscle/tests
 VPATH := $(libmuscle_testdir)
 
 unit_tests := $(wildcard $(libmuscle_testdir)/test*.cpp)
-integration_tests_cpp := $(wildcard $(libmuscle_testdir)/*test.cpp)
-integration_tests_f03 := $(wildcard $(libmuscle_testdir)/*test.f03)
-integration_tests := $(integration_tests_cpp) $(integration_tests_f03)
-api_tests := $(libmuscle_testdir)/test_fortran_api.f03
+integration_tests := $(wildcard $(libmuscle_testdir)/*test.cpp)
 
 unit_test_bins := $(unit_tests:$(libmuscle_testdir)/%.cpp=%)
-integration_test_cpp_bins := $(integration_tests_cpp:$(libmuscle_testdir)/%.cpp=%)
-integration_test_f03_bins := $(integration_tests_f03:$(libmuscle_testdir)/%.f03=%)
-integration_test_bins := $(integration_test_cpp_bins) $(integration_test_f03_bins)
-api_test_bins := test_fortran_api
+integration_test_bins := $(integration_tests:$(libmuscle_testdir)/%.cpp=%)
 
 ifndef MUSCLE_ENABLE_MPI
 integration_tests := $(filter-out mpi%,$(integration_tests))
 integration_test_bins := $(filter-out mpi%,$(integration_test_bins))
 endif
 
-all_tests := $(unit_test_bins) $(integration_test_bins) $(api_test_bins)
+all_tests := $(unit_test_bins) $(integration_test_bins)
 deps := $(all_tests:%=%.d)
 
 
@@ -55,10 +49,6 @@ LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config
 LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs msgpack)
 LDFLAGS2 += $(EXTRA_LINK_DIRS)
 
-FORTRAN_API_MODULES = $(CURDIR)/../../../../fortran/src/ymmsl/ymmsl.f03
-FORTRAN_API_MODULES += $(CURDIR)/../../../../fortran/src/libmuscle/libmuscle.f03
-
-$(info libmuscle test deps: $(deps))
 -include $(deps)
 
 endif
@@ -93,14 +83,9 @@ test_logging.o: test_logging.cpp
 test_logging: test_logging.o $(CURDIR)/../../ymmsl/libymmsl_d.a
 	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_ROOT)/lib/libgtest.a -pthread
 
-test_fortran_api: $(FORTRAN_API_MODULES) assert.f03 test_fortran_api.f03
-	$(FC) -std=f2003 $(FFLAGS) $(DEBUGFLAGS) $^ -o $@ $(LDFLAGS2) -lstdc++
-
 mpi_micro_model_test: mpi_micro_model_test.cpp $(CURDIR)/../../ymmsl/libymmsl_d.a $(CURDIR)/../../libmuscle/libmuscle_mpi_d.a
 	$(MPICXX) $(CXXFLAGS) $(DEBUGFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS2)
 
-fortran_micro_model_test: $(FORTRAN_API_MODULES) assert.f03 fortran_micro_model_test.f03
-	$(FC) -std=f2003 $(FFLAGS) $(DEBUGFLAGS) $^ -o $@ $(LDFLAGS2) -lstdc++
 
 empty :=
 space := $(empty) $(empty)

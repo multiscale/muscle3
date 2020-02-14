@@ -1,30 +1,55 @@
 # Get source paths
-hdrdir := $(CURDIR)/../../src
-public_modules := ymmsl/ymmsl.f03
-installed_modules := $(public_modules:%=$(PREFIX)/include/%)
+srcdir := $(CURDIR)/../../src/ymmsl
+
+sources := $(srcdir)/ymmsl.f03
+objects := $(sources:$(srcdir)/%.f03=%.o)
+libs := libymmsl_fortran.a libymmsl_fortran.so
+modules := $(sources:$(srcdir)/%.f03=%.mod)
+
+installed_modules := $(modules:%=$(PREFIX)/include/%)
+installed_libs := $(libs:%=$(PREFIX)/lib/%)
+
+LDFLAGS := -L../../../cpp/build/ymmsl -lymmsl
+FFLAGS := -std=f2003
 
 .PHONY: all
-all:
+all: ymmsl
+
+.PHONY: ymmsl
+ymmsl: $(libs)
 
 .PHONY: tests
 tests:
-	$(MAKE) -C tests tests
 
 .PHONY: test
 test: tests
-	$(MAKE) -C tests test
 
 .PHONY: clean
 clean:
-	$(MAKE) -C tests clean
+	rm -f $(objects) $(modules) $(libs)
 
 .PHONY: distclean
 distclean: clean
-	$(MAKE) -C tests distclean
+	rm -f $(objects) $(modules) $(libs)
 
 .PHONY: install
-install: $(installed_modules)
+install: $(installed_modules) $(installed_libs)
 
-$(PREFIX)/include/%.f03: $(hdrdir)/%.f03
+%.o: $(srcdir)/%.f03
+	$(FC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS)
+
+%.mod: %.o
+
+lib%_fortran.a: %.o
+	ar rcs $@ $^
+
+lib%_fortran.so: %.o
+	$(FC) -shared -o $@ $^ $(LDFLAGS)
+
+$(PREFIX)/include/%: %
+	@mkdir -p $(@D)
+	cp $< $@
+
+$(PREFIX)/lib/%: %
 	@mkdir -p $(@D)
 	cp $< $@

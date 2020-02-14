@@ -1,30 +1,62 @@
 # Get source paths
-hdrdir := $(CURDIR)/../../src
-public_modules := libmuscle/libmuscle.f03
-installed_modules := $(public_modules:%=$(PREFIX)/include/%)
+srcdir := $(CURDIR)/../../src/libmuscle
+
+sources := $(srcdir)/libmuscle.f03
+objects := $(sources:$(srcdir)/%.f03=%.o)
+libs := libmuscle_fortran.a libmuscle_fortran.so
+modules := $(sources:$(srcdir)/%.f03=%.mod)
+
+installed_modules := $(modules:%=$(PREFIX)/include/%)
+installed_libs := $(libs:%=$(PREFIX)/lib/%)
+
+LDFLAGS := -L../ymmsl -lymmsl_fortran
+LDFLAGS += -L ../../../cpp/build/libmuscle -lmuscle
+LDFLAGS += -L../../../cpp/build/ymmsl -lymmsl
+
+FFLAGS := -std=f2003 -I../ymmsl
 
 .PHONY: all
-all:
+all: libmuscle
+
+.PHONY: libmuscle
+libmuscle: $(libs)
 
 .PHONY: tests
 tests:
-	$(MAKE) -C tests tests
+	make -C tests tests
 
 .PHONY: test
 test: tests
-	$(MAKE) -C tests test
+	make -C tests test
 
 .PHONY: clean
 clean:
-	$(MAKE) -C tests clean
+	rm -f $(objects) $(modules) $(libs)
+	make -C tests clean
 
 .PHONY: distclean
 distclean: clean
-	$(MAKE) -C tests distclean
+	rm -f $(objects) $(modules) $(libs)
+	make -C tests distclean
 
 .PHONY: install
-install: $(installed_modules)
+install: $(installed_modules) $(installed_libs)
 
-$(PREFIX)/include/%.f03: $(hdrdir)/%.f03
+%.o: $(srcdir)/%.f03
+	$(FC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS)
+
+%.mod: %.o
+
+libmuscle_fortran.a: libmuscle.o
+	ar rcs $@ $^
+
+libmuscle_fortran.so: libmuscle.o
+	$(FC) -shared -o $@ $^ $(LDFLAGS)
+
+$(PREFIX)/include/%: %
+	@mkdir -p $(@D)
+	cp $< $@
+
+$(PREFIX)/lib/%: %
 	@mkdir -p $(@D)
 	cp $< $@

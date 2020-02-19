@@ -231,7 +231,58 @@ to the command line, or for MPI compute elements:
   -L<PREFIX>/lib -lymmsl -lmuscle_mpi
 
 
-There's one more thing: the directory that you've install MUSCLE into is
+There's one more thing: the directory that you've installed MUSCLE into is
+probably not in your system's library search path, and as a result the dynamic
+linker won't be able to find the libraries when you run your program. In order
+to fix this, ``LD_LIBRARY_PATH`` must be set, which you can do with the
+following command:
+
+.. code-block:: bash
+
+       ~$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<PREFIX>/lib
+
+
+If you have just installed MUSCLE 3, then the above bits are currently on your
+screen, with ``<PREFIX>`` filled out already, so you can just copy-paste them
+from there.
+
+Fortran
+-------
+
+The Fortran bindings for libmuscle are a wrapper around the C++ implementation.
+They will be built automatically if you follow the instructions above for
+building and installing libmuscle C++.
+
+
+Compiling and linking with libmuscle Fortran
+````````````````````````````````````````````
+
+Once libmuscle is installed, you will have to add some code to your model to
+talk to libmuscle, or you can write a compute element from scratch. Examples of
+how to do that are in the Fortran section of this manual. In order to compile
+and link your code with libmuscle, you have to adjust the compilation and
+linking commands a bit though.
+
+When compiling, the compiler needs to be able to find the MUSCLE 3 modules. You
+can point it to them by adding
+
+.. code-block::
+
+  -I<PREFIX>/include
+
+
+to your compiler command line, where `<PREFIX>` is where you installed it.
+
+When linking, the linker needs to be told where to find the ``ymmsl`` and
+``libmuscle`` libraries and their Fortran wrappers, and that it should link with
+them. That's done by adding
+
+.. code-block::
+
+  -L<PREFIX>/lib -lymmsl_fortran -lmuscle_fortran -lymmsl -lmuscle
+
+
+There's one more thing: the directory that you've installed MUSCLE into is
 probably not in your system's library search path, and as a result the dynamic
 linker won't be able to find the libraries when you run your program. In order
 to fix this, ``LD_LIBRARY_PATH`` must be set, which you can do with the

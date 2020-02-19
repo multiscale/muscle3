@@ -1,3 +1,5 @@
+.. _api-docs-fortran:
+
 API Documentation for Fortran
 =============================
 
@@ -423,7 +425,7 @@ LIBMUSCLE_Data
         ! val equals .true. here
         ! Attempt to (incorrectly) retrieve a character value
         str = LIBMUSCLE_Data_as_character(mydata, err_code, err_msg)
-        if (err_code .ne. LIBMUSCLE_success)
+        if (err_code .ne. LIBMUSCLE_success) then
             print *, err_msg
             ! Need to free the memory if an error message was returned
             deallocate(err_msg)
@@ -693,7 +695,7 @@ LIBMUSCLE_Data
 
     See :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
 
-    :p LIBMUSCLE_Data self The Data object to get an integer value out of.
+    :p LIBMUSCLE_Data self: The Data object to get an integer value out of.
     :p integer err_code: An error code output (optional)
     :p character err_msg: An error message output (allocatable, optional).
     :r value: The value.
@@ -1386,7 +1388,7 @@ LIBMUSCLE_Instance
     :r reuse: Whether to enter the reuse loop another time.
     :rtype reuse: logical
 
-.. :f:subroutine:: LIBMUSCLE_Instance_error_shutdown(self, message)
+.. f:subroutine:: LIBMUSCLE_Instance_error_shutdown(self, message)
 
     Logs an error and shuts down the Instance.
 
@@ -1397,7 +1399,7 @@ LIBMUSCLE_Instance
     :p LIBMUSCLE_Instance self: The instance to shut down.
     :p character message: An error message describing the problem encountered.
 
-.. :f:function:: LIBMUSCLE_Instance_get_setting_as_character(self, name, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Instance_get_setting_as_character(self, name, err_code, err_msg)
 
     Returns the value of a character-valued model setting.
 
@@ -1413,7 +1415,7 @@ LIBMUSCLE_Instance
     :r value: The setting's value.
     :rtype value: character
 
-.. :f:function:: LIBMUSCLE_Instance_get_setting_as_int8(self, name, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Instance_get_setting_as_int8(self, name, err_code, err_msg)
 
     Returns the value of an integer-valued model setting.
 
@@ -1429,7 +1431,7 @@ LIBMUSCLE_Instance
     :r value: The setting's value (kind=LIBMUSCLE_int8).
     :rtype value: integer
 
-.. :f:function:: LIBMUSCLE_Instance_get_setting_as_real8(self, name, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Instance_get_setting_as_real8(self, name, err_code, err_msg)
 
     Returns the value of a real-valued model setting.
 
@@ -1445,7 +1447,7 @@ LIBMUSCLE_Instance
     :r value: The setting's value (kind=LIBMUSCLE_real8).
     :rtype value: real
 
-.. :f:function:: LIBMUSCLE_Instance_get_setting_as_logical(self, name, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Instance_get_setting_as_logical(self, name, err_code, err_msg)
 
     Returns the value of a logical-valued model setting.
 
@@ -1461,7 +1463,7 @@ LIBMUSCLE_Instance
     :r value: The setting's value.
     :rtype value: logical
 
-.. :f:subroutine:: LIBMUSCLE_Instance_get_setting_as_real8array(self, name, value, err_code, err_msg)
+.. f:subroutine:: LIBMUSCLE_Instance_get_setting_as_real8array(self, name, value, err_code, err_msg)
 
     Returns the value of an array-of-real8-valued model setting.
 
@@ -1480,7 +1482,7 @@ LIBMUSCLE_Instance
     :p integer err_code: An error code output (optional).
     :p character err_msg: An error message output (allocatable, optional).
 
-.. :f:subroutine:: LIBMUSCLE_Instance_get_setting_as_real8array2(self, name, value, err_code, err_msg)
+.. f:subroutine:: LIBMUSCLE_Instance_get_setting_as_real8array2(self, name, value, err_code, err_msg)
 
     Returns the value of a 2D-array-of-real8-valued model setting.
 
@@ -1499,7 +1501,7 @@ LIBMUSCLE_Instance
     :p integer err_code: An error code output (optional).
     :p character err_msg: An error message output (allocatable, optional).
 
-.. :f:function:: LIBMUSCLE_Instance_list_ports(self)
+.. f:function:: LIBMUSCLE_Instance_list_ports(self)
 
     Returns a description of the ports of this instance.
 
@@ -1507,7 +1509,7 @@ LIBMUSCLE_Instance
     :r ports: A description of the ports, organised by operator.
     :rtype ports: LIBMUSCLE_PortsDescription
 
-.. :f:function:: LIBMUSCLE_Instance_is_connected(self, port)
+.. f:function:: LIBMUSCLE_Instance_is_connected(self, port)
 
     Returns whether the given port is connected.
 
@@ -1516,7 +1518,7 @@ LIBMUSCLE_Instance
     :r connected: ``.true.`` if the port is connected.
     :rtype connected: logical
 
-.. :f:function:: LIBMUSCLE_Instance_is_vector_port(self, port)
+.. f:function:: LIBMUSCLE_Instance_is_vector_port(self, port)
 
     Returns whether the given port is a vector port.
 
@@ -1525,7 +1527,7 @@ LIBMUSCLE_Instance
     :r connected: ``.true.`` if the port is a vector port.
     :rtype connected: logical
 
-.. :f:function:: LIBMUSCLE_Instance_is_resizable(self, port, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Instance_is_resizable(self, port, err_code, err_msg)
 
     Returns whether the port is resizable.
 
@@ -1540,7 +1542,7 @@ LIBMUSCLE_Instance
     :r connected: ``.true.`` if the port is a vector port.
     :rtype connected: logical
 
-.. :f:function:: LIBMUSCLE_Instance_get_port_length(self, port, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Instance_get_port_length(self, port, err_code, err_msg)
 
     Returns the current length of a vector port.
 
@@ -1555,7 +1557,7 @@ LIBMUSCLE_Instance
     :r connected: ``.true.`` if the port is a vector port.
     :rtype connected: logical
 
-.. :f:subroutine:: LIBMUSCLE_Instance_set_port_length(self, port, length)
+.. f:subroutine:: LIBMUSCLE_Instance_set_port_length(self, port, length)
 
     Sets the current length of a vector port.
 
@@ -1569,7 +1571,7 @@ LIBMUSCLE_Instance
     :p integer err_code: An error code output (optional).
     :p character err_msg: An error message output (allocatable, optional).
 
-.. :f:subroutine:: LIBMUSCLE_Instance_send(self, port_name, message)
+.. f:subroutine:: LIBMUSCLE_Instance_send(self, port_name, message)
 
     Send a message to the outside world via a port.
 
@@ -1580,7 +1582,7 @@ LIBMUSCLE_Instance
     :p character port_name: The name of the port to send on.
     :p LIBMUSCLE_Message message: The message to send.
 
-.. :f:subroutine:: LIBMUSCLE_Instance_send(self, port_name, message, slot)
+.. f:subroutine:: LIBMUSCLE_Instance_send(self, port_name, message, slot)
 
     Send a message to the outside world via a slot on a port.
 
@@ -1592,7 +1594,7 @@ LIBMUSCLE_Instance
     :p int slot: The slot to send on.
     :p LIBMUSCLE_Message message: The message to send.
 
-.. :f:function:: LIBMUSCLE_Instance_receive(self, port_name, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Instance_receive(self, port_name, err_code, err_msg)
 
     Receive a message from the outside world via a port.
 
@@ -1611,7 +1613,7 @@ LIBMUSCLE_Instance
     :r message: The received message.
     :rtype message: LIBMUSCLE_Message
 
-.. :f:function:: LIBMUSCLE_Instance_receive(self, port_name, default_msg, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Instance_receive(self, port_name, default_msg, err_code, err_msg)
 
     Receive a message from the outside world via a port.
 
@@ -1632,7 +1634,7 @@ LIBMUSCLE_Instance
     :r message: The received message.
     :rtype message: LIBMUSCLE_Message
 
-.. :f:function:: LIBMUSCLE_Instance_receive_on_slot(self, port_name, slot, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Instance_receive_on_slot(self, port_name, slot, err_code, err_msg)
 
     Receive a message from the outside world via a slot on a vector port.
 
@@ -1652,7 +1654,7 @@ LIBMUSCLE_Instance
     :r message: The received message.
     :rtype message: LIBMUSCLE_Message
 
-.. :f:function:: LIBMUSCLE_Instance_receive_on_slot(self, port_name, slot, default_msg, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Instance_receive_on_slot(self, port_name, slot, default_msg, err_code, err_msg)
 
     Receive a message from the outside world via a slot on a vector port.
 
@@ -1674,7 +1676,7 @@ LIBMUSCLE_Instance
     :r message: The received message.
     :rtype message: LIBMUSCLE_Message
 
-.. :f:function:: LIBMUSCLE_Instance_receive_with_settings(self, port_name, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Instance_receive_with_settings(self, port_name, err_code, err_msg)
 
     Receive a message with attached settings overlay.
 
@@ -1693,7 +1695,7 @@ LIBMUSCLE_Instance
     :r message: The received message.
     :rtype message: LIBMUSCLE_Message
 
-.. :f:function:: LIBMUSCLE_Instance_receive_with_settings(self, port_name, default_msg, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Instance_receive_with_settings(self, port_name, default_msg, err_code, err_msg)
 
     Receive a message with attached settings overlay.
 
@@ -1714,7 +1716,7 @@ LIBMUSCLE_Instance
     :r message: The received message.
     :rtype message: LIBMUSCLE_Message
 
-.. :f:function:: LIBMUSCLE_Instance_receive_with_settings_on_slot(self, port_name, slot, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Instance_receive_with_settings_on_slot(self, port_name, slot, err_code, err_msg)
 
     Receive a message with attached settings overlay.
 
@@ -1734,7 +1736,7 @@ LIBMUSCLE_Instance
     :r message: The received message.
     :rtype message: LIBMUSCLE_Message
 
-.. :f:function:: LIBMUSCLE_Instance_receive_with_settings_on_slot(self, port_name, slot, default_msg, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Instance_receive_with_settings_on_slot(self, port_name, slot, default_msg, err_code, err_msg)
 
     Receive a message with attached settings overlay.
 

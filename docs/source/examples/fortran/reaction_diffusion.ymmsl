@@ -1,0 +1,20 @@
+ymmsl_version: v0.1
+
+model:
+  name: reaction_diffusion
+  compute_elements:
+    macro: diffusion
+    micro: reaction
+  conduits:
+    macro.state_out: micro.initial_state
+    micro.final_state: macro.state_in
+
+settings:
+  micro.t_max: 2.469136e-06
+  micro.dt: 2.469136e-08
+  macro.t_max: 0.0001234568
+  macro.dt: 2.469136e-06
+  x_max: 1.0
+  dx: 0.01
+  k: -40500.0
+  d: 0.0405

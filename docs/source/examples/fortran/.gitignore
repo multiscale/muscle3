@@ -1,0 +1,6 @@
+*.log
+reaction
+reaction_mpi
+diffusion
+mc_driver
+load_balancer

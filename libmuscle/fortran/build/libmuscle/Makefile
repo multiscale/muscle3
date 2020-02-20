@@ -3,6 +3,7 @@ srcdir := $(CURDIR)/../../src/libmuscle
 
 sources := $(srcdir)/libmuscle.f03
 objects := $(sources:$(srcdir)/%.f03=%.o)
+lobjects := $(sources:$(srcdir)/%.f03=%.lo)
 libs := libmuscle_fortran.a libmuscle_fortran.so
 modules := $(sources:$(srcdir)/%.f03=%.mod)
 
@@ -32,6 +33,7 @@ test: tests
 .PHONY: clean
 clean:
 	rm -f $(objects) $(modules) $(libs)
+	rm -f mod_dump/*.mod
 	make -C tests clean
 
 .PHONY: distclean
@@ -45,12 +47,15 @@ install: $(installed_modules) $(installed_libs)
 %.o: $(srcdir)/%.f03
 	$(FC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS)
 
+%.lo: $(srcdir)/%.f03
+	$(FC) -c -fPIC -Jmod_dump $(FFLAGS) $^ -o $@ $(LDFLAGS)
+
 %.mod: %.o
 
-libmuscle_fortran.a: libmuscle.o
+libmuscle_fortran.a: $(objects)
 	ar rcs $@ $^
 
-libmuscle_fortran.so: libmuscle.o
+libmuscle_fortran.so: $(lobjects)
 	$(FC) -shared -o $@ $^ $(LDFLAGS)
 
 $(PREFIX)/include/%: %

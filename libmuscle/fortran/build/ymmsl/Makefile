@@ -3,6 +3,7 @@ srcdir := $(CURDIR)/../../src/ymmsl
 
 sources := $(srcdir)/ymmsl.f03
 objects := $(sources:$(srcdir)/%.f03=%.o)
+lobjects := $(sources:$(srcdir)/%.f03=%.lo)
 libs := libymmsl_fortran.a libymmsl_fortran.so
 modules := $(sources:$(srcdir)/%.f03=%.mod)
 
@@ -27,10 +28,10 @@ test: tests
 .PHONY: clean
 clean:
 	rm -f $(objects) $(modules) $(libs)
+	rm -f mod_dump/*.mod
 
 .PHONY: distclean
 distclean: clean
-	rm -f $(objects) $(modules) $(libs)
 
 .PHONY: install
 install: $(installed_modules) $(installed_libs)
@@ -38,12 +39,15 @@ install: $(installed_modules) $(installed_libs)
 %.o: $(srcdir)/%.f03
 	$(FC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS)
 
+%.lo: $(srcdir)/%.f03
+	$(FC) -c -fPIC -Jmod_dump $(FFLAGS) $< -o $@ $(LDFLAGS)
+
 %.mod: %.o
 
 lib%_fortran.a: %.o
 	ar rcs $@ $^
 
-lib%_fortran.so: %.o
+lib%_fortran.so: %.lo
 	$(FC) -shared -o $@ $^ $(LDFLAGS)
 
 $(PREFIX)/include/%: %

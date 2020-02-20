@@ -1399,6 +1399,96 @@ LIBMUSCLE_Instance
     :p LIBMUSCLE_Instance self: The instance to shut down.
     :p character message: An error message describing the problem encountered.
 
+.. f:function:: LIBMUSCLE_Instance_is_setting_a_character(self, name, err_code, err_msg)
+
+    Returns whether the setting is of type character.
+
+    If no setting with the given name exists, ``err_code`` will be set to
+    ``LIBMUSCLE_out_of_range``. See :f:func:`LIBMUSCLE_Data_as_logical` for an
+    example of error handling.
+
+    :p LIBMUSCLE_Instance self: The instance to get the setting from.
+    :p character name: The name of the setting to inspect.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r is_character: .true. if the setting is of character type.
+    :rtype is_character: logical
+
+.. f:function:: LIBMUSCLE_Instance_is_setting_a_int8(self, name, err_code, err_msg)
+
+    Returns whether the setting is of type integer.
+
+    If no setting with the given name exists, ``err_code`` will be set to
+    ``LIBMUSCLE_out_of_range``. See :f:func:`LIBMUSCLE_Data_as_logical` for an
+    example of error handling.
+
+    :p LIBMUSCLE_Instance self: The instance to get the setting from.
+    :p character name: The name of the setting to inspect.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r is_int8: .true. if the setting is of integer type.
+    :rtype is_int8: logical
+
+.. f:function:: LIBMUSCLE_Instance_is_setting_a_real8(self, name, err_code, err_msg)
+
+    Returns whether the setting is of type real.
+
+    If no setting with the given name exists, ``err_code`` will be set to
+    ``LIBMUSCLE_out_of_range``. See :f:func:`LIBMUSCLE_Data_as_logical` for an
+    example of error handling.
+
+    :p LIBMUSCLE_Instance self: The instance to get the setting from.
+    :p character name: The name of the setting to inspect.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r is_real8: .true. if the setting is of real type.
+    :rtype is_real8: logical
+
+.. f:function:: LIBMUSCLE_Instance_is_setting_a_logical(self, name, err_code, err_msg)
+
+    Returns whether the setting is of type logical.
+
+    If no setting with the given name exists, ``err_code`` will be set to
+    ``LIBMUSCLE_out_of_range``. See :f:func:`LIBMUSCLE_Data_as_logical` for an
+    example of error handling.
+
+    :p LIBMUSCLE_Instance self: The instance to get the setting from.
+    :p character name: The name of the setting to inspect.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r is_logical: .true. if the setting is of logical type.
+    :rtype is_logical: logical
+
+.. f:function:: LIBMUSCLE_Instance_is_setting_a_real8array(self, name, err_code, err_msg)
+
+    Returns whether the setting is a 1D array of real.
+
+    If no setting with the given name exists, ``err_code`` will be set to
+    ``LIBMUSCLE_out_of_range``. See :f:func:`LIBMUSCLE_Data_as_logical` for an
+    example of error handling.
+
+    :p LIBMUSCLE_Instance self: The instance to get the setting from.
+    :p character name: The name of the setting to inspect.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r is_real8array: .true. if the setting is of real8array type.
+    :rtype is_real8array: logical
+
+.. f:function:: LIBMUSCLE_Instance_is_setting_a_real8array2(self, name, err_code, err_msg)
+
+    Returns whether the setting is a 2D array of real.
+
+    If no setting with the given name exists, ``err_code`` will be set to
+    ``LIBMUSCLE_out_of_range``. See :f:func:`LIBMUSCLE_Data_as_logical` for an
+    example of error handling.
+
+    :p LIBMUSCLE_Instance self: The instance to get the setting from.
+    :p character name: The name of the setting to inspect.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r is_real8array2: .true. if the setting is of real8array2 type.
+    :rtype is_real8array2: logical
+
 .. f:function:: LIBMUSCLE_Instance_get_setting_as_character(self, name, err_code, err_msg)
 
     Returns the value of a character-valued model setting.

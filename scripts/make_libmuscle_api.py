@@ -559,6 +559,14 @@ instance_desc = Class('Instance', None, [
     MemFunTmpl(
         [String(), Int64t(), Double(), Bool(), VecDbl('value'),
             Vec2Dbl('value')],
+        Bool(), 'is_setting_a', [String('name')], True,
+            cpp_chain_call=lambda **kwargs: 'self_p->get_setting({}).is_a<{}>()'.format(
+                    kwargs['cpp_args'], kwargs['tpl_type'])
+        ),
+
+    MemFunTmpl(
+        [String(), Int64t(), Double(), Bool(), VecDbl('value'),
+            Vec2Dbl('value')],
         T(), 'get_setting_as', [String('name')], True),
     MemFun(Obj('PortsDescription'), 'list_ports'),
     MemFun(Bool(), 'is_connected', [String('port')]),

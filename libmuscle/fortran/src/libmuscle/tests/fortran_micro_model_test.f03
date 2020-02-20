@@ -13,8 +13,9 @@ program micro_model
     type(LIBMUSCLE_DataConstRef) :: rdata
     type(LIBMUSCLE_Message) :: message
     type(LIBMUSCLE_Data) :: sdata
-    integer :: i
+    integer :: i, err_code
     character(len=14) :: reply
+    logical :: is_int
 
     ports = LIBMUSCLE_PortsDescription_create()
     call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_F_INIT, 'in')
@@ -25,6 +26,11 @@ program micro_model
     i = 0
     do while (LIBMUSCLE_Instance_reuse_instance(instance))
         ! F_INIT
+        call assert_true(LIBMUSCLE_Instance_is_setting_a_int8(instance, 'test1'))
+        call assert_false(LIBMUSCLE_Instance_is_setting_a_logical(instance, 'test1'))
+        is_int = LIBMUSCLE_Instance_is_setting_a_int8(instance, 'does_not_exist', err_code)
+        call assert_eq_integer(err_code, LIBMUSCLE_out_of_range)
+
         call assert_eq_int8(LIBMUSCLE_Instance_get_setting_as_int8(instance, 'test1'), 13_LIBMUSCLE_int8)
         call assert_true(LIBMUSCLE_Instance_get_setting_as_logical(instance, 'test4'))
 

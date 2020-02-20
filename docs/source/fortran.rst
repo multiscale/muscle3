@@ -420,7 +420,7 @@ How to check in advance whether an operation can work depends on what you want
 to do. If you want to receive a message, you could use
 :f:func:`LIBMUSCLE_Instance_is_connected` to check that the port is connected
 before trying to receive. For settings that can be of different types, you can
-use ``LIBMUSCLE_Instance_setting_is_a_<type>``, and for data there is
+use ``LIBMUSCLE_Instance_is_setting_a_<type>``, and for data there is
 ``LIBMUSCLE_DataConstRef_is_a_<type>``.
 
 This does not work in all cases however, for example if you have received a

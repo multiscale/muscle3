@@ -239,6 +239,12 @@
         LIBMUSCLE_Instance_reuse_instance_default_;
         LIBMUSCLE_Instance_reuse_instance_apply_;
         LIBMUSCLE_Instance_error_shutdown_;
+        LIBMUSCLE_Instance_is_setting_a_character_;
+        LIBMUSCLE_Instance_is_setting_a_int8_;
+        LIBMUSCLE_Instance_is_setting_a_real8_;
+        LIBMUSCLE_Instance_is_setting_a_logical_;
+        LIBMUSCLE_Instance_is_setting_a_real8array_;
+        LIBMUSCLE_Instance_is_setting_a_real8array2_;
         LIBMUSCLE_Instance_get_setting_as_character_;
         LIBMUSCLE_Instance_get_setting_as_int8_;
         LIBMUSCLE_Instance_get_setting_as_real8_;

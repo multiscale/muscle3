@@ -1642,7 +1642,10 @@ class MemFunTmpl(Member):
                 self.may_throw)
         result.ns_prefix = self.ns_prefix
         result.public = self.public
-        result.set_class_name(self.class_name)
+        if self.class_name is None:
+            result.class_name = None
+        else:
+            result.set_class_name(self.class_name)
         result.instances = [copy(instance) for instance in self.instances]
         return result
 

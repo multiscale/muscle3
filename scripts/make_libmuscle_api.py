@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+from copy import copy
 from textwrap import indent
 
 import api_generator
@@ -472,7 +473,7 @@ portsdescription_desc = Class('PortsDescription', None, [
     ])
 
 
-instance_desc = Class('Instance', None, [
+instance_constructors = [
     Constructor([Obj('CmdLineArgs', 'cla')], 'create_autoports', fc_override=(
         'std::intptr_t LIBMUSCLE_Instance_create_autoports_(std::intptr_t cla) {\n'
         '    CmdLineArgs * cla_p = reinterpret_cast<CmdLineArgs *>(cla);\n'
@@ -490,7 +491,7 @@ instance_desc = Class('Instance', None, [
             '    num_args = command_argument_count()\n'
             '    cla = LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(num_args + 1)\n'
             '    do i = 0, num_args\n'
-            '        call get_Command_argument(i, length=arg_len)\n'
+            '        call get_command_argument(i, length=arg_len)\n'
             '        allocate (character(arg_len+1) :: cur_arg)\n'
             '        call get_command_argument(i, value=cur_arg)\n'
             '        cur_arg(arg_len+1:arg_len+1) = c_null_char\n'
@@ -530,7 +531,7 @@ instance_desc = Class('Instance', None, [
             '    num_args = command_argument_count()\n'
             '    cla = LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(num_args + 1)\n'
             '    do i = 0, num_args\n'
-            '        call get_Command_argument(i, length=arg_len)\n'
+            '        call get_command_argument(i, length=arg_len)\n'
             '        allocate (character(arg_len+1) :: cur_arg)\n'
             '        call get_command_argument(i, value=cur_arg)\n'
             '        cur_arg(arg_len+1:arg_len+1) = c_null_char\n'
@@ -543,6 +544,228 @@ instance_desc = Class('Instance', None, [
             'end function LIBMUSCLE_Instance_create_with_ports\n'
             '\n')),
     OverloadSet('create', ['create_autoports', 'create_with_ports']),
+    ]
+
+
+instance_mpi_constructors = [
+    Constructor(
+        [Obj('CmdLineArgs', 'cla'), Int('communicator'), Int('root')],
+        'create_autoports_cr',
+        fc_override=(
+            'std::intptr_t LIBMUSCLE_Instance_create_autoports_cr_(\n'
+            '        std::intptr_t cla,\n'
+            '        int communicator,\n'
+            '        int root\n'
+            ') {\n'
+            '    CmdLineArgs * cla_p = reinterpret_cast<CmdLineArgs *>(cla);\n'
+            '    MPI_Comm communicator_m = MPI_Comm_f2c(communicator);\n'
+            '    Instance * result = new Instance(cla_p->argc(), cla_p->argv(), communicator_m, root);\n'
+            '    return reinterpret_cast<std::intptr_t>(result);\n'
+            '}\n\n'),
+        f_override=(
+            'type(LIBMUSCLE_Instance) function LIBMUSCLE_Instance_create_autoports_cr( &\n'
+            '       communicator, root)\n'
+            '    implicit none\n'
+            '    integer :: communicator, root\n'
+            '\n'
+            '    integer :: num_args, i, arg_len\n'
+            '    integer (c_intptr_t) :: cla\n'
+            '    character (kind=c_char, len=:), allocatable :: cur_arg\n'
+            '\n'
+            '    num_args = command_argument_count()\n'
+            '    cla = LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(num_args + 1)\n'
+            '    do i = 0, num_args\n'
+            '        call get_command_argument(i, length=arg_len)\n'
+            '        allocate (character(arg_len+1) :: cur_arg)\n'
+            '        call get_command_argument(i, value=cur_arg)\n'
+            '        cur_arg(arg_len+1:arg_len+1) = c_null_char\n'
+            '        call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg_( &\n'
+            '               cla, i, cur_arg, int(len(cur_arg), c_size_t))\n'
+            '        deallocate(cur_arg)\n'
+            '    end do\n'
+            '    LIBMUSCLE_Instance_create_autoports_cr%ptr = &\n'
+            '        LIBMUSCLE_Instance_create_autoports_cr_(cla, communicator, root)\n'
+            '    call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_(cla)\n'
+            'end function LIBMUSCLE_Instance_create_autoports_cr\n'
+            '\n')),
+    Constructor(
+        [Obj('CmdLineArgs', 'cla'), Int('communicator')],
+        'create_autoports_c',
+        fc_override='',
+        f_override=(
+            'type(LIBMUSCLE_Instance) function LIBMUSCLE_Instance_create_autoports_c( &\n'
+            '       communicator)\n'
+            '    implicit none\n'
+            '    integer :: communicator\n'
+            '\n'
+            '    integer :: num_args, i, arg_len\n'
+            '    integer (c_intptr_t) :: cla\n'
+            '    character (kind=c_char, len=:), allocatable :: cur_arg\n'
+            '\n'
+            '    num_args = command_argument_count()\n'
+            '    cla = LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(num_args + 1)\n'
+            '    do i = 0, num_args\n'
+            '        call get_command_argument(i, length=arg_len)\n'
+            '        allocate (character(arg_len+1) :: cur_arg)\n'
+            '        call get_command_argument(i, value=cur_arg)\n'
+            '        cur_arg(arg_len+1:arg_len+1) = c_null_char\n'
+            '        call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg_( &\n'
+            '               cla, i, cur_arg, int(len(cur_arg), c_size_t))\n'
+            '        deallocate(cur_arg)\n'
+            '    end do\n'
+            '    LIBMUSCLE_Instance_create_autoports_c%ptr = &\n'
+            '        LIBMUSCLE_Instance_create_autoports_cr_(cla, communicator, 0)\n'
+            '    call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_(cla)\n'
+            'end function LIBMUSCLE_Instance_create_autoports_c\n'
+            '\n')),
+    Constructor(
+        [Obj('CmdLineArgs', 'cla')],
+        'create_autoports',
+        fc_override='',
+        f_override=(
+            'type(LIBMUSCLE_Instance) function LIBMUSCLE_Instance_create_autoports()\n'
+            '    implicit none\n'
+            '\n'
+            '    integer :: num_args, i, arg_len\n'
+            '    integer (c_intptr_t) :: cla\n'
+            '    character (kind=c_char, len=:), allocatable :: cur_arg\n'
+            '\n'
+            '    num_args = command_argument_count()\n'
+            '    cla = LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(num_args + 1)\n'
+            '    do i = 0, num_args\n'
+            '        call get_command_argument(i, length=arg_len)\n'
+            '        allocate (character(arg_len+1) :: cur_arg)\n'
+            '        call get_command_argument(i, value=cur_arg)\n'
+            '        cur_arg(arg_len+1:arg_len+1) = c_null_char\n'
+            '        call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg_( &\n'
+            '               cla, i, cur_arg, int(len(cur_arg), c_size_t))\n'
+            '        deallocate(cur_arg)\n'
+            '    end do\n'
+            '    LIBMUSCLE_Instance_create_autoports%ptr = &\n'
+            '        LIBMUSCLE_Instance_create_autoports_cr_(cla, MPI_COMM_WORLD, 0)\n'
+            '    call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_(cla)\n'
+            'end function LIBMUSCLE_Instance_create_autoports\n'
+            '\n')),
+    Constructor(
+        [
+            Obj('CmdLineArgs', 'cla'), Obj('PortsDescription', 'ports'),
+            Int('communicator'), Int('root')],
+        'create_with_ports_cr',
+        fc_override=(
+            'std::intptr_t LIBMUSCLE_Instance_create_with_ports_cr_(\n'
+            '        std::intptr_t cla,\n'
+            '        std::intptr_t ports,\n'
+            '        int communicator, int root\n'
+            ') {\n'
+            '    CmdLineArgs * cla_p = reinterpret_cast<CmdLineArgs *>(cla);\n'
+            '    PortsDescription * ports_p = reinterpret_cast<PortsDescription *>(\n'
+            '            ports);\n'
+            '    MPI_Comm communicator_m = MPI_Comm_f2c(communicator);\n'
+            '    Instance * result = new Instance(\n'
+            '        cla_p->argc(), cla_p->argv(), *ports_p, communicator_m, root);\n'
+            '    return reinterpret_cast<std::intptr_t>(result);\n'
+            '}\n\n'),
+        f_override=(
+            'type(LIBMUSCLE_Instance) function LIBMUSCLE_Instance_create_with_ports_cr( &\n'
+            '        ports, communicator, root)\n'
+            '    implicit none\n'
+            '\n'
+            '    type(LIBMUSCLE_PortsDescription) :: ports\n'
+            '    integer :: communicator, root\n'
+            '    integer :: num_args, i, arg_len\n'
+            '    integer (c_intptr_t) :: cla\n'
+            '    character (kind=c_char, len=:), allocatable :: cur_arg\n'
+            '\n'
+            '    num_args = command_argument_count()\n'
+            '    cla = LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(num_args + 1)\n'
+            '    do i = 0, num_args\n'
+            '        call get_command_argument(i, length=arg_len)\n'
+            '        allocate (character(arg_len+1) :: cur_arg)\n'
+            '        call get_command_argument(i, value=cur_arg)\n'
+            '        cur_arg(arg_len+1:arg_len+1) = c_null_char\n'
+            '        call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg_( &\n'
+            '               cla, i, cur_arg, int(len(cur_arg), c_size_t))\n'
+            '        deallocate(cur_arg)\n'
+            '    end do\n'
+            '    LIBMUSCLE_Instance_create_with_ports_cr%ptr = &\n'
+            '        LIBMUSCLE_Instance_create_with_ports_cr_( &\n'
+            '            cla, ports%ptr, communicator, root)\n'
+            '    call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_(cla)\n'
+            'end function LIBMUSCLE_Instance_create_with_ports_cr\n'
+            '\n')),
+    Constructor(
+        [
+            Obj('CmdLineArgs', 'cla'), Obj('PortsDescription', 'ports'),
+            Int('communicator')],
+        'create_with_ports_c',
+        fc_override='',
+        f_override=(
+            'type(LIBMUSCLE_Instance) function LIBMUSCLE_Instance_create_with_ports_c( &\n'
+            '        ports, communicator)\n'
+            '    implicit none\n'
+            '\n'
+            '    type(LIBMUSCLE_PortsDescription) :: ports\n'
+            '    integer :: communicator\n'
+            '    integer :: num_args, i, arg_len\n'
+            '    integer (c_intptr_t) :: cla\n'
+            '    character (kind=c_char, len=:), allocatable :: cur_arg\n'
+            '\n'
+            '    num_args = command_argument_count()\n'
+            '    cla = LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(num_args + 1)\n'
+            '    do i = 0, num_args\n'
+            '        call get_command_argument(i, length=arg_len)\n'
+            '        allocate (character(arg_len+1) :: cur_arg)\n'
+            '        call get_command_argument(i, value=cur_arg)\n'
+            '        cur_arg(arg_len+1:arg_len+1) = c_null_char\n'
+            '        call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg_( &\n'
+            '               cla, i, cur_arg, int(len(cur_arg), c_size_t))\n'
+            '        deallocate(cur_arg)\n'
+            '    end do\n'
+            '    LIBMUSCLE_Instance_create_with_ports_c%ptr = &\n'
+            '        LIBMUSCLE_Instance_create_with_ports_cr_( &\n'
+            '            cla, ports%ptr, communicator, 0)\n'
+            '    call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_(cla)\n'
+            'end function LIBMUSCLE_Instance_create_with_ports_c\n'
+            '\n')),
+    Constructor(
+        [
+            Obj('CmdLineArgs', 'cla'), Obj('PortsDescription', 'ports')],
+        'create_with_ports',
+        fc_override='',
+        f_override=(
+            'type(LIBMUSCLE_Instance) function LIBMUSCLE_Instance_create_with_ports( &\n'
+            '        ports)\n'
+            '    implicit none\n'
+            '\n'
+            '    type(LIBMUSCLE_PortsDescription) :: ports\n'
+            '    integer :: num_args, i, arg_len\n'
+            '    integer (c_intptr_t) :: cla\n'
+            '    character (kind=c_char, len=:), allocatable :: cur_arg\n'
+            '\n'
+            '    num_args = command_argument_count()\n'
+            '    cla = LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(num_args + 1)\n'
+            '    do i = 0, num_args\n'
+            '        call get_command_argument(i, length=arg_len)\n'
+            '        allocate (character(arg_len+1) :: cur_arg)\n'
+            '        call get_command_argument(i, value=cur_arg)\n'
+            '        cur_arg(arg_len+1:arg_len+1) = c_null_char\n'
+            '        call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg_( &\n'
+            '               cla, i, cur_arg, int(len(cur_arg), c_size_t))\n'
+            '        deallocate(cur_arg)\n'
+            '    end do\n'
+            '    LIBMUSCLE_Instance_create_with_ports%ptr = &\n'
+            '        LIBMUSCLE_Instance_create_with_ports_cr_( &\n'
+            '            cla, ports%ptr, MPI_COMM_WORLD, 0)\n'
+            '    call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_(cla)\n'
+            'end function LIBMUSCLE_Instance_create_with_ports\n'
+            '\n')),
+    OverloadSet('create', [
+        'create_autoports_cr', 'create_autoports_c', 'create_autoports',
+        'create_with_ports_cr', 'create_with_ports_c', 'create_with_ports']),
+    ]
+
+
+instance_members = [
     Destructor(),
     MemFun(
             Bool(), 'reuse_instance_default',
@@ -631,7 +854,17 @@ instance_desc = Class('Instance', None, [
                kwargs['cpp_args']))),
     OverloadSet('receive_with_settings_on_slot',
                 ['receive_with_settings_ps', 'receive_with_settings_psd'])
-    ])
+    ]
+
+
+instance_desc = Class(
+        'Instance', None, instance_constructors + [
+            copy(mem) for mem in instance_members])
+
+
+instance_mpi_desc = Class(
+        'Instance', None, instance_mpi_constructors + [
+            copy(mem) for mem in instance_members])
 
 
 cmdlineargs_desc = Class('CmdLineArgs', None, [
@@ -668,11 +901,36 @@ libmuscle_api_description = API(
         ])
 
 
+libmuscle_mpi_api_description = API(
+        'libmuscle_mpi',
+        #define LIBMUSCLE_ENABLE_MPI
+        [
+            'libmuscle/libmuscle.hpp',
+            'libmuscle/bindings/cmdlineargs.hpp',
+            'ymmsl/ymmsl.hpp',
+            'stdexcept',
+            'typeinfo'],
+        [
+            'mpi', 'ymmsl'],
+        [
+            Namespace('libmuscle', True, 'LIBMUSCLE', [], [
+                dataconstref_desc, data_desc, portsdescription_desc,
+                message_desc, instance_mpi_desc]),
+            Namespace('libmuscle::impl::bindings', False,
+                      'LIBMUSCLE_IMPL_BINDINGS', [], [cmdlineargs_desc]),
+            Namespace('ymmsl', None, 'YMMSL',
+                      ymmsl_forward_enums, ymmsl_forward_classes)
+        ])
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='MUSCLE API Generator')
     parser.add_argument('--fortran-c-wrappers', action='store_true')
     parser.add_argument('--fortran-module', action='store_true')
     parser.add_argument('--fortran-exports', nargs=2)
+    parser.add_argument('--fortran-mpi-c-wrappers', action='store_true')
+    parser.add_argument('--fortran-mpi-module', action='store_true')
+    parser.add_argument('--fortran-mpi-exports', nargs=2)
 
     args = parser.parse_args()
     if args.fortran_c_wrappers:
@@ -685,6 +943,23 @@ if __name__ == '__main__':
 
         in_name = args.fortran_exports[0]
         out_name = args.fortran_exports[1]
+        with open(in_name, 'r') as in_file:
+            with open(out_name, 'w') as out_file:
+                for line in in_file:
+                    if 'FORTRAN ABI' in line:
+                        out_file.write(exports_txt)
+                    else:
+                        out_file.write(line)
+    elif args.fortran_mpi_c_wrappers:
+        print(libmuscle_mpi_api_description.fortran_c_wrapper())
+    elif args.fortran_mpi_module:
+        print(libmuscle_mpi_api_description.fortran_module())
+    elif args.fortran_mpi_exports:
+        exports = libmuscle_mpi_api_description.fortran_exports()
+        exports_txt = indent('\n'.join(exports), 8*' ') + '\n'
+
+        in_name = args.fortran_mpi_exports[0]
+        out_name = args.fortran_mpi_exports[1]
         with open(in_name, 'r') as in_file:
             with open(out_name, 'w') as out_file:
                 for line in in_file:

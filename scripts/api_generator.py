@@ -969,7 +969,7 @@ class MemFun(Member):
     def fortran_c_wrapper(self) -> str:
         """Create a C wrapper for calling by Fortran.
         """
-        if self.fc_override:
+        if self.fc_override is not None:
             return self.fc_override
 
         result = ''

@@ -1,28 +1,35 @@
 # Get source paths
 hdrdir := $(CURDIR)/../../src
 srcdir := $(CURDIR)/../../src/libmuscle
-srcdirs := $(srcdir) $(srcdir)/mcp $(srcdir)/bindings
+srcdirs := $(srcdir) $(srcdir)/mcp
 objdir := $(CURDIR)/objs
 
 VPATH := $(srcdir)
 source_files := $(foreach dir,$(srcdirs),$(wildcard $(dir)/*.cpp))
+source_files += $(srcdir)/bindings/cmdlineargs.cpp
+mpi_source_files := $(source_files) $(srcdir)/bindings/libmuscle_mpi_fortran_c.cpp
+source_files := $(source_files) $(srcdir)/bindings/libmuscle_fortran_c.cpp
+
 objects := $(source_files:$(srcdir)%.cpp=$(objdir)%.o)
 lobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.lo)
 dobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.do)
 dlobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.dlo)
-mobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.mo)
-mlobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.mlo)
-mdobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.mdo)
-mdlobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.mdlo)
+mobjects := $(mpi_source_files:$(srcdir)%.cpp=$(objdir)%.mo)
+mlobjects := $(mpi_source_files:$(srcdir)%.cpp=$(objdir)%.mlo)
+mdobjects := $(mpi_source_files:$(srcdir)%.cpp=$(objdir)%.mdo)
+mdlobjects := $(mpi_source_files:$(srcdir)%.cpp=$(objdir)%.mdlo)
 
 deps := $(source_files:$(srcdir)%.cpp=$(objdir)%.d)
 
 prod_libs := libmuscle.a libmuscle.so
 debug_libs := libmuscle_d.a libmuscle_d.so
 
+tests_deps := libmuscle_d.a version.h
+
 ifdef MUSCLE_ENABLE_MPI
 prod_libs += libmuscle_mpi.a libmuscle_mpi.so
 debug_libs += libmuscle_mpi_d.a libmuscle_mpi_d.so
+tests_deps += libmuscle_mpi_d.a
 endif
 
 all_libs := $(prod_libs)
@@ -53,7 +60,7 @@ export DEBUGFLAGS
 all: $(all_libs) version.h
 
 .PHONY: tests
-tests: libmuscle_d.a version.h
+tests: $(tests_deps)
 	$(MAKE) -C tests tests
 
 .PHONY: test
@@ -170,13 +177,13 @@ libmuscle_mpi.a: $(mobjects)
 	ar rcs $@ $^
 
 libmuscle_mpi.so: $(mlobjects)
-	$(CXX) -shared -Wl,--version-script=libmuscle.version -o $@ $^ $(LDFLAGS)
+	$(MPICXX) -shared -Wl,--version-script=libmuscle_mpi.version -o $@ $^ $(LDFLAGS)
 
 libmuscle_mpi_d.a: $(mdobjects)
 	ar rcs $@ $^
 
 libmuscle_mpi_d.so: $(mdlobjects)
-	$(CXX) -shared -Wl,--version-script=libmuscle.version -o $@ $^ $(LDFLAGS)
+	$(MPICXX) -shared -Wl,--version-script=libmuscle_mpi.version -o $@ $^ $(LDFLAGS)
 
 $(PREFIX)/include/%.hpp: $(hdrdir)/%.hpp
 	@mkdir -p $(@D)

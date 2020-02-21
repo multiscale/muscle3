@@ -1332,6 +1332,10 @@ LIBMUSCLE_Instance
 
     Create a new Instance object with ports from the configuration.
 
+    For MPI-based compute elements, this will have libmuscle_mpi use a duplicate
+    of ``MPI_COMM_WORLD`` to communicate, and the designated root process will
+    be that with rank 0.
+
     This object must be freed when you're done with it using
     :f:func:`LIBMUSCLE_Instance_free`.
 
@@ -1342,10 +1346,55 @@ LIBMUSCLE_Instance
 
     Create a new Instance object with the given ports.
 
+    For MPI-based compute elements, this will have libmuscle_mpi use a duplicate
+    of ``MPI_COMM_WORLD`` to communicate, and the designated root process will
+    be that with rank 0.
+
     This object must be freed when you're done with it using
     :f:func:`LIBMUSCLE_Instance_free`.
 
     :p LIBMUSCLE_PortsDescription ports: The ports of the new instance.
+    :r instance: The newly created instance object.
+    :rtype instance: LIBMUSCLE_Instance
+
+.. f:function:: LIBMUSCLE_Instance_create(communicator, root)
+
+    Create a new Instance object for MPI with ports from the configuration.
+
+    For MPI-based compute elements, an MPI communicator and a root rank may be
+    passed. The communicator must contain all processes in this instance, and
+    ``root`` must be the rank of one of them. MUSCLE will create a duplicate of
+    this communicator for its own use. Creating a :f:type:`LIBMUSCLE_Instance`
+    for an MPI compute element is a collective operation, so it must be done in
+    all processes simultaneously, with the same communicator and the same root.
+
+    This object must be freed when you're done with it using
+    :f:func:`LIBMUSCLE_Instance_free`.
+
+    :p integer communicator: MPI communicator to use (optional, default
+            MPI_COMM_WORLD).
+    :p integer root: Rank of the root process (optional, default 0).
+    :r instance: The newly created instance object.
+    :rtype instance: LIBMUSCLE_Instance
+
+.. f:function:: LIBMUSCLE_Instance_create(ports, communicator, root)
+
+    Create a new Instance object for MPI with the given ports.
+
+    For MPI-based compute elements, an MPI communicator and a root rank may be
+    passed. The communicator must contain all processes in this instance, and
+    ``root`` must be the rank of one of them. MUSCLE will create a duplicate of
+    this communicator for its own use. Creating a :f:type:`LIBMUSCLE_Instance`
+    for an MPI compute element is a collective operation, so it must be done in
+    all processes simultaneously, with the same communicator and the same root.
+
+    This object must be freed when you're done with it using
+    :f:func:`LIBMUSCLE_Instance_free`.
+
+    :p LIBMUSCLE_PortsDescription ports: The ports of the new instance.
+    :p integer communicator: MPI communicator to use (optional, default
+            MPI_COMM_WORLD).
+    :p integer root: Rank of the root process (optional, default 0).
     :r instance: The newly created instance object.
     :rtype instance: LIBMUSCLE_Instance
 
@@ -1362,6 +1411,10 @@ LIBMUSCLE_Instance
     This method must be called at the beginning of the reuse loop, i.e. before
     the F_INIT operator, and its return value should decide whether to enter
     that loop again.
+
+    MPI-based compute elements must execute the reuse loop in each process in
+    parallel, and call this function at the top of the reuse loop in each
+    process.
 
     :p LIBMUSCLE_Instance self: The object to check for reuse.
     :r reuse: Whether to enter the reuse loop another time.
@@ -1396,6 +1449,9 @@ LIBMUSCLE_Instance
     you should call this function to shut down the instance before stopping the
     program. This makes debugging easier.
 
+    MPI-based compute elements may either call this function in all processes,
+    or only in the root process (as passed to the constructor).
+
     :p LIBMUSCLE_Instance self: The instance to shut down.
     :p character message: An error message describing the problem encountered.
 
@@ -1406,6 +1462,9 @@ LIBMUSCLE_Instance
     If no setting with the given name exists, ``err_code`` will be set to
     ``LIBMUSCLE_out_of_range``. See :f:func:`LIBMUSCLE_Data_as_logical` for an
     example of error handling.
+
+    MPI-based compute elements may call this function at any time within the
+    reuse loop, in any or all processes, simultaneously or not.
 
     :p LIBMUSCLE_Instance self: The instance to get the setting from.
     :p character name: The name of the setting to inspect.
@@ -1422,6 +1481,9 @@ LIBMUSCLE_Instance
     ``LIBMUSCLE_out_of_range``. See :f:func:`LIBMUSCLE_Data_as_logical` for an
     example of error handling.
 
+    MPI-based compute elements may call this function at any time within the
+    reuse loop, in any or all processes, simultaneously or not.
+
     :p LIBMUSCLE_Instance self: The instance to get the setting from.
     :p character name: The name of the setting to inspect.
     :p integer err_code: An error code output (optional).
@@ -1436,6 +1498,9 @@ LIBMUSCLE_Instance
     If no setting with the given name exists, ``err_code`` will be set to
     ``LIBMUSCLE_out_of_range``. See :f:func:`LIBMUSCLE_Data_as_logical` for an
     example of error handling.
+
+    MPI-based compute elements may call this function at any time within the
+    reuse loop, in any or all processes, simultaneously or not.
 
     :p LIBMUSCLE_Instance self: The instance to get the setting from.
     :p character name: The name of the setting to inspect.
@@ -1452,6 +1517,9 @@ LIBMUSCLE_Instance
     ``LIBMUSCLE_out_of_range``. See :f:func:`LIBMUSCLE_Data_as_logical` for an
     example of error handling.
 
+    MPI-based compute elements may call this function at any time within the
+    reuse loop, in any or all processes, simultaneously or not.
+
     :p LIBMUSCLE_Instance self: The instance to get the setting from.
     :p character name: The name of the setting to inspect.
     :p integer err_code: An error code output (optional).
@@ -1467,6 +1535,9 @@ LIBMUSCLE_Instance
     ``LIBMUSCLE_out_of_range``. See :f:func:`LIBMUSCLE_Data_as_logical` for an
     example of error handling.
 
+    MPI-based compute elements may call this function at any time within the
+    reuse loop, in any or all processes, simultaneously or not.
+
     :p LIBMUSCLE_Instance self: The instance to get the setting from.
     :p character name: The name of the setting to inspect.
     :p integer err_code: An error code output (optional).
@@ -1481,6 +1552,9 @@ LIBMUSCLE_Instance
     If no setting with the given name exists, ``err_code`` will be set to
     ``LIBMUSCLE_out_of_range``. See :f:func:`LIBMUSCLE_Data_as_logical` for an
     example of error handling.
+
+    MPI-based compute elements may call this function at any time within the
+    reuse loop, in any or all processes, simultaneously or not.
 
     :p LIBMUSCLE_Instance self: The instance to get the setting from.
     :p character name: The name of the setting to inspect.
@@ -1498,6 +1572,9 @@ LIBMUSCLE_Instance
     ``err_code`` will be set to ``LIBMUSCLE_bad_cast``. See
     :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
 
+    MPI-based compute elements may call this function at any time within the
+    reuse loop, in any or all processes, simultaneously or not.
+
     :p LIBMUSCLE_Instance self: The instance to get the setting from.
     :p character name: The name of the setting to retrieve.
     :p integer err_code: An error code output (optional).
@@ -1513,6 +1590,9 @@ LIBMUSCLE_Instance
     ``LIBMUSCLE_out_of_range``. If the value is not of type integer, then
     ``err_code`` will be set to ``LIBMUSCLE_bad_cast``. See
     :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
+
+    MPI-based compute elements may call this function at any time within the
+    reuse loop, in any or all processes, simultaneously or not.
 
     :p LIBMUSCLE_Instance self: The instance to get the setting from.
     :p character name: The name of the setting to retrieve.
@@ -1530,6 +1610,9 @@ LIBMUSCLE_Instance
     ``err_code`` will be set to ``LIBMUSCLE_bad_cast``. See
     :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
 
+    MPI-based compute elements may call this function at any time within the
+    reuse loop, in any or all processes, simultaneously or not.
+
     :p LIBMUSCLE_Instance self: The instance to get the setting from.
     :p character name: The name of the setting to retrieve.
     :p integer err_code: An error code output (optional).
@@ -1545,6 +1628,9 @@ LIBMUSCLE_Instance
     ``LIBMUSCLE_out_of_range``. If the value is not of type integer, then
     ``err_code`` will be set to ``LIBMUSCLE_bad_cast``. See
     :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
+
+    MPI-based compute elements may call this function at any time within the
+    reuse loop, in any or all processes, simultaneously or not.
 
     :p LIBMUSCLE_Instance self: The instance to get the setting from.
     :p character name: The name of the setting to retrieve.
@@ -1566,6 +1652,9 @@ LIBMUSCLE_Instance
     ``err_code`` will be set to ``LIBMUSCLE_bad_cast``. See
     :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
 
+    MPI-based compute elements may call this function at any time within the
+    reuse loop, in any or all processes, simultaneously or not.
+
     :p LIBMUSCLE_Instance self: The instance to get the setting from.
     :p character name: The name of the setting to retrieve.
     :p LIBMUSCLE_real8: The returned value (out, dimension(:))
@@ -1585,6 +1674,9 @@ LIBMUSCLE_Instance
     ``err_code`` will be set to ``LIBMUSCLE_bad_cast``. See
     :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
 
+    MPI-based compute elements may call this function at any time within the
+    reuse loop, in any or all processes, simultaneously or not.
+
     :p LIBMUSCLE_Instance self: The instance to get the setting from.
     :p character name: The name of the setting to retrieve.
     :p LIBMUSCLE_real8: The returned value (out, dimension(:,:))
@@ -1595,6 +1687,8 @@ LIBMUSCLE_Instance
 
     Returns a description of the ports of this instance.
 
+    MPI-based compute elements may call this function only in the root process.
+
     :p LIBMUSCLE_Instance self: The instance whose ports to describe.
     :r ports: A description of the ports, organised by operator.
     :rtype ports: LIBMUSCLE_PortsDescription
@@ -1602,6 +1696,8 @@ LIBMUSCLE_Instance
 .. f:function:: LIBMUSCLE_Instance_is_connected(self, port)
 
     Returns whether the given port is connected.
+
+    MPI-based compute elements may call this function only in the root process.
 
     :p LIBMUSCLE_Instance self: The instance to inspect.
     :p character port: The name of the port to inspect
@@ -1611,6 +1707,8 @@ LIBMUSCLE_Instance
 .. f:function:: LIBMUSCLE_Instance_is_vector_port(self, port)
 
     Returns whether the given port is a vector port.
+
+    MPI-based compute elements may call this function only in the root process.
 
     :p LIBMUSCLE_Instance self: The instance to inspect.
     :p character port: The name of the port to inspect
@@ -1624,6 +1722,8 @@ LIBMUSCLE_Instance
     This function must only be called on vector ports. If the port is a scalar
     port, ``err_code`` will be set to ``LIBMUSCLE_runtime_error`` and the return
     value will be invalid.
+
+    MPI-based compute elements may call this function only in the root process.
 
     :p LIBMUSCLE_Instance self: The instance to inspect.
     :p character port: The name of the port to inspect
@@ -1640,6 +1740,8 @@ LIBMUSCLE_Instance
     port, ``err_code`` will be set to ``LIBMUSCLE_runtime_error`` and the return
     value will be invalid.
 
+    MPI-based compute elements may call this function only in the root process.
+
     :p LIBMUSCLE_Instance self: The instance to inspect.
     :p character port: The name of the port to inspect
     :p integer err_code: An error code output (optional).
@@ -1655,6 +1757,8 @@ LIBMUSCLE_Instance
     a scalar port or a non-resizable vector port, ``err_code`` will be set to
     ``LIBMUSCLE_runtime_error`` and the return value will be invalid.
 
+    MPI-based compute elements may call this function only in the root process.
+
     :p LIBMUSCLE_Instance self: The instance to change a port on.
     :p character port: The name of the port to modify.
     :p integer length: The new length of the port.
@@ -1668,6 +1772,12 @@ LIBMUSCLE_Instance
     Sending is non-blocking, a copy of the message will be made and stored until
     the receiver is ready to receive it.
 
+    MPI-based compute elements may call this function either in all processes,
+    or only in the root process. In both cases, the message given by the root
+    process will be sent, the others ignored. You may want to do a gather
+    operation first to collect all the information that is to be sent in the
+    root process.
+
     :p LIBMUSCLE_Instance self: The instance to send a message from.
     :p character port_name: The name of the port to send on.
     :p LIBMUSCLE_Message message: The message to send.
@@ -1678,6 +1788,12 @@ LIBMUSCLE_Instance
 
     Sending is non-blocking, a copy of the message will be made and stored until
     the receiver is ready to receive it.
+
+    MPI-based compute elements may call this function either in all processes,
+    or only in the root process. In both cases, the message given by the root
+    process will be sent, the others ignored. You may want to do a gather
+    operation first to collect all the information that is to be sent in the
+    root process.
 
     :p LIBMUSCLE_Instance self: The instance to send a message from.
     :p character port_name: The name of the port to send on.
@@ -1695,6 +1811,12 @@ LIBMUSCLE_Instance
 
     If the port you are receiving on is not connected, then err_code will be set
     to ``LIBMUSCLE_runtime_error``.
+
+    MPI-based compute elements must call this function in all processes
+    simultaneously. The received message will be returned in the root process,
+    all other processes will receive a dummy message. It is therefore up to the
+    model code to scatter or broadcast the received message to the non-root
+    processes, if necessary.
 
     :p LIBMUSCLE_Instance self: The instance to receive a message for.
     :p character port_name: The name of the port to receive on.
@@ -1714,6 +1836,12 @@ LIBMUSCLE_Instance
 
     If the port you are receiving on is not connected, then a copy of
     ``default_msg`` will be returned.
+
+    MPI-based compute elements must call this function in all processes
+    simultaneously. The received message will be returned in the root process,
+    all other processes will receive a dummy message. It is therefore up to the
+    model code to scatter or broadcast the received message to the non-root
+    processes, if necessary.
 
     :p LIBMUSCLE_Instance self: The instance to receive a message for.
     :p character port_name: The name of the port to receive on.
@@ -1736,6 +1864,18 @@ LIBMUSCLE_Instance
     If the port you are receiving on is not connected, then err_code will be set
     to ``LIBMUSCLE_runtime_error``.
 
+    MPI-based compute elements must call this function in all processes
+    simultaneously. The received message will be returned in the root process,
+    all other processes will receive a dummy message. It is therefore up to the
+    model code to scatter or broadcast the received message to the non-root
+    processes, if necessary.
+
+    MPI-based compute elements must call this function in all processes
+    simultaneously. The received message will be returned in the root process,
+    all other processes will receive a dummy message. It is therefore up to the
+    model code to scatter or broadcast the received message to the non-root
+    processes, if necessary.
+
     :p LIBMUSCLE_Instance self: The instance to receive a message for.
     :p character port_name: The name of the vector port to receive on.
     :p integer slot: The slot to receive on.
@@ -1755,6 +1895,12 @@ LIBMUSCLE_Instance
 
     If the port you are receiving on is not connected, then a copy of
     ``default_msg`` will be returned.
+
+    MPI-based compute elements must call this function in all processes
+    simultaneously. The received message will be returned in the root process,
+    all other processes will receive a dummy message. It is therefore up to the
+    model code to scatter or broadcast the received message to the non-root
+    processes, if necessary.
 
     :p LIBMUSCLE_Instance self: The instance to receive a message for.
     :p character port_name: The name of the port to receive on.
@@ -1778,6 +1924,12 @@ LIBMUSCLE_Instance
     If the port you are receiving on is not connected, then err_code will be set
     to ``LIBMUSCLE_runtime_error``.
 
+    MPI-based compute elements must call this function in all processes
+    simultaneously. The received message will be returned in the root process,
+    all other processes will receive a dummy message. It is therefore up to the
+    model code to scatter or broadcast the received message to the non-root
+    processes, if necessary.
+
     :p LIBMUSCLE_Instance self: The instance to receive a message for.
     :p character port_name: The name of the port to receive on.
     :p integer err_code: An error code output (optional).
@@ -1796,6 +1948,12 @@ LIBMUSCLE_Instance
 
     If the port you are receiving on is not connected, then a copy of
     ``default_msg`` will be returned.
+
+    MPI-based compute elements must call this function in all processes
+    simultaneously. The received message will be returned in the root process,
+    all other processes will receive a dummy message. It is therefore up to the
+    model code to scatter or broadcast the received message to the non-root
+    processes, if necessary.
 
     :p LIBMUSCLE_Instance self: The instance to receive a message for.
     :p character port_name: The name of the port to receive on.
@@ -1818,6 +1976,12 @@ LIBMUSCLE_Instance
     If the port you are receiving on is not connected, then err_code will be set
     to ``LIBMUSCLE_runtime_error``.
 
+    MPI-based compute elements must call this function in all processes
+    simultaneously. The received message will be returned in the root process,
+    all other processes will receive a dummy message. It is therefore up to the
+    model code to scatter or broadcast the received message to the non-root
+    processes, if necessary.
+
     :p LIBMUSCLE_Instance self: The instance to receive a message for.
     :p character port_name: The name of the vector port to receive on.
     :p integer slot: The slot to receive on.
@@ -1837,6 +2001,12 @@ LIBMUSCLE_Instance
 
     If the port you are receiving on is not connected, then a copy of
     ``default_msg`` will be returned.
+
+    MPI-based compute elements must call this function in all processes
+    simultaneously. The received message will be returned in the root process,
+    all other processes will receive a dummy message. It is therefore up to the
+    model code to scatter or broadcast the received message to the non-root
+    processes, if necessary.
 
     :p LIBMUSCLE_Instance self: The instance to receive a message for.
     :p character port_name: The name of the port to receive on.

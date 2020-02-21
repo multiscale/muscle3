@@ -49,11 +49,17 @@ install: all
 	@echo "        Compiling: -I$(PREFIX)/include -DMUSCLE_ENABLE_MPI"
 	@echo "        Linking: -L$(PREFIX)/lib -lymmsl -lmuscle_mpi"
 	@echo '*                                                                  *'
-	@echo '*   Fortran:                                                       *'
+	@echo '*   Fortran without MPI:                                           *'
 	@echo '*                                                                  *'
 	@echo "        Compiling: -I$(PREFIX)/include"
 	@echo "        Linking: -L$(PREFIX)/lib -lymmsl_fortran"
-	@echo "        Linking: -lmuscle_fortran -lymmsl -lmuscle"
+	@echo "                 -lmuscle_fortran -lymmsl -lmuscle"
+	@echo '*                                                                  *'
+	@echo '*   Fortran with MPI:                                              *'
+	@echo '*                                                                  *'
+	@echo "        Compiling: -I$(PREFIX)/include"
+	@echo "        Linking: -L$(PREFIX)/lib -lymmsl_fortran"
+	@echo "                 -lmuscle_mpi_fortran -lymmsl -lmuscle_mpi"
 	@echo '*                                                                  *'
 	@echo '*   If the directory you installed MUSCLE 3 in is not in your      *'
 	@echo "*   system's library search path, then you have to set             *"
@@ -129,4 +135,6 @@ bindings:
 	scripts/make_libmuscle_api.py --fortran-c-wrappers >libmuscle/cpp/src/libmuscle/bindings/libmuscle_fortran_c.cpp
 	scripts/make_libmuscle_api.py --fortran-module >libmuscle/fortran/src/libmuscle/libmuscle.f03
 	scripts/make_libmuscle_api.py --fortran-exports libmuscle/cpp/build/libmuscle/libmuscle.version.in libmuscle/cpp/build/libmuscle/libmuscle.version
-
+	scripts/make_libmuscle_api.py --fortran-mpi-c-wrappers >libmuscle/cpp/src/libmuscle/bindings/libmuscle_mpi_fortran_c.cpp
+	scripts/make_libmuscle_api.py --fortran-mpi-module >libmuscle/fortran/src/libmuscle/libmuscle_mpi.f03
+	scripts/make_libmuscle_api.py --fortran-mpi-exports libmuscle/cpp/build/libmuscle/libmuscle.version.in libmuscle/cpp/build/libmuscle/libmuscle_mpi.version

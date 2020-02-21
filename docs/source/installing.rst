@@ -282,6 +282,14 @@ them. That's done by adding
   -L<PREFIX>/lib -lymmsl_fortran -lmuscle_fortran -lymmsl -lmuscle
 
 
+If your compute element uses MPI, then you need to link to the MPI versions of
+the libmuscle library instead:
+
+.. code-block::
+
+  -L<PREFIX>/lib -lymmsl_fortran -lmuscle_mpi_fortran -lymmsl -lmuscle_mpi
+
+
 There's one more thing: the directory that you've installed MUSCLE into is
 probably not in your system's library search path, and as a result the dynamic
 linker won't be able to find the libraries when you run your program. In order

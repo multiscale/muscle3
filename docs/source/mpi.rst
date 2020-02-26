@@ -26,7 +26,7 @@ and anywhere.
 This section shows how to use MUSCLE 3 with MPI from C++ and Fortran, based on
 the same reaction-diffusion model given in the C++ and Fortran sections, but now
 with a reaction model that uses MPI. It will help if you've read the Python
-tutorial an the C++ or Fortran section first, and some experience with MPI or
+tutorial and the C++ or Fortran section first, and some experience with MPI or
 having browsed through a tutorial will help.
 
 `The source code for the example in this section is here
@@ -41,33 +41,29 @@ Building and running the example
 --------------------------------
 
 If you've just built and installed the C++ version of libmuscle, then you're all
-set to build the examples. Go into the ``docs/source/examples/cpp`` subdirectory
-of the source directory, and type ``MUSCLE3_HOME=<PREFIX> MUSCLE_ENABLE_MPI=1
-make`` and the examples will be compiled and linked against your new libmuscle.
-For Fortran, do the same in the ``docs/source/examples/fortran`` directory. In
-order to run the examples, you'll need the Python version of MUSCLE 3 installed,
-because you need the MUSCLE Manager. The following (or something similar, if you
-used different directories) should work:
+set to build the examples. Go into the ``docs/source/examples`` subdirectory of
+the source directory, and type ``MUSCLE3_HOME=<PREFIX> MUSCLE_ENABLE_MPI=1 make
+cpp python`` and the examples will be compiled and linked against your new
+libmuscle.  For Fortran, use ``MUSCLE3_HOME=<PREFIX> MUSCLE_ENABLE_MPI=1 make
+fortran python`` instead.
+
+In order to run the examples, you'll need the Python version of MUSCLE
+3 installed, because you need the MUSCLE Manager, which is why ``python`` needs
+to be added to the Make command. The build system will set up a virtual
+environment in ``docs/source/examples/python/build/venv`` with everything needed
+to run the examples.
+
+You can then run the examples using the provided scripts in
+``docs/source/examples``:
 
 .. code-block:: bash
-  :caption: C++
 
-  ~/muscle3_source$ cd docs/source/examples/cpp
-  ~/muscle3_source/docs/source/examples/cpp$ MUSCLE3_HOME=~/muscle3 MUSCLE_ENABLE_MPI=1 make
-  ~/muscle3_source/docs/source/examples/cpp$ . ~/muscle3_venv/bin/activate
-  (muscle3_venv)~/muscle3_source/docs/source/examples/cpp$ MUSCLE3_HOME=~/muscle3 ./reaction_diffusion_mpi.sh
+  ~/muscle3_source/docs/source/examples$ MUSCLE3_HOME=~/muscle3 ./reaction_diffusion_mpi_cpp.sh
+  ~/muscle3_source/docs/source/examples$ MUSCLE3_HOME=~/muscle3 ./reaction_diffusion_mpi_fortran.sh
 
 
-.. code-block:: bash
-  :caption: Fortran
-
-  ~/muscle3_source$ cd docs/source/examples/fortran
-  ~/muscle3_source/docs/source/examples/fortran$ MUSCLE3_HOME=~/muscle3 MUSCLE_ENABLE_MPI=1 make
-  ~/muscle3_source/docs/source/examples/fortran$ . ~/muscle3_venv/bin/activate
-  (muscle3_venv)~/muscle3_source/docs/source/examples/fortran$ MUSCLE3_HOME=~/muscle3 ./reaction_diffusion_mpi.sh
-
-Note that this example is compiled with slightly different options compared to
-the non-MPI examples, and you should use those as well when compiling your
+Note that these examples are compiled with slightly different options compared
+to the non-MPI examples, and you should use those as well when compiling your
 own MPI-based submodels. See the Installing section for details.
 
 

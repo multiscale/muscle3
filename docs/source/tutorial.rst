@@ -11,18 +11,34 @@ the Installation section) and go to ``docs/source/examples/python``, or
 copy-paste the code from here.
 
 The easiest way to get set up is to create a virtualenv and then install MUSCLE
-3 and the additional requirements inside it:
+3 and the additional requirements inside it. Running ``make`` in the
+``examples/python`` directory will make a virtual environment in
+``examples/python/build/venv``:
 
 .. code-block:: bash
 
-  example/python$ python3 -m venv venv                    # create venv
-  example/python$ . venv/bin/activate                     # activate it
-  example/python$ pip3 install -r requirements.txt        # install dependencies
+  examples/python$ make
+
+  # or by hand:
+  examples/python$ python3 -m venv build/venv              # create venv
+  examples/python$ . build/venv/bin/activate               # activate it
+  examples/python$ pip3 install -r requirements.txt        # install dependencies
 
 
 If you get an error message saying amongst others ``error: invalid command
 'bdist_wheel'``, try running ``pip3 install wheel`` and then ``pip3 install -r
-requirements.txt`` again to fix it.
+requirements.txt`` again to fix it. Or if you have administrator rights,
+``apt-get install python3-wheel`` will also work, and fix this issue for the
+whole system.
+
+You can the run the example described below by activating the virtual
+environment, and then running the file ``reaction_diffusion.py``:
+
+.. code-block:: bash
+
+  examples/python$ . build/venv/bin/activate
+  exmaples/python$ python3 reaction_diffusion.py
+
 
 Our first example is a reaction-diffusion model on a 1D grid. It consists of a
 reaction model coupled to a diffusion model in a macro-micro fashion, with the

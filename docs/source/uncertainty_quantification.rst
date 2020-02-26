@@ -320,3 +320,12 @@ distribute work. This works well in this case, with all model runs taking
 approximately the same amount of compute time. In general however, a more
 flexible algorithm is desirable, which would require another small extension to
 MUSCLE 3. We plan to add this in a future version.
+
+Examples in C++ and Fortran
+---------------------------
+
+MUSCLE 3 comes with C++ and Fortran versions of this Uncertainty Quantification
+use case. See the C++ or Fortran section for how to run the examples, and the
+``reaction_diffusion_mc_cpp.sh`` and ``reaction_diffusion_mc_fortran.sh``
+scripts respectively. The source code for the components may be found in
+``docs/source/examples/cpp`` and ``docs/source/examples/fortran``.

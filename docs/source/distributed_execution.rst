@@ -5,17 +5,27 @@ In the previous section, we created a simple macro-micro multiscale model with
 MUSCLE 3, and ran it as a single Python script. This section briefly explains
 how to go from there to a distributed simulation, possibly on multiple nodes.
 
-Note that distributed simulations are still somewhat experimental. They need a
-bit more testing, and more development (in particular integration with a
-launcher) to make them easier to use. All the necessary pieces are in place
-however.
+Note that distributed simulations are not as easy to use as we would like them
+to be yet. All the necessary pieces are in place however. Below, we explain how
+they work. If you want to run the example below using a premade script, then you
+can go to the ``docs/examples/`` directory in the source code, and set up and
+run the Python example like this:
+
+.. code-block:: python
+
+  docs/examples$ make python
+  docs/examples$ ./reaction_diffusion_python.sh
+
+
+Below, we explain how it works and how to run it by hand.
+
 
 Making separate instances
 -------------------------
 
 Previously, we started a simulation by starting a single Python script that
 contained all of the implementations and also the model configuration. For
-distributed running, we want to start the instances one by one, so our script
+distributed running, we want to run the instances separately, so our script
 needs to be split up. Doing that is very simple: just copy the model function
 (and anything it depends on) to a new file, and add a main clause that runs it.
 For the reaction model of the previous example, that looks like this:
@@ -45,8 +55,8 @@ communicating via the network. To make this work, the manager is started first,
 with a yMMSL file that describes the simulation. The yMMSL file corresponding to
 our previous example looks like this:
 
-.. literalinclude:: examples/python/reaction_diffusion.ymmsl
-  :caption: ``docs/source/examples/python/reaction_diffusion.ymmsl``
+.. literalinclude:: examples/reaction_diffusion.ymmsl
+  :caption: ``docs/source/examples/reaction_diffusion.ymmsl``
   :language: yaml
 
 

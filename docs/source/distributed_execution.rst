@@ -11,7 +11,7 @@ they work. If you want to run the example below using a premade script, then you
 can go to the ``docs/examples/`` directory in the source code, and set up and
 run the Python example like this:
 
-.. code-block:: python
+.. code-block:: bash
 
   docs/examples$ make python
   docs/examples$ ./reaction_diffusion_python.sh

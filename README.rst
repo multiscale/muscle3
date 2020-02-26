@@ -38,7 +38,7 @@ C++, C and Fortran is under active development. Browse to
 Legal
 =====
 
-MUSCLE 3 is Copyright 2018 University of Amsterdam and Netherlands eScience
+MUSCLE 3 is Copyright 2018-2020 University of Amsterdam and Netherlands eScience
 Center. It is licensed under the Apache License 2.0.
 
 

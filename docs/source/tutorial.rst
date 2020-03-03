@@ -69,7 +69,7 @@ Importing headers
 
   import numpy as np
 
-  from libmuscle import Instance, Message
+  from libmuscle import Grid, Instance, Message
   from libmuscle.runner import run_simulation
   from ymmsl import (ComputeElement, Conduit, Configuration, Model, Operator,
                      Settings)
@@ -152,7 +152,7 @@ Initialisation: Settings and receiving messages
       k = instance.get_setting('k', 'float')
 
       msg = instance.receive('initial_state')
-      U = np.array(msg.data)
+      U = msg.data.array.copy()
 
       t_cur = msg.timestamp
 
@@ -175,11 +175,18 @@ be received, not sent, so that declaration makes ``initial_state`` a receiving
 port.
 
 The message that we receive contains several bits of information. Here, we are
-interested in the ``data`` attribute, which we assume to be an array of floats
-containing our initial state, which we'll call ``U``. We'll initialise our
-simulation time to the time at which that state is valid, which is contained in
-the ``timestamp`` attribute. This is a double-precision float containing the
-number of simulated (not wall-clock) seconds since the whole simulation started.
+interested in the ``data`` attribute, which we assume to be a grid of floats
+containing our initial state, which we'll call ``U``. The ``msg.data`` attribute
+holds an object of type :class:`libmuscle.Grid`, which holds a read-only NumPy
+array and optionally a list of index names. Here, we take the array and make a
+copy of it for ``U``, so that we can modify ``U`` in our upcoming state update.
+Without calling ``.copy()``, ``U`` would end up pointing to the same read-only
+array, and we'd get an error message if we tried to modify it.
+
+Finally, we'll initialise our simulation time to the time at which that state is
+valid, which is contained in the ``timestamp`` attribute. This is a
+double-precision float containing the number of simulated (not wall-clock)
+seconds since the whole simulation started.
 
 The state update loop
 ---------------------
@@ -222,7 +229,7 @@ Sending the final result
 .. code-block:: python
 
   # O_F
-  instance.send('final_state', Message(t_cur, None, U.tolist()))
+  instance.send('final_state', Message(t_cur, None, Grid(U, ['x'])))
 
 
 After the update loop is done, the model has arrived at its final state. We
@@ -255,8 +262,11 @@ document, for each port, which data type you're expecting or sending! Your
 future colleagues (and possibly your future self) will thank you.
 
 MessagePack is an extensible format, and since sending grids is very common in
-these kinds of models it would be nice if NumPy arrays could be sent directly.
-That's not yet implemented, but should be in a future version of MUSCLE 3.
+these kinds of models MUSCLE 3 supports sending NumPy arrays directly. Here, we
+wrap our array U into a :class:`libmuscle.Grid` object, so that we can add the
+name of the dimensions. In this case there's only one, and ``x`` is not very
+descriptive, so we could have also passed ``U`` directly, in which case MUSCLE
+would have sent a :class:`libmuscle.Grid` without index names automatically.
 
 Finally, if you want to use your own encoding, you can just send a ``bytes``
 object, which will be transmitted as-is, with minimal overhead.
@@ -281,20 +291,20 @@ O_I operator.
   t_next = t_cur + dt
   if t_next + dt > t_max:
       t_next = None
-  cur_state_msg = Message(t_cur, t_next, U.tolist())
+  cur_state_msg = Message(t_cur, t_next, Grid(U, ['x']))
   instance.send('state_out', cur_state_msg)
 
 
 Since the diffusion model is the macro-submodel in this model, it needs to send
 its state to the outside world on every timestep. This is done in the O_I
-operator. The message simply contains the state, converted to a standard Python
-list, and it is sent on the ``state_out`` port, which was declared for the O_I
-operator when we made the :class:`libmuscle.Instance` for this model. The
-message is sent with the current simulation time, and a second timestamp that
-gives the simulation time for the next message that will be sent on this port.
-Since our time steps are fixed, this is easy to calculate. We do need to take
-care to send ``None`` if this is the final message on this port however, since
-there won't be another message in that case.
+operator. The message simply contains the state, converted to a
+:class:`libmuscle.Grid`, and it is sent on the ``state_out`` port, which was
+declared for the O_I operator when we made the :class:`libmuscle.Instance` for
+this model. The message is sent with the current simulation time, and a second
+timestamp that gives the simulation time for the next message that will be sent
+on this port. Since our time steps are fixed, this is easy to calculate. We do
+need to take care to send ``None`` if this is the final message on this port
+however, since there won't be another message in that case.
 
 This deserves a bit more explanation. First, MUSCLE 3 does not use the
 timestamps that are attached to the messages for anything, and in this
@@ -326,7 +336,7 @@ Receiving messages with a default
   msg = instance.receive('state_in', default=cur_state_msg)
   if msg.timestamp > t_cur + dt:
       logger.warning('Received a message from the future!')
-  U = np.array(msg.data)
+  np.copyto(U, msg.data.array)
 
 
 The diffusion model being the macro-model, it will need to receive input for its
@@ -335,7 +345,7 @@ state update from the micro-model, which it does by calling
 are passing a default message. The default message is returned if this port is
 not connected. We are cleverly passing the message containing our current
 state, so that if this port is not connected, the model continues from its
-current state.  Since MUSCLE 3 will simply ignore a send command on a
+current state. Since MUSCLE 3 will simply ignore a send command on a
 disconnected port, this makes it possible to run the diffusion model without a
 micro-model attached.
 
@@ -347,17 +357,26 @@ if the micro-model runs for longer than our macro-model timestep. In this case,
 the number of steps is fixed, so that this warning will never be emitted.
 However, if the micro-model runs until it detects convergence, then it can
 happen that it runs for longer than the timestep of the macro-model, and that
-would indicate that there is no timescale overlap anymore. In that case, the
+would indicate that there is no timescale separation anymore. In that case, the
 result could be wrong, and a warning is appropriate.
 
-The S operator here calls the ``laplacian()`` function. There is no requirement
-for a submodel to be a single function, you can split it up, call library
-functions, and so on. There has to be a top-level function however if you want
-to run more than one submodel in a single Python program. Also, you cannot share
-any data with other components, other than by sending and receiving messages. In
-particular, you can't use global variables to communicate between models. This
-is intentional, because it doesn't work if you're running as separate programs
-on different computers.
+Then, we copy the received data into our state array. The received
+:class:`libmuscle.Grid` object contains a read-only array, and just writing ``U
+= msg.data.array`` would discard the state we have in ``U``, and instead make
+the variable ``U`` refer to the received read-only array. We would then get an
+error message when trying to update the state. The ``np.copyto`` function
+instead copies the (read-only) contents of ``msg.data.array`` into the existing
+(writable) array referred to by ``U``. This way, we can do our state update, and
+it's also a bit more efficient than reallocating memory all the time.
+
+The S operator here calls the ``laplacian()`` function (not shown). There is no
+requirement for a submodel to be a single function, you can split it up, call
+library functions, and so on. There has to be a top-level function however if
+you want to run more than one submodel in a single Python program. Also, you
+cannot share any data with other components, other than by sending and receiving
+messages. In particular, you can't use global variables to communicate between
+models. This is intentional, because it doesn't work if you're running as
+separate programs on different computers.
 
 
 Connecting it all together

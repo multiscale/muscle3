@@ -19,7 +19,19 @@ class ExtTypeId(IntEnum):
     """
     CLOSE_PORT = 0
     SETTINGS = 1
-    GRID = 2
+    GRID_INT32 = 2
+    GRID_INT64 = 3
+    GRID_FLOAT32 = 4
+    GRID_FLOAT64 = 5
+    GRID_BOOL = 6
+
+
+_grid_types = {
+        ExtTypeId.GRID_INT32,
+        ExtTypeId.GRID_INT64,
+        ExtTypeId.GRID_FLOAT32,
+        ExtTypeId.GRID_FLOAT64,
+        ExtTypeId.GRID_BOOL}
 
 
 class ClosePort:
@@ -34,7 +46,7 @@ class ClosePort:
     pass
 
 
-def encode_grid(grid: Grid) -> msgpack.ExtType:
+def _encode_grid(grid: Grid) -> msgpack.ExtType:
     """Encodes a Grid object into the wire format.
     """
     item_size_map = {
@@ -50,6 +62,13 @@ def encode_grid(grid: Grid) -> msgpack.ExtType:
             'float32': '<f',
             'float64': '<d',
             'bool': 'b'}
+
+    ext_type_map = {
+            'int32': ExtTypeId.GRID_INT32,
+            'int64': ExtTypeId.GRID_INT64,
+            'float32': ExtTypeId.GRID_FLOAT32,
+            'float64': ExtTypeId.GRID_FLOAT64,
+            'bool': ExtTypeId.GRID_BOOL}
 
     array = grid.array
     if array.flags.c_contiguous:
@@ -74,6 +93,7 @@ def encode_grid(grid: Grid) -> msgpack.ExtType:
     for i in range(array.size):
         struct.pack_into(fmt, buf, i * item_size, array.item(i))
 
+    # array_type is redundant, but useful metadata.
     grid_dict = {
             'type': array_type,
             'shape': list(array.shape),
@@ -81,18 +101,18 @@ def encode_grid(grid: Grid) -> msgpack.ExtType:
             'data': buf,
             'indexes': grid.indexes}
     packed_data = msgpack.packb(grid_dict, use_bin_type=True)
-    return msgpack.ExtType(ExtTypeId.GRID, packed_data)
+    return msgpack.ExtType(ext_type_map[array_type], packed_data)
 
 
-def decode_grid(data: bytes) -> Grid:
+def _decode_grid(code: int, data: bytes) -> Grid:
     """Creates a Grid from serialised data.
     """
     type_map = {
-            'int32': np.int32,
-            'int64': np.int64,
-            'float32': np.float32,
-            'float64': np.float64,
-            'bool': np.bool8}
+            ExtTypeId.GRID_INT32: np.int32,
+            ExtTypeId.GRID_INT64: np.int64,
+            ExtTypeId.GRID_FLOAT32: np.float32,
+            ExtTypeId.GRID_FLOAT64: np.float64,
+            ExtTypeId.GRID_BOOL: np.bool8}
 
     order_map = {
             'fa': 'F',
@@ -101,12 +121,12 @@ def decode_grid(data: bytes) -> Grid:
     grid_dict = msgpack.unpackb(data, raw=False)
     order = order_map[grid_dict['order']]
     shape = tuple(grid_dict['shape'])
-    dtype = type_map[grid_dict['type']]
+    dtype = type_map[ExtTypeId(code)]
     array = np.ndarray(shape, dtype, grid_dict['data'], order=order)
     return Grid(array, grid_dict['indexes'])
 
 
-def data_encoder(obj: Any) -> Any:
+def _data_encoder(obj: Any) -> Any:
     """Encodes custom objects for MessagePack.
 
     In particular, this takes care of any Settings, Grid and
@@ -119,20 +139,20 @@ def data_encoder(obj: Any) -> Any:
                                     use_bin_type=True)
         return msgpack.ExtType(ExtTypeId.SETTINGS, packed_data)
     elif isinstance(obj, np.ndarray):
-        return encode_grid(Grid(obj))
+        return _encode_grid(Grid(obj))
     elif isinstance(obj, Grid):
-        return encode_grid(obj)
+        return _encode_grid(obj)
     return obj
 
 
-def ext_decoder(code: int, data: bytes) -> msgpack.ExtType:
+def _ext_decoder(code: int, data: bytes) -> msgpack.ExtType:
     if code == ExtTypeId.CLOSE_PORT:
         return ClosePort()
     elif code == ExtTypeId.SETTINGS:
         plain_dict = msgpack.unpackb(data, raw=False)
         return Settings(plain_dict)
-    elif code == ExtTypeId.GRID:
-        return decode_grid(data)
+    elif code in _grid_types:
+        return _decode_grid(code, data)
     return msgpack.ExtType(code, data)
 
 
@@ -185,7 +205,7 @@ class Message:
             message: MessagePack encoded message data.
         """
         message_dict = msgpack.unpackb(
-                message, ext_hook=ext_decoder, raw=False)
+                message, ext_hook=_ext_decoder, raw=False)
         sender = Reference(message_dict["sender"])
         receiver = Reference(message_dict["receiver"])
         port_length = message_dict["port_length"]
@@ -211,4 +231,4 @@ class Message:
                 }
 
         return cast(bytes, msgpack.packb(
-            message_dict, default=data_encoder, use_bin_type=True))
+            message_dict, default=_data_encoder, use_bin_type=True))

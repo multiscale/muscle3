@@ -1,5 +1,7 @@
 #include <cstring>
+#include <functional>
 #include <memory>
+#include <numeric>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -19,6 +21,78 @@ using ymmsl::Settings;
 
 
 namespace libmuscle { namespace impl {
+
+// helper functions
+
+template <typename Element>
+ExtTypeId grid_type_id_();
+
+template <>
+ExtTypeId grid_type_id_<std::int32_t>() {
+    return ExtTypeId::grid_int32;
+}
+
+template <>
+ExtTypeId grid_type_id_<std::int64_t>() {
+    return ExtTypeId::grid_int64;
+}
+
+template <>
+ExtTypeId grid_type_id_<float>() {
+    return ExtTypeId::grid_float32;
+}
+
+template <>
+ExtTypeId grid_type_id_<double>() {
+    return ExtTypeId::grid_float64;
+}
+
+template <>
+ExtTypeId grid_type_id_<bool>() {
+    return ExtTypeId::grid_bool;
+}
+
+template <typename Element>
+std::string grid_type_name_();
+
+template <>
+std::string grid_type_name_<std::int32_t>() {
+    return "int32";
+}
+
+template <>
+std::string grid_type_name_<std::int64_t>() {
+    return "int64";
+}
+
+template <>
+std::string grid_type_name_<float>() {
+    return "float32";
+}
+
+template <>
+std::string grid_type_name_<double>() {
+    return "float64";
+}
+
+template <>
+std::string grid_type_name_<bool>() {
+    return "bool";
+}
+
+template <typename Element>
+DataConstRef DataConstRef::grid_data_(
+        Element const * const data, std::size_t num_elems
+) const {
+    return Data::byte_array(
+        reinterpret_cast<char const *>(data), num_elems * sizeof(Element));
+}
+
+template <>
+DataConstRef DataConstRef::grid_data_<bool>(
+        bool const * const data, std::size_t num_elems) const;
+
+// implementation
 
 DataConstRef::DataConstRef()
     : mp_zones_(new std::vector<std::shared_ptr<msgpack::zone>>())
@@ -97,6 +171,85 @@ DataConstRef::DataConstRef(double value)
 {
     *mp_obj_ << value;
 }
+
+/* This is here in the .cpp and instantiated explicitly, because it requires the
+ * ExtTypeId, and we don't want to have that in a public header since it's a
+ * detail of an internal format.
+ */
+template <typename Element>
+DataConstRef DataConstRef::grid(
+        Element const * const data,
+        std::vector<std::size_t> const & shape,
+        std::vector<std::string> const & indexes,
+        StorageOrder storage_order
+) {
+    auto grid_dict = Data::dict();
+    // type member is redundant, but useful metadata
+    grid_dict["type"] = grid_type_name_<Element>();
+    mcp::ExtTypeId ext_type_id = grid_type_id_<Element>();
+
+    Data shape_list = Data::nils(shape.size());
+    for (std::size_t i = 0u; i < shape.size(); ++i)
+        shape_list[i] = shape[i];
+    grid_dict["shape"] = shape_list;
+
+    if (storage_order == StorageOrder::first_adjacent)
+        grid_dict["order"] = "fa";
+    else
+        grid_dict["order"] = "la";
+
+    std::size_t num_elems = std::accumulate(
+        shape.cbegin(), shape.cend(), 1u,
+        std::multiplies<std::size_t>());
+    grid_dict["data"] = Data::byte_array(
+        reinterpret_cast<char const *>(data), num_elems * sizeof(Element));
+
+    if (!indexes.empty()) {
+        Data indexes_list = Data::nils(indexes.size());
+        for (std::size_t i = 0u; i < indexes.size(); ++i)
+            indexes_list[i] = indexes[i];
+        grid_dict["indexes"] = indexes_list;
+    }
+    else {
+        grid_dict["indexes"] = Data();
+    }
+
+    return DataConstRef(static_cast<char>(ext_type_id), grid_dict);
+}
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
+template DataConstRef DataConstRef::grid<std::int32_t>(
+        std::int32_t const * const data,
+        std::vector<std::size_t> const & shape,
+        std::vector<std::string> const & indexes,
+        StorageOrder storage_order);
+
+template DataConstRef DataConstRef::grid<std::int64_t>(
+        std::int64_t const * const data,
+        std::vector<std::size_t> const & shape,
+        std::vector<std::string> const & indexes,
+        StorageOrder storage_order);
+
+template DataConstRef DataConstRef::grid<float>(
+        float const * const data,
+        std::vector<std::size_t> const & shape,
+        std::vector<std::string> const & indexes,
+        StorageOrder storage_order);
+
+template DataConstRef DataConstRef::grid<double>(
+        double const * const data,
+        std::vector<std::size_t> const & shape,
+        std::vector<std::string> const & indexes,
+        StorageOrder storage_order);
+
+template DataConstRef DataConstRef::grid<bool>(
+        bool const * const data,
+        std::vector<std::size_t> const & shape,
+        std::vector<std::string> const & indexes,
+        StorageOrder storage_order);
+
+#endif
 
 DataConstRef::DataConstRef(SettingValue const & value)
     : DataConstRef()
@@ -249,6 +402,29 @@ bool DataConstRef::is_a_list() const {
     return mp_obj_->type == msgpack::type::ARRAY;
 }
 
+template <typename Element>
+bool DataConstRef::is_a_grid_of() const {
+    if (mp_obj_->type != msgpack::type::EXT)
+        return false;
+
+    auto ext_type = static_cast<mcp::ExtTypeId>(mp_obj_->via.ext.type());
+    return ext_type == grid_type_id_<Element>();
+}
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
+template bool DataConstRef::is_a_grid_of<std::int32_t>() const;
+
+template bool DataConstRef::is_a_grid_of<std::int64_t>() const;
+
+template bool DataConstRef::is_a_grid_of<float>() const;
+
+template bool DataConstRef::is_a_grid_of<double>() const;
+
+template bool DataConstRef::is_a_grid_of<bool>() const;
+
+#endif
+
 bool DataConstRef::is_a_byte_array() const {
     return mp_obj_->type == msgpack::type::BIN;
 }
@@ -340,11 +516,17 @@ std::size_t DataConstRef::size() const {
         return mp_obj_->via.map.size;
     else if (is_a_list())
         return mp_obj_->via.array.size;
+    else if (is_a_grid_()) {
+        auto shape_vec = shape();
+        return std::accumulate(
+            shape_vec.cbegin(), shape_vec.cend(), 1u,
+            std::multiplies<std::size_t>());
+    }
     else if (is_a_byte_array())
         return mp_obj_->via.bin.size;
     else
         throw std::runtime_error("DataConstRef::size() called for an object that does"
-                                 " not represent a list or dict");
+                                 " not represent a list, dict, grid or byte array");
 }
 
 char const * DataConstRef::as_byte_array() const {
@@ -398,6 +580,72 @@ DataConstRef DataConstRef::operator[](std::size_t index) const {
         throw std::runtime_error("Tried to index an object that is not a list.");
 }
 
+template <typename Element>
+Element const * DataConstRef::elements() const {
+    if (!is_a_grid_of<Element>())
+        throw std::runtime_error("Tried to get grid data, but this object is not a grid");
+    char const * data_bytes = grid_dict_()["data"].as_byte_array();
+    return reinterpret_cast<Element const *>(data_bytes);
+}
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
+template bool const * DataConstRef::elements<bool>() const;
+
+template double const * DataConstRef::elements<double>() const;
+
+template float const * DataConstRef::elements<float>() const;
+
+template int const * DataConstRef::elements<int>() const;
+
+template long const * DataConstRef::elements<long>() const;
+
+#endif
+
+std::vector<std::size_t> DataConstRef::shape() const {
+    if (is_a_grid_()) {
+        DataConstRef shape_list = grid_dict_()["shape"];
+        std::vector<std::size_t> result(shape_list.size());
+        for (std::size_t i = 0u; i < shape_list.size(); ++i)
+            result[i] = shape_list[i].as<std::size_t>();
+        return result;
+    }
+    else
+        throw std::runtime_error("Tried to get the shape, but this object is not a grid.");
+}
+
+StorageOrder DataConstRef::storage_order() const {
+    if (is_a_grid_()) {
+        std::string const & order = grid_dict_()["order"].as<std::string>();
+        if (order == "fa")
+            return StorageOrder::first_adjacent;
+        else if (order == "la")
+            return StorageOrder::last_adjacent;
+        throw std::runtime_error("Invalid data format received, MUSCLE 3 bug?");
+    }
+    else
+        throw std::runtime_error("Tried to get the shape, but this object is not a grid.");
+}
+
+bool DataConstRef::has_indexes() const {
+    if (is_a_grid_())
+        return !grid_dict_()["indexes"].is_nil();
+    else
+        throw std::runtime_error("Tried to check for indexes, but this object is not a grid.");
+}
+
+std::vector<std::string> DataConstRef::indexes() const {
+    if (has_indexes()) {
+        DataConstRef indexes = grid_dict_()["indexes"];
+        std::vector<std::string> result(indexes.size());
+        for (std::size_t i = 0u; i < indexes.size(); ++i)
+            result[i] = indexes[i].as<std::string>();
+        return result;
+    }
+    else
+        throw std::runtime_error("Tried to get indexes, but this grid does not have any.");
+}
+
 DataConstRef::DataConstRef(
         msgpack::object * obj,
         std::shared_ptr<msgpack::zone> const & zone)
@@ -421,6 +669,18 @@ DataConstRef::DataConstRef(std::shared_ptr<msgpack::zone> const & zone)
     mp_obj_->type = msgpack::type::NIL;
 }
 
+DataConstRef::DataConstRef(char ext_type_id, DataConstRef const & data)
+    : DataConstRef()
+{
+    msgpack::sbuffer buf;
+    msgpack::pack(buf, data);
+
+    char * zoned_mem = zone_alloc_<char>(buf.size() + 1);
+    zoned_mem[0] = ext_type_id;
+    memcpy(zoned_mem + 1, buf.data(), buf.size());
+    *mp_obj_ << msgpack::type::ext_ref(zoned_mem, buf.size() + 1);
+}
+
 std::vector<double> DataConstRef::as_vec_double_() const {
     std::vector<double> result;
     DataConstRef const & self = *this;
@@ -434,6 +694,107 @@ std::vector<double> DataConstRef::as_vec_double_() const {
     return result;
 }
 
+bool DataConstRef::is_a_grid_() const {
+    if (mp_obj_->type != msgpack::type::EXT)
+        return false;
+
+    auto ext_type = static_cast<mcp::ExtTypeId>(mp_obj_->via.ext.type());
+    return (ext_type == mcp::ExtTypeId::grid_int32)
+        || (ext_type == mcp::ExtTypeId::grid_int64)
+        || (ext_type == mcp::ExtTypeId::grid_float32)
+        || (ext_type == mcp::ExtTypeId::grid_float64)
+        || (ext_type == mcp::ExtTypeId::grid_bool);
+}
+
+DataConstRef DataConstRef::grid_dict_() const {
+    auto ext = mp_obj_->as<msgpack::type::ext>();
+    auto oh = msgpack::unpack(ext.data(), ext.size());
+
+    if (oh.get().type != msgpack::type::MAP)
+        throw std::runtime_error("Invalid grid format. Bug in MUSCLE 3?");
+
+    auto zone = std::make_shared<msgpack::zone>();
+    return DataConstRef(mcp::unpack_data(zone, ext.data(), ext.size()));
+}
+
+/* This is here in the .cpp and instantiated explicitly, because it requires the
+ * ExtTypeId, and we don't want to have that in a public header since it's a
+ * detail of an internal format.
+ */
+template <typename Element>
+Data Data::grid(
+        Element const * const data,
+        std::vector<std::size_t> const & shape,
+        std::vector<std::string> const & indexes,
+        StorageOrder storage_order
+) {
+    auto grid_dict = Data::dict();
+    // type member is redundant, but useful metadata
+    grid_dict["type"] = grid_type_name_<Element>();
+    mcp::ExtTypeId ext_type_id = grid_type_id_<Element>();
+
+    Data shape_list = Data::nils(shape.size());
+    for (std::size_t i = 0u; i < shape.size(); ++i)
+        shape_list[i] = shape[i];
+    grid_dict["shape"] = shape_list;
+
+    if (storage_order == StorageOrder::first_adjacent)
+        grid_dict["order"] = "fa";
+    else
+        grid_dict["order"] = "la";
+
+    std::size_t num_elems = std::accumulate(
+        shape.cbegin(), shape.cend(), 1u,
+        std::multiplies<std::size_t>());
+    grid_dict["data"] = Data::byte_array(
+        reinterpret_cast<char const *>(data), num_elems * sizeof(Element));
+
+    if (!indexes.empty()) {
+        Data indexes_list = Data::nils(indexes.size());
+        for (std::size_t i = 0u; i < indexes.size(); ++i)
+            indexes_list[i] = indexes[i];
+        grid_dict["indexes"] = indexes_list;
+    }
+    else {
+        grid_dict["indexes"] = Data();
+    }
+
+    return Data(static_cast<char>(ext_type_id), grid_dict);
+}
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
+template Data Data::grid<std::int32_t>(
+        std::int32_t const * const data,
+        std::vector<std::size_t> const & shape,
+        std::vector<std::string> const & indexes,
+        StorageOrder storage_order);
+
+template Data Data::grid<std::int64_t>(
+        std::int64_t const * const data,
+        std::vector<std::size_t> const & shape,
+        std::vector<std::string> const & indexes,
+        StorageOrder storage_order);
+
+template Data Data::grid<float>(
+        float const * const data,
+        std::vector<std::size_t> const & shape,
+        std::vector<std::string> const & indexes,
+        StorageOrder storage_order);
+
+template Data Data::grid<double>(
+        double const * const data,
+        std::vector<std::size_t> const & shape,
+        std::vector<std::string> const & indexes,
+        StorageOrder storage_order);
+
+template Data Data::grid<bool>(
+        bool const * const data,
+        std::vector<std::size_t> const & shape,
+        std::vector<std::string> const & indexes,
+        StorageOrder storage_order);
+
+#endif
 
 Data Data::dict() {
     Data dict;
@@ -545,6 +906,22 @@ char * Data::as_byte_array() {
     return const_cast<char *>(mp_obj_->via.bin.ptr);
 }
 
+void Data::set_dict_item_(
+        uint32_t offset, std::string const & key, DataConstRef const & value
+) {
+    mp_obj_->via.map.ptr[offset].key = msgpack::object(key, *mp_zones_->front());
+    mp_obj_->via.map.ptr[offset].val = msgpack::object(value, *mp_zones_->front());
+    mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
+}
+
+void Data::set_dict_item_(
+        uint32_t offset, std::string const & key, Data const & value
+) {
+    mp_obj_->via.map.ptr[offset].key = msgpack::object(key, *mp_zones_->front());
+    mp_obj_->via.map.ptr[offset].val = msgpack::object(value, *mp_zones_->front());
+    mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
+}
+
 void Data::init_dict_(uint32_t size) {
     mp_obj_->type = msgpack::type::MAP;
     mp_obj_->via.map.size = size;
@@ -555,6 +932,21 @@ void Data::init_list_(uint32_t size) {
     mp_obj_->type = msgpack::type::ARRAY;
     mp_obj_->via.array.size = size;
     mp_obj_->via.array.ptr = zone_alloc_<msgpack::object>(size);
+}
+
+template <>
+DataConstRef DataConstRef::grid_data_<bool>(
+        bool const * const data, std::size_t num_elems
+) const {
+    if (sizeof(bool) == 1u)
+        return Data::byte_array(
+            reinterpret_cast<char const *>(data), num_elems);
+    else {
+        Data result = Data::byte_array(num_elems);
+        char * data_copy = result.as_byte_array();
+        std::copy(data, data + num_elems, data_copy);
+        return result;
+    }
 }
 
 } }  // namespace libmuscle::impl

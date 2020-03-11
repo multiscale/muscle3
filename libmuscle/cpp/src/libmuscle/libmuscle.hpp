@@ -10,5 +10,6 @@ namespace libmuscle {
     using impl::Instance;
     using impl::Message;
     using impl::PortsDescription;
+    using impl::StorageOrder;
 }
 

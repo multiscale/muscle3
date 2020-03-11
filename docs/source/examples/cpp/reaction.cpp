@@ -26,10 +26,8 @@ void reaction(int argc, char * argv[]) {
         double k = instance.get_setting_as<double>("k");
 
         auto msg = instance.receive("initial_state");
-        DataConstRef data(msg.data());
-        std::vector<double> U(data.size());
-        for (int i = 0; i < data.size(); ++i)
-            U[i] = data[i].as<double>();
+        auto data_ptr = msg.data().elements<double>();
+        std::vector<double> U(data_ptr, data_ptr + msg.data().size());
 
         double t_cur = msg.timestamp();
         while (t_cur + dt < msg.timestamp() + t_max) {
@@ -42,9 +40,7 @@ void reaction(int argc, char * argv[]) {
         }
 
         // O_F
-        auto result = Data::nils(U.size());
-        for (int i = 0; i < U.size(); ++i)
-            result[i] = U[i];
+        auto result = Data::grid(U.data(), {U.size()}, {"x"});
         instance.send("final_state", Message(t_cur, result));
     }
 }

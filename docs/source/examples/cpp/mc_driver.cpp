@@ -89,12 +89,10 @@ void mc_driver(int argc, char * argv[]) {
         std::cerr << "Entering S" << std::endl;
         double t_max = 0.0;
         for (int sample = 0; sample < n_samples; ++sample) {
-            std::cerr << "Receiving states_in" << std::endl;
+            std::cerr << "Receiving states_in[" << sample << "]" << std::endl;
             Message msg = instance.receive_with_settings("states_in", sample);
-            std::cerr << "Received states_in: " << msg.data().size() << std::endl;
-            std::vector<double> U(msg.data().size());
-            for (std::size_t i = 0u; i < msg.data().size(); ++i)
-                U[i] = msg.data()[i].as<double>();
+            auto data_ptr = msg.data().elements<double>();
+            std::vector<double> U(data_ptr, data_ptr + msg.data().size());
 
             Us.push_back(U);
             t_max = std::max(t_max, msg.timestamp());

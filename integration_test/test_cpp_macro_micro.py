@@ -3,6 +3,8 @@ from pathlib import Path
 import subprocess
 import sys
 
+import numpy as np
+
 from libmuscle import Instance, Message
 from ymmsl import Operator
 
@@ -23,11 +25,20 @@ def macro():
 
         for i in range(2):
             # o_i
-            instance.send('out', Message(i * 10.0, (i + 1) * 10.0, 'testing'))
+            test_array = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+            assert test_array.shape == (2, 3)
+            assert test_array.flags.c_contiguous
+            data = {
+                    'message': 'testing',
+                    'test_grid': test_array}
+            instance.send('out', Message(i * 10.0, (i + 1) * 10.0, data))
 
             # s/b
             msg = instance.receive('in')
-            assert msg.data == 'testing back {}'.format(i)
+            assert msg.data['reply'] == 'testing back {}'.format(i)
+            assert msg.data['test_grid'].array.dtype.kind == 'i'
+            assert msg.data['test_grid'].array.dtype.itemsize == 8
+            assert msg.data['test_grid'].array[0][1] == 2
             assert msg.timestamp == i * 10.0
 
 

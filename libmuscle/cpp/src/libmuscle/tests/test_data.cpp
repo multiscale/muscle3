@@ -13,6 +13,7 @@
 using libmuscle::impl::Data;
 using libmuscle::impl::DataConstRef;
 using libmuscle::impl::mcp::unpack_data;
+using libmuscle::impl::StorageOrder;
 using ymmsl::SettingValue;
 using ymmsl::Settings;
 
@@ -134,6 +135,7 @@ TEST(libmuscle_mcp_data, string_value) {
     test<std::string>(std::string("Testing"));
 }
 
+
 TEST(libmuscle_mcp_data, dict) {
     Data d(Data::dict(
             "test_double", 13.3,
@@ -179,7 +181,6 @@ TEST(libmuscle_mcp_data, dict_errors) {
     ASSERT_THROW(d["test_not_a_map"], std::runtime_error);
 }
 
-
 TEST(libmuscle_mcp_data, dict_dict) {
     Data d(Data::dict(
             "test3", Data::dict("test1", true, "test2", 87),
@@ -213,7 +214,6 @@ TEST(libmuscle_mcp_data, dict_dict) {
     ASSERT_EQ(d2["test4"].as<double>(), 12.34);
 }
 
-
 TEST(libmuscle_mcp_data, dict_build) {
     Data dict = Data::dict("test1", true, "test2", 54);
     ASSERT_TRUE(dict["test1"].is_a<bool>());
@@ -242,7 +242,6 @@ TEST(libmuscle_mcp_data, dict_build) {
     ASSERT_TRUE(data["test4"].is_a<int>());
     ASSERT_EQ(data["test4"].as<int>(), 23);
 }
-
 
 TEST(libmuscle_mcp_data, dict_dataconstref) {
     // regression test
@@ -489,6 +488,104 @@ TEST(libmuscle_mcp_data, settings) {
 }
 
 
+TEST(libmuscle_mcp_data, grid) {
+    std::vector<std::int32_t> x({1, 2, 3, 4, 5, 6});
+    Data d = Data::grid(x.data(), {2, 3}, {"x", "y"}, StorageOrder::first_adjacent);
+    ASSERT_TRUE(d.is_a_grid_of<std::int32_t>());
+    ASSERT_FALSE(d.is_a_grid_of<double>());
+    ASSERT_EQ(d.size(), 6u);
+    ASSERT_EQ(d.shape().size(), 2u);
+    ASSERT_EQ(d.shape()[0], 2);
+    ASSERT_EQ(d.shape()[1], 3);
+    ASSERT_EQ(d.storage_order(), StorageOrder::first_adjacent);
+    ASSERT_THROW(d.elements<std::int64_t>(), std::runtime_error);
+    ASSERT_THROW(d.elements<float>(), std::runtime_error);
+    ASSERT_EQ(d.elements<std::int32_t>()[0], 1);
+    ASSERT_EQ(d.elements<std::int32_t>()[4], 5);
+    ASSERT_TRUE(d.has_indexes());
+    ASSERT_EQ(d.indexes().size(), 2u);
+    ASSERT_EQ(d.indexes()[0], "x");
+    ASSERT_EQ(d.indexes()[1], "y");
+
+    std::array<bool, 24u> x2 = {
+        false, true,  false, true,  false, true,
+        false, true,  false, true,  false, true,
+        false, true,  false, true,  false, true,
+        false, true,  false, true,  false, true};
+
+    Data d2 = Data::grid(x2.data(), {4, 3, 2});
+    ASSERT_TRUE(d2.is_a_grid_of<bool>());
+    ASSERT_FALSE(d2.is_a_grid_of<std::int64_t>());
+    ASSERT_EQ(d2.size(), 24u);
+    ASSERT_EQ(d2.shape().size(), 3u);
+    ASSERT_EQ(d2.shape()[0], 4u);
+    ASSERT_EQ(d2.shape()[1], 3u);
+    ASSERT_EQ(d2.shape()[2], 2u);
+    ASSERT_EQ(d2.storage_order(), StorageOrder::last_adjacent);
+    ASSERT_EQ(d2.elements<bool>()[0 * 6 + 0 * 2 + 0], false);
+    ASSERT_EQ(d2.elements<bool>()[2 * 6 + 1 * 2 + 0], false);
+    ASSERT_EQ(d2.elements<bool>()[3 * 6 + 0 * 2 + 1], true);
+    ASSERT_EQ(d2.elements<bool>()[0 * 6 + 2 * 2 + 1], true);
+    ASSERT_FALSE(d2.has_indexes());
+
+    Data d3 = Data::dict();
+    ASSERT_FALSE(d3.is_a_grid_of<double>());
+    ASSERT_THROW(d3.shape(), std::runtime_error);
+    ASSERT_THROW(d3.storage_order(), std::runtime_error);
+    ASSERT_THROW(d3.has_indexes(), std::runtime_error);
+    ASSERT_THROW(d3.elements<double>(), std::runtime_error);
+}
+
+
+TEST(libmuscle_mcp_data, grid_serialisation) {
+    // Tests serialising grids, also as an item in a list or a dict
+    std::vector<float> x({1.0, 4.0, 9.0, 16.0});
+    Data d = Data::grid(x.data(), {2, 2}, {"direction", "speed"});
+
+    msgpack::sbuffer buf;
+    msgpack::pack(buf, d);
+    auto zone = std::make_shared<msgpack::zone>();
+    auto d2 = unpack_data(zone, buf.data(), buf.size());
+
+    ASSERT_TRUE(d2.is_a_grid_of<float>());
+    ASSERT_EQ(d2.elements<float>()[1], 4.0);
+    ASSERT_TRUE(d2.has_indexes());
+    ASSERT_EQ(d2.indexes().at(1u), "speed");
+
+    Data d3 = Data::dict(
+            "year", "2000",
+            "data", d);
+
+    msgpack::sbuffer buf2;
+    msgpack::pack(buf2, d3);
+    auto zone2 = std::make_shared<msgpack::zone>();
+    auto d4 = unpack_data(zone2, buf2.data(), buf2.size());
+
+    auto d5 = d4["data"];
+    ASSERT_TRUE(d5.is_a_grid_of<float>());
+    ASSERT_EQ(d5.elements<float>()[2], 9.0);
+    ASSERT_TRUE(d5.has_indexes());
+    ASSERT_EQ(d5.indexes().at(0u), "direction");
+
+    Data d6 = Data::list(1, "test", d, d3);
+
+    msgpack::sbuffer buf3;
+    msgpack::pack(buf3, d6);
+    auto zone3 = std::make_shared<msgpack::zone>();
+    auto d7 = unpack_data(zone3, buf3.data(), buf3.size());
+
+    ASSERT_TRUE(d7.is_a_list());
+    ASSERT_EQ(d7.size(), 4u);
+    ASSERT_TRUE(d7[2].is_a_grid_of<float>());
+    ASSERT_EQ(d7[2].elements<float>()[3], 16.0);
+
+    ASSERT_TRUE(d7[3].is_a_dict());
+    ASSERT_TRUE(d7[3]["data"].is_a_grid_of<float>());
+    ASSERT_EQ(d7[3]["data"].shape().at(0), 2u);
+    ASSERT_EQ(d7[3]["data"].shape().at(1), 2u);
+}
+
+
 TEST(libmuscle_mcp_data, byte_array) {
     std::string test_data("Test data");
 
@@ -504,7 +601,6 @@ TEST(libmuscle_mcp_data, byte_array) {
     for (std::size_t i = 0u; i < data.size(); ++i)
         ASSERT_EQ(data.as_byte_array()[i], test_data[i]);
 }
-
 
 TEST(libmuscle_mcp_data, byte_array_alloc) {
     std::string test_data("Test data");

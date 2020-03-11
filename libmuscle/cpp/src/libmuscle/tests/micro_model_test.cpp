@@ -30,11 +30,11 @@ int main(int argc, char *argv[]) {
         assert(msg.data()["message"].as<std::string>() == "testing");
         auto r_test_grid = msg.data()["test_grid"];
         assert(r_test_grid.is_a_grid_of<double>());
-        assert(r_test_grid.grid_shape()[0] == 2u);
-        assert(r_test_grid.grid_shape()[1] == 3u);
-        assert(r_test_grid.grid_storage_order() == StorageOrder::last_adjacent);
-        assert(r_test_grid.grid_data<double>()[3] == 4.0);
-        assert(!r_test_grid.grid_has_indexes());
+        assert(r_test_grid.shape()[0] == 2u);
+        assert(r_test_grid.shape()[1] == 3u);
+        assert(r_test_grid.storage_order() == StorageOrder::last_adjacent);
+        assert(r_test_grid.elements<double>()[3] == 4.0);
+        assert(!r_test_grid.has_indexes());
 
         // O_F
         std::ostringstream reply;

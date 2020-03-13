@@ -45,7 +45,7 @@ void diffusion(int argc, char * argv[]) {
         double dx = instance.get_setting_as<double>("dx");
         double d = instance.get_setting_as<double>("d");
 
-        std::vector<double> U(lrint(x_max / dx));
+        std::vector<double> U(lrint(x_max / dx), 1e-20);
         U[25] = 2.0;
         U[50] = 2.0;
         U[75] = 2.0;

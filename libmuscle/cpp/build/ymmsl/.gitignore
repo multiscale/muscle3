@@ -1,4 +1,6 @@
 *
 !.gitignore
 !Makefile
+!ymmsl.version
+!ymmsl.version.in
 !tests

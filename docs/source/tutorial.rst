@@ -11,13 +11,33 @@ the Installation section) and go to ``docs/source/examples/python``, or
 copy-paste the code from here.
 
 The easiest way to get set up is to create a virtualenv and then install MUSCLE
-3 and the additional requirements inside it:
+3 and the additional requirements inside it. Running ``make`` in the
+``examples/python`` directory will make a virtual environment in
+``examples/python/build/venv``:
 
 .. code-block:: bash
 
-  example/python$ python3 -m venv venv                    # create venv
-  example/python$ . venv/bin/activate                     # activate it
-  example/python$ pip3 install -r requirements.txt        # install dependencies
+  examples/python$ make
+
+  # or by hand:
+  examples/python$ python3 -m venv build/venv              # create venv
+  examples/python$ . build/venv/bin/activate               # activate it
+  examples/python$ pip3 install -r requirements.txt        # install dependencies
+
+
+If you get an error message saying amongst others ``error: invalid command
+'bdist_wheel'``, try running ``pip3 install wheel`` and then ``pip3 install -r
+requirements.txt`` again to fix it. Or if you have administrator rights,
+``apt-get install python3-wheel`` will also work, and fix this issue for the
+whole system.
+
+You can the run the example described below by activating the virtual
+environment, and then running the file ``reaction_diffusion.py``:
+
+.. code-block:: bash
+
+  examples/python$ . build/venv/bin/activate
+  exmaples/python$ python3 reaction_diffusion.py
 
 
 Our first example is a reaction-diffusion model on a 1D grid. It consists of a
@@ -45,8 +65,8 @@ Importing headers
 
   from collections import OrderedDict
   import logging
+  import os
 
-  from matplotlib import pyplot as plt
   import numpy as np
 
   from libmuscle import Instance, Message
@@ -55,14 +75,14 @@ Importing headers
                      Settings)
 
 
-As usual, we begin by importing some required libraries. OrderedDict and
-logging come from the Python standard library, and NumPy and MatplotLib provide
-matrix math and plotting functionality. From libmuscle, we import
-:class:`libmuscle.Instance`, which will represent a model instance in the
-larger simulation, and :class:`libmuscle.Message`, which represents a MUSCLE
-message as passed between instances.  The :func:`libmuscle.run_simulation`
-function allows us to run a complete simulation from a single Python file, as
-opposed to having to start the different instances and the manager separately.
+As usual, we begin by importing some required libraries. OrderedDict and logging
+come from the Python standard library, and NumPy provides matrix math
+functionality. From libmuscle, we import :class:`libmuscle.Instance`, which will
+represent a model instance in the larger simulation, and
+:class:`libmuscle.Message`, which represents a MUSCLE message as passed between
+instances.  The :func:`libmuscle.run_simulation` function allows us to run a
+complete simulation from a single Python file, as opposed to having to start the
+different instances and the manager separately.
 
 In order to describe our model, we use a number of definitions from
 `ymmsl-python`. More about those below.
@@ -158,8 +178,8 @@ The message that we receive contains several bits of information. Here, we are
 interested in the ``data`` attribute, which we assume to be an array of floats
 containing our initial state, which we'll call ``U``. We'll initialise our
 simulation time to the time at which that state is valid, which is contained in
-the ``timestamp`` attribute. This is a float containing the number of seconds
-since the whole simulation started.
+the ``timestamp`` attribute. This is a double-precision float containing the
+number of simulated (not wall-clock) seconds since the whole simulation started.
 
 The state update loop
 ---------------------
@@ -168,7 +188,7 @@ The state update loop
 
   # F_INIT
 
-  while t_cur + dt < t_max:
+  while t_cur + dt < msg.timestamp + t_max:
       # O_I
 
       # S
@@ -178,12 +198,13 @@ The state update loop
   # O_F
 
 Having initialised the model, it is now time for the state update loop. This
-code should look familiar: we loop until we reach our maximum time, and on each
-iteration update the state according to the model equation. This update is
-called operator S in the Submodel Execution Loop, and in this model, it is
-determined entirely by the current state.  Since no information from outside is
-needed, we do not receive any messages, and in our :class:`libmuscle.Instance`
-declaration above, we did not declare any ports associated with ``Operator.S``.
+code should look familiar: we loop until we reach our maximum time (now
+relative to when we started), and on each iteration update the state according
+to the model equation. This update is called operator S in the Submodel
+Execution Loop, and in this model, it is determined entirely by the current
+state.  Since no information from outside is needed, we do not receive any
+messages, and in our :class:`libmuscle.Instance` declaration above, we did not
+declare any ports associated with ``Operator.S``.
 
 The Submodel Execution Loop specifies another operator within the state update
 loop, which is called O_I and comes before S. This operator provides for
@@ -488,7 +509,14 @@ If you run the script, e.g. using
 
   (venv) python$ python3 reaction_diffusion.py
 
-it will pop up a plot showing the state of the simulated system over time.
+it will pop up a plot showing the state of the simulated system over time. If
+you are on a machine without graphics support, then you will get an error
+message if you run the above, saying something like ``couldn't connect to
+display``. In that case, try the below command to disable graphical output:
+
+.. code-block:: bash
+
+  (venv) python$ DONTPLOT=1 python3 reaction_diffusion.py
 
 You will also find three log files in this directory: ``muscle3_manager.log``,
 ``muscle3.macro.log`` and ``muscle3.micro.log``. These contain log output for

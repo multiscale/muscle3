@@ -76,7 +76,7 @@ void reaction(int argc, char * argv[]) {
                    U_all.data(), U_size, MPI_DOUBLE,
                    root_rank, MPI_COMM_WORLD);
 
-        if (rank == 0) {
+        if (rank == root_rank) {
             auto result = Data::nils(U_all.size());
             for (int i = 0; i < U_all.size(); ++i)
                 result[i] = U_all[i];

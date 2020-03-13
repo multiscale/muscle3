@@ -3,7 +3,7 @@ PREFIX ?= /usr/local
 # Get source paths
 hdrdir := $(CURDIR)/../../src
 srcdir := $(CURDIR)/../../src/ymmsl
-srcdirs := $(srcdir)
+srcdirs := $(srcdir) $(srcdir)/bindings
 objdir := $(CURDIR)/objs
 
 VPATH := $(srcdir)
@@ -37,7 +37,7 @@ test:
 
 .PHONY: clean
 clean:
-	rm -f libymmsl.a libymmsl.so
+	rm -f libymmsl.a libymmsl.so libymmsl_d.a libymmsl_d.so
 	rm -rf objs
 	$(MAKE) -C tests clean
 
@@ -87,13 +87,13 @@ libymmsl.a: $(objects)
 	ar rcs $@ $^
 
 libymmsl.so: $(lobjects)
-	$(CXX) -shared -o $@ $^
+	$(CXX) -shared -Wl,--version-script=ymmsl.version -o $@ $^
 
 libymmsl_d.a: $(dobjects)
 	ar rcs $@ $^
 
 libymmsl_d.so: $(dlobjects)
-	$(CXX) -shared -o $@ $^
+	$(CXX) -shared -Wl,--version-script=ymmsl.version -o $@ $^
 
 $(PREFIX)/include/%.hpp: $(hdrdir)/%.hpp
 	@mkdir -p $(@D)

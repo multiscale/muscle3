@@ -4,6 +4,7 @@ VPATH := $(libmuscle_testdir)
 
 unit_tests := $(wildcard $(libmuscle_testdir)/test*.cpp)
 integration_tests := $(wildcard $(libmuscle_testdir)/*test.cpp)
+
 unit_test_bins := $(unit_tests:$(libmuscle_testdir)/%.cpp=%)
 integration_test_bins := $(integration_tests:$(libmuscle_testdir)/%.cpp=%)
 
@@ -17,7 +18,7 @@ deps := $(all_tests:%=%.d)
 
 
 .PHONY: test
-test: $(foreach bin,$(unit_test_bins),run_$(bin))
+test: $(foreach bin,$(unit_test_bins),run_$(bin)) $(foreach bin,$(api_test_bins),run_$(bin))
 
 .PHONY: tests
 tests: $(all_tests)
@@ -48,7 +49,6 @@ LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config
 LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs msgpack)
 LDFLAGS2 += $(EXTRA_LINK_DIRS)
 
-$(info libmuscle test deps: $(deps))
 -include $(deps)
 
 endif
@@ -85,6 +85,7 @@ test_logging: test_logging.o $(CURDIR)/../../ymmsl/libymmsl_d.a
 
 mpi_micro_model_test: mpi_micro_model_test.cpp $(CURDIR)/../../ymmsl/libymmsl_d.a $(CURDIR)/../../libmuscle/libmuscle_mpi_d.a
 	$(MPICXX) $(CXXFLAGS) $(DEBUGFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS2)
+
 
 empty :=
 space := $(empty) $(empty)

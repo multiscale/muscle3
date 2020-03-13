@@ -1,0 +1,8 @@
+*
+!.gitignore
+!Makefile
+!cmdlineargs.*
+!echolib.cpp
+!echolib.hpp
+!*.py
+!test_use_echolib.f03

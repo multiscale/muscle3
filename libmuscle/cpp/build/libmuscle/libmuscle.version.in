@@ -1,0 +1,102 @@
+{
+    global:
+        extern "C++" {
+            libmuscle::impl::Instance::Instance*;
+            "libmuscle::impl::Instance::~Instance()";
+            libmuscle::impl::Instance::reuse_instance*;
+            libmuscle::impl::Instance::error_shutdown*;
+            libmuscle::impl::Instance::set_port_length*;
+            libmuscle::impl::Instance::get_port_length*;
+            libmuscle::impl::Instance::is_connected*;
+            libmuscle::impl::Instance::is_resizable*;
+            libmuscle::impl::Instance::is_vector_port*;
+            libmuscle::impl::Instance::list_ports*;
+            libmuscle::impl::Instance::get_setting*;
+            "bool libmuscle::impl::Instance::get_setting_as<bool>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const";
+            "bool libmuscle::impl::Instance::get_setting_as<bool>(std::string const&) const";
+            "int64_t libmuscle::impl::Instance::get_setting_as<int64_t>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const";
+            "int64_t libmuscle::impl::Instance::get_setting_as<int64_t>(std::string const&) const";
+            "int libmuscle::impl::Instance::get_setting_as<int>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const";
+            "int libmuscle::impl::Instance::get_setting_as<int>(std::string const&) const";
+            "long libmuscle::impl::Instance::get_setting_as<long>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const";
+            "long libmuscle::impl::Instance::get_setting_as<long>(std::string const&) const";
+            "long long libmuscle::impl::Instance::get_setting_as<long long>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const";
+            "long long libmuscle::impl::Instance::get_setting_as<long long>(std::string const&) const";
+            "double libmuscle::impl::Instance::get_setting_as<double>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const";
+            "double libmuscle::impl::Instance::get_setting_as<double>(std::string const&) const";
+            "std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > libmuscle::impl::Instance::get_setting_as<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const";
+            "std::string libmuscle::impl::Instance::get_setting_as<std::string>(std::string const&) const";
+            "std::vector<double, std::allocator<double> > libmuscle::impl::Instance::get_setting_as<std::vector<double, std::allocator<double> > >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const";
+            "std::vector<double, std::allocator<double> > libmuscle::impl::Instance::get_setting_as<std::vector<double, std::allocator<double> > >(std::string const&) const";
+            "std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > > libmuscle::impl::Instance::get_setting_as<std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > > >(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const";
+            "std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > > libmuscle::impl::Instance::get_setting_as<std::vector<std::vector<double, std::allocator<double> >, std::allocator<std::vector<double, std::allocator<double> > > > >(std::string const&) const";
+            libmuscle::impl::Instance::receive_with_settings*;
+            libmuscle::impl::Instance::receive*;
+            libmuscle::impl::Instance::send*;
+
+            libmuscle::impl::Message::*;
+
+            "libmuscle::impl::DataConstRef::DataConstRef()";
+            "libmuscle::impl::DataConstRef::DataConstRef(bool)";
+            "libmuscle::impl::DataConstRef::DataConstRef(char const*)";
+            "libmuscle::impl::DataConstRef::DataConstRef(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)";
+            "libmuscle::impl::DataConstRef::DataConstRef(std::string const&)";
+            "libmuscle::impl::DataConstRef::DataConstRef(int)";
+            "libmuscle::impl::DataConstRef::DataConstRef(long)";
+            "libmuscle::impl::DataConstRef::DataConstRef(long long)";
+            "libmuscle::impl::DataConstRef::DataConstRef(unsigned int)";
+            "libmuscle::impl::DataConstRef::DataConstRef(unsigned long)";
+            "libmuscle::impl::DataConstRef::DataConstRef(unsigned long long)";
+            "libmuscle::impl::DataConstRef::DataConstRef(float)";
+            "libmuscle::impl::DataConstRef::DataConstRef(double)";
+            "libmuscle::impl::DataConstRef::DataConstRef(ymmsl::impl::SettingValue const&)";
+            "libmuscle::impl::DataConstRef::DataConstRef(ymmsl::impl::Settings const&)";
+            "libmuscle::impl::DataConstRef::reseat(libmuscle::impl::DataConstRef const&)";
+            "libmuscle::impl::DataConstRef::size() const";
+            "bool libmuscle::impl::DataConstRef::is_a<bool>() const";
+            "bool libmuscle::impl::DataConstRef::is_a<char>() const";
+            "bool libmuscle::impl::DataConstRef::is_a<double>() const";
+            "bool libmuscle::impl::DataConstRef::is_a<float>() const";
+            "bool libmuscle::impl::DataConstRef::is_a<unsigned char>() const";
+            "bool libmuscle::impl::DataConstRef::is_a<int>() const";
+            "bool libmuscle::impl::DataConstRef::is_a<unsigned int>() const";
+            "bool libmuscle::impl::DataConstRef::is_a<ymmsl::impl::SettingValue>() const";
+            "bool libmuscle::impl::DataConstRef::is_a<ymmsl::impl::Settings>() const";
+            "bool libmuscle::impl::DataConstRef::is_a<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >() const";
+            "bool libmuscle::impl::DataConstRef::is_a<std::string>() const";
+            "bool libmuscle::impl::DataConstRef::is_a<short>() const";
+            "bool libmuscle::impl::DataConstRef::is_a<unsigned short>() const";
+            "bool libmuscle::impl::DataConstRef::is_a<long long>() const";
+            "bool libmuscle::impl::DataConstRef::is_a<unsigned long long>() const";
+            "bool libmuscle::impl::DataConstRef::is_a<long>() const";
+            "bool libmuscle::impl::DataConstRef::is_a<unsigned long>() const";
+            "libmuscle::impl::DataConstRef::is_a_dict() const";
+            "libmuscle::impl::DataConstRef::is_a_list() const";
+            "libmuscle::impl::DataConstRef::is_a_byte_array() const";
+            "libmuscle::impl::DataConstRef::is_nil() const";
+            "libmuscle::impl::DataConstRef::as_byte_array() const";
+            "ymmsl::impl::SettingValue libmuscle::impl::DataConstRef::as<ymmsl::impl::SettingValue>() const";
+            "ymmsl::impl::Settings libmuscle::impl::DataConstRef::as<ymmsl::impl::Settings>() const";
+            "libmuscle::impl::DataConstRef::operator[](unsigned long) const";
+            "libmuscle::impl::DataConstRef::operator[](std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const";
+            "libmuscle::impl::DataConstRef::operator[](std::string const&) const";
+            "libmuscle::impl::DataConstRef::key(unsigned long) const";
+            "libmuscle::impl::DataConstRef::value(unsigned long) const";
+
+            "libmuscle::impl::Data::byte_array(char const*, unsigned int)";
+            "libmuscle::impl::Data::byte_array(unsigned int)";
+            "libmuscle::impl::Data::dict()";
+            "libmuscle::impl::Data::list()";
+            "libmuscle::impl::Data::nils(unsigned long)";
+            "libmuscle::impl::Data::operator=(libmuscle::impl::Data const&)";
+            "libmuscle::impl::Data::operator[](unsigned long)";
+            "libmuscle::impl::Data::operator[](std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)";
+            "libmuscle::impl::Data::operator[](std::string const&)";
+            "libmuscle::impl::Data::as_byte_array()";
+        };
+
+        // FORTRAN ABI
+
+    local: *;
+};
+

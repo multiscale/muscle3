@@ -1,7 +1,7 @@
 from collections import OrderedDict
 import logging
+import os
 
-from matplotlib import pyplot as plt
 import numpy as np
 
 from libmuscle import Instance, Message
@@ -27,7 +27,7 @@ def reaction() -> None:
         U = np.array(msg.data)
 
         t_cur = msg.timestamp
-        while t_cur + dt < t_max:
+        while t_cur + dt < msg.timestamp + t_max:
             # O_I
 
             # S
@@ -73,7 +73,7 @@ def diffusion() -> None:
         dx = instance.get_setting('dx', 'float')
         d = instance.get_setting('d', 'float')
 
-        U = np.zeros(int(round(x_max / dx)))
+        U = np.zeros(int(round(x_max / dx))) + 1e-20
         U[25] = 2.0
         U[50] = 2.0
         U[75] = 2.0
@@ -103,9 +103,24 @@ def diffusion() -> None:
             Us = np.vstack((Us, U))
             t_cur += dt
 
-        plt.figure()
-        plt.imshow(np.log(Us + 1e-20))
-        plt.show()
+        if 'DONTPLOT' not in os.environ:
+            from matplotlib import pyplot as plt
+            plt.figure()
+            plt.imshow(
+                    np.log(Us),
+                    origin='upper',
+                    extent=[
+                        -0.5*dx, x_max - 0.5*dx,
+                        (t_max - 0.5*dt) * 1000.0, -0.5*dt * 1000.0],
+                    interpolation='none',
+                    aspect='auto'
+                    )
+            cbar = plt.colorbar()
+            cbar.set_label('log(Concentration)', rotation=270, labelpad=20)
+            plt.xlabel('x')
+            plt.ylabel('t (ms)')
+            plt.title('Concentration over time')
+            plt.show()
 
 
 if __name__ == '__main__':

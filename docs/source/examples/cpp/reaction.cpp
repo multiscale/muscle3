@@ -32,7 +32,7 @@ void reaction(int argc, char * argv[]) {
             U[i] = data[i].as<double>();
 
         double t_cur = msg.timestamp();
-        while (t_cur + dt < t_max) {
+        while (t_cur + dt < msg.timestamp() + t_max) {
             // O_I
 
             // S

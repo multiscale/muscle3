@@ -13,19 +13,30 @@ Building and running the examples
 ---------------------------------
 
 If you've just built and installed the C++ version of libmuscle, then you're all
-set to build the examples. Go into the ``docs/source/examples/cpp`` subdirectory
-of the source directory, and type ``MUSCLE3_HOME=<PREFIX> make`` and the
-examples will be compiled and linked against your new libmuscle. In order to run
-them, you'll need the Python version of MUSCLE 3 installed, because you need the
-MUSCLE Manager. The following (or something similar, if you used different
-directories) should work:
+set to build the examples. To do that, go into the ``docs/source/examples``
+subdirectory, and run Make:
 
 .. code-block:: bash
 
-  ~/muscle3_source$ cd docs/source/examples/cpp
-  ~/muscle3_source/docs/source/examples/cpp$ MUSCLE3_HOME=~/muscle3 make
-  ~/muscle3_source/docs/source/examples/cpp$ . ~/muscle3_venv/bin/activate
-  (muscle3_venv)~/muscle3_source/docs/source/examples/cpp$ MUSCLE3_HOME=~/muscle3 ./reaction_diffusion.sh
+  ~/muscle3_source$ cd docs/source/examples
+  ~/muscle3_source/docs/source/examples$ MUSCLE3_HOME=~/muscle3 make cpp
+
+
+We also need the Python version of MUSCLE 3 installed, because the MUSCLE
+Manager comes with that, and we need it to run the simulation. To set that up,
+do:
+
+.. code-block:: bash
+
+  ~/muscle3_source/docs/source/examples$ make python
+
+
+You can then run the examples using the provided scripts in
+``docs/source/examples``:
+
+.. code-block:: bash
+
+  ~/muscle3_source/docs/source/examples$ MUSCLE3_HOME=~/muscle3 ./reaction_diffusion_cpp.sh
 
 
 Log output
@@ -236,7 +247,7 @@ containing a ``double`` value that we can extract using ``as()``.
 .. code-block:: cpp
 
         double t_cur = msg.timestamp();
-        while (t_cur + dt < t_max) {
+        while (t_cur + dt < msg.timestamp() + t_max) {
             // O_I
 
             // S
@@ -247,7 +258,8 @@ containing a ``double`` value that we can extract using ``as()``.
 
 The main loop of the model is almost unchanged, we just get the starting time
 from the received message's timestamp so as to synchronise with the overall
-simulation time correctly.
+simulation time correctly, and the stopping time is adjusted accordingly as
+well.
 
 Sending messages and Data
 `````````````````````````
@@ -356,10 +368,10 @@ model below:
 
 
 In the examples directory, you will find a handy script called
-``reaction_diffusion.sh``, which runs the C++ reaction-diffusion model locally.
-This script launches the MUSCLE Manager and an instance of each submodel, then
-waits for the simulation to complete. At the top of this page there are
-instructions on how to run the examples.
+``reaction_diffusion_cpp.sh``, which runs the C++ reaction-diffusion model
+locally. This script launches the MUSCLE Manager and an instance of each
+submodel, then waits for the simulation to complete. At the top of this page
+there are instructions on how to run the examples.
 
 Also in this directory are C++ versions of a Monte Carlo sampler and a
 round-robin load balancer, plus a script to launch this extended example. See

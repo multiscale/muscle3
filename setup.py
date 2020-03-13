@@ -40,7 +40,7 @@ setup(
     python_requires='>=3.5, <4',
     install_requires=[
         'click',
-        'grpcio==1.17.1',
+        'grpcio>=1.17.1, <2',
         'msgpack',
         'netifaces',
         'protobuf',
@@ -70,6 +70,7 @@ setup(
             'mypy-protobuf',
             'sphinx',
             'sphinx_rtd_theme',
+            'sphinx-fortran',
             'yapf',
             'isort'
         ]

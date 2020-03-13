@@ -285,7 +285,7 @@ class DataConstRef {
          * @throws std::domain_error if the index is out of bounds.
          * @see size()
          */
-        DataConstRef key(std::size_t i) const;
+        std::string key(std::size_t i) const;
 
         /** Access a value in a dictionary by index.
          *
@@ -469,6 +469,20 @@ class Data : public DataConstRef {
          * @throws std::runtime_error if the object is not a dictionary.
          */
         Data operator[](std::string const & key);
+
+        /** Access a value in a dictionary by index.
+         *
+         * Use only if is_a_dict() returns true.
+         *
+         * Indices match those of key(), so value(i) will give you the value
+         * corresponding to key(i).
+         *
+         * @param i The index of the value to retrieve.
+         * @throws std::runtime_error if the object is not a map.
+         * @throws std::domain_error if the index is out of bounds.
+         * @see size()
+         */
+        Data value(std::size_t i) const;
 
         /** Access a list entry by index.
          *

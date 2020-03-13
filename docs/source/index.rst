@@ -19,10 +19,12 @@ Environment.
    tutorial
    distributed_execution
    cplusplus
+   fortran
    mpi
    uncertainty_quantification
    python_api
    cpp_api
+   fortran_api
 
    contributing
    devtools

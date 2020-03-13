@@ -5,14 +5,34 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_.
 
-0.2.1-dev
-*********
+0.3.0
+*****
 
 Incompatible changes
 --------------------
 
 * Data::key() now returns std::string instead of DataConstRef.
 * Data::value() now return Data rather than DataConstRef
+
+Added
+-----
+
+* Support for Fortran, including MPI
+
+Improved
+--------
+
+* Fixes to examples
+* Small documentation improvements
+* Improved compatibility with other packages using gRPC
+
+
+Thanks
+------
+
+* Pavel for reporting documentation/examples issues
+* Derek for testing on Eagle
+* Dongwei for reporting the gRPC issue
 
 
 0.2.0

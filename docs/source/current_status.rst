@@ -101,22 +101,24 @@ Ongoing development
 
 Language support
 ````````````````
-Currently, MUSCLE 3 supports Python 3 and C++. While that covers quite some
-existing models in computational science, support for other languages is still
-needed. This mainly entails porting libmuscle, as the manager is a separate
-program, and writing tools to manipulate yMMSL files is probably best done in
-Python.
+Currently, MUSCLE 3 supports Python 3, C++ and Fortran. While that covers quite
+some existing models in computational science, support for other languages is
+still needed. This mainly entails porting libmuscle, as the manager is a
+separate program, and writing tools to manipulate yMMSL files is probably best
+done in Python.
 
-Next on the list in terms of language support are C and Fortran, then possibly
-Java and perhaps other languages. If you feel strongly about support for a
-specific language, please `make an issue on GitHub
+Next on the list in terms of language support are C and possibly Java, then
+perhaps other languages. If you feel strongly about support for a specific
+language, please `make an issue on GitHub
 <https://github.com/multiscale/muscle3/issues>`_.
 
 Distributed execution
 `````````````````````
 Distributed execution is now officially supported, although not yet widely
 tested. If you want to experiment on your laptop or your supercomputer,
-please have a look at the `Distributed execution`_ section of the manual.
+please have a look at the `Distributed execution`_ section of the manual. We are
+planning to use `QCG PilotJob <https://github.com/vecma-project/QCG-PilotJob>`_
+to make running simulations inside of cluster allocations easier.
 
 In order to avoid writing job scripts and staging files manually, some kind of
 launcher is needed. We are collaborating with the `VECMA project

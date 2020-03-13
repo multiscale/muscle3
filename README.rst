@@ -24,15 +24,16 @@
 .. image:: https://zenodo.org/badge/122876985.svg
    :target: https://zenodo.org/badge/latestdoi/122876985
 
+.. image:: https://img.shields.io/badge/rsd-muscle3-00a3e3.svg
+   :target: https://www.research-software.nl/software/muscle3
+
 |
 
 MUSCLE 3 is the third incarnation of the MUSCLE Multiscale Coupling Library and
 Environment. It is developed by the e-MUSC project of the University of
 Amsterdam and the Netherlands eScience Center.
 
-A first version of MUSCLE 3 is now available! This is Python-only; support for
-C++, C and Fortran is under active development. Browse to
-`the MUSCLE 3 documentation`_ to get started.
+Browse to `the MUSCLE 3 documentation`_ to get started.
 
 
 Legal
@@ -55,18 +56,6 @@ The MUSCLE 3 community fosters a welcoming atmosphere, and participation is open
 to everyone. In order to ensure that it stays that way, we have a
 `code of conduct`_, and we will enforce it if necessary. Please treat your
 fellow human beings with respect.
-
-
-Tooling
-=======
-
-Tests can be run using::
-
-  python setup.py test
-
-The documentation can be built using::
-
-  python setup.py build_sphinx
 
 
 .. _`the MUSCLE 3 documentation`: https://muscle3.readthedocs.io

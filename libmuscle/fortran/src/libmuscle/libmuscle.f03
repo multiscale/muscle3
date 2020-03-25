@@ -272,7 +272,7 @@ module libmuscle
                 bind(C, name="LIBMUSCLE_DataConstRef_create_logical_")
 
             use iso_c_binding
-            integer (c_int), value, intent(in) :: value
+            logical (c_bool), value, intent(in) :: value
         end function LIBMUSCLE_DataConstRef_create_logical_
 
         integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_character_( &
@@ -356,7 +356,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end subroutine LIBMUSCLE_DataConstRef_free_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_logical_( &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_logical_( &
                 self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_logical_")
 
@@ -364,7 +364,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_logical_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_character_( &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_character_( &
                 self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_character_")
 
@@ -372,7 +372,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_character_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_int_( &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_int_( &
                 self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_int_")
 
@@ -380,7 +380,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_int_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_int1_( &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_int1_( &
                 self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_int1_")
 
@@ -388,7 +388,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_int1_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_int2_( &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_int2_( &
                 self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_int2_")
 
@@ -396,7 +396,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_int2_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_int4_( &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_int4_( &
                 self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_int4_")
 
@@ -404,7 +404,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_int4_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_int8_( &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_int8_( &
                 self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_int8_")
 
@@ -412,7 +412,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_int8_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_real4_( &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_real4_( &
                 self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_real4_")
 
@@ -420,7 +420,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_real4_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_real8_( &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_real8_( &
                 self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_real8_")
 
@@ -428,7 +428,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_real8_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_dict_( &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_dict_( &
                 self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_dict_")
 
@@ -436,7 +436,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_dict_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_list_( &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_list_( &
                 self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_list_")
 
@@ -444,7 +444,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_list_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_byte_array_( &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_byte_array_( &
                 self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_byte_array_")
 
@@ -452,7 +452,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_byte_array_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_nil_( &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_nil_( &
                 self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_nil_")
 
@@ -460,7 +460,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_nil_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_settings_( &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_settings_( &
                 self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_settings_")
 
@@ -476,7 +476,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_size_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_as_logical_( &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_as_logical_( &
                 self, err_code, err_msg, err_msg_len) &
                 bind(C, name="LIBMUSCLE_DataConstRef_as_logical_")
 
@@ -638,7 +638,7 @@ module libmuscle
                 bind(C, name="LIBMUSCLE_Data_create_logical_")
 
             use iso_c_binding
-            integer (c_int), value, intent(in) :: value
+            logical (c_bool), value, intent(in) :: value
         end function LIBMUSCLE_Data_create_logical_
 
         integer (c_intptr_t) function LIBMUSCLE_Data_create_character_( &
@@ -722,7 +722,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end subroutine LIBMUSCLE_Data_free_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_logical_( &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_logical_( &
                 self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_logical_")
 
@@ -730,7 +730,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_logical_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_character_( &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_character_( &
                 self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_character_")
 
@@ -738,7 +738,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_character_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_int_( &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_int_( &
                 self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_int_")
 
@@ -746,7 +746,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_int_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_int1_( &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_int1_( &
                 self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_int1_")
 
@@ -754,7 +754,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_int1_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_int2_( &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_int2_( &
                 self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_int2_")
 
@@ -762,7 +762,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_int2_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_int4_( &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_int4_( &
                 self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_int4_")
 
@@ -770,7 +770,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_int4_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_int8_( &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_int8_( &
                 self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_int8_")
 
@@ -778,7 +778,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_int8_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_real4_( &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_real4_( &
                 self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_real4_")
 
@@ -786,7 +786,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_real4_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_real8_( &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_real8_( &
                 self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_real8_")
 
@@ -794,7 +794,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_real8_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_dict_( &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_dict_( &
                 self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_dict_")
 
@@ -802,7 +802,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_dict_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_list_( &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_list_( &
                 self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_list_")
 
@@ -810,7 +810,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_list_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_byte_array_( &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_byte_array_( &
                 self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_byte_array_")
 
@@ -818,7 +818,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_byte_array_
 
-        integer (c_int) function LIBMUSCLE_Data_is_nil_( &
+        logical (c_bool) function LIBMUSCLE_Data_is_nil_( &
                 self) &
                 bind(C, name="LIBMUSCLE_Data_is_nil_")
 
@@ -826,7 +826,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_nil_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_settings_( &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_settings_( &
                 self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_settings_")
 
@@ -842,7 +842,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_size_
 
-        integer (c_int) function LIBMUSCLE_Data_as_logical_( &
+        logical (c_bool) function LIBMUSCLE_Data_as_logical_( &
                 self, err_code, err_msg, err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_as_logical_")
 
@@ -1037,7 +1037,7 @@ module libmuscle
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
-            integer (c_int), value, intent(in) :: value
+            logical (c_bool), value, intent(in) :: value
         end subroutine LIBMUSCLE_Data_set_logical_
 
         subroutine LIBMUSCLE_Data_set_character_( &
@@ -1129,7 +1129,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
             character, intent(in) :: key
             integer (c_size_t), value, intent(in) :: key_size
-            integer (c_int), value, intent(in) :: value
+            logical (c_bool), value, intent(in) :: value
             integer (c_int), intent(out) :: err_code
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
@@ -1255,7 +1255,7 @@ module libmuscle
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
             integer (c_size_t), value, intent(in) :: i
-            integer (c_int), value, intent(in) :: value
+            logical (c_bool), value, intent(in) :: value
             integer (c_int), intent(out) :: err_code
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
@@ -1507,7 +1507,7 @@ module libmuscle
             real (c_double), value, intent(in) :: timestamp
         end subroutine LIBMUSCLE_Message_set_timestamp_
 
-        integer (c_int) function LIBMUSCLE_Message_has_next_timestamp_( &
+        logical (c_bool) function LIBMUSCLE_Message_has_next_timestamp_( &
                 self) &
                 bind(C, name="LIBMUSCLE_Message_has_next_timestamp_")
 
@@ -1566,7 +1566,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: data
         end subroutine LIBMUSCLE_Message_set_data_dcr_
 
-        integer (c_int) function LIBMUSCLE_Message_has_settings_( &
+        logical (c_bool) function LIBMUSCLE_Message_has_settings_( &
                 self) &
                 bind(C, name="LIBMUSCLE_Message_has_settings_")
 
@@ -1624,7 +1624,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end subroutine LIBMUSCLE_Instance_free_
 
-        integer (c_int) function LIBMUSCLE_Instance_reuse_instance_default_( &
+        logical (c_bool) function LIBMUSCLE_Instance_reuse_instance_default_( &
                 self) &
                 bind(C, name="LIBMUSCLE_Instance_reuse_instance_default_")
 
@@ -1632,13 +1632,13 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Instance_reuse_instance_default_
 
-        integer (c_int) function LIBMUSCLE_Instance_reuse_instance_apply_( &
+        logical (c_bool) function LIBMUSCLE_Instance_reuse_instance_apply_( &
                 self, apply_overlay) &
                 bind(C, name="LIBMUSCLE_Instance_reuse_instance_apply_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
-            integer (c_int), value, intent(in) :: apply_overlay
+            logical (c_bool), value, intent(in) :: apply_overlay
         end function LIBMUSCLE_Instance_reuse_instance_apply_
 
         subroutine LIBMUSCLE_Instance_error_shutdown_( &
@@ -1651,7 +1651,7 @@ module libmuscle
             integer (c_size_t), value, intent(in) :: message_size
         end subroutine LIBMUSCLE_Instance_error_shutdown_
 
-        integer (c_int) function LIBMUSCLE_Instance_is_setting_a_character_( &
+        logical (c_bool) function LIBMUSCLE_Instance_is_setting_a_character_( &
                 self, name, name_size, err_code, err_msg, err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_is_setting_a_character_")
 
@@ -1664,7 +1664,7 @@ module libmuscle
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Instance_is_setting_a_character_
 
-        integer (c_int) function LIBMUSCLE_Instance_is_setting_a_int8_( &
+        logical (c_bool) function LIBMUSCLE_Instance_is_setting_a_int8_( &
                 self, name, name_size, err_code, err_msg, err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_is_setting_a_int8_")
 
@@ -1677,7 +1677,7 @@ module libmuscle
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Instance_is_setting_a_int8_
 
-        integer (c_int) function LIBMUSCLE_Instance_is_setting_a_real8_( &
+        logical (c_bool) function LIBMUSCLE_Instance_is_setting_a_real8_( &
                 self, name, name_size, err_code, err_msg, err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_is_setting_a_real8_")
 
@@ -1690,7 +1690,7 @@ module libmuscle
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Instance_is_setting_a_real8_
 
-        integer (c_int) function LIBMUSCLE_Instance_is_setting_a_logical_( &
+        logical (c_bool) function LIBMUSCLE_Instance_is_setting_a_logical_( &
                 self, name, name_size, err_code, err_msg, err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_is_setting_a_logical_")
 
@@ -1703,7 +1703,7 @@ module libmuscle
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Instance_is_setting_a_logical_
 
-        integer (c_int) function LIBMUSCLE_Instance_is_setting_a_real8array_( &
+        logical (c_bool) function LIBMUSCLE_Instance_is_setting_a_real8array_( &
                 self, name, name_size, err_code, err_msg, err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_is_setting_a_real8array_")
 
@@ -1716,7 +1716,7 @@ module libmuscle
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Instance_is_setting_a_real8array_
 
-        integer (c_int) function LIBMUSCLE_Instance_is_setting_a_real8array2_( &
+        logical (c_bool) function LIBMUSCLE_Instance_is_setting_a_real8array2_( &
                 self, name, name_size, err_code, err_msg, err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_is_setting_a_real8array2_")
 
@@ -1770,7 +1770,7 @@ module libmuscle
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Instance_get_setting_as_real8_
 
-        integer (c_int) function LIBMUSCLE_Instance_get_setting_as_logical_( &
+        logical (c_bool) function LIBMUSCLE_Instance_get_setting_as_logical_( &
                 self, name, name_size, err_code, err_msg, err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_get_setting_as_logical_")
 
@@ -1821,7 +1821,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Instance_list_ports_
 
-        integer (c_int) function LIBMUSCLE_Instance_is_connected_( &
+        logical (c_bool) function LIBMUSCLE_Instance_is_connected_( &
                 self, port, port_size) &
                 bind(C, name="LIBMUSCLE_Instance_is_connected_")
 
@@ -1831,7 +1831,7 @@ module libmuscle
             integer (c_size_t), value, intent(in) :: port_size
         end function LIBMUSCLE_Instance_is_connected_
 
-        integer (c_int) function LIBMUSCLE_Instance_is_vector_port_( &
+        logical (c_bool) function LIBMUSCLE_Instance_is_vector_port_( &
                 self, port, port_size) &
                 bind(C, name="LIBMUSCLE_Instance_is_vector_port_")
 
@@ -1841,7 +1841,7 @@ module libmuscle
             integer (c_size_t), value, intent(in) :: port_size
         end function LIBMUSCLE_Instance_is_vector_port_
 
-        integer (c_int) function LIBMUSCLE_Instance_is_resizable_( &
+        logical (c_bool) function LIBMUSCLE_Instance_is_resizable_( &
                 self, port, port_size) &
                 bind(C, name="LIBMUSCLE_Instance_is_resizable_")
 
@@ -2204,7 +2204,7 @@ contains
         integer (c_intptr_t) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_create_logical_( &
-            merge(1, 0, value))
+            logical(value, c_bool))
 
         LIBMUSCLE_DataConstRef_create_logical%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_logical
@@ -2339,12 +2339,12 @@ contains
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_logical
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_logical_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_logical = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_logical = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_logical
 
     function LIBMUSCLE_DataConstRef_is_a_character(self)
@@ -2352,12 +2352,12 @@ contains
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_character
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_character_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_character = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_character = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_character
 
     function LIBMUSCLE_DataConstRef_is_a_int(self)
@@ -2365,12 +2365,12 @@ contains
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_int
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_int_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_int = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_int = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_int
 
     function LIBMUSCLE_DataConstRef_is_a_int1(self)
@@ -2378,12 +2378,12 @@ contains
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_int1
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_int1_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_int1 = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_int1 = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_int1
 
     function LIBMUSCLE_DataConstRef_is_a_int2(self)
@@ -2391,12 +2391,12 @@ contains
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_int2
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_int2_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_int2 = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_int2 = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_int2
 
     function LIBMUSCLE_DataConstRef_is_a_int4(self)
@@ -2404,12 +2404,12 @@ contains
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_int4
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_int4_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_int4 = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_int4 = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_int4
 
     function LIBMUSCLE_DataConstRef_is_a_int8(self)
@@ -2417,12 +2417,12 @@ contains
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_int8
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_int8_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_int8 = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_int8 = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_int8
 
     function LIBMUSCLE_DataConstRef_is_a_real4(self)
@@ -2430,12 +2430,12 @@ contains
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_real4
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_real4_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_real4 = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_real4 = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_real4
 
     function LIBMUSCLE_DataConstRef_is_a_real8(self)
@@ -2443,12 +2443,12 @@ contains
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_real8
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_real8_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_real8 = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_real8 = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_real8
 
     function LIBMUSCLE_DataConstRef_is_a_dict(self)
@@ -2456,12 +2456,12 @@ contains
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_dict
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_dict_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_dict = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_dict = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_dict
 
     function LIBMUSCLE_DataConstRef_is_a_list(self)
@@ -2469,12 +2469,12 @@ contains
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_list
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_list_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_list = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_list = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_list
 
     function LIBMUSCLE_DataConstRef_is_a_byte_array(self)
@@ -2482,12 +2482,12 @@ contains
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_byte_array
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_byte_array_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_byte_array = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_byte_array = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_byte_array
 
     function LIBMUSCLE_DataConstRef_is_nil(self)
@@ -2495,12 +2495,12 @@ contains
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_nil
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_nil_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_nil = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_nil = ret_val
     end function LIBMUSCLE_DataConstRef_is_nil
 
     function LIBMUSCLE_DataConstRef_is_a_settings(self)
@@ -2508,12 +2508,12 @@ contains
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_settings
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_settings_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_settings = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_settings = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_settings
 
     function LIBMUSCLE_DataConstRef_size(self)
@@ -2535,7 +2535,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_DataConstRef_as_logical
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -2575,7 +2575,7 @@ contains
             end if
         end if
 
-        LIBMUSCLE_DataConstRef_as_logical = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_as_logical = ret_val
     end function LIBMUSCLE_DataConstRef_as_logical
 
     function LIBMUSCLE_DataConstRef_as_character(self, err_code, err_msg)
@@ -3209,7 +3209,7 @@ contains
         integer (c_intptr_t) :: ret_val
 
         ret_val = LIBMUSCLE_Data_create_logical_( &
-            merge(1, 0, value))
+            logical(value, c_bool))
 
         LIBMUSCLE_Data_create_logical%ptr = ret_val
     end function LIBMUSCLE_Data_create_logical
@@ -3344,12 +3344,12 @@ contains
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_logical
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_logical_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_logical = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_logical = ret_val
     end function LIBMUSCLE_Data_is_a_logical
 
     function LIBMUSCLE_Data_is_a_character(self)
@@ -3357,12 +3357,12 @@ contains
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_character
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_character_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_character = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_character = ret_val
     end function LIBMUSCLE_Data_is_a_character
 
     function LIBMUSCLE_Data_is_a_int(self)
@@ -3370,12 +3370,12 @@ contains
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_int
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_int_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_int = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_int = ret_val
     end function LIBMUSCLE_Data_is_a_int
 
     function LIBMUSCLE_Data_is_a_int1(self)
@@ -3383,12 +3383,12 @@ contains
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_int1
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_int1_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_int1 = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_int1 = ret_val
     end function LIBMUSCLE_Data_is_a_int1
 
     function LIBMUSCLE_Data_is_a_int2(self)
@@ -3396,12 +3396,12 @@ contains
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_int2
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_int2_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_int2 = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_int2 = ret_val
     end function LIBMUSCLE_Data_is_a_int2
 
     function LIBMUSCLE_Data_is_a_int4(self)
@@ -3409,12 +3409,12 @@ contains
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_int4
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_int4_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_int4 = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_int4 = ret_val
     end function LIBMUSCLE_Data_is_a_int4
 
     function LIBMUSCLE_Data_is_a_int8(self)
@@ -3422,12 +3422,12 @@ contains
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_int8
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_int8_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_int8 = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_int8 = ret_val
     end function LIBMUSCLE_Data_is_a_int8
 
     function LIBMUSCLE_Data_is_a_real4(self)
@@ -3435,12 +3435,12 @@ contains
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_real4
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_real4_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_real4 = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_real4 = ret_val
     end function LIBMUSCLE_Data_is_a_real4
 
     function LIBMUSCLE_Data_is_a_real8(self)
@@ -3448,12 +3448,12 @@ contains
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_real8
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_real8_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_real8 = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_real8 = ret_val
     end function LIBMUSCLE_Data_is_a_real8
 
     function LIBMUSCLE_Data_is_a_dict(self)
@@ -3461,12 +3461,12 @@ contains
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_dict
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_dict_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_dict = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_dict = ret_val
     end function LIBMUSCLE_Data_is_a_dict
 
     function LIBMUSCLE_Data_is_a_list(self)
@@ -3474,12 +3474,12 @@ contains
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_list
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_list_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_list = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_list = ret_val
     end function LIBMUSCLE_Data_is_a_list
 
     function LIBMUSCLE_Data_is_a_byte_array(self)
@@ -3487,12 +3487,12 @@ contains
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_byte_array
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_byte_array_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_byte_array = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_byte_array = ret_val
     end function LIBMUSCLE_Data_is_a_byte_array
 
     function LIBMUSCLE_Data_is_nil(self)
@@ -3500,12 +3500,12 @@ contains
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_nil
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_nil_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_nil = ret_val .ne. 0
+        LIBMUSCLE_Data_is_nil = ret_val
     end function LIBMUSCLE_Data_is_nil
 
     function LIBMUSCLE_Data_is_a_settings(self)
@@ -3513,12 +3513,12 @@ contains
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_settings
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_settings_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_settings = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_settings = ret_val
     end function LIBMUSCLE_Data_is_a_settings
 
     function LIBMUSCLE_Data_size(self)
@@ -3540,7 +3540,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_Data_as_logical
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -3580,7 +3580,7 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Data_as_logical = ret_val .ne. 0
+        LIBMUSCLE_Data_as_logical = ret_val
     end function LIBMUSCLE_Data_as_logical
 
     function LIBMUSCLE_Data_as_character(self, err_code, err_msg)
@@ -4264,7 +4264,7 @@ contains
 
         call LIBMUSCLE_Data_set_logical_( &
             self%ptr, &
-            merge(1, 0, value))
+            logical(value, c_bool))
     end subroutine LIBMUSCLE_Data_set_logical
 
     subroutine LIBMUSCLE_Data_set_character(self, value)
@@ -4373,7 +4373,7 @@ contains
         call LIBMUSCLE_Data_set_item_key_logical_( &
             self%ptr, &
             key, int(len(key), c_size_t), &
-            merge(1, 0, value), &
+            logical(value, c_bool), &
             err_code_v, &
             err_msg_v, &
             err_msg_len_v)
@@ -4823,7 +4823,7 @@ contains
         call LIBMUSCLE_Data_set_item_index_logical_( &
             self%ptr, &
             i, &
-            merge(1, 0, value), &
+            logical(value, c_bool), &
             err_code_v, &
             err_msg_v, &
             err_msg_len_v)
@@ -5580,12 +5580,12 @@ contains
         type(LIBMUSCLE_Message), intent(in) :: self
         logical :: LIBMUSCLE_Message_has_next_timestamp
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Message_has_next_timestamp_( &
             self%ptr)
 
-        LIBMUSCLE_Message_has_next_timestamp = ret_val .ne. 0
+        LIBMUSCLE_Message_has_next_timestamp = ret_val
     end function LIBMUSCLE_Message_has_next_timestamp
 
     function LIBMUSCLE_Message_next_timestamp(self)
@@ -5656,12 +5656,12 @@ contains
         type(LIBMUSCLE_Message), intent(in) :: self
         logical :: LIBMUSCLE_Message_has_settings
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Message_has_settings_( &
             self%ptr)
 
-        LIBMUSCLE_Message_has_settings = ret_val .ne. 0
+        LIBMUSCLE_Message_has_settings = ret_val
     end function LIBMUSCLE_Message_has_settings
 
     function LIBMUSCLE_Message_get_settings(self)
@@ -5754,12 +5754,12 @@ contains
         type(LIBMUSCLE_Instance), intent(in) :: self
         logical :: LIBMUSCLE_Instance_reuse_instance_default
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Instance_reuse_instance_default_( &
             self%ptr)
 
-        LIBMUSCLE_Instance_reuse_instance_default = ret_val .ne. 0
+        LIBMUSCLE_Instance_reuse_instance_default = ret_val
     end function LIBMUSCLE_Instance_reuse_instance_default
 
     function LIBMUSCLE_Instance_reuse_instance_apply(self, apply_overlay)
@@ -5768,13 +5768,13 @@ contains
         logical, intent(in) :: apply_overlay
         logical :: LIBMUSCLE_Instance_reuse_instance_apply
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Instance_reuse_instance_apply_( &
             self%ptr, &
-            merge(1, 0, apply_overlay))
+            logical(apply_overlay, c_bool))
 
-        LIBMUSCLE_Instance_reuse_instance_apply = ret_val .ne. 0
+        LIBMUSCLE_Instance_reuse_instance_apply = ret_val
     end function LIBMUSCLE_Instance_reuse_instance_apply
 
     subroutine LIBMUSCLE_Instance_error_shutdown(self, message)
@@ -5795,7 +5795,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_Instance_is_setting_a_character
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -5836,7 +5836,7 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Instance_is_setting_a_character = ret_val .ne. 0
+        LIBMUSCLE_Instance_is_setting_a_character = ret_val
     end function LIBMUSCLE_Instance_is_setting_a_character
 
     function LIBMUSCLE_Instance_is_setting_a_int8(self, name, err_code, err_msg)
@@ -5847,7 +5847,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_Instance_is_setting_a_int8
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -5888,7 +5888,7 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Instance_is_setting_a_int8 = ret_val .ne. 0
+        LIBMUSCLE_Instance_is_setting_a_int8 = ret_val
     end function LIBMUSCLE_Instance_is_setting_a_int8
 
     function LIBMUSCLE_Instance_is_setting_a_real8(self, name, err_code, err_msg)
@@ -5899,7 +5899,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_Instance_is_setting_a_real8
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -5940,7 +5940,7 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Instance_is_setting_a_real8 = ret_val .ne. 0
+        LIBMUSCLE_Instance_is_setting_a_real8 = ret_val
     end function LIBMUSCLE_Instance_is_setting_a_real8
 
     function LIBMUSCLE_Instance_is_setting_a_logical(self, name, err_code, err_msg)
@@ -5951,7 +5951,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_Instance_is_setting_a_logical
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -5992,7 +5992,7 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Instance_is_setting_a_logical = ret_val .ne. 0
+        LIBMUSCLE_Instance_is_setting_a_logical = ret_val
     end function LIBMUSCLE_Instance_is_setting_a_logical
 
     function LIBMUSCLE_Instance_is_setting_a_real8array(self, name, err_code, err_msg)
@@ -6003,7 +6003,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_Instance_is_setting_a_real8array
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -6044,7 +6044,7 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Instance_is_setting_a_real8array = ret_val .ne. 0
+        LIBMUSCLE_Instance_is_setting_a_real8array = ret_val
     end function LIBMUSCLE_Instance_is_setting_a_real8array
 
     function LIBMUSCLE_Instance_is_setting_a_real8array2(self, name, err_code, err_msg)
@@ -6055,7 +6055,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_Instance_is_setting_a_real8array2
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -6096,7 +6096,7 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Instance_is_setting_a_real8array2 = ret_val .ne. 0
+        LIBMUSCLE_Instance_is_setting_a_real8array2 = ret_val
     end function LIBMUSCLE_Instance_is_setting_a_real8array2
 
     function LIBMUSCLE_Instance_get_setting_as_character(self, name, err_code, err_msg)
@@ -6270,7 +6270,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_Instance_get_setting_as_logical
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -6311,7 +6311,7 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Instance_get_setting_as_logical = ret_val .ne. 0
+        LIBMUSCLE_Instance_get_setting_as_logical = ret_val
     end function LIBMUSCLE_Instance_get_setting_as_logical
 
     subroutine LIBMUSCLE_Instance_get_setting_as_real8array(self, name, value, err_code, err_msg)
@@ -6447,13 +6447,13 @@ contains
         character (len=*), intent(in) :: port
         logical :: LIBMUSCLE_Instance_is_connected
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Instance_is_connected_( &
             self%ptr, &
             port, int(len(port), c_size_t))
 
-        LIBMUSCLE_Instance_is_connected = ret_val .ne. 0
+        LIBMUSCLE_Instance_is_connected = ret_val
     end function LIBMUSCLE_Instance_is_connected
 
     function LIBMUSCLE_Instance_is_vector_port(self, port)
@@ -6462,13 +6462,13 @@ contains
         character (len=*), intent(in) :: port
         logical :: LIBMUSCLE_Instance_is_vector_port
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Instance_is_vector_port_( &
             self%ptr, &
             port, int(len(port), c_size_t))
 
-        LIBMUSCLE_Instance_is_vector_port = ret_val .ne. 0
+        LIBMUSCLE_Instance_is_vector_port = ret_val
     end function LIBMUSCLE_Instance_is_vector_port
 
     function LIBMUSCLE_Instance_is_resizable(self, port)
@@ -6477,13 +6477,13 @@ contains
         character (len=*), intent(in) :: port
         logical :: LIBMUSCLE_Instance_is_resizable
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Instance_is_resizable_( &
             self%ptr, &
             port, int(len(port), c_size_t))
 
-        LIBMUSCLE_Instance_is_resizable = ret_val .ne. 0
+        LIBMUSCLE_Instance_is_resizable = ret_val
     end function LIBMUSCLE_Instance_is_resizable
 
     function LIBMUSCLE_Instance_get_port_length(self, port)

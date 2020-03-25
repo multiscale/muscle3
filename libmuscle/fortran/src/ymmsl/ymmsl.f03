@@ -81,7 +81,7 @@ module ymmsl
             integer (c_intptr_t), value, intent(in) :: self
         end subroutine YMMSL_Settings_free_
 
-        integer (c_int) function YMMSL_Settings_equals_( &
+        logical (c_bool) function YMMSL_Settings_equals_( &
                 self, other) &
                 bind(C, name="YMMSL_Settings_equals_")
 
@@ -98,7 +98,7 @@ module ymmsl
             integer (c_intptr_t), value, intent(in) :: self
         end function YMMSL_Settings_size_
 
-        integer (c_int) function YMMSL_Settings_empty_( &
+        logical (c_bool) function YMMSL_Settings_empty_( &
                 self) &
                 bind(C, name="YMMSL_Settings_empty_")
 
@@ -106,7 +106,7 @@ module ymmsl
             integer (c_intptr_t), value, intent(in) :: self
         end function YMMSL_Settings_empty_
 
-        integer (c_int) function YMMSL_Settings_is_a_character_( &
+        logical (c_bool) function YMMSL_Settings_is_a_character_( &
                 self, key, key_size, err_code, err_msg, err_msg_len) &
                 bind(C, name="YMMSL_Settings_is_a_character_")
 
@@ -119,7 +119,7 @@ module ymmsl
             integer (c_size_t), intent(out) :: err_msg_len
         end function YMMSL_Settings_is_a_character_
 
-        integer (c_int) function YMMSL_Settings_is_a_int8_( &
+        logical (c_bool) function YMMSL_Settings_is_a_int8_( &
                 self, key, key_size, err_code, err_msg, err_msg_len) &
                 bind(C, name="YMMSL_Settings_is_a_int8_")
 
@@ -132,7 +132,7 @@ module ymmsl
             integer (c_size_t), intent(out) :: err_msg_len
         end function YMMSL_Settings_is_a_int8_
 
-        integer (c_int) function YMMSL_Settings_is_a_real8_( &
+        logical (c_bool) function YMMSL_Settings_is_a_real8_( &
                 self, key, key_size, err_code, err_msg, err_msg_len) &
                 bind(C, name="YMMSL_Settings_is_a_real8_")
 
@@ -145,7 +145,7 @@ module ymmsl
             integer (c_size_t), intent(out) :: err_msg_len
         end function YMMSL_Settings_is_a_real8_
 
-        integer (c_int) function YMMSL_Settings_is_a_logical_( &
+        logical (c_bool) function YMMSL_Settings_is_a_logical_( &
                 self, key, key_size, err_code, err_msg, err_msg_len) &
                 bind(C, name="YMMSL_Settings_is_a_logical_")
 
@@ -158,7 +158,7 @@ module ymmsl
             integer (c_size_t), intent(out) :: err_msg_len
         end function YMMSL_Settings_is_a_logical_
 
-        integer (c_int) function YMMSL_Settings_is_a_real8array_( &
+        logical (c_bool) function YMMSL_Settings_is_a_real8array_( &
                 self, key, key_size, err_code, err_msg, err_msg_len) &
                 bind(C, name="YMMSL_Settings_is_a_real8array_")
 
@@ -171,7 +171,7 @@ module ymmsl
             integer (c_size_t), intent(out) :: err_msg_len
         end function YMMSL_Settings_is_a_real8array_
 
-        integer (c_int) function YMMSL_Settings_is_a_real8array2_( &
+        logical (c_bool) function YMMSL_Settings_is_a_real8array2_( &
                 self, key, key_size, err_code, err_msg, err_msg_len) &
                 bind(C, name="YMMSL_Settings_is_a_real8array2_")
 
@@ -226,7 +226,7 @@ module ymmsl
             integer (c_intptr_t), value, intent(in) :: self
             character, intent(in) :: key
             integer (c_size_t), value, intent(in) :: key_size
-            integer (c_int), value, intent(in) :: value
+            logical (c_bool), value, intent(in) :: value
         end subroutine YMMSL_Settings_set_logical_
 
         subroutine YMMSL_Settings_set_real8array_( &
@@ -294,7 +294,7 @@ module ymmsl
             integer (c_size_t), intent(out) :: err_msg_len
         end function YMMSL_Settings_get_as_real8_
 
-        integer (c_int) function YMMSL_Settings_get_as_logical_( &
+        logical (c_bool) function YMMSL_Settings_get_as_logical_( &
                 self, key, key_size, err_code, err_msg, err_msg_len) &
                 bind(C, name="YMMSL_Settings_get_as_logical_")
 
@@ -337,7 +337,7 @@ module ymmsl
             integer (c_size_t), intent(out) :: err_msg_len
         end subroutine YMMSL_Settings_get_as_real8array2_
 
-        integer (c_int) function YMMSL_Settings_contains_( &
+        logical (c_bool) function YMMSL_Settings_contains_( &
                 self, key, key_size) &
                 bind(C, name="YMMSL_Settings_contains_")
 
@@ -420,13 +420,13 @@ contains
         type(YMMSL_Settings), intent(in) :: other
         logical :: YMMSL_Settings_equals
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = YMMSL_Settings_equals_( &
             self%ptr, &
             other%ptr)
 
-        YMMSL_Settings_equals = ret_val .ne. 0
+        YMMSL_Settings_equals = ret_val
     end function YMMSL_Settings_equals
 
     function YMMSL_Settings_size(self)
@@ -446,12 +446,12 @@ contains
         type(YMMSL_Settings), intent(in) :: self
         logical :: YMMSL_Settings_empty
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = YMMSL_Settings_empty_( &
             self%ptr)
 
-        YMMSL_Settings_empty = ret_val .ne. 0
+        YMMSL_Settings_empty = ret_val
     end function YMMSL_Settings_empty
 
     function YMMSL_Settings_is_a_character(self, key, err_code, err_msg)
@@ -462,7 +462,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: YMMSL_Settings_is_a_character
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -503,7 +503,7 @@ contains
             end if
         end if
 
-        YMMSL_Settings_is_a_character = ret_val .ne. 0
+        YMMSL_Settings_is_a_character = ret_val
     end function YMMSL_Settings_is_a_character
 
     function YMMSL_Settings_is_a_int8(self, key, err_code, err_msg)
@@ -514,7 +514,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: YMMSL_Settings_is_a_int8
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -555,7 +555,7 @@ contains
             end if
         end if
 
-        YMMSL_Settings_is_a_int8 = ret_val .ne. 0
+        YMMSL_Settings_is_a_int8 = ret_val
     end function YMMSL_Settings_is_a_int8
 
     function YMMSL_Settings_is_a_real8(self, key, err_code, err_msg)
@@ -566,7 +566,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: YMMSL_Settings_is_a_real8
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -607,7 +607,7 @@ contains
             end if
         end if
 
-        YMMSL_Settings_is_a_real8 = ret_val .ne. 0
+        YMMSL_Settings_is_a_real8 = ret_val
     end function YMMSL_Settings_is_a_real8
 
     function YMMSL_Settings_is_a_logical(self, key, err_code, err_msg)
@@ -618,7 +618,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: YMMSL_Settings_is_a_logical
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -659,7 +659,7 @@ contains
             end if
         end if
 
-        YMMSL_Settings_is_a_logical = ret_val .ne. 0
+        YMMSL_Settings_is_a_logical = ret_val
     end function YMMSL_Settings_is_a_logical
 
     function YMMSL_Settings_is_a_real8array(self, key, err_code, err_msg)
@@ -670,7 +670,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: YMMSL_Settings_is_a_real8array
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -711,7 +711,7 @@ contains
             end if
         end if
 
-        YMMSL_Settings_is_a_real8array = ret_val .ne. 0
+        YMMSL_Settings_is_a_real8array = ret_val
     end function YMMSL_Settings_is_a_real8array
 
     function YMMSL_Settings_is_a_real8array2(self, key, err_code, err_msg)
@@ -722,7 +722,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: YMMSL_Settings_is_a_real8array2
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -763,7 +763,7 @@ contains
             end if
         end if
 
-        YMMSL_Settings_is_a_real8array2 = ret_val .ne. 0
+        YMMSL_Settings_is_a_real8array2 = ret_val
     end function YMMSL_Settings_is_a_real8array2
 
     subroutine YMMSL_Settings_set_character(self, key, value)
@@ -811,7 +811,7 @@ contains
         call YMMSL_Settings_set_logical_( &
             self%ptr, &
             key, int(len(key), c_size_t), &
-            merge(1, 0, value))
+            logical(value, c_bool))
     end subroutine YMMSL_Settings_set_logical
 
     subroutine YMMSL_Settings_set_real8array(self, key, value)
@@ -1009,7 +1009,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: YMMSL_Settings_get_as_logical
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -1050,7 +1050,7 @@ contains
             end if
         end if
 
-        YMMSL_Settings_get_as_logical = ret_val .ne. 0
+        YMMSL_Settings_get_as_logical = ret_val
     end function YMMSL_Settings_get_as_logical
 
     subroutine YMMSL_Settings_get_as_real8array(self, key, value, err_code, err_msg)
@@ -1173,13 +1173,13 @@ contains
         character (len=*), intent(in) :: key
         logical :: YMMSL_Settings_contains
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = YMMSL_Settings_contains_( &
             self%ptr, &
             key, int(len(key), c_size_t))
 
-        YMMSL_Settings_contains = ret_val .ne. 0
+        YMMSL_Settings_contains = ret_val
     end function YMMSL_Settings_contains
 
     function YMMSL_Settings_erase(self, key)

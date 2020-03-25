@@ -490,34 +490,34 @@ class Bool(Par):
         return True, self._regular_type('logical')
 
     def fi_type(self) -> str:
-        return self._regular_type('integer (c_int), value')
+        return self._regular_type('logical (c_bool), value')
 
     def fi_ret_type(self) -> str:
-        return self._regular_type('integer (c_int)')
+        return self._regular_type('logical (c_bool)')
 
     def fc_type(self) -> str:
-        return self._regular_type('int')
+        return self._regular_type('bool')
 
     def fc_ret_type(self) -> str:
-        return self._regular_type('int')
+        return self._regular_type('bool')
 
     def fc_cpp_arg(self) -> str:
-        return '{} != 0'.format(self.name)
+        return self.name
 
     def fc_get_result(self, cpp_chain_call: str) -> str:
         return 'bool result = {}'.format(cpp_chain_call)
 
     def fc_return(self) -> str:
-        return '    return result ? 1 : 0;\n'
+        return '    return result;\n'
 
     def f_chain_arg(self) -> str:
-        return 'merge(1, 0, {})'.format(self.name)
+        return 'logical({}, c_bool)'.format(self.name)
 
     def f_call_c(self, result_name: str, call: str) -> str:
         return '    {} = {}\n\n'.format(result_name, call)
 
     def f_return_result(self, return_name: str, result_name: str) -> str:
-        return '    {} = {} .ne. 0\n'.format(return_name, result_name)
+        return '    {} = {}\n'.format(return_name, result_name)
 
 
 class EnumVal(Par):

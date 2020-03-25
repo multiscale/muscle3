@@ -583,7 +583,9 @@ DataConstRef DataConstRef::operator[](std::size_t index) const {
 template <typename Element>
 Element const * DataConstRef::elements() const {
     if (!is_a_grid_of<Element>())
-        throw std::runtime_error("Tried to get grid data, but this object is not a grid");
+        throw std::runtime_error(
+                "Tried to get grid data, but this object is not a grid or"
+                " not of the correct type.");
     char const * data_bytes = grid_dict_()["data"].as_byte_array();
     return reinterpret_cast<Element const *>(data_bytes);
 }

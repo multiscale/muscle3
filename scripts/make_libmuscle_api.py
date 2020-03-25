@@ -3,15 +3,166 @@
 import argparse
 from copy import copy
 from textwrap import indent
+from typing import Dict, List, Optional
 
 import api_generator
 
 from api_generator import (
-        API, AssignmentOperator, Bool, Bytes, Char, Class, Constructor,
+        API, Array, AssignmentOperator, Bool, Bytes, Char, Class, Constructor,
         Destructor, Double, Enum, EnumVal, Float, IndexAssignmentOperator, Int,
-        Int16t, Int32t, Int64t, MemFun, MemFunTmpl, NamedConstructor, Namespace,
-        Obj, OverloadSet, ShiftedIndexAssignmentOperator, Sizet, String, T,
-        VecDbl, Vec2Dbl, Void)
+        Int16t, Int32t, Int64t, Member, MemFun, MemFunTmpl, NamedConstructor,
+        Namespace, Obj, OverloadSet, ShiftedIndexAssignmentOperator, Sizet,
+        String, T, VecDbl, Vec2Dbl, VecSizet, Void)
+
+
+class GridConstructor(Member):
+    """Creates a constructor for grids.
+
+    Grid constructors are a bit weird, with multidimensional array
+    arguments, and a number of arguments that depends on the number of
+    dimensions of that array. I don't have the time to implement that
+    generically, so we're using this custom class. It's a hack, and
+    nobody likes hacks, but it's what we can do. Also, this only runs
+    once, and the output is verified by the test suite, so it's not
+    very dangerous, just ugly.
+    """
+
+    def __init__(self, with_names: bool) -> None:
+        """Create a grid constructor.
+
+        This creates a set of named constructors, one for each
+        combination of five element types and seven dimensions. If
+        with_types is True, every instance has n additional string
+        arguments for index names, where n is the number of dimensions
+        of the array it accepts.
+
+        Args:
+            with_names: Whether to add index name arguments.
+        """
+        self.ns_prefix = None       # type: Optional[str]
+        self.public = None          # type: Optional[bool]
+        self.class_name = None      # type: Optional[str]
+        self.with_names = with_names
+        self.types = [Bool(), Int32t(), Int64t(), Float(), Double()]
+        self.name = 'grid'
+        self.instances = list()     # type: List[NamedConstructor]
+
+        # generate instances
+        for typ in self.types:
+            for ndims in range(1, 8):
+                instance_ret_type = Obj('<deferred>')
+                instance_params = [Array(ndims, copy(typ), 'data_array')]
+                if with_names:
+                    for i in range(1, ndims+1):
+                        arg_name = 'index_name_{}'.format(i)
+                        instance_params.append(String(arg_name))
+
+                instance_name = 'grid_{}_{}_{}'.format(
+                        ndims, typ.tname(), 'n' if with_names else 'a')
+
+                if with_names:
+                    arg_list = [
+                            'index_name_{}_s'.format(i)
+                            for i in range(1, ndims+1)]
+                    name_args = '{{{}}}'.format(','.join(arg_list))
+
+                    chain_call = lambda name_args=name_args, **kwargs: (
+                            '{}::grid(data_array_p,'
+                            ' data_array_shape_v, {},'
+                            ' libmuscle::StorageOrder::first_adjacent'
+                            ')').format(kwargs['class_name'], name_args)
+                else:
+                    chain_call = lambda **kwargs: ('{}::grid(data_array_p,'
+                            ' data_array_shape_v, {{}},'
+                            ' libmuscle::StorageOrder::first_adjacent'
+                            ')').format(kwargs['class_name'])
+
+                self.instances.append(NamedConstructor(
+                    instance_params, instance_name, cpp_func_name='grid',
+                    cpp_chain_call=chain_call))
+
+    def __copy__(self) -> 'MemFunTmpl':
+        result = GridConstructor(self.with_names)
+        result.ns_prefix = self.ns_prefix
+        result.public = self.public
+        if self.class_name is None:
+            result.class_name = None
+        else:
+            result.set_class_name(self.class_name)
+        result.instances = [copy(instance) for instance in self.instances]
+        return result
+
+    def set_class_name(self, class_name: str) -> None:
+        self.class_name = class_name
+        for instance in self.instances:
+            instance.set_class_name(class_name)
+
+    def reset_class_name(self, class_name: str) -> None:
+        self.class_name = class_name
+        for instance in self.instances:
+            instance.reset_class_name(class_name)
+
+    def set_public(self, public: bool) -> None:
+        self.public = public
+        for instance in self.instances:
+            instance.set_public(public)
+
+    def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
+        """Sets the namespace prefix correctly for all members.
+
+        Args:
+            ns_for_name: A map from type names to namespace names.
+        """
+        self.ns_prefix = ns_for_name[self.class_name]
+        for instance in self.instances:
+            instance.set_ns_prefix(ns_for_name)
+
+    def fortran_c_wrapper(self) -> str:
+        """Create a C wrapper for calling by Fortran.
+        """
+        result = ''
+        for instance in self.instances:
+            result += instance.fortran_c_wrapper()
+        return result
+
+    def fortran_interface(self) -> str:
+        """Create a Fortran interface declaration for the C wrapper.
+        """
+        result = ''
+        for instance in self.instances:
+            result += instance.fortran_interface()
+        return result
+
+    def fortran_function(self) -> str:
+        """Create the Fortran function definition for this member.
+        """
+        result = ''
+        for instance in self.instances:
+            result += instance.fortran_function()
+        return result
+
+    def fortran_public_declaration(self) -> str:
+        """Create a Fortran statement declaring us public.
+        """
+        result = ''
+        for instance in self.instances:
+            result += instance.fortran_public_declaration()
+        return result
+
+    def fortran_exports(self) -> List[str]:
+        """Generates a list of linker exports for the Fortran symbols.
+        """
+        result = list()     # type: List[str]
+        for instance in self.instances:
+            result += instance.fortran_exports()
+        return result
+
+
+create_grid_overloads = [
+        'create_grid_{}_{}_{}'.format(ndims, typ, with_names_tag)
+        for ndims in range(1, 8)
+        for typ in ['logical', 'int4', 'int8', 'real4', 'real8']
+        for with_names_tag in ['n', 'a']]
 
 
 dataconstref_desc = Class('DataConstRef', None, [
@@ -30,6 +181,9 @@ dataconstref_desc = Class('DataConstRef', None, [
         'create_nil', 'create_logical', 'create_character', 'create_int1',
         'create_int2', 'create_int4', 'create_int8', 'create_real4',
         'create_real8', 'create_settings', 'create_copy']),
+    GridConstructor(False),
+    GridConstructor(True),
+    OverloadSet('create_grid', create_grid_overloads),
     Destructor(),
     MemFunTmpl(
         [Bool(), String(), Int(), Char(), Int16t(), Int32t(), Int64t(),
@@ -37,6 +191,9 @@ dataconstref_desc = Class('DataConstRef', None, [
         Bool(), 'is_a', [], False),
     MemFun(Bool(), 'is_a_dict'),
     MemFun(Bool(), 'is_a_list'),
+    MemFunTmpl(
+        [Bool(), Float(), Double(), Int32t(), Int64t()],
+        Bool(), 'is_a_grid_of', [], False),
     MemFun(Bool(), 'is_a_byte_array'),
     MemFun(Bool(), 'is_nil'),
     MemFun(Bool(), 'is_a_settings', [], False,
@@ -133,6 +290,81 @@ dataconstref_desc = Class('DataConstRef', None, [
     OverloadSet('get_item', [
         'get_item_by_key', 'get_item_by_index'
         ]),
+    MemFun(Sizet(), 'num_dims', [], True,
+            fc_override=(
+                'std::size_t LIBMUSCLE_DataConstRef_num_dims_(\n'
+                '        std::intptr_t self,\n'
+                '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
+                ') {\n'
+                '    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);\n'
+                '    try {\n'
+                '        *err_code = 0;\n'
+                '        return self_p->shape().size();\n'
+                '    }\n'
+                '    catch (std::runtime_error const & e) {\n'
+                '        *err_code = 1;\n'
+                '        static std::string msg;\n'
+                '        msg = e.what();\n'
+                '        *err_msg = const_cast<char*>(msg.data());\n'
+                '        *err_msg_len = msg.size();\n'
+                '    }\n'
+                '}\n\n')
+            ),
+    MemFun(VecSizet('shp'), 'shape', [], True),
+    MemFunTmpl(
+            [Bool(), Double(), Float(), Int32t(), Int64t()],
+            Array(1, T(), 'elements'), 'elements_1', [], True,
+            cpp_chain_call=lambda **kwargs: 'self_p->elements<{}>()'.format(
+                kwargs['tpl_type'])),
+    MemFunTmpl(
+            [Bool(), Double(), Float(), Int32t(), Int64t()],
+            Array(2, T(), 'elements'), 'elements_2', [], True,
+            cpp_chain_call=lambda **kwargs: 'self_p->elements<{}>()'.format(
+                kwargs['tpl_type'])),
+    MemFunTmpl(
+            [Bool(), Double(), Float(), Int32t(), Int64t()],
+            Array(3, T(), 'elements'), 'elements_3', [], True,
+            cpp_chain_call=lambda **kwargs: 'self_p->elements<{}>()'.format(
+                kwargs['tpl_type'])),
+    MemFunTmpl(
+            [Bool(), Double(), Float(), Int32t(), Int64t()],
+            Array(4, T(), 'elements'), 'elements_4', [], True,
+            cpp_chain_call=lambda **kwargs: 'self_p->elements<{}>()'.format(
+                kwargs['tpl_type'])),
+    MemFunTmpl(
+            [Bool(), Double(), Float(), Int32t(), Int64t()],
+            Array(5, T(), 'elements'), 'elements_5', [], True,
+            cpp_chain_call=lambda **kwargs: 'self_p->elements<{}>()'.format(
+                kwargs['tpl_type'])),
+    MemFunTmpl(
+            [Bool(), Double(), Float(), Int32t(), Int64t()],
+            Array(6, T(), 'elements'), 'elements_6', [], True,
+            cpp_chain_call=lambda **kwargs: 'self_p->elements<{}>()'.format(
+                kwargs['tpl_type'])),
+    MemFunTmpl(
+            [Bool(), Double(), Float(), Int32t(), Int64t()],
+            Array(7, T(), 'elements'), 'elements_7', [], True,
+            cpp_chain_call=lambda **kwargs: 'self_p->elements<{}>()'.format(
+                kwargs['tpl_type'])),
+    OverloadSet('elements', [
+        'elements_1_logical', 'elements_1_real4', 'elements_1_real8',
+        'elements_1_int4', 'elements_1_int8',
+        'elements_2_logical', 'elements_2_real4', 'elements_2_real8',
+        'elements_2_int4', 'elements_2_int8',
+        'elements_3_logical', 'elements_3_real4', 'elements_3_real8',
+        'elements_3_int4', 'elements_3_int8',
+        'elements_4_logical', 'elements_4_real4', 'elements_4_real8',
+        'elements_4_int4', 'elements_4_int8',
+        'elements_5_logical', 'elements_5_real4', 'elements_5_real8',
+        'elements_5_int4', 'elements_5_int8',
+        'elements_6_logical', 'elements_6_real4', 'elements_6_real8',
+        'elements_6_int4', 'elements_6_int8',
+        'elements_7_logical', 'elements_7_real4', 'elements_7_real8',
+        'elements_7_int4', 'elements_7_int8',
+        ]),
+    MemFun(Bool(), 'has_indexes', [], True),
+    MemFun(String(), 'index', [Sizet('i')], True,
+            cpp_chain_call=lambda **kwargs: 'self_p->indexes().at(i - 1)'),
     ])
 
 
@@ -232,6 +464,26 @@ data_desc = Class('Data', dataconstref_desc, [
                 '    }\n'
                 '    catch (std::out_of_range const & e) {\n'
                 '        *err_code = 3;\n'
+                '        static std::string msg;\n'
+                '        msg = e.what();\n'
+                '        *err_msg = const_cast<char*>(msg.data());\n'
+                '        *err_msg_len = msg.size();\n'
+                '    }\n'
+                '}\n\n')
+            ),
+    MemFun(Sizet(), 'num_dims', [], True,
+            fc_override=(
+                'std::size_t LIBMUSCLE_Data_num_dims_(\n'
+                '        std::intptr_t self,\n'
+                '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
+                ') {\n'
+                '    Data * self_p = reinterpret_cast<Data *>(self);\n'
+                '    try {\n'
+                '        *err_code = 0;\n'
+                '        return self_p->shape().size();\n'
+                '    }\n'
+                '    catch (std::runtime_error const & e) {\n'
+                '        *err_code = 1;\n'
                 '        static std::string msg;\n'
                 '        msg = e.what();\n'
                 '        *err_msg = const_cast<char*>(msg.data());\n'
@@ -967,3 +1219,16 @@ if __name__ == '__main__':
                         out_file.write(exports_txt)
                     else:
                         out_file.write(line)
+
+"""
+    NamedConstructor([Array(1, Double(), 'data_array')], 'grid_1_real8',
+        cpp_func_name='grid',
+        cpp_chain_call=lambda **kwargs: '{}::grid({}, {{}},'
+                ' libmuscle::StorageOrder::first_adjacent)'.format(
+                    kwargs['class_name'], kwargs['cpp_args'])),
+    NamedConstructor([Array(2, Int64t(), 'data_array')], 'grid_2_int8',
+        cpp_func_name='grid',
+        cpp_chain_call=lambda **kwargs: '{}::grid({}, {{}},'
+                ' libmuscle::StorageOrder::first_adjacent)'.format(
+                    kwargs['class_name'], kwargs['cpp_args'])),
+"""

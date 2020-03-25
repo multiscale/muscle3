@@ -77,7 +77,10 @@ class Par:
         """Converts brief type description to more regular format.
 
         This is a helper function for derived classes. Output is a list
-        of tuples (type, name_prefix).
+        of tuples (type, name_postfix), with one tuple for each
+        variable. For simple types, this list will be of length 1, for
+        variable-sized things however, there may be additional
+        variables describing e.g. size or shape or format.
 
         Input is either
 
@@ -346,6 +349,216 @@ class Vec2Dbl(Par):
                 )
 
         return textwrap.indent(result.format(self.name), '    ')
+
+
+class VecSizet(Par):
+    """Represents a vector of size_t parameter.
+    """
+    def tname(self) -> str:
+        return 'sizearray'
+
+    def fc_cpp_type(self) -> str:
+        return 'std::vector<std::size_t>'
+
+    def f_type(self) -> str:
+        return self._regular_type(
+                'integer ({}_size), dimension(:)'.format(self.ns_prefix))
+
+    def f_ret_type(self) -> str:
+        return False, self._regular_type(
+                [('integer ({}_size), dimension(:)'.format(self.ns_prefix),
+                  self.name)])
+
+    def f_aux_variables(self) -> List[Tuple[str, str]]:
+        return [(
+            'integer ({}_size), pointer, dimension(:)'.format(self.ns_prefix),
+            'f_ret_ptr')]
+
+    def f_chain_arg(self) -> str:
+        return '{}, int(size({}), c_size_t)'.format(self.name, self.name)
+
+    def f_call_c(self, result_name: str, call: str) -> str:
+        return '    call {}\n\n'.format(call)
+
+    def f_return_result(self, return_name: str, result_name: str) -> str:
+        return ('    call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))\n'
+                '    {} = f_ret_ptr\n').format(return_name)
+
+    def fi_type(self) -> str:
+        return self._regular_type(
+                ['integer (c_size_t), dimension(*)'.format(self.ns_prefix),
+                 ('integer (c_size_t), value', '_size')])
+
+    def fi_ret_type(self) -> str:
+        return self._regular_type(
+                ['type (c_ptr)',
+                 ('integer (c_size_t)', '_size')])
+
+    def fc_type(self) -> str:
+        return self._regular_type(['std::size_t *', ('std::size_t', '_size')])
+
+    def fc_ret_type(self) -> str:
+        return self._regular_type(['std::size_t **', ('std::size_t *', '_size')])
+
+    def fc_convert_input(self) -> str:
+        return '    std::vector<std::size_t> {}_v({}, {} + {}_size);\n'.format(
+                self.name, self.name, self.name, self.name)
+
+    def fc_cpp_arg(self) -> str:
+        return self.name + '_v'
+
+    def fc_get_result(self, cpp_chain_call: str) -> str:
+        return ('static std::vector<std::size_t> result;\n'
+                '    result = {}').format(cpp_chain_call)
+
+    def fc_return(self) -> str:
+        return ('    *{0} = result.data();\n'
+                '    *{0}_size = result.size();\n'
+                '    return;\n').format(self.name)
+
+
+class Array(Par):
+    def __init__(
+            self, ndims: int, elem_type: Par, name: Optional[str] = None
+            ) -> None:
+        """Create an array parameter description.
+
+        Args:
+            ndims: Number of dimensions of the array.
+            elem_type: Type of the array's elements.
+            name: Name of the parameter.
+        """
+        if name is None:
+            name = self.elem_type.name
+            self.elem_type = elem_type
+        else:
+            self.elem_type = copy(elem_type)
+            self.elem_type.name = name
+
+        super().__init__(name)
+        self.ndims = ndims
+
+    def set_ns_prefix(self, ns_for_name: Dict[str, str], ns: str) -> None:
+        """Sets the namespace prefix correctly for all members.
+
+        Args:
+            ns_for_name: A map from type names to namespace names.
+            ns: Name of the namespace that this parameter's member function's
+                    class is in.
+        """
+        self.ns_prefix = ns
+        self.elem_type.set_ns_prefix(ns_for_name, ns)
+
+    def tname(self) -> str:
+        return '{}array{}'.format(self.elem_type.tname(), ndims)
+
+    def fc_cpp_type(self) -> str:
+        return '{} const *'.format(self.elem_type.fc_cpp_type())
+
+    def f_type(self) -> str:
+        return self._regular_type(
+                '{}, dimension({})'.format(
+                    self.elem_type.f_type()[0][0], self._f_dims()))
+
+    def f_ret_type(self) -> str:
+        return False, self._regular_type(
+                [('{}, dimension({})'.format(self.elem_type.f_type()[0][0],
+                                             self._f_dims()),
+                  self.name)])
+
+    def f_aux_variables(self) -> List[Tuple[str, str]]:
+        return [('{}, pointer, dimension({})'.format(
+                    self.elem_type.fi_ret_type()[0][0], self._f_dims()), 'f_ret_ptr'),
+                ('{}, pointer, dimension(:)'.format(
+                    self.elem_type.fi_ret_type()[0][0]), 'f_ret_ptr_linear')]
+
+    def f_chain_arg(self) -> str:
+        return '{0}, int(shape({0}), c_size_t), {1}_{2}_size'.format(
+                self.elem_type.f_chain_arg(), self.ndims, self.ns_prefix)
+
+    def f_call_c(self, result_name: str, call: str) -> str:
+        return '    call {}\n\n'.format(call)
+
+    def f_return_result(self, return_name: str, result_name: str) -> str:
+        c_order = '(/{}/)'.format(', '.join(
+            map(str, reversed(range(1, self.ndims+1)))))
+        return (
+                '    if (ret_val_format .eq. 0) then\n'
+                '        call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)\n'
+                '        {0} = f_ret_ptr\n'
+                '    else\n'
+                '        call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))\n'
+                '        {0} = reshape(f_ret_ptr_linear, ret_val_shape, (/ {2}:: /), {1})\n'
+                '    end if\n'
+                ).format(
+                        return_name, c_order,
+                        self.elem_type.fi_ret_type()[0][0])
+
+    def fi_type(self) -> str:
+        base_type = self.elem_type.fi_type()[0][0].split(',')[0]
+        return self._regular_type(
+                ['{}, dimension(*)'.format(base_type),
+                 ('integer (c_size_t), dimension({})'.format(self.ndims),
+                     '_shape'),
+                 ('integer (c_size_t), value', '_ndims')])
+
+    def fi_ret_type(self) -> str:
+        return self._regular_type(
+                ['type (c_ptr)',
+                 ('integer (c_size_t), dimension({})'.format(self.ndims),
+                     '_shape'),
+                 ('integer (c_int)', '_format')])
+
+    def fc_type(self) -> str:
+        elem_fc_type = self.elem_type.fc_type()[0][0]
+        return self._regular_type(
+                ['{} *'.format(elem_fc_type),
+                    ('std::size_t *', '_shape'),
+                    ('std::size_t', '_ndims')])
+
+    def fc_ret_type(self) -> str:
+        # TODO: add ndims
+        return self._regular_type(
+            ['{} **'.format(self.elem_type.fc_cpp_type()),
+             ('std::size_t *', '_shape'),
+             ('int *', '_format')])
+
+    def fc_convert_input(self) -> str:
+        result = (
+                'std::vector<std::size_t> {0}_shape_v(\n'
+                '        {0}_shape, {0}_shape + {0}_ndims);\n'
+                'auto {0}_p = const_cast<{1} const * const>({0});\n'
+                ).format(
+                        self.name, self.elem_type.fc_cpp_type())
+
+        return textwrap.indent(result, '    ')
+
+    def fc_cpp_arg(self) -> str:
+        return '{0}_p, {0}_shape_v'.format(self.name)
+
+    def fc_get_result(self, cpp_chain_call: str) -> str:
+        return '{} result = {}'.format(
+                self.fc_cpp_type(), cpp_chain_call)
+
+    def fc_return(self) -> str:
+        result = (
+                'if (self_p->shape().size() != {2}u)\n'
+                '    throw std::runtime_error("Grid does not have the expected {2} dimensions");\n'
+                '*{0} = const_cast<{1} *>(result);\n'
+                'for (std::size_t i = 0u; i < {2}u; ++i)\n'
+                '    {0}_shape[i] = self_p->shape()[i];\n'
+                '\n'
+                '*{0}_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);\n'
+                'return;\n'
+                )
+
+        return textwrap.indent(
+                result.format(self.name, self.elem_type.fc_cpp_type(),
+                              self.ndims),
+                '    ')
+
+    def _f_dims(self) -> str:
+        return ', '.join([':'] * self.ndims)
 
 
 class Bytes(Par):
@@ -903,7 +1116,7 @@ class MemFun(Member):
         will be passed ``cpp_func_name`` and ``cpp_args`` parameters of
         type ``str``, containing the name of the C++ function to call
         and a comma-separated list of arguments to use. Note that
-        ``cpp_func_name`` can be overridden using the argument of the
+        ``cpp_func_name`` can be overridden using an argument of the
         same name. If ``cpp_chain_call`` is not specified, a plain
         member function call will be generated, so this is an override.
 
@@ -1032,12 +1245,16 @@ class MemFun(Member):
             out_parameters.append(('integer (c_size_t)', 'err_msg_len'))
 
         arg_list = [par_name for _, par_name in in_parameters + out_parameters]
-        if return_type != '':
-            result += '{} function {}( &\n        {}) &\n'.format(
-                    return_type, func_name, ', '.join(arg_list))
+        if len(arg_list) > 1:
+            arg_vlist = ' &\n' + textwrap.indent(', &\n'.join(arg_list), 8*' ')
         else:
-            result += 'subroutine {}( &\n        {}) &\n'.format(
-                    func_name, ', '.join(arg_list))
+            arg_vlist = ', '.join(arg_list)
+
+        if return_type != '':
+            result += '{} function {}({}) &\n'.format(
+                    return_type, func_name, arg_vlist)
+        else:
+            result += 'subroutine {}({}) &\n'.format(func_name, arg_vlist)
         result += '        bind(C, name="{}")\n'.format(func_name)
         result += '\n'
         result += '    use iso_c_binding\n'
@@ -1075,11 +1292,12 @@ class MemFun(Member):
                                    'err_msg'))
 
         all_parameters = in_parameters + out_parameters
-        arg_list = ', '.join([par_name for _, par_name in all_parameters])
+        arg_list = ', &\n'.join([par_name for _, par_name in all_parameters])
+        arg_ilist = textwrap.indent(arg_list, 8*' ')
         if return_type != '':
-            result += 'function {}({})\n'.format(func_name, arg_list)
+            result += 'function {}( &\n{})\n'.format(func_name, arg_ilist)
         else:
-            result += 'subroutine {}({})\n'.format(func_name, arg_list)
+            result += 'subroutine {}( &\n{})\n'.format(func_name, arg_ilist)
 
         # parameter declarations
         result += '    implicit none\n'
@@ -1455,6 +1673,8 @@ class NamedConstructor(Constructor):
         if 'cpp_func_name' not in args:
             args['cpp_func_name'] = name
         super().__init__(params, 'create_' + name, **args)
+        self.cpp_chain_call = args.get(
+                'cpp_chain_call', self._default_cpp_chain_call)
 
     def __copy__(self) -> 'NamedConstructor':
         result = NamedConstructor(copy(self.params), self.name)
@@ -1470,11 +1690,23 @@ class NamedConstructor(Constructor):
         result.cpp_func_name = self.cpp_func_name
         return result
 
+    @staticmethod
+    def _default_cpp_chain_call(**kwargs):
+        return '{0}::{1}({2})'.format(
+                kwargs['class_name'], kwargs['cpp_func_name'],
+                kwargs['cpp_args'])
+
     def _fc_cpp_call(self) -> str:
         # Create object instead of calling something
-        cpp_args = [par.fc_cpp_arg() for par in self.params]
-        return '    {0} * result = new {0}({0}::{1}({2}));\n'.format(
-                self.class_name, self.cpp_func_name, ', '.join(cpp_args))
+        cpp_args = ', '.join([par.fc_cpp_arg() for par in self.params])
+        chain_args = {
+                'class_name': self.class_name,
+                'cpp_func_name': self.cpp_func_name,
+                'cpp_args': cpp_args
+                }
+        cpp_chain_call = self.cpp_chain_call(**chain_args)
+        result = self.ret_type.fc_get_result(cpp_chain_call)
+        return '    {};\n'.format(result)
 
     def _fc_return(self) -> str:
         return '    return reinterpret_cast<std::intptr_t>(result);\n'
@@ -1622,6 +1854,10 @@ class MemFunTmpl(Member):
             instance_ret_type = self.ret_type
             if isinstance(instance_ret_type, T):
                 instance_ret_type = typ
+            if isinstance(instance_ret_type, Array):
+                if isinstance(instance_ret_type.elem_type, T):
+                    instance_ret_type = copy(self.ret_type)
+                    instance_ret_type.elem_type = typ
 
             instance_params = list()    # type: List[Par]
             for param in self.params:

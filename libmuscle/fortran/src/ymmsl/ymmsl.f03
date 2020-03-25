@@ -66,15 +66,13 @@ module ymmsl
 
     interface
 
-        integer (c_intptr_t) function YMMSL_Settings_create_( &
-                ) &
+        integer (c_intptr_t) function YMMSL_Settings_create_() &
                 bind(C, name="YMMSL_Settings_create_")
 
             use iso_c_binding
         end function YMMSL_Settings_create_
 
-        subroutine YMMSL_Settings_free_( &
-                self) &
+        subroutine YMMSL_Settings_free_(self) &
                 bind(C, name="YMMSL_Settings_free_")
 
             use iso_c_binding
@@ -82,7 +80,8 @@ module ymmsl
         end subroutine YMMSL_Settings_free_
 
         logical (c_bool) function YMMSL_Settings_equals_( &
-                self, other) &
+                self, &
+                other) &
                 bind(C, name="YMMSL_Settings_equals_")
 
             use iso_c_binding
@@ -90,16 +89,14 @@ module ymmsl
             integer (c_intptr_t), value, intent(in) :: other
         end function YMMSL_Settings_equals_
 
-        integer (c_size_t) function YMMSL_Settings_size_( &
-                self) &
+        integer (c_size_t) function YMMSL_Settings_size_(self) &
                 bind(C, name="YMMSL_Settings_size_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function YMMSL_Settings_size_
 
-        logical (c_bool) function YMMSL_Settings_empty_( &
-                self) &
+        logical (c_bool) function YMMSL_Settings_empty_(self) &
                 bind(C, name="YMMSL_Settings_empty_")
 
             use iso_c_binding
@@ -107,7 +104,12 @@ module ymmsl
         end function YMMSL_Settings_empty_
 
         logical (c_bool) function YMMSL_Settings_is_a_character_( &
-                self, key, key_size, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="YMMSL_Settings_is_a_character_")
 
             use iso_c_binding
@@ -120,7 +122,12 @@ module ymmsl
         end function YMMSL_Settings_is_a_character_
 
         logical (c_bool) function YMMSL_Settings_is_a_int8_( &
-                self, key, key_size, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="YMMSL_Settings_is_a_int8_")
 
             use iso_c_binding
@@ -133,7 +140,12 @@ module ymmsl
         end function YMMSL_Settings_is_a_int8_
 
         logical (c_bool) function YMMSL_Settings_is_a_real8_( &
-                self, key, key_size, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="YMMSL_Settings_is_a_real8_")
 
             use iso_c_binding
@@ -146,7 +158,12 @@ module ymmsl
         end function YMMSL_Settings_is_a_real8_
 
         logical (c_bool) function YMMSL_Settings_is_a_logical_( &
-                self, key, key_size, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="YMMSL_Settings_is_a_logical_")
 
             use iso_c_binding
@@ -159,7 +176,12 @@ module ymmsl
         end function YMMSL_Settings_is_a_logical_
 
         logical (c_bool) function YMMSL_Settings_is_a_real8array_( &
-                self, key, key_size, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="YMMSL_Settings_is_a_real8array_")
 
             use iso_c_binding
@@ -172,7 +194,12 @@ module ymmsl
         end function YMMSL_Settings_is_a_real8array_
 
         logical (c_bool) function YMMSL_Settings_is_a_real8array2_( &
-                self, key, key_size, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="YMMSL_Settings_is_a_real8array2_")
 
             use iso_c_binding
@@ -185,7 +212,11 @@ module ymmsl
         end function YMMSL_Settings_is_a_real8array2_
 
         subroutine YMMSL_Settings_set_character_( &
-                self, key, key_size, value, value_size) &
+                self, &
+                key, &
+                key_size, &
+                value, &
+                value_size) &
                 bind(C, name="YMMSL_Settings_set_character_")
 
             use iso_c_binding
@@ -197,7 +228,10 @@ module ymmsl
         end subroutine YMMSL_Settings_set_character_
 
         subroutine YMMSL_Settings_set_int8_( &
-                self, key, key_size, value) &
+                self, &
+                key, &
+                key_size, &
+                value) &
                 bind(C, name="YMMSL_Settings_set_int8_")
 
             use iso_c_binding
@@ -208,7 +242,10 @@ module ymmsl
         end subroutine YMMSL_Settings_set_int8_
 
         subroutine YMMSL_Settings_set_real8_( &
-                self, key, key_size, value) &
+                self, &
+                key, &
+                key_size, &
+                value) &
                 bind(C, name="YMMSL_Settings_set_real8_")
 
             use iso_c_binding
@@ -219,7 +256,10 @@ module ymmsl
         end subroutine YMMSL_Settings_set_real8_
 
         subroutine YMMSL_Settings_set_logical_( &
-                self, key, key_size, value) &
+                self, &
+                key, &
+                key_size, &
+                value) &
                 bind(C, name="YMMSL_Settings_set_logical_")
 
             use iso_c_binding
@@ -230,7 +270,11 @@ module ymmsl
         end subroutine YMMSL_Settings_set_logical_
 
         subroutine YMMSL_Settings_set_real8array_( &
-                self, key, key_size, value, value_size) &
+                self, &
+                key, &
+                key_size, &
+                value, &
+                value_size) &
                 bind(C, name="YMMSL_Settings_set_real8array_")
 
             use iso_c_binding
@@ -242,7 +286,11 @@ module ymmsl
         end subroutine YMMSL_Settings_set_real8array_
 
         subroutine YMMSL_Settings_set_real8array2_( &
-                self, key, key_size, value, value_shape) &
+                self, &
+                key, &
+                key_size, &
+                value, &
+                value_shape) &
                 bind(C, name="YMMSL_Settings_set_real8array2_")
 
             use iso_c_binding
@@ -254,7 +302,14 @@ module ymmsl
         end subroutine YMMSL_Settings_set_real8array2_
 
         subroutine YMMSL_Settings_get_as_character_( &
-                self, key, key_size, ret_val, ret_val_size, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                ret_val, &
+                ret_val_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="YMMSL_Settings_get_as_character_")
 
             use iso_c_binding
@@ -269,7 +324,12 @@ module ymmsl
         end subroutine YMMSL_Settings_get_as_character_
 
         integer (c_int64_t) function YMMSL_Settings_get_as_int8_( &
-                self, key, key_size, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="YMMSL_Settings_get_as_int8_")
 
             use iso_c_binding
@@ -282,7 +342,12 @@ module ymmsl
         end function YMMSL_Settings_get_as_int8_
 
         real (c_double) function YMMSL_Settings_get_as_real8_( &
-                self, key, key_size, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="YMMSL_Settings_get_as_real8_")
 
             use iso_c_binding
@@ -295,7 +360,12 @@ module ymmsl
         end function YMMSL_Settings_get_as_real8_
 
         logical (c_bool) function YMMSL_Settings_get_as_logical_( &
-                self, key, key_size, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="YMMSL_Settings_get_as_logical_")
 
             use iso_c_binding
@@ -308,7 +378,14 @@ module ymmsl
         end function YMMSL_Settings_get_as_logical_
 
         subroutine YMMSL_Settings_get_as_real8array_( &
-                self, key, key_size, ret_val, ret_val_size, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                ret_val, &
+                ret_val_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="YMMSL_Settings_get_as_real8array_")
 
             use iso_c_binding
@@ -323,7 +400,14 @@ module ymmsl
         end subroutine YMMSL_Settings_get_as_real8array_
 
         subroutine YMMSL_Settings_get_as_real8array2_( &
-                self, key, key_size, ret_val, ret_val_shape, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                ret_val, &
+                ret_val_shape, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="YMMSL_Settings_get_as_real8array2_")
 
             use iso_c_binding
@@ -338,7 +422,9 @@ module ymmsl
         end subroutine YMMSL_Settings_get_as_real8array2_
 
         logical (c_bool) function YMMSL_Settings_contains_( &
-                self, key, key_size) &
+                self, &
+                key, &
+                key_size) &
                 bind(C, name="YMMSL_Settings_contains_")
 
             use iso_c_binding
@@ -348,7 +434,9 @@ module ymmsl
         end function YMMSL_Settings_contains_
 
         integer (c_size_t) function YMMSL_Settings_erase_( &
-                self, key, key_size) &
+                self, &
+                key, &
+                key_size) &
                 bind(C, name="YMMSL_Settings_erase_")
 
             use iso_c_binding
@@ -357,8 +445,7 @@ module ymmsl
             integer (c_size_t), value, intent(in) :: key_size
         end function YMMSL_Settings_erase_
 
-        subroutine YMMSL_Settings_clear_( &
-                self) &
+        subroutine YMMSL_Settings_clear_(self) &
                 bind(C, name="YMMSL_Settings_clear_")
 
             use iso_c_binding
@@ -366,7 +453,13 @@ module ymmsl
         end subroutine YMMSL_Settings_clear_
 
         subroutine YMMSL_Settings_key_( &
-                self, i, ret_val, ret_val_size, err_code, err_msg, err_msg_len) &
+                self, &
+                i, &
+                ret_val, &
+                ret_val_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="YMMSL_Settings_key_")
 
             use iso_c_binding
@@ -394,7 +487,8 @@ module ymmsl
 
 contains
 
-    function YMMSL_Settings_create()
+    function YMMSL_Settings_create( &
+    )
         implicit none
         type(YMMSL_Settings) :: YMMSL_Settings_create
 
@@ -406,7 +500,8 @@ contains
         YMMSL_Settings_create%ptr = ret_val
     end function YMMSL_Settings_create
 
-    subroutine YMMSL_Settings_free(self)
+    subroutine YMMSL_Settings_free( &
+            self)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
 
@@ -414,7 +509,9 @@ contains
             self%ptr)
     end subroutine YMMSL_Settings_free
 
-    function YMMSL_Settings_equals(self, other)
+    function YMMSL_Settings_equals( &
+            self, &
+            other)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         type(YMMSL_Settings), intent(in) :: other
@@ -429,7 +526,8 @@ contains
         YMMSL_Settings_equals = ret_val
     end function YMMSL_Settings_equals
 
-    function YMMSL_Settings_size(self)
+    function YMMSL_Settings_size( &
+            self)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         integer (YMMSL_size) :: YMMSL_Settings_size
@@ -441,7 +539,8 @@ contains
         YMMSL_Settings_size = ret_val
     end function YMMSL_Settings_size
 
-    function YMMSL_Settings_empty(self)
+    function YMMSL_Settings_empty( &
+            self)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         logical :: YMMSL_Settings_empty
@@ -454,7 +553,11 @@ contains
         YMMSL_Settings_empty = ret_val
     end function YMMSL_Settings_empty
 
-    function YMMSL_Settings_is_a_character(self, key, err_code, err_msg)
+    function YMMSL_Settings_is_a_character( &
+            self, &
+            key, &
+            err_code, &
+            err_msg)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -506,7 +609,11 @@ contains
         YMMSL_Settings_is_a_character = ret_val
     end function YMMSL_Settings_is_a_character
 
-    function YMMSL_Settings_is_a_int8(self, key, err_code, err_msg)
+    function YMMSL_Settings_is_a_int8( &
+            self, &
+            key, &
+            err_code, &
+            err_msg)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -558,7 +665,11 @@ contains
         YMMSL_Settings_is_a_int8 = ret_val
     end function YMMSL_Settings_is_a_int8
 
-    function YMMSL_Settings_is_a_real8(self, key, err_code, err_msg)
+    function YMMSL_Settings_is_a_real8( &
+            self, &
+            key, &
+            err_code, &
+            err_msg)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -610,7 +721,11 @@ contains
         YMMSL_Settings_is_a_real8 = ret_val
     end function YMMSL_Settings_is_a_real8
 
-    function YMMSL_Settings_is_a_logical(self, key, err_code, err_msg)
+    function YMMSL_Settings_is_a_logical( &
+            self, &
+            key, &
+            err_code, &
+            err_msg)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -662,7 +777,11 @@ contains
         YMMSL_Settings_is_a_logical = ret_val
     end function YMMSL_Settings_is_a_logical
 
-    function YMMSL_Settings_is_a_real8array(self, key, err_code, err_msg)
+    function YMMSL_Settings_is_a_real8array( &
+            self, &
+            key, &
+            err_code, &
+            err_msg)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -714,7 +833,11 @@ contains
         YMMSL_Settings_is_a_real8array = ret_val
     end function YMMSL_Settings_is_a_real8array
 
-    function YMMSL_Settings_is_a_real8array2(self, key, err_code, err_msg)
+    function YMMSL_Settings_is_a_real8array2( &
+            self, &
+            key, &
+            err_code, &
+            err_msg)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -766,7 +889,10 @@ contains
         YMMSL_Settings_is_a_real8array2 = ret_val
     end function YMMSL_Settings_is_a_real8array2
 
-    subroutine YMMSL_Settings_set_character(self, key, value)
+    subroutine YMMSL_Settings_set_character( &
+            self, &
+            key, &
+            value)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -778,7 +904,10 @@ contains
             value, int(len(value), c_size_t))
     end subroutine YMMSL_Settings_set_character
 
-    subroutine YMMSL_Settings_set_int8(self, key, value)
+    subroutine YMMSL_Settings_set_int8( &
+            self, &
+            key, &
+            value)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -790,7 +919,10 @@ contains
             value)
     end subroutine YMMSL_Settings_set_int8
 
-    subroutine YMMSL_Settings_set_real8(self, key, value)
+    subroutine YMMSL_Settings_set_real8( &
+            self, &
+            key, &
+            value)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -802,7 +934,10 @@ contains
             value)
     end subroutine YMMSL_Settings_set_real8
 
-    subroutine YMMSL_Settings_set_logical(self, key, value)
+    subroutine YMMSL_Settings_set_logical( &
+            self, &
+            key, &
+            value)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -814,7 +949,10 @@ contains
             logical(value, c_bool))
     end subroutine YMMSL_Settings_set_logical
 
-    subroutine YMMSL_Settings_set_real8array(self, key, value)
+    subroutine YMMSL_Settings_set_real8array( &
+            self, &
+            key, &
+            value)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -826,7 +964,10 @@ contains
             value, int(size(value), c_size_t))
     end subroutine YMMSL_Settings_set_real8array
 
-    subroutine YMMSL_Settings_set_real8array2(self, key, value)
+    subroutine YMMSL_Settings_set_real8array2( &
+            self, &
+            key, &
+            value)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -838,7 +979,11 @@ contains
             value, int(shape(value), c_size_t))
     end subroutine YMMSL_Settings_set_real8array2
 
-    function YMMSL_Settings_get_as_character(self, key, err_code, err_msg)
+    function YMMSL_Settings_get_as_character( &
+            self, &
+            key, &
+            err_code, &
+            err_msg)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -899,7 +1044,11 @@ contains
         end do
     end function YMMSL_Settings_get_as_character
 
-    function YMMSL_Settings_get_as_int8(self, key, err_code, err_msg)
+    function YMMSL_Settings_get_as_int8( &
+            self, &
+            key, &
+            err_code, &
+            err_msg)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -950,7 +1099,11 @@ contains
         YMMSL_Settings_get_as_int8 = ret_val
     end function YMMSL_Settings_get_as_int8
 
-    function YMMSL_Settings_get_as_real8(self, key, err_code, err_msg)
+    function YMMSL_Settings_get_as_real8( &
+            self, &
+            key, &
+            err_code, &
+            err_msg)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -1001,7 +1154,11 @@ contains
         YMMSL_Settings_get_as_real8 = ret_val
     end function YMMSL_Settings_get_as_real8
 
-    function YMMSL_Settings_get_as_logical(self, key, err_code, err_msg)
+    function YMMSL_Settings_get_as_logical( &
+            self, &
+            key, &
+            err_code, &
+            err_msg)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -1053,7 +1210,12 @@ contains
         YMMSL_Settings_get_as_logical = ret_val
     end function YMMSL_Settings_get_as_logical
 
-    subroutine YMMSL_Settings_get_as_real8array(self, key, value, err_code, err_msg)
+    subroutine YMMSL_Settings_get_as_real8array( &
+            self, &
+            key, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -1110,7 +1272,12 @@ contains
         value = f_ret_ptr
     end subroutine YMMSL_Settings_get_as_real8array
 
-    subroutine YMMSL_Settings_get_as_real8array2(self, key, value, err_code, err_msg)
+    subroutine YMMSL_Settings_get_as_real8array2( &
+            self, &
+            key, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -1167,7 +1334,9 @@ contains
         value = f_ret_ptr
     end subroutine YMMSL_Settings_get_as_real8array2
 
-    function YMMSL_Settings_contains(self, key)
+    function YMMSL_Settings_contains( &
+            self, &
+            key)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -1182,7 +1351,9 @@ contains
         YMMSL_Settings_contains = ret_val
     end function YMMSL_Settings_contains
 
-    function YMMSL_Settings_erase(self, key)
+    function YMMSL_Settings_erase( &
+            self, &
+            key)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -1196,7 +1367,8 @@ contains
         YMMSL_Settings_erase = ret_val
     end function YMMSL_Settings_erase
 
-    subroutine YMMSL_Settings_clear(self)
+    subroutine YMMSL_Settings_clear( &
+            self)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
 
@@ -1204,7 +1376,11 @@ contains
             self%ptr)
     end subroutine YMMSL_Settings_clear
 
-    function YMMSL_Settings_key(self, i, err_code, err_msg)
+    function YMMSL_Settings_key( &
+            self, &
+            i, &
+            err_code, &
+            err_msg)
         implicit none
         type(YMMSL_Settings), intent(in) :: self
         integer (YMMSL_size), intent(in) :: i

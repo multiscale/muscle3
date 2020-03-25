@@ -79,6 +79,706 @@ std::intptr_t LIBMUSCLE_DataConstRef_create_copy_(std::intptr_t value) {
     return reinterpret_cast<std::intptr_t>(result);
 }
 
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_1_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_2_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_3_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_4_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_5_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_6_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_7_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_1_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_2_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_3_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_4_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_5_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_6_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_7_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_1_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_2_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_3_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_4_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_5_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_6_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_7_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_1_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_2_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_3_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_4_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_5_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_6_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_7_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_1_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_2_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_3_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_4_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_5_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_6_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_7_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_1_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_2_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_3_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_4_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_5_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_6_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    std::string index_name_6_s(index_name_6, index_name_6_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_7_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size, char * index_name_7, std::size_t index_name_7_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    std::string index_name_6_s(index_name_6, index_name_6_size);
+    std::string index_name_7_s(index_name_7, index_name_7_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s,index_name_7_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_1_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_2_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_3_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_4_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_5_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_6_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    std::string index_name_6_s(index_name_6, index_name_6_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_7_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size, char * index_name_7, std::size_t index_name_7_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    std::string index_name_6_s(index_name_6, index_name_6_size);
+    std::string index_name_7_s(index_name_7, index_name_7_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s,index_name_7_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_1_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_2_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_3_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_4_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_5_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_6_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    std::string index_name_6_s(index_name_6, index_name_6_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_7_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size, char * index_name_7, std::size_t index_name_7_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    std::string index_name_6_s(index_name_6, index_name_6_size);
+    std::string index_name_7_s(index_name_7, index_name_7_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s,index_name_7_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_1_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_2_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_3_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_4_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_5_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_6_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    std::string index_name_6_s(index_name_6, index_name_6_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_7_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size, char * index_name_7, std::size_t index_name_7_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    std::string index_name_6_s(index_name_6, index_name_6_size);
+    std::string index_name_7_s(index_name_7, index_name_7_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s,index_name_7_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_1_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_2_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_3_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_4_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_5_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_6_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    std::string index_name_6_s(index_name_6, index_name_6_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_7_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size, char * index_name_7, std::size_t index_name_7_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    std::string index_name_6_s(index_name_6, index_name_6_size);
+    std::string index_name_7_s(index_name_7, index_name_7_size);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s,index_name_7_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
 void LIBMUSCLE_DataConstRef_free_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     delete self_p;
@@ -148,6 +848,36 @@ bool LIBMUSCLE_DataConstRef_is_a_dict_(std::intptr_t self) {
 bool LIBMUSCLE_DataConstRef_is_a_list_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a_list();
+    return result;
+}
+
+bool LIBMUSCLE_DataConstRef_is_a_grid_of_logical_(std::intptr_t self) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    bool result = self_p->is_a_grid_of<bool>();
+    return result;
+}
+
+bool LIBMUSCLE_DataConstRef_is_a_grid_of_real4_(std::intptr_t self) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    bool result = self_p->is_a_grid_of<float>();
+    return result;
+}
+
+bool LIBMUSCLE_DataConstRef_is_a_grid_of_real8_(std::intptr_t self) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    bool result = self_p->is_a_grid_of<double>();
+    return result;
+}
+
+bool LIBMUSCLE_DataConstRef_is_a_grid_of_int4_(std::intptr_t self) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    bool result = self_p->is_a_grid_of<int32_t>();
+    return result;
+}
+
+bool LIBMUSCLE_DataConstRef_is_a_grid_of_int8_(std::intptr_t self) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    bool result = self_p->is_a_grid_of<int64_t>();
     return result;
 }
 
@@ -692,6 +1422,1947 @@ std::intptr_t LIBMUSCLE_DataConstRef_get_item_by_index_(
     }
 }
 
+std::size_t LIBMUSCLE_DataConstRef_num_dims_(
+        std::intptr_t self,
+        int * err_code, char ** err_msg, std::size_t * err_msg_len
+) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        return self_p->shape().size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_shape_(std::intptr_t self, std::size_t ** shp, std::size_t * shp_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        static std::vector<std::size_t> result;
+        result = self_p->shape();
+        *shp = result.data();
+        *shp_size = result.size();
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_1_logical_(std::intptr_t self, bool ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        bool const * result = self_p->elements<bool>();
+        if (self_p->shape().size() != 1u)
+            throw std::runtime_error("Grid does not have the expected 1 dimensions");
+        *elements = const_cast<bool *>(result);
+        for (std::size_t i = 0u; i < 1u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_1_real8_(std::intptr_t self, double ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        double const * result = self_p->elements<double>();
+        if (self_p->shape().size() != 1u)
+            throw std::runtime_error("Grid does not have the expected 1 dimensions");
+        *elements = const_cast<double *>(result);
+        for (std::size_t i = 0u; i < 1u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_1_real4_(std::intptr_t self, float ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        float const * result = self_p->elements<float>();
+        if (self_p->shape().size() != 1u)
+            throw std::runtime_error("Grid does not have the expected 1 dimensions");
+        *elements = const_cast<float *>(result);
+        for (std::size_t i = 0u; i < 1u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_1_int4_(std::intptr_t self, int32_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        int32_t const * result = self_p->elements<int32_t>();
+        if (self_p->shape().size() != 1u)
+            throw std::runtime_error("Grid does not have the expected 1 dimensions");
+        *elements = const_cast<int32_t *>(result);
+        for (std::size_t i = 0u; i < 1u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_1_int8_(std::intptr_t self, int64_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        int64_t const * result = self_p->elements<int64_t>();
+        if (self_p->shape().size() != 1u)
+            throw std::runtime_error("Grid does not have the expected 1 dimensions");
+        *elements = const_cast<int64_t *>(result);
+        for (std::size_t i = 0u; i < 1u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_2_logical_(std::intptr_t self, bool ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        bool const * result = self_p->elements<bool>();
+        if (self_p->shape().size() != 2u)
+            throw std::runtime_error("Grid does not have the expected 2 dimensions");
+        *elements = const_cast<bool *>(result);
+        for (std::size_t i = 0u; i < 2u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_2_real8_(std::intptr_t self, double ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        double const * result = self_p->elements<double>();
+        if (self_p->shape().size() != 2u)
+            throw std::runtime_error("Grid does not have the expected 2 dimensions");
+        *elements = const_cast<double *>(result);
+        for (std::size_t i = 0u; i < 2u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_2_real4_(std::intptr_t self, float ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        float const * result = self_p->elements<float>();
+        if (self_p->shape().size() != 2u)
+            throw std::runtime_error("Grid does not have the expected 2 dimensions");
+        *elements = const_cast<float *>(result);
+        for (std::size_t i = 0u; i < 2u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_2_int4_(std::intptr_t self, int32_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        int32_t const * result = self_p->elements<int32_t>();
+        if (self_p->shape().size() != 2u)
+            throw std::runtime_error("Grid does not have the expected 2 dimensions");
+        *elements = const_cast<int32_t *>(result);
+        for (std::size_t i = 0u; i < 2u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_2_int8_(std::intptr_t self, int64_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        int64_t const * result = self_p->elements<int64_t>();
+        if (self_p->shape().size() != 2u)
+            throw std::runtime_error("Grid does not have the expected 2 dimensions");
+        *elements = const_cast<int64_t *>(result);
+        for (std::size_t i = 0u; i < 2u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_3_logical_(std::intptr_t self, bool ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        bool const * result = self_p->elements<bool>();
+        if (self_p->shape().size() != 3u)
+            throw std::runtime_error("Grid does not have the expected 3 dimensions");
+        *elements = const_cast<bool *>(result);
+        for (std::size_t i = 0u; i < 3u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_3_real8_(std::intptr_t self, double ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        double const * result = self_p->elements<double>();
+        if (self_p->shape().size() != 3u)
+            throw std::runtime_error("Grid does not have the expected 3 dimensions");
+        *elements = const_cast<double *>(result);
+        for (std::size_t i = 0u; i < 3u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_3_real4_(std::intptr_t self, float ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        float const * result = self_p->elements<float>();
+        if (self_p->shape().size() != 3u)
+            throw std::runtime_error("Grid does not have the expected 3 dimensions");
+        *elements = const_cast<float *>(result);
+        for (std::size_t i = 0u; i < 3u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_3_int4_(std::intptr_t self, int32_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        int32_t const * result = self_p->elements<int32_t>();
+        if (self_p->shape().size() != 3u)
+            throw std::runtime_error("Grid does not have the expected 3 dimensions");
+        *elements = const_cast<int32_t *>(result);
+        for (std::size_t i = 0u; i < 3u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_3_int8_(std::intptr_t self, int64_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        int64_t const * result = self_p->elements<int64_t>();
+        if (self_p->shape().size() != 3u)
+            throw std::runtime_error("Grid does not have the expected 3 dimensions");
+        *elements = const_cast<int64_t *>(result);
+        for (std::size_t i = 0u; i < 3u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_4_logical_(std::intptr_t self, bool ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        bool const * result = self_p->elements<bool>();
+        if (self_p->shape().size() != 4u)
+            throw std::runtime_error("Grid does not have the expected 4 dimensions");
+        *elements = const_cast<bool *>(result);
+        for (std::size_t i = 0u; i < 4u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_4_real8_(std::intptr_t self, double ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        double const * result = self_p->elements<double>();
+        if (self_p->shape().size() != 4u)
+            throw std::runtime_error("Grid does not have the expected 4 dimensions");
+        *elements = const_cast<double *>(result);
+        for (std::size_t i = 0u; i < 4u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_4_real4_(std::intptr_t self, float ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        float const * result = self_p->elements<float>();
+        if (self_p->shape().size() != 4u)
+            throw std::runtime_error("Grid does not have the expected 4 dimensions");
+        *elements = const_cast<float *>(result);
+        for (std::size_t i = 0u; i < 4u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_4_int4_(std::intptr_t self, int32_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        int32_t const * result = self_p->elements<int32_t>();
+        if (self_p->shape().size() != 4u)
+            throw std::runtime_error("Grid does not have the expected 4 dimensions");
+        *elements = const_cast<int32_t *>(result);
+        for (std::size_t i = 0u; i < 4u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_4_int8_(std::intptr_t self, int64_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        int64_t const * result = self_p->elements<int64_t>();
+        if (self_p->shape().size() != 4u)
+            throw std::runtime_error("Grid does not have the expected 4 dimensions");
+        *elements = const_cast<int64_t *>(result);
+        for (std::size_t i = 0u; i < 4u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_5_logical_(std::intptr_t self, bool ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        bool const * result = self_p->elements<bool>();
+        if (self_p->shape().size() != 5u)
+            throw std::runtime_error("Grid does not have the expected 5 dimensions");
+        *elements = const_cast<bool *>(result);
+        for (std::size_t i = 0u; i < 5u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_5_real8_(std::intptr_t self, double ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        double const * result = self_p->elements<double>();
+        if (self_p->shape().size() != 5u)
+            throw std::runtime_error("Grid does not have the expected 5 dimensions");
+        *elements = const_cast<double *>(result);
+        for (std::size_t i = 0u; i < 5u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_5_real4_(std::intptr_t self, float ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        float const * result = self_p->elements<float>();
+        if (self_p->shape().size() != 5u)
+            throw std::runtime_error("Grid does not have the expected 5 dimensions");
+        *elements = const_cast<float *>(result);
+        for (std::size_t i = 0u; i < 5u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_5_int4_(std::intptr_t self, int32_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        int32_t const * result = self_p->elements<int32_t>();
+        if (self_p->shape().size() != 5u)
+            throw std::runtime_error("Grid does not have the expected 5 dimensions");
+        *elements = const_cast<int32_t *>(result);
+        for (std::size_t i = 0u; i < 5u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_5_int8_(std::intptr_t self, int64_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        int64_t const * result = self_p->elements<int64_t>();
+        if (self_p->shape().size() != 5u)
+            throw std::runtime_error("Grid does not have the expected 5 dimensions");
+        *elements = const_cast<int64_t *>(result);
+        for (std::size_t i = 0u; i < 5u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_6_logical_(std::intptr_t self, bool ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        bool const * result = self_p->elements<bool>();
+        if (self_p->shape().size() != 6u)
+            throw std::runtime_error("Grid does not have the expected 6 dimensions");
+        *elements = const_cast<bool *>(result);
+        for (std::size_t i = 0u; i < 6u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_6_real8_(std::intptr_t self, double ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        double const * result = self_p->elements<double>();
+        if (self_p->shape().size() != 6u)
+            throw std::runtime_error("Grid does not have the expected 6 dimensions");
+        *elements = const_cast<double *>(result);
+        for (std::size_t i = 0u; i < 6u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_6_real4_(std::intptr_t self, float ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        float const * result = self_p->elements<float>();
+        if (self_p->shape().size() != 6u)
+            throw std::runtime_error("Grid does not have the expected 6 dimensions");
+        *elements = const_cast<float *>(result);
+        for (std::size_t i = 0u; i < 6u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_6_int4_(std::intptr_t self, int32_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        int32_t const * result = self_p->elements<int32_t>();
+        if (self_p->shape().size() != 6u)
+            throw std::runtime_error("Grid does not have the expected 6 dimensions");
+        *elements = const_cast<int32_t *>(result);
+        for (std::size_t i = 0u; i < 6u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_6_int8_(std::intptr_t self, int64_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        int64_t const * result = self_p->elements<int64_t>();
+        if (self_p->shape().size() != 6u)
+            throw std::runtime_error("Grid does not have the expected 6 dimensions");
+        *elements = const_cast<int64_t *>(result);
+        for (std::size_t i = 0u; i < 6u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_7_logical_(std::intptr_t self, bool ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        bool const * result = self_p->elements<bool>();
+        if (self_p->shape().size() != 7u)
+            throw std::runtime_error("Grid does not have the expected 7 dimensions");
+        *elements = const_cast<bool *>(result);
+        for (std::size_t i = 0u; i < 7u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_7_real8_(std::intptr_t self, double ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        double const * result = self_p->elements<double>();
+        if (self_p->shape().size() != 7u)
+            throw std::runtime_error("Grid does not have the expected 7 dimensions");
+        *elements = const_cast<double *>(result);
+        for (std::size_t i = 0u; i < 7u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_7_real4_(std::intptr_t self, float ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        float const * result = self_p->elements<float>();
+        if (self_p->shape().size() != 7u)
+            throw std::runtime_error("Grid does not have the expected 7 dimensions");
+        *elements = const_cast<float *>(result);
+        for (std::size_t i = 0u; i < 7u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_7_int4_(std::intptr_t self, int32_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        int32_t const * result = self_p->elements<int32_t>();
+        if (self_p->shape().size() != 7u)
+            throw std::runtime_error("Grid does not have the expected 7 dimensions");
+        *elements = const_cast<int32_t *>(result);
+        for (std::size_t i = 0u; i < 7u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_7_int8_(std::intptr_t self, int64_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        int64_t const * result = self_p->elements<int64_t>();
+        if (self_p->shape().size() != 7u)
+            throw std::runtime_error("Grid does not have the expected 7 dimensions");
+        *elements = const_cast<int64_t *>(result);
+        for (std::size_t i = 0u; i < 7u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+bool LIBMUSCLE_DataConstRef_has_indexes_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        bool result = self_p->has_indexes();
+        return result;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_index_(std::intptr_t self, std::size_t i, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        static std::string result;
+        result = self_p->indexes().at(i - 1);
+        *ret_val = const_cast<char*>(result.c_str());
+        *ret_val_size = result.size();
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
 std::intptr_t LIBMUSCLE_Data_create_nil_() {
     Data * result = new Data();
     return reinterpret_cast<std::intptr_t>(result);
@@ -747,6 +3418,706 @@ std::intptr_t LIBMUSCLE_Data_create_settings_(std::intptr_t value) {
 std::intptr_t LIBMUSCLE_Data_create_copy_(std::intptr_t value) {
     Data * value_p = reinterpret_cast<Data *>(value);
     Data * result = new Data(*value_p);
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_1_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_2_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_3_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_4_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_5_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_6_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_7_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_1_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_2_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_3_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_4_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_5_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_6_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_7_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_1_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_2_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_3_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_4_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_5_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_6_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_7_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_1_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_2_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_3_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_4_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_5_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_6_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_7_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_1_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_2_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_3_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_4_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_5_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_6_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_7_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_1_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_2_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_3_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_4_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_5_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_6_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    std::string index_name_6_s(index_name_6, index_name_6_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_7_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size, char * index_name_7, std::size_t index_name_7_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    std::string index_name_6_s(index_name_6, index_name_6_size);
+    std::string index_name_7_s(index_name_7, index_name_7_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s,index_name_7_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_1_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_2_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_3_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_4_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_5_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_6_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    std::string index_name_6_s(index_name_6, index_name_6_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_7_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size, char * index_name_7, std::size_t index_name_7_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    std::string index_name_6_s(index_name_6, index_name_6_size);
+    std::string index_name_7_s(index_name_7, index_name_7_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s,index_name_7_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_1_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_2_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_3_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_4_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_5_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_6_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    std::string index_name_6_s(index_name_6, index_name_6_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_7_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size, char * index_name_7, std::size_t index_name_7_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    std::string index_name_6_s(index_name_6, index_name_6_size);
+    std::string index_name_7_s(index_name_7, index_name_7_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s,index_name_7_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_1_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_2_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_3_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_4_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_5_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_6_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    std::string index_name_6_s(index_name_6, index_name_6_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_7_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size, char * index_name_7, std::size_t index_name_7_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    std::string index_name_6_s(index_name_6, index_name_6_size);
+    std::string index_name_7_s(index_name_7, index_name_7_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s,index_name_7_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_1_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_2_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_3_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_4_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_5_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_6_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    std::string index_name_6_s(index_name_6, index_name_6_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_7_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size, char * index_name_7, std::size_t index_name_7_size) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    std::string index_name_1_s(index_name_1, index_name_1_size);
+    std::string index_name_2_s(index_name_2, index_name_2_size);
+    std::string index_name_3_s(index_name_3, index_name_3_size);
+    std::string index_name_4_s(index_name_4, index_name_4_size);
+    std::string index_name_5_s(index_name_5, index_name_5_size);
+    std::string index_name_6_s(index_name_6, index_name_6_size);
+    std::string index_name_7_s(index_name_7, index_name_7_size);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s,index_name_7_s}, libmuscle::StorageOrder::first_adjacent));
     return reinterpret_cast<std::intptr_t>(result);
 }
 
@@ -819,6 +4190,36 @@ bool LIBMUSCLE_Data_is_a_dict_(std::intptr_t self) {
 bool LIBMUSCLE_Data_is_a_list_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a_list();
+    return result;
+}
+
+bool LIBMUSCLE_Data_is_a_grid_of_logical_(std::intptr_t self) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    bool result = self_p->is_a_grid_of<bool>();
+    return result;
+}
+
+bool LIBMUSCLE_Data_is_a_grid_of_real4_(std::intptr_t self) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    bool result = self_p->is_a_grid_of<float>();
+    return result;
+}
+
+bool LIBMUSCLE_Data_is_a_grid_of_real8_(std::intptr_t self) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    bool result = self_p->is_a_grid_of<double>();
+    return result;
+}
+
+bool LIBMUSCLE_Data_is_a_grid_of_int4_(std::intptr_t self) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    bool result = self_p->is_a_grid_of<int32_t>();
+    return result;
+}
+
+bool LIBMUSCLE_Data_is_a_grid_of_int8_(std::intptr_t self) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    bool result = self_p->is_a_grid_of<int64_t>();
     return result;
 }
 
@@ -1356,6 +4757,1947 @@ std::intptr_t LIBMUSCLE_Data_get_item_by_index_(
     }
     catch (std::out_of_range const & e) {
         *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+std::size_t LIBMUSCLE_Data_num_dims_(
+        std::intptr_t self,
+        int * err_code, char ** err_msg, std::size_t * err_msg_len
+) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        return self_p->shape().size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_shape_(std::intptr_t self, std::size_t ** shp, std::size_t * shp_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        static std::vector<std::size_t> result;
+        result = self_p->shape();
+        *shp = result.data();
+        *shp_size = result.size();
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_1_logical_(std::intptr_t self, bool ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        bool const * result = self_p->elements<bool>();
+        if (self_p->shape().size() != 1u)
+            throw std::runtime_error("Grid does not have the expected 1 dimensions");
+        *elements = const_cast<bool *>(result);
+        for (std::size_t i = 0u; i < 1u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_1_real8_(std::intptr_t self, double ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        double const * result = self_p->elements<double>();
+        if (self_p->shape().size() != 1u)
+            throw std::runtime_error("Grid does not have the expected 1 dimensions");
+        *elements = const_cast<double *>(result);
+        for (std::size_t i = 0u; i < 1u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_1_real4_(std::intptr_t self, float ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        float const * result = self_p->elements<float>();
+        if (self_p->shape().size() != 1u)
+            throw std::runtime_error("Grid does not have the expected 1 dimensions");
+        *elements = const_cast<float *>(result);
+        for (std::size_t i = 0u; i < 1u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_1_int4_(std::intptr_t self, int32_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        int32_t const * result = self_p->elements<int32_t>();
+        if (self_p->shape().size() != 1u)
+            throw std::runtime_error("Grid does not have the expected 1 dimensions");
+        *elements = const_cast<int32_t *>(result);
+        for (std::size_t i = 0u; i < 1u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_1_int8_(std::intptr_t self, int64_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        int64_t const * result = self_p->elements<int64_t>();
+        if (self_p->shape().size() != 1u)
+            throw std::runtime_error("Grid does not have the expected 1 dimensions");
+        *elements = const_cast<int64_t *>(result);
+        for (std::size_t i = 0u; i < 1u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_2_logical_(std::intptr_t self, bool ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        bool const * result = self_p->elements<bool>();
+        if (self_p->shape().size() != 2u)
+            throw std::runtime_error("Grid does not have the expected 2 dimensions");
+        *elements = const_cast<bool *>(result);
+        for (std::size_t i = 0u; i < 2u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_2_real8_(std::intptr_t self, double ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        double const * result = self_p->elements<double>();
+        if (self_p->shape().size() != 2u)
+            throw std::runtime_error("Grid does not have the expected 2 dimensions");
+        *elements = const_cast<double *>(result);
+        for (std::size_t i = 0u; i < 2u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_2_real4_(std::intptr_t self, float ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        float const * result = self_p->elements<float>();
+        if (self_p->shape().size() != 2u)
+            throw std::runtime_error("Grid does not have the expected 2 dimensions");
+        *elements = const_cast<float *>(result);
+        for (std::size_t i = 0u; i < 2u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_2_int4_(std::intptr_t self, int32_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        int32_t const * result = self_p->elements<int32_t>();
+        if (self_p->shape().size() != 2u)
+            throw std::runtime_error("Grid does not have the expected 2 dimensions");
+        *elements = const_cast<int32_t *>(result);
+        for (std::size_t i = 0u; i < 2u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_2_int8_(std::intptr_t self, int64_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        int64_t const * result = self_p->elements<int64_t>();
+        if (self_p->shape().size() != 2u)
+            throw std::runtime_error("Grid does not have the expected 2 dimensions");
+        *elements = const_cast<int64_t *>(result);
+        for (std::size_t i = 0u; i < 2u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_3_logical_(std::intptr_t self, bool ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        bool const * result = self_p->elements<bool>();
+        if (self_p->shape().size() != 3u)
+            throw std::runtime_error("Grid does not have the expected 3 dimensions");
+        *elements = const_cast<bool *>(result);
+        for (std::size_t i = 0u; i < 3u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_3_real8_(std::intptr_t self, double ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        double const * result = self_p->elements<double>();
+        if (self_p->shape().size() != 3u)
+            throw std::runtime_error("Grid does not have the expected 3 dimensions");
+        *elements = const_cast<double *>(result);
+        for (std::size_t i = 0u; i < 3u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_3_real4_(std::intptr_t self, float ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        float const * result = self_p->elements<float>();
+        if (self_p->shape().size() != 3u)
+            throw std::runtime_error("Grid does not have the expected 3 dimensions");
+        *elements = const_cast<float *>(result);
+        for (std::size_t i = 0u; i < 3u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_3_int4_(std::intptr_t self, int32_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        int32_t const * result = self_p->elements<int32_t>();
+        if (self_p->shape().size() != 3u)
+            throw std::runtime_error("Grid does not have the expected 3 dimensions");
+        *elements = const_cast<int32_t *>(result);
+        for (std::size_t i = 0u; i < 3u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_3_int8_(std::intptr_t self, int64_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        int64_t const * result = self_p->elements<int64_t>();
+        if (self_p->shape().size() != 3u)
+            throw std::runtime_error("Grid does not have the expected 3 dimensions");
+        *elements = const_cast<int64_t *>(result);
+        for (std::size_t i = 0u; i < 3u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_4_logical_(std::intptr_t self, bool ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        bool const * result = self_p->elements<bool>();
+        if (self_p->shape().size() != 4u)
+            throw std::runtime_error("Grid does not have the expected 4 dimensions");
+        *elements = const_cast<bool *>(result);
+        for (std::size_t i = 0u; i < 4u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_4_real8_(std::intptr_t self, double ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        double const * result = self_p->elements<double>();
+        if (self_p->shape().size() != 4u)
+            throw std::runtime_error("Grid does not have the expected 4 dimensions");
+        *elements = const_cast<double *>(result);
+        for (std::size_t i = 0u; i < 4u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_4_real4_(std::intptr_t self, float ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        float const * result = self_p->elements<float>();
+        if (self_p->shape().size() != 4u)
+            throw std::runtime_error("Grid does not have the expected 4 dimensions");
+        *elements = const_cast<float *>(result);
+        for (std::size_t i = 0u; i < 4u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_4_int4_(std::intptr_t self, int32_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        int32_t const * result = self_p->elements<int32_t>();
+        if (self_p->shape().size() != 4u)
+            throw std::runtime_error("Grid does not have the expected 4 dimensions");
+        *elements = const_cast<int32_t *>(result);
+        for (std::size_t i = 0u; i < 4u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_4_int8_(std::intptr_t self, int64_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        int64_t const * result = self_p->elements<int64_t>();
+        if (self_p->shape().size() != 4u)
+            throw std::runtime_error("Grid does not have the expected 4 dimensions");
+        *elements = const_cast<int64_t *>(result);
+        for (std::size_t i = 0u; i < 4u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_5_logical_(std::intptr_t self, bool ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        bool const * result = self_p->elements<bool>();
+        if (self_p->shape().size() != 5u)
+            throw std::runtime_error("Grid does not have the expected 5 dimensions");
+        *elements = const_cast<bool *>(result);
+        for (std::size_t i = 0u; i < 5u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_5_real8_(std::intptr_t self, double ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        double const * result = self_p->elements<double>();
+        if (self_p->shape().size() != 5u)
+            throw std::runtime_error("Grid does not have the expected 5 dimensions");
+        *elements = const_cast<double *>(result);
+        for (std::size_t i = 0u; i < 5u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_5_real4_(std::intptr_t self, float ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        float const * result = self_p->elements<float>();
+        if (self_p->shape().size() != 5u)
+            throw std::runtime_error("Grid does not have the expected 5 dimensions");
+        *elements = const_cast<float *>(result);
+        for (std::size_t i = 0u; i < 5u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_5_int4_(std::intptr_t self, int32_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        int32_t const * result = self_p->elements<int32_t>();
+        if (self_p->shape().size() != 5u)
+            throw std::runtime_error("Grid does not have the expected 5 dimensions");
+        *elements = const_cast<int32_t *>(result);
+        for (std::size_t i = 0u; i < 5u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_5_int8_(std::intptr_t self, int64_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        int64_t const * result = self_p->elements<int64_t>();
+        if (self_p->shape().size() != 5u)
+            throw std::runtime_error("Grid does not have the expected 5 dimensions");
+        *elements = const_cast<int64_t *>(result);
+        for (std::size_t i = 0u; i < 5u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_6_logical_(std::intptr_t self, bool ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        bool const * result = self_p->elements<bool>();
+        if (self_p->shape().size() != 6u)
+            throw std::runtime_error("Grid does not have the expected 6 dimensions");
+        *elements = const_cast<bool *>(result);
+        for (std::size_t i = 0u; i < 6u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_6_real8_(std::intptr_t self, double ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        double const * result = self_p->elements<double>();
+        if (self_p->shape().size() != 6u)
+            throw std::runtime_error("Grid does not have the expected 6 dimensions");
+        *elements = const_cast<double *>(result);
+        for (std::size_t i = 0u; i < 6u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_6_real4_(std::intptr_t self, float ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        float const * result = self_p->elements<float>();
+        if (self_p->shape().size() != 6u)
+            throw std::runtime_error("Grid does not have the expected 6 dimensions");
+        *elements = const_cast<float *>(result);
+        for (std::size_t i = 0u; i < 6u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_6_int4_(std::intptr_t self, int32_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        int32_t const * result = self_p->elements<int32_t>();
+        if (self_p->shape().size() != 6u)
+            throw std::runtime_error("Grid does not have the expected 6 dimensions");
+        *elements = const_cast<int32_t *>(result);
+        for (std::size_t i = 0u; i < 6u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_6_int8_(std::intptr_t self, int64_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        int64_t const * result = self_p->elements<int64_t>();
+        if (self_p->shape().size() != 6u)
+            throw std::runtime_error("Grid does not have the expected 6 dimensions");
+        *elements = const_cast<int64_t *>(result);
+        for (std::size_t i = 0u; i < 6u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_7_logical_(std::intptr_t self, bool ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        bool const * result = self_p->elements<bool>();
+        if (self_p->shape().size() != 7u)
+            throw std::runtime_error("Grid does not have the expected 7 dimensions");
+        *elements = const_cast<bool *>(result);
+        for (std::size_t i = 0u; i < 7u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_7_real8_(std::intptr_t self, double ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        double const * result = self_p->elements<double>();
+        if (self_p->shape().size() != 7u)
+            throw std::runtime_error("Grid does not have the expected 7 dimensions");
+        *elements = const_cast<double *>(result);
+        for (std::size_t i = 0u; i < 7u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_7_real4_(std::intptr_t self, float ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        float const * result = self_p->elements<float>();
+        if (self_p->shape().size() != 7u)
+            throw std::runtime_error("Grid does not have the expected 7 dimensions");
+        *elements = const_cast<float *>(result);
+        for (std::size_t i = 0u; i < 7u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_7_int4_(std::intptr_t self, int32_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        int32_t const * result = self_p->elements<int32_t>();
+        if (self_p->shape().size() != 7u)
+            throw std::runtime_error("Grid does not have the expected 7 dimensions");
+        *elements = const_cast<int32_t *>(result);
+        for (std::size_t i = 0u; i < 7u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_7_int8_(std::intptr_t self, int64_t ** elements, std::size_t * elements_shape, int * elements_format, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        int64_t const * result = self_p->elements<int64_t>();
+        if (self_p->shape().size() != 7u)
+            throw std::runtime_error("Grid does not have the expected 7 dimensions");
+        *elements = const_cast<int64_t *>(result);
+        for (std::size_t i = 0u; i < 7u; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+bool LIBMUSCLE_Data_has_indexes_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        bool result = self_p->has_indexes();
+        return result;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_index_(std::intptr_t self, std::size_t i, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        static std::string result;
+        result = self_p->indexes().at(i - 1);
+        *ret_val = const_cast<char*>(result.c_str());
+        *ret_val_size = result.size();
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
         static std::string msg;
         msg = e.what();
         *err_msg = const_cast<char*>(msg.data());

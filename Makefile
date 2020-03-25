@@ -16,11 +16,11 @@ test_python: cpp_tests fortran_tests
 	python3 setup.py test
 
 .PHONY: test_cpp
-test_cpp:
+test_cpp: cpp
 	cd libmuscle/cpp && $(MAKE) test
 
 .PHONY: test_fortran
-test_fortran:
+test_fortran: fortran_tests
 	cd libmuscle/fortran && $(MAKE) test
 
 .PHONY: test_scripts

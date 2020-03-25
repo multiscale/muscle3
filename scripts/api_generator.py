@@ -1128,6 +1128,7 @@ class MemFun(Member):
             cpp_func_name: Name of C++ member function to call.
             cpp_chain_call: Function that produces the C++ chain call.
             fc_override: Custom Fortran-C wrapper function.
+            fc_chain_call: Function that produces the C ABI call.
             f_override: Custom Fortran function.
         """
         self.ns_prefix = None       # type: Optional[str]
@@ -1140,6 +1141,8 @@ class MemFun(Member):
         self.cpp_chain_call = args.get(
                 'cpp_chain_call', self._default_cpp_chain_call)
         self.fc_override = args.get('fc_override')
+        self.fc_chain_call = args.get(
+                'fc_chain_call', self._default_fc_chain_call)
         self.f_override = args.get('f_override')
         self.cpp_func_name = args.get('cpp_func_name', name)
 
@@ -1151,6 +1154,7 @@ class MemFun(Member):
         result.class_name = self.class_name
         result.cpp_chain_call = self.cpp_chain_call
         result.fc_override = self.fc_override
+        result.fc_chain_call = self.fc_chain_call
         result.f_override = self.f_override
         result.cpp_func_name = self.cpp_func_name
         return result
@@ -1233,6 +1237,9 @@ class MemFun(Member):
         """Create a Fortran interface declaration for the C wrapper.
         """
         result = ''
+        if self.fc_override == '':
+            return result
+
         func_name = '{}_{}_{}_'.format(
                 self.ns_prefix, self.class_name, self.name)
 
@@ -1276,7 +1283,7 @@ class MemFun(Member):
     def fortran_function(self) -> str:
         """Create the Fortran function definition for this member.
         """
-        if self.f_override:
+        if self.f_override is not None:
             return textwrap.indent(self.f_override, 4*' ')
 
         result = ''
@@ -1336,7 +1343,9 @@ class MemFun(Member):
         arg_str = ', &\n'.join([8*' ' + arg for arg in args])
 
         # call C function
-        chain_call = '{}_( &\n{})'.format(func_name, arg_str)
+        chain_call = self.fc_chain_call(
+                ns_prefix=self.ns_prefix, class_name=self.class_name,
+                fc_func_name=(func_name + '_'), fc_args=arg_str)
         result_name = ''
         if return_type != '':
             result_name = func_name
@@ -1395,8 +1404,15 @@ class MemFun(Member):
     def fortran_exports(self) -> List[str]:
         """Generates a list of linker exports for the Fortran symbols.
         """
-        return ['{}_{}_{}_;'.format(
-                self.ns_prefix, self.class_name, self.name)]
+        if self.fc_override == '':
+            return []
+        else:
+            return ['{}_{}_{}_;'.format(
+                    self.ns_prefix, self.class_name, self.name)]
+
+    @staticmethod
+    def _default_fc_chain_call(**kwargs):
+        return '{fc_func_name}( &\n{fc_args})'.format(**kwargs)
 
     @staticmethod
     def _default_cpp_chain_call(**kwargs):
@@ -1685,6 +1701,7 @@ class NamedConstructor(Constructor):
         result.ret_type = self.ret_type
         result.may_throw = self.may_throw
         result.cpp_chain_call = self.cpp_chain_call
+        result.fc_chain_call = self.fc_chain_call
         result.fc_override = self.fc_override
         result.f_override = self.f_override
         result.cpp_func_name = self.cpp_func_name

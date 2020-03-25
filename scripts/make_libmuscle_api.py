@@ -47,6 +47,20 @@ class GridConstructor(Member):
         self.name = 'grid'
         self.instances = list()     # type: List[NamedConstructor]
 
+        # generate flexible C functions
+        if not with_names:
+            for typ in self.types:
+                instance_ret_type = Obj('<deferred>')
+                instance_params = [Array(1, copy(typ), 'data_array')]
+                instance_name = 'grid_{}_a'.format(typ.tname())
+                chain_call = lambda **kwargs: ('{}::grid(data_array_p,'
+                        ' data_array_shape_v, {{}},'
+                        ' libmuscle::StorageOrder::first_adjacent'
+                        ')').format(kwargs['class_name'])
+                self.instances.append(NamedConstructor(
+                    instance_params, instance_name, cpp_func_name='grid',
+                    cpp_chain_call=chain_call, f_override=''))
+
         # generate instances
         for typ in self.types:
             for ndims in range(1, 8):
@@ -71,15 +85,18 @@ class GridConstructor(Member):
                             ' data_array_shape_v, {},'
                             ' libmuscle::StorageOrder::first_adjacent'
                             ')').format(kwargs['class_name'], name_args)
+                    self.instances.append(NamedConstructor(
+                        instance_params, instance_name, cpp_func_name='grid',
+                        cpp_chain_call=chain_call))
                 else:
-                    chain_call = lambda **kwargs: ('{}::grid(data_array_p,'
-                            ' data_array_shape_v, {{}},'
-                            ' libmuscle::StorageOrder::first_adjacent'
-                            ')').format(kwargs['class_name'])
+                    chain_call = lambda tname=typ.tname(), **a: (
+                            '{}_{}_create_grid_{}_a_( &\n{})'.format(
+                                a['ns_prefix'], a['class_name'], tname,
+                                a['fc_args']))
 
-                self.instances.append(NamedConstructor(
-                    instance_params, instance_name, cpp_func_name='grid',
-                    cpp_chain_call=chain_call))
+                    self.instances.append(NamedConstructor(
+                        instance_params, instance_name, cpp_func_name='grid',
+                        fc_chain_call=chain_call, fc_override=''))
 
     def __copy__(self) -> 'MemFunTmpl':
         result = GridConstructor(self.with_names)

@@ -1187,7 +1187,7 @@ class MemFun(Member):
         """Create a C wrapper for calling by Fortran.
         """
         if self.fc_override is not None:
-            return self.fc_override
+            return self.fc_override.replace('$CLASSNAME$', self.class_name)
 
         result = ''
 
@@ -1284,7 +1284,9 @@ class MemFun(Member):
         """Create the Fortran function definition for this member.
         """
         if self.f_override is not None:
-            return textwrap.indent(self.f_override, 4*' ')
+            return textwrap.indent(
+                    self.f_override.replace('$CLASSNAME$', self.class_name),
+                    4*' ')
 
         result = ''
 
@@ -1397,6 +1399,9 @@ class MemFun(Member):
     def fortran_public_declaration(self) -> str:
         """Create a Fortran statement declaring us public.
         """
+        if self.f_override == '':
+            return ''
+
         func_name = '{}_{}_{}'.format(
                 self.ns_prefix, self.class_name, self.name)
         return '    public :: {}\n'.format(func_name)

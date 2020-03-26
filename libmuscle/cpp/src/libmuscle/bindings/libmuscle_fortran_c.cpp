@@ -119,423 +119,188 @@ std::intptr_t LIBMUSCLE_DataConstRef_create_grid_real8_a_(double * data_array, s
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_1_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size) {
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_logical_n_(
+        bool * data_array,
+        std::size_t * data_array_shape,
+        std::size_t data_array_ndims,
+        char * index_name_1, std::size_t index_name_1_size,
+        char * index_name_2, std::size_t index_name_2_size,
+        char * index_name_3, std::size_t index_name_3_size,
+        char * index_name_4, std::size_t index_name_4_size,
+        char * index_name_5, std::size_t index_name_5_size,
+        char * index_name_6, std::size_t index_name_6_size,
+        char * index_name_7, std::size_t index_name_7_size
+) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
     auto data_array_p = const_cast<bool const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s}, libmuscle::StorageOrder::first_adjacent));
+
+    std::vector<std::string> names_v;
+    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    if (data_array_ndims >= 2u)
+        names_v.push_back(std::string(index_name_2, index_name_2_size));
+    if (data_array_ndims >= 3u)
+        names_v.push_back(std::string(index_name_3, index_name_3_size));
+    if (data_array_ndims >= 4u)
+        names_v.push_back(std::string(index_name_4, index_name_4_size));
+    if (data_array_ndims >= 5u)
+        names_v.push_back(std::string(index_name_5, index_name_5_size));
+    if (data_array_ndims >= 6u)
+        names_v.push_back(std::string(index_name_6, index_name_6_size));
+    if (data_array_ndims >= 7u)
+        names_v.push_back(std::string(index_name_7, index_name_7_size));
+
+    Data * result = new Data(Data::grid(
+            data_array_p, data_array_shape_v,
+            names_v, libmuscle::StorageOrder::first_adjacent));
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_2_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<bool const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_3_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<bool const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_4_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<bool const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_5_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<bool const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_6_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<bool const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    std::string index_name_6_s(index_name_6, index_name_6_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_7_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size, char * index_name_7, std::size_t index_name_7_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<bool const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    std::string index_name_6_s(index_name_6, index_name_6_size);
-    std::string index_name_7_s(index_name_7, index_name_7_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s,index_name_7_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_1_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size) {
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_int4_n_(
+        int32_t * data_array,
+        std::size_t * data_array_shape,
+        std::size_t data_array_ndims,
+        char * index_name_1, std::size_t index_name_1_size,
+        char * index_name_2, std::size_t index_name_2_size,
+        char * index_name_3, std::size_t index_name_3_size,
+        char * index_name_4, std::size_t index_name_4_size,
+        char * index_name_5, std::size_t index_name_5_size,
+        char * index_name_6, std::size_t index_name_6_size,
+        char * index_name_7, std::size_t index_name_7_size
+) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
     auto data_array_p = const_cast<int32_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s}, libmuscle::StorageOrder::first_adjacent));
+
+    std::vector<std::string> names_v;
+    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    if (data_array_ndims >= 2u)
+        names_v.push_back(std::string(index_name_2, index_name_2_size));
+    if (data_array_ndims >= 3u)
+        names_v.push_back(std::string(index_name_3, index_name_3_size));
+    if (data_array_ndims >= 4u)
+        names_v.push_back(std::string(index_name_4, index_name_4_size));
+    if (data_array_ndims >= 5u)
+        names_v.push_back(std::string(index_name_5, index_name_5_size));
+    if (data_array_ndims >= 6u)
+        names_v.push_back(std::string(index_name_6, index_name_6_size));
+    if (data_array_ndims >= 7u)
+        names_v.push_back(std::string(index_name_7, index_name_7_size));
+
+    Data * result = new Data(Data::grid(
+            data_array_p, data_array_shape_v,
+            names_v, libmuscle::StorageOrder::first_adjacent));
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_2_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int32_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_3_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int32_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_4_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int32_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_5_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int32_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_6_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int32_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    std::string index_name_6_s(index_name_6, index_name_6_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_7_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size, char * index_name_7, std::size_t index_name_7_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int32_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    std::string index_name_6_s(index_name_6, index_name_6_size);
-    std::string index_name_7_s(index_name_7, index_name_7_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s,index_name_7_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_1_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size) {
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_int8_n_(
+        int64_t * data_array,
+        std::size_t * data_array_shape,
+        std::size_t data_array_ndims,
+        char * index_name_1, std::size_t index_name_1_size,
+        char * index_name_2, std::size_t index_name_2_size,
+        char * index_name_3, std::size_t index_name_3_size,
+        char * index_name_4, std::size_t index_name_4_size,
+        char * index_name_5, std::size_t index_name_5_size,
+        char * index_name_6, std::size_t index_name_6_size,
+        char * index_name_7, std::size_t index_name_7_size
+) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
     auto data_array_p = const_cast<int64_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s}, libmuscle::StorageOrder::first_adjacent));
+
+    std::vector<std::string> names_v;
+    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    if (data_array_ndims >= 2u)
+        names_v.push_back(std::string(index_name_2, index_name_2_size));
+    if (data_array_ndims >= 3u)
+        names_v.push_back(std::string(index_name_3, index_name_3_size));
+    if (data_array_ndims >= 4u)
+        names_v.push_back(std::string(index_name_4, index_name_4_size));
+    if (data_array_ndims >= 5u)
+        names_v.push_back(std::string(index_name_5, index_name_5_size));
+    if (data_array_ndims >= 6u)
+        names_v.push_back(std::string(index_name_6, index_name_6_size));
+    if (data_array_ndims >= 7u)
+        names_v.push_back(std::string(index_name_7, index_name_7_size));
+
+    Data * result = new Data(Data::grid(
+            data_array_p, data_array_shape_v,
+            names_v, libmuscle::StorageOrder::first_adjacent));
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_2_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int64_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_3_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int64_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_4_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int64_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_5_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int64_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_6_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int64_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    std::string index_name_6_s(index_name_6, index_name_6_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_7_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size, char * index_name_7, std::size_t index_name_7_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int64_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    std::string index_name_6_s(index_name_6, index_name_6_size);
-    std::string index_name_7_s(index_name_7, index_name_7_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s,index_name_7_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_1_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size) {
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_real4_n_(
+        float * data_array,
+        std::size_t * data_array_shape,
+        std::size_t data_array_ndims,
+        char * index_name_1, std::size_t index_name_1_size,
+        char * index_name_2, std::size_t index_name_2_size,
+        char * index_name_3, std::size_t index_name_3_size,
+        char * index_name_4, std::size_t index_name_4_size,
+        char * index_name_5, std::size_t index_name_5_size,
+        char * index_name_6, std::size_t index_name_6_size,
+        char * index_name_7, std::size_t index_name_7_size
+) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
     auto data_array_p = const_cast<float const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s}, libmuscle::StorageOrder::first_adjacent));
+
+    std::vector<std::string> names_v;
+    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    if (data_array_ndims >= 2u)
+        names_v.push_back(std::string(index_name_2, index_name_2_size));
+    if (data_array_ndims >= 3u)
+        names_v.push_back(std::string(index_name_3, index_name_3_size));
+    if (data_array_ndims >= 4u)
+        names_v.push_back(std::string(index_name_4, index_name_4_size));
+    if (data_array_ndims >= 5u)
+        names_v.push_back(std::string(index_name_5, index_name_5_size));
+    if (data_array_ndims >= 6u)
+        names_v.push_back(std::string(index_name_6, index_name_6_size));
+    if (data_array_ndims >= 7u)
+        names_v.push_back(std::string(index_name_7, index_name_7_size));
+
+    Data * result = new Data(Data::grid(
+            data_array_p, data_array_shape_v,
+            names_v, libmuscle::StorageOrder::first_adjacent));
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_2_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<float const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_3_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<float const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_4_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<float const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_5_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<float const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_6_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<float const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    std::string index_name_6_s(index_name_6, index_name_6_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_7_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size, char * index_name_7, std::size_t index_name_7_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<float const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    std::string index_name_6_s(index_name_6, index_name_6_size);
-    std::string index_name_7_s(index_name_7, index_name_7_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s,index_name_7_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_1_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size) {
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_real8_n_(
+        double * data_array,
+        std::size_t * data_array_shape,
+        std::size_t data_array_ndims,
+        char * index_name_1, std::size_t index_name_1_size,
+        char * index_name_2, std::size_t index_name_2_size,
+        char * index_name_3, std::size_t index_name_3_size,
+        char * index_name_4, std::size_t index_name_4_size,
+        char * index_name_5, std::size_t index_name_5_size,
+        char * index_name_6, std::size_t index_name_6_size,
+        char * index_name_7, std::size_t index_name_7_size
+) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
     auto data_array_p = const_cast<double const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_2_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<double const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
+    std::vector<std::string> names_v;
+    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    if (data_array_ndims >= 2u)
+        names_v.push_back(std::string(index_name_2, index_name_2_size));
+    if (data_array_ndims >= 3u)
+        names_v.push_back(std::string(index_name_3, index_name_3_size));
+    if (data_array_ndims >= 4u)
+        names_v.push_back(std::string(index_name_4, index_name_4_size));
+    if (data_array_ndims >= 5u)
+        names_v.push_back(std::string(index_name_5, index_name_5_size));
+    if (data_array_ndims >= 6u)
+        names_v.push_back(std::string(index_name_6, index_name_6_size));
+    if (data_array_ndims >= 7u)
+        names_v.push_back(std::string(index_name_7, index_name_7_size));
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_3_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<double const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_4_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<double const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_5_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<double const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_6_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<double const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    std::string index_name_6_s(index_name_6, index_name_6_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_7_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size, char * index_name_7, std::size_t index_name_7_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<double const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    std::string index_name_6_s(index_name_6, index_name_6_size);
-    std::string index_name_7_s(index_name_7, index_name_7_size);
-    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s,index_name_7_s}, libmuscle::StorageOrder::first_adjacent));
+    Data * result = new Data(Data::grid(
+            data_array_p, data_array_shape_v,
+            names_v, libmuscle::StorageOrder::first_adjacent));
     return reinterpret_cast<std::intptr_t>(result);
 }
 
@@ -3221,423 +2986,188 @@ std::intptr_t LIBMUSCLE_Data_create_grid_real8_a_(double * data_array, std::size
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_grid_1_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size) {
+std::intptr_t LIBMUSCLE_Data_create_grid_logical_n_(
+        bool * data_array,
+        std::size_t * data_array_shape,
+        std::size_t data_array_ndims,
+        char * index_name_1, std::size_t index_name_1_size,
+        char * index_name_2, std::size_t index_name_2_size,
+        char * index_name_3, std::size_t index_name_3_size,
+        char * index_name_4, std::size_t index_name_4_size,
+        char * index_name_5, std::size_t index_name_5_size,
+        char * index_name_6, std::size_t index_name_6_size,
+        char * index_name_7, std::size_t index_name_7_size
+) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
     auto data_array_p = const_cast<bool const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s}, libmuscle::StorageOrder::first_adjacent));
+
+    std::vector<std::string> names_v;
+    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    if (data_array_ndims >= 2u)
+        names_v.push_back(std::string(index_name_2, index_name_2_size));
+    if (data_array_ndims >= 3u)
+        names_v.push_back(std::string(index_name_3, index_name_3_size));
+    if (data_array_ndims >= 4u)
+        names_v.push_back(std::string(index_name_4, index_name_4_size));
+    if (data_array_ndims >= 5u)
+        names_v.push_back(std::string(index_name_5, index_name_5_size));
+    if (data_array_ndims >= 6u)
+        names_v.push_back(std::string(index_name_6, index_name_6_size));
+    if (data_array_ndims >= 7u)
+        names_v.push_back(std::string(index_name_7, index_name_7_size));
+
+    Data * result = new Data(Data::grid(
+            data_array_p, data_array_shape_v,
+            names_v, libmuscle::StorageOrder::first_adjacent));
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_grid_2_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<bool const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_3_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<bool const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_4_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<bool const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_5_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<bool const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_6_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<bool const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    std::string index_name_6_s(index_name_6, index_name_6_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_7_logical_n_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size, char * index_name_7, std::size_t index_name_7_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<bool const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    std::string index_name_6_s(index_name_6, index_name_6_size);
-    std::string index_name_7_s(index_name_7, index_name_7_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s,index_name_7_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_1_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size) {
+std::intptr_t LIBMUSCLE_Data_create_grid_int4_n_(
+        int32_t * data_array,
+        std::size_t * data_array_shape,
+        std::size_t data_array_ndims,
+        char * index_name_1, std::size_t index_name_1_size,
+        char * index_name_2, std::size_t index_name_2_size,
+        char * index_name_3, std::size_t index_name_3_size,
+        char * index_name_4, std::size_t index_name_4_size,
+        char * index_name_5, std::size_t index_name_5_size,
+        char * index_name_6, std::size_t index_name_6_size,
+        char * index_name_7, std::size_t index_name_7_size
+) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
     auto data_array_p = const_cast<int32_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s}, libmuscle::StorageOrder::first_adjacent));
+
+    std::vector<std::string> names_v;
+    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    if (data_array_ndims >= 2u)
+        names_v.push_back(std::string(index_name_2, index_name_2_size));
+    if (data_array_ndims >= 3u)
+        names_v.push_back(std::string(index_name_3, index_name_3_size));
+    if (data_array_ndims >= 4u)
+        names_v.push_back(std::string(index_name_4, index_name_4_size));
+    if (data_array_ndims >= 5u)
+        names_v.push_back(std::string(index_name_5, index_name_5_size));
+    if (data_array_ndims >= 6u)
+        names_v.push_back(std::string(index_name_6, index_name_6_size));
+    if (data_array_ndims >= 7u)
+        names_v.push_back(std::string(index_name_7, index_name_7_size));
+
+    Data * result = new Data(Data::grid(
+            data_array_p, data_array_shape_v,
+            names_v, libmuscle::StorageOrder::first_adjacent));
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_grid_2_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int32_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_3_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int32_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_4_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int32_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_5_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int32_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_6_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int32_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    std::string index_name_6_s(index_name_6, index_name_6_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_7_int4_n_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size, char * index_name_7, std::size_t index_name_7_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int32_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    std::string index_name_6_s(index_name_6, index_name_6_size);
-    std::string index_name_7_s(index_name_7, index_name_7_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s,index_name_7_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_1_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size) {
+std::intptr_t LIBMUSCLE_Data_create_grid_int8_n_(
+        int64_t * data_array,
+        std::size_t * data_array_shape,
+        std::size_t data_array_ndims,
+        char * index_name_1, std::size_t index_name_1_size,
+        char * index_name_2, std::size_t index_name_2_size,
+        char * index_name_3, std::size_t index_name_3_size,
+        char * index_name_4, std::size_t index_name_4_size,
+        char * index_name_5, std::size_t index_name_5_size,
+        char * index_name_6, std::size_t index_name_6_size,
+        char * index_name_7, std::size_t index_name_7_size
+) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
     auto data_array_p = const_cast<int64_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s}, libmuscle::StorageOrder::first_adjacent));
+
+    std::vector<std::string> names_v;
+    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    if (data_array_ndims >= 2u)
+        names_v.push_back(std::string(index_name_2, index_name_2_size));
+    if (data_array_ndims >= 3u)
+        names_v.push_back(std::string(index_name_3, index_name_3_size));
+    if (data_array_ndims >= 4u)
+        names_v.push_back(std::string(index_name_4, index_name_4_size));
+    if (data_array_ndims >= 5u)
+        names_v.push_back(std::string(index_name_5, index_name_5_size));
+    if (data_array_ndims >= 6u)
+        names_v.push_back(std::string(index_name_6, index_name_6_size));
+    if (data_array_ndims >= 7u)
+        names_v.push_back(std::string(index_name_7, index_name_7_size));
+
+    Data * result = new Data(Data::grid(
+            data_array_p, data_array_shape_v,
+            names_v, libmuscle::StorageOrder::first_adjacent));
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_grid_2_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int64_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_3_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int64_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_4_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int64_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_5_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int64_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_6_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int64_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    std::string index_name_6_s(index_name_6, index_name_6_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_7_int8_n_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size, char * index_name_7, std::size_t index_name_7_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int64_t const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    std::string index_name_6_s(index_name_6, index_name_6_size);
-    std::string index_name_7_s(index_name_7, index_name_7_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s,index_name_7_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_1_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size) {
+std::intptr_t LIBMUSCLE_Data_create_grid_real4_n_(
+        float * data_array,
+        std::size_t * data_array_shape,
+        std::size_t data_array_ndims,
+        char * index_name_1, std::size_t index_name_1_size,
+        char * index_name_2, std::size_t index_name_2_size,
+        char * index_name_3, std::size_t index_name_3_size,
+        char * index_name_4, std::size_t index_name_4_size,
+        char * index_name_5, std::size_t index_name_5_size,
+        char * index_name_6, std::size_t index_name_6_size,
+        char * index_name_7, std::size_t index_name_7_size
+) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
     auto data_array_p = const_cast<float const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s}, libmuscle::StorageOrder::first_adjacent));
+
+    std::vector<std::string> names_v;
+    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    if (data_array_ndims >= 2u)
+        names_v.push_back(std::string(index_name_2, index_name_2_size));
+    if (data_array_ndims >= 3u)
+        names_v.push_back(std::string(index_name_3, index_name_3_size));
+    if (data_array_ndims >= 4u)
+        names_v.push_back(std::string(index_name_4, index_name_4_size));
+    if (data_array_ndims >= 5u)
+        names_v.push_back(std::string(index_name_5, index_name_5_size));
+    if (data_array_ndims >= 6u)
+        names_v.push_back(std::string(index_name_6, index_name_6_size));
+    if (data_array_ndims >= 7u)
+        names_v.push_back(std::string(index_name_7, index_name_7_size));
+
+    Data * result = new Data(Data::grid(
+            data_array_p, data_array_shape_v,
+            names_v, libmuscle::StorageOrder::first_adjacent));
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_grid_2_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<float const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_3_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<float const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_4_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<float const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_5_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<float const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_6_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<float const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    std::string index_name_6_s(index_name_6, index_name_6_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_7_real4_n_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size, char * index_name_7, std::size_t index_name_7_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<float const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    std::string index_name_6_s(index_name_6, index_name_6_size);
-    std::string index_name_7_s(index_name_7, index_name_7_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s,index_name_7_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_1_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size) {
+std::intptr_t LIBMUSCLE_Data_create_grid_real8_n_(
+        double * data_array,
+        std::size_t * data_array_shape,
+        std::size_t data_array_ndims,
+        char * index_name_1, std::size_t index_name_1_size,
+        char * index_name_2, std::size_t index_name_2_size,
+        char * index_name_3, std::size_t index_name_3_size,
+        char * index_name_4, std::size_t index_name_4_size,
+        char * index_name_5, std::size_t index_name_5_size,
+        char * index_name_6, std::size_t index_name_6_size,
+        char * index_name_7, std::size_t index_name_7_size
+) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
     auto data_array_p = const_cast<double const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
 
-std::intptr_t LIBMUSCLE_Data_create_grid_2_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<double const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
+    std::vector<std::string> names_v;
+    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    if (data_array_ndims >= 2u)
+        names_v.push_back(std::string(index_name_2, index_name_2_size));
+    if (data_array_ndims >= 3u)
+        names_v.push_back(std::string(index_name_3, index_name_3_size));
+    if (data_array_ndims >= 4u)
+        names_v.push_back(std::string(index_name_4, index_name_4_size));
+    if (data_array_ndims >= 5u)
+        names_v.push_back(std::string(index_name_5, index_name_5_size));
+    if (data_array_ndims >= 6u)
+        names_v.push_back(std::string(index_name_6, index_name_6_size));
+    if (data_array_ndims >= 7u)
+        names_v.push_back(std::string(index_name_7, index_name_7_size));
 
-std::intptr_t LIBMUSCLE_Data_create_grid_3_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<double const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_4_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<double const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_5_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<double const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_6_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<double const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    std::string index_name_6_s(index_name_6, index_name_6_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s}, libmuscle::StorageOrder::first_adjacent));
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Data_create_grid_7_real8_n_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims, char * index_name_1, std::size_t index_name_1_size, char * index_name_2, std::size_t index_name_2_size, char * index_name_3, std::size_t index_name_3_size, char * index_name_4, std::size_t index_name_4_size, char * index_name_5, std::size_t index_name_5_size, char * index_name_6, std::size_t index_name_6_size, char * index_name_7, std::size_t index_name_7_size) {
-    std::vector<std::size_t> data_array_shape_v(
-            data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<double const * const>(data_array);
-    std::string index_name_1_s(index_name_1, index_name_1_size);
-    std::string index_name_2_s(index_name_2, index_name_2_size);
-    std::string index_name_3_s(index_name_3, index_name_3_size);
-    std::string index_name_4_s(index_name_4, index_name_4_size);
-    std::string index_name_5_s(index_name_5, index_name_5_size);
-    std::string index_name_6_s(index_name_6, index_name_6_size);
-    std::string index_name_7_s(index_name_7, index_name_7_size);
-    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {index_name_1_s,index_name_2_s,index_name_3_s,index_name_4_s,index_name_5_s,index_name_6_s,index_name_7_s}, libmuscle::StorageOrder::first_adjacent));
+    Data * result = new Data(Data::grid(
+            data_array_p, data_array_shape_v,
+            names_v, libmuscle::StorageOrder::first_adjacent));
     return reinterpret_cast<std::intptr_t>(result);
 }
 

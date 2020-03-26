@@ -40,11 +40,6 @@ module libmuscle
     public :: LIBMUSCLE_DataConstRef_create_settings
     public :: LIBMUSCLE_DataConstRef_create_copy
     public :: LIBMUSCLE_DataConstRef_create
-    public :: LIBMUSCLE_DataConstRef_create_grid_logical_a
-    public :: LIBMUSCLE_DataConstRef_create_grid_int4_a
-    public :: LIBMUSCLE_DataConstRef_create_grid_int8_a
-    public :: LIBMUSCLE_DataConstRef_create_grid_real4_a
-    public :: LIBMUSCLE_DataConstRef_create_grid_real8_a
     public :: LIBMUSCLE_DataConstRef_create_grid_1_logical_a
     public :: LIBMUSCLE_DataConstRef_create_grid_2_logical_a
     public :: LIBMUSCLE_DataConstRef_create_grid_3_logical_a
@@ -208,11 +203,6 @@ module libmuscle
     public :: LIBMUSCLE_Data_create_settings
     public :: LIBMUSCLE_Data_create_copy
     public :: LIBMUSCLE_Data_create
-    public :: LIBMUSCLE_Data_create_grid_logical_a
-    public :: LIBMUSCLE_Data_create_grid_int4_a
-    public :: LIBMUSCLE_Data_create_grid_int8_a
-    public :: LIBMUSCLE_Data_create_grid_real4_a
-    public :: LIBMUSCLE_Data_create_grid_real8_a
     public :: LIBMUSCLE_Data_create_grid_1_logical_a
     public :: LIBMUSCLE_Data_create_grid_2_logical_a
     public :: LIBMUSCLE_Data_create_grid_3_logical_a
@@ -641,163 +631,7 @@ module libmuscle
             integer (c_size_t), value, intent(in) :: data_array_ndims
         end function LIBMUSCLE_DataConstRef_create_grid_real8_a_
 
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_1_logical_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_1_logical_n_")
-
-            use iso_c_binding
-            logical (c_bool), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-        end function LIBMUSCLE_DataConstRef_create_grid_1_logical_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_2_logical_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_2_logical_n_")
-
-            use iso_c_binding
-            logical (c_bool), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(2), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-        end function LIBMUSCLE_DataConstRef_create_grid_2_logical_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_3_logical_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_3_logical_n_")
-
-            use iso_c_binding
-            logical (c_bool), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(3), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-        end function LIBMUSCLE_DataConstRef_create_grid_3_logical_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_4_logical_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_4_logical_n_")
-
-            use iso_c_binding
-            logical (c_bool), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(4), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-        end function LIBMUSCLE_DataConstRef_create_grid_4_logical_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_5_logical_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size, &
-                index_name_5, &
-                index_name_5_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_5_logical_n_")
-
-            use iso_c_binding
-            logical (c_bool), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(5), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-            character, intent(in) :: index_name_5
-            integer (c_size_t), value, intent(in) :: index_name_5_size
-        end function LIBMUSCLE_DataConstRef_create_grid_5_logical_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_6_logical_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size, &
-                index_name_5, &
-                index_name_5_size, &
-                index_name_6, &
-                index_name_6_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_6_logical_n_")
-
-            use iso_c_binding
-            logical (c_bool), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(6), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-            character, intent(in) :: index_name_5
-            integer (c_size_t), value, intent(in) :: index_name_5_size
-            character, intent(in) :: index_name_6
-            integer (c_size_t), value, intent(in) :: index_name_6_size
-        end function LIBMUSCLE_DataConstRef_create_grid_6_logical_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_7_logical_n_( &
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_logical_n_( &
                 data_array, &
                 data_array_shape, &
                 data_array_ndims, &
@@ -815,11 +649,11 @@ module libmuscle
                 index_name_6_size, &
                 index_name_7, &
                 index_name_7_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_7_logical_n_")
+                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_logical_n_")
 
             use iso_c_binding
             logical (c_bool), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(7), intent(in) :: data_array_shape
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
             integer (c_size_t), value, intent(in) :: data_array_ndims
             character, intent(in) :: index_name_1
             integer (c_size_t), value, intent(in) :: index_name_1_size
@@ -835,165 +669,9 @@ module libmuscle
             integer (c_size_t), value, intent(in) :: index_name_6_size
             character, intent(in) :: index_name_7
             integer (c_size_t), value, intent(in) :: index_name_7_size
-        end function LIBMUSCLE_DataConstRef_create_grid_7_logical_n_
+        end function LIBMUSCLE_DataConstRef_create_grid_logical_n_
 
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_1_int4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_1_int4_n_")
-
-            use iso_c_binding
-            integer (c_int32_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-        end function LIBMUSCLE_DataConstRef_create_grid_1_int4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_2_int4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_2_int4_n_")
-
-            use iso_c_binding
-            integer (c_int32_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(2), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-        end function LIBMUSCLE_DataConstRef_create_grid_2_int4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_3_int4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_3_int4_n_")
-
-            use iso_c_binding
-            integer (c_int32_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(3), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-        end function LIBMUSCLE_DataConstRef_create_grid_3_int4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_4_int4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_4_int4_n_")
-
-            use iso_c_binding
-            integer (c_int32_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(4), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-        end function LIBMUSCLE_DataConstRef_create_grid_4_int4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_5_int4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size, &
-                index_name_5, &
-                index_name_5_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_5_int4_n_")
-
-            use iso_c_binding
-            integer (c_int32_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(5), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-            character, intent(in) :: index_name_5
-            integer (c_size_t), value, intent(in) :: index_name_5_size
-        end function LIBMUSCLE_DataConstRef_create_grid_5_int4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_6_int4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size, &
-                index_name_5, &
-                index_name_5_size, &
-                index_name_6, &
-                index_name_6_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_6_int4_n_")
-
-            use iso_c_binding
-            integer (c_int32_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(6), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-            character, intent(in) :: index_name_5
-            integer (c_size_t), value, intent(in) :: index_name_5_size
-            character, intent(in) :: index_name_6
-            integer (c_size_t), value, intent(in) :: index_name_6_size
-        end function LIBMUSCLE_DataConstRef_create_grid_6_int4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_7_int4_n_( &
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_int4_n_( &
                 data_array, &
                 data_array_shape, &
                 data_array_ndims, &
@@ -1011,11 +689,11 @@ module libmuscle
                 index_name_6_size, &
                 index_name_7, &
                 index_name_7_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_7_int4_n_")
+                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_int4_n_")
 
             use iso_c_binding
             integer (c_int32_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(7), intent(in) :: data_array_shape
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
             integer (c_size_t), value, intent(in) :: data_array_ndims
             character, intent(in) :: index_name_1
             integer (c_size_t), value, intent(in) :: index_name_1_size
@@ -1031,165 +709,9 @@ module libmuscle
             integer (c_size_t), value, intent(in) :: index_name_6_size
             character, intent(in) :: index_name_7
             integer (c_size_t), value, intent(in) :: index_name_7_size
-        end function LIBMUSCLE_DataConstRef_create_grid_7_int4_n_
+        end function LIBMUSCLE_DataConstRef_create_grid_int4_n_
 
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_1_int8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_1_int8_n_")
-
-            use iso_c_binding
-            integer (c_int64_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-        end function LIBMUSCLE_DataConstRef_create_grid_1_int8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_2_int8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_2_int8_n_")
-
-            use iso_c_binding
-            integer (c_int64_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(2), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-        end function LIBMUSCLE_DataConstRef_create_grid_2_int8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_3_int8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_3_int8_n_")
-
-            use iso_c_binding
-            integer (c_int64_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(3), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-        end function LIBMUSCLE_DataConstRef_create_grid_3_int8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_4_int8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_4_int8_n_")
-
-            use iso_c_binding
-            integer (c_int64_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(4), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-        end function LIBMUSCLE_DataConstRef_create_grid_4_int8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_5_int8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size, &
-                index_name_5, &
-                index_name_5_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_5_int8_n_")
-
-            use iso_c_binding
-            integer (c_int64_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(5), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-            character, intent(in) :: index_name_5
-            integer (c_size_t), value, intent(in) :: index_name_5_size
-        end function LIBMUSCLE_DataConstRef_create_grid_5_int8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_6_int8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size, &
-                index_name_5, &
-                index_name_5_size, &
-                index_name_6, &
-                index_name_6_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_6_int8_n_")
-
-            use iso_c_binding
-            integer (c_int64_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(6), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-            character, intent(in) :: index_name_5
-            integer (c_size_t), value, intent(in) :: index_name_5_size
-            character, intent(in) :: index_name_6
-            integer (c_size_t), value, intent(in) :: index_name_6_size
-        end function LIBMUSCLE_DataConstRef_create_grid_6_int8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_7_int8_n_( &
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_int8_n_( &
                 data_array, &
                 data_array_shape, &
                 data_array_ndims, &
@@ -1207,11 +729,11 @@ module libmuscle
                 index_name_6_size, &
                 index_name_7, &
                 index_name_7_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_7_int8_n_")
+                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_int8_n_")
 
             use iso_c_binding
             integer (c_int64_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(7), intent(in) :: data_array_shape
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
             integer (c_size_t), value, intent(in) :: data_array_ndims
             character, intent(in) :: index_name_1
             integer (c_size_t), value, intent(in) :: index_name_1_size
@@ -1227,165 +749,9 @@ module libmuscle
             integer (c_size_t), value, intent(in) :: index_name_6_size
             character, intent(in) :: index_name_7
             integer (c_size_t), value, intent(in) :: index_name_7_size
-        end function LIBMUSCLE_DataConstRef_create_grid_7_int8_n_
+        end function LIBMUSCLE_DataConstRef_create_grid_int8_n_
 
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_1_real4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_1_real4_n_")
-
-            use iso_c_binding
-            real (c_float), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-        end function LIBMUSCLE_DataConstRef_create_grid_1_real4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_2_real4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_2_real4_n_")
-
-            use iso_c_binding
-            real (c_float), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(2), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-        end function LIBMUSCLE_DataConstRef_create_grid_2_real4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_3_real4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_3_real4_n_")
-
-            use iso_c_binding
-            real (c_float), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(3), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-        end function LIBMUSCLE_DataConstRef_create_grid_3_real4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_4_real4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_4_real4_n_")
-
-            use iso_c_binding
-            real (c_float), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(4), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-        end function LIBMUSCLE_DataConstRef_create_grid_4_real4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_5_real4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size, &
-                index_name_5, &
-                index_name_5_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_5_real4_n_")
-
-            use iso_c_binding
-            real (c_float), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(5), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-            character, intent(in) :: index_name_5
-            integer (c_size_t), value, intent(in) :: index_name_5_size
-        end function LIBMUSCLE_DataConstRef_create_grid_5_real4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_6_real4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size, &
-                index_name_5, &
-                index_name_5_size, &
-                index_name_6, &
-                index_name_6_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_6_real4_n_")
-
-            use iso_c_binding
-            real (c_float), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(6), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-            character, intent(in) :: index_name_5
-            integer (c_size_t), value, intent(in) :: index_name_5_size
-            character, intent(in) :: index_name_6
-            integer (c_size_t), value, intent(in) :: index_name_6_size
-        end function LIBMUSCLE_DataConstRef_create_grid_6_real4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_7_real4_n_( &
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_real4_n_( &
                 data_array, &
                 data_array_shape, &
                 data_array_ndims, &
@@ -1403,11 +769,11 @@ module libmuscle
                 index_name_6_size, &
                 index_name_7, &
                 index_name_7_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_7_real4_n_")
+                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_real4_n_")
 
             use iso_c_binding
             real (c_float), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(7), intent(in) :: data_array_shape
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
             integer (c_size_t), value, intent(in) :: data_array_ndims
             character, intent(in) :: index_name_1
             integer (c_size_t), value, intent(in) :: index_name_1_size
@@ -1423,165 +789,9 @@ module libmuscle
             integer (c_size_t), value, intent(in) :: index_name_6_size
             character, intent(in) :: index_name_7
             integer (c_size_t), value, intent(in) :: index_name_7_size
-        end function LIBMUSCLE_DataConstRef_create_grid_7_real4_n_
+        end function LIBMUSCLE_DataConstRef_create_grid_real4_n_
 
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_1_real8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_1_real8_n_")
-
-            use iso_c_binding
-            real (c_double), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-        end function LIBMUSCLE_DataConstRef_create_grid_1_real8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_2_real8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_2_real8_n_")
-
-            use iso_c_binding
-            real (c_double), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(2), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-        end function LIBMUSCLE_DataConstRef_create_grid_2_real8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_3_real8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_3_real8_n_")
-
-            use iso_c_binding
-            real (c_double), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(3), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-        end function LIBMUSCLE_DataConstRef_create_grid_3_real8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_4_real8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_4_real8_n_")
-
-            use iso_c_binding
-            real (c_double), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(4), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-        end function LIBMUSCLE_DataConstRef_create_grid_4_real8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_5_real8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size, &
-                index_name_5, &
-                index_name_5_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_5_real8_n_")
-
-            use iso_c_binding
-            real (c_double), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(5), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-            character, intent(in) :: index_name_5
-            integer (c_size_t), value, intent(in) :: index_name_5_size
-        end function LIBMUSCLE_DataConstRef_create_grid_5_real8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_6_real8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size, &
-                index_name_5, &
-                index_name_5_size, &
-                index_name_6, &
-                index_name_6_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_6_real8_n_")
-
-            use iso_c_binding
-            real (c_double), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(6), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-            character, intent(in) :: index_name_5
-            integer (c_size_t), value, intent(in) :: index_name_5_size
-            character, intent(in) :: index_name_6
-            integer (c_size_t), value, intent(in) :: index_name_6_size
-        end function LIBMUSCLE_DataConstRef_create_grid_6_real8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_7_real8_n_( &
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_real8_n_( &
                 data_array, &
                 data_array_shape, &
                 data_array_ndims, &
@@ -1599,11 +809,11 @@ module libmuscle
                 index_name_6_size, &
                 index_name_7, &
                 index_name_7_size) &
-                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_7_real8_n_")
+                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_real8_n_")
 
             use iso_c_binding
             real (c_double), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(7), intent(in) :: data_array_shape
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
             integer (c_size_t), value, intent(in) :: data_array_ndims
             character, intent(in) :: index_name_1
             integer (c_size_t), value, intent(in) :: index_name_1_size
@@ -1619,7 +829,7 @@ module libmuscle
             integer (c_size_t), value, intent(in) :: index_name_6_size
             character, intent(in) :: index_name_7
             integer (c_size_t), value, intent(in) :: index_name_7_size
-        end function LIBMUSCLE_DataConstRef_create_grid_7_real8_n_
+        end function LIBMUSCLE_DataConstRef_create_grid_real8_n_
 
         subroutine LIBMUSCLE_DataConstRef_free_(self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_free_")
@@ -2869,163 +2079,7 @@ module libmuscle
             integer (c_size_t), value, intent(in) :: data_array_ndims
         end function LIBMUSCLE_Data_create_grid_real8_a_
 
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_1_logical_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_1_logical_n_")
-
-            use iso_c_binding
-            logical (c_bool), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-        end function LIBMUSCLE_Data_create_grid_1_logical_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_2_logical_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_2_logical_n_")
-
-            use iso_c_binding
-            logical (c_bool), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(2), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-        end function LIBMUSCLE_Data_create_grid_2_logical_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_3_logical_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_3_logical_n_")
-
-            use iso_c_binding
-            logical (c_bool), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(3), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-        end function LIBMUSCLE_Data_create_grid_3_logical_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_4_logical_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_4_logical_n_")
-
-            use iso_c_binding
-            logical (c_bool), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(4), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-        end function LIBMUSCLE_Data_create_grid_4_logical_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_5_logical_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size, &
-                index_name_5, &
-                index_name_5_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_5_logical_n_")
-
-            use iso_c_binding
-            logical (c_bool), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(5), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-            character, intent(in) :: index_name_5
-            integer (c_size_t), value, intent(in) :: index_name_5_size
-        end function LIBMUSCLE_Data_create_grid_5_logical_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_6_logical_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size, &
-                index_name_5, &
-                index_name_5_size, &
-                index_name_6, &
-                index_name_6_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_6_logical_n_")
-
-            use iso_c_binding
-            logical (c_bool), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(6), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-            character, intent(in) :: index_name_5
-            integer (c_size_t), value, intent(in) :: index_name_5_size
-            character, intent(in) :: index_name_6
-            integer (c_size_t), value, intent(in) :: index_name_6_size
-        end function LIBMUSCLE_Data_create_grid_6_logical_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_7_logical_n_( &
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_logical_n_( &
                 data_array, &
                 data_array_shape, &
                 data_array_ndims, &
@@ -3043,11 +2097,11 @@ module libmuscle
                 index_name_6_size, &
                 index_name_7, &
                 index_name_7_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_7_logical_n_")
+                bind(C, name="LIBMUSCLE_Data_create_grid_logical_n_")
 
             use iso_c_binding
             logical (c_bool), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(7), intent(in) :: data_array_shape
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
             integer (c_size_t), value, intent(in) :: data_array_ndims
             character, intent(in) :: index_name_1
             integer (c_size_t), value, intent(in) :: index_name_1_size
@@ -3063,165 +2117,9 @@ module libmuscle
             integer (c_size_t), value, intent(in) :: index_name_6_size
             character, intent(in) :: index_name_7
             integer (c_size_t), value, intent(in) :: index_name_7_size
-        end function LIBMUSCLE_Data_create_grid_7_logical_n_
+        end function LIBMUSCLE_Data_create_grid_logical_n_
 
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_1_int4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_1_int4_n_")
-
-            use iso_c_binding
-            integer (c_int32_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-        end function LIBMUSCLE_Data_create_grid_1_int4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_2_int4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_2_int4_n_")
-
-            use iso_c_binding
-            integer (c_int32_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(2), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-        end function LIBMUSCLE_Data_create_grid_2_int4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_3_int4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_3_int4_n_")
-
-            use iso_c_binding
-            integer (c_int32_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(3), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-        end function LIBMUSCLE_Data_create_grid_3_int4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_4_int4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_4_int4_n_")
-
-            use iso_c_binding
-            integer (c_int32_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(4), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-        end function LIBMUSCLE_Data_create_grid_4_int4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_5_int4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size, &
-                index_name_5, &
-                index_name_5_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_5_int4_n_")
-
-            use iso_c_binding
-            integer (c_int32_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(5), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-            character, intent(in) :: index_name_5
-            integer (c_size_t), value, intent(in) :: index_name_5_size
-        end function LIBMUSCLE_Data_create_grid_5_int4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_6_int4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size, &
-                index_name_5, &
-                index_name_5_size, &
-                index_name_6, &
-                index_name_6_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_6_int4_n_")
-
-            use iso_c_binding
-            integer (c_int32_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(6), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-            character, intent(in) :: index_name_5
-            integer (c_size_t), value, intent(in) :: index_name_5_size
-            character, intent(in) :: index_name_6
-            integer (c_size_t), value, intent(in) :: index_name_6_size
-        end function LIBMUSCLE_Data_create_grid_6_int4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_7_int4_n_( &
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_int4_n_( &
                 data_array, &
                 data_array_shape, &
                 data_array_ndims, &
@@ -3239,11 +2137,11 @@ module libmuscle
                 index_name_6_size, &
                 index_name_7, &
                 index_name_7_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_7_int4_n_")
+                bind(C, name="LIBMUSCLE_Data_create_grid_int4_n_")
 
             use iso_c_binding
             integer (c_int32_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(7), intent(in) :: data_array_shape
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
             integer (c_size_t), value, intent(in) :: data_array_ndims
             character, intent(in) :: index_name_1
             integer (c_size_t), value, intent(in) :: index_name_1_size
@@ -3259,165 +2157,9 @@ module libmuscle
             integer (c_size_t), value, intent(in) :: index_name_6_size
             character, intent(in) :: index_name_7
             integer (c_size_t), value, intent(in) :: index_name_7_size
-        end function LIBMUSCLE_Data_create_grid_7_int4_n_
+        end function LIBMUSCLE_Data_create_grid_int4_n_
 
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_1_int8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_1_int8_n_")
-
-            use iso_c_binding
-            integer (c_int64_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-        end function LIBMUSCLE_Data_create_grid_1_int8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_2_int8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_2_int8_n_")
-
-            use iso_c_binding
-            integer (c_int64_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(2), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-        end function LIBMUSCLE_Data_create_grid_2_int8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_3_int8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_3_int8_n_")
-
-            use iso_c_binding
-            integer (c_int64_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(3), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-        end function LIBMUSCLE_Data_create_grid_3_int8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_4_int8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_4_int8_n_")
-
-            use iso_c_binding
-            integer (c_int64_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(4), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-        end function LIBMUSCLE_Data_create_grid_4_int8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_5_int8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size, &
-                index_name_5, &
-                index_name_5_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_5_int8_n_")
-
-            use iso_c_binding
-            integer (c_int64_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(5), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-            character, intent(in) :: index_name_5
-            integer (c_size_t), value, intent(in) :: index_name_5_size
-        end function LIBMUSCLE_Data_create_grid_5_int8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_6_int8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size, &
-                index_name_5, &
-                index_name_5_size, &
-                index_name_6, &
-                index_name_6_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_6_int8_n_")
-
-            use iso_c_binding
-            integer (c_int64_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(6), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-            character, intent(in) :: index_name_5
-            integer (c_size_t), value, intent(in) :: index_name_5_size
-            character, intent(in) :: index_name_6
-            integer (c_size_t), value, intent(in) :: index_name_6_size
-        end function LIBMUSCLE_Data_create_grid_6_int8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_7_int8_n_( &
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_int8_n_( &
                 data_array, &
                 data_array_shape, &
                 data_array_ndims, &
@@ -3435,11 +2177,11 @@ module libmuscle
                 index_name_6_size, &
                 index_name_7, &
                 index_name_7_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_7_int8_n_")
+                bind(C, name="LIBMUSCLE_Data_create_grid_int8_n_")
 
             use iso_c_binding
             integer (c_int64_t), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(7), intent(in) :: data_array_shape
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
             integer (c_size_t), value, intent(in) :: data_array_ndims
             character, intent(in) :: index_name_1
             integer (c_size_t), value, intent(in) :: index_name_1_size
@@ -3455,165 +2197,9 @@ module libmuscle
             integer (c_size_t), value, intent(in) :: index_name_6_size
             character, intent(in) :: index_name_7
             integer (c_size_t), value, intent(in) :: index_name_7_size
-        end function LIBMUSCLE_Data_create_grid_7_int8_n_
+        end function LIBMUSCLE_Data_create_grid_int8_n_
 
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_1_real4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_1_real4_n_")
-
-            use iso_c_binding
-            real (c_float), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-        end function LIBMUSCLE_Data_create_grid_1_real4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_2_real4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_2_real4_n_")
-
-            use iso_c_binding
-            real (c_float), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(2), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-        end function LIBMUSCLE_Data_create_grid_2_real4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_3_real4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_3_real4_n_")
-
-            use iso_c_binding
-            real (c_float), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(3), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-        end function LIBMUSCLE_Data_create_grid_3_real4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_4_real4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_4_real4_n_")
-
-            use iso_c_binding
-            real (c_float), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(4), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-        end function LIBMUSCLE_Data_create_grid_4_real4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_5_real4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size, &
-                index_name_5, &
-                index_name_5_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_5_real4_n_")
-
-            use iso_c_binding
-            real (c_float), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(5), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-            character, intent(in) :: index_name_5
-            integer (c_size_t), value, intent(in) :: index_name_5_size
-        end function LIBMUSCLE_Data_create_grid_5_real4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_6_real4_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size, &
-                index_name_5, &
-                index_name_5_size, &
-                index_name_6, &
-                index_name_6_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_6_real4_n_")
-
-            use iso_c_binding
-            real (c_float), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(6), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-            character, intent(in) :: index_name_5
-            integer (c_size_t), value, intent(in) :: index_name_5_size
-            character, intent(in) :: index_name_6
-            integer (c_size_t), value, intent(in) :: index_name_6_size
-        end function LIBMUSCLE_Data_create_grid_6_real4_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_7_real4_n_( &
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_real4_n_( &
                 data_array, &
                 data_array_shape, &
                 data_array_ndims, &
@@ -3631,11 +2217,11 @@ module libmuscle
                 index_name_6_size, &
                 index_name_7, &
                 index_name_7_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_7_real4_n_")
+                bind(C, name="LIBMUSCLE_Data_create_grid_real4_n_")
 
             use iso_c_binding
             real (c_float), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(7), intent(in) :: data_array_shape
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
             integer (c_size_t), value, intent(in) :: data_array_ndims
             character, intent(in) :: index_name_1
             integer (c_size_t), value, intent(in) :: index_name_1_size
@@ -3651,165 +2237,9 @@ module libmuscle
             integer (c_size_t), value, intent(in) :: index_name_6_size
             character, intent(in) :: index_name_7
             integer (c_size_t), value, intent(in) :: index_name_7_size
-        end function LIBMUSCLE_Data_create_grid_7_real4_n_
+        end function LIBMUSCLE_Data_create_grid_real4_n_
 
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_1_real8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_1_real8_n_")
-
-            use iso_c_binding
-            real (c_double), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-        end function LIBMUSCLE_Data_create_grid_1_real8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_2_real8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_2_real8_n_")
-
-            use iso_c_binding
-            real (c_double), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(2), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-        end function LIBMUSCLE_Data_create_grid_2_real8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_3_real8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_3_real8_n_")
-
-            use iso_c_binding
-            real (c_double), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(3), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-        end function LIBMUSCLE_Data_create_grid_3_real8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_4_real8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_4_real8_n_")
-
-            use iso_c_binding
-            real (c_double), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(4), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-        end function LIBMUSCLE_Data_create_grid_4_real8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_5_real8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size, &
-                index_name_5, &
-                index_name_5_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_5_real8_n_")
-
-            use iso_c_binding
-            real (c_double), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(5), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-            character, intent(in) :: index_name_5
-            integer (c_size_t), value, intent(in) :: index_name_5_size
-        end function LIBMUSCLE_Data_create_grid_5_real8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_6_real8_n_( &
-                data_array, &
-                data_array_shape, &
-                data_array_ndims, &
-                index_name_1, &
-                index_name_1_size, &
-                index_name_2, &
-                index_name_2_size, &
-                index_name_3, &
-                index_name_3_size, &
-                index_name_4, &
-                index_name_4_size, &
-                index_name_5, &
-                index_name_5_size, &
-                index_name_6, &
-                index_name_6_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_6_real8_n_")
-
-            use iso_c_binding
-            real (c_double), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(6), intent(in) :: data_array_shape
-            integer (c_size_t), value, intent(in) :: data_array_ndims
-            character, intent(in) :: index_name_1
-            integer (c_size_t), value, intent(in) :: index_name_1_size
-            character, intent(in) :: index_name_2
-            integer (c_size_t), value, intent(in) :: index_name_2_size
-            character, intent(in) :: index_name_3
-            integer (c_size_t), value, intent(in) :: index_name_3_size
-            character, intent(in) :: index_name_4
-            integer (c_size_t), value, intent(in) :: index_name_4_size
-            character, intent(in) :: index_name_5
-            integer (c_size_t), value, intent(in) :: index_name_5_size
-            character, intent(in) :: index_name_6
-            integer (c_size_t), value, intent(in) :: index_name_6_size
-        end function LIBMUSCLE_Data_create_grid_6_real8_n_
-
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_7_real8_n_( &
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_real8_n_( &
                 data_array, &
                 data_array_shape, &
                 data_array_ndims, &
@@ -3827,11 +2257,11 @@ module libmuscle
                 index_name_6_size, &
                 index_name_7, &
                 index_name_7_size) &
-                bind(C, name="LIBMUSCLE_Data_create_grid_7_real8_n_")
+                bind(C, name="LIBMUSCLE_Data_create_grid_real8_n_")
 
             use iso_c_binding
             real (c_double), dimension(*), intent(in) :: data_array
-            integer (c_size_t), dimension(7), intent(in) :: data_array_shape
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
             integer (c_size_t), value, intent(in) :: data_array_ndims
             character, intent(in) :: index_name_1
             integer (c_size_t), value, intent(in) :: index_name_1_size
@@ -3847,7 +2277,7 @@ module libmuscle
             integer (c_size_t), value, intent(in) :: index_name_6_size
             character, intent(in) :: index_name_7
             integer (c_size_t), value, intent(in) :: index_name_7_size
-        end function LIBMUSCLE_Data_create_grid_7_real8_n_
+        end function LIBMUSCLE_Data_create_grid_real8_n_
 
         subroutine LIBMUSCLE_Data_free_(self) &
                 bind(C, name="LIBMUSCLE_Data_free_")
@@ -7285,6 +5715,7 @@ contains
     function LIBMUSCLE_DataConstRef_create_grid_1_logical_n( &
             data_array, &
             index_name_1)
+
         implicit none
         logical, dimension(:), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7292,9 +5723,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_1_logical_n_( &
-            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 1_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                1_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_1_logical_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_1_logical_n
@@ -7303,6 +5743,7 @@ contains
             data_array, &
             index_name_1, &
             index_name_2)
+
         implicit none
         logical, dimension(:, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7311,10 +5752,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_2_logical_n_( &
-            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 2_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                2_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_2_logical_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_2_logical_n
@@ -7324,6 +5773,7 @@ contains
             index_name_1, &
             index_name_2, &
             index_name_3)
+
         implicit none
         logical, dimension(:, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7333,11 +5783,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_3_logical_n_( &
-            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 3_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                3_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_3_logical_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_3_logical_n
@@ -7348,6 +5805,7 @@ contains
             index_name_2, &
             index_name_3, &
             index_name_4)
+
         implicit none
         logical, dimension(:, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7358,12 +5816,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_4_logical_n_( &
-            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 4_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                4_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_4_logical_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_4_logical_n
@@ -7375,6 +5839,7 @@ contains
             index_name_3, &
             index_name_4, &
             index_name_5)
+
         implicit none
         logical, dimension(:, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7386,13 +5851,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_5_logical_n_( &
-            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 5_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                5_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_5_logical_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_5_logical_n
@@ -7405,6 +5875,7 @@ contains
             index_name_4, &
             index_name_5, &
             index_name_6)
+
         implicit none
         logical, dimension(:, :, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7417,14 +5888,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_6_logical_n_( &
-            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 6_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t), &
-            index_name_6, int(len(index_name_6), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                6_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_6_logical_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_6_logical_n
@@ -7438,6 +5913,7 @@ contains
             index_name_5, &
             index_name_6, &
             index_name_7)
+
         implicit none
         logical, dimension(:, :, :, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7451,15 +5927,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_7_logical_n_( &
-            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 7_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t), &
-            index_name_6, int(len(index_name_6), c_size_t), &
-            index_name_7, int(len(index_name_7), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                7_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_7, int(len(index_name_7), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_7_logical_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_7_logical_n
@@ -7467,6 +5946,7 @@ contains
     function LIBMUSCLE_DataConstRef_create_grid_1_int4_n( &
             data_array, &
             index_name_1)
+
         implicit none
         integer (LIBMUSCLE_int4), dimension(:), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7474,9 +5954,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_1_int4_n_( &
-            data_array, int(shape(data_array), c_size_t), 1_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                1_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_1_int4_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_1_int4_n
@@ -7485,6 +5974,7 @@ contains
             data_array, &
             index_name_1, &
             index_name_2)
+
         implicit none
         integer (LIBMUSCLE_int4), dimension(:, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7493,10 +5983,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_2_int4_n_( &
-            data_array, int(shape(data_array), c_size_t), 2_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                2_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_2_int4_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_2_int4_n
@@ -7506,6 +6004,7 @@ contains
             index_name_1, &
             index_name_2, &
             index_name_3)
+
         implicit none
         integer (LIBMUSCLE_int4), dimension(:, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7515,11 +6014,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_3_int4_n_( &
-            data_array, int(shape(data_array), c_size_t), 3_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                3_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_3_int4_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_3_int4_n
@@ -7530,6 +6036,7 @@ contains
             index_name_2, &
             index_name_3, &
             index_name_4)
+
         implicit none
         integer (LIBMUSCLE_int4), dimension(:, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7540,12 +6047,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_4_int4_n_( &
-            data_array, int(shape(data_array), c_size_t), 4_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                4_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_4_int4_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_4_int4_n
@@ -7557,6 +6070,7 @@ contains
             index_name_3, &
             index_name_4, &
             index_name_5)
+
         implicit none
         integer (LIBMUSCLE_int4), dimension(:, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7568,13 +6082,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_5_int4_n_( &
-            data_array, int(shape(data_array), c_size_t), 5_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                5_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_5_int4_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_5_int4_n
@@ -7587,6 +6106,7 @@ contains
             index_name_4, &
             index_name_5, &
             index_name_6)
+
         implicit none
         integer (LIBMUSCLE_int4), dimension(:, :, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7599,14 +6119,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_6_int4_n_( &
-            data_array, int(shape(data_array), c_size_t), 6_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t), &
-            index_name_6, int(len(index_name_6), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                6_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_6_int4_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_6_int4_n
@@ -7620,6 +6144,7 @@ contains
             index_name_5, &
             index_name_6, &
             index_name_7)
+
         implicit none
         integer (LIBMUSCLE_int4), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7633,15 +6158,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_7_int4_n_( &
-            data_array, int(shape(data_array), c_size_t), 7_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t), &
-            index_name_6, int(len(index_name_6), c_size_t), &
-            index_name_7, int(len(index_name_7), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                7_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_7, int(len(index_name_7), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_7_int4_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_7_int4_n
@@ -7649,6 +6177,7 @@ contains
     function LIBMUSCLE_DataConstRef_create_grid_1_int8_n( &
             data_array, &
             index_name_1)
+
         implicit none
         integer (selected_int_kind(18)), dimension(:), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7656,9 +6185,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_1_int8_n_( &
-            data_array, int(shape(data_array), c_size_t), 1_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                1_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_1_int8_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_1_int8_n
@@ -7667,6 +6205,7 @@ contains
             data_array, &
             index_name_1, &
             index_name_2)
+
         implicit none
         integer (selected_int_kind(18)), dimension(:, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7675,10 +6214,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_2_int8_n_( &
-            data_array, int(shape(data_array), c_size_t), 2_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                2_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_2_int8_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_2_int8_n
@@ -7688,6 +6235,7 @@ contains
             index_name_1, &
             index_name_2, &
             index_name_3)
+
         implicit none
         integer (selected_int_kind(18)), dimension(:, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7697,11 +6245,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_3_int8_n_( &
-            data_array, int(shape(data_array), c_size_t), 3_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                3_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_3_int8_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_3_int8_n
@@ -7712,6 +6267,7 @@ contains
             index_name_2, &
             index_name_3, &
             index_name_4)
+
         implicit none
         integer (selected_int_kind(18)), dimension(:, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7722,12 +6278,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_4_int8_n_( &
-            data_array, int(shape(data_array), c_size_t), 4_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                4_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_4_int8_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_4_int8_n
@@ -7739,6 +6301,7 @@ contains
             index_name_3, &
             index_name_4, &
             index_name_5)
+
         implicit none
         integer (selected_int_kind(18)), dimension(:, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7750,13 +6313,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_5_int8_n_( &
-            data_array, int(shape(data_array), c_size_t), 5_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                5_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_5_int8_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_5_int8_n
@@ -7769,6 +6337,7 @@ contains
             index_name_4, &
             index_name_5, &
             index_name_6)
+
         implicit none
         integer (selected_int_kind(18)), dimension(:, :, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7781,14 +6350,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_6_int8_n_( &
-            data_array, int(shape(data_array), c_size_t), 6_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t), &
-            index_name_6, int(len(index_name_6), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                6_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_6_int8_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_6_int8_n
@@ -7802,6 +6375,7 @@ contains
             index_name_5, &
             index_name_6, &
             index_name_7)
+
         implicit none
         integer (selected_int_kind(18)), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7815,15 +6389,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_7_int8_n_( &
-            data_array, int(shape(data_array), c_size_t), 7_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t), &
-            index_name_6, int(len(index_name_6), c_size_t), &
-            index_name_7, int(len(index_name_7), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                7_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_7, int(len(index_name_7), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_7_int8_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_7_int8_n
@@ -7831,6 +6408,7 @@ contains
     function LIBMUSCLE_DataConstRef_create_grid_1_real4_n( &
             data_array, &
             index_name_1)
+
         implicit none
         real (LIBMUSCLE_real4), dimension(:), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7838,9 +6416,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_1_real4_n_( &
-            data_array, int(shape(data_array), c_size_t), 1_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                1_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_1_real4_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_1_real4_n
@@ -7849,6 +6436,7 @@ contains
             data_array, &
             index_name_1, &
             index_name_2)
+
         implicit none
         real (LIBMUSCLE_real4), dimension(:, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7857,10 +6445,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_2_real4_n_( &
-            data_array, int(shape(data_array), c_size_t), 2_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                2_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_2_real4_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_2_real4_n
@@ -7870,6 +6466,7 @@ contains
             index_name_1, &
             index_name_2, &
             index_name_3)
+
         implicit none
         real (LIBMUSCLE_real4), dimension(:, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7879,11 +6476,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_3_real4_n_( &
-            data_array, int(shape(data_array), c_size_t), 3_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                3_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_3_real4_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_3_real4_n
@@ -7894,6 +6498,7 @@ contains
             index_name_2, &
             index_name_3, &
             index_name_4)
+
         implicit none
         real (LIBMUSCLE_real4), dimension(:, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7904,12 +6509,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_4_real4_n_( &
-            data_array, int(shape(data_array), c_size_t), 4_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                4_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_4_real4_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_4_real4_n
@@ -7921,6 +6532,7 @@ contains
             index_name_3, &
             index_name_4, &
             index_name_5)
+
         implicit none
         real (LIBMUSCLE_real4), dimension(:, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7932,13 +6544,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_5_real4_n_( &
-            data_array, int(shape(data_array), c_size_t), 5_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                5_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_5_real4_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_5_real4_n
@@ -7951,6 +6568,7 @@ contains
             index_name_4, &
             index_name_5, &
             index_name_6)
+
         implicit none
         real (LIBMUSCLE_real4), dimension(:, :, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7963,14 +6581,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_6_real4_n_( &
-            data_array, int(shape(data_array), c_size_t), 6_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t), &
-            index_name_6, int(len(index_name_6), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                6_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_6_real4_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_6_real4_n
@@ -7984,6 +6606,7 @@ contains
             index_name_5, &
             index_name_6, &
             index_name_7)
+
         implicit none
         real (LIBMUSCLE_real4), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -7997,15 +6620,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_7_real4_n_( &
-            data_array, int(shape(data_array), c_size_t), 7_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t), &
-            index_name_6, int(len(index_name_6), c_size_t), &
-            index_name_7, int(len(index_name_7), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                7_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_7, int(len(index_name_7), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_7_real4_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_7_real4_n
@@ -8013,6 +6639,7 @@ contains
     function LIBMUSCLE_DataConstRef_create_grid_1_real8_n( &
             data_array, &
             index_name_1)
+
         implicit none
         real (LIBMUSCLE_real8), dimension(:), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -8020,9 +6647,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_1_real8_n_( &
-            data_array, int(shape(data_array), c_size_t), 1_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                1_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_1_real8_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_1_real8_n
@@ -8031,6 +6667,7 @@ contains
             data_array, &
             index_name_1, &
             index_name_2)
+
         implicit none
         real (LIBMUSCLE_real8), dimension(:, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -8039,10 +6676,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_2_real8_n_( &
-            data_array, int(shape(data_array), c_size_t), 2_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                2_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_2_real8_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_2_real8_n
@@ -8052,6 +6697,7 @@ contains
             index_name_1, &
             index_name_2, &
             index_name_3)
+
         implicit none
         real (LIBMUSCLE_real8), dimension(:, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -8061,11 +6707,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_3_real8_n_( &
-            data_array, int(shape(data_array), c_size_t), 3_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                3_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_3_real8_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_3_real8_n
@@ -8076,6 +6729,7 @@ contains
             index_name_2, &
             index_name_3, &
             index_name_4)
+
         implicit none
         real (LIBMUSCLE_real8), dimension(:, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -8086,12 +6740,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_4_real8_n_( &
-            data_array, int(shape(data_array), c_size_t), 4_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                4_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_4_real8_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_4_real8_n
@@ -8103,6 +6763,7 @@ contains
             index_name_3, &
             index_name_4, &
             index_name_5)
+
         implicit none
         real (LIBMUSCLE_real8), dimension(:, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -8114,13 +6775,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_5_real8_n_( &
-            data_array, int(shape(data_array), c_size_t), 5_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                5_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_5_real8_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_5_real8_n
@@ -8133,6 +6799,7 @@ contains
             index_name_4, &
             index_name_5, &
             index_name_6)
+
         implicit none
         real (LIBMUSCLE_real8), dimension(:, :, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -8145,14 +6812,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_6_real8_n_( &
-            data_array, int(shape(data_array), c_size_t), 6_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t), &
-            index_name_6, int(len(index_name_6), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                6_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_6_real8_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_6_real8_n
@@ -8166,6 +6837,7 @@ contains
             index_name_5, &
             index_name_6, &
             index_name_7)
+
         implicit none
         real (LIBMUSCLE_real8), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -8179,15 +6851,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_DataConstRef_create_grid_7_real8_n_( &
-            data_array, int(shape(data_array), c_size_t), 7_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t), &
-            index_name_6, int(len(index_name_6), c_size_t), &
-            index_name_7, int(len(index_name_7), c_size_t))
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                7_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_7, int(len(index_name_7), c_size_t) &
+            )
 
         LIBMUSCLE_DataConstRef_create_grid_7_real8_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_7_real8_n
@@ -12403,6 +11078,7 @@ contains
     function LIBMUSCLE_Data_create_grid_1_logical_n( &
             data_array, &
             index_name_1)
+
         implicit none
         logical, dimension(:), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12410,9 +11086,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_1_logical_n_( &
-            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 1_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                1_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_1_logical_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_1_logical_n
@@ -12421,6 +11106,7 @@ contains
             data_array, &
             index_name_1, &
             index_name_2)
+
         implicit none
         logical, dimension(:, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12429,10 +11115,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_2_logical_n_( &
-            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 2_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                2_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_2_logical_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_2_logical_n
@@ -12442,6 +11136,7 @@ contains
             index_name_1, &
             index_name_2, &
             index_name_3)
+
         implicit none
         logical, dimension(:, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12451,11 +11146,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_3_logical_n_( &
-            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 3_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                3_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_3_logical_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_3_logical_n
@@ -12466,6 +11168,7 @@ contains
             index_name_2, &
             index_name_3, &
             index_name_4)
+
         implicit none
         logical, dimension(:, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12476,12 +11179,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_4_logical_n_( &
-            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 4_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                4_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_4_logical_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_4_logical_n
@@ -12493,6 +11202,7 @@ contains
             index_name_3, &
             index_name_4, &
             index_name_5)
+
         implicit none
         logical, dimension(:, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12504,13 +11214,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_5_logical_n_( &
-            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 5_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                5_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_5_logical_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_5_logical_n
@@ -12523,6 +11238,7 @@ contains
             index_name_4, &
             index_name_5, &
             index_name_6)
+
         implicit none
         logical, dimension(:, :, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12535,14 +11251,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_6_logical_n_( &
-            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 6_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t), &
-            index_name_6, int(len(index_name_6), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                6_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_6_logical_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_6_logical_n
@@ -12556,6 +11276,7 @@ contains
             index_name_5, &
             index_name_6, &
             index_name_7)
+
         implicit none
         logical, dimension(:, :, :, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12569,15 +11290,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_7_logical_n_( &
-            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 7_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t), &
-            index_name_6, int(len(index_name_6), c_size_t), &
-            index_name_7, int(len(index_name_7), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                7_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_7, int(len(index_name_7), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_7_logical_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_7_logical_n
@@ -12585,6 +11309,7 @@ contains
     function LIBMUSCLE_Data_create_grid_1_int4_n( &
             data_array, &
             index_name_1)
+
         implicit none
         integer (LIBMUSCLE_int4), dimension(:), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12592,9 +11317,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_1_int4_n_( &
-            data_array, int(shape(data_array), c_size_t), 1_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                1_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_1_int4_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_1_int4_n
@@ -12603,6 +11337,7 @@ contains
             data_array, &
             index_name_1, &
             index_name_2)
+
         implicit none
         integer (LIBMUSCLE_int4), dimension(:, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12611,10 +11346,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_2_int4_n_( &
-            data_array, int(shape(data_array), c_size_t), 2_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                2_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_2_int4_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_2_int4_n
@@ -12624,6 +11367,7 @@ contains
             index_name_1, &
             index_name_2, &
             index_name_3)
+
         implicit none
         integer (LIBMUSCLE_int4), dimension(:, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12633,11 +11377,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_3_int4_n_( &
-            data_array, int(shape(data_array), c_size_t), 3_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                3_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_3_int4_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_3_int4_n
@@ -12648,6 +11399,7 @@ contains
             index_name_2, &
             index_name_3, &
             index_name_4)
+
         implicit none
         integer (LIBMUSCLE_int4), dimension(:, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12658,12 +11410,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_4_int4_n_( &
-            data_array, int(shape(data_array), c_size_t), 4_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                4_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_4_int4_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_4_int4_n
@@ -12675,6 +11433,7 @@ contains
             index_name_3, &
             index_name_4, &
             index_name_5)
+
         implicit none
         integer (LIBMUSCLE_int4), dimension(:, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12686,13 +11445,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_5_int4_n_( &
-            data_array, int(shape(data_array), c_size_t), 5_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                5_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_5_int4_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_5_int4_n
@@ -12705,6 +11469,7 @@ contains
             index_name_4, &
             index_name_5, &
             index_name_6)
+
         implicit none
         integer (LIBMUSCLE_int4), dimension(:, :, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12717,14 +11482,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_6_int4_n_( &
-            data_array, int(shape(data_array), c_size_t), 6_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t), &
-            index_name_6, int(len(index_name_6), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                6_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_6_int4_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_6_int4_n
@@ -12738,6 +11507,7 @@ contains
             index_name_5, &
             index_name_6, &
             index_name_7)
+
         implicit none
         integer (LIBMUSCLE_int4), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12751,15 +11521,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_7_int4_n_( &
-            data_array, int(shape(data_array), c_size_t), 7_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t), &
-            index_name_6, int(len(index_name_6), c_size_t), &
-            index_name_7, int(len(index_name_7), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                7_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_7, int(len(index_name_7), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_7_int4_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_7_int4_n
@@ -12767,6 +11540,7 @@ contains
     function LIBMUSCLE_Data_create_grid_1_int8_n( &
             data_array, &
             index_name_1)
+
         implicit none
         integer (selected_int_kind(18)), dimension(:), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12774,9 +11548,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_1_int8_n_( &
-            data_array, int(shape(data_array), c_size_t), 1_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                1_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_1_int8_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_1_int8_n
@@ -12785,6 +11568,7 @@ contains
             data_array, &
             index_name_1, &
             index_name_2)
+
         implicit none
         integer (selected_int_kind(18)), dimension(:, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12793,10 +11577,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_2_int8_n_( &
-            data_array, int(shape(data_array), c_size_t), 2_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                2_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_2_int8_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_2_int8_n
@@ -12806,6 +11598,7 @@ contains
             index_name_1, &
             index_name_2, &
             index_name_3)
+
         implicit none
         integer (selected_int_kind(18)), dimension(:, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12815,11 +11608,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_3_int8_n_( &
-            data_array, int(shape(data_array), c_size_t), 3_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                3_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_3_int8_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_3_int8_n
@@ -12830,6 +11630,7 @@ contains
             index_name_2, &
             index_name_3, &
             index_name_4)
+
         implicit none
         integer (selected_int_kind(18)), dimension(:, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12840,12 +11641,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_4_int8_n_( &
-            data_array, int(shape(data_array), c_size_t), 4_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                4_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_4_int8_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_4_int8_n
@@ -12857,6 +11664,7 @@ contains
             index_name_3, &
             index_name_4, &
             index_name_5)
+
         implicit none
         integer (selected_int_kind(18)), dimension(:, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12868,13 +11676,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_5_int8_n_( &
-            data_array, int(shape(data_array), c_size_t), 5_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                5_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_5_int8_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_5_int8_n
@@ -12887,6 +11700,7 @@ contains
             index_name_4, &
             index_name_5, &
             index_name_6)
+
         implicit none
         integer (selected_int_kind(18)), dimension(:, :, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12899,14 +11713,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_6_int8_n_( &
-            data_array, int(shape(data_array), c_size_t), 6_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t), &
-            index_name_6, int(len(index_name_6), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                6_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_6_int8_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_6_int8_n
@@ -12920,6 +11738,7 @@ contains
             index_name_5, &
             index_name_6, &
             index_name_7)
+
         implicit none
         integer (selected_int_kind(18)), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12933,15 +11752,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_7_int8_n_( &
-            data_array, int(shape(data_array), c_size_t), 7_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t), &
-            index_name_6, int(len(index_name_6), c_size_t), &
-            index_name_7, int(len(index_name_7), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                7_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_7, int(len(index_name_7), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_7_int8_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_7_int8_n
@@ -12949,6 +11771,7 @@ contains
     function LIBMUSCLE_Data_create_grid_1_real4_n( &
             data_array, &
             index_name_1)
+
         implicit none
         real (LIBMUSCLE_real4), dimension(:), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12956,9 +11779,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_1_real4_n_( &
-            data_array, int(shape(data_array), c_size_t), 1_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                1_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_1_real4_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_1_real4_n
@@ -12967,6 +11799,7 @@ contains
             data_array, &
             index_name_1, &
             index_name_2)
+
         implicit none
         real (LIBMUSCLE_real4), dimension(:, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12975,10 +11808,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_2_real4_n_( &
-            data_array, int(shape(data_array), c_size_t), 2_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                2_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_2_real4_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_2_real4_n
@@ -12988,6 +11829,7 @@ contains
             index_name_1, &
             index_name_2, &
             index_name_3)
+
         implicit none
         real (LIBMUSCLE_real4), dimension(:, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -12997,11 +11839,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_3_real4_n_( &
-            data_array, int(shape(data_array), c_size_t), 3_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                3_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_3_real4_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_3_real4_n
@@ -13012,6 +11861,7 @@ contains
             index_name_2, &
             index_name_3, &
             index_name_4)
+
         implicit none
         real (LIBMUSCLE_real4), dimension(:, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -13022,12 +11872,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_4_real4_n_( &
-            data_array, int(shape(data_array), c_size_t), 4_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                4_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_4_real4_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_4_real4_n
@@ -13039,6 +11895,7 @@ contains
             index_name_3, &
             index_name_4, &
             index_name_5)
+
         implicit none
         real (LIBMUSCLE_real4), dimension(:, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -13050,13 +11907,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_5_real4_n_( &
-            data_array, int(shape(data_array), c_size_t), 5_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                5_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_5_real4_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_5_real4_n
@@ -13069,6 +11931,7 @@ contains
             index_name_4, &
             index_name_5, &
             index_name_6)
+
         implicit none
         real (LIBMUSCLE_real4), dimension(:, :, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -13081,14 +11944,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_6_real4_n_( &
-            data_array, int(shape(data_array), c_size_t), 6_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t), &
-            index_name_6, int(len(index_name_6), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                6_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_6_real4_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_6_real4_n
@@ -13102,6 +11969,7 @@ contains
             index_name_5, &
             index_name_6, &
             index_name_7)
+
         implicit none
         real (LIBMUSCLE_real4), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -13115,15 +11983,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_7_real4_n_( &
-            data_array, int(shape(data_array), c_size_t), 7_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t), &
-            index_name_6, int(len(index_name_6), c_size_t), &
-            index_name_7, int(len(index_name_7), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                7_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_7, int(len(index_name_7), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_7_real4_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_7_real4_n
@@ -13131,6 +12002,7 @@ contains
     function LIBMUSCLE_Data_create_grid_1_real8_n( &
             data_array, &
             index_name_1)
+
         implicit none
         real (LIBMUSCLE_real8), dimension(:), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -13138,9 +12010,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_1_real8_n_( &
-            data_array, int(shape(data_array), c_size_t), 1_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                1_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_1_real8_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_1_real8_n
@@ -13149,6 +12030,7 @@ contains
             data_array, &
             index_name_1, &
             index_name_2)
+
         implicit none
         real (LIBMUSCLE_real8), dimension(:, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -13157,10 +12039,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_2_real8_n_( &
-            data_array, int(shape(data_array), c_size_t), 2_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                2_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_2_real8_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_2_real8_n
@@ -13170,6 +12060,7 @@ contains
             index_name_1, &
             index_name_2, &
             index_name_3)
+
         implicit none
         real (LIBMUSCLE_real8), dimension(:, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -13179,11 +12070,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_3_real8_n_( &
-            data_array, int(shape(data_array), c_size_t), 3_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                3_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_3_real8_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_3_real8_n
@@ -13194,6 +12092,7 @@ contains
             index_name_2, &
             index_name_3, &
             index_name_4)
+
         implicit none
         real (LIBMUSCLE_real8), dimension(:, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -13204,12 +12103,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_4_real8_n_( &
-            data_array, int(shape(data_array), c_size_t), 4_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                4_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_4_real8_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_4_real8_n
@@ -13221,6 +12126,7 @@ contains
             index_name_3, &
             index_name_4, &
             index_name_5)
+
         implicit none
         real (LIBMUSCLE_real8), dimension(:, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -13232,13 +12138,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_5_real8_n_( &
-            data_array, int(shape(data_array), c_size_t), 5_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                5_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_5_real8_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_5_real8_n
@@ -13251,6 +12162,7 @@ contains
             index_name_4, &
             index_name_5, &
             index_name_6)
+
         implicit none
         real (LIBMUSCLE_real8), dimension(:, :, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -13263,14 +12175,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_6_real8_n_( &
-            data_array, int(shape(data_array), c_size_t), 6_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t), &
-            index_name_6, int(len(index_name_6), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                6_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_6_real8_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_6_real8_n
@@ -13284,6 +12200,7 @@ contains
             index_name_5, &
             index_name_6, &
             index_name_7)
+
         implicit none
         real (LIBMUSCLE_real8), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
         character (len=*), intent(in) :: index_name_1
@@ -13297,15 +12214,18 @@ contains
 
         integer (c_intptr_t) :: ret_val
 
-        ret_val = LIBMUSCLE_Data_create_grid_7_real8_n_( &
-            data_array, int(shape(data_array), c_size_t), 7_LIBMUSCLE_size, &
-            index_name_1, int(len(index_name_1), c_size_t), &
-            index_name_2, int(len(index_name_2), c_size_t), &
-            index_name_3, int(len(index_name_3), c_size_t), &
-            index_name_4, int(len(index_name_4), c_size_t), &
-            index_name_5, int(len(index_name_5), c_size_t), &
-            index_name_6, int(len(index_name_6), c_size_t), &
-            index_name_7, int(len(index_name_7), c_size_t))
+        ret_val = LIBMUSCLE_Data_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                7_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_7, int(len(index_name_7), c_size_t) &
+            )
 
         LIBMUSCLE_Data_create_grid_7_real8_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_7_real8_n

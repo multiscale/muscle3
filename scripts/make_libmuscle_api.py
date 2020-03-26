@@ -48,10 +48,15 @@ class GridConstructor(Member):
         self.instances = list()     # type: List[NamedConstructor]
 
         # generate flexible C functions
-        if not with_names:
-            for typ in self.types:
-                instance_ret_type = Obj('<deferred>')
-                instance_params = [Array(1, copy(typ), 'data_array')]
+        for typ in self.types:
+            # This is not set yet here, but f_type() needs it.
+            # The dict is only used by Obj, which we don't have.
+            typ.name = 'data_array'
+            typ.set_ns_prefix({}, 'LIBMUSCLE')
+
+            instance_ret_type = Obj('<deferred>')
+            instance_params = [Array(1, copy(typ), 'data_array')]
+            if not with_names:
                 instance_name = 'grid_{}_a'.format(typ.tname())
                 chain_call = lambda **kwargs: ('{}::grid(data_array_p,'
                         ' data_array_shape_v, {{}},'
@@ -60,6 +65,51 @@ class GridConstructor(Member):
                 self.instances.append(NamedConstructor(
                     instance_params, instance_name, cpp_func_name='grid',
                     cpp_chain_call=chain_call, f_override=''))
+            else:
+                for i in range(1, 8):
+                    arg_name = 'index_name_{}'.format(i)
+                    instance_params.append(String(arg_name))
+                instance_name = 'grid_{}_n'.format(typ.tname())
+                fc_override=(
+                        'std::intptr_t LIBMUSCLE_$CLASSNAME$_create_grid_{0}_n_(\n'
+                        '        {1} * data_array,\n'
+                        '        std::size_t * data_array_shape,\n'
+                        '        std::size_t data_array_ndims,\n'
+                        '        char * index_name_1, std::size_t index_name_1_size,\n'
+                        '        char * index_name_2, std::size_t index_name_2_size,\n'
+                        '        char * index_name_3, std::size_t index_name_3_size,\n'
+                        '        char * index_name_4, std::size_t index_name_4_size,\n'
+                        '        char * index_name_5, std::size_t index_name_5_size,\n'
+                        '        char * index_name_6, std::size_t index_name_6_size,\n'
+                        '        char * index_name_7, std::size_t index_name_7_size\n'
+                        ') {{\n'
+                        '    std::vector<std::size_t> data_array_shape_v(\n'
+                        '            data_array_shape, data_array_shape + data_array_ndims);\n'
+                        '    auto data_array_p = const_cast<{1} const * const>(data_array);\n'
+                        '\n'
+                        '    std::vector<std::string> names_v;\n'
+                        '    names_v.push_back(std::string(index_name_1, index_name_1_size));\n'
+                        '    if (data_array_ndims >= 2u)\n'
+                        '        names_v.push_back(std::string(index_name_2, index_name_2_size));\n'
+                        '    if (data_array_ndims >= 3u)\n'
+                        '        names_v.push_back(std::string(index_name_3, index_name_3_size));\n'
+                        '    if (data_array_ndims >= 4u)\n'
+                        '        names_v.push_back(std::string(index_name_4, index_name_4_size));\n'
+                        '    if (data_array_ndims >= 5u)\n'
+                        '        names_v.push_back(std::string(index_name_5, index_name_5_size));\n'
+                        '    if (data_array_ndims >= 6u)\n'
+                        '        names_v.push_back(std::string(index_name_6, index_name_6_size));\n'
+                        '    if (data_array_ndims >= 7u)\n'
+                        '        names_v.push_back(std::string(index_name_7, index_name_7_size));\n'
+                        '\n'
+                        '    Data * result = new Data(Data::grid(\n'
+                        '            data_array_p, data_array_shape_v,\n'
+                        '            names_v, libmuscle::StorageOrder::first_adjacent));\n'
+                        '    return reinterpret_cast<std::intptr_t>(result);\n'
+                        '}}\n\n').format(typ.tname(), typ.fc_cpp_type())
+                self.instances.append(NamedConstructor(
+                    instance_params, instance_name, fc_override=fc_override,
+                    f_override=''))
 
         # generate instances
         for typ in self.types:
@@ -76,18 +126,56 @@ class GridConstructor(Member):
 
                 if with_names:
                     arg_list = [
-                            'index_name_{}_s'.format(i)
+                            'index_name_{}'.format(i)
                             for i in range(1, ndims+1)]
-                    name_args = '{{{}}}'.format(','.join(arg_list))
+                    name_args = ', &\n        '.join(arg_list)
+                    name_types = ''.join([
+                            '    character (len=*), intent(in) :: {}\n'.format(arg)
+                            for arg in arg_list])
+                    name_params = ', &\n'.join([(
+                        '            index_name_{0},'
+                        ' int(len(index_name_{0}), c_size_t)').format(dim)
+                        for dim in range(1, ndims+1)])
+                    if ndims < 7:
+                        name_params += ', &\n'
+                    filler_params = ', &\n'.join([(
+                        '            index_name_1,'
+                        ' int(len(index_name_1), c_size_t)')
+                        for dim in range(ndims+1, 8)])
 
-                    chain_call = lambda name_args=name_args, **kwargs: (
-                            '{}::grid(data_array_p,'
-                            ' data_array_shape_v, {},'
-                            ' libmuscle::StorageOrder::first_adjacent'
-                            ')').format(kwargs['class_name'], name_args)
+                    dim_list = ', '.join([':'] * ndims)
+
+                    f_override=(
+                            'function LIBMUSCLE_$CLASSNAME$_create_grid_{0}_{1}_n( &\n'
+                            '        data_array, &\n'
+                            '        {2})\n'
+                            '\n'
+                            '    implicit none\n'
+                            '    {6}, dimension({8}), intent(in) :: data_array\n'
+                            '{3}'
+                            '    type(LIBMUSCLE_$CLASSNAME$) :: LIBMUSCLE_$CLASSNAME$_create_grid_{0}_{1}_n\n'
+                            '\n'
+                            '    integer (c_intptr_t) :: ret_val\n'
+                            '\n'
+                            '    ret_val = LIBMUSCLE_$CLASSNAME$_create_grid_{1}_n_( &\n'
+                            '            {7}, &\n'
+                            '            int(shape(data_array), c_size_t), &\n'
+                            '            {0}_LIBMUSCLE_size, &\n'
+                            '{4}'
+                            '{5} &\n'
+                            '        )\n'
+                            '\n'
+                            '    LIBMUSCLE_$CLASSNAME$_create_grid_{0}_{1}_n%ptr = ret_val\n'
+                            'end function LIBMUSCLE_$CLASSNAME$_create_grid_{0}_{1}_n\n'
+                            '\n').format(
+                                    ndims, typ.tname(), name_args, name_types,
+                                    name_params, filler_params,
+                                    typ.f_type()[0][0], typ.f_chain_arg(),
+                                    dim_list)
+
                     self.instances.append(NamedConstructor(
-                        instance_params, instance_name, cpp_func_name='grid',
-                        cpp_chain_call=chain_call))
+                        instance_params, instance_name,
+                        f_override=f_override, fc_override=''))
                 else:
                     chain_call = lambda tname=typ.tname(), **a: (
                             '{}_{}_create_grid_{}_a_( &\n{})'.format(

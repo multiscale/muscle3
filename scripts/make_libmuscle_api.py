@@ -1324,16 +1324,3 @@ if __name__ == '__main__':
                         out_file.write(exports_txt)
                     else:
                         out_file.write(line)
-
-"""
-    NamedConstructor([Array(1, Double(), 'data_array')], 'grid_1_real8',
-        cpp_func_name='grid',
-        cpp_chain_call=lambda **kwargs: '{}::grid({}, {{}},'
-                ' libmuscle::StorageOrder::first_adjacent)'.format(
-                    kwargs['class_name'], kwargs['cpp_args'])),
-    NamedConstructor([Array(2, Int64t(), 'data_array')], 'grid_2_int8',
-        cpp_func_name='grid',
-        cpp_chain_call=lambda **kwargs: '{}::grid({}, {{}},'
-                ' libmuscle::StorageOrder::first_adjacent)'.format(
-                    kwargs['class_name'], kwargs['cpp_args'])),
-"""

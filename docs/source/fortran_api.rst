@@ -162,6 +162,44 @@ LIBMUSCLE_Data
     :r obj: The new Data object.
     :rtype obj: LIBMUSCLE_Data
 
+.. f:function:: LIBMUSCLE_Data_create_grid(data_array)
+
+    Creates a Data object containing a grid (array).
+
+    The argument must be an array of type ``logical`` and default kind,
+    an array of type ``integer`` and kind ``LIBMUSCLE_int4`` or
+    ``LIBMUSCLE_int8``, or an array of type ``real`` and kind
+    ``LIBMUSCLE_real4`` or kind ``LIBMUSCLE_real8``.
+
+    Grids created with this function have no index names.
+
+    :p array data_array: The array of data to represent.
+    :r obj: The new Data object.
+    :rtype obj: LIBMUSCLE_Data
+
+.. f:function:: LIBMUSCLE_Data_create_grid(data_array, index_name, ...)
+
+    Creates a Data object containing a grid (array).
+
+    The ``data_array`` argument must be an array of type ``logical`` and
+    default kind, an array of type ``integer`` and kind ``LIBMUSCLE_int4``
+    or ``LIBMUSCLE_int8``, or an array of type ``real`` and kind
+    ``LIBMUSCLE_real4`` or kind ``LIBMUSCLE_real8``.
+
+    If an ``n``-dimensional array is passed as the first argument, then
+    there must be ``n`` additional arguments of type ``character``, giving
+    the names of the indexes in order. For instance, if your 2D array
+    represents a table and you index it ``data_array(row, column)`` then
+    ``"row"`` and ``"column"`` would be reasonable index names here. Note
+    that MUSCLE 3 does not use these names, they are here to make it
+    easier to understand the message on the receiver side, or if it is
+    saved and analysed later.
+
+    :p array data_array: The array of data to represent.
+    :p character index_name: The names of the grid's indexes.
+    :r obj: The new Data object.
+    :rtype obj: LIBMUSCLE_Data
+
 .. f:function:: LIBMUSCLE_Data_create_dict()
 
     Creates a Data object containing an empty dictionary.
@@ -369,6 +407,50 @@ LIBMUSCLE_Data
 
     :p LIBMUSCLE_Data self: The Data object to inspect.
     :r is: True if the object contains a list.
+    :rtype is: logical
+
+.. f:function:: LIBMUSCLE_Data_is_a_grid_of_logical(self)
+
+    Determine whether the Data object contains a grid of logical values.
+
+    :p LIBMUSCLE_Data self: The Data object to inspect.
+    :r is: True if the object contains a grid of logical.
+    :rtype is: logical
+
+.. f:function:: LIBMUSCLE_Data_is_a_grid_of_int4(self)
+
+    Determine whether the Data object contains a grid of integer values
+    of kind ``LIBMUSCLE_int4``.
+
+    :p LIBMUSCLE_Data self: The Data object to inspect.
+    :r is: True if the object contains a grid of int4.
+    :rtype is: logical
+
+.. f:function:: LIBMUSCLE_Data_is_a_grid_of_int8(self)
+
+    Determine whether the Data object contains a grid of integer values
+    of kind ``LIBMUSCLE_int8``.
+
+    :p LIBMUSCLE_Data self: The Data object to inspect.
+    :r is: True if the object contains a grid of int8.
+    :rtype is: logical
+
+.. f:function:: LIBMUSCLE_Data_is_a_grid_of_real4(self)
+
+    Determine whether the Data object contains a grid of real values
+    of kind ``LIBMUSCLE_real4``.
+
+    :p LIBMUSCLE_Data self: The Data object to inspect.
+    :r is: True if the object contains a grid of real4.
+    :rtype is: logical
+
+.. f:function:: LIBMUSCLE_Data_is_a_grid_of_real8(self)
+
+    Determine whether the Data object contains a grid of real8 values
+    of kind ``LIBMUSCLE_real8``.
+
+    :p LIBMUSCLE_Data self: The Data object to inspect.
+    :r is: True if the object contains a grid of real8.
     :rtype is: logical
 
 .. f:function:: LIBMUSCLE_Data_is_a_byte_array(self)
@@ -1079,6 +1161,84 @@ LIBMUSCLE_Data
     :p character err_msg: An error message output (allocatable, optional).
     :r value: The value at the given index
     :rtype value: LIBMUSCLE_Data
+
+.. f:function:: LIBMUSCLE_Data_num_dims(self, err_code, err_msg)
+
+    Get the number of dimensions of a grid-valued Data object.
+
+    This function is only valid for Data objects containing a grid. You
+    can use :f:func:`LIBMUSCLE_Data_is_a_grid_of_logical` and similar
+    functions to check that it is a grid. If the Data object does not
+    contain a grid, ``err_code`` will be set to
+    ``LIBMUSCLE_runtime_error``.
+
+    :p LIBMUSCLE_Data self: The Data object to get the number of
+            dimensions for.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r num_dims: The number of dimensions
+    :rtype num_dims: integer (LIBMUSCLE_size)
+
+.. f:subroutine:: LIBMUSCLE_Data_shape(self, shp, err_code, err_msg)
+
+    Get the shape of the array of a grid-valued Data object.
+
+    The array passed to receive the shape must be one-dimensional, and
+    at least of length `n`, where `n` is the number of dimensions of
+    the grid.
+
+    This function is only valid for Data objects containing a grid. You
+    can use :f:func:`LIBMUSCLE_Data_is_a_grid_of_logical` and similar
+    functions to check that it is a grid. If the Data object does not
+    contain a grid, ``err_code`` will be set to
+    ``LIBMUSCLE_runtime_error``.
+
+    :p LIBMUSCLE_Data self: The data object to get the shape of.
+    :p integer shp: A 1D array of integer (LIBMUSCLE_size) to put the
+            shape into (intent (out)).
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+
+.. f:function:: LIBMUSCLE_Data_has_indexes(self, err_code, err_msg)
+
+    Check whether a grid has index names.
+
+    Returns ``.true.`` if the grid has index names, ``.false.`` otherwise.
+
+    This function is only valid for Data objects containing a grid. You
+    can use :f:func:`LIBMUSCLE_Data_is_a_grid_of_logical` and similar
+    functions to check that it is a grid. If the Data object does not
+    contain a grid, ``err_code`` will be set to
+    ``LIBMUSCLE_runtime_error``.
+
+    :p LIBMUSCLE_Data self: The data object to check for indexes.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r has_indexes: Whether there are indexes.
+    :rtype has_indexes: logical
+
+.. f:function:: LIBMUSCLE_Data_index(self, i, err_code, err_msg)
+
+    Return the name of the i'th index.
+
+    The value of ``i`` ranges from 1 to the number of dimensions.
+
+    This function is only valid for Data objects containing a grid. You
+    can use :f:func:`LIBMUSCLE_Data_is_a_grid_of_logical` and similar
+    functions to check that it is a grid. If the Data object does not
+    contain a grid, ``err_code`` will be set to
+    ``LIBMUSCLE_runtime_error``. If the index is zero, negative, or
+    larger than the number of dimensions, ``err_code`` will be set to
+    ``LIBMUSCLE_out_of_range``.
+
+    :p LIBMUSCLE_Data self: The data object to get the index of.
+    :p integer i: The index of the index to get the name of (LIBMUSCLE_size).
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r index_name: The name of the index (allocatable)
+    :rtype index_name: logical
+
+
 
 LIBMUSCLE_Message
 `````````````````

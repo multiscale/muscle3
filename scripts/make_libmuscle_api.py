@@ -429,16 +429,16 @@ dataconstref_desc = Class('DataConstRef', None, [
         ),
     MemFun(Obj('DataConstRef', 'value'), 'get_item_by_key', [String('key')], True,
             fc_override=(
-                'std::intptr_t LIBMUSCLE_DataConstRef_get_item_by_key_(\n'
+                'std::intptr_t LIBMUSCLE_$CLASSNAME$_get_item_by_key_(\n'
                 '        std::intptr_t self,\n'
                 '        char * key, std::size_t key_size,\n'
                 '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
                 ') {\n'
-                '    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);\n'
+                '    $CLASSNAME$ * self_p = reinterpret_cast<$CLASSNAME$ *>(self);\n'
                 '    std::string key_s(key, key_size);\n'
                 '    try {\n'
                 '        *err_code = 0;\n'
-                '        DataConstRef * result = new DataConstRef((*self_p)[key_s]);\n'
+                '        $CLASSNAME$ * result = new $CLASSNAME$((*self_p)[key_s]);\n'
                 '        return reinterpret_cast<std::intptr_t>(result);\n'
                 '    }\n'
                 '    catch (std::runtime_error const & e) {\n'
@@ -459,15 +459,15 @@ dataconstref_desc = Class('DataConstRef', None, [
             ),
     MemFun(Obj('DataConstRef', 'value'), 'get_item_by_index', [Sizet('i')], True,
             fc_override=(
-                'std::intptr_t LIBMUSCLE_DataConstRef_get_item_by_index_(\n'
+                'std::intptr_t LIBMUSCLE_$CLASSNAME$_get_item_by_index_(\n'
                 '        std::intptr_t self,\n'
                 '        std::size_t i,\n'
                 '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
                 ') {\n'
-                '    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);\n'
+                '    $CLASSNAME$ * self_p = reinterpret_cast<$CLASSNAME$ *>(self);\n'
                 '    try {\n'
                 '        *err_code = 0;\n'
-                '        DataConstRef * result = new DataConstRef((*self_p)[i-1u]);\n'
+                '        $CLASSNAME$ * result = new $CLASSNAME$((*self_p)[i-1u]);\n'
                 '        return reinterpret_cast<std::intptr_t>(result);\n'
                 '    }\n'
                 '    catch (std::runtime_error const & e) {\n'
@@ -491,11 +491,11 @@ dataconstref_desc = Class('DataConstRef', None, [
         ]),
     MemFun(Sizet(), 'num_dims', [], True,
             fc_override=(
-                'std::size_t LIBMUSCLE_DataConstRef_num_dims_(\n'
+                'std::size_t LIBMUSCLE_$CLASSNAME$_num_dims_(\n'
                 '        std::intptr_t self,\n'
                 '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
                 ') {\n'
-                '    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);\n'
+                '    $CLASSNAME$ * self_p = reinterpret_cast<$CLASSNAME$ *>(self);\n'
                 '    try {\n'
                 '        *err_code = 0;\n'
                 '        return self_p->shape().size();\n'
@@ -577,85 +577,6 @@ data_desc = Class('Data', dataconstref_desc, [
             '}\n'
             )
         ),
-    MemFun(Obj('Data', 'value'), 'get_item_by_key', [String('key')], True,
-            fc_override=(
-                'std::intptr_t LIBMUSCLE_Data_get_item_by_key_(\n'
-                '        std::intptr_t self,\n'
-                '        char * key, std::size_t key_size,\n'
-                '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
-                ') {\n'
-                '    Data * self_p = reinterpret_cast<Data *>(self);\n'
-                '    std::string key_s(key, key_size);\n'
-                '    try {\n'
-                '        *err_code = 0;\n'
-                '        Data * result = new Data((*self_p)[key_s]);\n'
-                '        return reinterpret_cast<std::intptr_t>(result);\n'
-                '    }\n'
-                '    catch (std::runtime_error const & e) {\n'
-                '        *err_code = 1;\n'
-                '        static std::string msg;\n'
-                '        msg = e.what();\n'
-                '        *err_msg = const_cast<char*>(msg.data());\n'
-                '        *err_msg_len = msg.size();\n'
-                '    }\n'
-                '    catch (std::out_of_range const & e) {\n'
-                '        *err_code = 3;\n'
-                '        static std::string msg;\n'
-                '        msg = e.what();\n'
-                '        *err_msg = const_cast<char*>(msg.data());\n'
-                '        *err_msg_len = msg.size();\n'
-                '    }\n'
-                '}\n\n')
-            ),
-    MemFun(Obj('Data', 'value'), 'get_item_by_index', [Sizet('i')], True,
-            fc_override=(
-                'std::intptr_t LIBMUSCLE_Data_get_item_by_index_(\n'
-                '        std::intptr_t self,\n'
-                '        std::size_t i,\n'
-                '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
-                ') {\n'
-                '        Data * self_p = reinterpret_cast<DataConstRef *>(self);\n'
-                '        try {\n'
-                '            *err_code = 0;\n'
-                '            Data * result = new Data((*self_p)[i-1u]);\n'
-                '            return reinterpret_cast<std::intptr_t>(result);\n'
-                '    }\n'
-                '    catch (std::runtime_error const & e) {\n'
-                '        *err_code = 1;\n'
-                '        static std::string msg;\n'
-                '        msg = e.what();\n'
-                '        *err_msg = const_cast<char*>(msg.data());\n'
-                '        *err_msg_len = msg.size();\n'
-                '    }\n'
-                '    catch (std::out_of_range const & e) {\n'
-                '        *err_code = 3;\n'
-                '        static std::string msg;\n'
-                '        msg = e.what();\n'
-                '        *err_msg = const_cast<char*>(msg.data());\n'
-                '        *err_msg_len = msg.size();\n'
-                '    }\n'
-                '}\n\n')
-            ),
-    MemFun(Sizet(), 'num_dims', [], True,
-            fc_override=(
-                'std::size_t LIBMUSCLE_Data_num_dims_(\n'
-                '        std::intptr_t self,\n'
-                '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
-                ') {\n'
-                '    Data * self_p = reinterpret_cast<Data *>(self);\n'
-                '    try {\n'
-                '        *err_code = 0;\n'
-                '        return self_p->shape().size();\n'
-                '    }\n'
-                '    catch (std::runtime_error const & e) {\n'
-                '        *err_code = 1;\n'
-                '        static std::string msg;\n'
-                '        msg = e.what();\n'
-                '        *err_msg = const_cast<char*>(msg.data());\n'
-                '        *err_msg_len = msg.size();\n'
-                '    }\n'
-                '}\n\n')
-            ),
 
     AssignmentOperator('set_logical', Bool('value')),
     AssignmentOperator('set_character', String('value')),

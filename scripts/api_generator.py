@@ -1758,6 +1758,74 @@ class Destructor(MemFun):
         return '    delete self_p;\n'
 
 
+class MultiMemFun(Member):
+    """A base class for classes that generate many functions.
+
+    This class represents a set of member functions, for example
+    a set of template instantiations or functions taking array
+    arguments of different number of dimensions. It forwards all
+    functions to the individual instances contained in it.
+
+    Attributes:
+        instances: A list of the instances in this MultiMemFun.
+    """
+    def __init__(self) -> None:
+        """Create a MultiMemFun."""
+        self.instances = list()     # type: List[Member]
+
+    def __copy__(self) -> 'MemFunTmpl':
+        result = MultiMemFun()
+        result.instances = [copy(instance) for instance in self.instances]
+        return result
+
+    def set_class_name(self, class_name: str) -> None:
+        for instance in self.instances:
+            instance.set_class_name(class_name)
+
+    def reset_class_name(self, class_name: str) -> None:
+        for instance in self.instances:
+            instance.reset_class_name(class_name)
+
+    def set_public(self, public: bool) -> None:
+        for instance in self.instances:
+            instance.set_public(public)
+
+    def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
+        """Sets the namespace prefix correctly for all members.
+
+        Args:
+            ns_for_name: A map from type names to namespace names.
+        """
+        for instance in self.instances:
+            instance.set_ns_prefix(ns_for_name)
+
+    def fortran_c_wrapper(self) -> str:
+        """Create a C wrapper for calling by Fortran.
+        """
+        return ''.join([i.fortran_c_wrapper() for i in self.instances])
+
+    def fortran_interface(self) -> str:
+        """Create a Fortran interface declaration for the C wrapper.
+        """
+        return ''.join([i.fortran_interface() for i in self.instances])
+
+    def fortran_function(self) -> str:
+        """Create the Fortran function definition for this member.
+        """
+        return ''.join([i.fortran_function() for i in self.instances])
+
+    def fortran_public_declaration(self) -> str:
+        """Create a Fortran statement declaring us public.
+        """
+        return ''.join(
+                [i.fortran_public_declaration() for i in self.instances])
+
+    def fortran_exports(self) -> List[str]:
+        """Generates a list of linker exports for the Fortran symbols.
+        """
+        return [e for i in self.instances for e in i.fortran_exports()]
+
+
 class MemFunTmplInstance(MemFun):
     def __init__(self,
                  ret_type: Par,
@@ -1829,7 +1897,7 @@ class MemFunTmplInstance(MemFun):
         return '    {};\n'.format(result)
 
 
-class MemFunTmpl(Member):
+class MemFunTmpl(MultiMemFun):
     def __init__(self,
                  types: List[Par],
                  ret_type: Par,
@@ -1861,6 +1929,7 @@ class MemFunTmpl(Member):
             cpp_func_name: Name of C++ member function to call.
             cpp_chain_call: Function that produces the C++ chain call.
         """
+        super().__init__()
         self.ns_prefix = None       # type: Optional[str]
         self.public = None          # type: Optional[bool]
         self.class_name = None      # type: Optional[str]
@@ -1869,7 +1938,6 @@ class MemFunTmpl(Member):
         self.name = name
         self.params = params if params else list()  # type: List[Par]
         self.may_throw = may_throw
-        self.instances = list()     # type: List[MemFun]
 
         # generate instances
         for typ in self.types:
@@ -1905,77 +1973,6 @@ class MemFunTmpl(Member):
         else:
             result.set_class_name(self.class_name)
         result.instances = [copy(instance) for instance in self.instances]
-        return result
-
-    def set_class_name(self, class_name: str) -> None:
-        self.class_name = class_name
-        self.params.insert(0, Obj(class_name, 'self'))
-        for instance in self.instances:
-            instance.set_class_name(class_name)
-
-    def reset_class_name(self, class_name: str) -> None:
-        self.class_name = class_name
-        self.params[0] = Obj(class_name, 'self')
-        for instance in self.instances:
-            instance.reset_class_name(class_name)
-
-    def set_public(self, public: bool) -> None:
-        self.public = public
-        for instance in self.instances:
-            instance.set_public(public)
-
-    def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
-        """Sets the namespace prefix correctly for all members.
-
-        Args:
-            ns_for_name: A map from type names to namespace names.
-        """
-        self.ns_prefix = ns_for_name[self.class_name]
-        self.ret_type.set_ns_prefix(ns_for_name, self.ns_prefix)
-        for param in self.params:
-            param.set_ns_prefix(ns_for_name, self.ns_prefix)
-
-        for instance in self.instances:
-            instance.set_ns_prefix(ns_for_name)
-
-    def fortran_c_wrapper(self) -> str:
-        """Create a C wrapper for calling by Fortran.
-        """
-        result = ''
-        for instance in self.instances:
-            result += instance.fortran_c_wrapper()
-        return result
-
-    def fortran_interface(self) -> str:
-        """Create a Fortran interface declaration for the C wrapper.
-        """
-        result = ''
-        for instance in self.instances:
-            result += instance.fortran_interface()
-        return result
-
-    def fortran_function(self) -> str:
-        """Create the Fortran function definition for this member.
-        """
-        result = ''
-        for instance in self.instances:
-            result += instance.fortran_function()
-        return result
-
-    def fortran_public_declaration(self) -> str:
-        """Create a Fortran statement declaring us public.
-        """
-        result = ''
-        for instance in self.instances:
-            result += instance.fortran_public_declaration()
-        return result
-
-    def fortran_exports(self) -> List[str]:
-        """Generates a list of linker exports for the Fortran symbols.
-        """
-        result = list()     # type: List[str]
-        for instance in self.instances:
-            result += instance.fortran_exports()
         return result
 
 

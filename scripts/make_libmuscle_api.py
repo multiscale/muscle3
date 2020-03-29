@@ -10,12 +10,13 @@ import api_generator
 from api_generator import (
         API, Array, AssignmentOperator, Bool, Bytes, Char, Class, Constructor,
         Destructor, Double, Enum, EnumVal, Float, IndexAssignmentOperator, Int,
-        Int16t, Int32t, Int64t, Member, MemFun, MemFunTmpl, NamedConstructor,
-        Namespace, Obj, OverloadSet, ShiftedIndexAssignmentOperator, Sizet,
-        String, T, VecDbl, Vec2Dbl, VecSizet, Void)
+        Int16t, Int32t, Int64t, Member, MemFun, MemFunTmpl, MultiMemFun,
+        NamedConstructor, Namespace, Obj, OverloadSet,
+        ShiftedIndexAssignmentOperator, Sizet, String, T, VecDbl, Vec2Dbl,
+        VecSizet, Void)
 
 
-class GridConstructor(Member):
+class GridConstructor(MultiMemFun):
     """Creates a constructor for grids.
 
     Grid constructors are a bit weird, with multidimensional array
@@ -197,73 +198,8 @@ class GridConstructor(Member):
         result.instances = [copy(instance) for instance in self.instances]
         return result
 
-    def set_class_name(self, class_name: str) -> None:
-        self.class_name = class_name
-        for instance in self.instances:
-            instance.set_class_name(class_name)
 
-    def reset_class_name(self, class_name: str) -> None:
-        self.class_name = class_name
-        for instance in self.instances:
-            instance.reset_class_name(class_name)
-
-    def set_public(self, public: bool) -> None:
-        self.public = public
-        for instance in self.instances:
-            instance.set_public(public)
-
-    def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
-        """Sets the namespace prefix correctly for all members.
-
-        Args:
-            ns_for_name: A map from type names to namespace names.
-        """
-        self.ns_prefix = ns_for_name[self.class_name]
-        for instance in self.instances:
-            instance.set_ns_prefix(ns_for_name)
-
-    def fortran_c_wrapper(self) -> str:
-        """Create a C wrapper for calling by Fortran.
-        """
-        result = ''
-        for instance in self.instances:
-            result += instance.fortran_c_wrapper()
-        return result
-
-    def fortran_interface(self) -> str:
-        """Create a Fortran interface declaration for the C wrapper.
-        """
-        result = ''
-        for instance in self.instances:
-            result += instance.fortran_interface()
-        return result
-
-    def fortran_function(self) -> str:
-        """Create the Fortran function definition for this member.
-        """
-        result = ''
-        for instance in self.instances:
-            result += instance.fortran_function()
-        return result
-
-    def fortran_public_declaration(self) -> str:
-        """Create a Fortran statement declaring us public.
-        """
-        result = ''
-        for instance in self.instances:
-            result += instance.fortran_public_declaration()
-        return result
-
-    def fortran_exports(self) -> List[str]:
-        """Generates a list of linker exports for the Fortran symbols.
-        """
-        result = list()     # type: List[str]
-        for instance in self.instances:
-            result += instance.fortran_exports()
-        return result
-
-
-class Elements(Member):
+class Elements(MultiMemFun):
     """Creates the elements() function.
 
     There are a lot of these, just like with the grid constructor, for
@@ -418,71 +354,6 @@ class Elements(Member):
         else:
             result.set_class_name(self.class_name)
         result.instances = [copy(instance) for instance in self.instances]
-        return result
-
-    def set_class_name(self, class_name: str) -> None:
-        self.class_name = class_name
-        for instance in self.instances:
-            instance.set_class_name(class_name)
-
-    def reset_class_name(self, class_name: str) -> None:
-        self.class_name = class_name
-        for instance in self.instances:
-            instance.reset_class_name(class_name)
-
-    def set_public(self, public: bool) -> None:
-        self.public = public
-        for instance in self.instances:
-            instance.set_public(public)
-
-    def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
-        """Sets the namespace prefix correctly for all members.
-
-        Args:
-            ns_for_name: A map from type names to namespace names.
-        """
-        self.ns_prefix = ns_for_name[self.class_name]
-        for instance in self.instances:
-            instance.set_ns_prefix(ns_for_name)
-
-    def fortran_c_wrapper(self) -> str:
-        """Create a C wrapper for calling by Fortran.
-        """
-        result = ''
-        for instance in self.instances:
-            result += instance.fortran_c_wrapper()
-        return result
-
-    def fortran_interface(self) -> str:
-        """Create a Fortran interface declaration for the C wrapper.
-        """
-        result = ''
-        for instance in self.instances:
-            result += instance.fortran_interface()
-        return result
-
-    def fortran_function(self) -> str:
-        """Create the Fortran function definition for this member.
-        """
-        result = ''
-        for instance in self.instances:
-            result += instance.fortran_function()
-        return result
-
-    def fortran_public_declaration(self) -> str:
-        """Create a Fortran statement declaring us public.
-        """
-        result = ''
-        for instance in self.instances:
-            result += instance.fortran_public_declaration()
-        return result
-
-    def fortran_exports(self) -> List[str]:
-        """Generates a list of linker exports for the Fortran symbols.
-        """
-        result = list()     # type: List[str]
-        for instance in self.instances:
-            result += instance.fortran_exports()
         return result
 
 

@@ -186,8 +186,231 @@ class GridConstructor(Member):
                         instance_params, instance_name, cpp_func_name='grid',
                         fc_chain_call=chain_call, fc_override=''))
 
-    def __copy__(self) -> 'MemFunTmpl':
+    def __copy__(self) -> 'GridConstructor':
         result = GridConstructor(self.with_names)
+        result.ns_prefix = self.ns_prefix
+        result.public = self.public
+        if self.class_name is None:
+            result.class_name = None
+        else:
+            result.set_class_name(self.class_name)
+        result.instances = [copy(instance) for instance in self.instances]
+        return result
+
+    def set_class_name(self, class_name: str) -> None:
+        self.class_name = class_name
+        for instance in self.instances:
+            instance.set_class_name(class_name)
+
+    def reset_class_name(self, class_name: str) -> None:
+        self.class_name = class_name
+        for instance in self.instances:
+            instance.reset_class_name(class_name)
+
+    def set_public(self, public: bool) -> None:
+        self.public = public
+        for instance in self.instances:
+            instance.set_public(public)
+
+    def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
+        """Sets the namespace prefix correctly for all members.
+
+        Args:
+            ns_for_name: A map from type names to namespace names.
+        """
+        self.ns_prefix = ns_for_name[self.class_name]
+        for instance in self.instances:
+            instance.set_ns_prefix(ns_for_name)
+
+    def fortran_c_wrapper(self) -> str:
+        """Create a C wrapper for calling by Fortran.
+        """
+        result = ''
+        for instance in self.instances:
+            result += instance.fortran_c_wrapper()
+        return result
+
+    def fortran_interface(self) -> str:
+        """Create a Fortran interface declaration for the C wrapper.
+        """
+        result = ''
+        for instance in self.instances:
+            result += instance.fortran_interface()
+        return result
+
+    def fortran_function(self) -> str:
+        """Create the Fortran function definition for this member.
+        """
+        result = ''
+        for instance in self.instances:
+            result += instance.fortran_function()
+        return result
+
+    def fortran_public_declaration(self) -> str:
+        """Create a Fortran statement declaring us public.
+        """
+        result = ''
+        for instance in self.instances:
+            result += instance.fortran_public_declaration()
+        return result
+
+    def fortran_exports(self) -> List[str]:
+        """Generates a list of linker exports for the Fortran symbols.
+        """
+        result = list()     # type: List[str]
+        for instance in self.instances:
+            result += instance.fortran_exports()
+        return result
+
+
+class Elements(Member):
+    """Creates the elements() function.
+
+    There are a lot of these, just like with the grid constructor, for
+    different dimensions and types. So we do some extra work here too
+    to reduce the size of the ABI.
+    """
+
+    def __init__(self) -> None:
+        self.ns_prefix = None       # type: Optional[str]
+        self.public = None          # type: Optional[bool]
+        self.class_name = None      # type: Optional[str]
+        self.types = [Bool(), Int32t(), Int64t(), Float(), Double()]
+        self.name = 'elements'
+        self.instances = list()     # type: List[Member]
+
+        # Generate ABI
+        for typ in self.types:
+            # This is not set yet here, but f_type() needs it.
+            # The dict is only used by Obj, which we don't have.
+            typ.name = 'elements'
+            typ.set_ns_prefix({}, 'LIBMUSCLE')
+            func_name = 'elements_{}'.format(typ.tname())
+            fc_override = (
+                    'void LIBMUSCLE_$CLASSNAME$_elements_{0}_(\n'
+                    '        std::intptr_t self,\n'
+                    '        std::size_t ndims,\n'
+                    '        {1} ** elements,\n'
+                    '        std::size_t * elements_shape,\n'
+                    '        int * elements_format,\n'
+                    '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
+                    ') {{\n'
+                    '    $CLASSNAME$ * self_p = reinterpret_cast<$CLASSNAME$ *>(self);\n'
+                    '    try {{\n'
+                    '        *err_code = 0;\n'
+                    '        if (self_p->shape().size() != ndims)\n'
+                    '            throw std::runtime_error("Grid does not have a matching number of dimensions.");\n'
+                    '        {1} const * result = self_p->elements<{1}>();\n'
+                    '        *elements = const_cast<{1} *>(result);\n'
+                    '\n'
+                    '        for (std::size_t i = 0u; i < ndims; ++i)\n'
+                    '            elements_shape[i] = self_p->shape()[i];\n'
+                    '\n'
+                    '        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);\n'
+                    '        return;\n'
+                    '    }}\n'
+                    '    catch (std::runtime_error const & e) {{\n'
+                    '        *err_code = 4;\n'
+                    '        static std::string msg;\n'
+                    '        msg = e.what();\n'
+                    '        *err_msg = const_cast<char*>(msg.data());\n'
+                    '        *err_msg_len = msg.size();\n'
+                    '    }}\n'
+                    '}}\n\n'
+                    ).format(typ.tname(), typ.fc_cpp_type())
+
+            self.instances.append(
+                    MemFun(
+                        Array(1, copy(typ), 'elements'), func_name, [Sizet('ndims')], True,
+                        f_override='', fc_override=fc_override))
+
+        # Generate API
+        for typ in self.types:
+            for ndims in range(1, 8):
+                func_name = 'elements_{}_{}'.format(ndims, typ.tname())
+                dims_list = ', '.join([':']*ndims)
+                rev_dims = ', '.join(map(str, reversed(range(1, ndims+1))))
+                f_override = (
+                        'subroutine LIBMUSCLE_$CLASSNAME$_elements_{0}_{1}( &\n'
+                        '        self, &\n'
+                        '        elements, &\n'
+                        '        err_code, &\n'
+                        '        err_msg)\n'
+                        '\n'
+                        '    implicit none\n'
+                        '    type(LIBMUSCLE_$CLASSNAME$), intent(in) :: self\n'
+                        '    {2}, dimension({3}), intent(out) :: elements\n'
+                        '    integer, optional, intent(out) :: err_code\n'
+                        '    character(:), allocatable, optional, intent(out) :: err_msg\n'
+                        '\n'
+                        '    type (c_ptr) :: ret_val\n'
+                        '    integer (c_size_t), dimension({0}) :: ret_val_shape\n'
+                        '    integer (c_int) :: ret_val_format\n'
+                        '    {4}, pointer, dimension({3}) :: f_ret_ptr\n'
+                        '    {4}, pointer, dimension(:) :: f_ret_ptr_linear\n'
+                        '    integer (c_int) :: err_code_v\n'
+                        '    type (c_ptr) :: err_msg_v\n'
+                        '    integer (c_size_t) :: err_msg_len_v\n'
+                        '    character (c_char), dimension(:), pointer :: err_msg_f\n'
+                        '    character(:), allocatable :: err_msg_p\n'
+                        '    integer (c_size_t) :: err_msg_i\n'
+                        '\n'
+                        '    call LIBMUSCLE_$CLASSNAME$_elements_{1}_( &\n'
+                        '        self%ptr, &\n'
+                        '        {0}_LIBMUSCLE_size, &\n'
+                        '        ret_val, &\n'
+                        '        ret_val_shape, &\n'
+                        '        ret_val_format, &\n'
+                        '        err_code_v, &\n'
+                        '        err_msg_v, &\n'
+                        '        err_msg_len_v)\n'
+                        '\n'
+                        '    if (err_code_v .ne. 0) then\n'
+                        '        if (present(err_code)) then\n'
+                        '            err_code = err_code_v\n'
+                        '            if (present(err_msg)) then\n'
+                        '                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))\n'
+                        '                allocate (character(err_msg_len_v) :: err_msg)\n'
+                        '                do err_msg_i = 1, err_msg_len_v\n'
+                        '                    err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)\n'
+                        '                end do\n'
+                        '            end if\n'
+                        '            return\n'
+                        '        else\n'
+                        '            call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))\n'
+                        '            allocate (character(err_msg_len_v) :: err_msg_p)\n'
+                        '            do err_msg_i = 1, err_msg_len_v\n'
+                        '                err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)\n'
+                        '            end do\n'
+                        '            print *, err_msg_p\n'
+                        '            stop\n'
+                        '        end if\n'
+                        '    else\n'
+                        '        if (present(err_code)) then\n'
+                        '            err_code = 0\n'
+                        '        end if\n'
+                        '    end if\n'
+                        '\n'
+                        '    if (ret_val_format .eq. 0) then\n'
+                        '        call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)\n'
+                        '        elements = f_ret_ptr\n'
+                        '    else\n'
+                        '        call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))\n'
+                        '        elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ {4}:: /), (/{5}/))\n'
+                        '    end if\n'
+                        'end subroutine LIBMUSCLE_$CLASSNAME$_elements_{0}_{1}\n\n'
+                        ).format(
+                                ndims, typ.tname(), typ.f_ret_type()[1][0][0],
+                                dims_list, typ.fi_ret_type()[0][0], rev_dims)
+
+                self.instances.append(
+                        MemFun(
+                            Array(ndims, copy(typ), 'elements'),
+                            func_name, [], True,
+                            f_override=f_override, fc_override=''))
+
+    def __copy__(self) -> 'Elements':
+        result = Elements()
         result.ns_prefix = self.ns_prefix
         result.public = self.public
         if self.class_name is None:
@@ -416,41 +639,7 @@ dataconstref_desc = Class('DataConstRef', None, [
                 '}\n\n')
             ),
     MemFun(VecSizet('shp'), 'shape', [], True),
-    MemFunTmpl(
-            [Bool(), Double(), Float(), Int32t(), Int64t()],
-            Array(1, T(), 'elements'), 'elements_1', [], True,
-            cpp_chain_call=lambda **kwargs: 'self_p->elements<{}>()'.format(
-                kwargs['tpl_type'])),
-    MemFunTmpl(
-            [Bool(), Double(), Float(), Int32t(), Int64t()],
-            Array(2, T(), 'elements'), 'elements_2', [], True,
-            cpp_chain_call=lambda **kwargs: 'self_p->elements<{}>()'.format(
-                kwargs['tpl_type'])),
-    MemFunTmpl(
-            [Bool(), Double(), Float(), Int32t(), Int64t()],
-            Array(3, T(), 'elements'), 'elements_3', [], True,
-            cpp_chain_call=lambda **kwargs: 'self_p->elements<{}>()'.format(
-                kwargs['tpl_type'])),
-    MemFunTmpl(
-            [Bool(), Double(), Float(), Int32t(), Int64t()],
-            Array(4, T(), 'elements'), 'elements_4', [], True,
-            cpp_chain_call=lambda **kwargs: 'self_p->elements<{}>()'.format(
-                kwargs['tpl_type'])),
-    MemFunTmpl(
-            [Bool(), Double(), Float(), Int32t(), Int64t()],
-            Array(5, T(), 'elements'), 'elements_5', [], True,
-            cpp_chain_call=lambda **kwargs: 'self_p->elements<{}>()'.format(
-                kwargs['tpl_type'])),
-    MemFunTmpl(
-            [Bool(), Double(), Float(), Int32t(), Int64t()],
-            Array(6, T(), 'elements'), 'elements_6', [], True,
-            cpp_chain_call=lambda **kwargs: 'self_p->elements<{}>()'.format(
-                kwargs['tpl_type'])),
-    MemFunTmpl(
-            [Bool(), Double(), Float(), Int32t(), Int64t()],
-            Array(7, T(), 'elements'), 'elements_7', [], True,
-            cpp_chain_call=lambda **kwargs: 'self_p->elements<{}>()'.format(
-                kwargs['tpl_type'])),
+    Elements(),
     OverloadSet('elements', [
         'elements_1_logical', 'elements_1_real4', 'elements_1_real8',
         'elements_1_int4', 'elements_1_int8',

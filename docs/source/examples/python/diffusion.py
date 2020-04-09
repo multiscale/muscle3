@@ -3,7 +3,7 @@ import os
 
 import numpy as np
 
-from libmuscle import Instance, Message
+from libmuscle import Grid, Instance, Message
 from ymmsl import Operator
 
 
@@ -55,14 +55,14 @@ def diffusion() -> None:
             t_next = t_cur + dt
             if t_next + dt > t_max:
                 t_next = None
-            cur_state_msg = Message(t_cur, t_next, U.tolist())
+            cur_state_msg = Message(t_cur, t_next, Grid(U, ['x']))
             instance.send('state_out', cur_state_msg)
 
             # S
             msg = instance.receive('state_in', default=cur_state_msg)
             if msg.timestamp > t_cur + dt:
                 logger.warning('Received a message from the future!')
-            U = np.array(msg.data)
+            np.copyto(U, msg.data.array)
 
             dU = np.zeros_like(U)
             dU[1:-1] = d * laplacian(U, dx) * dt

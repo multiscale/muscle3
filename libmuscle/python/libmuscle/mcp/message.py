@@ -1,9 +1,13 @@
 from enum import IntEnum
+import struct
 from typing import Any, cast, Optional
 
 import msgpack
+import numpy as np
 
 from ymmsl import Reference, Settings
+
+from libmuscle.grid import Grid
 
 
 class ExtTypeId(IntEnum):
@@ -15,6 +19,19 @@ class ExtTypeId(IntEnum):
     """
     CLOSE_PORT = 0
     SETTINGS = 1
+    GRID_INT32 = 2
+    GRID_INT64 = 3
+    GRID_FLOAT32 = 4
+    GRID_FLOAT64 = 5
+    GRID_BOOL = 6
+
+
+_grid_types = {
+        ExtTypeId.GRID_INT32,
+        ExtTypeId.GRID_INT64,
+        ExtTypeId.GRID_FLOAT32,
+        ExtTypeId.GRID_FLOAT64,
+        ExtTypeId.GRID_BOOL}
 
 
 class ClosePort:
@@ -27,6 +44,119 @@ class ClosePort:
     All information is carried by the type, this has no attributes.
     """
     pass
+
+
+def _encode_grid(grid: Grid) -> msgpack.ExtType:
+    """Encodes a Grid object into the wire format.
+    """
+    item_size_map = {
+            'int32': 4,
+            'int64': 8,
+            'float32': 4,
+            'float64': 8,
+            'bool': 1}
+
+    format_map = {
+            'int32': '<i',
+            'int64': '<q',
+            'float32': '<f',
+            'float64': '<d',
+            'bool': 'b'}
+
+    ext_type_map = {
+            'int32': ExtTypeId.GRID_INT32,
+            'int64': ExtTypeId.GRID_INT64,
+            'float32': ExtTypeId.GRID_FLOAT32,
+            'float64': ExtTypeId.GRID_FLOAT64,
+            'bool': ExtTypeId.GRID_BOOL}
+
+    array = grid.array
+    if array.flags.c_contiguous:
+        # indexes that differ in the last place are adjacent
+        order = 'la'
+    elif array.flags.f_contiguous:
+        # indexes that differ in the first place are adjacent
+        order = 'fa'
+
+    # dtype is a bit weird, but this seems to be consistent
+    if isinstance(array.dtype, np.dtype):
+        array_type = str(array.dtype)
+    else:
+        array_type = str(np.dtype(array_type))
+
+    if array_type not in item_size_map:
+        raise RuntimeError('Unsupported array data type')
+
+    item_size = item_size_map[array_type]
+    fmt = format_map[array_type]
+    buf = bytearray(array.size * item_size)
+    for i in range(array.size):
+        struct.pack_into(fmt, buf, i * item_size, array.item(i))
+
+    # array_type is redundant, but useful metadata.
+    grid_dict = {
+            'type': array_type,
+            'shape': list(array.shape),
+            'order': order,
+            'data': buf,
+            'indexes': grid.indexes}
+    packed_data = msgpack.packb(grid_dict, use_bin_type=True)
+    return msgpack.ExtType(ext_type_map[array_type], packed_data)
+
+
+def _decode_grid(code: int, data: bytes) -> Grid:
+    """Creates a Grid from serialised data.
+    """
+    type_map = {
+            ExtTypeId.GRID_INT32: np.int32,
+            ExtTypeId.GRID_INT64: np.int64,
+            ExtTypeId.GRID_FLOAT32: np.float32,
+            ExtTypeId.GRID_FLOAT64: np.float64,
+            ExtTypeId.GRID_BOOL: np.bool8}
+
+    order_map = {
+            'fa': 'F',
+            'la': 'C'}
+
+    grid_dict = msgpack.unpackb(data, raw=False)
+    order = order_map[grid_dict['order']]
+    shape = tuple(grid_dict['shape'])
+    dtype = type_map[ExtTypeId(code)]
+    array = np.ndarray(shape, dtype, grid_dict['data'], order=order)
+    indexes = grid_dict['indexes']
+    if indexes == []:
+        indexes = None
+    return Grid(array, indexes)
+
+
+def _data_encoder(obj: Any) -> Any:
+    """Encodes custom objects for MessagePack.
+
+    In particular, this takes care of any Settings, Grid and
+    numpy.ndarray objects the user may want to send.
+    """
+    if isinstance(obj, ClosePort):
+        return msgpack.ExtType(ExtTypeId.CLOSE_PORT, bytes())
+    elif isinstance(obj, Settings):
+        packed_data = msgpack.packb(obj.as_ordered_dict(),
+                                    use_bin_type=True)
+        return msgpack.ExtType(ExtTypeId.SETTINGS, packed_data)
+    elif isinstance(obj, np.ndarray):
+        return _encode_grid(Grid(obj))
+    elif isinstance(obj, Grid):
+        return _encode_grid(obj)
+    return obj
+
+
+def _ext_decoder(code: int, data: bytes) -> msgpack.ExtType:
+    if code == ExtTypeId.CLOSE_PORT:
+        return ClosePort()
+    elif code == ExtTypeId.SETTINGS:
+        plain_dict = msgpack.unpackb(data, raw=False)
+        return Settings(plain_dict)
+    elif code in _grid_types:
+        return _decode_grid(code, data)
+    return msgpack.ExtType(code, data)
 
 
 class Message:
@@ -65,7 +195,10 @@ class Message:
         self.timestamp = timestamp
         self.next_timestamp = next_timestamp
         self.settings_overlay = settings_overlay
-        self.data = data
+        if isinstance(data, np.ndarray):
+            self.data = Grid(data)
+        else:
+            self.data = data
 
     @staticmethod
     def from_bytes(message: bytes) -> 'Message':
@@ -74,55 +207,31 @@ class Message:
         Args:
             message: MessagePack encoded message data.
         """
-        message_dict = msgpack.unpackb(message, raw=False)
+        message_dict = msgpack.unpackb(
+                message, ext_hook=_ext_decoder, raw=False)
         sender = Reference(message_dict["sender"])
         receiver = Reference(message_dict["receiver"])
         port_length = message_dict["port_length"]
         timestamp = message_dict["timestamp"]
         next_timestamp = message_dict["next_timestamp"]
-
-        settings_dict = msgpack.unpackb(message_dict["settings_overlay"].data,
-                                        raw=False)
-        settings_overlay = Settings(settings_dict)
+        settings_overlay = message_dict["settings_overlay"]
 
         data = message_dict["data"]
-        if isinstance(data, msgpack.ExtType):
-            if data.code == ExtTypeId.CLOSE_PORT:
-                data = ClosePort()
-            elif data.code == ExtTypeId.SETTINGS:
-                plain_dict = msgpack.unpackb(data.data, raw=False)
-                data = Settings(plain_dict)
-
         return Message(sender, receiver, port_length, timestamp,
                        next_timestamp, settings_overlay, data)
 
     def encoded(self) -> bytes:
         """Encode the message and return as a bytes buffer.
         """
-        # pack overlay
-        packed_overlay = msgpack.packb(self.settings_overlay.as_ordered_dict(),
-                                       use_bin_type=True)
-        overlay = msgpack.ExtType(ExtTypeId.SETTINGS, packed_overlay)
-
-        # pack data
-        if isinstance(self.data, ClosePort):
-            data = msgpack.ExtType(ExtTypeId.CLOSE_PORT, bytes())
-        elif isinstance(self.data, Settings):
-            packed_data = msgpack.packb(self.data.as_ordered_dict(),
-                                        use_bin_type=True)
-            data = msgpack.ExtType(ExtTypeId.SETTINGS, packed_data)
-        else:
-            data = self.data
-
-        # pack message
         message_dict = {
                 'sender': str(self.sender),
                 'receiver': str(self.receiver),
                 'port_length': self.port_length,
                 'timestamp': self.timestamp,
                 'next_timestamp': self.next_timestamp,
-                'settings_overlay': overlay,
-                'data': data
+                'settings_overlay': self.settings_overlay,
+                'data': self.data
                 }
 
-        return cast(bytes, msgpack.packb(message_dict, use_bin_type=True))
+        return cast(bytes, msgpack.packb(
+            message_dict, default=_data_encoder, use_bin_type=True))

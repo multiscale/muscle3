@@ -80,7 +80,6 @@ def do_mmp_client_test(caplog):
     result = subprocess.run([str(cpp_test_client)], env=env)
 
     # check that C++-side checks were successful
-    print(result.stderr, flush=True)
     assert result.returncode == 0
 
     # check submit_log_message

@@ -127,7 +127,6 @@ contains
         call assert_eq_real8(LIBMUSCLE_Data_as_real8(d1), 3.1415926536d0)
         call LIBMUSCLE_Data_free(d1)
         print *, '[       OK ] data.real8'
-
     end subroutine test_data_basic_types
 
     subroutine test_data_settings
@@ -187,7 +186,6 @@ contains
         print *, '[       OK ] data.assign'
     end subroutine test_data_copy_assign
 
-
     subroutine test_data_dict
         use libmuscle
 
@@ -243,7 +241,6 @@ contains
         call LIBMUSCLE_Data_free(d1)
         print *, '[       OK ] data.dict'
     end subroutine test_data_dict
-
 
     subroutine test_data_list
         use libmuscle
@@ -336,6 +333,132 @@ contains
         print *, '[       OK ] data.list_set_item'
     end subroutine test_data_list
 
+    subroutine test_data_grid
+        use libmuscle
+
+        implicit none
+        integer, parameter :: int4 = LIBMUSCLE_int4
+        integer, parameter :: int8 = LIBMUSCLE_int8
+        integer, parameter :: sz = LIBMUSCLE_size
+        integer, parameter :: real4 = LIBMUSCLE_real4
+        integer, parameter :: real8 = LIBMUSCLE_real8
+
+        logical, dimension(3) :: ad1, ad1_b
+        logical, dimension(2, 2, 2, 2, 2, 2, 2) :: ad7, ad7_b
+        integer (int4), dimension(1, 2, 1, 1, 1) :: ai45, ai45_b
+        integer (int8), dimension(2, 3, 4) :: ai83, ai83_b
+        real (real4), dimension(2, 3) :: ar42, ar42_b
+        real (real8), dimension(2, 2, 2, 2, 2, 3) :: ar86, ar86_b
+
+        integer (sz), dimension(7) :: shp
+
+        type(LIBMUSCLE_DataConstRef) :: d1
+        type(LIBMUSCLE_Data) :: d2
+
+        print *, '[  RUN     ] data.create_grid'
+        ad1 = (/.true., .false., .false./)
+        d1 = LIBMUSCLE_DataConstRef_create_grid(ad1)
+        call assert_true(LIBMUSCLE_DataConstRef_is_a_grid_of_logical(d1))
+        call assert_false(LIBMUSCLE_DataConstRef_is_a_grid_of_int4(d1))
+        call assert_eq_size(LIBMUSCLE_DataConstRef_num_dims(d1), 1_sz)
+        call LIBMUSCLE_DataConstRef_shape(d1, shp)
+        call assert_eq_size(shp(1), 3_sz)
+        call assert_false(LIBMUSCLE_DataConstRef_has_indexes(d1))
+        call LIBMUSCLE_DataConstRef_elements(d1, ad1_b)
+        call assert_true(all(ad1_b .eqv. ad1))
+        call LIBMUSCLE_DataConstRef_free(d1)
+
+        ad7 = reshape(spread(.true., 1, 128), (/2, 2, 2, 2, 2, 2, 2/))
+        d1 = LIBMUSCLE_DataConstRef_create_grid(ad7)
+        call assert_true(LIBMUSCLE_DataConstRef_is_a_grid_of_logical(d1))
+        call assert_false(LIBMUSCLE_DataConstRef_is_a_dict(d1))
+        call assert_eq_size(LIBMUSCLE_DataConstRef_num_dims(d1), 7_sz)
+        call LIBMUSCLE_DataConstRef_shape(d1, shp)
+        call assert_true(all(shp .eq. (/2, 2, 2, 2, 2, 2, 2/)))
+        call assert_false(LIBMUSCLE_DataConstRef_has_indexes(d1))
+        call LIBMUSCLE_DataConstRef_elements(d1, ad7_b)
+        call assert_true(all(ad7 .eqv. ad7_b))
+        call LIBMUSCLE_DataConstRef_free(d1)
+
+        ai45 = reshape((/13_int4, 42_int4/), (/1, 2, 1, 1, 1/))
+        d1 = LIBMUSCLE_DataConstRef_create_grid(ai45)
+        call assert_true(LIBMUSCLE_DataConstRef_is_a_grid_of_int4(d1))
+        call assert_false(LIBMUSCLE_DataConstRef_is_a_int4(d1))
+        call assert_eq_size(LIBMUSCLE_DataConstRef_num_dims(d1), 5_sz)
+        call LIBMUSCLE_DataConstRef_shape(d1, shp)
+        call assert_true(all(shp(1:5) .eq. (/1, 2, 1, 1, 1/)))
+        call assert_false(LIBMUSCLE_DataConstRef_has_indexes(d1))
+        call LIBMUSCLE_DataConstRef_elements(d1, ai45_b)
+        call assert_true(all(ai45 .eq. ai45_b))
+        call LIBMUSCLE_DataConstRef_free(d1)
+
+        ai83 = reshape(spread((/7_int8, -3_int8/), 1, 12), (/2, 3, 4/))
+        d1 = LIBMUSCLE_DataConstRef_create_grid(ai83)
+        call assert_true(LIBMUSCLE_DataConstRef_is_a_grid_of_int8(d1))
+        call assert_false(LIBMUSCLE_DataConstRef_is_a_character(d1))
+        call assert_eq_size(LIBMUSCLE_DataConstRef_num_dims(d1), 3_sz)
+        call LIBMUSCLE_DataConstRef_shape(d1, shp)
+        call assert_true(all(shp(1:3) .eq. (/2, 3, 4/)))
+        call assert_false(LIBMUSCLE_DataConstRef_has_indexes(d1))
+        call LIBMUSCLE_DataConstRef_elements(d1, ai83_b)
+        call assert_true(all(ai83 .eq. ai83_b))
+        call LIBMUSCLE_DataConstRef_free(d1)
+
+        ar42 = reshape(spread((/3.3_real4, -7.6_real4/), 1, 3), (/2, 3/))
+        d1 = LIBMUSCLE_DataConstRef_create_grid(ar42)
+        call assert_true(LIBMUSCLE_DataConstRef_is_a_grid_of_real4(d1))
+        call assert_false(LIBMUSCLE_DataConstRef_is_a_logical(d1))
+        call assert_eq_size(LIBMUSCLE_DataConstRef_num_dims(d1), 2_sz)
+        call LIBMUSCLE_DataConstRef_shape(d1, shp)
+        call assert_true(all(shp(1:2) .eq. (/2, 3/)))
+        call assert_false(LIBMUSCLE_DataConstRef_has_indexes(d1))
+        call LIBMUSCLE_DataConstRef_elements(d1, ar42_b)
+        call assert_true(all(ar42 .eq. ar42_b))
+        call LIBMUSCLE_DataConstRef_free(d1)
+
+        ar86 = reshape(spread(3.14_real8, 1, 96), (/2, 2, 2, 2, 2, 3/))
+        d1 = LIBMUSCLE_DataConstRef_create_grid(ar86)
+        call assert_true(LIBMUSCLE_DataConstRef_is_a_grid_of_real8(d1))
+        call assert_false(LIBMUSCLE_DataConstRef_is_a_byte_array(d1))
+        call assert_eq_size(LIBMUSCLE_DataConstRef_num_dims(d1), 6_sz)
+        call LIBMUSCLE_DataConstRef_shape(d1, shp)
+        call assert_true(all(shp(1:6) .eq. (/2, 2, 2, 2, 2, 3/)))
+        call assert_false(LIBMUSCLE_DataConstRef_has_indexes(d1))
+        call LIBMUSCLE_DataConstRef_elements(d1, ar86_b)
+        call assert_true(all(ar86 .eq. ar86_b))
+        call LIBMUSCLE_DataConstRef_free(d1)
+
+        ! Data instead of DataConstRef
+        ai83 = reshape(spread((/7_int8, -3_int8/), 1, 12), (/2, 3, 4/))
+        d2 = LIBMUSCLE_Data_create_grid(ai83)
+        call assert_true(LIBMUSCLE_Data_is_a_grid_of_int8(d2))
+        call assert_false(LIBMUSCLE_Data_is_a_character(d2))
+        call assert_eq_size(LIBMUSCLE_Data_num_dims(d2), 3_sz)
+        call LIBMUSCLE_Data_shape(d2, shp)
+        call assert_true(all(shp(1:3) .eq. (/2, 3, 4/)))
+        call assert_false(LIBMUSCLE_Data_has_indexes(d2))
+        call LIBMUSCLE_Data_elements(d2, ai83_b)
+        call assert_true(all(ai83 .eq. ai83_b))
+        call LIBMUSCLE_Data_free(d2)
+
+        ! Indexes
+        ar42 = reshape(spread((/3.3_real4, -7.6_real4/), 1, 3), (/2, 3/))
+        d1 = LIBMUSCLE_DataConstRef_create_grid(ar42, 'x', 'y')
+        call assert_true(LIBMUSCLE_DataConstRef_is_a_grid_of_real4(d1))
+        call assert_false(LIBMUSCLE_DataConstRef_is_a_logical(d1))
+        call assert_eq_size(LIBMUSCLE_DataConstRef_num_dims(d1), 2_sz)
+        call LIBMUSCLE_DataConstRef_shape(d1, shp)
+        call assert_true(all(shp(1:2) .eq. (/2, 3/)))
+        call assert_true(LIBMUSCLE_DataConstRef_has_indexes(d1))
+        call assert_eq_character(LIBMUSCLE_DataConstRef_index(d1, 1_sz), 'x')
+        call assert_eq_character(LIBMUSCLE_DataConstRef_index(d1, 2_sz), 'y')
+        call LIBMUSCLE_DataConstRef_elements(d1, ar42_b)
+        call assert_true(all(ar42 .eq. ar42_b))
+        call LIBMUSCLE_DataConstRef_free(d1)
+
+        print *, '[       OK ] data.create_grid'
+    end subroutine test_data_grid
+
     subroutine test_data_byte_array
         use libmuscle
 
@@ -382,12 +505,12 @@ contains
         print *, '[       OK ] data.byte_array'
     end subroutine test_data_byte_array
 
-
     subroutine test_data
         call test_data_basic_types
         call test_data_copy_assign
         call test_data_dict
         call test_data_list
+        call test_data_grid
         call test_data_byte_array
         call test_data_settings
     end subroutine test_data
@@ -405,7 +528,6 @@ contains
         call YMMSL_Settings_free(s1)
         print *, '[       OK ] settings.create'
     end subroutine test_settings_create
-
 
     subroutine test_settings_equals
         use ymmsl
@@ -429,7 +551,6 @@ contains
         print *, '[       OK ] settings.equals'
     end subroutine test_settings_equals
 
-
     subroutine test_settings_size
         use ymmsl
         implicit none
@@ -444,7 +565,6 @@ contains
         call YMMSL_Settings_free(s1)
         print *, '[       OK ] settings.size'
     end subroutine test_settings_size
-
 
     subroutine test_settings_set_get_as
         use ymmsl
@@ -486,7 +606,6 @@ contains
         call YMMSL_Settings_free(s1)
         print *, '[       OK ] settings.set_get_as'
     end subroutine test_settings_set_get_as
-
 
     subroutine test_settings_is_a
         use ymmsl
@@ -530,7 +649,6 @@ contains
         print *, '[       OK ] settings.is_a'
     end subroutine test_settings_is_a
 
-
     subroutine test_settings_erase
         use ymmsl
         implicit none
@@ -547,7 +665,6 @@ contains
         call YMMSL_Settings_free(s1)
         print *, '[       OK ] settings.erase'
     end subroutine test_settings_erase
-
 
     subroutine test_settings_clear
         use ymmsl
@@ -572,7 +689,6 @@ contains
         call YMMSL_Settings_free(s1)
         print *, '[       OK ] settings.clear'
     end subroutine test_settings_clear
-
 
     subroutine test_settings_key
         use ymmsl
@@ -608,7 +724,6 @@ contains
         print *, '[       OK ] settings.key'
     end subroutine test_settings_key
 
-
     subroutine test_settings
         call test_settings_create
         call test_settings_equals
@@ -619,6 +734,7 @@ contains
         call test_settings_is_a
         call test_settings_key
     end subroutine test_settings
+
 
     subroutine test_message_create
         use libmuscle
@@ -767,6 +883,7 @@ contains
         call test_message_settings
     end subroutine test_message
 
+
     subroutine test_operator
         use ymmsl
 
@@ -781,6 +898,7 @@ contains
         o1 = YMMSL_Operator_O_F
         print *, '[       OK ] operator.use'
     end subroutine test_operator
+
 
     subroutine test_ports_description
         use libmuscle

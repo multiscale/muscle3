@@ -1,6 +1,6 @@
 import numpy as np
 
-from libmuscle import Instance, Message
+from libmuscle import Grid, Instance, Message
 from ymmsl import Operator
 
 
@@ -18,7 +18,7 @@ def reaction() -> None:
         k = instance.get_setting('k', 'float')
 
         msg = instance.receive('initial_state')
-        U = np.array(msg.data)
+        U = msg.data.array.copy()
 
         t_cur = msg.timestamp
         while t_cur + dt < msg.timestamp + t_max:
@@ -29,7 +29,7 @@ def reaction() -> None:
             t_cur += dt
 
         # O_F
-        instance.send('final_state', Message(t_cur, None, U.tolist()))
+        instance.send('final_state', Message(t_cur, None, Grid(U, ['x'])))
 
 
 if __name__ == '__main__':

@@ -102,9 +102,7 @@ program mc_driver
                 allocate (Us(n_samples, U_size))
             end if
 
-            do i = 1, U_size
-                Us(sample, i) = LIBMUSCLE_DataConstRef_as_real8(LIBMUSCLE_DataConstRef_get_item(rdata, i))
-            end do
+            call LIBMUSCLE_DataConstRef_elements(rdata, Us(sample, :))
             t_max = max(t_max, LIBMUSCLE_Message_timestamp(rmsg))
 
             call LIBMUSCLE_DataConstRef_free(rdata)
@@ -112,11 +110,7 @@ program mc_driver
         end do
 
         ! calculate mean
-        means = LIBMUSCLE_Data_create_nils(U_size)
-
-        do i = 1, U_size
-            call LIBMUSCLE_Data_set_item(means, i, sum(Us(:, i)) / n_samples)
-        end do
+        means = LIBMUSCLE_Data_create_grid(sum(Us, 1) / n_samples, 'x')
         smsg = LIBMUSCLE_Message_create(t_max, means)
         call LIBMUSCLE_Instance_send(instance, 'mean_out', smsg)
 

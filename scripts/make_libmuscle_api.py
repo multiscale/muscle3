@@ -3,15 +3,365 @@
 import argparse
 from copy import copy
 from textwrap import indent
+from typing import Dict, List, Optional
 
 import api_generator
 
 from api_generator import (
-        API, AssignmentOperator, Bool, Bytes, Char, Class, Constructor,
+        API, Array, AssignmentOperator, Bool, Bytes, Char, Class, Constructor,
         Destructor, Double, Enum, EnumVal, Float, IndexAssignmentOperator, Int,
-        Int16t, Int32t, Int64t, MemFun, MemFunTmpl, NamedConstructor, Namespace,
-        Obj, OverloadSet, ShiftedIndexAssignmentOperator, Sizet, String, T,
-        VecDbl, Vec2Dbl, Void)
+        Int16t, Int32t, Int64t, Member, MemFun, MemFunTmpl, MultiMemFun,
+        NamedConstructor, Namespace, Obj, OverloadSet,
+        ShiftedIndexAssignmentOperator, Sizet, String, T, VecDbl, Vec2Dbl,
+        VecSizet, Void)
+
+
+class GridConstructor(MultiMemFun):
+    """Creates a constructor for grids.
+
+    Grid constructors are a bit weird, with multidimensional array
+    arguments, and a number of arguments that depends on the number of
+    dimensions of that array. I don't have the time to implement that
+    generically, so we're using this custom class. It's a hack, and
+    nobody likes hacks, but it's what we can do. Also, this only runs
+    once, and the output is verified by the test suite, so it's not
+    very dangerous, just ugly.
+    """
+
+    def __init__(self, with_names: bool) -> None:
+        """Create a grid constructor.
+
+        This creates a set of named constructors, one for each
+        combination of five element types and seven dimensions. If
+        with_types is True, every instance has n additional string
+        arguments for index names, where n is the number of dimensions
+        of the array it accepts.
+
+        Args:
+            with_names: Whether to add index name arguments.
+        """
+        self.ns_prefix = None       # type: Optional[str]
+        self.public = None          # type: Optional[bool]
+        self.class_name = None      # type: Optional[str]
+        self.with_names = with_names
+        self.types = [Bool(), Int32t(), Int64t(), Float(), Double()]
+        self.name = 'grid'
+        self.instances = list()     # type: List[NamedConstructor]
+
+        # generate flexible C functions
+        for typ in self.types:
+            # This is not set yet here, but f_type() needs it.
+            # The dict is only used by Obj, which we don't have.
+            typ.name = 'data_array'
+            typ.set_ns_prefix({}, 'LIBMUSCLE')
+
+            instance_ret_type = Obj('<deferred>')
+            instance_params = [Array(1, copy(typ), 'data_array')]
+            if not with_names:
+                instance_name = 'grid_{}_a'.format(typ.tname())
+                chain_call = lambda **kwargs: ('{}::grid(data_array_p,'
+                        ' data_array_shape_v, {{}},'
+                        ' libmuscle::StorageOrder::first_adjacent'
+                        ')').format(kwargs['class_name'])
+                self.instances.append(NamedConstructor(
+                    instance_params, instance_name, cpp_func_name='grid',
+                    cpp_chain_call=chain_call, f_override=''))
+            else:
+                for i in range(1, 8):
+                    arg_name = 'index_name_{}'.format(i)
+                    instance_params.append(String(arg_name))
+                instance_name = 'grid_{}_n'.format(typ.tname())
+                fc_override=(
+                        'std::intptr_t LIBMUSCLE_$CLASSNAME$_create_grid_{0}_n_(\n'
+                        '        {1} * data_array,\n'
+                        '        std::size_t * data_array_shape,\n'
+                        '        std::size_t data_array_ndims,\n'
+                        '        char * index_name_1, std::size_t index_name_1_size,\n'
+                        '        char * index_name_2, std::size_t index_name_2_size,\n'
+                        '        char * index_name_3, std::size_t index_name_3_size,\n'
+                        '        char * index_name_4, std::size_t index_name_4_size,\n'
+                        '        char * index_name_5, std::size_t index_name_5_size,\n'
+                        '        char * index_name_6, std::size_t index_name_6_size,\n'
+                        '        char * index_name_7, std::size_t index_name_7_size\n'
+                        ') {{\n'
+                        '    std::vector<std::size_t> data_array_shape_v(\n'
+                        '            data_array_shape, data_array_shape + data_array_ndims);\n'
+                        '    auto data_array_p = const_cast<{1} const * const>(data_array);\n'
+                        '\n'
+                        '    std::vector<std::string> names_v;\n'
+                        '    names_v.push_back(std::string(index_name_1, index_name_1_size));\n'
+                        '    if (data_array_ndims >= 2u)\n'
+                        '        names_v.push_back(std::string(index_name_2, index_name_2_size));\n'
+                        '    if (data_array_ndims >= 3u)\n'
+                        '        names_v.push_back(std::string(index_name_3, index_name_3_size));\n'
+                        '    if (data_array_ndims >= 4u)\n'
+                        '        names_v.push_back(std::string(index_name_4, index_name_4_size));\n'
+                        '    if (data_array_ndims >= 5u)\n'
+                        '        names_v.push_back(std::string(index_name_5, index_name_5_size));\n'
+                        '    if (data_array_ndims >= 6u)\n'
+                        '        names_v.push_back(std::string(index_name_6, index_name_6_size));\n'
+                        '    if (data_array_ndims >= 7u)\n'
+                        '        names_v.push_back(std::string(index_name_7, index_name_7_size));\n'
+                        '\n'
+                        '    Data * result = new Data(Data::grid(\n'
+                        '            data_array_p, data_array_shape_v,\n'
+                        '            names_v, libmuscle::StorageOrder::first_adjacent));\n'
+                        '    return reinterpret_cast<std::intptr_t>(result);\n'
+                        '}}\n\n').format(typ.tname(), typ.fc_cpp_type())
+                self.instances.append(NamedConstructor(
+                    instance_params, instance_name, fc_override=fc_override,
+                    f_override=''))
+
+        # generate instances
+        for typ in self.types:
+            for ndims in range(1, 8):
+                instance_ret_type = Obj('<deferred>')
+                instance_params = [Array(ndims, copy(typ), 'data_array')]
+                if with_names:
+                    for i in range(1, ndims+1):
+                        arg_name = 'index_name_{}'.format(i)
+                        instance_params.append(String(arg_name))
+
+                instance_name = 'grid_{}_{}_{}'.format(
+                        ndims, typ.tname(), 'n' if with_names else 'a')
+
+                if with_names:
+                    arg_list = [
+                            'index_name_{}'.format(i)
+                            for i in range(1, ndims+1)]
+                    name_args = ', &\n        '.join(arg_list)
+                    name_types = ''.join([
+                            '    character (len=*), intent(in) :: {}\n'.format(arg)
+                            for arg in arg_list])
+                    name_params = ', &\n'.join([(
+                        '            index_name_{0},'
+                        ' int(len(index_name_{0}), c_size_t)').format(dim)
+                        for dim in range(1, ndims+1)])
+                    if ndims < 7:
+                        name_params += ', &\n'
+                    filler_params = ', &\n'.join([(
+                        '            index_name_1,'
+                        ' int(len(index_name_1), c_size_t)')
+                        for dim in range(ndims+1, 8)])
+
+                    dim_list = ', '.join([':'] * ndims)
+
+                    f_override=(
+                            'function LIBMUSCLE_$CLASSNAME$_create_grid_{0}_{1}_n( &\n'
+                            '        data_array, &\n'
+                            '        {2})\n'
+                            '\n'
+                            '    implicit none\n'
+                            '    {6}, dimension({8}), intent(in) :: data_array\n'
+                            '{3}'
+                            '    type(LIBMUSCLE_$CLASSNAME$) :: LIBMUSCLE_$CLASSNAME$_create_grid_{0}_{1}_n\n'
+                            '\n'
+                            '    integer (c_intptr_t) :: ret_val\n'
+                            '\n'
+                            '    ret_val = LIBMUSCLE_$CLASSNAME$_create_grid_{1}_n_( &\n'
+                            '            {7}, &\n'
+                            '            int(shape(data_array), c_size_t), &\n'
+                            '            {0}_LIBMUSCLE_size, &\n'
+                            '{4}'
+                            '{5} &\n'
+                            '        )\n'
+                            '\n'
+                            '    LIBMUSCLE_$CLASSNAME$_create_grid_{0}_{1}_n%ptr = ret_val\n'
+                            'end function LIBMUSCLE_$CLASSNAME$_create_grid_{0}_{1}_n\n'
+                            '\n').format(
+                                    ndims, typ.tname(), name_args, name_types,
+                                    name_params, filler_params,
+                                    typ.f_type()[0][0], typ.f_chain_arg(),
+                                    dim_list)
+
+                    self.instances.append(NamedConstructor(
+                        instance_params, instance_name,
+                        f_override=f_override, fc_override=''))
+                else:
+                    chain_call = lambda tname=typ.tname(), **a: (
+                            '{}_{}_create_grid_{}_a_( &\n{})'.format(
+                                a['ns_prefix'], a['class_name'], tname,
+                                a['fc_args']))
+
+                    self.instances.append(NamedConstructor(
+                        instance_params, instance_name, cpp_func_name='grid',
+                        fc_chain_call=chain_call, fc_override=''))
+
+    def __copy__(self) -> 'GridConstructor':
+        result = GridConstructor(self.with_names)
+        result.ns_prefix = self.ns_prefix
+        result.public = self.public
+        if self.class_name is None:
+            result.class_name = None
+        else:
+            result.set_class_name(self.class_name)
+        result.instances = [copy(instance) for instance in self.instances]
+        return result
+
+
+class Elements(MultiMemFun):
+    """Creates the elements() function.
+
+    There are a lot of these, just like with the grid constructor, for
+    different dimensions and types. So we do some extra work here too
+    to reduce the size of the ABI.
+    """
+
+    def __init__(self) -> None:
+        self.ns_prefix = None       # type: Optional[str]
+        self.public = None          # type: Optional[bool]
+        self.class_name = None      # type: Optional[str]
+        self.types = [Bool(), Int32t(), Int64t(), Float(), Double()]
+        self.name = 'elements'
+        self.instances = list()     # type: List[Member]
+
+        # Generate ABI
+        for typ in self.types:
+            # This is not set yet here, but f_type() needs it.
+            # The dict is only used by Obj, which we don't have.
+            typ.name = 'elements'
+            typ.set_ns_prefix({}, 'LIBMUSCLE')
+            func_name = 'elements_{}'.format(typ.tname())
+            fc_override = (
+                    'void LIBMUSCLE_$CLASSNAME$_elements_{0}_(\n'
+                    '        std::intptr_t self,\n'
+                    '        std::size_t ndims,\n'
+                    '        {1} ** elements,\n'
+                    '        std::size_t * elements_shape,\n'
+                    '        int * elements_format,\n'
+                    '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
+                    ') {{\n'
+                    '    $CLASSNAME$ * self_p = reinterpret_cast<$CLASSNAME$ *>(self);\n'
+                    '    try {{\n'
+                    '        *err_code = 0;\n'
+                    '        if (self_p->shape().size() != ndims)\n'
+                    '            throw std::runtime_error("Grid does not have a matching number of dimensions.");\n'
+                    '        {1} const * result = self_p->elements<{1}>();\n'
+                    '        *elements = const_cast<{1} *>(result);\n'
+                    '\n'
+                    '        for (std::size_t i = 0u; i < ndims; ++i)\n'
+                    '            elements_shape[i] = self_p->shape()[i];\n'
+                    '\n'
+                    '        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);\n'
+                    '        return;\n'
+                    '    }}\n'
+                    '    catch (std::runtime_error const & e) {{\n'
+                    '        *err_code = 4;\n'
+                    '        static std::string msg;\n'
+                    '        msg = e.what();\n'
+                    '        *err_msg = const_cast<char*>(msg.data());\n'
+                    '        *err_msg_len = msg.size();\n'
+                    '    }}\n'
+                    '}}\n\n'
+                    ).format(typ.tname(), typ.fc_cpp_type())
+
+            self.instances.append(
+                    MemFun(
+                        Array(1, copy(typ), 'elements'), func_name, [Sizet('ndims')], True,
+                        f_override='', fc_override=fc_override))
+
+        # Generate API
+        for typ in self.types:
+            for ndims in range(1, 8):
+                func_name = 'elements_{}_{}'.format(ndims, typ.tname())
+                dims_list = ', '.join([':']*ndims)
+                rev_dims = ', '.join(map(str, reversed(range(1, ndims+1))))
+                f_override = (
+                        'subroutine LIBMUSCLE_$CLASSNAME$_elements_{0}_{1}( &\n'
+                        '        self, &\n'
+                        '        elements, &\n'
+                        '        err_code, &\n'
+                        '        err_msg)\n'
+                        '\n'
+                        '    implicit none\n'
+                        '    type(LIBMUSCLE_$CLASSNAME$), intent(in) :: self\n'
+                        '    {2}, dimension({3}), intent(out) :: elements\n'
+                        '    integer, optional, intent(out) :: err_code\n'
+                        '    character(:), allocatable, optional, intent(out) :: err_msg\n'
+                        '\n'
+                        '    type (c_ptr) :: ret_val\n'
+                        '    integer (c_size_t), dimension({0}) :: ret_val_shape\n'
+                        '    integer (c_int) :: ret_val_format\n'
+                        '    {4}, pointer, dimension({3}) :: f_ret_ptr\n'
+                        '    {4}, pointer, dimension(:) :: f_ret_ptr_linear\n'
+                        '    integer (c_int) :: err_code_v\n'
+                        '    type (c_ptr) :: err_msg_v\n'
+                        '    integer (c_size_t) :: err_msg_len_v\n'
+                        '    character (c_char), dimension(:), pointer :: err_msg_f\n'
+                        '    character(:), allocatable :: err_msg_p\n'
+                        '    integer (c_size_t) :: err_msg_i\n'
+                        '\n'
+                        '    call LIBMUSCLE_$CLASSNAME$_elements_{1}_( &\n'
+                        '        self%ptr, &\n'
+                        '        {0}_LIBMUSCLE_size, &\n'
+                        '        ret_val, &\n'
+                        '        ret_val_shape, &\n'
+                        '        ret_val_format, &\n'
+                        '        err_code_v, &\n'
+                        '        err_msg_v, &\n'
+                        '        err_msg_len_v)\n'
+                        '\n'
+                        '    if (err_code_v .ne. 0) then\n'
+                        '        if (present(err_code)) then\n'
+                        '            err_code = err_code_v\n'
+                        '            if (present(err_msg)) then\n'
+                        '                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))\n'
+                        '                allocate (character(err_msg_len_v) :: err_msg)\n'
+                        '                do err_msg_i = 1, err_msg_len_v\n'
+                        '                    err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)\n'
+                        '                end do\n'
+                        '            end if\n'
+                        '            return\n'
+                        '        else\n'
+                        '            call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))\n'
+                        '            allocate (character(err_msg_len_v) :: err_msg_p)\n'
+                        '            do err_msg_i = 1, err_msg_len_v\n'
+                        '                err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)\n'
+                        '            end do\n'
+                        '            print *, err_msg_p\n'
+                        '            stop\n'
+                        '        end if\n'
+                        '    else\n'
+                        '        if (present(err_code)) then\n'
+                        '            err_code = 0\n'
+                        '        end if\n'
+                        '    end if\n'
+                        '\n'
+                        '    if (ret_val_format .eq. 0) then\n'
+                        '        call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)\n'
+                        '        elements = f_ret_ptr\n'
+                        '    else\n'
+                        '        call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))\n'
+                        '        elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ {4}:: /), (/{5}/))\n'
+                        '    end if\n'
+                        'end subroutine LIBMUSCLE_$CLASSNAME$_elements_{0}_{1}\n\n'
+                        ).format(
+                                ndims, typ.tname(), typ.f_ret_type()[1][0][0],
+                                dims_list, typ.fi_ret_type()[0][0], rev_dims)
+
+                self.instances.append(
+                        MemFun(
+                            Array(ndims, copy(typ), 'elements'),
+                            func_name, [], True,
+                            f_override=f_override, fc_override=''))
+
+    def __copy__(self) -> 'Elements':
+        result = Elements()
+        result.ns_prefix = self.ns_prefix
+        result.public = self.public
+        if self.class_name is None:
+            result.class_name = None
+        else:
+            result.set_class_name(self.class_name)
+        result.instances = [copy(instance) for instance in self.instances]
+        return result
+
+
+create_grid_overloads = [
+        'create_grid_{}_{}_{}'.format(ndims, typ, with_names_tag)
+        for ndims in range(1, 8)
+        for typ in ['logical', 'int4', 'int8', 'real4', 'real8']
+        for with_names_tag in ['n', 'a']]
 
 
 dataconstref_desc = Class('DataConstRef', None, [
@@ -30,6 +380,9 @@ dataconstref_desc = Class('DataConstRef', None, [
         'create_nil', 'create_logical', 'create_character', 'create_int1',
         'create_int2', 'create_int4', 'create_int8', 'create_real4',
         'create_real8', 'create_settings', 'create_copy']),
+    GridConstructor(False),
+    GridConstructor(True),
+    OverloadSet('create_grid', create_grid_overloads),
     Destructor(),
     MemFunTmpl(
         [Bool(), String(), Int(), Char(), Int16t(), Int32t(), Int64t(),
@@ -37,6 +390,9 @@ dataconstref_desc = Class('DataConstRef', None, [
         Bool(), 'is_a', [], False),
     MemFun(Bool(), 'is_a_dict'),
     MemFun(Bool(), 'is_a_list'),
+    MemFunTmpl(
+        [Bool(), Float(), Double(), Int32t(), Int64t()],
+        Bool(), 'is_a_grid_of', [], False),
     MemFun(Bool(), 'is_a_byte_array'),
     MemFun(Bool(), 'is_nil'),
     MemFun(Bool(), 'is_a_settings', [], False,
@@ -73,16 +429,16 @@ dataconstref_desc = Class('DataConstRef', None, [
         ),
     MemFun(Obj('DataConstRef', 'value'), 'get_item_by_key', [String('key')], True,
             fc_override=(
-                'std::intptr_t LIBMUSCLE_DataConstRef_get_item_by_key_(\n'
+                'std::intptr_t LIBMUSCLE_$CLASSNAME$_get_item_by_key_(\n'
                 '        std::intptr_t self,\n'
                 '        char * key, std::size_t key_size,\n'
                 '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
                 ') {\n'
-                '    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);\n'
+                '    $CLASSNAME$ * self_p = reinterpret_cast<$CLASSNAME$ *>(self);\n'
                 '    std::string key_s(key, key_size);\n'
                 '    try {\n'
                 '        *err_code = 0;\n'
-                '        DataConstRef * result = new DataConstRef((*self_p)[key_s]);\n'
+                '        $CLASSNAME$ * result = new $CLASSNAME$((*self_p)[key_s]);\n'
                 '        return reinterpret_cast<std::intptr_t>(result);\n'
                 '    }\n'
                 '    catch (std::runtime_error const & e) {\n'
@@ -103,15 +459,15 @@ dataconstref_desc = Class('DataConstRef', None, [
             ),
     MemFun(Obj('DataConstRef', 'value'), 'get_item_by_index', [Sizet('i')], True,
             fc_override=(
-                'std::intptr_t LIBMUSCLE_DataConstRef_get_item_by_index_(\n'
+                'std::intptr_t LIBMUSCLE_$CLASSNAME$_get_item_by_index_(\n'
                 '        std::intptr_t self,\n'
                 '        std::size_t i,\n'
                 '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
                 ') {\n'
-                '    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);\n'
+                '    $CLASSNAME$ * self_p = reinterpret_cast<$CLASSNAME$ *>(self);\n'
                 '    try {\n'
                 '        *err_code = 0;\n'
-                '        DataConstRef * result = new DataConstRef((*self_p)[i-1u]);\n'
+                '        $CLASSNAME$ * result = new $CLASSNAME$((*self_p)[i-1u]);\n'
                 '        return reinterpret_cast<std::intptr_t>(result);\n'
                 '    }\n'
                 '    catch (std::runtime_error const & e) {\n'
@@ -133,6 +489,47 @@ dataconstref_desc = Class('DataConstRef', None, [
     OverloadSet('get_item', [
         'get_item_by_key', 'get_item_by_index'
         ]),
+    MemFun(Sizet(), 'num_dims', [], True,
+            fc_override=(
+                'std::size_t LIBMUSCLE_$CLASSNAME$_num_dims_(\n'
+                '        std::intptr_t self,\n'
+                '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
+                ') {\n'
+                '    $CLASSNAME$ * self_p = reinterpret_cast<$CLASSNAME$ *>(self);\n'
+                '    try {\n'
+                '        *err_code = 0;\n'
+                '        return self_p->shape().size();\n'
+                '    }\n'
+                '    catch (std::runtime_error const & e) {\n'
+                '        *err_code = 1;\n'
+                '        static std::string msg;\n'
+                '        msg = e.what();\n'
+                '        *err_msg = const_cast<char*>(msg.data());\n'
+                '        *err_msg_len = msg.size();\n'
+                '    }\n'
+                '}\n\n')
+            ),
+    MemFun(VecSizet('shp'), 'shape', [], True),
+    Elements(),
+    OverloadSet('elements', [
+        'elements_1_logical', 'elements_1_real4', 'elements_1_real8',
+        'elements_1_int4', 'elements_1_int8',
+        'elements_2_logical', 'elements_2_real4', 'elements_2_real8',
+        'elements_2_int4', 'elements_2_int8',
+        'elements_3_logical', 'elements_3_real4', 'elements_3_real8',
+        'elements_3_int4', 'elements_3_int8',
+        'elements_4_logical', 'elements_4_real4', 'elements_4_real8',
+        'elements_4_int4', 'elements_4_int8',
+        'elements_5_logical', 'elements_5_real4', 'elements_5_real8',
+        'elements_5_int4', 'elements_5_int8',
+        'elements_6_logical', 'elements_6_real4', 'elements_6_real8',
+        'elements_6_int4', 'elements_6_int8',
+        'elements_7_logical', 'elements_7_real4', 'elements_7_real8',
+        'elements_7_int4', 'elements_7_int8',
+        ]),
+    MemFun(Bool(), 'has_indexes', [], True),
+    MemFun(String(), 'index', [Sizet('i')], True,
+            cpp_chain_call=lambda **kwargs: 'self_p->indexes().at(i - 1)'),
     ])
 
 
@@ -180,65 +577,6 @@ data_desc = Class('Data', dataconstref_desc, [
             '}\n'
             )
         ),
-    MemFun(Obj('Data', 'value'), 'get_item_by_key', [String('key')], True,
-            fc_override=(
-                'std::intptr_t LIBMUSCLE_Data_get_item_by_key_(\n'
-                '        std::intptr_t self,\n'
-                '        char * key, std::size_t key_size,\n'
-                '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
-                ') {\n'
-                '    Data * self_p = reinterpret_cast<Data *>(self);\n'
-                '    std::string key_s(key, key_size);\n'
-                '    try {\n'
-                '        *err_code = 0;\n'
-                '        Data * result = new Data((*self_p)[key_s]);\n'
-                '        return reinterpret_cast<std::intptr_t>(result);\n'
-                '    }\n'
-                '    catch (std::runtime_error const & e) {\n'
-                '        *err_code = 1;\n'
-                '        static std::string msg;\n'
-                '        msg = e.what();\n'
-                '        *err_msg = const_cast<char*>(msg.data());\n'
-                '        *err_msg_len = msg.size();\n'
-                '    }\n'
-                '    catch (std::out_of_range const & e) {\n'
-                '        *err_code = 3;\n'
-                '        static std::string msg;\n'
-                '        msg = e.what();\n'
-                '        *err_msg = const_cast<char*>(msg.data());\n'
-                '        *err_msg_len = msg.size();\n'
-                '    }\n'
-                '}\n\n')
-            ),
-    MemFun(Obj('Data', 'value'), 'get_item_by_index', [Sizet('i')], True,
-            fc_override=(
-                'std::intptr_t LIBMUSCLE_Data_get_item_by_index_(\n'
-                '        std::intptr_t self,\n'
-                '        std::size_t i,\n'
-                '        int * err_code, char ** err_msg, std::size_t * err_msg_len\n'
-                ') {\n'
-                '        Data * self_p = reinterpret_cast<DataConstRef *>(self);\n'
-                '        try {\n'
-                '            *err_code = 0;\n'
-                '            Data * result = new Data((*self_p)[i-1u]);\n'
-                '            return reinterpret_cast<std::intptr_t>(result);\n'
-                '    }\n'
-                '    catch (std::runtime_error const & e) {\n'
-                '        *err_code = 1;\n'
-                '        static std::string msg;\n'
-                '        msg = e.what();\n'
-                '        *err_msg = const_cast<char*>(msg.data());\n'
-                '        *err_msg_len = msg.size();\n'
-                '    }\n'
-                '    catch (std::out_of_range const & e) {\n'
-                '        *err_code = 3;\n'
-                '        static std::string msg;\n'
-                '        msg = e.what();\n'
-                '        *err_msg = const_cast<char*>(msg.data());\n'
-                '        *err_msg_len = msg.size();\n'
-                '    }\n'
-                '}\n\n')
-            ),
 
     AssignmentOperator('set_logical', Bool('value')),
     AssignmentOperator('set_character', String('value')),

@@ -3,6 +3,7 @@ grpcio==1.17.1
 grpcio-tools==1.17.1
 msgpack==0.6.1
 netifaces
+numpy>=1.12
 protobuf==3.8.0
 sphinx-fortran
 typing==3.6.6

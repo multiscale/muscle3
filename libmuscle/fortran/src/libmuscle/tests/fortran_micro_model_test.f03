@@ -10,10 +10,14 @@ program micro_model
     type(LIBMUSCLE_PortsDescription) :: ports
     type(LIBMUSCLE_Instance) :: instance
     type(LIBMUSCLE_Message) :: msg
-    type(LIBMUSCLE_DataConstRef) :: rdata
+    type(LIBMUSCLE_DataConstRef) :: rdata, rdata2, rgrid
     type(LIBMUSCLE_Message) :: message
-    type(LIBMUSCLE_Data) :: sdata
+    type(LIBMUSCLE_Data) :: sdata, sgrid
     integer :: i, err_code
+    integer (LIBMUSCLE_size), dimension(2) :: rshape
+    real (LIBMUSCLE_real8), dimension(:, :), allocatable :: test_grid
+    integer (LIBMUSCLE_int8), dimension(2, 3) :: test_grid_data
+
     character(len=14) :: reply
     logical :: is_int
 
@@ -37,16 +41,37 @@ program micro_model
         msg = LIBMUSCLE_Instance_receive(instance, 'in')
 
         rdata = LIBMUSCLE_Message_get_data(msg)
-        call assert_eq_character(LIBMUSCLE_DataConstRef_as_character(rdata), 'testing')
+        rdata2 = LIBMUSCLE_DataConstRef_get_item(rdata, 'message')
+        call assert_eq_character(LIBMUSCLE_DataConstRef_as_character(rdata2), 'testing')
+        call LIBMUSCLE_DataConstRef_free(rdata2)
+
+        rgrid = LIBMUSCLE_DataConstRef_get_item(rdata, 'test_grid')
+        call assert_true(LIBMUSCLE_DataConstref_is_a_grid_of_real8(rgrid))
+        call assert_eq_size(LIBMUSCLE_DataConstRef_num_dims(rgrid), 2_LIBMUSCLE_size)
+        call LIBMUSCLE_DataConstRef_shape(rgrid, rshape)
+        call assert_eq_size(rshape(1), 2_LIBMUSCLE_size)
+        call assert_eq_size(rshape(2), 3_LIBMUSCLE_size)
+
+        allocate (test_grid(rshape(1), rshape(2)))
+        call LIBMUSCLE_DataConstRef_elements(rgrid, test_grid)
+        call assert_eq_real8(test_grid(1, 2), 2.0d0)
+
+        deallocate (test_grid)
+        call LIBMUSCLE_DataConstRef_free(rgrid)
         call LIBMUSCLE_DataConstRef_free(rdata)
 
         ! O_F
         write (reply, '(A12, " ", I0)') 'testing back', i
-        sdata = LIBMUSCLE_Data_create(reply)
+        test_grid_data = int(reshape((/1, 4, 2, 5, 3, 6/), (/2, 3/)), LIBMUSCLE_int8)
+        sgrid = LIBMUSCLE_Data_create_grid(test_grid_data)
+        sdata = LIBMUSCLE_Data_create_dict()
+        call LIBMUSCLE_Data_set_item(sdata, 'reply', reply)
+        call LIBMUSCLE_Data_set_item(sdata, 'test_grid', sgrid)
         message = LIBMUSCLE_Message_create(LIBMUSCLE_Message_timestamp(msg), sdata)
         call LIBMUSCLE_Instance_send(instance, 'out', message)
         call LIBMUSCLE_Message_free(message)
         call LIBMUSCLE_Data_free(sdata)
+        call LIBMUSCLE_Data_free(sgrid)
 
         call LIBMUSCLE_Message_free(msg)
         i = i + 1

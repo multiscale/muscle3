@@ -97,7 +97,7 @@ def test_grid_decode() -> None:
     assert msg.data.array[0, 0] == 1
     assert msg.data.array[0, 1] == 2
     assert msg.data.array[1, 1] == 5 * 65536
-    assert msg.data.indexes == []
+    assert msg.data.indexes is None
 
     grid_dict['order'] = 'fa'
     grid_data = msgpack.packb(grid_dict, use_bin_type=True)
@@ -112,7 +112,7 @@ def test_grid_decode() -> None:
     assert msg.data.array[0, 0] == 1
     assert msg.data.array[0, 1] == 3
     assert msg.data.array[0, 2] == 5 * 65536
-    assert msg.data.indexes == []
+    assert msg.data.indexes is None
 
 
 def test_grid_roundtrip() -> None:

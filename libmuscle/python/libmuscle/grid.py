@@ -41,5 +41,11 @@ class Grid:
             array: An array of data, of a supported type (see above).
             indexes: Names of the indexes (see above).
         """
+        if indexes is not None:
+            if len(indexes) != array.ndim:
+                raise ValueError(
+                        'Number of indexes must match number of array'
+                        ' dimensions')
+
         self.array = array
         self.indexes = indexes

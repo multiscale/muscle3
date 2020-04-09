@@ -123,7 +123,10 @@ def _decode_grid(code: int, data: bytes) -> Grid:
     shape = tuple(grid_dict['shape'])
     dtype = type_map[ExtTypeId(code)]
     array = np.ndarray(shape, dtype, grid_dict['data'], order=order)
-    return Grid(array, grid_dict['indexes'])
+    indexes = grid_dict['indexes']
+    if indexes == []:
+        indexes = None
+    return Grid(array, indexes)
 
 
 def _data_encoder(obj: Any) -> Any:

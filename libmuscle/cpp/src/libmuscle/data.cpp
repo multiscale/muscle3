@@ -183,6 +183,9 @@ DataConstRef DataConstRef::grid(
         std::vector<std::string> const & indexes,
         StorageOrder storage_order
 ) {
+    if (shape.size() != indexes.size() && !indexes.empty())
+        throw std::runtime_error("Shape and indexes must have the same length");
+
     auto grid_dict = Data::dict();
     // type member is redundant, but useful metadata
     grid_dict["type"] = grid_type_name_<Element>();
@@ -730,6 +733,9 @@ Data Data::grid(
         std::vector<std::string> const & indexes,
         StorageOrder storage_order
 ) {
+    if (shape.size() != indexes.size() && !indexes.empty())
+        throw std::runtime_error("Shape and indexes must have the same length");
+
     auto grid_dict = Data::dict();
     // type member is redundant, but useful metadata
     grid_dict["type"] = grid_type_name_<Element>();

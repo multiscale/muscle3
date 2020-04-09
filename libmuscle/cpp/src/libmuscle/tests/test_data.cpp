@@ -534,6 +534,9 @@ TEST(libmuscle_mcp_data, grid) {
     ASSERT_THROW(d3.storage_order(), std::runtime_error);
     ASSERT_THROW(d3.has_indexes(), std::runtime_error);
     ASSERT_THROW(d3.elements<double>(), std::runtime_error);
+
+    ASSERT_THROW(Data::grid(x2.data(), {4, 3, 2}, {"x", "y"}), std::runtime_error);
+    ASSERT_THROW(Data::grid(x2.data(), {4, 3, 2}, {"w", "x", "y", "z"}), std::runtime_error);
 }
 
 

@@ -20,7 +20,7 @@ program diffusion
     type(LIBMUSCLE_Data) :: sdata
 
     real (selected_real_kind(15)) :: t_cur, t_next, t_max, dt, x_max, dx, d
-    integer (LIBMUSCLE_size) :: i, U_size, n_steps, iteration
+    integer (LIBMUSCLE_size) :: U_size, n_steps, iteration
     real (selected_real_kind(15)), dimension(:), allocatable :: U, dU
     real (selected_real_kind(15)), dimension(:, :), allocatable :: Us
 
@@ -57,12 +57,9 @@ program diffusion
         do while (t_cur + dt < t_max)
             print *, 't_cur: ', t_cur, 't_max: ', t_max
             ! O_I
-            sdata = LIBMUSCLE_Data_create_nils(U_size)
-            do i = 1, U_size
-                call LIBMUSCLE_Data_set_item(sdata, i, U(i))
-            end do
-
+            sdata = LIBMUSCLE_Data_create_grid(U, 'x')
             smsg = LIBMUSCLE_Message_create(t_cur, sdata)
+            call LIBMUSCLE_Data_free(sdata)
             t_next = t_cur + dt
             if (t_next + dt <= t_max) then
                 call LIBMUSCLE_Message_set_next_timestamp(smsg, t_next)
@@ -72,15 +69,10 @@ program diffusion
             ! S
             rmsg = LIBMUSCLE_Instance_receive(instance, 'state_in', smsg)
             rdata = LIBMUSCLE_Message_get_data(rmsg)
-            do i = 1, U_size
-                item = LIBMUSCLE_DataConstRef_get_item(rdata, i)
-                U(i) = LIBMUSCLE_DataConstRef_as_real8(item)
-                call LIBMUSCLE_DataConstRef_free(item)
-            end do
+            call LIBMUSCLE_DataConstRef_elements(rdata, U)
             call LIBMUSCLE_DataConstRef_free(rdata)
             call LIBMUSCLE_Message_free(rmsg)
             call LIBMUSCLE_Message_free(smsg)
-            call LIBMUSCLE_Data_free(sdata)
 
             dU(2:U_size-1) = d * laplacian(U, dx) * dt
             dU(1) = dU(2)
@@ -94,14 +86,9 @@ program diffusion
         end do
 
         ! O_F
-        sdata = LIBMUSCLE_Data_create_nils(U_size)
-        do i = 1, U_size
-            call LIBMUSCLE_Data_set_item(sdata, i, U(i))
-        end do
-
+        sdata = LIBMUSCLE_Data_create_grid(U, 'x')
         smsg = LIBMUSCLE_Message_create(t_cur, sdata)
         call LIBMUSCLE_Instance_send(instance, 'final_state_out', smsg)
-
         call LIBMUSCLE_Message_free(smsg)
         call LIBMUSCLE_Data_free(sdata)
         deallocate (U, dU, Us)

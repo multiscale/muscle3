@@ -42,11 +42,7 @@ program reaction_mpi
             rdata = LIBMUSCLE_Message_get_data(rmsg)
             U_all_size = LIBMUSCLE_DataConstRef_size(rdata)
             allocate (U_all(U_all_size))
-            do i = 1, U_all_size
-                item = LIBMUSCLE_DataConstRef_get_item(rdata, int(i, LIBMUSCLE_size))
-                U_all(i) = LIBMUSCLE_DataConstRef_as_real8(item)
-                call LIBMUSCLE_DataConstRef_free(item)
-            end do
+            call LIBMUSCLE_DataConstRef_elements(rdata, U_all)
             call LIBMUSCLE_DataConstRef_free(rdata)
 
             t_cur = LIBMUSCLE_Message_timestamp(rmsg)
@@ -84,11 +80,7 @@ program reaction_mpi
                         root_rank, MPI_COMM_WORLD, ierr)
 
         if (rank == root_rank) then
-            sdata = LIBMUSCLE_Data_create_nils(int(U_all_size, LIBMUSCLE_size))
-            do i = 1, U_all_size
-                call LIBMUSCLE_Data_set_item(sdata, int(i, LIBMUSCLE_size), U_all(i))
-            end do
-
+            sdata = LIBMUSCLE_Data_create_grid(U_all, 'x')
             smsg = LIBMUSCLE_Message_create(t_cur, sdata)
             call LIBMUSCLE_Instance_send(instance, 'final_state', smsg)
 

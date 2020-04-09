@@ -154,7 +154,6 @@ Variables
     type(LIBMUSCLE_Data) :: sdata
 
     real (selected_real_kind(15)) :: t_cur, t_max, dt, k
-    integer (LIBMUSCLE_size) :: i, U_size
     real (selected_real_kind(15)), dimension(:), allocatable :: U
 
 
@@ -172,14 +171,7 @@ may want to use.
 
 Eagle-eyed readers will have noticed that ``dx`` and ``x_max`` are missing. That
 is because we'll derive the size of the state vector of the model (``U``) from
-the state we receive, rather than from the configuration. To facilitate that,
-the index variable ``i`` and the size ``U_size`` are now of integer kind
-``LIBMUSCLE_size``. Both the default integer kind and ``LIBMUSCLE_size`` are
-easily large enough to accomodate any reasonable state size, so this doesn't
-matter much, but MUSCLE 3 uses the ``LIBMUSCLE_size`` kind for sizes and so
-we'll use it here too. If that doesn't work for your model, then you can use the
-standard Fortran ``int()`` function to convert between the different kinds.
-
+the state we receive, rather than from the configuration.
 
 Creating an Instance
 ````````````````````
@@ -242,21 +234,15 @@ message on our ``F_INIT`` port with the initial state:
 
         rmsg = LIBMUSCLE_Instance_receive(instance, 'initial_state')
         rdata = LIBMUSCLE_Message_get_data(rmsg)
-
-        U_size = LIBMUSCLE_DataConstRef_size(rdata)
-        allocate (U(U_size))
-        do i = 1, U_size
-            item = LIBMUSCLE_DataConstRef_get_item(rdata, i)
-            U(i) = LIBMUSCLE_DataConstRef_as_real8(item)
-            call LIBMUSCLE_DataConstRef_free(item)
-        end do
+        allocate (U(LIBMUSCLE_DataConstRef_size(rdata)))
+        call LIBMUSCLE_DataConstRef_elements(rdata, U)
         call LIBMUSCLE_DataConstRef_free(rdata)
 
 
 Calling the :f:func:`LIBMUSCLE_Instance_receive` function with an instance and a
 port name yields an object of type :f:type:`LIBMUSCLE_Message` containing the
 received message. As always when using MUSCLE from Fortran, we have to remember
-to free the returned Message object when we are done with it.  That's not yet
+to free the returned Message object when we are done with it. That's not yet
 the case though, because we still need to get the received data out. In Python,
 Message is a very simple class with several public members. In Fortran, objects
 are always accessed and manipulated through LIBMUSCLE functions, in this case
@@ -265,36 +251,35 @@ object. Again, since MUSCLE gave us an object, we have to remember to free it
 when we're done.
 
 First though, we'll use the data to initialise our state. We are going to assume
-that we'll receive a list of numbers, just like in the equivalent examples in
+that we'll receive a 1D grid of numbers, just like in the equivalent examples in
 the other supported languages. :f:func:`LIBMUSCLE_DataConstRef_size` will return
-the size of the list that we received (or print an error and stop if we received
-something else that doesn't have a size, see below for handling errors
+the size of the array that we received (or print an error and stop if we
+received something else that doesn't have a size, see below for handling errors
 differently). We use that to allocate the ``U`` array to the same size as the
-received state, and then we copy the values from the received list into ``U``.
-To get the values out, we use :f:func:`LIBMUSCLE_DataConstRef_get_item` to get a
-DataConstRef object containing the item, and then we use
-:f:func:`LIBMUSCLE_DataConstRef_as_real8` to extract a double precision real
-value from that. And then, of course, we need to free the returned ``item``
-object.
+received state, and then we copy the elements of the array into ``U`` using
+:f:func:`LIBMUSCLE_DataConstRef_elements`. We can then free the ``rdata``
+object, since we don't need it any longer. We'll hold on to the ``rmsg`` a bit
+longer, since we'll need it later.
 
 If all this freeing objects is starting to sound tedious, that's because it is,
 and it's why more modern languages like Python and C++ do this for you.
 Unfortunately, for Fortran, it has to be done manually.
 
-Note that item indices start at 1, as usual in Fortran. MUSCLE 3 follows the
-language in which you're using it and automatically translates, so if this list
-was sent from Python or C++, then received item 1 corresponds to sent item 0.
+Note that indices for the received array start at 1, as usual in Fortran. MUSCLE
+3 follows the language in which you're using it and automatically translates, so
+if this grid was sent from Python or C++, then received item 1 corresponds to
+sent item 0.
 
 If you have a DataConstRef object, then you can check which kind of value it
-contains, e.g. using :f:func:`LIBMUSCLE_DataConstRef_is_a_real8`. Here, we don't
-bother with a check. Instead, we blindly assume that we've been sent a list of
-doubles. If that's not the case, an error will be printed and our program will
-halt. That's okay, because it means that there's something wrong somewhere that
-we need to fix. MUSCLE is designed to let you get away with being a bit sloppy
-as long as things actually go right, but it will check for problems and let you
-know if something goes wrong. If you want to make a submodel or component that
-can handle different kinds of messages, then these inspection functions will
-help you do so however.
+contains, e.g. using :f:func:`LIBMUSCLE_DataConstRef_is_a_grid_of_real8`. Here,
+we don't bother with a check. Instead, we blindly assume that we've been sent a
+1D grid of doubles. If that's not the case, an error will be printed and our
+program will halt. That's okay, because it means that there's something wrong
+somewhere that we need to fix. MUSCLE is designed to let you get away with being
+a bit sloppy as long as things actually go right, but it will check for problems
+and let you know if something goes wrong. If you want to make a submodel or
+component that can handle different kinds of messages, then these inspection
+functions will help you do so however.
 
 
 .. code-block:: fortran
@@ -326,14 +311,9 @@ Sending messages and Data
 .. code-block:: fortran
 
         ! O_F
-        sdata = LIBMUSCLE_Data_create_nils(U_size)
-        do i = 1, U_size
-            call LIBMUSCLE_Data_set_item(sdata, i, U(i))
-        end do
-
+        sdata = LIBMUSCLE_Data_create_grid(U, 'x')
         smsg = LIBMUSCLE_Message_create(t_cur, sdata)
         call LIBMUSCLE_Instance_send(instance, 'final_state', smsg)
-
         call LIBMUSCLE_Message_free(smsg)
         call LIBMUSCLE_Data_free(sdata)
         deallocate (U)
@@ -343,24 +323,20 @@ Sending messages and Data
 
 
 Having computed our final state, we will send it to the outside world on the
-``final_state`` port. In this case, we need to send a list of doubles, which we
-first need to wrap up into a ``Data`` object. A ``Data`` object works just like
-a ``DataConstRef``, except that it isn't constant, and can thus be modified.
+``final_state`` port. In this case, we need to send a vector of doubles, which
+we first need to wrap up into a ``Data`` object. A ``Data`` object works just
+like a ``DataConstRef``, except that it isn't constant, and can thus be
+modified. We do this by creating a ``Data`` object containing a grid value, with
+the array ``U`` and the index name ``x``.
 
-Here, we start by creating a ``Data`` containing a list of ``U_size`` nil (null,
-None) values. This allocates enough space in the list for all of our reals. We
-can then use :f:func:`LIBMUSCLE_Data_set_item` to assign the value to each list
-item. Note that there's no need to explicitly specify the type here; it will be
-inferred from the type of the value that we're passing. Indexes range from 1 to
-the size of the array, as usual in Fortran.
-
-Having put our data into the list, we can then put the list into a new
-:f:type:`LIBMUSCLE_Message` object, and call the
+Having put our data into the ``Data`` object is a grid, we can then put the grid
+into a new :f:type:`LIBMUSCLE_Message` object, and call the
 :f:func:`LIBMUSCLE_Instance_send` function to send it. Finally, we free the
 Message and Data objects that we created, and deallocate the state as in the
-original non-MUSCLE version. That concludes the reuse loop. When we're done
-running the model, the reuse loop will finish, and we can free our Instance
-object before we quit.
+original non-MUSCLE version.
+
+That concludes the reuse loop. When we're done running the model, the reuse loop
+will finish, and we can free our Instance object before we quit.
 
 :f:type:`LIBMUSCLE_Data` is quite versatile, and makes it easier to send data of
 various types between submodels. Here are some other examples of creating
@@ -406,11 +382,7 @@ your model!):
 
 
 As you can see, sending complex data types with MUSCLE is a bit more difficult
-in Fortran than in Python, but it is not too burdensome. One thing that's still
-missing is sending and receiving multidimensional arrays of numbers. We hope to
-add that in a future version; for now you'll need to put them into a list of
-numbers manually.
-
+in Fortran than in Python, but it is not too burdensome.
 
 Handling errors
 ```````````````

@@ -6,7 +6,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
     - name: Set up Python 3.6
@@ -20,7 +19,7 @@ jobs:
 
     - name: Build and run the test suite
       run: |
-        cd $GITHUB_WORKSPACE/muscle3
+        cd $GITHUB_WORKSPACE
         make test
 
 

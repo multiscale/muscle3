@@ -1,0 +1,26 @@
+# Run Continuous Integration on every push
+name: continuous_integration
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    - name: Set up Python 3.6
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.6
+
+    - name: Install dependencies
+      run: |
+        apt-get install build-essential gfortran libopenmpi-dev pkg-config wget
+
+    - name: Build and run the test suite
+      run: |
+        cd $GITHUB_WORKSPACE/muscle3
+        make test
+
+

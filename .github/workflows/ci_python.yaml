@@ -19,6 +19,7 @@ jobs:
 
     - name: Install dependencies
       run: |
+        pip install --upgrade pip
         pip install ymmsl==0.10.0
 
     - name: Build and run the test suite

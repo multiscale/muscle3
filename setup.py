@@ -52,6 +52,7 @@ setup(
         'pytest-runner',
         # dependencies for `python setup.py build_sphinx`
         'breathe',
+        'MarkupSafe<2',
         'sphinx',
         'recommonmark',
         'sphinx-rtd-theme'

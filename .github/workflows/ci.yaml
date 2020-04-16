@@ -16,6 +16,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get install build-essential cmake gfortran libopenmpi-dev pkg-config wget
+        pip install ymmsl==0.10.0
 
     - name: Build and run the test suite
       run: |

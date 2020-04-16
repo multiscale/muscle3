@@ -19,6 +19,8 @@ jobs:
         pip install ymmsl==0.10.0
 
     - name: Build and run the test suite
+      env:
+        MUSCLE_ENABLE_MPI: 1
       run: |
         cd $GITHUB_WORKSPACE
-        MUSCLE_ENABLE_MPI=1 make test
+        make test

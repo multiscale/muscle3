@@ -1,0 +1,29 @@
+# Run Continuous Integration on every push
+# This version tests only Python, but on all supported versions of it.
+name: python_compatibility
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.5, 3.6, 3.7]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        pip install ymmsl==0.10.0
+
+    - name: Build and run the test suite
+      env:
+        MUSCLE_ENABLE_MPI: 1
+      run: |
+        cd $GITHUB_WORKSPACE
+        make test_python_only

@@ -20,6 +20,4 @@ jobs:
     - name: Build and run the test suite
       run: |
         cd $GITHUB_WORKSPACE
-        make test
-
-
+        MUSCLE_ENABLE_MPI=1 make test

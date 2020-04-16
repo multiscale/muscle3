@@ -8,6 +8,8 @@ import numpy as np
 from libmuscle import Instance, Message
 from ymmsl import Operator
 
+from .conftest import skip_if_python_only
+
 
 def run_macro(instance_id: str):
     sys.argv.append('--muscle-instance={}'.format(instance_id))
@@ -43,6 +45,7 @@ def macro():
             assert msg.timestamp == i * 10.0
 
 
+@skip_if_python_only
 def test_fortran_macro_micro(mmp_server_process_simple):
     # create C++ micro model
     # see libmuscle/fortran/src/libmuscle/tests/fortran_micro_model_test.f03

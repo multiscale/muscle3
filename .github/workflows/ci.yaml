@@ -15,7 +15,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        sudo apt-get install build-essential gfortran libopenmpi-dev pkg-config wget
+        sudo apt-get install build-essential cmake gfortran libopenmpi-dev pkg-config wget
 
     - name: Build and run the test suite
       run: |

@@ -4,31 +4,10 @@ name: python_compatibility
 on: [push, pull_request]
 jobs:
   build:
-    runs-on: ubuntu-16.04
-    strategy:
-      matrix:
-        python-version: [3.5, 3.6, 3.7]
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: Install dependencies
-      run: |
-        sudo apt-get install -y python3-numpy
-        pip install --upgrade pip
-        pip install ymmsl==0.10.0
-        pip install 'Jinja2<3' 'MarkupSafe<2'
-        pip install Cython --install-option="--no-cython-compile"
-
-    - name: Build and run the test suite
-      env:
-        MUSCLE_ENABLE_MPI: 1
-      run: |
-        cd $GITHUB_WORKSPACE
-        make test_python_only
-
+    - name: Run Python tests on 3.5
+      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3_src" python:3.5 /bin/bash -c 'cp -r /home/muscle3_src /home/muscle3 && cd /home/muscle3 && pip install ymmsl==0.10.0 && make test_python_only'

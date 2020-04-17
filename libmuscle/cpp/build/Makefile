@@ -49,7 +49,7 @@ export protobuf_ROOT                   # make available to grpc as well
 dep_name := grpc
 dep_min_version := 1.17.1
 dep_version := 1.17.1
-dep_pkgconfig_name := grpc
+dep_pkgconfig_name := grpc++
 include make_available.make
 
 grpc: protobuf

@@ -11,6 +11,8 @@ from libmuscle.post_office import PostOffice
 
 from ymmsl import Reference, Settings
 
+from .conftest import skip_if_python_only
+
 
 def tcp_server_process(control_pipe):
     control_pipe[0].close()
@@ -38,6 +40,7 @@ def tcp_server_process(control_pipe):
     server.close()
 
 
+@skip_if_python_only
 def test_cpp_tcp_client(log_file_in_tmpdir):
     # create server process
     server_pipe = mp.Pipe()

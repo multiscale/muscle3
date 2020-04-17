@@ -11,6 +11,10 @@ all: cpp fortran
 .PHONY: test
 test: test_python test_scripts test_cpp test_fortran
 
+.PHONY: test_python_only
+test_python_only:
+	MUSCLE_TEST_PYTHON_ONLY=1 python3 setup.py test
+
 .PHONY: test_python
 test_python: cpp_tests fortran_tests
 	python3 setup.py test

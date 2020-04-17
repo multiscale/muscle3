@@ -1,0 +1,32 @@
+# Run Continuous Integration on every push
+name: continuous_integration
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python 3.6
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.6
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get install -y build-essential cmake gfortran libopenmpi-dev pkg-config wget
+        sudo apt-get install -y libssl-dev zlib1g-dev
+        pip install ymmsl==0.10.0
+
+    - name: Build and run the test suite
+      env:
+        MUSCLE_ENABLE_MPI: 1
+      run: |
+        cd $GITHUB_WORKSPACE
+        make test
+
+    - name: Upload coverage report to Codacy
+      uses: mrfyda/codacy-coverage-reporter-action@master
+      with:
+        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}

@@ -8,3 +8,7 @@ source =
 omit =
     # Generated code
     muscle_manager_protocol/muscle_manager_protocol_pb2*
+
+[xml]
+
+output = cobertura.xml

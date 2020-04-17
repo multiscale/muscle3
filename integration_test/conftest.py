@@ -1,5 +1,6 @@
 import logging
 import multiprocessing as mp
+import os
 import sys
 from typing import Generator
 
@@ -14,6 +15,11 @@ from libmuscle.manager.logger import Logger
 from libmuscle.manager.mmp_server import MMPServer
 from libmuscle.manager.manager import elements_for_model
 from libmuscle.manager.topology_store import TopologyStore
+
+
+skip_if_python_only = pytest.mark.skipif(
+        'MUSCLE_TEST_PYTHON_ONLY' in os.environ,
+        reason='Python-only tests requested')
 
 
 @pytest.fixture

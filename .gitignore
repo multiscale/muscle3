@@ -11,7 +11,7 @@
 
 htmlcov
 .coverage
-coverage.xml
+cobertura.xml
 
 docs/doxygen
 docs/apidocs

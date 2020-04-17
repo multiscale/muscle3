@@ -25,3 +25,8 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE
         make test
+
+    - name: Upload coverage report to Codacy
+      uses: mrfyda/codacy-coverage-reporter-action@master
+      with:
+        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}

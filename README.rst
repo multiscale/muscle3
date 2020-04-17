@@ -5,8 +5,8 @@
     :target: https://muscle3.readthedocs.io/en/develop/?badge=develop
     :alt: Documentation Build Status
 
-.. image:: https://api.travis-ci.org/multiscale/muscle3.svg?branch=develop
-    :target: https://travis-ci.org/multiscale/muscle3
+.. image:: https://github.com/multiscale/muscle3/workflows/continuous_integration/badge.svg?branch=develop
+    :target: https://github.com/multiscale/muscle3/actions
     :alt: Build Status
 
 .. image:: https://api.codacy.com/project/badge/Coverage/ea0c833cf1ce4e13840c6498dfe27ff8

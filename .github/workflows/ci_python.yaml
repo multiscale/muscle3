@@ -19,7 +19,7 @@ jobs:
       run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3_src" python:3.6 /bin/bash -c 'cp -r /home/muscle3_src /home/muscle3 && cd /home/muscle3 && pip install ymmsl==0.10.0 && make test_python_only'
 
     - name: Run Python tests on 3.6.1
-      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3_src" python:3.6.1 /bin/bash -c 'cp -r /home/muscle3_src /home/muscle3 && cd /home/muscle3 && pip install ymmsl==0.10.0 && make test_python_only'
+      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3_src" python:3.6.1 /bin/bash -c 'cp -r /home/muscle3_src /home/muscle3 && cd /home/muscle3 && pip install -U pip setuptools wheel "ymmsl==0.10.0" && make test_python_only'
 
     - name: Run Python tests on 3.7
       run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3_src" python:3.7 /bin/bash -c 'cp -r /home/muscle3_src /home/muscle3 && cd /home/muscle3 && pip install ymmsl==0.10.0 && make test_python_only'

@@ -9,5 +9,20 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Run Python tests on 3.5
+    - name: Run Python tests on 3.5 latest
       run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3_src" python:3.5 /bin/bash -c 'cp -r /home/muscle3_src /home/muscle3 && cd /home/muscle3 && pip install ymmsl==0.10.0 && make test_python_only'
+
+    - name: Run Python tests on 3.5.1
+      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3_src" python:3.5.1 /bin/bash -c 'cp -r /home/muscle3_src /home/muscle3 && cd /home/muscle3 && pip install ymmsl==0.10.0 && make test_python_only'
+
+    - name: Run Python tests on 3.6 latest
+      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3_src" python:3.6 /bin/bash -c 'cp -r /home/muscle3_src /home/muscle3 && cd /home/muscle3 && pip install ymmsl==0.10.0 && make test_python_only'
+
+    - name: Run Python tests on 3.6.1
+      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3_src" python:3.6.1 /bin/bash -c 'cp -r /home/muscle3_src /home/muscle3 && cd /home/muscle3 && pip install ymmsl==0.10.0 && make test_python_only'
+
+    - name: Run Python tests on 3.7
+      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3_src" python:3.7 /bin/bash -c 'cp -r /home/muscle3_src /home/muscle3 && cd /home/muscle3 && pip install ymmsl==0.10.0 && make test_python_only'
+
+    - name: Run Python tests on 3.8
+      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3_src" python:3.8 /bin/bash -c 'cp -r /home/muscle3_src /home/muscle3 && cd /home/muscle3 && pip install ymmsl==0.10.0 && make test_python_only'

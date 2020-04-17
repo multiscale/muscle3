@@ -108,9 +108,9 @@ archive and enter the main directory:
 
   ~$ mkdir muscle3_source
   ~$ cd muscle3_source
-  ~/muscle3_source$ wget https://github.com/multiscale/muscle3/archive/0.2.0/muscle3-0.2.0.tar.gz
-  ~/muscle3_source$ tar xf muscle3-0.2.0.tar.gz
-  ~/muscle3_source$ cd muscle3-0.2.0
+  ~/muscle3_source$ wget https://github.com/multiscale/muscle3/archive/%%VERSION%%/muscle3-%%VERSION%%.tar.gz
+  ~/muscle3_source$ tar xf muscle3-%%VERSION%%.tar.gz
+  ~/muscle3_source$ cd muscle3-%%VERSION%%
 
 
 Of course, you can put the source anywhere you like.
@@ -123,7 +123,7 @@ The basic command for building MUSCLE 3 is:
 
 .. code-block:: bash
 
-  ~/muscle3_source/muscle3-0.2.0$ make
+  ~/muscle3_source/muscle3-%%VERSION%%$ make
 
 
 There are a few options that can be added by setting them as environment
@@ -160,7 +160,7 @@ do:
 
 .. code-block:: bash
 
-  ~/muscle3_source/muscle3-0.2.0$ MUSCLE_ENABLE_MPI=1 NCORES=2 make
+  ~/muscle3_source/muscle3-%%VERSION%%$ MUSCLE_ENABLE_MPI=1 NCORES=2 make
 
 
 This will take ten minutes or so (including building the dependencies),
@@ -176,7 +176,7 @@ uninstall command yet that will cleanly remove it. That goes like this:
 
 .. code-block:: bash
 
-  ~/muscle3_source/muscle3-0.2.0$ PREFIX=~/muscle3 make install
+  ~/muscle3_source/muscle3-%%VERSION%%$ PREFIX=~/muscle3 make install
 
 
 This command will install the C++ version of MUSCLE 3 into the directory

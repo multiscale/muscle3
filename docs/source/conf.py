@@ -107,6 +107,17 @@ breathe_default_project = 'libmuscle'
 
 breathe_default_members = ('members',)
 
+# -- Patch version into installation instructions --
+def patch_installation_version():
+    with open('installing.rst', 'w') as out_file:
+        with open('installing.rst.in', 'r') as in_file:
+            in_text = in_file.read()
+            out_text = in_text.replace('%%VERSION%%', release.strip())
+            out_file.write(out_text)
+
+patch_installation_version()
+
+
 # -- Run doxygen manually, as readthedocs doesn't support it --
 import subprocess
 subprocess.call('cd ../.. ; doxygen', shell=True)

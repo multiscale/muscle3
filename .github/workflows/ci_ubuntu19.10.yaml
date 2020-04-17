@@ -1,0 +1,16 @@
+# Run Continuous Integration for the latest Ubuntu release
+# This mainly checks for issues/regressions in the native build
+name: native_compatibility_ubuntu19.10
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+  push:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Run tests on Ubuntu 19.10
+      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3" ubuntu:19.10 /bin/bash -c 'sudo apt-get update && sudo apt-get -y dist-upgrade && sudo apt-get uninstall libssl-dev zlib1g-dev && cd /home/muscle3 && pip install ymmsl==0.10.0 && make test'

@@ -40,13 +40,13 @@ setup(
     python_requires='>=3.5, <4',
     install_requires=[
         'click',
-        'grpcio>=1.17.1, <2',
+        'grpcio>=1.24.3, <2',
         'msgpack',
         'netifaces',
         'numpy>=1.12',
-        'protobuf',
+        'protobuf>=3.10.0',
         'ruamel.yaml<=0.15.64',
-        'ymmsl==0.10.0'          # Also in .travisrc, update there as well
+        'ymmsl==0.10.0'          # Also in CI, update there as well
     ],
     setup_requires=[
         'pytest-runner',

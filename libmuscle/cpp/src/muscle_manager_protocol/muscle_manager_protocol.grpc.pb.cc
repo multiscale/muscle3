@@ -47,15 +47,27 @@ MuscleManager::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& chan
 }
 
 void MuscleManager::Stub::experimental_async::SubmitLogMessage(::grpc::ClientContext* context, const ::muscle_manager_protocol::LogMessage* request, ::muscle_manager_protocol::LogResult* response, std::function<void(::grpc::Status)> f) {
-  return ::grpc::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_SubmitLogMessage_, context, request, response, std::move(f));
+  ::grpc_impl::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_SubmitLogMessage_, context, request, response, std::move(f));
+}
+
+void MuscleManager::Stub::experimental_async::SubmitLogMessage(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::LogResult* response, std::function<void(::grpc::Status)> f) {
+  ::grpc_impl::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_SubmitLogMessage_, context, request, response, std::move(f));
+}
+
+void MuscleManager::Stub::experimental_async::SubmitLogMessage(::grpc::ClientContext* context, const ::muscle_manager_protocol::LogMessage* request, ::muscle_manager_protocol::LogResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc_impl::internal::ClientCallbackUnaryFactory::Create(stub_->channel_.get(), stub_->rpcmethod_SubmitLogMessage_, context, request, response, reactor);
+}
+
+void MuscleManager::Stub::experimental_async::SubmitLogMessage(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::LogResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc_impl::internal::ClientCallbackUnaryFactory::Create(stub_->channel_.get(), stub_->rpcmethod_SubmitLogMessage_, context, request, response, reactor);
 }
 
 ::grpc::ClientAsyncResponseReader< ::muscle_manager_protocol::LogResult>* MuscleManager::Stub::AsyncSubmitLogMessageRaw(::grpc::ClientContext* context, const ::muscle_manager_protocol::LogMessage& request, ::grpc::CompletionQueue* cq) {
-  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::LogResult>::Create(channel_.get(), cq, rpcmethod_SubmitLogMessage_, context, request, true);
+  return ::grpc_impl::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::LogResult>::Create(channel_.get(), cq, rpcmethod_SubmitLogMessage_, context, request, true);
 }
 
 ::grpc::ClientAsyncResponseReader< ::muscle_manager_protocol::LogResult>* MuscleManager::Stub::PrepareAsyncSubmitLogMessageRaw(::grpc::ClientContext* context, const ::muscle_manager_protocol::LogMessage& request, ::grpc::CompletionQueue* cq) {
-  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::LogResult>::Create(channel_.get(), cq, rpcmethod_SubmitLogMessage_, context, request, false);
+  return ::grpc_impl::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::LogResult>::Create(channel_.get(), cq, rpcmethod_SubmitLogMessage_, context, request, false);
 }
 
 ::grpc::Status MuscleManager::Stub::SubmitProfileEvents(::grpc::ClientContext* context, const ::muscle_manager_protocol::Profile& request, ::muscle_manager_protocol::ProfileResult* response) {
@@ -63,15 +75,27 @@ void MuscleManager::Stub::experimental_async::SubmitLogMessage(::grpc::ClientCon
 }
 
 void MuscleManager::Stub::experimental_async::SubmitProfileEvents(::grpc::ClientContext* context, const ::muscle_manager_protocol::Profile* request, ::muscle_manager_protocol::ProfileResult* response, std::function<void(::grpc::Status)> f) {
-  return ::grpc::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_SubmitProfileEvents_, context, request, response, std::move(f));
+  ::grpc_impl::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_SubmitProfileEvents_, context, request, response, std::move(f));
+}
+
+void MuscleManager::Stub::experimental_async::SubmitProfileEvents(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::ProfileResult* response, std::function<void(::grpc::Status)> f) {
+  ::grpc_impl::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_SubmitProfileEvents_, context, request, response, std::move(f));
+}
+
+void MuscleManager::Stub::experimental_async::SubmitProfileEvents(::grpc::ClientContext* context, const ::muscle_manager_protocol::Profile* request, ::muscle_manager_protocol::ProfileResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc_impl::internal::ClientCallbackUnaryFactory::Create(stub_->channel_.get(), stub_->rpcmethod_SubmitProfileEvents_, context, request, response, reactor);
+}
+
+void MuscleManager::Stub::experimental_async::SubmitProfileEvents(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::ProfileResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc_impl::internal::ClientCallbackUnaryFactory::Create(stub_->channel_.get(), stub_->rpcmethod_SubmitProfileEvents_, context, request, response, reactor);
 }
 
 ::grpc::ClientAsyncResponseReader< ::muscle_manager_protocol::ProfileResult>* MuscleManager::Stub::AsyncSubmitProfileEventsRaw(::grpc::ClientContext* context, const ::muscle_manager_protocol::Profile& request, ::grpc::CompletionQueue* cq) {
-  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::ProfileResult>::Create(channel_.get(), cq, rpcmethod_SubmitProfileEvents_, context, request, true);
+  return ::grpc_impl::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::ProfileResult>::Create(channel_.get(), cq, rpcmethod_SubmitProfileEvents_, context, request, true);
 }
 
 ::grpc::ClientAsyncResponseReader< ::muscle_manager_protocol::ProfileResult>* MuscleManager::Stub::PrepareAsyncSubmitProfileEventsRaw(::grpc::ClientContext* context, const ::muscle_manager_protocol::Profile& request, ::grpc::CompletionQueue* cq) {
-  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::ProfileResult>::Create(channel_.get(), cq, rpcmethod_SubmitProfileEvents_, context, request, false);
+  return ::grpc_impl::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::ProfileResult>::Create(channel_.get(), cq, rpcmethod_SubmitProfileEvents_, context, request, false);
 }
 
 ::grpc::Status MuscleManager::Stub::RequestSettings(::grpc::ClientContext* context, const ::muscle_manager_protocol::SettingsRequest& request, ::muscle_manager_protocol::SettingsResult* response) {
@@ -79,15 +103,27 @@ void MuscleManager::Stub::experimental_async::SubmitProfileEvents(::grpc::Client
 }
 
 void MuscleManager::Stub::experimental_async::RequestSettings(::grpc::ClientContext* context, const ::muscle_manager_protocol::SettingsRequest* request, ::muscle_manager_protocol::SettingsResult* response, std::function<void(::grpc::Status)> f) {
-  return ::grpc::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_RequestSettings_, context, request, response, std::move(f));
+  ::grpc_impl::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_RequestSettings_, context, request, response, std::move(f));
+}
+
+void MuscleManager::Stub::experimental_async::RequestSettings(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::SettingsResult* response, std::function<void(::grpc::Status)> f) {
+  ::grpc_impl::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_RequestSettings_, context, request, response, std::move(f));
+}
+
+void MuscleManager::Stub::experimental_async::RequestSettings(::grpc::ClientContext* context, const ::muscle_manager_protocol::SettingsRequest* request, ::muscle_manager_protocol::SettingsResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc_impl::internal::ClientCallbackUnaryFactory::Create(stub_->channel_.get(), stub_->rpcmethod_RequestSettings_, context, request, response, reactor);
+}
+
+void MuscleManager::Stub::experimental_async::RequestSettings(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::SettingsResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc_impl::internal::ClientCallbackUnaryFactory::Create(stub_->channel_.get(), stub_->rpcmethod_RequestSettings_, context, request, response, reactor);
 }
 
 ::grpc::ClientAsyncResponseReader< ::muscle_manager_protocol::SettingsResult>* MuscleManager::Stub::AsyncRequestSettingsRaw(::grpc::ClientContext* context, const ::muscle_manager_protocol::SettingsRequest& request, ::grpc::CompletionQueue* cq) {
-  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::SettingsResult>::Create(channel_.get(), cq, rpcmethod_RequestSettings_, context, request, true);
+  return ::grpc_impl::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::SettingsResult>::Create(channel_.get(), cq, rpcmethod_RequestSettings_, context, request, true);
 }
 
 ::grpc::ClientAsyncResponseReader< ::muscle_manager_protocol::SettingsResult>* MuscleManager::Stub::PrepareAsyncRequestSettingsRaw(::grpc::ClientContext* context, const ::muscle_manager_protocol::SettingsRequest& request, ::grpc::CompletionQueue* cq) {
-  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::SettingsResult>::Create(channel_.get(), cq, rpcmethod_RequestSettings_, context, request, false);
+  return ::grpc_impl::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::SettingsResult>::Create(channel_.get(), cq, rpcmethod_RequestSettings_, context, request, false);
 }
 
 ::grpc::Status MuscleManager::Stub::RegisterInstance(::grpc::ClientContext* context, const ::muscle_manager_protocol::RegistrationRequest& request, ::muscle_manager_protocol::RegistrationResult* response) {
@@ -95,15 +131,27 @@ void MuscleManager::Stub::experimental_async::RequestSettings(::grpc::ClientCont
 }
 
 void MuscleManager::Stub::experimental_async::RegisterInstance(::grpc::ClientContext* context, const ::muscle_manager_protocol::RegistrationRequest* request, ::muscle_manager_protocol::RegistrationResult* response, std::function<void(::grpc::Status)> f) {
-  return ::grpc::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_RegisterInstance_, context, request, response, std::move(f));
+  ::grpc_impl::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_RegisterInstance_, context, request, response, std::move(f));
+}
+
+void MuscleManager::Stub::experimental_async::RegisterInstance(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::RegistrationResult* response, std::function<void(::grpc::Status)> f) {
+  ::grpc_impl::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_RegisterInstance_, context, request, response, std::move(f));
+}
+
+void MuscleManager::Stub::experimental_async::RegisterInstance(::grpc::ClientContext* context, const ::muscle_manager_protocol::RegistrationRequest* request, ::muscle_manager_protocol::RegistrationResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc_impl::internal::ClientCallbackUnaryFactory::Create(stub_->channel_.get(), stub_->rpcmethod_RegisterInstance_, context, request, response, reactor);
+}
+
+void MuscleManager::Stub::experimental_async::RegisterInstance(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::RegistrationResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc_impl::internal::ClientCallbackUnaryFactory::Create(stub_->channel_.get(), stub_->rpcmethod_RegisterInstance_, context, request, response, reactor);
 }
 
 ::grpc::ClientAsyncResponseReader< ::muscle_manager_protocol::RegistrationResult>* MuscleManager::Stub::AsyncRegisterInstanceRaw(::grpc::ClientContext* context, const ::muscle_manager_protocol::RegistrationRequest& request, ::grpc::CompletionQueue* cq) {
-  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::RegistrationResult>::Create(channel_.get(), cq, rpcmethod_RegisterInstance_, context, request, true);
+  return ::grpc_impl::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::RegistrationResult>::Create(channel_.get(), cq, rpcmethod_RegisterInstance_, context, request, true);
 }
 
 ::grpc::ClientAsyncResponseReader< ::muscle_manager_protocol::RegistrationResult>* MuscleManager::Stub::PrepareAsyncRegisterInstanceRaw(::grpc::ClientContext* context, const ::muscle_manager_protocol::RegistrationRequest& request, ::grpc::CompletionQueue* cq) {
-  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::RegistrationResult>::Create(channel_.get(), cq, rpcmethod_RegisterInstance_, context, request, false);
+  return ::grpc_impl::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::RegistrationResult>::Create(channel_.get(), cq, rpcmethod_RegisterInstance_, context, request, false);
 }
 
 ::grpc::Status MuscleManager::Stub::RequestPeers(::grpc::ClientContext* context, const ::muscle_manager_protocol::PeerRequest& request, ::muscle_manager_protocol::PeerResult* response) {
@@ -111,15 +159,27 @@ void MuscleManager::Stub::experimental_async::RegisterInstance(::grpc::ClientCon
 }
 
 void MuscleManager::Stub::experimental_async::RequestPeers(::grpc::ClientContext* context, const ::muscle_manager_protocol::PeerRequest* request, ::muscle_manager_protocol::PeerResult* response, std::function<void(::grpc::Status)> f) {
-  return ::grpc::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_RequestPeers_, context, request, response, std::move(f));
+  ::grpc_impl::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_RequestPeers_, context, request, response, std::move(f));
+}
+
+void MuscleManager::Stub::experimental_async::RequestPeers(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::PeerResult* response, std::function<void(::grpc::Status)> f) {
+  ::grpc_impl::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_RequestPeers_, context, request, response, std::move(f));
+}
+
+void MuscleManager::Stub::experimental_async::RequestPeers(::grpc::ClientContext* context, const ::muscle_manager_protocol::PeerRequest* request, ::muscle_manager_protocol::PeerResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc_impl::internal::ClientCallbackUnaryFactory::Create(stub_->channel_.get(), stub_->rpcmethod_RequestPeers_, context, request, response, reactor);
+}
+
+void MuscleManager::Stub::experimental_async::RequestPeers(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::PeerResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc_impl::internal::ClientCallbackUnaryFactory::Create(stub_->channel_.get(), stub_->rpcmethod_RequestPeers_, context, request, response, reactor);
 }
 
 ::grpc::ClientAsyncResponseReader< ::muscle_manager_protocol::PeerResult>* MuscleManager::Stub::AsyncRequestPeersRaw(::grpc::ClientContext* context, const ::muscle_manager_protocol::PeerRequest& request, ::grpc::CompletionQueue* cq) {
-  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::PeerResult>::Create(channel_.get(), cq, rpcmethod_RequestPeers_, context, request, true);
+  return ::grpc_impl::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::PeerResult>::Create(channel_.get(), cq, rpcmethod_RequestPeers_, context, request, true);
 }
 
 ::grpc::ClientAsyncResponseReader< ::muscle_manager_protocol::PeerResult>* MuscleManager::Stub::PrepareAsyncRequestPeersRaw(::grpc::ClientContext* context, const ::muscle_manager_protocol::PeerRequest& request, ::grpc::CompletionQueue* cq) {
-  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::PeerResult>::Create(channel_.get(), cq, rpcmethod_RequestPeers_, context, request, false);
+  return ::grpc_impl::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::PeerResult>::Create(channel_.get(), cq, rpcmethod_RequestPeers_, context, request, false);
 }
 
 ::grpc::Status MuscleManager::Stub::DeregisterInstance(::grpc::ClientContext* context, const ::muscle_manager_protocol::DeregistrationRequest& request, ::muscle_manager_protocol::DeregistrationResult* response) {
@@ -127,15 +187,27 @@ void MuscleManager::Stub::experimental_async::RequestPeers(::grpc::ClientContext
 }
 
 void MuscleManager::Stub::experimental_async::DeregisterInstance(::grpc::ClientContext* context, const ::muscle_manager_protocol::DeregistrationRequest* request, ::muscle_manager_protocol::DeregistrationResult* response, std::function<void(::grpc::Status)> f) {
-  return ::grpc::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_DeregisterInstance_, context, request, response, std::move(f));
+  ::grpc_impl::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_DeregisterInstance_, context, request, response, std::move(f));
+}
+
+void MuscleManager::Stub::experimental_async::DeregisterInstance(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::DeregistrationResult* response, std::function<void(::grpc::Status)> f) {
+  ::grpc_impl::internal::CallbackUnaryCall(stub_->channel_.get(), stub_->rpcmethod_DeregisterInstance_, context, request, response, std::move(f));
+}
+
+void MuscleManager::Stub::experimental_async::DeregisterInstance(::grpc::ClientContext* context, const ::muscle_manager_protocol::DeregistrationRequest* request, ::muscle_manager_protocol::DeregistrationResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc_impl::internal::ClientCallbackUnaryFactory::Create(stub_->channel_.get(), stub_->rpcmethod_DeregisterInstance_, context, request, response, reactor);
+}
+
+void MuscleManager::Stub::experimental_async::DeregisterInstance(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::DeregistrationResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc_impl::internal::ClientCallbackUnaryFactory::Create(stub_->channel_.get(), stub_->rpcmethod_DeregisterInstance_, context, request, response, reactor);
 }
 
 ::grpc::ClientAsyncResponseReader< ::muscle_manager_protocol::DeregistrationResult>* MuscleManager::Stub::AsyncDeregisterInstanceRaw(::grpc::ClientContext* context, const ::muscle_manager_protocol::DeregistrationRequest& request, ::grpc::CompletionQueue* cq) {
-  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::DeregistrationResult>::Create(channel_.get(), cq, rpcmethod_DeregisterInstance_, context, request, true);
+  return ::grpc_impl::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::DeregistrationResult>::Create(channel_.get(), cq, rpcmethod_DeregisterInstance_, context, request, true);
 }
 
 ::grpc::ClientAsyncResponseReader< ::muscle_manager_protocol::DeregistrationResult>* MuscleManager::Stub::PrepareAsyncDeregisterInstanceRaw(::grpc::ClientContext* context, const ::muscle_manager_protocol::DeregistrationRequest& request, ::grpc::CompletionQueue* cq) {
-  return ::grpc::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::DeregistrationResult>::Create(channel_.get(), cq, rpcmethod_DeregisterInstance_, context, request, false);
+  return ::grpc_impl::internal::ClientAsyncResponseReaderFactory< ::muscle_manager_protocol::DeregistrationResult>::Create(channel_.get(), cq, rpcmethod_DeregisterInstance_, context, request, false);
 }
 
 MuscleManager::Service::Service() {

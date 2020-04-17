@@ -84,10 +84,10 @@ not, MUSCLE 3 will **download and install them automatically**.
 The dependencies are:
 
 - c-ares 1.11.0 or later
-- gRPC 1.17.1 or later
+- gRPC 1.24.3 or later
 - MessagePack 3.2.0 or later
 - OpenSSL 1.0.2 or later
-- Protobuf 3.7.1 or later
+- Protobuf 3.10.0 or later
 - zlib 1.2.x
 
 

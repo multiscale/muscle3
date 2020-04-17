@@ -39,16 +39,16 @@ distclean:
 
 
 dep_name := protobuf
-dep_min_version := 3.7.1
-dep_version := 3.7.1
+dep_min_version := 3.10.0
+dep_version := 3.10.0
 dep_pkgconfig_name := protobuf
 include make_available.make
 
 export protobuf_ROOT                   # make available to grpc as well
 
 dep_name := grpc
-dep_min_version := 1.17.1
-dep_version := 1.17.1
+dep_min_version := 1.24.3
+dep_version := 1.24.3
 dep_pkgconfig_name := grpc++
 include make_available.make
 

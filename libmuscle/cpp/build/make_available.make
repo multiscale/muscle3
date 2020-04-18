@@ -16,32 +16,12 @@
 
 ifneq ($(MAKECMDGOALS),clean)
 
-$(info )
-$(info Checking for $(dep_name) >= $(dep_min_version)...)
+include $(TOOLDIR)/dep_detect.make
 
-_pkg_config := export PKG_CONFIG_PATH=$($(dep_name)_ROOT) && pkg-config
-_pkg = '$(dep_pkgconfig_name) >= $(dep_min_version)'
-
-_exists := $(shell $(_pkg_config) --exists $(_pkg) || echo NOTFOUND)
-
-ifneq ($(_exists), NOTFOUND)
-    $(info - $(dep_name) found at $(shell $(_pkg_config) --variable=prefix $(_pkg)))
-    $(dep_name)_ROOT := $(shell $(_pkg_config) --variable=prefix $(_pkg))
-
-.PHONY: $(dep_name)
-$(dep_name):
-	@echo Not building $@, it was already available.
-
+ifeq ($($(dep_name)_AVAILABLE), 1)
+    include $(TOOLDIR)/dep_use.make
 else
-    $(info - $(dep_name) not found, will build it.)
-    $(dep_name)_ROOT := $(CURDIR)/$(dep_name)/$(dep_name)
-    export $(dep_name)_VERSION := $(dep_version)
-
-.PHONY: $(dep_name)
-$(dep_name):
-	@echo
-	@echo Building local $@...
-	$(MAKE) -C $@
+    include $(TOOLDIR)/dep_build.make
 endif
 
 endif

@@ -3,7 +3,7 @@ all: grpc
 	@echo
 
 .PHONY: install
-ifdef grpc_VERSION
+ifndef grpc_AVAILABLE
 install: grpc
 	$(MAKE) -C c-ares install
 	$(MAKE) -C zlib install
@@ -34,19 +34,19 @@ dep_name := c-ares
 dep_min_version := 1.11.0
 dep_version := 1.15.0
 dep_pkgconfig_name := libcares
-include ../make_available.make
+include $(TOOLDIR)/make_available.make
 
 dep_name := zlib
 dep_min_version := 1.2
 dep_version := 1.2.11
 dep_pkgconfig_name := zlib
-include ../make_available.make
+include $(TOOLDIR)/make_available.make
 
 dep_name := openssl
 dep_min_version := 1.0.2
 dep_version := 1.1.1c
 dep_pkgconfig_name := openssl
-include ../make_available.make
+include $(TOOLDIR)/make_available.make
 
 v$(grpc_VERSION).tar.gz:
 	$(DOWNLOAD) https://github.com/grpc/grpc/archive/v$(grpc_VERSION).tar.gz

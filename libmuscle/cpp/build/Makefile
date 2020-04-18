@@ -1,5 +1,7 @@
 include check_tools.make
 
+export TOOLDIR := $(CURDIR)
+
 
 .PHONY: all
 all: muscle_manager_protocol ymmsl libmuscle
@@ -37,6 +39,7 @@ distclean:
 	$(MAKE) -C ymmsl distclean
 	$(MAKE) -C libmuscle distclean
 
+# Find dependencies or set up build
 
 dep_name := protobuf
 dep_min_version := 3.10.0
@@ -44,13 +47,20 @@ dep_version := 3.10.0
 dep_pkgconfig_name := protobuf
 include make_available.make
 
-export protobuf_ROOT                   # make available to grpc as well
-
 dep_name := grpc
 dep_min_version := 1.24.3
 dep_version := 1.24.3
 dep_pkgconfig_name := grpc++
 include make_available.make
+
+# If gRPC is available but we're building our own protobuf, then we should
+# build our own gRPC as well, linked against our own protobuf, to avoid having
+# two versions of protobuf in the same process.
+ifeq (grpc_AVAILABLE, 1)
+    ifneq (protobuf_AVAILABLE, 1)
+        include dep_build.make
+    endif
+endif
 
 grpc: protobuf
 
@@ -66,8 +76,7 @@ dep_version := 1.8.1
 dep_pkgconfig_name := gtest
 include make_available.make
 
-export googletest_ROOT
-
+# Directories where local builds will be available
 
 DEP_DIRS := $(CURDIR)/protobuf/protobuf
 DEP_DIRS += $(CURDIR)/grpc/c-ares/c-ares

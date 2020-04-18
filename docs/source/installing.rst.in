@@ -55,15 +55,17 @@ Prerequisites
 
 To build libmuscle, we're going to need some tools. In particular, we need a C++
 compiler and GNU make. MUSCLE 3 uses C++14, so you need at least g++ 4.9.3.
-Clang is expected to work, but that's not been tested, nor has any other
-compiler. If you want to try, go right ahead, we'd love to have feedback on
-this. Building has been tested with gmake 3.82 and 4.1.
+Clang is expected to work, but that's not been tested. Using the Intel
+toolchain currently does not work, due to issues with building gRPC with it.
+Other compilers have not been tested. If you want to try, go right ahead, we'd
+love to have feedback on this. Building has been tested with gmake 3.82 and 4.1.
 
 If you're doing C++ development on a reasonably modern Linux, then you probably
 already have a suitable compiler installed. If not, on a Debian (or Ubuntu)
-based system, ``sudo apt-get install build-essential`` should get you set up. On
-a cluster, there is usually a ``module load g++`` or similar command available
-that sets you up with g++ and associated tools. The exact command will vary from
+based system, ``sudo apt-get install build-essential cmake gfortran pkg-config
+wget`` should get you set up. On a cluster, there is usually a ``module load
+g++`` or similar command available that sets you up with g++ and associated
+tools, and similar for a Fortran compiler. The exact command will vary from
 machine to machine, so consult the documentation for your cluster and/or ask the
 helpdesk.
 

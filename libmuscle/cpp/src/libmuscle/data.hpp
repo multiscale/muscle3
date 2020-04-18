@@ -19,7 +19,11 @@ enum class StorageOrder {
     last_adjacent
 };
 
+class DataConstRef;
+
 class Data;
+
+bool is_close_port(DataConstRef const &);
 
 namespace mcp {
     // forward-declare this so it can be a friend

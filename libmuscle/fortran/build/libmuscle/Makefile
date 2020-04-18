@@ -66,10 +66,10 @@ install: $(installed_modules) $(installed_libs)
 	$(FC) -c -fPIC -Jmod_dump $(FFLAGS) $^ -o $@ $(LDFLAGS)
 
 %.mo: $(srcdir)/%.f03
-	mpi$(FC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS_MPI)
+	$(MPIFC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS_MPI)
 
 %.mlo: $(srcdir)/%.f03
-	mpi$(FC) -c -fPIC -Jmod_dump $(FFLAGS) $^ -o $@ $(LDFLAGS_MPI)
+	$(MPIFC) -c -fPIC -Jmod_dump $(FFLAGS) $^ -o $@ $(LDFLAGS_MPI)
 
 %.mod: %.o
 
@@ -83,7 +83,7 @@ libmuscle_mpi_fortran.a: $(mobjects)
 	ar rcs $@ $^
 
 libmuscle_mpi_fortran.so: $(mlobjects)
-	mpi$(FC) -shared -o $@ $^ $(LDFLAGS_MPI)
+	$(MPIFC) -shared -o $@ $^ $(LDFLAGS_MPI)
 
 $(PREFIX)/include/%: %
 	@mkdir -p $(@D)

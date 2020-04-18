@@ -1,8 +1,5 @@
 include check_tools.make
 
-export TOOLDIR := $(CURDIR)
-
-
 .PHONY: all
 all: muscle_manager_protocol ymmsl libmuscle
 
@@ -45,20 +42,20 @@ dep_name := protobuf
 dep_min_version := 3.10.0
 dep_version := 3.10.0
 dep_pkgconfig_name := protobuf
-include make_available.make
+include $(TOOLDIR)/make_available.make
 
 dep_name := grpc
 dep_min_version := 1.24.3
 dep_version := 1.24.3
 dep_pkgconfig_name := grpc++
-include make_available.make
+include $(TOOLDIR)/make_available.make
 
 # If gRPC is available but we're building our own protobuf, then we should
 # build our own gRPC as well, linked against our own protobuf, to avoid having
 # two versions of protobuf in the same process.
 ifeq (grpc_AVAILABLE, 1)
     ifneq (protobuf_AVAILABLE, 1)
-        include dep_build.make
+        include $(TOOLDIR)/dep_build.make
     endif
 endif
 
@@ -68,13 +65,13 @@ dep_name := msgpack
 dep_min_version := 3.1.0
 dep_version := 3.2.0
 dep_pkgconfig_name := msgpack
-include make_available.make
+include $(TOOLDIR)/make_available.make
 
 dep_name := googletest
 dep_min_version := 1.8.1
 dep_version := 1.8.1
 dep_pkgconfig_name := gtest
-include make_available.make
+include $(TOOLDIR)/make_available.make
 
 # Directories where local builds will be available
 

@@ -1,4 +1,5 @@
-cpp_test_files := libmuscle/cpp/build/ymmsl/tests/test_* libmuscle/cpp/build/libmuscle/tests/test_*
+export TOOLDIR := $(CURDIR)/scripts/gmake
+
 
 .PHONY: all
 all: cpp fortran

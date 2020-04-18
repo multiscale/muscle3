@@ -25,7 +25,7 @@ dep_name := zlib
 dep_min_version := 1.2
 dep_version := 1.2.11
 dep_pkgconfig_name := zlib
-include ../make_available.make
+include $(TOOLDIR)/make_available.make
 
 
 msgpack-$(msgpack_VERSION).tar.gz:

@@ -95,9 +95,10 @@ The dependencies are:
 
 If your model uses any of these dependencies directly, then it's best to install
 that dependency on your system, either via the package manager or from source,
-and then link both your library and MUSCLE 3 to the dependency. This avoids
-having two different versions around and active at the same time. Otherwise,
-it's easier to rely on the automatic installation.
+and then link both your library and MUSCLE 3 to the dependency. (See below for
+how t opoint the build to your installation.) This avoids having two different
+versions around and active at the same time. Otherwise, it's easier to rely on
+the automatic installation.
 
 Downloading MUSCLE 3
 ````````````````````
@@ -155,6 +156,29 @@ DOWNLOAD=<download command>
 TAR=<tar command>
     This overrides the command used to unpack dependencies, which by default is
     ``tar``.
+
+protobuf_ROOT=<directory>
+    Also look in the given directory when detecting the ProtoBuf library. This
+    should be the top of the installation tree, so it will have `include/`,
+    `lib/` and `bin/` subdirectories.
+
+grpc_ROOT=<directory>
+    Also look in the given directory when detecting the gRPC library.
+
+msgpack_ROOT=<directory>
+    Also look in the given directory when detecting the MsgPack library.
+
+googletest_ROOT=<directory>
+    Also look in the given directory when detecting the GoogleTest library.
+
+c-ares_ROOT=<directory>
+    Also look in the given directory when detecting the c-ares library.
+
+zlib_ROOT=<directory>
+    Also look in the given directory when detecting zlib.
+
+openssl_ROOT=<directory>
+    Also look in the given directory when detecting OpenSSL.
 
 
 As an example, to build libmuscle with MPI support, and using 2 cores, you would

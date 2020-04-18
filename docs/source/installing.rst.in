@@ -192,13 +192,39 @@ do:
 This will take ten minutes or so (including building the dependencies),
 depending on the speed of your machine.
 
+
+Getting help
+````````````
+
+The plan is for this to always magically work, but operating systems being as
+diverse as they are (especially on HPC machines), it's possible that the build
+will fail. In that case, have a look at the output to see if you can identify
+an error message, and then go to
+`the MUSCLE 3 issues on GitHub <https://github.com/multiscale/muscle3/issues>`_
+to see if the problem has been reported already, and if there's a work-around.
+
+If not, please make a new issue with a description of the problem (preferably
+mention the error in the issue title, so that others can find it), and attach a
+log of the build. You can make a build log using:
+
+.. code-block:: bash
+
+  ~/muscle3_source/muscle3-%%VERSION%%$ make distclean
+  ~/muscle3_source/muscle3-%%VERSION%%$ make >make.log 2>&1
+
+
+This will produce a file named ``make.log`` with the build output in it. To
+attach it to a GitHub issue, drag it into the text box from your file manager.
+
+
 Installing libmuscle C++
 ````````````````````````
 
-Finally, we need to install MUSCLE 3. We recommend installing it into a
-subdirectory of your home directory for now, as opposed to ``/usr/local/bin`` or
-something similar (although ``/opt/muscle3`` would be okay), since there is no
-uninstall command yet that will cleanly remove it. That goes like this:
+Once MUSCLE 3 has been compiled, we need to install it. We recommend installing
+it into a subdirectory of your home directory for now, as opposed to
+``/usr/local/bin`` or something similar (although ``/opt/muscle3`` would be
+okay), since there is no uninstall command yet that will cleanly remove it. That
+goes like this:
 
 .. code-block:: bash
 

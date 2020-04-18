@@ -44,7 +44,7 @@ include $(TOOLDIR)/make_available.make
 
 dep_name := openssl
 dep_min_version := 1.0.2
-dep_version := 1.1.1c
+dep_version := 1.1.1f
 dep_pkgconfig_name := openssl
 include $(TOOLDIR)/make_available.make
 

@@ -53,6 +53,7 @@ v$(grpc_VERSION).tar.gz:
 
 grpc-$(grpc_VERSION): v$(grpc_VERSION).tar.gz
 	$(TAR) xf v$(grpc_VERSION).tar.gz
+	patch -p0 <grpc_issue_14844.patch
 
 protoc_path := $(protobuf_ROOT)/bin
 

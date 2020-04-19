@@ -46,7 +46,7 @@ public_headers += libmuscle/libmuscle.hpp libmuscle/message.hpp
 public_headers += libmuscle/ports_description.hpp libmuscle/util.hpp libmuscle/util.tpp
 installed_headers := $(public_headers:%=$(PREFIX)/include/%)
 
-CXXFLAGS += -Wall -pedantic -std=c++14
+CXXFLAGS += -Wall -pedantic -std=c++14 -pthread
 export CXXFLAGS
 MPIFLAGS := -DMUSCLE_ENABLE_MPI
 export MPIFLAGS

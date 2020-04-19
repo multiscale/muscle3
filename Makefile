@@ -1,5 +1,11 @@
 export TOOLDIR := $(CURDIR)/scripts/gmake
 
+version_file := $(CURDIR)/VERSION
+export muscle_version := $(shell cat $(version_file))
+export major_version := $(shell sed -e 's/^\([0-9]*\)\..*/\1/' $(version_file))
+export minor_version := $(shell sed -e 's/^[0-9]*\.\([0-9]*\)\..*/\1/' $(version_file))
+export patch_version := $(shell sed -e 's/^[0-9]*\.[0-9]*\.\([0-9]*\).*/\1/' $(version_file))
+
 
 .PHONY: all
 all: cpp fortran

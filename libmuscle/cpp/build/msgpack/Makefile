@@ -2,15 +2,11 @@
 all: msgpack
 
 .PHONY: install
-ifdef msgpack_VERSION
 install: msgpack
 	mkdir -p $(PREFIX)/lib
 	cp -ra msgpack/lib/* $(PREFIX)/lib/
 	mkdir -p $(PREFIX)/include
 	cp -ra msgpack/include/* $(PREFIX)/include/
-else
-install:
-endif
 
 .PHONY: clean
 clean:
@@ -25,6 +21,7 @@ dep_name := zlib
 dep_min_version := 1.2
 dep_version := 1.2.11
 dep_pkgconfig_name := zlib
+dep_install := 1
 include $(TOOLDIR)/make_available.make
 
 

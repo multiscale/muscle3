@@ -1,4 +1,4 @@
-# Make module that defines a dummy target for a dependency already on the
+# Make module that defines dummy targets for a dependency already on the
 # system.
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -7,6 +7,9 @@ ifneq ($(MAKECMDGOALS),clean)
 $(dep_name):
 	@echo
 	@echo Not building $@, it was already available.
+
+.PHONY: $(dep_name)_install
+$(dep_name)_install:
 
 endif
 

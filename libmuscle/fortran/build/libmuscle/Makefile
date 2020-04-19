@@ -11,15 +11,19 @@ libs := libmuscle_fortran.a libmuscle_fortran.so
 mpi_libs := libmuscle_mpi_fortran.a libmuscle_mpi_fortran.so
 modules := $(sources:$(srcdir)/%.f03=%.mod)
 mpi_modules := $(mpi_sources:$(srcdir)/%.f03=%.mod)
+pkg_config_files := libmuscle_fortran.pc
 
 
 ifdef MUSCLE_ENABLE_MPI
 libs += $(mpi_libs)
 modules += $(mpi_modules)
+pkg_config_files += libmuscle_mpi_fortran.pc
 endif
 
 installed_modules := $(modules:%=$(PREFIX)/include/%)
 installed_libs := $(libs:%=$(PREFIX)/lib/%)
+installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
+
 
 LDFLAGS := -L../ymmsl -lymmsl_fortran
 LDFLAGS += -L../../../cpp/build/libmuscle -lmuscle
@@ -57,7 +61,7 @@ distclean: clean
 	make -C tests distclean
 
 .PHONY: install
-install: $(installed_modules) $(installed_libs)
+install: $(installed_modules) $(installed_libs) $(installed_pkg_config_files)
 
 %.o: $(srcdir)/%.f03
 	$(FC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS)
@@ -92,3 +96,36 @@ $(PREFIX)/include/%: %
 $(PREFIX)/lib/%: %
 	@mkdir -p $(@D)
 	cp $< $@
+
+$(PREFIX)/lib/pkgconfig/%: %
+	@mkdir -p $(@D)
+	cp $< $@
+
+libmuscle_fortran.pc:
+	@echo 'prefix=$(PREFIX)' >$@
+	@echo 'exec_prefix=$${prefix}' >>$@
+	@echo 'includedir=$${prefix}/include' >>$@
+	@echo 'libdir=$${exec_prefix}/lib' >>$@
+	@echo >>$@
+	@echo 'Name: libmuscle for Fortran' >>$@
+	@echo 'Description: Library for MUSCLE 3 - Fortran version' >>$@
+	@echo 'URL: https://muscle3.readthedocs.io' >>$@
+	@echo 'Version: $(muscle_version)' >>$@
+	@echo 'Requires.private: libmuscle = $(muscle_version)' >>$@
+	@echo 'Cflags: -I$${includedir}' >>$@
+	@echo 'Libs: -L$${libdir} -lymmsl_fortran -lmuscle_fortran' >>$@
+
+libmuscle_mpi_fortran.pc:
+	@echo 'prefix=$(PREFIX)' >$@
+	@echo 'exec_prefix=$${prefix}' >>$@
+	@echo 'includedir=$${prefix}/include' >>$@
+	@echo 'libdir=$${exec_prefix}/lib' >>$@
+	@echo >>$@
+	@echo 'Name: libmuscle for Fortran and MPI' >>$@
+	@echo 'Description: Library for MUSCLE 3 - Fortran-MPI version' >>$@
+	@echo 'URL: https://muscle3.readthedocs.io' >>$@
+	@echo 'Version: $(muscle_version)' >>$@
+	@echo 'Requires.private: libmuscle_mpi = $(muscle_version)' >>$@
+	@echo 'Cflags: -I$${includedir}' >>$@
+	@echo 'Libs: -L$${libdir} -lymmsl_fortran -lmuscle_mpi_fortran' >>$@
+

@@ -2,13 +2,9 @@
 all: zlib
 
 .PHONY: install
-ifdef zlib_VERSION
 install: zlib
 	mkdir -p $(PREFIX)/lib
 	cp -ra zlib/lib/* $(PREFIX)/lib/
-else
-install:
-endif
 
 .PHONY: clean
 clean:

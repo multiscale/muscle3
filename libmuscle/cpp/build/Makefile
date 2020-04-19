@@ -9,12 +9,9 @@ test: tests
 	$(MAKE) -C libmuscle test
 
 .PHONY: install
-install: all
+install: all protobuf_install grpc_install msgpack_install
 	$(MAKE) -C ymmsl install
 	$(MAKE) -C libmuscle install
-	$(MAKE) -C protobuf install
-	$(MAKE) -C grpc install
-	$(MAKE) -C msgpack install
 
 .PHONY: clean
 clean:
@@ -42,12 +39,14 @@ dep_name := protobuf
 dep_min_version := 3.10.0
 dep_version := 3.10.0
 dep_pkgconfig_name := protobuf
+dep_install := 1
 include $(TOOLDIR)/make_available.make
 
 dep_name := grpc
 dep_min_version := 1.24.3
 dep_version := 1.24.3
 dep_pkgconfig_name := grpc++
+dep_install := 1
 include $(TOOLDIR)/make_available.make
 
 # If gRPC is available but we're building our own protobuf, then we should
@@ -65,12 +64,14 @@ dep_name := msgpack
 dep_min_version := 3.1.0
 dep_version := 3.2.0
 dep_pkgconfig_name := msgpack
+dep_install := 1
 include $(TOOLDIR)/make_available.make
 
 dep_name := googletest
 dep_min_version := 1.8.1
 dep_version := 1.8.1
 dep_pkgconfig_name := gtest
+dep_install := 0
 include $(TOOLDIR)/make_available.make
 
 # Directories where local builds will be available

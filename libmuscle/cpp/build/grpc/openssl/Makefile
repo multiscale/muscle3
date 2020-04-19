@@ -2,13 +2,9 @@
 all: openssl
 
 .PHONY: install
-ifdef openssl_VERSION
 install: openssl
 	mkdir -p $(PREFIX)/lib
 	cp -ra openssl/lib/* $(PREFIX)/lib/
-else
-install:
-endif
 
 .PHONY: clean
 clean:

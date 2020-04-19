@@ -16,5 +16,22 @@ $(dep_name):
 	@echo Building local $@...
 	$(MAKE) -C $@
 
+ifeq ($(dep_install), 1)
+
+$(info - Installing, dep_install = $(dep_install))
+
+.PHONY: $(dep_name)_install
+$(dep_name)_install: $(dep_name)
+	@echo
+	@echo Installing local $<...
+	$(MAKE) -C $< install
+
+else
+
+.PHONY: $(dep_name)_install
+$(dep_name)_install:
+
+endif
+
 endif
 

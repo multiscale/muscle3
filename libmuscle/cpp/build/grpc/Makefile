@@ -3,16 +3,10 @@ all: grpc
 	@echo
 
 .PHONY: install
-ifndef grpc_AVAILABLE
-install: grpc
-	$(MAKE) -C c-ares install
-	$(MAKE) -C zlib install
-	$(MAKE) -C openssl install
-	mkdir -p $(PREFIX)/lib
-	cp -ra grpc/lib/* $(PREFIX)/lib/
-else
-install:
-endif
+install: all c-ares_install zlib_install openssl_install
+	@echo 'Installing grpc...'
+	mkdir -p $(PREFIX)
+	cp -ra grpc/* $(PREFIX)/
 
 .PHONY: clean
 clean:
@@ -34,18 +28,21 @@ dep_name := c-ares
 dep_min_version := 1.11.0
 dep_version := 1.15.0
 dep_pkgconfig_name := libcares
+dep_install := 1
 include $(TOOLDIR)/make_available.make
 
 dep_name := zlib
 dep_min_version := 1.2
 dep_version := 1.2.11
 dep_pkgconfig_name := zlib
+dep_install := 1
 include $(TOOLDIR)/make_available.make
 
 dep_name := openssl
 dep_min_version := 1.0.2
 dep_version := 1.1.1f
 dep_pkgconfig_name := openssl
+dep_install := 1
 include $(TOOLDIR)/make_available.make
 
 v$(grpc_VERSION).tar.gz:

@@ -48,8 +48,6 @@ installed_headers := $(public_headers:%=$(PREFIX)/include/%)
 
 CXXFLAGS += -Wall -pedantic -std=c++14
 export CXXFLAGS
-MPICXX := mpic++
-export MPICXX
 MPIFLAGS := -DMUSCLE_ENABLE_MPI
 export MPIFLAGS
 DEBUGFLAGS := -g

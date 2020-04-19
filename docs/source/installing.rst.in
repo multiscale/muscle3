@@ -283,6 +283,10 @@ to the command line, or for MPI compute elements:
   -L<PREFIX>/lib -lymmsl -lmuscle_mpi
 
 
+You're most likely linking dynamically, but ``libmuscle`` does install static
+libraries in case you need them. If you link statically, then you must add the
+``-pthread`` option, as ``libmuscle`` uses background threads for communication.
+
 There's one more thing: the directory that you've installed MUSCLE into is
 probably not in your system's library search path, and as a result the dynamic
 linker won't be able to find the libraries when you run your program. In order

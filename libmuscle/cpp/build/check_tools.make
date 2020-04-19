@@ -57,6 +57,10 @@ include $(TOOLDIR)/detect_tool.make
 tool_command := curl
 include $(TOOLDIR)/detect_tool.make
 
+ifeq ($(DOWNLOAD), curl)
+    export DOWNLOAD := curl -LO
+endif
+
 ifndef DOWNLOAD
     $(warning - Could not find either wget or curl, so I won't be able to download dependencies.)
     $(warning - To fix this, install wget or curl, or set DOWNLOAD to a command that can download http links.)

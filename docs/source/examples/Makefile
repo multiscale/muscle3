@@ -4,6 +4,8 @@ $(error MUSCLE3_HOME is not defined, use 'MUSCLE3_HOME=/path/to/muscle3 make <ta
 endif
 endif
 
+export PKG_CONFIG_PATH := $(MUSCLE3_HOME)/lib/pkgconfig:$(PKG_CONFIG_PATH)
+
 .PHONY: all
 all: python cpp fortran
 

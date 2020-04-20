@@ -1,8 +1,9 @@
 FC ?= gfortran
-FFLAGS += -std=f2003 -g -I$(MUSCLE3_HOME)/include
+MPIFC ?= mpifort
+FFLAGS += -std=f2003 -g $(shell pkg-config --cflags libmuscle_fortran)
 
-MPI_LDFLAGS := -L$(MUSCLE3_HOME)/lib -lymmsl_fortran -lmuscle_mpi_fortran -lymmsl -lmuscle_mpi
-LDFLAGS := -L$(MUSCLE3_HOME)/lib -lymmsl_fortran -lmuscle_fortran -lymmsl -lmuscle
+MPI_LDFLAGS := $(shell pkg-config --libs libmuscle_mpi_fortran)
+LDFLAGS := $(shell pkg-config --libs libmuscle_fortran)
 
 
 binaries := reaction diffusion mc_driver load_balancer
@@ -25,5 +26,5 @@ clean:
 	LD_LIBRARY_PATH=$(MUSCLE3_HOME)/lib:$(LD_LIBRARY_PATH) $(FC) $(FFLAGS) -o $@ $^ $(LDFLAGS)
 
 %_mpi: ../%_mpi.f03
-	LD_LIBRARY_PATH=$(MUSCLE3_HOME)/lib:$(LD_LIBRARY_PATH) mpi$(FC) $(FFLAGS) -o $@ $^ $(MPI_LDFLAGS)
+	LD_LIBRARY_PATH=$(MUSCLE3_HOME)/lib:$(LD_LIBRARY_PATH) $(MPIFC) $(FFLAGS) -o $@ $^ $(MPI_LDFLAGS)
 

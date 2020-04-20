@@ -287,6 +287,10 @@ You're most likely linking dynamically, but ``libmuscle`` does install static
 libraries in case you need them. If you link statically, then you must add the
 ``-pthread`` option, as ``libmuscle`` uses background threads for communication.
 
+MUSCLE 3 also supports ``pkg-config``. To use ``pkg-config``, add
+``<PREFIX>/lib/pkgconfig`` to your ``PKG_CONFIG_PATH`` and use the module names
+``libmuscle`` or ``libmuscle_mpi``.
+
 There's one more thing: the directory that you've installed MUSCLE into is
 probably not in your system's library search path, and as a result the dynamic
 linker won't be able to find the libraries when you run your program. In order
@@ -345,6 +349,10 @@ the libmuscle library instead:
 
   -L<PREFIX>/lib -lymmsl_fortran -lmuscle_mpi_fortran -lymmsl -lmuscle_mpi
 
+
+MUSCLE 3 also supports ``pkg-config``. To use ``pkg-config``, add
+``<PREFIX>/lib/pkgconfig`` to your ``PKG_CONFIG_PATH`` and use the module names
+``libmuscle_fortran`` or ``libmuscle_mpi_fortran``.
 
 There's one more thing: the directory that you've installed MUSCLE into is
 probably not in your system's library search path, and as a result the dynamic

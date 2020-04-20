@@ -72,6 +72,12 @@ install: all
 	@echo "        Linking: -L$(PREFIX)/lib -lymmsl_fortran"
 	@echo "                 -lmuscle_mpi_fortran -lymmsl -lmuscle_mpi"
 	@echo '*                                                                  *'
+	@echo '*                                                                  *'
+	@echo "    You can also use pkg-config. Add $(PREFIX)/lib/pkgconfig"
+	@echo '*   to your PKG_CONFIG_PATH environment variable and use module    *'
+	@echo '*   names libmuscle, libmuscle_mpi, libmuscle_fortran or           *'
+	@echo '*   libmuscle_mpi_fortran.                                         *'
+	@echo '*                                                                  *'
 	@echo '*   If the directory you installed MUSCLE 3 in is not in your      *'
 	@echo "*   system's library search path, then you have to set             *"
 	@echo '*   LD_LIBRARY_PATH before compiling, linking or running:          *'

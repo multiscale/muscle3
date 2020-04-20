@@ -224,5 +224,5 @@ libmuscle_mpi.pc:
 	@echo 'Version: $(muscle_version)' >>$@
 	@echo 'Requires.private: grpc++ >= 1.24.3, protobuf >= 3.10.0, msgpack >= 3.1.0' >>$@
 	@echo 'Cflags: -I$${includedir} -DMUSCLE_ENABLE_MPI' >>$@
-	@echo 'Libs: -L$${libdir} -lymmsl -lmuscle' >>$@
+	@echo 'Libs: -L$${libdir} -lymmsl -lmuscle_mpi' >>$@
 

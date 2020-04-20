@@ -87,7 +87,7 @@ distclean: clean
 .PHONY: install
 install: all $(installed_headers) $(installed_pkg_config_files)
 	@echo
-	@echo Installing libmuscle to $(PREFIX)
+	@echo Installing libmuscle C++ to $(PREFIX)
 	@mkdir -p $(PREFIX)/lib
 	cp libmuscle*.a $(PREFIX)/lib
 	cp libmuscle*.so $(PREFIX)/lib

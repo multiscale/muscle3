@@ -23,7 +23,6 @@ endif
 
 installed_modules := $(modules:%=$(PREFIX)/include/%)
 installed_sources := $(sources:$(srcdir)/%=$(PREFIX)/include/%)
-installed_libs := $(libs:%=$(PREFIX)/lib/%)
 installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
 
 
@@ -63,7 +62,12 @@ distclean: clean
 	make -C tests distclean
 
 .PHONY: install
-install: $(installed_sources) $(installed_modules) $(installed_libs) $(installed_pkg_config_files)
+install: $(installed_sources) $(installed_modules) $(installed_pkg_config_files)
+	@echo
+	@echo Installing libmuscle Fortran to $(PREFIX)
+	@mkdir -p $(PREFIX)/lib
+	cp libmuscle*.a $(PREFIX)/lib
+	cp libmuscle*.so $(PREFIX)/lib
 
 %.o: $(srcdir)/%.f03
 	$(FC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS)

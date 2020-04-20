@@ -7,6 +7,7 @@ lobjects := $(sources:$(srcdir)/%.f03=%.lo)
 libs := libymmsl_fortran.a libymmsl_fortran.so
 modules := $(sources:$(srcdir)/%.f03=%.mod)
 
+installed_sources := $(sources:$(srcdir)/%=$(PREFIX)/include/%)
 installed_modules := $(modules:%=$(PREFIX)/include/%)
 installed_libs := $(libs:%=$(PREFIX)/lib/%)
 
@@ -34,7 +35,7 @@ clean:
 distclean: clean
 
 .PHONY: install
-install: $(installed_modules) $(installed_libs)
+install: $(installed_sources) $(installed_modules) $(installed_libs)
 
 %.o: $(srcdir)/%.f03
 	$(FC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS)
@@ -49,6 +50,10 @@ lib%_fortran.a: %.o
 
 lib%_fortran.so: %.lo
 	$(FC) -shared -o $@ $^ $(LDFLAGS)
+
+$(PREFIX)/include/%.f03: $(srcdir)/%.f03
+	@mkdir -p $(@D)
+	cp $< $@
 
 $(PREFIX)/include/%: %
 	@mkdir -p $(@D)

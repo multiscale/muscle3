@@ -16,11 +16,13 @@ pkg_config_files := libmuscle_fortran.pc
 
 ifdef MUSCLE_ENABLE_MPI
 libs += $(mpi_libs)
+sources += $(mpi_sources)
 modules += $(mpi_modules)
 pkg_config_files += libmuscle_mpi_fortran.pc
 endif
 
 installed_modules := $(modules:%=$(PREFIX)/include/%)
+installed_sources := $(sources:$(srcdir)/%=$(PREFIX)/include/%)
 installed_libs := $(libs:%=$(PREFIX)/lib/%)
 installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
 
@@ -61,7 +63,7 @@ distclean: clean
 	make -C tests distclean
 
 .PHONY: install
-install: $(installed_modules) $(installed_libs) $(installed_pkg_config_files)
+install: $(installed_sources) $(installed_modules) $(installed_libs) $(installed_pkg_config_files)
 
 %.o: $(srcdir)/%.f03
 	$(FC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS)
@@ -88,6 +90,10 @@ libmuscle_mpi_fortran.a: $(mobjects)
 
 libmuscle_mpi_fortran.so: $(mlobjects)
 	$(MPIFC) -shared -o $@ $^ $(LDFLAGS_MPI)
+
+$(PREFIX)/include/%.f03: $(srcdir)/%.f03
+	@mkdir -p $(@D)
+	cp $< $@
 
 $(PREFIX)/include/%: %
 	@mkdir -p $(@D)

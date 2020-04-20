@@ -54,6 +54,7 @@ test: tests
 clean:
 	rm -f *.o *.lo *.mo *.mlo *.mod *.a *.so
 	rm -f mod_dump/*.mod
+	rm -f libmuscle_fortran.pc libmuscle_mpi_fortran.pc
 	make -C tests clean
 
 .PHONY: distclean

@@ -77,6 +77,7 @@ test: tests
 clean:
 	rm -f libmuscle.a libmuscle.so libmuscle_d.a libmuscle_d.so version.h
 	rm -f libmuscle_mpi.a libmuscle_mpi.so libmuscle_mpi_d.a libmuscle_mpi_d.so
+	rm -f libmuscle.pc libmuscle_mpi.pc
 	rm -rf $(objdir)
 	$(MAKE) -C tests clean
 

@@ -6,6 +6,8 @@ if [ -z "$MUSCLE3_HOME" ] ; then
     exit 1
 fi
 
+echo 'Running reaction-diffusion with MPI in C++'
+
 . python/build/venv/bin/activate
 muscle_manager reaction_diffusion.ymmsl &
 

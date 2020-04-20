@@ -6,6 +6,8 @@ if [ -z "$MUSCLE3_HOME" ] ; then
     exit 1
 fi
 
+echo 'Running reaction-diffusion in Fortran'
+
 . python/build/venv/bin/activate
 muscle_manager reaction_diffusion.ymmsl &
 

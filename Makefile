@@ -38,6 +38,15 @@ test_fortran: fortran_tests
 test_scripts:
 	cd scripts && $(MAKE) test
 
+.PHONY: test_install
+test_install:
+	PREFIX=$(CURDIR)/libmuscle/build/test_install $(MAKE) install
+
+.PHONY: test_examples
+test_examples: test_install
+	export MUSCLE3_HOME=$(CURDIR)/libmuscle/build/test_install && $(MAKE) -C docs/source/examples test
+
+
 .PHONY: install
 install: all
 	cd libmuscle/cpp && $(MAKE) install

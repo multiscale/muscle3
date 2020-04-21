@@ -25,21 +25,21 @@ distclean: clean
 
 
 dep_name := c-ares
-dep_min_version := 1.11.0
+dep_version_constraint := >= 1.11.0
 dep_version := 1.15.0
 dep_pkgconfig_name := libcares
 dep_install := 1
 include $(TOOLDIR)/make_available.make
 
 dep_name := zlib
-dep_min_version := 1.2
+dep_version_constraint := >= 1.2
 dep_version := 1.2.11
 dep_pkgconfig_name := zlib
 dep_install := 1
 include $(TOOLDIR)/make_available.make
 
 dep_name := openssl
-dep_min_version := 1.0.2
+dep_version_constraint := >= 1.0.2
 dep_version := 1.1.1f
 dep_pkgconfig_name := openssl
 dep_install := 1

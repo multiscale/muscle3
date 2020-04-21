@@ -1,19 +1,19 @@
 # Make module for detecting dependencies
 
-# Define $(dep_name), $(dep_min_version) and $(dep_pkgconfig_name) and include
-# this file. It will try to find the dependency in the system directories and
-# in the directory set by $(dep_name)_ROOT, and it will set
+# Define $(dep_name), $(dep_version_constraint) and $(dep_pkgconfig_name) and
+# include this file. It will try to find the dependency in the system
+# directories and in the directory set by $(dep_name)_ROOT, and it will set
 # $(dep_name)_AVAILABLE to 1, $(dep_name)_ROOT to the prefix and
 # $(dep_name)_VERSION to the version if the dependency is found on the system
 
 ifneq ($(MAKECMDGOALS),clean)
 
 $(info )
-$(info Checking for $(dep_name) >= $(dep_min_version)...)
+$(info Checking for $(dep_name) $(dep_version_constraint)...)
 $(info - $(dep_name)_ROOT set to $($(dep_name)_ROOT))
 
 _pkg_config := export PKG_CONFIG_PATH=$($(dep_name)_ROOT)/lib/pkgconfig:$(PKG_CONFIG_PATH) && pkg-config
-_pkg = '$(dep_pkgconfig_name) >= $(dep_min_version)'
+_pkg = '$(dep_pkgconfig_name) $(dep_version_constraint)'
 
 _exists_new_enough := $(shell $(_pkg_config) --exists $(_pkg) || echo NOTFOUND)
 

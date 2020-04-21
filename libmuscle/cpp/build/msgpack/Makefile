@@ -18,7 +18,7 @@ distclean: clean
 	rm -rf msgpack
 
 dep_name := zlib
-dep_min_version := 1.2
+dep_version_constraint := >= 1.2
 dep_version := 1.2.11
 dep_pkgconfig_name := zlib
 dep_install := 1

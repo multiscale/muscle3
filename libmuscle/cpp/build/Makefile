@@ -36,14 +36,14 @@ distclean:
 # Find dependencies or set up build
 
 dep_name := protobuf
-dep_min_version := 3.10.0
+dep_version_constraint := = 3.10.0
 dep_version := 3.10.0
 dep_pkgconfig_name := protobuf
 dep_install := 1
 include $(TOOLDIR)/make_available.make
 
 dep_name := grpc
-dep_min_version := 1.24.3
+dep_version_constraint := = 1.24.3
 dep_version := 1.24.3
 dep_pkgconfig_name := grpc++
 dep_install := 1
@@ -61,14 +61,14 @@ endif
 grpc: protobuf
 
 dep_name := msgpack
-dep_min_version := 3.1.0
+dep_version_constraint := >= 3.1.0
 dep_version := 3.2.0
 dep_pkgconfig_name := msgpack
 dep_install := 1
 include $(TOOLDIR)/make_available.make
 
 dep_name := googletest
-dep_min_version := 1.8.1
+dep_version_constraint := >= 1.8.1
 dep_version := 1.8.1
 dep_pkgconfig_name := gtest
 dep_install := 0

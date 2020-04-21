@@ -1,0 +1,16 @@
+# Run Continuous Integration for the latest Ubuntu release
+# This mainly checks for issues/regressions in the native build
+name: native_compatibility_ubuntu16.04
+on:
+  schedule:
+    - cron: '0 1 * * 0'
+  push:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Run tests on Ubuntu 16.04
+      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3" ubuntu:16.04 /bin/bash -c 'apt-get update && apt-get -y dist-upgrade && apt-get -y install build-essential cmake gfortran libopenmpi-dev pkg-config python3 python3-pip curl && apt-get -y remove libssl-dev zlib1g-dev && cd /home/muscle3 && pip3 install ymmsl==0.10.0 && make test_examples'

@@ -1,11 +1,7 @@
 # Run Continuous Integration on every push
 # This version tests only Python, but on all supported versions of it.
 name: python_compatibility_3.8
-on:
-  push:
-    branches-ignore: ['**']     # disable for now
-  pull_request:
-    branches-ignore: ['**']     # disable for now
+on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest

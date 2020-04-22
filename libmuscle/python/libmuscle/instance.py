@@ -2,7 +2,8 @@ from copy import copy
 import logging
 from pathlib import Path
 import sys
-from typing import cast, Dict, List, Optional, Tuple, Type, Union
+from typing import cast, Dict, List, Optional, Tuple, Union
+from typing_extensions import Type
 
 import grpc
 from ymmsl import (Conduit, Identifier, Operator, SettingValue, Port,

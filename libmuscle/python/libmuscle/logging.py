@@ -1,7 +1,8 @@
 import datetime
 from enum import Enum
 import logging
-from typing import Dict, NewType
+from typing import Dict
+from typing_extensions import NewType
 from ymmsl import Operator
 
 import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp

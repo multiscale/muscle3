@@ -46,7 +46,7 @@ setup(
         'numpy>=1.12',
         'protobuf>=3.10.0',
         'ruamel.yaml<=0.15.64',
-        'ymmsl==0.10.0'          # Also in CI, update there as well
+        'ymmsl==0.10.1'          # Also in CI, update there as well
     ],
     setup_requires=[
         'pytest-runner',

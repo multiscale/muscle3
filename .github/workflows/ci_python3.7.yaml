@@ -16,4 +16,4 @@ jobs:
         key: python-compatibility-3.7-eggs
 
     - name: Run Python tests on 3.7 latest
-      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3" python:3.7 /bin/bash -c 'cd /home/muscle3 && pip install ymmsl==0.10.0 && make test_python_only'
+      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3" python:3.7 /bin/bash -c 'cd /home/muscle3 && pip install ymmsl==0.10.1 && make test_python_only'

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import cast, Optional
 
 from ymmsl import SettingValue, Reference, Settings
 
@@ -84,7 +84,7 @@ class SettingsManager:
         """
         for i in range(len(instance), -1, -1):
             if i > 0:
-                name = instance[:i] + setting_name
+                name = cast(Reference, instance[:i]) + setting_name
             else:
                 name = setting_name
 

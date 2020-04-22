@@ -1,4 +1,4 @@
-matplotlib
+matplotlib<3
 muscle3
 numpy
 sobol_seq

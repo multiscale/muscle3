@@ -21,18 +21,30 @@ Pip in the usual way. It's normally a good idea to make a virtual environment
 
   ~$ python3 -m venv muscle3_venv
   ~$ . muscle3_venv/bin/activate
+  (muscle3_venv)~$ pip install -U pip setuptools wheel
   (muscle3_venv)~$ pip install muscle3
 
 
 This will create a Python virtualenv in a directory named ``muscle3_venv`` in
-your home directory, activate it, and then install MUSCLE 3 inside of it. You
-can then use MUSCLE 3 whenever you have the virtualenv activated. This will also
-install the Python YMMSL library, and any required dependencies.
+your home directory, and then activate it. This means that when you run Python,
+it will use the version of Python in the virtual environment, and see the
+packages you have installed there.
+
+Next, we upgrade ``pip``, the Python package installer (most systems have an old
+version, and old versions sometimes give problems), ``setuptools`` (same thing)
+and we install ``wheel`` (which can cause packages to fail to install if it's
+not there).
+
+Having made a good environment, we can then install MUSCLE 3 inside of it. Once
+that's done, you can use MUSCLE 3 whenever you have the virtualenv activated.
+This will also install the Python YMMSL library, and any required dependencies.
 
 You can also install MUSCLE 3 without a virtualenv if your system allows that.
 The advantage of virtual environments is that you can keep different programs
 separate, and reduce the chance of library version mismatches. On the other
-hand, not having to activate the virtual environment saves you a step.
+hand, not having to activate the virtual environment saves you a step. If you
+get any error messages, try upgrading pip, setuptools and wheel as shown above,
+and then try again.
 
 If you want to install the Python YMMSL library without installing MUSCLE 3,
 then you can use

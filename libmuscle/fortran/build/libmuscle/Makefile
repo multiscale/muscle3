@@ -13,8 +13,7 @@ modules := $(sources:$(srcdir)/%.f03=%.mod)
 mpi_modules := $(mpi_sources:$(srcdir)/%.f03=%.mod)
 pkg_config_files := libmuscle_fortran.pc
 
-
-ifeq ($(if $(or $(MUSCLE_ENABLE_MPI),$(wildcard libmuscle_mpi_fortran.so)),1,0),1)
+ifeq ($(if $(or $(MUSCLE_ENABLE_MPI),$(and $(findstring install,$(MAKECMDGOALS)),$(wildcard libmuscle_mpi_fortran.so))),1,0),1)
     libs += $(mpi_libs)
     sources += $(mpi_sources)
     modules += $(mpi_modules)

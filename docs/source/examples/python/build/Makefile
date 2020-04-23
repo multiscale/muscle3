@@ -9,4 +9,4 @@ clean:
 
 venv:
 	python3 -m venv venv
-	. venv/bin/activate && pip3 install -U pip3 setuptools wheel && pip3 install -r ../requirements.txt && pip3 install $(CURDIR)/../../../../../
+	. venv/bin/activate && pip3 install -U pip setuptools wheel && pip3 install -r ../requirements.txt && pip3 install $(CURDIR)/../../../../../

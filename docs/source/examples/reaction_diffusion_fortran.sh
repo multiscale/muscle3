@@ -14,7 +14,7 @@ muscle_manager reaction_diffusion.ymmsl &
 manager_pid=$!
 
 export LD_LIBRARY_PATH=$MUSCLE3_HOME/lib:$LD_LIBRARY_PATH
-BINDIR=cpp/build
+BINDIR=fortran/build
 
 $BINDIR/reaction --muscle-instance=micro >'micro.log' 2>&1 &
 $BINDIR/diffusion --muscle-instance=macro >'macro.log' 2>&1 &

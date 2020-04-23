@@ -114,12 +114,14 @@ clean:
 	cd libmuscle/cpp && $(MAKE) clean
 	cd libmuscle/fortran && $(MAKE) clean
 	cd scripts && $(MAKE) clean
+	cd docs/source/examples && $(MAKE) clean
 
 .PHONY: distclean
 distclean:
 	cd libmuscle/cpp && $(MAKE) distclean
 	cd libmuscle/fortran && $(MAKE) distclean
 	cd scripts && $(MAKE) distclean
+	cd docs/source/examples && $(MAKE) clean
 
 .PHONY: fortran
 fortran: cpp

@@ -15,6 +15,8 @@ test: all
 	./reaction_diffusion_fortran.sh
 	./reaction_diffusion_mc_cpp.sh
 	./reaction_diffusion_mc_fortran.sh
+	./reaction_diffusion_python_cpp.sh
+	./reaction_diffusion_python_fortran.sh
 
 .PHONY: test_mpi
 test_mpi: all

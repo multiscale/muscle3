@@ -26,7 +26,7 @@ debug_libs := libmuscle_d.a libmuscle_d.so
 
 tests_deps := libmuscle_d.a version.h
 
-ifdef MUSCLE_ENABLE_MPI
+ifeq ($(if $(or $(MUSCLE_ENABLE_MPI),$(wildcard libmuscle_mpi.so)),1,0),1)
 prod_libs += libmuscle_mpi.a libmuscle_mpi.so
 debug_libs += libmuscle_mpi_d.a libmuscle_mpi_d.so
 tests_deps += libmuscle_mpi_d.a
@@ -48,7 +48,7 @@ installed_headers := $(public_headers:%=$(PREFIX)/include/%)
 
 pkg_config_files := libmuscle.pc
 
-ifdef MUSCLE_ENABLE_MPI
+ifeq ($(if $(or $(MUSCLE_ENABLE_MPI),$(wildcard libmuscle_mpi.so)),1,0),1)
     pkg_config_files += libmuscle_mpi.pc
 endif
 

@@ -14,11 +14,11 @@ mpi_modules := $(mpi_sources:$(srcdir)/%.f03=%.mod)
 pkg_config_files := libmuscle_fortran.pc
 
 
-ifdef MUSCLE_ENABLE_MPI
-libs += $(mpi_libs)
-sources += $(mpi_sources)
-modules += $(mpi_modules)
-pkg_config_files += libmuscle_mpi_fortran.pc
+ifeq ($(if $(or $(MUSCLE_ENABLE_MPI),$(wildcard libmuscle_mpi_fortran.so)),1,0),1)
+    libs += $(mpi_libs)
+    sources += $(mpi_sources)
+    modules += $(mpi_modules)
+    pkg_config_files += libmuscle_mpi_fortran.pc
 endif
 
 installed_modules := $(modules:%=$(PREFIX)/include/%)

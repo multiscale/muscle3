@@ -39,10 +39,9 @@ void reaction(int argc, char * argv[]) {
         auto msg = instance.receive("initial_state");
 
         if (rank == root_rank) {
-            DataConstRef data(msg.data());
-            U_all.resize(data.size());
-            for (int i = 0; i < data.size(); ++i)
-                U_all[i] = data[i].as<double>();
+            auto data_ptr = msg.data().elements<double>();
+            U_all.resize(msg.data().size());
+            std::copy_n(data_ptr, msg.data().size(), U_all.begin());
 
             t_cur = msg.timestamp();
             t_end = t_cur + t_max;
@@ -77,9 +76,7 @@ void reaction(int argc, char * argv[]) {
                    root_rank, MPI_COMM_WORLD);
 
         if (rank == root_rank) {
-            auto result = Data::nils(U_all.size());
-            for (int i = 0; i < U_all.size(); ++i)
-                result[i] = U_all[i];
+            auto result = Data::grid(U_all.data(), {U_all.size()}, {"x"});
             instance.send("final_state", Message(t_cur, result));
         }
     }

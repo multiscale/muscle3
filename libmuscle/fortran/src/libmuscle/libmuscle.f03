@@ -40,6 +40,77 @@ module libmuscle
     public :: LIBMUSCLE_DataConstRef_create_settings
     public :: LIBMUSCLE_DataConstRef_create_copy
     public :: LIBMUSCLE_DataConstRef_create
+    public :: LIBMUSCLE_DataConstRef_create_grid_1_logical_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_2_logical_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_3_logical_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_4_logical_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_5_logical_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_6_logical_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_7_logical_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_1_int4_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_2_int4_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_3_int4_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_4_int4_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_5_int4_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_6_int4_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_7_int4_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_1_int8_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_2_int8_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_3_int8_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_4_int8_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_5_int8_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_6_int8_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_7_int8_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_1_real4_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_2_real4_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_3_real4_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_4_real4_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_5_real4_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_6_real4_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_7_real4_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_1_real8_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_2_real8_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_3_real8_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_4_real8_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_5_real8_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_6_real8_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_7_real8_a
+    public :: LIBMUSCLE_DataConstRef_create_grid_1_logical_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_2_logical_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_3_logical_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_4_logical_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_5_logical_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_6_logical_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_7_logical_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_1_int4_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_2_int4_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_3_int4_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_4_int4_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_5_int4_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_6_int4_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_7_int4_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_1_int8_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_2_int8_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_3_int8_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_4_int8_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_5_int8_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_6_int8_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_7_int8_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_1_real4_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_2_real4_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_3_real4_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_4_real4_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_5_real4_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_6_real4_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_7_real4_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_1_real8_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_2_real8_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_3_real8_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_4_real8_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_5_real8_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_6_real8_n
+    public :: LIBMUSCLE_DataConstRef_create_grid_7_real8_n
+    public :: LIBMUSCLE_DataConstRef_create_grid
     public :: LIBMUSCLE_DataConstRef_free
     public :: LIBMUSCLE_DataConstRef_is_a_logical
     public :: LIBMUSCLE_DataConstRef_is_a_character
@@ -52,6 +123,11 @@ module libmuscle
     public :: LIBMUSCLE_DataConstRef_is_a_real8
     public :: LIBMUSCLE_DataConstRef_is_a_dict
     public :: LIBMUSCLE_DataConstRef_is_a_list
+    public :: LIBMUSCLE_DataConstRef_is_a_grid_of_logical
+    public :: LIBMUSCLE_DataConstRef_is_a_grid_of_real4
+    public :: LIBMUSCLE_DataConstRef_is_a_grid_of_real8
+    public :: LIBMUSCLE_DataConstRef_is_a_grid_of_int4
+    public :: LIBMUSCLE_DataConstRef_is_a_grid_of_int8
     public :: LIBMUSCLE_DataConstRef_is_a_byte_array
     public :: LIBMUSCLE_DataConstRef_is_nil
     public :: LIBMUSCLE_DataConstRef_is_a_settings
@@ -70,6 +146,46 @@ module libmuscle
     public :: LIBMUSCLE_DataConstRef_get_item_by_key
     public :: LIBMUSCLE_DataConstRef_get_item_by_index
     public :: LIBMUSCLE_DataConstRef_get_item
+    public :: LIBMUSCLE_DataConstRef_num_dims
+    public :: LIBMUSCLE_DataConstRef_shape
+    public :: LIBMUSCLE_DataConstRef_elements_1_logical
+    public :: LIBMUSCLE_DataConstRef_elements_2_logical
+    public :: LIBMUSCLE_DataConstRef_elements_3_logical
+    public :: LIBMUSCLE_DataConstRef_elements_4_logical
+    public :: LIBMUSCLE_DataConstRef_elements_5_logical
+    public :: LIBMUSCLE_DataConstRef_elements_6_logical
+    public :: LIBMUSCLE_DataConstRef_elements_7_logical
+    public :: LIBMUSCLE_DataConstRef_elements_1_int4
+    public :: LIBMUSCLE_DataConstRef_elements_2_int4
+    public :: LIBMUSCLE_DataConstRef_elements_3_int4
+    public :: LIBMUSCLE_DataConstRef_elements_4_int4
+    public :: LIBMUSCLE_DataConstRef_elements_5_int4
+    public :: LIBMUSCLE_DataConstRef_elements_6_int4
+    public :: LIBMUSCLE_DataConstRef_elements_7_int4
+    public :: LIBMUSCLE_DataConstRef_elements_1_int8
+    public :: LIBMUSCLE_DataConstRef_elements_2_int8
+    public :: LIBMUSCLE_DataConstRef_elements_3_int8
+    public :: LIBMUSCLE_DataConstRef_elements_4_int8
+    public :: LIBMUSCLE_DataConstRef_elements_5_int8
+    public :: LIBMUSCLE_DataConstRef_elements_6_int8
+    public :: LIBMUSCLE_DataConstRef_elements_7_int8
+    public :: LIBMUSCLE_DataConstRef_elements_1_real4
+    public :: LIBMUSCLE_DataConstRef_elements_2_real4
+    public :: LIBMUSCLE_DataConstRef_elements_3_real4
+    public :: LIBMUSCLE_DataConstRef_elements_4_real4
+    public :: LIBMUSCLE_DataConstRef_elements_5_real4
+    public :: LIBMUSCLE_DataConstRef_elements_6_real4
+    public :: LIBMUSCLE_DataConstRef_elements_7_real4
+    public :: LIBMUSCLE_DataConstRef_elements_1_real8
+    public :: LIBMUSCLE_DataConstRef_elements_2_real8
+    public :: LIBMUSCLE_DataConstRef_elements_3_real8
+    public :: LIBMUSCLE_DataConstRef_elements_4_real8
+    public :: LIBMUSCLE_DataConstRef_elements_5_real8
+    public :: LIBMUSCLE_DataConstRef_elements_6_real8
+    public :: LIBMUSCLE_DataConstRef_elements_7_real8
+    public :: LIBMUSCLE_DataConstRef_elements
+    public :: LIBMUSCLE_DataConstRef_has_indexes
+    public :: LIBMUSCLE_DataConstRef_index
     type LIBMUSCLE_Data
         integer (c_intptr_t) :: ptr
     end type LIBMUSCLE_Data
@@ -87,6 +203,77 @@ module libmuscle
     public :: LIBMUSCLE_Data_create_settings
     public :: LIBMUSCLE_Data_create_copy
     public :: LIBMUSCLE_Data_create
+    public :: LIBMUSCLE_Data_create_grid_1_logical_a
+    public :: LIBMUSCLE_Data_create_grid_2_logical_a
+    public :: LIBMUSCLE_Data_create_grid_3_logical_a
+    public :: LIBMUSCLE_Data_create_grid_4_logical_a
+    public :: LIBMUSCLE_Data_create_grid_5_logical_a
+    public :: LIBMUSCLE_Data_create_grid_6_logical_a
+    public :: LIBMUSCLE_Data_create_grid_7_logical_a
+    public :: LIBMUSCLE_Data_create_grid_1_int4_a
+    public :: LIBMUSCLE_Data_create_grid_2_int4_a
+    public :: LIBMUSCLE_Data_create_grid_3_int4_a
+    public :: LIBMUSCLE_Data_create_grid_4_int4_a
+    public :: LIBMUSCLE_Data_create_grid_5_int4_a
+    public :: LIBMUSCLE_Data_create_grid_6_int4_a
+    public :: LIBMUSCLE_Data_create_grid_7_int4_a
+    public :: LIBMUSCLE_Data_create_grid_1_int8_a
+    public :: LIBMUSCLE_Data_create_grid_2_int8_a
+    public :: LIBMUSCLE_Data_create_grid_3_int8_a
+    public :: LIBMUSCLE_Data_create_grid_4_int8_a
+    public :: LIBMUSCLE_Data_create_grid_5_int8_a
+    public :: LIBMUSCLE_Data_create_grid_6_int8_a
+    public :: LIBMUSCLE_Data_create_grid_7_int8_a
+    public :: LIBMUSCLE_Data_create_grid_1_real4_a
+    public :: LIBMUSCLE_Data_create_grid_2_real4_a
+    public :: LIBMUSCLE_Data_create_grid_3_real4_a
+    public :: LIBMUSCLE_Data_create_grid_4_real4_a
+    public :: LIBMUSCLE_Data_create_grid_5_real4_a
+    public :: LIBMUSCLE_Data_create_grid_6_real4_a
+    public :: LIBMUSCLE_Data_create_grid_7_real4_a
+    public :: LIBMUSCLE_Data_create_grid_1_real8_a
+    public :: LIBMUSCLE_Data_create_grid_2_real8_a
+    public :: LIBMUSCLE_Data_create_grid_3_real8_a
+    public :: LIBMUSCLE_Data_create_grid_4_real8_a
+    public :: LIBMUSCLE_Data_create_grid_5_real8_a
+    public :: LIBMUSCLE_Data_create_grid_6_real8_a
+    public :: LIBMUSCLE_Data_create_grid_7_real8_a
+    public :: LIBMUSCLE_Data_create_grid_1_logical_n
+    public :: LIBMUSCLE_Data_create_grid_2_logical_n
+    public :: LIBMUSCLE_Data_create_grid_3_logical_n
+    public :: LIBMUSCLE_Data_create_grid_4_logical_n
+    public :: LIBMUSCLE_Data_create_grid_5_logical_n
+    public :: LIBMUSCLE_Data_create_grid_6_logical_n
+    public :: LIBMUSCLE_Data_create_grid_7_logical_n
+    public :: LIBMUSCLE_Data_create_grid_1_int4_n
+    public :: LIBMUSCLE_Data_create_grid_2_int4_n
+    public :: LIBMUSCLE_Data_create_grid_3_int4_n
+    public :: LIBMUSCLE_Data_create_grid_4_int4_n
+    public :: LIBMUSCLE_Data_create_grid_5_int4_n
+    public :: LIBMUSCLE_Data_create_grid_6_int4_n
+    public :: LIBMUSCLE_Data_create_grid_7_int4_n
+    public :: LIBMUSCLE_Data_create_grid_1_int8_n
+    public :: LIBMUSCLE_Data_create_grid_2_int8_n
+    public :: LIBMUSCLE_Data_create_grid_3_int8_n
+    public :: LIBMUSCLE_Data_create_grid_4_int8_n
+    public :: LIBMUSCLE_Data_create_grid_5_int8_n
+    public :: LIBMUSCLE_Data_create_grid_6_int8_n
+    public :: LIBMUSCLE_Data_create_grid_7_int8_n
+    public :: LIBMUSCLE_Data_create_grid_1_real4_n
+    public :: LIBMUSCLE_Data_create_grid_2_real4_n
+    public :: LIBMUSCLE_Data_create_grid_3_real4_n
+    public :: LIBMUSCLE_Data_create_grid_4_real4_n
+    public :: LIBMUSCLE_Data_create_grid_5_real4_n
+    public :: LIBMUSCLE_Data_create_grid_6_real4_n
+    public :: LIBMUSCLE_Data_create_grid_7_real4_n
+    public :: LIBMUSCLE_Data_create_grid_1_real8_n
+    public :: LIBMUSCLE_Data_create_grid_2_real8_n
+    public :: LIBMUSCLE_Data_create_grid_3_real8_n
+    public :: LIBMUSCLE_Data_create_grid_4_real8_n
+    public :: LIBMUSCLE_Data_create_grid_5_real8_n
+    public :: LIBMUSCLE_Data_create_grid_6_real8_n
+    public :: LIBMUSCLE_Data_create_grid_7_real8_n
+    public :: LIBMUSCLE_Data_create_grid
     public :: LIBMUSCLE_Data_free
     public :: LIBMUSCLE_Data_is_a_logical
     public :: LIBMUSCLE_Data_is_a_character
@@ -99,6 +286,11 @@ module libmuscle
     public :: LIBMUSCLE_Data_is_a_real8
     public :: LIBMUSCLE_Data_is_a_dict
     public :: LIBMUSCLE_Data_is_a_list
+    public :: LIBMUSCLE_Data_is_a_grid_of_logical
+    public :: LIBMUSCLE_Data_is_a_grid_of_real4
+    public :: LIBMUSCLE_Data_is_a_grid_of_real8
+    public :: LIBMUSCLE_Data_is_a_grid_of_int4
+    public :: LIBMUSCLE_Data_is_a_grid_of_int8
     public :: LIBMUSCLE_Data_is_a_byte_array
     public :: LIBMUSCLE_Data_is_nil
     public :: LIBMUSCLE_Data_is_a_settings
@@ -117,6 +309,46 @@ module libmuscle
     public :: LIBMUSCLE_Data_get_item_by_key
     public :: LIBMUSCLE_Data_get_item_by_index
     public :: LIBMUSCLE_Data_get_item
+    public :: LIBMUSCLE_Data_num_dims
+    public :: LIBMUSCLE_Data_shape
+    public :: LIBMUSCLE_Data_elements_1_logical
+    public :: LIBMUSCLE_Data_elements_2_logical
+    public :: LIBMUSCLE_Data_elements_3_logical
+    public :: LIBMUSCLE_Data_elements_4_logical
+    public :: LIBMUSCLE_Data_elements_5_logical
+    public :: LIBMUSCLE_Data_elements_6_logical
+    public :: LIBMUSCLE_Data_elements_7_logical
+    public :: LIBMUSCLE_Data_elements_1_int4
+    public :: LIBMUSCLE_Data_elements_2_int4
+    public :: LIBMUSCLE_Data_elements_3_int4
+    public :: LIBMUSCLE_Data_elements_4_int4
+    public :: LIBMUSCLE_Data_elements_5_int4
+    public :: LIBMUSCLE_Data_elements_6_int4
+    public :: LIBMUSCLE_Data_elements_7_int4
+    public :: LIBMUSCLE_Data_elements_1_int8
+    public :: LIBMUSCLE_Data_elements_2_int8
+    public :: LIBMUSCLE_Data_elements_3_int8
+    public :: LIBMUSCLE_Data_elements_4_int8
+    public :: LIBMUSCLE_Data_elements_5_int8
+    public :: LIBMUSCLE_Data_elements_6_int8
+    public :: LIBMUSCLE_Data_elements_7_int8
+    public :: LIBMUSCLE_Data_elements_1_real4
+    public :: LIBMUSCLE_Data_elements_2_real4
+    public :: LIBMUSCLE_Data_elements_3_real4
+    public :: LIBMUSCLE_Data_elements_4_real4
+    public :: LIBMUSCLE_Data_elements_5_real4
+    public :: LIBMUSCLE_Data_elements_6_real4
+    public :: LIBMUSCLE_Data_elements_7_real4
+    public :: LIBMUSCLE_Data_elements_1_real8
+    public :: LIBMUSCLE_Data_elements_2_real8
+    public :: LIBMUSCLE_Data_elements_3_real8
+    public :: LIBMUSCLE_Data_elements_4_real8
+    public :: LIBMUSCLE_Data_elements_5_real8
+    public :: LIBMUSCLE_Data_elements_6_real8
+    public :: LIBMUSCLE_Data_elements_7_real8
+    public :: LIBMUSCLE_Data_elements
+    public :: LIBMUSCLE_Data_has_indexes
+    public :: LIBMUSCLE_Data_index
     public :: LIBMUSCLE_Data_create_dict
     public :: LIBMUSCLE_Data_create_list
     public :: LIBMUSCLE_Data_create_nils
@@ -260,23 +492,22 @@ module libmuscle
 
     interface
 
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_nil_( &
-                ) &
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_nil_() &
                 bind(C, name="LIBMUSCLE_DataConstRef_create_nil_")
 
             use iso_c_binding
         end function LIBMUSCLE_DataConstRef_create_nil_
 
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_logical_( &
-                value) &
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_logical_(value) &
                 bind(C, name="LIBMUSCLE_DataConstRef_create_logical_")
 
             use iso_c_binding
-            integer (c_int), value, intent(in) :: value
+            logical (c_bool), value, intent(in) :: value
         end function LIBMUSCLE_DataConstRef_create_logical_
 
         integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_character_( &
-                value, value_size) &
+                value, &
+                value_size) &
                 bind(C, name="LIBMUSCLE_DataConstRef_create_character_")
 
             use iso_c_binding
@@ -284,200 +515,474 @@ module libmuscle
             integer (c_size_t), value, intent(in) :: value_size
         end function LIBMUSCLE_DataConstRef_create_character_
 
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_int1_( &
-                value) &
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_int1_(value) &
                 bind(C, name="LIBMUSCLE_DataConstRef_create_int1_")
 
             use iso_c_binding
             integer (c_int8_t), value, intent(in) :: value
         end function LIBMUSCLE_DataConstRef_create_int1_
 
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_int2_( &
-                value) &
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_int2_(value) &
                 bind(C, name="LIBMUSCLE_DataConstRef_create_int2_")
 
             use iso_c_binding
             integer (c_short), value, intent(in) :: value
         end function LIBMUSCLE_DataConstRef_create_int2_
 
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_int4_( &
-                value) &
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_int4_(value) &
                 bind(C, name="LIBMUSCLE_DataConstRef_create_int4_")
 
             use iso_c_binding
             integer (c_int32_t), value, intent(in) :: value
         end function LIBMUSCLE_DataConstRef_create_int4_
 
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_int8_( &
-                value) &
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_int8_(value) &
                 bind(C, name="LIBMUSCLE_DataConstRef_create_int8_")
 
             use iso_c_binding
             integer (c_int64_t), value, intent(in) :: value
         end function LIBMUSCLE_DataConstRef_create_int8_
 
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_real4_( &
-                value) &
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_real4_(value) &
                 bind(C, name="LIBMUSCLE_DataConstRef_create_real4_")
 
             use iso_c_binding
             real (c_float), value, intent(in) :: value
         end function LIBMUSCLE_DataConstRef_create_real4_
 
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_real8_( &
-                value) &
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_real8_(value) &
                 bind(C, name="LIBMUSCLE_DataConstRef_create_real8_")
 
             use iso_c_binding
             real (c_double), value, intent(in) :: value
         end function LIBMUSCLE_DataConstRef_create_real8_
 
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_settings_( &
-                value) &
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_settings_(value) &
                 bind(C, name="LIBMUSCLE_DataConstRef_create_settings_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: value
         end function LIBMUSCLE_DataConstRef_create_settings_
 
-        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_copy_( &
-                value) &
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_copy_(value) &
                 bind(C, name="LIBMUSCLE_DataConstRef_create_copy_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: value
         end function LIBMUSCLE_DataConstRef_create_copy_
 
-        subroutine LIBMUSCLE_DataConstRef_free_( &
-                self) &
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_logical_a_( &
+                data_array, &
+                data_array_shape, &
+                data_array_ndims) &
+                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_logical_a_")
+
+            use iso_c_binding
+            logical (c_bool), dimension(*), intent(in) :: data_array
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
+            integer (c_size_t), value, intent(in) :: data_array_ndims
+        end function LIBMUSCLE_DataConstRef_create_grid_logical_a_
+
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_int4_a_( &
+                data_array, &
+                data_array_shape, &
+                data_array_ndims) &
+                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_int4_a_")
+
+            use iso_c_binding
+            integer (c_int32_t), dimension(*), intent(in) :: data_array
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
+            integer (c_size_t), value, intent(in) :: data_array_ndims
+        end function LIBMUSCLE_DataConstRef_create_grid_int4_a_
+
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_int8_a_( &
+                data_array, &
+                data_array_shape, &
+                data_array_ndims) &
+                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_int8_a_")
+
+            use iso_c_binding
+            integer (c_int64_t), dimension(*), intent(in) :: data_array
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
+            integer (c_size_t), value, intent(in) :: data_array_ndims
+        end function LIBMUSCLE_DataConstRef_create_grid_int8_a_
+
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_real4_a_( &
+                data_array, &
+                data_array_shape, &
+                data_array_ndims) &
+                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_real4_a_")
+
+            use iso_c_binding
+            real (c_float), dimension(*), intent(in) :: data_array
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
+            integer (c_size_t), value, intent(in) :: data_array_ndims
+        end function LIBMUSCLE_DataConstRef_create_grid_real4_a_
+
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_real8_a_( &
+                data_array, &
+                data_array_shape, &
+                data_array_ndims) &
+                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_real8_a_")
+
+            use iso_c_binding
+            real (c_double), dimension(*), intent(in) :: data_array
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
+            integer (c_size_t), value, intent(in) :: data_array_ndims
+        end function LIBMUSCLE_DataConstRef_create_grid_real8_a_
+
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_logical_n_( &
+                data_array, &
+                data_array_shape, &
+                data_array_ndims, &
+                index_name_1, &
+                index_name_1_size, &
+                index_name_2, &
+                index_name_2_size, &
+                index_name_3, &
+                index_name_3_size, &
+                index_name_4, &
+                index_name_4_size, &
+                index_name_5, &
+                index_name_5_size, &
+                index_name_6, &
+                index_name_6_size, &
+                index_name_7, &
+                index_name_7_size) &
+                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_logical_n_")
+
+            use iso_c_binding
+            logical (c_bool), dimension(*), intent(in) :: data_array
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
+            integer (c_size_t), value, intent(in) :: data_array_ndims
+            character, intent(in) :: index_name_1
+            integer (c_size_t), value, intent(in) :: index_name_1_size
+            character, intent(in) :: index_name_2
+            integer (c_size_t), value, intent(in) :: index_name_2_size
+            character, intent(in) :: index_name_3
+            integer (c_size_t), value, intent(in) :: index_name_3_size
+            character, intent(in) :: index_name_4
+            integer (c_size_t), value, intent(in) :: index_name_4_size
+            character, intent(in) :: index_name_5
+            integer (c_size_t), value, intent(in) :: index_name_5_size
+            character, intent(in) :: index_name_6
+            integer (c_size_t), value, intent(in) :: index_name_6_size
+            character, intent(in) :: index_name_7
+            integer (c_size_t), value, intent(in) :: index_name_7_size
+        end function LIBMUSCLE_DataConstRef_create_grid_logical_n_
+
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_int4_n_( &
+                data_array, &
+                data_array_shape, &
+                data_array_ndims, &
+                index_name_1, &
+                index_name_1_size, &
+                index_name_2, &
+                index_name_2_size, &
+                index_name_3, &
+                index_name_3_size, &
+                index_name_4, &
+                index_name_4_size, &
+                index_name_5, &
+                index_name_5_size, &
+                index_name_6, &
+                index_name_6_size, &
+                index_name_7, &
+                index_name_7_size) &
+                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_int4_n_")
+
+            use iso_c_binding
+            integer (c_int32_t), dimension(*), intent(in) :: data_array
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
+            integer (c_size_t), value, intent(in) :: data_array_ndims
+            character, intent(in) :: index_name_1
+            integer (c_size_t), value, intent(in) :: index_name_1_size
+            character, intent(in) :: index_name_2
+            integer (c_size_t), value, intent(in) :: index_name_2_size
+            character, intent(in) :: index_name_3
+            integer (c_size_t), value, intent(in) :: index_name_3_size
+            character, intent(in) :: index_name_4
+            integer (c_size_t), value, intent(in) :: index_name_4_size
+            character, intent(in) :: index_name_5
+            integer (c_size_t), value, intent(in) :: index_name_5_size
+            character, intent(in) :: index_name_6
+            integer (c_size_t), value, intent(in) :: index_name_6_size
+            character, intent(in) :: index_name_7
+            integer (c_size_t), value, intent(in) :: index_name_7_size
+        end function LIBMUSCLE_DataConstRef_create_grid_int4_n_
+
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_int8_n_( &
+                data_array, &
+                data_array_shape, &
+                data_array_ndims, &
+                index_name_1, &
+                index_name_1_size, &
+                index_name_2, &
+                index_name_2_size, &
+                index_name_3, &
+                index_name_3_size, &
+                index_name_4, &
+                index_name_4_size, &
+                index_name_5, &
+                index_name_5_size, &
+                index_name_6, &
+                index_name_6_size, &
+                index_name_7, &
+                index_name_7_size) &
+                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_int8_n_")
+
+            use iso_c_binding
+            integer (c_int64_t), dimension(*), intent(in) :: data_array
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
+            integer (c_size_t), value, intent(in) :: data_array_ndims
+            character, intent(in) :: index_name_1
+            integer (c_size_t), value, intent(in) :: index_name_1_size
+            character, intent(in) :: index_name_2
+            integer (c_size_t), value, intent(in) :: index_name_2_size
+            character, intent(in) :: index_name_3
+            integer (c_size_t), value, intent(in) :: index_name_3_size
+            character, intent(in) :: index_name_4
+            integer (c_size_t), value, intent(in) :: index_name_4_size
+            character, intent(in) :: index_name_5
+            integer (c_size_t), value, intent(in) :: index_name_5_size
+            character, intent(in) :: index_name_6
+            integer (c_size_t), value, intent(in) :: index_name_6_size
+            character, intent(in) :: index_name_7
+            integer (c_size_t), value, intent(in) :: index_name_7_size
+        end function LIBMUSCLE_DataConstRef_create_grid_int8_n_
+
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_real4_n_( &
+                data_array, &
+                data_array_shape, &
+                data_array_ndims, &
+                index_name_1, &
+                index_name_1_size, &
+                index_name_2, &
+                index_name_2_size, &
+                index_name_3, &
+                index_name_3_size, &
+                index_name_4, &
+                index_name_4_size, &
+                index_name_5, &
+                index_name_5_size, &
+                index_name_6, &
+                index_name_6_size, &
+                index_name_7, &
+                index_name_7_size) &
+                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_real4_n_")
+
+            use iso_c_binding
+            real (c_float), dimension(*), intent(in) :: data_array
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
+            integer (c_size_t), value, intent(in) :: data_array_ndims
+            character, intent(in) :: index_name_1
+            integer (c_size_t), value, intent(in) :: index_name_1_size
+            character, intent(in) :: index_name_2
+            integer (c_size_t), value, intent(in) :: index_name_2_size
+            character, intent(in) :: index_name_3
+            integer (c_size_t), value, intent(in) :: index_name_3_size
+            character, intent(in) :: index_name_4
+            integer (c_size_t), value, intent(in) :: index_name_4_size
+            character, intent(in) :: index_name_5
+            integer (c_size_t), value, intent(in) :: index_name_5_size
+            character, intent(in) :: index_name_6
+            integer (c_size_t), value, intent(in) :: index_name_6_size
+            character, intent(in) :: index_name_7
+            integer (c_size_t), value, intent(in) :: index_name_7_size
+        end function LIBMUSCLE_DataConstRef_create_grid_real4_n_
+
+        integer (c_intptr_t) function LIBMUSCLE_DataConstRef_create_grid_real8_n_( &
+                data_array, &
+                data_array_shape, &
+                data_array_ndims, &
+                index_name_1, &
+                index_name_1_size, &
+                index_name_2, &
+                index_name_2_size, &
+                index_name_3, &
+                index_name_3_size, &
+                index_name_4, &
+                index_name_4_size, &
+                index_name_5, &
+                index_name_5_size, &
+                index_name_6, &
+                index_name_6_size, &
+                index_name_7, &
+                index_name_7_size) &
+                bind(C, name="LIBMUSCLE_DataConstRef_create_grid_real8_n_")
+
+            use iso_c_binding
+            real (c_double), dimension(*), intent(in) :: data_array
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
+            integer (c_size_t), value, intent(in) :: data_array_ndims
+            character, intent(in) :: index_name_1
+            integer (c_size_t), value, intent(in) :: index_name_1_size
+            character, intent(in) :: index_name_2
+            integer (c_size_t), value, intent(in) :: index_name_2_size
+            character, intent(in) :: index_name_3
+            integer (c_size_t), value, intent(in) :: index_name_3_size
+            character, intent(in) :: index_name_4
+            integer (c_size_t), value, intent(in) :: index_name_4_size
+            character, intent(in) :: index_name_5
+            integer (c_size_t), value, intent(in) :: index_name_5_size
+            character, intent(in) :: index_name_6
+            integer (c_size_t), value, intent(in) :: index_name_6_size
+            character, intent(in) :: index_name_7
+            integer (c_size_t), value, intent(in) :: index_name_7_size
+        end function LIBMUSCLE_DataConstRef_create_grid_real8_n_
+
+        subroutine LIBMUSCLE_DataConstRef_free_(self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_free_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end subroutine LIBMUSCLE_DataConstRef_free_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_logical_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_logical_(self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_logical_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_logical_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_character_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_character_(self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_character_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_character_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_int_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_int_(self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_int_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_int_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_int1_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_int1_(self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_int1_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_int1_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_int2_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_int2_(self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_int2_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_int2_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_int4_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_int4_(self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_int4_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_int4_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_int8_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_int8_(self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_int8_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_int8_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_real4_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_real4_(self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_real4_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_real4_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_real8_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_real8_(self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_real8_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_real8_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_dict_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_dict_(self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_dict_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_dict_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_list_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_list_(self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_list_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_list_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_byte_array_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_grid_of_logical_(self) &
+                bind(C, name="LIBMUSCLE_DataConstRef_is_a_grid_of_logical_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_DataConstRef_is_a_grid_of_logical_
+
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_grid_of_real4_(self) &
+                bind(C, name="LIBMUSCLE_DataConstRef_is_a_grid_of_real4_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_DataConstRef_is_a_grid_of_real4_
+
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_grid_of_real8_(self) &
+                bind(C, name="LIBMUSCLE_DataConstRef_is_a_grid_of_real8_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_DataConstRef_is_a_grid_of_real8_
+
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_grid_of_int4_(self) &
+                bind(C, name="LIBMUSCLE_DataConstRef_is_a_grid_of_int4_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_DataConstRef_is_a_grid_of_int4_
+
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_grid_of_int8_(self) &
+                bind(C, name="LIBMUSCLE_DataConstRef_is_a_grid_of_int8_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_DataConstRef_is_a_grid_of_int8_
+
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_byte_array_(self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_byte_array_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_byte_array_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_nil_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_nil_(self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_nil_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_nil_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_is_a_settings_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_is_a_settings_(self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_is_a_settings_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_is_a_settings_
 
-        integer (c_size_t) function LIBMUSCLE_DataConstRef_size_( &
-                self) &
+        integer (c_size_t) function LIBMUSCLE_DataConstRef_size_(self) &
                 bind(C, name="LIBMUSCLE_DataConstRef_size_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_DataConstRef_size_
 
-        integer (c_int) function LIBMUSCLE_DataConstRef_as_logical_( &
-                self, err_code, err_msg, err_msg_len) &
+        logical (c_bool) function LIBMUSCLE_DataConstRef_as_logical_( &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_DataConstRef_as_logical_")
 
             use iso_c_binding
@@ -488,7 +993,12 @@ module libmuscle
         end function LIBMUSCLE_DataConstRef_as_logical_
 
         subroutine LIBMUSCLE_DataConstRef_as_character_( &
-                self, ret_val, ret_val_size, err_code, err_msg, err_msg_len) &
+                self, &
+                ret_val, &
+                ret_val_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_DataConstRef_as_character_")
 
             use iso_c_binding
@@ -501,7 +1011,10 @@ module libmuscle
         end subroutine LIBMUSCLE_DataConstRef_as_character_
 
         integer (c_int) function LIBMUSCLE_DataConstRef_as_int_( &
-                self, err_code, err_msg, err_msg_len) &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_DataConstRef_as_int_")
 
             use iso_c_binding
@@ -512,7 +1025,10 @@ module libmuscle
         end function LIBMUSCLE_DataConstRef_as_int_
 
         integer (c_int8_t) function LIBMUSCLE_DataConstRef_as_int1_( &
-                self, err_code, err_msg, err_msg_len) &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_DataConstRef_as_int1_")
 
             use iso_c_binding
@@ -523,7 +1039,10 @@ module libmuscle
         end function LIBMUSCLE_DataConstRef_as_int1_
 
         integer (c_short) function LIBMUSCLE_DataConstRef_as_int2_( &
-                self, err_code, err_msg, err_msg_len) &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_DataConstRef_as_int2_")
 
             use iso_c_binding
@@ -534,7 +1053,10 @@ module libmuscle
         end function LIBMUSCLE_DataConstRef_as_int2_
 
         integer (c_int32_t) function LIBMUSCLE_DataConstRef_as_int4_( &
-                self, err_code, err_msg, err_msg_len) &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_DataConstRef_as_int4_")
 
             use iso_c_binding
@@ -545,7 +1067,10 @@ module libmuscle
         end function LIBMUSCLE_DataConstRef_as_int4_
 
         integer (c_int64_t) function LIBMUSCLE_DataConstRef_as_int8_( &
-                self, err_code, err_msg, err_msg_len) &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_DataConstRef_as_int8_")
 
             use iso_c_binding
@@ -556,7 +1081,10 @@ module libmuscle
         end function LIBMUSCLE_DataConstRef_as_int8_
 
         real (c_float) function LIBMUSCLE_DataConstRef_as_real4_( &
-                self, err_code, err_msg, err_msg_len) &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_DataConstRef_as_real4_")
 
             use iso_c_binding
@@ -567,7 +1095,10 @@ module libmuscle
         end function LIBMUSCLE_DataConstRef_as_real4_
 
         real (c_double) function LIBMUSCLE_DataConstRef_as_real8_( &
-                self, err_code, err_msg, err_msg_len) &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_DataConstRef_as_real8_")
 
             use iso_c_binding
@@ -578,7 +1109,10 @@ module libmuscle
         end function LIBMUSCLE_DataConstRef_as_real8_
 
         integer (c_intptr_t) function LIBMUSCLE_DataConstRef_as_settings_( &
-                self, err_code, err_msg, err_msg_len) &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_DataConstRef_as_settings_")
 
             use iso_c_binding
@@ -589,7 +1123,12 @@ module libmuscle
         end function LIBMUSCLE_DataConstRef_as_settings_
 
         subroutine LIBMUSCLE_DataConstRef_as_byte_array_( &
-                self, ret_val, ret_val_size, err_code, err_msg, err_msg_len) &
+                self, &
+                ret_val, &
+                ret_val_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_DataConstRef_as_byte_array_")
 
             use iso_c_binding
@@ -602,7 +1141,12 @@ module libmuscle
         end subroutine LIBMUSCLE_DataConstRef_as_byte_array_
 
         integer (c_intptr_t) function LIBMUSCLE_DataConstRef_get_item_by_key_( &
-                self, key, key_size, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_DataConstRef_get_item_by_key_")
 
             use iso_c_binding
@@ -615,7 +1159,11 @@ module libmuscle
         end function LIBMUSCLE_DataConstRef_get_item_by_key_
 
         integer (c_intptr_t) function LIBMUSCLE_DataConstRef_get_item_by_index_( &
-                self, i, err_code, err_msg, err_msg_len) &
+                self, &
+                i, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_DataConstRef_get_item_by_index_")
 
             use iso_c_binding
@@ -626,23 +1174,198 @@ module libmuscle
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_DataConstRef_get_item_by_index_
 
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_nil_( &
-                ) &
+        integer (c_size_t) function LIBMUSCLE_DataConstRef_num_dims_( &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="LIBMUSCLE_DataConstRef_num_dims_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end function LIBMUSCLE_DataConstRef_num_dims_
+
+        subroutine LIBMUSCLE_DataConstRef_shape_( &
+                self, &
+                ret_val, &
+                ret_val_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="LIBMUSCLE_DataConstRef_shape_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_size_t), intent(out) :: ret_val_size
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_DataConstRef_shape_
+
+        subroutine LIBMUSCLE_DataConstRef_elements_logical_( &
+                self, &
+                ndims, &
+                ret_val, &
+                ret_val_shape, &
+                ret_val_format, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="LIBMUSCLE_DataConstRef_elements_logical_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_size_t), value, intent(in) :: ndims
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_size_t), dimension(1), intent(out) :: ret_val_shape
+            integer (c_int), intent(out) :: ret_val_format
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_DataConstRef_elements_logical_
+
+        subroutine LIBMUSCLE_DataConstRef_elements_int4_( &
+                self, &
+                ndims, &
+                ret_val, &
+                ret_val_shape, &
+                ret_val_format, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="LIBMUSCLE_DataConstRef_elements_int4_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_size_t), value, intent(in) :: ndims
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_size_t), dimension(1), intent(out) :: ret_val_shape
+            integer (c_int), intent(out) :: ret_val_format
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_DataConstRef_elements_int4_
+
+        subroutine LIBMUSCLE_DataConstRef_elements_int8_( &
+                self, &
+                ndims, &
+                ret_val, &
+                ret_val_shape, &
+                ret_val_format, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="LIBMUSCLE_DataConstRef_elements_int8_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_size_t), value, intent(in) :: ndims
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_size_t), dimension(1), intent(out) :: ret_val_shape
+            integer (c_int), intent(out) :: ret_val_format
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_DataConstRef_elements_int8_
+
+        subroutine LIBMUSCLE_DataConstRef_elements_real4_( &
+                self, &
+                ndims, &
+                ret_val, &
+                ret_val_shape, &
+                ret_val_format, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="LIBMUSCLE_DataConstRef_elements_real4_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_size_t), value, intent(in) :: ndims
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_size_t), dimension(1), intent(out) :: ret_val_shape
+            integer (c_int), intent(out) :: ret_val_format
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_DataConstRef_elements_real4_
+
+        subroutine LIBMUSCLE_DataConstRef_elements_real8_( &
+                self, &
+                ndims, &
+                ret_val, &
+                ret_val_shape, &
+                ret_val_format, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="LIBMUSCLE_DataConstRef_elements_real8_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_size_t), value, intent(in) :: ndims
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_size_t), dimension(1), intent(out) :: ret_val_shape
+            integer (c_int), intent(out) :: ret_val_format
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_DataConstRef_elements_real8_
+
+        logical (c_bool) function LIBMUSCLE_DataConstRef_has_indexes_( &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="LIBMUSCLE_DataConstRef_has_indexes_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end function LIBMUSCLE_DataConstRef_has_indexes_
+
+        subroutine LIBMUSCLE_DataConstRef_index_( &
+                self, &
+                i, &
+                ret_val, &
+                ret_val_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="LIBMUSCLE_DataConstRef_index_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_size_t), value, intent(in) :: i
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_size_t), intent(out) :: ret_val_size
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_DataConstRef_index_
+
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_nil_() &
                 bind(C, name="LIBMUSCLE_Data_create_nil_")
 
             use iso_c_binding
         end function LIBMUSCLE_Data_create_nil_
 
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_logical_( &
-                value) &
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_logical_(value) &
                 bind(C, name="LIBMUSCLE_Data_create_logical_")
 
             use iso_c_binding
-            integer (c_int), value, intent(in) :: value
+            logical (c_bool), value, intent(in) :: value
         end function LIBMUSCLE_Data_create_logical_
 
         integer (c_intptr_t) function LIBMUSCLE_Data_create_character_( &
-                value, value_size) &
+                value, &
+                value_size) &
                 bind(C, name="LIBMUSCLE_Data_create_character_")
 
             use iso_c_binding
@@ -650,200 +1373,474 @@ module libmuscle
             integer (c_size_t), value, intent(in) :: value_size
         end function LIBMUSCLE_Data_create_character_
 
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_int1_( &
-                value) &
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_int1_(value) &
                 bind(C, name="LIBMUSCLE_Data_create_int1_")
 
             use iso_c_binding
             integer (c_int8_t), value, intent(in) :: value
         end function LIBMUSCLE_Data_create_int1_
 
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_int2_( &
-                value) &
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_int2_(value) &
                 bind(C, name="LIBMUSCLE_Data_create_int2_")
 
             use iso_c_binding
             integer (c_short), value, intent(in) :: value
         end function LIBMUSCLE_Data_create_int2_
 
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_int4_( &
-                value) &
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_int4_(value) &
                 bind(C, name="LIBMUSCLE_Data_create_int4_")
 
             use iso_c_binding
             integer (c_int32_t), value, intent(in) :: value
         end function LIBMUSCLE_Data_create_int4_
 
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_int8_( &
-                value) &
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_int8_(value) &
                 bind(C, name="LIBMUSCLE_Data_create_int8_")
 
             use iso_c_binding
             integer (c_int64_t), value, intent(in) :: value
         end function LIBMUSCLE_Data_create_int8_
 
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_real4_( &
-                value) &
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_real4_(value) &
                 bind(C, name="LIBMUSCLE_Data_create_real4_")
 
             use iso_c_binding
             real (c_float), value, intent(in) :: value
         end function LIBMUSCLE_Data_create_real4_
 
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_real8_( &
-                value) &
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_real8_(value) &
                 bind(C, name="LIBMUSCLE_Data_create_real8_")
 
             use iso_c_binding
             real (c_double), value, intent(in) :: value
         end function LIBMUSCLE_Data_create_real8_
 
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_settings_( &
-                value) &
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_settings_(value) &
                 bind(C, name="LIBMUSCLE_Data_create_settings_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: value
         end function LIBMUSCLE_Data_create_settings_
 
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_copy_( &
-                value) &
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_copy_(value) &
                 bind(C, name="LIBMUSCLE_Data_create_copy_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: value
         end function LIBMUSCLE_Data_create_copy_
 
-        subroutine LIBMUSCLE_Data_free_( &
-                self) &
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_logical_a_( &
+                data_array, &
+                data_array_shape, &
+                data_array_ndims) &
+                bind(C, name="LIBMUSCLE_Data_create_grid_logical_a_")
+
+            use iso_c_binding
+            logical (c_bool), dimension(*), intent(in) :: data_array
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
+            integer (c_size_t), value, intent(in) :: data_array_ndims
+        end function LIBMUSCLE_Data_create_grid_logical_a_
+
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_int4_a_( &
+                data_array, &
+                data_array_shape, &
+                data_array_ndims) &
+                bind(C, name="LIBMUSCLE_Data_create_grid_int4_a_")
+
+            use iso_c_binding
+            integer (c_int32_t), dimension(*), intent(in) :: data_array
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
+            integer (c_size_t), value, intent(in) :: data_array_ndims
+        end function LIBMUSCLE_Data_create_grid_int4_a_
+
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_int8_a_( &
+                data_array, &
+                data_array_shape, &
+                data_array_ndims) &
+                bind(C, name="LIBMUSCLE_Data_create_grid_int8_a_")
+
+            use iso_c_binding
+            integer (c_int64_t), dimension(*), intent(in) :: data_array
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
+            integer (c_size_t), value, intent(in) :: data_array_ndims
+        end function LIBMUSCLE_Data_create_grid_int8_a_
+
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_real4_a_( &
+                data_array, &
+                data_array_shape, &
+                data_array_ndims) &
+                bind(C, name="LIBMUSCLE_Data_create_grid_real4_a_")
+
+            use iso_c_binding
+            real (c_float), dimension(*), intent(in) :: data_array
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
+            integer (c_size_t), value, intent(in) :: data_array_ndims
+        end function LIBMUSCLE_Data_create_grid_real4_a_
+
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_real8_a_( &
+                data_array, &
+                data_array_shape, &
+                data_array_ndims) &
+                bind(C, name="LIBMUSCLE_Data_create_grid_real8_a_")
+
+            use iso_c_binding
+            real (c_double), dimension(*), intent(in) :: data_array
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
+            integer (c_size_t), value, intent(in) :: data_array_ndims
+        end function LIBMUSCLE_Data_create_grid_real8_a_
+
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_logical_n_( &
+                data_array, &
+                data_array_shape, &
+                data_array_ndims, &
+                index_name_1, &
+                index_name_1_size, &
+                index_name_2, &
+                index_name_2_size, &
+                index_name_3, &
+                index_name_3_size, &
+                index_name_4, &
+                index_name_4_size, &
+                index_name_5, &
+                index_name_5_size, &
+                index_name_6, &
+                index_name_6_size, &
+                index_name_7, &
+                index_name_7_size) &
+                bind(C, name="LIBMUSCLE_Data_create_grid_logical_n_")
+
+            use iso_c_binding
+            logical (c_bool), dimension(*), intent(in) :: data_array
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
+            integer (c_size_t), value, intent(in) :: data_array_ndims
+            character, intent(in) :: index_name_1
+            integer (c_size_t), value, intent(in) :: index_name_1_size
+            character, intent(in) :: index_name_2
+            integer (c_size_t), value, intent(in) :: index_name_2_size
+            character, intent(in) :: index_name_3
+            integer (c_size_t), value, intent(in) :: index_name_3_size
+            character, intent(in) :: index_name_4
+            integer (c_size_t), value, intent(in) :: index_name_4_size
+            character, intent(in) :: index_name_5
+            integer (c_size_t), value, intent(in) :: index_name_5_size
+            character, intent(in) :: index_name_6
+            integer (c_size_t), value, intent(in) :: index_name_6_size
+            character, intent(in) :: index_name_7
+            integer (c_size_t), value, intent(in) :: index_name_7_size
+        end function LIBMUSCLE_Data_create_grid_logical_n_
+
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_int4_n_( &
+                data_array, &
+                data_array_shape, &
+                data_array_ndims, &
+                index_name_1, &
+                index_name_1_size, &
+                index_name_2, &
+                index_name_2_size, &
+                index_name_3, &
+                index_name_3_size, &
+                index_name_4, &
+                index_name_4_size, &
+                index_name_5, &
+                index_name_5_size, &
+                index_name_6, &
+                index_name_6_size, &
+                index_name_7, &
+                index_name_7_size) &
+                bind(C, name="LIBMUSCLE_Data_create_grid_int4_n_")
+
+            use iso_c_binding
+            integer (c_int32_t), dimension(*), intent(in) :: data_array
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
+            integer (c_size_t), value, intent(in) :: data_array_ndims
+            character, intent(in) :: index_name_1
+            integer (c_size_t), value, intent(in) :: index_name_1_size
+            character, intent(in) :: index_name_2
+            integer (c_size_t), value, intent(in) :: index_name_2_size
+            character, intent(in) :: index_name_3
+            integer (c_size_t), value, intent(in) :: index_name_3_size
+            character, intent(in) :: index_name_4
+            integer (c_size_t), value, intent(in) :: index_name_4_size
+            character, intent(in) :: index_name_5
+            integer (c_size_t), value, intent(in) :: index_name_5_size
+            character, intent(in) :: index_name_6
+            integer (c_size_t), value, intent(in) :: index_name_6_size
+            character, intent(in) :: index_name_7
+            integer (c_size_t), value, intent(in) :: index_name_7_size
+        end function LIBMUSCLE_Data_create_grid_int4_n_
+
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_int8_n_( &
+                data_array, &
+                data_array_shape, &
+                data_array_ndims, &
+                index_name_1, &
+                index_name_1_size, &
+                index_name_2, &
+                index_name_2_size, &
+                index_name_3, &
+                index_name_3_size, &
+                index_name_4, &
+                index_name_4_size, &
+                index_name_5, &
+                index_name_5_size, &
+                index_name_6, &
+                index_name_6_size, &
+                index_name_7, &
+                index_name_7_size) &
+                bind(C, name="LIBMUSCLE_Data_create_grid_int8_n_")
+
+            use iso_c_binding
+            integer (c_int64_t), dimension(*), intent(in) :: data_array
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
+            integer (c_size_t), value, intent(in) :: data_array_ndims
+            character, intent(in) :: index_name_1
+            integer (c_size_t), value, intent(in) :: index_name_1_size
+            character, intent(in) :: index_name_2
+            integer (c_size_t), value, intent(in) :: index_name_2_size
+            character, intent(in) :: index_name_3
+            integer (c_size_t), value, intent(in) :: index_name_3_size
+            character, intent(in) :: index_name_4
+            integer (c_size_t), value, intent(in) :: index_name_4_size
+            character, intent(in) :: index_name_5
+            integer (c_size_t), value, intent(in) :: index_name_5_size
+            character, intent(in) :: index_name_6
+            integer (c_size_t), value, intent(in) :: index_name_6_size
+            character, intent(in) :: index_name_7
+            integer (c_size_t), value, intent(in) :: index_name_7_size
+        end function LIBMUSCLE_Data_create_grid_int8_n_
+
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_real4_n_( &
+                data_array, &
+                data_array_shape, &
+                data_array_ndims, &
+                index_name_1, &
+                index_name_1_size, &
+                index_name_2, &
+                index_name_2_size, &
+                index_name_3, &
+                index_name_3_size, &
+                index_name_4, &
+                index_name_4_size, &
+                index_name_5, &
+                index_name_5_size, &
+                index_name_6, &
+                index_name_6_size, &
+                index_name_7, &
+                index_name_7_size) &
+                bind(C, name="LIBMUSCLE_Data_create_grid_real4_n_")
+
+            use iso_c_binding
+            real (c_float), dimension(*), intent(in) :: data_array
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
+            integer (c_size_t), value, intent(in) :: data_array_ndims
+            character, intent(in) :: index_name_1
+            integer (c_size_t), value, intent(in) :: index_name_1_size
+            character, intent(in) :: index_name_2
+            integer (c_size_t), value, intent(in) :: index_name_2_size
+            character, intent(in) :: index_name_3
+            integer (c_size_t), value, intent(in) :: index_name_3_size
+            character, intent(in) :: index_name_4
+            integer (c_size_t), value, intent(in) :: index_name_4_size
+            character, intent(in) :: index_name_5
+            integer (c_size_t), value, intent(in) :: index_name_5_size
+            character, intent(in) :: index_name_6
+            integer (c_size_t), value, intent(in) :: index_name_6_size
+            character, intent(in) :: index_name_7
+            integer (c_size_t), value, intent(in) :: index_name_7_size
+        end function LIBMUSCLE_Data_create_grid_real4_n_
+
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_grid_real8_n_( &
+                data_array, &
+                data_array_shape, &
+                data_array_ndims, &
+                index_name_1, &
+                index_name_1_size, &
+                index_name_2, &
+                index_name_2_size, &
+                index_name_3, &
+                index_name_3_size, &
+                index_name_4, &
+                index_name_4_size, &
+                index_name_5, &
+                index_name_5_size, &
+                index_name_6, &
+                index_name_6_size, &
+                index_name_7, &
+                index_name_7_size) &
+                bind(C, name="LIBMUSCLE_Data_create_grid_real8_n_")
+
+            use iso_c_binding
+            real (c_double), dimension(*), intent(in) :: data_array
+            integer (c_size_t), dimension(1), intent(in) :: data_array_shape
+            integer (c_size_t), value, intent(in) :: data_array_ndims
+            character, intent(in) :: index_name_1
+            integer (c_size_t), value, intent(in) :: index_name_1_size
+            character, intent(in) :: index_name_2
+            integer (c_size_t), value, intent(in) :: index_name_2_size
+            character, intent(in) :: index_name_3
+            integer (c_size_t), value, intent(in) :: index_name_3_size
+            character, intent(in) :: index_name_4
+            integer (c_size_t), value, intent(in) :: index_name_4_size
+            character, intent(in) :: index_name_5
+            integer (c_size_t), value, intent(in) :: index_name_5_size
+            character, intent(in) :: index_name_6
+            integer (c_size_t), value, intent(in) :: index_name_6_size
+            character, intent(in) :: index_name_7
+            integer (c_size_t), value, intent(in) :: index_name_7_size
+        end function LIBMUSCLE_Data_create_grid_real8_n_
+
+        subroutine LIBMUSCLE_Data_free_(self) &
                 bind(C, name="LIBMUSCLE_Data_free_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end subroutine LIBMUSCLE_Data_free_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_logical_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_logical_(self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_logical_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_logical_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_character_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_character_(self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_character_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_character_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_int_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_int_(self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_int_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_int_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_int1_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_int1_(self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_int1_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_int1_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_int2_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_int2_(self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_int2_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_int2_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_int4_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_int4_(self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_int4_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_int4_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_int8_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_int8_(self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_int8_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_int8_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_real4_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_real4_(self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_real4_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_real4_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_real8_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_real8_(self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_real8_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_real8_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_dict_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_dict_(self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_dict_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_dict_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_list_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_list_(self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_list_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_list_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_byte_array_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_grid_of_logical_(self) &
+                bind(C, name="LIBMUSCLE_Data_is_a_grid_of_logical_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_Data_is_a_grid_of_logical_
+
+        logical (c_bool) function LIBMUSCLE_Data_is_a_grid_of_real4_(self) &
+                bind(C, name="LIBMUSCLE_Data_is_a_grid_of_real4_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_Data_is_a_grid_of_real4_
+
+        logical (c_bool) function LIBMUSCLE_Data_is_a_grid_of_real8_(self) &
+                bind(C, name="LIBMUSCLE_Data_is_a_grid_of_real8_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_Data_is_a_grid_of_real8_
+
+        logical (c_bool) function LIBMUSCLE_Data_is_a_grid_of_int4_(self) &
+                bind(C, name="LIBMUSCLE_Data_is_a_grid_of_int4_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_Data_is_a_grid_of_int4_
+
+        logical (c_bool) function LIBMUSCLE_Data_is_a_grid_of_int8_(self) &
+                bind(C, name="LIBMUSCLE_Data_is_a_grid_of_int8_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_Data_is_a_grid_of_int8_
+
+        logical (c_bool) function LIBMUSCLE_Data_is_a_byte_array_(self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_byte_array_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_byte_array_
 
-        integer (c_int) function LIBMUSCLE_Data_is_nil_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_Data_is_nil_(self) &
                 bind(C, name="LIBMUSCLE_Data_is_nil_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_nil_
 
-        integer (c_int) function LIBMUSCLE_Data_is_a_settings_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_Data_is_a_settings_(self) &
                 bind(C, name="LIBMUSCLE_Data_is_a_settings_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_is_a_settings_
 
-        integer (c_size_t) function LIBMUSCLE_Data_size_( &
-                self) &
+        integer (c_size_t) function LIBMUSCLE_Data_size_(self) &
                 bind(C, name="LIBMUSCLE_Data_size_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Data_size_
 
-        integer (c_int) function LIBMUSCLE_Data_as_logical_( &
-                self, err_code, err_msg, err_msg_len) &
+        logical (c_bool) function LIBMUSCLE_Data_as_logical_( &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_as_logical_")
 
             use iso_c_binding
@@ -854,7 +1851,12 @@ module libmuscle
         end function LIBMUSCLE_Data_as_logical_
 
         subroutine LIBMUSCLE_Data_as_character_( &
-                self, ret_val, ret_val_size, err_code, err_msg, err_msg_len) &
+                self, &
+                ret_val, &
+                ret_val_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_as_character_")
 
             use iso_c_binding
@@ -867,7 +1869,10 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_as_character_
 
         integer (c_int) function LIBMUSCLE_Data_as_int_( &
-                self, err_code, err_msg, err_msg_len) &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_as_int_")
 
             use iso_c_binding
@@ -878,7 +1883,10 @@ module libmuscle
         end function LIBMUSCLE_Data_as_int_
 
         integer (c_int8_t) function LIBMUSCLE_Data_as_int1_( &
-                self, err_code, err_msg, err_msg_len) &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_as_int1_")
 
             use iso_c_binding
@@ -889,7 +1897,10 @@ module libmuscle
         end function LIBMUSCLE_Data_as_int1_
 
         integer (c_short) function LIBMUSCLE_Data_as_int2_( &
-                self, err_code, err_msg, err_msg_len) &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_as_int2_")
 
             use iso_c_binding
@@ -900,7 +1911,10 @@ module libmuscle
         end function LIBMUSCLE_Data_as_int2_
 
         integer (c_int32_t) function LIBMUSCLE_Data_as_int4_( &
-                self, err_code, err_msg, err_msg_len) &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_as_int4_")
 
             use iso_c_binding
@@ -911,7 +1925,10 @@ module libmuscle
         end function LIBMUSCLE_Data_as_int4_
 
         integer (c_int64_t) function LIBMUSCLE_Data_as_int8_( &
-                self, err_code, err_msg, err_msg_len) &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_as_int8_")
 
             use iso_c_binding
@@ -922,7 +1939,10 @@ module libmuscle
         end function LIBMUSCLE_Data_as_int8_
 
         real (c_float) function LIBMUSCLE_Data_as_real4_( &
-                self, err_code, err_msg, err_msg_len) &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_as_real4_")
 
             use iso_c_binding
@@ -933,7 +1953,10 @@ module libmuscle
         end function LIBMUSCLE_Data_as_real4_
 
         real (c_double) function LIBMUSCLE_Data_as_real8_( &
-                self, err_code, err_msg, err_msg_len) &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_as_real8_")
 
             use iso_c_binding
@@ -944,7 +1967,10 @@ module libmuscle
         end function LIBMUSCLE_Data_as_real8_
 
         integer (c_intptr_t) function LIBMUSCLE_Data_as_settings_( &
-                self, err_code, err_msg, err_msg_len) &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_as_settings_")
 
             use iso_c_binding
@@ -955,7 +1981,12 @@ module libmuscle
         end function LIBMUSCLE_Data_as_settings_
 
         subroutine LIBMUSCLE_Data_as_byte_array_( &
-                self, ret_val, ret_val_size, err_code, err_msg, err_msg_len) &
+                self, &
+                ret_val, &
+                ret_val_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_as_byte_array_")
 
             use iso_c_binding
@@ -968,7 +1999,12 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_as_byte_array_
 
         integer (c_intptr_t) function LIBMUSCLE_Data_get_item_by_key_( &
-                self, key, key_size, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_get_item_by_key_")
 
             use iso_c_binding
@@ -981,7 +2017,11 @@ module libmuscle
         end function LIBMUSCLE_Data_get_item_by_key_
 
         integer (c_intptr_t) function LIBMUSCLE_Data_get_item_by_index_( &
-                self, i, err_code, err_msg, err_msg_len) &
+                self, &
+                i, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_get_item_by_index_")
 
             use iso_c_binding
@@ -992,30 +2032,202 @@ module libmuscle
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Data_get_item_by_index_
 
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_dict_( &
-                ) &
+        integer (c_size_t) function LIBMUSCLE_Data_num_dims_( &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_num_dims_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end function LIBMUSCLE_Data_num_dims_
+
+        subroutine LIBMUSCLE_Data_shape_( &
+                self, &
+                ret_val, &
+                ret_val_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_shape_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_size_t), intent(out) :: ret_val_size
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_Data_shape_
+
+        subroutine LIBMUSCLE_Data_elements_logical_( &
+                self, &
+                ndims, &
+                ret_val, &
+                ret_val_shape, &
+                ret_val_format, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_elements_logical_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_size_t), value, intent(in) :: ndims
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_size_t), dimension(1), intent(out) :: ret_val_shape
+            integer (c_int), intent(out) :: ret_val_format
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_Data_elements_logical_
+
+        subroutine LIBMUSCLE_Data_elements_int4_( &
+                self, &
+                ndims, &
+                ret_val, &
+                ret_val_shape, &
+                ret_val_format, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_elements_int4_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_size_t), value, intent(in) :: ndims
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_size_t), dimension(1), intent(out) :: ret_val_shape
+            integer (c_int), intent(out) :: ret_val_format
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_Data_elements_int4_
+
+        subroutine LIBMUSCLE_Data_elements_int8_( &
+                self, &
+                ndims, &
+                ret_val, &
+                ret_val_shape, &
+                ret_val_format, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_elements_int8_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_size_t), value, intent(in) :: ndims
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_size_t), dimension(1), intent(out) :: ret_val_shape
+            integer (c_int), intent(out) :: ret_val_format
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_Data_elements_int8_
+
+        subroutine LIBMUSCLE_Data_elements_real4_( &
+                self, &
+                ndims, &
+                ret_val, &
+                ret_val_shape, &
+                ret_val_format, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_elements_real4_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_size_t), value, intent(in) :: ndims
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_size_t), dimension(1), intent(out) :: ret_val_shape
+            integer (c_int), intent(out) :: ret_val_format
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_Data_elements_real4_
+
+        subroutine LIBMUSCLE_Data_elements_real8_( &
+                self, &
+                ndims, &
+                ret_val, &
+                ret_val_shape, &
+                ret_val_format, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_elements_real8_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_size_t), value, intent(in) :: ndims
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_size_t), dimension(1), intent(out) :: ret_val_shape
+            integer (c_int), intent(out) :: ret_val_format
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_Data_elements_real8_
+
+        logical (c_bool) function LIBMUSCLE_Data_has_indexes_( &
+                self, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_has_indexes_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end function LIBMUSCLE_Data_has_indexes_
+
+        subroutine LIBMUSCLE_Data_index_( &
+                self, &
+                i, &
+                ret_val, &
+                ret_val_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="LIBMUSCLE_Data_index_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_size_t), value, intent(in) :: i
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_size_t), intent(out) :: ret_val_size
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_Data_index_
+
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_dict_() &
                 bind(C, name="LIBMUSCLE_Data_create_dict_")
 
             use iso_c_binding
         end function LIBMUSCLE_Data_create_dict_
 
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_list_( &
-                ) &
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_list_() &
                 bind(C, name="LIBMUSCLE_Data_create_list_")
 
             use iso_c_binding
         end function LIBMUSCLE_Data_create_list_
 
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_nils_( &
-                size) &
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_nils_(size) &
                 bind(C, name="LIBMUSCLE_Data_create_nils_")
 
             use iso_c_binding
             integer (c_size_t), value, intent(in) :: size
         end function LIBMUSCLE_Data_create_nils_
 
-        integer (c_intptr_t) function LIBMUSCLE_Data_create_byte_array_empty_( &
-                size) &
+        integer (c_intptr_t) function LIBMUSCLE_Data_create_byte_array_empty_(size) &
                 bind(C, name="LIBMUSCLE_Data_create_byte_array_empty_")
 
             use iso_c_binding
@@ -1023,7 +2235,8 @@ module libmuscle
         end function LIBMUSCLE_Data_create_byte_array_empty_
 
         integer (c_intptr_t) function LIBMUSCLE_Data_create_byte_array_from_buf_( &
-                buf, buf_size) &
+                buf, &
+                buf_size) &
                 bind(C, name="LIBMUSCLE_Data_create_byte_array_from_buf_")
 
             use iso_c_binding
@@ -1032,16 +2245,19 @@ module libmuscle
         end function LIBMUSCLE_Data_create_byte_array_from_buf_
 
         subroutine LIBMUSCLE_Data_set_logical_( &
-                self, value) &
+                self, &
+                value) &
                 bind(C, name="LIBMUSCLE_Data_set_logical_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
-            integer (c_int), value, intent(in) :: value
+            logical (c_bool), value, intent(in) :: value
         end subroutine LIBMUSCLE_Data_set_logical_
 
         subroutine LIBMUSCLE_Data_set_character_( &
-                self, value, value_size) &
+                self, &
+                value, &
+                value_size) &
                 bind(C, name="LIBMUSCLE_Data_set_character_")
 
             use iso_c_binding
@@ -1051,7 +2267,8 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_character_
 
         subroutine LIBMUSCLE_Data_set_int1_( &
-                self, value) &
+                self, &
+                value) &
                 bind(C, name="LIBMUSCLE_Data_set_int1_")
 
             use iso_c_binding
@@ -1060,7 +2277,8 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_int1_
 
         subroutine LIBMUSCLE_Data_set_int2_( &
-                self, value) &
+                self, &
+                value) &
                 bind(C, name="LIBMUSCLE_Data_set_int2_")
 
             use iso_c_binding
@@ -1069,7 +2287,8 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_int2_
 
         subroutine LIBMUSCLE_Data_set_int4_( &
-                self, value) &
+                self, &
+                value) &
                 bind(C, name="LIBMUSCLE_Data_set_int4_")
 
             use iso_c_binding
@@ -1078,7 +2297,8 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_int4_
 
         subroutine LIBMUSCLE_Data_set_int8_( &
-                self, value) &
+                self, &
+                value) &
                 bind(C, name="LIBMUSCLE_Data_set_int8_")
 
             use iso_c_binding
@@ -1087,7 +2307,8 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_int8_
 
         subroutine LIBMUSCLE_Data_set_real4_( &
-                self, value) &
+                self, &
+                value) &
                 bind(C, name="LIBMUSCLE_Data_set_real4_")
 
             use iso_c_binding
@@ -1096,7 +2317,8 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_real4_
 
         subroutine LIBMUSCLE_Data_set_real8_( &
-                self, value) &
+                self, &
+                value) &
                 bind(C, name="LIBMUSCLE_Data_set_real8_")
 
             use iso_c_binding
@@ -1105,7 +2327,8 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_real8_
 
         subroutine LIBMUSCLE_Data_set_data_( &
-                self, value) &
+                self, &
+                value) &
                 bind(C, name="LIBMUSCLE_Data_set_data_")
 
             use iso_c_binding
@@ -1113,8 +2336,7 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: value
         end subroutine LIBMUSCLE_Data_set_data_
 
-        subroutine LIBMUSCLE_Data_set_nil_( &
-                self) &
+        subroutine LIBMUSCLE_Data_set_nil_(self) &
                 bind(C, name="LIBMUSCLE_Data_set_nil_")
 
             use iso_c_binding
@@ -1122,21 +2344,34 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_nil_
 
         subroutine LIBMUSCLE_Data_set_item_key_logical_( &
-                self, key, key_size, value, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                value, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_set_item_key_logical_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
             character, intent(in) :: key
             integer (c_size_t), value, intent(in) :: key_size
-            integer (c_int), value, intent(in) :: value
+            logical (c_bool), value, intent(in) :: value
             integer (c_int), intent(out) :: err_code
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
         end subroutine LIBMUSCLE_Data_set_item_key_logical_
 
         subroutine LIBMUSCLE_Data_set_item_key_character_( &
-                self, key, key_size, value, value_size, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                value, &
+                value_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_set_item_key_character_")
 
             use iso_c_binding
@@ -1151,7 +2386,13 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_item_key_character_
 
         subroutine LIBMUSCLE_Data_set_item_key_int1_( &
-                self, key, key_size, value, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                value, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_set_item_key_int1_")
 
             use iso_c_binding
@@ -1165,7 +2406,13 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_item_key_int1_
 
         subroutine LIBMUSCLE_Data_set_item_key_int2_( &
-                self, key, key_size, value, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                value, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_set_item_key_int2_")
 
             use iso_c_binding
@@ -1179,7 +2426,13 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_item_key_int2_
 
         subroutine LIBMUSCLE_Data_set_item_key_int4_( &
-                self, key, key_size, value, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                value, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_set_item_key_int4_")
 
             use iso_c_binding
@@ -1193,7 +2446,13 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_item_key_int4_
 
         subroutine LIBMUSCLE_Data_set_item_key_int8_( &
-                self, key, key_size, value, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                value, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_set_item_key_int8_")
 
             use iso_c_binding
@@ -1207,7 +2466,13 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_item_key_int8_
 
         subroutine LIBMUSCLE_Data_set_item_key_real4_( &
-                self, key, key_size, value, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                value, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_set_item_key_real4_")
 
             use iso_c_binding
@@ -1221,7 +2486,13 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_item_key_real4_
 
         subroutine LIBMUSCLE_Data_set_item_key_real8_( &
-                self, key, key_size, value, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                value, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_set_item_key_real8_")
 
             use iso_c_binding
@@ -1235,7 +2506,13 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_item_key_real8_
 
         subroutine LIBMUSCLE_Data_set_item_key_data_( &
-                self, key, key_size, value, err_code, err_msg, err_msg_len) &
+                self, &
+                key, &
+                key_size, &
+                value, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_set_item_key_data_")
 
             use iso_c_binding
@@ -1249,20 +2526,31 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_item_key_data_
 
         subroutine LIBMUSCLE_Data_set_item_index_logical_( &
-                self, i, value, err_code, err_msg, err_msg_len) &
+                self, &
+                i, &
+                value, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_set_item_index_logical_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
             integer (c_size_t), value, intent(in) :: i
-            integer (c_int), value, intent(in) :: value
+            logical (c_bool), value, intent(in) :: value
             integer (c_int), intent(out) :: err_code
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
         end subroutine LIBMUSCLE_Data_set_item_index_logical_
 
         subroutine LIBMUSCLE_Data_set_item_index_character_( &
-                self, i, value, value_size, err_code, err_msg, err_msg_len) &
+                self, &
+                i, &
+                value, &
+                value_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_set_item_index_character_")
 
             use iso_c_binding
@@ -1276,7 +2564,12 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_item_index_character_
 
         subroutine LIBMUSCLE_Data_set_item_index_int1_( &
-                self, i, value, err_code, err_msg, err_msg_len) &
+                self, &
+                i, &
+                value, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_set_item_index_int1_")
 
             use iso_c_binding
@@ -1289,7 +2582,12 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_item_index_int1_
 
         subroutine LIBMUSCLE_Data_set_item_index_int2_( &
-                self, i, value, err_code, err_msg, err_msg_len) &
+                self, &
+                i, &
+                value, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_set_item_index_int2_")
 
             use iso_c_binding
@@ -1302,7 +2600,12 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_item_index_int2_
 
         subroutine LIBMUSCLE_Data_set_item_index_int4_( &
-                self, i, value, err_code, err_msg, err_msg_len) &
+                self, &
+                i, &
+                value, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_set_item_index_int4_")
 
             use iso_c_binding
@@ -1315,7 +2618,12 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_item_index_int4_
 
         subroutine LIBMUSCLE_Data_set_item_index_int8_( &
-                self, i, value, err_code, err_msg, err_msg_len) &
+                self, &
+                i, &
+                value, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_set_item_index_int8_")
 
             use iso_c_binding
@@ -1328,7 +2636,12 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_item_index_int8_
 
         subroutine LIBMUSCLE_Data_set_item_index_real4_( &
-                self, i, value, err_code, err_msg, err_msg_len) &
+                self, &
+                i, &
+                value, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_set_item_index_real4_")
 
             use iso_c_binding
@@ -1341,7 +2654,12 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_item_index_real4_
 
         subroutine LIBMUSCLE_Data_set_item_index_real8_( &
-                self, i, value, err_code, err_msg, err_msg_len) &
+                self, &
+                i, &
+                value, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_set_item_index_real8_")
 
             use iso_c_binding
@@ -1354,7 +2672,12 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_item_index_real8_
 
         subroutine LIBMUSCLE_Data_set_item_index_data_( &
-                self, i, value, err_code, err_msg, err_msg_len) &
+                self, &
+                i, &
+                value, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_set_item_index_data_")
 
             use iso_c_binding
@@ -1367,7 +2690,13 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_set_item_index_data_
 
         subroutine LIBMUSCLE_Data_key_( &
-                self, i, ret_val, ret_val_size, err_code, err_msg, err_msg_len) &
+                self, &
+                i, &
+                ret_val, &
+                ret_val_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_key_")
 
             use iso_c_binding
@@ -1381,7 +2710,11 @@ module libmuscle
         end subroutine LIBMUSCLE_Data_key_
 
         integer (c_intptr_t) function LIBMUSCLE_Data_value_( &
-                self, i, err_code, err_msg, err_msg_len) &
+                self, &
+                i, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Data_value_")
 
             use iso_c_binding
@@ -1392,15 +2725,13 @@ module libmuscle
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Data_value_
 
-        integer (c_intptr_t) function LIBMUSCLE_PortsDescription_create_( &
-                ) &
+        integer (c_intptr_t) function LIBMUSCLE_PortsDescription_create_() &
                 bind(C, name="LIBMUSCLE_PortsDescription_create_")
 
             use iso_c_binding
         end function LIBMUSCLE_PortsDescription_create_
 
-        subroutine LIBMUSCLE_PortsDescription_free_( &
-                self) &
+        subroutine LIBMUSCLE_PortsDescription_free_(self) &
                 bind(C, name="LIBMUSCLE_PortsDescription_free_")
 
             use iso_c_binding
@@ -1408,7 +2739,10 @@ module libmuscle
         end subroutine LIBMUSCLE_PortsDescription_free_
 
         subroutine LIBMUSCLE_PortsDescription_add_( &
-                self, op, port, port_size) &
+                self, &
+                op, &
+                port, &
+                port_size) &
                 bind(C, name="LIBMUSCLE_PortsDescription_add_")
 
             use iso_c_binding
@@ -1419,7 +2753,8 @@ module libmuscle
         end subroutine LIBMUSCLE_PortsDescription_add_
 
         integer (c_size_t) function LIBMUSCLE_PortsDescription_num_ports_( &
-                self, op) &
+                self, &
+                op) &
                 bind(C, name="LIBMUSCLE_PortsDescription_num_ports_")
 
             use iso_c_binding
@@ -1428,7 +2763,14 @@ module libmuscle
         end function LIBMUSCLE_PortsDescription_num_ports_
 
         subroutine LIBMUSCLE_PortsDescription_get_( &
-                self, op, i, ret_val, ret_val_size, err_code, err_msg, err_msg_len) &
+                self, &
+                op, &
+                i, &
+                ret_val, &
+                ret_val_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_PortsDescription_get_")
 
             use iso_c_binding
@@ -1443,7 +2785,8 @@ module libmuscle
         end subroutine LIBMUSCLE_PortsDescription_get_
 
         integer (c_intptr_t) function LIBMUSCLE_Message_create_td_( &
-                timestamp, data) &
+                timestamp, &
+                data) &
                 bind(C, name="LIBMUSCLE_Message_create_td_")
 
             use iso_c_binding
@@ -1452,7 +2795,9 @@ module libmuscle
         end function LIBMUSCLE_Message_create_td_
 
         integer (c_intptr_t) function LIBMUSCLE_Message_create_tnd_( &
-                timestamp, next_timestamp, data) &
+                timestamp, &
+                next_timestamp, &
+                data) &
                 bind(C, name="LIBMUSCLE_Message_create_tnd_")
 
             use iso_c_binding
@@ -1462,7 +2807,9 @@ module libmuscle
         end function LIBMUSCLE_Message_create_tnd_
 
         integer (c_intptr_t) function LIBMUSCLE_Message_create_tds_( &
-                timestamp, data, settings) &
+                timestamp, &
+                data, &
+                settings) &
                 bind(C, name="LIBMUSCLE_Message_create_tds_")
 
             use iso_c_binding
@@ -1472,7 +2819,10 @@ module libmuscle
         end function LIBMUSCLE_Message_create_tds_
 
         integer (c_intptr_t) function LIBMUSCLE_Message_create_tnds_( &
-                timestamp, next_timestamp, data, settings) &
+                timestamp, &
+                next_timestamp, &
+                data, &
+                settings) &
                 bind(C, name="LIBMUSCLE_Message_create_tnds_")
 
             use iso_c_binding
@@ -1482,16 +2832,14 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: settings
         end function LIBMUSCLE_Message_create_tnds_
 
-        subroutine LIBMUSCLE_Message_free_( &
-                self) &
+        subroutine LIBMUSCLE_Message_free_(self) &
                 bind(C, name="LIBMUSCLE_Message_free_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end subroutine LIBMUSCLE_Message_free_
 
-        real (c_double) function LIBMUSCLE_Message_timestamp_( &
-                self) &
+        real (c_double) function LIBMUSCLE_Message_timestamp_(self) &
                 bind(C, name="LIBMUSCLE_Message_timestamp_")
 
             use iso_c_binding
@@ -1499,7 +2847,8 @@ module libmuscle
         end function LIBMUSCLE_Message_timestamp_
 
         subroutine LIBMUSCLE_Message_set_timestamp_( &
-                self, timestamp) &
+                self, &
+                timestamp) &
                 bind(C, name="LIBMUSCLE_Message_set_timestamp_")
 
             use iso_c_binding
@@ -1507,16 +2856,14 @@ module libmuscle
             real (c_double), value, intent(in) :: timestamp
         end subroutine LIBMUSCLE_Message_set_timestamp_
 
-        integer (c_int) function LIBMUSCLE_Message_has_next_timestamp_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_Message_has_next_timestamp_(self) &
                 bind(C, name="LIBMUSCLE_Message_has_next_timestamp_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Message_has_next_timestamp_
 
-        real (c_double) function LIBMUSCLE_Message_next_timestamp_( &
-                self) &
+        real (c_double) function LIBMUSCLE_Message_next_timestamp_(self) &
                 bind(C, name="LIBMUSCLE_Message_next_timestamp_")
 
             use iso_c_binding
@@ -1524,7 +2871,8 @@ module libmuscle
         end function LIBMUSCLE_Message_next_timestamp_
 
         subroutine LIBMUSCLE_Message_set_next_timestamp_( &
-                self, next_timestamp) &
+                self, &
+                next_timestamp) &
                 bind(C, name="LIBMUSCLE_Message_set_next_timestamp_")
 
             use iso_c_binding
@@ -1532,16 +2880,14 @@ module libmuscle
             real (c_double), value, intent(in) :: next_timestamp
         end subroutine LIBMUSCLE_Message_set_next_timestamp_
 
-        subroutine LIBMUSCLE_Message_unset_next_timestamp_( &
-                self) &
+        subroutine LIBMUSCLE_Message_unset_next_timestamp_(self) &
                 bind(C, name="LIBMUSCLE_Message_unset_next_timestamp_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end subroutine LIBMUSCLE_Message_unset_next_timestamp_
 
-        integer (c_intptr_t) function LIBMUSCLE_Message_get_data_( &
-                self) &
+        integer (c_intptr_t) function LIBMUSCLE_Message_get_data_(self) &
                 bind(C, name="LIBMUSCLE_Message_get_data_")
 
             use iso_c_binding
@@ -1549,7 +2895,8 @@ module libmuscle
         end function LIBMUSCLE_Message_get_data_
 
         subroutine LIBMUSCLE_Message_set_data_d_( &
-                self, data) &
+                self, &
+                data) &
                 bind(C, name="LIBMUSCLE_Message_set_data_d_")
 
             use iso_c_binding
@@ -1558,7 +2905,8 @@ module libmuscle
         end subroutine LIBMUSCLE_Message_set_data_d_
 
         subroutine LIBMUSCLE_Message_set_data_dcr_( &
-                self, data) &
+                self, &
+                data) &
                 bind(C, name="LIBMUSCLE_Message_set_data_dcr_")
 
             use iso_c_binding
@@ -1566,16 +2914,14 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: data
         end subroutine LIBMUSCLE_Message_set_data_dcr_
 
-        integer (c_int) function LIBMUSCLE_Message_has_settings_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_Message_has_settings_(self) &
                 bind(C, name="LIBMUSCLE_Message_has_settings_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Message_has_settings_
 
-        integer (c_intptr_t) function LIBMUSCLE_Message_get_settings_( &
-                self) &
+        integer (c_intptr_t) function LIBMUSCLE_Message_get_settings_(self) &
                 bind(C, name="LIBMUSCLE_Message_get_settings_")
 
             use iso_c_binding
@@ -1583,7 +2929,8 @@ module libmuscle
         end function LIBMUSCLE_Message_get_settings_
 
         subroutine LIBMUSCLE_Message_set_settings_( &
-                self, settings) &
+                self, &
+                settings) &
                 bind(C, name="LIBMUSCLE_Message_set_settings_")
 
             use iso_c_binding
@@ -1591,16 +2938,14 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: settings
         end subroutine LIBMUSCLE_Message_set_settings_
 
-        subroutine LIBMUSCLE_Message_unset_settings_( &
-                self) &
+        subroutine LIBMUSCLE_Message_unset_settings_(self) &
                 bind(C, name="LIBMUSCLE_Message_unset_settings_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end subroutine LIBMUSCLE_Message_unset_settings_
 
-        integer (c_intptr_t) function LIBMUSCLE_Instance_create_autoports_( &
-                cla) &
+        integer (c_intptr_t) function LIBMUSCLE_Instance_create_autoports_(cla) &
                 bind(C, name="LIBMUSCLE_Instance_create_autoports_")
 
             use iso_c_binding
@@ -1608,7 +2953,8 @@ module libmuscle
         end function LIBMUSCLE_Instance_create_autoports_
 
         integer (c_intptr_t) function LIBMUSCLE_Instance_create_with_ports_( &
-                cla, ports) &
+                cla, &
+                ports) &
                 bind(C, name="LIBMUSCLE_Instance_create_with_ports_")
 
             use iso_c_binding
@@ -1616,33 +2962,34 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: ports
         end function LIBMUSCLE_Instance_create_with_ports_
 
-        subroutine LIBMUSCLE_Instance_free_( &
-                self) &
+        subroutine LIBMUSCLE_Instance_free_(self) &
                 bind(C, name="LIBMUSCLE_Instance_free_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end subroutine LIBMUSCLE_Instance_free_
 
-        integer (c_int) function LIBMUSCLE_Instance_reuse_instance_default_( &
-                self) &
+        logical (c_bool) function LIBMUSCLE_Instance_reuse_instance_default_(self) &
                 bind(C, name="LIBMUSCLE_Instance_reuse_instance_default_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Instance_reuse_instance_default_
 
-        integer (c_int) function LIBMUSCLE_Instance_reuse_instance_apply_( &
-                self, apply_overlay) &
+        logical (c_bool) function LIBMUSCLE_Instance_reuse_instance_apply_( &
+                self, &
+                apply_overlay) &
                 bind(C, name="LIBMUSCLE_Instance_reuse_instance_apply_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
-            integer (c_int), value, intent(in) :: apply_overlay
+            logical (c_bool), value, intent(in) :: apply_overlay
         end function LIBMUSCLE_Instance_reuse_instance_apply_
 
         subroutine LIBMUSCLE_Instance_error_shutdown_( &
-                self, message, message_size) &
+                self, &
+                message, &
+                message_size) &
                 bind(C, name="LIBMUSCLE_Instance_error_shutdown_")
 
             use iso_c_binding
@@ -1651,8 +2998,13 @@ module libmuscle
             integer (c_size_t), value, intent(in) :: message_size
         end subroutine LIBMUSCLE_Instance_error_shutdown_
 
-        integer (c_int) function LIBMUSCLE_Instance_is_setting_a_character_( &
-                self, name, name_size, err_code, err_msg, err_msg_len) &
+        logical (c_bool) function LIBMUSCLE_Instance_is_setting_a_character_( &
+                self, &
+                name, &
+                name_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_is_setting_a_character_")
 
             use iso_c_binding
@@ -1664,8 +3016,13 @@ module libmuscle
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Instance_is_setting_a_character_
 
-        integer (c_int) function LIBMUSCLE_Instance_is_setting_a_int8_( &
-                self, name, name_size, err_code, err_msg, err_msg_len) &
+        logical (c_bool) function LIBMUSCLE_Instance_is_setting_a_int8_( &
+                self, &
+                name, &
+                name_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_is_setting_a_int8_")
 
             use iso_c_binding
@@ -1677,8 +3034,13 @@ module libmuscle
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Instance_is_setting_a_int8_
 
-        integer (c_int) function LIBMUSCLE_Instance_is_setting_a_real8_( &
-                self, name, name_size, err_code, err_msg, err_msg_len) &
+        logical (c_bool) function LIBMUSCLE_Instance_is_setting_a_real8_( &
+                self, &
+                name, &
+                name_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_is_setting_a_real8_")
 
             use iso_c_binding
@@ -1690,8 +3052,13 @@ module libmuscle
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Instance_is_setting_a_real8_
 
-        integer (c_int) function LIBMUSCLE_Instance_is_setting_a_logical_( &
-                self, name, name_size, err_code, err_msg, err_msg_len) &
+        logical (c_bool) function LIBMUSCLE_Instance_is_setting_a_logical_( &
+                self, &
+                name, &
+                name_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_is_setting_a_logical_")
 
             use iso_c_binding
@@ -1703,8 +3070,13 @@ module libmuscle
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Instance_is_setting_a_logical_
 
-        integer (c_int) function LIBMUSCLE_Instance_is_setting_a_real8array_( &
-                self, name, name_size, err_code, err_msg, err_msg_len) &
+        logical (c_bool) function LIBMUSCLE_Instance_is_setting_a_real8array_( &
+                self, &
+                name, &
+                name_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_is_setting_a_real8array_")
 
             use iso_c_binding
@@ -1716,8 +3088,13 @@ module libmuscle
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Instance_is_setting_a_real8array_
 
-        integer (c_int) function LIBMUSCLE_Instance_is_setting_a_real8array2_( &
-                self, name, name_size, err_code, err_msg, err_msg_len) &
+        logical (c_bool) function LIBMUSCLE_Instance_is_setting_a_real8array2_( &
+                self, &
+                name, &
+                name_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_is_setting_a_real8array2_")
 
             use iso_c_binding
@@ -1730,7 +3107,14 @@ module libmuscle
         end function LIBMUSCLE_Instance_is_setting_a_real8array2_
 
         subroutine LIBMUSCLE_Instance_get_setting_as_character_( &
-                self, name, name_size, ret_val, ret_val_size, err_code, err_msg, err_msg_len) &
+                self, &
+                name, &
+                name_size, &
+                ret_val, &
+                ret_val_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_get_setting_as_character_")
 
             use iso_c_binding
@@ -1745,7 +3129,12 @@ module libmuscle
         end subroutine LIBMUSCLE_Instance_get_setting_as_character_
 
         integer (c_int64_t) function LIBMUSCLE_Instance_get_setting_as_int8_( &
-                self, name, name_size, err_code, err_msg, err_msg_len) &
+                self, &
+                name, &
+                name_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_get_setting_as_int8_")
 
             use iso_c_binding
@@ -1758,7 +3147,12 @@ module libmuscle
         end function LIBMUSCLE_Instance_get_setting_as_int8_
 
         real (c_double) function LIBMUSCLE_Instance_get_setting_as_real8_( &
-                self, name, name_size, err_code, err_msg, err_msg_len) &
+                self, &
+                name, &
+                name_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_get_setting_as_real8_")
 
             use iso_c_binding
@@ -1770,8 +3164,13 @@ module libmuscle
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Instance_get_setting_as_real8_
 
-        integer (c_int) function LIBMUSCLE_Instance_get_setting_as_logical_( &
-                self, name, name_size, err_code, err_msg, err_msg_len) &
+        logical (c_bool) function LIBMUSCLE_Instance_get_setting_as_logical_( &
+                self, &
+                name, &
+                name_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_get_setting_as_logical_")
 
             use iso_c_binding
@@ -1784,7 +3183,14 @@ module libmuscle
         end function LIBMUSCLE_Instance_get_setting_as_logical_
 
         subroutine LIBMUSCLE_Instance_get_setting_as_real8array_( &
-                self, name, name_size, ret_val, ret_val_size, err_code, err_msg, err_msg_len) &
+                self, &
+                name, &
+                name_size, &
+                ret_val, &
+                ret_val_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_get_setting_as_real8array_")
 
             use iso_c_binding
@@ -1799,7 +3205,14 @@ module libmuscle
         end subroutine LIBMUSCLE_Instance_get_setting_as_real8array_
 
         subroutine LIBMUSCLE_Instance_get_setting_as_real8array2_( &
-                self, name, name_size, ret_val, ret_val_shape, err_code, err_msg, err_msg_len) &
+                self, &
+                name, &
+                name_size, &
+                ret_val, &
+                ret_val_shape, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_get_setting_as_real8array2_")
 
             use iso_c_binding
@@ -1813,16 +3226,17 @@ module libmuscle
             integer (c_size_t), intent(out) :: err_msg_len
         end subroutine LIBMUSCLE_Instance_get_setting_as_real8array2_
 
-        integer (c_intptr_t) function LIBMUSCLE_Instance_list_ports_( &
-                self) &
+        integer (c_intptr_t) function LIBMUSCLE_Instance_list_ports_(self) &
                 bind(C, name="LIBMUSCLE_Instance_list_ports_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end function LIBMUSCLE_Instance_list_ports_
 
-        integer (c_int) function LIBMUSCLE_Instance_is_connected_( &
-                self, port, port_size) &
+        logical (c_bool) function LIBMUSCLE_Instance_is_connected_( &
+                self, &
+                port, &
+                port_size) &
                 bind(C, name="LIBMUSCLE_Instance_is_connected_")
 
             use iso_c_binding
@@ -1831,8 +3245,10 @@ module libmuscle
             integer (c_size_t), value, intent(in) :: port_size
         end function LIBMUSCLE_Instance_is_connected_
 
-        integer (c_int) function LIBMUSCLE_Instance_is_vector_port_( &
-                self, port, port_size) &
+        logical (c_bool) function LIBMUSCLE_Instance_is_vector_port_( &
+                self, &
+                port, &
+                port_size) &
                 bind(C, name="LIBMUSCLE_Instance_is_vector_port_")
 
             use iso_c_binding
@@ -1841,8 +3257,10 @@ module libmuscle
             integer (c_size_t), value, intent(in) :: port_size
         end function LIBMUSCLE_Instance_is_vector_port_
 
-        integer (c_int) function LIBMUSCLE_Instance_is_resizable_( &
-                self, port, port_size) &
+        logical (c_bool) function LIBMUSCLE_Instance_is_resizable_( &
+                self, &
+                port, &
+                port_size) &
                 bind(C, name="LIBMUSCLE_Instance_is_resizable_")
 
             use iso_c_binding
@@ -1852,7 +3270,9 @@ module libmuscle
         end function LIBMUSCLE_Instance_is_resizable_
 
         integer (c_int) function LIBMUSCLE_Instance_get_port_length_( &
-                self, port, port_size) &
+                self, &
+                port, &
+                port_size) &
                 bind(C, name="LIBMUSCLE_Instance_get_port_length_")
 
             use iso_c_binding
@@ -1862,7 +3282,10 @@ module libmuscle
         end function LIBMUSCLE_Instance_get_port_length_
 
         subroutine LIBMUSCLE_Instance_set_port_length_( &
-                self, port, port_size, length) &
+                self, &
+                port, &
+                port_size, &
+                length) &
                 bind(C, name="LIBMUSCLE_Instance_set_port_length_")
 
             use iso_c_binding
@@ -1873,7 +3296,10 @@ module libmuscle
         end subroutine LIBMUSCLE_Instance_set_port_length_
 
         subroutine LIBMUSCLE_Instance_send_pm_( &
-                self, port_name, port_name_size, message) &
+                self, &
+                port_name, &
+                port_name_size, &
+                message) &
                 bind(C, name="LIBMUSCLE_Instance_send_pm_")
 
             use iso_c_binding
@@ -1884,7 +3310,11 @@ module libmuscle
         end subroutine LIBMUSCLE_Instance_send_pm_
 
         subroutine LIBMUSCLE_Instance_send_pms_( &
-                self, port_name, port_name_size, message, slot) &
+                self, &
+                port_name, &
+                port_name_size, &
+                message, &
+                slot) &
                 bind(C, name="LIBMUSCLE_Instance_send_pms_")
 
             use iso_c_binding
@@ -1896,7 +3326,12 @@ module libmuscle
         end subroutine LIBMUSCLE_Instance_send_pms_
 
         integer (c_intptr_t) function LIBMUSCLE_Instance_receive_p_( &
-                self, port_name, port_name_size, err_code, err_msg, err_msg_len) &
+                self, &
+                port_name, &
+                port_name_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_receive_p_")
 
             use iso_c_binding
@@ -1909,7 +3344,13 @@ module libmuscle
         end function LIBMUSCLE_Instance_receive_p_
 
         integer (c_intptr_t) function LIBMUSCLE_Instance_receive_pd_( &
-                self, port_name, port_name_size, default_msg, err_code, err_msg, err_msg_len) &
+                self, &
+                port_name, &
+                port_name_size, &
+                default_msg, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_receive_pd_")
 
             use iso_c_binding
@@ -1923,7 +3364,13 @@ module libmuscle
         end function LIBMUSCLE_Instance_receive_pd_
 
         integer (c_intptr_t) function LIBMUSCLE_Instance_receive_ps_( &
-                self, port_name, port_name_size, slot, err_code, err_msg, err_msg_len) &
+                self, &
+                port_name, &
+                port_name_size, &
+                slot, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_receive_ps_")
 
             use iso_c_binding
@@ -1937,7 +3384,14 @@ module libmuscle
         end function LIBMUSCLE_Instance_receive_ps_
 
         integer (c_intptr_t) function LIBMUSCLE_Instance_receive_psd_( &
-                self, port_name, port_name_size, slot, default_message, err_code, err_msg, err_msg_len) &
+                self, &
+                port_name, &
+                port_name_size, &
+                slot, &
+                default_message, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_receive_psd_")
 
             use iso_c_binding
@@ -1952,7 +3406,12 @@ module libmuscle
         end function LIBMUSCLE_Instance_receive_psd_
 
         integer (c_intptr_t) function LIBMUSCLE_Instance_receive_with_settings_p_( &
-                self, port_name, port_name_size, err_code, err_msg, err_msg_len) &
+                self, &
+                port_name, &
+                port_name_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_receive_with_settings_p_")
 
             use iso_c_binding
@@ -1965,7 +3424,13 @@ module libmuscle
         end function LIBMUSCLE_Instance_receive_with_settings_p_
 
         integer (c_intptr_t) function LIBMUSCLE_Instance_receive_with_settings_pd_( &
-                self, port_name, port_name_size, default_msg, err_code, err_msg, err_msg_len) &
+                self, &
+                port_name, &
+                port_name_size, &
+                default_msg, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_receive_with_settings_pd_")
 
             use iso_c_binding
@@ -1979,7 +3444,13 @@ module libmuscle
         end function LIBMUSCLE_Instance_receive_with_settings_pd_
 
         integer (c_intptr_t) function LIBMUSCLE_Instance_receive_with_settings_ps_( &
-                self, port_name, port_name_size, slot, err_code, err_msg, err_msg_len) &
+                self, &
+                port_name, &
+                port_name_size, &
+                slot, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_receive_with_settings_ps_")
 
             use iso_c_binding
@@ -1993,7 +3464,14 @@ module libmuscle
         end function LIBMUSCLE_Instance_receive_with_settings_ps_
 
         integer (c_intptr_t) function LIBMUSCLE_Instance_receive_with_settings_psd_( &
-                self, port_name, port_name_size, slot, default_msg, err_code, err_msg, err_msg_len) &
+                self, &
+                port_name, &
+                port_name_size, &
+                slot, &
+                default_msg, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
                 bind(C, name="LIBMUSCLE_Instance_receive_with_settings_psd_")
 
             use iso_c_binding
@@ -2024,10 +3502,123 @@ module libmuscle
             LIBMUSCLE_DataConstRef_create_copy
     end interface
 
+    interface LIBMUSCLE_DataConstRef_create_grid
+        module procedure &
+            LIBMUSCLE_DataConstRef_create_grid_1_logical_n, &
+            LIBMUSCLE_DataConstRef_create_grid_1_logical_a, &
+            LIBMUSCLE_DataConstRef_create_grid_1_int4_n, &
+            LIBMUSCLE_DataConstRef_create_grid_1_int4_a, &
+            LIBMUSCLE_DataConstRef_create_grid_1_int8_n, &
+            LIBMUSCLE_DataConstRef_create_grid_1_int8_a, &
+            LIBMUSCLE_DataConstRef_create_grid_1_real4_n, &
+            LIBMUSCLE_DataConstRef_create_grid_1_real4_a, &
+            LIBMUSCLE_DataConstRef_create_grid_1_real8_n, &
+            LIBMUSCLE_DataConstRef_create_grid_1_real8_a, &
+            LIBMUSCLE_DataConstRef_create_grid_2_logical_n, &
+            LIBMUSCLE_DataConstRef_create_grid_2_logical_a, &
+            LIBMUSCLE_DataConstRef_create_grid_2_int4_n, &
+            LIBMUSCLE_DataConstRef_create_grid_2_int4_a, &
+            LIBMUSCLE_DataConstRef_create_grid_2_int8_n, &
+            LIBMUSCLE_DataConstRef_create_grid_2_int8_a, &
+            LIBMUSCLE_DataConstRef_create_grid_2_real4_n, &
+            LIBMUSCLE_DataConstRef_create_grid_2_real4_a, &
+            LIBMUSCLE_DataConstRef_create_grid_2_real8_n, &
+            LIBMUSCLE_DataConstRef_create_grid_2_real8_a, &
+            LIBMUSCLE_DataConstRef_create_grid_3_logical_n, &
+            LIBMUSCLE_DataConstRef_create_grid_3_logical_a, &
+            LIBMUSCLE_DataConstRef_create_grid_3_int4_n, &
+            LIBMUSCLE_DataConstRef_create_grid_3_int4_a, &
+            LIBMUSCLE_DataConstRef_create_grid_3_int8_n, &
+            LIBMUSCLE_DataConstRef_create_grid_3_int8_a, &
+            LIBMUSCLE_DataConstRef_create_grid_3_real4_n, &
+            LIBMUSCLE_DataConstRef_create_grid_3_real4_a, &
+            LIBMUSCLE_DataConstRef_create_grid_3_real8_n, &
+            LIBMUSCLE_DataConstRef_create_grid_3_real8_a, &
+            LIBMUSCLE_DataConstRef_create_grid_4_logical_n, &
+            LIBMUSCLE_DataConstRef_create_grid_4_logical_a, &
+            LIBMUSCLE_DataConstRef_create_grid_4_int4_n, &
+            LIBMUSCLE_DataConstRef_create_grid_4_int4_a, &
+            LIBMUSCLE_DataConstRef_create_grid_4_int8_n, &
+            LIBMUSCLE_DataConstRef_create_grid_4_int8_a, &
+            LIBMUSCLE_DataConstRef_create_grid_4_real4_n, &
+            LIBMUSCLE_DataConstRef_create_grid_4_real4_a, &
+            LIBMUSCLE_DataConstRef_create_grid_4_real8_n, &
+            LIBMUSCLE_DataConstRef_create_grid_4_real8_a, &
+            LIBMUSCLE_DataConstRef_create_grid_5_logical_n, &
+            LIBMUSCLE_DataConstRef_create_grid_5_logical_a, &
+            LIBMUSCLE_DataConstRef_create_grid_5_int4_n, &
+            LIBMUSCLE_DataConstRef_create_grid_5_int4_a, &
+            LIBMUSCLE_DataConstRef_create_grid_5_int8_n, &
+            LIBMUSCLE_DataConstRef_create_grid_5_int8_a, &
+            LIBMUSCLE_DataConstRef_create_grid_5_real4_n, &
+            LIBMUSCLE_DataConstRef_create_grid_5_real4_a, &
+            LIBMUSCLE_DataConstRef_create_grid_5_real8_n, &
+            LIBMUSCLE_DataConstRef_create_grid_5_real8_a, &
+            LIBMUSCLE_DataConstRef_create_grid_6_logical_n, &
+            LIBMUSCLE_DataConstRef_create_grid_6_logical_a, &
+            LIBMUSCLE_DataConstRef_create_grid_6_int4_n, &
+            LIBMUSCLE_DataConstRef_create_grid_6_int4_a, &
+            LIBMUSCLE_DataConstRef_create_grid_6_int8_n, &
+            LIBMUSCLE_DataConstRef_create_grid_6_int8_a, &
+            LIBMUSCLE_DataConstRef_create_grid_6_real4_n, &
+            LIBMUSCLE_DataConstRef_create_grid_6_real4_a, &
+            LIBMUSCLE_DataConstRef_create_grid_6_real8_n, &
+            LIBMUSCLE_DataConstRef_create_grid_6_real8_a, &
+            LIBMUSCLE_DataConstRef_create_grid_7_logical_n, &
+            LIBMUSCLE_DataConstRef_create_grid_7_logical_a, &
+            LIBMUSCLE_DataConstRef_create_grid_7_int4_n, &
+            LIBMUSCLE_DataConstRef_create_grid_7_int4_a, &
+            LIBMUSCLE_DataConstRef_create_grid_7_int8_n, &
+            LIBMUSCLE_DataConstRef_create_grid_7_int8_a, &
+            LIBMUSCLE_DataConstRef_create_grid_7_real4_n, &
+            LIBMUSCLE_DataConstRef_create_grid_7_real4_a, &
+            LIBMUSCLE_DataConstRef_create_grid_7_real8_n, &
+            LIBMUSCLE_DataConstRef_create_grid_7_real8_a
+    end interface
+
     interface LIBMUSCLE_DataConstRef_get_item
         module procedure &
             LIBMUSCLE_DataConstRef_get_item_by_key, &
             LIBMUSCLE_DataConstRef_get_item_by_index
+    end interface
+
+    interface LIBMUSCLE_DataConstRef_elements
+        module procedure &
+            LIBMUSCLE_DataConstRef_elements_1_logical, &
+            LIBMUSCLE_DataConstRef_elements_1_real4, &
+            LIBMUSCLE_DataConstRef_elements_1_real8, &
+            LIBMUSCLE_DataConstRef_elements_1_int4, &
+            LIBMUSCLE_DataConstRef_elements_1_int8, &
+            LIBMUSCLE_DataConstRef_elements_2_logical, &
+            LIBMUSCLE_DataConstRef_elements_2_real4, &
+            LIBMUSCLE_DataConstRef_elements_2_real8, &
+            LIBMUSCLE_DataConstRef_elements_2_int4, &
+            LIBMUSCLE_DataConstRef_elements_2_int8, &
+            LIBMUSCLE_DataConstRef_elements_3_logical, &
+            LIBMUSCLE_DataConstRef_elements_3_real4, &
+            LIBMUSCLE_DataConstRef_elements_3_real8, &
+            LIBMUSCLE_DataConstRef_elements_3_int4, &
+            LIBMUSCLE_DataConstRef_elements_3_int8, &
+            LIBMUSCLE_DataConstRef_elements_4_logical, &
+            LIBMUSCLE_DataConstRef_elements_4_real4, &
+            LIBMUSCLE_DataConstRef_elements_4_real8, &
+            LIBMUSCLE_DataConstRef_elements_4_int4, &
+            LIBMUSCLE_DataConstRef_elements_4_int8, &
+            LIBMUSCLE_DataConstRef_elements_5_logical, &
+            LIBMUSCLE_DataConstRef_elements_5_real4, &
+            LIBMUSCLE_DataConstRef_elements_5_real8, &
+            LIBMUSCLE_DataConstRef_elements_5_int4, &
+            LIBMUSCLE_DataConstRef_elements_5_int8, &
+            LIBMUSCLE_DataConstRef_elements_6_logical, &
+            LIBMUSCLE_DataConstRef_elements_6_real4, &
+            LIBMUSCLE_DataConstRef_elements_6_real8, &
+            LIBMUSCLE_DataConstRef_elements_6_int4, &
+            LIBMUSCLE_DataConstRef_elements_6_int8, &
+            LIBMUSCLE_DataConstRef_elements_7_logical, &
+            LIBMUSCLE_DataConstRef_elements_7_real4, &
+            LIBMUSCLE_DataConstRef_elements_7_real8, &
+            LIBMUSCLE_DataConstRef_elements_7_int4, &
+            LIBMUSCLE_DataConstRef_elements_7_int8
     end interface
 
     interface LIBMUSCLE_Data_create
@@ -2045,10 +3636,123 @@ module libmuscle
             LIBMUSCLE_Data_create_copy
     end interface
 
+    interface LIBMUSCLE_Data_create_grid
+        module procedure &
+            LIBMUSCLE_Data_create_grid_1_logical_n, &
+            LIBMUSCLE_Data_create_grid_1_logical_a, &
+            LIBMUSCLE_Data_create_grid_1_int4_n, &
+            LIBMUSCLE_Data_create_grid_1_int4_a, &
+            LIBMUSCLE_Data_create_grid_1_int8_n, &
+            LIBMUSCLE_Data_create_grid_1_int8_a, &
+            LIBMUSCLE_Data_create_grid_1_real4_n, &
+            LIBMUSCLE_Data_create_grid_1_real4_a, &
+            LIBMUSCLE_Data_create_grid_1_real8_n, &
+            LIBMUSCLE_Data_create_grid_1_real8_a, &
+            LIBMUSCLE_Data_create_grid_2_logical_n, &
+            LIBMUSCLE_Data_create_grid_2_logical_a, &
+            LIBMUSCLE_Data_create_grid_2_int4_n, &
+            LIBMUSCLE_Data_create_grid_2_int4_a, &
+            LIBMUSCLE_Data_create_grid_2_int8_n, &
+            LIBMUSCLE_Data_create_grid_2_int8_a, &
+            LIBMUSCLE_Data_create_grid_2_real4_n, &
+            LIBMUSCLE_Data_create_grid_2_real4_a, &
+            LIBMUSCLE_Data_create_grid_2_real8_n, &
+            LIBMUSCLE_Data_create_grid_2_real8_a, &
+            LIBMUSCLE_Data_create_grid_3_logical_n, &
+            LIBMUSCLE_Data_create_grid_3_logical_a, &
+            LIBMUSCLE_Data_create_grid_3_int4_n, &
+            LIBMUSCLE_Data_create_grid_3_int4_a, &
+            LIBMUSCLE_Data_create_grid_3_int8_n, &
+            LIBMUSCLE_Data_create_grid_3_int8_a, &
+            LIBMUSCLE_Data_create_grid_3_real4_n, &
+            LIBMUSCLE_Data_create_grid_3_real4_a, &
+            LIBMUSCLE_Data_create_grid_3_real8_n, &
+            LIBMUSCLE_Data_create_grid_3_real8_a, &
+            LIBMUSCLE_Data_create_grid_4_logical_n, &
+            LIBMUSCLE_Data_create_grid_4_logical_a, &
+            LIBMUSCLE_Data_create_grid_4_int4_n, &
+            LIBMUSCLE_Data_create_grid_4_int4_a, &
+            LIBMUSCLE_Data_create_grid_4_int8_n, &
+            LIBMUSCLE_Data_create_grid_4_int8_a, &
+            LIBMUSCLE_Data_create_grid_4_real4_n, &
+            LIBMUSCLE_Data_create_grid_4_real4_a, &
+            LIBMUSCLE_Data_create_grid_4_real8_n, &
+            LIBMUSCLE_Data_create_grid_4_real8_a, &
+            LIBMUSCLE_Data_create_grid_5_logical_n, &
+            LIBMUSCLE_Data_create_grid_5_logical_a, &
+            LIBMUSCLE_Data_create_grid_5_int4_n, &
+            LIBMUSCLE_Data_create_grid_5_int4_a, &
+            LIBMUSCLE_Data_create_grid_5_int8_n, &
+            LIBMUSCLE_Data_create_grid_5_int8_a, &
+            LIBMUSCLE_Data_create_grid_5_real4_n, &
+            LIBMUSCLE_Data_create_grid_5_real4_a, &
+            LIBMUSCLE_Data_create_grid_5_real8_n, &
+            LIBMUSCLE_Data_create_grid_5_real8_a, &
+            LIBMUSCLE_Data_create_grid_6_logical_n, &
+            LIBMUSCLE_Data_create_grid_6_logical_a, &
+            LIBMUSCLE_Data_create_grid_6_int4_n, &
+            LIBMUSCLE_Data_create_grid_6_int4_a, &
+            LIBMUSCLE_Data_create_grid_6_int8_n, &
+            LIBMUSCLE_Data_create_grid_6_int8_a, &
+            LIBMUSCLE_Data_create_grid_6_real4_n, &
+            LIBMUSCLE_Data_create_grid_6_real4_a, &
+            LIBMUSCLE_Data_create_grid_6_real8_n, &
+            LIBMUSCLE_Data_create_grid_6_real8_a, &
+            LIBMUSCLE_Data_create_grid_7_logical_n, &
+            LIBMUSCLE_Data_create_grid_7_logical_a, &
+            LIBMUSCLE_Data_create_grid_7_int4_n, &
+            LIBMUSCLE_Data_create_grid_7_int4_a, &
+            LIBMUSCLE_Data_create_grid_7_int8_n, &
+            LIBMUSCLE_Data_create_grid_7_int8_a, &
+            LIBMUSCLE_Data_create_grid_7_real4_n, &
+            LIBMUSCLE_Data_create_grid_7_real4_a, &
+            LIBMUSCLE_Data_create_grid_7_real8_n, &
+            LIBMUSCLE_Data_create_grid_7_real8_a
+    end interface
+
     interface LIBMUSCLE_Data_get_item
         module procedure &
             LIBMUSCLE_Data_get_item_by_key, &
             LIBMUSCLE_Data_get_item_by_index
+    end interface
+
+    interface LIBMUSCLE_Data_elements
+        module procedure &
+            LIBMUSCLE_Data_elements_1_logical, &
+            LIBMUSCLE_Data_elements_1_real4, &
+            LIBMUSCLE_Data_elements_1_real8, &
+            LIBMUSCLE_Data_elements_1_int4, &
+            LIBMUSCLE_Data_elements_1_int8, &
+            LIBMUSCLE_Data_elements_2_logical, &
+            LIBMUSCLE_Data_elements_2_real4, &
+            LIBMUSCLE_Data_elements_2_real8, &
+            LIBMUSCLE_Data_elements_2_int4, &
+            LIBMUSCLE_Data_elements_2_int8, &
+            LIBMUSCLE_Data_elements_3_logical, &
+            LIBMUSCLE_Data_elements_3_real4, &
+            LIBMUSCLE_Data_elements_3_real8, &
+            LIBMUSCLE_Data_elements_3_int4, &
+            LIBMUSCLE_Data_elements_3_int8, &
+            LIBMUSCLE_Data_elements_4_logical, &
+            LIBMUSCLE_Data_elements_4_real4, &
+            LIBMUSCLE_Data_elements_4_real8, &
+            LIBMUSCLE_Data_elements_4_int4, &
+            LIBMUSCLE_Data_elements_4_int8, &
+            LIBMUSCLE_Data_elements_5_logical, &
+            LIBMUSCLE_Data_elements_5_real4, &
+            LIBMUSCLE_Data_elements_5_real8, &
+            LIBMUSCLE_Data_elements_5_int4, &
+            LIBMUSCLE_Data_elements_5_int8, &
+            LIBMUSCLE_Data_elements_6_logical, &
+            LIBMUSCLE_Data_elements_6_real4, &
+            LIBMUSCLE_Data_elements_6_real8, &
+            LIBMUSCLE_Data_elements_6_int4, &
+            LIBMUSCLE_Data_elements_6_int8, &
+            LIBMUSCLE_Data_elements_7_logical, &
+            LIBMUSCLE_Data_elements_7_real4, &
+            LIBMUSCLE_Data_elements_7_real8, &
+            LIBMUSCLE_Data_elements_7_int4, &
+            LIBMUSCLE_Data_elements_7_int8
     end interface
 
     interface LIBMUSCLE_Data_create_byte_array
@@ -2151,16 +3855,14 @@ module libmuscle
 
     interface
 
-        integer (c_intptr_t) function LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_( &
-                count) &
+        integer (c_intptr_t) function LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(count) &
                 bind(C, name="LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_")
 
             use iso_c_binding
             integer (c_int), value, intent(in) :: count
         end function LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_
 
-        subroutine LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_( &
-                self) &
+        subroutine LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_(self) &
                 bind(C, name="LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_")
 
             use iso_c_binding
@@ -2168,7 +3870,10 @@ module libmuscle
         end subroutine LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_
 
         subroutine LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg_( &
-                self, i, arg, arg_size) &
+                self, &
+                i, &
+                arg, &
+                arg_size) &
                 bind(C, name="LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg_")
 
             use iso_c_binding
@@ -2184,7 +3889,8 @@ module libmuscle
 
 contains
 
-    function LIBMUSCLE_DataConstRef_create_nil()
+    function LIBMUSCLE_DataConstRef_create_nil( &
+    )
         implicit none
         type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_nil
 
@@ -2196,7 +3902,8 @@ contains
         LIBMUSCLE_DataConstRef_create_nil%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_nil
 
-    function LIBMUSCLE_DataConstRef_create_logical(value)
+    function LIBMUSCLE_DataConstRef_create_logical( &
+            value)
         implicit none
         logical, intent(in) :: value
         type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_logical
@@ -2204,12 +3911,13 @@ contains
         integer (c_intptr_t) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_create_logical_( &
-            merge(1, 0, value))
+            logical(value, c_bool))
 
         LIBMUSCLE_DataConstRef_create_logical%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_logical
 
-    function LIBMUSCLE_DataConstRef_create_character(value)
+    function LIBMUSCLE_DataConstRef_create_character( &
+            value)
         implicit none
         character (len=*), intent(in) :: value
         type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_character
@@ -2222,7 +3930,8 @@ contains
         LIBMUSCLE_DataConstRef_create_character%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_character
 
-    function LIBMUSCLE_DataConstRef_create_int1(value)
+    function LIBMUSCLE_DataConstRef_create_int1( &
+            value)
         implicit none
         integer (LIBMUSCLE_int1), intent(in) :: value
         type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_int1
@@ -2235,7 +3944,8 @@ contains
         LIBMUSCLE_DataConstRef_create_int1%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_int1
 
-    function LIBMUSCLE_DataConstRef_create_int2(value)
+    function LIBMUSCLE_DataConstRef_create_int2( &
+            value)
         implicit none
         integer (selected_int_kind(4)), intent(in) :: value
         type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_int2
@@ -2248,7 +3958,8 @@ contains
         LIBMUSCLE_DataConstRef_create_int2%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_int2
 
-    function LIBMUSCLE_DataConstRef_create_int4(value)
+    function LIBMUSCLE_DataConstRef_create_int4( &
+            value)
         implicit none
         integer (LIBMUSCLE_int4), intent(in) :: value
         type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_int4
@@ -2261,7 +3972,8 @@ contains
         LIBMUSCLE_DataConstRef_create_int4%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_int4
 
-    function LIBMUSCLE_DataConstRef_create_int8(value)
+    function LIBMUSCLE_DataConstRef_create_int8( &
+            value)
         implicit none
         integer (selected_int_kind(18)), intent(in) :: value
         type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_int8
@@ -2274,7 +3986,8 @@ contains
         LIBMUSCLE_DataConstRef_create_int8%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_int8
 
-    function LIBMUSCLE_DataConstRef_create_real4(value)
+    function LIBMUSCLE_DataConstRef_create_real4( &
+            value)
         implicit none
         real (LIBMUSCLE_real4), intent(in) :: value
         type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_real4
@@ -2287,7 +4000,8 @@ contains
         LIBMUSCLE_DataConstRef_create_real4%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_real4
 
-    function LIBMUSCLE_DataConstRef_create_real8(value)
+    function LIBMUSCLE_DataConstRef_create_real8( &
+            value)
         implicit none
         real (LIBMUSCLE_real8), intent(in) :: value
         type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_real8
@@ -2300,7 +4014,8 @@ contains
         LIBMUSCLE_DataConstRef_create_real8%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_real8
 
-    function LIBMUSCLE_DataConstRef_create_settings(value)
+    function LIBMUSCLE_DataConstRef_create_settings( &
+            value)
         implicit none
         type(YMMSL_Settings), intent(in) :: value
         type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_settings
@@ -2313,7 +4028,8 @@ contains
         LIBMUSCLE_DataConstRef_create_settings%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_settings
 
-    function LIBMUSCLE_DataConstRef_create_copy(value)
+    function LIBMUSCLE_DataConstRef_create_copy( &
+            value)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: value
         type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_copy
@@ -2326,7 +4042,1653 @@ contains
         LIBMUSCLE_DataConstRef_create_copy%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_copy
 
-    subroutine LIBMUSCLE_DataConstRef_free(self)
+    function LIBMUSCLE_DataConstRef_create_grid_1_logical_a( &
+            data_array)
+        implicit none
+        logical, dimension(:), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_1_logical_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_logical_a_( &
+            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 1_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_1_logical_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_1_logical_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_2_logical_a( &
+            data_array)
+        implicit none
+        logical, dimension(:, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_2_logical_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_logical_a_( &
+            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 2_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_2_logical_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_2_logical_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_3_logical_a( &
+            data_array)
+        implicit none
+        logical, dimension(:, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_3_logical_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_logical_a_( &
+            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 3_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_3_logical_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_3_logical_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_4_logical_a( &
+            data_array)
+        implicit none
+        logical, dimension(:, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_4_logical_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_logical_a_( &
+            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 4_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_4_logical_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_4_logical_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_5_logical_a( &
+            data_array)
+        implicit none
+        logical, dimension(:, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_5_logical_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_logical_a_( &
+            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 5_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_5_logical_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_5_logical_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_6_logical_a( &
+            data_array)
+        implicit none
+        logical, dimension(:, :, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_6_logical_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_logical_a_( &
+            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 6_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_6_logical_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_6_logical_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_7_logical_a( &
+            data_array)
+        implicit none
+        logical, dimension(:, :, :, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_7_logical_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_logical_a_( &
+            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 7_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_7_logical_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_7_logical_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_1_int4_a( &
+            data_array)
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_1_int4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int4_a_( &
+            data_array, int(shape(data_array), c_size_t), 1_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_1_int4_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_1_int4_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_2_int4_a( &
+            data_array)
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_2_int4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int4_a_( &
+            data_array, int(shape(data_array), c_size_t), 2_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_2_int4_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_2_int4_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_3_int4_a( &
+            data_array)
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_3_int4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int4_a_( &
+            data_array, int(shape(data_array), c_size_t), 3_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_3_int4_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_3_int4_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_4_int4_a( &
+            data_array)
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_4_int4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int4_a_( &
+            data_array, int(shape(data_array), c_size_t), 4_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_4_int4_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_4_int4_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_5_int4_a( &
+            data_array)
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_5_int4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int4_a_( &
+            data_array, int(shape(data_array), c_size_t), 5_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_5_int4_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_5_int4_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_6_int4_a( &
+            data_array)
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_6_int4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int4_a_( &
+            data_array, int(shape(data_array), c_size_t), 6_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_6_int4_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_6_int4_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_7_int4_a( &
+            data_array)
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_7_int4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int4_a_( &
+            data_array, int(shape(data_array), c_size_t), 7_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_7_int4_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_7_int4_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_1_int8_a( &
+            data_array)
+        implicit none
+        integer (selected_int_kind(18)), dimension(:), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_1_int8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int8_a_( &
+            data_array, int(shape(data_array), c_size_t), 1_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_1_int8_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_1_int8_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_2_int8_a( &
+            data_array)
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_2_int8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int8_a_( &
+            data_array, int(shape(data_array), c_size_t), 2_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_2_int8_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_2_int8_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_3_int8_a( &
+            data_array)
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_3_int8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int8_a_( &
+            data_array, int(shape(data_array), c_size_t), 3_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_3_int8_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_3_int8_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_4_int8_a( &
+            data_array)
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_4_int8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int8_a_( &
+            data_array, int(shape(data_array), c_size_t), 4_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_4_int8_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_4_int8_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_5_int8_a( &
+            data_array)
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_5_int8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int8_a_( &
+            data_array, int(shape(data_array), c_size_t), 5_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_5_int8_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_5_int8_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_6_int8_a( &
+            data_array)
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_6_int8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int8_a_( &
+            data_array, int(shape(data_array), c_size_t), 6_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_6_int8_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_6_int8_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_7_int8_a( &
+            data_array)
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_7_int8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int8_a_( &
+            data_array, int(shape(data_array), c_size_t), 7_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_7_int8_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_7_int8_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_1_real4_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_1_real4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real4_a_( &
+            data_array, int(shape(data_array), c_size_t), 1_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_1_real4_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_1_real4_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_2_real4_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_2_real4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real4_a_( &
+            data_array, int(shape(data_array), c_size_t), 2_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_2_real4_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_2_real4_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_3_real4_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_3_real4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real4_a_( &
+            data_array, int(shape(data_array), c_size_t), 3_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_3_real4_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_3_real4_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_4_real4_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_4_real4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real4_a_( &
+            data_array, int(shape(data_array), c_size_t), 4_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_4_real4_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_4_real4_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_5_real4_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_5_real4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real4_a_( &
+            data_array, int(shape(data_array), c_size_t), 5_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_5_real4_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_5_real4_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_6_real4_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_6_real4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real4_a_( &
+            data_array, int(shape(data_array), c_size_t), 6_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_6_real4_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_6_real4_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_7_real4_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_7_real4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real4_a_( &
+            data_array, int(shape(data_array), c_size_t), 7_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_7_real4_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_7_real4_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_1_real8_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_1_real8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real8_a_( &
+            data_array, int(shape(data_array), c_size_t), 1_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_1_real8_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_1_real8_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_2_real8_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_2_real8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real8_a_( &
+            data_array, int(shape(data_array), c_size_t), 2_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_2_real8_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_2_real8_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_3_real8_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_3_real8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real8_a_( &
+            data_array, int(shape(data_array), c_size_t), 3_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_3_real8_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_3_real8_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_4_real8_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_4_real8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real8_a_( &
+            data_array, int(shape(data_array), c_size_t), 4_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_4_real8_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_4_real8_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_5_real8_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_5_real8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real8_a_( &
+            data_array, int(shape(data_array), c_size_t), 5_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_5_real8_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_5_real8_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_6_real8_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_6_real8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real8_a_( &
+            data_array, int(shape(data_array), c_size_t), 6_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_6_real8_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_6_real8_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_7_real8_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_7_real8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real8_a_( &
+            data_array, int(shape(data_array), c_size_t), 7_LIBMUSCLE_size)
+
+        LIBMUSCLE_DataConstRef_create_grid_7_real8_a%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_7_real8_a
+
+    function LIBMUSCLE_DataConstRef_create_grid_1_logical_n( &
+            data_array, &
+            index_name_1)
+
+        implicit none
+        logical, dimension(:), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_1_logical_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                1_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_1_logical_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_1_logical_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_2_logical_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2)
+
+        implicit none
+        logical, dimension(:, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_2_logical_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                2_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_2_logical_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_2_logical_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_3_logical_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3)
+
+        implicit none
+        logical, dimension(:, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_3_logical_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                3_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_3_logical_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_3_logical_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_4_logical_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4)
+
+        implicit none
+        logical, dimension(:, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_4_logical_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                4_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_4_logical_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_4_logical_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_5_logical_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5)
+
+        implicit none
+        logical, dimension(:, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_5_logical_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                5_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_5_logical_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_5_logical_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_6_logical_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5, &
+            index_name_6)
+
+        implicit none
+        logical, dimension(:, :, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        character (len=*), intent(in) :: index_name_6
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_6_logical_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                6_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_6_logical_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_6_logical_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_7_logical_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5, &
+            index_name_6, &
+            index_name_7)
+
+        implicit none
+        logical, dimension(:, :, :, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        character (len=*), intent(in) :: index_name_6
+        character (len=*), intent(in) :: index_name_7
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_7_logical_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                7_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_7, int(len(index_name_7), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_7_logical_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_7_logical_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_1_int4_n( &
+            data_array, &
+            index_name_1)
+
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_1_int4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                1_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_1_int4_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_1_int4_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_2_int4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2)
+
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_2_int4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                2_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_2_int4_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_2_int4_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_3_int4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3)
+
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_3_int4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                3_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_3_int4_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_3_int4_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_4_int4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4)
+
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_4_int4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                4_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_4_int4_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_4_int4_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_5_int4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5)
+
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_5_int4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                5_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_5_int4_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_5_int4_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_6_int4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5, &
+            index_name_6)
+
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        character (len=*), intent(in) :: index_name_6
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_6_int4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                6_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_6_int4_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_6_int4_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_7_int4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5, &
+            index_name_6, &
+            index_name_7)
+
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        character (len=*), intent(in) :: index_name_6
+        character (len=*), intent(in) :: index_name_7
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_7_int4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                7_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_7, int(len(index_name_7), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_7_int4_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_7_int4_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_1_int8_n( &
+            data_array, &
+            index_name_1)
+
+        implicit none
+        integer (selected_int_kind(18)), dimension(:), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_1_int8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                1_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_1_int8_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_1_int8_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_2_int8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2)
+
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_2_int8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                2_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_2_int8_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_2_int8_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_3_int8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3)
+
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_3_int8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                3_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_3_int8_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_3_int8_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_4_int8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4)
+
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_4_int8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                4_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_4_int8_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_4_int8_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_5_int8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5)
+
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_5_int8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                5_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_5_int8_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_5_int8_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_6_int8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5, &
+            index_name_6)
+
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        character (len=*), intent(in) :: index_name_6
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_6_int8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                6_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_6_int8_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_6_int8_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_7_int8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5, &
+            index_name_6, &
+            index_name_7)
+
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        character (len=*), intent(in) :: index_name_6
+        character (len=*), intent(in) :: index_name_7
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_7_int8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                7_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_7, int(len(index_name_7), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_7_int8_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_7_int8_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_1_real4_n( &
+            data_array, &
+            index_name_1)
+
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_1_real4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                1_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_1_real4_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_1_real4_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_2_real4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2)
+
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_2_real4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                2_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_2_real4_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_2_real4_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_3_real4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3)
+
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_3_real4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                3_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_3_real4_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_3_real4_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_4_real4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4)
+
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_4_real4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                4_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_4_real4_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_4_real4_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_5_real4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5)
+
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_5_real4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                5_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_5_real4_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_5_real4_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_6_real4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5, &
+            index_name_6)
+
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        character (len=*), intent(in) :: index_name_6
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_6_real4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                6_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_6_real4_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_6_real4_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_7_real4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5, &
+            index_name_6, &
+            index_name_7)
+
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        character (len=*), intent(in) :: index_name_6
+        character (len=*), intent(in) :: index_name_7
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_7_real4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                7_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_7, int(len(index_name_7), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_7_real4_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_7_real4_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_1_real8_n( &
+            data_array, &
+            index_name_1)
+
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_1_real8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                1_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_1_real8_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_1_real8_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_2_real8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2)
+
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_2_real8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                2_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_2_real8_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_2_real8_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_3_real8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3)
+
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_3_real8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                3_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_3_real8_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_3_real8_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_4_real8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4)
+
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_4_real8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                4_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_4_real8_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_4_real8_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_5_real8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5)
+
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_5_real8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                5_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_5_real8_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_5_real8_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_6_real8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5, &
+            index_name_6)
+
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        character (len=*), intent(in) :: index_name_6
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_6_real8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                6_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_6_real8_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_6_real8_n
+
+    function LIBMUSCLE_DataConstRef_create_grid_7_real8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5, &
+            index_name_6, &
+            index_name_7)
+
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        character (len=*), intent(in) :: index_name_6
+        character (len=*), intent(in) :: index_name_7
+        type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_grid_7_real8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                7_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_7, int(len(index_name_7), c_size_t) &
+            )
+
+        LIBMUSCLE_DataConstRef_create_grid_7_real8_n%ptr = ret_val
+    end function LIBMUSCLE_DataConstRef_create_grid_7_real8_n
+
+    subroutine LIBMUSCLE_DataConstRef_free( &
+            self)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
 
@@ -2334,189 +5696,274 @@ contains
             self%ptr)
     end subroutine LIBMUSCLE_DataConstRef_free
 
-    function LIBMUSCLE_DataConstRef_is_a_logical(self)
+    function LIBMUSCLE_DataConstRef_is_a_logical( &
+            self)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_logical
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_logical_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_logical = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_logical = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_logical
 
-    function LIBMUSCLE_DataConstRef_is_a_character(self)
+    function LIBMUSCLE_DataConstRef_is_a_character( &
+            self)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_character
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_character_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_character = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_character = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_character
 
-    function LIBMUSCLE_DataConstRef_is_a_int(self)
+    function LIBMUSCLE_DataConstRef_is_a_int( &
+            self)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_int
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_int_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_int = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_int = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_int
 
-    function LIBMUSCLE_DataConstRef_is_a_int1(self)
+    function LIBMUSCLE_DataConstRef_is_a_int1( &
+            self)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_int1
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_int1_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_int1 = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_int1 = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_int1
 
-    function LIBMUSCLE_DataConstRef_is_a_int2(self)
+    function LIBMUSCLE_DataConstRef_is_a_int2( &
+            self)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_int2
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_int2_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_int2 = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_int2 = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_int2
 
-    function LIBMUSCLE_DataConstRef_is_a_int4(self)
+    function LIBMUSCLE_DataConstRef_is_a_int4( &
+            self)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_int4
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_int4_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_int4 = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_int4 = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_int4
 
-    function LIBMUSCLE_DataConstRef_is_a_int8(self)
+    function LIBMUSCLE_DataConstRef_is_a_int8( &
+            self)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_int8
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_int8_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_int8 = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_int8 = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_int8
 
-    function LIBMUSCLE_DataConstRef_is_a_real4(self)
+    function LIBMUSCLE_DataConstRef_is_a_real4( &
+            self)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_real4
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_real4_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_real4 = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_real4 = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_real4
 
-    function LIBMUSCLE_DataConstRef_is_a_real8(self)
+    function LIBMUSCLE_DataConstRef_is_a_real8( &
+            self)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_real8
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_real8_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_real8 = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_real8 = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_real8
 
-    function LIBMUSCLE_DataConstRef_is_a_dict(self)
+    function LIBMUSCLE_DataConstRef_is_a_dict( &
+            self)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_dict
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_dict_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_dict = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_dict = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_dict
 
-    function LIBMUSCLE_DataConstRef_is_a_list(self)
+    function LIBMUSCLE_DataConstRef_is_a_list( &
+            self)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_list
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_list_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_list = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_list = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_list
 
-    function LIBMUSCLE_DataConstRef_is_a_byte_array(self)
+    function LIBMUSCLE_DataConstRef_is_a_grid_of_logical( &
+            self)
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        logical :: LIBMUSCLE_DataConstRef_is_a_grid_of_logical
+
+        logical (c_bool) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_is_a_grid_of_logical_( &
+            self%ptr)
+
+        LIBMUSCLE_DataConstRef_is_a_grid_of_logical = ret_val
+    end function LIBMUSCLE_DataConstRef_is_a_grid_of_logical
+
+    function LIBMUSCLE_DataConstRef_is_a_grid_of_real4( &
+            self)
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        logical :: LIBMUSCLE_DataConstRef_is_a_grid_of_real4
+
+        logical (c_bool) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_is_a_grid_of_real4_( &
+            self%ptr)
+
+        LIBMUSCLE_DataConstRef_is_a_grid_of_real4 = ret_val
+    end function LIBMUSCLE_DataConstRef_is_a_grid_of_real4
+
+    function LIBMUSCLE_DataConstRef_is_a_grid_of_real8( &
+            self)
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        logical :: LIBMUSCLE_DataConstRef_is_a_grid_of_real8
+
+        logical (c_bool) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_is_a_grid_of_real8_( &
+            self%ptr)
+
+        LIBMUSCLE_DataConstRef_is_a_grid_of_real8 = ret_val
+    end function LIBMUSCLE_DataConstRef_is_a_grid_of_real8
+
+    function LIBMUSCLE_DataConstRef_is_a_grid_of_int4( &
+            self)
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        logical :: LIBMUSCLE_DataConstRef_is_a_grid_of_int4
+
+        logical (c_bool) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_is_a_grid_of_int4_( &
+            self%ptr)
+
+        LIBMUSCLE_DataConstRef_is_a_grid_of_int4 = ret_val
+    end function LIBMUSCLE_DataConstRef_is_a_grid_of_int4
+
+    function LIBMUSCLE_DataConstRef_is_a_grid_of_int8( &
+            self)
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        logical :: LIBMUSCLE_DataConstRef_is_a_grid_of_int8
+
+        logical (c_bool) :: ret_val
+
+        ret_val = LIBMUSCLE_DataConstRef_is_a_grid_of_int8_( &
+            self%ptr)
+
+        LIBMUSCLE_DataConstRef_is_a_grid_of_int8 = ret_val
+    end function LIBMUSCLE_DataConstRef_is_a_grid_of_int8
+
+    function LIBMUSCLE_DataConstRef_is_a_byte_array( &
+            self)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_byte_array
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_byte_array_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_byte_array = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_byte_array = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_byte_array
 
-    function LIBMUSCLE_DataConstRef_is_nil(self)
+    function LIBMUSCLE_DataConstRef_is_nil( &
+            self)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_nil
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_nil_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_nil = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_nil = ret_val
     end function LIBMUSCLE_DataConstRef_is_nil
 
-    function LIBMUSCLE_DataConstRef_is_a_settings(self)
+    function LIBMUSCLE_DataConstRef_is_a_settings( &
+            self)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_settings
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_DataConstRef_is_a_settings_( &
             self%ptr)
 
-        LIBMUSCLE_DataConstRef_is_a_settings = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_is_a_settings = ret_val
     end function LIBMUSCLE_DataConstRef_is_a_settings
 
-    function LIBMUSCLE_DataConstRef_size(self)
+    function LIBMUSCLE_DataConstRef_size( &
+            self)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer (LIBMUSCLE_size) :: LIBMUSCLE_DataConstRef_size
@@ -2528,14 +5975,17 @@ contains
         LIBMUSCLE_DataConstRef_size = ret_val
     end function LIBMUSCLE_DataConstRef_size
 
-    function LIBMUSCLE_DataConstRef_as_logical(self, err_code, err_msg)
+    function LIBMUSCLE_DataConstRef_as_logical( &
+            self, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_DataConstRef_as_logical
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -2575,10 +6025,13 @@ contains
             end if
         end if
 
-        LIBMUSCLE_DataConstRef_as_logical = ret_val .ne. 0
+        LIBMUSCLE_DataConstRef_as_logical = ret_val
     end function LIBMUSCLE_DataConstRef_as_logical
 
-    function LIBMUSCLE_DataConstRef_as_character(self, err_code, err_msg)
+    function LIBMUSCLE_DataConstRef_as_character( &
+            self, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
@@ -2637,7 +6090,10 @@ contains
         end do
     end function LIBMUSCLE_DataConstRef_as_character
 
-    function LIBMUSCLE_DataConstRef_as_int(self, err_code, err_msg)
+    function LIBMUSCLE_DataConstRef_as_int( &
+            self, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
@@ -2686,7 +6142,10 @@ contains
         LIBMUSCLE_DataConstRef_as_int = ret_val
     end function LIBMUSCLE_DataConstRef_as_int
 
-    function LIBMUSCLE_DataConstRef_as_int1(self, err_code, err_msg)
+    function LIBMUSCLE_DataConstRef_as_int1( &
+            self, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
@@ -2735,7 +6194,10 @@ contains
         LIBMUSCLE_DataConstRef_as_int1 = ret_val
     end function LIBMUSCLE_DataConstRef_as_int1
 
-    function LIBMUSCLE_DataConstRef_as_int2(self, err_code, err_msg)
+    function LIBMUSCLE_DataConstRef_as_int2( &
+            self, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
@@ -2784,7 +6246,10 @@ contains
         LIBMUSCLE_DataConstRef_as_int2 = ret_val
     end function LIBMUSCLE_DataConstRef_as_int2
 
-    function LIBMUSCLE_DataConstRef_as_int4(self, err_code, err_msg)
+    function LIBMUSCLE_DataConstRef_as_int4( &
+            self, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
@@ -2833,7 +6298,10 @@ contains
         LIBMUSCLE_DataConstRef_as_int4 = ret_val
     end function LIBMUSCLE_DataConstRef_as_int4
 
-    function LIBMUSCLE_DataConstRef_as_int8(self, err_code, err_msg)
+    function LIBMUSCLE_DataConstRef_as_int8( &
+            self, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
@@ -2882,7 +6350,10 @@ contains
         LIBMUSCLE_DataConstRef_as_int8 = ret_val
     end function LIBMUSCLE_DataConstRef_as_int8
 
-    function LIBMUSCLE_DataConstRef_as_real4(self, err_code, err_msg)
+    function LIBMUSCLE_DataConstRef_as_real4( &
+            self, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
@@ -2931,7 +6402,10 @@ contains
         LIBMUSCLE_DataConstRef_as_real4 = ret_val
     end function LIBMUSCLE_DataConstRef_as_real4
 
-    function LIBMUSCLE_DataConstRef_as_real8(self, err_code, err_msg)
+    function LIBMUSCLE_DataConstRef_as_real8( &
+            self, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
@@ -2980,7 +6454,10 @@ contains
         LIBMUSCLE_DataConstRef_as_real8 = ret_val
     end function LIBMUSCLE_DataConstRef_as_real8
 
-    function LIBMUSCLE_DataConstRef_as_settings(self, err_code, err_msg)
+    function LIBMUSCLE_DataConstRef_as_settings( &
+            self, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
@@ -3030,7 +6507,11 @@ contains
         LIBMUSCLE_DataConstRef_as_settings%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_as_settings
 
-    subroutine LIBMUSCLE_DataConstRef_as_byte_array(self, data, err_code, err_msg)
+    subroutine LIBMUSCLE_DataConstRef_as_byte_array( &
+            self, &
+            data, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         character(len=1), dimension(:), intent(out) :: data
@@ -3085,7 +6566,11 @@ contains
         data = f_ret_ptr
     end subroutine LIBMUSCLE_DataConstRef_as_byte_array
 
-    function LIBMUSCLE_DataConstRef_get_item_by_key(self, key, err_code, err_msg)
+    function LIBMUSCLE_DataConstRef_get_item_by_key( &
+            self, &
+            key, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -3137,7 +6622,11 @@ contains
         LIBMUSCLE_DataConstRef_get_item_by_key%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_get_item_by_key
 
-    function LIBMUSCLE_DataConstRef_get_item_by_index(self, i, err_code, err_msg)
+    function LIBMUSCLE_DataConstRef_get_item_by_index( &
+            self, &
+            i, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
@@ -3189,7 +6678,2652 @@ contains
         LIBMUSCLE_DataConstRef_get_item_by_index%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_get_item_by_index
 
-    function LIBMUSCLE_Data_create_nil()
+    function LIBMUSCLE_DataConstRef_num_dims( &
+            self, &
+            err_code, &
+            err_msg)
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        integer (LIBMUSCLE_size) :: LIBMUSCLE_DataConstRef_num_dims
+
+        integer (c_size_t) :: ret_val
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        ret_val = LIBMUSCLE_DataConstRef_num_dims_( &
+            self%ptr, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        LIBMUSCLE_DataConstRef_num_dims = ret_val
+    end function LIBMUSCLE_DataConstRef_num_dims
+
+    subroutine LIBMUSCLE_DataConstRef_shape( &
+            self, &
+            shp, &
+            err_code, &
+            err_msg)
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        integer (LIBMUSCLE_size), dimension(:), intent(out) :: shp
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t) :: ret_val_size
+        integer (LIBMUSCLE_size), pointer, dimension(:) :: f_ret_ptr
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_shape_( &
+            self%ptr, &
+            ret_val, &
+            ret_val_size, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
+        shp = f_ret_ptr
+    end subroutine LIBMUSCLE_DataConstRef_shape
+
+    subroutine LIBMUSCLE_DataConstRef_elements_1_logical( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        logical, dimension(:), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(1) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        logical (c_bool), pointer, dimension(:) :: f_ret_ptr
+        logical (c_bool), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_logical_( &
+            self%ptr, &
+            1_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ logical (c_bool):: /), (/1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_1_logical
+
+    subroutine LIBMUSCLE_DataConstRef_elements_2_logical( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        logical, dimension(:, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(2) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        logical (c_bool), pointer, dimension(:, :) :: f_ret_ptr
+        logical (c_bool), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_logical_( &
+            self%ptr, &
+            2_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ logical (c_bool):: /), (/2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_2_logical
+
+    subroutine LIBMUSCLE_DataConstRef_elements_3_logical( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        logical, dimension(:, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(3) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        logical (c_bool), pointer, dimension(:, :, :) :: f_ret_ptr
+        logical (c_bool), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_logical_( &
+            self%ptr, &
+            3_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ logical (c_bool):: /), (/3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_3_logical
+
+    subroutine LIBMUSCLE_DataConstRef_elements_4_logical( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        logical, dimension(:, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(4) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        logical (c_bool), pointer, dimension(:, :, :, :) :: f_ret_ptr
+        logical (c_bool), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_logical_( &
+            self%ptr, &
+            4_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ logical (c_bool):: /), (/4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_4_logical
+
+    subroutine LIBMUSCLE_DataConstRef_elements_5_logical( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        logical, dimension(:, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(5) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        logical (c_bool), pointer, dimension(:, :, :, :, :) :: f_ret_ptr
+        logical (c_bool), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_logical_( &
+            self%ptr, &
+            5_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ logical (c_bool):: /), (/5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_5_logical
+
+    subroutine LIBMUSCLE_DataConstRef_elements_6_logical( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        logical, dimension(:, :, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(6) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        logical (c_bool), pointer, dimension(:, :, :, :, :, :) :: f_ret_ptr
+        logical (c_bool), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_logical_( &
+            self%ptr, &
+            6_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ logical (c_bool):: /), (/6, 5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_6_logical
+
+    subroutine LIBMUSCLE_DataConstRef_elements_7_logical( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        logical, dimension(:, :, :, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(7) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        logical (c_bool), pointer, dimension(:, :, :, :, :, :, :) :: f_ret_ptr
+        logical (c_bool), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_logical_( &
+            self%ptr, &
+            7_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ logical (c_bool):: /), (/7, 6, 5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_7_logical
+
+    subroutine LIBMUSCLE_DataConstRef_elements_1_int4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        integer (LIBMUSCLE_int4), dimension(:), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(1) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int32_t), pointer, dimension(:) :: f_ret_ptr
+        integer (c_int32_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_int4_( &
+            self%ptr, &
+            1_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int32_t):: /), (/1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_1_int4
+
+    subroutine LIBMUSCLE_DataConstRef_elements_2_int4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        integer (LIBMUSCLE_int4), dimension(:, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(2) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int32_t), pointer, dimension(:, :) :: f_ret_ptr
+        integer (c_int32_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_int4_( &
+            self%ptr, &
+            2_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int32_t):: /), (/2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_2_int4
+
+    subroutine LIBMUSCLE_DataConstRef_elements_3_int4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        integer (LIBMUSCLE_int4), dimension(:, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(3) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int32_t), pointer, dimension(:, :, :) :: f_ret_ptr
+        integer (c_int32_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_int4_( &
+            self%ptr, &
+            3_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int32_t):: /), (/3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_3_int4
+
+    subroutine LIBMUSCLE_DataConstRef_elements_4_int4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(4) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int32_t), pointer, dimension(:, :, :, :) :: f_ret_ptr
+        integer (c_int32_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_int4_( &
+            self%ptr, &
+            4_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int32_t):: /), (/4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_4_int4
+
+    subroutine LIBMUSCLE_DataConstRef_elements_5_int4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(5) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int32_t), pointer, dimension(:, :, :, :, :) :: f_ret_ptr
+        integer (c_int32_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_int4_( &
+            self%ptr, &
+            5_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int32_t):: /), (/5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_5_int4
+
+    subroutine LIBMUSCLE_DataConstRef_elements_6_int4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(6) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int32_t), pointer, dimension(:, :, :, :, :, :) :: f_ret_ptr
+        integer (c_int32_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_int4_( &
+            self%ptr, &
+            6_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int32_t):: /), (/6, 5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_6_int4
+
+    subroutine LIBMUSCLE_DataConstRef_elements_7_int4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(7) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int32_t), pointer, dimension(:, :, :, :, :, :, :) :: f_ret_ptr
+        integer (c_int32_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_int4_( &
+            self%ptr, &
+            7_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int32_t):: /), (/7, 6, 5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_7_int4
+
+    subroutine LIBMUSCLE_DataConstRef_elements_1_int8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        integer (selected_int_kind(18)), dimension(:), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(1) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int64_t), pointer, dimension(:) :: f_ret_ptr
+        integer (c_int64_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_int8_( &
+            self%ptr, &
+            1_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int64_t):: /), (/1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_1_int8
+
+    subroutine LIBMUSCLE_DataConstRef_elements_2_int8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        integer (selected_int_kind(18)), dimension(:, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(2) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int64_t), pointer, dimension(:, :) :: f_ret_ptr
+        integer (c_int64_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_int8_( &
+            self%ptr, &
+            2_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int64_t):: /), (/2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_2_int8
+
+    subroutine LIBMUSCLE_DataConstRef_elements_3_int8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        integer (selected_int_kind(18)), dimension(:, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(3) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int64_t), pointer, dimension(:, :, :) :: f_ret_ptr
+        integer (c_int64_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_int8_( &
+            self%ptr, &
+            3_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int64_t):: /), (/3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_3_int8
+
+    subroutine LIBMUSCLE_DataConstRef_elements_4_int8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        integer (selected_int_kind(18)), dimension(:, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(4) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int64_t), pointer, dimension(:, :, :, :) :: f_ret_ptr
+        integer (c_int64_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_int8_( &
+            self%ptr, &
+            4_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int64_t):: /), (/4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_4_int8
+
+    subroutine LIBMUSCLE_DataConstRef_elements_5_int8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        integer (selected_int_kind(18)), dimension(:, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(5) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int64_t), pointer, dimension(:, :, :, :, :) :: f_ret_ptr
+        integer (c_int64_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_int8_( &
+            self%ptr, &
+            5_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int64_t):: /), (/5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_5_int8
+
+    subroutine LIBMUSCLE_DataConstRef_elements_6_int8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        integer (selected_int_kind(18)), dimension(:, :, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(6) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int64_t), pointer, dimension(:, :, :, :, :, :) :: f_ret_ptr
+        integer (c_int64_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_int8_( &
+            self%ptr, &
+            6_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int64_t):: /), (/6, 5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_6_int8
+
+    subroutine LIBMUSCLE_DataConstRef_elements_7_int8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        integer (selected_int_kind(18)), dimension(:, :, :, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(7) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int64_t), pointer, dimension(:, :, :, :, :, :, :) :: f_ret_ptr
+        integer (c_int64_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_int8_( &
+            self%ptr, &
+            7_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int64_t):: /), (/7, 6, 5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_7_int8
+
+    subroutine LIBMUSCLE_DataConstRef_elements_1_real4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        real (LIBMUSCLE_real4), dimension(:), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(1) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_float), pointer, dimension(:) :: f_ret_ptr
+        real (c_float), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_real4_( &
+            self%ptr, &
+            1_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_float):: /), (/1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_1_real4
+
+    subroutine LIBMUSCLE_DataConstRef_elements_2_real4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        real (LIBMUSCLE_real4), dimension(:, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(2) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_float), pointer, dimension(:, :) :: f_ret_ptr
+        real (c_float), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_real4_( &
+            self%ptr, &
+            2_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_float):: /), (/2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_2_real4
+
+    subroutine LIBMUSCLE_DataConstRef_elements_3_real4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        real (LIBMUSCLE_real4), dimension(:, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(3) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_float), pointer, dimension(:, :, :) :: f_ret_ptr
+        real (c_float), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_real4_( &
+            self%ptr, &
+            3_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_float):: /), (/3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_3_real4
+
+    subroutine LIBMUSCLE_DataConstRef_elements_4_real4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        real (LIBMUSCLE_real4), dimension(:, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(4) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_float), pointer, dimension(:, :, :, :) :: f_ret_ptr
+        real (c_float), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_real4_( &
+            self%ptr, &
+            4_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_float):: /), (/4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_4_real4
+
+    subroutine LIBMUSCLE_DataConstRef_elements_5_real4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        real (LIBMUSCLE_real4), dimension(:, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(5) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_float), pointer, dimension(:, :, :, :, :) :: f_ret_ptr
+        real (c_float), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_real4_( &
+            self%ptr, &
+            5_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_float):: /), (/5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_5_real4
+
+    subroutine LIBMUSCLE_DataConstRef_elements_6_real4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        real (LIBMUSCLE_real4), dimension(:, :, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(6) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_float), pointer, dimension(:, :, :, :, :, :) :: f_ret_ptr
+        real (c_float), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_real4_( &
+            self%ptr, &
+            6_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_float):: /), (/6, 5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_6_real4
+
+    subroutine LIBMUSCLE_DataConstRef_elements_7_real4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        real (LIBMUSCLE_real4), dimension(:, :, :, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(7) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_float), pointer, dimension(:, :, :, :, :, :, :) :: f_ret_ptr
+        real (c_float), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_real4_( &
+            self%ptr, &
+            7_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_float):: /), (/7, 6, 5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_7_real4
+
+    subroutine LIBMUSCLE_DataConstRef_elements_1_real8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        real (LIBMUSCLE_real8), dimension(:), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(1) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_double), pointer, dimension(:) :: f_ret_ptr
+        real (c_double), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_real8_( &
+            self%ptr, &
+            1_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_double):: /), (/1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_1_real8
+
+    subroutine LIBMUSCLE_DataConstRef_elements_2_real8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        real (LIBMUSCLE_real8), dimension(:, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(2) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_double), pointer, dimension(:, :) :: f_ret_ptr
+        real (c_double), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_real8_( &
+            self%ptr, &
+            2_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_double):: /), (/2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_2_real8
+
+    subroutine LIBMUSCLE_DataConstRef_elements_3_real8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        real (LIBMUSCLE_real8), dimension(:, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(3) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_double), pointer, dimension(:, :, :) :: f_ret_ptr
+        real (c_double), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_real8_( &
+            self%ptr, &
+            3_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_double):: /), (/3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_3_real8
+
+    subroutine LIBMUSCLE_DataConstRef_elements_4_real8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        real (LIBMUSCLE_real8), dimension(:, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(4) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_double), pointer, dimension(:, :, :, :) :: f_ret_ptr
+        real (c_double), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_real8_( &
+            self%ptr, &
+            4_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_double):: /), (/4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_4_real8
+
+    subroutine LIBMUSCLE_DataConstRef_elements_5_real8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        real (LIBMUSCLE_real8), dimension(:, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(5) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_double), pointer, dimension(:, :, :, :, :) :: f_ret_ptr
+        real (c_double), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_real8_( &
+            self%ptr, &
+            5_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_double):: /), (/5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_5_real8
+
+    subroutine LIBMUSCLE_DataConstRef_elements_6_real8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        real (LIBMUSCLE_real8), dimension(:, :, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(6) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_double), pointer, dimension(:, :, :, :, :, :) :: f_ret_ptr
+        real (c_double), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_real8_( &
+            self%ptr, &
+            6_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_double):: /), (/6, 5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_6_real8
+
+    subroutine LIBMUSCLE_DataConstRef_elements_7_real8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        real (LIBMUSCLE_real8), dimension(:, :, :, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(7) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_double), pointer, dimension(:, :, :, :, :, :, :) :: f_ret_ptr
+        real (c_double), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_elements_real8_( &
+            self%ptr, &
+            7_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_double):: /), (/7, 6, 5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_DataConstRef_elements_7_real8
+
+    function LIBMUSCLE_DataConstRef_has_indexes( &
+            self, &
+            err_code, &
+            err_msg)
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        logical :: LIBMUSCLE_DataConstRef_has_indexes
+
+        logical (c_bool) :: ret_val
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        ret_val = LIBMUSCLE_DataConstRef_has_indexes_( &
+            self%ptr, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        LIBMUSCLE_DataConstRef_has_indexes = ret_val
+    end function LIBMUSCLE_DataConstRef_has_indexes
+
+    function LIBMUSCLE_DataConstRef_index( &
+            self, &
+            i, &
+            err_code, &
+            err_msg)
+        implicit none
+        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        integer (LIBMUSCLE_size), intent(in) :: i
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        character(:), allocatable :: LIBMUSCLE_DataConstRef_index
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t) :: ret_val_size
+        character (c_char), dimension(:), pointer :: f_ret_ptr
+        integer :: i_loop
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_DataConstRef_index_( &
+            self%ptr, &
+            i, &
+            ret_val, &
+            ret_val_size, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
+        allocate (character(ret_val_size) :: LIBMUSCLE_DataConstRef_index)
+        do i_loop = 1, ret_val_size
+            LIBMUSCLE_DataConstRef_index(i_loop:i_loop) = f_ret_ptr(i_loop)
+        end do
+    end function LIBMUSCLE_DataConstRef_index
+
+    function LIBMUSCLE_Data_create_nil( &
+    )
         implicit none
         type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_nil
 
@@ -3201,7 +9335,8 @@ contains
         LIBMUSCLE_Data_create_nil%ptr = ret_val
     end function LIBMUSCLE_Data_create_nil
 
-    function LIBMUSCLE_Data_create_logical(value)
+    function LIBMUSCLE_Data_create_logical( &
+            value)
         implicit none
         logical, intent(in) :: value
         type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_logical
@@ -3209,12 +9344,13 @@ contains
         integer (c_intptr_t) :: ret_val
 
         ret_val = LIBMUSCLE_Data_create_logical_( &
-            merge(1, 0, value))
+            logical(value, c_bool))
 
         LIBMUSCLE_Data_create_logical%ptr = ret_val
     end function LIBMUSCLE_Data_create_logical
 
-    function LIBMUSCLE_Data_create_character(value)
+    function LIBMUSCLE_Data_create_character( &
+            value)
         implicit none
         character (len=*), intent(in) :: value
         type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_character
@@ -3227,7 +9363,8 @@ contains
         LIBMUSCLE_Data_create_character%ptr = ret_val
     end function LIBMUSCLE_Data_create_character
 
-    function LIBMUSCLE_Data_create_int1(value)
+    function LIBMUSCLE_Data_create_int1( &
+            value)
         implicit none
         integer (LIBMUSCLE_int1), intent(in) :: value
         type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_int1
@@ -3240,7 +9377,8 @@ contains
         LIBMUSCLE_Data_create_int1%ptr = ret_val
     end function LIBMUSCLE_Data_create_int1
 
-    function LIBMUSCLE_Data_create_int2(value)
+    function LIBMUSCLE_Data_create_int2( &
+            value)
         implicit none
         integer (selected_int_kind(4)), intent(in) :: value
         type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_int2
@@ -3253,7 +9391,8 @@ contains
         LIBMUSCLE_Data_create_int2%ptr = ret_val
     end function LIBMUSCLE_Data_create_int2
 
-    function LIBMUSCLE_Data_create_int4(value)
+    function LIBMUSCLE_Data_create_int4( &
+            value)
         implicit none
         integer (LIBMUSCLE_int4), intent(in) :: value
         type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_int4
@@ -3266,7 +9405,8 @@ contains
         LIBMUSCLE_Data_create_int4%ptr = ret_val
     end function LIBMUSCLE_Data_create_int4
 
-    function LIBMUSCLE_Data_create_int8(value)
+    function LIBMUSCLE_Data_create_int8( &
+            value)
         implicit none
         integer (selected_int_kind(18)), intent(in) :: value
         type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_int8
@@ -3279,7 +9419,8 @@ contains
         LIBMUSCLE_Data_create_int8%ptr = ret_val
     end function LIBMUSCLE_Data_create_int8
 
-    function LIBMUSCLE_Data_create_real4(value)
+    function LIBMUSCLE_Data_create_real4( &
+            value)
         implicit none
         real (LIBMUSCLE_real4), intent(in) :: value
         type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_real4
@@ -3292,7 +9433,8 @@ contains
         LIBMUSCLE_Data_create_real4%ptr = ret_val
     end function LIBMUSCLE_Data_create_real4
 
-    function LIBMUSCLE_Data_create_real8(value)
+    function LIBMUSCLE_Data_create_real8( &
+            value)
         implicit none
         real (LIBMUSCLE_real8), intent(in) :: value
         type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_real8
@@ -3305,7 +9447,8 @@ contains
         LIBMUSCLE_Data_create_real8%ptr = ret_val
     end function LIBMUSCLE_Data_create_real8
 
-    function LIBMUSCLE_Data_create_settings(value)
+    function LIBMUSCLE_Data_create_settings( &
+            value)
         implicit none
         type(YMMSL_Settings), intent(in) :: value
         type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_settings
@@ -3318,7 +9461,8 @@ contains
         LIBMUSCLE_Data_create_settings%ptr = ret_val
     end function LIBMUSCLE_Data_create_settings
 
-    function LIBMUSCLE_Data_create_copy(value)
+    function LIBMUSCLE_Data_create_copy( &
+            value)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: value
         type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_copy
@@ -3331,7 +9475,1653 @@ contains
         LIBMUSCLE_Data_create_copy%ptr = ret_val
     end function LIBMUSCLE_Data_create_copy
 
-    subroutine LIBMUSCLE_Data_free(self)
+    function LIBMUSCLE_Data_create_grid_1_logical_a( &
+            data_array)
+        implicit none
+        logical, dimension(:), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_1_logical_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_logical_a_( &
+            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 1_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_1_logical_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_1_logical_a
+
+    function LIBMUSCLE_Data_create_grid_2_logical_a( &
+            data_array)
+        implicit none
+        logical, dimension(:, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_2_logical_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_logical_a_( &
+            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 2_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_2_logical_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_2_logical_a
+
+    function LIBMUSCLE_Data_create_grid_3_logical_a( &
+            data_array)
+        implicit none
+        logical, dimension(:, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_3_logical_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_logical_a_( &
+            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 3_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_3_logical_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_3_logical_a
+
+    function LIBMUSCLE_Data_create_grid_4_logical_a( &
+            data_array)
+        implicit none
+        logical, dimension(:, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_4_logical_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_logical_a_( &
+            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 4_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_4_logical_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_4_logical_a
+
+    function LIBMUSCLE_Data_create_grid_5_logical_a( &
+            data_array)
+        implicit none
+        logical, dimension(:, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_5_logical_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_logical_a_( &
+            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 5_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_5_logical_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_5_logical_a
+
+    function LIBMUSCLE_Data_create_grid_6_logical_a( &
+            data_array)
+        implicit none
+        logical, dimension(:, :, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_6_logical_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_logical_a_( &
+            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 6_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_6_logical_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_6_logical_a
+
+    function LIBMUSCLE_Data_create_grid_7_logical_a( &
+            data_array)
+        implicit none
+        logical, dimension(:, :, :, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_7_logical_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_logical_a_( &
+            logical(data_array, c_bool), int(shape(logical(data_array, c_bool)), c_size_t), 7_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_7_logical_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_7_logical_a
+
+    function LIBMUSCLE_Data_create_grid_1_int4_a( &
+            data_array)
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_1_int4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int4_a_( &
+            data_array, int(shape(data_array), c_size_t), 1_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_1_int4_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_1_int4_a
+
+    function LIBMUSCLE_Data_create_grid_2_int4_a( &
+            data_array)
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_2_int4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int4_a_( &
+            data_array, int(shape(data_array), c_size_t), 2_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_2_int4_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_2_int4_a
+
+    function LIBMUSCLE_Data_create_grid_3_int4_a( &
+            data_array)
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_3_int4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int4_a_( &
+            data_array, int(shape(data_array), c_size_t), 3_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_3_int4_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_3_int4_a
+
+    function LIBMUSCLE_Data_create_grid_4_int4_a( &
+            data_array)
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_4_int4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int4_a_( &
+            data_array, int(shape(data_array), c_size_t), 4_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_4_int4_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_4_int4_a
+
+    function LIBMUSCLE_Data_create_grid_5_int4_a( &
+            data_array)
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_5_int4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int4_a_( &
+            data_array, int(shape(data_array), c_size_t), 5_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_5_int4_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_5_int4_a
+
+    function LIBMUSCLE_Data_create_grid_6_int4_a( &
+            data_array)
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_6_int4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int4_a_( &
+            data_array, int(shape(data_array), c_size_t), 6_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_6_int4_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_6_int4_a
+
+    function LIBMUSCLE_Data_create_grid_7_int4_a( &
+            data_array)
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_7_int4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int4_a_( &
+            data_array, int(shape(data_array), c_size_t), 7_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_7_int4_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_7_int4_a
+
+    function LIBMUSCLE_Data_create_grid_1_int8_a( &
+            data_array)
+        implicit none
+        integer (selected_int_kind(18)), dimension(:), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_1_int8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int8_a_( &
+            data_array, int(shape(data_array), c_size_t), 1_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_1_int8_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_1_int8_a
+
+    function LIBMUSCLE_Data_create_grid_2_int8_a( &
+            data_array)
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_2_int8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int8_a_( &
+            data_array, int(shape(data_array), c_size_t), 2_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_2_int8_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_2_int8_a
+
+    function LIBMUSCLE_Data_create_grid_3_int8_a( &
+            data_array)
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_3_int8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int8_a_( &
+            data_array, int(shape(data_array), c_size_t), 3_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_3_int8_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_3_int8_a
+
+    function LIBMUSCLE_Data_create_grid_4_int8_a( &
+            data_array)
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_4_int8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int8_a_( &
+            data_array, int(shape(data_array), c_size_t), 4_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_4_int8_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_4_int8_a
+
+    function LIBMUSCLE_Data_create_grid_5_int8_a( &
+            data_array)
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_5_int8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int8_a_( &
+            data_array, int(shape(data_array), c_size_t), 5_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_5_int8_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_5_int8_a
+
+    function LIBMUSCLE_Data_create_grid_6_int8_a( &
+            data_array)
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_6_int8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int8_a_( &
+            data_array, int(shape(data_array), c_size_t), 6_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_6_int8_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_6_int8_a
+
+    function LIBMUSCLE_Data_create_grid_7_int8_a( &
+            data_array)
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_7_int8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int8_a_( &
+            data_array, int(shape(data_array), c_size_t), 7_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_7_int8_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_7_int8_a
+
+    function LIBMUSCLE_Data_create_grid_1_real4_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_1_real4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real4_a_( &
+            data_array, int(shape(data_array), c_size_t), 1_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_1_real4_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_1_real4_a
+
+    function LIBMUSCLE_Data_create_grid_2_real4_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_2_real4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real4_a_( &
+            data_array, int(shape(data_array), c_size_t), 2_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_2_real4_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_2_real4_a
+
+    function LIBMUSCLE_Data_create_grid_3_real4_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_3_real4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real4_a_( &
+            data_array, int(shape(data_array), c_size_t), 3_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_3_real4_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_3_real4_a
+
+    function LIBMUSCLE_Data_create_grid_4_real4_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_4_real4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real4_a_( &
+            data_array, int(shape(data_array), c_size_t), 4_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_4_real4_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_4_real4_a
+
+    function LIBMUSCLE_Data_create_grid_5_real4_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_5_real4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real4_a_( &
+            data_array, int(shape(data_array), c_size_t), 5_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_5_real4_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_5_real4_a
+
+    function LIBMUSCLE_Data_create_grid_6_real4_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_6_real4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real4_a_( &
+            data_array, int(shape(data_array), c_size_t), 6_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_6_real4_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_6_real4_a
+
+    function LIBMUSCLE_Data_create_grid_7_real4_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_7_real4_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real4_a_( &
+            data_array, int(shape(data_array), c_size_t), 7_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_7_real4_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_7_real4_a
+
+    function LIBMUSCLE_Data_create_grid_1_real8_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_1_real8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real8_a_( &
+            data_array, int(shape(data_array), c_size_t), 1_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_1_real8_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_1_real8_a
+
+    function LIBMUSCLE_Data_create_grid_2_real8_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_2_real8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real8_a_( &
+            data_array, int(shape(data_array), c_size_t), 2_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_2_real8_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_2_real8_a
+
+    function LIBMUSCLE_Data_create_grid_3_real8_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_3_real8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real8_a_( &
+            data_array, int(shape(data_array), c_size_t), 3_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_3_real8_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_3_real8_a
+
+    function LIBMUSCLE_Data_create_grid_4_real8_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_4_real8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real8_a_( &
+            data_array, int(shape(data_array), c_size_t), 4_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_4_real8_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_4_real8_a
+
+    function LIBMUSCLE_Data_create_grid_5_real8_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_5_real8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real8_a_( &
+            data_array, int(shape(data_array), c_size_t), 5_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_5_real8_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_5_real8_a
+
+    function LIBMUSCLE_Data_create_grid_6_real8_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_6_real8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real8_a_( &
+            data_array, int(shape(data_array), c_size_t), 6_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_6_real8_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_6_real8_a
+
+    function LIBMUSCLE_Data_create_grid_7_real8_a( &
+            data_array)
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_7_real8_a
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real8_a_( &
+            data_array, int(shape(data_array), c_size_t), 7_LIBMUSCLE_size)
+
+        LIBMUSCLE_Data_create_grid_7_real8_a%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_7_real8_a
+
+    function LIBMUSCLE_Data_create_grid_1_logical_n( &
+            data_array, &
+            index_name_1)
+
+        implicit none
+        logical, dimension(:), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_1_logical_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                1_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_1_logical_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_1_logical_n
+
+    function LIBMUSCLE_Data_create_grid_2_logical_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2)
+
+        implicit none
+        logical, dimension(:, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_2_logical_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                2_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_2_logical_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_2_logical_n
+
+    function LIBMUSCLE_Data_create_grid_3_logical_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3)
+
+        implicit none
+        logical, dimension(:, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_3_logical_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                3_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_3_logical_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_3_logical_n
+
+    function LIBMUSCLE_Data_create_grid_4_logical_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4)
+
+        implicit none
+        logical, dimension(:, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_4_logical_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                4_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_4_logical_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_4_logical_n
+
+    function LIBMUSCLE_Data_create_grid_5_logical_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5)
+
+        implicit none
+        logical, dimension(:, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_5_logical_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                5_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_5_logical_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_5_logical_n
+
+    function LIBMUSCLE_Data_create_grid_6_logical_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5, &
+            index_name_6)
+
+        implicit none
+        logical, dimension(:, :, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        character (len=*), intent(in) :: index_name_6
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_6_logical_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                6_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_6_logical_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_6_logical_n
+
+    function LIBMUSCLE_Data_create_grid_7_logical_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5, &
+            index_name_6, &
+            index_name_7)
+
+        implicit none
+        logical, dimension(:, :, :, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        character (len=*), intent(in) :: index_name_6
+        character (len=*), intent(in) :: index_name_7
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_7_logical_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_logical_n_( &
+                logical(data_array, c_bool), &
+                int(shape(data_array), c_size_t), &
+                7_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_7, int(len(index_name_7), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_7_logical_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_7_logical_n
+
+    function LIBMUSCLE_Data_create_grid_1_int4_n( &
+            data_array, &
+            index_name_1)
+
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_1_int4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                1_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_1_int4_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_1_int4_n
+
+    function LIBMUSCLE_Data_create_grid_2_int4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2)
+
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_2_int4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                2_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_2_int4_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_2_int4_n
+
+    function LIBMUSCLE_Data_create_grid_3_int4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3)
+
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_3_int4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                3_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_3_int4_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_3_int4_n
+
+    function LIBMUSCLE_Data_create_grid_4_int4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4)
+
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_4_int4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                4_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_4_int4_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_4_int4_n
+
+    function LIBMUSCLE_Data_create_grid_5_int4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5)
+
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_5_int4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                5_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_5_int4_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_5_int4_n
+
+    function LIBMUSCLE_Data_create_grid_6_int4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5, &
+            index_name_6)
+
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        character (len=*), intent(in) :: index_name_6
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_6_int4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                6_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_6_int4_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_6_int4_n
+
+    function LIBMUSCLE_Data_create_grid_7_int4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5, &
+            index_name_6, &
+            index_name_7)
+
+        implicit none
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        character (len=*), intent(in) :: index_name_6
+        character (len=*), intent(in) :: index_name_7
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_7_int4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                7_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_7, int(len(index_name_7), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_7_int4_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_7_int4_n
+
+    function LIBMUSCLE_Data_create_grid_1_int8_n( &
+            data_array, &
+            index_name_1)
+
+        implicit none
+        integer (selected_int_kind(18)), dimension(:), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_1_int8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                1_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_1_int8_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_1_int8_n
+
+    function LIBMUSCLE_Data_create_grid_2_int8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2)
+
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_2_int8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                2_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_2_int8_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_2_int8_n
+
+    function LIBMUSCLE_Data_create_grid_3_int8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3)
+
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_3_int8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                3_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_3_int8_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_3_int8_n
+
+    function LIBMUSCLE_Data_create_grid_4_int8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4)
+
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_4_int8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                4_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_4_int8_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_4_int8_n
+
+    function LIBMUSCLE_Data_create_grid_5_int8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5)
+
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_5_int8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                5_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_5_int8_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_5_int8_n
+
+    function LIBMUSCLE_Data_create_grid_6_int8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5, &
+            index_name_6)
+
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        character (len=*), intent(in) :: index_name_6
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_6_int8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                6_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_6_int8_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_6_int8_n
+
+    function LIBMUSCLE_Data_create_grid_7_int8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5, &
+            index_name_6, &
+            index_name_7)
+
+        implicit none
+        integer (selected_int_kind(18)), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        character (len=*), intent(in) :: index_name_6
+        character (len=*), intent(in) :: index_name_7
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_7_int8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_int8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                7_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_7, int(len(index_name_7), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_7_int8_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_7_int8_n
+
+    function LIBMUSCLE_Data_create_grid_1_real4_n( &
+            data_array, &
+            index_name_1)
+
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_1_real4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                1_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_1_real4_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_1_real4_n
+
+    function LIBMUSCLE_Data_create_grid_2_real4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2)
+
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_2_real4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                2_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_2_real4_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_2_real4_n
+
+    function LIBMUSCLE_Data_create_grid_3_real4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3)
+
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_3_real4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                3_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_3_real4_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_3_real4_n
+
+    function LIBMUSCLE_Data_create_grid_4_real4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4)
+
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_4_real4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                4_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_4_real4_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_4_real4_n
+
+    function LIBMUSCLE_Data_create_grid_5_real4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5)
+
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_5_real4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                5_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_5_real4_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_5_real4_n
+
+    function LIBMUSCLE_Data_create_grid_6_real4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5, &
+            index_name_6)
+
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        character (len=*), intent(in) :: index_name_6
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_6_real4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                6_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_6_real4_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_6_real4_n
+
+    function LIBMUSCLE_Data_create_grid_7_real4_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5, &
+            index_name_6, &
+            index_name_7)
+
+        implicit none
+        real (LIBMUSCLE_real4), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        character (len=*), intent(in) :: index_name_6
+        character (len=*), intent(in) :: index_name_7
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_7_real4_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real4_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                7_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_7, int(len(index_name_7), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_7_real4_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_7_real4_n
+
+    function LIBMUSCLE_Data_create_grid_1_real8_n( &
+            data_array, &
+            index_name_1)
+
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_1_real8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                1_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_1_real8_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_1_real8_n
+
+    function LIBMUSCLE_Data_create_grid_2_real8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2)
+
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_2_real8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                2_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_2_real8_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_2_real8_n
+
+    function LIBMUSCLE_Data_create_grid_3_real8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3)
+
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_3_real8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                3_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_3_real8_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_3_real8_n
+
+    function LIBMUSCLE_Data_create_grid_4_real8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4)
+
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_4_real8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                4_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_4_real8_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_4_real8_n
+
+    function LIBMUSCLE_Data_create_grid_5_real8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5)
+
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_5_real8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                5_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_5_real8_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_5_real8_n
+
+    function LIBMUSCLE_Data_create_grid_6_real8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5, &
+            index_name_6)
+
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        character (len=*), intent(in) :: index_name_6
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_6_real8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                6_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_1, int(len(index_name_1), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_6_real8_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_6_real8_n
+
+    function LIBMUSCLE_Data_create_grid_7_real8_n( &
+            data_array, &
+            index_name_1, &
+            index_name_2, &
+            index_name_3, &
+            index_name_4, &
+            index_name_5, &
+            index_name_6, &
+            index_name_7)
+
+        implicit none
+        real (LIBMUSCLE_real8), dimension(:, :, :, :, :, :, :), intent(in) :: data_array
+        character (len=*), intent(in) :: index_name_1
+        character (len=*), intent(in) :: index_name_2
+        character (len=*), intent(in) :: index_name_3
+        character (len=*), intent(in) :: index_name_4
+        character (len=*), intent(in) :: index_name_5
+        character (len=*), intent(in) :: index_name_6
+        character (len=*), intent(in) :: index_name_7
+        type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_grid_7_real8_n
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_create_grid_real8_n_( &
+                data_array, &
+                int(shape(data_array), c_size_t), &
+                7_LIBMUSCLE_size, &
+                index_name_1, int(len(index_name_1), c_size_t), &
+                index_name_2, int(len(index_name_2), c_size_t), &
+                index_name_3, int(len(index_name_3), c_size_t), &
+                index_name_4, int(len(index_name_4), c_size_t), &
+                index_name_5, int(len(index_name_5), c_size_t), &
+                index_name_6, int(len(index_name_6), c_size_t), &
+                index_name_7, int(len(index_name_7), c_size_t) &
+            )
+
+        LIBMUSCLE_Data_create_grid_7_real8_n%ptr = ret_val
+    end function LIBMUSCLE_Data_create_grid_7_real8_n
+
+    subroutine LIBMUSCLE_Data_free( &
+            self)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
 
@@ -3339,189 +11129,274 @@ contains
             self%ptr)
     end subroutine LIBMUSCLE_Data_free
 
-    function LIBMUSCLE_Data_is_a_logical(self)
+    function LIBMUSCLE_Data_is_a_logical( &
+            self)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_logical
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_logical_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_logical = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_logical = ret_val
     end function LIBMUSCLE_Data_is_a_logical
 
-    function LIBMUSCLE_Data_is_a_character(self)
+    function LIBMUSCLE_Data_is_a_character( &
+            self)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_character
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_character_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_character = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_character = ret_val
     end function LIBMUSCLE_Data_is_a_character
 
-    function LIBMUSCLE_Data_is_a_int(self)
+    function LIBMUSCLE_Data_is_a_int( &
+            self)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_int
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_int_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_int = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_int = ret_val
     end function LIBMUSCLE_Data_is_a_int
 
-    function LIBMUSCLE_Data_is_a_int1(self)
+    function LIBMUSCLE_Data_is_a_int1( &
+            self)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_int1
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_int1_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_int1 = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_int1 = ret_val
     end function LIBMUSCLE_Data_is_a_int1
 
-    function LIBMUSCLE_Data_is_a_int2(self)
+    function LIBMUSCLE_Data_is_a_int2( &
+            self)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_int2
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_int2_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_int2 = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_int2 = ret_val
     end function LIBMUSCLE_Data_is_a_int2
 
-    function LIBMUSCLE_Data_is_a_int4(self)
+    function LIBMUSCLE_Data_is_a_int4( &
+            self)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_int4
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_int4_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_int4 = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_int4 = ret_val
     end function LIBMUSCLE_Data_is_a_int4
 
-    function LIBMUSCLE_Data_is_a_int8(self)
+    function LIBMUSCLE_Data_is_a_int8( &
+            self)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_int8
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_int8_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_int8 = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_int8 = ret_val
     end function LIBMUSCLE_Data_is_a_int8
 
-    function LIBMUSCLE_Data_is_a_real4(self)
+    function LIBMUSCLE_Data_is_a_real4( &
+            self)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_real4
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_real4_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_real4 = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_real4 = ret_val
     end function LIBMUSCLE_Data_is_a_real4
 
-    function LIBMUSCLE_Data_is_a_real8(self)
+    function LIBMUSCLE_Data_is_a_real8( &
+            self)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_real8
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_real8_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_real8 = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_real8 = ret_val
     end function LIBMUSCLE_Data_is_a_real8
 
-    function LIBMUSCLE_Data_is_a_dict(self)
+    function LIBMUSCLE_Data_is_a_dict( &
+            self)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_dict
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_dict_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_dict = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_dict = ret_val
     end function LIBMUSCLE_Data_is_a_dict
 
-    function LIBMUSCLE_Data_is_a_list(self)
+    function LIBMUSCLE_Data_is_a_list( &
+            self)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_list
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_list_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_list = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_list = ret_val
     end function LIBMUSCLE_Data_is_a_list
 
-    function LIBMUSCLE_Data_is_a_byte_array(self)
+    function LIBMUSCLE_Data_is_a_grid_of_logical( &
+            self)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        logical :: LIBMUSCLE_Data_is_a_grid_of_logical
+
+        logical (c_bool) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_is_a_grid_of_logical_( &
+            self%ptr)
+
+        LIBMUSCLE_Data_is_a_grid_of_logical = ret_val
+    end function LIBMUSCLE_Data_is_a_grid_of_logical
+
+    function LIBMUSCLE_Data_is_a_grid_of_real4( &
+            self)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        logical :: LIBMUSCLE_Data_is_a_grid_of_real4
+
+        logical (c_bool) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_is_a_grid_of_real4_( &
+            self%ptr)
+
+        LIBMUSCLE_Data_is_a_grid_of_real4 = ret_val
+    end function LIBMUSCLE_Data_is_a_grid_of_real4
+
+    function LIBMUSCLE_Data_is_a_grid_of_real8( &
+            self)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        logical :: LIBMUSCLE_Data_is_a_grid_of_real8
+
+        logical (c_bool) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_is_a_grid_of_real8_( &
+            self%ptr)
+
+        LIBMUSCLE_Data_is_a_grid_of_real8 = ret_val
+    end function LIBMUSCLE_Data_is_a_grid_of_real8
+
+    function LIBMUSCLE_Data_is_a_grid_of_int4( &
+            self)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        logical :: LIBMUSCLE_Data_is_a_grid_of_int4
+
+        logical (c_bool) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_is_a_grid_of_int4_( &
+            self%ptr)
+
+        LIBMUSCLE_Data_is_a_grid_of_int4 = ret_val
+    end function LIBMUSCLE_Data_is_a_grid_of_int4
+
+    function LIBMUSCLE_Data_is_a_grid_of_int8( &
+            self)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        logical :: LIBMUSCLE_Data_is_a_grid_of_int8
+
+        logical (c_bool) :: ret_val
+
+        ret_val = LIBMUSCLE_Data_is_a_grid_of_int8_( &
+            self%ptr)
+
+        LIBMUSCLE_Data_is_a_grid_of_int8 = ret_val
+    end function LIBMUSCLE_Data_is_a_grid_of_int8
+
+    function LIBMUSCLE_Data_is_a_byte_array( &
+            self)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_byte_array
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_byte_array_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_byte_array = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_byte_array = ret_val
     end function LIBMUSCLE_Data_is_a_byte_array
 
-    function LIBMUSCLE_Data_is_nil(self)
+    function LIBMUSCLE_Data_is_nil( &
+            self)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_nil
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_nil_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_nil = ret_val .ne. 0
+        LIBMUSCLE_Data_is_nil = ret_val
     end function LIBMUSCLE_Data_is_nil
 
-    function LIBMUSCLE_Data_is_a_settings(self)
+    function LIBMUSCLE_Data_is_a_settings( &
+            self)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_settings
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Data_is_a_settings_( &
             self%ptr)
 
-        LIBMUSCLE_Data_is_a_settings = ret_val .ne. 0
+        LIBMUSCLE_Data_is_a_settings = ret_val
     end function LIBMUSCLE_Data_is_a_settings
 
-    function LIBMUSCLE_Data_size(self)
+    function LIBMUSCLE_Data_size( &
+            self)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size) :: LIBMUSCLE_Data_size
@@ -3533,14 +11408,17 @@ contains
         LIBMUSCLE_Data_size = ret_val
     end function LIBMUSCLE_Data_size
 
-    function LIBMUSCLE_Data_as_logical(self, err_code, err_msg)
+    function LIBMUSCLE_Data_as_logical( &
+            self, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_Data_as_logical
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -3580,10 +11458,13 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Data_as_logical = ret_val .ne. 0
+        LIBMUSCLE_Data_as_logical = ret_val
     end function LIBMUSCLE_Data_as_logical
 
-    function LIBMUSCLE_Data_as_character(self, err_code, err_msg)
+    function LIBMUSCLE_Data_as_character( &
+            self, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
@@ -3642,7 +11523,10 @@ contains
         end do
     end function LIBMUSCLE_Data_as_character
 
-    function LIBMUSCLE_Data_as_int(self, err_code, err_msg)
+    function LIBMUSCLE_Data_as_int( &
+            self, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
@@ -3691,7 +11575,10 @@ contains
         LIBMUSCLE_Data_as_int = ret_val
     end function LIBMUSCLE_Data_as_int
 
-    function LIBMUSCLE_Data_as_int1(self, err_code, err_msg)
+    function LIBMUSCLE_Data_as_int1( &
+            self, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
@@ -3740,7 +11627,10 @@ contains
         LIBMUSCLE_Data_as_int1 = ret_val
     end function LIBMUSCLE_Data_as_int1
 
-    function LIBMUSCLE_Data_as_int2(self, err_code, err_msg)
+    function LIBMUSCLE_Data_as_int2( &
+            self, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
@@ -3789,7 +11679,10 @@ contains
         LIBMUSCLE_Data_as_int2 = ret_val
     end function LIBMUSCLE_Data_as_int2
 
-    function LIBMUSCLE_Data_as_int4(self, err_code, err_msg)
+    function LIBMUSCLE_Data_as_int4( &
+            self, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
@@ -3838,7 +11731,10 @@ contains
         LIBMUSCLE_Data_as_int4 = ret_val
     end function LIBMUSCLE_Data_as_int4
 
-    function LIBMUSCLE_Data_as_int8(self, err_code, err_msg)
+    function LIBMUSCLE_Data_as_int8( &
+            self, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
@@ -3887,7 +11783,10 @@ contains
         LIBMUSCLE_Data_as_int8 = ret_val
     end function LIBMUSCLE_Data_as_int8
 
-    function LIBMUSCLE_Data_as_real4(self, err_code, err_msg)
+    function LIBMUSCLE_Data_as_real4( &
+            self, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
@@ -3936,7 +11835,10 @@ contains
         LIBMUSCLE_Data_as_real4 = ret_val
     end function LIBMUSCLE_Data_as_real4
 
-    function LIBMUSCLE_Data_as_real8(self, err_code, err_msg)
+    function LIBMUSCLE_Data_as_real8( &
+            self, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
@@ -3985,7 +11887,10 @@ contains
         LIBMUSCLE_Data_as_real8 = ret_val
     end function LIBMUSCLE_Data_as_real8
 
-    function LIBMUSCLE_Data_as_settings(self, err_code, err_msg)
+    function LIBMUSCLE_Data_as_settings( &
+            self, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
@@ -4035,7 +11940,11 @@ contains
         LIBMUSCLE_Data_as_settings%ptr = ret_val
     end function LIBMUSCLE_Data_as_settings
 
-    subroutine LIBMUSCLE_Data_as_byte_array(self, data, err_code, err_msg)
+    subroutine LIBMUSCLE_Data_as_byte_array( &
+            self, &
+            data, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         character(len=1), dimension(:), intent(out) :: data
@@ -4090,7 +11999,11 @@ contains
         data = f_ret_ptr
     end subroutine LIBMUSCLE_Data_as_byte_array
 
-    function LIBMUSCLE_Data_get_item_by_key(self, key, err_code, err_msg)
+    function LIBMUSCLE_Data_get_item_by_key( &
+            self, &
+            key, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -4142,7 +12055,11 @@ contains
         LIBMUSCLE_Data_get_item_by_key%ptr = ret_val
     end function LIBMUSCLE_Data_get_item_by_key
 
-    function LIBMUSCLE_Data_get_item_by_index(self, i, err_code, err_msg)
+    function LIBMUSCLE_Data_get_item_by_index( &
+            self, &
+            i, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
@@ -4194,7 +12111,2652 @@ contains
         LIBMUSCLE_Data_get_item_by_index%ptr = ret_val
     end function LIBMUSCLE_Data_get_item_by_index
 
-    function LIBMUSCLE_Data_create_dict()
+    function LIBMUSCLE_Data_num_dims( &
+            self, &
+            err_code, &
+            err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        integer (LIBMUSCLE_size) :: LIBMUSCLE_Data_num_dims
+
+        integer (c_size_t) :: ret_val
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        ret_val = LIBMUSCLE_Data_num_dims_( &
+            self%ptr, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        LIBMUSCLE_Data_num_dims = ret_val
+    end function LIBMUSCLE_Data_num_dims
+
+    subroutine LIBMUSCLE_Data_shape( &
+            self, &
+            shp, &
+            err_code, &
+            err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer (LIBMUSCLE_size), dimension(:), intent(out) :: shp
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t) :: ret_val_size
+        integer (LIBMUSCLE_size), pointer, dimension(:) :: f_ret_ptr
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_shape_( &
+            self%ptr, &
+            ret_val, &
+            ret_val_size, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
+        shp = f_ret_ptr
+    end subroutine LIBMUSCLE_Data_shape
+
+    subroutine LIBMUSCLE_Data_elements_1_logical( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        logical, dimension(:), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(1) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        logical (c_bool), pointer, dimension(:) :: f_ret_ptr
+        logical (c_bool), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_logical_( &
+            self%ptr, &
+            1_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ logical (c_bool):: /), (/1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_1_logical
+
+    subroutine LIBMUSCLE_Data_elements_2_logical( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        logical, dimension(:, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(2) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        logical (c_bool), pointer, dimension(:, :) :: f_ret_ptr
+        logical (c_bool), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_logical_( &
+            self%ptr, &
+            2_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ logical (c_bool):: /), (/2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_2_logical
+
+    subroutine LIBMUSCLE_Data_elements_3_logical( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        logical, dimension(:, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(3) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        logical (c_bool), pointer, dimension(:, :, :) :: f_ret_ptr
+        logical (c_bool), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_logical_( &
+            self%ptr, &
+            3_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ logical (c_bool):: /), (/3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_3_logical
+
+    subroutine LIBMUSCLE_Data_elements_4_logical( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        logical, dimension(:, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(4) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        logical (c_bool), pointer, dimension(:, :, :, :) :: f_ret_ptr
+        logical (c_bool), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_logical_( &
+            self%ptr, &
+            4_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ logical (c_bool):: /), (/4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_4_logical
+
+    subroutine LIBMUSCLE_Data_elements_5_logical( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        logical, dimension(:, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(5) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        logical (c_bool), pointer, dimension(:, :, :, :, :) :: f_ret_ptr
+        logical (c_bool), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_logical_( &
+            self%ptr, &
+            5_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ logical (c_bool):: /), (/5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_5_logical
+
+    subroutine LIBMUSCLE_Data_elements_6_logical( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        logical, dimension(:, :, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(6) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        logical (c_bool), pointer, dimension(:, :, :, :, :, :) :: f_ret_ptr
+        logical (c_bool), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_logical_( &
+            self%ptr, &
+            6_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ logical (c_bool):: /), (/6, 5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_6_logical
+
+    subroutine LIBMUSCLE_Data_elements_7_logical( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        logical, dimension(:, :, :, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(7) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        logical (c_bool), pointer, dimension(:, :, :, :, :, :, :) :: f_ret_ptr
+        logical (c_bool), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_logical_( &
+            self%ptr, &
+            7_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ logical (c_bool):: /), (/7, 6, 5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_7_logical
+
+    subroutine LIBMUSCLE_Data_elements_1_int4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer (LIBMUSCLE_int4), dimension(:), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(1) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int32_t), pointer, dimension(:) :: f_ret_ptr
+        integer (c_int32_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_int4_( &
+            self%ptr, &
+            1_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int32_t):: /), (/1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_1_int4
+
+    subroutine LIBMUSCLE_Data_elements_2_int4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer (LIBMUSCLE_int4), dimension(:, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(2) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int32_t), pointer, dimension(:, :) :: f_ret_ptr
+        integer (c_int32_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_int4_( &
+            self%ptr, &
+            2_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int32_t):: /), (/2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_2_int4
+
+    subroutine LIBMUSCLE_Data_elements_3_int4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer (LIBMUSCLE_int4), dimension(:, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(3) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int32_t), pointer, dimension(:, :, :) :: f_ret_ptr
+        integer (c_int32_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_int4_( &
+            self%ptr, &
+            3_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int32_t):: /), (/3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_3_int4
+
+    subroutine LIBMUSCLE_Data_elements_4_int4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(4) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int32_t), pointer, dimension(:, :, :, :) :: f_ret_ptr
+        integer (c_int32_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_int4_( &
+            self%ptr, &
+            4_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int32_t):: /), (/4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_4_int4
+
+    subroutine LIBMUSCLE_Data_elements_5_int4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(5) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int32_t), pointer, dimension(:, :, :, :, :) :: f_ret_ptr
+        integer (c_int32_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_int4_( &
+            self%ptr, &
+            5_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int32_t):: /), (/5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_5_int4
+
+    subroutine LIBMUSCLE_Data_elements_6_int4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(6) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int32_t), pointer, dimension(:, :, :, :, :, :) :: f_ret_ptr
+        integer (c_int32_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_int4_( &
+            self%ptr, &
+            6_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int32_t):: /), (/6, 5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_6_int4
+
+    subroutine LIBMUSCLE_Data_elements_7_int4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer (LIBMUSCLE_int4), dimension(:, :, :, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(7) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int32_t), pointer, dimension(:, :, :, :, :, :, :) :: f_ret_ptr
+        integer (c_int32_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_int4_( &
+            self%ptr, &
+            7_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int32_t):: /), (/7, 6, 5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_7_int4
+
+    subroutine LIBMUSCLE_Data_elements_1_int8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer (selected_int_kind(18)), dimension(:), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(1) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int64_t), pointer, dimension(:) :: f_ret_ptr
+        integer (c_int64_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_int8_( &
+            self%ptr, &
+            1_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int64_t):: /), (/1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_1_int8
+
+    subroutine LIBMUSCLE_Data_elements_2_int8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer (selected_int_kind(18)), dimension(:, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(2) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int64_t), pointer, dimension(:, :) :: f_ret_ptr
+        integer (c_int64_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_int8_( &
+            self%ptr, &
+            2_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int64_t):: /), (/2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_2_int8
+
+    subroutine LIBMUSCLE_Data_elements_3_int8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer (selected_int_kind(18)), dimension(:, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(3) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int64_t), pointer, dimension(:, :, :) :: f_ret_ptr
+        integer (c_int64_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_int8_( &
+            self%ptr, &
+            3_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int64_t):: /), (/3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_3_int8
+
+    subroutine LIBMUSCLE_Data_elements_4_int8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer (selected_int_kind(18)), dimension(:, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(4) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int64_t), pointer, dimension(:, :, :, :) :: f_ret_ptr
+        integer (c_int64_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_int8_( &
+            self%ptr, &
+            4_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int64_t):: /), (/4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_4_int8
+
+    subroutine LIBMUSCLE_Data_elements_5_int8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer (selected_int_kind(18)), dimension(:, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(5) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int64_t), pointer, dimension(:, :, :, :, :) :: f_ret_ptr
+        integer (c_int64_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_int8_( &
+            self%ptr, &
+            5_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int64_t):: /), (/5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_5_int8
+
+    subroutine LIBMUSCLE_Data_elements_6_int8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer (selected_int_kind(18)), dimension(:, :, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(6) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int64_t), pointer, dimension(:, :, :, :, :, :) :: f_ret_ptr
+        integer (c_int64_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_int8_( &
+            self%ptr, &
+            6_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int64_t):: /), (/6, 5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_6_int8
+
+    subroutine LIBMUSCLE_Data_elements_7_int8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer (selected_int_kind(18)), dimension(:, :, :, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(7) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        integer (c_int64_t), pointer, dimension(:, :, :, :, :, :, :) :: f_ret_ptr
+        integer (c_int64_t), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_int8_( &
+            self%ptr, &
+            7_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ integer (c_int64_t):: /), (/7, 6, 5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_7_int8
+
+    subroutine LIBMUSCLE_Data_elements_1_real4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        real (LIBMUSCLE_real4), dimension(:), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(1) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_float), pointer, dimension(:) :: f_ret_ptr
+        real (c_float), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_real4_( &
+            self%ptr, &
+            1_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_float):: /), (/1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_1_real4
+
+    subroutine LIBMUSCLE_Data_elements_2_real4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        real (LIBMUSCLE_real4), dimension(:, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(2) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_float), pointer, dimension(:, :) :: f_ret_ptr
+        real (c_float), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_real4_( &
+            self%ptr, &
+            2_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_float):: /), (/2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_2_real4
+
+    subroutine LIBMUSCLE_Data_elements_3_real4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        real (LIBMUSCLE_real4), dimension(:, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(3) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_float), pointer, dimension(:, :, :) :: f_ret_ptr
+        real (c_float), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_real4_( &
+            self%ptr, &
+            3_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_float):: /), (/3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_3_real4
+
+    subroutine LIBMUSCLE_Data_elements_4_real4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        real (LIBMUSCLE_real4), dimension(:, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(4) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_float), pointer, dimension(:, :, :, :) :: f_ret_ptr
+        real (c_float), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_real4_( &
+            self%ptr, &
+            4_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_float):: /), (/4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_4_real4
+
+    subroutine LIBMUSCLE_Data_elements_5_real4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        real (LIBMUSCLE_real4), dimension(:, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(5) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_float), pointer, dimension(:, :, :, :, :) :: f_ret_ptr
+        real (c_float), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_real4_( &
+            self%ptr, &
+            5_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_float):: /), (/5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_5_real4
+
+    subroutine LIBMUSCLE_Data_elements_6_real4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        real (LIBMUSCLE_real4), dimension(:, :, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(6) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_float), pointer, dimension(:, :, :, :, :, :) :: f_ret_ptr
+        real (c_float), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_real4_( &
+            self%ptr, &
+            6_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_float):: /), (/6, 5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_6_real4
+
+    subroutine LIBMUSCLE_Data_elements_7_real4( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        real (LIBMUSCLE_real4), dimension(:, :, :, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(7) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_float), pointer, dimension(:, :, :, :, :, :, :) :: f_ret_ptr
+        real (c_float), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_real4_( &
+            self%ptr, &
+            7_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_float):: /), (/7, 6, 5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_7_real4
+
+    subroutine LIBMUSCLE_Data_elements_1_real8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        real (LIBMUSCLE_real8), dimension(:), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(1) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_double), pointer, dimension(:) :: f_ret_ptr
+        real (c_double), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_real8_( &
+            self%ptr, &
+            1_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_double):: /), (/1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_1_real8
+
+    subroutine LIBMUSCLE_Data_elements_2_real8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        real (LIBMUSCLE_real8), dimension(:, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(2) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_double), pointer, dimension(:, :) :: f_ret_ptr
+        real (c_double), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_real8_( &
+            self%ptr, &
+            2_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_double):: /), (/2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_2_real8
+
+    subroutine LIBMUSCLE_Data_elements_3_real8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        real (LIBMUSCLE_real8), dimension(:, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(3) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_double), pointer, dimension(:, :, :) :: f_ret_ptr
+        real (c_double), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_real8_( &
+            self%ptr, &
+            3_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_double):: /), (/3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_3_real8
+
+    subroutine LIBMUSCLE_Data_elements_4_real8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        real (LIBMUSCLE_real8), dimension(:, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(4) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_double), pointer, dimension(:, :, :, :) :: f_ret_ptr
+        real (c_double), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_real8_( &
+            self%ptr, &
+            4_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_double):: /), (/4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_4_real8
+
+    subroutine LIBMUSCLE_Data_elements_5_real8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        real (LIBMUSCLE_real8), dimension(:, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(5) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_double), pointer, dimension(:, :, :, :, :) :: f_ret_ptr
+        real (c_double), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_real8_( &
+            self%ptr, &
+            5_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_double):: /), (/5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_5_real8
+
+    subroutine LIBMUSCLE_Data_elements_6_real8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        real (LIBMUSCLE_real8), dimension(:, :, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(6) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_double), pointer, dimension(:, :, :, :, :, :) :: f_ret_ptr
+        real (c_double), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_real8_( &
+            self%ptr, &
+            6_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_double):: /), (/6, 5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_6_real8
+
+    subroutine LIBMUSCLE_Data_elements_7_real8( &
+            self, &
+            elements, &
+            err_code, &
+            err_msg)
+
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        real (LIBMUSCLE_real8), dimension(:, :, :, :, :, :, :), intent(out) :: elements
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(7) :: ret_val_shape
+        integer (c_int) :: ret_val_format
+        real (c_double), pointer, dimension(:, :, :, :, :, :, :) :: f_ret_ptr
+        real (c_double), pointer, dimension(:) :: f_ret_ptr_linear
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_elements_real8_( &
+            self%ptr, &
+            7_LIBMUSCLE_size, &
+            ret_val, &
+            ret_val_shape, &
+            ret_val_format, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        if (ret_val_format .eq. 0) then
+            call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+            elements = f_ret_ptr
+        else
+            call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+            elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ real (c_double):: /), (/7, 6, 5, 4, 3, 2, 1/))
+        end if
+    end subroutine LIBMUSCLE_Data_elements_7_real8
+
+    function LIBMUSCLE_Data_has_indexes( &
+            self, &
+            err_code, &
+            err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        logical :: LIBMUSCLE_Data_has_indexes
+
+        logical (c_bool) :: ret_val
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        ret_val = LIBMUSCLE_Data_has_indexes_( &
+            self%ptr, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        LIBMUSCLE_Data_has_indexes = ret_val
+    end function LIBMUSCLE_Data_has_indexes
+
+    function LIBMUSCLE_Data_index( &
+            self, &
+            i, &
+            err_code, &
+            err_msg)
+        implicit none
+        type(LIBMUSCLE_Data), intent(in) :: self
+        integer (LIBMUSCLE_size), intent(in) :: i
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        character(:), allocatable :: LIBMUSCLE_Data_index
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t) :: ret_val_size
+        character (c_char), dimension(:), pointer :: f_ret_ptr
+        integer :: i_loop
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Data_index_( &
+            self%ptr, &
+            i, &
+            ret_val, &
+            ret_val_size, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
+        allocate (character(ret_val_size) :: LIBMUSCLE_Data_index)
+        do i_loop = 1, ret_val_size
+            LIBMUSCLE_Data_index(i_loop:i_loop) = f_ret_ptr(i_loop)
+        end do
+    end function LIBMUSCLE_Data_index
+
+    function LIBMUSCLE_Data_create_dict( &
+    )
         implicit none
         type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_dict
 
@@ -4206,7 +14768,8 @@ contains
         LIBMUSCLE_Data_create_dict%ptr = ret_val
     end function LIBMUSCLE_Data_create_dict
 
-    function LIBMUSCLE_Data_create_list()
+    function LIBMUSCLE_Data_create_list( &
+    )
         implicit none
         type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_list
 
@@ -4218,7 +14781,8 @@ contains
         LIBMUSCLE_Data_create_list%ptr = ret_val
     end function LIBMUSCLE_Data_create_list
 
-    function LIBMUSCLE_Data_create_nils(size)
+    function LIBMUSCLE_Data_create_nils( &
+            size)
         implicit none
         integer (LIBMUSCLE_size), intent(in) :: size
         type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_nils
@@ -4231,7 +14795,8 @@ contains
         LIBMUSCLE_Data_create_nils%ptr = ret_val
     end function LIBMUSCLE_Data_create_nils
 
-    function LIBMUSCLE_Data_create_byte_array_empty(size)
+    function LIBMUSCLE_Data_create_byte_array_empty( &
+            size)
         implicit none
         integer (LIBMUSCLE_size), intent(in) :: size
         type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_byte_array_empty
@@ -4244,7 +14809,8 @@ contains
         LIBMUSCLE_Data_create_byte_array_empty%ptr = ret_val
     end function LIBMUSCLE_Data_create_byte_array_empty
 
-    function LIBMUSCLE_Data_create_byte_array_from_buf(buf)
+    function LIBMUSCLE_Data_create_byte_array_from_buf( &
+            buf)
         implicit none
         character(len=1), dimension(:), intent(in) :: buf
         type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_byte_array_from_buf
@@ -4257,17 +14823,21 @@ contains
         LIBMUSCLE_Data_create_byte_array_from_buf%ptr = ret_val
     end function LIBMUSCLE_Data_create_byte_array_from_buf
 
-    subroutine LIBMUSCLE_Data_set_logical(self, value)
+    subroutine LIBMUSCLE_Data_set_logical( &
+            self, &
+            value)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         logical, intent(in) :: value
 
         call LIBMUSCLE_Data_set_logical_( &
             self%ptr, &
-            merge(1, 0, value))
+            logical(value, c_bool))
     end subroutine LIBMUSCLE_Data_set_logical
 
-    subroutine LIBMUSCLE_Data_set_character(self, value)
+    subroutine LIBMUSCLE_Data_set_character( &
+            self, &
+            value)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: value
@@ -4277,7 +14847,9 @@ contains
             value, int(len(value), c_size_t))
     end subroutine LIBMUSCLE_Data_set_character
 
-    subroutine LIBMUSCLE_Data_set_int1(self, value)
+    subroutine LIBMUSCLE_Data_set_int1( &
+            self, &
+            value)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_int1), intent(in) :: value
@@ -4287,7 +14859,9 @@ contains
             value)
     end subroutine LIBMUSCLE_Data_set_int1
 
-    subroutine LIBMUSCLE_Data_set_int2(self, value)
+    subroutine LIBMUSCLE_Data_set_int2( &
+            self, &
+            value)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer (selected_int_kind(4)), intent(in) :: value
@@ -4297,7 +14871,9 @@ contains
             value)
     end subroutine LIBMUSCLE_Data_set_int2
 
-    subroutine LIBMUSCLE_Data_set_int4(self, value)
+    subroutine LIBMUSCLE_Data_set_int4( &
+            self, &
+            value)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_int4), intent(in) :: value
@@ -4307,7 +14883,9 @@ contains
             value)
     end subroutine LIBMUSCLE_Data_set_int4
 
-    subroutine LIBMUSCLE_Data_set_int8(self, value)
+    subroutine LIBMUSCLE_Data_set_int8( &
+            self, &
+            value)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer (selected_int_kind(18)), intent(in) :: value
@@ -4317,7 +14895,9 @@ contains
             value)
     end subroutine LIBMUSCLE_Data_set_int8
 
-    subroutine LIBMUSCLE_Data_set_real4(self, value)
+    subroutine LIBMUSCLE_Data_set_real4( &
+            self, &
+            value)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         real (LIBMUSCLE_real4), intent(in) :: value
@@ -4327,7 +14907,9 @@ contains
             value)
     end subroutine LIBMUSCLE_Data_set_real4
 
-    subroutine LIBMUSCLE_Data_set_real8(self, value)
+    subroutine LIBMUSCLE_Data_set_real8( &
+            self, &
+            value)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         real (LIBMUSCLE_real8), intent(in) :: value
@@ -4337,7 +14919,9 @@ contains
             value)
     end subroutine LIBMUSCLE_Data_set_real8
 
-    subroutine LIBMUSCLE_Data_set_data(self, value)
+    subroutine LIBMUSCLE_Data_set_data( &
+            self, &
+            value)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         type(LIBMUSCLE_Data), intent(in) :: value
@@ -4347,7 +14931,8 @@ contains
             value%ptr)
     end subroutine LIBMUSCLE_Data_set_data
 
-    subroutine LIBMUSCLE_Data_set_nil(self)
+    subroutine LIBMUSCLE_Data_set_nil( &
+            self)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
 
@@ -4355,7 +14940,12 @@ contains
             self%ptr)
     end subroutine LIBMUSCLE_Data_set_nil
 
-    subroutine LIBMUSCLE_Data_set_item_key_logical(self, key, value, err_code, err_msg)
+    subroutine LIBMUSCLE_Data_set_item_key_logical( &
+            self, &
+            key, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -4373,7 +14963,7 @@ contains
         call LIBMUSCLE_Data_set_item_key_logical_( &
             self%ptr, &
             key, int(len(key), c_size_t), &
-            merge(1, 0, value), &
+            logical(value, c_bool), &
             err_code_v, &
             err_msg_v, &
             err_msg_len_v)
@@ -4405,7 +14995,12 @@ contains
 
     end subroutine LIBMUSCLE_Data_set_item_key_logical
 
-    subroutine LIBMUSCLE_Data_set_item_key_character(self, key, value, err_code, err_msg)
+    subroutine LIBMUSCLE_Data_set_item_key_character( &
+            self, &
+            key, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -4455,7 +15050,12 @@ contains
 
     end subroutine LIBMUSCLE_Data_set_item_key_character
 
-    subroutine LIBMUSCLE_Data_set_item_key_int1(self, key, value, err_code, err_msg)
+    subroutine LIBMUSCLE_Data_set_item_key_int1( &
+            self, &
+            key, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -4505,7 +15105,12 @@ contains
 
     end subroutine LIBMUSCLE_Data_set_item_key_int1
 
-    subroutine LIBMUSCLE_Data_set_item_key_int2(self, key, value, err_code, err_msg)
+    subroutine LIBMUSCLE_Data_set_item_key_int2( &
+            self, &
+            key, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -4555,7 +15160,12 @@ contains
 
     end subroutine LIBMUSCLE_Data_set_item_key_int2
 
-    subroutine LIBMUSCLE_Data_set_item_key_int4(self, key, value, err_code, err_msg)
+    subroutine LIBMUSCLE_Data_set_item_key_int4( &
+            self, &
+            key, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -4605,7 +15215,12 @@ contains
 
     end subroutine LIBMUSCLE_Data_set_item_key_int4
 
-    subroutine LIBMUSCLE_Data_set_item_key_int8(self, key, value, err_code, err_msg)
+    subroutine LIBMUSCLE_Data_set_item_key_int8( &
+            self, &
+            key, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -4655,7 +15270,12 @@ contains
 
     end subroutine LIBMUSCLE_Data_set_item_key_int8
 
-    subroutine LIBMUSCLE_Data_set_item_key_real4(self, key, value, err_code, err_msg)
+    subroutine LIBMUSCLE_Data_set_item_key_real4( &
+            self, &
+            key, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -4705,7 +15325,12 @@ contains
 
     end subroutine LIBMUSCLE_Data_set_item_key_real4
 
-    subroutine LIBMUSCLE_Data_set_item_key_real8(self, key, value, err_code, err_msg)
+    subroutine LIBMUSCLE_Data_set_item_key_real8( &
+            self, &
+            key, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -4755,7 +15380,12 @@ contains
 
     end subroutine LIBMUSCLE_Data_set_item_key_real8
 
-    subroutine LIBMUSCLE_Data_set_item_key_data(self, key, value, err_code, err_msg)
+    subroutine LIBMUSCLE_Data_set_item_key_data( &
+            self, &
+            key, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: key
@@ -4805,7 +15435,12 @@ contains
 
     end subroutine LIBMUSCLE_Data_set_item_key_data
 
-    subroutine LIBMUSCLE_Data_set_item_index_logical(self, i, value, err_code, err_msg)
+    subroutine LIBMUSCLE_Data_set_item_index_logical( &
+            self, &
+            i, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
@@ -4823,7 +15458,7 @@ contains
         call LIBMUSCLE_Data_set_item_index_logical_( &
             self%ptr, &
             i, &
-            merge(1, 0, value), &
+            logical(value, c_bool), &
             err_code_v, &
             err_msg_v, &
             err_msg_len_v)
@@ -4855,7 +15490,12 @@ contains
 
     end subroutine LIBMUSCLE_Data_set_item_index_logical
 
-    subroutine LIBMUSCLE_Data_set_item_index_character(self, i, value, err_code, err_msg)
+    subroutine LIBMUSCLE_Data_set_item_index_character( &
+            self, &
+            i, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
@@ -4905,7 +15545,12 @@ contains
 
     end subroutine LIBMUSCLE_Data_set_item_index_character
 
-    subroutine LIBMUSCLE_Data_set_item_index_int1(self, i, value, err_code, err_msg)
+    subroutine LIBMUSCLE_Data_set_item_index_int1( &
+            self, &
+            i, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
@@ -4955,7 +15600,12 @@ contains
 
     end subroutine LIBMUSCLE_Data_set_item_index_int1
 
-    subroutine LIBMUSCLE_Data_set_item_index_int2(self, i, value, err_code, err_msg)
+    subroutine LIBMUSCLE_Data_set_item_index_int2( &
+            self, &
+            i, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
@@ -5005,7 +15655,12 @@ contains
 
     end subroutine LIBMUSCLE_Data_set_item_index_int2
 
-    subroutine LIBMUSCLE_Data_set_item_index_int4(self, i, value, err_code, err_msg)
+    subroutine LIBMUSCLE_Data_set_item_index_int4( &
+            self, &
+            i, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
@@ -5055,7 +15710,12 @@ contains
 
     end subroutine LIBMUSCLE_Data_set_item_index_int4
 
-    subroutine LIBMUSCLE_Data_set_item_index_int8(self, i, value, err_code, err_msg)
+    subroutine LIBMUSCLE_Data_set_item_index_int8( &
+            self, &
+            i, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
@@ -5105,7 +15765,12 @@ contains
 
     end subroutine LIBMUSCLE_Data_set_item_index_int8
 
-    subroutine LIBMUSCLE_Data_set_item_index_real4(self, i, value, err_code, err_msg)
+    subroutine LIBMUSCLE_Data_set_item_index_real4( &
+            self, &
+            i, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
@@ -5155,7 +15820,12 @@ contains
 
     end subroutine LIBMUSCLE_Data_set_item_index_real4
 
-    subroutine LIBMUSCLE_Data_set_item_index_real8(self, i, value, err_code, err_msg)
+    subroutine LIBMUSCLE_Data_set_item_index_real8( &
+            self, &
+            i, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
@@ -5205,7 +15875,12 @@ contains
 
     end subroutine LIBMUSCLE_Data_set_item_index_real8
 
-    subroutine LIBMUSCLE_Data_set_item_index_data(self, i, value, err_code, err_msg)
+    subroutine LIBMUSCLE_Data_set_item_index_data( &
+            self, &
+            i, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
@@ -5255,7 +15930,11 @@ contains
 
     end subroutine LIBMUSCLE_Data_set_item_index_data
 
-    function LIBMUSCLE_Data_key(self, i, err_code, err_msg)
+    function LIBMUSCLE_Data_key( &
+            self, &
+            i, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
@@ -5316,7 +15995,11 @@ contains
         end do
     end function LIBMUSCLE_Data_key
 
-    function LIBMUSCLE_Data_value(self, i, err_code, err_msg)
+    function LIBMUSCLE_Data_value( &
+            self, &
+            i, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
@@ -5368,7 +16051,8 @@ contains
         LIBMUSCLE_Data_value%ptr = ret_val
     end function LIBMUSCLE_Data_value
 
-    function LIBMUSCLE_PortsDescription_create()
+    function LIBMUSCLE_PortsDescription_create( &
+    )
         implicit none
         type(LIBMUSCLE_PortsDescription) :: LIBMUSCLE_PortsDescription_create
 
@@ -5380,7 +16064,8 @@ contains
         LIBMUSCLE_PortsDescription_create%ptr = ret_val
     end function LIBMUSCLE_PortsDescription_create
 
-    subroutine LIBMUSCLE_PortsDescription_free(self)
+    subroutine LIBMUSCLE_PortsDescription_free( &
+            self)
         implicit none
         type(LIBMUSCLE_PortsDescription), intent(in) :: self
 
@@ -5388,7 +16073,10 @@ contains
             self%ptr)
     end subroutine LIBMUSCLE_PortsDescription_free
 
-    subroutine LIBMUSCLE_PortsDescription_add(self, op, port)
+    subroutine LIBMUSCLE_PortsDescription_add( &
+            self, &
+            op, &
+            port)
         implicit none
         type(LIBMUSCLE_PortsDescription), intent(in) :: self
         integer(YMMSL_Operator), intent(in) :: op
@@ -5400,7 +16088,9 @@ contains
             port, int(len(port), c_size_t))
     end subroutine LIBMUSCLE_PortsDescription_add
 
-    function LIBMUSCLE_PortsDescription_num_ports(self, op)
+    function LIBMUSCLE_PortsDescription_num_ports( &
+            self, &
+            op)
         implicit none
         type(LIBMUSCLE_PortsDescription), intent(in) :: self
         integer(YMMSL_Operator), intent(in) :: op
@@ -5414,7 +16104,12 @@ contains
         LIBMUSCLE_PortsDescription_num_ports = ret_val
     end function LIBMUSCLE_PortsDescription_num_ports
 
-    function LIBMUSCLE_PortsDescription_get(self, op, i, err_code, err_msg)
+    function LIBMUSCLE_PortsDescription_get( &
+            self, &
+            op, &
+            i, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_PortsDescription), intent(in) :: self
         integer(YMMSL_Operator), intent(in) :: op
@@ -5477,7 +16172,9 @@ contains
         end do
     end function LIBMUSCLE_PortsDescription_get
 
-    function LIBMUSCLE_Message_create_td(timestamp, data)
+    function LIBMUSCLE_Message_create_td( &
+            timestamp, &
+            data)
         implicit none
         real (LIBMUSCLE_real8), intent(in) :: timestamp
         type(LIBMUSCLE_Data), intent(in) :: data
@@ -5492,7 +16189,10 @@ contains
         LIBMUSCLE_Message_create_td%ptr = ret_val
     end function LIBMUSCLE_Message_create_td
 
-    function LIBMUSCLE_Message_create_tnd(timestamp, next_timestamp, data)
+    function LIBMUSCLE_Message_create_tnd( &
+            timestamp, &
+            next_timestamp, &
+            data)
         implicit none
         real (LIBMUSCLE_real8), intent(in) :: timestamp
         real (LIBMUSCLE_real8), intent(in) :: next_timestamp
@@ -5509,7 +16209,10 @@ contains
         LIBMUSCLE_Message_create_tnd%ptr = ret_val
     end function LIBMUSCLE_Message_create_tnd
 
-    function LIBMUSCLE_Message_create_tds(timestamp, data, settings)
+    function LIBMUSCLE_Message_create_tds( &
+            timestamp, &
+            data, &
+            settings)
         implicit none
         real (LIBMUSCLE_real8), intent(in) :: timestamp
         type(LIBMUSCLE_Data), intent(in) :: data
@@ -5526,7 +16229,11 @@ contains
         LIBMUSCLE_Message_create_tds%ptr = ret_val
     end function LIBMUSCLE_Message_create_tds
 
-    function LIBMUSCLE_Message_create_tnds(timestamp, next_timestamp, data, settings)
+    function LIBMUSCLE_Message_create_tnds( &
+            timestamp, &
+            next_timestamp, &
+            data, &
+            settings)
         implicit none
         real (LIBMUSCLE_real8), intent(in) :: timestamp
         real (LIBMUSCLE_real8), intent(in) :: next_timestamp
@@ -5545,7 +16252,8 @@ contains
         LIBMUSCLE_Message_create_tnds%ptr = ret_val
     end function LIBMUSCLE_Message_create_tnds
 
-    subroutine LIBMUSCLE_Message_free(self)
+    subroutine LIBMUSCLE_Message_free( &
+            self)
         implicit none
         type(LIBMUSCLE_Message), intent(in) :: self
 
@@ -5553,7 +16261,8 @@ contains
             self%ptr)
     end subroutine LIBMUSCLE_Message_free
 
-    function LIBMUSCLE_Message_timestamp(self)
+    function LIBMUSCLE_Message_timestamp( &
+            self)
         implicit none
         type(LIBMUSCLE_Message), intent(in) :: self
         real (LIBMUSCLE_real8) :: LIBMUSCLE_Message_timestamp
@@ -5565,7 +16274,9 @@ contains
         LIBMUSCLE_Message_timestamp = ret_val
     end function LIBMUSCLE_Message_timestamp
 
-    subroutine LIBMUSCLE_Message_set_timestamp(self, timestamp)
+    subroutine LIBMUSCLE_Message_set_timestamp( &
+            self, &
+            timestamp)
         implicit none
         type(LIBMUSCLE_Message), intent(in) :: self
         real (LIBMUSCLE_real8), intent(in) :: timestamp
@@ -5575,20 +16286,22 @@ contains
             timestamp)
     end subroutine LIBMUSCLE_Message_set_timestamp
 
-    function LIBMUSCLE_Message_has_next_timestamp(self)
+    function LIBMUSCLE_Message_has_next_timestamp( &
+            self)
         implicit none
         type(LIBMUSCLE_Message), intent(in) :: self
         logical :: LIBMUSCLE_Message_has_next_timestamp
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Message_has_next_timestamp_( &
             self%ptr)
 
-        LIBMUSCLE_Message_has_next_timestamp = ret_val .ne. 0
+        LIBMUSCLE_Message_has_next_timestamp = ret_val
     end function LIBMUSCLE_Message_has_next_timestamp
 
-    function LIBMUSCLE_Message_next_timestamp(self)
+    function LIBMUSCLE_Message_next_timestamp( &
+            self)
         implicit none
         type(LIBMUSCLE_Message), intent(in) :: self
         real (LIBMUSCLE_real8) :: LIBMUSCLE_Message_next_timestamp
@@ -5600,7 +16313,9 @@ contains
         LIBMUSCLE_Message_next_timestamp = ret_val
     end function LIBMUSCLE_Message_next_timestamp
 
-    subroutine LIBMUSCLE_Message_set_next_timestamp(self, next_timestamp)
+    subroutine LIBMUSCLE_Message_set_next_timestamp( &
+            self, &
+            next_timestamp)
         implicit none
         type(LIBMUSCLE_Message), intent(in) :: self
         real (LIBMUSCLE_real8), intent(in) :: next_timestamp
@@ -5610,7 +16325,8 @@ contains
             next_timestamp)
     end subroutine LIBMUSCLE_Message_set_next_timestamp
 
-    subroutine LIBMUSCLE_Message_unset_next_timestamp(self)
+    subroutine LIBMUSCLE_Message_unset_next_timestamp( &
+            self)
         implicit none
         type(LIBMUSCLE_Message), intent(in) :: self
 
@@ -5618,7 +16334,8 @@ contains
             self%ptr)
     end subroutine LIBMUSCLE_Message_unset_next_timestamp
 
-    function LIBMUSCLE_Message_get_data(self)
+    function LIBMUSCLE_Message_get_data( &
+            self)
         implicit none
         type(LIBMUSCLE_Message), intent(in) :: self
         type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_Message_get_data
@@ -5631,7 +16348,9 @@ contains
         LIBMUSCLE_Message_get_data%ptr = ret_val
     end function LIBMUSCLE_Message_get_data
 
-    subroutine LIBMUSCLE_Message_set_data_d(self, data)
+    subroutine LIBMUSCLE_Message_set_data_d( &
+            self, &
+            data)
         implicit none
         type(LIBMUSCLE_Message), intent(in) :: self
         type(LIBMUSCLE_Data), intent(in) :: data
@@ -5641,7 +16360,9 @@ contains
             data%ptr)
     end subroutine LIBMUSCLE_Message_set_data_d
 
-    subroutine LIBMUSCLE_Message_set_data_dcr(self, data)
+    subroutine LIBMUSCLE_Message_set_data_dcr( &
+            self, &
+            data)
         implicit none
         type(LIBMUSCLE_Message), intent(in) :: self
         type(LIBMUSCLE_DataConstRef), intent(in) :: data
@@ -5651,20 +16372,22 @@ contains
             data%ptr)
     end subroutine LIBMUSCLE_Message_set_data_dcr
 
-    function LIBMUSCLE_Message_has_settings(self)
+    function LIBMUSCLE_Message_has_settings( &
+            self)
         implicit none
         type(LIBMUSCLE_Message), intent(in) :: self
         logical :: LIBMUSCLE_Message_has_settings
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Message_has_settings_( &
             self%ptr)
 
-        LIBMUSCLE_Message_has_settings = ret_val .ne. 0
+        LIBMUSCLE_Message_has_settings = ret_val
     end function LIBMUSCLE_Message_has_settings
 
-    function LIBMUSCLE_Message_get_settings(self)
+    function LIBMUSCLE_Message_get_settings( &
+            self)
         implicit none
         type(LIBMUSCLE_Message), intent(in) :: self
         type(YMMSL_Settings) :: LIBMUSCLE_Message_get_settings
@@ -5677,7 +16400,9 @@ contains
         LIBMUSCLE_Message_get_settings%ptr = ret_val
     end function LIBMUSCLE_Message_get_settings
 
-    subroutine LIBMUSCLE_Message_set_settings(self, settings)
+    subroutine LIBMUSCLE_Message_set_settings( &
+            self, &
+            settings)
         implicit none
         type(LIBMUSCLE_Message), intent(in) :: self
         type(YMMSL_Settings), intent(in) :: settings
@@ -5687,7 +16412,8 @@ contains
             settings%ptr)
     end subroutine LIBMUSCLE_Message_set_settings
 
-    subroutine LIBMUSCLE_Message_unset_settings(self)
+    subroutine LIBMUSCLE_Message_unset_settings( &
+            self)
         implicit none
         type(LIBMUSCLE_Message), intent(in) :: self
 
@@ -5741,7 +16467,8 @@ contains
         call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_(cla)
     end function LIBMUSCLE_Instance_create_with_ports
 
-    subroutine LIBMUSCLE_Instance_free(self)
+    subroutine LIBMUSCLE_Instance_free( &
+            self)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
 
@@ -5749,35 +16476,40 @@ contains
             self%ptr)
     end subroutine LIBMUSCLE_Instance_free
 
-    function LIBMUSCLE_Instance_reuse_instance_default(self)
+    function LIBMUSCLE_Instance_reuse_instance_default( &
+            self)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         logical :: LIBMUSCLE_Instance_reuse_instance_default
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Instance_reuse_instance_default_( &
             self%ptr)
 
-        LIBMUSCLE_Instance_reuse_instance_default = ret_val .ne. 0
+        LIBMUSCLE_Instance_reuse_instance_default = ret_val
     end function LIBMUSCLE_Instance_reuse_instance_default
 
-    function LIBMUSCLE_Instance_reuse_instance_apply(self, apply_overlay)
+    function LIBMUSCLE_Instance_reuse_instance_apply( &
+            self, &
+            apply_overlay)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         logical, intent(in) :: apply_overlay
         logical :: LIBMUSCLE_Instance_reuse_instance_apply
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Instance_reuse_instance_apply_( &
             self%ptr, &
-            merge(1, 0, apply_overlay))
+            logical(apply_overlay, c_bool))
 
-        LIBMUSCLE_Instance_reuse_instance_apply = ret_val .ne. 0
+        LIBMUSCLE_Instance_reuse_instance_apply = ret_val
     end function LIBMUSCLE_Instance_reuse_instance_apply
 
-    subroutine LIBMUSCLE_Instance_error_shutdown(self, message)
+    subroutine LIBMUSCLE_Instance_error_shutdown( &
+            self, &
+            message)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: message
@@ -5787,7 +16519,11 @@ contains
             message, int(len(message), c_size_t))
     end subroutine LIBMUSCLE_Instance_error_shutdown
 
-    function LIBMUSCLE_Instance_is_setting_a_character(self, name, err_code, err_msg)
+    function LIBMUSCLE_Instance_is_setting_a_character( &
+            self, &
+            name, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
@@ -5795,7 +16531,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_Instance_is_setting_a_character
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -5836,10 +16572,14 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Instance_is_setting_a_character = ret_val .ne. 0
+        LIBMUSCLE_Instance_is_setting_a_character = ret_val
     end function LIBMUSCLE_Instance_is_setting_a_character
 
-    function LIBMUSCLE_Instance_is_setting_a_int8(self, name, err_code, err_msg)
+    function LIBMUSCLE_Instance_is_setting_a_int8( &
+            self, &
+            name, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
@@ -5847,7 +16587,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_Instance_is_setting_a_int8
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -5888,10 +16628,14 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Instance_is_setting_a_int8 = ret_val .ne. 0
+        LIBMUSCLE_Instance_is_setting_a_int8 = ret_val
     end function LIBMUSCLE_Instance_is_setting_a_int8
 
-    function LIBMUSCLE_Instance_is_setting_a_real8(self, name, err_code, err_msg)
+    function LIBMUSCLE_Instance_is_setting_a_real8( &
+            self, &
+            name, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
@@ -5899,7 +16643,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_Instance_is_setting_a_real8
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -5940,10 +16684,14 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Instance_is_setting_a_real8 = ret_val .ne. 0
+        LIBMUSCLE_Instance_is_setting_a_real8 = ret_val
     end function LIBMUSCLE_Instance_is_setting_a_real8
 
-    function LIBMUSCLE_Instance_is_setting_a_logical(self, name, err_code, err_msg)
+    function LIBMUSCLE_Instance_is_setting_a_logical( &
+            self, &
+            name, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
@@ -5951,7 +16699,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_Instance_is_setting_a_logical
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -5992,10 +16740,14 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Instance_is_setting_a_logical = ret_val .ne. 0
+        LIBMUSCLE_Instance_is_setting_a_logical = ret_val
     end function LIBMUSCLE_Instance_is_setting_a_logical
 
-    function LIBMUSCLE_Instance_is_setting_a_real8array(self, name, err_code, err_msg)
+    function LIBMUSCLE_Instance_is_setting_a_real8array( &
+            self, &
+            name, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
@@ -6003,7 +16755,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_Instance_is_setting_a_real8array
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -6044,10 +16796,14 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Instance_is_setting_a_real8array = ret_val .ne. 0
+        LIBMUSCLE_Instance_is_setting_a_real8array = ret_val
     end function LIBMUSCLE_Instance_is_setting_a_real8array
 
-    function LIBMUSCLE_Instance_is_setting_a_real8array2(self, name, err_code, err_msg)
+    function LIBMUSCLE_Instance_is_setting_a_real8array2( &
+            self, &
+            name, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
@@ -6055,7 +16811,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_Instance_is_setting_a_real8array2
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -6096,10 +16852,14 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Instance_is_setting_a_real8array2 = ret_val .ne. 0
+        LIBMUSCLE_Instance_is_setting_a_real8array2 = ret_val
     end function LIBMUSCLE_Instance_is_setting_a_real8array2
 
-    function LIBMUSCLE_Instance_get_setting_as_character(self, name, err_code, err_msg)
+    function LIBMUSCLE_Instance_get_setting_as_character( &
+            self, &
+            name, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
@@ -6160,7 +16920,11 @@ contains
         end do
     end function LIBMUSCLE_Instance_get_setting_as_character
 
-    function LIBMUSCLE_Instance_get_setting_as_int8(self, name, err_code, err_msg)
+    function LIBMUSCLE_Instance_get_setting_as_int8( &
+            self, &
+            name, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
@@ -6211,7 +16975,11 @@ contains
         LIBMUSCLE_Instance_get_setting_as_int8 = ret_val
     end function LIBMUSCLE_Instance_get_setting_as_int8
 
-    function LIBMUSCLE_Instance_get_setting_as_real8(self, name, err_code, err_msg)
+    function LIBMUSCLE_Instance_get_setting_as_real8( &
+            self, &
+            name, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
@@ -6262,7 +17030,11 @@ contains
         LIBMUSCLE_Instance_get_setting_as_real8 = ret_val
     end function LIBMUSCLE_Instance_get_setting_as_real8
 
-    function LIBMUSCLE_Instance_get_setting_as_logical(self, name, err_code, err_msg)
+    function LIBMUSCLE_Instance_get_setting_as_logical( &
+            self, &
+            name, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
@@ -6270,7 +17042,7 @@ contains
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_Instance_get_setting_as_logical
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
         type (c_ptr) :: err_msg_v
         integer (c_size_t) :: err_msg_len_v
@@ -6311,10 +17083,15 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Instance_get_setting_as_logical = ret_val .ne. 0
+        LIBMUSCLE_Instance_get_setting_as_logical = ret_val
     end function LIBMUSCLE_Instance_get_setting_as_logical
 
-    subroutine LIBMUSCLE_Instance_get_setting_as_real8array(self, name, value, err_code, err_msg)
+    subroutine LIBMUSCLE_Instance_get_setting_as_real8array( &
+            self, &
+            name, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
@@ -6371,7 +17148,12 @@ contains
         value = f_ret_ptr
     end subroutine LIBMUSCLE_Instance_get_setting_as_real8array
 
-    subroutine LIBMUSCLE_Instance_get_setting_as_real8array2(self, name, value, err_code, err_msg)
+    subroutine LIBMUSCLE_Instance_get_setting_as_real8array2( &
+            self, &
+            name, &
+            value, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
@@ -6428,7 +17210,8 @@ contains
         value = f_ret_ptr
     end subroutine LIBMUSCLE_Instance_get_setting_as_real8array2
 
-    function LIBMUSCLE_Instance_list_ports(self)
+    function LIBMUSCLE_Instance_list_ports( &
+            self)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         type(LIBMUSCLE_PortsDescription) :: LIBMUSCLE_Instance_list_ports
@@ -6441,52 +17224,60 @@ contains
         LIBMUSCLE_Instance_list_ports%ptr = ret_val
     end function LIBMUSCLE_Instance_list_ports
 
-    function LIBMUSCLE_Instance_is_connected(self, port)
+    function LIBMUSCLE_Instance_is_connected( &
+            self, &
+            port)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port
         logical :: LIBMUSCLE_Instance_is_connected
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Instance_is_connected_( &
             self%ptr, &
             port, int(len(port), c_size_t))
 
-        LIBMUSCLE_Instance_is_connected = ret_val .ne. 0
+        LIBMUSCLE_Instance_is_connected = ret_val
     end function LIBMUSCLE_Instance_is_connected
 
-    function LIBMUSCLE_Instance_is_vector_port(self, port)
+    function LIBMUSCLE_Instance_is_vector_port( &
+            self, &
+            port)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port
         logical :: LIBMUSCLE_Instance_is_vector_port
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Instance_is_vector_port_( &
             self%ptr, &
             port, int(len(port), c_size_t))
 
-        LIBMUSCLE_Instance_is_vector_port = ret_val .ne. 0
+        LIBMUSCLE_Instance_is_vector_port = ret_val
     end function LIBMUSCLE_Instance_is_vector_port
 
-    function LIBMUSCLE_Instance_is_resizable(self, port)
+    function LIBMUSCLE_Instance_is_resizable( &
+            self, &
+            port)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port
         logical :: LIBMUSCLE_Instance_is_resizable
 
-        integer (c_int) :: ret_val
+        logical (c_bool) :: ret_val
 
         ret_val = LIBMUSCLE_Instance_is_resizable_( &
             self%ptr, &
             port, int(len(port), c_size_t))
 
-        LIBMUSCLE_Instance_is_resizable = ret_val .ne. 0
+        LIBMUSCLE_Instance_is_resizable = ret_val
     end function LIBMUSCLE_Instance_is_resizable
 
-    function LIBMUSCLE_Instance_get_port_length(self, port)
+    function LIBMUSCLE_Instance_get_port_length( &
+            self, &
+            port)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port
@@ -6500,7 +17291,10 @@ contains
         LIBMUSCLE_Instance_get_port_length = ret_val
     end function LIBMUSCLE_Instance_get_port_length
 
-    subroutine LIBMUSCLE_Instance_set_port_length(self, port, length)
+    subroutine LIBMUSCLE_Instance_set_port_length( &
+            self, &
+            port, &
+            length)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port
@@ -6512,7 +17306,10 @@ contains
             length)
     end subroutine LIBMUSCLE_Instance_set_port_length
 
-    subroutine LIBMUSCLE_Instance_send_pm(self, port_name, message)
+    subroutine LIBMUSCLE_Instance_send_pm( &
+            self, &
+            port_name, &
+            message)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port_name
@@ -6524,7 +17321,11 @@ contains
             message%ptr)
     end subroutine LIBMUSCLE_Instance_send_pm
 
-    subroutine LIBMUSCLE_Instance_send_pms(self, port_name, message, slot)
+    subroutine LIBMUSCLE_Instance_send_pms( &
+            self, &
+            port_name, &
+            message, &
+            slot)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port_name
@@ -6538,7 +17339,11 @@ contains
             slot)
     end subroutine LIBMUSCLE_Instance_send_pms
 
-    function LIBMUSCLE_Instance_receive_p(self, port_name, err_code, err_msg)
+    function LIBMUSCLE_Instance_receive_p( &
+            self, &
+            port_name, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port_name
@@ -6590,7 +17395,12 @@ contains
         LIBMUSCLE_Instance_receive_p%ptr = ret_val
     end function LIBMUSCLE_Instance_receive_p
 
-    function LIBMUSCLE_Instance_receive_pd(self, port_name, default_msg, err_code, err_msg)
+    function LIBMUSCLE_Instance_receive_pd( &
+            self, &
+            port_name, &
+            default_msg, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port_name
@@ -6644,7 +17454,12 @@ contains
         LIBMUSCLE_Instance_receive_pd%ptr = ret_val
     end function LIBMUSCLE_Instance_receive_pd
 
-    function LIBMUSCLE_Instance_receive_ps(self, port_name, slot, err_code, err_msg)
+    function LIBMUSCLE_Instance_receive_ps( &
+            self, &
+            port_name, &
+            slot, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port_name
@@ -6698,7 +17513,13 @@ contains
         LIBMUSCLE_Instance_receive_ps%ptr = ret_val
     end function LIBMUSCLE_Instance_receive_ps
 
-    function LIBMUSCLE_Instance_receive_psd(self, port_name, slot, default_message, err_code, err_msg)
+    function LIBMUSCLE_Instance_receive_psd( &
+            self, &
+            port_name, &
+            slot, &
+            default_message, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port_name
@@ -6754,7 +17575,11 @@ contains
         LIBMUSCLE_Instance_receive_psd%ptr = ret_val
     end function LIBMUSCLE_Instance_receive_psd
 
-    function LIBMUSCLE_Instance_receive_with_settings_p(self, port_name, err_code, err_msg)
+    function LIBMUSCLE_Instance_receive_with_settings_p( &
+            self, &
+            port_name, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port_name
@@ -6806,7 +17631,12 @@ contains
         LIBMUSCLE_Instance_receive_with_settings_p%ptr = ret_val
     end function LIBMUSCLE_Instance_receive_with_settings_p
 
-    function LIBMUSCLE_Instance_receive_with_settings_pd(self, port_name, default_msg, err_code, err_msg)
+    function LIBMUSCLE_Instance_receive_with_settings_pd( &
+            self, &
+            port_name, &
+            default_msg, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port_name
@@ -6860,7 +17690,12 @@ contains
         LIBMUSCLE_Instance_receive_with_settings_pd%ptr = ret_val
     end function LIBMUSCLE_Instance_receive_with_settings_pd
 
-    function LIBMUSCLE_Instance_receive_with_settings_ps(self, port_name, slot, err_code, err_msg)
+    function LIBMUSCLE_Instance_receive_with_settings_ps( &
+            self, &
+            port_name, &
+            slot, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port_name
@@ -6914,7 +17749,13 @@ contains
         LIBMUSCLE_Instance_receive_with_settings_ps%ptr = ret_val
     end function LIBMUSCLE_Instance_receive_with_settings_ps
 
-    function LIBMUSCLE_Instance_receive_with_settings_psd(self, port_name, slot, default_msg, err_code, err_msg)
+    function LIBMUSCLE_Instance_receive_with_settings_psd( &
+            self, &
+            port_name, &
+            slot, &
+            default_msg, &
+            err_code, &
+            err_msg)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port_name
@@ -6971,7 +17812,8 @@ contains
     end function LIBMUSCLE_Instance_receive_with_settings_psd
 
 
-    function LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create(count)
+    function LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create( &
+            count)
         implicit none
         integer, intent(in) :: count
         type(LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs) :: LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create
@@ -6984,7 +17826,8 @@ contains
         LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create%ptr = ret_val
     end function LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create
 
-    subroutine LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free(self)
+    subroutine LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free( &
+            self)
         implicit none
         type(LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs), intent(in) :: self
 
@@ -6992,7 +17835,10 @@ contains
             self%ptr)
     end subroutine LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free
 
-    subroutine LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg(self, i, arg)
+    subroutine LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg( &
+            self, &
+            i, &
+            arg)
         implicit none
         type(LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs), intent(in) :: self
         integer, intent(in) :: i

@@ -5,6 +5,30 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_.
 
+0.3.1
+*****
+
+Added
+-----
+
+* Support for sending and receiving multidimensional grids/arrays
+* Support for Python 3.8
+
+Improved
+--------
+
+* Python 3.5.1 support
+* Build compatibility on more operating systems
+
+Thanks
+------
+
+* Olivier for testing, reporting and fixing build issues
+* Pavel for testing and reporting build issues
+* Hamid for testing and reporting build issues
+* Ben for testing and reporting build issues
+
+
 0.3.0
 *****
 

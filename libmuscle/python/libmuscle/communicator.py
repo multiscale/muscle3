@@ -353,7 +353,7 @@ class Communicator:
                 is_connected = self._peer_manager.is_connected(port_id)
                 if is_connected:
                     peer_port = self._peer_manager.get_peer_port(port_id)
-                    peer_ce = peer_port[:-1]
+                    peer_ce = cast(Reference, peer_port[:-1])
                     port_peer_dims = self._peer_manager.get_peer_dims(peer_ce)
                 else:
                     port_peer_dims = []

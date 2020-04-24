@@ -3,16 +3,10 @@ all: grpc
 	@echo
 
 .PHONY: install
-ifdef grpc_VERSION
-install: grpc
-	$(MAKE) -C c-ares install
-	$(MAKE) -C zlib install
-	$(MAKE) -C openssl install
-	mkdir -p $(PREFIX)/lib
-	cp -ra grpc/lib/* $(PREFIX)/lib/
-else
-install:
-endif
+install: all c-ares_install zlib_install openssl_install
+	@echo 'Installing grpc...'
+	mkdir -p $(PREFIX)
+	cp -ra grpc/* $(PREFIX)/
 
 .PHONY: clean
 clean:
@@ -31,28 +25,32 @@ distclean: clean
 
 
 dep_name := c-ares
-dep_min_version := 1.11.0
+dep_version_constraint := >= 1.11.0
 dep_version := 1.15.0
 dep_pkgconfig_name := libcares
-include ../make_available.make
+dep_install := 1
+include $(TOOLDIR)/make_available.make
 
 dep_name := zlib
-dep_min_version := 1.2
+dep_version_constraint := >= 1.2
 dep_version := 1.2.11
 dep_pkgconfig_name := zlib
-include ../make_available.make
+dep_install := 1
+include $(TOOLDIR)/make_available.make
 
 dep_name := openssl
-dep_min_version := 1.0.2
-dep_version := 1.1.1c
+dep_version_constraint := >= 1.0.2
+dep_version := 1.1.1f
 dep_pkgconfig_name := openssl
-include ../make_available.make
+dep_install := 1
+include $(TOOLDIR)/make_available.make
 
 v$(grpc_VERSION).tar.gz:
 	$(DOWNLOAD) https://github.com/grpc/grpc/archive/v$(grpc_VERSION).tar.gz
 
 grpc-$(grpc_VERSION): v$(grpc_VERSION).tar.gz
 	$(TAR) xf v$(grpc_VERSION).tar.gz
+	patch -p0 <grpc_issue_14844.patch
 
 protoc_path := $(protobuf_ROOT)/bin
 

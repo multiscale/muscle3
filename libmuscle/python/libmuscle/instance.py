@@ -2,7 +2,8 @@ from copy import copy
 import logging
 from pathlib import Path
 import sys
-from typing import cast, Dict, List, Optional, Tuple, Type, Union
+from typing import cast, Dict, List, Optional, Tuple, Union
+from typing_extensions import Type
 
 import grpc
 from ymmsl import (Conduit, Identifier, Operator, SettingValue, Port,
@@ -483,7 +484,7 @@ class Instance:
             i = 0
             while i < len(ref) and isinstance(ref[i], Identifier):
                 i += 1
-            name = ref[:i]
+            name = cast(Reference, ref[:i])
 
             while i < len(ref) and isinstance(ref[i], int):
                 index.append(cast(int, ref[i]))

@@ -57,10 +57,7 @@ void diffusion(int argc, char * argv[]) {
         while (t_cur + dt <= t_max) {
             std::cerr << "t_cur: " << t_cur << ", t_max: " << t_max << std::endl;
             // O_I
-            auto data = Data::nils(U.size());
-            for (std::size_t i = 0u; i < U.size(); ++i)
-                data[i] = U[i];
-
+            auto data = Data::grid(U.data(), {U.size()}, {"x"});
             Message cur_state_msg(t_cur, data);
             double t_next = t_cur + dt;
             if (t_next + dt <= t_max)
@@ -69,8 +66,12 @@ void diffusion(int argc, char * argv[]) {
 
             // S
             auto msg = instance.receive("state_in", cur_state_msg);
-            for (std::size_t i = 0u; i < msg.data().size(); ++i)
-                U[i] = msg.data()[i].as<double>();
+            if (msg.data().shape().size() != 1u || msg.data().size() != U.size()) {
+                auto msg = "Received state of incorrect shape or size!";
+                instance.error_shutdown(msg);
+                throw std::runtime_error(msg);
+            }
+            std::copy_n(msg.data().elements<double>(), msg.data().size(), U.begin());
 
             std::vector<double> dU(U.size());
             auto lpl = laplacian(U, dx);
@@ -87,9 +88,7 @@ void diffusion(int argc, char * argv[]) {
         }
 
         // O_F
-        auto data = Data::nils(U.size());
-        for (std::size_t i = 0u; i < U.size(); ++i)
-            data[i] = U[i];
+        auto data = Data::grid(U.data(), {U.size()}, {"x"});
         instance.send("final_state_out", Message(t_cur, data));
         std::cerr << "All done" << std::endl;
     }

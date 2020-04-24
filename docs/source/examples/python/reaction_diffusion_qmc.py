@@ -4,7 +4,7 @@ import os
 import numpy as np
 import sobol_seq
 
-from libmuscle import Instance, Message
+from libmuscle import Grid, Instance, Message
 from libmuscle.runner import run_simulation
 from ymmsl import (ComputeElement, Conduit, Configuration, Model, Operator,
                    Settings)
@@ -24,7 +24,7 @@ def reaction() -> None:
         k = instance.get_setting('k', 'float')
 
         msg = instance.receive('initial_state')
-        U = np.array(msg.data)
+        U = msg.data.array.copy()
 
         t_cur = msg.timestamp
         while t_cur + dt < msg.timestamp + t_max:
@@ -35,7 +35,7 @@ def reaction() -> None:
             t_cur += dt
 
         # O_F
-        instance.send('final_state', Message(t_cur, None, U.tolist()))
+        instance.send('final_state', Message(t_cur, None, Grid(U, ['x'])))
 
 
 def laplacian(Z: np.array, dx: float) -> np.array:
@@ -86,14 +86,14 @@ def diffusion() -> None:
             t_next = t_cur + dt
             if t_next + dt > t_max:
                 t_next = None
-            cur_state_msg = Message(t_cur, t_next, U.tolist())
+            cur_state_msg = Message(t_cur, t_next, Grid(U, ['x']))
             instance.send('state_out', cur_state_msg)
 
             # S
             msg = instance.receive('state_in', default=cur_state_msg)
             if msg.timestamp > t_cur + dt:
                 logger.warning('Received a message from the future!')
-            U = np.array(msg.data)
+            np.copyto(U, msg.data.array)
 
             dU = np.zeros_like(U)
             dU[1:-1] = d * laplacian(U, dx) * dt
@@ -105,7 +105,7 @@ def diffusion() -> None:
             t_cur += dt
 
         # O_F
-        instance.send('final_state_out', Message(t_cur, None, U.tolist()))
+        instance.send('final_state_out', Message(t_cur, None, Grid(U, ['x'])))
 
 
 def load_balancer() -> None:
@@ -206,7 +206,7 @@ def qmc_driver() -> None:
         # S
         for sample in range(n_samples):
             msg = instance.receive_with_settings('states_in', sample)
-            U = np.array(msg.data)
+            U = msg.data.array
             # accumulate
             if Us is None:
                 Us = U

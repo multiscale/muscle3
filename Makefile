@@ -1,4 +1,11 @@
-cpp_test_files := libmuscle/cpp/build/ymmsl/tests/test_* libmuscle/cpp/build/libmuscle/tests/test_*
+export TOOLDIR := $(CURDIR)/scripts/gmake
+
+version_file := $(CURDIR)/VERSION
+export muscle_version := $(shell cat $(version_file))
+export major_version := $(shell sed -e 's/^\([0-9]*\)\..*/\1/' $(version_file))
+export minor_version := $(shell sed -e 's/^[0-9]*\.\([0-9]*\)\..*/\1/' $(version_file))
+export patch_version := $(shell sed -e 's/^[0-9]*\.[0-9]*\.\([0-9]*\).*/\1/' $(version_file))
+
 
 .PHONY: all
 all: cpp fortran
@@ -11,21 +18,34 @@ all: cpp fortran
 .PHONY: test
 test: test_python test_scripts test_cpp test_fortran
 
+.PHONY: test_python_only
+test_python_only:
+	MUSCLE_TEST_PYTHON_ONLY=1 python3 setup.py test
+
 .PHONY: test_python
 test_python: cpp_tests fortran_tests
 	python3 setup.py test
 
 .PHONY: test_cpp
-test_cpp:
+test_cpp: cpp
 	cd libmuscle/cpp && $(MAKE) test
 
 .PHONY: test_fortran
-test_fortran:
+test_fortran: fortran_tests
 	cd libmuscle/fortran && $(MAKE) test
 
 .PHONY: test_scripts
 test_scripts:
 	cd scripts && $(MAKE) test
+
+.PHONY: test_install
+test_install:
+	PREFIX=$(CURDIR)/libmuscle/build/test_install $(MAKE) install
+
+.PHONY: test_examples
+test_examples: test_install
+	export MUSCLE3_HOME=$(CURDIR)/libmuscle/build/test_install && $(MAKE) -C docs/source/examples test
+
 
 .PHONY: install
 install: all
@@ -61,6 +81,12 @@ install: all
 	@echo "        Linking: -L$(PREFIX)/lib -lymmsl_fortran"
 	@echo "                 -lmuscle_mpi_fortran -lymmsl -lmuscle_mpi"
 	@echo '*                                                                  *'
+	@echo '*                                                                  *'
+	@echo "    You can also use pkg-config. Add $(PREFIX)/lib/pkgconfig"
+	@echo '*   to your PKG_CONFIG_PATH environment variable and use module    *'
+	@echo '*   names libmuscle, libmuscle_mpi, libmuscle_fortran or           *'
+	@echo '*   libmuscle_mpi_fortran.                                         *'
+	@echo '*                                                                  *'
 	@echo '*   If the directory you installed MUSCLE 3 in is not in your      *'
 	@echo "*   system's library search path, then you have to set             *"
 	@echo '*   LD_LIBRARY_PATH before compiling, linking or running:          *'
@@ -88,12 +114,16 @@ clean:
 	cd libmuscle/cpp && $(MAKE) clean
 	cd libmuscle/fortran && $(MAKE) clean
 	cd scripts && $(MAKE) clean
+	cd docs/source/examples && $(MAKE) clean
+	rm -rf ./build
 
 .PHONY: distclean
 distclean:
 	cd libmuscle/cpp && $(MAKE) distclean
 	cd libmuscle/fortran && $(MAKE) distclean
 	cd scripts && $(MAKE) distclean
+	cd docs/source/examples && $(MAKE) clean
+	rm -rf ./build
 
 .PHONY: fortran
 fortran: cpp

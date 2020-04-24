@@ -9,7 +9,10 @@ from libmuscle.mcp.message import Message
 
 from ymmsl import Reference, Settings
 
+from .conftest import skip_if_python_only
 
+
+@skip_if_python_only
 def test_cpp_tcp_server(log_file_in_tmpdir):
     # create C++ server
     # it serves a message for us to receive

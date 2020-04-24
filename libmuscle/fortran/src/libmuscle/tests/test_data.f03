@@ -127,7 +127,6 @@ contains
         call assert_eq_real8(LIBMUSCLE_Data_as_real8(d1), 3.1415926536d0)
         call LIBMUSCLE_Data_free(d1)
         print *, '[       OK ] data.real8'
-
     end subroutine test_data_basic_types
 
     subroutine test_data_settings
@@ -187,7 +186,6 @@ contains
         print *, '[       OK ] data.assign'
     end subroutine test_data_copy_assign
 
-
     subroutine test_data_dict
         use libmuscle
 
@@ -243,7 +241,6 @@ contains
         call LIBMUSCLE_Data_free(d1)
         print *, '[       OK ] data.dict'
     end subroutine test_data_dict
-
 
     subroutine test_data_list
         use libmuscle
@@ -336,6 +333,132 @@ contains
         print *, '[       OK ] data.list_set_item'
     end subroutine test_data_list
 
+    subroutine test_data_grid
+        use libmuscle
+
+        implicit none
+        integer, parameter :: int4 = LIBMUSCLE_int4
+        integer, parameter :: int8 = LIBMUSCLE_int8
+        integer, parameter :: sz = LIBMUSCLE_size
+        integer, parameter :: real4 = LIBMUSCLE_real4
+        integer, parameter :: real8 = LIBMUSCLE_real8
+
+        logical, dimension(3) :: ad1, ad1_b
+        logical, dimension(2, 2, 2, 2, 2, 2, 2) :: ad7, ad7_b
+        integer (int4), dimension(1, 2, 1, 1, 1) :: ai45, ai45_b
+        integer (int8), dimension(2, 3, 4) :: ai83, ai83_b
+        real (real4), dimension(2, 3) :: ar42, ar42_b
+        real (real8), dimension(2, 2, 2, 2, 2, 3) :: ar86, ar86_b
+
+        integer (sz), dimension(7) :: shp
+
+        type(LIBMUSCLE_DataConstRef) :: d1
+        type(LIBMUSCLE_Data) :: d2
+
+        print *, '[  RUN     ] data.create_grid'
+        ad1 = (/.true., .false., .false./)
+        d1 = LIBMUSCLE_DataConstRef_create_grid(ad1)
+        call assert_true(LIBMUSCLE_DataConstRef_is_a_grid_of_logical(d1))
+        call assert_false(LIBMUSCLE_DataConstRef_is_a_grid_of_int4(d1))
+        call assert_eq_size(LIBMUSCLE_DataConstRef_num_dims(d1), 1_sz)
+        call LIBMUSCLE_DataConstRef_shape(d1, shp)
+        call assert_eq_size(shp(1), 3_sz)
+        call assert_false(LIBMUSCLE_DataConstRef_has_indexes(d1))
+        call LIBMUSCLE_DataConstRef_elements(d1, ad1_b)
+        call assert_true(all(ad1_b .eqv. ad1))
+        call LIBMUSCLE_DataConstRef_free(d1)
+
+        ad7 = reshape(spread(.true., 1, 128), (/2, 2, 2, 2, 2, 2, 2/))
+        d1 = LIBMUSCLE_DataConstRef_create_grid(ad7)
+        call assert_true(LIBMUSCLE_DataConstRef_is_a_grid_of_logical(d1))
+        call assert_false(LIBMUSCLE_DataConstRef_is_a_dict(d1))
+        call assert_eq_size(LIBMUSCLE_DataConstRef_num_dims(d1), 7_sz)
+        call LIBMUSCLE_DataConstRef_shape(d1, shp)
+        call assert_true(all(shp .eq. (/2, 2, 2, 2, 2, 2, 2/)))
+        call assert_false(LIBMUSCLE_DataConstRef_has_indexes(d1))
+        call LIBMUSCLE_DataConstRef_elements(d1, ad7_b)
+        call assert_true(all(ad7 .eqv. ad7_b))
+        call LIBMUSCLE_DataConstRef_free(d1)
+
+        ai45 = reshape((/13_int4, 42_int4/), (/1, 2, 1, 1, 1/))
+        d1 = LIBMUSCLE_DataConstRef_create_grid(ai45)
+        call assert_true(LIBMUSCLE_DataConstRef_is_a_grid_of_int4(d1))
+        call assert_false(LIBMUSCLE_DataConstRef_is_a_int4(d1))
+        call assert_eq_size(LIBMUSCLE_DataConstRef_num_dims(d1), 5_sz)
+        call LIBMUSCLE_DataConstRef_shape(d1, shp)
+        call assert_true(all(shp(1:5) .eq. (/1, 2, 1, 1, 1/)))
+        call assert_false(LIBMUSCLE_DataConstRef_has_indexes(d1))
+        call LIBMUSCLE_DataConstRef_elements(d1, ai45_b)
+        call assert_true(all(ai45 .eq. ai45_b))
+        call LIBMUSCLE_DataConstRef_free(d1)
+
+        ai83 = reshape(spread((/7_int8, -3_int8/), 1, 12), (/2, 3, 4/))
+        d1 = LIBMUSCLE_DataConstRef_create_grid(ai83)
+        call assert_true(LIBMUSCLE_DataConstRef_is_a_grid_of_int8(d1))
+        call assert_false(LIBMUSCLE_DataConstRef_is_a_character(d1))
+        call assert_eq_size(LIBMUSCLE_DataConstRef_num_dims(d1), 3_sz)
+        call LIBMUSCLE_DataConstRef_shape(d1, shp)
+        call assert_true(all(shp(1:3) .eq. (/2, 3, 4/)))
+        call assert_false(LIBMUSCLE_DataConstRef_has_indexes(d1))
+        call LIBMUSCLE_DataConstRef_elements(d1, ai83_b)
+        call assert_true(all(ai83 .eq. ai83_b))
+        call LIBMUSCLE_DataConstRef_free(d1)
+
+        ar42 = reshape(spread((/3.3_real4, -7.6_real4/), 1, 3), (/2, 3/))
+        d1 = LIBMUSCLE_DataConstRef_create_grid(ar42)
+        call assert_true(LIBMUSCLE_DataConstRef_is_a_grid_of_real4(d1))
+        call assert_false(LIBMUSCLE_DataConstRef_is_a_logical(d1))
+        call assert_eq_size(LIBMUSCLE_DataConstRef_num_dims(d1), 2_sz)
+        call LIBMUSCLE_DataConstRef_shape(d1, shp)
+        call assert_true(all(shp(1:2) .eq. (/2, 3/)))
+        call assert_false(LIBMUSCLE_DataConstRef_has_indexes(d1))
+        call LIBMUSCLE_DataConstRef_elements(d1, ar42_b)
+        call assert_true(all(ar42 .eq. ar42_b))
+        call LIBMUSCLE_DataConstRef_free(d1)
+
+        ar86 = reshape(spread(3.14_real8, 1, 96), (/2, 2, 2, 2, 2, 3/))
+        d1 = LIBMUSCLE_DataConstRef_create_grid(ar86)
+        call assert_true(LIBMUSCLE_DataConstRef_is_a_grid_of_real8(d1))
+        call assert_false(LIBMUSCLE_DataConstRef_is_a_byte_array(d1))
+        call assert_eq_size(LIBMUSCLE_DataConstRef_num_dims(d1), 6_sz)
+        call LIBMUSCLE_DataConstRef_shape(d1, shp)
+        call assert_true(all(shp(1:6) .eq. (/2, 2, 2, 2, 2, 3/)))
+        call assert_false(LIBMUSCLE_DataConstRef_has_indexes(d1))
+        call LIBMUSCLE_DataConstRef_elements(d1, ar86_b)
+        call assert_true(all(ar86 .eq. ar86_b))
+        call LIBMUSCLE_DataConstRef_free(d1)
+
+        ! Data instead of DataConstRef
+        ai83 = reshape(spread((/7_int8, -3_int8/), 1, 12), (/2, 3, 4/))
+        d2 = LIBMUSCLE_Data_create_grid(ai83)
+        call assert_true(LIBMUSCLE_Data_is_a_grid_of_int8(d2))
+        call assert_false(LIBMUSCLE_Data_is_a_character(d2))
+        call assert_eq_size(LIBMUSCLE_Data_num_dims(d2), 3_sz)
+        call LIBMUSCLE_Data_shape(d2, shp)
+        call assert_true(all(shp(1:3) .eq. (/2, 3, 4/)))
+        call assert_false(LIBMUSCLE_Data_has_indexes(d2))
+        call LIBMUSCLE_Data_elements(d2, ai83_b)
+        call assert_true(all(ai83 .eq. ai83_b))
+        call LIBMUSCLE_Data_free(d2)
+
+        ! Indexes
+        ar42 = reshape(spread((/3.3_real4, -7.6_real4/), 1, 3), (/2, 3/))
+        d1 = LIBMUSCLE_DataConstRef_create_grid(ar42, 'x', 'y')
+        call assert_true(LIBMUSCLE_DataConstRef_is_a_grid_of_real4(d1))
+        call assert_false(LIBMUSCLE_DataConstRef_is_a_logical(d1))
+        call assert_eq_size(LIBMUSCLE_DataConstRef_num_dims(d1), 2_sz)
+        call LIBMUSCLE_DataConstRef_shape(d1, shp)
+        call assert_true(all(shp(1:2) .eq. (/2, 3/)))
+        call assert_true(LIBMUSCLE_DataConstRef_has_indexes(d1))
+        call assert_eq_character(LIBMUSCLE_DataConstRef_index(d1, 1_sz), 'x')
+        call assert_eq_character(LIBMUSCLE_DataConstRef_index(d1, 2_sz), 'y')
+        call LIBMUSCLE_DataConstRef_elements(d1, ar42_b)
+        call assert_true(all(ar42 .eq. ar42_b))
+        call LIBMUSCLE_DataConstRef_free(d1)
+
+        print *, '[       OK ] data.create_grid'
+    end subroutine test_data_grid
+
     subroutine test_data_byte_array
         use libmuscle
 
@@ -381,441 +504,25 @@ contains
 
         print *, '[       OK ] data.byte_array'
     end subroutine test_data_byte_array
-
-
-    subroutine test_data
-        call test_data_basic_types
-        call test_data_copy_assign
-        call test_data_dict
-        call test_data_list
-        call test_data_byte_array
-        call test_data_settings
-    end subroutine test_data
-
-
-    subroutine test_settings_create
-        use ymmsl
-        implicit none
-
-        type(YMMSL_Settings) :: s1
-
-        print *, '[  RUN     ] settings.create'
-        s1 = YMMSL_Settings_create()
-        call assert_true(YMMSL_Settings_empty(s1))
-        call YMMSL_Settings_free(s1)
-        print *, '[       OK ] settings.create'
-    end subroutine test_settings_create
-
-
-    subroutine test_settings_equals
-        use ymmsl
-        implicit none
-
-        type(YMMSL_Settings) :: s1, s2
-
-        print *, '[  RUN     ] settings.equals'
-        s1 = YMMSL_Settings_create()
-        s2 = YMMSL_Settings_create()
-        call assert_true(YMMSL_Settings_equals(s1, s2))
-
-        call YMMSL_Settings_set(s1, 'key', 'value')
-        call assert_false(YMMSL_Settings_equals(s1, s2))
-
-        call YMMSL_Settings_set(s2, 'key', 'value')
-        call assert_true(YMMSL_Settings_equals(s1, s2))
-
-        call YMMSL_Settings_free(s1)
-        call YMMSL_Settings_free(s2)
-        print *, '[       OK ] settings.equals'
-    end subroutine test_settings_equals
-
-
-    subroutine test_settings_size
-        use ymmsl
-        implicit none
-
-        type(YMMSL_Settings) :: s1
-
-        print *, '[  RUN     ] settings.size'
-        s1 = YMMSL_Settings_create()
-
-        call assert_eq_size(YMMSL_Settings_size(s1), 0_YMMSL_size)
-
-        call YMMSL_Settings_free(s1)
-        print *, '[       OK ] settings.size'
-    end subroutine test_settings_size
-
-
-    subroutine test_settings_set_get_as
-        use ymmsl
-        implicit none
-
-        type(YMMSL_Settings) :: s1
-        real(YMMSL_real8), dimension(2) :: ra1, ra2
-        real(YMMSL_real8), dimension(3, 2) :: ra3, ra4
-
-        print *, '[  RUN     ] settings.set_get_as'
-        s1 = YMMSL_Settings_create()
-        ra1 = (/1.0d0, 2.0d0/)
-        ra3 = reshape((/1.0d0, 2.0d0, 3.0d0, 4.0d0, 5.0d0, 6.0d0/), (/3, 2/))
-
-        call YMMSL_Settings_set(s1, 'key1', 'value1')
-        call YMMSL_Settings_set(s1, 'key2', 42424242424242_YMMSL_int8)
-        call YMMSL_Settings_set(s1, 'key3', .false.)
-        call YMMSL_Settings_set(s1, 'key4', 13.13d0)
-        call YMMSL_Settings_set(s1, 'key5', ra1)
-        call YMMSL_Settings_set(s1, 'key6', ra3)
-
-        call assert_true(YMMSL_Settings_contains(s1, 'key1'))
-        call assert_true(YMMSL_Settings_contains(s1, 'key2'))
-        call assert_true(YMMSL_Settings_contains(s1, 'key3'))
-        call assert_true(YMMSL_Settings_contains(s1, 'key4'))
-        call assert_true(YMMSL_Settings_contains(s1, 'key5'))
-        call assert_true(YMMSL_Settings_contains(s1, 'key6'))
-        call assert_false(YMMSL_Settings_contains(s1, 'nokey'))
-
-        call assert_eq_character(YMMSL_Settings_get_as_character(s1, 'key1'), 'value1')
-        call assert_eq_int8(YMMSL_Settings_get_as_int8(s1, 'key2'), 42424242424242_YMMSL_int8)
-        call assert_eq_logical(YMMSL_Settings_get_as_logical(s1, 'key3'), .false.)
-        call assert_eq_real8(YMMSL_Settings_get_as_real8(s1, 'key4'), 13.13d0)
-        call YMMSL_Settings_get_as_real8array(s1, 'key5', ra2)
-        call assert_eq_real8array(ra2, ra1)
-        call YMMSL_Settings_get_as_real8array2(s1, 'key6', ra4)
-        call assert_eq_real8array2(ra4, ra3)
-
-        call YMMSL_Settings_free(s1)
-        print *, '[       OK ] settings.set_get_as'
-    end subroutine test_settings_set_get_as
-
-
-    subroutine test_settings_is_a
-        use ymmsl
-        implicit none
-
-        type(YMMSL_Settings) :: s1
-        real(YMMSL_real8), dimension(2) :: ra1
-        real(YMMSL_real8), dimension(3, 2) :: ra2
-        logical :: l1
-        integer :: err_code
-
-        print *, '[  RUN     ] settings.is_a'
-        s1 = YMMSL_Settings_create()
-        ra1 = (/1.0d0, 2.0d0/)
-        ra2 = reshape((/1.0d0, 2.0d0, 3.0d0, 4.0d0, 5.0d0, 6.0d0/), (/3, 2/))
-
-        call YMMSL_Settings_set(s1, 'key1', 'value1')
-        call YMMSL_Settings_set(s1, 'key2', 42424242424242_YMMSL_int8)
-        call YMMSL_Settings_set(s1, 'key3', .false.)
-        call YMMSL_Settings_set(s1, 'key4', 13.13d0)
-        call YMMSL_Settings_set(s1, 'key5', ra1)
-        call YMMSL_Settings_set(s1, 'key6', ra2)
-
-        call assert_true(YMMSL_Settings_is_a_character(s1, 'key1'))
-        call assert_true(YMMSL_Settings_is_a_int8(s1, 'key2'))
-        call assert_true(YMMSL_Settings_is_a_logical(s1, 'key3'))
-        call assert_true(YMMSL_Settings_is_a_real8(s1, 'key4'))
-        call assert_true(YMMSL_Settings_is_a_real8array(s1, 'key5'))
-        call assert_true(YMMSL_Settings_is_a_real8array2(s1, 'key6'))
-
-        call assert_false(YMMSL_Settings_is_a_int8(s1, 'key1'))
-        call assert_false(YMMSL_Settings_is_a_logical(s1, 'key1'))
-        call assert_false(YMMSL_Settings_is_a_real8(s1, 'key1'))
-        call assert_false(YMMSL_Settings_is_a_real8array(s1, 'key1'))
-        call assert_false(YMMSL_Settings_is_a_real8array2(s1, 'key1'))
-
-        l1 = YMMSL_Settings_is_a_logical(s1, 'nokey', err_code)
-        call assert_eq_integer(err_code, YMMSL_out_of_range)
-
-        call YMMSL_Settings_free(s1)
-        print *, '[       OK ] settings.is_a'
-    end subroutine test_settings_is_a
-
-
-    subroutine test_settings_erase
-        use ymmsl
-        implicit none
-
-        type(YMMSL_Settings) :: s1
-
-        print *, '[  RUN     ] settings.erase'
-        s1 = YMMSL_Settings_create()
-        call YMMSL_Settings_set(s1, 'key', 'value')
-        call assert_true(YMMSL_Settings_contains(s1, 'key'))
-        call assert_eq_size(YMMSL_Settings_erase(s1, 'key'), 1_YMMSL_size)
-        call assert_false(YMMSL_Settings_contains(s1, 'key'))
-        call assert_eq_size(YMMSL_Settings_erase(s1, 'key'), 0_YMMSL_size)
-        call YMMSL_Settings_free(s1)
-        print *, '[       OK ] settings.erase'
-    end subroutine test_settings_erase
-
-
-    subroutine test_settings_clear
-        use ymmsl
-        implicit none
-
-        type(YMMSL_Settings) :: s1
-
-        print *, '[  RUN     ] settings.clear'
-        s1 = YMMSL_Settings_create()
-        call YMMSL_Settings_set(s1, 'key1', 'value')
-        call YMMSL_Settings_set(s1, 'key2', 42_YMMSL_int8)
-
-        call assert_true(YMMSL_Settings_contains(s1, 'key1'))
-        call assert_true(YMMSL_Settings_contains(s1, 'key2'))
-
-        call YMMSL_Settings_clear(s1)
-
-        call assert_false(YMMSL_Settings_contains(s1, 'key1'))
-        call assert_false(YMMSL_Settings_contains(s1, 'key2'))
-        call assert_eq_size(YMMSL_Settings_size(s1), 0_YMMSL_size)
-
-        call YMMSL_Settings_free(s1)
-        print *, '[       OK ] settings.clear'
-    end subroutine test_settings_clear
-
-
-    subroutine test_settings_key
-        use ymmsl
-        implicit none
-
-        type(YMMSL_Settings) :: s1
-        character(len=:), allocatable :: c1, c2, err_msg
-        integer :: err_code
-
-        print *, '[  RUN     ] settings.key'
-        s1 = YMMSL_Settings_create()
-        call YMMSL_Settings_set(s1, 'key1', 'value')
-        call YMMSL_Settings_set(s1, 'key2', 42_YMMSL_int8)
-
-        c1 = YMMSL_Settings_key(s1, 1_YMMSL_size, err_code)
-        call assert_eq_integer(err_code, YMMSL_success)
-        c2 = YMMSL_Settings_key(s1, 2_YMMSL_size, err_code)
-        call assert_eq_integer(err_code, YMMSL_success)
-
-        call assert_true((c1 .eq. 'key1') .or. (c1 .eq. 'key2'))
-        call assert_true((c2 .eq. 'key1') .or. (c2 .eq. 'key2'))
-        call assert_true(c1 .ne. c2)
-
-        c1 = YMMSL_Settings_key(s1, 0_YMMSL_size, err_code, err_msg)
-        call assert_eq_integer(err_code, YMMSL_out_of_range)
-
-        c1 = YMMSL_Settings_key(s1, 3_YMMSL_size, err_code)
-        call assert_eq_integer(err_code, YMMSL_out_of_range)
-
-        deallocate(c1)
-        deallocate(c2)
-        call YMMSL_Settings_free(s1)
-        print *, '[       OK ] settings.key'
-    end subroutine test_settings_key
-
-
-    subroutine test_settings
-        call test_settings_create
-        call test_settings_equals
-        call test_settings_size
-        call test_settings_set_get_as
-        call test_settings_erase
-        call test_settings_clear
-        call test_settings_is_a
-        call test_settings_key
-    end subroutine test_settings
-
-    subroutine test_message_create
-        use libmuscle
-        use ymmsl
-        implicit none
-
-        type(LIBMUSCLE_Data) :: d1
-        type(LIBMUSCLE_Message) :: m1
-        type(YMMSL_Settings) :: s1
-
-        print *, '[  RUN     ] message.create'
-        d1 = LIBMUSCLE_Data_create()
-
-        m1 = LIBMUSCLE_Message_create(0.0d0, d1)
-        call LIBMUSCLE_Message_free(m1)
-
-        m1 = LIBMUSCLE_Message_create(0.0d0, 1.0d0, d1)
-        call LIBMUSCLE_Message_free(m1)
-
-        s1 = YMMSL_Settings_create()
-        m1 = LIBMUSCLE_Message_create(0.0d0, d1, s1)
-        call LIBMUSCLE_Message_free(m1)
-        call YMMSL_Settings_free(s1)
-
-        s1 = YMMSL_Settings_create()
-        m1 = LIBMUSCLE_Message_create(0.0d0, 10.0d0, d1, s1)
-        call LIBMUSCLE_Message_free(m1)
-        call YMMSL_Settings_free(s1)
-
-        call LIBMUSCLE_Data_free(d1)
-        print *, '[       OK ] message.create'
-    end subroutine test_message_create
-
-    subroutine test_message_timestamps
-        use libmuscle
-        implicit none
-
-        type(LIBMUSCLE_Data) :: d1
-        type(LIBMUSCLE_Message) :: m1
-
-        print *, '[  RUN     ] message.timestamps'
-        d1 = LIBMUSCLE_Data_create()
-        m1 = LIBMUSCLE_Message_create(23.4d0, d1)
-
-        call assert_eq_real8(LIBMUSCLE_Message_timestamp(m1), 23.4d0)
-        call LIBMUSCLE_Message_set_timestamp(m1, 12.8d0)
-        call assert_eq_real8(LIBMUSCLE_Message_timestamp(m1), 12.8d0)
-
-        call assert_false(LIBMUSCLE_Message_has_next_timestamp(m1))
-        call LIBMUSCLE_Message_set_next_timestamp(m1, 101.0d0)
-        call assert_true(LIBMUSCLE_Message_has_next_timestamp(m1))
-        call assert_eq_real8(LIBMUSCLE_Message_next_timestamp(m1), 101.0d0)
-        call LIBMUSCLE_Message_unset_next_timestamp(m1)
-        call assert_false(LIBMUSCLE_Message_has_next_timestamp(m1))
-
-        call LIBMUSCLE_Message_free(m1)
-        call LIBMUSCLE_Data_free(d1)
-        print *, '[       OK ] message.timestamps'
-    end subroutine test_message_timestamps
-
-    subroutine test_message_data
-        use libmuscle
-        implicit none
-
-        type(LIBMUSCLE_Data) :: d1, d2
-        type(LIBMUSCLE_DataConstRef) :: d3
-        type(LIBMUSCLE_Message) :: m1
-
-        print *, '[  RUN     ] message.data'
-        d1 = LIBMUSCLE_Data_create('Testing')
-        m1 = LIBMUSCLE_Message_create(0.0d0, d1)
-        call LIBMUSCLE_Data_free(d1)
-
-        d3 = LIBMUSCLE_Message_get_data(m1)
-        call assert_eq_character(LIBMUSCLE_DataConstRef_as_character(d3), 'Testing')
-        call LIBMUSCLE_DataConstRef_free(d3)
-
-        d2 = LIBMUSCLE_Data_create(1001)
-        call LIBMUSCLE_Message_set_data(m1, d2)
-        call LIBMUSCLE_Data_free(d2)
-
-        d3 = LIBMUSCLE_Message_get_data(m1)
-        call assert_eq_int4(LIBMUSCLE_DataConstRef_as_int4(d3), 1001_LIBMUSCLE_int4)
-        call LIBMUSCLE_DataConstRef_free(d3)
-
-        d3 = LIBMUSCLE_DataConstRef_create('Still testing')
-        call LIBMUSCLE_Message_set_data(m1, d3)
-        call LIBMUSCLE_DataConstRef_free(d3)
-
-        d3 = LIBMUSCLE_Message_get_data(m1)
-        call assert_eq_character(LIBMUSCLE_DataConstRef_as_character(d3), 'Still testing')
-        call LIBMUSCLE_DataConstRef_free(d3)
-
-        call LIBMUSCLE_Message_free(m1)
-        print *, '[       OK ] message.data'
-    end subroutine test_message_data
-
-    subroutine test_message_settings
-        use libmuscle
-        use ymmsl
-        implicit none
-
-        type(LIBMUSCLE_Data) :: d1
-        type(YMMSL_Settings) :: s1, s2
-        type(LIBMUSCLE_Message) :: m1
-
-        print *, '[  RUN     ] message.settings'
-        d1 = LIBMUSCLE_Data_create()
-        m1 = LIBMUSCLE_Message_create(0.0d0, d1)
-        call assert_false(LIBMUSCLE_Message_has_settings(m1))
-        call LIBMUSCLE_Message_free(m1)
-        call LIBMUSCLE_Data_free(d1)
-
-        d1 = LIBMUSCLE_Data_create()
-        s1 = YMMSL_Settings_create()
-        call YMMSL_Settings_set(s1, 'key', 'value')
-        m1 = LIBMUSCLE_Message_create(0.0d0, d1, s1)
-        call YMMSL_Settings_free(s1)
-        call LIBMUSCLE_Data_free(d1)
-
-        call assert_true(LIBMUSCLE_Message_has_settings(m1))
-        s2 = LIBMUSCLE_Message_get_settings(m1)
-        call assert_eq_character(YMMSL_Settings_get_as_character(s2, 'key'), 'value')
-        call YMMSL_Settings_free(s2)
-
-        s1 = YMMSL_Settings_create()
-        call YMMSL_Settings_set(s1, 'key2', 'value2')
-        call LIBMUSCLE_Message_set_settings(m1, s1)
-        call YMMSL_Settings_free(s1)
-
-        s2 = LIBMUSCLE_Message_get_settings(m1)
-        call assert_eq_character(YMMSL_Settings_get_as_character(s2, 'key2'), 'value2')
-        call YMMSL_Settings_free(s2)
-
-        call LIBMUSCLE_Message_unset_settings(m1)
-        call assert_false(LIBMUSCLE_Message_has_settings(m1))
-
-        call LIBMUSCLE_Message_free(m1)
-        print *, '[       OK ] message.settings'
-    end subroutine test_message_settings
-
-    subroutine test_message
-        call test_message_create
-        call test_message_timestamps
-        call test_message_data
-        call test_message_settings
-    end subroutine test_message
-
-    subroutine test_operator
-        use ymmsl
-
-        integer(YMMSL_Operator) :: o1
-
-        print *, '[  RUN     ] operator.use'
-        o1 = YMMSL_Operator_NONE
-        o1 = YMMSL_Operator_F_INIT
-        o1 = YMMSL_Operator_O_I
-        o1 = YMMSL_Operator_S
-        o1 = YMMSL_Operator_B
-        o1 = YMMSL_Operator_O_F
-        print *, '[       OK ] operator.use'
-    end subroutine test_operator
-
-    subroutine test_ports_description
-        use libmuscle
-        use ymmsl
-        implicit none
-
-        type(LIBMUSCLE_PortsDescription) :: pd
-
-        print *, '[  RUN     ] ports_description.use'
-        pd = LIBMUSCLE_PortsDescription_create()
-        call assert_eq_size(LIBMUSCLE_PortsDescription_num_ports(pd, YMMSL_Operator_F_INIT), 0_LIBMUSCLE_size)
-        call LIBMUSCLE_PortsDescription_add(pd, YMMSL_Operator_F_INIT, 'init_state')
-        call assert_eq_size(LIBMUSCLE_PortsDescription_num_ports(pd, YMMSL_Operator_F_INIT), 1_LIBMUSCLE_size)
-        call assert_eq_character(LIBMUSCLE_PortsDescription_get(pd, YMMSL_Operator_F_INIT, 1_LIBMUSCLE_size), 'init_state')
-        call LIBMUSCLE_PortsDescription_free(pd)
-        print *, '[       OK ] ports_description.use'
-    end subroutine test_ports_description
-
 end module tests
 
-program test_fortran_api
+program test_data
     use tests
     implicit none
 
     print *, ''
-    print *, '[==========] Fortran API test'
+    print *, '[==========] Fortran API Data'
 
-    call test_data
-    call test_settings
-    call test_operator
-    call test_message
-    call test_ports_description
+    call test_data_basic_types
+    call test_data_copy_assign
+    call test_data_dict
+    call test_data_list
+    call test_data_grid
+    call test_data_byte_array
+    call test_data_settings
 
-    print *, '[==========] Fortran API test'
-    print *, '[  PASSED  ] Fortran API test'
+    print *, '[==========] Fortran API Data'
+    print *, '[  PASSED  ] Fortran API Data'
     print *, ''
-end program test_fortran_api
+end program test_data
 

@@ -5,428 +5,403 @@
 
 #include <algorithm>
 
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/extension_set.h>
-#include <google/protobuf/wire_format_lite_inl.h>
+#include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
-
-extern PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2ftimestamp_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_Conduit_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_ListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_PeerResult_PeerDimensions_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_PeerResult_PeerLocations_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_Port_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_ListOfListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto ::google::protobuf::internal::SCCInfo<2> scc_info_ProfileEvent_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto ::google::protobuf::internal::SCCInfo<2> scc_info_Setting_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2ftimestamp_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Conduit_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_ListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_ListOfListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_PeerResult_PeerDimensions_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_PeerResult_PeerLocations_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Port_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_ProfileEvent_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_Setting_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto;
 namespace muscle_manager_protocol {
 class LogMessageDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<LogMessage> _instance;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<LogMessage> _instance;
 } _LogMessage_default_instance_;
 class LogResultDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<LogResult> _instance;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<LogResult> _instance;
 } _LogResult_default_instance_;
 class PortDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<Port> _instance;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Port> _instance;
 } _Port_default_instance_;
 class ProfileEventDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<ProfileEvent> _instance;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<ProfileEvent> _instance;
 } _ProfileEvent_default_instance_;
 class ProfileDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<Profile> _instance;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Profile> _instance;
 } _Profile_default_instance_;
 class ProfileResultDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<ProfileResult> _instance;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<ProfileResult> _instance;
 } _ProfileResult_default_instance_;
 class RegistrationRequestDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<RegistrationRequest> _instance;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<RegistrationRequest> _instance;
 } _RegistrationRequest_default_instance_;
 class RegistrationResultDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<RegistrationResult> _instance;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<RegistrationResult> _instance;
 } _RegistrationResult_default_instance_;
 class ConduitDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<Conduit> _instance;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Conduit> _instance;
 } _Conduit_default_instance_;
 class PeerRequestDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<PeerRequest> _instance;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<PeerRequest> _instance;
 } _PeerRequest_default_instance_;
 class PeerResult_PeerDimensionsDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<PeerResult_PeerDimensions> _instance;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<PeerResult_PeerDimensions> _instance;
 } _PeerResult_PeerDimensions_default_instance_;
 class PeerResult_PeerLocationsDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<PeerResult_PeerLocations> _instance;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<PeerResult_PeerLocations> _instance;
 } _PeerResult_PeerLocations_default_instance_;
 class PeerResultDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<PeerResult> _instance;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<PeerResult> _instance;
 } _PeerResult_default_instance_;
 class ListOfDoubleDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<ListOfDouble> _instance;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<ListOfDouble> _instance;
 } _ListOfDouble_default_instance_;
 class ListOfListOfDoubleDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<ListOfListOfDouble> _instance;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<ListOfListOfDouble> _instance;
 } _ListOfListOfDouble_default_instance_;
 class SettingDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<Setting> _instance;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Setting> _instance;
 } _Setting_default_instance_;
 class SettingsRequestDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<SettingsRequest> _instance;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<SettingsRequest> _instance;
 } _SettingsRequest_default_instance_;
 class SettingsResultDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<SettingsResult> _instance;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<SettingsResult> _instance;
 } _SettingsResult_default_instance_;
 class DeregistrationRequestDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<DeregistrationRequest> _instance;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<DeregistrationRequest> _instance;
 } _DeregistrationRequest_default_instance_;
 class DeregistrationResultDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<DeregistrationResult> _instance;
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<DeregistrationResult> _instance;
 } _DeregistrationResult_default_instance_;
 }  // namespace muscle_manager_protocol
-static void InitDefaultsLogMessage_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::muscle_manager_protocol::_LogMessage_default_instance_;
-    new (ptr) ::muscle_manager_protocol::LogMessage();
-    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::muscle_manager_protocol::LogMessage::InitAsDefaultInstance();
-}
-
-::google::protobuf::internal::SCCInfo<1> scc_info_LogMessage_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsLogMessage_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {
-      &scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto.base,}};
-
-static void InitDefaultsLogResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::muscle_manager_protocol::_LogResult_default_instance_;
-    new (ptr) ::muscle_manager_protocol::LogResult();
-    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::muscle_manager_protocol::LogResult::InitAsDefaultInstance();
-}
-
-::google::protobuf::internal::SCCInfo<0> scc_info_LogResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsLogResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
-
-static void InitDefaultsPort_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::muscle_manager_protocol::_Port_default_instance_;
-    new (ptr) ::muscle_manager_protocol::Port();
-    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::muscle_manager_protocol::Port::InitAsDefaultInstance();
-}
-
-::google::protobuf::internal::SCCInfo<0> scc_info_Port_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsPort_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
-
-static void InitDefaultsProfileEvent_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::muscle_manager_protocol::_ProfileEvent_default_instance_;
-    new (ptr) ::muscle_manager_protocol::ProfileEvent();
-    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::muscle_manager_protocol::ProfileEvent::InitAsDefaultInstance();
-}
-
-::google::protobuf::internal::SCCInfo<2> scc_info_ProfileEvent_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 2, InitDefaultsProfileEvent_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {
-      &scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto.base,
-      &scc_info_Port_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,}};
-
-static void InitDefaultsProfile_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::muscle_manager_protocol::_Profile_default_instance_;
-    new (ptr) ::muscle_manager_protocol::Profile();
-    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::muscle_manager_protocol::Profile::InitAsDefaultInstance();
-}
-
-::google::protobuf::internal::SCCInfo<1> scc_info_Profile_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsProfile_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {
-      &scc_info_ProfileEvent_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,}};
-
-static void InitDefaultsProfileResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::muscle_manager_protocol::_ProfileResult_default_instance_;
-    new (ptr) ::muscle_manager_protocol::ProfileResult();
-    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::muscle_manager_protocol::ProfileResult::InitAsDefaultInstance();
-}
-
-::google::protobuf::internal::SCCInfo<0> scc_info_ProfileResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsProfileResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
-
-static void InitDefaultsRegistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::muscle_manager_protocol::_RegistrationRequest_default_instance_;
-    new (ptr) ::muscle_manager_protocol::RegistrationRequest();
-    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::muscle_manager_protocol::RegistrationRequest::InitAsDefaultInstance();
-}
-
-::google::protobuf::internal::SCCInfo<1> scc_info_RegistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsRegistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {
-      &scc_info_Port_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,}};
-
-static void InitDefaultsRegistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::muscle_manager_protocol::_RegistrationResult_default_instance_;
-    new (ptr) ::muscle_manager_protocol::RegistrationResult();
-    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::muscle_manager_protocol::RegistrationResult::InitAsDefaultInstance();
-}
-
-::google::protobuf::internal::SCCInfo<0> scc_info_RegistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsRegistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
-
-static void InitDefaultsConduit_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+static void InitDefaultsscc_info_Conduit_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
     void* ptr = &::muscle_manager_protocol::_Conduit_default_instance_;
     new (ptr) ::muscle_manager_protocol::Conduit();
-    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
   ::muscle_manager_protocol::Conduit::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<0> scc_info_Conduit_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsConduit_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Conduit_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Conduit_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
 
-static void InitDefaultsPeerRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::muscle_manager_protocol::_PeerRequest_default_instance_;
-    new (ptr) ::muscle_manager_protocol::PeerRequest();
-    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::muscle_manager_protocol::PeerRequest::InitAsDefaultInstance();
-}
-
-::google::protobuf::internal::SCCInfo<0> scc_info_PeerRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsPeerRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
-
-static void InitDefaultsPeerResult_PeerDimensions_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::muscle_manager_protocol::_PeerResult_PeerDimensions_default_instance_;
-    new (ptr) ::muscle_manager_protocol::PeerResult_PeerDimensions();
-    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::muscle_manager_protocol::PeerResult_PeerDimensions::InitAsDefaultInstance();
-}
-
-::google::protobuf::internal::SCCInfo<0> scc_info_PeerResult_PeerDimensions_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsPeerResult_PeerDimensions_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
-
-static void InitDefaultsPeerResult_PeerLocations_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::muscle_manager_protocol::_PeerResult_PeerLocations_default_instance_;
-    new (ptr) ::muscle_manager_protocol::PeerResult_PeerLocations();
-    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::muscle_manager_protocol::PeerResult_PeerLocations::InitAsDefaultInstance();
-}
-
-::google::protobuf::internal::SCCInfo<0> scc_info_PeerResult_PeerLocations_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsPeerResult_PeerLocations_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
-
-static void InitDefaultsPeerResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::muscle_manager_protocol::_PeerResult_default_instance_;
-    new (ptr) ::muscle_manager_protocol::PeerResult();
-    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::muscle_manager_protocol::PeerResult::InitAsDefaultInstance();
-}
-
-::google::protobuf::internal::SCCInfo<3> scc_info_PeerResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 3, InitDefaultsPeerResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {
-      &scc_info_Conduit_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
-      &scc_info_PeerResult_PeerDimensions_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
-      &scc_info_PeerResult_PeerLocations_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,}};
-
-static void InitDefaultsListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::muscle_manager_protocol::_ListOfDouble_default_instance_;
-    new (ptr) ::muscle_manager_protocol::ListOfDouble();
-    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::muscle_manager_protocol::ListOfDouble::InitAsDefaultInstance();
-}
-
-::google::protobuf::internal::SCCInfo<0> scc_info_ListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
-
-static void InitDefaultsListOfListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::muscle_manager_protocol::_ListOfListOfDouble_default_instance_;
-    new (ptr) ::muscle_manager_protocol::ListOfListOfDouble();
-    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::muscle_manager_protocol::ListOfListOfDouble::InitAsDefaultInstance();
-}
-
-::google::protobuf::internal::SCCInfo<1> scc_info_ListOfListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsListOfListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {
-      &scc_info_ListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,}};
-
-static void InitDefaultsSetting_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::muscle_manager_protocol::_Setting_default_instance_;
-    new (ptr) ::muscle_manager_protocol::Setting();
-    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::muscle_manager_protocol::Setting::InitAsDefaultInstance();
-}
-
-::google::protobuf::internal::SCCInfo<2> scc_info_Setting_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 2, InitDefaultsSetting_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {
-      &scc_info_ListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
-      &scc_info_ListOfListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,}};
-
-static void InitDefaultsSettingsRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::muscle_manager_protocol::_SettingsRequest_default_instance_;
-    new (ptr) ::muscle_manager_protocol::SettingsRequest();
-    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::muscle_manager_protocol::SettingsRequest::InitAsDefaultInstance();
-}
-
-::google::protobuf::internal::SCCInfo<0> scc_info_SettingsRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsSettingsRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
-
-static void InitDefaultsSettingsResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::muscle_manager_protocol::_SettingsResult_default_instance_;
-    new (ptr) ::muscle_manager_protocol::SettingsResult();
-    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::muscle_manager_protocol::SettingsResult::InitAsDefaultInstance();
-}
-
-::google::protobuf::internal::SCCInfo<1> scc_info_SettingsResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsSettingsResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {
-      &scc_info_Setting_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,}};
-
-static void InitDefaultsDeregistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+static void InitDefaultsscc_info_DeregistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
     void* ptr = &::muscle_manager_protocol::_DeregistrationRequest_default_instance_;
     new (ptr) ::muscle_manager_protocol::DeregistrationRequest();
-    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
   ::muscle_manager_protocol::DeregistrationRequest::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<0> scc_info_DeregistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsDeregistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_DeregistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_DeregistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
 
-static void InitDefaultsDeregistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+static void InitDefaultsscc_info_DeregistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
     void* ptr = &::muscle_manager_protocol::_DeregistrationResult_default_instance_;
     new (ptr) ::muscle_manager_protocol::DeregistrationResult();
-    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
   ::muscle_manager_protocol::DeregistrationResult::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<0> scc_info_DeregistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsDeregistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_DeregistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_DeregistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
 
-void InitDefaults_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
-  ::google::protobuf::internal::InitSCC(&scc_info_LogMessage_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_LogResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_Port_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_ProfileEvent_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_Profile_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_ProfileResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_RegistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_RegistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_Conduit_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_PeerRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_PeerResult_PeerDimensions_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_PeerResult_PeerLocations_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_PeerResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_ListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_ListOfListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_Setting_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_SettingsRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_SettingsResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_DeregistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_DeregistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+static void InitDefaultsscc_info_ListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::muscle_manager_protocol::_ListOfDouble_default_instance_;
+    new (ptr) ::muscle_manager_protocol::ListOfDouble();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::muscle_manager_protocol::ListOfDouble::InitAsDefaultInstance();
 }
 
-::google::protobuf::Metadata file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[20];
-const ::google::protobuf::EnumDescriptor* file_level_enum_descriptors_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[5];
-constexpr ::google::protobuf::ServiceDescriptor const** file_level_service_descriptors_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto = nullptr;
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_ListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_ListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
 
-const ::google::protobuf::uint32 TableStruct_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
+static void InitDefaultsscc_info_ListOfListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::muscle_manager_protocol::_ListOfListOfDouble_default_instance_;
+    new (ptr) ::muscle_manager_protocol::ListOfListOfDouble();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::muscle_manager_protocol::ListOfListOfDouble::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_ListOfListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_ListOfListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {
+      &scc_info_ListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,}};
+
+static void InitDefaultsscc_info_LogMessage_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::muscle_manager_protocol::_LogMessage_default_instance_;
+    new (ptr) ::muscle_manager_protocol::LogMessage();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::muscle_manager_protocol::LogMessage::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_LogMessage_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_LogMessage_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {
+      &scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto.base,}};
+
+static void InitDefaultsscc_info_LogResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::muscle_manager_protocol::_LogResult_default_instance_;
+    new (ptr) ::muscle_manager_protocol::LogResult();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::muscle_manager_protocol::LogResult::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_LogResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_LogResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
+
+static void InitDefaultsscc_info_PeerRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::muscle_manager_protocol::_PeerRequest_default_instance_;
+    new (ptr) ::muscle_manager_protocol::PeerRequest();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::muscle_manager_protocol::PeerRequest::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_PeerRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_PeerRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
+
+static void InitDefaultsscc_info_PeerResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::muscle_manager_protocol::_PeerResult_default_instance_;
+    new (ptr) ::muscle_manager_protocol::PeerResult();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::muscle_manager_protocol::PeerResult::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<3> scc_info_PeerResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 3, 0, InitDefaultsscc_info_PeerResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {
+      &scc_info_Conduit_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+      &scc_info_PeerResult_PeerDimensions_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+      &scc_info_PeerResult_PeerLocations_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,}};
+
+static void InitDefaultsscc_info_PeerResult_PeerDimensions_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::muscle_manager_protocol::_PeerResult_PeerDimensions_default_instance_;
+    new (ptr) ::muscle_manager_protocol::PeerResult_PeerDimensions();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::muscle_manager_protocol::PeerResult_PeerDimensions::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_PeerResult_PeerDimensions_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_PeerResult_PeerDimensions_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
+
+static void InitDefaultsscc_info_PeerResult_PeerLocations_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::muscle_manager_protocol::_PeerResult_PeerLocations_default_instance_;
+    new (ptr) ::muscle_manager_protocol::PeerResult_PeerLocations();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::muscle_manager_protocol::PeerResult_PeerLocations::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_PeerResult_PeerLocations_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_PeerResult_PeerLocations_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
+
+static void InitDefaultsscc_info_Port_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::muscle_manager_protocol::_Port_default_instance_;
+    new (ptr) ::muscle_manager_protocol::Port();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::muscle_manager_protocol::Port::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Port_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Port_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
+
+static void InitDefaultsscc_info_Profile_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::muscle_manager_protocol::_Profile_default_instance_;
+    new (ptr) ::muscle_manager_protocol::Profile();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::muscle_manager_protocol::Profile::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Profile_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_Profile_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {
+      &scc_info_ProfileEvent_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,}};
+
+static void InitDefaultsscc_info_ProfileEvent_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::muscle_manager_protocol::_ProfileEvent_default_instance_;
+    new (ptr) ::muscle_manager_protocol::ProfileEvent();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::muscle_manager_protocol::ProfileEvent::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_ProfileEvent_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 2, 0, InitDefaultsscc_info_ProfileEvent_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {
+      &scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto.base,
+      &scc_info_Port_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,}};
+
+static void InitDefaultsscc_info_ProfileResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::muscle_manager_protocol::_ProfileResult_default_instance_;
+    new (ptr) ::muscle_manager_protocol::ProfileResult();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::muscle_manager_protocol::ProfileResult::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_ProfileResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_ProfileResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
+
+static void InitDefaultsscc_info_RegistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::muscle_manager_protocol::_RegistrationRequest_default_instance_;
+    new (ptr) ::muscle_manager_protocol::RegistrationRequest();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::muscle_manager_protocol::RegistrationRequest::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_RegistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_RegistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {
+      &scc_info_Port_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,}};
+
+static void InitDefaultsscc_info_RegistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::muscle_manager_protocol::_RegistrationResult_default_instance_;
+    new (ptr) ::muscle_manager_protocol::RegistrationResult();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::muscle_manager_protocol::RegistrationResult::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_RegistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_RegistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
+
+static void InitDefaultsscc_info_Setting_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::muscle_manager_protocol::_Setting_default_instance_;
+    new (ptr) ::muscle_manager_protocol::Setting();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::muscle_manager_protocol::Setting::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_Setting_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 2, 0, InitDefaultsscc_info_Setting_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {
+      &scc_info_ListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+      &scc_info_ListOfListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,}};
+
+static void InitDefaultsscc_info_SettingsRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::muscle_manager_protocol::_SettingsRequest_default_instance_;
+    new (ptr) ::muscle_manager_protocol::SettingsRequest();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::muscle_manager_protocol::SettingsRequest::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SettingsRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_SettingsRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {}};
+
+static void InitDefaultsscc_info_SettingsResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::muscle_manager_protocol::_SettingsResult_default_instance_;
+    new (ptr) ::muscle_manager_protocol::SettingsResult();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::muscle_manager_protocol::SettingsResult::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_SettingsResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_SettingsResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto}, {
+      &scc_info_Setting_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,}};
+
+static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[20];
+static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptors_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[5];
+static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto = nullptr;
+
+const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::muscle_manager_protocol::LogMessage, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -574,7 +549,7 @@ const ::google::protobuf::uint32 TableStruct_muscle_5fmanager_5fprotocol_2fmuscl
   PROTOBUF_FIELD_OFFSET(::muscle_manager_protocol::DeregistrationResult, status_),
   PROTOBUF_FIELD_OFFSET(::muscle_manager_protocol::DeregistrationResult, error_message_),
 };
-static const ::google::protobuf::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
+static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, sizeof(::muscle_manager_protocol::LogMessage)},
   { 9, -1, sizeof(::muscle_manager_protocol::LogResult)},
   { 14, -1, sizeof(::muscle_manager_protocol::Port)},
@@ -597,36 +572,30 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] PROTOBUF_SE
   { 139, -1, sizeof(::muscle_manager_protocol::DeregistrationResult)},
 };
 
-static ::google::protobuf::Message const * const file_default_instances[] = {
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_LogMessage_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_LogResult_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_Port_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_ProfileEvent_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_Profile_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_ProfileResult_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_RegistrationRequest_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_RegistrationResult_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_Conduit_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_PeerRequest_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_PeerResult_PeerDimensions_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_PeerResult_PeerLocations_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_PeerResult_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_ListOfDouble_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_ListOfListOfDouble_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_Setting_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_SettingsRequest_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_SettingsResult_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_DeregistrationRequest_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::muscle_manager_protocol::_DeregistrationResult_default_instance_),
+static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::muscle_manager_protocol::_LogMessage_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::muscle_manager_protocol::_LogResult_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::muscle_manager_protocol::_Port_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::muscle_manager_protocol::_ProfileEvent_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::muscle_manager_protocol::_Profile_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::muscle_manager_protocol::_ProfileResult_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::muscle_manager_protocol::_RegistrationRequest_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::muscle_manager_protocol::_RegistrationResult_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::muscle_manager_protocol::_Conduit_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::muscle_manager_protocol::_PeerRequest_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::muscle_manager_protocol::_PeerResult_PeerDimensions_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::muscle_manager_protocol::_PeerResult_PeerLocations_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::muscle_manager_protocol::_PeerResult_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::muscle_manager_protocol::_ListOfDouble_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::muscle_manager_protocol::_ListOfListOfDouble_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::muscle_manager_protocol::_Setting_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::muscle_manager_protocol::_SettingsRequest_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::muscle_manager_protocol::_SettingsResult_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::muscle_manager_protocol::_DeregistrationRequest_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::muscle_manager_protocol::_DeregistrationResult_default_instance_),
 };
 
-::google::protobuf::internal::AssignDescriptorsTable assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto = {
-  {}, AddDescriptors_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto, "muscle_manager_protocol/muscle_manager_protocol.proto", schemas,
-  file_default_instances, TableStruct_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto::offsets,
-  file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto, 20, file_level_enum_descriptors_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto, file_level_service_descriptors_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto,
-};
-
-const char descriptor_table_protodef_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[] =
+const char descriptor_table_protodef_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n5muscle_manager_protocol/muscle_manager"
   "_protocol.proto\022\027muscle_manager_protocol"
   "\032\037google/protobuf/timestamp.proto\"\220\001\n\nLo"
@@ -716,25 +685,45 @@ const char descriptor_table_protodef_muscle_5fmanager_5fprotocol_2fmuscle_5fmana
   "est\032-.muscle_manager_protocol.Deregistra"
   "tionResultb\006proto3"
   ;
-::google::protobuf::internal::DescriptorTable descriptor_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto = {
-  false, InitDefaults_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto, 
-  descriptor_table_protodef_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto,
-  "muscle_manager_protocol/muscle_manager_protocol.proto", &assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto, 3498,
+static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto_deps[1] = {
+  &::descriptor_table_google_2fprotobuf_2ftimestamp_2eproto,
+};
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto_sccs[20] = {
+  &scc_info_Conduit_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+  &scc_info_DeregistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+  &scc_info_DeregistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+  &scc_info_ListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+  &scc_info_ListOfListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+  &scc_info_LogMessage_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+  &scc_info_LogResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+  &scc_info_PeerRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+  &scc_info_PeerResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+  &scc_info_PeerResult_PeerDimensions_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+  &scc_info_PeerResult_PeerLocations_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+  &scc_info_Port_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+  &scc_info_Profile_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+  &scc_info_ProfileEvent_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+  &scc_info_ProfileResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+  &scc_info_RegistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+  &scc_info_RegistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+  &scc_info_Setting_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+  &scc_info_SettingsRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+  &scc_info_SettingsResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base,
+};
+static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto_once;
+static bool descriptor_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto_initialized = false;
+const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto = {
+  &descriptor_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto_initialized, descriptor_table_protodef_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto, "muscle_manager_protocol/muscle_manager_protocol.proto", 3498,
+  &descriptor_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto_once, descriptor_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto_sccs, descriptor_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto_deps, 20, 1,
+  schemas, file_default_instances, TableStruct_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto::offsets,
+  file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto, 20, file_level_enum_descriptors_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto, file_level_service_descriptors_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto,
 };
 
-void AddDescriptors_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto() {
-  static constexpr ::google::protobuf::internal::InitFunc deps[1] =
-  {
-    ::AddDescriptors_google_2fprotobuf_2ftimestamp_2eproto,
-  };
- ::google::protobuf::internal::AddDescriptors(&descriptor_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto, deps, 1);
-}
-
 // Force running AddDescriptors() at dynamic initialization time.
-static bool dynamic_init_dummy_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto = []() { AddDescriptors_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto(); return true; }();
+static bool dynamic_init_dummy_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto = (  ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto), true);
 namespace muscle_manager_protocol {
-const ::google::protobuf::EnumDescriptor* ResultStatus_descriptor() {
-  ::google::protobuf::internal::AssignDescriptors(&assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ResultStatus_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
   return file_level_enum_descriptors_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[0];
 }
 bool ResultStatus_IsValid(int value) {
@@ -748,8 +737,8 @@ bool ResultStatus_IsValid(int value) {
   }
 }
 
-const ::google::protobuf::EnumDescriptor* Operator_descriptor() {
-  ::google::protobuf::internal::AssignDescriptors(&assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* Operator_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
   return file_level_enum_descriptors_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[1];
 }
 bool Operator_IsValid(int value) {
@@ -767,8 +756,8 @@ bool Operator_IsValid(int value) {
   }
 }
 
-const ::google::protobuf::EnumDescriptor* LogLevel_descriptor() {
-  ::google::protobuf::internal::AssignDescriptors(&assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* LogLevel_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
   return file_level_enum_descriptors_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[2];
 }
 bool LogLevel_IsValid(int value) {
@@ -784,8 +773,8 @@ bool LogLevel_IsValid(int value) {
   }
 }
 
-const ::google::protobuf::EnumDescriptor* ProfileEventType_descriptor() {
-  ::google::protobuf::internal::AssignDescriptors(&assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ProfileEventType_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
   return file_level_enum_descriptors_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[3];
 }
 bool ProfileEventType_IsValid(int value) {
@@ -801,8 +790,8 @@ bool ProfileEventType_IsValid(int value) {
   }
 }
 
-const ::google::protobuf::EnumDescriptor* SettingValueType_descriptor() {
-  ::google::protobuf::internal::AssignDescriptors(&assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* SettingValueType_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
   return file_level_enum_descriptors_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[4];
 }
 bool SettingValueType_IsValid(int value) {
@@ -823,16 +812,16 @@ bool SettingValueType_IsValid(int value) {
 // ===================================================================
 
 void LogMessage::InitAsDefaultInstance() {
-  ::muscle_manager_protocol::_LogMessage_default_instance_._instance.get_mutable()->timestamp_ = const_cast< ::google::protobuf::Timestamp*>(
-      ::google::protobuf::Timestamp::internal_default_instance());
+  ::muscle_manager_protocol::_LogMessage_default_instance_._instance.get_mutable()->timestamp_ = const_cast< PROTOBUF_NAMESPACE_ID::Timestamp*>(
+      PROTOBUF_NAMESPACE_ID::Timestamp::internal_default_instance());
 }
-class LogMessage::HasBitSetters {
+class LogMessage::_Internal {
  public:
-  static const ::google::protobuf::Timestamp& timestamp(const LogMessage* msg);
+  static const PROTOBUF_NAMESPACE_ID::Timestamp& timestamp(const LogMessage* msg);
 };
 
-const ::google::protobuf::Timestamp&
-LogMessage::HasBitSetters::timestamp(const LogMessage* msg) {
+const PROTOBUF_NAMESPACE_ID::Timestamp&
+LogMessage::_Internal::timestamp(const LogMessage* msg) {
   return *msg->timestamp_;
 }
 void LogMessage::clear_timestamp() {
@@ -841,32 +830,25 @@ void LogMessage::clear_timestamp() {
   }
   timestamp_ = nullptr;
 }
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int LogMessage::kInstanceIdFieldNumber;
-const int LogMessage::kTimestampFieldNumber;
-const int LogMessage::kLevelFieldNumber;
-const int LogMessage::kTextFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 LogMessage::LogMessage()
-  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:muscle_manager_protocol.LogMessage)
 }
 LogMessage::LogMessage(const LogMessage& from)
-  : ::google::protobuf::Message(),
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  instance_id_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.instance_id().size() > 0) {
-    instance_id_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.instance_id_);
+  instance_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_instance_id().empty()) {
+    instance_id_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.instance_id_);
   }
-  text_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.text().size() > 0) {
-    text_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.text_);
+  text_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_text().empty()) {
+    text_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.text_);
   }
-  if (from.has_timestamp()) {
-    timestamp_ = new ::google::protobuf::Timestamp(*from.timestamp_);
+  if (from._internal_has_timestamp()) {
+    timestamp_ = new PROTOBUF_NAMESPACE_ID::Timestamp(*from.timestamp_);
   } else {
     timestamp_ = nullptr;
   }
@@ -875,10 +857,9 @@ LogMessage::LogMessage(const LogMessage& from)
 }
 
 void LogMessage::SharedCtor() {
-  ::google::protobuf::internal::InitSCC(
-      &scc_info_LogMessage_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  instance_id_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  text_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_LogMessage_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  instance_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  text_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   ::memset(&timestamp_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&level_) -
       reinterpret_cast<char*>(&timestamp_)) + sizeof(level_));
@@ -890,8 +871,8 @@ LogMessage::~LogMessage() {
 }
 
 void LogMessage::SharedDtor() {
-  instance_id_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  text_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  instance_id_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  text_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (this != internal_default_instance()) delete timestamp_;
 }
 
@@ -899,19 +880,19 @@ void LogMessage::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 const LogMessage& LogMessage::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_LogMessage_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_LogMessage_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
 void LogMessage::Clear() {
 // @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.LogMessage)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  instance_id_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  text_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  instance_id_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  text_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (GetArenaNoVirtual() == nullptr && timestamp_ != nullptr) {
     delete timestamp_;
   }
@@ -920,271 +901,106 @@ void LogMessage::Clear() {
   _internal_metadata_.Clear();
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* LogMessage::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<LogMessage*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+const char* LogMessage::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
     switch (tag >> 3) {
       // string instance_id = 1;
-      case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("muscle_manager_protocol.LogMessage.instance_id");
-        object = msg->mutable_instance_id();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_instance_id(), ptr, ctx, "muscle_manager_protocol.LogMessage.instance_id");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // .google.protobuf.Timestamp timestamp = 3;
-      case 3: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 26) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        parser_till_end = ::google::protobuf::Timestamp::_InternalParse;
-        object = msg->mutable_timestamp();
-        if (size > end - ptr) goto len_delim_till_end;
-        ptr += size;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ctx->ParseExactRange(
-            {parser_till_end, object}, ptr - size, ptr));
-        break;
-      }
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
+          ptr = ctx->ParseMessage(_internal_mutable_timestamp(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // .muscle_manager_protocol.LogLevel level = 4;
-      case 4: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 32) goto handle_unusual;
-        ::google::protobuf::uint64 val = ::google::protobuf::internal::ReadVarint(&ptr);
-        msg->set_level(static_cast<::muscle_manager_protocol::LogLevel>(val));
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        break;
-      }
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 32)) {
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+          _internal_set_level(static_cast<::muscle_manager_protocol::LogLevel>(val));
+        } else goto handle_unusual;
+        continue;
       // string text = 5;
-      case 5: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 42) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("muscle_manager_protocol.LogMessage.text");
-        object = msg->mutable_text();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
-        break;
-      }
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 42)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_text(), ptr, ctx, "muscle_manager_protocol.LogMessage.text");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
-          return ptr;
+          ctx->SetLastTag(tag);
+          goto success;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
-  return ptr;
-string_till_end:
-  static_cast<::std::string*>(object)->clear();
-  static_cast<::std::string*>(object)->reserve(size);
-  goto len_delim_till_end;
-len_delim_till_end:
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                               {parser_till_end, object}, size);
-}
-#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool LogMessage::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.LogMessage)
-  for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // string instance_id = 1;
-      case 1: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (10 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_instance_id()));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->instance_id().data(), static_cast<int>(this->instance_id().length()),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "muscle_manager_protocol.LogMessage.instance_id"));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // .google.protobuf.Timestamp timestamp = 3;
-      case 3: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (26 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_timestamp()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // .muscle_manager_protocol.LogLevel level = 4;
-      case 4: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (32 & 0xFF)) {
-          int value = 0;
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
-                 input, &value)));
-          set_level(static_cast< ::muscle_manager_protocol::LogLevel >(value));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // string text = 5;
-      case 5: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (42 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_text()));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->text().data(), static_cast<int>(this->text().length()),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "muscle_manager_protocol.LogMessage.text"));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      default: {
-      handle_unusual:
-        if (tag == 0) {
-          goto success;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, _internal_metadata_.mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
 success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.LogMessage)
-  return true;
+  return ptr;
 failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.LogMessage)
-  return false;
-#undef DO_
-}
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-void LogMessage::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.LogMessage)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // string instance_id = 1;
-  if (this->instance_id().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->instance_id().data(), static_cast<int>(this->instance_id().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "muscle_manager_protocol.LogMessage.instance_id");
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      1, this->instance_id(), output);
-  }
-
-  // .google.protobuf.Timestamp timestamp = 3;
-  if (this->has_timestamp()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      3, HasBitSetters::timestamp(this), output);
-  }
-
-  // .muscle_manager_protocol.LogLevel level = 4;
-  if (this->level() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteEnum(
-      4, this->level(), output);
-  }
-
-  // string text = 5;
-  if (this->text().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->text().data(), static_cast<int>(this->text().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "muscle_manager_protocol.LogMessage.text");
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      5, this->text(), output);
-  }
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.LogMessage)
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 
-::google::protobuf::uint8* LogMessage::InternalSerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::PROTOBUF_NAMESPACE_ID::uint8* LogMessage::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.LogMessage)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   // string instance_id = 1;
   if (this->instance_id().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->instance_id().data(), static_cast<int>(this->instance_id().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_instance_id().data(), static_cast<int>(this->_internal_instance_id().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "muscle_manager_protocol.LogMessage.instance_id");
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        1, this->instance_id(), target);
+    target = stream->WriteStringMaybeAliased(
+        1, this->_internal_instance_id(), target);
   }
 
   // .google.protobuf.Timestamp timestamp = 3;
   if (this->has_timestamp()) {
-    target = ::google::protobuf::internal::WireFormatLite::
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        3, HasBitSetters::timestamp(this), target);
+        3, _Internal::timestamp(this), target, stream);
   }
 
   // .muscle_manager_protocol.LogLevel level = 4;
   if (this->level() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      4, this->level(), target);
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteEnumToArray(
+      4, this->_internal_level(), target);
   }
 
   // string text = 5;
   if (this->text().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->text().data(), static_cast<int>(this->text().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_text().data(), static_cast<int>(this->_internal_text().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "muscle_manager_protocol.LogMessage.text");
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        5, this->text(), target);
+    target = stream->WriteStringMaybeAliased(
+        5, this->_internal_text(), target);
   }
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.LogMessage)
   return target;
@@ -1194,56 +1010,55 @@ size_t LogMessage::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.LogMessage)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   // string instance_id = 1;
   if (this->instance_id().size() > 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->instance_id());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_instance_id());
   }
 
   // string text = 5;
   if (this->text().size() > 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->text());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_text());
   }
 
   // .google.protobuf.Timestamp timestamp = 3;
   if (this->has_timestamp()) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::MessageSize(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
         *timestamp_);
   }
 
   // .muscle_manager_protocol.LogLevel level = 4;
   if (this->level() != 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::EnumSize(this->level());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::EnumSize(this->_internal_level());
   }
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
 }
 
-void LogMessage::MergeFrom(const ::google::protobuf::Message& from) {
+void LogMessage::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.LogMessage)
   GOOGLE_DCHECK_NE(&from, this);
   const LogMessage* source =
-      ::google::protobuf::DynamicCastToGenerated<LogMessage>(
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<LogMessage>(
           &from);
   if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.LogMessage)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.LogMessage)
     MergeFrom(*source);
@@ -1254,26 +1069,26 @@ void LogMessage::MergeFrom(const LogMessage& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.LogMessage)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from.instance_id().size() > 0) {
 
-    instance_id_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.instance_id_);
+    instance_id_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.instance_id_);
   }
   if (from.text().size() > 0) {
 
-    text_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.text_);
+    text_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.text_);
   }
   if (from.has_timestamp()) {
-    mutable_timestamp()->::google::protobuf::Timestamp::MergeFrom(from.timestamp());
+    _internal_mutable_timestamp()->PROTOBUF_NAMESPACE_ID::Timestamp::MergeFrom(from._internal_timestamp());
   }
   if (from.level() != 0) {
-    set_level(from.level());
+    _internal_set_level(from._internal_level());
   }
 }
 
-void LogMessage::CopyFrom(const ::google::protobuf::Message& from) {
+void LogMessage::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.LogMessage)
   if (&from == this) return;
   Clear();
@@ -1291,24 +1106,19 @@ bool LogMessage::IsInitialized() const {
   return true;
 }
 
-void LogMessage::Swap(LogMessage* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void LogMessage::InternalSwap(LogMessage* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
-  instance_id_.Swap(&other->instance_id_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  instance_id_.Swap(&other->instance_id_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
-  text_.Swap(&other->text_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  text_.Swap(&other->text_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   swap(timestamp_, other->timestamp_);
   swap(level_, other->level_);
 }
 
-::google::protobuf::Metadata LogMessage::GetMetadata() const {
-  ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
-  return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
+::PROTOBUF_NAMESPACE_ID::Metadata LogMessage::GetMetadata() const {
+  return GetMetadataStatic();
 }
 
 
@@ -1316,20 +1126,17 @@ void LogMessage::InternalSwap(LogMessage* other) {
 
 void LogResult::InitAsDefaultInstance() {
 }
-class LogResult::HasBitSetters {
+class LogResult::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 LogResult::LogResult()
-  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:muscle_manager_protocol.LogResult)
 }
 LogResult::LogResult(const LogResult& from)
-  : ::google::protobuf::Message(),
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:muscle_manager_protocol.LogResult)
@@ -1350,97 +1157,55 @@ void LogResult::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 const LogResult& LogResult::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_LogResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_LogResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
 void LogResult::Clear() {
 // @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.LogResult)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   _internal_metadata_.Clear();
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* LogResult::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<LogResult*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+const char* LogResult::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
     switch (tag >> 3) {
       default: {
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
-          return ptr;
+          ctx->SetLastTag(tag);
+          goto success;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
-  return ptr;
-}
-#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool LogResult::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.LogResult)
-  for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-  handle_unusual:
-    if (tag == 0) {
-      goto success;
-    }
-    DO_(::google::protobuf::internal::WireFormat::SkipField(
-          input, tag, _internal_metadata_.mutable_unknown_fields()));
-  }
 success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.LogResult)
-  return true;
+  return ptr;
 failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.LogResult)
-  return false;
-#undef DO_
-}
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-void LogResult::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.LogResult)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.LogResult)
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 
-::google::protobuf::uint8* LogResult::InternalSerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::PROTOBUF_NAMESPACE_ID::uint8* LogResult::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.LogResult)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.LogResult)
   return target;
@@ -1450,29 +1215,28 @@ size_t LogResult::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.LogResult)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
 }
 
-void LogResult::MergeFrom(const ::google::protobuf::Message& from) {
+void LogResult::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.LogResult)
   GOOGLE_DCHECK_NE(&from, this);
   const LogResult* source =
-      ::google::protobuf::DynamicCastToGenerated<LogResult>(
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<LogResult>(
           &from);
   if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.LogResult)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.LogResult)
     MergeFrom(*source);
@@ -1483,12 +1247,12 @@ void LogResult::MergeFrom(const LogResult& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.LogResult)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
 }
 
-void LogResult::CopyFrom(const ::google::protobuf::Message& from) {
+void LogResult::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.LogResult)
   if (&from == this) return;
   Clear();
@@ -1506,18 +1270,13 @@ bool LogResult::IsInitialized() const {
   return true;
 }
 
-void LogResult::Swap(LogResult* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void LogResult::InternalSwap(LogResult* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
 
-::google::protobuf::Metadata LogResult::GetMetadata() const {
-  ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
-  return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
+::PROTOBUF_NAMESPACE_ID::Metadata LogResult::GetMetadata() const {
+  return GetMetadataStatic();
 }
 
 
@@ -1525,36 +1284,30 @@ void LogResult::InternalSwap(LogResult* other) {
 
 void Port::InitAsDefaultInstance() {
 }
-class Port::HasBitSetters {
+class Port::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Port::kNameFieldNumber;
-const int Port::kOperatorFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 Port::Port()
-  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:muscle_manager_protocol.Port)
 }
 Port::Port(const Port& from)
-  : ::google::protobuf::Message(),
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.name().size() > 0) {
-    name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_);
+  name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_name().empty()) {
+    name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.name_);
   }
   operator__ = from.operator__;
   // @@protoc_insertion_point(copy_constructor:muscle_manager_protocol.Port)
 }
 
 void Port::SharedCtor() {
-  ::google::protobuf::internal::InitSCC(
-      &scc_info_Port_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Port_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   operator__ = 0;
 }
 
@@ -1564,205 +1317,97 @@ Port::~Port() {
 }
 
 void Port::SharedDtor() {
-  name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  name_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 void Port::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 const Port& Port::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_Port_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Port_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
 void Port::Clear() {
 // @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.Port)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  name_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   operator__ = 0;
   _internal_metadata_.Clear();
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* Port::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<Port*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+const char* Port::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
     switch (tag >> 3) {
       // string name = 1;
-      case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("muscle_manager_protocol.Port.name");
-        object = msg->mutable_name();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_name(), ptr, ctx, "muscle_manager_protocol.Port.name");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // .muscle_manager_protocol.Operator operator = 2;
-      case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 16) goto handle_unusual;
-        ::google::protobuf::uint64 val = ::google::protobuf::internal::ReadVarint(&ptr);
-        msg->set_operator_(static_cast<::muscle_manager_protocol::Operator>(val));
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+          _internal_set_operator_(static_cast<::muscle_manager_protocol::Operator>(val));
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
-          return ptr;
+          ctx->SetLastTag(tag);
+          goto success;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
-  return ptr;
-string_till_end:
-  static_cast<::std::string*>(object)->clear();
-  static_cast<::std::string*>(object)->reserve(size);
-  goto len_delim_till_end;
-len_delim_till_end:
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                               {parser_till_end, object}, size);
-}
-#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool Port::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.Port)
-  for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // string name = 1;
-      case 1: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (10 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_name()));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->name().data(), static_cast<int>(this->name().length()),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "muscle_manager_protocol.Port.name"));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // .muscle_manager_protocol.Operator operator = 2;
-      case 2: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (16 & 0xFF)) {
-          int value = 0;
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
-                 input, &value)));
-          set_operator_(static_cast< ::muscle_manager_protocol::Operator >(value));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      default: {
-      handle_unusual:
-        if (tag == 0) {
-          goto success;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, _internal_metadata_.mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
 success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.Port)
-  return true;
+  return ptr;
 failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.Port)
-  return false;
-#undef DO_
-}
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-void Port::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.Port)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // string name = 1;
-  if (this->name().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->name().data(), static_cast<int>(this->name().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "muscle_manager_protocol.Port.name");
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      1, this->name(), output);
-  }
-
-  // .muscle_manager_protocol.Operator operator = 2;
-  if (this->operator_() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteEnum(
-      2, this->operator_(), output);
-  }
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.Port)
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 
-::google::protobuf::uint8* Port::InternalSerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::PROTOBUF_NAMESPACE_ID::uint8* Port::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.Port)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   // string name = 1;
   if (this->name().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->name().data(), static_cast<int>(this->name().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_name().data(), static_cast<int>(this->_internal_name().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "muscle_manager_protocol.Port.name");
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        1, this->name(), target);
+    target = stream->WriteStringMaybeAliased(
+        1, this->_internal_name(), target);
   }
 
   // .muscle_manager_protocol.Operator operator = 2;
   if (this->operator_() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->operator_(), target);
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteEnumToArray(
+      2, this->_internal_operator_(), target);
   }
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.Port)
   return target;
@@ -1772,42 +1417,41 @@ size_t Port::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.Port)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   // string name = 1;
   if (this->name().size() > 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->name());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_name());
   }
 
   // .muscle_manager_protocol.Operator operator = 2;
   if (this->operator_() != 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::EnumSize(this->operator_());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::EnumSize(this->_internal_operator_());
   }
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
 }
 
-void Port::MergeFrom(const ::google::protobuf::Message& from) {
+void Port::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.Port)
   GOOGLE_DCHECK_NE(&from, this);
   const Port* source =
-      ::google::protobuf::DynamicCastToGenerated<Port>(
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<Port>(
           &from);
   if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.Port)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.Port)
     MergeFrom(*source);
@@ -1818,19 +1462,19 @@ void Port::MergeFrom(const Port& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.Port)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from.name().size() > 0) {
 
-    name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_);
+    name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.name_);
   }
   if (from.operator_() != 0) {
-    set_operator_(from.operator_());
+    _internal_set_operator_(from._internal_operator_());
   }
 }
 
-void Port::CopyFrom(const ::google::protobuf::Message& from) {
+void Port::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.Port)
   if (&from == this) return;
   Clear();
@@ -1848,51 +1492,46 @@ bool Port::IsInitialized() const {
   return true;
 }
 
-void Port::Swap(Port* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void Port::InternalSwap(Port* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
-  name_.Swap(&other->name_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  name_.Swap(&other->name_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   swap(operator__, other->operator__);
 }
 
-::google::protobuf::Metadata Port::GetMetadata() const {
-  ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
-  return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
+::PROTOBUF_NAMESPACE_ID::Metadata Port::GetMetadata() const {
+  return GetMetadataStatic();
 }
 
 
 // ===================================================================
 
 void ProfileEvent::InitAsDefaultInstance() {
-  ::muscle_manager_protocol::_ProfileEvent_default_instance_._instance.get_mutable()->start_time_ = const_cast< ::google::protobuf::Timestamp*>(
-      ::google::protobuf::Timestamp::internal_default_instance());
-  ::muscle_manager_protocol::_ProfileEvent_default_instance_._instance.get_mutable()->stop_time_ = const_cast< ::google::protobuf::Timestamp*>(
-      ::google::protobuf::Timestamp::internal_default_instance());
+  ::muscle_manager_protocol::_ProfileEvent_default_instance_._instance.get_mutable()->start_time_ = const_cast< PROTOBUF_NAMESPACE_ID::Timestamp*>(
+      PROTOBUF_NAMESPACE_ID::Timestamp::internal_default_instance());
+  ::muscle_manager_protocol::_ProfileEvent_default_instance_._instance.get_mutable()->stop_time_ = const_cast< PROTOBUF_NAMESPACE_ID::Timestamp*>(
+      PROTOBUF_NAMESPACE_ID::Timestamp::internal_default_instance());
   ::muscle_manager_protocol::_ProfileEvent_default_instance_._instance.get_mutable()->port_ = const_cast< ::muscle_manager_protocol::Port*>(
       ::muscle_manager_protocol::Port::internal_default_instance());
 }
-class ProfileEvent::HasBitSetters {
+class ProfileEvent::_Internal {
  public:
-  static const ::google::protobuf::Timestamp& start_time(const ProfileEvent* msg);
-  static const ::google::protobuf::Timestamp& stop_time(const ProfileEvent* msg);
+  static const PROTOBUF_NAMESPACE_ID::Timestamp& start_time(const ProfileEvent* msg);
+  static const PROTOBUF_NAMESPACE_ID::Timestamp& stop_time(const ProfileEvent* msg);
   static const ::muscle_manager_protocol::Port& port(const ProfileEvent* msg);
 };
 
-const ::google::protobuf::Timestamp&
-ProfileEvent::HasBitSetters::start_time(const ProfileEvent* msg) {
+const PROTOBUF_NAMESPACE_ID::Timestamp&
+ProfileEvent::_Internal::start_time(const ProfileEvent* msg) {
   return *msg->start_time_;
 }
-const ::google::protobuf::Timestamp&
-ProfileEvent::HasBitSetters::stop_time(const ProfileEvent* msg) {
+const PROTOBUF_NAMESPACE_ID::Timestamp&
+ProfileEvent::_Internal::stop_time(const ProfileEvent* msg) {
   return *msg->stop_time_;
 }
 const ::muscle_manager_protocol::Port&
-ProfileEvent::HasBitSetters::port(const ProfileEvent* msg) {
+ProfileEvent::_Internal::port(const ProfileEvent* msg) {
   return *msg->port_;
 }
 void ProfileEvent::clear_start_time() {
@@ -1907,41 +1546,30 @@ void ProfileEvent::clear_stop_time() {
   }
   stop_time_ = nullptr;
 }
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int ProfileEvent::kInstanceIdFieldNumber;
-const int ProfileEvent::kStartTimeFieldNumber;
-const int ProfileEvent::kStopTimeFieldNumber;
-const int ProfileEvent::kEventTypeFieldNumber;
-const int ProfileEvent::kPortFieldNumber;
-const int ProfileEvent::kPortLengthFieldNumber;
-const int ProfileEvent::kSlotFieldNumber;
-const int ProfileEvent::kMessageSizeFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 ProfileEvent::ProfileEvent()
-  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:muscle_manager_protocol.ProfileEvent)
 }
 ProfileEvent::ProfileEvent(const ProfileEvent& from)
-  : ::google::protobuf::Message(),
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  instance_id_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.instance_id().size() > 0) {
-    instance_id_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.instance_id_);
+  instance_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_instance_id().empty()) {
+    instance_id_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.instance_id_);
   }
-  if (from.has_start_time()) {
-    start_time_ = new ::google::protobuf::Timestamp(*from.start_time_);
+  if (from._internal_has_start_time()) {
+    start_time_ = new PROTOBUF_NAMESPACE_ID::Timestamp(*from.start_time_);
   } else {
     start_time_ = nullptr;
   }
-  if (from.has_stop_time()) {
-    stop_time_ = new ::google::protobuf::Timestamp(*from.stop_time_);
+  if (from._internal_has_stop_time()) {
+    stop_time_ = new PROTOBUF_NAMESPACE_ID::Timestamp(*from.stop_time_);
   } else {
     stop_time_ = nullptr;
   }
-  if (from.has_port()) {
+  if (from._internal_has_port()) {
     port_ = new ::muscle_manager_protocol::Port(*from.port_);
   } else {
     port_ = nullptr;
@@ -1953,9 +1581,8 @@ ProfileEvent::ProfileEvent(const ProfileEvent& from)
 }
 
 void ProfileEvent::SharedCtor() {
-  ::google::protobuf::internal::InitSCC(
-      &scc_info_ProfileEvent_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  instance_id_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_ProfileEvent_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  instance_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   ::memset(&start_time_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&slot_) -
       reinterpret_cast<char*>(&start_time_)) + sizeof(slot_));
@@ -1967,7 +1594,7 @@ ProfileEvent::~ProfileEvent() {
 }
 
 void ProfileEvent::SharedDtor() {
-  instance_id_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  instance_id_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (this != internal_default_instance()) delete start_time_;
   if (this != internal_default_instance()) delete stop_time_;
   if (this != internal_default_instance()) delete port_;
@@ -1977,18 +1604,18 @@ void ProfileEvent::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 const ProfileEvent& ProfileEvent::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_ProfileEvent_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_ProfileEvent_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
 void ProfileEvent::Clear() {
 // @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.ProfileEvent)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  instance_id_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  instance_id_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (GetArenaNoVirtual() == nullptr && start_time_ != nullptr) {
     delete start_time_;
   }
@@ -2007,383 +1634,158 @@ void ProfileEvent::Clear() {
   _internal_metadata_.Clear();
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* ProfileEvent::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<ProfileEvent*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+const char* ProfileEvent::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
     switch (tag >> 3) {
       // string instance_id = 1;
-      case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("muscle_manager_protocol.ProfileEvent.instance_id");
-        object = msg->mutable_instance_id();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_instance_id(), ptr, ctx, "muscle_manager_protocol.ProfileEvent.instance_id");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // .google.protobuf.Timestamp start_time = 2;
-      case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 18) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        parser_till_end = ::google::protobuf::Timestamp::_InternalParse;
-        object = msg->mutable_start_time();
-        if (size > end - ptr) goto len_delim_till_end;
-        ptr += size;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ctx->ParseExactRange(
-            {parser_till_end, object}, ptr - size, ptr));
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr = ctx->ParseMessage(_internal_mutable_start_time(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // .google.protobuf.Timestamp stop_time = 3;
-      case 3: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 26) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        parser_till_end = ::google::protobuf::Timestamp::_InternalParse;
-        object = msg->mutable_stop_time();
-        if (size > end - ptr) goto len_delim_till_end;
-        ptr += size;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ctx->ParseExactRange(
-            {parser_till_end, object}, ptr - size, ptr));
-        break;
-      }
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
+          ptr = ctx->ParseMessage(_internal_mutable_stop_time(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // .muscle_manager_protocol.ProfileEventType event_type = 4;
-      case 4: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 32) goto handle_unusual;
-        ::google::protobuf::uint64 val = ::google::protobuf::internal::ReadVarint(&ptr);
-        msg->set_event_type(static_cast<::muscle_manager_protocol::ProfileEventType>(val));
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        break;
-      }
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 32)) {
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+          _internal_set_event_type(static_cast<::muscle_manager_protocol::ProfileEventType>(val));
+        } else goto handle_unusual;
+        continue;
       // .muscle_manager_protocol.Port port = 5;
-      case 5: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 42) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        parser_till_end = ::muscle_manager_protocol::Port::_InternalParse;
-        object = msg->mutable_port();
-        if (size > end - ptr) goto len_delim_till_end;
-        ptr += size;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ctx->ParseExactRange(
-            {parser_till_end, object}, ptr - size, ptr));
-        break;
-      }
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 42)) {
+          ptr = ctx->ParseMessage(_internal_mutable_port(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // int32 port_length = 6;
-      case 6: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 48) goto handle_unusual;
-        msg->set_port_length(::google::protobuf::internal::ReadVarint(&ptr));
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        break;
-      }
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 48)) {
+          port_length_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // int32 slot = 7;
-      case 7: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 56) goto handle_unusual;
-        msg->set_slot(::google::protobuf::internal::ReadVarint(&ptr));
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        break;
-      }
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 56)) {
+          slot_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // int64 message_size = 8;
-      case 8: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 64) goto handle_unusual;
-        msg->set_message_size(::google::protobuf::internal::ReadVarint(&ptr));
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        break;
-      }
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 64)) {
+          message_size_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
-          return ptr;
+          ctx->SetLastTag(tag);
+          goto success;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
-  return ptr;
-string_till_end:
-  static_cast<::std::string*>(object)->clear();
-  static_cast<::std::string*>(object)->reserve(size);
-  goto len_delim_till_end;
-len_delim_till_end:
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                               {parser_till_end, object}, size);
-}
-#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool ProfileEvent::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.ProfileEvent)
-  for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // string instance_id = 1;
-      case 1: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (10 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_instance_id()));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->instance_id().data(), static_cast<int>(this->instance_id().length()),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "muscle_manager_protocol.ProfileEvent.instance_id"));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // .google.protobuf.Timestamp start_time = 2;
-      case 2: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (18 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_start_time()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // .google.protobuf.Timestamp stop_time = 3;
-      case 3: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (26 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_stop_time()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // .muscle_manager_protocol.ProfileEventType event_type = 4;
-      case 4: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (32 & 0xFF)) {
-          int value = 0;
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
-                 input, &value)));
-          set_event_type(static_cast< ::muscle_manager_protocol::ProfileEventType >(value));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // .muscle_manager_protocol.Port port = 5;
-      case 5: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (42 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_port()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // int32 port_length = 6;
-      case 6: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (48 & 0xFF)) {
-
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &port_length_)));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // int32 slot = 7;
-      case 7: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (56 & 0xFF)) {
-
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &slot_)));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // int64 message_size = 8;
-      case 8: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (64 & 0xFF)) {
-
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
-                 input, &message_size_)));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      default: {
-      handle_unusual:
-        if (tag == 0) {
-          goto success;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, _internal_metadata_.mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
 success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.ProfileEvent)
-  return true;
+  return ptr;
 failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.ProfileEvent)
-  return false;
-#undef DO_
-}
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-void ProfileEvent::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.ProfileEvent)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // string instance_id = 1;
-  if (this->instance_id().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->instance_id().data(), static_cast<int>(this->instance_id().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "muscle_manager_protocol.ProfileEvent.instance_id");
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      1, this->instance_id(), output);
-  }
-
-  // .google.protobuf.Timestamp start_time = 2;
-  if (this->has_start_time()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      2, HasBitSetters::start_time(this), output);
-  }
-
-  // .google.protobuf.Timestamp stop_time = 3;
-  if (this->has_stop_time()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      3, HasBitSetters::stop_time(this), output);
-  }
-
-  // .muscle_manager_protocol.ProfileEventType event_type = 4;
-  if (this->event_type() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteEnum(
-      4, this->event_type(), output);
-  }
-
-  // .muscle_manager_protocol.Port port = 5;
-  if (this->has_port()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      5, HasBitSetters::port(this), output);
-  }
-
-  // int32 port_length = 6;
-  if (this->port_length() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(6, this->port_length(), output);
-  }
-
-  // int32 slot = 7;
-  if (this->slot() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(7, this->slot(), output);
-  }
-
-  // int64 message_size = 8;
-  if (this->message_size() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt64(8, this->message_size(), output);
-  }
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.ProfileEvent)
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 
-::google::protobuf::uint8* ProfileEvent::InternalSerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::PROTOBUF_NAMESPACE_ID::uint8* ProfileEvent::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.ProfileEvent)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   // string instance_id = 1;
   if (this->instance_id().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->instance_id().data(), static_cast<int>(this->instance_id().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_instance_id().data(), static_cast<int>(this->_internal_instance_id().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "muscle_manager_protocol.ProfileEvent.instance_id");
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        1, this->instance_id(), target);
+    target = stream->WriteStringMaybeAliased(
+        1, this->_internal_instance_id(), target);
   }
 
   // .google.protobuf.Timestamp start_time = 2;
   if (this->has_start_time()) {
-    target = ::google::protobuf::internal::WireFormatLite::
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        2, HasBitSetters::start_time(this), target);
+        2, _Internal::start_time(this), target, stream);
   }
 
   // .google.protobuf.Timestamp stop_time = 3;
   if (this->has_stop_time()) {
-    target = ::google::protobuf::internal::WireFormatLite::
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        3, HasBitSetters::stop_time(this), target);
+        3, _Internal::stop_time(this), target, stream);
   }
 
   // .muscle_manager_protocol.ProfileEventType event_type = 4;
   if (this->event_type() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      4, this->event_type(), target);
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteEnumToArray(
+      4, this->_internal_event_type(), target);
   }
 
   // .muscle_manager_protocol.Port port = 5;
   if (this->has_port()) {
-    target = ::google::protobuf::internal::WireFormatLite::
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        5, HasBitSetters::port(this), target);
+        5, _Internal::port(this), target, stream);
   }
 
   // int32 port_length = 6;
   if (this->port_length() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(6, this->port_length(), target);
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(6, this->_internal_port_length(), target);
   }
 
   // int32 slot = 7;
   if (this->slot() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(7, this->slot(), target);
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(7, this->_internal_slot(), target);
   }
 
   // int64 message_size = 8;
   if (this->message_size() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(8, this->message_size(), target);
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64ToArray(8, this->_internal_message_size(), target);
   }
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.ProfileEvent)
   return target;
@@ -2393,84 +1795,83 @@ size_t ProfileEvent::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.ProfileEvent)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   // string instance_id = 1;
   if (this->instance_id().size() > 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->instance_id());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_instance_id());
   }
 
   // .google.protobuf.Timestamp start_time = 2;
   if (this->has_start_time()) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::MessageSize(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
         *start_time_);
   }
 
   // .google.protobuf.Timestamp stop_time = 3;
   if (this->has_stop_time()) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::MessageSize(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
         *stop_time_);
   }
 
   // .muscle_manager_protocol.Port port = 5;
   if (this->has_port()) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::MessageSize(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
         *port_);
   }
 
   // .muscle_manager_protocol.ProfileEventType event_type = 4;
   if (this->event_type() != 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::EnumSize(this->event_type());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::EnumSize(this->_internal_event_type());
   }
 
   // int32 port_length = 6;
   if (this->port_length() != 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::Int32Size(
-        this->port_length());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+        this->_internal_port_length());
   }
 
   // int64 message_size = 8;
   if (this->message_size() != 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::Int64Size(
-        this->message_size());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int64Size(
+        this->_internal_message_size());
   }
 
   // int32 slot = 7;
   if (this->slot() != 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::Int32Size(
-        this->slot());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+        this->_internal_slot());
   }
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
 }
 
-void ProfileEvent::MergeFrom(const ::google::protobuf::Message& from) {
+void ProfileEvent::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.ProfileEvent)
   GOOGLE_DCHECK_NE(&from, this);
   const ProfileEvent* source =
-      ::google::protobuf::DynamicCastToGenerated<ProfileEvent>(
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<ProfileEvent>(
           &from);
   if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.ProfileEvent)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.ProfileEvent)
     MergeFrom(*source);
@@ -2481,37 +1882,37 @@ void ProfileEvent::MergeFrom(const ProfileEvent& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.ProfileEvent)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from.instance_id().size() > 0) {
 
-    instance_id_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.instance_id_);
+    instance_id_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.instance_id_);
   }
   if (from.has_start_time()) {
-    mutable_start_time()->::google::protobuf::Timestamp::MergeFrom(from.start_time());
+    _internal_mutable_start_time()->PROTOBUF_NAMESPACE_ID::Timestamp::MergeFrom(from._internal_start_time());
   }
   if (from.has_stop_time()) {
-    mutable_stop_time()->::google::protobuf::Timestamp::MergeFrom(from.stop_time());
+    _internal_mutable_stop_time()->PROTOBUF_NAMESPACE_ID::Timestamp::MergeFrom(from._internal_stop_time());
   }
   if (from.has_port()) {
-    mutable_port()->::muscle_manager_protocol::Port::MergeFrom(from.port());
+    _internal_mutable_port()->::muscle_manager_protocol::Port::MergeFrom(from._internal_port());
   }
   if (from.event_type() != 0) {
-    set_event_type(from.event_type());
+    _internal_set_event_type(from._internal_event_type());
   }
   if (from.port_length() != 0) {
-    set_port_length(from.port_length());
+    _internal_set_port_length(from._internal_port_length());
   }
   if (from.message_size() != 0) {
-    set_message_size(from.message_size());
+    _internal_set_message_size(from._internal_message_size());
   }
   if (from.slot() != 0) {
-    set_slot(from.slot());
+    _internal_set_slot(from._internal_slot());
   }
 }
 
-void ProfileEvent::CopyFrom(const ::google::protobuf::Message& from) {
+void ProfileEvent::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.ProfileEvent)
   if (&from == this) return;
   Clear();
@@ -2529,14 +1930,10 @@ bool ProfileEvent::IsInitialized() const {
   return true;
 }
 
-void ProfileEvent::Swap(ProfileEvent* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void ProfileEvent::InternalSwap(ProfileEvent* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
-  instance_id_.Swap(&other->instance_id_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  instance_id_.Swap(&other->instance_id_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   swap(start_time_, other->start_time_);
   swap(stop_time_, other->stop_time_);
@@ -2547,9 +1944,8 @@ void ProfileEvent::InternalSwap(ProfileEvent* other) {
   swap(slot_, other->slot_);
 }
 
-::google::protobuf::Metadata ProfileEvent::GetMetadata() const {
-  ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
-  return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
+::PROTOBUF_NAMESPACE_ID::Metadata ProfileEvent::GetMetadata() const {
+  return GetMetadataStatic();
 }
 
 
@@ -2557,21 +1953,17 @@ void ProfileEvent::InternalSwap(ProfileEvent* other) {
 
 void Profile::InitAsDefaultInstance() {
 }
-class Profile::HasBitSetters {
+class Profile::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Profile::kEventsFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 Profile::Profile()
-  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:muscle_manager_protocol.Profile)
 }
 Profile::Profile(const Profile& from)
-  : ::google::protobuf::Message(),
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr),
       events_(from.events_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
@@ -2579,8 +1971,7 @@ Profile::Profile(const Profile& from)
 }
 
 void Profile::SharedCtor() {
-  ::google::protobuf::internal::InitSCC(
-      &scc_info_Profile_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Profile_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
 }
 
 Profile::~Profile() {
@@ -2595,14 +1986,14 @@ void Profile::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 const Profile& Profile::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_Profile_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Profile_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
 void Profile::Clear() {
 // @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.Profile)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
@@ -2610,136 +2001,62 @@ void Profile::Clear() {
   _internal_metadata_.Clear();
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* Profile::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<Profile*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+const char* Profile::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
     switch (tag >> 3) {
       // repeated .muscle_manager_protocol.ProfileEvent events = 1;
-      case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
-        do {
-          ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-          parser_till_end = ::muscle_manager_protocol::ProfileEvent::_InternalParse;
-          object = msg->add_events();
-          if (size > end - ptr) goto len_delim_till_end;
-          ptr += size;
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ctx->ParseExactRange(
-              {parser_till_end, object}, ptr - size, ptr));
-          if (ptr >= end) break;
-        } while ((::google::protobuf::io::UnalignedLoad<::google::protobuf::uint64>(ptr) & 255) == 10 && (ptr += 1));
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(_internal_add_events(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<10>(ptr));
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
-          return ptr;
+          ctx->SetLastTag(tag);
+          goto success;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
-  return ptr;
-len_delim_till_end:
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                               {parser_till_end, object}, size);
-}
-#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool Profile::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.Profile)
-  for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated .muscle_manager_protocol.ProfileEvent events = 1;
-      case 1: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (10 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-                input, add_events()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      default: {
-      handle_unusual:
-        if (tag == 0) {
-          goto success;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, _internal_metadata_.mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
 success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.Profile)
-  return true;
+  return ptr;
 failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.Profile)
-  return false;
-#undef DO_
-}
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-void Profile::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.Profile)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // repeated .muscle_manager_protocol.ProfileEvent events = 1;
-  for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->events_size()); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      1,
-      this->events(static_cast<int>(i)),
-      output);
-  }
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.Profile)
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 
-::google::protobuf::uint8* Profile::InternalSerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::PROTOBUF_NAMESPACE_ID::uint8* Profile::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.Profile)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   // repeated .muscle_manager_protocol.ProfileEvent events = 1;
   for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->events_size()); i < n; i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessageToArray(
-        1, this->events(static_cast<int>(i)), target);
+      n = static_cast<unsigned int>(this->_internal_events_size()); i < n; i++) {
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessageToArray(1, this->_internal_events(i), target, stream);
   }
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.Profile)
   return target;
@@ -2749,40 +2066,35 @@ size_t Profile::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.Profile)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   // repeated .muscle_manager_protocol.ProfileEvent events = 1;
-  {
-    unsigned int count = static_cast<unsigned int>(this->events_size());
-    total_size += 1UL * count;
-    for (unsigned int i = 0; i < count; i++) {
-      total_size +=
-        ::google::protobuf::internal::WireFormatLite::MessageSize(
-          this->events(static_cast<int>(i)));
-    }
+  total_size += 1UL * this->_internal_events_size();
+  for (const auto& msg : this->events_) {
+    total_size +=
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
 }
 
-void Profile::MergeFrom(const ::google::protobuf::Message& from) {
+void Profile::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.Profile)
   GOOGLE_DCHECK_NE(&from, this);
   const Profile* source =
-      ::google::protobuf::DynamicCastToGenerated<Profile>(
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<Profile>(
           &from);
   if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.Profile)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.Profile)
     MergeFrom(*source);
@@ -2793,13 +2105,13 @@ void Profile::MergeFrom(const Profile& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.Profile)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   events_.MergeFrom(from.events_);
 }
 
-void Profile::CopyFrom(const ::google::protobuf::Message& from) {
+void Profile::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.Profile)
   if (&from == this) return;
   Clear();
@@ -2817,19 +2129,14 @@ bool Profile::IsInitialized() const {
   return true;
 }
 
-void Profile::Swap(Profile* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void Profile::InternalSwap(Profile* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
-  CastToBase(&events_)->InternalSwap(CastToBase(&other->events_));
+  events_.InternalSwap(&other->events_);
 }
 
-::google::protobuf::Metadata Profile::GetMetadata() const {
-  ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
-  return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
+::PROTOBUF_NAMESPACE_ID::Metadata Profile::GetMetadata() const {
+  return GetMetadataStatic();
 }
 
 
@@ -2837,20 +2144,17 @@ void Profile::InternalSwap(Profile* other) {
 
 void ProfileResult::InitAsDefaultInstance() {
 }
-class ProfileResult::HasBitSetters {
+class ProfileResult::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 ProfileResult::ProfileResult()
-  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:muscle_manager_protocol.ProfileResult)
 }
 ProfileResult::ProfileResult(const ProfileResult& from)
-  : ::google::protobuf::Message(),
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:muscle_manager_protocol.ProfileResult)
@@ -2871,97 +2175,55 @@ void ProfileResult::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 const ProfileResult& ProfileResult::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_ProfileResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_ProfileResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
 void ProfileResult::Clear() {
 // @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.ProfileResult)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   _internal_metadata_.Clear();
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* ProfileResult::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<ProfileResult*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+const char* ProfileResult::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
     switch (tag >> 3) {
       default: {
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
-          return ptr;
+          ctx->SetLastTag(tag);
+          goto success;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
-  return ptr;
-}
-#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool ProfileResult::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.ProfileResult)
-  for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-  handle_unusual:
-    if (tag == 0) {
-      goto success;
-    }
-    DO_(::google::protobuf::internal::WireFormat::SkipField(
-          input, tag, _internal_metadata_.mutable_unknown_fields()));
-  }
 success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.ProfileResult)
-  return true;
+  return ptr;
 failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.ProfileResult)
-  return false;
-#undef DO_
-}
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-void ProfileResult::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.ProfileResult)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.ProfileResult)
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 
-::google::protobuf::uint8* ProfileResult::InternalSerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::PROTOBUF_NAMESPACE_ID::uint8* ProfileResult::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.ProfileResult)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.ProfileResult)
   return target;
@@ -2971,29 +2233,28 @@ size_t ProfileResult::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.ProfileResult)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
 }
 
-void ProfileResult::MergeFrom(const ::google::protobuf::Message& from) {
+void ProfileResult::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.ProfileResult)
   GOOGLE_DCHECK_NE(&from, this);
   const ProfileResult* source =
-      ::google::protobuf::DynamicCastToGenerated<ProfileResult>(
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<ProfileResult>(
           &from);
   if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.ProfileResult)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.ProfileResult)
     MergeFrom(*source);
@@ -3004,12 +2265,12 @@ void ProfileResult::MergeFrom(const ProfileResult& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.ProfileResult)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
 }
 
-void ProfileResult::CopyFrom(const ::google::protobuf::Message& from) {
+void ProfileResult::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.ProfileResult)
   if (&from == this) return;
   Clear();
@@ -3027,18 +2288,13 @@ bool ProfileResult::IsInitialized() const {
   return true;
 }
 
-void ProfileResult::Swap(ProfileResult* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void ProfileResult::InternalSwap(ProfileResult* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
 
-::google::protobuf::Metadata ProfileResult::GetMetadata() const {
-  ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
-  return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
+::PROTOBUF_NAMESPACE_ID::Metadata ProfileResult::GetMetadata() const {
+  return GetMetadataStatic();
 }
 
 
@@ -3046,38 +2302,31 @@ void ProfileResult::InternalSwap(ProfileResult* other) {
 
 void RegistrationRequest::InitAsDefaultInstance() {
 }
-class RegistrationRequest::HasBitSetters {
+class RegistrationRequest::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int RegistrationRequest::kInstanceNameFieldNumber;
-const int RegistrationRequest::kNetworkLocationsFieldNumber;
-const int RegistrationRequest::kPortsFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 RegistrationRequest::RegistrationRequest()
-  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:muscle_manager_protocol.RegistrationRequest)
 }
 RegistrationRequest::RegistrationRequest(const RegistrationRequest& from)
-  : ::google::protobuf::Message(),
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr),
       network_locations_(from.network_locations_),
       ports_(from.ports_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  instance_name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.instance_name().size() > 0) {
-    instance_name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.instance_name_);
+  instance_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_instance_name().empty()) {
+    instance_name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.instance_name_);
   }
   // @@protoc_insertion_point(copy_constructor:muscle_manager_protocol.RegistrationRequest)
 }
 
 void RegistrationRequest::SharedCtor() {
-  ::google::protobuf::internal::InitSCC(
-      &scc_info_RegistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  instance_name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_RegistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  instance_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 RegistrationRequest::~RegistrationRequest() {
@@ -3086,271 +2335,125 @@ RegistrationRequest::~RegistrationRequest() {
 }
 
 void RegistrationRequest::SharedDtor() {
-  instance_name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  instance_name_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 void RegistrationRequest::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 const RegistrationRequest& RegistrationRequest::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_RegistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_RegistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
 void RegistrationRequest::Clear() {
 // @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.RegistrationRequest)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   network_locations_.Clear();
   ports_.Clear();
-  instance_name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  instance_name_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   _internal_metadata_.Clear();
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* RegistrationRequest::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<RegistrationRequest*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+const char* RegistrationRequest::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
     switch (tag >> 3) {
       // string instance_name = 1;
-      case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("muscle_manager_protocol.RegistrationRequest.instance_name");
-        object = msg->mutable_instance_name();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_instance_name(), ptr, ctx, "muscle_manager_protocol.RegistrationRequest.instance_name");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // repeated string network_locations = 2;
-      case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 18) goto handle_unusual;
-        do {
-          ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-          ctx->extra_parse_data().SetFieldName("muscle_manager_protocol.RegistrationRequest.network_locations");
-          object = msg->add_network_locations();
-          if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-            parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8;
-            goto string_till_end;
-          }
-          GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8(ptr, size, ctx));
-          ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-          ptr += size;
-          if (ptr >= end) break;
-        } while ((::google::protobuf::io::UnalignedLoad<::google::protobuf::uint64>(ptr) & 255) == 18 && (ptr += 1));
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_add_network_locations(), ptr, ctx, "muscle_manager_protocol.RegistrationRequest.network_locations");
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<18>(ptr));
+        } else goto handle_unusual;
+        continue;
       // repeated .muscle_manager_protocol.Port ports = 3;
-      case 3: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 26) goto handle_unusual;
-        do {
-          ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-          parser_till_end = ::muscle_manager_protocol::Port::_InternalParse;
-          object = msg->add_ports();
-          if (size > end - ptr) goto len_delim_till_end;
-          ptr += size;
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ctx->ParseExactRange(
-              {parser_till_end, object}, ptr - size, ptr));
-          if (ptr >= end) break;
-        } while ((::google::protobuf::io::UnalignedLoad<::google::protobuf::uint64>(ptr) & 255) == 26 && (ptr += 1));
-        break;
-      }
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(_internal_add_ports(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<26>(ptr));
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
-          return ptr;
+          ctx->SetLastTag(tag);
+          goto success;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
-  return ptr;
-string_till_end:
-  static_cast<::std::string*>(object)->clear();
-  static_cast<::std::string*>(object)->reserve(size);
-  goto len_delim_till_end;
-len_delim_till_end:
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                               {parser_till_end, object}, size);
-}
-#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool RegistrationRequest::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.RegistrationRequest)
-  for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // string instance_name = 1;
-      case 1: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (10 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_instance_name()));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->instance_name().data(), static_cast<int>(this->instance_name().length()),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "muscle_manager_protocol.RegistrationRequest.instance_name"));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // repeated string network_locations = 2;
-      case 2: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (18 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->add_network_locations()));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->network_locations(this->network_locations_size() - 1).data(),
-            static_cast<int>(this->network_locations(this->network_locations_size() - 1).length()),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "muscle_manager_protocol.RegistrationRequest.network_locations"));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // repeated .muscle_manager_protocol.Port ports = 3;
-      case 3: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (26 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-                input, add_ports()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      default: {
-      handle_unusual:
-        if (tag == 0) {
-          goto success;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, _internal_metadata_.mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
 success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.RegistrationRequest)
-  return true;
+  return ptr;
 failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.RegistrationRequest)
-  return false;
-#undef DO_
-}
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-void RegistrationRequest::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.RegistrationRequest)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // string instance_name = 1;
-  if (this->instance_name().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->instance_name().data(), static_cast<int>(this->instance_name().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "muscle_manager_protocol.RegistrationRequest.instance_name");
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      1, this->instance_name(), output);
-  }
-
-  // repeated string network_locations = 2;
-  for (int i = 0, n = this->network_locations_size(); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->network_locations(i).data(), static_cast<int>(this->network_locations(i).length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "muscle_manager_protocol.RegistrationRequest.network_locations");
-    ::google::protobuf::internal::WireFormatLite::WriteString(
-      2, this->network_locations(i), output);
-  }
-
-  // repeated .muscle_manager_protocol.Port ports = 3;
-  for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->ports_size()); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      3,
-      this->ports(static_cast<int>(i)),
-      output);
-  }
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.RegistrationRequest)
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 
-::google::protobuf::uint8* RegistrationRequest::InternalSerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::PROTOBUF_NAMESPACE_ID::uint8* RegistrationRequest::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.RegistrationRequest)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   // string instance_name = 1;
   if (this->instance_name().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->instance_name().data(), static_cast<int>(this->instance_name().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_instance_name().data(), static_cast<int>(this->_internal_instance_name().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "muscle_manager_protocol.RegistrationRequest.instance_name");
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        1, this->instance_name(), target);
+    target = stream->WriteStringMaybeAliased(
+        1, this->_internal_instance_name(), target);
   }
 
   // repeated string network_locations = 2;
-  for (int i = 0, n = this->network_locations_size(); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->network_locations(i).data(), static_cast<int>(this->network_locations(i).length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+  for (int i = 0, n = this->_internal_network_locations_size(); i < n; i++) {
+    const auto& s = this->_internal_network_locations(i);
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      s.data(), static_cast<int>(s.length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "muscle_manager_protocol.RegistrationRequest.network_locations");
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteStringToArray(2, this->network_locations(i), target);
+    target = stream->WriteString(2, s, target);
   }
 
   // repeated .muscle_manager_protocol.Port ports = 3;
   for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->ports_size()); i < n; i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessageToArray(
-        3, this->ports(static_cast<int>(i)), target);
+      n = static_cast<unsigned int>(this->_internal_ports_size()); i < n; i++) {
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessageToArray(3, this->_internal_ports(i), target, stream);
   }
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.RegistrationRequest)
   return target;
@@ -3360,55 +2463,50 @@ size_t RegistrationRequest::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.RegistrationRequest)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   // repeated string network_locations = 2;
   total_size += 1 *
-      ::google::protobuf::internal::FromIntSize(this->network_locations_size());
-  for (int i = 0, n = this->network_locations_size(); i < n; i++) {
-    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
-      this->network_locations(i));
+      ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(network_locations_.size());
+  for (int i = 0, n = network_locations_.size(); i < n; i++) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+      network_locations_.Get(i));
   }
 
   // repeated .muscle_manager_protocol.Port ports = 3;
-  {
-    unsigned int count = static_cast<unsigned int>(this->ports_size());
-    total_size += 1UL * count;
-    for (unsigned int i = 0; i < count; i++) {
-      total_size +=
-        ::google::protobuf::internal::WireFormatLite::MessageSize(
-          this->ports(static_cast<int>(i)));
-    }
+  total_size += 1UL * this->_internal_ports_size();
+  for (const auto& msg : this->ports_) {
+    total_size +=
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   // string instance_name = 1;
   if (this->instance_name().size() > 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->instance_name());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_instance_name());
   }
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
 }
 
-void RegistrationRequest::MergeFrom(const ::google::protobuf::Message& from) {
+void RegistrationRequest::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.RegistrationRequest)
   GOOGLE_DCHECK_NE(&from, this);
   const RegistrationRequest* source =
-      ::google::protobuf::DynamicCastToGenerated<RegistrationRequest>(
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<RegistrationRequest>(
           &from);
   if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.RegistrationRequest)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.RegistrationRequest)
     MergeFrom(*source);
@@ -3419,18 +2517,18 @@ void RegistrationRequest::MergeFrom(const RegistrationRequest& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.RegistrationRequest)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   network_locations_.MergeFrom(from.network_locations_);
   ports_.MergeFrom(from.ports_);
   if (from.instance_name().size() > 0) {
 
-    instance_name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.instance_name_);
+    instance_name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.instance_name_);
   }
 }
 
-void RegistrationRequest::CopyFrom(const ::google::protobuf::Message& from) {
+void RegistrationRequest::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.RegistrationRequest)
   if (&from == this) return;
   Clear();
@@ -3448,22 +2546,17 @@ bool RegistrationRequest::IsInitialized() const {
   return true;
 }
 
-void RegistrationRequest::Swap(RegistrationRequest* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void RegistrationRequest::InternalSwap(RegistrationRequest* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
-  network_locations_.InternalSwap(CastToBase(&other->network_locations_));
-  CastToBase(&ports_)->InternalSwap(CastToBase(&other->ports_));
-  instance_name_.Swap(&other->instance_name_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  network_locations_.InternalSwap(&other->network_locations_);
+  ports_.InternalSwap(&other->ports_);
+  instance_name_.Swap(&other->instance_name_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
 }
 
-::google::protobuf::Metadata RegistrationRequest::GetMetadata() const {
-  ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
-  return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
+::PROTOBUF_NAMESPACE_ID::Metadata RegistrationRequest::GetMetadata() const {
+  return GetMetadataStatic();
 }
 
 
@@ -3471,36 +2564,30 @@ void RegistrationRequest::InternalSwap(RegistrationRequest* other) {
 
 void RegistrationResult::InitAsDefaultInstance() {
 }
-class RegistrationResult::HasBitSetters {
+class RegistrationResult::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int RegistrationResult::kStatusFieldNumber;
-const int RegistrationResult::kErrorMessageFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 RegistrationResult::RegistrationResult()
-  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:muscle_manager_protocol.RegistrationResult)
 }
 RegistrationResult::RegistrationResult(const RegistrationResult& from)
-  : ::google::protobuf::Message(),
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  error_message_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.error_message().size() > 0) {
-    error_message_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.error_message_);
+  error_message_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_error_message().empty()) {
+    error_message_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.error_message_);
   }
   status_ = from.status_;
   // @@protoc_insertion_point(copy_constructor:muscle_manager_protocol.RegistrationResult)
 }
 
 void RegistrationResult::SharedCtor() {
-  ::google::protobuf::internal::InitSCC(
-      &scc_info_RegistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  error_message_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_RegistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  error_message_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   status_ = 0;
 }
 
@@ -3510,205 +2597,97 @@ RegistrationResult::~RegistrationResult() {
 }
 
 void RegistrationResult::SharedDtor() {
-  error_message_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  error_message_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 void RegistrationResult::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 const RegistrationResult& RegistrationResult::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_RegistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_RegistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
 void RegistrationResult::Clear() {
 // @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.RegistrationResult)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  error_message_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  error_message_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   status_ = 0;
   _internal_metadata_.Clear();
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* RegistrationResult::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<RegistrationResult*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+const char* RegistrationResult::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
     switch (tag >> 3) {
       // .muscle_manager_protocol.ResultStatus status = 1;
-      case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 8) goto handle_unusual;
-        ::google::protobuf::uint64 val = ::google::protobuf::internal::ReadVarint(&ptr);
-        msg->set_status(static_cast<::muscle_manager_protocol::ResultStatus>(val));
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+          _internal_set_status(static_cast<::muscle_manager_protocol::ResultStatus>(val));
+        } else goto handle_unusual;
+        continue;
       // string error_message = 2;
-      case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 18) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("muscle_manager_protocol.RegistrationResult.error_message");
-        object = msg->mutable_error_message();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_error_message(), ptr, ctx, "muscle_manager_protocol.RegistrationResult.error_message");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
-          return ptr;
+          ctx->SetLastTag(tag);
+          goto success;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
-  return ptr;
-string_till_end:
-  static_cast<::std::string*>(object)->clear();
-  static_cast<::std::string*>(object)->reserve(size);
-  goto len_delim_till_end;
-len_delim_till_end:
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                               {parser_till_end, object}, size);
-}
-#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool RegistrationResult::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.RegistrationResult)
-  for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // .muscle_manager_protocol.ResultStatus status = 1;
-      case 1: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (8 & 0xFF)) {
-          int value = 0;
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
-                 input, &value)));
-          set_status(static_cast< ::muscle_manager_protocol::ResultStatus >(value));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // string error_message = 2;
-      case 2: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (18 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_error_message()));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->error_message().data(), static_cast<int>(this->error_message().length()),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "muscle_manager_protocol.RegistrationResult.error_message"));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      default: {
-      handle_unusual:
-        if (tag == 0) {
-          goto success;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, _internal_metadata_.mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
 success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.RegistrationResult)
-  return true;
+  return ptr;
 failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.RegistrationResult)
-  return false;
-#undef DO_
-}
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-void RegistrationResult::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.RegistrationResult)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // .muscle_manager_protocol.ResultStatus status = 1;
-  if (this->status() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteEnum(
-      1, this->status(), output);
-  }
-
-  // string error_message = 2;
-  if (this->error_message().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->error_message().data(), static_cast<int>(this->error_message().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "muscle_manager_protocol.RegistrationResult.error_message");
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      2, this->error_message(), output);
-  }
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.RegistrationResult)
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 
-::google::protobuf::uint8* RegistrationResult::InternalSerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::PROTOBUF_NAMESPACE_ID::uint8* RegistrationResult::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.RegistrationResult)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   // .muscle_manager_protocol.ResultStatus status = 1;
   if (this->status() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      1, this->status(), target);
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteEnumToArray(
+      1, this->_internal_status(), target);
   }
 
   // string error_message = 2;
   if (this->error_message().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->error_message().data(), static_cast<int>(this->error_message().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_error_message().data(), static_cast<int>(this->_internal_error_message().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "muscle_manager_protocol.RegistrationResult.error_message");
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        2, this->error_message(), target);
+    target = stream->WriteStringMaybeAliased(
+        2, this->_internal_error_message(), target);
   }
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.RegistrationResult)
   return target;
@@ -3718,42 +2697,41 @@ size_t RegistrationResult::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.RegistrationResult)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   // string error_message = 2;
   if (this->error_message().size() > 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->error_message());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_error_message());
   }
 
   // .muscle_manager_protocol.ResultStatus status = 1;
   if (this->status() != 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::EnumSize(this->status());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::EnumSize(this->_internal_status());
   }
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
 }
 
-void RegistrationResult::MergeFrom(const ::google::protobuf::Message& from) {
+void RegistrationResult::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.RegistrationResult)
   GOOGLE_DCHECK_NE(&from, this);
   const RegistrationResult* source =
-      ::google::protobuf::DynamicCastToGenerated<RegistrationResult>(
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<RegistrationResult>(
           &from);
   if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.RegistrationResult)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.RegistrationResult)
     MergeFrom(*source);
@@ -3764,19 +2742,19 @@ void RegistrationResult::MergeFrom(const RegistrationResult& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.RegistrationResult)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from.error_message().size() > 0) {
 
-    error_message_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.error_message_);
+    error_message_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.error_message_);
   }
   if (from.status() != 0) {
-    set_status(from.status());
+    _internal_set_status(from._internal_status());
   }
 }
 
-void RegistrationResult::CopyFrom(const ::google::protobuf::Message& from) {
+void RegistrationResult::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.RegistrationResult)
   if (&from == this) return;
   Clear();
@@ -3794,21 +2772,16 @@ bool RegistrationResult::IsInitialized() const {
   return true;
 }
 
-void RegistrationResult::Swap(RegistrationResult* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void RegistrationResult::InternalSwap(RegistrationResult* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
-  error_message_.Swap(&other->error_message_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  error_message_.Swap(&other->error_message_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   swap(status_, other->status_);
 }
 
-::google::protobuf::Metadata RegistrationResult::GetMetadata() const {
-  ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
-  return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
+::PROTOBUF_NAMESPACE_ID::Metadata RegistrationResult::GetMetadata() const {
+  return GetMetadataStatic();
 }
 
 
@@ -3816,40 +2789,34 @@ void RegistrationResult::InternalSwap(RegistrationResult* other) {
 
 void Conduit::InitAsDefaultInstance() {
 }
-class Conduit::HasBitSetters {
+class Conduit::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Conduit::kSenderFieldNumber;
-const int Conduit::kReceiverFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 Conduit::Conduit()
-  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:muscle_manager_protocol.Conduit)
 }
 Conduit::Conduit(const Conduit& from)
-  : ::google::protobuf::Message(),
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  sender_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.sender().size() > 0) {
-    sender_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sender_);
+  sender_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_sender().empty()) {
+    sender_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.sender_);
   }
-  receiver_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.receiver().size() > 0) {
-    receiver_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.receiver_);
+  receiver_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_receiver().empty()) {
+    receiver_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.receiver_);
   }
   // @@protoc_insertion_point(copy_constructor:muscle_manager_protocol.Conduit)
 }
 
 void Conduit::SharedCtor() {
-  ::google::protobuf::internal::InitSCC(
-      &scc_info_Conduit_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  sender_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  receiver_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Conduit_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  sender_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  receiver_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 Conduit::~Conduit() {
@@ -3858,224 +2825,100 @@ Conduit::~Conduit() {
 }
 
 void Conduit::SharedDtor() {
-  sender_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  receiver_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  sender_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  receiver_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 void Conduit::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 const Conduit& Conduit::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_Conduit_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Conduit_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
 void Conduit::Clear() {
 // @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.Conduit)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  sender_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  receiver_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  sender_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  receiver_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   _internal_metadata_.Clear();
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* Conduit::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<Conduit*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+const char* Conduit::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
     switch (tag >> 3) {
       // string sender = 1;
-      case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("muscle_manager_protocol.Conduit.sender");
-        object = msg->mutable_sender();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_sender(), ptr, ctx, "muscle_manager_protocol.Conduit.sender");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // string receiver = 2;
-      case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 18) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("muscle_manager_protocol.Conduit.receiver");
-        object = msg->mutable_receiver();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_receiver(), ptr, ctx, "muscle_manager_protocol.Conduit.receiver");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
-          return ptr;
+          ctx->SetLastTag(tag);
+          goto success;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
-  return ptr;
-string_till_end:
-  static_cast<::std::string*>(object)->clear();
-  static_cast<::std::string*>(object)->reserve(size);
-  goto len_delim_till_end;
-len_delim_till_end:
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                               {parser_till_end, object}, size);
-}
-#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool Conduit::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.Conduit)
-  for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // string sender = 1;
-      case 1: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (10 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_sender()));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->sender().data(), static_cast<int>(this->sender().length()),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "muscle_manager_protocol.Conduit.sender"));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // string receiver = 2;
-      case 2: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (18 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_receiver()));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->receiver().data(), static_cast<int>(this->receiver().length()),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "muscle_manager_protocol.Conduit.receiver"));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      default: {
-      handle_unusual:
-        if (tag == 0) {
-          goto success;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, _internal_metadata_.mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
 success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.Conduit)
-  return true;
+  return ptr;
 failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.Conduit)
-  return false;
-#undef DO_
-}
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-void Conduit::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.Conduit)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // string sender = 1;
-  if (this->sender().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->sender().data(), static_cast<int>(this->sender().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "muscle_manager_protocol.Conduit.sender");
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      1, this->sender(), output);
-  }
-
-  // string receiver = 2;
-  if (this->receiver().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->receiver().data(), static_cast<int>(this->receiver().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "muscle_manager_protocol.Conduit.receiver");
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      2, this->receiver(), output);
-  }
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.Conduit)
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 
-::google::protobuf::uint8* Conduit::InternalSerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::PROTOBUF_NAMESPACE_ID::uint8* Conduit::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.Conduit)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   // string sender = 1;
   if (this->sender().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->sender().data(), static_cast<int>(this->sender().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_sender().data(), static_cast<int>(this->_internal_sender().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "muscle_manager_protocol.Conduit.sender");
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        1, this->sender(), target);
+    target = stream->WriteStringMaybeAliased(
+        1, this->_internal_sender(), target);
   }
 
   // string receiver = 2;
   if (this->receiver().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->receiver().data(), static_cast<int>(this->receiver().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_receiver().data(), static_cast<int>(this->_internal_receiver().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "muscle_manager_protocol.Conduit.receiver");
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        2, this->receiver(), target);
+    target = stream->WriteStringMaybeAliased(
+        2, this->_internal_receiver(), target);
   }
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.Conduit)
   return target;
@@ -4085,43 +2928,42 @@ size_t Conduit::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.Conduit)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   // string sender = 1;
   if (this->sender().size() > 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->sender());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_sender());
   }
 
   // string receiver = 2;
   if (this->receiver().size() > 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->receiver());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_receiver());
   }
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
 }
 
-void Conduit::MergeFrom(const ::google::protobuf::Message& from) {
+void Conduit::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.Conduit)
   GOOGLE_DCHECK_NE(&from, this);
   const Conduit* source =
-      ::google::protobuf::DynamicCastToGenerated<Conduit>(
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<Conduit>(
           &from);
   if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.Conduit)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.Conduit)
     MergeFrom(*source);
@@ -4132,20 +2974,20 @@ void Conduit::MergeFrom(const Conduit& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.Conduit)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from.sender().size() > 0) {
 
-    sender_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sender_);
+    sender_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.sender_);
   }
   if (from.receiver().size() > 0) {
 
-    receiver_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.receiver_);
+    receiver_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.receiver_);
   }
 }
 
-void Conduit::CopyFrom(const ::google::protobuf::Message& from) {
+void Conduit::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.Conduit)
   if (&from == this) return;
   Clear();
@@ -4163,22 +3005,17 @@ bool Conduit::IsInitialized() const {
   return true;
 }
 
-void Conduit::Swap(Conduit* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void Conduit::InternalSwap(Conduit* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
-  sender_.Swap(&other->sender_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  sender_.Swap(&other->sender_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
-  receiver_.Swap(&other->receiver_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  receiver_.Swap(&other->receiver_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
 }
 
-::google::protobuf::Metadata Conduit::GetMetadata() const {
-  ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
-  return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
+::PROTOBUF_NAMESPACE_ID::Metadata Conduit::GetMetadata() const {
+  return GetMetadataStatic();
 }
 
 
@@ -4186,34 +3023,29 @@ void Conduit::InternalSwap(Conduit* other) {
 
 void PeerRequest::InitAsDefaultInstance() {
 }
-class PeerRequest::HasBitSetters {
+class PeerRequest::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int PeerRequest::kInstanceNameFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 PeerRequest::PeerRequest()
-  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:muscle_manager_protocol.PeerRequest)
 }
 PeerRequest::PeerRequest(const PeerRequest& from)
-  : ::google::protobuf::Message(),
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  instance_name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.instance_name().size() > 0) {
-    instance_name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.instance_name_);
+  instance_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_instance_name().empty()) {
+    instance_name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.instance_name_);
   }
   // @@protoc_insertion_point(copy_constructor:muscle_manager_protocol.PeerRequest)
 }
 
 void PeerRequest::SharedCtor() {
-  ::google::protobuf::internal::InitSCC(
-      &scc_info_PeerRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  instance_name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_PeerRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  instance_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 PeerRequest::~PeerRequest() {
@@ -4222,170 +3054,81 @@ PeerRequest::~PeerRequest() {
 }
 
 void PeerRequest::SharedDtor() {
-  instance_name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  instance_name_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 void PeerRequest::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 const PeerRequest& PeerRequest::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_PeerRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_PeerRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
 void PeerRequest::Clear() {
 // @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.PeerRequest)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  instance_name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  instance_name_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   _internal_metadata_.Clear();
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* PeerRequest::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<PeerRequest*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+const char* PeerRequest::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
     switch (tag >> 3) {
       // string instance_name = 1;
-      case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("muscle_manager_protocol.PeerRequest.instance_name");
-        object = msg->mutable_instance_name();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_instance_name(), ptr, ctx, "muscle_manager_protocol.PeerRequest.instance_name");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
-          return ptr;
+          ctx->SetLastTag(tag);
+          goto success;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
-  return ptr;
-string_till_end:
-  static_cast<::std::string*>(object)->clear();
-  static_cast<::std::string*>(object)->reserve(size);
-  goto len_delim_till_end;
-len_delim_till_end:
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                               {parser_till_end, object}, size);
-}
-#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool PeerRequest::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.PeerRequest)
-  for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // string instance_name = 1;
-      case 1: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (10 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_instance_name()));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->instance_name().data(), static_cast<int>(this->instance_name().length()),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "muscle_manager_protocol.PeerRequest.instance_name"));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      default: {
-      handle_unusual:
-        if (tag == 0) {
-          goto success;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, _internal_metadata_.mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
 success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.PeerRequest)
-  return true;
+  return ptr;
 failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.PeerRequest)
-  return false;
-#undef DO_
-}
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-void PeerRequest::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.PeerRequest)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // string instance_name = 1;
-  if (this->instance_name().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->instance_name().data(), static_cast<int>(this->instance_name().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "muscle_manager_protocol.PeerRequest.instance_name");
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      1, this->instance_name(), output);
-  }
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.PeerRequest)
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 
-::google::protobuf::uint8* PeerRequest::InternalSerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::PROTOBUF_NAMESPACE_ID::uint8* PeerRequest::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.PeerRequest)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   // string instance_name = 1;
   if (this->instance_name().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->instance_name().data(), static_cast<int>(this->instance_name().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_instance_name().data(), static_cast<int>(this->_internal_instance_name().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "muscle_manager_protocol.PeerRequest.instance_name");
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        1, this->instance_name(), target);
+    target = stream->WriteStringMaybeAliased(
+        1, this->_internal_instance_name(), target);
   }
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.PeerRequest)
   return target;
@@ -4395,36 +3138,35 @@ size_t PeerRequest::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.PeerRequest)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   // string instance_name = 1;
   if (this->instance_name().size() > 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->instance_name());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_instance_name());
   }
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
 }
 
-void PeerRequest::MergeFrom(const ::google::protobuf::Message& from) {
+void PeerRequest::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.PeerRequest)
   GOOGLE_DCHECK_NE(&from, this);
   const PeerRequest* source =
-      ::google::protobuf::DynamicCastToGenerated<PeerRequest>(
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<PeerRequest>(
           &from);
   if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.PeerRequest)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.PeerRequest)
     MergeFrom(*source);
@@ -4435,16 +3177,16 @@ void PeerRequest::MergeFrom(const PeerRequest& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.PeerRequest)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from.instance_name().size() > 0) {
 
-    instance_name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.instance_name_);
+    instance_name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.instance_name_);
   }
 }
 
-void PeerRequest::CopyFrom(const ::google::protobuf::Message& from) {
+void PeerRequest::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.PeerRequest)
   if (&from == this) return;
   Clear();
@@ -4462,20 +3204,15 @@ bool PeerRequest::IsInitialized() const {
   return true;
 }
 
-void PeerRequest::Swap(PeerRequest* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void PeerRequest::InternalSwap(PeerRequest* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
-  instance_name_.Swap(&other->instance_name_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  instance_name_.Swap(&other->instance_name_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
 }
 
-::google::protobuf::Metadata PeerRequest::GetMetadata() const {
-  ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
-  return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
+::PROTOBUF_NAMESPACE_ID::Metadata PeerRequest::GetMetadata() const {
+  return GetMetadataStatic();
 }
 
 
@@ -4483,36 +3220,30 @@ void PeerRequest::InternalSwap(PeerRequest* other) {
 
 void PeerResult_PeerDimensions::InitAsDefaultInstance() {
 }
-class PeerResult_PeerDimensions::HasBitSetters {
+class PeerResult_PeerDimensions::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int PeerResult_PeerDimensions::kPeerNameFieldNumber;
-const int PeerResult_PeerDimensions::kDimensionsFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 PeerResult_PeerDimensions::PeerResult_PeerDimensions()
-  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:muscle_manager_protocol.PeerResult.PeerDimensions)
 }
 PeerResult_PeerDimensions::PeerResult_PeerDimensions(const PeerResult_PeerDimensions& from)
-  : ::google::protobuf::Message(),
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr),
       dimensions_(from.dimensions_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  peer_name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.peer_name().size() > 0) {
-    peer_name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.peer_name_);
+  peer_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_peer_name().empty()) {
+    peer_name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.peer_name_);
   }
   // @@protoc_insertion_point(copy_constructor:muscle_manager_protocol.PeerResult.PeerDimensions)
 }
 
 void PeerResult_PeerDimensions::SharedCtor() {
-  ::google::protobuf::internal::InitSCC(
-      &scc_info_PeerResult_PeerDimensions_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  peer_name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_PeerResult_PeerDimensions_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  peer_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 PeerResult_PeerDimensions::~PeerResult_PeerDimensions() {
@@ -4521,231 +3252,101 @@ PeerResult_PeerDimensions::~PeerResult_PeerDimensions() {
 }
 
 void PeerResult_PeerDimensions::SharedDtor() {
-  peer_name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  peer_name_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 void PeerResult_PeerDimensions::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 const PeerResult_PeerDimensions& PeerResult_PeerDimensions::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_PeerResult_PeerDimensions_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_PeerResult_PeerDimensions_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
 void PeerResult_PeerDimensions::Clear() {
 // @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.PeerResult.PeerDimensions)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   dimensions_.Clear();
-  peer_name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  peer_name_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   _internal_metadata_.Clear();
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* PeerResult_PeerDimensions::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<PeerResult_PeerDimensions*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+const char* PeerResult_PeerDimensions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
     switch (tag >> 3) {
       // string peer_name = 1;
-      case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("muscle_manager_protocol.PeerResult.PeerDimensions.peer_name");
-        object = msg->mutable_peer_name();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_peer_name(), ptr, ctx, "muscle_manager_protocol.PeerResult.PeerDimensions.peer_name");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // repeated int32 dimensions = 2;
-      case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) == 18) {
-          ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-          parser_till_end = ::google::protobuf::internal::PackedInt32Parser;
-          object = msg->mutable_dimensions();
-          if (size > end - ptr) goto len_delim_till_end;
-          auto newend = ptr + size;
-          if (size) ptr = parser_till_end(ptr, newend, object, ctx);
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ptr == newend);
-          break;
-        } else if (static_cast<::google::protobuf::uint8>(tag) != 16) goto handle_unusual;
-        do {
-          msg->add_dimensions(::google::protobuf::internal::ReadVarint(&ptr));
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-          if (ptr >= end) break;
-        } while ((::google::protobuf::io::UnalignedLoad<::google::protobuf::uint64>(ptr) & 255) == 16 && (ptr += 1));
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedInt32Parser(_internal_mutable_dimensions(), ptr, ctx);
+          CHK_(ptr);
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16) {
+          _internal_add_dimensions(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr));
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
-          return ptr;
+          ctx->SetLastTag(tag);
+          goto success;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
+success:
   return ptr;
-string_till_end:
-  static_cast<::std::string*>(object)->clear();
-  static_cast<::std::string*>(object)->reserve(size);
-  goto len_delim_till_end;
-len_delim_till_end:
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                               {parser_till_end, object}, size);
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
-#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool PeerResult_PeerDimensions::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.PeerResult.PeerDimensions)
-  for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // string peer_name = 1;
-      case 1: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (10 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_peer_name()));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->peer_name().data(), static_cast<int>(this->peer_name().length()),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "muscle_manager_protocol.PeerResult.PeerDimensions.peer_name"));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
 
-      // repeated int32 dimensions = 2;
-      case 2: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (18 & 0xFF)) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, this->mutable_dimensions())));
-        } else if (static_cast< ::google::protobuf::uint8>(tag) == (16 & 0xFF)) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 18u, input, this->mutable_dimensions())));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
+::PROTOBUF_NAMESPACE_ID::uint8* PeerResult_PeerDimensions::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.PeerResult.PeerDimensions)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
 
-      default: {
-      handle_unusual:
-        if (tag == 0) {
-          goto success;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, _internal_metadata_.mutable_unknown_fields()));
-        break;
-      }
+  // string peer_name = 1;
+  if (this->peer_name().size() > 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_peer_name().data(), static_cast<int>(this->_internal_peer_name().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "muscle_manager_protocol.PeerResult.PeerDimensions.peer_name");
+    target = stream->WriteStringMaybeAliased(
+        1, this->_internal_peer_name(), target);
+  }
+
+  // repeated int32 dimensions = 2;
+  {
+    int byte_size = _dimensions_cached_byte_size_.load(std::memory_order_relaxed);
+    if (byte_size > 0) {
+      target = stream->WriteInt32Packed(
+          2, _internal_dimensions(), byte_size, target);
     }
   }
-success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.PeerResult.PeerDimensions)
-  return true;
-failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.PeerResult.PeerDimensions)
-  return false;
-#undef DO_
-}
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
 
-void PeerResult_PeerDimensions::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.PeerResult.PeerDimensions)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // string peer_name = 1;
-  if (this->peer_name().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->peer_name().data(), static_cast<int>(this->peer_name().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "muscle_manager_protocol.PeerResult.PeerDimensions.peer_name");
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      1, this->peer_name(), output);
-  }
-
-  // repeated int32 dimensions = 2;
-  if (this->dimensions_size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteTag(2, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
-    output->WriteVarint32(_dimensions_cached_byte_size_.load(
-        std::memory_order_relaxed));
-  }
-  for (int i = 0, n = this->dimensions_size(); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32NoTag(
-      this->dimensions(i), output);
-  }
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.PeerResult.PeerDimensions)
-}
-
-::google::protobuf::uint8* PeerResult_PeerDimensions::InternalSerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.PeerResult.PeerDimensions)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // string peer_name = 1;
-  if (this->peer_name().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->peer_name().data(), static_cast<int>(this->peer_name().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "muscle_manager_protocol.PeerResult.PeerDimensions.peer_name");
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        1, this->peer_name(), target);
-  }
-
-  // repeated int32 dimensions = 2;
-  if (this->dimensions_size() > 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteTagToArray(
-      2,
-      ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
-      target);
-    target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
-        _dimensions_cached_byte_size_.load(std::memory_order_relaxed),
-         target);
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32NoTagToArray(this->dimensions_, target);
-  }
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.PeerResult.PeerDimensions)
   return target;
@@ -4755,25 +3356,20 @@ size_t PeerResult_PeerDimensions::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.PeerResult.PeerDimensions)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   // repeated int32 dimensions = 2;
   {
-    size_t data_size = ::google::protobuf::internal::WireFormatLite::
+    size_t data_size = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       Int32Size(this->dimensions_);
     if (data_size > 0) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
-            static_cast<::google::protobuf::int32>(data_size));
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+            static_cast<::PROTOBUF_NAMESPACE_ID::int32>(data_size));
     }
-    int cached_size = ::google::protobuf::internal::ToCachedSize(data_size);
+    int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(data_size);
     _dimensions_cached_byte_size_.store(cached_size,
                                     std::memory_order_relaxed);
     total_size += data_size;
@@ -4782,24 +3378,28 @@ size_t PeerResult_PeerDimensions::ByteSizeLong() const {
   // string peer_name = 1;
   if (this->peer_name().size() > 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->peer_name());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_peer_name());
   }
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
 }
 
-void PeerResult_PeerDimensions::MergeFrom(const ::google::protobuf::Message& from) {
+void PeerResult_PeerDimensions::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.PeerResult.PeerDimensions)
   GOOGLE_DCHECK_NE(&from, this);
   const PeerResult_PeerDimensions* source =
-      ::google::protobuf::DynamicCastToGenerated<PeerResult_PeerDimensions>(
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<PeerResult_PeerDimensions>(
           &from);
   if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.PeerResult.PeerDimensions)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.PeerResult.PeerDimensions)
     MergeFrom(*source);
@@ -4810,17 +3410,17 @@ void PeerResult_PeerDimensions::MergeFrom(const PeerResult_PeerDimensions& from)
 // @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.PeerResult.PeerDimensions)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   dimensions_.MergeFrom(from.dimensions_);
   if (from.peer_name().size() > 0) {
 
-    peer_name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.peer_name_);
+    peer_name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.peer_name_);
   }
 }
 
-void PeerResult_PeerDimensions::CopyFrom(const ::google::protobuf::Message& from) {
+void PeerResult_PeerDimensions::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.PeerResult.PeerDimensions)
   if (&from == this) return;
   Clear();
@@ -4838,21 +3438,16 @@ bool PeerResult_PeerDimensions::IsInitialized() const {
   return true;
 }
 
-void PeerResult_PeerDimensions::Swap(PeerResult_PeerDimensions* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void PeerResult_PeerDimensions::InternalSwap(PeerResult_PeerDimensions* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
   dimensions_.InternalSwap(&other->dimensions_);
-  peer_name_.Swap(&other->peer_name_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  peer_name_.Swap(&other->peer_name_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
 }
 
-::google::protobuf::Metadata PeerResult_PeerDimensions::GetMetadata() const {
-  ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
-  return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
+::PROTOBUF_NAMESPACE_ID::Metadata PeerResult_PeerDimensions::GetMetadata() const {
+  return GetMetadataStatic();
 }
 
 
@@ -4860,36 +3455,30 @@ void PeerResult_PeerDimensions::InternalSwap(PeerResult_PeerDimensions* other) {
 
 void PeerResult_PeerLocations::InitAsDefaultInstance() {
 }
-class PeerResult_PeerLocations::HasBitSetters {
+class PeerResult_PeerLocations::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int PeerResult_PeerLocations::kInstanceNameFieldNumber;
-const int PeerResult_PeerLocations::kLocationsFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 PeerResult_PeerLocations::PeerResult_PeerLocations()
-  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:muscle_manager_protocol.PeerResult.PeerLocations)
 }
 PeerResult_PeerLocations::PeerResult_PeerLocations(const PeerResult_PeerLocations& from)
-  : ::google::protobuf::Message(),
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr),
       locations_(from.locations_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  instance_name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.instance_name().size() > 0) {
-    instance_name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.instance_name_);
+  instance_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_instance_name().empty()) {
+    instance_name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.instance_name_);
   }
   // @@protoc_insertion_point(copy_constructor:muscle_manager_protocol.PeerResult.PeerLocations)
 }
 
 void PeerResult_PeerLocations::SharedCtor() {
-  ::google::protobuf::internal::InitSCC(
-      &scc_info_PeerResult_PeerLocations_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  instance_name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_PeerResult_PeerLocations_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  instance_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 PeerResult_PeerLocations::~PeerResult_PeerLocations() {
@@ -4898,226 +3487,104 @@ PeerResult_PeerLocations::~PeerResult_PeerLocations() {
 }
 
 void PeerResult_PeerLocations::SharedDtor() {
-  instance_name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  instance_name_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 void PeerResult_PeerLocations::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 const PeerResult_PeerLocations& PeerResult_PeerLocations::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_PeerResult_PeerLocations_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_PeerResult_PeerLocations_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
 void PeerResult_PeerLocations::Clear() {
 // @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.PeerResult.PeerLocations)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   locations_.Clear();
-  instance_name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  instance_name_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   _internal_metadata_.Clear();
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* PeerResult_PeerLocations::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<PeerResult_PeerLocations*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+const char* PeerResult_PeerLocations::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
     switch (tag >> 3) {
       // string instance_name = 1;
-      case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("muscle_manager_protocol.PeerResult.PeerLocations.instance_name");
-        object = msg->mutable_instance_name();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_instance_name(), ptr, ctx, "muscle_manager_protocol.PeerResult.PeerLocations.instance_name");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // repeated string locations = 2;
-      case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 18) goto handle_unusual;
-        do {
-          ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-          ctx->extra_parse_data().SetFieldName("muscle_manager_protocol.PeerResult.PeerLocations.locations");
-          object = msg->add_locations();
-          if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-            parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8;
-            goto string_till_end;
-          }
-          GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8(ptr, size, ctx));
-          ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-          ptr += size;
-          if (ptr >= end) break;
-        } while ((::google::protobuf::io::UnalignedLoad<::google::protobuf::uint64>(ptr) & 255) == 18 && (ptr += 1));
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_add_locations(), ptr, ctx, "muscle_manager_protocol.PeerResult.PeerLocations.locations");
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<18>(ptr));
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
-          return ptr;
+          ctx->SetLastTag(tag);
+          goto success;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
-  return ptr;
-string_till_end:
-  static_cast<::std::string*>(object)->clear();
-  static_cast<::std::string*>(object)->reserve(size);
-  goto len_delim_till_end;
-len_delim_till_end:
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                               {parser_till_end, object}, size);
-}
-#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool PeerResult_PeerLocations::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.PeerResult.PeerLocations)
-  for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // string instance_name = 1;
-      case 1: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (10 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_instance_name()));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->instance_name().data(), static_cast<int>(this->instance_name().length()),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "muscle_manager_protocol.PeerResult.PeerLocations.instance_name"));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // repeated string locations = 2;
-      case 2: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (18 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->add_locations()));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->locations(this->locations_size() - 1).data(),
-            static_cast<int>(this->locations(this->locations_size() - 1).length()),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "muscle_manager_protocol.PeerResult.PeerLocations.locations"));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      default: {
-      handle_unusual:
-        if (tag == 0) {
-          goto success;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, _internal_metadata_.mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
 success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.PeerResult.PeerLocations)
-  return true;
+  return ptr;
 failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.PeerResult.PeerLocations)
-  return false;
-#undef DO_
-}
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-void PeerResult_PeerLocations::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.PeerResult.PeerLocations)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // string instance_name = 1;
-  if (this->instance_name().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->instance_name().data(), static_cast<int>(this->instance_name().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "muscle_manager_protocol.PeerResult.PeerLocations.instance_name");
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      1, this->instance_name(), output);
-  }
-
-  // repeated string locations = 2;
-  for (int i = 0, n = this->locations_size(); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->locations(i).data(), static_cast<int>(this->locations(i).length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "muscle_manager_protocol.PeerResult.PeerLocations.locations");
-    ::google::protobuf::internal::WireFormatLite::WriteString(
-      2, this->locations(i), output);
-  }
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.PeerResult.PeerLocations)
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 
-::google::protobuf::uint8* PeerResult_PeerLocations::InternalSerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::PROTOBUF_NAMESPACE_ID::uint8* PeerResult_PeerLocations::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.PeerResult.PeerLocations)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   // string instance_name = 1;
   if (this->instance_name().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->instance_name().data(), static_cast<int>(this->instance_name().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_instance_name().data(), static_cast<int>(this->_internal_instance_name().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "muscle_manager_protocol.PeerResult.PeerLocations.instance_name");
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        1, this->instance_name(), target);
+    target = stream->WriteStringMaybeAliased(
+        1, this->_internal_instance_name(), target);
   }
 
   // repeated string locations = 2;
-  for (int i = 0, n = this->locations_size(); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->locations(i).data(), static_cast<int>(this->locations(i).length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+  for (int i = 0, n = this->_internal_locations_size(); i < n; i++) {
+    const auto& s = this->_internal_locations(i);
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      s.data(), static_cast<int>(s.length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "muscle_manager_protocol.PeerResult.PeerLocations.locations");
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteStringToArray(2, this->locations(i), target);
+    target = stream->WriteString(2, s, target);
   }
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.PeerResult.PeerLocations)
   return target;
@@ -5127,44 +3594,43 @@ size_t PeerResult_PeerLocations::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.PeerResult.PeerLocations)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   // repeated string locations = 2;
   total_size += 1 *
-      ::google::protobuf::internal::FromIntSize(this->locations_size());
-  for (int i = 0, n = this->locations_size(); i < n; i++) {
-    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
-      this->locations(i));
+      ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(locations_.size());
+  for (int i = 0, n = locations_.size(); i < n; i++) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+      locations_.Get(i));
   }
 
   // string instance_name = 1;
   if (this->instance_name().size() > 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->instance_name());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_instance_name());
   }
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
 }
 
-void PeerResult_PeerLocations::MergeFrom(const ::google::protobuf::Message& from) {
+void PeerResult_PeerLocations::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.PeerResult.PeerLocations)
   GOOGLE_DCHECK_NE(&from, this);
   const PeerResult_PeerLocations* source =
-      ::google::protobuf::DynamicCastToGenerated<PeerResult_PeerLocations>(
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<PeerResult_PeerLocations>(
           &from);
   if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.PeerResult.PeerLocations)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.PeerResult.PeerLocations)
     MergeFrom(*source);
@@ -5175,17 +3641,17 @@ void PeerResult_PeerLocations::MergeFrom(const PeerResult_PeerLocations& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.PeerResult.PeerLocations)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   locations_.MergeFrom(from.locations_);
   if (from.instance_name().size() > 0) {
 
-    instance_name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.instance_name_);
+    instance_name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.instance_name_);
   }
 }
 
-void PeerResult_PeerLocations::CopyFrom(const ::google::protobuf::Message& from) {
+void PeerResult_PeerLocations::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.PeerResult.PeerLocations)
   if (&from == this) return;
   Clear();
@@ -5203,21 +3669,16 @@ bool PeerResult_PeerLocations::IsInitialized() const {
   return true;
 }
 
-void PeerResult_PeerLocations::Swap(PeerResult_PeerLocations* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void PeerResult_PeerLocations::InternalSwap(PeerResult_PeerLocations* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
-  locations_.InternalSwap(CastToBase(&other->locations_));
-  instance_name_.Swap(&other->instance_name_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  locations_.InternalSwap(&other->locations_);
+  instance_name_.Swap(&other->instance_name_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
 }
 
-::google::protobuf::Metadata PeerResult_PeerLocations::GetMetadata() const {
-  ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
-  return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
+::PROTOBUF_NAMESPACE_ID::Metadata PeerResult_PeerLocations::GetMetadata() const {
+  return GetMetadataStatic();
 }
 
 
@@ -5225,42 +3686,33 @@ void PeerResult_PeerLocations::InternalSwap(PeerResult_PeerLocations* other) {
 
 void PeerResult::InitAsDefaultInstance() {
 }
-class PeerResult::HasBitSetters {
+class PeerResult::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int PeerResult::kStatusFieldNumber;
-const int PeerResult::kErrorMessageFieldNumber;
-const int PeerResult::kConduitsFieldNumber;
-const int PeerResult::kPeerDimensionsFieldNumber;
-const int PeerResult::kPeerLocationsFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 PeerResult::PeerResult()
-  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:muscle_manager_protocol.PeerResult)
 }
 PeerResult::PeerResult(const PeerResult& from)
-  : ::google::protobuf::Message(),
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr),
       conduits_(from.conduits_),
       peer_dimensions_(from.peer_dimensions_),
       peer_locations_(from.peer_locations_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  error_message_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.error_message().size() > 0) {
-    error_message_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.error_message_);
+  error_message_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_error_message().empty()) {
+    error_message_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.error_message_);
   }
   status_ = from.status_;
   // @@protoc_insertion_point(copy_constructor:muscle_manager_protocol.PeerResult)
 }
 
 void PeerResult::SharedCtor() {
-  ::google::protobuf::internal::InitSCC(
-      &scc_info_PeerResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  error_message_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_PeerResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  error_message_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   status_ = 0;
 }
 
@@ -5270,340 +3722,160 @@ PeerResult::~PeerResult() {
 }
 
 void PeerResult::SharedDtor() {
-  error_message_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  error_message_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 void PeerResult::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 const PeerResult& PeerResult::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_PeerResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_PeerResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
 void PeerResult::Clear() {
 // @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.PeerResult)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   conduits_.Clear();
   peer_dimensions_.Clear();
   peer_locations_.Clear();
-  error_message_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  error_message_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   status_ = 0;
   _internal_metadata_.Clear();
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* PeerResult::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<PeerResult*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+const char* PeerResult::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
     switch (tag >> 3) {
       // .muscle_manager_protocol.ResultStatus status = 1;
-      case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 8) goto handle_unusual;
-        ::google::protobuf::uint64 val = ::google::protobuf::internal::ReadVarint(&ptr);
-        msg->set_status(static_cast<::muscle_manager_protocol::ResultStatus>(val));
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+          _internal_set_status(static_cast<::muscle_manager_protocol::ResultStatus>(val));
+        } else goto handle_unusual;
+        continue;
       // string error_message = 2;
-      case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 18) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("muscle_manager_protocol.PeerResult.error_message");
-        object = msg->mutable_error_message();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_error_message(), ptr, ctx, "muscle_manager_protocol.PeerResult.error_message");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // repeated .muscle_manager_protocol.Conduit conduits = 3;
-      case 3: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 26) goto handle_unusual;
-        do {
-          ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-          parser_till_end = ::muscle_manager_protocol::Conduit::_InternalParse;
-          object = msg->add_conduits();
-          if (size > end - ptr) goto len_delim_till_end;
-          ptr += size;
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ctx->ParseExactRange(
-              {parser_till_end, object}, ptr - size, ptr));
-          if (ptr >= end) break;
-        } while ((::google::protobuf::io::UnalignedLoad<::google::protobuf::uint64>(ptr) & 255) == 26 && (ptr += 1));
-        break;
-      }
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(_internal_add_conduits(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<26>(ptr));
+        } else goto handle_unusual;
+        continue;
       // repeated .muscle_manager_protocol.PeerResult.PeerDimensions peer_dimensions = 4;
-      case 4: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 34) goto handle_unusual;
-        do {
-          ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-          parser_till_end = ::muscle_manager_protocol::PeerResult_PeerDimensions::_InternalParse;
-          object = msg->add_peer_dimensions();
-          if (size > end - ptr) goto len_delim_till_end;
-          ptr += size;
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ctx->ParseExactRange(
-              {parser_till_end, object}, ptr - size, ptr));
-          if (ptr >= end) break;
-        } while ((::google::protobuf::io::UnalignedLoad<::google::protobuf::uint64>(ptr) & 255) == 34 && (ptr += 1));
-        break;
-      }
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 34)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(_internal_add_peer_dimensions(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<34>(ptr));
+        } else goto handle_unusual;
+        continue;
       // repeated .muscle_manager_protocol.PeerResult.PeerLocations peer_locations = 5;
-      case 5: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 42) goto handle_unusual;
-        do {
-          ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-          parser_till_end = ::muscle_manager_protocol::PeerResult_PeerLocations::_InternalParse;
-          object = msg->add_peer_locations();
-          if (size > end - ptr) goto len_delim_till_end;
-          ptr += size;
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ctx->ParseExactRange(
-              {parser_till_end, object}, ptr - size, ptr));
-          if (ptr >= end) break;
-        } while ((::google::protobuf::io::UnalignedLoad<::google::protobuf::uint64>(ptr) & 255) == 42 && (ptr += 1));
-        break;
-      }
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 42)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(_internal_add_peer_locations(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<42>(ptr));
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
-          return ptr;
+          ctx->SetLastTag(tag);
+          goto success;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
-  return ptr;
-string_till_end:
-  static_cast<::std::string*>(object)->clear();
-  static_cast<::std::string*>(object)->reserve(size);
-  goto len_delim_till_end;
-len_delim_till_end:
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                               {parser_till_end, object}, size);
-}
-#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool PeerResult::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.PeerResult)
-  for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // .muscle_manager_protocol.ResultStatus status = 1;
-      case 1: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (8 & 0xFF)) {
-          int value = 0;
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
-                 input, &value)));
-          set_status(static_cast< ::muscle_manager_protocol::ResultStatus >(value));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // string error_message = 2;
-      case 2: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (18 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_error_message()));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->error_message().data(), static_cast<int>(this->error_message().length()),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "muscle_manager_protocol.PeerResult.error_message"));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // repeated .muscle_manager_protocol.Conduit conduits = 3;
-      case 3: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (26 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-                input, add_conduits()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // repeated .muscle_manager_protocol.PeerResult.PeerDimensions peer_dimensions = 4;
-      case 4: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (34 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-                input, add_peer_dimensions()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // repeated .muscle_manager_protocol.PeerResult.PeerLocations peer_locations = 5;
-      case 5: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (42 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-                input, add_peer_locations()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      default: {
-      handle_unusual:
-        if (tag == 0) {
-          goto success;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, _internal_metadata_.mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
 success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.PeerResult)
-  return true;
+  return ptr;
 failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.PeerResult)
-  return false;
-#undef DO_
-}
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-void PeerResult::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.PeerResult)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // .muscle_manager_protocol.ResultStatus status = 1;
-  if (this->status() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteEnum(
-      1, this->status(), output);
-  }
-
-  // string error_message = 2;
-  if (this->error_message().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->error_message().data(), static_cast<int>(this->error_message().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "muscle_manager_protocol.PeerResult.error_message");
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      2, this->error_message(), output);
-  }
-
-  // repeated .muscle_manager_protocol.Conduit conduits = 3;
-  for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->conduits_size()); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      3,
-      this->conduits(static_cast<int>(i)),
-      output);
-  }
-
-  // repeated .muscle_manager_protocol.PeerResult.PeerDimensions peer_dimensions = 4;
-  for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->peer_dimensions_size()); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      4,
-      this->peer_dimensions(static_cast<int>(i)),
-      output);
-  }
-
-  // repeated .muscle_manager_protocol.PeerResult.PeerLocations peer_locations = 5;
-  for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->peer_locations_size()); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      5,
-      this->peer_locations(static_cast<int>(i)),
-      output);
-  }
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.PeerResult)
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 
-::google::protobuf::uint8* PeerResult::InternalSerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::PROTOBUF_NAMESPACE_ID::uint8* PeerResult::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.PeerResult)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   // .muscle_manager_protocol.ResultStatus status = 1;
   if (this->status() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      1, this->status(), target);
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteEnumToArray(
+      1, this->_internal_status(), target);
   }
 
   // string error_message = 2;
   if (this->error_message().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->error_message().data(), static_cast<int>(this->error_message().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_error_message().data(), static_cast<int>(this->_internal_error_message().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "muscle_manager_protocol.PeerResult.error_message");
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        2, this->error_message(), target);
+    target = stream->WriteStringMaybeAliased(
+        2, this->_internal_error_message(), target);
   }
 
   // repeated .muscle_manager_protocol.Conduit conduits = 3;
   for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->conduits_size()); i < n; i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessageToArray(
-        3, this->conduits(static_cast<int>(i)), target);
+      n = static_cast<unsigned int>(this->_internal_conduits_size()); i < n; i++) {
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessageToArray(3, this->_internal_conduits(i), target, stream);
   }
 
   // repeated .muscle_manager_protocol.PeerResult.PeerDimensions peer_dimensions = 4;
   for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->peer_dimensions_size()); i < n; i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessageToArray(
-        4, this->peer_dimensions(static_cast<int>(i)), target);
+      n = static_cast<unsigned int>(this->_internal_peer_dimensions_size()); i < n; i++) {
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessageToArray(4, this->_internal_peer_dimensions(i), target, stream);
   }
 
   // repeated .muscle_manager_protocol.PeerResult.PeerLocations peer_locations = 5;
   for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->peer_locations_size()); i < n; i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessageToArray(
-        5, this->peer_locations(static_cast<int>(i)), target);
+      n = static_cast<unsigned int>(this->_internal_peer_locations_size()); i < n; i++) {
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessageToArray(5, this->_internal_peer_locations(i), target, stream);
   }
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.PeerResult)
   return target;
@@ -5613,75 +3885,62 @@ size_t PeerResult::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.PeerResult)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   // repeated .muscle_manager_protocol.Conduit conduits = 3;
-  {
-    unsigned int count = static_cast<unsigned int>(this->conduits_size());
-    total_size += 1UL * count;
-    for (unsigned int i = 0; i < count; i++) {
-      total_size +=
-        ::google::protobuf::internal::WireFormatLite::MessageSize(
-          this->conduits(static_cast<int>(i)));
-    }
+  total_size += 1UL * this->_internal_conduits_size();
+  for (const auto& msg : this->conduits_) {
+    total_size +=
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   // repeated .muscle_manager_protocol.PeerResult.PeerDimensions peer_dimensions = 4;
-  {
-    unsigned int count = static_cast<unsigned int>(this->peer_dimensions_size());
-    total_size += 1UL * count;
-    for (unsigned int i = 0; i < count; i++) {
-      total_size +=
-        ::google::protobuf::internal::WireFormatLite::MessageSize(
-          this->peer_dimensions(static_cast<int>(i)));
-    }
+  total_size += 1UL * this->_internal_peer_dimensions_size();
+  for (const auto& msg : this->peer_dimensions_) {
+    total_size +=
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   // repeated .muscle_manager_protocol.PeerResult.PeerLocations peer_locations = 5;
-  {
-    unsigned int count = static_cast<unsigned int>(this->peer_locations_size());
-    total_size += 1UL * count;
-    for (unsigned int i = 0; i < count; i++) {
-      total_size +=
-        ::google::protobuf::internal::WireFormatLite::MessageSize(
-          this->peer_locations(static_cast<int>(i)));
-    }
+  total_size += 1UL * this->_internal_peer_locations_size();
+  for (const auto& msg : this->peer_locations_) {
+    total_size +=
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
   // string error_message = 2;
   if (this->error_message().size() > 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->error_message());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_error_message());
   }
 
   // .muscle_manager_protocol.ResultStatus status = 1;
   if (this->status() != 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::EnumSize(this->status());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::EnumSize(this->_internal_status());
   }
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
 }
 
-void PeerResult::MergeFrom(const ::google::protobuf::Message& from) {
+void PeerResult::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.PeerResult)
   GOOGLE_DCHECK_NE(&from, this);
   const PeerResult* source =
-      ::google::protobuf::DynamicCastToGenerated<PeerResult>(
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<PeerResult>(
           &from);
   if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.PeerResult)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.PeerResult)
     MergeFrom(*source);
@@ -5692,7 +3951,7 @@ void PeerResult::MergeFrom(const PeerResult& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.PeerResult)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   conduits_.MergeFrom(from.conduits_);
@@ -5700,14 +3959,14 @@ void PeerResult::MergeFrom(const PeerResult& from) {
   peer_locations_.MergeFrom(from.peer_locations_);
   if (from.error_message().size() > 0) {
 
-    error_message_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.error_message_);
+    error_message_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.error_message_);
   }
   if (from.status() != 0) {
-    set_status(from.status());
+    _internal_set_status(from._internal_status());
   }
 }
 
-void PeerResult::CopyFrom(const ::google::protobuf::Message& from) {
+void PeerResult::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.PeerResult)
   if (&from == this) return;
   Clear();
@@ -5725,24 +3984,19 @@ bool PeerResult::IsInitialized() const {
   return true;
 }
 
-void PeerResult::Swap(PeerResult* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void PeerResult::InternalSwap(PeerResult* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
-  CastToBase(&conduits_)->InternalSwap(CastToBase(&other->conduits_));
-  CastToBase(&peer_dimensions_)->InternalSwap(CastToBase(&other->peer_dimensions_));
-  CastToBase(&peer_locations_)->InternalSwap(CastToBase(&other->peer_locations_));
-  error_message_.Swap(&other->error_message_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  conduits_.InternalSwap(&other->conduits_);
+  peer_dimensions_.InternalSwap(&other->peer_dimensions_);
+  peer_locations_.InternalSwap(&other->peer_locations_);
+  error_message_.Swap(&other->error_message_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   swap(status_, other->status_);
 }
 
-::google::protobuf::Metadata PeerResult::GetMetadata() const {
-  ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
-  return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
+::PROTOBUF_NAMESPACE_ID::Metadata PeerResult::GetMetadata() const {
+  return GetMetadataStatic();
 }
 
 
@@ -5750,21 +4004,17 @@ void PeerResult::InternalSwap(PeerResult* other) {
 
 void ListOfDouble::InitAsDefaultInstance() {
 }
-class ListOfDouble::HasBitSetters {
+class ListOfDouble::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int ListOfDouble::kValuesFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 ListOfDouble::ListOfDouble()
-  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:muscle_manager_protocol.ListOfDouble)
 }
 ListOfDouble::ListOfDouble(const ListOfDouble& from)
-  : ::google::protobuf::Message(),
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr),
       values_(from.values_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
@@ -5786,14 +4036,14 @@ void ListOfDouble::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 const ListOfDouble& ListOfDouble::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_ListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_ListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
 void ListOfDouble::Clear() {
 // @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.ListOfDouble)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
@@ -5801,150 +4051,57 @@ void ListOfDouble::Clear() {
   _internal_metadata_.Clear();
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* ListOfDouble::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<ListOfDouble*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+const char* ListOfDouble::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
     switch (tag >> 3) {
       // repeated double values = 1;
-      case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) == 10) {
-          ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-          parser_till_end = ::google::protobuf::internal::PackedDoubleParser;
-          object = msg->mutable_values();
-          if (size > end - ptr) goto len_delim_till_end;
-          auto newend = ptr + size;
-          if (size) ptr = parser_till_end(ptr, newend, object, ctx);
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ptr == newend);
-          break;
-        } else if (static_cast<::google::protobuf::uint8>(tag) != 9) goto handle_unusual;
-        do {
-          msg->add_values(::google::protobuf::io::UnalignedLoad<double>(ptr));
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedDoubleParser(_internal_mutable_values(), ptr, ctx);
+          CHK_(ptr);
+        } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 9) {
+          _internal_add_values(::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr));
           ptr += sizeof(double);
-          if (ptr >= end) break;
-        } while ((::google::protobuf::io::UnalignedLoad<::google::protobuf::uint64>(ptr) & 255) == 9 && (ptr += 1));
-        break;
-      }
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
-          return ptr;
+          ctx->SetLastTag(tag);
+          goto success;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
-  return ptr;
-len_delim_till_end:
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                               {parser_till_end, object}, size);
-}
-#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool ListOfDouble::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.ListOfDouble)
-  for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated double values = 1;
-      case 1: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (10 & 0xFF)) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
-                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 input, this->mutable_values())));
-        } else if (static_cast< ::google::protobuf::uint8>(tag) == (9 & 0xFF)) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
-                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 1, 10u, input, this->mutable_values())));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      default: {
-      handle_unusual:
-        if (tag == 0) {
-          goto success;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, _internal_metadata_.mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
 success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.ListOfDouble)
-  return true;
+  return ptr;
 failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.ListOfDouble)
-  return false;
-#undef DO_
-}
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-void ListOfDouble::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.ListOfDouble)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // repeated double values = 1;
-  if (this->values_size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteTag(1, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
-    output->WriteVarint32(_values_cached_byte_size_.load(
-        std::memory_order_relaxed));
-    ::google::protobuf::internal::WireFormatLite::WriteDoubleArray(
-      this->values().data(), this->values_size(), output);
-  }
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.ListOfDouble)
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 
-::google::protobuf::uint8* ListOfDouble::InternalSerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::PROTOBUF_NAMESPACE_ID::uint8* ListOfDouble::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.ListOfDouble)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   // repeated double values = 1;
-  if (this->values_size() > 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteTagToArray(
-      1,
-      ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
-      target);
-    target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
-        _values_cached_byte_size_.load(std::memory_order_relaxed),
-         target);
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteDoubleNoTagToArray(this->values_, target);
+  if (this->_internal_values_size() > 0) {
+    target = stream->WriteFixedPacked(1, _internal_values(), target);
   }
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.ListOfDouble)
   return target;
@@ -5954,44 +4111,43 @@ size_t ListOfDouble::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.ListOfDouble)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   // repeated double values = 1;
   {
-    unsigned int count = static_cast<unsigned int>(this->values_size());
+    unsigned int count = static_cast<unsigned int>(this->_internal_values_size());
     size_t data_size = 8UL * count;
     if (data_size > 0) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int32Size(
-            static_cast<::google::protobuf::int32>(data_size));
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+            static_cast<::PROTOBUF_NAMESPACE_ID::int32>(data_size));
     }
-    int cached_size = ::google::protobuf::internal::ToCachedSize(data_size);
+    int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(data_size);
     _values_cached_byte_size_.store(cached_size,
                                     std::memory_order_relaxed);
     total_size += data_size;
   }
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
 }
 
-void ListOfDouble::MergeFrom(const ::google::protobuf::Message& from) {
+void ListOfDouble::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.ListOfDouble)
   GOOGLE_DCHECK_NE(&from, this);
   const ListOfDouble* source =
-      ::google::protobuf::DynamicCastToGenerated<ListOfDouble>(
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<ListOfDouble>(
           &from);
   if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.ListOfDouble)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.ListOfDouble)
     MergeFrom(*source);
@@ -6002,13 +4158,13 @@ void ListOfDouble::MergeFrom(const ListOfDouble& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.ListOfDouble)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   values_.MergeFrom(from.values_);
 }
 
-void ListOfDouble::CopyFrom(const ::google::protobuf::Message& from) {
+void ListOfDouble::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.ListOfDouble)
   if (&from == this) return;
   Clear();
@@ -6026,19 +4182,14 @@ bool ListOfDouble::IsInitialized() const {
   return true;
 }
 
-void ListOfDouble::Swap(ListOfDouble* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void ListOfDouble::InternalSwap(ListOfDouble* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
   values_.InternalSwap(&other->values_);
 }
 
-::google::protobuf::Metadata ListOfDouble::GetMetadata() const {
-  ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
-  return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
+::PROTOBUF_NAMESPACE_ID::Metadata ListOfDouble::GetMetadata() const {
+  return GetMetadataStatic();
 }
 
 
@@ -6046,21 +4197,17 @@ void ListOfDouble::InternalSwap(ListOfDouble* other) {
 
 void ListOfListOfDouble::InitAsDefaultInstance() {
 }
-class ListOfListOfDouble::HasBitSetters {
+class ListOfListOfDouble::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int ListOfListOfDouble::kValuesFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 ListOfListOfDouble::ListOfListOfDouble()
-  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:muscle_manager_protocol.ListOfListOfDouble)
 }
 ListOfListOfDouble::ListOfListOfDouble(const ListOfListOfDouble& from)
-  : ::google::protobuf::Message(),
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr),
       values_(from.values_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
@@ -6068,8 +4215,7 @@ ListOfListOfDouble::ListOfListOfDouble(const ListOfListOfDouble& from)
 }
 
 void ListOfListOfDouble::SharedCtor() {
-  ::google::protobuf::internal::InitSCC(
-      &scc_info_ListOfListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_ListOfListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
 }
 
 ListOfListOfDouble::~ListOfListOfDouble() {
@@ -6084,14 +4230,14 @@ void ListOfListOfDouble::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 const ListOfListOfDouble& ListOfListOfDouble::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_ListOfListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_ListOfListOfDouble_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
 void ListOfListOfDouble::Clear() {
 // @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.ListOfListOfDouble)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
@@ -6099,136 +4245,62 @@ void ListOfListOfDouble::Clear() {
   _internal_metadata_.Clear();
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* ListOfListOfDouble::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<ListOfListOfDouble*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+const char* ListOfListOfDouble::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
     switch (tag >> 3) {
       // repeated .muscle_manager_protocol.ListOfDouble values = 1;
-      case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
-        do {
-          ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-          parser_till_end = ::muscle_manager_protocol::ListOfDouble::_InternalParse;
-          object = msg->add_values();
-          if (size > end - ptr) goto len_delim_till_end;
-          ptr += size;
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ctx->ParseExactRange(
-              {parser_till_end, object}, ptr - size, ptr));
-          if (ptr >= end) break;
-        } while ((::google::protobuf::io::UnalignedLoad<::google::protobuf::uint64>(ptr) & 255) == 10 && (ptr += 1));
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(_internal_add_values(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<10>(ptr));
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
-          return ptr;
+          ctx->SetLastTag(tag);
+          goto success;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
-  return ptr;
-len_delim_till_end:
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                               {parser_till_end, object}, size);
-}
-#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool ListOfListOfDouble::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.ListOfListOfDouble)
-  for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated .muscle_manager_protocol.ListOfDouble values = 1;
-      case 1: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (10 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-                input, add_values()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      default: {
-      handle_unusual:
-        if (tag == 0) {
-          goto success;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, _internal_metadata_.mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
 success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.ListOfListOfDouble)
-  return true;
+  return ptr;
 failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.ListOfListOfDouble)
-  return false;
-#undef DO_
-}
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-void ListOfListOfDouble::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.ListOfListOfDouble)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // repeated .muscle_manager_protocol.ListOfDouble values = 1;
-  for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->values_size()); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      1,
-      this->values(static_cast<int>(i)),
-      output);
-  }
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.ListOfListOfDouble)
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 
-::google::protobuf::uint8* ListOfListOfDouble::InternalSerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::PROTOBUF_NAMESPACE_ID::uint8* ListOfListOfDouble::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.ListOfListOfDouble)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   // repeated .muscle_manager_protocol.ListOfDouble values = 1;
   for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->values_size()); i < n; i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessageToArray(
-        1, this->values(static_cast<int>(i)), target);
+      n = static_cast<unsigned int>(this->_internal_values_size()); i < n; i++) {
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessageToArray(1, this->_internal_values(i), target, stream);
   }
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.ListOfListOfDouble)
   return target;
@@ -6238,40 +4310,35 @@ size_t ListOfListOfDouble::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.ListOfListOfDouble)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   // repeated .muscle_manager_protocol.ListOfDouble values = 1;
-  {
-    unsigned int count = static_cast<unsigned int>(this->values_size());
-    total_size += 1UL * count;
-    for (unsigned int i = 0; i < count; i++) {
-      total_size +=
-        ::google::protobuf::internal::WireFormatLite::MessageSize(
-          this->values(static_cast<int>(i)));
-    }
+  total_size += 1UL * this->_internal_values_size();
+  for (const auto& msg : this->values_) {
+    total_size +=
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
 }
 
-void ListOfListOfDouble::MergeFrom(const ::google::protobuf::Message& from) {
+void ListOfListOfDouble::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.ListOfListOfDouble)
   GOOGLE_DCHECK_NE(&from, this);
   const ListOfListOfDouble* source =
-      ::google::protobuf::DynamicCastToGenerated<ListOfListOfDouble>(
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<ListOfListOfDouble>(
           &from);
   if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.ListOfListOfDouble)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.ListOfListOfDouble)
     MergeFrom(*source);
@@ -6282,13 +4349,13 @@ void ListOfListOfDouble::MergeFrom(const ListOfListOfDouble& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.ListOfListOfDouble)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   values_.MergeFrom(from.values_);
 }
 
-void ListOfListOfDouble::CopyFrom(const ::google::protobuf::Message& from) {
+void ListOfListOfDouble::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.ListOfListOfDouble)
   if (&from == this) return;
   Clear();
@@ -6306,19 +4373,14 @@ bool ListOfListOfDouble::IsInitialized() const {
   return true;
 }
 
-void ListOfListOfDouble::Swap(ListOfListOfDouble* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void ListOfListOfDouble::InternalSwap(ListOfListOfDouble* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
-  CastToBase(&values_)->InternalSwap(CastToBase(&other->values_));
+  values_.InternalSwap(&other->values_);
 }
 
-::google::protobuf::Metadata ListOfListOfDouble::GetMetadata() const {
-  ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
-  return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
+::PROTOBUF_NAMESPACE_ID::Metadata ListOfListOfDouble::GetMetadata() const {
+  return GetMetadataStatic();
 }
 
 
@@ -6330,54 +4392,43 @@ void Setting::InitAsDefaultInstance() {
   ::muscle_manager_protocol::_Setting_default_instance_._instance.get_mutable()->value_list_list_float_ = const_cast< ::muscle_manager_protocol::ListOfListOfDouble*>(
       ::muscle_manager_protocol::ListOfListOfDouble::internal_default_instance());
 }
-class Setting::HasBitSetters {
+class Setting::_Internal {
  public:
   static const ::muscle_manager_protocol::ListOfDouble& value_list_float(const Setting* msg);
   static const ::muscle_manager_protocol::ListOfListOfDouble& value_list_list_float(const Setting* msg);
 };
 
 const ::muscle_manager_protocol::ListOfDouble&
-Setting::HasBitSetters::value_list_float(const Setting* msg) {
+Setting::_Internal::value_list_float(const Setting* msg) {
   return *msg->value_list_float_;
 }
 const ::muscle_manager_protocol::ListOfListOfDouble&
-Setting::HasBitSetters::value_list_list_float(const Setting* msg) {
+Setting::_Internal::value_list_list_float(const Setting* msg) {
   return *msg->value_list_list_float_;
 }
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int Setting::kNameFieldNumber;
-const int Setting::kValueTypeFieldNumber;
-const int Setting::kValueStringFieldNumber;
-const int Setting::kValueIntFieldNumber;
-const int Setting::kValueFloatFieldNumber;
-const int Setting::kValueBoolFieldNumber;
-const int Setting::kValueListFloatFieldNumber;
-const int Setting::kValueListListFloatFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 Setting::Setting()
-  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:muscle_manager_protocol.Setting)
 }
 Setting::Setting(const Setting& from)
-  : ::google::protobuf::Message(),
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.name().size() > 0) {
-    name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_);
+  name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_name().empty()) {
+    name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.name_);
   }
-  value_string_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.value_string().size() > 0) {
-    value_string_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.value_string_);
+  value_string_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_value_string().empty()) {
+    value_string_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.value_string_);
   }
-  if (from.has_value_list_float()) {
+  if (from._internal_has_value_list_float()) {
     value_list_float_ = new ::muscle_manager_protocol::ListOfDouble(*from.value_list_float_);
   } else {
     value_list_float_ = nullptr;
   }
-  if (from.has_value_list_list_float()) {
+  if (from._internal_has_value_list_list_float()) {
     value_list_list_float_ = new ::muscle_manager_protocol::ListOfListOfDouble(*from.value_list_list_float_);
   } else {
     value_list_list_float_ = nullptr;
@@ -6389,10 +4440,9 @@ Setting::Setting(const Setting& from)
 }
 
 void Setting::SharedCtor() {
-  ::google::protobuf::internal::InitSCC(
-      &scc_info_Setting_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  value_string_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Setting_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  value_string_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   ::memset(&value_list_float_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&value_float_) -
       reinterpret_cast<char*>(&value_list_float_)) + sizeof(value_float_));
@@ -6404,8 +4454,8 @@ Setting::~Setting() {
 }
 
 void Setting::SharedDtor() {
-  name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  value_string_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  name_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  value_string_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (this != internal_default_instance()) delete value_list_float_;
   if (this != internal_default_instance()) delete value_list_list_float_;
 }
@@ -6414,19 +4464,19 @@ void Setting::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 const Setting& Setting::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_Setting_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Setting_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
 void Setting::Clear() {
 // @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.Setting)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  value_string_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  name_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  value_string_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (GetArenaNoVirtual() == nullptr && value_list_float_ != nullptr) {
     delete value_list_float_;
   }
@@ -6441,398 +4491,160 @@ void Setting::Clear() {
   _internal_metadata_.Clear();
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* Setting::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<Setting*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+const char* Setting::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
     switch (tag >> 3) {
       // string name = 1;
-      case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("muscle_manager_protocol.Setting.name");
-        object = msg->mutable_name();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_name(), ptr, ctx, "muscle_manager_protocol.Setting.name");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // .muscle_manager_protocol.SettingValueType value_type = 2;
-      case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 16) goto handle_unusual;
-        ::google::protobuf::uint64 val = ::google::protobuf::internal::ReadVarint(&ptr);
-        msg->set_value_type(static_cast<::muscle_manager_protocol::SettingValueType>(val));
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+          _internal_set_value_type(static_cast<::muscle_manager_protocol::SettingValueType>(val));
+        } else goto handle_unusual;
+        continue;
       // string value_string = 3;
-      case 3: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 26) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("muscle_manager_protocol.Setting.value_string");
-        object = msg->mutable_value_string();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
-        break;
-      }
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_value_string(), ptr, ctx, "muscle_manager_protocol.Setting.value_string");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // int64 value_int = 4;
-      case 4: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 32) goto handle_unusual;
-        msg->set_value_int(::google::protobuf::internal::ReadVarint(&ptr));
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        break;
-      }
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 32)) {
+          value_int_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // double value_float = 5;
-      case 5: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 41) goto handle_unusual;
-        msg->set_value_float(::google::protobuf::io::UnalignedLoad<double>(ptr));
-        ptr += sizeof(double);
-        break;
-      }
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 41)) {
+          value_float_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
+          ptr += sizeof(double);
+        } else goto handle_unusual;
+        continue;
       // bool value_bool = 6;
-      case 6: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 48) goto handle_unusual;
-        msg->set_value_bool(::google::protobuf::internal::ReadVarint(&ptr));
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        break;
-      }
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 48)) {
+          value_bool_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // .muscle_manager_protocol.ListOfDouble value_list_float = 7;
-      case 7: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 58) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        parser_till_end = ::muscle_manager_protocol::ListOfDouble::_InternalParse;
-        object = msg->mutable_value_list_float();
-        if (size > end - ptr) goto len_delim_till_end;
-        ptr += size;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ctx->ParseExactRange(
-            {parser_till_end, object}, ptr - size, ptr));
-        break;
-      }
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 58)) {
+          ptr = ctx->ParseMessage(_internal_mutable_value_list_float(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       // .muscle_manager_protocol.ListOfListOfDouble value_list_list_float = 8;
-      case 8: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 66) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        parser_till_end = ::muscle_manager_protocol::ListOfListOfDouble::_InternalParse;
-        object = msg->mutable_value_list_list_float();
-        if (size > end - ptr) goto len_delim_till_end;
-        ptr += size;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ctx->ParseExactRange(
-            {parser_till_end, object}, ptr - size, ptr));
-        break;
-      }
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 66)) {
+          ptr = ctx->ParseMessage(_internal_mutable_value_list_list_float(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
-          return ptr;
+          ctx->SetLastTag(tag);
+          goto success;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
-  return ptr;
-string_till_end:
-  static_cast<::std::string*>(object)->clear();
-  static_cast<::std::string*>(object)->reserve(size);
-  goto len_delim_till_end;
-len_delim_till_end:
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                               {parser_till_end, object}, size);
-}
-#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool Setting::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.Setting)
-  for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // string name = 1;
-      case 1: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (10 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_name()));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->name().data(), static_cast<int>(this->name().length()),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "muscle_manager_protocol.Setting.name"));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // .muscle_manager_protocol.SettingValueType value_type = 2;
-      case 2: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (16 & 0xFF)) {
-          int value = 0;
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
-                 input, &value)));
-          set_value_type(static_cast< ::muscle_manager_protocol::SettingValueType >(value));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // string value_string = 3;
-      case 3: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (26 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_value_string()));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->value_string().data(), static_cast<int>(this->value_string().length()),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "muscle_manager_protocol.Setting.value_string"));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // int64 value_int = 4;
-      case 4: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (32 & 0xFF)) {
-
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
-                 input, &value_int_)));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // double value_float = 5;
-      case 5: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (41 & 0xFF)) {
-
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 input, &value_float_)));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // bool value_bool = 6;
-      case 6: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (48 & 0xFF)) {
-
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
-                 input, &value_bool_)));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // .muscle_manager_protocol.ListOfDouble value_list_float = 7;
-      case 7: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (58 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_value_list_float()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // .muscle_manager_protocol.ListOfListOfDouble value_list_list_float = 8;
-      case 8: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (66 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_value_list_list_float()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      default: {
-      handle_unusual:
-        if (tag == 0) {
-          goto success;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, _internal_metadata_.mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
 success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.Setting)
-  return true;
+  return ptr;
 failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.Setting)
-  return false;
-#undef DO_
-}
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-void Setting::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.Setting)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // string name = 1;
-  if (this->name().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->name().data(), static_cast<int>(this->name().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "muscle_manager_protocol.Setting.name");
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      1, this->name(), output);
-  }
-
-  // .muscle_manager_protocol.SettingValueType value_type = 2;
-  if (this->value_type() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteEnum(
-      2, this->value_type(), output);
-  }
-
-  // string value_string = 3;
-  if (this->value_string().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->value_string().data(), static_cast<int>(this->value_string().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "muscle_manager_protocol.Setting.value_string");
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      3, this->value_string(), output);
-  }
-
-  // int64 value_int = 4;
-  if (this->value_int() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt64(4, this->value_int(), output);
-  }
-
-  // double value_float = 5;
-  if (this->value_float() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(5, this->value_float(), output);
-  }
-
-  // bool value_bool = 6;
-  if (this->value_bool() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteBool(6, this->value_bool(), output);
-  }
-
-  // .muscle_manager_protocol.ListOfDouble value_list_float = 7;
-  if (this->has_value_list_float()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      7, HasBitSetters::value_list_float(this), output);
-  }
-
-  // .muscle_manager_protocol.ListOfListOfDouble value_list_list_float = 8;
-  if (this->has_value_list_list_float()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      8, HasBitSetters::value_list_list_float(this), output);
-  }
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.Setting)
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 
-::google::protobuf::uint8* Setting::InternalSerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::PROTOBUF_NAMESPACE_ID::uint8* Setting::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.Setting)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   // string name = 1;
   if (this->name().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->name().data(), static_cast<int>(this->name().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_name().data(), static_cast<int>(this->_internal_name().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "muscle_manager_protocol.Setting.name");
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        1, this->name(), target);
+    target = stream->WriteStringMaybeAliased(
+        1, this->_internal_name(), target);
   }
 
   // .muscle_manager_protocol.SettingValueType value_type = 2;
   if (this->value_type() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->value_type(), target);
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteEnumToArray(
+      2, this->_internal_value_type(), target);
   }
 
   // string value_string = 3;
   if (this->value_string().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->value_string().data(), static_cast<int>(this->value_string().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_value_string().data(), static_cast<int>(this->_internal_value_string().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "muscle_manager_protocol.Setting.value_string");
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        3, this->value_string(), target);
+    target = stream->WriteStringMaybeAliased(
+        3, this->_internal_value_string(), target);
   }
 
   // int64 value_int = 4;
   if (this->value_int() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(4, this->value_int(), target);
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64ToArray(4, this->_internal_value_int(), target);
   }
 
   // double value_float = 5;
-  if (this->value_float() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(5, this->value_float(), target);
+  if (!(this->value_float() <= 0 && this->value_float() >= 0)) {
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteDoubleToArray(5, this->_internal_value_float(), target);
   }
 
   // bool value_bool = 6;
   if (this->value_bool() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(6, this->value_bool(), target);
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBoolToArray(6, this->_internal_value_bool(), target);
   }
 
   // .muscle_manager_protocol.ListOfDouble value_list_float = 7;
   if (this->has_value_list_float()) {
-    target = ::google::protobuf::internal::WireFormatLite::
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        7, HasBitSetters::value_list_float(this), target);
+        7, _Internal::value_list_float(this), target, stream);
   }
 
   // .muscle_manager_protocol.ListOfListOfDouble value_list_list_float = 8;
   if (this->has_value_list_list_float()) {
-    target = ::google::protobuf::internal::WireFormatLite::
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        8, HasBitSetters::value_list_list_float(this), target);
+        8, _Internal::value_list_list_float(this), target, stream);
   }
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.Setting)
   return target;
@@ -6842,54 +4654,49 @@ size_t Setting::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.Setting)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   // string name = 1;
   if (this->name().size() > 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->name());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_name());
   }
 
   // string value_string = 3;
   if (this->value_string().size() > 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->value_string());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_value_string());
   }
 
   // .muscle_manager_protocol.ListOfDouble value_list_float = 7;
   if (this->has_value_list_float()) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::MessageSize(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
         *value_list_float_);
   }
 
   // .muscle_manager_protocol.ListOfListOfDouble value_list_list_float = 8;
   if (this->has_value_list_list_float()) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::MessageSize(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
         *value_list_list_float_);
   }
 
   // int64 value_int = 4;
   if (this->value_int() != 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::Int64Size(
-        this->value_int());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int64Size(
+        this->_internal_value_int());
   }
 
   // .muscle_manager_protocol.SettingValueType value_type = 2;
   if (this->value_type() != 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::EnumSize(this->value_type());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::EnumSize(this->_internal_value_type());
   }
 
   // bool value_bool = 6;
@@ -6898,24 +4705,28 @@ size_t Setting::ByteSizeLong() const {
   }
 
   // double value_float = 5;
-  if (this->value_float() != 0) {
+  if (!(this->value_float() <= 0 && this->value_float() >= 0)) {
     total_size += 1 + 8;
   }
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
 }
 
-void Setting::MergeFrom(const ::google::protobuf::Message& from) {
+void Setting::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.Setting)
   GOOGLE_DCHECK_NE(&from, this);
   const Setting* source =
-      ::google::protobuf::DynamicCastToGenerated<Setting>(
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<Setting>(
           &from);
   if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.Setting)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.Setting)
     MergeFrom(*source);
@@ -6926,38 +4737,38 @@ void Setting::MergeFrom(const Setting& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.Setting)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from.name().size() > 0) {
 
-    name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_);
+    name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.name_);
   }
   if (from.value_string().size() > 0) {
 
-    value_string_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.value_string_);
+    value_string_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.value_string_);
   }
   if (from.has_value_list_float()) {
-    mutable_value_list_float()->::muscle_manager_protocol::ListOfDouble::MergeFrom(from.value_list_float());
+    _internal_mutable_value_list_float()->::muscle_manager_protocol::ListOfDouble::MergeFrom(from._internal_value_list_float());
   }
   if (from.has_value_list_list_float()) {
-    mutable_value_list_list_float()->::muscle_manager_protocol::ListOfListOfDouble::MergeFrom(from.value_list_list_float());
+    _internal_mutable_value_list_list_float()->::muscle_manager_protocol::ListOfListOfDouble::MergeFrom(from._internal_value_list_list_float());
   }
   if (from.value_int() != 0) {
-    set_value_int(from.value_int());
+    _internal_set_value_int(from._internal_value_int());
   }
   if (from.value_type() != 0) {
-    set_value_type(from.value_type());
+    _internal_set_value_type(from._internal_value_type());
   }
   if (from.value_bool() != 0) {
-    set_value_bool(from.value_bool());
+    _internal_set_value_bool(from._internal_value_bool());
   }
-  if (from.value_float() != 0) {
-    set_value_float(from.value_float());
+  if (!(from.value_float() <= 0 && from.value_float() >= 0)) {
+    _internal_set_value_float(from._internal_value_float());
   }
 }
 
-void Setting::CopyFrom(const ::google::protobuf::Message& from) {
+void Setting::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.Setting)
   if (&from == this) return;
   Clear();
@@ -6975,16 +4786,12 @@ bool Setting::IsInitialized() const {
   return true;
 }
 
-void Setting::Swap(Setting* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void Setting::InternalSwap(Setting* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
-  name_.Swap(&other->name_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  name_.Swap(&other->name_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
-  value_string_.Swap(&other->value_string_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  value_string_.Swap(&other->value_string_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   swap(value_list_float_, other->value_list_float_);
   swap(value_list_list_float_, other->value_list_list_float_);
@@ -6994,9 +4801,8 @@ void Setting::InternalSwap(Setting* other) {
   swap(value_float_, other->value_float_);
 }
 
-::google::protobuf::Metadata Setting::GetMetadata() const {
-  ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
-  return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
+::PROTOBUF_NAMESPACE_ID::Metadata Setting::GetMetadata() const {
+  return GetMetadataStatic();
 }
 
 
@@ -7004,20 +4810,17 @@ void Setting::InternalSwap(Setting* other) {
 
 void SettingsRequest::InitAsDefaultInstance() {
 }
-class SettingsRequest::HasBitSetters {
+class SettingsRequest::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 SettingsRequest::SettingsRequest()
-  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:muscle_manager_protocol.SettingsRequest)
 }
 SettingsRequest::SettingsRequest(const SettingsRequest& from)
-  : ::google::protobuf::Message(),
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:muscle_manager_protocol.SettingsRequest)
@@ -7038,97 +4841,55 @@ void SettingsRequest::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 const SettingsRequest& SettingsRequest::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_SettingsRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_SettingsRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
 void SettingsRequest::Clear() {
 // @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.SettingsRequest)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   _internal_metadata_.Clear();
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* SettingsRequest::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<SettingsRequest*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+const char* SettingsRequest::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
     switch (tag >> 3) {
       default: {
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
-          return ptr;
+          ctx->SetLastTag(tag);
+          goto success;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
-  return ptr;
-}
-#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool SettingsRequest::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.SettingsRequest)
-  for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-  handle_unusual:
-    if (tag == 0) {
-      goto success;
-    }
-    DO_(::google::protobuf::internal::WireFormat::SkipField(
-          input, tag, _internal_metadata_.mutable_unknown_fields()));
-  }
 success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.SettingsRequest)
-  return true;
+  return ptr;
 failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.SettingsRequest)
-  return false;
-#undef DO_
-}
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-void SettingsRequest::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.SettingsRequest)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.SettingsRequest)
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 
-::google::protobuf::uint8* SettingsRequest::InternalSerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::PROTOBUF_NAMESPACE_ID::uint8* SettingsRequest::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.SettingsRequest)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.SettingsRequest)
   return target;
@@ -7138,29 +4899,28 @@ size_t SettingsRequest::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.SettingsRequest)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
 }
 
-void SettingsRequest::MergeFrom(const ::google::protobuf::Message& from) {
+void SettingsRequest::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.SettingsRequest)
   GOOGLE_DCHECK_NE(&from, this);
   const SettingsRequest* source =
-      ::google::protobuf::DynamicCastToGenerated<SettingsRequest>(
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<SettingsRequest>(
           &from);
   if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.SettingsRequest)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.SettingsRequest)
     MergeFrom(*source);
@@ -7171,12 +4931,12 @@ void SettingsRequest::MergeFrom(const SettingsRequest& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.SettingsRequest)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
 }
 
-void SettingsRequest::CopyFrom(const ::google::protobuf::Message& from) {
+void SettingsRequest::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.SettingsRequest)
   if (&from == this) return;
   Clear();
@@ -7194,18 +4954,13 @@ bool SettingsRequest::IsInitialized() const {
   return true;
 }
 
-void SettingsRequest::Swap(SettingsRequest* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void SettingsRequest::InternalSwap(SettingsRequest* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
 
-::google::protobuf::Metadata SettingsRequest::GetMetadata() const {
-  ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
-  return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
+::PROTOBUF_NAMESPACE_ID::Metadata SettingsRequest::GetMetadata() const {
+  return GetMetadataStatic();
 }
 
 
@@ -7213,21 +4968,17 @@ void SettingsRequest::InternalSwap(SettingsRequest* other) {
 
 void SettingsResult::InitAsDefaultInstance() {
 }
-class SettingsResult::HasBitSetters {
+class SettingsResult::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int SettingsResult::kSettingValuesFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 SettingsResult::SettingsResult()
-  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:muscle_manager_protocol.SettingsResult)
 }
 SettingsResult::SettingsResult(const SettingsResult& from)
-  : ::google::protobuf::Message(),
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr),
       setting_values_(from.setting_values_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
@@ -7235,8 +4986,7 @@ SettingsResult::SettingsResult(const SettingsResult& from)
 }
 
 void SettingsResult::SharedCtor() {
-  ::google::protobuf::internal::InitSCC(
-      &scc_info_SettingsResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_SettingsResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
 }
 
 SettingsResult::~SettingsResult() {
@@ -7251,14 +5001,14 @@ void SettingsResult::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 const SettingsResult& SettingsResult::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_SettingsResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_SettingsResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
 void SettingsResult::Clear() {
 // @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.SettingsResult)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
@@ -7266,136 +5016,62 @@ void SettingsResult::Clear() {
   _internal_metadata_.Clear();
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* SettingsResult::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<SettingsResult*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+const char* SettingsResult::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
     switch (tag >> 3) {
       // repeated .muscle_manager_protocol.Setting setting_values = 1;
-      case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
-        do {
-          ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-          parser_till_end = ::muscle_manager_protocol::Setting::_InternalParse;
-          object = msg->add_setting_values();
-          if (size > end - ptr) goto len_delim_till_end;
-          ptr += size;
-          GOOGLE_PROTOBUF_PARSER_ASSERT(ctx->ParseExactRange(
-              {parser_till_end, object}, ptr - size, ptr));
-          if (ptr >= end) break;
-        } while ((::google::protobuf::io::UnalignedLoad<::google::protobuf::uint64>(ptr) & 255) == 10 && (ptr += 1));
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(_internal_add_setting_values(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<10>(ptr));
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
-          return ptr;
+          ctx->SetLastTag(tag);
+          goto success;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
-  return ptr;
-len_delim_till_end:
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                               {parser_till_end, object}, size);
-}
-#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool SettingsResult::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.SettingsResult)
-  for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated .muscle_manager_protocol.Setting setting_values = 1;
-      case 1: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (10 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-                input, add_setting_values()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      default: {
-      handle_unusual:
-        if (tag == 0) {
-          goto success;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, _internal_metadata_.mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
 success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.SettingsResult)
-  return true;
+  return ptr;
 failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.SettingsResult)
-  return false;
-#undef DO_
-}
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-void SettingsResult::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.SettingsResult)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // repeated .muscle_manager_protocol.Setting setting_values = 1;
-  for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->setting_values_size()); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      1,
-      this->setting_values(static_cast<int>(i)),
-      output);
-  }
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.SettingsResult)
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 
-::google::protobuf::uint8* SettingsResult::InternalSerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::PROTOBUF_NAMESPACE_ID::uint8* SettingsResult::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.SettingsResult)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   // repeated .muscle_manager_protocol.Setting setting_values = 1;
   for (unsigned int i = 0,
-      n = static_cast<unsigned int>(this->setting_values_size()); i < n; i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessageToArray(
-        1, this->setting_values(static_cast<int>(i)), target);
+      n = static_cast<unsigned int>(this->_internal_setting_values_size()); i < n; i++) {
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessageToArray(1, this->_internal_setting_values(i), target, stream);
   }
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.SettingsResult)
   return target;
@@ -7405,40 +5081,35 @@ size_t SettingsResult::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.SettingsResult)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   // repeated .muscle_manager_protocol.Setting setting_values = 1;
-  {
-    unsigned int count = static_cast<unsigned int>(this->setting_values_size());
-    total_size += 1UL * count;
-    for (unsigned int i = 0; i < count; i++) {
-      total_size +=
-        ::google::protobuf::internal::WireFormatLite::MessageSize(
-          this->setting_values(static_cast<int>(i)));
-    }
+  total_size += 1UL * this->_internal_setting_values_size();
+  for (const auto& msg : this->setting_values_) {
+    total_size +=
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
 }
 
-void SettingsResult::MergeFrom(const ::google::protobuf::Message& from) {
+void SettingsResult::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.SettingsResult)
   GOOGLE_DCHECK_NE(&from, this);
   const SettingsResult* source =
-      ::google::protobuf::DynamicCastToGenerated<SettingsResult>(
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<SettingsResult>(
           &from);
   if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.SettingsResult)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.SettingsResult)
     MergeFrom(*source);
@@ -7449,13 +5120,13 @@ void SettingsResult::MergeFrom(const SettingsResult& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.SettingsResult)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   setting_values_.MergeFrom(from.setting_values_);
 }
 
-void SettingsResult::CopyFrom(const ::google::protobuf::Message& from) {
+void SettingsResult::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.SettingsResult)
   if (&from == this) return;
   Clear();
@@ -7473,19 +5144,14 @@ bool SettingsResult::IsInitialized() const {
   return true;
 }
 
-void SettingsResult::Swap(SettingsResult* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void SettingsResult::InternalSwap(SettingsResult* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
-  CastToBase(&setting_values_)->InternalSwap(CastToBase(&other->setting_values_));
+  setting_values_.InternalSwap(&other->setting_values_);
 }
 
-::google::protobuf::Metadata SettingsResult::GetMetadata() const {
-  ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
-  return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
+::PROTOBUF_NAMESPACE_ID::Metadata SettingsResult::GetMetadata() const {
+  return GetMetadataStatic();
 }
 
 
@@ -7493,34 +5159,29 @@ void SettingsResult::InternalSwap(SettingsResult* other) {
 
 void DeregistrationRequest::InitAsDefaultInstance() {
 }
-class DeregistrationRequest::HasBitSetters {
+class DeregistrationRequest::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int DeregistrationRequest::kInstanceNameFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 DeregistrationRequest::DeregistrationRequest()
-  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:muscle_manager_protocol.DeregistrationRequest)
 }
 DeregistrationRequest::DeregistrationRequest(const DeregistrationRequest& from)
-  : ::google::protobuf::Message(),
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  instance_name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.instance_name().size() > 0) {
-    instance_name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.instance_name_);
+  instance_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_instance_name().empty()) {
+    instance_name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.instance_name_);
   }
   // @@protoc_insertion_point(copy_constructor:muscle_manager_protocol.DeregistrationRequest)
 }
 
 void DeregistrationRequest::SharedCtor() {
-  ::google::protobuf::internal::InitSCC(
-      &scc_info_DeregistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  instance_name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_DeregistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  instance_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 DeregistrationRequest::~DeregistrationRequest() {
@@ -7529,170 +5190,81 @@ DeregistrationRequest::~DeregistrationRequest() {
 }
 
 void DeregistrationRequest::SharedDtor() {
-  instance_name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  instance_name_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 void DeregistrationRequest::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 const DeregistrationRequest& DeregistrationRequest::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_DeregistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_DeregistrationRequest_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
 void DeregistrationRequest::Clear() {
 // @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.DeregistrationRequest)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  instance_name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  instance_name_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   _internal_metadata_.Clear();
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* DeregistrationRequest::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<DeregistrationRequest*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+const char* DeregistrationRequest::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
     switch (tag >> 3) {
       // string instance_name = 1;
-      case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 10) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("muscle_manager_protocol.DeregistrationRequest.instance_name");
-        object = msg->mutable_instance_name();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_instance_name(), ptr, ctx, "muscle_manager_protocol.DeregistrationRequest.instance_name");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
-          return ptr;
+          ctx->SetLastTag(tag);
+          goto success;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
-  return ptr;
-string_till_end:
-  static_cast<::std::string*>(object)->clear();
-  static_cast<::std::string*>(object)->reserve(size);
-  goto len_delim_till_end;
-len_delim_till_end:
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                               {parser_till_end, object}, size);
-}
-#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool DeregistrationRequest::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.DeregistrationRequest)
-  for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // string instance_name = 1;
-      case 1: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (10 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_instance_name()));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->instance_name().data(), static_cast<int>(this->instance_name().length()),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "muscle_manager_protocol.DeregistrationRequest.instance_name"));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      default: {
-      handle_unusual:
-        if (tag == 0) {
-          goto success;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, _internal_metadata_.mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
 success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.DeregistrationRequest)
-  return true;
+  return ptr;
 failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.DeregistrationRequest)
-  return false;
-#undef DO_
-}
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-void DeregistrationRequest::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.DeregistrationRequest)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // string instance_name = 1;
-  if (this->instance_name().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->instance_name().data(), static_cast<int>(this->instance_name().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "muscle_manager_protocol.DeregistrationRequest.instance_name");
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      1, this->instance_name(), output);
-  }
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.DeregistrationRequest)
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 
-::google::protobuf::uint8* DeregistrationRequest::InternalSerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::PROTOBUF_NAMESPACE_ID::uint8* DeregistrationRequest::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.DeregistrationRequest)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   // string instance_name = 1;
   if (this->instance_name().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->instance_name().data(), static_cast<int>(this->instance_name().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_instance_name().data(), static_cast<int>(this->_internal_instance_name().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "muscle_manager_protocol.DeregistrationRequest.instance_name");
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        1, this->instance_name(), target);
+    target = stream->WriteStringMaybeAliased(
+        1, this->_internal_instance_name(), target);
   }
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.DeregistrationRequest)
   return target;
@@ -7702,36 +5274,35 @@ size_t DeregistrationRequest::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.DeregistrationRequest)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   // string instance_name = 1;
   if (this->instance_name().size() > 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->instance_name());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_instance_name());
   }
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
 }
 
-void DeregistrationRequest::MergeFrom(const ::google::protobuf::Message& from) {
+void DeregistrationRequest::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.DeregistrationRequest)
   GOOGLE_DCHECK_NE(&from, this);
   const DeregistrationRequest* source =
-      ::google::protobuf::DynamicCastToGenerated<DeregistrationRequest>(
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<DeregistrationRequest>(
           &from);
   if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.DeregistrationRequest)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.DeregistrationRequest)
     MergeFrom(*source);
@@ -7742,16 +5313,16 @@ void DeregistrationRequest::MergeFrom(const DeregistrationRequest& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.DeregistrationRequest)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from.instance_name().size() > 0) {
 
-    instance_name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.instance_name_);
+    instance_name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.instance_name_);
   }
 }
 
-void DeregistrationRequest::CopyFrom(const ::google::protobuf::Message& from) {
+void DeregistrationRequest::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.DeregistrationRequest)
   if (&from == this) return;
   Clear();
@@ -7769,20 +5340,15 @@ bool DeregistrationRequest::IsInitialized() const {
   return true;
 }
 
-void DeregistrationRequest::Swap(DeregistrationRequest* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void DeregistrationRequest::InternalSwap(DeregistrationRequest* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
-  instance_name_.Swap(&other->instance_name_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  instance_name_.Swap(&other->instance_name_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
 }
 
-::google::protobuf::Metadata DeregistrationRequest::GetMetadata() const {
-  ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
-  return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
+::PROTOBUF_NAMESPACE_ID::Metadata DeregistrationRequest::GetMetadata() const {
+  return GetMetadataStatic();
 }
 
 
@@ -7790,36 +5356,30 @@ void DeregistrationRequest::InternalSwap(DeregistrationRequest* other) {
 
 void DeregistrationResult::InitAsDefaultInstance() {
 }
-class DeregistrationResult::HasBitSetters {
+class DeregistrationResult::_Internal {
  public:
 };
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int DeregistrationResult::kStatusFieldNumber;
-const int DeregistrationResult::kErrorMessageFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
 DeregistrationResult::DeregistrationResult()
-  : ::google::protobuf::Message(), _internal_metadata_(nullptr) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:muscle_manager_protocol.DeregistrationResult)
 }
 DeregistrationResult::DeregistrationResult(const DeregistrationResult& from)
-  : ::google::protobuf::Message(),
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
       _internal_metadata_(nullptr) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  error_message_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.error_message().size() > 0) {
-    error_message_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.error_message_);
+  error_message_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_error_message().empty()) {
+    error_message_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.error_message_);
   }
   status_ = from.status_;
   // @@protoc_insertion_point(copy_constructor:muscle_manager_protocol.DeregistrationResult)
 }
 
 void DeregistrationResult::SharedCtor() {
-  ::google::protobuf::internal::InitSCC(
-      &scc_info_DeregistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
-  error_message_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_DeregistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  error_message_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   status_ = 0;
 }
 
@@ -7829,205 +5389,97 @@ DeregistrationResult::~DeregistrationResult() {
 }
 
 void DeregistrationResult::SharedDtor() {
-  error_message_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  error_message_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 void DeregistrationResult::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
 const DeregistrationResult& DeregistrationResult::default_instance() {
-  ::google::protobuf::internal::InitSCC(&::scc_info_DeregistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_DeregistrationResult_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto.base);
   return *internal_default_instance();
 }
 
 
 void DeregistrationResult::Clear() {
 // @@protoc_insertion_point(message_clear_start:muscle_manager_protocol.DeregistrationResult)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  error_message_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  error_message_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   status_ = 0;
   _internal_metadata_.Clear();
 }
 
-#if GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-const char* DeregistrationResult::_InternalParse(const char* begin, const char* end, void* object,
-                  ::google::protobuf::internal::ParseContext* ctx) {
-  auto msg = static_cast<DeregistrationResult*>(object);
-  ::google::protobuf::int32 size; (void)size;
-  int depth; (void)depth;
-  ::google::protobuf::uint32 tag;
-  ::google::protobuf::internal::ParseFunc parser_till_end; (void)parser_till_end;
-  auto ptr = begin;
-  while (ptr < end) {
-    ptr = ::google::protobuf::io::Parse32(ptr, &tag);
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+const char* DeregistrationResult::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
     switch (tag >> 3) {
       // .muscle_manager_protocol.ResultStatus status = 1;
-      case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 8) goto handle_unusual;
-        ::google::protobuf::uint64 val = ::google::protobuf::internal::ReadVarint(&ptr);
-        msg->set_status(static_cast<::muscle_manager_protocol::ResultStatus>(val));
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        break;
-      }
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          CHK_(ptr);
+          _internal_set_status(static_cast<::muscle_manager_protocol::ResultStatus>(val));
+        } else goto handle_unusual;
+        continue;
       // string error_message = 2;
-      case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) != 18) goto handle_unusual;
-        ptr = ::google::protobuf::io::ReadSize(ptr, &size);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ctx->extra_parse_data().SetFieldName("muscle_manager_protocol.DeregistrationResult.error_message");
-        object = msg->mutable_error_message();
-        if (size > end - ptr + ::google::protobuf::internal::ParseContext::kSlopBytes) {
-          parser_till_end = ::google::protobuf::internal::GreedyStringParserUTF8;
-          goto string_till_end;
-        }
-        GOOGLE_PROTOBUF_PARSER_ASSERT(::google::protobuf::internal::StringCheckUTF8(ptr, size, ctx));
-        ::google::protobuf::internal::InlineGreedyStringParser(object, ptr, size, ctx);
-        ptr += size;
-        break;
-      }
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_error_message(), ptr, ctx, "muscle_manager_protocol.DeregistrationResult.error_message");
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
       default: {
       handle_unusual:
         if ((tag & 7) == 4 || tag == 0) {
-          ctx->EndGroup(tag);
-          return ptr;
+          ctx->SetLastTag(tag);
+          goto success;
         }
-        auto res = UnknownFieldParse(tag, {_InternalParse, msg},
-          ptr, end, msg->_internal_metadata_.mutable_unknown_fields(), ctx);
-        ptr = res.first;
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        if (res.second) return ptr;
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
       }
     }  // switch
   }  // while
-  return ptr;
-string_till_end:
-  static_cast<::std::string*>(object)->clear();
-  static_cast<::std::string*>(object)->reserve(size);
-  goto len_delim_till_end;
-len_delim_till_end:
-  return ctx->StoreAndTailCall(ptr, end, {_InternalParse, msg},
-                               {parser_till_end, object}, size);
-}
-#else  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-bool DeregistrationResult::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!PROTOBUF_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:muscle_manager_protocol.DeregistrationResult)
-  for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // .muscle_manager_protocol.ResultStatus status = 1;
-      case 1: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (8 & 0xFF)) {
-          int value = 0;
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
-                 input, &value)));
-          set_status(static_cast< ::muscle_manager_protocol::ResultStatus >(value));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // string error_message = 2;
-      case 2: {
-        if (static_cast< ::google::protobuf::uint8>(tag) == (18 & 0xFF)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_error_message()));
-          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->error_message().data(), static_cast<int>(this->error_message().length()),
-            ::google::protobuf::internal::WireFormatLite::PARSE,
-            "muscle_manager_protocol.DeregistrationResult.error_message"));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      default: {
-      handle_unusual:
-        if (tag == 0) {
-          goto success;
-        }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, _internal_metadata_.mutable_unknown_fields()));
-        break;
-      }
-    }
-  }
 success:
-  // @@protoc_insertion_point(parse_success:muscle_manager_protocol.DeregistrationResult)
-  return true;
+  return ptr;
 failure:
-  // @@protoc_insertion_point(parse_failure:muscle_manager_protocol.DeregistrationResult)
-  return false;
-#undef DO_
-}
-#endif  // GOOGLE_PROTOBUF_ENABLE_EXPERIMENTAL_PARSER
-
-void DeregistrationResult::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:muscle_manager_protocol.DeregistrationResult)
-  ::google::protobuf::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // .muscle_manager_protocol.ResultStatus status = 1;
-  if (this->status() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteEnum(
-      1, this->status(), output);
-  }
-
-  // string error_message = 2;
-  if (this->error_message().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->error_message().data(), static_cast<int>(this->error_message().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-      "muscle_manager_protocol.DeregistrationResult.error_message");
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      2, this->error_message(), output);
-  }
-
-  if (_internal_metadata_.have_unknown_fields()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        _internal_metadata_.unknown_fields(), output);
-  }
-  // @@protoc_insertion_point(serialize_end:muscle_manager_protocol.DeregistrationResult)
+  ptr = nullptr;
+  goto success;
+#undef CHK_
 }
 
-::google::protobuf::uint8* DeregistrationResult::InternalSerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::PROTOBUF_NAMESPACE_ID::uint8* DeregistrationResult::InternalSerializeWithCachedSizesToArray(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:muscle_manager_protocol.DeregistrationResult)
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   // .muscle_manager_protocol.ResultStatus status = 1;
   if (this->status() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      1, this->status(), target);
+    stream->EnsureSpace(&target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteEnumToArray(
+      1, this->_internal_status(), target);
   }
 
   // string error_message = 2;
   if (this->error_message().size() > 0) {
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->error_message().data(), static_cast<int>(this->error_message().length()),
-      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_error_message().data(), static_cast<int>(this->_internal_error_message().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "muscle_manager_protocol.DeregistrationResult.error_message");
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        2, this->error_message(), target);
+    target = stream->WriteStringMaybeAliased(
+        2, this->_internal_error_message(), target);
   }
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:muscle_manager_protocol.DeregistrationResult)
   return target;
@@ -8037,42 +5489,41 @@ size_t DeregistrationResult::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:muscle_manager_protocol.DeregistrationResult)
   size_t total_size = 0;
 
-  if (_internal_metadata_.have_unknown_fields()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        _internal_metadata_.unknown_fields());
-  }
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   // string error_message = 2;
   if (this->error_message().size() > 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->error_message());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_error_message());
   }
 
   // .muscle_manager_protocol.ResultStatus status = 1;
   if (this->status() != 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::EnumSize(this->status());
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::EnumSize(this->_internal_status());
   }
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
 }
 
-void DeregistrationResult::MergeFrom(const ::google::protobuf::Message& from) {
+void DeregistrationResult::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:muscle_manager_protocol.DeregistrationResult)
   GOOGLE_DCHECK_NE(&from, this);
   const DeregistrationResult* source =
-      ::google::protobuf::DynamicCastToGenerated<DeregistrationResult>(
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<DeregistrationResult>(
           &from);
   if (source == nullptr) {
   // @@protoc_insertion_point(generalized_merge_from_cast_fail:muscle_manager_protocol.DeregistrationResult)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:muscle_manager_protocol.DeregistrationResult)
     MergeFrom(*source);
@@ -8083,19 +5534,19 @@ void DeregistrationResult::MergeFrom(const DeregistrationResult& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:muscle_manager_protocol.DeregistrationResult)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::google::protobuf::uint32 cached_has_bits = 0;
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (from.error_message().size() > 0) {
 
-    error_message_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.error_message_);
+    error_message_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.error_message_);
   }
   if (from.status() != 0) {
-    set_status(from.status());
+    _internal_set_status(from._internal_status());
   }
 }
 
-void DeregistrationResult::CopyFrom(const ::google::protobuf::Message& from) {
+void DeregistrationResult::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 // @@protoc_insertion_point(generalized_copy_from_start:muscle_manager_protocol.DeregistrationResult)
   if (&from == this) return;
   Clear();
@@ -8113,28 +5564,22 @@ bool DeregistrationResult::IsInitialized() const {
   return true;
 }
 
-void DeregistrationResult::Swap(DeregistrationResult* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
 void DeregistrationResult::InternalSwap(DeregistrationResult* other) {
   using std::swap;
   _internal_metadata_.Swap(&other->_internal_metadata_);
-  error_message_.Swap(&other->error_message_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  error_message_.Swap(&other->error_message_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   swap(status_, other->status_);
 }
 
-::google::protobuf::Metadata DeregistrationResult::GetMetadata() const {
-  ::google::protobuf::internal::AssignDescriptors(&::assign_descriptors_table_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto);
-  return ::file_level_metadata_muscle_5fmanager_5fprotocol_2fmuscle_5fmanager_5fprotocol_2eproto[kIndexInFileMessages];
+::PROTOBUF_NAMESPACE_ID::Metadata DeregistrationResult::GetMetadata() const {
+  return GetMetadataStatic();
 }
 
 
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace muscle_manager_protocol
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 template<> PROTOBUF_NOINLINE ::muscle_manager_protocol::LogMessage* Arena::CreateMaybeMessage< ::muscle_manager_protocol::LogMessage >(Arena* arena) {
   return Arena::CreateInternal< ::muscle_manager_protocol::LogMessage >(arena);
 }
@@ -8195,8 +5640,7 @@ template<> PROTOBUF_NOINLINE ::muscle_manager_protocol::DeregistrationRequest* A
 template<> PROTOBUF_NOINLINE ::muscle_manager_protocol::DeregistrationResult* Arena::CreateMaybeMessage< ::muscle_manager_protocol::DeregistrationResult >(Arena* arena) {
   return Arena::CreateInternal< ::muscle_manager_protocol::DeregistrationResult >(arena);
 }
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 // @@protoc_insertion_point(global_scope)
 #include <google/protobuf/port_undef.inc>

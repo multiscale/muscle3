@@ -2,5 +2,6 @@
 !.gitignore
 !Makefile
 !libmuscle.version
+!libmuscle_mpi.version
 !libmuscle.version.in
 !tests

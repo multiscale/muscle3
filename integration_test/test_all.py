@@ -2,11 +2,12 @@ from collections import OrderedDict
 import sys
 from typing import List
 
+import numpy as np
 import pytest
 from ymmsl import (ComputeElement, Conduit, Configuration, Model, Operator,
                    Reference, Settings)
 
-from libmuscle import Instance, Message
+from libmuscle import Grid, Instance, Message
 from libmuscle.runner import run_simulation
 
 
@@ -29,7 +30,11 @@ def macro():
         # s/b
         for slot in range(10):
             msg = instance.receive('in', slot)
-            assert msg.data == 'testing back'
+            assert msg.data['string'] == 'testing back'
+            assert msg.data['int'] == 42
+            assert msg.data['float'] == 3.1416
+            assert msg.data['grid'].array.dtype == np.float64
+            assert msg.data['grid'].array[0, 1] == 34.0
 
 
 def micro():
@@ -49,7 +54,12 @@ def micro():
         assert msg.data == 'testing'
 
         # o_f
-        instance.send('out', Message(0.1, None, 'testing back'))
+        result = {
+                'string': 'testing back',
+                'int': 42,
+                'float': 3.1416,
+                'grid': Grid(np.array([[12.0, 34.0, 56.0], [1.0, 2.0, 3.0]]))}
+        instance.send('out', Message(0.1, None, result))
 
 
 def test_all(log_file_in_tmpdir):

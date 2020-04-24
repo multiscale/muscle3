@@ -1,5 +1,6 @@
 // Template implementation. Do not include directly!
 
+#include <cstdint>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -62,9 +63,7 @@ void Data::init_dict_(uint32_t offset, std::string const & key, DataConstRef con
                 Args const & ... args)
 {
     init_dict_(offset + 1, args...);
-    mp_obj_->via.map.ptr[offset].key = msgpack::object(key, *mp_zones_->front());
-    mp_obj_->via.map.ptr[offset].val = msgpack::object(value, *mp_zones_->front());
-    mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
+    set_dict_item_(offset, key, value);
 }
 
 template <typename... Args>
@@ -72,9 +71,7 @@ void Data::init_dict_(uint32_t offset, std::string const & key, Data const & val
                 Args const & ... args)
 {
     init_dict_(offset + 1, args...);
-    mp_obj_->via.map.ptr[offset].key = msgpack::object(key, *mp_zones_->front());
-    mp_obj_->via.map.ptr[offset].val = msgpack::object(value, *mp_zones_->front());
-    mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
+    set_dict_item_(offset, key, value);
 }
 
 template <typename Arg, typename... Args>

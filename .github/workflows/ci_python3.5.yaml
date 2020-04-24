@@ -1,0 +1,19 @@
+# Run Continuous Integration on every push
+# This version tests only Python, but on all supported versions of it.
+name: python_compatibility_3.5
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Cache Python 3.5 eggs
+      uses: actions/cache@v1
+      with:
+        path: ${{ github.workspace }}/.eggs
+        key: python-compatibility-3.5-eggs
+
+    - name: Run Python tests on 3.5 latest
+      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3" python:3.5 /bin/bash -c 'cd /home/muscle3 && pip install ymmsl==0.10.1 && make test_python_only'

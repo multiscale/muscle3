@@ -1,6 +1,7 @@
 import socketserver as ss
 import threading
-from typing import cast, List, Optional, Tuple, Type
+from typing import cast, List, Optional, Tuple
+from typing_extensions import Type
 
 import msgpack
 import netifaces

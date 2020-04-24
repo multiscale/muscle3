@@ -14,7 +14,6 @@ program reaction
     type(LIBMUSCLE_Data) :: sdata
 
     real (selected_real_kind(15)) :: t_cur, t_max, dt, k
-    integer (LIBMUSCLE_size) :: i, U_size
     real (selected_real_kind(15)), dimension(:), allocatable :: U
 
 
@@ -32,14 +31,8 @@ program reaction
 
         rmsg = LIBMUSCLE_Instance_receive(instance, 'initial_state')
         rdata = LIBMUSCLE_Message_get_data(rmsg)
-
-        U_size = LIBMUSCLE_DataConstRef_size(rdata)
-        allocate (U(U_size))
-        do i = 1, U_size
-            item = LIBMUSCLE_DataConstRef_get_item(rdata, i)
-            U(i) = LIBMUSCLE_DataConstRef_as_real8(item)
-            call LIBMUSCLE_DataConstRef_free(item)
-        end do
+        allocate (U(LIBMUSCLE_DataConstRef_size(rdata)))
+        call LIBMUSCLE_DataConstRef_elements(rdata, U)
         call LIBMUSCLE_DataConstRef_free(rdata)
 
         t_cur = LIBMUSCLE_Message_timestamp(rmsg)
@@ -55,14 +48,9 @@ program reaction
         end do
 
         ! O_F
-        sdata = LIBMUSCLE_Data_create_nils(U_size)
-        do i = 1, U_size
-            call LIBMUSCLE_Data_set_item(sdata, i, U(i))
-        end do
-
+        sdata = LIBMUSCLE_Data_create_grid(U, 'x')
         smsg = LIBMUSCLE_Message_create(t_cur, sdata)
         call LIBMUSCLE_Instance_send(instance, 'final_state', smsg)
-
         call LIBMUSCLE_Message_free(smsg)
         call LIBMUSCLE_Data_free(sdata)
         deallocate (U)

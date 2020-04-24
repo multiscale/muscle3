@@ -2,13 +2,9 @@
 all: protobuf
 
 .PHONY: install
-ifdef protobuf_VERSION
 install: protobuf
 	mkdir -p $(PREFIX)/lib
-	cp -ra protobuf/lib/* $(PREFIX)/lib/
-else
-install:
-endif
+	cp -ra protobuf/* $(PREFIX)/
 
 .PHONY: clean
 clean:

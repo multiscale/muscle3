@@ -174,7 +174,7 @@ def _split_reference(ref: Reference) -> Tuple[Reference, List[int]]:
     i = 0
     while i < len(ref) and isinstance(ref[i], Identifier):
         i += 1
-    name = ref[:i]
+    name = cast(Reference, ref[:i])
 
     while i < len(ref) and isinstance(ref[i], int):
         index.append(cast(int, ref[i]))

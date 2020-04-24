@@ -2,13 +2,9 @@
 all: c-ares
 
 .PHONY: install
-ifdef c-ares_VERSION
 install: c-ares
 	mkdir -p $(PREFIX)/lib
 	cp -ra c-ares/lib/* $(PREFIX)/lib/
-else
-install:
-endif
 
 .PHONY: clean
 clean:

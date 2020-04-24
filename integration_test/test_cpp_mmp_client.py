@@ -14,6 +14,8 @@ from libmuscle.manager.topology_store import TopologyStore
 from libmuscle.mmp_client import MMPClient
 from libmuscle.operator import Operator
 
+from .conftest import skip_if_python_only
+
 
 def do_mmp_client_test(caplog):
     ymmsl_text = (
@@ -80,7 +82,6 @@ def do_mmp_client_test(caplog):
     result = subprocess.run([str(cpp_test_client)], env=env)
 
     # check that C++-side checks were successful
-    print(result.stderr, flush=True)
     assert result.returncode == 0
 
     # check submit_log_message
@@ -104,6 +105,7 @@ def do_mmp_client_test(caplog):
     server.stop()
 
 
+@skip_if_python_only
 def test_mmp_client(log_file_in_tmpdir, caplog):
     process = mp.Process(target=do_mmp_client_test, args=(caplog,))
     process.start()

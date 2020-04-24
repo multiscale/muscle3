@@ -25,11 +25,11 @@ void YMMSL_Settings_free_(std::intptr_t self) {
     return;
 }
 
-int YMMSL_Settings_equals_(std::intptr_t self, std::intptr_t other) {
+bool YMMSL_Settings_equals_(std::intptr_t self, std::intptr_t other) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     Settings * other_p = reinterpret_cast<Settings *>(other);
     bool result = ((*self_p) == *other_p);
-    return result ? 1 : 0;
+    return result;
 }
 
 std::size_t YMMSL_Settings_size_(std::intptr_t self) {
@@ -38,19 +38,19 @@ std::size_t YMMSL_Settings_size_(std::intptr_t self) {
     return result;
 }
 
-int YMMSL_Settings_empty_(std::intptr_t self) {
+bool YMMSL_Settings_empty_(std::intptr_t self) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     bool result = self_p->empty();
-    return result ? 1 : 0;
+    return result;
 }
 
-int YMMSL_Settings_is_a_character_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool YMMSL_Settings_is_a_character_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
     try {
         *err_code = 0;
         bool result = self_p->at(key_s).is_a<std::string>();
-        return result ? 1 : 0;
+        return result;
     }
     catch (std::domain_error const & e) {
         *err_code = 1;
@@ -89,13 +89,13 @@ int YMMSL_Settings_is_a_character_(std::intptr_t self, char * key, std::size_t k
     }
 }
 
-int YMMSL_Settings_is_a_int8_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool YMMSL_Settings_is_a_int8_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
     try {
         *err_code = 0;
         bool result = self_p->at(key_s).is_a<int64_t>();
-        return result ? 1 : 0;
+        return result;
     }
     catch (std::domain_error const & e) {
         *err_code = 1;
@@ -134,13 +134,13 @@ int YMMSL_Settings_is_a_int8_(std::intptr_t self, char * key, std::size_t key_si
     }
 }
 
-int YMMSL_Settings_is_a_real8_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool YMMSL_Settings_is_a_real8_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
     try {
         *err_code = 0;
         bool result = self_p->at(key_s).is_a<double>();
-        return result ? 1 : 0;
+        return result;
     }
     catch (std::domain_error const & e) {
         *err_code = 1;
@@ -179,13 +179,13 @@ int YMMSL_Settings_is_a_real8_(std::intptr_t self, char * key, std::size_t key_s
     }
 }
 
-int YMMSL_Settings_is_a_logical_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool YMMSL_Settings_is_a_logical_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
     try {
         *err_code = 0;
         bool result = self_p->at(key_s).is_a<bool>();
-        return result ? 1 : 0;
+        return result;
     }
     catch (std::domain_error const & e) {
         *err_code = 1;
@@ -224,13 +224,13 @@ int YMMSL_Settings_is_a_logical_(std::intptr_t self, char * key, std::size_t key
     }
 }
 
-int YMMSL_Settings_is_a_real8array_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool YMMSL_Settings_is_a_real8array_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
     try {
         *err_code = 0;
         bool result = self_p->at(key_s).is_a<std::vector<double>>();
-        return result ? 1 : 0;
+        return result;
     }
     catch (std::domain_error const & e) {
         *err_code = 1;
@@ -269,13 +269,13 @@ int YMMSL_Settings_is_a_real8array_(std::intptr_t self, char * key, std::size_t 
     }
 }
 
-int YMMSL_Settings_is_a_real8array2_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool YMMSL_Settings_is_a_real8array2_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
     try {
         *err_code = 0;
         bool result = self_p->at(key_s).is_a<std::vector<std::vector<double>>>();
-        return result ? 1 : 0;
+        return result;
     }
     catch (std::domain_error const & e) {
         *err_code = 1;
@@ -336,10 +336,10 @@ void YMMSL_Settings_set_real8_(std::intptr_t self, char * key, std::size_t key_s
     return;
 }
 
-void YMMSL_Settings_set_logical_(std::intptr_t self, char * key, std::size_t key_size, int value) {
+void YMMSL_Settings_set_logical_(std::intptr_t self, char * key, std::size_t key_size, bool value) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
-    (*self_p)[key_s] = value != 0;
+    (*self_p)[key_s] = value;
     return;
 }
 
@@ -501,13 +501,13 @@ double YMMSL_Settings_get_as_real8_(std::intptr_t self, char * key, std::size_t 
     }
 }
 
-int YMMSL_Settings_get_as_logical_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool YMMSL_Settings_get_as_logical_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
     try {
         *err_code = 0;
         bool result = self_p->at(key_s).as<bool>();
-        return result ? 1 : 0;
+        return result;
     }
     catch (std::domain_error const & e) {
         *err_code = 1;
@@ -652,11 +652,11 @@ void YMMSL_Settings_get_as_real8array2_(std::intptr_t self, char * key, std::siz
     }
 }
 
-int YMMSL_Settings_contains_(std::intptr_t self, char * key, std::size_t key_size) {
+bool YMMSL_Settings_contains_(std::intptr_t self, char * key, std::size_t key_size) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
     bool result = self_p->contains(key_s);
-    return result ? 1 : 0;
+    return result;
 }
 
 std::size_t YMMSL_Settings_erase_(std::intptr_t self, char * key, std::size_t key_size) {

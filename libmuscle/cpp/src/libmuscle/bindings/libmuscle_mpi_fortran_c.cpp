@@ -26,8 +26,8 @@ std::intptr_t LIBMUSCLE_DataConstRef_create_nil_() {
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_logical_(int value) {
-    DataConstRef * result = new DataConstRef(value != 0);
+std::intptr_t LIBMUSCLE_DataConstRef_create_logical_(bool value) {
+    DataConstRef * result = new DataConstRef(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
@@ -79,94 +79,349 @@ std::intptr_t LIBMUSCLE_DataConstRef_create_copy_(std::intptr_t value) {
     return reinterpret_cast<std::intptr_t>(result);
 }
 
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_logical_n_(
+        bool * data_array,
+        std::size_t * data_array_shape,
+        std::size_t data_array_ndims,
+        char * index_name_1, std::size_t index_name_1_size,
+        char * index_name_2, std::size_t index_name_2_size,
+        char * index_name_3, std::size_t index_name_3_size,
+        char * index_name_4, std::size_t index_name_4_size,
+        char * index_name_5, std::size_t index_name_5_size,
+        char * index_name_6, std::size_t index_name_6_size,
+        char * index_name_7, std::size_t index_name_7_size
+) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+
+    std::vector<std::string> names_v;
+    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    if (data_array_ndims >= 2u)
+        names_v.push_back(std::string(index_name_2, index_name_2_size));
+    if (data_array_ndims >= 3u)
+        names_v.push_back(std::string(index_name_3, index_name_3_size));
+    if (data_array_ndims >= 4u)
+        names_v.push_back(std::string(index_name_4, index_name_4_size));
+    if (data_array_ndims >= 5u)
+        names_v.push_back(std::string(index_name_5, index_name_5_size));
+    if (data_array_ndims >= 6u)
+        names_v.push_back(std::string(index_name_6, index_name_6_size));
+    if (data_array_ndims >= 7u)
+        names_v.push_back(std::string(index_name_7, index_name_7_size));
+
+    Data * result = new Data(Data::grid(
+            data_array_p, data_array_shape_v,
+            names_v, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_int4_n_(
+        int32_t * data_array,
+        std::size_t * data_array_shape,
+        std::size_t data_array_ndims,
+        char * index_name_1, std::size_t index_name_1_size,
+        char * index_name_2, std::size_t index_name_2_size,
+        char * index_name_3, std::size_t index_name_3_size,
+        char * index_name_4, std::size_t index_name_4_size,
+        char * index_name_5, std::size_t index_name_5_size,
+        char * index_name_6, std::size_t index_name_6_size,
+        char * index_name_7, std::size_t index_name_7_size
+) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+
+    std::vector<std::string> names_v;
+    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    if (data_array_ndims >= 2u)
+        names_v.push_back(std::string(index_name_2, index_name_2_size));
+    if (data_array_ndims >= 3u)
+        names_v.push_back(std::string(index_name_3, index_name_3_size));
+    if (data_array_ndims >= 4u)
+        names_v.push_back(std::string(index_name_4, index_name_4_size));
+    if (data_array_ndims >= 5u)
+        names_v.push_back(std::string(index_name_5, index_name_5_size));
+    if (data_array_ndims >= 6u)
+        names_v.push_back(std::string(index_name_6, index_name_6_size));
+    if (data_array_ndims >= 7u)
+        names_v.push_back(std::string(index_name_7, index_name_7_size));
+
+    Data * result = new Data(Data::grid(
+            data_array_p, data_array_shape_v,
+            names_v, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_int8_n_(
+        int64_t * data_array,
+        std::size_t * data_array_shape,
+        std::size_t data_array_ndims,
+        char * index_name_1, std::size_t index_name_1_size,
+        char * index_name_2, std::size_t index_name_2_size,
+        char * index_name_3, std::size_t index_name_3_size,
+        char * index_name_4, std::size_t index_name_4_size,
+        char * index_name_5, std::size_t index_name_5_size,
+        char * index_name_6, std::size_t index_name_6_size,
+        char * index_name_7, std::size_t index_name_7_size
+) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+
+    std::vector<std::string> names_v;
+    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    if (data_array_ndims >= 2u)
+        names_v.push_back(std::string(index_name_2, index_name_2_size));
+    if (data_array_ndims >= 3u)
+        names_v.push_back(std::string(index_name_3, index_name_3_size));
+    if (data_array_ndims >= 4u)
+        names_v.push_back(std::string(index_name_4, index_name_4_size));
+    if (data_array_ndims >= 5u)
+        names_v.push_back(std::string(index_name_5, index_name_5_size));
+    if (data_array_ndims >= 6u)
+        names_v.push_back(std::string(index_name_6, index_name_6_size));
+    if (data_array_ndims >= 7u)
+        names_v.push_back(std::string(index_name_7, index_name_7_size));
+
+    Data * result = new Data(Data::grid(
+            data_array_p, data_array_shape_v,
+            names_v, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_real4_n_(
+        float * data_array,
+        std::size_t * data_array_shape,
+        std::size_t data_array_ndims,
+        char * index_name_1, std::size_t index_name_1_size,
+        char * index_name_2, std::size_t index_name_2_size,
+        char * index_name_3, std::size_t index_name_3_size,
+        char * index_name_4, std::size_t index_name_4_size,
+        char * index_name_5, std::size_t index_name_5_size,
+        char * index_name_6, std::size_t index_name_6_size,
+        char * index_name_7, std::size_t index_name_7_size
+) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+
+    std::vector<std::string> names_v;
+    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    if (data_array_ndims >= 2u)
+        names_v.push_back(std::string(index_name_2, index_name_2_size));
+    if (data_array_ndims >= 3u)
+        names_v.push_back(std::string(index_name_3, index_name_3_size));
+    if (data_array_ndims >= 4u)
+        names_v.push_back(std::string(index_name_4, index_name_4_size));
+    if (data_array_ndims >= 5u)
+        names_v.push_back(std::string(index_name_5, index_name_5_size));
+    if (data_array_ndims >= 6u)
+        names_v.push_back(std::string(index_name_6, index_name_6_size));
+    if (data_array_ndims >= 7u)
+        names_v.push_back(std::string(index_name_7, index_name_7_size));
+
+    Data * result = new Data(Data::grid(
+            data_array_p, data_array_shape_v,
+            names_v, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_DataConstRef_create_grid_real8_n_(
+        double * data_array,
+        std::size_t * data_array_shape,
+        std::size_t data_array_ndims,
+        char * index_name_1, std::size_t index_name_1_size,
+        char * index_name_2, std::size_t index_name_2_size,
+        char * index_name_3, std::size_t index_name_3_size,
+        char * index_name_4, std::size_t index_name_4_size,
+        char * index_name_5, std::size_t index_name_5_size,
+        char * index_name_6, std::size_t index_name_6_size,
+        char * index_name_7, std::size_t index_name_7_size
+) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+
+    std::vector<std::string> names_v;
+    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    if (data_array_ndims >= 2u)
+        names_v.push_back(std::string(index_name_2, index_name_2_size));
+    if (data_array_ndims >= 3u)
+        names_v.push_back(std::string(index_name_3, index_name_3_size));
+    if (data_array_ndims >= 4u)
+        names_v.push_back(std::string(index_name_4, index_name_4_size));
+    if (data_array_ndims >= 5u)
+        names_v.push_back(std::string(index_name_5, index_name_5_size));
+    if (data_array_ndims >= 6u)
+        names_v.push_back(std::string(index_name_6, index_name_6_size));
+    if (data_array_ndims >= 7u)
+        names_v.push_back(std::string(index_name_7, index_name_7_size));
+
+    Data * result = new Data(Data::grid(
+            data_array_p, data_array_shape_v,
+            names_v, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
 void LIBMUSCLE_DataConstRef_free_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     delete self_p;
     return;
 }
 
-int LIBMUSCLE_DataConstRef_is_a_logical_(std::intptr_t self) {
+bool LIBMUSCLE_DataConstRef_is_a_logical_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a<bool>();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_DataConstRef_is_a_character_(std::intptr_t self) {
+bool LIBMUSCLE_DataConstRef_is_a_character_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a<std::string>();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_DataConstRef_is_a_int_(std::intptr_t self) {
+bool LIBMUSCLE_DataConstRef_is_a_int_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a<int>();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_DataConstRef_is_a_int1_(std::intptr_t self) {
+bool LIBMUSCLE_DataConstRef_is_a_int1_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a<char>();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_DataConstRef_is_a_int2_(std::intptr_t self) {
+bool LIBMUSCLE_DataConstRef_is_a_int2_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a<int16_t>();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_DataConstRef_is_a_int4_(std::intptr_t self) {
+bool LIBMUSCLE_DataConstRef_is_a_int4_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a<int32_t>();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_DataConstRef_is_a_int8_(std::intptr_t self) {
+bool LIBMUSCLE_DataConstRef_is_a_int8_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a<int64_t>();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_DataConstRef_is_a_real4_(std::intptr_t self) {
+bool LIBMUSCLE_DataConstRef_is_a_real4_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a<float>();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_DataConstRef_is_a_real8_(std::intptr_t self) {
+bool LIBMUSCLE_DataConstRef_is_a_real8_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a<double>();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_DataConstRef_is_a_dict_(std::intptr_t self) {
+bool LIBMUSCLE_DataConstRef_is_a_dict_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a_dict();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_DataConstRef_is_a_list_(std::intptr_t self) {
+bool LIBMUSCLE_DataConstRef_is_a_list_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a_list();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_DataConstRef_is_a_byte_array_(std::intptr_t self) {
+bool LIBMUSCLE_DataConstRef_is_a_grid_of_logical_(std::intptr_t self) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    bool result = self_p->is_a_grid_of<bool>();
+    return result;
+}
+
+bool LIBMUSCLE_DataConstRef_is_a_grid_of_real4_(std::intptr_t self) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    bool result = self_p->is_a_grid_of<float>();
+    return result;
+}
+
+bool LIBMUSCLE_DataConstRef_is_a_grid_of_real8_(std::intptr_t self) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    bool result = self_p->is_a_grid_of<double>();
+    return result;
+}
+
+bool LIBMUSCLE_DataConstRef_is_a_grid_of_int4_(std::intptr_t self) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    bool result = self_p->is_a_grid_of<int32_t>();
+    return result;
+}
+
+bool LIBMUSCLE_DataConstRef_is_a_grid_of_int8_(std::intptr_t self) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    bool result = self_p->is_a_grid_of<int64_t>();
+    return result;
+}
+
+bool LIBMUSCLE_DataConstRef_is_a_byte_array_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a_byte_array();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_DataConstRef_is_nil_(std::intptr_t self) {
+bool LIBMUSCLE_DataConstRef_is_nil_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_nil();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_DataConstRef_is_a_settings_(std::intptr_t self) {
+bool LIBMUSCLE_DataConstRef_is_a_settings_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a<Settings>();
-    return result ? 1 : 0;
+    return result;
 }
 
 std::size_t LIBMUSCLE_DataConstRef_size_(std::intptr_t self) {
@@ -175,12 +430,12 @@ std::size_t LIBMUSCLE_DataConstRef_size_(std::intptr_t self) {
     return result;
 }
 
-int LIBMUSCLE_DataConstRef_as_logical_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_DataConstRef_as_logical_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     try {
         *err_code = 0;
         bool result = self_p->as<bool>();
-        return result ? 1 : 0;
+        return result;
     }
     catch (std::domain_error const & e) {
         *err_code = 1;
@@ -692,13 +947,324 @@ std::intptr_t LIBMUSCLE_DataConstRef_get_item_by_index_(
     }
 }
 
+std::size_t LIBMUSCLE_DataConstRef_num_dims_(
+        std::intptr_t self,
+        int * err_code, char ** err_msg, std::size_t * err_msg_len
+) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        return self_p->shape().size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_shape_(std::intptr_t self, std::size_t ** shp, std::size_t * shp_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        static std::vector<std::size_t> result;
+        result = self_p->shape();
+        *shp = result.data();
+        *shp_size = result.size();
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_logical_(
+        std::intptr_t self,
+        std::size_t ndims,
+        bool ** elements,
+        std::size_t * elements_shape,
+        int * elements_format,
+        int * err_code, char ** err_msg, std::size_t * err_msg_len
+) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        if (self_p->shape().size() != ndims)
+            throw std::runtime_error("Grid does not have a matching number of dimensions.");
+        bool const * result = self_p->elements<bool>();
+        *elements = const_cast<bool *>(result);
+
+        for (std::size_t i = 0u; i < ndims; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_int4_(
+        std::intptr_t self,
+        std::size_t ndims,
+        int32_t ** elements,
+        std::size_t * elements_shape,
+        int * elements_format,
+        int * err_code, char ** err_msg, std::size_t * err_msg_len
+) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        if (self_p->shape().size() != ndims)
+            throw std::runtime_error("Grid does not have a matching number of dimensions.");
+        int32_t const * result = self_p->elements<int32_t>();
+        *elements = const_cast<int32_t *>(result);
+
+        for (std::size_t i = 0u; i < ndims; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_int8_(
+        std::intptr_t self,
+        std::size_t ndims,
+        int64_t ** elements,
+        std::size_t * elements_shape,
+        int * elements_format,
+        int * err_code, char ** err_msg, std::size_t * err_msg_len
+) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        if (self_p->shape().size() != ndims)
+            throw std::runtime_error("Grid does not have a matching number of dimensions.");
+        int64_t const * result = self_p->elements<int64_t>();
+        *elements = const_cast<int64_t *>(result);
+
+        for (std::size_t i = 0u; i < ndims; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_real4_(
+        std::intptr_t self,
+        std::size_t ndims,
+        float ** elements,
+        std::size_t * elements_shape,
+        int * elements_format,
+        int * err_code, char ** err_msg, std::size_t * err_msg_len
+) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        if (self_p->shape().size() != ndims)
+            throw std::runtime_error("Grid does not have a matching number of dimensions.");
+        float const * result = self_p->elements<float>();
+        *elements = const_cast<float *>(result);
+
+        for (std::size_t i = 0u; i < ndims; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_elements_real8_(
+        std::intptr_t self,
+        std::size_t ndims,
+        double ** elements,
+        std::size_t * elements_shape,
+        int * elements_format,
+        int * err_code, char ** err_msg, std::size_t * err_msg_len
+) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        if (self_p->shape().size() != ndims)
+            throw std::runtime_error("Grid does not have a matching number of dimensions.");
+        double const * result = self_p->elements<double>();
+        *elements = const_cast<double *>(result);
+
+        for (std::size_t i = 0u; i < ndims; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+bool LIBMUSCLE_DataConstRef_has_indexes_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        bool result = self_p->has_indexes();
+        return result;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_DataConstRef_index_(std::intptr_t self, std::size_t i, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    try {
+        *err_code = 0;
+        static std::string result;
+        result = self_p->indexes().at(i - 1);
+        *ret_val = const_cast<char*>(result.c_str());
+        *ret_val_size = result.size();
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
 std::intptr_t LIBMUSCLE_Data_create_nil_() {
     Data * result = new Data();
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_logical_(int value) {
-    Data * result = new Data(value != 0);
+std::intptr_t LIBMUSCLE_Data_create_logical_(bool value) {
+    Data * result = new Data(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
@@ -750,94 +1316,349 @@ std::intptr_t LIBMUSCLE_Data_create_copy_(std::intptr_t value) {
     return reinterpret_cast<std::intptr_t>(result);
 }
 
+std::intptr_t LIBMUSCLE_Data_create_grid_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+    Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_logical_n_(
+        bool * data_array,
+        std::size_t * data_array_shape,
+        std::size_t data_array_ndims,
+        char * index_name_1, std::size_t index_name_1_size,
+        char * index_name_2, std::size_t index_name_2_size,
+        char * index_name_3, std::size_t index_name_3_size,
+        char * index_name_4, std::size_t index_name_4_size,
+        char * index_name_5, std::size_t index_name_5_size,
+        char * index_name_6, std::size_t index_name_6_size,
+        char * index_name_7, std::size_t index_name_7_size
+) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<bool const * const>(data_array);
+
+    std::vector<std::string> names_v;
+    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    if (data_array_ndims >= 2u)
+        names_v.push_back(std::string(index_name_2, index_name_2_size));
+    if (data_array_ndims >= 3u)
+        names_v.push_back(std::string(index_name_3, index_name_3_size));
+    if (data_array_ndims >= 4u)
+        names_v.push_back(std::string(index_name_4, index_name_4_size));
+    if (data_array_ndims >= 5u)
+        names_v.push_back(std::string(index_name_5, index_name_5_size));
+    if (data_array_ndims >= 6u)
+        names_v.push_back(std::string(index_name_6, index_name_6_size));
+    if (data_array_ndims >= 7u)
+        names_v.push_back(std::string(index_name_7, index_name_7_size));
+
+    Data * result = new Data(Data::grid(
+            data_array_p, data_array_shape_v,
+            names_v, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_int4_n_(
+        int32_t * data_array,
+        std::size_t * data_array_shape,
+        std::size_t data_array_ndims,
+        char * index_name_1, std::size_t index_name_1_size,
+        char * index_name_2, std::size_t index_name_2_size,
+        char * index_name_3, std::size_t index_name_3_size,
+        char * index_name_4, std::size_t index_name_4_size,
+        char * index_name_5, std::size_t index_name_5_size,
+        char * index_name_6, std::size_t index_name_6_size,
+        char * index_name_7, std::size_t index_name_7_size
+) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int32_t const * const>(data_array);
+
+    std::vector<std::string> names_v;
+    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    if (data_array_ndims >= 2u)
+        names_v.push_back(std::string(index_name_2, index_name_2_size));
+    if (data_array_ndims >= 3u)
+        names_v.push_back(std::string(index_name_3, index_name_3_size));
+    if (data_array_ndims >= 4u)
+        names_v.push_back(std::string(index_name_4, index_name_4_size));
+    if (data_array_ndims >= 5u)
+        names_v.push_back(std::string(index_name_5, index_name_5_size));
+    if (data_array_ndims >= 6u)
+        names_v.push_back(std::string(index_name_6, index_name_6_size));
+    if (data_array_ndims >= 7u)
+        names_v.push_back(std::string(index_name_7, index_name_7_size));
+
+    Data * result = new Data(Data::grid(
+            data_array_p, data_array_shape_v,
+            names_v, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_int8_n_(
+        int64_t * data_array,
+        std::size_t * data_array_shape,
+        std::size_t data_array_ndims,
+        char * index_name_1, std::size_t index_name_1_size,
+        char * index_name_2, std::size_t index_name_2_size,
+        char * index_name_3, std::size_t index_name_3_size,
+        char * index_name_4, std::size_t index_name_4_size,
+        char * index_name_5, std::size_t index_name_5_size,
+        char * index_name_6, std::size_t index_name_6_size,
+        char * index_name_7, std::size_t index_name_7_size
+) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<int64_t const * const>(data_array);
+
+    std::vector<std::string> names_v;
+    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    if (data_array_ndims >= 2u)
+        names_v.push_back(std::string(index_name_2, index_name_2_size));
+    if (data_array_ndims >= 3u)
+        names_v.push_back(std::string(index_name_3, index_name_3_size));
+    if (data_array_ndims >= 4u)
+        names_v.push_back(std::string(index_name_4, index_name_4_size));
+    if (data_array_ndims >= 5u)
+        names_v.push_back(std::string(index_name_5, index_name_5_size));
+    if (data_array_ndims >= 6u)
+        names_v.push_back(std::string(index_name_6, index_name_6_size));
+    if (data_array_ndims >= 7u)
+        names_v.push_back(std::string(index_name_7, index_name_7_size));
+
+    Data * result = new Data(Data::grid(
+            data_array_p, data_array_shape_v,
+            names_v, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_real4_n_(
+        float * data_array,
+        std::size_t * data_array_shape,
+        std::size_t data_array_ndims,
+        char * index_name_1, std::size_t index_name_1_size,
+        char * index_name_2, std::size_t index_name_2_size,
+        char * index_name_3, std::size_t index_name_3_size,
+        char * index_name_4, std::size_t index_name_4_size,
+        char * index_name_5, std::size_t index_name_5_size,
+        char * index_name_6, std::size_t index_name_6_size,
+        char * index_name_7, std::size_t index_name_7_size
+) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<float const * const>(data_array);
+
+    std::vector<std::string> names_v;
+    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    if (data_array_ndims >= 2u)
+        names_v.push_back(std::string(index_name_2, index_name_2_size));
+    if (data_array_ndims >= 3u)
+        names_v.push_back(std::string(index_name_3, index_name_3_size));
+    if (data_array_ndims >= 4u)
+        names_v.push_back(std::string(index_name_4, index_name_4_size));
+    if (data_array_ndims >= 5u)
+        names_v.push_back(std::string(index_name_5, index_name_5_size));
+    if (data_array_ndims >= 6u)
+        names_v.push_back(std::string(index_name_6, index_name_6_size));
+    if (data_array_ndims >= 7u)
+        names_v.push_back(std::string(index_name_7, index_name_7_size));
+
+    Data * result = new Data(Data::grid(
+            data_array_p, data_array_shape_v,
+            names_v, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+std::intptr_t LIBMUSCLE_Data_create_grid_real8_n_(
+        double * data_array,
+        std::size_t * data_array_shape,
+        std::size_t data_array_ndims,
+        char * index_name_1, std::size_t index_name_1_size,
+        char * index_name_2, std::size_t index_name_2_size,
+        char * index_name_3, std::size_t index_name_3_size,
+        char * index_name_4, std::size_t index_name_4_size,
+        char * index_name_5, std::size_t index_name_5_size,
+        char * index_name_6, std::size_t index_name_6_size,
+        char * index_name_7, std::size_t index_name_7_size
+) {
+    std::vector<std::size_t> data_array_shape_v(
+            data_array_shape, data_array_shape + data_array_ndims);
+    auto data_array_p = const_cast<double const * const>(data_array);
+
+    std::vector<std::string> names_v;
+    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    if (data_array_ndims >= 2u)
+        names_v.push_back(std::string(index_name_2, index_name_2_size));
+    if (data_array_ndims >= 3u)
+        names_v.push_back(std::string(index_name_3, index_name_3_size));
+    if (data_array_ndims >= 4u)
+        names_v.push_back(std::string(index_name_4, index_name_4_size));
+    if (data_array_ndims >= 5u)
+        names_v.push_back(std::string(index_name_5, index_name_5_size));
+    if (data_array_ndims >= 6u)
+        names_v.push_back(std::string(index_name_6, index_name_6_size));
+    if (data_array_ndims >= 7u)
+        names_v.push_back(std::string(index_name_7, index_name_7_size));
+
+    Data * result = new Data(Data::grid(
+            data_array_p, data_array_shape_v,
+            names_v, libmuscle::StorageOrder::first_adjacent));
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
 void LIBMUSCLE_Data_free_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     delete self_p;
     return;
 }
 
-int LIBMUSCLE_Data_is_a_logical_(std::intptr_t self) {
+bool LIBMUSCLE_Data_is_a_logical_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<bool>();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_Data_is_a_character_(std::intptr_t self) {
+bool LIBMUSCLE_Data_is_a_character_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<std::string>();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_Data_is_a_int_(std::intptr_t self) {
+bool LIBMUSCLE_Data_is_a_int_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<int>();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_Data_is_a_int1_(std::intptr_t self) {
+bool LIBMUSCLE_Data_is_a_int1_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<char>();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_Data_is_a_int2_(std::intptr_t self) {
+bool LIBMUSCLE_Data_is_a_int2_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<int16_t>();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_Data_is_a_int4_(std::intptr_t self) {
+bool LIBMUSCLE_Data_is_a_int4_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<int32_t>();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_Data_is_a_int8_(std::intptr_t self) {
+bool LIBMUSCLE_Data_is_a_int8_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<int64_t>();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_Data_is_a_real4_(std::intptr_t self) {
+bool LIBMUSCLE_Data_is_a_real4_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<float>();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_Data_is_a_real8_(std::intptr_t self) {
+bool LIBMUSCLE_Data_is_a_real8_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<double>();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_Data_is_a_dict_(std::intptr_t self) {
+bool LIBMUSCLE_Data_is_a_dict_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a_dict();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_Data_is_a_list_(std::intptr_t self) {
+bool LIBMUSCLE_Data_is_a_list_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a_list();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_Data_is_a_byte_array_(std::intptr_t self) {
+bool LIBMUSCLE_Data_is_a_grid_of_logical_(std::intptr_t self) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    bool result = self_p->is_a_grid_of<bool>();
+    return result;
+}
+
+bool LIBMUSCLE_Data_is_a_grid_of_real4_(std::intptr_t self) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    bool result = self_p->is_a_grid_of<float>();
+    return result;
+}
+
+bool LIBMUSCLE_Data_is_a_grid_of_real8_(std::intptr_t self) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    bool result = self_p->is_a_grid_of<double>();
+    return result;
+}
+
+bool LIBMUSCLE_Data_is_a_grid_of_int4_(std::intptr_t self) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    bool result = self_p->is_a_grid_of<int32_t>();
+    return result;
+}
+
+bool LIBMUSCLE_Data_is_a_grid_of_int8_(std::intptr_t self) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    bool result = self_p->is_a_grid_of<int64_t>();
+    return result;
+}
+
+bool LIBMUSCLE_Data_is_a_byte_array_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a_byte_array();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_Data_is_nil_(std::intptr_t self) {
+bool LIBMUSCLE_Data_is_nil_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_nil();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_Data_is_a_settings_(std::intptr_t self) {
+bool LIBMUSCLE_Data_is_a_settings_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<Settings>();
-    return result ? 1 : 0;
+    return result;
 }
 
 std::size_t LIBMUSCLE_Data_size_(std::intptr_t self) {
@@ -846,12 +1667,12 @@ std::size_t LIBMUSCLE_Data_size_(std::intptr_t self) {
     return result;
 }
 
-int LIBMUSCLE_Data_as_logical_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_Data_as_logical_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
         bool result = self_p->as<bool>();
-        return result ? 1 : 0;
+        return result;
     }
     catch (std::domain_error const & e) {
         *err_code = 1;
@@ -1363,6 +2184,317 @@ std::intptr_t LIBMUSCLE_Data_get_item_by_index_(
     }
 }
 
+std::size_t LIBMUSCLE_Data_num_dims_(
+        std::intptr_t self,
+        int * err_code, char ** err_msg, std::size_t * err_msg_len
+) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        return self_p->shape().size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_shape_(std::intptr_t self, std::size_t ** shp, std::size_t * shp_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        static std::vector<std::size_t> result;
+        result = self_p->shape();
+        *shp = result.data();
+        *shp_size = result.size();
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_logical_(
+        std::intptr_t self,
+        std::size_t ndims,
+        bool ** elements,
+        std::size_t * elements_shape,
+        int * elements_format,
+        int * err_code, char ** err_msg, std::size_t * err_msg_len
+) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        if (self_p->shape().size() != ndims)
+            throw std::runtime_error("Grid does not have a matching number of dimensions.");
+        bool const * result = self_p->elements<bool>();
+        *elements = const_cast<bool *>(result);
+
+        for (std::size_t i = 0u; i < ndims; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_int4_(
+        std::intptr_t self,
+        std::size_t ndims,
+        int32_t ** elements,
+        std::size_t * elements_shape,
+        int * elements_format,
+        int * err_code, char ** err_msg, std::size_t * err_msg_len
+) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        if (self_p->shape().size() != ndims)
+            throw std::runtime_error("Grid does not have a matching number of dimensions.");
+        int32_t const * result = self_p->elements<int32_t>();
+        *elements = const_cast<int32_t *>(result);
+
+        for (std::size_t i = 0u; i < ndims; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_int8_(
+        std::intptr_t self,
+        std::size_t ndims,
+        int64_t ** elements,
+        std::size_t * elements_shape,
+        int * elements_format,
+        int * err_code, char ** err_msg, std::size_t * err_msg_len
+) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        if (self_p->shape().size() != ndims)
+            throw std::runtime_error("Grid does not have a matching number of dimensions.");
+        int64_t const * result = self_p->elements<int64_t>();
+        *elements = const_cast<int64_t *>(result);
+
+        for (std::size_t i = 0u; i < ndims; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_real4_(
+        std::intptr_t self,
+        std::size_t ndims,
+        float ** elements,
+        std::size_t * elements_shape,
+        int * elements_format,
+        int * err_code, char ** err_msg, std::size_t * err_msg_len
+) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        if (self_p->shape().size() != ndims)
+            throw std::runtime_error("Grid does not have a matching number of dimensions.");
+        float const * result = self_p->elements<float>();
+        *elements = const_cast<float *>(result);
+
+        for (std::size_t i = 0u; i < ndims; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_elements_real8_(
+        std::intptr_t self,
+        std::size_t ndims,
+        double ** elements,
+        std::size_t * elements_shape,
+        int * elements_format,
+        int * err_code, char ** err_msg, std::size_t * err_msg_len
+) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        if (self_p->shape().size() != ndims)
+            throw std::runtime_error("Grid does not have a matching number of dimensions.");
+        double const * result = self_p->elements<double>();
+        *elements = const_cast<double *>(result);
+
+        for (std::size_t i = 0u; i < ndims; ++i)
+            elements_shape[i] = self_p->shape()[i];
+
+        *elements_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+        return;
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+bool LIBMUSCLE_Data_has_indexes_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        bool result = self_p->has_indexes();
+        return result;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Data_index_(std::intptr_t self, std::size_t i, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    try {
+        *err_code = 0;
+        static std::string result;
+        result = self_p->indexes().at(i - 1);
+        *ret_val = const_cast<char*>(result.c_str());
+        *ret_val_size = result.size();
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
 std::intptr_t LIBMUSCLE_Data_create_dict_() {
     Data * result = new Data(Data::dict());
     return reinterpret_cast<std::intptr_t>(result);
@@ -1390,9 +2522,9 @@ std::intptr_t LIBMUSCLE_Data_create_byte_array_from_buf_(
    return reinterpret_cast<std::intptr_t>(result);
 }
 
-void LIBMUSCLE_Data_set_logical_(std::intptr_t self, int value) {
+void LIBMUSCLE_Data_set_logical_(std::intptr_t self, bool value) {
     Data * self_p = reinterpret_cast<Data *>(self);
-    *self_p = value != 0;
+    *self_p = value;
     return;
 }
 
@@ -1451,12 +2583,12 @@ void LIBMUSCLE_Data_set_nil_(std::intptr_t self) {
     *self_p = Data();
 }
 
-void LIBMUSCLE_Data_set_item_key_logical_(std::intptr_t self, char * key, std::size_t key_size, int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_Data_set_item_key_logical_(std::intptr_t self, char * key, std::size_t key_size, bool value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string key_s(key, key_size);
     try {
         *err_code = 0;
-        (*self_p)[key_s] = value != 0;
+        (*self_p)[key_s] = value;
         return;
     }
     catch (std::domain_error const & e) {
@@ -1858,11 +2990,11 @@ void LIBMUSCLE_Data_set_item_key_data_(std::intptr_t self, char * key, std::size
     }
 }
 
-void LIBMUSCLE_Data_set_item_index_logical_(std::intptr_t self, std::size_t i, int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_Data_set_item_index_logical_(std::intptr_t self, std::size_t i, bool value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
-        (*self_p)[i - 1u] = value != 0;
+        (*self_p)[i - 1u] = value;
         return;
     }
     catch (std::domain_error const & e) {
@@ -2434,10 +3566,10 @@ void LIBMUSCLE_Message_set_timestamp_(std::intptr_t self, double timestamp) {
     return;
 }
 
-int LIBMUSCLE_Message_has_next_timestamp_(std::intptr_t self) {
+bool LIBMUSCLE_Message_has_next_timestamp_(std::intptr_t self) {
     Message * self_p = reinterpret_cast<Message *>(self);
     bool result = self_p->has_next_timestamp();
-    return result ? 1 : 0;
+    return result;
 }
 
 double LIBMUSCLE_Message_next_timestamp_(std::intptr_t self) {
@@ -2478,10 +3610,10 @@ void LIBMUSCLE_Message_set_data_dcr_(std::intptr_t self, std::intptr_t data) {
     return;
 }
 
-int LIBMUSCLE_Message_has_settings_(std::intptr_t self) {
+bool LIBMUSCLE_Message_has_settings_(std::intptr_t self) {
     Message * self_p = reinterpret_cast<Message *>(self);
     bool result = self_p->has_settings();
-    return result ? 1 : 0;
+    return result;
 }
 
 std::intptr_t LIBMUSCLE_Message_get_settings_(std::intptr_t self) {
@@ -2534,16 +3666,16 @@ void LIBMUSCLE_Instance_free_(std::intptr_t self) {
     return;
 }
 
-int LIBMUSCLE_Instance_reuse_instance_default_(std::intptr_t self) {
+bool LIBMUSCLE_Instance_reuse_instance_default_(std::intptr_t self) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     bool result = self_p->reuse_instance();
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_Instance_reuse_instance_apply_(std::intptr_t self, int apply_overlay) {
+bool LIBMUSCLE_Instance_reuse_instance_apply_(std::intptr_t self, bool apply_overlay) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
-    bool result = self_p->reuse_instance(apply_overlay != 0);
-    return result ? 1 : 0;
+    bool result = self_p->reuse_instance(apply_overlay);
+    return result;
 }
 
 void LIBMUSCLE_Instance_error_shutdown_(std::intptr_t self, char * message, std::size_t message_size) {
@@ -2553,13 +3685,13 @@ void LIBMUSCLE_Instance_error_shutdown_(std::intptr_t self, char * message, std:
     return;
 }
 
-int LIBMUSCLE_Instance_is_setting_a_character_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_Instance_is_setting_a_character_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
         *err_code = 0;
         bool result = self_p->get_setting(name_s).is_a<std::string>();
-        return result ? 1 : 0;
+        return result;
     }
     catch (std::domain_error const & e) {
         *err_code = 1;
@@ -2598,13 +3730,13 @@ int LIBMUSCLE_Instance_is_setting_a_character_(std::intptr_t self, char * name, 
     }
 }
 
-int LIBMUSCLE_Instance_is_setting_a_int8_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_Instance_is_setting_a_int8_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
         *err_code = 0;
         bool result = self_p->get_setting(name_s).is_a<int64_t>();
-        return result ? 1 : 0;
+        return result;
     }
     catch (std::domain_error const & e) {
         *err_code = 1;
@@ -2643,13 +3775,13 @@ int LIBMUSCLE_Instance_is_setting_a_int8_(std::intptr_t self, char * name, std::
     }
 }
 
-int LIBMUSCLE_Instance_is_setting_a_real8_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_Instance_is_setting_a_real8_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
         *err_code = 0;
         bool result = self_p->get_setting(name_s).is_a<double>();
-        return result ? 1 : 0;
+        return result;
     }
     catch (std::domain_error const & e) {
         *err_code = 1;
@@ -2688,13 +3820,13 @@ int LIBMUSCLE_Instance_is_setting_a_real8_(std::intptr_t self, char * name, std:
     }
 }
 
-int LIBMUSCLE_Instance_is_setting_a_logical_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_Instance_is_setting_a_logical_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
         *err_code = 0;
         bool result = self_p->get_setting(name_s).is_a<bool>();
-        return result ? 1 : 0;
+        return result;
     }
     catch (std::domain_error const & e) {
         *err_code = 1;
@@ -2733,13 +3865,13 @@ int LIBMUSCLE_Instance_is_setting_a_logical_(std::intptr_t self, char * name, st
     }
 }
 
-int LIBMUSCLE_Instance_is_setting_a_real8array_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_Instance_is_setting_a_real8array_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
         *err_code = 0;
         bool result = self_p->get_setting(name_s).is_a<std::vector<double>>();
-        return result ? 1 : 0;
+        return result;
     }
     catch (std::domain_error const & e) {
         *err_code = 1;
@@ -2778,13 +3910,13 @@ int LIBMUSCLE_Instance_is_setting_a_real8array_(std::intptr_t self, char * name,
     }
 }
 
-int LIBMUSCLE_Instance_is_setting_a_real8array2_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_Instance_is_setting_a_real8array2_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
         *err_code = 0;
         bool result = self_p->get_setting(name_s).is_a<std::vector<std::vector<double>>>();
-        return result ? 1 : 0;
+        return result;
     }
     catch (std::domain_error const & e) {
         *err_code = 1;
@@ -2961,13 +4093,13 @@ double LIBMUSCLE_Instance_get_setting_as_real8_(std::intptr_t self, char * name,
     }
 }
 
-int LIBMUSCLE_Instance_get_setting_as_logical_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_Instance_get_setting_as_logical_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
         *err_code = 0;
         bool result = self_p->get_setting_as<bool>(name_s);
-        return result ? 1 : 0;
+        return result;
     }
     catch (std::domain_error const & e) {
         *err_code = 1;
@@ -3118,25 +4250,25 @@ std::intptr_t LIBMUSCLE_Instance_list_ports_(std::intptr_t self) {
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-int LIBMUSCLE_Instance_is_connected_(std::intptr_t self, char * port, std::size_t port_size) {
+bool LIBMUSCLE_Instance_is_connected_(std::intptr_t self, char * port, std::size_t port_size) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string port_s(port, port_size);
     bool result = self_p->is_connected(port_s);
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_Instance_is_vector_port_(std::intptr_t self, char * port, std::size_t port_size) {
+bool LIBMUSCLE_Instance_is_vector_port_(std::intptr_t self, char * port, std::size_t port_size) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string port_s(port, port_size);
     bool result = self_p->is_vector_port(port_s);
-    return result ? 1 : 0;
+    return result;
 }
 
-int LIBMUSCLE_Instance_is_resizable_(std::intptr_t self, char * port, std::size_t port_size) {
+bool LIBMUSCLE_Instance_is_resizable_(std::intptr_t self, char * port, std::size_t port_size) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string port_s(port, port_size);
     bool result = self_p->is_resizable(port_s);
-    return result ? 1 : 0;
+    return result;
 }
 
 int LIBMUSCLE_Instance_get_port_length_(std::intptr_t self, char * port, std::size_t port_size) {

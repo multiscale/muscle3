@@ -1,10 +1,10 @@
 CXX ?= g++
-MPICXX += mpic++
-CXXFLAGS += -std=c++14 -g -I$(MUSCLE3_HOME)/include
-MPI_CXXFLAGS := $(CXXFLAGS) -DMUSCLE_ENABLE_MPI
+MPICXX := mpic++
+CXXFLAGS += -std=c++14 -g $(shell pkg-config --cflags libmuscle)
+MPI_CXXFLAGS := -std=c++14 -g $(shell pkg-config --cflags libmuscle_mpi)
 
-MPI_LDFLAGS := $(LDFLAGS) -L$(MUSCLE3_HOME)/lib -lymmsl -lmuscle_mpi -lmpi
-LDFLAGS += -L$(MUSCLE3_HOME)/lib -lymmsl -lmuscle
+MPI_LDFLAGS := $(LDFLAGS) $(shell pkg-config --libs libmuscle_mpi)
+LDFLAGS += $(shell pkg-config --libs libmuscle)
 
 
 binaries := reaction diffusion mc_driver load_balancer

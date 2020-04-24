@@ -2,7 +2,7 @@ MUSCLE and C++
 ==============
 
 This section shows how to use MUSCLE 3 from C++, based on the same
-reaction-diffusion model given in the Python tutorial.
+reaction-diffusion model as given in the Python tutorial.
 `The source code for the examples in this section is here
 <https://github.com/multiscale/muscle3/tree/master/docs/source/examples/cpp>`_.
 You can also go to ``docs/source/examples/cpp`` in the source directory (that's
@@ -14,7 +14,7 @@ Building and running the examples
 
 If you've just built and installed the C++ version of libmuscle, then you're all
 set to build the examples. To do that, go into the ``docs/source/examples``
-subdirectory, and run Make:
+subdirectory, and run Make, passing the installed location of MUSCLE 3:
 
 .. code-block:: bash
 
@@ -192,10 +192,8 @@ message on our ``F_INIT`` port with the initial state:
 .. code-block:: cpp
 
     auto msg = instance.receive("initial_state");
-    DataConstRef data = msg.data();
-    std::vector<double> U(data.size());
-    for (int i = 0; i < data.size(); ++i)
-        U[i] = data[i].as<double>();
+    auto data_ptr = msg.data().elements<double>();
+    std::vector<double> U(data_ptr, data_ptr + msg.data().size());
 
 
 Calling the ``receive`` method on an instance yields an object of type
@@ -230,18 +228,30 @@ contain data of many different types, and that's what ``Data`` and
   type.
 
 In the code here, we don't bother with a check. Instead, we blindly assume that
-we've been sent a list of doubles. If that's not the case, an exception will be
-thrown and our program will halt. That's okay, because it means that there's
+we've been sent a 1D grid of doubles. If there is no grid, an exception will
+be thrown and our program will halt. That's okay, because it means that there's
 something wrong somewhere that we need to fix. MUSCLE is designed to let you get
 away with being a bit sloppy as long as things actually go right, but it will
 check for problems and let you know if something goes wrong.
 
-If a ``DataConstRef`` contains a list of some kind, then its ``size()`` member
-function can be used to determine the length of that list. We use that to create
-a ``std::vector`` of the correct length, and then extract each item in the
-received list into the vector. Note that items in a list can be accessed through
-``data[i]``, and that each item is itself a ``DataConstRef``, now (hopefully)
-containing a ``double`` value that we can extract using ``as()``.
+A grid in MUSCLE 3 is an n-dimensional array of numbers or booleans. It has a
+shape (size in each dimension), a size (total number of elements), a storage
+order which says in which order the elements are arranged in memory, and
+optionally names for the indexes.
+
+Here, we expect a 1D grid of doubles, which is just a vector of numbers. Storage
+order is irrelevant then. We'll use the standard C++ ``std::vector`` class to
+contain our state. It has a constructor that takes a pointer to an array of
+objects of the appropriate type and the number of them, and copies those objects
+into itself. We use the :cpp:func:`DataConstRef::elements` to get a pointer to
+the elements, and :cpp:func:`DataConstRef::size` to get the number of elements,
+and that's all we need to create our state vector ``U``.
+
+Note that MUSCLE 3 will in this case check that we have the right type of
+elements (doubles), but it cannot know and therefore will not check that we're
+expecting a 1D grid. We could check that by hand by checking the length of
+``msg.data().shape()`` to see if it's 1. See the diffusion model below for an
+example.
 
 
 .. code-block:: cpp
@@ -267,24 +277,24 @@ Sending messages and Data
 .. code-block:: cpp
 
         // O_F
-        auto result = Data::nils(U.size());
-        for (int i = 0; i < U.size(); ++i)
-            result[i] = U[i];
+        auto result = Data::grid(U.data(), {U.size()}, {"x"});
         instance.send("final_state", Message(t_cur, result));
 
 
 Having computed our final state, we will send it to the outside world on the
-``final_state`` port. In this case, we need to send a list of doubles, which we
-first need to wrap up into a ``Data`` object. A ``Data`` object works just like
-a ``DataConstRef``, except that it isn't constant, and can thus be modified. (It
-is in fact a reference, like ``DataConstRef``, despite the name, and it has
-automatic memory management as well.)
+``final_state`` port. In this case, we need to send a 1D grid of doubles, which
+we first need to wrap up into a ``Data`` object. A ``Data`` object works just
+like a ``DataConstRef``, except that it isn't constant, and can thus be
+modified. (It is in fact a reference, like ``DataConstRef``, despite the name,
+and it has automatic memory management as well.)
 
-Here, we start by creating a ``Data`` containing a list of `U.size()` nil (null,
-None) values. This allocates enough space in the list for all of our doubles. We
-can then simply use ``result[i]`` to assign our double values to each list item.
-Note that there's no need to explicitly specify that this is a double, the
-compiler knows and will do the right thing.
+Here, we create a ``Data`` containing a grid. We pass it a pointer to the
+numbers in ``U``, and the shape of our grid, which is a 1-element array because
+the grid is 1-dimensional. The third argument contains the names of the indexes,
+which helps to avoid confusion over which index is x and which is y (or
+row/column, or latitude/longitude, or... you get the idea). You are not
+required to add these (and MUSCLE 3 doesn't use them), but you or someone else
+using your code will be very grateful you did at some point in the future.
 
 With our data item constructed, we can send a ``Message`` containing the current
 timestamp and the data to the ``final_state`` port. Note that there are

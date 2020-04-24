@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -13,7 +14,16 @@
 
 namespace libmuscle { namespace impl {
 
+enum class StorageOrder {
+    first_adjacent,
+    last_adjacent
+};
+
+class DataConstRef;
+
 class Data;
+
+bool is_close_port(DataConstRef const &);
 
 namespace mcp {
     // forward-declare this so it can be a friend
@@ -112,6 +122,51 @@ class DataConstRef {
          */
         DataConstRef(double value);
 
+        /** Create a DataConstRef object containing a grid object.
+         *
+         * This creates a DataConstRef that represents a grid or array of a
+         * given element type.
+         *
+         * Supported types are ``std::int32_t``, ``std::int64_t``, ``float``,
+         * ``double`` and ``bool``. Note that unless you have exotic hardware,
+         * ``int``, ``long`` and ``long long`` will be aliased as either
+         * ``int32_t`` or ``int64_t``, and will therefore work as well. Unsigned
+         * integer types are not supported.
+         *
+         * Besides a type, arrays have a shape. This is a list of sizes, one for
+         * each dimension of the array.
+         *
+         * They also have a storage order, which specifies in which order the
+         * elements are arranged in memory. StorageOrder::first_adjacent means
+         * that array items who only differ by one in their first index are
+         * adjacent in memory, while StorageOrder::last_adjacent means that
+         * array items which only differ by one in their last index are adjacent
+         * in memory. Last adjacent is the standard in C and C++, and is also
+         * known as column-major, while first adjacent is the standard in
+         * Fortran, and is also known as row-major.
+         *
+         * The data argument should be a pointer to a contiguous array of
+         * elements of the given type.
+         *
+         * Finally, the optional index_names argument may be used to specify the
+         * names of the indices. For a Cartesian grid, these may be ``x`` and
+         * ``y``, while for for example a polar grid you may have ``rho`` and
+         * ``phi``. These names are optional, but help to make it easier to
+         * interpret the data, and so adding them is very much recommended.
+         *
+         * @tparam Element The type of the elements.
+         * @param data Pointer to the array data.
+         * @param shape The shape of the array.
+         * @param indexes Names of the array's indexes.
+         * @param storage_order The storage order of the array data.
+         */
+        template <typename Element>
+        static DataConstRef grid(
+                Element const * const data,
+                std::vector<std::size_t> const & shape,
+                std::vector<std::string> const & indexes = {},
+                StorageOrder storage_order = StorageOrder::last_adjacent);
+
         /** Create a DataConstRef object from a SettingValue's value.
          *
          * Note that this will decode to whichever type is stored in the
@@ -203,6 +258,19 @@ class DataConstRef {
          */
         bool is_a_list() const;
 
+        /** Return whether this references a grid of the given element type.
+         *
+         * Supported element types are ``std::int32_t``, ``std::int64_t``,
+         * ``float``, ``double``, and ``bool``. Unless you're on some exotic
+         * machine, ``int``, ``long``, and ``long long`` are aliases for
+         * ``int32_t`` or ``int64_t``, and so will also work. Unsigned types are
+         * not supported.
+         *
+         * @tparam Element The type of the elements of the array.
+         */
+        template <typename Element>
+        bool is_a_grid_of() const;
+
         /** Return whether this references a byte array.
          *
          * If so, as_byte_array() can be used to obtain values, and size()
@@ -212,10 +280,11 @@ class DataConstRef {
          */
         bool is_a_byte_array() const;
 
-        /** Returns the size of a list, dict or byte array.
+        /** Returns the size of a list, dict, grid or byte array.
          *
-         * @return The number of items in a referenced list or dict value, or
-         *         the number of bytes in a byte array.
+         * @return The number of items in a referenced list or dict value, the
+         *         number of elements in a grid, or the number of bytes in a
+         *         byte array.
          */
         std::size_t size() const;
 
@@ -313,6 +382,81 @@ class DataConstRef {
          */
         DataConstRef operator[](std::size_t index) const;
 
+        /** Get the shape of a grid.
+         *
+         * Use only if is_a_grid_of() returns true.
+         *
+         * The shape of an array is a list of sizes of the array, one for each
+         * of its dimensions.
+         *
+         * @return The shape of the contained grid.
+         * @throws std::runtime_error if the object is not a grid.
+         */
+        std::vector<std::size_t> shape() const;
+
+        /** Get the storage order of the grid.
+         *
+         * Use only if is_a_grid_of() returns true.
+         *
+         * The storage order is either StorageOrder::first_adjacent or
+         * StorageOrder::last_adjacent. StorageOrder::first_adjacent means that
+         * array items who only differ by one in their first index are adjacent
+         * in memory, while StorageOrder::last_adjacent means that array items
+         * which only differ by one in their last index are adjacent in memory.
+         * Last adjacent is the standard in C and C++, and is also known as
+         * column-major, while first adjacent is the standard in Fortran, and is
+         * also known as row-major.
+         *
+         * @return The storage order of the grid.
+         * @throws std::runtime_error if the object is not a grid.
+         */
+        StorageOrder storage_order() const;
+
+        /** Return whether a grid has index names.
+         *
+         * Use only if is_a_grid_of() returns true.
+         *
+         * This function determines whether the grid has named indexes. If so,
+         * you can access them through indexes().
+         *
+         * @return True iff the grid has named indexes.
+         * @throw std::runtime_Error if the object is not a grid.
+         */
+        bool has_indexes() const;
+
+        /** Get the index names of the grid.
+         *
+         * Use only if is_a_grid_of() returns true and has_indexes()
+         * returns true.
+         *
+         * The optional index names returned by this function specify which
+         * index refers to what. For a 2D Cartesian grid, these may be ``'x'``
+         * and ``'y'`` for example, or for a polar grid, ``'phi'`` and
+         * ``'rho'``. They're intended to help annotate and use the data, and
+         * may be absent if the sender of a message did not include them.
+         *
+         * @return The indexes.
+         * @throw std::runtime_error if the object is not a grid.
+         */
+        std::vector<std::string> indexes() const;
+
+        /** Get the elements (data values) of a grid.
+         *
+         * Use only if is_a_grid_of<Element>() returns true.
+         *
+         * This returns a pointer to the specified type which points to a block
+         * of memory containing the grid's element values. They are contiguous
+         * in memory in the order specified by storage_order().
+         *
+         * The returned pointer is valid at least as long as this object exists.
+         *
+         * @tparam Element The type of the data stored in the grid.
+         * @return A pointer to the data, as specified above.
+         * @throws std::runtime_error if the object is not a grid of this type.
+         */
+        template <typename Element>
+        Element const * elements() const;
+
     protected:
         using Zones_ = std::shared_ptr<std::vector<std::shared_ptr<msgpack::zone>>>;
         Zones_ mp_zones_;
@@ -331,6 +475,9 @@ class DataConstRef {
         // create DCR sharing the given zone
         DataConstRef(std::shared_ptr<msgpack::zone> const & zone);
 
+        // create DCR with given data packed as ext type
+        DataConstRef(char ext_type_id, DataConstRef const & data);
+
         // allocate an object on this object's zone
         template <typename T>
         T * zone_alloc_(uint32_t size = 1u);
@@ -343,6 +490,13 @@ class DataConstRef {
         // see comment at Data::init_dict_'s implementation
         friend class Data;
         friend bool ::libmuscle::impl::is_close_port(DataConstRef const &);
+
+        bool is_a_grid_() const;
+
+        DataConstRef grid_dict_() const;
+
+        template <typename Element>
+        DataConstRef grid_data_(Element const * const data, std::size_t num_elems) const;
 };
 
 
@@ -369,6 +523,51 @@ class Data : public DataConstRef {
     public:
         // create from scalar type
         using DataConstRef::DataConstRef;
+
+        /** Create a Data object containing a grid object.
+         *
+         * This creates a DataConstRef that represents a grid or array of a
+         * given element type.
+         *
+         * Supported types are ``std::int32_t``, ``std::int64_t``, ``float``,
+         * ``double`` and ``bool``. Note that unless you have exotic hardware,
+         * ``int``, ``long`` and ``long long`` will be aliased as either
+         * ``int32_t`` or ``int64_t``, and will therefore work as well. Unsigned
+         * integer types are not supported.
+         *
+         * Besides a type, arrays have a shape. This is a list of sizes, one for
+         * each dimension of the array.
+         *
+         * They also have a storage order, which specifies in which order the
+         * elements are arranged in memory. StorageOrder::first_adjacent means
+         * that array items who only differ by one in their first index are
+         * adjacent in memory, while StorageOrder::last_adjacent means that
+         * array items which only differ by one in their last index are adjacent
+         * in memory. Last adjacent is the standard in C and C++, and is also
+         * known as column-major, while first adjacent is the standard in
+         * Fortran, and is also known as row-major.
+         *
+         * The data argument should be a pointer to a contiguous array of
+         * elements of the given type.
+         *
+         * Finally, the optional index_names argument may be used to specify the
+         * names of the indices. For a Cartesian grid, these may be ``x`` and
+         * ``y``, while for for example a polar grid you may have ``rho`` and
+         * ``phi``. These names are optional, but help to make it easier to
+         * interpret the data, and so adding them is very much recommended.
+         *
+         * @tparam Element The type of the elements.
+         * @param data Pointer to the array data.
+         * @param shape The shape of the array.
+         * @param indexes Names of the array's indexes.
+         * @param storage_order The storage order of the array data.
+         */
+        template <typename Element>
+        static Data grid(
+                Element const * const data,
+                std::vector<std::size_t> const & shape,
+                std::vector<std::string> const & indexes = {},
+                StorageOrder storage_order = StorageOrder::last_adjacent);
 
         /** Create a Data containing an empty dictionary.
          *
@@ -423,7 +622,7 @@ class Data : public DataConstRef {
 
         /** Create a byte array of a given size.
          *
-         * The buffer will be owned by this Data object. Use byte_array() to
+         * The buffer will be owned by this Data object. Use as_byte_array() to
          * get a pointer to put data into it.
          */
         static Data byte_array(uint32_t size);
@@ -515,6 +714,15 @@ class Data : public DataConstRef {
         char * as_byte_array();
 
     private:
+        // this requires packing, so needs to be non-template
+        void set_dict_item_(
+                uint32_t offset,
+                std::string const & key, DataConstRef const & value);
+
+        void set_dict_item_(
+                uint32_t offset,
+                std::string const & key, Data const & value);
+
         void init_dict_(uint32_t size);
 
         template <typename... Args>

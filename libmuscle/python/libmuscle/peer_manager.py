@@ -95,7 +95,7 @@ class PeerManager:
             The peer endpoint.
         """
         peer = self.__peers[self.__kernel + port]
-        peer_kernel = peer[:-1]
+        peer_kernel = cast(Reference, peer[:-1])
         peer_port = cast(Identifier, peer[-1])
 
         total_index = self.__index + slot

@@ -11,15 +11,19 @@ libs := libmuscle_fortran.a libmuscle_fortran.so
 mpi_libs := libmuscle_mpi_fortran.a libmuscle_mpi_fortran.so
 modules := $(sources:$(srcdir)/%.f03=%.mod)
 mpi_modules := $(mpi_sources:$(srcdir)/%.f03=%.mod)
+pkg_config_files := libmuscle_fortran.pc
 
-
-ifdef MUSCLE_ENABLE_MPI
-libs += $(mpi_libs)
-modules += $(mpi_modules)
+ifeq ($(if $(or $(MUSCLE_ENABLE_MPI),$(and $(findstring install,$(MAKECMDGOALS)),$(wildcard libmuscle_mpi_fortran.so))),1,0),1)
+    libs += $(mpi_libs)
+    sources += $(mpi_sources)
+    modules += $(mpi_modules)
+    pkg_config_files += libmuscle_mpi_fortran.pc
 endif
 
 installed_modules := $(modules:%=$(PREFIX)/include/%)
-installed_libs := $(libs:%=$(PREFIX)/lib/%)
+installed_sources := $(sources:$(srcdir)/%=$(PREFIX)/include/%)
+installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
+
 
 LDFLAGS := -L../ymmsl -lymmsl_fortran
 LDFLAGS += -L../../../cpp/build/libmuscle -lmuscle
@@ -49,6 +53,7 @@ test: tests
 clean:
 	rm -f *.o *.lo *.mo *.mlo *.mod *.a *.so
 	rm -f mod_dump/*.mod
+	rm -f libmuscle_fortran.pc libmuscle_mpi_fortran.pc
 	make -C tests clean
 
 .PHONY: distclean
@@ -57,7 +62,12 @@ distclean: clean
 	make -C tests distclean
 
 .PHONY: install
-install: $(installed_modules) $(installed_libs)
+install: $(installed_sources) $(installed_modules) $(installed_pkg_config_files)
+	@echo
+	@echo Installing libmuscle Fortran to $(PREFIX)
+	@mkdir -p $(PREFIX)/lib
+	cp libmuscle*.a $(PREFIX)/lib
+	cp libmuscle*.so $(PREFIX)/lib
 
 %.o: $(srcdir)/%.f03
 	$(FC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS)
@@ -66,10 +76,10 @@ install: $(installed_modules) $(installed_libs)
 	$(FC) -c -fPIC -Jmod_dump $(FFLAGS) $^ -o $@ $(LDFLAGS)
 
 %.mo: $(srcdir)/%.f03
-	mpi$(FC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS_MPI)
+	$(MPIFC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS_MPI)
 
 %.mlo: $(srcdir)/%.f03
-	mpi$(FC) -c -fPIC -Jmod_dump $(FFLAGS) $^ -o $@ $(LDFLAGS_MPI)
+	$(MPIFC) -c -fPIC -Jmod_dump $(FFLAGS) $^ -o $@ $(LDFLAGS_MPI)
 
 %.mod: %.o
 
@@ -83,7 +93,11 @@ libmuscle_mpi_fortran.a: $(mobjects)
 	ar rcs $@ $^
 
 libmuscle_mpi_fortran.so: $(mlobjects)
-	mpi$(FC) -shared -o $@ $^ $(LDFLAGS_MPI)
+	$(MPIFC) -shared -o $@ $^ $(LDFLAGS_MPI)
+
+$(PREFIX)/include/%.f03: $(srcdir)/%.f03
+	@mkdir -p $(@D)
+	cp $< $@
 
 $(PREFIX)/include/%: %
 	@mkdir -p $(@D)
@@ -92,3 +106,36 @@ $(PREFIX)/include/%: %
 $(PREFIX)/lib/%: %
 	@mkdir -p $(@D)
 	cp $< $@
+
+$(PREFIX)/lib/pkgconfig/%: %
+	@mkdir -p $(@D)
+	cp $< $@
+
+libmuscle_fortran.pc:
+	@echo 'prefix=$(PREFIX)' >$@
+	@echo 'exec_prefix=$${prefix}' >>$@
+	@echo 'includedir=$${prefix}/include' >>$@
+	@echo 'libdir=$${exec_prefix}/lib' >>$@
+	@echo >>$@
+	@echo 'Name: libmuscle for Fortran' >>$@
+	@echo 'Description: Library for MUSCLE 3 - Fortran version' >>$@
+	@echo 'URL: https://muscle3.readthedocs.io' >>$@
+	@echo 'Version: $(muscle_version)' >>$@
+	@echo 'Requires.private: libmuscle = $(muscle_version)' >>$@
+	@echo 'Cflags: -I$${includedir}' >>$@
+	@echo 'Libs: -L$${libdir} -lymmsl_fortran -lmuscle_fortran' >>$@
+
+libmuscle_mpi_fortran.pc:
+	@echo 'prefix=$(PREFIX)' >$@
+	@echo 'exec_prefix=$${prefix}' >>$@
+	@echo 'includedir=$${prefix}/include' >>$@
+	@echo 'libdir=$${exec_prefix}/lib' >>$@
+	@echo >>$@
+	@echo 'Name: libmuscle for Fortran and MPI' >>$@
+	@echo 'Description: Library for MUSCLE 3 - Fortran-MPI version' >>$@
+	@echo 'URL: https://muscle3.readthedocs.io' >>$@
+	@echo 'Version: $(muscle_version)' >>$@
+	@echo 'Requires.private: libmuscle_mpi = $(muscle_version)' >>$@
+	@echo 'Cflags: -I$${includedir}' >>$@
+	@echo 'Libs: -L$${libdir} -lymmsl_fortran -lmuscle_mpi_fortran' >>$@
+

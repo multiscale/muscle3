@@ -8,6 +8,8 @@ import sys
 from libmuscle import Instance, Message
 from ymmsl import Operator
 
+from .conftest import skip_if_python_only
+
 
 def run_macro(instance_id: str):
     sys.argv.append('--muscle-instance={}'.format(instance_id))
@@ -33,6 +35,7 @@ def macro():
             assert msg.timestamp == i * 10.0
 
 
+@skip_if_python_only
 def test_cpp_macro_micro(mmp_server_process_simple):
     # only run this if MPI is enabled
     if 'MUSCLE_ENABLE_MPI' not in os.environ:

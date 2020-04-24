@@ -10,20 +10,30 @@
 #include <grpcpp/impl/codegen/async_generic_service.h>
 #include <grpcpp/impl/codegen/async_stream.h>
 #include <grpcpp/impl/codegen/async_unary_call.h>
+#include <grpcpp/impl/codegen/client_callback.h>
+#include <grpcpp/impl/codegen/client_context.h>
+#include <grpcpp/impl/codegen/completion_queue.h>
 #include <grpcpp/impl/codegen/method_handler_impl.h>
 #include <grpcpp/impl/codegen/proto_utils.h>
 #include <grpcpp/impl/codegen/rpc_method.h>
 #include <grpcpp/impl/codegen/server_callback.h>
+#include <grpcpp/impl/codegen/server_context.h>
 #include <grpcpp/impl/codegen/service_type.h>
 #include <grpcpp/impl/codegen/status.h>
 #include <grpcpp/impl/codegen/stub_options.h>
 #include <grpcpp/impl/codegen/sync_stream.h>
 
-namespace grpc {
+namespace grpc_impl {
 class CompletionQueue;
-class Channel;
 class ServerCompletionQueue;
 class ServerContext;
+}  // namespace grpc_impl
+
+namespace grpc {
+namespace experimental {
+template <typename RequestT, typename ResponseT>
+class MessageAllocator;
+}  // namespace experimental
 }  // namespace grpc
 
 namespace muscle_manager_protocol {
@@ -90,16 +100,34 @@ class MuscleManager final {
       virtual ~experimental_async_interface() {}
       // Sends a logged message to the Manager
       virtual void SubmitLogMessage(::grpc::ClientContext* context, const ::muscle_manager_protocol::LogMessage* request, ::muscle_manager_protocol::LogResult* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void SubmitLogMessage(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::LogResult* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void SubmitLogMessage(::grpc::ClientContext* context, const ::muscle_manager_protocol::LogMessage* request, ::muscle_manager_protocol::LogResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      virtual void SubmitLogMessage(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::LogResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
       // Sends a batch of profiling events to the Manager
       virtual void SubmitProfileEvents(::grpc::ClientContext* context, const ::muscle_manager_protocol::Profile* request, ::muscle_manager_protocol::ProfileResult* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void SubmitProfileEvents(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::ProfileResult* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void SubmitProfileEvents(::grpc::ClientContext* context, const ::muscle_manager_protocol::Profile* request, ::muscle_manager_protocol::ProfileResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      virtual void SubmitProfileEvents(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::ProfileResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
       // Requests the global base settings
       virtual void RequestSettings(::grpc::ClientContext* context, const ::muscle_manager_protocol::SettingsRequest* request, ::muscle_manager_protocol::SettingsResult* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void RequestSettings(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::SettingsResult* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void RequestSettings(::grpc::ClientContext* context, const ::muscle_manager_protocol::SettingsRequest* request, ::muscle_manager_protocol::SettingsResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      virtual void RequestSettings(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::SettingsResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
       // Registers a newly started kernel instance
       virtual void RegisterInstance(::grpc::ClientContext* context, const ::muscle_manager_protocol::RegistrationRequest* request, ::muscle_manager_protocol::RegistrationResult* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void RegisterInstance(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::RegistrationResult* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void RegisterInstance(::grpc::ClientContext* context, const ::muscle_manager_protocol::RegistrationRequest* request, ::muscle_manager_protocol::RegistrationResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      virtual void RegisterInstance(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::RegistrationResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
       // Requests information about peers
       virtual void RequestPeers(::grpc::ClientContext* context, const ::muscle_manager_protocol::PeerRequest* request, ::muscle_manager_protocol::PeerResult* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void RequestPeers(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::PeerResult* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void RequestPeers(::grpc::ClientContext* context, const ::muscle_manager_protocol::PeerRequest* request, ::muscle_manager_protocol::PeerResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      virtual void RequestPeers(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::PeerResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
       // Deregisters an instance on shutdown
       virtual void DeregisterInstance(::grpc::ClientContext* context, const ::muscle_manager_protocol::DeregistrationRequest* request, ::muscle_manager_protocol::DeregistrationResult* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void DeregisterInstance(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::DeregistrationResult* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void DeregisterInstance(::grpc::ClientContext* context, const ::muscle_manager_protocol::DeregistrationRequest* request, ::muscle_manager_protocol::DeregistrationResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
+      virtual void DeregisterInstance(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::DeregistrationResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) = 0;
     };
     virtual class experimental_async_interface* experimental_async() { return nullptr; }
   private:
@@ -165,11 +193,29 @@ class MuscleManager final {
       public StubInterface::experimental_async_interface {
      public:
       void SubmitLogMessage(::grpc::ClientContext* context, const ::muscle_manager_protocol::LogMessage* request, ::muscle_manager_protocol::LogResult* response, std::function<void(::grpc::Status)>) override;
+      void SubmitLogMessage(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::LogResult* response, std::function<void(::grpc::Status)>) override;
+      void SubmitLogMessage(::grpc::ClientContext* context, const ::muscle_manager_protocol::LogMessage* request, ::muscle_manager_protocol::LogResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      void SubmitLogMessage(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::LogResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
       void SubmitProfileEvents(::grpc::ClientContext* context, const ::muscle_manager_protocol::Profile* request, ::muscle_manager_protocol::ProfileResult* response, std::function<void(::grpc::Status)>) override;
+      void SubmitProfileEvents(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::ProfileResult* response, std::function<void(::grpc::Status)>) override;
+      void SubmitProfileEvents(::grpc::ClientContext* context, const ::muscle_manager_protocol::Profile* request, ::muscle_manager_protocol::ProfileResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      void SubmitProfileEvents(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::ProfileResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
       void RequestSettings(::grpc::ClientContext* context, const ::muscle_manager_protocol::SettingsRequest* request, ::muscle_manager_protocol::SettingsResult* response, std::function<void(::grpc::Status)>) override;
+      void RequestSettings(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::SettingsResult* response, std::function<void(::grpc::Status)>) override;
+      void RequestSettings(::grpc::ClientContext* context, const ::muscle_manager_protocol::SettingsRequest* request, ::muscle_manager_protocol::SettingsResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      void RequestSettings(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::SettingsResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
       void RegisterInstance(::grpc::ClientContext* context, const ::muscle_manager_protocol::RegistrationRequest* request, ::muscle_manager_protocol::RegistrationResult* response, std::function<void(::grpc::Status)>) override;
+      void RegisterInstance(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::RegistrationResult* response, std::function<void(::grpc::Status)>) override;
+      void RegisterInstance(::grpc::ClientContext* context, const ::muscle_manager_protocol::RegistrationRequest* request, ::muscle_manager_protocol::RegistrationResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      void RegisterInstance(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::RegistrationResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
       void RequestPeers(::grpc::ClientContext* context, const ::muscle_manager_protocol::PeerRequest* request, ::muscle_manager_protocol::PeerResult* response, std::function<void(::grpc::Status)>) override;
+      void RequestPeers(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::PeerResult* response, std::function<void(::grpc::Status)>) override;
+      void RequestPeers(::grpc::ClientContext* context, const ::muscle_manager_protocol::PeerRequest* request, ::muscle_manager_protocol::PeerResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      void RequestPeers(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::PeerResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
       void DeregisterInstance(::grpc::ClientContext* context, const ::muscle_manager_protocol::DeregistrationRequest* request, ::muscle_manager_protocol::DeregistrationResult* response, std::function<void(::grpc::Status)>) override;
+      void DeregisterInstance(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::DeregistrationResult* response, std::function<void(::grpc::Status)>) override;
+      void DeregisterInstance(::grpc::ClientContext* context, const ::muscle_manager_protocol::DeregistrationRequest* request, ::muscle_manager_protocol::DeregistrationResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
+      void DeregisterInstance(::grpc::ClientContext* context, const ::grpc::ByteBuffer* request, ::muscle_manager_protocol::DeregistrationResult* response, ::grpc::experimental::ClientUnaryReactor* reactor) override;
      private:
       friend class Stub;
       explicit experimental_async(Stub* stub): stub_(stub) { }
@@ -222,7 +268,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithAsyncMethod_SubmitLogMessage : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_SubmitLogMessage() {
       ::grpc::Service::MarkMethodAsync(0);
@@ -231,7 +277,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status SubmitLogMessage(::grpc::ServerContext* context, const ::muscle_manager_protocol::LogMessage* request, ::muscle_manager_protocol::LogResult* response) override {
+    ::grpc::Status SubmitLogMessage(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::LogMessage* /*request*/, ::muscle_manager_protocol::LogResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -242,7 +288,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithAsyncMethod_SubmitProfileEvents : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_SubmitProfileEvents() {
       ::grpc::Service::MarkMethodAsync(1);
@@ -251,7 +297,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status SubmitProfileEvents(::grpc::ServerContext* context, const ::muscle_manager_protocol::Profile* request, ::muscle_manager_protocol::ProfileResult* response) override {
+    ::grpc::Status SubmitProfileEvents(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::Profile* /*request*/, ::muscle_manager_protocol::ProfileResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -262,7 +308,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithAsyncMethod_RequestSettings : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_RequestSettings() {
       ::grpc::Service::MarkMethodAsync(2);
@@ -271,7 +317,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status RequestSettings(::grpc::ServerContext* context, const ::muscle_manager_protocol::SettingsRequest* request, ::muscle_manager_protocol::SettingsResult* response) override {
+    ::grpc::Status RequestSettings(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::SettingsRequest* /*request*/, ::muscle_manager_protocol::SettingsResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -282,7 +328,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithAsyncMethod_RegisterInstance : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_RegisterInstance() {
       ::grpc::Service::MarkMethodAsync(3);
@@ -291,7 +337,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status RegisterInstance(::grpc::ServerContext* context, const ::muscle_manager_protocol::RegistrationRequest* request, ::muscle_manager_protocol::RegistrationResult* response) override {
+    ::grpc::Status RegisterInstance(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::RegistrationRequest* /*request*/, ::muscle_manager_protocol::RegistrationResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -302,7 +348,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithAsyncMethod_RequestPeers : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_RequestPeers() {
       ::grpc::Service::MarkMethodAsync(4);
@@ -311,7 +357,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status RequestPeers(::grpc::ServerContext* context, const ::muscle_manager_protocol::PeerRequest* request, ::muscle_manager_protocol::PeerResult* response) override {
+    ::grpc::Status RequestPeers(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::PeerRequest* /*request*/, ::muscle_manager_protocol::PeerResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -322,7 +368,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithAsyncMethod_DeregisterInstance : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_DeregisterInstance() {
       ::grpc::Service::MarkMethodAsync(5);
@@ -331,7 +377,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status DeregisterInstance(::grpc::ServerContext* context, const ::muscle_manager_protocol::DeregistrationRequest* request, ::muscle_manager_protocol::DeregistrationResult* response) override {
+    ::grpc::Status DeregisterInstance(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::DeregistrationRequest* /*request*/, ::muscle_manager_protocol::DeregistrationResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -343,158 +389,194 @@ class MuscleManager final {
   template <class BaseClass>
   class ExperimentalWithCallbackMethod_SubmitLogMessage : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithCallbackMethod_SubmitLogMessage() {
       ::grpc::Service::experimental().MarkMethodCallback(0,
-        new ::grpc::internal::CallbackUnaryHandler< ExperimentalWithCallbackMethod_SubmitLogMessage<BaseClass>, ::muscle_manager_protocol::LogMessage, ::muscle_manager_protocol::LogResult>(
+        new ::grpc_impl::internal::CallbackUnaryHandler< ::muscle_manager_protocol::LogMessage, ::muscle_manager_protocol::LogResult>(
           [this](::grpc::ServerContext* context,
                  const ::muscle_manager_protocol::LogMessage* request,
                  ::muscle_manager_protocol::LogResult* response,
                  ::grpc::experimental::ServerCallbackRpcController* controller) {
-                   this->SubmitLogMessage(context, request, response, controller);
-                 }, this));
+                   return this->SubmitLogMessage(context, request, response, controller);
+                 }));
+    }
+    void SetMessageAllocatorFor_SubmitLogMessage(
+        ::grpc::experimental::MessageAllocator< ::muscle_manager_protocol::LogMessage, ::muscle_manager_protocol::LogResult>* allocator) {
+      static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::muscle_manager_protocol::LogMessage, ::muscle_manager_protocol::LogResult>*>(
+          ::grpc::Service::experimental().GetHandler(0))
+              ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_SubmitLogMessage() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status SubmitLogMessage(::grpc::ServerContext* context, const ::muscle_manager_protocol::LogMessage* request, ::muscle_manager_protocol::LogResult* response) override {
+    ::grpc::Status SubmitLogMessage(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::LogMessage* /*request*/, ::muscle_manager_protocol::LogResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual void SubmitLogMessage(::grpc::ServerContext* context, const ::muscle_manager_protocol::LogMessage* request, ::muscle_manager_protocol::LogResult* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+    virtual void SubmitLogMessage(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::LogMessage* /*request*/, ::muscle_manager_protocol::LogResult* /*response*/, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   template <class BaseClass>
   class ExperimentalWithCallbackMethod_SubmitProfileEvents : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithCallbackMethod_SubmitProfileEvents() {
       ::grpc::Service::experimental().MarkMethodCallback(1,
-        new ::grpc::internal::CallbackUnaryHandler< ExperimentalWithCallbackMethod_SubmitProfileEvents<BaseClass>, ::muscle_manager_protocol::Profile, ::muscle_manager_protocol::ProfileResult>(
+        new ::grpc_impl::internal::CallbackUnaryHandler< ::muscle_manager_protocol::Profile, ::muscle_manager_protocol::ProfileResult>(
           [this](::grpc::ServerContext* context,
                  const ::muscle_manager_protocol::Profile* request,
                  ::muscle_manager_protocol::ProfileResult* response,
                  ::grpc::experimental::ServerCallbackRpcController* controller) {
-                   this->SubmitProfileEvents(context, request, response, controller);
-                 }, this));
+                   return this->SubmitProfileEvents(context, request, response, controller);
+                 }));
+    }
+    void SetMessageAllocatorFor_SubmitProfileEvents(
+        ::grpc::experimental::MessageAllocator< ::muscle_manager_protocol::Profile, ::muscle_manager_protocol::ProfileResult>* allocator) {
+      static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::muscle_manager_protocol::Profile, ::muscle_manager_protocol::ProfileResult>*>(
+          ::grpc::Service::experimental().GetHandler(1))
+              ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_SubmitProfileEvents() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status SubmitProfileEvents(::grpc::ServerContext* context, const ::muscle_manager_protocol::Profile* request, ::muscle_manager_protocol::ProfileResult* response) override {
+    ::grpc::Status SubmitProfileEvents(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::Profile* /*request*/, ::muscle_manager_protocol::ProfileResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual void SubmitProfileEvents(::grpc::ServerContext* context, const ::muscle_manager_protocol::Profile* request, ::muscle_manager_protocol::ProfileResult* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+    virtual void SubmitProfileEvents(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::Profile* /*request*/, ::muscle_manager_protocol::ProfileResult* /*response*/, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   template <class BaseClass>
   class ExperimentalWithCallbackMethod_RequestSettings : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithCallbackMethod_RequestSettings() {
       ::grpc::Service::experimental().MarkMethodCallback(2,
-        new ::grpc::internal::CallbackUnaryHandler< ExperimentalWithCallbackMethod_RequestSettings<BaseClass>, ::muscle_manager_protocol::SettingsRequest, ::muscle_manager_protocol::SettingsResult>(
+        new ::grpc_impl::internal::CallbackUnaryHandler< ::muscle_manager_protocol::SettingsRequest, ::muscle_manager_protocol::SettingsResult>(
           [this](::grpc::ServerContext* context,
                  const ::muscle_manager_protocol::SettingsRequest* request,
                  ::muscle_manager_protocol::SettingsResult* response,
                  ::grpc::experimental::ServerCallbackRpcController* controller) {
-                   this->RequestSettings(context, request, response, controller);
-                 }, this));
+                   return this->RequestSettings(context, request, response, controller);
+                 }));
+    }
+    void SetMessageAllocatorFor_RequestSettings(
+        ::grpc::experimental::MessageAllocator< ::muscle_manager_protocol::SettingsRequest, ::muscle_manager_protocol::SettingsResult>* allocator) {
+      static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::muscle_manager_protocol::SettingsRequest, ::muscle_manager_protocol::SettingsResult>*>(
+          ::grpc::Service::experimental().GetHandler(2))
+              ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_RequestSettings() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status RequestSettings(::grpc::ServerContext* context, const ::muscle_manager_protocol::SettingsRequest* request, ::muscle_manager_protocol::SettingsResult* response) override {
+    ::grpc::Status RequestSettings(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::SettingsRequest* /*request*/, ::muscle_manager_protocol::SettingsResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual void RequestSettings(::grpc::ServerContext* context, const ::muscle_manager_protocol::SettingsRequest* request, ::muscle_manager_protocol::SettingsResult* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+    virtual void RequestSettings(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::SettingsRequest* /*request*/, ::muscle_manager_protocol::SettingsResult* /*response*/, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   template <class BaseClass>
   class ExperimentalWithCallbackMethod_RegisterInstance : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithCallbackMethod_RegisterInstance() {
       ::grpc::Service::experimental().MarkMethodCallback(3,
-        new ::grpc::internal::CallbackUnaryHandler< ExperimentalWithCallbackMethod_RegisterInstance<BaseClass>, ::muscle_manager_protocol::RegistrationRequest, ::muscle_manager_protocol::RegistrationResult>(
+        new ::grpc_impl::internal::CallbackUnaryHandler< ::muscle_manager_protocol::RegistrationRequest, ::muscle_manager_protocol::RegistrationResult>(
           [this](::grpc::ServerContext* context,
                  const ::muscle_manager_protocol::RegistrationRequest* request,
                  ::muscle_manager_protocol::RegistrationResult* response,
                  ::grpc::experimental::ServerCallbackRpcController* controller) {
-                   this->RegisterInstance(context, request, response, controller);
-                 }, this));
+                   return this->RegisterInstance(context, request, response, controller);
+                 }));
+    }
+    void SetMessageAllocatorFor_RegisterInstance(
+        ::grpc::experimental::MessageAllocator< ::muscle_manager_protocol::RegistrationRequest, ::muscle_manager_protocol::RegistrationResult>* allocator) {
+      static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::muscle_manager_protocol::RegistrationRequest, ::muscle_manager_protocol::RegistrationResult>*>(
+          ::grpc::Service::experimental().GetHandler(3))
+              ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_RegisterInstance() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status RegisterInstance(::grpc::ServerContext* context, const ::muscle_manager_protocol::RegistrationRequest* request, ::muscle_manager_protocol::RegistrationResult* response) override {
+    ::grpc::Status RegisterInstance(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::RegistrationRequest* /*request*/, ::muscle_manager_protocol::RegistrationResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual void RegisterInstance(::grpc::ServerContext* context, const ::muscle_manager_protocol::RegistrationRequest* request, ::muscle_manager_protocol::RegistrationResult* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+    virtual void RegisterInstance(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::RegistrationRequest* /*request*/, ::muscle_manager_protocol::RegistrationResult* /*response*/, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   template <class BaseClass>
   class ExperimentalWithCallbackMethod_RequestPeers : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithCallbackMethod_RequestPeers() {
       ::grpc::Service::experimental().MarkMethodCallback(4,
-        new ::grpc::internal::CallbackUnaryHandler< ExperimentalWithCallbackMethod_RequestPeers<BaseClass>, ::muscle_manager_protocol::PeerRequest, ::muscle_manager_protocol::PeerResult>(
+        new ::grpc_impl::internal::CallbackUnaryHandler< ::muscle_manager_protocol::PeerRequest, ::muscle_manager_protocol::PeerResult>(
           [this](::grpc::ServerContext* context,
                  const ::muscle_manager_protocol::PeerRequest* request,
                  ::muscle_manager_protocol::PeerResult* response,
                  ::grpc::experimental::ServerCallbackRpcController* controller) {
-                   this->RequestPeers(context, request, response, controller);
-                 }, this));
+                   return this->RequestPeers(context, request, response, controller);
+                 }));
+    }
+    void SetMessageAllocatorFor_RequestPeers(
+        ::grpc::experimental::MessageAllocator< ::muscle_manager_protocol::PeerRequest, ::muscle_manager_protocol::PeerResult>* allocator) {
+      static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::muscle_manager_protocol::PeerRequest, ::muscle_manager_protocol::PeerResult>*>(
+          ::grpc::Service::experimental().GetHandler(4))
+              ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_RequestPeers() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status RequestPeers(::grpc::ServerContext* context, const ::muscle_manager_protocol::PeerRequest* request, ::muscle_manager_protocol::PeerResult* response) override {
+    ::grpc::Status RequestPeers(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::PeerRequest* /*request*/, ::muscle_manager_protocol::PeerResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual void RequestPeers(::grpc::ServerContext* context, const ::muscle_manager_protocol::PeerRequest* request, ::muscle_manager_protocol::PeerResult* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+    virtual void RequestPeers(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::PeerRequest* /*request*/, ::muscle_manager_protocol::PeerResult* /*response*/, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   template <class BaseClass>
   class ExperimentalWithCallbackMethod_DeregisterInstance : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithCallbackMethod_DeregisterInstance() {
       ::grpc::Service::experimental().MarkMethodCallback(5,
-        new ::grpc::internal::CallbackUnaryHandler< ExperimentalWithCallbackMethod_DeregisterInstance<BaseClass>, ::muscle_manager_protocol::DeregistrationRequest, ::muscle_manager_protocol::DeregistrationResult>(
+        new ::grpc_impl::internal::CallbackUnaryHandler< ::muscle_manager_protocol::DeregistrationRequest, ::muscle_manager_protocol::DeregistrationResult>(
           [this](::grpc::ServerContext* context,
                  const ::muscle_manager_protocol::DeregistrationRequest* request,
                  ::muscle_manager_protocol::DeregistrationResult* response,
                  ::grpc::experimental::ServerCallbackRpcController* controller) {
-                   this->DeregisterInstance(context, request, response, controller);
-                 }, this));
+                   return this->DeregisterInstance(context, request, response, controller);
+                 }));
+    }
+    void SetMessageAllocatorFor_DeregisterInstance(
+        ::grpc::experimental::MessageAllocator< ::muscle_manager_protocol::DeregistrationRequest, ::muscle_manager_protocol::DeregistrationResult>* allocator) {
+      static_cast<::grpc_impl::internal::CallbackUnaryHandler< ::muscle_manager_protocol::DeregistrationRequest, ::muscle_manager_protocol::DeregistrationResult>*>(
+          ::grpc::Service::experimental().GetHandler(5))
+              ->SetMessageAllocator(allocator);
     }
     ~ExperimentalWithCallbackMethod_DeregisterInstance() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status DeregisterInstance(::grpc::ServerContext* context, const ::muscle_manager_protocol::DeregistrationRequest* request, ::muscle_manager_protocol::DeregistrationResult* response) override {
+    ::grpc::Status DeregisterInstance(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::DeregistrationRequest* /*request*/, ::muscle_manager_protocol::DeregistrationResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual void DeregisterInstance(::grpc::ServerContext* context, const ::muscle_manager_protocol::DeregistrationRequest* request, ::muscle_manager_protocol::DeregistrationResult* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+    virtual void DeregisterInstance(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::DeregistrationRequest* /*request*/, ::muscle_manager_protocol::DeregistrationResult* /*response*/, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   typedef ExperimentalWithCallbackMethod_SubmitLogMessage<ExperimentalWithCallbackMethod_SubmitProfileEvents<ExperimentalWithCallbackMethod_RequestSettings<ExperimentalWithCallbackMethod_RegisterInstance<ExperimentalWithCallbackMethod_RequestPeers<ExperimentalWithCallbackMethod_DeregisterInstance<Service > > > > > > ExperimentalCallbackService;
   template <class BaseClass>
   class WithGenericMethod_SubmitLogMessage : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_SubmitLogMessage() {
       ::grpc::Service::MarkMethodGeneric(0);
@@ -503,7 +585,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status SubmitLogMessage(::grpc::ServerContext* context, const ::muscle_manager_protocol::LogMessage* request, ::muscle_manager_protocol::LogResult* response) override {
+    ::grpc::Status SubmitLogMessage(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::LogMessage* /*request*/, ::muscle_manager_protocol::LogResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -511,7 +593,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithGenericMethod_SubmitProfileEvents : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_SubmitProfileEvents() {
       ::grpc::Service::MarkMethodGeneric(1);
@@ -520,7 +602,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status SubmitProfileEvents(::grpc::ServerContext* context, const ::muscle_manager_protocol::Profile* request, ::muscle_manager_protocol::ProfileResult* response) override {
+    ::grpc::Status SubmitProfileEvents(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::Profile* /*request*/, ::muscle_manager_protocol::ProfileResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -528,7 +610,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithGenericMethod_RequestSettings : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_RequestSettings() {
       ::grpc::Service::MarkMethodGeneric(2);
@@ -537,7 +619,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status RequestSettings(::grpc::ServerContext* context, const ::muscle_manager_protocol::SettingsRequest* request, ::muscle_manager_protocol::SettingsResult* response) override {
+    ::grpc::Status RequestSettings(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::SettingsRequest* /*request*/, ::muscle_manager_protocol::SettingsResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -545,7 +627,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithGenericMethod_RegisterInstance : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_RegisterInstance() {
       ::grpc::Service::MarkMethodGeneric(3);
@@ -554,7 +636,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status RegisterInstance(::grpc::ServerContext* context, const ::muscle_manager_protocol::RegistrationRequest* request, ::muscle_manager_protocol::RegistrationResult* response) override {
+    ::grpc::Status RegisterInstance(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::RegistrationRequest* /*request*/, ::muscle_manager_protocol::RegistrationResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -562,7 +644,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithGenericMethod_RequestPeers : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_RequestPeers() {
       ::grpc::Service::MarkMethodGeneric(4);
@@ -571,7 +653,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status RequestPeers(::grpc::ServerContext* context, const ::muscle_manager_protocol::PeerRequest* request, ::muscle_manager_protocol::PeerResult* response) override {
+    ::grpc::Status RequestPeers(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::PeerRequest* /*request*/, ::muscle_manager_protocol::PeerResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -579,7 +661,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithGenericMethod_DeregisterInstance : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_DeregisterInstance() {
       ::grpc::Service::MarkMethodGeneric(5);
@@ -588,7 +670,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status DeregisterInstance(::grpc::ServerContext* context, const ::muscle_manager_protocol::DeregistrationRequest* request, ::muscle_manager_protocol::DeregistrationResult* response) override {
+    ::grpc::Status DeregisterInstance(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::DeregistrationRequest* /*request*/, ::muscle_manager_protocol::DeregistrationResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -596,7 +678,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithRawMethod_SubmitLogMessage : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_SubmitLogMessage() {
       ::grpc::Service::MarkMethodRaw(0);
@@ -605,7 +687,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status SubmitLogMessage(::grpc::ServerContext* context, const ::muscle_manager_protocol::LogMessage* request, ::muscle_manager_protocol::LogResult* response) override {
+    ::grpc::Status SubmitLogMessage(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::LogMessage* /*request*/, ::muscle_manager_protocol::LogResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -616,7 +698,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithRawMethod_SubmitProfileEvents : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_SubmitProfileEvents() {
       ::grpc::Service::MarkMethodRaw(1);
@@ -625,7 +707,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status SubmitProfileEvents(::grpc::ServerContext* context, const ::muscle_manager_protocol::Profile* request, ::muscle_manager_protocol::ProfileResult* response) override {
+    ::grpc::Status SubmitProfileEvents(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::Profile* /*request*/, ::muscle_manager_protocol::ProfileResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -636,7 +718,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithRawMethod_RequestSettings : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_RequestSettings() {
       ::grpc::Service::MarkMethodRaw(2);
@@ -645,7 +727,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status RequestSettings(::grpc::ServerContext* context, const ::muscle_manager_protocol::SettingsRequest* request, ::muscle_manager_protocol::SettingsResult* response) override {
+    ::grpc::Status RequestSettings(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::SettingsRequest* /*request*/, ::muscle_manager_protocol::SettingsResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -656,7 +738,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithRawMethod_RegisterInstance : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_RegisterInstance() {
       ::grpc::Service::MarkMethodRaw(3);
@@ -665,7 +747,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status RegisterInstance(::grpc::ServerContext* context, const ::muscle_manager_protocol::RegistrationRequest* request, ::muscle_manager_protocol::RegistrationResult* response) override {
+    ::grpc::Status RegisterInstance(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::RegistrationRequest* /*request*/, ::muscle_manager_protocol::RegistrationResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -676,7 +758,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithRawMethod_RequestPeers : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_RequestPeers() {
       ::grpc::Service::MarkMethodRaw(4);
@@ -685,7 +767,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status RequestPeers(::grpc::ServerContext* context, const ::muscle_manager_protocol::PeerRequest* request, ::muscle_manager_protocol::PeerResult* response) override {
+    ::grpc::Status RequestPeers(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::PeerRequest* /*request*/, ::muscle_manager_protocol::PeerResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -696,7 +778,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithRawMethod_DeregisterInstance : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_DeregisterInstance() {
       ::grpc::Service::MarkMethodRaw(5);
@@ -705,7 +787,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status DeregisterInstance(::grpc::ServerContext* context, const ::muscle_manager_protocol::DeregistrationRequest* request, ::muscle_manager_protocol::DeregistrationResult* response) override {
+    ::grpc::Status DeregisterInstance(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::DeregistrationRequest* /*request*/, ::muscle_manager_protocol::DeregistrationResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -716,157 +798,157 @@ class MuscleManager final {
   template <class BaseClass>
   class ExperimentalWithRawCallbackMethod_SubmitLogMessage : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithRawCallbackMethod_SubmitLogMessage() {
       ::grpc::Service::experimental().MarkMethodRawCallback(0,
-        new ::grpc::internal::CallbackUnaryHandler< ExperimentalWithRawCallbackMethod_SubmitLogMessage<BaseClass>, ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+        new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
           [this](::grpc::ServerContext* context,
                  const ::grpc::ByteBuffer* request,
                  ::grpc::ByteBuffer* response,
                  ::grpc::experimental::ServerCallbackRpcController* controller) {
                    this->SubmitLogMessage(context, request, response, controller);
-                 }, this));
+                 }));
     }
     ~ExperimentalWithRawCallbackMethod_SubmitLogMessage() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status SubmitLogMessage(::grpc::ServerContext* context, const ::muscle_manager_protocol::LogMessage* request, ::muscle_manager_protocol::LogResult* response) override {
+    ::grpc::Status SubmitLogMessage(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::LogMessage* /*request*/, ::muscle_manager_protocol::LogResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual void SubmitLogMessage(::grpc::ServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+    virtual void SubmitLogMessage(::grpc::ServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   template <class BaseClass>
   class ExperimentalWithRawCallbackMethod_SubmitProfileEvents : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithRawCallbackMethod_SubmitProfileEvents() {
       ::grpc::Service::experimental().MarkMethodRawCallback(1,
-        new ::grpc::internal::CallbackUnaryHandler< ExperimentalWithRawCallbackMethod_SubmitProfileEvents<BaseClass>, ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+        new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
           [this](::grpc::ServerContext* context,
                  const ::grpc::ByteBuffer* request,
                  ::grpc::ByteBuffer* response,
                  ::grpc::experimental::ServerCallbackRpcController* controller) {
                    this->SubmitProfileEvents(context, request, response, controller);
-                 }, this));
+                 }));
     }
     ~ExperimentalWithRawCallbackMethod_SubmitProfileEvents() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status SubmitProfileEvents(::grpc::ServerContext* context, const ::muscle_manager_protocol::Profile* request, ::muscle_manager_protocol::ProfileResult* response) override {
+    ::grpc::Status SubmitProfileEvents(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::Profile* /*request*/, ::muscle_manager_protocol::ProfileResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual void SubmitProfileEvents(::grpc::ServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+    virtual void SubmitProfileEvents(::grpc::ServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   template <class BaseClass>
   class ExperimentalWithRawCallbackMethod_RequestSettings : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithRawCallbackMethod_RequestSettings() {
       ::grpc::Service::experimental().MarkMethodRawCallback(2,
-        new ::grpc::internal::CallbackUnaryHandler< ExperimentalWithRawCallbackMethod_RequestSettings<BaseClass>, ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+        new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
           [this](::grpc::ServerContext* context,
                  const ::grpc::ByteBuffer* request,
                  ::grpc::ByteBuffer* response,
                  ::grpc::experimental::ServerCallbackRpcController* controller) {
                    this->RequestSettings(context, request, response, controller);
-                 }, this));
+                 }));
     }
     ~ExperimentalWithRawCallbackMethod_RequestSettings() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status RequestSettings(::grpc::ServerContext* context, const ::muscle_manager_protocol::SettingsRequest* request, ::muscle_manager_protocol::SettingsResult* response) override {
+    ::grpc::Status RequestSettings(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::SettingsRequest* /*request*/, ::muscle_manager_protocol::SettingsResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual void RequestSettings(::grpc::ServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+    virtual void RequestSettings(::grpc::ServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   template <class BaseClass>
   class ExperimentalWithRawCallbackMethod_RegisterInstance : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithRawCallbackMethod_RegisterInstance() {
       ::grpc::Service::experimental().MarkMethodRawCallback(3,
-        new ::grpc::internal::CallbackUnaryHandler< ExperimentalWithRawCallbackMethod_RegisterInstance<BaseClass>, ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+        new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
           [this](::grpc::ServerContext* context,
                  const ::grpc::ByteBuffer* request,
                  ::grpc::ByteBuffer* response,
                  ::grpc::experimental::ServerCallbackRpcController* controller) {
                    this->RegisterInstance(context, request, response, controller);
-                 }, this));
+                 }));
     }
     ~ExperimentalWithRawCallbackMethod_RegisterInstance() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status RegisterInstance(::grpc::ServerContext* context, const ::muscle_manager_protocol::RegistrationRequest* request, ::muscle_manager_protocol::RegistrationResult* response) override {
+    ::grpc::Status RegisterInstance(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::RegistrationRequest* /*request*/, ::muscle_manager_protocol::RegistrationResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual void RegisterInstance(::grpc::ServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+    virtual void RegisterInstance(::grpc::ServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   template <class BaseClass>
   class ExperimentalWithRawCallbackMethod_RequestPeers : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithRawCallbackMethod_RequestPeers() {
       ::grpc::Service::experimental().MarkMethodRawCallback(4,
-        new ::grpc::internal::CallbackUnaryHandler< ExperimentalWithRawCallbackMethod_RequestPeers<BaseClass>, ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+        new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
           [this](::grpc::ServerContext* context,
                  const ::grpc::ByteBuffer* request,
                  ::grpc::ByteBuffer* response,
                  ::grpc::experimental::ServerCallbackRpcController* controller) {
                    this->RequestPeers(context, request, response, controller);
-                 }, this));
+                 }));
     }
     ~ExperimentalWithRawCallbackMethod_RequestPeers() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status RequestPeers(::grpc::ServerContext* context, const ::muscle_manager_protocol::PeerRequest* request, ::muscle_manager_protocol::PeerResult* response) override {
+    ::grpc::Status RequestPeers(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::PeerRequest* /*request*/, ::muscle_manager_protocol::PeerResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual void RequestPeers(::grpc::ServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+    virtual void RequestPeers(::grpc::ServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   template <class BaseClass>
   class ExperimentalWithRawCallbackMethod_DeregisterInstance : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     ExperimentalWithRawCallbackMethod_DeregisterInstance() {
       ::grpc::Service::experimental().MarkMethodRawCallback(5,
-        new ::grpc::internal::CallbackUnaryHandler< ExperimentalWithRawCallbackMethod_DeregisterInstance<BaseClass>, ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+        new ::grpc_impl::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
           [this](::grpc::ServerContext* context,
                  const ::grpc::ByteBuffer* request,
                  ::grpc::ByteBuffer* response,
                  ::grpc::experimental::ServerCallbackRpcController* controller) {
                    this->DeregisterInstance(context, request, response, controller);
-                 }, this));
+                 }));
     }
     ~ExperimentalWithRawCallbackMethod_DeregisterInstance() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
-    ::grpc::Status DeregisterInstance(::grpc::ServerContext* context, const ::muscle_manager_protocol::DeregistrationRequest* request, ::muscle_manager_protocol::DeregistrationResult* response) override {
+    ::grpc::Status DeregisterInstance(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::DeregistrationRequest* /*request*/, ::muscle_manager_protocol::DeregistrationResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
-    virtual void DeregisterInstance(::grpc::ServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
+    virtual void DeregisterInstance(::grpc::ServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/, ::grpc::experimental::ServerCallbackRpcController* controller) { controller->Finish(::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "")); }
   };
   template <class BaseClass>
   class WithStreamedUnaryMethod_SubmitLogMessage : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_SubmitLogMessage() {
       ::grpc::Service::MarkMethodStreamed(0,
@@ -876,7 +958,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status SubmitLogMessage(::grpc::ServerContext* context, const ::muscle_manager_protocol::LogMessage* request, ::muscle_manager_protocol::LogResult* response) override {
+    ::grpc::Status SubmitLogMessage(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::LogMessage* /*request*/, ::muscle_manager_protocol::LogResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -886,7 +968,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithStreamedUnaryMethod_SubmitProfileEvents : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_SubmitProfileEvents() {
       ::grpc::Service::MarkMethodStreamed(1,
@@ -896,7 +978,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status SubmitProfileEvents(::grpc::ServerContext* context, const ::muscle_manager_protocol::Profile* request, ::muscle_manager_protocol::ProfileResult* response) override {
+    ::grpc::Status SubmitProfileEvents(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::Profile* /*request*/, ::muscle_manager_protocol::ProfileResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -906,7 +988,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithStreamedUnaryMethod_RequestSettings : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_RequestSettings() {
       ::grpc::Service::MarkMethodStreamed(2,
@@ -916,7 +998,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status RequestSettings(::grpc::ServerContext* context, const ::muscle_manager_protocol::SettingsRequest* request, ::muscle_manager_protocol::SettingsResult* response) override {
+    ::grpc::Status RequestSettings(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::SettingsRequest* /*request*/, ::muscle_manager_protocol::SettingsResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -926,7 +1008,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithStreamedUnaryMethod_RegisterInstance : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_RegisterInstance() {
       ::grpc::Service::MarkMethodStreamed(3,
@@ -936,7 +1018,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status RegisterInstance(::grpc::ServerContext* context, const ::muscle_manager_protocol::RegistrationRequest* request, ::muscle_manager_protocol::RegistrationResult* response) override {
+    ::grpc::Status RegisterInstance(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::RegistrationRequest* /*request*/, ::muscle_manager_protocol::RegistrationResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -946,7 +1028,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithStreamedUnaryMethod_RequestPeers : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_RequestPeers() {
       ::grpc::Service::MarkMethodStreamed(4,
@@ -956,7 +1038,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status RequestPeers(::grpc::ServerContext* context, const ::muscle_manager_protocol::PeerRequest* request, ::muscle_manager_protocol::PeerResult* response) override {
+    ::grpc::Status RequestPeers(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::PeerRequest* /*request*/, ::muscle_manager_protocol::PeerResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -966,7 +1048,7 @@ class MuscleManager final {
   template <class BaseClass>
   class WithStreamedUnaryMethod_DeregisterInstance : public BaseClass {
    private:
-    void BaseClassMustBeDerivedFromService(const Service *service) {}
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_DeregisterInstance() {
       ::grpc::Service::MarkMethodStreamed(5,
@@ -976,7 +1058,7 @@ class MuscleManager final {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable regular version of this method
-    ::grpc::Status DeregisterInstance(::grpc::ServerContext* context, const ::muscle_manager_protocol::DeregistrationRequest* request, ::muscle_manager_protocol::DeregistrationResult* response) override {
+    ::grpc::Status DeregisterInstance(::grpc::ServerContext* /*context*/, const ::muscle_manager_protocol::DeregistrationRequest* /*request*/, ::muscle_manager_protocol::DeregistrationResult* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }

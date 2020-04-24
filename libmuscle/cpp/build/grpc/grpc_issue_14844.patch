@@ -1,0 +1,20 @@
+--- grpc-1.24.3/Makefile	2020-04-18 19:03:44.646829591 +0200
++++ grpc-1.24.3/Makefile.new	2020-04-18 19:17:37.735047514 +0200
+@@ -3097,13 +3097,13 @@
+ 
+ install-headers_c:
+ 	$(E) "[INSTALL] Installing public C headers"
+-	$(Q) $(foreach h, $(PUBLIC_HEADERS_C), $(INSTALL) -d $(prefix)/$(dir $(h)) && ) exit 0 || exit 1
+-	$(Q) $(foreach h, $(PUBLIC_HEADERS_C), $(INSTALL) $(h) $(prefix)/$(h) && ) exit 0 || exit 1
++	$(Q) for h in $(PUBLIC_HEADERS_C) ; do $(INSTALL) -d $(prefix)/$$(dirname $$h) ; done
++	$(Q) for h in $(PUBLIC_HEADERS_C) ; do $(INSTALL) $$h $(prefix)/$$h ; done
+ 
+ install-headers_cxx:
+ 	$(E) "[INSTALL] Installing public C++ headers"
+-	$(Q) $(foreach h, $(PUBLIC_HEADERS_CXX), $(INSTALL) -d $(prefix)/$(dir $(h)) && ) exit 0 || exit 1
+-	$(Q) $(foreach h, $(PUBLIC_HEADERS_CXX), $(INSTALL) $(h) $(prefix)/$(h) && ) exit 0 || exit 1
++	$(Q) for h in $(PUBLIC_HEADERS_CXX) ; do $(INSTALL) -d $(prefix)/$$(dirname $$h) ; done
++	$(Q) for h in $(PUBLIC_HEADERS_CXX) ; do $(INSTALL) $$h $(prefix)/$$h ; done
+ 
+ install-static: install-static_c install-static_cxx
+ 

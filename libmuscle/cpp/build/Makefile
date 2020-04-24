@@ -1,6 +1,5 @@
 include check_tools.make
 
-
 .PHONY: all
 all: muscle_manager_protocol ymmsl libmuscle
 
@@ -10,12 +9,9 @@ test: tests
 	$(MAKE) -C libmuscle test
 
 .PHONY: install
-install: all
+install: all protobuf_install grpc_install msgpack_install
 	$(MAKE) -C ymmsl install
 	$(MAKE) -C libmuscle install
-	$(MAKE) -C protobuf install
-	$(MAKE) -C grpc install
-	$(MAKE) -C msgpack install
 
 .PHONY: clean
 clean:
@@ -37,37 +33,48 @@ distclean:
 	$(MAKE) -C ymmsl distclean
 	$(MAKE) -C libmuscle distclean
 
+# Find dependencies or set up build
 
 dep_name := protobuf
-dep_min_version := 3.7.1
-dep_version := 3.7.1
+dep_version_constraint := = 3.10.0
+dep_version := 3.10.0
 dep_pkgconfig_name := protobuf
-include make_available.make
-
-export protobuf_ROOT                   # make available to grpc as well
+dep_install := 1
+include $(TOOLDIR)/make_available.make
 
 dep_name := grpc
-dep_min_version := 1.17.1
-dep_version := 1.17.1
-dep_pkgconfig_name := grpc
-include make_available.make
+dep_version_constraint := = 1.24.3
+dep_version := 1.24.3
+dep_pkgconfig_name := grpc++
+dep_install := 1
+include $(TOOLDIR)/make_available.make
+
+# If gRPC is available but we're building our own protobuf, then we should
+# build our own gRPC as well, linked against our own protobuf, to avoid having
+# two versions of protobuf in the same process.
+ifeq (grpc_AVAILABLE, 1)
+    ifneq (protobuf_AVAILABLE, 1)
+        include $(TOOLDIR)/dep_build.make
+    endif
+endif
 
 grpc: protobuf
 
 dep_name := msgpack
-dep_min_version := 3.1.0
+dep_version_constraint := >= 3.1.0
 dep_version := 3.2.0
 dep_pkgconfig_name := msgpack
-include make_available.make
+dep_install := 1
+include $(TOOLDIR)/make_available.make
 
 dep_name := googletest
-dep_min_version := 1.8.1
+dep_version_constraint := >= 1.8.1
 dep_version := 1.8.1
 dep_pkgconfig_name := gtest
-include make_available.make
+dep_install := 0
+include $(TOOLDIR)/make_available.make
 
-export googletest_ROOT
-
+# Directories where local builds will be available
 
 DEP_DIRS := $(CURDIR)/protobuf/protobuf
 DEP_DIRS += $(CURDIR)/grpc/c-ares/c-ares

@@ -1,11 +1,11 @@
-.. image:: https://github.com/multiscale/muscle3/raw/develop/docs/source/muscle3_logo_readme.png
+.. image:: https://github.com/multiscale/muscle3/raw/master/docs/source/muscle3_logo_readme.png
     :alt: MUSCLE 3
 
-.. image:: https://readthedocs.org/projects/muscle3/badge/?version=develop
-    :target: https://muscle3.readthedocs.io/en/develop/?badge=develop
+.. image:: https://readthedocs.org/projects/muscle3/badge/?version=master
+    :target: https://muscle3.readthedocs.io/en/develop/?badge=master
     :alt: Documentation Build Status
 
-.. image:: https://github.com/multiscale/muscle3/workflows/continuous_integration/badge.svg?branch=develop
+.. image:: https://github.com/multiscale/muscle3/workflows/continuous_integration/badge.svg?branch=master
     :target: https://github.com/multiscale/muscle3/actions
     :alt: Build Status
 
@@ -17,8 +17,8 @@
     :target: https://www.codacy.com/app/LourensVeen/muscle3
     :alt: Codacy Grade
 
-.. image:: https://requires.io/github/multiscale/muscle3/requirements.svg?branch=develop
-     :target: https://requires.io/github/multiscale/muscle3/requirements/?branch=develop
+.. image:: https://requires.io/github/multiscale/muscle3/requirements.svg?branch=master
+     :target: https://requires.io/github/multiscale/muscle3/requirements/?branch=master
      :alt: Requirements Status
 
 .. image:: https://zenodo.org/badge/122876985.svg

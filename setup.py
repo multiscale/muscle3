@@ -12,6 +12,10 @@ _libmuscle_version_file = _here / 'libmuscle' / 'python' / 'libmuscle' / 'versio
 with _libmuscle_version_file.open('w') as f:
     f.write('__version__ = \'{}\'\n'.format(_version))
 
+_muscle3_packages = [
+        p for p in find_packages() + find_packages('libmuscle/python')
+        if p != 'integration_test']
+
 setup(
     name='muscle3',
     version=_version,
@@ -29,7 +33,7 @@ setup(
         'Programming Language :: Python :: 3.6'],
 
     # packages=['muscle_manager', 'muscle_manager_protocol', 'libmuscle', 'libmuscle.mcp'],
-    packages=find_packages() + find_packages('libmuscle/python'),
+    packages=_muscle3_packages,
     package_dir={
         'muscle_manager': 'muscle_manager',
         'libmuscle': 'libmuscle/python/libmuscle'

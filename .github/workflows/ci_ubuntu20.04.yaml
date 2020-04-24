@@ -4,7 +4,6 @@ name: native_compatibility_ubuntu20.04
 on:
   schedule:
     - cron: '0 4 * * 0'
-  push:
 jobs:
   build:
     runs-on: ubuntu-latest

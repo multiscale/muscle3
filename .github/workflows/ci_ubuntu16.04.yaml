@@ -4,7 +4,6 @@ name: native_compatibility_ubuntu16.04
 on:
   schedule:
     - cron: '0 1 * * 0'
-  push:
 jobs:
   build:
     runs-on: ubuntu-latest

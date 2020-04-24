@@ -115,6 +115,7 @@ clean:
 	cd libmuscle/fortran && $(MAKE) clean
 	cd scripts && $(MAKE) clean
 	cd docs/source/examples && $(MAKE) clean
+	rm -rf ./build
 
 .PHONY: distclean
 distclean:
@@ -122,6 +123,7 @@ distclean:
 	cd libmuscle/fortran && $(MAKE) distclean
 	cd scripts && $(MAKE) distclean
 	cd docs/source/examples && $(MAKE) clean
+	rm -rf ./build
 
 .PHONY: fortran
 fortran: cpp

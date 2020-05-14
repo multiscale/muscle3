@@ -349,6 +349,27 @@ TEST(libmuscle_mcp_data, list_dict) {
     ASSERT_EQ(data[2]["test2"].as<int>(), 87);
 }
 
+TEST(libmuscle_mcp_data, list_list) {
+    auto list = Data::list("test1", "test2", 13);
+
+    msgpack::sbuffer buf;
+    msgpack::pack(buf, Data::list(1, 2.0, list));
+    auto zone = std::make_shared<msgpack::zone>();
+    auto data = unpack_data(zone, buf.data(), buf.size());
+
+    ASSERT_TRUE(data.is_a_list());
+    ASSERT_EQ(data.size(), 3);
+    ASSERT_TRUE(data[0].is_a<int>());
+    ASSERT_EQ(data[0].as<int>(), 1);
+    ASSERT_TRUE(data[1].is_a<double>());
+    ASSERT_EQ(data[1].as<double>(), 2.0);
+    ASSERT_TRUE(data[2].is_a_list());
+    ASSERT_EQ(data[2].size(), 3);
+    ASSERT_EQ(data[2][0].as<std::string>(), "test1");
+    ASSERT_EQ(data[2][1].as<std::string>(), "test2");
+    ASSERT_EQ(data[2][2].as<int>(), 13);
+}
+
 TEST(libmuscle_mcp_data, list_dataconstref) {
     // regression test
     Data dict = Data::list(DataConstRef());

@@ -120,7 +120,9 @@
             "libmuscle::impl::Data::byte_array(char const*, unsigned int)";
             "libmuscle::impl::Data::byte_array(unsigned int)";
             "libmuscle::impl::Data::dict()";
+            "libmuscle::impl::Data::init_dict_(unsigned int)";
             "libmuscle::impl::Data::list()";
+            "libmuscle::impl::Data::init_list_(unsigned int)";
             "libmuscle::impl::Data::nils(unsigned long)";
             "libmuscle::impl::Data::operator=(libmuscle::impl::Data const&)";
             "libmuscle::impl::Data::operator[](unsigned long)";

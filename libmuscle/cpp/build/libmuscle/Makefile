@@ -42,7 +42,8 @@ header_root := $(CURDIR)/../../src
 CXXFLAGS += -I$(header_root)
 
 public_headers := libmuscle/data.hpp libmuscle/data.tpp libmuscle/instance.hpp
-public_headers += libmuscle/libmuscle.hpp libmuscle/message.hpp
+public_headers += libmuscle/libmuscle.hpp libmuscle/mcp/data_pack.hpp
+public_headers += libmuscle/mcp/data_pack.tpp libmuscle/message.hpp
 public_headers += libmuscle/ports_description.hpp libmuscle/util.hpp libmuscle/util.tpp
 installed_headers := $(public_headers:%=$(PREFIX)/include/%)
 

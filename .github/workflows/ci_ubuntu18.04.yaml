@@ -4,6 +4,9 @@ name: native_compatibility_ubuntu18.04
 on:
   schedule:
     - cron: '0 2 * * 0'
+  push:
+    branches:
+      - 'release-*'
 jobs:
   build:
     runs-on: ubuntu-latest

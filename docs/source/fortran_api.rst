@@ -2302,6 +2302,22 @@ YMMSL_Settings
     :r is: ``.true.`` if the value is of type logical.
     :rtype is: logical
 
+.. f:function:: YMMSL_Settings_is_a_int4(self, key, err_code, err_msg)
+
+    Return whether a value is of type ``YMMSL_int4``.
+
+    This returns ``.true.`` if the value is an integer and fits in an int4.
+
+    If the given key does not exist, then ``err_code`` will be set to
+    ``YMMSL_out_of_bounds`` and the result will be invalid.
+
+    :p YMMSL_Settings self: The Settings object to inspect.
+    :p character key: The name of the setting to check.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r is: ``.true.`` if the value is of type ``YMMSL_int4``.
+    :rtype is: logical
+
 .. f:function:: YMMSL_Settings_is_a_int8(self, key, err_code, err_msg)
 
     Return whether a value is of type ``YMMSL_int8``.
@@ -2365,9 +2381,10 @@ YMMSL_Settings
     If no setting with the given key exists, one is added, if one does,
     it is overwritten.
 
-    ``value`` may be a character (string), a logical, an 8-byte integer (e.g.
-    ``YMMSL_int8``), an 8-byte real number (``YMMSL_real8``), or a one- or
-    two-dimensional arrays of 8-byte real numbers.
+    ``value`` may be a character (string), a logical, a 4-byte integer (e.g.
+    ``YMMSL_int4``), an 8-byte integer (e.g.  ``YMMSL_int8``), an 8-byte real
+    number (``YMMSL_real8``), or a one- or two-dimensional arrays of 8-byte real
+    numbers.
 
     :p YMMSL_Settings self: The Settings object to modify.
     :p character key: The name of the setting.
@@ -2400,6 +2417,20 @@ YMMSL_Settings
     :p character err_msg: An error message output (allocatable, optional).
     :r value: The value at the given index
     :rtype value: logical
+
+.. f:function:: YMMSL_Settings_get_as_int4(self, key, err_code, err_msg)
+
+    Return the value of an integer-typed setting.
+
+    If this setting is not currently set to a integer-typed value, or the
+    value is out of range for an int4, then ``err_code`` will be set to
+    ``YMMSL_bad_cast`` and the result will be invalid.
+
+    :p character key: The name of the setting to get.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The value at the given index (YMMSL_int4)
+    :rtype value: integer
 
 .. f:function:: YMMSL_Settings_get_as_int8(self, key, err_code, err_msg)
 

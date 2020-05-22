@@ -1,5 +1,8 @@
 // Template implementation. Do not include directly!
 
+#include <limits>
+
+
 namespace ymmsl { namespace impl {
 
 template<>
@@ -10,6 +13,16 @@ inline bool SettingValue::is_a<std::string>() const {
 template<>
 inline bool SettingValue::is_a<int64_t>() const {
     return type_ == Type_::INT;
+}
+
+template<>
+inline bool SettingValue::is_a<int32_t>() const {
+    if (type_ != Type_::INT) return false;
+
+    bool too_small = (int_value_ < std::numeric_limits<int32_t>::min());
+    bool too_big = (int_value_ > std::numeric_limits<int32_t>::max());
+
+    return !(too_small || too_big);
 }
 
 template<>
@@ -48,6 +61,13 @@ inline std::string SettingValue::as<std::string>() const {
 template<>
 inline int64_t SettingValue::as<int64_t>() const {
     if (!is_a<int64_t>())
+        throw std::bad_cast();
+    return int_value_;
+}
+
+template<>
+inline int32_t SettingValue::as<int32_t>() const {
+    if (!is_a<int32_t>())
         throw std::bad_cast();
     return int_value_;
 }

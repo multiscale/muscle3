@@ -27,7 +27,7 @@ inline bool SettingValue::is_a<int32_t>() const {
 
 template<>
 inline bool SettingValue::is_a<double>() const {
-    return type_ == Type_::FLOAT;
+    return (type_ == Type_::FLOAT) || (type_ == Type_::INT);
 }
 
 template<>
@@ -76,6 +76,8 @@ template<>
 inline double SettingValue::as<double>() const {
     if (!is_a<double>())
         throw std::bad_cast();
+    if (is_a<int64_t>())
+        return static_cast<double>(int_value_);
     return float_value_;
 }
 

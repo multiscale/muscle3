@@ -171,6 +171,10 @@ TEST(libmuscle_instance, get_setting) {
     ASSERT_EQ(static_cast<int>(instance.get_setting_as<int32_t>("test3")), 10);
     ASSERT_THROW(instance.get_setting_as<int32_t>("test4"), std::bad_cast);
 
+    ASSERT_EQ(instance.get_setting_as<double>("test5"), 10.0);
+    ASSERT_EQ(instance.get_setting_as<double>("test6"), 1.0f / 3.0f);
+    ASSERT_EQ(instance.get_setting_as<double>("test3"), 10.0);
+
     ASSERT_THROW(instance.get_setting("testx"), std::out_of_range);
     ASSERT_THROW(instance.get_setting_as<int64_t>("test1"), std::bad_cast);
 }

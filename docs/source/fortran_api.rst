@@ -2336,6 +2336,9 @@ YMMSL_Settings
 
     Return whether a value is of type ``YMMSL_real8``.
 
+    This will also return ``.true.`` if the value is an integer, even if
+    converting it would lose precision.
+
     If the given key does not exist, then ``err_code`` will be set to
     ``YMMSL_out_of_bounds`` and the result will be invalid.
 
@@ -2450,7 +2453,10 @@ YMMSL_Settings
 
     Return the value of a real-typed setting.
 
-    If this setting is not currently set to a real-typed value,
+    This will also work if the setting is integer-typed in which case it
+    will be converted, with possible loss of precision.
+
+    If this setting is not currently set to a real- or integer-typed value,
     then ``err_code`` will be set to ``YMMSL_bad_cast`` and the result
     will be invalid.
 

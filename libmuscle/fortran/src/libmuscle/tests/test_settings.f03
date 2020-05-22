@@ -88,6 +88,7 @@ contains
         call assert_eq_int8(YMMSL_Settings_get_as_int8(s1, 'key3'), 42424242424242_YMMSL_int8)
         call assert_eq_logical(YMMSL_Settings_get_as_logical(s1, 'key4'), .false.)
         call assert_eq_real8(YMMSL_Settings_get_as_real8(s1, 'key5'), 13.13d0)
+        call assert_eq_real8(YMMSL_Settings_get_as_real8(s1, 'key2'), 242424242d0)
         call YMMSL_Settings_get_as_real8array(s1, 'key6', ra2)
         call assert_eq_real8array(ra2, ra1)
         call YMMSL_Settings_get_as_real8array2(s1, 'key7', ra4)

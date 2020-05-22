@@ -130,7 +130,9 @@ class SettingValue {
         /** Return whether this SettingValue holds a value of the given type.
          *
          * Note that for int32_t, this function will return true only if the
-         * value is integer and fits in an int32_t.
+         * value is integer and fits in an int32_t. For double, it will return
+         * true if the value is integer, even if converting it to a double
+         * would reduce precision.
          *
          * Since int and long are usually equivalent to int32_t or int64_t,
          * you can use those values too.

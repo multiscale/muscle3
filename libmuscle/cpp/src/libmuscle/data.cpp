@@ -310,6 +310,7 @@ DataConstRef::DataConstRef(Settings const & settings)
 void DataConstRef::reseat(DataConstRef const & target) {
     mp_zones_ = target.mp_zones_;
     mp_obj_ = target.mp_obj_;
+    obj_cache_ = target.obj_cache_;
 }
 
 template <>
@@ -718,8 +719,10 @@ DataConstRef DataConstRef::grid_dict_() const {
     if (oh.get().type != msgpack::type::MAP)
         throw std::runtime_error("Invalid grid format. Bug in MUSCLE 3?");
 
-    auto zone = std::make_shared<msgpack::zone>();
-    return DataConstRef(mcp::unpack_data(zone, ext.data(), ext.size()));
+    if (!obj_cache_)
+        obj_cache_ = std::make_shared<DataConstRef>(
+                mcp::unpack_data(mp_zones_->at(0), ext.data(), ext.size()));
+    return *obj_cache_;
 }
 
 /* This is here in the .cpp and instantiated explicitly, because it requires the
@@ -853,6 +856,7 @@ Data & Data::operator=(Data const & rhs) {
         if (mp_zones_ != rhs.mp_zones_)
             mp_zones_->insert(mp_zones_->end(),
                     rhs.mp_zones_->cbegin(), rhs.mp_zones_->cend());
+        obj_cache_ = rhs.obj_cache_;
     }
     return *this;
 }

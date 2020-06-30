@@ -84,6 +84,26 @@ else
     $(info - Will extract archives using $(TAR).)
 endif
 
+# Check for valgrind (for testing for memory leaks)
+$(info )
+$(info Looking for valgrind...)
+tool_var := VALGRIND
+include $(TOOLDIR)/check_override.make
+
+tool_command := valgrind
+include $(TOOLDIR)/detect_tool.make
+
+ifeq ($(VALGRIND), valgrind)
+    export VALGRIND := valgrind --leak-check=full --error-exitcode=1
+endif
+
+ifndef VALGRIND
+    $(warning - Could not find valgrind, so tests will run without it.)
+    $(warning - To fix this, install valgrind and if necessary set VALGRIND to point to it.)
+else
+    $(info - Will check for leaks using $(VALGRIND).)
+endif
+
 # Check number of cores
 ifndef NCORES
     NCORES := $(shell nproc 2>/dev/null || echo 2)

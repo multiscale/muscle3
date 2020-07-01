@@ -16,4 +16,4 @@ jobs:
         key: python-compatibility-3.5.1-eggs
 
     - name: Run Python tests on 3.5.1
-      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3" python:3.5.1 /bin/bash -c 'apt-get update && apt-get -y install python3-numpy && cd /home/muscle3 && pip install -U pip setuptools wheel ymmsl==0.10.1 && make test_python_only'
+      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3" python:3.5.1 /bin/bash -c 'cd /home/muscle3 && pip install -U pip setuptools wheel numpy ymmsl==0.10.1 && make test_python_only'

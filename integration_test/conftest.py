@@ -8,7 +8,7 @@ import pytest
 import yatiml
 import ymmsl
 
-import integration_test.include_libmuscle
+import integration_test.include_libmuscle   # noqa: F401
 
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger

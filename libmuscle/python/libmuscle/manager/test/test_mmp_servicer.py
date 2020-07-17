@@ -1,5 +1,5 @@
 from google.protobuf.timestamp_pb2 import Timestamp
-from ymmsl import Operator, Reference
+from ymmsl import Operator
 
 from libmuscle.manager.mmp_server import MMPServicer
 import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp

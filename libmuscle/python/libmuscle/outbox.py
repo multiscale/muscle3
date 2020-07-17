@@ -1,7 +1,4 @@
 from queue import Queue
-from typing import List
-
-from ymmsl import Reference
 
 
 class Outbox:

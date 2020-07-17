@@ -1,5 +1,5 @@
 from typing import List, Optional
-from ymmsl import Identifier, Operator, Reference
+from ymmsl import Identifier, Operator
 import ymmsl
 
 from libmuscle.operator import operator_from_grpc, operator_to_grpc

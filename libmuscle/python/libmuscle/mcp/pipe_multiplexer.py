@@ -3,7 +3,7 @@ from multiprocessing.connection import Connection
 # The below line seems to help avoid crashes, something to do with
 # a background thread in the library and forking threaded processes.
 from multiprocessing import resource_sharer    # type: ignore
-from typing import Dict, List, Tuple
+from typing import Dict, List
 import uuid
 
 from ymmsl import Reference

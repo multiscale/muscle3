@@ -1,8 +1,5 @@
-from typing import List
-
-import pytest
-from ymmsl import (ComputeElement, Conduit, Configuration, Operator, Reference,
-                   Model, Settings)
+from ymmsl import (ComputeElement, Conduit, Configuration, Operator, Model,
+                   Settings)
 
 from libmuscle import Instance, Message
 from libmuscle.runner import run_simulation

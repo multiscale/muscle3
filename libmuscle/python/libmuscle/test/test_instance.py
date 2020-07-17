@@ -1,9 +1,9 @@
 import sys
-from typing import Generator, List
+from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
-from ymmsl import Conduit, Operator, Reference, Settings
+from ymmsl import Operator, Reference, Settings
 
 from libmuscle.communicator import Message
 from libmuscle.instance import Instance
@@ -61,7 +61,7 @@ def instance(sys_argv_instance):
 @pytest.fixture
 def instance2(sys_argv_instance):
     with patch('libmuscle.instance.MMPClient') as mmp_client, \
-         patch('libmuscle.instance.Communicator') as comm_type:
+         patch('libmuscle.instance.Communicator'):
         mmp_client_object = MagicMock()
         mmp_client_object.request_peers.return_value = (None, None, None)
         mmp_client.return_value = mmp_client_object

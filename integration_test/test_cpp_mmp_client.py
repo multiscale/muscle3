@@ -5,13 +5,11 @@ import subprocess
 import ymmsl
 from ymmsl import Port, Reference
 
-from libmuscle.logging import LogLevel, LogMessage, Timestamp
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger
 from libmuscle.manager.mmp_server import MMPServer
 from libmuscle.manager.manager import elements_for_model
 from libmuscle.manager.topology_store import TopologyStore
-from libmuscle.mmp_client import MMPClient
 from libmuscle.operator import Operator
 
 from .conftest import skip_if_python_only

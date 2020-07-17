@@ -65,7 +65,6 @@ setup(
         'mypy',
         'pytest>=3.5',
         'pytest-cov',
-        'pytest-pep8',
         'pytest-flake8',
         'pytest-mypy'
     ],

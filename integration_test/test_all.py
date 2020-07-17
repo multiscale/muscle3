@@ -1,11 +1,8 @@
 from collections import OrderedDict
-import sys
-from typing import List
 
 import numpy as np
-import pytest
 from ymmsl import (ComputeElement, Conduit, Configuration, Model, Operator,
-                   Reference, Settings)
+                   Settings)
 
 from libmuscle import Grid, Instance, Message
 from libmuscle.runner import run_simulation

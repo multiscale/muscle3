@@ -1,5 +1,4 @@
 from concurrent import futures
-import logging
 import time
 import socket
 from typing import cast, Generator, List
@@ -12,7 +11,6 @@ from libmuscle.logging import LogLevel, Timestamp
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger
 from libmuscle.manager.topology_store import TopologyStore
-from libmuscle.operator import operator_from_grpc
 from libmuscle.util import (conduit_to_grpc, generate_indices,
                             instance_indices, instance_to_kernel)
 
@@ -136,7 +134,7 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
             self.__log(LogLevel.INFO, 'Registered instance {}'.format(
                         request.instance_name))
             return mmp.RegistrationResult(status=mmp.RESULT_STATUS_SUCCESS)
-        except ValueError as e:
+        except ValueError:
             return mmp.RegistrationResult(
                     status=mmp.RESULT_STATUS_ERROR,
                     error_message=('An instance with name {} was already'
@@ -197,7 +195,7 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
             self.__log(LogLevel.INFO, 'Deregistered instance {}'.format(
                     request.instance_name))
             return mmp.DeregistrationResult(status=mmp.RESULT_STATUS_SUCCESS)
-        except ValueError as e:
+        except ValueError:
             return mmp.DeregistrationResult(
                     status=mmp.RESULT_STATUS_ERROR,
                     error_message=('No instance with name {} was registered'

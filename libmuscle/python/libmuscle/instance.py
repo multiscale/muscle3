@@ -1,13 +1,11 @@
 from copy import copy
 import logging
-from pathlib import Path
 import sys
-from typing import cast, Dict, List, Optional, Tuple, Union
-from typing_extensions import Type
+from typing import cast, Dict, List, Optional, Tuple
 
 import grpc
-from ymmsl import (Conduit, Identifier, Operator, SettingValue, Port,
-                   Reference, Settings)
+from ymmsl import (Identifier, Operator, SettingValue, Port, Reference,
+                   Settings)
 
 from libmuscle.communicator import Communicator, Message
 from libmuscle.settings_manager import SettingsManager
@@ -15,7 +13,7 @@ from libmuscle.logging_handler import MuscleManagerHandler
 from libmuscle.mcp.message import ClosePort
 from libmuscle.mmp_client import MMPClient
 from libmuscle.profiler import Profiler
-from libmuscle.profiling import ProfileEvent, ProfileEventType
+from libmuscle.profiling import ProfileEventType
 from libmuscle.util import extract_log_file_location
 
 
@@ -25,7 +23,7 @@ class Instance:
     This class provides a low-level send/receive API for the instance
     to use.
     """
-    def __init__(self, ports: Optional[Dict[Operator, List[str]]]=None
+    def __init__(self, ports: Optional[Dict[Operator, List[str]]] = None
                  ) -> None:
         """Create an Instance.
 
@@ -67,7 +65,7 @@ class Instance:
         self._register()
         self._connect()
 
-    def reuse_instance(self, apply_overlay: bool=True) -> bool:
+    def reuse_instance(self, apply_overlay: bool = True) -> bool:
         """Decide whether to run this instance again.
 
         In a multiscale simulation, instances get reused all the time.
@@ -253,7 +251,7 @@ class Instance:
         self._communicator.get_port(port).set_length(length)
 
     def send(self, port_name: str, message: Message,
-             slot: Optional[int]=None) -> None:
+             slot: Optional[int] = None) -> None:
         """Send a message to the outside world.
 
         Sending is non-blocking, a copy of the message will be made
@@ -271,8 +269,8 @@ class Instance:
 
         self._communicator.send_message(port_name, message, slot)
 
-    def receive(self, port_name: str, slot: Optional[int]=None,
-                default: Optional[Message]=None
+    def receive(self, port_name: str, slot: Optional[int] = None,
+                default: Optional[Message] = None
                 ) -> Message:
         """Receive a message from the outside world.
 
@@ -304,8 +302,8 @@ class Instance:
         return self.__receive_message(port_name, slot, default, False)
 
     def receive_with_settings(
-            self, port_name: str, slot: Optional[int]=None,
-            default: Optional[Message]=None
+            self, port_name: str, slot: Optional[int] = None,
+            default: Optional[Message] = None
             ) -> Message:
         """Receive a message with attached settings overlay.
 

@@ -1,5 +1,4 @@
-import msgpack
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, Dict, List, Optional, Tuple, cast
 from ymmsl import Conduit, Identifier, Operator, Reference, Settings
 
 from libmuscle.endpoint import Endpoint
@@ -11,7 +10,7 @@ from libmuscle.peer_manager import PeerManager
 from libmuscle.post_office import PostOffice
 from libmuscle.port import Port
 from libmuscle.profiler import Profiler
-from libmuscle.profiling import ProfileEvent, ProfileEventType
+from libmuscle.profiling import ProfileEventType
 
 
 MessageObject = Any
@@ -35,7 +34,7 @@ class Message:
     # actually goes out on the wire, see libmuscle.mcp.Message for that.
     def __init__(self, timestamp: float, next_timestamp: Optional[float],
                  data: MessageObject,
-                 settings: Optional[Settings]=None
+                 settings: Optional[Settings] = None
                  ) -> None:
         """Create a Message.
 
@@ -176,7 +175,7 @@ class Communicator:
 
     def send_message(
             self, port_name: str, message: Message,
-            slot: Optional[int]=None) -> None:
+            slot: Optional[int] = None) -> None:
         """Send a message and settings to the outside world.
 
         Sending is non-blocking, a copy of the message will be made
@@ -226,8 +225,8 @@ class Communicator:
             profile_event.port_length = port.get_length()
         profile_event.message_size = len(encoded_message)
 
-    def receive_message(self, port_name: str, slot: Optional[int]=None,
-                        default: Optional[Message]=None
+    def receive_message(self, port_name: str, slot: Optional[int] = None,
+                        default: Optional[Message] = None
                         ) -> Message:
         """Receive a message and attached settings overlay.
 
@@ -305,7 +304,7 @@ class Communicator:
 
         return message
 
-    def close_port(self, port_name: str, slot: Optional[int]=None
+    def close_port(self, port_name: str, slot: Optional[int] = None
                    ) -> None:
         """Closes the given port.
 

@@ -6,7 +6,6 @@ from libmuscle.port import Port
 
 from ymmsl import Conduit, Identifier, Operator, Reference, Settings
 
-import msgpack
 import pytest
 from unittest.mock import patch, MagicMock
 

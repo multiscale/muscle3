@@ -1,7 +1,7 @@
 from enum import Enum
 from threading import Condition
 from typing import Dict  # noqa
-from typing import cast, List
+from typing import List
 
 from ymmsl import Port, Reference
 

@@ -9,7 +9,6 @@ from libmuscle.manager.mmp_server import MMPServer
 from libmuscle.manager.manager import elements_for_model
 from libmuscle.manager.topology_store import TopologyStore
 from libmuscle.mmp_client import MMPClient
-from libmuscle.operator import Operator
 
 
 def do_logging_test(caplog):

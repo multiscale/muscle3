@@ -1,6 +1,5 @@
 import socket
 
-import msgpack
 from typing import Optional
 from ymmsl import Reference
 

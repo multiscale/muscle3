@@ -1,12 +1,10 @@
-import datetime
 from enum import Enum
 import time
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
 from ymmsl import Port, Reference
 
-from libmuscle.operator import operator_to_grpc
 from libmuscle.port import optional_port_to_grpc
 from libmuscle.timestamp import Timestamp
 
@@ -98,10 +96,10 @@ class ProfileEvent:
             start_time: Timestamp,
             stop_time: Timestamp,
             event_type: ProfileEventType,
-            port: Optional[Port]=None,
-            port_length: Optional[int]=None,
-            slot: Optional[int]=None,
-            message_size: Optional[int]=None
+            port: Optional[Port] = None,
+            port_length: Optional[int] = None,
+            slot: Optional[int] = None,
+            message_size: Optional[int] = None
             ) -> None:
 
         self.instance_id = instance_id

@@ -1,7 +1,6 @@
 import logging
 
 from libmuscle.logging import LogLevel, Timestamp
-from libmuscle.operator import Operator
 from libmuscle.util import extract_log_file_location
 
 

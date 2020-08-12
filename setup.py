@@ -56,7 +56,7 @@ setup(
         'pytest-runner',
         # dependencies for `python setup.py build_sphinx`
         'breathe',
-        'sphinx',
+        'sphinx<3.2',
         'recommonmark',
         'sphinx-rtd-theme'
     ],
@@ -72,7 +72,7 @@ setup(
         'dev': [
             'grpcio-tools==1.17.1',
             'mypy-protobuf',
-            'sphinx',
+            'sphinx<3.2',
             'sphinx_rtd_theme',
             'sphinx-fortran',
             'yapf',

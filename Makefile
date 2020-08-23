@@ -116,6 +116,7 @@ clean:
 	cd scripts && $(MAKE) clean
 	cd docs/source/examples && $(MAKE) clean
 	rm -rf ./build
+	rm -rf $(CURDIR)/libmuscle/build/test_install/*
 
 .PHONY: distclean
 distclean:
@@ -124,6 +125,7 @@ distclean:
 	cd scripts && $(MAKE) distclean
 	cd docs/source/examples && $(MAKE) clean
 	rm -rf ./build
+	rm -rf $(CURDIR)/libmuscle/build/test_install/*
 
 .PHONY: fortran
 fortran: cpp

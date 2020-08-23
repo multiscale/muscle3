@@ -50,7 +50,7 @@ setup(
         'msgpack',
         'netifaces',
         'numpy>=1.12',
-        'protobuf>=3.10.0',
+        'protobuf>=3.10.0, <4',
         'typing_extensions',
         'ymmsl==0.10.1'          # Also in CI, update there as well
     ],

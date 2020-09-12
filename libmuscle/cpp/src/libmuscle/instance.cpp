@@ -132,6 +132,7 @@ Instance::Impl::Impl(
         communicator_.reset(new Communicator(name_(), index_(), ports, *logger_, 0));
         register_();
         connect_();
+        set_log_level_();
 #ifdef MUSCLE_ENABLE_MPI
         auto sbase_data = Data(settings_manager_.base);
         msgpack::sbuffer sbuf;

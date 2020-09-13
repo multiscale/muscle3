@@ -29,7 +29,7 @@ class Logger:
         logging.getLogger().addHandler(self._local_handler)
 
         # hardwired for now
-        logging.getLogger().setLevel(logging.INFO)
+        logging.getLogger().setLevel(logging.NOTSET)
         logging.getLogger('yatiml.loader').setLevel(logging.WARNING)
         logging.getLogger('yatiml.dumper').setLevel(logging.WARNING)
 

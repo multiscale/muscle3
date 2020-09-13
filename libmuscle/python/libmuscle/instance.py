@@ -17,6 +17,9 @@ from libmuscle.profiling import ProfileEventType
 from libmuscle.util import extract_log_file_location
 
 
+_logger = logging.getLogger(__name__)
+
+
 class Instance:
     """Represents a compute element instance in a MUSCLE3 simulation.
 
@@ -64,6 +67,7 @@ class Instance:
 
         self._register()
         self._connect()
+        self._set_log_level()
 
     def reuse_instance(self, apply_overlay: bool = True) -> bool:
         """Decide whether to run this instance again.
@@ -104,6 +108,8 @@ class Instance:
         # receive something that was sent on the last go-around.
         # At least emit a warning.
         self.__pre_receive_f_init(apply_overlay)
+
+        self._set_log_level()
 
         ports = self._communicator.list_ports()
         f_init_not_connected = all(
@@ -408,9 +414,9 @@ class Instance:
         logging.getLogger().addHandler(local_handler)
 
         if self.__manager is not None:
-            mmp_handler = MuscleManagerHandler(id_str, logging.WARNING,
-                                               self.__manager)
-            logging.getLogger().addHandler(mmp_handler)
+            self._mmp_handler = MuscleManagerHandler(id_str, logging.WARNING,
+                                                     self.__manager)
+            logging.getLogger().addHandler(self._mmp_handler)
 
     def __receive_message(
             self, port_name: str, slot: Optional[int],
@@ -578,6 +584,7 @@ class Instance:
         self._f_init_cache = dict()
         ports = self._communicator.list_ports()
         for port_name in ports.get(Operator.F_INIT, []):
+            _logger.info('Pre-receiving on port {}'.format(port_name))
             port = self._communicator.get_port(port_name)
             if not port.is_connected():
                 continue
@@ -589,6 +596,42 @@ class Instance:
                 # get the rest.
                 for slot in range(1, port.get_length()):
                     pre_receive(port_name, slot)
+
+    def _set_log_level(self) -> None:
+        """Sets the remote log level.
+
+        This is the minimum level a message must have to be sent to
+        the manager. It gets this from the muscle_remote_log_level
+        setting.
+
+        Note that this also sets the global log level to this level
+        if it is currently higher, otherwise we still get no output.
+
+        """
+        try:
+            log_level_str = cast(
+                    str, self.get_setting('muscle_remote_log_level', 'str'))
+            level_map = {
+                    'CRITICAL': logging.CRITICAL,
+                    'ERROR': logging.ERROR,
+                    'WARNING': logging.WARNING,
+                    'INFO': logging.INFO,
+                    'DEBUG': logging.DEBUG}
+
+            if log_level_str.upper() not in level_map:
+                _logger.warning(
+                    ('muscle_remote_log_level is set to {}, which is not a'
+                     ' valid log level. Please use one of DEBUG, INFO,'
+                     ' WARNING, ERROR, or CRITICAL').format(log_level_str))
+                return
+
+            log_level = level_map[log_level_str]
+            self._mmp_handler.setLevel(log_level)
+            if not logging.getLogger().isEnabledFor(log_level):
+                logging.getLogger().setLevel(log_level)
+        except KeyError:
+            # muscle_remote_log_level not set, do nothing and keep the default
+            pass
 
     def __apply_overlay(self, message: Message) -> None:
         """Sets local overlay if we don't already have one.
@@ -700,7 +743,7 @@ class Instance:
         that we're shutting down, and deregisters from the manager.
         """
         if not self.__is_shut_down:
-            logging.critical(message)
+            _logger.critical(message)
             self.__close_ports()
             self._communicator.shutdown()
             self._deregister()

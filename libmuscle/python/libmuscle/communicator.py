@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Dict, List, Optional, Tuple, cast
 from ymmsl import Conduit, Identifier, Operator, Reference, Settings
 
@@ -11,6 +12,9 @@ from libmuscle.post_office import PostOffice
 from libmuscle.port import Port
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEventType
+
+
+_logger = logging.getLogger(__name__)
 
 
 MessageObject = Any
@@ -187,8 +191,10 @@ class Communicator:
             slot: The slot to send the message on, if any.
         """
         if slot is None:
+            _logger.info('Sending message on {}'.format(port_name))
             slot_list = []  # type: List[int]
         else:
+            _logger.info('Sending message on {}[{}]'.format(port_name, slot))
             slot_list = [slot]
             slot_length = self._ports[port_name].get_length()
             if slot_length <= slot:
@@ -254,8 +260,11 @@ class Communicator:
                 connected.
         """
         if slot is None:
+            _logger.info('Waiting for message on {}'.format(port_name))
             slot_list = []      # type: List[int]
         else:
+            _logger.info('Waiting for message on {}[{}]'.format(
+                port_name, slot))
             slot_list = [slot]
 
         recv_endpoint = self.__get_endpoint(port_name, slot_list)
@@ -267,6 +276,9 @@ class Communicator:
                                     ' given. Either specify a default, or'
                                     ' connect a sending component to this'
                                     ' port.').format(port_name))
+            _logger.info(
+                    'No message received on {} as it is not connected'.format(
+                        port_name))
             return default
 
         if port_name in self._ports:
@@ -302,6 +314,16 @@ class Communicator:
             profile_event.port_length = port.get_length()
         profile_event.message_size = len(mcp_message_bytes)
 
+        if slot is None:
+            _logger.info('Received message on {}'.format(port_name))
+            if isinstance(mcp_message.data, ClosePort):
+                _logger.info('Port {} is now closed'.format(port_name))
+        else:
+            _logger.info('Received message on {}[{}]'.format(port_name, slot))
+            if isinstance(mcp_message.data, ClosePort):
+                _logger.info('Port {}[{}] is now closed'.format(
+                    port_name, slot))
+
         return message
 
     def close_port(self, port_name: str, slot: Optional[int] = None
@@ -316,6 +338,10 @@ class Communicator:
             port_name: The name of the port to close.
         """
         message = Message(float('inf'), None, ClosePort(), Settings())
+        if slot is None:
+            _logger.info('Closing port {}'.format(port_name))
+        else:
+            _logger.info('Closing port {}[{}]'.format(port_name, slot))
         self.send_message(port_name, message, slot)
 
     def shutdown(self) -> None:

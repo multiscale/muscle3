@@ -36,11 +36,11 @@ def do_logging_test(caplog):
             )
 
     # create server
-    logger = Logger()
     ymmsl_doc = ymmsl.load(ymmsl_text)
     expected_elements = elements_for_model(ymmsl_doc.model)
     instance_registry = InstanceRegistry(expected_elements)
     topology_store = TopologyStore(ymmsl_doc)
+    logger = Logger()
     server = MMPServer(logger, ymmsl_doc.settings, instance_registry,
                        topology_store)
 
@@ -49,14 +49,14 @@ def do_logging_test(caplog):
     message = LogMessage(
             instance_id='test_logging',
             timestamp=Timestamp(2.0),
-            level=LogLevel.CRITICAL,
+            level=LogLevel.DEBUG,
             text='Integration testing')
 
     # log and check
     client.submit_log_message(message)
     assert caplog.records[0].name == 'test_logging'
     assert caplog.records[0].time_stamp == '1970-01-01T00:00:02Z'
-    assert caplog.records[0].levelname == 'CRITICAL'
+    assert caplog.records[0].levelname == 'DEBUG'
     assert caplog.records[0].message == 'Integration testing'
 
     server.stop()

@@ -83,7 +83,7 @@ def do_mmp_client_test(caplog):
     assert result.returncode == 0
 
     # check submit_log_message
-    assert caplog.records[0].name == 'test_logging'
+    assert caplog.records[0].name == 'instances.test_logging'
     assert caplog.records[0].time_stamp == '1970-01-01T00:00:02Z'
     assert caplog.records[0].levelname == 'CRITICAL'
     assert caplog.records[0].message == 'Integration testing'

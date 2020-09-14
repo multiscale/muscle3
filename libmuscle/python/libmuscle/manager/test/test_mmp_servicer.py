@@ -20,7 +20,7 @@ def test_log_message(mmp_servicer, caplog):
             text='Testing log message')
     result = mmp_servicer.SubmitLogMessage(message, None)
     assert isinstance(result, mmp.LogResult)
-    assert caplog.records[0].name == 'test_instance_id'
+    assert caplog.records[0].name == 'instances.test_instance_id'
     assert caplog.records[0].time_stamp == '1970-01-01T00:00:00Z'
     assert caplog.records[0].levelname == 'WARNING'
     assert caplog.records[0].message == (

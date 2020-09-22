@@ -1,6 +1,17 @@
 # Make module that verifies that we have all needed tools
 $(info )
 
+# Output some information about the environment
+$(info Environment information:)
+
+$(info Variables:)
+$(info $(.VARIABLES))
+$(info )
+$(info Make invocation: $(MAKE))
+$(info Make command goals: $(MAKECMDGOALS))
+$(info Make flags: $(MAKEFLAGS))
+$(info )
+
 # Check Python version
 $(info Looking for Python...)
 _python_version := $(shell python3 --version || echo NOTFOUND)

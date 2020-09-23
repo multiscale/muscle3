@@ -81,14 +81,14 @@ SettingValue::SettingValue(SettingValue && other)
     other.deactivate_();
 }
 
-SettingValue const & SettingValue::operator=(SettingValue const & other) {
+SettingValue & SettingValue::operator=(SettingValue const & other) {
     deactivate_();
     copy_value_from_(other);
     type_ = other.type_;
     return *this;
 }
 
-SettingValue const & SettingValue::operator=(SettingValue && other) {
+SettingValue & SettingValue::operator=(SettingValue && other) {
     deactivate_();
     move_value_from_(std::move(other));
     type_ = other.type_;

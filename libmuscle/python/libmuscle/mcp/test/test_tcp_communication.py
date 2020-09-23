@@ -1,11 +1,7 @@
-import time
 from ymmsl import Reference
-
-import pytest
 
 from libmuscle.mcp.tcp_client import TcpClient
 from libmuscle.mcp.tcp_server import TcpServer
-from libmuscle.mcp.message import Message
 
 
 def test_send_receive(receiver, post_office):

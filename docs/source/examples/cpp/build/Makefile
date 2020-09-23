@@ -1,10 +1,12 @@
 CXX ?= g++
-MPICXX := mpic++
-CXXFLAGS += -std=c++14 -g $(shell pkg-config --cflags libmuscle)
-MPI_CXXFLAGS := -std=c++14 -g $(shell pkg-config --cflags libmuscle_mpi)
+CXXFLAGS += -std=c++14 -g $(shell pkg-config --cflags libmuscle ymmsl)
+LDFLAGS += $(shell pkg-config --libs libmuscle ymmsl)
 
-MPI_LDFLAGS := $(LDFLAGS) $(shell pkg-config --libs libmuscle_mpi)
-LDFLAGS += $(shell pkg-config --libs libmuscle)
+ifdef MUSCLE_ENABLE_MPI
+    MPICXX := mpic++
+    MPI_CXXFLAGS := -std=c++14 -g $(shell pkg-config --cflags libmuscle_mpi ymmsl)
+    MPI_LDFLAGS := $(shell pkg-config --libs libmuscle_mpi ymmsl)
+endif
 
 
 binaries := reaction diffusion mc_driver load_balancer

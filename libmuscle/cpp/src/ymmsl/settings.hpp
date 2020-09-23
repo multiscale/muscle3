@@ -101,11 +101,11 @@ class SettingValue {
 
         /** Copy-assigns a SettingValue.
          */
-        SettingValue const & operator=(SettingValue const & other);
+        SettingValue & operator=(SettingValue const & other);
 
         /** Move-assigns a SettingValue.
          */
-        SettingValue const & operator=(SettingValue && other);
+        SettingValue & operator=(SettingValue && other);
 
         /** Destructs a SettingValue.
          */
@@ -129,8 +129,16 @@ class SettingValue {
 
         /** Return whether this SettingValue holds a value of the given type.
          *
-         * @param T A valid type, being one of std::string, int64_t, double,
-         *          bool, std::vector<double>, or
+         * Note that for int32_t, this function will return true only if the
+         * value is integer and fits in an int32_t. For double, it will return
+         * true if the value is integer, even if converting it to a double
+         * would reduce precision.
+         *
+         * Since int and long are usually equivalent to int32_t or int64_t,
+         * you can use those values too.
+         *
+         * @param T A valid type, being one of std::string, int32_t, int64_t,
+         *          double, bool, std::vector<double>, or
          *          std::vector<std::vector<double>>.
          */
         template <typename T>
@@ -140,8 +148,8 @@ class SettingValue {
          *
          * Only call if is_a<T>() returns true.
          *
-         * @param T A valid type, being one of std::string, int64_t, double,
-         *          bool, std::vector<double>, or
+         * @param T A valid type, being one of std::string, int32_t, int64_t,
+         *          double, bool, std::vector<double>, or
          *          std::vector<std::vector<double>>.
          *
          * @throw std::bad_cast if the type of this value does not match the

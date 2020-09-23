@@ -3,7 +3,6 @@ from typing import List, Optional
 
 from ymmsl import Port, Reference
 
-import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
 from libmuscle.mmp_client import MMPClient
 from libmuscle.profiling import ProfileEvent, ProfileEventType
 from libmuscle.timestamp import Timestamp
@@ -23,9 +22,9 @@ class Profiler:
         self._manager = manager
         self._events = list()   # type: List[ProfileEvent]
 
-    def start(self, event_type: ProfileEventType, port: Optional[Port]=None,
-              port_length: Optional[int]=None, slot: Optional[int]=None,
-              message_size: Optional[int]=None
+    def start(self, event_type: ProfileEventType, port: Optional[Port] = None,
+              port_length: Optional[int] = None, slot: Optional[int] = None,
+              message_size: Optional[int] = None
               ) -> ProfileEvent:
         """Start measuring an event.
 

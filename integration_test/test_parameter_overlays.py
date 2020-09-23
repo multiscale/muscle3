@@ -1,8 +1,7 @@
 from collections import OrderedDict
 
-import pytest
 from ymmsl import (ComputeElement, Conduit, Configuration, Model, Operator,
-                   Reference, Settings)
+                   Settings)
 
 from libmuscle import Instance, Message
 from libmuscle.runner import run_simulation

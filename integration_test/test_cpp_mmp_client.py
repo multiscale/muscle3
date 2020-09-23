@@ -5,13 +5,11 @@ import subprocess
 import ymmsl
 from ymmsl import Port, Reference
 
-from libmuscle.logging import LogLevel, LogMessage, Timestamp
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger
 from libmuscle.manager.mmp_server import MMPServer
 from libmuscle.manager.manager import elements_for_model
 from libmuscle.manager.topology_store import TopologyStore
-from libmuscle.mmp_client import MMPClient
 from libmuscle.operator import Operator
 
 from .conftest import skip_if_python_only
@@ -85,7 +83,7 @@ def do_mmp_client_test(caplog):
     assert result.returncode == 0
 
     # check submit_log_message
-    assert caplog.records[0].name == 'test_logging'
+    assert caplog.records[0].name == 'instances.test_logging'
     assert caplog.records[0].time_stamp == '1970-01-01T00:00:02Z'
     assert caplog.records[0].levelname == 'CRITICAL'
     assert caplog.records[0].message == 'Integration testing'

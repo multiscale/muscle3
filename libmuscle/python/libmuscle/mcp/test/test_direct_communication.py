@@ -1,7 +1,3 @@
-from unittest.mock import patch
-from typing import Dict
-
-import pytest
 from ymmsl import Reference
 
 from libmuscle.mcp.direct_client import DirectClient

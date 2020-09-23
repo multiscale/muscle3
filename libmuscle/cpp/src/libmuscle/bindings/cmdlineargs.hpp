@@ -9,7 +9,7 @@ namespace libmuscle { namespace impl { namespace bindings {
 // Simple helper class for passing command line args from Fortran to C++.
 class CmdLineArgs {
     public:
-        CmdLineArgs(int count);
+        explicit CmdLineArgs(int count);
 
         void set_arg(int i, std::string const & arg);
 

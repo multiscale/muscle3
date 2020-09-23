@@ -85,7 +85,7 @@ install: all
 	@echo "    You can also use pkg-config. Add $(PREFIX)/lib/pkgconfig"
 	@echo '*   to your PKG_CONFIG_PATH environment variable and use module    *'
 	@echo '*   names libmuscle, libmuscle_mpi, libmuscle_fortran or           *'
-	@echo '*   libmuscle_mpi_fortran.                                         *'
+	@echo '*   libmuscle_mpi_fortran and ymmsl or ymmsl_fortran.              *'
 	@echo '*                                                                  *'
 	@echo '*   If the directory you installed MUSCLE 3 in is not in your      *'
 	@echo "*   system's library search path, then you have to set             *"
@@ -116,6 +116,7 @@ clean:
 	cd scripts && $(MAKE) clean
 	cd docs/source/examples && $(MAKE) clean
 	rm -rf ./build
+	rm -rf $(CURDIR)/libmuscle/build/test_install/*
 
 .PHONY: distclean
 distclean:
@@ -124,6 +125,7 @@ distclean:
 	cd scripts && $(MAKE) distclean
 	cd docs/source/examples && $(MAKE) clean
 	rm -rf ./build
+	rm -rf $(CURDIR)/libmuscle/build/test_install/*
 
 .PHONY: fortran
 fortran: cpp

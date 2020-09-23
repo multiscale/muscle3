@@ -1,6 +1,6 @@
 import pytest
-from ymmsl import (ComputeElement, Conduit, Configuration, Identifier, Model,
-                   Reference, Settings)
+from ymmsl import (ComputeElement, Conduit, Configuration, Model, Reference,
+                   Settings)
 
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger

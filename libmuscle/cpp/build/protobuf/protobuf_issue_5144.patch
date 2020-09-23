@@ -1,0 +1,36 @@
+diff -ur protobuf-3.10.0/src/libprotobuf-lite.map protobuf-3.10.0/src/libprotobuf-lite.map.new
+--- protobuf-3.10.0/src/libprotobuf-lite.map	2019-10-03 02:08:05.000000000 +0200
++++ protobuf-3.10.0.new/src/libprotobuf-lite.map	2020-09-07 22:10:24.703978857 +0200
+@@ -3,6 +3,8 @@
+     extern "C++" {
+       *google*;
+     };
++    scc_info_*;
++    descriptor_table_*;
+
+   local:
+     *;
+diff -ur protobuf-3.10.0/src/libprotobuf.map protobuf-3.10.0/src/libprotobuf.map.new
+--- protobuf-3.10.0/src/libprotobuf.map	2019-10-03 02:08:05.000000000 +0200
++++ protobuf-3.10.0.new/src/libprotobuf.map	2020-09-07 22:10:11.919922750 +0200
+@@ -3,6 +3,8 @@
+     extern "C++" {
+       *google*;
+     };
++    scc_info_*;
++    descriptor_table_*;
+
+   local:
+     *;
+diff -ur protobuf-3.10.0/src/libprotoc.map protobuf-3.10.0/src/libprotoc.map.new
+--- protobuf-3.10.0/src/libprotoc.map	2019-10-03 02:08:05.000000000 +0200
++++ protobuf-3.10.0.new/src/libprotoc.map	2020-09-07 22:10:01.171875099 +0200
+@@ -3,6 +3,8 @@
+     extern "C++" {
+       *google*;
+     };
++    scc_info_*;
++    descriptor_table_*;
+
+   local:
+     *;

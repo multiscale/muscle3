@@ -544,3 +544,47 @@ usual Python way in your models, and MUSCLE 3 will automatically take care of
 writing them to the log file. Any messages at level ``WARNING`` or higher will
 be sent to the manager log as well. This helps give an overview of what went
 wrong in a single place in case of errors.
+
+Note that by default, Python (and MUSCLE 3) only logs messages at level
+``WARNING`` or higher. So if you add a statement like
+
+.. code-block:: python
+
+  logging.info('Some useful information')
+
+then you'll find that it will not show up in either of the log files, because
+``INFO`` is a lower level than ``WARNING``. To get more or less local log output
+(e.g. in ``muscle3.macro.log``), you can use one of these commands:
+
+.. code-block:: python
+
+  # least output
+  logging.getLogger().setLevel(logging.CRITICAL)
+  logging.getLogger().setLevel(logging.ERROR)
+  logging.getLogger().setLevel(logging.WARNING)
+  logging.getLogger().setLevel(logging.INFO)
+  logging.getLogger().setLevel(logging.DEBUG)
+  # most output
+
+The minimum log level for sending a message to the central log file
+(``muscle_manager.log``) is set by the ``muscle_remote_log_level`` setting. For
+example, if you change the example to read
+
+.. code-block:: python
+
+    settings = Settings(OrderedDict([
+                ('muscle_remote_log_level', 'DEBUG'),
+                ('micro.t_max', 2.469136e-6),
+                ('micro.dt', 2.469136e-8),
+                ('macro.t_max', 1.234568e-4),
+                ('macro.dt', 2.469136e-6),
+                ('x_max', 1.01),
+                ('dx', 0.01),
+                ('k', -4.05e4),     # reaction parameter
+                ('d', 4.05e-2)      # diffusion parameter
+                ]))
+
+then all log messages from all submodels will be sent to the manager log. This
+does slow down the simulation if you have many log statements, so it's good to
+use this to debug and to learn, but do increase the level again for production
+runs.

@@ -2,8 +2,6 @@ import multiprocessing as mp
 import time
 from ymmsl import Reference
 
-import pytest
-
 from libmuscle.mcp.pipe_client import PipeClient
 from libmuscle.mcp.pipe_server import PipeServer
 import libmuscle.mcp.pipe_multiplexer as mux

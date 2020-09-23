@@ -55,7 +55,7 @@ shows up:
 
 .. code-block:: bash
 
-  python setup.py build_sphinx
+  make docs
 
 It may give some warnings about missing references, that's a known issue and
 normally harmless. Next, point your web browser to
@@ -67,8 +67,8 @@ Run tests
 ---------
 
 Before we make a commit, the tests should be run, and this is a good idea anyway
-if we're making a release. So run ``python setup.py test`` and check that
-everything is in order.
+if we're making a release. So run ``make test`` and check that everything is in
+order.
 
 Commit the version update
 -------------------------
@@ -136,7 +136,12 @@ can start using it. To build, use:
 
 .. code-block:: bash
 
+  rm -r ./build
   python3 setup.py sdist bdist_wheel
+
+Note that we remove ``./build``, which is the build directory setuptools uses,
+to ensure that we're doing a clean build, I've seen some weird mixes of versions
+on occasion so it's better to be safe than sorry.
 
 We can then check to see if everything is okay using
 
@@ -149,6 +154,13 @@ and if all seems well, we can upload to PyPI:
 .. code-block:: bash
 
   twine upload dist/muscle3-x.y.z*
+
+Announce release
+----------------
+
+Announce the release in the usual places, so that people know it exists. There
+should be a short release message listing new features and fixed bugs, and don't
+forget to thank everyone who contributed!
 
 Merge the release branch back into develop
 ------------------------------------------

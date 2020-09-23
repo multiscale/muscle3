@@ -1,4 +1,4 @@
-.. image:: https://github.com/multiscale/muscle3/raw/master/docs/source/muscle3_logo_readme.png
+.. image:: https://github.com/multiscale/muscle3/raw/develop/docs/source/muscle3_logo_readme.png
     :alt: MUSCLE 3
 
 .. image:: https://readthedocs.org/projects/muscle3/badge/?version=master

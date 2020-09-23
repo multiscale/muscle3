@@ -1,13 +1,6 @@
 import socket
-from typing import Dict
 
-import msgpack
-import pytest
 from ymmsl import Reference
-
-from libmuscle.outbox import Outbox
-from libmuscle.post_office import PostOffice
-from libmuscle.mcp.message import Message
 
 
 def test_create(tcp_server):

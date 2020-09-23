@@ -41,12 +41,14 @@ module ymmsl
     public :: YMMSL_Settings_size
     public :: YMMSL_Settings_empty
     public :: YMMSL_Settings_is_a_character
+    public :: YMMSL_Settings_is_a_int4
     public :: YMMSL_Settings_is_a_int8
     public :: YMMSL_Settings_is_a_real8
     public :: YMMSL_Settings_is_a_logical
     public :: YMMSL_Settings_is_a_real8array
     public :: YMMSL_Settings_is_a_real8array2
     public :: YMMSL_Settings_set_character
+    public :: YMMSL_Settings_set_int4
     public :: YMMSL_Settings_set_int8
     public :: YMMSL_Settings_set_real8
     public :: YMMSL_Settings_set_logical
@@ -54,6 +56,7 @@ module ymmsl
     public :: YMMSL_Settings_set_real8array2
     public :: YMMSL_Settings_set
     public :: YMMSL_Settings_get_as_character
+    public :: YMMSL_Settings_get_as_int4
     public :: YMMSL_Settings_get_as_int8
     public :: YMMSL_Settings_get_as_real8
     public :: YMMSL_Settings_get_as_logical
@@ -120,6 +123,24 @@ module ymmsl
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
         end function YMMSL_Settings_is_a_character_
+
+        logical (c_bool) function YMMSL_Settings_is_a_int4_( &
+                self, &
+                key, &
+                key_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="YMMSL_Settings_is_a_int4_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            character, intent(in) :: key
+            integer (c_size_t), value, intent(in) :: key_size
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end function YMMSL_Settings_is_a_int4_
 
         logical (c_bool) function YMMSL_Settings_is_a_int8_( &
                 self, &
@@ -227,6 +248,20 @@ module ymmsl
             integer (c_size_t), value, intent(in) :: value_size
         end subroutine YMMSL_Settings_set_character_
 
+        subroutine YMMSL_Settings_set_int4_( &
+                self, &
+                key, &
+                key_size, &
+                value) &
+                bind(C, name="YMMSL_Settings_set_int4_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            character, intent(in) :: key
+            integer (c_size_t), value, intent(in) :: key_size
+            integer (c_int32_t), value, intent(in) :: value
+        end subroutine YMMSL_Settings_set_int4_
+
         subroutine YMMSL_Settings_set_int8_( &
                 self, &
                 key, &
@@ -322,6 +357,24 @@ module ymmsl
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
         end subroutine YMMSL_Settings_get_as_character_
+
+        integer (c_int32_t) function YMMSL_Settings_get_as_int4_( &
+                self, &
+                key, &
+                key_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="YMMSL_Settings_get_as_int4_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            character, intent(in) :: key
+            integer (c_size_t), value, intent(in) :: key_size
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end function YMMSL_Settings_get_as_int4_
 
         integer (c_int64_t) function YMMSL_Settings_get_as_int8_( &
                 self, &
@@ -477,6 +530,7 @@ module ymmsl
     interface YMMSL_Settings_set
         module procedure &
             YMMSL_Settings_set_character, &
+            YMMSL_Settings_set_int4, &
             YMMSL_Settings_set_int8, &
             YMMSL_Settings_set_real8, &
             YMMSL_Settings_set_logical, &
@@ -608,6 +662,62 @@ contains
 
         YMMSL_Settings_is_a_character = ret_val
     end function YMMSL_Settings_is_a_character
+
+    function YMMSL_Settings_is_a_int4( &
+            self, &
+            key, &
+            err_code, &
+            err_msg)
+        implicit none
+        type(YMMSL_Settings), intent(in) :: self
+        character (len=*), intent(in) :: key
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        logical :: YMMSL_Settings_is_a_int4
+
+        logical (c_bool) :: ret_val
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        ret_val = YMMSL_Settings_is_a_int4_( &
+            self%ptr, &
+            key, int(len(key), c_size_t), &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        YMMSL_Settings_is_a_int4 = ret_val
+    end function YMMSL_Settings_is_a_int4
 
     function YMMSL_Settings_is_a_int8( &
             self, &
@@ -904,6 +1014,21 @@ contains
             value, int(len(value), c_size_t))
     end subroutine YMMSL_Settings_set_character
 
+    subroutine YMMSL_Settings_set_int4( &
+            self, &
+            key, &
+            value)
+        implicit none
+        type(YMMSL_Settings), intent(in) :: self
+        character (len=*), intent(in) :: key
+        integer (YMMSL_int4), intent(in) :: value
+
+        call YMMSL_Settings_set_int4_( &
+            self%ptr, &
+            key, int(len(key), c_size_t), &
+            value)
+    end subroutine YMMSL_Settings_set_int4
+
     subroutine YMMSL_Settings_set_int8( &
             self, &
             key, &
@@ -1043,6 +1168,61 @@ contains
             YMMSL_Settings_get_as_character(i_loop:i_loop) = f_ret_ptr(i_loop)
         end do
     end function YMMSL_Settings_get_as_character
+
+    function YMMSL_Settings_get_as_int4( &
+            self, &
+            key, &
+            err_code, &
+            err_msg)
+        implicit none
+        type(YMMSL_Settings), intent(in) :: self
+        character (len=*), intent(in) :: key
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        integer (YMMSL_int4) :: YMMSL_Settings_get_as_int4
+
+        integer (c_int32_t) :: ret_val
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        ret_val = YMMSL_Settings_get_as_int4_( &
+            self%ptr, &
+            key, int(len(key), c_size_t), &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        YMMSL_Settings_get_as_int4 = ret_val
+    end function YMMSL_Settings_get_as_int4
 
     function YMMSL_Settings_get_as_int8( &
             self, &

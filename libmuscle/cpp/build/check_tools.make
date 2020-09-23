@@ -1,6 +1,17 @@
 # Make module that verifies that we have all needed tools
 $(info )
 
+# Output some information about the environment
+$(info Environment information:)
+
+$(info Variables:)
+$(info $(.VARIABLES))
+$(info )
+$(info Make invocation: $(MAKE))
+$(info Make command goals: $(MAKECMDGOALS))
+$(info Make flags: $(MAKEFLAGS))
+$(info )
+
 # Check Python version
 $(info Looking for Python...)
 _python_version := $(shell python3 --version || echo NOTFOUND)
@@ -82,6 +93,26 @@ ifndef TAR
     $(warning - To fix this, set TAR to a command that can extract tar archives.)
 else
     $(info - Will extract archives using $(TAR).)
+endif
+
+# Check for valgrind (for testing for memory leaks)
+$(info )
+$(info Looking for valgrind...)
+tool_var := VALGRIND
+include $(TOOLDIR)/check_override.make
+
+tool_command := valgrind
+include $(TOOLDIR)/detect_tool.make
+
+ifeq ($(VALGRIND), valgrind)
+    export VALGRIND := valgrind --leak-check=full --error-exitcode=1
+endif
+
+ifndef VALGRIND
+    $(warning - Could not find valgrind, so tests will run without it.)
+    $(warning - To fix this, install valgrind and if necessary set VALGRIND to point to it.)
+else
+    $(info - Will check for leaks using $(VALGRIND).)
 endif
 
 # Check number of cores

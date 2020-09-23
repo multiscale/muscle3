@@ -68,9 +68,8 @@ int connect(std::string const & address) {
 
     // try to connect to each in turn until we find one that works
     addrinfo * p;
-    int socket_fd;
     for (p = address_info.get(); p != nullptr; p = p->ai_next) {
-        socket_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+        int socket_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
         if (socket_fd == -1) continue;
 
         err_code = connect(socket_fd, p->ai_addr, p->ai_addrlen);

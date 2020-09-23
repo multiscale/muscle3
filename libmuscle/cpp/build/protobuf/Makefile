@@ -20,6 +20,7 @@ protobuf-cpp-$(protobuf_VERSION).tar.gz:
 
 protobuf-$(protobuf_VERSION): protobuf-cpp-$(protobuf_VERSION).tar.gz
 	$(TAR) xf protobuf-cpp-$(protobuf_VERSION).tar.gz
+	patch -p0 <protobuf_issue_5144.patch
 
 protobuf: protobuf-$(protobuf_VERSION)
 	cd protobuf-$(protobuf_VERSION) && ./configure --prefix=$(CURDIR)/protobuf && make -j $(NCORES) && make install

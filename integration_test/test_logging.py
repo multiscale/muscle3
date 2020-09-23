@@ -9,7 +9,6 @@ from libmuscle.manager.mmp_server import MMPServer
 from libmuscle.manager.manager import elements_for_model
 from libmuscle.manager.topology_store import TopologyStore
 from libmuscle.mmp_client import MMPClient
-from libmuscle.operator import Operator
 
 
 def do_logging_test(caplog):
@@ -50,14 +49,14 @@ def do_logging_test(caplog):
     message = LogMessage(
             instance_id='test_logging',
             timestamp=Timestamp(2.0),
-            level=LogLevel.CRITICAL,
+            level=LogLevel.DEBUG,
             text='Integration testing')
 
     # log and check
     client.submit_log_message(message)
-    assert caplog.records[0].name == 'test_logging'
+    assert caplog.records[0].name == 'instances.test_logging'
     assert caplog.records[0].time_stamp == '1970-01-01T00:00:02Z'
-    assert caplog.records[0].levelname == 'CRITICAL'
+    assert caplog.records[0].levelname == 'DEBUG'
     assert caplog.records[0].message == 'Integration testing'
 
     server.stop()

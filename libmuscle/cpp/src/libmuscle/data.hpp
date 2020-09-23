@@ -462,6 +462,9 @@ class DataConstRef {
         Zones_ mp_zones_;
         msgpack::object * mp_obj_;
 
+        // cache for extracted complex object, e.g. Settings, Grid
+        mutable std::shared_ptr<DataConstRef> obj_cache_;
+
         // create DCR pointing to the given object and sharing the given zone
         DataConstRef(
                 msgpack::object * data,
@@ -473,7 +476,7 @@ class DataConstRef {
                 Zones_ const & zones);
 
         // create DCR sharing the given zone
-        DataConstRef(std::shared_ptr<msgpack::zone> const & zone);
+        explicit DataConstRef(std::shared_ptr<msgpack::zone> const & zone);
 
         // create DCR with given data packed as ext type
         DataConstRef(char ext_type_id, DataConstRef const & data);

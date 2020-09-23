@@ -1,8 +1,5 @@
 from pathlib import Path
 import subprocess
-from unittest.mock import MagicMock
-
-import msgpack
 
 from libmuscle.mcp.tcp_client import TcpClient
 from libmuscle.mcp.message import Message

@@ -1,5 +1,5 @@
 from google.protobuf.timestamp_pb2 import Timestamp
-from ymmsl import Operator, Reference
+from ymmsl import Operator
 
 from libmuscle.manager.mmp_server import MMPServicer
 import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
@@ -20,7 +20,7 @@ def test_log_message(mmp_servicer, caplog):
             text='Testing log message')
     result = mmp_servicer.SubmitLogMessage(message, None)
     assert isinstance(result, mmp.LogResult)
-    assert caplog.records[0].name == 'test_instance_id'
+    assert caplog.records[0].name == 'instances.test_instance_id'
     assert caplog.records[0].time_stamp == '1970-01-01T00:00:00Z'
     assert caplog.records[0].levelname == 'WARNING'
     assert caplog.records[0].message == (

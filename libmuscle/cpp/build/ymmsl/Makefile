@@ -18,6 +18,9 @@ public_headers := ymmsl/compute_element.hpp ymmsl/identity.hpp ymmsl/model.hpp
 public_headers += ymmsl/settings.hpp ymmsl/settings.tpp ymmsl/ymmsl.hpp
 installed_headers := $(public_headers:%=$(PREFIX)/include/%)
 
+pkg_config_files := ymmsl.pc
+installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
+
 CXXFLAGS += -Wall -pedantic -std=c++14 -I$(hdrdir)
 export CXXFLAGS
 DEBUGFLAGS := -g
@@ -38,6 +41,7 @@ test:
 .PHONY: clean
 clean:
 	rm -f libymmsl.a libymmsl.so libymmsl_d.a libymmsl_d.so
+	rm -f $(pkg_config_files)
 	rm -rf objs
 	$(MAKE) -C tests clean
 
@@ -46,7 +50,7 @@ distclean: clean
 	$(MAKE) -C tests distclean
 
 .PHONY: install
-install: all $(installed_headers)
+install: all $(installed_headers) $(installed_pkg_config_files)
 	@echo
 	@echo Installing libymmsl to $(PREFIX)
 	@mkdir -p $(PREFIX)/lib
@@ -54,6 +58,7 @@ install: all $(installed_headers)
 	cp libymmsl_d.a $(PREFIX)/lib
 	cp libymmsl.so $(PREFIX)/lib
 	cp libymmsl_d.so $(PREFIX)/lib
+	for pc in $(PREFIX)/lib/pkgconfig/* ; do sed -i -e 's@^prefix=.*$$@prefix=$(PREFIX)@' $$pc ; done
 
 
 cleantargets := clean distclean
@@ -102,4 +107,21 @@ $(PREFIX)/include/%.hpp: $(hdrdir)/%.hpp
 $(PREFIX)/include/%.tpp: $(hdrdir)/%.tpp
 	@mkdir -p $(@D)
 	cp $< $@
+
+$(PREFIX)/lib/pkgconfig/%.pc: %.pc
+	@mkdir -p $(@D)
+	cp $< $@
+
+ymmsl.pc:
+	@echo 'prefix=$(PREFIX)' >$@
+	@echo 'exec_prefix=$${prefix}' >>$@
+	@echo 'includedir=$${prefix}/include' >>$@
+	@echo 'libdir=$${exec_prefix}/lib' >>$@
+	@echo >>$@
+	@echo 'Name: yMMSL for C++' >>$@
+	@echo 'Description: Partial yMMSL support library for MUSCLE 3' >>$@
+	@echo 'URL: https://muscle3.readthedocs.io' >>$@
+	@echo 'Version: $(muscle_version)' >>$@
+	@echo 'Cflags: -I$${includedir}' >>$@
+	@echo 'Libs: -L$${libdir} -lymmsl' >>$@
 

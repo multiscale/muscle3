@@ -1,5 +1,3 @@
-from typing import Dict
-
 from ymmsl import Reference
 
 from libmuscle.post_office import PostOffice

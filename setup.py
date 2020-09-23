@@ -30,7 +30,9 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6'],
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8'],
 
     # packages=['muscle_manager', 'muscle_manager_protocol', 'libmuscle', 'libmuscle.mcp'],
     packages=_muscle3_packages,
@@ -48,7 +50,7 @@ setup(
         'msgpack',
         'netifaces',
         'numpy>=1.12',
-        'protobuf>=3.10.0',
+        'protobuf>=3.10.0, <4',
         'typing_extensions',
         'ymmsl==0.10.1'          # Also in CI, update there as well
     ],
@@ -56,7 +58,9 @@ setup(
         'pytest-runner',
         # dependencies for `python setup.py build_sphinx`
         'breathe',
-        'sphinx',
+        'sphinx<3.2',
+        'sphinx_rtd_theme',
+        'sphinx-fortran',
         'recommonmark',
         'sphinx-rtd-theme'
     ],
@@ -65,7 +69,6 @@ setup(
         'mypy',
         'pytest>=3.5',
         'pytest-cov',
-        'pytest-pep8',
         'pytest-flake8',
         'pytest-mypy'
     ],
@@ -73,7 +76,7 @@ setup(
         'dev': [
             'grpcio-tools==1.17.1',
             'mypy-protobuf',
-            'sphinx',
+            'sphinx<3.2',
             'sphinx_rtd_theme',
             'sphinx-fortran',
             'yapf',

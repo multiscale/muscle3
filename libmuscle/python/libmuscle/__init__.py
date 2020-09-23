@@ -1,6 +1,3 @@
-import os
-import pathlib
-
 from libmuscle.communicator import Message
 from libmuscle.grid import Grid
 from libmuscle.instance import Instance

@@ -1,11 +1,6 @@
-from typing import Dict
-
-import pytest
 from ymmsl import Reference
 
-from libmuscle.outbox import Outbox
-from libmuscle.post_office import PostOffice
-from libmuscle.mcp.direct_server import DirectServer, registered_servers
+from libmuscle.mcp.direct_server import registered_servers
 from libmuscle.mcp.message import Message
 
 

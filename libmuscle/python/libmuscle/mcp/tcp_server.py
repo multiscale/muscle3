@@ -3,7 +3,6 @@ import threading
 from typing import cast, List, Optional, Tuple
 from typing_extensions import Type
 
-import msgpack
 import netifaces
 from ymmsl import Reference
 

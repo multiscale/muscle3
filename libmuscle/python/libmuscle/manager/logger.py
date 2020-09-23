@@ -1,7 +1,6 @@
 import logging
 
 from libmuscle.logging import LogLevel, Timestamp
-from libmuscle.operator import Operator
 from libmuscle.util import extract_log_file_location
 
 
@@ -30,9 +29,8 @@ class Logger:
         logging.getLogger().addHandler(self._local_handler)
 
         # hardwired for now
-        logging.getLogger().setLevel(logging.INFO)
-        logging.getLogger('yatiml.loader').setLevel(logging.WARNING)
-        logging.getLogger('yatiml.dumper').setLevel(logging.WARNING)
+        logging.getLogger('instances').setLevel(1)
+        logging.getLogger('yatiml').setLevel(logging.WARNING)
 
     def close(self) -> None:
         logging.getLogger().removeHandler(self._local_handler)
@@ -53,7 +51,7 @@ class Logger:
             level: The log level of the message.
             text: The message text.
         """
-        logger = logging.getLogger(instance_id)
+        logger = logging.getLogger('instances.{}'.format(instance_id))
         logger.log(
                 level.as_python_level(),
                 text,

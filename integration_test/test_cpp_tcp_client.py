@@ -3,11 +3,8 @@ from pathlib import Path
 import subprocess
 from unittest.mock import MagicMock
 
-import msgpack
-
 from libmuscle.mcp.tcp_server import TcpServer
 from libmuscle.mcp.message import Message
-from libmuscle.post_office import PostOffice
 
 from ymmsl import Reference, Settings
 

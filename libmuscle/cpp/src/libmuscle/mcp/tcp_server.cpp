@@ -35,7 +35,7 @@ class TcpServerWorker {
          *
          * @param post_office The PostOffice to get messages from.
          */
-        TcpServerWorker(PostOffice & post_office)
+        explicit TcpServerWorker(PostOffice & post_office)
             : post_office_(post_office)
             , shutting_down_(false)
             , connections_()
@@ -296,12 +296,12 @@ TcpServer::AddrInfoList_ TcpServer::get_address_info_(
 
 std::vector<int> TcpServer::create_sockets_(addrinfo const * addresses) const {
     std::vector<int> result;
-    int err = 0;
     for (addrinfo const *p = addresses; p != nullptr; p = p->ai_next) {
         int sockfd;
         if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1)
             continue;
 
+        int err = 0;
         if ((err = bind(sockfd, p->ai_addr, p->ai_addrlen)) == -1) {
             ::close(sockfd);
             continue;
@@ -324,19 +324,18 @@ std::string TcpServer::get_address_string_(int sockfd) const {
     getsockname(sockfd, reinterpret_cast<sockaddr*>(&bound_addr), &addr_len);
 
     char addr_buf[INET6_ADDRSTRLEN];
-    int port = 0;
 
     auto family = reinterpret_cast<sockaddr*>(&bound_addr)->sa_family;
     if (family == AF_INET) {
         auto ipv4_addr = reinterpret_cast<sockaddr_in*>(&bound_addr);
         inet_ntop(AF_INET, &(ipv4_addr->sin_addr), addr_buf, INET6_ADDRSTRLEN);
-        port = ntohs(ipv4_addr->sin_port);
+        int port = ntohs(ipv4_addr->sin_port);
         location = std::string(addr_buf) + ":" + std::to_string(port);
     }
     else if (family == AF_INET6) {
         auto ipv6_addr = reinterpret_cast<sockaddr_in6*>(&bound_addr);
         inet_ntop(AF_INET6, &(ipv6_addr->sin6_addr), addr_buf, INET6_ADDRSTRLEN);
-        port = ntohs(ipv6_addr->sin6_port);
+        int port = ntohs(ipv6_addr->sin6_port);
         location = "[" + std::string(addr_buf) + "]:" + std::to_string(port);
     }
     else

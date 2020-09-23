@@ -85,7 +85,7 @@ install: all
 	@echo "    You can also use pkg-config. Add $(PREFIX)/lib/pkgconfig"
 	@echo '*   to your PKG_CONFIG_PATH environment variable and use module    *'
 	@echo '*   names libmuscle, libmuscle_mpi, libmuscle_fortran or           *'
-	@echo '*   libmuscle_mpi_fortran.                                         *'
+	@echo '*   libmuscle_mpi_fortran and ymmsl or ymmsl_fortran.              *'
 	@echo '*                                                                  *'
 	@echo '*   If the directory you installed MUSCLE 3 in is not in your      *'
 	@echo "*   system's library search path, then you have to set             *"

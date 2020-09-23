@@ -6,10 +6,12 @@ objects := $(sources:$(srcdir)/%.f03=%.o)
 lobjects := $(sources:$(srcdir)/%.f03=%.lo)
 libs := libymmsl_fortran.a libymmsl_fortran.so
 modules := $(sources:$(srcdir)/%.f03=%.mod)
+pkg_config_files := ymmsl_fortran.pc
 
 installed_sources := $(sources:$(srcdir)/%=$(PREFIX)/include/%)
 installed_modules := $(modules:%=$(PREFIX)/include/%)
 installed_libs := $(libs:%=$(PREFIX)/lib/%)
+installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
 
 LDFLAGS := -L../../../cpp/build/ymmsl -lymmsl
 FFLAGS := -std=f2003
@@ -28,14 +30,14 @@ test: tests
 
 .PHONY: clean
 clean:
-	rm -f $(objects) $(modules) $(libs)
+	rm -f $(objects) $(modules) $(libs) $(pkg_config_files)
 	rm -f mod_dump/*.mod
 
 .PHONY: distclean
 distclean: clean
 
 .PHONY: install
-install: $(installed_sources) $(installed_modules) $(installed_libs)
+install: $(installed_sources) $(installed_modules) $(installed_libs) $(installed_pkg_config_files)
 
 %.o: $(srcdir)/%.f03
 	$(FC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS)
@@ -62,3 +64,22 @@ $(PREFIX)/include/%: %
 $(PREFIX)/lib/%: %
 	@mkdir -p $(@D)
 	cp $< $@
+
+$(PREFIX)/lib/pkgconfig/%: %
+	@mkdir -p $(@D)
+	cp $< $@
+
+ymmsl_fortran.pc:
+	@echo 'prefix=$(PREFIX)' >$@
+	@echo 'exec_prefix=$${prefix}' >>$@
+	@echo 'includedir=$${prefix}/include' >>$@
+	@echo 'libdir=$${exec_prefix}/lib' >>$@
+	@echo >>$@
+	@echo 'Name: yMMSL for Fortran' >>$@
+	@echo 'Description: Partial yMMSL support library for MUSCLE 3' >>$@
+	@echo 'URL: https://muscle3.readthedocs.io' >>$@
+	@echo 'Version: $(muscle_version)' >>$@
+	@echo 'Requires.private: ymmsl = $(muscle_version)' >>$@
+	@echo 'Cflags: -I$${includedir}' >>$@
+	@echo 'Libs: -L$${libdir} -lymmsl_fortran' >>$@
+

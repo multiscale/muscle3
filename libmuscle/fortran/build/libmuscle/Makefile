@@ -121,9 +121,10 @@ libmuscle_fortran.pc:
 	@echo 'Description: Library for MUSCLE 3 - Fortran version' >>$@
 	@echo 'URL: https://muscle3.readthedocs.io' >>$@
 	@echo 'Version: $(muscle_version)' >>$@
+	@echo 'Requires: ymmsl_fortran = $(muscle_version)' >>$@
 	@echo 'Requires.private: libmuscle = $(muscle_version)' >>$@
 	@echo 'Cflags: -I$${includedir}' >>$@
-	@echo 'Libs: -L$${libdir} -lymmsl_fortran -lmuscle_fortran' >>$@
+	@echo 'Libs: -L$${libdir} -lmuscle_fortran' >>$@
 
 libmuscle_mpi_fortran.pc:
 	@echo 'prefix=$(PREFIX)' >$@
@@ -135,7 +136,8 @@ libmuscle_mpi_fortran.pc:
 	@echo 'Description: Library for MUSCLE 3 - Fortran-MPI version' >>$@
 	@echo 'URL: https://muscle3.readthedocs.io' >>$@
 	@echo 'Version: $(muscle_version)' >>$@
+	@echo 'Requires: ymmsl_fortran = $(muscle_version)' >>$@
 	@echo 'Requires.private: libmuscle_mpi = $(muscle_version)' >>$@
 	@echo 'Cflags: -I$${includedir}' >>$@
-	@echo 'Libs: -L$${libdir} -lymmsl_fortran -lmuscle_mpi_fortran' >>$@
+	@echo 'Libs: -L$${libdir} -lmuscle_mpi_fortran' >>$@
 

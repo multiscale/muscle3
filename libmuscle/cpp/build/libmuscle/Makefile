@@ -210,9 +210,10 @@ libmuscle.pc:
 	@echo 'Description: Library for MUSCLE 3' >>$@
 	@echo 'URL: https://muscle3.readthedocs.io' >>$@
 	@echo 'Version: $(muscle_version)' >>$@
+	@echo 'Requires: ymmsl = $(muscle_version)' >>$@
 	@echo 'Requires.private: grpc++ >= 1.24.3, protobuf >= 3.10.0, msgpack >= 3.1.0' >>$@
 	@echo 'Cflags: -I$${includedir}' >>$@
-	@echo 'Libs: -L$${libdir} -lymmsl -lmuscle' >>$@
+	@echo 'Libs: -L$${libdir} -lmuscle' >>$@
 
 libmuscle_mpi.pc:
 	@echo 'prefix=$(PREFIX)' >$@
@@ -224,7 +225,8 @@ libmuscle_mpi.pc:
 	@echo 'Description: Library for MUSCLE 3' >>$@
 	@echo 'URL: https://muscle3.readthedocs.io' >>$@
 	@echo 'Version: $(muscle_version)' >>$@
+	@echo 'Requires: ymmsl = $(muscle_version)' >>$@
 	@echo 'Requires.private: grpc++ >= 1.24.3, protobuf >= 3.10.0, msgpack >= 3.1.0' >>$@
 	@echo 'Cflags: -I$${includedir} -DMUSCLE_ENABLE_MPI' >>$@
-	@echo 'Libs: -L$${libdir} -lymmsl -lmuscle_mpi' >>$@
+	@echo 'Libs: -L$${libdir} -lmuscle_mpi' >>$@
 

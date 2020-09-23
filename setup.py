@@ -59,6 +59,8 @@ setup(
         # dependencies for `python setup.py build_sphinx`
         'breathe',
         'sphinx<3.2',
+        'sphinx_rtd_theme',
+        'sphinx-fortran',
         'recommonmark',
         'sphinx-rtd-theme'
     ],

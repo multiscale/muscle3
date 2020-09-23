@@ -476,7 +476,7 @@ class DataConstRef {
                 Zones_ const & zones);
 
         // create DCR sharing the given zone
-        DataConstRef(std::shared_ptr<msgpack::zone> const & zone);
+        explicit DataConstRef(std::shared_ptr<msgpack::zone> const & zone);
 
         // create DCR with given data packed as ext type
         DataConstRef(char ext_type_id, DataConstRef const & data);

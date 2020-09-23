@@ -32,7 +32,7 @@ class MMPClient {
          *
          * @param location A connection string of the form hostname:port.
          */
-        MMPClient(std::string const & location);
+        explicit MMPClient(std::string const & location);
 
         /** Send a log message to the manager.
          *

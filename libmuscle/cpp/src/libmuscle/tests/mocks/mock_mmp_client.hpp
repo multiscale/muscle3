@@ -15,7 +15,7 @@ namespace libmuscle { namespace impl {
 
 class MockMMPClient {
     public:
-        MockMMPClient(std::string const & location);
+        explicit MockMMPClient(std::string const & location);
 
         void submit_log_message(LogMessage const & message);
 

@@ -58,13 +58,13 @@ struct OptMock {
         ++rhs.move_constructed_from;
     }
 
-    OptMock const & operator=(OptMock const & rhs) {
+    OptMock & operator=(OptMock const & rhs) {
         ++copy_assigned_to;
         ++rhs.copy_assigned_from;
         return *this;
     }
 
-    OptMock const & operator=(OptMock && rhs) {
+    OptMock & operator=(OptMock && rhs) {
         ++move_assigned_to;
         ++rhs.move_assigned_from;
         return *this;

@@ -101,11 +101,11 @@ class SettingValue {
 
         /** Copy-assigns a SettingValue.
          */
-        SettingValue const & operator=(SettingValue const & other);
+        SettingValue & operator=(SettingValue const & other);
 
         /** Move-assigns a SettingValue.
          */
-        SettingValue const & operator=(SettingValue && other);
+        SettingValue & operator=(SettingValue && other);
 
         /** Destructs a SettingValue.
          */

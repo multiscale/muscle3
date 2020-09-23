@@ -2,7 +2,7 @@
 
 from copy import copy
 import textwrap
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 
 error_codes = {
@@ -129,7 +129,7 @@ class Void(Par):
     def f_call_c(self, result_name: str, call: str) -> str:
         return '    call {}\n'.format(call)
 
-    def f_return_result(self, result_name: str, call: str) -> str:
+    def f_return_result(self, return_name: str, result_name: str) -> str:
         return ''
 
 
@@ -233,7 +233,7 @@ class VecDbl(Par):
 
     def fi_type(self) -> str:
         return self._regular_type(
-                ['real (c_double), dimension(*)'.format(self.ns_prefix),
+                ['real (c_double), dimension(*)',
                  ('integer (c_size_t), value', '_size')])
 
     def fi_ret_type(self) -> str:
@@ -386,7 +386,7 @@ class VecSizet(Par):
 
     def fi_type(self) -> str:
         return self._regular_type(
-                ['integer (c_size_t), dimension(*)'.format(self.ns_prefix),
+                ['integer (c_size_t), dimension(*)',
                  ('integer (c_size_t), value', '_size')])
 
     def fi_ret_type(self) -> str:
@@ -429,7 +429,7 @@ class Array(Par):
             name: Name of the parameter.
         """
         if name is None:
-            name = self.elem_type.name
+            name = elem_type.name
             self.elem_type = elem_type
         else:
             self.elem_type = copy(elem_type)
@@ -1524,8 +1524,11 @@ class Constructor(MemFun):
     This generates code suitable for a constructor, rather than
     the default code.
     """
-    def __init__(self, params: List[Par] = list(), name: str = 'create', **args
-            ) -> None:
+    def __init__(
+            self, params: Optional[List[Par]] = None, name: str = 'create',
+            **args) -> None:
+        if params is None:
+            params = list()
         super().__init__(Obj('<deferred>'), name, params, **args)
 
     def __copy__(self) -> 'Constructor':

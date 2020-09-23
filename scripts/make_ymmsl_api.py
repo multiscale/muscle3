@@ -3,15 +3,12 @@
 import argparse
 from textwrap import indent
 
-import api_generator
-
 from api_generator import (
         API, AssignmentOperator, Bool, Bytes, Char, Class, Constructor,
         Destructor, Double, Enum, EnumVal, EqualsOperator, Float,
         IndexAssignmentOperator, Int, Int16t, Int32t, Int64t, MemFun,
         MemFunTmpl, NamedConstructor, Namespace, Obj, OverloadSet,
-        ShiftedIndexAssignmentOperator, Sizet, String, T, VecDbl, Vec2Dbl,
-        Void)
+        Sizet, String, T, VecDbl, Vec2Dbl, Void)
 
 
 # These need to kept in sync with the values in the C++ implementation

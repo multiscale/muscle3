@@ -2,8 +2,6 @@
 
 import argparse
 
-import api_generator
-
 from api_generator import (
         API, Bool, Bytes, Class, Constructor, Destructor, Double, Enum,
         EnumVal, Int, Int64t, MemFun, MemFunTmpl, Namespace, Obj, OverloadSet,

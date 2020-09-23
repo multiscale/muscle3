@@ -5,8 +5,6 @@ from copy import copy
 from textwrap import indent
 from typing import Dict, List, Optional
 
-import api_generator
-
 from api_generator import (
         API, Array, AssignmentOperator, Bool, Bytes, Char, Class, Constructor,
         Destructor, Double, Enum, EnumVal, Float, IndexAssignmentOperator, Int,
@@ -33,7 +31,7 @@ class GridConstructor(MultiMemFun):
 
         This creates a set of named constructors, one for each
         combination of five element types and seven dimensions. If
-        with_types is True, every instance has n additional string
+        with_names is True, every instance has n additional string
         arguments for index names, where n is the number of dimensions
         of the array it accepts.
 
@@ -55,7 +53,6 @@ class GridConstructor(MultiMemFun):
             typ.name = 'data_array'
             typ.set_ns_prefix({}, 'LIBMUSCLE')
 
-            instance_ret_type = Obj('<deferred>')
             instance_params = [Array(1, copy(typ), 'data_array')]
             if not with_names:
                 instance_name = 'grid_{}_a'.format(typ.tname())
@@ -115,7 +112,6 @@ class GridConstructor(MultiMemFun):
         # generate instances
         for typ in self.types:
             for ndims in range(1, 8):
-                instance_ret_type = Obj('<deferred>')
                 instance_params = [Array(ndims, copy(typ), 'data_array')]
                 if with_names:
                     for i in range(1, ndims+1):

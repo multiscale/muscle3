@@ -5,6 +5,32 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_.
 
+0.3.2
+*****
+
+Improved
+--------
+
+* Accessing settings from C++ now more flexible
+* Python produces more detailed logs to aid in debugging
+* Improved pkg-config set-up
+* Improved build system output to help find problems
+* Documentation on logging in Python
+* Protobuf dependency build now more compatible
+
+Fixed
+-----
+
+* C++ list/dict building functions
+* C++ use-after-free when receiving grids
+
+Thanks
+------
+
+* Pavel for testing and reporting issues
+* Dongwei for testing and reporting issues
+
+
 0.3.1
 *****
 

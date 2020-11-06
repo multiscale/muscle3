@@ -1,18 +1,57 @@
 # YAML 1.2
 ---
+cff-version: "1.1.0"
+
+title: "MUSCLE 3: The Multiscale Coupling Library and Environment"
+doi: "10.5281/zenodo.3258864"
+repository-code: "https://github.com/multiscale/muscle3"
+
+message: "If you use MUSCLE 3, please cite it using these metadata."
 authors:
   -
     family-names: Veen
     given-names: Lourens
     orcid: "https://orcid.org/0000-0002-6311-1168"
-cff-version: "1.1.0"
-doi: "10.5281/zenodo.3258864"
+
 keywords:
   - multiscale
   - coupling
   - MUSCLE
+
 license: "Apache-2.0"
-message: "If you use MUSCLE 3, please cite it using these metadata."
-repository-code: "https://github.com/multiscale/muscle3"
-title: "MUSCLE 3: The Multiscale Coupling Library and Environment"
+
+references:
+  - type: conference-paper
+    doi: "10.1007/978-3-030-50433-5_33"
+    authors:
+      - family-names: Veen
+        given-names: Lourens E.
+      - family-names: Hoekstra
+        given-names: Alfons G.
+    title: Easing Multiscale Model Design and Coupling with MUSCLE 3
+    year: 2020
+
+    collection-title: Lecture Notes in Computer Science
+    volume: 12142
+    volume-title: Computational Science -- ICCS 2020
+    editors:
+      - family-names: Krzhizhanovskaya
+        given-names: Valeria V.
+      - family-names: Závodszky
+        given-names: Gábor
+      - family-names: Lees
+        given-names: Michael H.
+      - family-names: Dongarra
+        given-names: Jack J.
+      - family-names: Sloot
+        given-names: Peter M. A.
+      - family-names: Brissos
+        given-names: Sèrgio
+      - family-names: Teixeira
+        given-names: João
+    start: 425
+    end: 438
+    publisher:
+      name: Springer International Publishing
+      city: Cham
 ...

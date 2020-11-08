@@ -97,7 +97,6 @@ DataConstRef DataConstRef::grid_data_<bool>(
 DataConstRef::DataConstRef()
     : mp_zones_(new std::vector<std::shared_ptr<msgpack::zone>>())
 {
-    mp_zones_->push_back(std::make_shared<msgpack::zone>());
     mp_obj_ = zone_alloc_<msgpack::object>();
     mp_obj_->type = msgpack::type::NIL;
 }

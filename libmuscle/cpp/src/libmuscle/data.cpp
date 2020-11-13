@@ -845,17 +845,23 @@ Data Data::byte_array(char const * buf, uint32_t size) {
 Data & Data::operator=(Data const & rhs) {
     if (mp_obj_ != rhs.mp_obj_) {
         *mp_obj_ = *rhs.mp_obj_;
-
-        // We can't overwrite mp_zones_ here, because mp_obj_ is allocated on
-        // one of them, and we don't know which. So we just append, which is
-        // suboptimal because it may keep objects alive that are no longer
-        // reachable. Consider a separate shared_ptr to the zone that mp_obj_
-        // is on (in a separate member), so that we can safely overwrite
-        // mp_zones_.
-        if (mp_zones_ != rhs.mp_zones_)
-            mp_zones_->insert(mp_zones_->end(),
-                    rhs.mp_zones_->cbegin(), rhs.mp_zones_->cend());
         obj_cache_ = rhs.obj_cache_;
+
+        if (
+                rhs.mp_obj_->type == msgpack::type::STR ||
+                rhs.mp_obj_->type == msgpack::type::BIN ||
+                rhs.mp_obj_->type == msgpack::type::ARRAY ||
+                rhs.mp_obj_->type == msgpack::type::MAP ||
+                rhs.mp_obj_->type == msgpack::type::EXT)
+        {
+            // The above assignment will only copy the pointer for these
+            // types. So we need to add the source zones to our own to
+            // ensure that the data structure pointed to by thet pointer
+            // continues to exist for as long as we do.
+            if (mp_zones_ != rhs.mp_zones_)
+                mp_zones_->insert(mp_zones_->end(),
+                        rhs.mp_zones_->cbegin(), rhs.mp_zones_->cend());
+        }
     }
     return *this;
 }

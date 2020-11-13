@@ -19,7 +19,7 @@ class _InstancePipe:
     """Pipes for communicating between an instance and the mux.
 
     Objects of this class contain the endpoints for a pipe
-    that is used to communicate between an instance processe and the
+    that is used to communicate between an instance process and the
     multiplexer. The multiplexer (in this module) facilitates the
     creation of peer-to-peer pipe connections between the processes.
 

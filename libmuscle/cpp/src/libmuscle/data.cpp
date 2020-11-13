@@ -856,7 +856,7 @@ Data & Data::operator=(Data const & rhs) {
         {
             // The above assignment will only copy the pointer for these
             // types. So we need to add the source zones to our own to
-            // ensure that the data structure pointed to by thet pointer
+            // ensure that the data structure pointed to by that pointer
             // continues to exist for as long as we do.
             if (mp_zones_ != rhs.mp_zones_)
                 mp_zones_->insert(mp_zones_->end(),

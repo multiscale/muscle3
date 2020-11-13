@@ -346,7 +346,8 @@ your model!):
 
 .. code-block:: fortran
 
-    type(LIBMUSCLE_Data) :: d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11
+    type(LIBMUSCLE_Data) :: d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12
+    integer (LIBMUSCLE_int8), dimension(2, 3) :: ar
     character(len=1), dimension(1024) :: bytes
 
     ! create a Data containing a nil value (None in Python)
@@ -377,12 +378,23 @@ your model!):
     call LIBMUSCLE_Data_set_item(d10, 'note', 'Keys must be strings')
     call LIBMUSCLE_Data_set_item(d10, 'nest all you want', d9)
 
+    ! grid
+    ar = reshape(spread((/1_LIBMUSCLE_int8/), 1, 6), (/2, 3/))
+    d12 = LIBMUSCLE_Data_create_grid(ar)
+
     ! byte array
-    d11 = LIBMUSCLE_Data_create_byte_array(bytes)
+    d12 = LIBMUSCLE_Data_create_byte_array(bytes)
 
 
 As you can see, sending complex data types with MUSCLE is a bit more difficult
 in Fortran than in Python, but it is not too burdensome.
+
+If you want to send large amounts of data, then use grids (arrays) as much as
+possible. Lists and dicts are more flexible, but they are also slower and take
+up much more memory. In particular, a set of objects (agents for example) is
+better sent as a dict of arrays (with one 1D array for each attribute) than as a
+list of dicts. (The latter will probably work up to 1 million objects or so, but
+it will still be slower.)
 
 Handling errors
 ```````````````

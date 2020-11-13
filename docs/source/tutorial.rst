@@ -248,8 +248,9 @@ and is set to ``None`` here.
 MUSCLE 3 uses `MessagePack <https://msgpack.org>`_ to encode messages between
 models. MessagePack is a binary encoding format which can be thought of as a
 binary version of JSON. That means that the message can be an integer, float,
-bool, string, or a list or dictionary containing such. Like with JSON, these can
-be nested, so you can send a dictionary containing lists of floats for example.
+bool, string, or a list or dictionary containing such, and MUSCLE 3 also
+supports NumPy arrays and byte arrays. Like with JSON, these can be nested, so
+you can send a dictionary containing lists of floats for example.
 
 MessagePack is self-describing, so you can inspect the received message to find
 out what you were sent. In most cases, all data you send on a particular
@@ -267,6 +268,13 @@ wrap our array U into a :class:`libmuscle.Grid` object, so that we can add the
 name of the dimensions. In this case there's only one, and ``x`` is not very
 descriptive, so we could have also passed ``U`` directly, in which case MUSCLE
 would have sent a :class:`libmuscle.Grid` without index names automatically.
+
+Note that grids (and NumPy arrays) are much more efficient than lists and
+dictionaries. If you have a lot of data to send, then you should use those as
+much as possible. For example, a set of agents is best sent as a dictionary of
+1D NumPy arrays, with one array/grid for each attribute. A list of dictionaries
+will be quite a bit slower and use a lot more memory, but it should work up to
+a million or so objects.
 
 Finally, if you want to use your own encoding, you can just send a ``bytes``
 object, which will be transmitted as-is, with minimal overhead.

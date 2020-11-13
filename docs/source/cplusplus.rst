@@ -334,9 +334,18 @@ objects containing different kinds of data:
             "existing_object", d4
             );
 
+    // grid
+    // +-----------------+
+    // | 1.0 | 2.0 | 3.0 |
+    // +-----------------+
+    // | 4.0 | 5.0 | 6.0 |
+    // +-----------------+
+    std::vector<double> array = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+    auto d11 = Data::grid(array.data(), {2, 3}, {"row", "col"});
+
     // byte array
     std::vector<char> bytes;
-    auto d11 = Data::byte_array(bytes.data(), bytes.size());
+    auto d12 = Data::byte_array(bytes.data(), bytes.size());
 
     // simple types are created automatically when making a Message
     instance.send("output_port", Message(t_cur, 1.0));
@@ -344,15 +353,18 @@ objects containing different kinds of data:
     std::string text("A text message");
     instance.send("output_port", Message(t_cur, text));
 
-    // but you have to name dicts, lists, and byte arrays
+    // but you have to name dicts, lists, grids and byte arrays
     instance.send("output_port", Message(t_cur, Data::list("a", 10)));
 
 
 As you can see, sending complex data types with MUSCLE is almost as easy in C++
-as it is in Python. One thing that's still missing is sending and receiving
-multidimensional arrays of numbers. We hope to add that in a future version; for
-now you'll need to put them into a list of numbers manually.
-
+as it is in Python. There is however a bit of a cost to this ease-of-use in the
+form of extra memory usage. If you're sending large amounts of data, then it is
+best to use as many grids as you can, as those are much more efficient than
+dictionaries and lists. In particular, a set of objects (agents for example) is
+much more efficiently sent as a dictionary-of-grids (with one 1D-grid for each
+attribute) than as a list of dictionaries. (The latter will work up to a million
+objects or so, but it will be slower.)
 
 .. code-block:: cpp
 

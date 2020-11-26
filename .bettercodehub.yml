@@ -1,0 +1,23 @@
+component_depth: 1
+languages:
+  - name: python
+    production:
+      include:
+        - /libmuscle/python/libmuscle/.*\.py
+        - /muscle_manager/.*\.py
+      exclude:
+        - .*/test/.*\.py
+    test:
+      include:
+        - .*/test/.*\.py
+        - /integration_test/.*\.py
+  - name: cpp
+    production:
+      include:
+        - /libmuscle/cpp/src/libmuscle/.*\.?pp
+        - /libmuscle/cpp/src/ymmsl/.*\.?pp
+      exclude:
+        - .*/tests/.*\.?pp
+    test:
+      include:
+        - .*/tests/.*\.?pp

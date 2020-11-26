@@ -2,10 +2,11 @@ component_depth: 1
 languages:
   - name: python
     production:
-      include:
-        - /libmuscle/python/libmuscle/.*\.py
-        - /muscle_manager/.*\.py
       exclude:
+        - /muscle_manager_protocol/.*\.py
+        - /scripts/.*\.py
+        - /setup.py
+        - /docs/.*
         - .*/test/.*\.py
     test:
       include:
@@ -13,10 +14,10 @@ languages:
         - /integration_test/.*\.py
   - name: cpp
     production:
-      include:
-        - /libmuscle/cpp/src/libmuscle/.*\.?pp
-        - /libmuscle/cpp/src/ymmsl/.*\.?pp
       exclude:
+        - /libmuscle/cpp/src/muscle_manager_protocol/.*
+        - /libmuscle/cpp/src/libmuscle/bindings/.*
+        - /libmuscle/cpp/src/ymmsl/bindings/.*
         - .*/tests/.*\.?pp
     test:
       include:

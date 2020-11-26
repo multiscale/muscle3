@@ -70,7 +70,8 @@ setup(
         'pytest>=3.5',
         'pytest-cov',
         'pytest-flake8',
-        'pytest-mypy'
+        'pytest-mypy',
+        'importlib-metadata==2.1.0'
     ],
     extras_require={
         'dev': [

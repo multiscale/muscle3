@@ -19,6 +19,7 @@ languages:
         - /libmuscle/cpp/src/libmuscle/bindings/.*
         - /libmuscle/cpp/src/ymmsl/bindings/.*
         - .*/tests/.*\.?pp
+        - /docs/.*
     test:
       include:
         - .*/tests/.*\.?pp

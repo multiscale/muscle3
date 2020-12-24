@@ -9,7 +9,7 @@ fi
 echo 'Running reaction-diffusion with MPI in C++'
 
 . python/build/venv/bin/activate
-muscle_manager reaction_diffusion.ymmsl &
+muscle_manager reaction_diffusion.ymmsl rd_settings.ymmsl &
 
 manager_pid=$!
 

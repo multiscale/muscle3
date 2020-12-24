@@ -45,7 +45,7 @@ setup(
     },
     python_requires='>=3.5, <4',
     install_requires=[
-        'click',
+        'click>=6',
         'grpcio>=1.24.3, <2',
         'msgpack',
         'netifaces',

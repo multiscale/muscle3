@@ -16,4 +16,4 @@ jobs:
         key: python-compatibility-3.6.1-eggs2
 
     - name: Run Python tests on 3.6.1 latest
-      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3" python:3.6.1 /bin/bash -c 'cd /home/muscle3 && pip install -U pip setuptools wheel git+https://github.com/multiscale/ymmsl-python.git@develop && make test_python_only'
+      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3" python:3.6.1 /bin/bash -c 'cd /home/muscle3 && pip install -U pip setuptools wheel && pip install -U git+https://github.com/multiscale/ymmsl-python.git@develop && make test_python_only'

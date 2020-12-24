@@ -1,5 +1,5 @@
 import pytest
-from ymmsl import (ComputeElement, Conduit, Configuration, Model, Reference,
+from ymmsl import (Component, Conduit, Configuration, Model, Reference,
                    Settings)
 
 from libmuscle.manager.instance_registry import InstanceRegistry
@@ -34,8 +34,8 @@ def topology_store() -> TopologyStore:
             Model(
                 'test_model',
                 [
-                    ComputeElement('macro', 'macro_implementation'),
-                    ComputeElement(
+                    Component('macro', 'macro_implementation'),
+                    Component(
                         'micro', 'micro_implementation', [10, 10])],
                 [
                     Conduit('macro.out', 'micro.in'),
@@ -75,9 +75,9 @@ def topology_store2() -> TopologyStore:
             Model(
                 'test_model',
                 [
-                    ComputeElement('macro', 'macro_implementation'),
-                    ComputeElement('meso', 'meso_implementation', [5]),
-                    ComputeElement('micro', 'micro_implementation', [5, 10])
+                    Component('macro', 'macro_implementation'),
+                    Component('meso', 'meso_implementation', [5]),
+                    Component('micro', 'micro_implementation', [5, 10])
                 ],
                 [
                     Conduit('macro.out', 'meso.in'),

@@ -16,7 +16,7 @@ def do_logging_test(caplog):
             'ymmsl_version: v0.1\n'
             'model:\n'
             '  name: test_model\n'
-            '  compute_elements:\n'
+            '  components:\n'
             '    macro: macro_implementation\n'
             '    micro:\n'
             '      implementation: micro_implementation\n'

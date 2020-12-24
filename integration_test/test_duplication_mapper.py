@@ -1,4 +1,4 @@
-from ymmsl import (ComputeElement, Conduit, Configuration, Operator, Model,
+from ymmsl import (Component, Conduit, Configuration, Operator, Model,
                    Settings)
 
 from libmuscle import Instance, Message
@@ -36,9 +36,9 @@ def test_duplication_mapper(log_file_in_tmpdir):
     This is an acyclic workflow.
     """
     elements = [
-            ComputeElement('dm', 'muscle.duplication_mapper'),
-            ComputeElement('first', 'receiver'),
-            ComputeElement('second', 'receiver')]
+            Component('dm', 'muscle.duplication_mapper'),
+            Component('first', 'receiver'),
+            Component('second', 'receiver')]
 
     conduits = [
                 Conduit('dm.out', 'first.in'),

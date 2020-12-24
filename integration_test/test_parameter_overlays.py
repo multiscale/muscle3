@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from ymmsl import (ComputeElement, Conduit, Configuration, Model, Operator,
+from ymmsl import (Component, Conduit, Configuration, Model, Operator,
                    Settings)
 
 from libmuscle import Instance, Message
@@ -94,11 +94,11 @@ def test_settings_overlays(log_file_in_tmpdir):
     """A positive all-up test of settings overlays.
     """
     elements = [
-            ComputeElement('qmc', 'qmc'),
-            ComputeElement('macro', 'macro', [10]),
-            ComputeElement('relay', 'explicit_relay'),
-            ComputeElement('relay2', 'explicit_relay'),
-            ComputeElement('micro', 'micro', [10])]
+            Component('qmc', 'qmc'),
+            Component('macro', 'macro', [10]),
+            Component('relay', 'explicit_relay'),
+            Component('relay2', 'explicit_relay'),
+            Component('micro', 'micro', [10])]
 
     conduits = [
                 Conduit('qmc.settings_out', 'macro.muscle_settings_in'),

@@ -67,7 +67,7 @@ def mmp_server_process(yatiml_log_warning):
             'ymmsl_version: v0.1\n'
             'model:\n'
             '  name: test_model\n'
-            '  compute_elements:\n'
+            '  components:\n'
             '    macro: macro_implementation\n'
             '    micro:\n'
             '      implementation: micro_implementation\n'
@@ -84,6 +84,9 @@ def mmp_server_process(yatiml_log_warning):
             '  test6:\n'
             '    - [1.0, 2.0]\n'
             '    - [3.0, 1.0]\n'
+            'implementations:\n'
+            '  macro_implementation: macro.py\n'
+            '  micro_implementation: micro.py\n'
             )
     ymmsl_doc = ymmsl.load(ymmsl_text)
 
@@ -96,7 +99,7 @@ def mmp_server_process_simple(yatiml_log_warning):
             'ymmsl_version: v0.1\n'
             'model:\n'
             '  name: test_model\n'
-            '  compute_elements:\n'
+            '  components:\n'
             '    macro: macro_implementation\n'
             '    micro: micro_implementation\n'
             '  conduits:\n'
@@ -123,7 +126,7 @@ def mmp_server(yatiml_log_warning):
             'ymmsl_version: v0.1\n'
             'model:\n'
             '  name: test_model\n'
-            '  compute_elements:\n'
+            '  components:\n'
             '    macro: macro_implementation\n'
             '    micro:\n'
             '      implementation: micro_implementation\n'

@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 import numpy as np
-from ymmsl import (ComputeElement, Conduit, Configuration, Model, Operator,
+from ymmsl import (Component, Conduit, Configuration, Model, Operator,
                    Settings)
 
 from libmuscle import Grid, Instance, Message
@@ -63,8 +63,8 @@ def test_all(log_file_in_tmpdir):
     """A positive all-up test of everything.
     """
     elements = [
-            ComputeElement('macro', 'macro_impl'),
-            ComputeElement('micro', 'micro_impl', [10])]
+            Component('macro', 'macro_impl'),
+            Component('micro', 'micro_impl', [10])]
 
     conduits = [
             Conduit('macro.out', 'micro.in'),

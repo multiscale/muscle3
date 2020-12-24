@@ -2,7 +2,7 @@ ymmsl_version: v0.1
 
 model:
   name: reaction_diffusion_mc
-  compute_elements:
+  components:
     mc: mc_driver
     rr: load_balancer
     macro:

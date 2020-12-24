@@ -2,7 +2,7 @@ ymmsl_version: v0.1
 
 model:
   name: reaction_diffusion
-  compute_elements:
+  components:
     macro: diffusion
     micro: reaction
   conduits:

@@ -13,7 +13,7 @@ jobs:
       uses: actions/cache@v1
       with:
         path: ${{ github.workspace }}/.eggs
-        key: python-compatibility-3.5.1-eggs
+        key: python-compatibility-3.5.1-eggs2
 
     - name: Run Python tests on 3.5.1
       run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3" python:3.5.1 /bin/bash -c 'cd /home/muscle3 && pip install -U pip setuptools wheel "numpy<1.19" git+https://github.com/multiscale/ymmsl-python.git@develop && make test_python_only'

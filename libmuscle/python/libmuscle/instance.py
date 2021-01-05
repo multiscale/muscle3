@@ -20,6 +20,9 @@ from libmuscle.util import extract_log_file_location
 _logger = logging.getLogger(__name__)
 
 
+_FInitCacheType = Dict[Tuple[str, Optional[int]], Message]
+
+
 class Instance:
     """Represents a compute element instance in a MUSCLE3 simulation.
 
@@ -62,8 +65,7 @@ class Instance:
         self._first_run = True
         """Keeps track of whether this is the first reuse run."""
 
-        FInitCacheType = Dict[Tuple[str, Optional[int]], Message]
-        self._f_init_cache = dict()     # type: FInitCacheType
+        self._f_init_cache = dict()     # type: _FInitCacheType
 
         self._register()
         self._connect()

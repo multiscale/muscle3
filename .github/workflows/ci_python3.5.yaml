@@ -16,4 +16,4 @@ jobs:
         key: python-compatibility-3.5-eggs
 
     - name: Run Python tests on 3.5 latest
-      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3" python:3.5 /bin/bash -c 'cd /home/muscle3 && pip install -U pip setuptools wheel "numpy" pip install -U git+https://github.com/yatiml/yatiml.git@develop && git+https://github.com/multiscale/ymmsl-python.git@develop && make test_python_only'
+      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3" python:3.5 /bin/bash -c 'cd /home/muscle3 && pip install -U pip setuptools wheel "numpy" pip install -U git+https://github.com/yatiml/yatiml.git@develop && pip install -U git+https://github.com/multiscale/ymmsl-python.git@develop && make test_python_only'

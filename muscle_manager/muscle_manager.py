@@ -2,7 +2,7 @@ from typing import Sequence
 
 import click
 import ymmsl
-from ymmsl import Configuration
+from ymmsl import PartialConfiguration
 
 from libmuscle.manager.manager import start_server
 
@@ -13,12 +13,12 @@ from libmuscle.manager.manager import start_server
             exists=True, file_okay=True, dir_okay=False, readable=True,
             allow_dash=True, resolve_path=True))
 def manage_simulation(ymmsl_files: Sequence[str]) -> None:
-    configuration = Configuration()
+    configuration = PartialConfiguration()
     for path in ymmsl_files:
         with open(path, 'r') as f:
             configuration.update(ymmsl.load(f))
 
-    server = start_server(configuration)
+    server = start_server(configuration.as_configuration())
     print(server.get_location())
     server.wait()
 

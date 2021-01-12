@@ -31,7 +31,7 @@ class PipeServer(Server):
             self._shutdown_conn, self._handler_shutdown_conn = mp.Pipe()
             self._server_thread = threading.Thread(
                     target=self.__conn_request_handler,
-                    name='PipeServer-{}'.format(instance_id))
+                    name='PipeServer-{}'.format(instance_id), daemon=True)
 
             self._server_thread.start()
         else:
@@ -72,7 +72,7 @@ class PipeServer(Server):
                             target=self.__mcp_pipe_handler,
                             args=(client_id, connection),
                             name='PipeHandler-{}-{}'.format(
-                                self._instance_id, client_id))
+                                self._instance_id, client_id), daemon=True)
                     conn_thread.start()
                     conn_threads.append(conn_thread)
                 except EOFError:

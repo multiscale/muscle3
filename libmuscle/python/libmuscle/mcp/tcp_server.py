@@ -13,6 +13,8 @@ from libmuscle.post_office import PostOffice
 
 
 class TcpServerImpl(ss.ThreadingMixIn, ss.TCPServer):
+    daemon_threads = True
+
     def __init__(self, host_port_tuple: Tuple[str, int],
                  streamhandler: Type, tcp_server: 'TcpServer'
                  ) -> None:
@@ -65,7 +67,7 @@ class TcpServer(Server):
 
         self._server = TcpServerImpl(('', 0), TcpHandler, self)
         self._server_thread = threading.Thread(
-                target=self._server.serve_forever)
+                target=self._server.serve_forever, daemon=True)
         self._server_thread.start()
 
     def get_location(self) -> str:

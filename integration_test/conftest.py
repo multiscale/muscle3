@@ -13,7 +13,6 @@ import integration_test.include_libmuscle   # noqa: F401
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger
 from libmuscle.manager.mmp_server import MMPServer
-from libmuscle.manager.manager import elements_for_model
 from libmuscle.manager.topology_store import TopologyStore
 
 
@@ -29,8 +28,7 @@ def yatiml_log_warning():
 
 def make_server(ymmsl_doc: ymmsl.Configuration):
     logger = Logger()
-    expected_elements = elements_for_model(ymmsl_doc.model)
-    instance_registry = InstanceRegistry(expected_elements)
+    instance_registry = InstanceRegistry()
     topology_store = TopologyStore(ymmsl_doc)
     server = MMPServer(logger, ymmsl_doc.settings, instance_registry,
                        topology_store)

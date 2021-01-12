@@ -8,7 +8,6 @@ from ymmsl import Port, Reference
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger
 from libmuscle.manager.mmp_server import MMPServer
-from libmuscle.manager.manager import elements_for_model
 from libmuscle.manager.topology_store import TopologyStore
 from libmuscle.operator import Operator
 
@@ -42,8 +41,7 @@ def do_mmp_client_test(caplog):
     # create server
     logger = Logger()
     ymmsl_doc = ymmsl.load(ymmsl_text)
-    expected_elements = elements_for_model(ymmsl_doc.model)
-    instance_registry = InstanceRegistry(expected_elements)
+    instance_registry = InstanceRegistry()
     topology_store = TopologyStore(ymmsl_doc)
     server = MMPServer(logger, ymmsl_doc.settings, instance_registry,
                        topology_store)

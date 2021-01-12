@@ -68,9 +68,8 @@ def start_server(configuration: Configuration) -> MMPServer:
                          ' model to run.')
 
     topology_store = TopologyStore(configuration)
-    expected_elements = elements_for_model(configuration.model)
 
     logger = Logger()
-    instance_registry = InstanceRegistry(expected_elements)
+    instance_registry = InstanceRegistry()
     return MMPServer(logger, configuration.settings, instance_registry,
                      topology_store)

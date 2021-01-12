@@ -24,10 +24,7 @@ def settings():
 
 @pytest.fixture
 def instance_registry():
-    expected_instances = ['macro']
-    for i in range(10):
-        expected_instances.append('micro[{}]'.format(i))
-    return InstanceRegistry(expected_instances)
+    return InstanceRegistry()
 
 
 @pytest.fixture
@@ -93,13 +90,7 @@ def topology_store2() -> TopologyStore:
 
 @pytest.fixture
 def loaded_instance_registry2():
-    expected_instances = ['macro']
-    for i in range(5):
-        expected_instances.append('meso[{}]'.format(i))
-    for j in range(5):
-        for i in range(10):
-            expected_instances.append('micro[{}][{}]'.format(j, i))
-    instance_registry = InstanceRegistry(expected_instances)
+    instance_registry = InstanceRegistry()
 
     instance_registry.add(Reference('macro'), ['direct:macro'], [])
 

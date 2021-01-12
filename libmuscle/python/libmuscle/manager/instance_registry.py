@@ -1,4 +1,3 @@
-from enum import Enum
 from threading import Condition
 from typing import Dict  # noqa
 from typing import List
@@ -6,10 +5,8 @@ from typing import List
 from ymmsl import Port, Reference
 
 
-class _InstanceStatus(Enum):
-    EXPECTED = 0,
-    REGISTERED = 1,
-    DEREGISTERED = 2
+class AlreadyRegistered(RuntimeError):
+    pass
 
 
 class InstanceRegistry:
@@ -18,20 +15,12 @@ class InstanceRegistry:
     The InstanceRegistry is a simple in-memory database that stores
     information about running instances of compute elements.
     """
-    def __init__(self, expected_instances: List[str]) -> None:
-        """Construct an empty InstanceRegistry.
-
-        Args:
-            expected_instances: List of instance names expected to
-                    register.
-        """
-        self.__status = dict()  # type: Dict[Reference, _InstanceStatus]
-        self.__deregistered_one = Condition()   # doubles as lock for __status
-        self.__locations = dict()  # type: Dict[Reference, List[str]]
-        self.__ports = dict()  # type: Dict[Reference, List[Port]]
-
-        for instance_name in expected_instances:
-            self.__status[Reference(instance_name)] = _InstanceStatus.EXPECTED
+    def __init__(self) -> None:
+        """Construct an empty InstanceRegistry"""
+        self._deregistered_one = Condition()    # doubles as lock
+        self._locations = dict()  # type: Dict[Reference, List[str]]
+        self._ports = dict()  # type: Dict[Reference, List[Port]]
+        self._startup = True
 
     def add(self, name: Reference, locations: List[str], ports: List[Port]
             ) -> None:
@@ -46,12 +35,14 @@ class InstanceRegistry:
             ValueError: If an instance with this name has already been
                     registered.
         """
-        if name in self.__locations or name in self.__ports:
-            raise ValueError('Instance already registered')
-        with self.__deregistered_one:
-            self.__status[name] = _InstanceStatus.REGISTERED
-        self.__locations[name] = locations
-        self.__ports[name] = ports
+        with self._deregistered_one:
+            if name in self._locations:
+                raise AlreadyRegistered(
+                        'Instance {} tried to register twice'.format(name))
+
+            self._locations[name] = locations
+            self._ports[name] = ports
+            self._startup = False
 
     def get_locations(self, name: Reference) -> List[str]:
         """Retrieves the locations of a registered instance.
@@ -62,7 +53,8 @@ class InstanceRegistry:
         Raises:
             KeyError: If no instance with this name was registered.
         """
-        return self.__locations[name]
+        with self._deregistered_one:
+            return self._locations[name]
 
     def get_ports(self, name: Reference) -> List[Port]:
         """Retrieves the ports of a registered instance.
@@ -73,7 +65,8 @@ class InstanceRegistry:
         Raises:
             KeyError: If no instance with this name was registered.
         """
-        return self.__ports[name]
+        with self._deregistered_one:
+            return self._ports[name]
 
     def remove(self, name: Reference) -> None:
         """Remove an instance from the registry.
@@ -84,25 +77,19 @@ class InstanceRegistry:
         Raises:
             KeyError: If the instance does not exist.
         """
-        del(self.__locations[name])
-        del(self.__ports[name])
-        with self.__deregistered_one:
-            self.__status[name] = _InstanceStatus.DEREGISTERED
-            self.__deregistered_one.notify()
+        with self._deregistered_one:
+            del self._locations[name]
+            del self._ports[name]
+            self._deregistered_one.notify()
 
     def wait(self) -> None:
-        """Waits until all instance are deregistered.
+        """Waits until all instances are deregistered.
 
-        This function blocks, and returns after each expected instance
-        has been registered and deregistered again, signalling the end
-        of the simulation run.
+        This function blocks, and returns after each instance has been
+        registered and deregistered again, signally the end of the
+        simulation run.
         """
-        # this is called from a different thread than add/remove
-        def all_deregistered() -> bool:
-            return all(map(
-                    lambda x: x == _InstanceStatus.DEREGISTERED,
-                    self.__status.values()))
-
-        with self.__deregistered_one:
-            while not all_deregistered():
-                self.__deregistered_one.wait()
+        # This is called from a different thread than add/remove
+        with self._deregistered_one:
+            while self._startup or self._locations:
+                self._deregistered_one.wait()

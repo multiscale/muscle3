@@ -12,7 +12,7 @@ def port():
 
 @pytest.fixture
 def registry():
-    return InstanceRegistry(['instance1'])
+    return InstanceRegistry()
 
 
 def test_port(port):
@@ -22,15 +22,15 @@ def test_port(port):
 
 def test_registry_add(registry, port):
     registry.add('instance1', 'tcp://localhost:6253', [port])
-    assert (registry._InstanceRegistry__locations['instance1'] ==
+    assert (registry._locations['instance1'] ==
             'tcp://localhost:6253')
-    assert registry._InstanceRegistry__ports['instance1'] == [port]
+    assert registry._ports['instance1'] == [port]
 
 
 def test_registry_get(registry, port):
-    registry._InstanceRegistry__locations['instance1'] = [
+    registry._locations['instance1'] = [
             'tcp://localhost:6253']
-    registry._InstanceRegistry__ports['instance1'] = [port]
+    registry._ports['instance1'] = [port]
     assert registry.get_locations('instance1') == ['tcp://localhost:6253']
     assert registry.get_ports('instance1') == [port]
 
@@ -42,12 +42,12 @@ def test_registry_get(registry, port):
 
 
 def test_registry_remove(registry, port):
-    registry._InstanceRegistry__locations['instance1'] = [
+    registry._locations['instance1'] = [
             'tcp://localhost:6253']
-    registry._InstanceRegistry__ports['instance1'] = [port]
+    registry._ports['instance1'] = [port]
     registry.remove('instance1')
-    assert 'instance1' not in registry._InstanceRegistry__locations
-    assert 'instance1' not in registry._InstanceRegistry__ports
+    assert 'instance1' not in registry._locations
+    assert 'instance1' not in registry._ports
 
     with pytest.raises(KeyError):
         registry.remove('non-existant-instance')

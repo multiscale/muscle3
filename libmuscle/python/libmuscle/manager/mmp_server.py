@@ -8,7 +8,8 @@ from ymmsl import Reference, Settings
 
 from libmuscle.port import port_from_grpc
 from libmuscle.logging import LogLevel, Timestamp
-from libmuscle.manager.instance_registry import InstanceRegistry
+from libmuscle.manager.instance_registry import (
+        AlreadyRegistered, InstanceRegistry)
 from libmuscle.manager.logger import Logger
 from libmuscle.manager.topology_store import TopologyStore
 from libmuscle.util import (conduit_to_grpc, generate_indices,
@@ -134,7 +135,7 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
             self.__log(LogLevel.INFO, 'Registered instance {}'.format(
                         request.instance_name))
             return mmp.RegistrationResult(status=mmp.RESULT_STATUS_SUCCESS)
-        except ValueError:
+        except AlreadyRegistered:
             return mmp.RegistrationResult(
                     status=mmp.RESULT_STATUS_ERROR,
                     error_message=('An instance with name {} was already'
@@ -253,8 +254,8 @@ class MMPServer():
             topology_store: TopologyStore
             ) -> None:
         self._instance_registry = instance_registry
-        self._servicer = MMPServicer(logger, settings, instance_registry,
-                                     topology_store)
+        self._servicer = MMPServicer(
+                logger, settings, instance_registry, topology_store)
         self._server = grpc.server(futures.ThreadPoolExecutor())
         mmp_grpc.add_MuscleManagerServicer_to_server(  # type: ignore
                 self._servicer, self._server)

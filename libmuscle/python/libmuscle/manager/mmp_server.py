@@ -270,16 +270,6 @@ class MMPServer():
         hostname = socket.getfqdn()
         return '{}:{}'.format(hostname, 9000)
 
-    def wait(self) -> None:
-        """Waits for the server to finish.
-
-        The server will shut down after every instance has been
-        registered and deregistered again.
-        """
-        self._instance_registry.wait()
-        time.sleep(1)
-        self._server.stop(5)
-
     def stop(self) -> None:
         """Stops the server.
 

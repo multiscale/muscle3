@@ -12,7 +12,7 @@ from ymmsl import Configuration, Identifier, Model, Reference
 
 from libmuscle.mcp import pipe_multiplexer as mux
 from libmuscle.util import generate_indices
-from libmuscle.manager.manager import start_server
+from libmuscle.manager.manager import Manager
 
 
 __all__ = ['run_simulation']
@@ -52,13 +52,13 @@ def manager_process(control_pipe: Pipe, configuration: Configuration) -> None:
         configuration: The configuration to run.
     """
     control_pipe[0].close()
-    server = start_server(configuration)
+    manager = Manager(configuration)
     control_pipe[1].send(True)
 
     # wait for shutdown command
     control_pipe[1].recv()
     control_pipe[1].close()
-    server.stop()
+    manager.stop()
 
 
 def start_server_process(configuration: Configuration) -> MMPServerController:

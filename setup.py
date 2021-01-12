@@ -51,6 +51,7 @@ setup(
         'netifaces',
         'numpy>=1.12,<1.20',
         'protobuf>=3.10.0, <4',
+        'qcg-pilotjob',
         'typing_extensions',
         'ymmsl'          # Also in CI, update there as well
     ],

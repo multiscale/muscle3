@@ -5,10 +5,7 @@ import subprocess
 import ymmsl
 from ymmsl import Port, Reference
 
-from libmuscle.manager.instance_registry import InstanceRegistry
-from libmuscle.manager.logger import Logger
-from libmuscle.manager.mmp_server import MMPServer
-from libmuscle.manager.topology_store import TopologyStore
+from libmuscle.manager.manager import Manager
 from libmuscle.operator import Operator
 
 from .conftest import skip_if_python_only
@@ -39,12 +36,8 @@ def do_mmp_client_test(caplog):
             )
 
     # create server
-    logger = Logger()
     ymmsl_doc = ymmsl.load(ymmsl_text)
-    instance_registry = InstanceRegistry()
-    topology_store = TopologyStore(ymmsl_doc)
-    server = MMPServer(logger, ymmsl_doc.settings, instance_registry,
-                       topology_store)
+    manager = Manager(ymmsl_doc)
 
     # mock the deregistration
     removed_instance = None
@@ -53,10 +46,10 @@ def do_mmp_client_test(caplog):
         nonlocal removed_instance
         removed_instance = name
 
-    instance_registry.remove = mock_remove
+    manager._instance_registry.remove = mock_remove
 
     # add some peers
-    instance_registry.add(
+    manager._instance_registry.add(
             Reference('macro'), ['tcp:test3', 'tcp:test4'],
             [Port('out', Operator.O_I), Port('in', Operator.S)])
 
@@ -86,12 +79,11 @@ def do_mmp_client_test(caplog):
             assert rec.time_stamp == '1970-01-01T00:00:02Z'
             assert rec.levelname == 'CRITICAL'
             assert rec.message == 'Integration testing'
-            break
 
-    # check register_instance
-    assert (instance_registry.get_locations('micro[3]') ==
+    # check instance registry
+    assert (manager._instance_registry.get_locations('micro[3]') ==
             ['tcp:test1', 'tcp:test2'])
-    ports = instance_registry.get_ports('micro[3]')
+    ports = manager._instance_registry.get_ports('micro[3]')
     assert ports[0].name == 'out'
     assert ports[0].operator == Operator.O_F
     assert ports[1].name == 'in'
@@ -100,7 +92,7 @@ def do_mmp_client_test(caplog):
     # check deregister_instance
     assert removed_instance == 'micro[3]'
 
-    server.stop()
+    manager.stop()
 
 
 @skip_if_python_only

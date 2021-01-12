@@ -1,75 +1,71 @@
-from typing import List
+from pathlib import Path
+import logging
+from typing import Optional
 
-from ymmsl import Configuration, Model
+from ymmsl import PartialConfiguration
 
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger
 from libmuscle.manager.mmp_server import MMPServer
+from libmuscle.manager.process_manager import ProcessManager
+from libmuscle.manager.run_dir import RunDir
 from libmuscle.manager.topology_store import TopologyStore
 
 
-def elements_for_model(model: Model) -> List[str]:
-    """Creates a list of elements to expect to register.
+_logger = logging.getLogger(__name__)
 
-    Args:
-        model: The model to create a list for.
+
+class Manager:
+    """The MUSCLE3 manager.
+
+    This creates and manager instances and connects them together
+    according to the simulation configuration.
     """
-    def increment(index: List[int], dims: List[int]) -> None:
-        # assumes index and dims are the same length > 0
-        # modifies index argument
-        i = len(index) - 1
-        index[i] += 1
-        while index[i] == dims[i]:
-            index[i] = 0
-            i -= 1
-            if i == -1:
-                break
-            index[i] += 1
+    def __init__(
+            self,
+            configuration: PartialConfiguration,
+            run_dir: Optional[RunDir] = None
+            ) -> None:
+        """Create a Manager.
 
-    def index_to_str(index: List[int]) -> str:
-        result = ''
-        for i in index:
-            result += '[{}]'.format(i)
-        return result
+        This creates the manager and the associated server, but does
+        not start any instances.
 
-    def generate_indices(multiplicity: List[int]) -> List[str]:
-        # n-dimensional counter
-        indices = list()    # type: List[str]
+        Args:
+            configuration: The simulation configuration.
+            run_dir: Main working directory.
+        """
+        self._configuration = configuration
+        self._run_dir = run_dir
+        log_dir = self._run_dir.muscle_dir if self._run_dir else Path.cwd()
+        self._logger = Logger(log_dir)
+        self._topology_store = TopologyStore(configuration)
+        self._process_manager = None    # type: Optional[ProcessManager]
+        self._instance_registry = InstanceRegistry()
+        self._server = MMPServer(
+                self._logger, self._configuration.settings,
+                self._instance_registry, self._topology_store)
 
-        index = [0] * len(multiplicity)
-        indices.append(index_to_str(index))
-        increment(index, multiplicity)
-        while sum(index) > 0:
-            indices.append(index_to_str(index))
-            increment(index, multiplicity)
-        return indices
+    def get_server_location(self) -> str:
+        """Returns the network location of the server."""
+        return self._server.get_location()
 
-    result = list()     # type: List[str]
-    for element in model.components:
-        if len(element.multiplicity) == 0:
-            result.append(str(element.name))
+    def start_instances(self) -> None:
+        """Starts all required component instances."""
+        if self._run_dir is None:
+            raise RuntimeError('No run dir specified')
+        configuration = self._configuration.as_configuration()
+        self._process_manager = ProcessManager(configuration, self._run_dir)
+        self._process_manager.start_all()
+
+    def stop(self) -> None:
+        """Shuts down the manager."""
+        self._server.stop()
+
+    def wait(self) -> None:
+        """Blocks until the simulation is done, then shuts down."""
+        if self._process_manager:
+            self._process_manager.wait()
         else:
-            for index in generate_indices(element.multiplicity):
-                result.append(str(element.name) + index)
-    return result
-
-
-def start_server(configuration: Configuration) -> MMPServer:
-    """Creates an MMP server and starts it.
-
-    Args;
-        configuration: The configuration to run.
-    """
-    if configuration.settings is None:
-        raise ValueError('The yMMSL description needs to specify the'
-                         ' settings for the simulation.')
-    if not configuration.model or not isinstance(configuration.model, Model):
-        raise ValueError('The yMMSL description needs to specify the'
-                         ' model to run.')
-
-    topology_store = TopologyStore(configuration)
-
-    logger = Logger()
-    instance_registry = InstanceRegistry()
-    return MMPServer(logger, configuration.settings, instance_registry,
-                     topology_store)
+            self._instance_registry.wait()
+        self._server.stop()

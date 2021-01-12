@@ -64,6 +64,9 @@ class Logger:
         logging.getLogger('instances').setLevel(1)
         logging.getLogger('yatiml').setLevel(logging.WARNING)
 
+        # QCG-PJ has its own log file, do not also log here
+        logging.getLogger('qcg.pilotjob').propagate = False
+
     def close(self) -> None:
         logging.getLogger().removeHandler(self._local_handler)
 

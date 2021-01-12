@@ -10,10 +10,7 @@ import ymmsl
 
 import integration_test.include_libmuscle   # noqa: F401
 
-from libmuscle.manager.instance_registry import InstanceRegistry
-from libmuscle.manager.logger import Logger
-from libmuscle.manager.mmp_server import MMPServer
-from libmuscle.manager.topology_store import TopologyStore
+from libmuscle.manager.manager import Manager
 
 
 skip_if_python_only = pytest.mark.skipif(
@@ -26,29 +23,20 @@ def yatiml_log_warning():
     yatiml.logger.setLevel(logging.WARNING)
 
 
-def make_server(ymmsl_doc: ymmsl.Configuration):
-    logger = Logger()
-    instance_registry = InstanceRegistry()
-    topology_store = TopologyStore(ymmsl_doc)
-    server = MMPServer(logger, ymmsl_doc.settings, instance_registry,
-                       topology_store)
-    return server
-
-
 def start_mmp_server(control_pipe, ymmsl_doc):
     control_pipe[0].close()
-    server = make_server(ymmsl_doc)
+    manager = Manager(ymmsl_doc)
     control_pipe[1].send(True)
     control_pipe[1].recv()
     control_pipe[1].close()
-    server.stop()
+    manager.stop()
 
 
 def make_server_process(ymmsl_doc):
     control_pipe = mp.Pipe()
     process = mp.Process(target=start_mmp_server,
                          args=(control_pipe, ymmsl_doc),
-                         name='MMPServer')
+                         name='Manager')
     process.start()
     control_pipe[1].close()
     # wait for start
@@ -144,9 +132,9 @@ def mmp_server(yatiml_log_warning):
             )
     ymmsl_doc = ymmsl.load(ymmsl_text)
 
-    server = make_server(ymmsl_doc)
-    yield server
-    server.stop()
+    manager = Manager(ymmsl_doc)
+    yield manager._server
+    manager.stop()
 
 
 @pytest.fixture

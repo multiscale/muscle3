@@ -1,3 +1,7 @@
 matplotlib
 numpy
 sobol_seq
+git+https://github.com/yatiml/yatiml.git@develop
+git+https://github.com/multiscale/ymmsl-python.git@develop
+git+https://github.com/vecma-project/qcg-pilotjob.git@develop
+

@@ -1,5 +1,6 @@
 from copy import copy
 import logging
+import os
 import sys
 from typing import cast, Dict, List, Optional, Tuple
 
@@ -509,9 +510,14 @@ class Instance:
                 name, index = split_reference(prefix_ref)
                 break
         else:
-            raise RuntimeError(('A --muscle-instance command line argument is'
-                                ' required to identify this instance. Please'
-                                ' add one.'))
+            if 'MUSCLE_INSTANCE' in os.environ:
+                prefix_ref = Reference(os.environ['MUSCLE_INSTANCE'])
+                name, index = split_reference(prefix_ref)
+            else:
+                raise RuntimeError((
+                    'A --muscle-instance command line argument or'
+                    ' MUSCLE_INSTANCE environment variable is required to'
+                    ' identify this instance. Please add one.'))
         return name, index
 
     def __list_declared_ports(self) -> List[Port]:

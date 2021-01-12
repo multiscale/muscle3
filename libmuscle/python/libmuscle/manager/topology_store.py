@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from ymmsl import Conduit, Configuration, Model, Reference
+from ymmsl import Conduit, PartialConfiguration, Model, Reference
 
 
 class TopologyStore:
@@ -12,7 +12,7 @@ class TopologyStore:
     Attributes:
         conduits (List[Conduit]): A list of conduits.
     """
-    def __init__(self, config: Configuration) -> None:
+    def __init__(self, config: PartialConfiguration) -> None:
         """Creates a TopologyStore.
 
         Creates a TopologyStore containing conduits read from the given

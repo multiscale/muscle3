@@ -252,14 +252,14 @@ class MMPServer():
             instance_registry: InstanceRegistry,
             topology_store: TopologyStore
             ) -> None:
-        self.__instance_registry = instance_registry
-        self.__servicer = MMPServicer(logger, settings, instance_registry,
-                                      topology_store)
-        self.__server = grpc.server(futures.ThreadPoolExecutor())
+        self._instance_registry = instance_registry
+        self._servicer = MMPServicer(logger, settings, instance_registry,
+                                     topology_store)
+        self._server = grpc.server(futures.ThreadPoolExecutor())
         mmp_grpc.add_MuscleManagerServicer_to_server(  # type: ignore
-                self.__servicer, self.__server)
-        self.__server.add_insecure_port('[::]:9000')
-        self.__server.start()
+                self._servicer, self._server)
+        self._server.add_insecure_port('[::]:9000')
+        self._server.start()
 
     def get_location(self) -> str:
         """Returns this server's network location.
@@ -275,9 +275,9 @@ class MMPServer():
         The server will shut down after every instance has been
         registered and deregistered again.
         """
-        self.__instance_registry.wait()
+        self._instance_registry.wait()
         time.sleep(1)
-        self.__server.stop(5)
+        self._server.stop(5)
 
     def stop(self) -> None:
         """Stops the server.
@@ -285,4 +285,4 @@ class MMPServer():
         This makes the server stop serving requests, and shuts down its
         background threads.
         """
-        self.__server.stop(0)
+        self._server.stop(0)

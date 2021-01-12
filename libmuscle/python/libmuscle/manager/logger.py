@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from typing import Optional
 
 from libmuscle.logging import LogLevel, Timestamp
 from libmuscle.util import extract_log_file_location
@@ -10,9 +11,14 @@ class Logger:
 
     The Logger component takes log messages and writes them to
     standard out.
+
+    Args:
+        log_dir: Directory to write the log file into.
     """
-    def __init__(self) -> None:
-        logfile = extract_log_file_location(Path.cwd(), 'muscle3_manager.log')
+    def __init__(self, log_dir: Optional[Path] = None) -> None:
+        if log_dir is None:
+            log_dir = Path.cwd()
+        logfile = extract_log_file_location(log_dir, 'muscle3_manager.log')
         self._local_handler = logging.FileHandler(str(logfile), mode='w')
         formatter = logging.Formatter('%(time_stamp)-15s: %(name)s'
                                       ' %(levelname)s: %(message)s')

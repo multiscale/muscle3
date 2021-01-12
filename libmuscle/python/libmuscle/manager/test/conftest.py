@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 from ymmsl import (Component, Conduit, Configuration, Model, Reference,
                    Settings)
@@ -9,8 +11,8 @@ from libmuscle.manager.topology_store import TopologyStore
 
 
 @pytest.fixture
-def logger():
-    test_logger = Logger()
+def logger(tmpdir):
+    test_logger = Logger(Path(str(tmpdir)))
     yield test_logger
     test_logger.close()
 

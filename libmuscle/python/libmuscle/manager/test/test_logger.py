@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 from libmuscle.logging import LogLevel, Timestamp
 from libmuscle.manager.logger import Logger
@@ -9,8 +10,8 @@ def test_log_level():
     assert LogLevel.CRITICAL.value > LogLevel.DEBUG.value
 
 
-def test_create_logger():
-    logger = Logger()
+def test_create_logger(tmpdir):
+    logger = Logger(Path(str(tmpdir)))
     logger.close()
 
 

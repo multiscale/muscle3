@@ -62,10 +62,16 @@ class Manager:
         """Shuts down the manager."""
         self._server.stop()
 
-    def wait(self) -> None:
-        """Blocks until the simulation is done, then shuts down."""
+    def wait(self) -> bool:
+        """Blocks until the simulation is done, then shuts down.
+
+        Returns:
+            True if success, False if an error occurred.
+        """
         if self._process_manager:
-            self._process_manager.wait()
+            success = self._process_manager.wait()
         else:
             self._instance_registry.wait()
+            success = True
         self._server.stop()
+        return success

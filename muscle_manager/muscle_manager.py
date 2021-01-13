@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from pathlib import Path
+import sys
 from typing import Optional, Sequence
 
 import click
@@ -48,7 +49,8 @@ def manage_simulation(
         manager = Manager(configuration, None)
         print(manager.get_server_location())
 
-    manager.wait()
+    success = manager.wait()
+    sys.exit(0 if success else 1)
 
 
 if __name__ == '__main__':

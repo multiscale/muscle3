@@ -60,15 +60,13 @@ class ProcessManager:
         self._manager_lock = Lock()
 
         # create and start monitoring thread
-        _logger.info('Starting monitoring thread')
+        _logger.debug('Starting monitoring thread')
         self._monitor_thread = Thread(target=self._monitor_instances)
         self._monitor_thread.start()
 
         with self._manager_lock:
-            _logger.warning('Available resources: {}'.format(
+            _logger.info('Available resources: {}'.format(
                 self._qcg_manager.resources()))
-
-        _logger.warning('ProcessManager created')
 
     def start_all(self) -> None:
         """Start all instances required by the simulation."""
@@ -110,7 +108,7 @@ class ProcessManager:
             outfile = str(idir / '{}.out'.format(instance_name))
             errfile = str(idir / '{}.err'.format(instance_name))
 
-            _logger.info('Adding job {} {} {} {} {}'.format(
+            _logger.debug('Adding job {} {} {} {} {}'.format(
                 instance_name, user_script_file, res.num_cores, outfile,
                 errfile))
 
@@ -131,12 +129,15 @@ class ProcessManager:
             self._job_ids = self._qcg_manager.submit(qcg_jobs)
             _logger.info('Submitted')
 
-    def wait(self) -> None:
+    def wait(self) -> bool:
         """Waits until all instances are done.
 
         This function blocks, and returns after each expected instance
         has been started and stopped, signalling the end of the
         simulation run.
+
+        Returns:
+            True iff the model finished successfully.
         """
         def all_done() -> bool:
             return all(map(
@@ -146,6 +147,9 @@ class ProcessManager:
         with self._all_done:
             while not all_done():
                 self._all_done.wait()
+
+        with self._status_lock:
+            return _ProcessStatus.ERROR not in self._status.values()
 
     def _required_instances(self) -> List[Tuple[Reference, Component]]:
         """Creates a list of elements to expect to exist.

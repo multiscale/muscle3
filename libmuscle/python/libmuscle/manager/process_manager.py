@@ -32,7 +32,8 @@ class ProcessManager:
     well.
     """
     def __init__(
-            self, configuration: Configuration, run_dir: RunDir
+            self, configuration: Configuration, run_dir: RunDir,
+            manager_location: str
             ) -> None:
         """Construct a ProcessManager.
 
@@ -40,9 +41,11 @@ class ProcessManager:
             expected_instances: List of instance names expected to
                     exist at some point during the simulation.
             run_dir: Path to working directory for this run.
+            manager_location: The network location of the manager.
         """
         self._config = configuration
         self._run_dir = run_dir
+        self._manager_location = manager_location
 
         self._status = dict()  # type: Dict[Reference, _ProcessStatus]
         self._status_lock = Lock()
@@ -92,8 +95,10 @@ class ProcessManager:
 
             # create MUSCLE run script
             run_script = '#!/bin/bash\n\n'
-            run_script += 'export MUSCLE_START_DIR={}\n'.format(Path.cwd())
+            run_script += 'export MUSCLE_MANAGER={}\n'.format(
+                    self._manager_location)
             run_script += 'export MUSCLE_INSTANCE={}\n'.format(instance_name)
+            run_script += 'export MUSCLE_START_DIR={}\n'.format(Path.cwd())
             run_script += '{}\n'.format(user_script_file)
             run_script_file = idir / 'run_script.sh'
             with run_script_file.open('w') as f:

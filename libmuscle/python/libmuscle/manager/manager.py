@@ -55,7 +55,8 @@ class Manager:
         if self._run_dir is None:
             raise RuntimeError('No run dir specified')
         configuration = self._configuration.as_configuration()
-        self._process_manager = ProcessManager(configuration, self._run_dir)
+        self._process_manager = ProcessManager(
+                configuration, self._run_dir, self.get_server_location())
         self._process_manager.start_all()
 
     def stop(self) -> None:

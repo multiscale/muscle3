@@ -11,6 +11,7 @@
 #include <ymmsl/ymmsl.hpp>
 
 #include <cstdint>
+#include <cstdlib>
 #include <stdexcept>
 
 #ifdef MUSCLE_ENABLE_MPI
@@ -494,8 +495,12 @@ Reference Instance::Impl::make_full_name_(int argc, char const * const argv[]) c
             return Reference(prefix_str);
         }
     }
-    throw std::runtime_error("A --muscle-instance command line argument is"
-            " required to identify this instance. Please add one.");
+    char * prefix_str = getenv("MUSCLE_INSTANCE");
+    if (prefix_str != nullptr)
+        return Reference(prefix_str);
+    throw std::runtime_error("A --muscle-instance command line argument or"
+            " MUSCLE_INSTANCE environment variable is required to"
+            " identify this instance. Please add one.");
 }
 
 /* Gets the manager network location from the command line.

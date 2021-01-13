@@ -390,7 +390,9 @@ class Instance:
         We use a --muscle-manager=<host:port> argument to tell the
         MUSCLE library how to connect to the manager. This function
         will extract this argument from the command line arguments,
-        if it is present.
+        if it is present. If not, it will check the MUSCLE_MANAGER
+        environment variable, and if that is not set, fall back to
+        the default.
 
         Returns:
             A connection string, or None.
@@ -403,7 +405,7 @@ class Instance:
             if arg.startswith(prefix):
                 return arg[len(prefix):]
 
-        return 'localhost:9000'
+        return os.environ.get('MUSCLE_MANAGER', 'localhost:9000')
 
     def __set_up_logging(self) -> None:
         """Adds logging handlers for one or more instances.

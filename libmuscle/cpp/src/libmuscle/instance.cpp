@@ -508,6 +508,9 @@ Reference Instance::Impl::make_full_name_(int argc, char const * const argv[]) c
  * We use a --muscle-manager=<host:port> argument to tell the MUSCLE library
  * how to connect to the manager. This function will extract this argument
  * from the command line arguments, if it is present.
+ *
+ * If not, it will check the MUSCLE_MANAGER environment variable, and if that
+ * is not set, fall back to the default.
  */
 std::string Instance::Impl::extract_manager_location_(
         int argc, char const * const argv[]) const
@@ -516,6 +519,10 @@ std::string Instance::Impl::extract_manager_location_(
     for (int i = 1; i < argc; ++i)
         if (strncmp(argv[i], prefix_tag.c_str(), prefix_tag.size()) == 0)
             return std::string(argv[i] + prefix_tag.size());
+
+    char * prefix = getenv("MUSCLE_MANAGER");
+    if (prefix != nullptr)
+        return std::string(prefix);
 
     return "localhost:9000";
 }

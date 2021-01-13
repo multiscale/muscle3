@@ -37,11 +37,11 @@ setup(
     # packages=['muscle_manager', 'muscle_manager_protocol', 'libmuscle', 'libmuscle.mcp'],
     packages=_muscle3_packages,
     package_dir={
-        'muscle_manager': 'muscle_manager',
+        'muscle3': 'muscle3',
         'libmuscle': 'libmuscle/python/libmuscle'
     },
     entry_points={
-        'console_scripts': ['muscle_manager=muscle_manager.muscle_manager:manage_simulation']
+        'console_scripts': ['muscle_manager=muscle3.muscle_manager:manage_simulation']
     },
     python_requires='>=3.5, <4',
     install_requires=[

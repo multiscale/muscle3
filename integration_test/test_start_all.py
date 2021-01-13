@@ -1,4 +1,3 @@
-import logging
 import os
 from pathlib import Path
 
@@ -13,9 +12,7 @@ from .conftest import skip_if_python_only
 
 
 @skip_if_python_only
-def test_start_all(tmpdir, caplog):
-    caplog.set_level(logging.DEBUG)
-
+def test_start_all(tmpdir):
     tmppath = Path(str(tmpdir))
 
     # find our test component and its requirements

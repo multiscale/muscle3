@@ -52,7 +52,7 @@ setup(
         'numpy>=1.12,<1.20',
         'protobuf>=3.10.0, <4',
         'typing_extensions',
-        'ymmsl'          # Also in CI, update there as well
+        'ymmsl>=0.11.0'          # Also in CI, update there as well
     ],
     setup_requires=[
         'pytest-runner',

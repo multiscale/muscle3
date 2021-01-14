@@ -17,6 +17,9 @@ def manage_simulation(ymmsl_files: Sequence[str]) -> None:
     for path in ymmsl_files:
         with open(path, 'r') as f:
             configuration.update(ymmsl.load(f))
+    # temporary dummy data to satisfy type
+    configuration.update(PartialConfiguration(
+        None, None, {'dummy': None}, {'dummy': None}))
 
     server = start_server(configuration.as_configuration())
     print(server.get_location())

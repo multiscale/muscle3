@@ -2,7 +2,7 @@ from typing import Sequence
 
 import click
 import ymmsl
-from ymmsl import PartialConfiguration
+from ymmsl import Implementation, PartialConfiguration, Reference, Resources
 
 from libmuscle.manager.manager import start_server
 
@@ -19,7 +19,9 @@ def manage_simulation(ymmsl_files: Sequence[str]) -> None:
             configuration.update(ymmsl.load(f))
     # temporary dummy data to satisfy type
     configuration.update(PartialConfiguration(
-        None, None, {'dummy': None}, {'dummy': None}))
+        None, None,
+        {Reference('dummy'): Implementation(Reference('dummy'), '')},
+        {Reference('dummy'): Resources(Reference('dummy'), 0)}))
 
     server = start_server(configuration.as_configuration())
     print(server.get_location())

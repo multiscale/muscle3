@@ -121,15 +121,49 @@ def test_grid_roundtrip() -> None:
     timestamp = 10.0
     next_timestamp = 11.0
 
+    for order in ('C', 'F'):
+        array = np.array(
+                [[[1.0, 2.0, 3.0],
+                  [4.0, 5.0, 6.0]],
+                 [[7.0, 8.0, 9.0],
+                  [10.0, 11.0, 12.0]]], np.float64, order=order)
+
+        assert array[0, 0, 0] == 1.0
+
+        grid = Grid(array, ['x', 'y', 'z'])
+        msg = Message(sender, receiver, None, timestamp, next_timestamp,
+                      Settings(), grid)
+
+        wire_data = msg.encoded()
+        msg_out = Message.from_bytes(wire_data)
+
+        assert isinstance(msg_out.data, Grid)
+        grid_out = msg_out.data
+        assert grid_out.indexes == ['x', 'y', 'z']
+        assert isinstance(grid_out.array, np.ndarray)
+        assert grid_out.array.dtype == np.float64
+        assert grid_out.array.shape == (2, 2, 3)
+        assert grid_out.array.size == 12
+        assert grid_out.array[1, 0, 1] == 8.0
+        assert grid_out.array[0, 0, 2] == 3.0
+
+
+def test_non_contiguous_grid_roundtrip() -> None:
+    sender = Reference('sender.port')
+    receiver = Reference('receiver.port')
+    timestamp = 10.0
+    next_timestamp = 11.0
+
     array = np.array(
-            [[[1.0, 2.0, 3.0],
-              [4.0, 5.0, 6.0]],
-             [[7.0, 8.0, 9.0],
-              [10.0, 11.0, 12.0]]], np.float64)
+            [[[1.0 + 0.125j, 2.0 + 0.25j, 3.0 + 0.375j],
+              [4.0 + 0.4375j, 5.0 + 0.5j, 6.0 + 0.625j]],
+             [[7.0 + 0.75j, 8.0 + 0.875j, 9.0 + 0.9375j],
+              [10.0 + 0.10j, 11.0 + 0.11j, 12.0 + 0.12j]]], np.complex64)
 
-    assert(array[0, 0, 0] == 1.0)
+    assert array.real[0, 0, 0] == 1.0
+    assert array.imag[0, 0, 0] == 0.125
 
-    grid = Grid(array, ['x', 'y', 'z'])
+    grid = Grid(array.real, ['a', 'b', 'c'])
     msg = Message(sender, receiver, None, timestamp, next_timestamp,
                   Settings(), grid)
 
@@ -138,9 +172,8 @@ def test_grid_roundtrip() -> None:
 
     assert isinstance(msg_out.data, Grid)
     grid_out = msg_out.data
-    assert grid_out.indexes == ['x', 'y', 'z']
     assert isinstance(grid_out.array, np.ndarray)
-    assert grid_out.array.dtype == np.float64
+    assert grid_out.array.dtype == np.float32
     assert grid_out.array.shape == (2, 2, 3)
     assert grid_out.array.size == 12
     assert grid_out.array[1, 0, 1] == 8.0

@@ -246,7 +246,7 @@ def run_simulation(
                          ' definition, so the simulation can not be run.')
 
     instances = dict()
-    for ce in configuration.model.compute_elements:
+    for ce in configuration.model.components:
         impl_name = str(ce.implementation)
         if impl_name not in implementations:
             raise ValueError(('The model specifies an implementation named'

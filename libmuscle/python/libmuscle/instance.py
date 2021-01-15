@@ -1,5 +1,7 @@
 from copy import copy
 import logging
+import os
+from pathlib import Path
 import sys
 from typing import cast, Dict, List, Optional, Tuple
 
@@ -18,6 +20,9 @@ from libmuscle.util import extract_log_file_location
 
 
 _logger = logging.getLogger(__name__)
+
+
+_FInitCacheType = Dict[Tuple[str, Optional[int]], Message]
 
 
 class Instance:
@@ -62,8 +67,7 @@ class Instance:
         self._first_run = True
         """Keeps track of whether this is the first reuse run."""
 
-        FInitCacheType = Dict[Tuple[str, Optional[int]], Message]
-        self._f_init_cache = dict()     # type: FInitCacheType
+        self._f_init_cache = dict()     # type: _FInitCacheType
 
         self._register()
         self._connect()
@@ -406,7 +410,8 @@ class Instance:
         """
         id_str = str(self._instance_name())
 
-        logfile = extract_log_file_location('muscle3.{}.log'.format(id_str))
+        logfile = extract_log_file_location(
+                Path.cwd(), 'muscle3.{}.log'.format(id_str))
         local_handler = logging.FileHandler(str(logfile), mode='w')
         formatter = logging.Formatter('%(asctime)-15s: %(name)s'
                                       ' %(levelname)s: %(message)s')
@@ -507,9 +512,14 @@ class Instance:
                 name, index = split_reference(prefix_ref)
                 break
         else:
-            raise RuntimeError(('A --muscle-instance command line argument is'
-                                ' required to identify this instance. Please'
-                                ' add one.'))
+            if 'MUSCLE_INSTANCE' in os.environ:
+                prefix_ref = Reference(os.environ['MUSCLE_INSTANCE'])
+                name, index = split_reference(prefix_ref)
+            else:
+                raise RuntimeError((
+                    'A --muscle-instance command line argument or'
+                    ' MUSCLE_INSTANCE environment variable is required to'
+                    ' identify this instance. Please add one.'))
         return name, index
 
     def __list_declared_ports(self) -> List[Port]:

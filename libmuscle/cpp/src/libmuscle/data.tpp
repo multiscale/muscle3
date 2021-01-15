@@ -30,6 +30,8 @@ T DataConstRef::as() const {
 
 template <typename T>
 T * DataConstRef::zone_alloc_(uint32_t size) {
+    if (mp_zones_->empty())
+        mp_zones_->push_back(std::make_shared<msgpack::zone>(24));
     auto num_bytes = sizeof(T) * size;
     return static_cast<T*>((*mp_zones_)[0]->allocate_align(
                 num_bytes, MSGPACK_ZONE_ALIGNOF(T)));

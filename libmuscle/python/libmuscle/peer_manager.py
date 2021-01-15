@@ -37,10 +37,10 @@ class PeerManager:
         self.__peers = dict()  # type: Dict[Reference, Reference]
 
         for conduit in conduits:
-            if str(conduit.sending_compute_element()) == str(kernel):
+            if str(conduit.sending_component()) == str(kernel):
                 # we send on the port this conduit attaches to
                 self.__peers[conduit.sender] = conduit.receiver
-            if str(conduit.receiving_compute_element()) == str(kernel):
+            if str(conduit.receiving_component()) == str(kernel):
                 # we receive on the port this conduit attaches to
                 self.__peers[conduit.receiver] = conduit.sender
 

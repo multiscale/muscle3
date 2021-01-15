@@ -45,14 +45,14 @@ setup(
     },
     python_requires='>=3.5, <4',
     install_requires=[
-        'click',
+        'click>=6',
         'grpcio>=1.24.3, <2',
         'msgpack',
         'netifaces',
-        'numpy>=1.12',
+        'numpy>=1.12,<1.20',
         'protobuf>=3.10.0, <4',
         'typing_extensions',
-        'ymmsl==0.10.1'          # Also in CI, update there as well
+        'ymmsl>=0.11.0'          # Also in CI, update there as well
     ],
     setup_requires=[
         'pytest-runner',
@@ -67,10 +67,11 @@ setup(
     tests_require=[
         'coverage<5',
         'mypy',
-        'pytest>=3.5',
+        'pytest>=3.5,<6.2',
         'pytest-cov',
         'pytest-flake8',
-        'pytest-mypy'
+        'pytest-mypy',
+        'importlib-metadata==2.1.0'
     ],
     extras_require={
         'dev': [

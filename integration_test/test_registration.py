@@ -14,7 +14,7 @@ def test_registration(log_file_in_tmpdir, mmp_server):
     client.register_instance(instance_name, ['tcp://localhost:10000'],
                              [port])
 
-    servicer = mmp_server._MMPServer__servicer
+    servicer = mmp_server._servicer
     registry = servicer._MMPServicer__instance_registry
 
     assert registry.get_locations(instance_name) == ['tcp://localhost:10000']

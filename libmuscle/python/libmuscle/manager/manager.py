@@ -45,7 +45,7 @@ def elements_for_model(model: Model) -> List[str]:
         return indices
 
     result = list()     # type: List[str]
-    for element in model.compute_elements:
+    for element in model.components:
         if len(element.multiplicity) == 0:
             result.append(str(element.name))
         else:

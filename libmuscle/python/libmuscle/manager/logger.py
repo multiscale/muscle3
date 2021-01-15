@@ -1,7 +1,36 @@
 import logging
+from pathlib import Path
+from typing import Optional
 
 from libmuscle.logging import LogLevel, Timestamp
 from libmuscle.util import extract_log_file_location
+
+
+class Formatter(logging.Formatter):
+    """A custom formatter that can format remote messages."""
+    def usesTime(self) -> bool:
+        """Tells the formatter to make asctime available."""
+        return True
+
+    def formatMessage(self, record: logging.LogRecord) -> str:
+        """Formats a message for a record.
+
+        If the record contains a time_stamp attribute, assumes that it
+        is a remote record and formats accordingly, otherwise formats
+        as a local record.
+
+        Args:
+            record: The LogRecord to format.
+
+        Returns:
+            The formatted message.
+        """
+        if 'time_stamp' in record.__dict__:
+            return (
+                    '%(asctime)s %(name)s [%(time_stamp)-15s]'
+                    ' %(levelname)s: %(message)s' % record.__dict__)
+        return ('%(asctime)s muscle_manager %(levelname)s: %(message)s' %
+                record.__dict__)
 
 
 class Logger:
@@ -9,13 +38,16 @@ class Logger:
 
     The Logger component takes log messages and writes them to
     standard out.
+
+    Args:
+        log_dir: Directory to write the log file into.
     """
-    def __init__(self) -> None:
-        logfile = extract_log_file_location('muscle3_manager.log')
+    def __init__(self, log_dir: Optional[Path] = None) -> None:
+        if log_dir is None:
+            log_dir = Path.cwd()
+        logfile = extract_log_file_location(log_dir, 'muscle3_manager.log')
         self._local_handler = logging.FileHandler(str(logfile), mode='w')
-        formatter = logging.Formatter('%(time_stamp)-15s: %(name)s'
-                                      ' %(levelname)s: %(message)s')
-        self._local_handler.setFormatter(formatter)
+        self._local_handler.setFormatter(Formatter())
 
         # Find and remove default handler to disable automatic console output
         # Testing for 'stderr' in the stringified version is not nice, but

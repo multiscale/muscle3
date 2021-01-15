@@ -1,5 +1,4 @@
 from enum import IntEnum
-import struct
 from typing import Any, cast, Optional
 
 import msgpack
@@ -49,20 +48,6 @@ class ClosePort:
 def _encode_grid(grid: Grid) -> msgpack.ExtType:
     """Encodes a Grid object into the wire format.
     """
-    item_size_map = {
-            'int32': 4,
-            'int64': 8,
-            'float32': 4,
-            'float64': 8,
-            'bool': 1}
-
-    format_map = {
-            'int32': '<i',
-            'int64': '<q',
-            'float32': '<f',
-            'float64': '<d',
-            'bool': 'b'}
-
     ext_type_map = {
             'int32': ExtTypeId.GRID_INT32,
             'int64': ExtTypeId.GRID_INT64,
@@ -71,12 +56,12 @@ def _encode_grid(grid: Grid) -> msgpack.ExtType:
             'bool': ExtTypeId.GRID_BOOL}
 
     array = grid.array
-    if array.flags.c_contiguous:
-        # indexes that differ in the last place are adjacent
-        order = 'la'
-    elif array.flags.f_contiguous:
+    if array.flags.f_contiguous:
         # indexes that differ in the first place are adjacent
         order = 'fa'
+    else:
+        # indexes that differ in the last place are adjacent
+        order = 'la'
 
     # dtype is a bit weird, but this seems to be consistent
     if isinstance(array.dtype, np.dtype):
@@ -84,14 +69,10 @@ def _encode_grid(grid: Grid) -> msgpack.ExtType:
     else:
         array_type = str(np.dtype(array_type))
 
-    if array_type not in item_size_map:
+    if array_type not in ext_type_map:
         raise RuntimeError('Unsupported array data type')
 
-    item_size = item_size_map[array_type]
-    fmt = format_map[array_type]
-    buf = bytearray(array.size * item_size)
-    for i in range(array.size):
-        struct.pack_into(fmt, buf, i * item_size, array.item(i))
+    buf = array.tobytes(order='A')
 
     # array_type is redundant, but useful metadata.
     grid_dict = {

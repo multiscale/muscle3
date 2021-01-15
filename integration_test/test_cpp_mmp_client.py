@@ -20,7 +20,7 @@ def do_mmp_client_test(caplog):
             'ymmsl_version: v0.1\n'
             'model:\n'
             '  name: test_model\n'
-            '  compute_elements:\n'
+            '  components:\n'
             '    macro: macro_implementation\n'
             '    micro:\n'
             '      implementation: micro_implementation\n'
@@ -83,10 +83,12 @@ def do_mmp_client_test(caplog):
     assert result.returncode == 0
 
     # check submit_log_message
-    assert caplog.records[0].name == 'instances.test_logging'
-    assert caplog.records[0].time_stamp == '1970-01-01T00:00:02Z'
-    assert caplog.records[0].levelname == 'CRITICAL'
-    assert caplog.records[0].message == 'Integration testing'
+    for rec in caplog.records:
+        if rec.name == 'instances.test_logging':
+            assert rec.time_stamp == '1970-01-01T00:00:02Z'
+            assert rec.levelname == 'CRITICAL'
+            assert rec.message == 'Integration testing'
+            break
 
     # check register_instance
     assert (instance_registry.get_locations('micro[3]') ==

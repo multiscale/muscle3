@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from ymmsl import Conduit, Configuration, Model, Reference
+from ymmsl import Conduit, PartialConfiguration, Model, Reference
 
 
 class TopologyStore:
@@ -12,7 +12,7 @@ class TopologyStore:
     Attributes:
         conduits (List[Conduit]): A list of conduits.
     """
-    def __init__(self, config: Configuration) -> None:
+    def __init__(self, config: PartialConfiguration) -> None:
         """Creates a TopologyStore.
 
         Creates a TopologyStore containing conduits read from the given
@@ -28,7 +28,7 @@ class TopologyStore:
         self.conduits = config.model.conduits
         self.kernel_dimensions = {
                 k.name: k.multiplicity
-                for k in config.model.compute_elements}
+                for k in config.model.components}
 
     def has_kernel(self, kernel: Reference) -> bool:
         """Returns True iff the given kernel is in the model.
@@ -49,9 +49,9 @@ class TopologyStore:
         """
         ret = list()
         for conduit in self.conduits:
-            if conduit.sending_compute_element() == kernel_name:
+            if conduit.sending_component() == kernel_name:
                 ret.append(conduit)
-            if conduit.receiving_compute_element() == kernel_name:
+            if conduit.receiving_component() == kernel_name:
                 ret.append(conduit)
         return ret
 
@@ -70,10 +70,10 @@ class TopologyStore:
         """
         ret = dict()
         for conduit in self.conduits:
-            if conduit.sending_compute_element() == kernel_name:
-                recv = conduit.receiving_compute_element()
+            if conduit.sending_component() == kernel_name:
+                recv = conduit.receiving_component()
                 ret[recv] = self.kernel_dimensions[recv]
-            if conduit.receiving_compute_element() == kernel_name:
-                snd = conduit.sending_compute_element()
+            if conduit.receiving_component() == kernel_name:
+                snd = conduit.sending_component()
                 ret[snd] = self.kernel_dimensions[snd]
         return ret

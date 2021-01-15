@@ -109,7 +109,7 @@ The dependencies are:
 If your model uses any of these dependencies directly, then it's best to install
 that dependency on your system, either via the package manager or from source,
 and then link both your library and MUSCLE 3 to the dependency. (See below for
-how t opoint the build to your installation.) This avoids having two different
+how to point the build to your installation.) This avoids having two different
 versions around and active at the same time. Otherwise, it's easier to rely on
 the automatic installation. Note that the gRPC and Protobuf dependencies are
 exact; getting them to install and work correctly on all systems is

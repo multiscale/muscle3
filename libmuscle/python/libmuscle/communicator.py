@@ -396,16 +396,16 @@ class Communicator:
         """
         ports = dict()
         for conduit in conduits:
-            if conduit.sending_compute_element() == self._kernel:
+            if conduit.sending_component() == self._kernel:
                 port_id = conduit.sending_port()
                 operator = Operator.O_F
                 port_peer_dims = self._peer_manager.get_peer_dims(
-                        conduit.receiving_compute_element())
-            elif conduit.receiving_compute_element() == self._kernel:
+                        conduit.receiving_component())
+            elif conduit.receiving_component() == self._kernel:
                 port_id = conduit.receiving_port()
                 operator = Operator.F_INIT
                 port_peer_dims = self._peer_manager.get_peer_dims(
-                        conduit.sending_compute_element())
+                        conduit.sending_component())
             else:
                 continue
 
@@ -425,14 +425,14 @@ class Communicator:
             conduits: The list of conduits.
         """
         for conduit in conduits:
-            if conduit.receiving_compute_element() == self._kernel:
+            if conduit.receiving_component() == self._kernel:
                 port_id = conduit.receiving_port()
                 if str(port_id) == 'muscle_settings_in':
                     return Port(str(port_id), Operator.F_INIT, False,
                                 self._peer_manager.is_connected(port_id),
                                 len(self._index),
                                 self._peer_manager.get_peer_dims(
-                                    conduit.sending_compute_element()))
+                                    conduit.sending_component()))
         return Port('muscle_settings_in', Operator.F_INIT, False, False,
                     len(self._index), [])
 

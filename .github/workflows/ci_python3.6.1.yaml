@@ -13,7 +13,7 @@ jobs:
       uses: actions/cache@v1
       with:
         path: ${{ github.workspace }}/.eggs
-        key: python-compatibility-3.6.1-eggs2
+        key: python-compatibility-3.6.1-eggs
 
     - name: Run Python tests on 3.6.1 latest
-      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3" python:3.6.1 /bin/bash -c 'cd /home/muscle3 && pip install -U pip setuptools wheel && pip install -U git+https://github.com/yatiml/yatiml.git@develop && pip install -U git+https://github.com/multiscale/ymmsl-python.git@develop && pip install -U git+https://github.com/vecma-project/qcg-pilotjob.git@develop && make test_python_only'
+      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3" python:3.6.1 /bin/bash -c 'cd /home/muscle3 && pip install -U pip setuptools wheel ymmsl==0.11.0 && make test_python_only'

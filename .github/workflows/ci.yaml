@@ -18,9 +18,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y build-essential cmake gfortran libopenmpi-dev pkg-config wget valgrind
         sudo apt-get install -y libssl-dev zlib1g-dev
-        pip install git+https://github.com/yatiml/yatiml.git@develop
-        pip install git+https://github.com/multiscale/ymmsl-python.git@develop
-        pip install git+https://github.com/vecma-project/qcg-pilotjob.git@develop
+        pip install ymmsl==0.11.0
 
     - name: Build and run the test suite
       env:

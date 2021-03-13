@@ -5,6 +5,28 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_.
 
+0.4.0
+*****
+
+Incompatible changes
+--------------------
+
+* `compute_elements` are now called `components` in .ymmsl files
+
+Improved
+--------
+
+* Use latest OpenSSL library when installing it automatically
+
+Fixed
+-----
+
+* Handling of non-contiguous and F-order numpy arrays
+* C++ memory usage for large dicts/lists now more reasonable
+* Improved shutdown when Python submodel crashes
+* Logging warning message
+
+
 0.3.2
 *****
 

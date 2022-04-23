@@ -86,6 +86,7 @@ class Manager:
     def stop(self) -> None:
         """Shuts down the manager."""
         self._server.stop()
+        self._logger.close()
 
     def wait(self) -> bool:
         """Blocks until the simulation is done, then shuts down.
@@ -101,5 +102,5 @@ class Manager:
         else:
             self._instance_registry.wait()
             success = True
-        self._server.stop()
+        self.stop()
         return success

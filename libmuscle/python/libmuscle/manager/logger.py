@@ -37,8 +37,9 @@ class Formatter(logging.Formatter):
 class Logger:
     """The MUSCLE 3 Manager Logger component.
 
-    The Logger component takes log messages and writes them to
-    standard out.
+    The Logger component configures the local logging system to output
+    to the central log file, and it accepts messages from remote
+    instances to write to it as well. Log levels are also set here.
 
     Args:
         log_dir: Directory to write the log file into.

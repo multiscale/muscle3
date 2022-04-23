@@ -64,6 +64,8 @@ class Logger:
         logging.getLogger().addHandler(self._local_handler)
 
         # hardwired for now
+        logging.getLogger().setLevel(logging.INFO)
+        logging.getLogger('qcg').setLevel(logging.WARNING)
         logging.getLogger('yatiml').setLevel(logging.WARNING)
 
     def close(self) -> None:

@@ -1,6 +1,6 @@
 from pathlib import Path
 import sys
-from typing import Generator, List, cast
+from typing import Generator, List, Optional, cast
 
 from ymmsl import Conduit, Reference
 
@@ -90,7 +90,7 @@ def increment_index(index: List[int], dims: List[int]) -> bool:
     return False
 
 
-def extract_log_file_location(run_dir: Path, filename: str) -> Path:
+def extract_log_file_location(filename: str) -> Optional[Path]:
     """Gets the log file location from the command line.
 
     Extracts the --muscle-log-file=<path> argument to tell the
@@ -100,8 +100,7 @@ def extract_log_file_location(run_dir: Path, filename: str) -> Path:
     directory, <filename> will be written inside of that directory,
     if the path is not an existing directory, then it will be used
     as the name of the log file to write to. If no command line
-    argument is given, <filename> will be written in the specified
-    directory.
+    argument is given, this function returns None.
 
     Args:
         run_dir: Default directory to use.
@@ -114,13 +113,13 @@ def extract_log_file_location(run_dir: Path, filename: str) -> Path:
     # just one option from the command line and ignore the rest.
     # So we do it by hand.
     prefix = '--muscle-log-file='
-    given_path_str = ''
+    given_path_str = None
     for arg in sys.argv[1:]:
         if arg.startswith(prefix):
             given_path_str = arg[len(prefix):]
 
-    if given_path_str == '':
-        return run_dir / filename
+    if not given_path_str:
+        return None
 
     given_path = Path(given_path_str)
 

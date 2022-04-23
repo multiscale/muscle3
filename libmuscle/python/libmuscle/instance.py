@@ -1,7 +1,6 @@
 from copy import copy
 import logging
 import os
-from pathlib import Path
 import sys
 from typing import cast, Dict, List, Optional, Tuple
 
@@ -412,13 +411,13 @@ class Instance:
         """
         id_str = str(self._instance_name())
 
-        logfile = extract_log_file_location(
-                Path.cwd(), 'muscle3.{}.log'.format(id_str))
-        local_handler = logging.FileHandler(str(logfile), mode='w')
-        formatter = logging.Formatter('%(asctime)-15s: %(name)s'
-                                      ' %(levelname)s: %(message)s')
-        local_handler.setFormatter(formatter)
-        logging.getLogger().addHandler(local_handler)
+        logfile = extract_log_file_location('{}.log'.format(id_str))
+        if logfile is not None:
+            local_handler = logging.FileHandler(str(logfile), mode='w')
+            formatter = logging.Formatter('%(asctime)-15s: %(name)s'
+                                          ' %(levelname)s: %(message)s')
+            local_handler.setFormatter(formatter)
+            logging.getLogger().addHandler(local_handler)
 
         if self.__manager is not None:
             self._mmp_handler = MuscleManagerHandler(id_str, logging.WARNING,

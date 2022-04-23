@@ -45,7 +45,9 @@ class Logger:
     def __init__(self, log_dir: Optional[Path] = None) -> None:
         if log_dir is None:
             log_dir = Path.cwd()
-        logfile = extract_log_file_location(log_dir, 'muscle3_manager.log')
+        logfile = extract_log_file_location('muscle3_manager.log')
+        if logfile is None:
+            logfile = log_dir / 'muscle3_manager.log'
         self._local_handler = logging.FileHandler(str(logfile), mode='w')
         self._local_handler.setFormatter(Formatter())
 

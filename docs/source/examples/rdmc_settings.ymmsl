@@ -1,11 +1,15 @@
 ymmsl_version: v0.1
 
 settings:
+  muscle_remote_log_level: WARNING
   micro.t_max: 2.469136e-06
   micro.dt: 2.469136e-08
   macro.t_max: 0.0001234568
   macro.dt: 2.469136e-06
-  x_max: 1.0
+  x_max: 1.01
   dx: 0.01
-  k: -40500.0
-  d: 0.0405
+  k_min: -4.455e4
+  k_max: -3.645e4
+  d_min: 0.03645
+  d_max: 0.04455
+  n_samples: 10

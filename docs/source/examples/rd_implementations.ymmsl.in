@@ -1,0 +1,44 @@
+ymmsl_version: v0.1
+
+implementations:
+  reaction_python:
+    virtual_env: MUSCLE_EXAMPLES/python/build/venv
+    executable: python
+    args: MUSCLE_EXAMPLES/python/reaction.py
+
+  reaction_cpp:
+    executable: MUSCLE_EXAMPLES/cpp/build/reaction
+
+  reaction_cpp_mpi:
+    executable: MUSCLE_EXAMPLES/cpp/build/reaction_mpi
+    execution_model: openmpi
+
+  reaction_fortran:
+    executable: MUSCLE_EXAMPLES/fortran/build/reaction
+
+  reaction_fortran_mpi:
+    executable: MUSCLE_EXAMPLES/fortran/build/reaction_mpi
+    execution_model: openmpi
+
+  diffusion_python:
+    virtual_env: MUSCLE_EXAMPLES/python/build/venv
+    executable: python
+    args: MUSCLE_EXAMPLES/python/diffusion.py
+
+  diffusion_cpp:
+    executable: MUSCLE_EXAMPLES/cpp/build/diffusion
+
+  diffusion_fortran:
+    executable: MUSCLE_EXAMPLES/fortran/build/diffusion
+
+  mc_driver_cpp:
+    executable: MUSCLE_EXAMPLES/cpp/build/mc_driver
+
+  mc_driver_fortran:
+    executable: MUSCLE_EXAMPLES/fortran/build/mc_driver
+
+  load_balancer_cpp:
+    executable: MUSCLE_EXAMPLES/cpp/build/load_balancer
+
+  load_balancer_fortran:
+    executable: MUSCLE_EXAMPLES/fortran/build/load_balancer

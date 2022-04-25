@@ -24,9 +24,8 @@ class Manager:
     according to the simulation configuration.
     """
     def __init__(
-            self,
-            configuration: PartialConfiguration,
-            run_dir: Optional[RunDir] = None
+            self, configuration: PartialConfiguration,
+            run_dir: Optional[RunDir] = None, log_level: Optional[str] = None
             ) -> None:
         """Create a Manager.
 
@@ -40,7 +39,7 @@ class Manager:
         self._configuration = configuration
         self._run_dir = run_dir
         log_dir = self._run_dir.path if self._run_dir else Path.cwd()
-        self._logger = Logger(log_dir)
+        self._logger = Logger(log_dir, log_level)
         self._topology_store = TopologyStore(configuration)
         self._instance_registry = InstanceRegistry()
 

@@ -41,10 +41,21 @@ class Logger:
     to the central log file, and it accepts messages from remote
     instances to write to it as well. Log levels are also set here.
 
-    Args:
-        log_dir: Directory to write the log file into.
     """
-    def __init__(self, log_dir: Optional[Path] = None) -> None:
+    def __init__(
+            self, log_dir: Optional[Path] = None,
+            log_level: Optional[str] = None) -> None:
+        """Create a Logger.
+
+        Log levels may be any of the Python predefined log levels, i.e.
+        critical, error, warning, info and debug, and they're
+        case_insensitive.
+
+        Args:
+            log_dir: Directory to write the log file into.
+            log_level: Log level to set.
+        """
+
         if log_dir is None:
             log_dir = Path.cwd()
         logfile = extract_log_file_location('muscle3_manager.log')
@@ -64,9 +75,23 @@ class Logger:
         # add our own
         logging.getLogger().addHandler(self._local_handler)
 
-        # hardwired for now
-        logging.getLogger().setLevel(logging.INFO)
-        logging.getLogger('qcg').setLevel(logging.WARNING)
+        # set log levels
+        if log_level is None:
+            log_level = 'INFO'
+        else:
+            log_level = log_level.upper()
+
+        logging.getLogger().setLevel(log_level)
+
+        # QCG produces a fair bit of junk at INFO, which we don't want
+        # by default. So we set it to WARNING in that case, which is
+        # cleaner. To get all the mess, set the log level to DEBUG.
+        qcg_level = 'WARNING' if log_level == 'INFO' else log_level
+        logging.getLogger('qcg').setLevel(qcg_level)
+
+        # YAtiML should be pretty reliable, and if there is an issue
+        # then we can easily load the problem file in Python by hand
+        # using the yMMSL library and set the log level there.
         logging.getLogger('yatiml').setLevel(logging.WARNING)
 
     def close(self) -> None:

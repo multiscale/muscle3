@@ -37,7 +37,7 @@ def manage_simulation(
             model_name = configuration.model.name
         else:
             model_name = Identifier('model')
-        timestamp = datetime.now(timezone.utc)
+        timestamp = datetime.now()
         timestr = timestamp.strftime('%Y%m%d_%H%M%S')
         run_dir_path = Path.cwd() / 'run_{}_{}'.format(model_name, timestr)
     else:

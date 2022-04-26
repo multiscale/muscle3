@@ -629,14 +629,14 @@ class Instance:
                     'INFO': logging.INFO,
                     'DEBUG': logging.DEBUG}
 
-            if log_level_str.upper() not in level_map:
+            log_level = level_map.get(log_level_str.upper())
+            if log_level is None:
                 _logger.warning(
                     ('muscle_remote_log_level is set to {}, which is not a'
                      ' valid log level. Please use one of DEBUG, INFO,'
                      ' WARNING, ERROR, or CRITICAL').format(log_level_str))
                 return
 
-            log_level = level_map[log_level_str]
             self._mmp_handler.setLevel(log_level)
             if not logging.getLogger().isEnabledFor(log_level):
                 logging.getLogger().setLevel(log_level)

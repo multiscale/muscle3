@@ -495,7 +495,7 @@ class Instance:
             i = 0
             while i < len(ref) and isinstance(ref[i], Identifier):
                 i += 1
-            name = cast(Reference, ref[:i])
+            name = ref[:i]
 
             while i < len(ref) and isinstance(ref[i], int):
                 index.append(cast(int, ref[i]))

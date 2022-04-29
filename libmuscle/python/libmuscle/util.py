@@ -32,7 +32,7 @@ def instance_to_kernel(instance: Reference) -> Reference:
     i = len(instance)
     while isinstance(instance[i-1], int):
         i -= 1
-    return cast(Reference, instance[:i])
+    return instance[:i]
 
 
 def instance_indices(instance: Reference) -> List[int]:

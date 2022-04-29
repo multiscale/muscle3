@@ -16,4 +16,4 @@ jobs:
         key: python-compatibility-3.6-eggs
 
     - name: Run Python tests on 3.6 latest
-      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3" python:3.6 /bin/bash -c 'cd /home/muscle3 && pip install ymmsl==0.11.0 "qcg-pilotjob>=0.10" && make test_python_only'
+      run: docker run -v "${GITHUB_WORKSPACE}:/home/muscle3" python:3.6 /bin/bash -c 'cd /home/muscle3 && pip install "ymmsl @ git+https://github.com/multiscale/ymmsl-python.git@develop#egg=ymmsl" "qcg-pilotjob>=0.10" && make test_python_only'

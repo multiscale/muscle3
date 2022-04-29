@@ -53,7 +53,7 @@ setup(
         'protobuf>=3.10.0, <4',
         'qcg-pilotjob>=0.10',
         'typing_extensions',
-        'ymmsl>=0.11.0'          # Also in CI, update there as well
+        'ymmsl @ git+https://github.com/multiscale/ymmsl-python.git@develop#egg=ymmsl'          # Also in CI, update there as well
     ],
     setup_requires=[
         'pytest-runner',

@@ -8,7 +8,7 @@ from typing import cast, Dict, List, Tuple
 
 from qcg.pilotjob.api.job import Jobs as QCGJobs
 from qcg.pilotjob.api.manager import Manager as QCGManager
-from ymmsl import Component, Configuration, Reference
+from ymmsl import Component, Configuration, ThreadedResReq, Reference
 
 from libmuscle.manager.run_dir import RunDir
 
@@ -80,9 +80,13 @@ class ProcessManager:
             impl_name = cast(Reference, component.implementation)
             impl = self._config.implementations[impl_name]
             res = self._config.resources[component.name]
+            if not isinstance(res, ThreadedResReq):
+                raise RuntimeError('Not implemented yet')
 
             # write user script
-            if not impl.script.startswith('#!'):
+            if not impl.script:
+                user_script = '#!/bin/bash\n'
+            elif not impl.script.startswith('#!'):
                 user_script = '#!/bin/bash\n\n{}'.format(impl.script)
             else:
                 user_script = impl.script
@@ -114,14 +118,14 @@ class ProcessManager:
             errfile = str(idir / '{}.err'.format(instance_name))
 
             _logger.debug('Adding job {} {} {} {} {}'.format(
-                instance_name, user_script_file, res.num_cores, outfile,
+                instance_name, user_script_file, res.threads, outfile,
                 errfile))
 
             qcg_jobs.add(
                     name=str(instance_name),
                     wd=str(workdir),
                     script=str(run_script_file),
-                    numCores=res.num_cores,
+                    numCores=res.threads,
                     stdout=outfile, stderr=errfile)
 
             with self._status_lock:

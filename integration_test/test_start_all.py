@@ -46,8 +46,10 @@ def test_start_all(tmpdir):
             '    macro.out: micro.init\n'
             '    micro.result: macro.in\n'
             'resources:\n'
-            '  macro: 1\n'
-            '  micro: 1\n'
+            '  macro:\n'
+            '    threads: 1\n'
+            '  micro:\n'
+            '    threads: 1\n'
             )
 
     config = ymmsl.load(ymmsl_text)

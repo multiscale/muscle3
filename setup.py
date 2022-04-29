@@ -49,33 +49,11 @@ setup(
         'grpcio>=1.24.3, <2',
         'msgpack',
         'netifaces',
-        'numpy>=1.12,<1.20',
+        'numpy>=1.12,<1.23',
         'protobuf>=3.10.0, <3.13',
         'qcg-pilotjob==0.13',
         'typing_extensions<4',
         'ymmsl @ git+https://github.com/multiscale/ymmsl-python.git@develop#egg=ymmsl'          # Also in CI, update there as well
-    ],
-    setup_requires=[
-        'pytest-runner',
-        # dependencies for `python setup.py build_sphinx`
-        'breathe',
-        'sphinx<3.2',
-        'sphinx_rtd_theme',
-        'sphinx-fortran',
-        'recommonmark',
-        'sphinx-rtd-theme'
-    ],
-    tests_require=[
-        'coverage',
-        'filelock<3.1',
-        'flake8<4',
-        'mypy',
-        'pytest>=3.5,<6.2',
-        'pytest-cov',
-        'pytest-flake8<1.1',
-        'pytest-mypy',
-        'importlib-metadata==2.1.0',
-        'tomli<2'
     ],
     extras_require={
         'dev': [
@@ -89,6 +67,3 @@ setup(
         ]
     },
 )
-
-# clean up the version file again
-_libmuscle_version_file.unlink()

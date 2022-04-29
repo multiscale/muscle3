@@ -1,0 +1,37 @@
+# Run Continuous Integration on every push
+name: python_compatibility
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
+
+    steps:
+    - name: Check out the source code
+      uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache Tox
+      uses: actions/cache@v1
+      with:
+        path: ${{ github.workspace }}/.tox
+        key: python-compatibility-${{ matrix.python-version }}-tox
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install tox tox-gh-actions
+
+    - name: Run the test suite
+      run: make test_python_only
+
+    - name: Upload coverage report to Codacy
+      uses: codacy/codacy-coverage-reporter-action@master
+      with:
+        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}

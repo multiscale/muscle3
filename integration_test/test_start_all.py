@@ -54,7 +54,7 @@ def test_start_all(tmpdir):
 
     config = ymmsl.load(ymmsl_text)
     config.implementations['component'] = Implementation(
-            'component', component_script)
+            'component', script=component_script)
 
     # set up
     run_dir = RunDir(tmppath / 'run')

@@ -41,7 +41,7 @@ fortran:
 	make -C fortran all
 
 rd_implementations.ymmsl: rd_implementations.ymmsl.in
-	sed -e "s^MUSCLE_EXAMPLES^${PWD}^g" $^ >$@
+	sed -e "s^MUSCLE3_EXAMPLES^${PWD}^g" $^ | sed -e "s^MUSCLE3_HOME^${MUSCLE3_HOME}^g" >$@
 
 .PHONY: clean
 clean:

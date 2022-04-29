@@ -1,5 +1,7 @@
 from pathlib import Path
 import logging
+import sys
+import traceback
 from typing import Optional
 
 from ymmsl import PartialConfiguration
@@ -7,7 +9,7 @@ from ymmsl import PartialConfiguration
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger
 from libmuscle.manager.mmp_server import MMPServer
-from libmuscle.manager.process_manager import ProcessManager
+from libmuscle.manager.instance_manager import InstanceManager
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.manager.topology_store import TopologyStore
 
@@ -18,7 +20,7 @@ _logger = logging.getLogger(__name__)
 class Manager:
     """The MUSCLE3 manager.
 
-    This creates and manager instances and connects them together
+    This creates and manages instances and connects them together
     according to the simulation configuration.
     """
     def __init__(
@@ -37,14 +39,27 @@ class Manager:
         """
         self._configuration = configuration
         self._run_dir = run_dir
-        log_dir = self._run_dir.muscle_dir if self._run_dir else Path.cwd()
+        log_dir = self._run_dir.path if self._run_dir else Path.cwd()
         self._logger = Logger(log_dir)
         self._topology_store = TopologyStore(configuration)
-        self._process_manager = None    # type: Optional[ProcessManager]
         self._instance_registry = InstanceRegistry()
+
+        self._instance_manager = None    # type: Optional[InstanceManager]
+        try:
+            configuration = self._configuration.as_configuration()
+            if self._run_dir is not None:
+                self._instance_manager = InstanceManager(
+                        configuration, self._run_dir)
+        except ValueError:
+            pass
+
         self._server = MMPServer(
                 self._logger, self._configuration.settings,
                 self._instance_registry, self._topology_store)
+
+        if self._instance_manager:
+            self._instance_manager.set_manager_location(
+                    self.get_server_location())
 
     def get_server_location(self) -> str:
         """Returns the network location of the server."""
@@ -54,10 +69,19 @@ class Manager:
         """Starts all required component instances."""
         if self._run_dir is None:
             raise RuntimeError('No run dir specified')
-        configuration = self._configuration.as_configuration()
-        self._process_manager = ProcessManager(
-                configuration, self._run_dir, self.get_server_location())
-        self._process_manager.start_all()
+        if not self._instance_manager:
+            raise RuntimeError(
+                    'For MUSCLE3 to be able to start instances, the'
+                    ' configuration must contain a model, implementations,'
+                    ' and resources. Please make sure they are all there.')
+        try:
+            self._instance_manager.start_all()
+        except:     # noqa
+            _logger.error('An error occurred while starting the components:')
+            for line in traceback.format_exception(*sys.exc_info()):
+                _logger.error(line)
+            self._instance_manager.shutdown()
+            raise
 
     def stop(self) -> None:
         """Shuts down the manager."""
@@ -69,8 +93,11 @@ class Manager:
         Returns:
             True if success, False if an error occurred.
         """
-        if self._process_manager:
-            success = self._process_manager.wait()
+        if self._instance_manager:
+            try:
+                success = self._instance_manager.wait()
+            finally:
+                self._instance_manager.shutdown()
         else:
             self._instance_registry.wait()
             success = True

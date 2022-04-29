@@ -51,7 +51,7 @@ setup(
         'netifaces',
         'numpy>=1.12,<1.20',
         'protobuf>=3.10.0, <3.13',
-        'qcg-pilotjob>=0.10',
+        'qcg-pilotjob==0.13',
         'typing_extensions<4',
         'ymmsl @ git+https://github.com/multiscale/ymmsl-python.git@develop#egg=ymmsl'          # Also in CI, update there as well
     ],
@@ -68,6 +68,7 @@ setup(
     tests_require=[
         'coverage',
         'filelock<3.1',
+        'flake8<4',
         'mypy',
         'pytest>=3.5,<6.2',
         'pytest-cov',

@@ -50,9 +50,9 @@ setup(
         'msgpack',
         'netifaces',
         'numpy>=1.12,<1.20',
-        'protobuf>=3.10.0, <4',
+        'protobuf>=3.10.0, <3.13',
         'qcg-pilotjob>=0.10',
-        'typing_extensions',
+        'typing_extensions<4',
         'ymmsl @ git+https://github.com/multiscale/ymmsl-python.git@develop#egg=ymmsl'          # Also in CI, update there as well
     ],
     setup_requires=[
@@ -67,12 +67,14 @@ setup(
     ],
     tests_require=[
         'coverage',
+        'filelock<3.1',
         'mypy',
         'pytest>=3.5,<6.2',
         'pytest-cov',
-        'pytest-flake8',
+        'pytest-flake8<1.1',
         'pytest-mypy',
-        'importlib-metadata==2.1.0'
+        'importlib-metadata==2.1.0',
+        'tomli<2'
     ],
     extras_require={
         'dev': [

@@ -25,12 +25,13 @@ class Formatter(logging.Formatter):
         Returns:
             The formatted message.
         """
-        if 'time_stamp' in record.__dict__:
+        if 'instance' in record.__dict__:
             return (
-                    '%(asctime)s %(name)s [%(time_stamp)-15s]'
-                    ' %(levelname)s: %(message)s' % record.__dict__)
-        return ('%(asctime)s muscle_manager %(levelname)s: %(message)s' %
-                record.__dict__)
+                    '%(instance)-14s %(iasctime)-15s %(levelname)-7s'
+                    ' %(name)s: %(message)s' % record.__dict__)
+        return (
+                'muscle_manager %(asctime)s %(levelname)-7s %(name)s:'
+                ' %(message)s' % record.__dict__)
 
 
 class Logger:
@@ -63,7 +64,6 @@ class Logger:
         logging.getLogger().addHandler(self._local_handler)
 
         # hardwired for now
-        logging.getLogger('instances').setLevel(1)
         logging.getLogger('yatiml').setLevel(logging.WARNING)
 
     def close(self) -> None:
@@ -85,8 +85,10 @@ class Logger:
             level: The log level of the message.
             text: The message text.
         """
-        logger = logging.getLogger('instances.{}'.format(instance_id))
+        logger = logging.getLogger(instance_id)
         logger.log(
                 level.as_python_level(),
                 text,
-                extra={'time_stamp': timestamp.to_rfc3339()})
+                extra={
+                    'instance': instance_id,
+                    'iasctime': timestamp.to_asctime()})

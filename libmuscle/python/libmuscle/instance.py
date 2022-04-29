@@ -414,8 +414,8 @@ class Instance:
         logfile = extract_log_file_location('{}.log'.format(id_str))
         if logfile is not None:
             local_handler = logging.FileHandler(str(logfile), mode='w')
-            formatter = logging.Formatter('%(asctime)-15s: %(name)s'
-                                          ' %(levelname)s: %(message)s')
+            formatter = logging.Formatter(
+                    '%(asctime)-15s: %(levelname)-7s %(name)s: %(message)s')
             local_handler.setFormatter(formatter)
             logging.getLogger().addHandler(local_handler)
 

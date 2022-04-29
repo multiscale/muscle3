@@ -6,12 +6,13 @@ import ymmsl
 from ymmsl import Port, Reference
 
 from libmuscle.manager.manager import Manager
+from libmuscle.manager.run_dir import RunDir
 from libmuscle.operator import Operator
 
 from .conftest import skip_if_python_only
 
 
-def do_mmp_client_test(caplog):
+def do_mmp_client_test(tmpdir, caplog):
     ymmsl_text = (
             'ymmsl_version: v0.1\n'
             'model:\n'
@@ -37,7 +38,7 @@ def do_mmp_client_test(caplog):
 
     # create server
     ymmsl_doc = ymmsl.load(ymmsl_text)
-    manager = Manager(ymmsl_doc)
+    manager = Manager(ymmsl_doc, RunDir(Path(tmpdir)))
 
     # mock the deregistration
     removed_instance = None
@@ -96,8 +97,8 @@ def do_mmp_client_test(caplog):
 
 
 @skip_if_python_only
-def test_mmp_client(log_file_in_tmpdir, caplog):
-    process = mp.Process(target=do_mmp_client_test, args=(caplog,))
+def test_mmp_client(log_file_in_tmpdir, tmpdir, caplog):
+    process = mp.Process(target=do_mmp_client_test, args=(tmpdir, caplog))
     process.start()
     process.join()
     assert process.exitcode == 0

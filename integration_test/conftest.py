@@ -1,6 +1,7 @@
 import logging
 import multiprocessing as mp
 import os
+from pathlib import Path
 import sys
 from typing import Generator
 
@@ -11,6 +12,7 @@ import ymmsl
 import integration_test.include_libmuscle   # noqa: F401
 
 from libmuscle.manager.manager import Manager
+from libmuscle.manager.run_dir import RunDir
 
 
 skip_if_python_only = pytest.mark.skipif(
@@ -23,19 +25,20 @@ def yatiml_log_warning():
     yatiml.logger.setLevel(logging.WARNING)
 
 
-def start_mmp_server(control_pipe, ymmsl_doc):
+def start_mmp_server(control_pipe, ymmsl_doc, run_dir):
     control_pipe[0].close()
-    manager = Manager(ymmsl_doc)
+    manager = Manager(ymmsl_doc, run_dir)
     control_pipe[1].send(True)
     control_pipe[1].recv()
     control_pipe[1].close()
     manager.stop()
 
 
-def make_server_process(ymmsl_doc):
+def make_server_process(ymmsl_doc, tmpdir):
+    run_dir = RunDir(Path(tmpdir))
     control_pipe = mp.Pipe()
     process = mp.Process(target=start_mmp_server,
-                         args=(control_pipe, ymmsl_doc),
+                         args=(control_pipe, ymmsl_doc, run_dir),
                          name='Manager')
     process.start()
     control_pipe[1].close()
@@ -48,7 +51,7 @@ def make_server_process(ymmsl_doc):
 
 
 @pytest.fixture
-def mmp_server_process(yatiml_log_warning):
+def mmp_server_process(yatiml_log_warning, tmpdir):
     ymmsl_text = (
             'ymmsl_version: v0.1\n'
             'model:\n'
@@ -76,11 +79,11 @@ def mmp_server_process(yatiml_log_warning):
             )
     ymmsl_doc = ymmsl.load(ymmsl_text)
 
-    yield from make_server_process(ymmsl_doc)
+    yield from make_server_process(ymmsl_doc, tmpdir)
 
 
 @pytest.fixture
-def mmp_server_process_simple(yatiml_log_warning):
+def mmp_server_process_simple(tmpdir, yatiml_log_warning):
     ymmsl_text = (
             'ymmsl_version: v0.1\n'
             'model:\n'
@@ -103,7 +106,7 @@ def mmp_server_process_simple(yatiml_log_warning):
             )
     ymmsl_doc = ymmsl.load(ymmsl_text)
 
-    yield from make_server_process(ymmsl_doc)
+    yield from make_server_process(ymmsl_doc, tmpdir)
 
 
 @pytest.fixture

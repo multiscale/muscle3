@@ -1,7 +1,6 @@
 from copy import copy
 import logging
 import os
-from pathlib import Path
 import sys
 from typing import cast, Dict, List, Optional, Tuple
 
@@ -412,13 +411,13 @@ class Instance:
         """
         id_str = str(self._instance_name())
 
-        logfile = extract_log_file_location(
-                Path.cwd(), 'muscle3.{}.log'.format(id_str))
-        local_handler = logging.FileHandler(str(logfile), mode='w')
-        formatter = logging.Formatter('%(asctime)-15s: %(name)s'
-                                      ' %(levelname)s: %(message)s')
-        local_handler.setFormatter(formatter)
-        logging.getLogger().addHandler(local_handler)
+        logfile = extract_log_file_location('{}.log'.format(id_str))
+        if logfile is not None:
+            local_handler = logging.FileHandler(str(logfile), mode='w')
+            formatter = logging.Formatter(
+                    '%(asctime)-15s: %(levelname)-7s %(name)s: %(message)s')
+            local_handler.setFormatter(formatter)
+            logging.getLogger().addHandler(local_handler)
 
         if self.__manager is not None:
             self._mmp_handler = MuscleManagerHandler(id_str, logging.WARNING,
@@ -630,14 +629,14 @@ class Instance:
                     'INFO': logging.INFO,
                     'DEBUG': logging.DEBUG}
 
-            if log_level_str.upper() not in level_map:
+            log_level = level_map.get(log_level_str.upper())
+            if log_level is None:
                 _logger.warning(
                     ('muscle_remote_log_level is set to {}, which is not a'
                      ' valid log level. Please use one of DEBUG, INFO,'
                      ' WARNING, ERROR, or CRITICAL').format(log_level_str))
                 return
 
-            log_level = level_map[log_level_str]
             self._mmp_handler.setLevel(log_level)
             if not logging.getLogger().isEnabledFor(log_level):
                 logging.getLogger().setLevel(log_level)

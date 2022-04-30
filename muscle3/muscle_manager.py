@@ -16,6 +16,7 @@ from libmuscle.manager.run_dir import RunDir
         'ymmsl_files', nargs=-1, required=True, type=click.Path(
             exists=True, file_okay=True, dir_okay=False, readable=True,
             allow_dash=True, resolve_path=True))
+@click.option('--log-level', nargs=1, type=str)
 @click.option('--run-dir', nargs=1, type=click.Path(
     exists=True, file_okay=False, dir_okay=True, readable=True, writable=True,
     allow_dash=False, resolve_path=True))
@@ -23,7 +24,8 @@ from libmuscle.manager.run_dir import RunDir
 def manage_simulation(
         ymmsl_files: Sequence[str],
         start_all: bool,
-        run_dir: Optional[str]
+        run_dir: Optional[str],
+        log_level: Optional[str]
         ) -> None:
     configuration = PartialConfiguration()
     for path in ymmsl_files:
@@ -43,10 +45,10 @@ def manage_simulation(
 
     if start_all:
         run_dir_obj = RunDir(run_dir_path)
-        manager = Manager(configuration, run_dir_obj)
+        manager = Manager(configuration, run_dir_obj, log_level)
         manager.start_instances()
     else:
-        manager = Manager(configuration, None)
+        manager = Manager(configuration, None, log_level)
         print(manager.get_server_location())
 
     success = manager.wait()

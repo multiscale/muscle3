@@ -10,16 +10,18 @@ class Timestamp:
         seconds: The number of seconds since the start of 1970.
     """
     def __init__(self, seconds: float) -> None:
-        self.__seconds = seconds
+        self._seconds = seconds
 
-    def to_rfc3339(self) -> str:
-        """Converts a Timestamp to a datetime string.
+    def to_asctime(self) -> str:
+        """Converts a Timestamp to a LogRecord asctime.
 
         Returns:
-            The timestamp as a string.
+            The timestamp as a string in the format used by default
+            by Python's logging subsystem.
         """
-        date_time = datetime.datetime.utcfromtimestamp(self.__seconds)
-        return date_time.isoformat() + 'Z'
+        date_time = datetime.datetime.fromtimestamp(self._seconds)
+        whole_part = date_time.strftime('%Y-%m-%d %H:%M:%S')
+        return '%s,%03d' % (whole_part, date_time.time().microsecond / 1000)
 
     @staticmethod
     def from_grpc(timestamp: pbts.Timestamp) -> 'Timestamp':
@@ -39,6 +41,6 @@ class Timestamp:
         Returns:
             The same timestamp, as a gRPC object.
         """
-        seconds = int(self.__seconds)
-        nanos = int((self.__seconds - seconds) * 10**9)
+        seconds = int(self._seconds)
+        nanos = int((self._seconds - seconds) * 10**9)
         return pbts.Timestamp(seconds=seconds, nanos=nanos)

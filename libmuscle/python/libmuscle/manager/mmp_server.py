@@ -1,5 +1,5 @@
 from concurrent import futures
-import time
+import logging
 import socket
 from typing import cast, Generator, List
 
@@ -17,6 +17,9 @@ from libmuscle.util import (conduit_to_grpc, generate_indices,
 
 import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
 import muscle_manager_protocol.muscle_manager_protocol_pb2_grpc as mmp_grpc
+
+
+_logger = logging.getLogger(__name__)
 
 
 class MMPServicer(mmp_grpc.MuscleManagerServicer):
@@ -132,8 +135,7 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
                     Reference(str(request.instance_name)),
                     list(request.network_locations),
                     ports)
-            self.__log(LogLevel.INFO, 'Registered instance {}'.format(
-                        request.instance_name))
+            _logger.info(f'Registered instance {request.instance_name}')
             return mmp.RegistrationResult(status=mmp.RESULT_STATUS_SUCCESS)
         except AlreadyRegistered:
             return mmp.RegistrationResult(
@@ -179,8 +181,7 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
                                   error_message='Waiting for kernel {}'.format(
                                       e.args[0]))
 
-        self.__log(LogLevel.INFO, 'Sent peers to {}'.format(
-                    request.instance_name))
+        _logger.debug(f'Sent peers to {request.instance_name}')
         return mmp.PeerResult(
                 status=mmp.RESULT_STATUS_SUCCESS,
                 conduits=mmp_conduits,
@@ -193,8 +194,7 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
         """Handles an instance deregistration request."""
         try:
             self.__instance_registry.remove(Reference(request.instance_name))
-            self.__log(LogLevel.INFO, 'Deregistered instance {}'.format(
-                    request.instance_name))
+            _logger.info(f'Deregistered instance {request.instance_name}')
             return mmp.DeregistrationResult(status=mmp.RESULT_STATUS_SUCCESS)
         except ValueError:
             return mmp.DeregistrationResult(
@@ -227,16 +227,6 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
 
                 for peer_indices in generate_indices(peer_dims[len(dims):]):
                     yield base + peer_indices
-
-    def __log(self, level: LogLevel, msg: str) -> None:
-        """Logs a message to the log file.
-
-        Args:
-            level: The level to log at.
-            msg: The message to log.
-        """
-        self.__logger.log_message('muscle3_manager', Timestamp(time.time()),
-                                  level, msg)
 
 
 class MMPServer():

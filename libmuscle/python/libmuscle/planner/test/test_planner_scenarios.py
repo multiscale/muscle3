@@ -323,7 +323,7 @@ scenarios = [
         ]
 
 
-@pytest.mark.parametrize('scenario', scenarios)     # type: ignore
+@pytest.mark.parametrize('scenario', scenarios)
 def test_scenarios(scenario: _Scenario) -> None:
     model, reqs, res, excl = scenario
     planner = Planner(res)

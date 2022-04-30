@@ -9,7 +9,7 @@ from ymmsl import (
         ResourceRequirements, ThreadedResReq)
 
 
-@pytest.fixture     # type: ignore
+@pytest.fixture
 def all_resources() -> Resources:
     return Resources({
         'node001': {1, 2, 3, 4},
@@ -17,24 +17,24 @@ def all_resources() -> Resources:
         'node003': {1, 2, 3, 4}})
 
 
-@pytest.fixture     # type: ignore
+@pytest.fixture
 def init() -> Component:
     return Component('init', ports=Ports(o_f=['state_out']))
 
 
-@pytest.fixture     # type: ignore
+@pytest.fixture
 def macro() -> Component:
     return Component('macro', ports=Ports(
             f_init=['initial_state_in'], o_i=['bc_out'], s=['bc_in']))
 
 
-@pytest.fixture     # type: ignore
+@pytest.fixture
 def micro() -> Component:
     return Component('micro', ports=Ports(
             f_init=['initial_bc_in'], o_f=['final_bc_out']))
 
 
-@pytest.fixture     # type: ignore
+@pytest.fixture
 def model(init: Component, macro: Component, micro: Component) -> Model:
     return Model(
             'test_model',
@@ -45,7 +45,7 @@ def model(init: Component, macro: Component, micro: Component) -> Model:
                 Conduit('micro.final_bc_out', 'macro.bc_in')])
 
 
-@pytest.fixture     # type: ignore
+@pytest.fixture
 def requirements() -> Dict[Reference, ResourceRequirements]:
     res_list = [
             ThreadedResReq(Reference('init'), 4),

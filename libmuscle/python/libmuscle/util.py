@@ -30,7 +30,7 @@ def instance_to_kernel(instance: Reference) -> Reference:
         The name of its kernel.
     """
     i = len(instance)
-    while isinstance(instance[i-1], int):
+    while isinstance(instance[i - 1], int):
         i -= 1
     return instance[:i]
 
@@ -45,7 +45,7 @@ def instance_indices(instance: Reference) -> List[int]:
         The name of its kernel.
     """
     i = len(instance)
-    while isinstance(instance[i-1], int):
+    while isinstance(instance[i - 1], int):
         i -= 1
 
     # Note that the slice operator on References returns a Reference,

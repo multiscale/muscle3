@@ -20,11 +20,11 @@ test: test_python test_scripts test_cpp test_fortran
 
 .PHONY: test_python_only
 test_python_only:
-	MUSCLE_TEST_PYTHON_ONLY=1 python3 setup.py test
+	MUSCLE_TEST_PYTHON_ONLY=1 tox
 
 .PHONY: test_python
 test_python: cpp_tests fortran_tests
-	python3 setup.py test
+	tox
 
 .PHONY: test_cpp
 test_cpp: cpp
@@ -101,7 +101,7 @@ install: all
 
 .PHONY: docs
 docs:
-	python3 setup.py build_sphinx
+	tox -e docs
 
 .PHONY: docsclean
 docsclean:
@@ -117,6 +117,7 @@ clean:
 	cd docs/source/examples && $(MAKE) clean
 	rm -rf ./build
 	rm -rf $(CURDIR)/libmuscle/build/test_install/*
+	rm -rf libmuscle/python/libmuscle/version.py
 
 .PHONY: distclean
 distclean:
@@ -126,6 +127,7 @@ distclean:
 	cd docs/source/examples && $(MAKE) clean
 	rm -rf ./build
 	rm -rf $(CURDIR)/libmuscle/build/test_install/*
+	rm -rf libmuscle/python/libmuscle/version.py
 
 .PHONY: fortran
 fortran: cpp

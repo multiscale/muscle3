@@ -1,0 +1,51 @@
+ymmsl_version: v0.1
+
+model:
+  name: reaction_diffusion_mc_fortran
+  components:
+    mc:
+      implementation: mc_driver_fortran
+      ports:
+        o_i: parameters_out
+        s: states_in
+    rr:
+      implementation: load_balancer_fortran
+      ports:
+        f_init: front_in
+        o_i: back_out
+        s: back_in
+        o_f: front_out
+    macro:
+      implementation: diffusion_fortran
+      multiplicity: 2
+      ports:
+        o_i: state_out
+        s: state_in
+        o_f: final_state_out
+    micro:
+      implementation: reaction_fortran
+      multiplicity: 2
+      ports:
+        f_init: initial_state
+        o_f: final_state
+
+  conduits:
+    mc.parameters_out: rr.front_in
+    rr.front_out: mc.states_in
+    rr.back_out: macro.muscle_settings_in
+    macro.final_state_out: rr.back_in
+    macro.state_out: micro.initial_state
+    micro.final_state: macro.state_in
+
+resources:
+  mc:
+    threads: 1
+
+  rr:
+    threads: 1
+
+  macro:
+    threads: 1
+
+  micro:
+    threads: 1

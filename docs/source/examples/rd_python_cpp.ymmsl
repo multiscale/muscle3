@@ -1,0 +1,27 @@
+ymmsl_version: v0.1
+
+model:
+  name: reaction_diffusion_python_cpp
+
+  components:
+    macro:
+      implementation: diffusion_cpp
+      ports:
+        o_i: state_out
+        s: state_in
+
+    micro:
+      implementation: reaction_python
+      ports:
+        f_init: initial_state
+        o_f: final_state
+
+  conduits:
+    macro.state_out: micro.initial_state
+    micro.final_state: macro.state_in
+
+resources:
+  macro:
+    threads: 1
+  micro:
+    threads: 1

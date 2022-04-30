@@ -1,0 +1,64 @@
+ymmsl_version: v0.1
+
+implementations:
+  reaction_python:
+    virtual_env: MUSCLE3_EXAMPLES/python/build/venv
+    executable: python
+    args: MUSCLE3_EXAMPLES/python/reaction.py
+
+  reaction_cpp:
+    env:
+      LD_LIBRARY_PATH: MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/cpp/build/reaction
+
+  reaction_cpp_mpi:
+    env:
+      LD_LIBRARY_PATH: MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/cpp/build/reaction_mpi
+    execution_model: openmpi
+
+  reaction_fortran:
+    env:
+      LD_LIBRARY_PATH: MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/fortran/build/reaction
+
+  reaction_fortran_mpi:
+    env:
+      LD_LIBRARY_PATH: MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/fortran/build/reaction_mpi
+    execution_model: openmpi
+
+  diffusion_python:
+    virtual_env: MUSCLE3_EXAMPLES/python/build/venv
+    executable: python
+    args: MUSCLE3_EXAMPLES/python/diffusion.py
+
+  diffusion_cpp:
+    env:
+      LD_LIBRARY_PATH: MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/cpp/build/diffusion
+
+  diffusion_fortran:
+    env:
+      LD_LIBRARY_PATH: MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/fortran/build/diffusion
+
+  mc_driver_cpp:
+    env:
+      LD_LIBRARY_PATH: MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/cpp/build/mc_driver
+
+  mc_driver_fortran:
+    env:
+      LD_LIBRARY_PATH: MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/fortran/build/mc_driver
+
+  load_balancer_cpp:
+    env:
+      LD_LIBRARY_PATH: MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/cpp/build/load_balancer
+
+  load_balancer_fortran:
+    env:
+      LD_LIBRARY_PATH: MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/fortran/build/load_balancer

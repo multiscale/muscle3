@@ -4,7 +4,7 @@ import sys
 import traceback
 from typing import Optional
 
-from ymmsl import PartialConfiguration
+from ymmsl import PartialConfiguration, save as save_ymmsl
 
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger
@@ -42,6 +42,11 @@ class Manager:
         self._logger = Logger(log_dir, log_level)
         self._topology_store = TopologyStore(configuration)
         self._instance_registry = InstanceRegistry()
+
+        if self._run_dir:
+            save_ymmsl(
+                    self._configuration,
+                    self._run_dir.path / 'configuration.ymmsl')
 
         self._instance_manager = None    # type: Optional[InstanceManager]
         try:

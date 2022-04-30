@@ -37,7 +37,7 @@ def manage_simulation(
             model_name = configuration.model.name
         else:
             model_name = Identifier('model')
-        timestamp = datetime.now(timezone.utc)
+        timestamp = datetime.now()
         timestr = timestamp.strftime('%Y%m%d_%H%M%S')
         run_dir_path = Path.cwd() / 'run_{}_{}'.format(model_name, timestr)
     else:
@@ -52,6 +52,13 @@ def manage_simulation(
         print(manager.get_server_location())
 
     success = manager.wait()
+
+    if not success:
+        print('An error occurred during execution, and the simulation was')
+        print('shut down. The manager log should tell you what happened.')
+        print('You can find it at')
+        print(run_dir_path / 'muscle3_manager.log')
+
     sys.exit(0 if success else 1)
 
 

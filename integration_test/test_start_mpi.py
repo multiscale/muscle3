@@ -1,5 +1,7 @@
+import os
 from pathlib import Path
 
+import pytest
 import ymmsl
 
 from libmuscle.manager.manager import Manager
@@ -9,10 +11,14 @@ from .conftest import skip_if_python_only
 
 
 @skip_if_python_only
-def test_start_all(tmpdir):
+def test_start_mpi(tmpdir):
+    # only run this if MPI is enabled
+    if 'MUSCLE_ENABLE_MPI' not in os.environ:
+        pytest.skip('MPI is not enabled, try with MUSCLE_ENABLE_MPI=1')
+
     tmppath = Path(str(tmpdir))
 
-    # find our test component and its requirements
+    # find our test components and their requirements
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
     lib_paths = [
             cpp_build_dir / 'grpc' / 'c-ares' / 'c-ares' / 'lib',
@@ -25,6 +31,7 @@ def test_start_all(tmpdir):
 
     cpp_test_dir = cpp_build_dir / 'libmuscle' / 'tests'
     test_component = cpp_test_dir / 'component_test'
+    mpi_test_component = cpp_test_dir / 'mpi_component_test'
 
     # make config
     ymmsl_text = ((
@@ -41,7 +48,7 @@ def test_start_all(tmpdir):
             '      ports:\n'
             '        f_init: init\n'
             '        o_f: result\n'
-            '      implementation: component\n'
+            '      implementation: mpi_component\n'
             '  conduits:\n'
             '    macro.out: micro.init\n'
             '    micro.result: macro.in\n'
@@ -50,12 +57,18 @@ def test_start_all(tmpdir):
             '    env:\n'
             '      LD_LIBRARY_PATH: {}\n'
             '    executable: {}\n'
+            '  mpi_component:\n'
+            '    env:\n'
+            '      LD_LIBRARY_PATH: {}\n'
+            '    executable: {}\n'
+            '    execution_model: openmpi\n'
             'resources:\n'
             '  macro:\n'
             '    threads: 1\n'
             '  micro:\n'
-            '    threads: 1\n'
-            ).format(ld_lib_path, test_component))
+            '    mpi_processes: 2\n'
+            ).format(
+                ld_lib_path, test_component, ld_lib_path, mpi_test_component))
 
     config = ymmsl.load(ymmsl_text)
 

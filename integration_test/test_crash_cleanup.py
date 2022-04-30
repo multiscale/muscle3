@@ -9,7 +9,7 @@ from .conftest import skip_if_python_only
 
 
 @skip_if_python_only
-def test_start_all(tmpdir):
+def test_crash_cleanup(tmpdir):
     tmppath = Path(str(tmpdir))
 
     # find our test component and its requirements
@@ -25,6 +25,7 @@ def test_start_all(tmpdir):
 
     cpp_test_dir = cpp_build_dir / 'libmuscle' / 'tests'
     test_component = cpp_test_dir / 'component_test'
+    crash_component = cpp_test_dir / 'crashing_component_test'
 
     # make config
     ymmsl_text = ((
@@ -36,7 +37,7 @@ def test_start_all(tmpdir):
             '      ports:\n'
             '        o_i: out\n'
             '        s: in\n'
-            '      implementation: component\n'
+            '      implementation: crashing_component\n'
             '    micro:\n'
             '      ports:\n'
             '        f_init: init\n'
@@ -46,6 +47,10 @@ def test_start_all(tmpdir):
             '    macro.out: micro.init\n'
             '    micro.result: macro.in\n'
             'implementations:\n'
+            '  crashing_component:\n'
+            '    env:\n'
+            '      LD_LIBRARY_PATH: {}\n'
+            '    executable: {}\n'
             '  component:\n'
             '    env:\n'
             '      LD_LIBRARY_PATH: {}\n'
@@ -55,7 +60,8 @@ def test_start_all(tmpdir):
             '    threads: 1\n'
             '  micro:\n'
             '    threads: 1\n'
-            ).format(ld_lib_path, test_component))
+            ).format(
+                ld_lib_path, crash_component, ld_lib_path, test_component))
 
     config = ymmsl.load(ymmsl_text)
 
@@ -67,5 +73,5 @@ def test_start_all(tmpdir):
     manager.start_instances()
     success = manager.wait()
 
-    # check that all went well
-    assert success
+    # check that all did not go well
+    assert not success

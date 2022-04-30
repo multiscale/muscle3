@@ -10,12 +10,10 @@ class RunDir:
 
     <run_dir>/
         input/
-        muscle3/
-            1_<name>.ymmsl
-            2_<name>.ymmsl
-            muscle_manager.log
-            muscle_stats.sqlite
-            .qcgpj/
+        1_<name>.ymmsl
+        2_<name>.ymmsl
+        muscle_manager.log
+        muscle_stats.sqlite
         instances/
             <instance_name[i]>/
                 run_script.sh
@@ -32,10 +30,6 @@ class RunDir:
 
         if not self.path.exists():
             self.path.mkdir()
-
-        self.muscle_dir = self.path / 'muscle3'
-        if not self.muscle_dir.exists():
-            self.muscle_dir.mkdir()
 
         instances_dir = self.path / 'instances'
         if not instances_dir.exists():
@@ -55,3 +49,11 @@ class RunDir:
             raise ValueError('Instance already has a directory')
         idir.mkdir()
         return idir
+
+    def instance_dir(self, name: Reference) -> Path:
+        """Return the instance dir of the given instance.
+
+        The directory may or may not exist, call add_instance_dir() to
+        make it.
+        """
+        return self.path / 'instances' / str(name)

@@ -1,4 +1,5 @@
-from libmuscle.planner.planner import ModelGraph, Planner, Resources
+from libmuscle.planner.planner import (
+        InsufficientResourcesAvailable, ModelGraph, Planner, Resources)
 
 from copy import copy
 import pytest
@@ -235,3 +236,36 @@ def test_oversubscribe_single_instance_mpi() -> None:
     allocations = planner.allocate_all(config)
 
     assert allocations[Reference('x')].cores == {'node001': {1, 2, 3, 4}}
+
+
+def test_virtual_allocation() -> None:
+    model = Model('ensemble', [Component('x', 'x', 9, ports=Ports())])
+    impl = [Implementation(Reference('x'), script='x')]
+    reqs = {
+            Reference('x'): MPICoresResReq(Reference('x'), 13)
+            }   # type: Dict[Reference, ResourceRequirements]
+    config = Configuration(model, None, impl, reqs)
+
+    res = Resources({'node000001': {1, 2, 3, 4}})
+
+    planner = Planner(res)
+    allocations = planner.allocate_all(config, virtual=True)
+
+    assert res.total_cores() == 120
+    assert allocations[Reference('x[0]')].total_cores() == 13
+    assert allocations[Reference('x[8]')].total_cores() == 13
+
+
+def test_impossible_virtual_allocation() -> None:
+    model = Model('ensemble', [Component('x', 'x', 9, ports=Ports())])
+    impl = [Implementation(Reference('x'), script='x')]
+    reqs = {
+            Reference('x'): ThreadedResReq(Reference('x'), 13)
+            }   # type: Dict[Reference, ResourceRequirements]
+    config = Configuration(model, None, impl, reqs)
+
+    res = Resources({'node000001': {1, 2, 3, 4}})
+
+    planner = Planner(res)
+    with pytest.raises(InsufficientResourcesAvailable):
+        planner.allocate_all(config, virtual=True)

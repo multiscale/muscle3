@@ -431,13 +431,29 @@ class Planner:
         self._all_resources = all_resources
         self._allocations = dict()  # type: Dict[Reference, Resources]
         self._oversubscribed = dict()   # type: Dict[Reference, Resources]
+        self._next_virtual_node = 1
 
     def allocate_all(
-            self, configuration: Configuration) -> Dict[Reference, Resources]:
+            self, configuration: Configuration, virtual: bool = False
+            ) -> Dict[Reference, Resources]:
         """Allocates resources for the given components.
+
+        Allocation can occur either on a fixed set of available
+        resources (virtual set to  False), or on an elastic set of
+        virtual resources (virtual set to True). Use the former
+        inside of a (fixed) cluster allocation and the latter to
+        determine how many nodes are needed to run a simulation
+        without oversubscribing.
+
+        If virtual is True, additional nodes will be added as
+        needed to obtain the resources needed to allocate all
+        instances. Each additional node will have as many cores
+        as a random existing one. The intended use is to pass a
+        single node to __init__ when using this mode.
 
         Args:
             configuration: Configuration to allocate all components of
+            virtual: Allocate on virtual resources or not, see above
 
         Returns:
             Resources for each instance required by the model.
@@ -468,12 +484,22 @@ class Planner:
                 conflicting_names = self._conflicting_names(
                         model, exclusive, component)
 
-                try:
-                    result[instance] = self._allocate_instance(
-                            instance, component, requirements[component.name],
-                            conflicting_names)
-                except InsufficientResourcesAvailable:
-                    leftover_instances.append(instance)
+                done = False
+                while not done:
+                    try:
+                        result[instance] = self._allocate_instance(
+                                instance, component,
+                                requirements[component.name],
+                                conflicting_names, virtual)
+                        done = True
+                    except InsufficientResourcesAvailable:
+                        if virtual:
+                            self._expand_resources(
+                                    component.name,
+                                    requirements[component.name])
+                        else:
+                            leftover_instances.append(instance)
+                            done = True
 
             if leftover_instances:
                 _logger.warning(
@@ -531,12 +557,42 @@ class Planner:
             conflicting_comps -= nonconflicting_mms
         return {c.name for c in conflicting_comps}
 
+    def _expand_resources(
+            self, name: Reference, req: ResourceRequirements) -> None:
+        """Adds an extra virtual node to the available resources."""
+        taken = True
+        while taken:
+            new_node = 'node{:06d}'.format(self._next_virtual_node)
+            taken = new_node in self._all_resources.cores
+            self._next_virtual_node += 1
+
+        num_cores = len(next(iter(self._all_resources.cores.values())))
+        if isinstance(req, ThreadedResReq):
+            if req.threads > num_cores:
+                raise InsufficientResourcesAvailable(
+                        f'Instance {name} requires {req.threads} threads,'
+                        f' which is impossible with {num_cores} cores per'
+                        ' node.')
+        if isinstance(req, MPICoresResReq):
+            if req.threads_per_mpi_process > num_cores:
+                raise InsufficientResourcesAvailable(
+                        f'Instance {name} requires'
+                        f' {req.threads_per_mpi_process} threads per process,'
+                        f' which is impossible with {num_cores} cores per'
+                        ' node.')
+        self._all_resources.cores[new_node] = set(range(num_cores))
+
     def _allocate_instance(
             self, instance: Reference, component: Component,
             requirements: ResourceRequirements,
-            simultaneous_components: Set[Reference]
+            simultaneous_components: Set[Reference], virtual: bool
             ) -> Resources:
         """Allocates resources for the given instance.
+
+        If we are on real resources, and the instance requires more
+        threads than our nodes have cores, then we'll just give it all
+        cores on a node and hope for the best. If we are on virtual
+        resources, this will raise InsufficientResourcesAvailable.
 
         Args:
             instance: The instance to allocate for
@@ -545,6 +601,7 @@ class Planner:
             simultaneous_components: Components which may execute
                     simultaneously and whose resources we therefore
                     cannot overlap with
+            virtual: Whether we are on virtual resources
 
         Returns:
             A Resources object describing the resources allocated
@@ -578,7 +635,7 @@ class Planner:
                         ' supported yet. Please make an issue on GitHub.')
 
         except InsufficientResourcesAvailable:
-            if not self._allocations:
+            if not self._allocations and not virtual:
                 # There are no other allocations and it's still not
                 # enough. Just give it all and hope for the best.
                 _logger.warning((

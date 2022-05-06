@@ -9,8 +9,8 @@ source_files := $(wildcard $(srcdir)/*.cc)
 objects := $(source_files:$(srcdir)/%.cc=%.o)
 
 CXXFLAGS += -std=c++14 -I$(hdrdir) -fPIC
-CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --cflags protobuf)
-CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --cflags grpc)
+CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --cflags protobuf)
+CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --cflags grpc)
 
 
 .PHONY: all

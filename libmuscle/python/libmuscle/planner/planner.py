@@ -3,7 +3,7 @@ import logging
 from typing import Dict, Iterable, List, Mapping, Optional, Set
 
 from ymmsl import (
-        Component, Model, MPICoresResReq, MPINodesResReq,
+        Component, Configuration, Model, MPICoresResReq, MPINodesResReq,
         Operator, Reference, ResourceRequirements, ThreadedResReq)
 
 
@@ -433,21 +433,27 @@ class Planner:
         self._oversubscribed = dict()   # type: Dict[Reference, Resources]
 
     def allocate_all(
-            self, model: ModelGraph,
-            requirements: Mapping[Reference, ResourceRequirements],
-            exclusive: Set[Component]
-            ) -> Dict[Reference, Resources]:
+            self, configuration: Configuration) -> Dict[Reference, Resources]:
         """Allocates resources for the given components.
 
         Args:
-            model: Model whose components to allocate
-            requirements: Requirements for the components
-            exclusive: Set of components that need exclusive resources
+            configuration: Configuration to allocate all components of
 
         Returns:
             Resources for each instance required by the model.
         """
         result = dict()     # type: Dict[Reference, Resources]
+
+        # Analyse model
+        model = ModelGraph(configuration.model)
+        requirements = configuration.resources
+        implementations = configuration.implementations
+        exclusive = {
+                c for c in model.components()
+                if (c.implementation and
+                    not implementations[c.implementation].can_share_resources)}
+
+        # Allocate
         unallocated_instances = [
                 i for c in model.components() for i in c.instances()]
         leftover_instances = list()     # type: List[Reference]
@@ -459,15 +465,8 @@ class Planner:
 
             for instance in to_allocate:
                 component = model.component(instance.without_trailing_ints())
-
-                conflicting_comps = set(model.components())
-                conflicting_comps -= model.predecessors(component)
-                conflicting_comps -= model.successors(component)
-                if component not in exclusive:
-                    mms = model.micros(component) | model.macros(component)
-                    nonconflicting_mms = mms - exclusive
-                    conflicting_comps -= nonconflicting_mms
-                conflicting_names = {c.name for c in conflicting_comps}
+                conflicting_names = self._conflicting_names(
+                        model, exclusive, component)
 
                 try:
                     result[instance] = self._allocate_instance(
@@ -518,6 +517,19 @@ class Planner:
         sorted_mpi_instances = [x[0] for x in sorted_mpi]
 
         return sorted_threaded_instances + sorted_mpi_instances
+
+    def _conflicting_names(
+            self, model: ModelGraph, exclusive: Set[Component],
+            component: Component) -> Set[Reference]:
+        """Returns names of components that cannot share resources."""
+        conflicting_comps = set(model.components())
+        conflicting_comps -= model.predecessors(component)
+        conflicting_comps -= model.successors(component)
+        if component not in exclusive:
+            mms = model.micros(component) | model.macros(component)
+            nonconflicting_mms = mms - exclusive
+            conflicting_comps -= nonconflicting_mms
+        return {c.name for c in conflicting_comps}
 
     def _allocate_instance(
             self, instance: Reference, component: Component,

@@ -48,5 +48,5 @@ clean:
 	make -C cpp clean
 	make -C fortran clean
 	make -C python clean
-	rm rd_implementations.ymmsl
+	rm -f rd_implementations.ymmsl
 	rm -rf run_*

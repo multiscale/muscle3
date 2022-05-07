@@ -11,18 +11,18 @@ all: python cpp fortran rd_implementations.ymmsl
 
 .PHONY: test
 test: all
-	LD_LIBRARY_PATH=${MUSCLE3_HOME}/lib muscle_manager --start-all rd_implementations.ymmsl rd_python.ymmsl rd_settings.ymmsl
-	LD_LIBRARY_PATH=${MUSCLE3_HOME}/lib muscle_manager --start-all rd_implementations.ymmsl rd_cpp.ymmsl rd_settings.ymmsl
-	LD_LIBRARY_PATH=${MUSCLE3_HOME}/lib muscle_manager --start-all rd_implementations.ymmsl rd_fortran.ymmsl rd_settings.ymmsl
-	LD_LIBRARY_PATH=${MUSCLE3_HOME}/lib muscle_manager --start-all rd_implementations.ymmsl rd_python_cpp.ymmsl rd_settings.ymmsl
-	LD_LIBRARY_PATH=${MUSCLE3_HOME}/lib muscle_manager --start-all rd_implementations.ymmsl rd_python_fortran.ymmsl rd_settings.ymmsl
-	LD_LIBRARY_PATH=${MUSCLE3_HOME}/lib muscle_manager --start-all rd_implementations.ymmsl rdmc_cpp.ymmsl rdmc_settings.ymmsl
-	LD_LIBRARY_PATH=${MUSCLE3_HOME}/lib muscle_manager --start-all rd_implementations.ymmsl rdmc_fortran.ymmsl rdmc_settings.ymmsl
+	. python/build/venv/bin/activate && LD_LIBRARY_PATH=${MUSCLE3_HOME}/lib muscle_manager --start-all rd_implementations.ymmsl rd_python.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && LD_LIBRARY_PATH=${MUSCLE3_HOME}/lib muscle_manager --start-all rd_implementations.ymmsl rd_cpp.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && LD_LIBRARY_PATH=${MUSCLE3_HOME}/lib muscle_manager --start-all rd_implementations.ymmsl rd_fortran.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && LD_LIBRARY_PATH=${MUSCLE3_HOME}/lib muscle_manager --start-all rd_implementations.ymmsl rd_python_cpp.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && LD_LIBRARY_PATH=${MUSCLE3_HOME}/lib muscle_manager --start-all rd_implementations.ymmsl rd_python_fortran.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && LD_LIBRARY_PATH=${MUSCLE3_HOME}/lib muscle_manager --start-all rd_implementations.ymmsl rdmc_cpp.ymmsl rdmc_settings.ymmsl
+	. python/build/venv/bin/activate && LD_LIBRARY_PATH=${MUSCLE3_HOME}/lib muscle_manager --start-all rd_implementations.ymmsl rdmc_fortran.ymmsl rdmc_settings.ymmsl
 
 .PHONY: test_mpi
 test_mpi: all
-	LD_LIBRARY_PATH=${MUSCLE3_HOME}/lib muscle_manager --start-all rd_implementations.ymmsl rd_cpp_mpi.ymmsl rd_settings.ymmsl
-	LD_LIBRARY_PATH=${MUSCLE3_HOME}/lib muscle_manager --start-all rd_implementations.ymmsl rd_fortran_mpi.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && LD_LIBRARY_PATH=${MUSCLE3_HOME}/lib muscle_manager --start-all rd_implementations.ymmsl rd_cpp_mpi.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && LD_LIBRARY_PATH=${MUSCLE3_HOME}/lib muscle_manager --start-all rd_implementations.ymmsl rd_fortran_mpi.ymmsl rd_settings.ymmsl
 
 ifdef MUSCLE_ENABLE_MPI
 test: test_mpi

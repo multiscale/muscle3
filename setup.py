@@ -41,7 +41,9 @@ setup(
         'libmuscle': 'libmuscle/python/libmuscle'
     },
     entry_points={
-        'console_scripts': ['muscle_manager=muscle3.muscle_manager:manage_simulation']
+        'console_scripts': [
+            'muscle_manager=muscle3.muscle_manager:manage_simulation',
+            'muscle3=muscle3.muscle3:muscle3']
     },
     python_requires='>=3.5, <4',
     install_requires=[

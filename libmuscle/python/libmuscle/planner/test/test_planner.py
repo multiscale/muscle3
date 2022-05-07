@@ -1,12 +1,13 @@
-from libmuscle.planner.planner import ModelGraph, Planner, Resources
+from libmuscle.planner.planner import (
+        InsufficientResourcesAvailable, ModelGraph, Planner, Resources)
 
 from copy import copy
 import pytest
-from typing import Dict
+from typing import Dict, List
 
 from ymmsl import (
-        Component, Conduit, Model, MPICoresResReq, Ports, Reference,
-        ResourceRequirements, ThreadedResReq)
+        Component, Conduit, Configuration, Implementation, Model,
+        MPICoresResReq, Ports, Reference, ResourceRequirements, ThreadedResReq)
 
 
 @pytest.fixture
@@ -19,18 +20,18 @@ def all_resources() -> Resources:
 
 @pytest.fixture
 def init() -> Component:
-    return Component('init', ports=Ports(o_f=['state_out']))
+    return Component('init', 'init', ports=Ports(o_f=['state_out']))
 
 
 @pytest.fixture
 def macro() -> Component:
-    return Component('macro', ports=Ports(
+    return Component('macro', 'macro', ports=Ports(
             f_init=['initial_state_in'], o_i=['bc_out'], s=['bc_in']))
 
 
 @pytest.fixture
 def micro() -> Component:
-    return Component('micro', ports=Ports(
+    return Component('micro', 'micro', ports=Ports(
             f_init=['initial_bc_in'], o_f=['final_bc_out']))
 
 
@@ -46,12 +47,27 @@ def model(init: Component, macro: Component, micro: Component) -> Model:
 
 
 @pytest.fixture
+def implementations() -> List[Implementation]:
+    return [
+            Implementation(Reference('init'), script='init'),
+            Implementation(Reference('macro'), script='macro'),
+            Implementation(Reference('micro'), script='micro')]
+
+
+@pytest.fixture
 def requirements() -> Dict[Reference, ResourceRequirements]:
     res_list = [
             ThreadedResReq(Reference('init'), 4),
             ThreadedResReq(Reference('macro'), 4),
             ThreadedResReq(Reference('micro'), 4)]
     return {r.name: r for r in res_list}
+
+
+@pytest.fixture
+def configuration(
+        model: Model, implementations: List[Implementation],
+        requirements: Dict[Reference, ResourceRequirements]) -> Configuration:
+    return Configuration(model, None, implementations, requirements)
 
 
 def test_model_graph(
@@ -118,38 +134,34 @@ def test_resources(all_resources: Resources) -> None:
     assert all_resources.cores['node005'] == {1, 2, 3, 4, 5, 6}
 
 
-def test_resource_manager(
-        all_resources: Resources, model: Model,
-        requirements: Dict[Reference, ResourceRequirements]) -> None:
+def test_planner(
+        all_resources: Resources, configuration: Configuration) -> None:
     planner = Planner(all_resources)
-    model_graph = ModelGraph(model)
-    allocations = planner.allocate_all(model_graph, requirements, set())
+    allocations = planner.allocate_all(configuration)
 
     assert allocations[Reference('init')].cores == {'node001': {1, 2, 3, 4}}
     assert allocations[Reference('macro')].cores == {'node001': {1, 2, 3, 4}}
     assert allocations[Reference('micro')].cores == {'node001': {1, 2, 3, 4}}
 
 
-def test_resource_manager_exclusive_macro(
-        all_resources: Resources, model: Model,
-        requirements: Dict[Reference, ResourceRequirements]) -> None:
+def test_planner_exclusive_macro(
+        all_resources: Resources, configuration: Configuration) -> None:
     planner = Planner(all_resources)
-    model_graph = ModelGraph(model)
-    allocations = planner.allocate_all(
-            model_graph, requirements, {model.components[1]})
+    configuration.implementations[Reference('macro')].can_share_resources = (
+            False)
+    allocations = planner.allocate_all(configuration)
 
     assert allocations[Reference('init')].cores == {'node001': {1, 2, 3, 4}}
     assert allocations[Reference('macro')].cores == {'node001': {1, 2, 3, 4}}
     assert allocations[Reference('micro')].cores == {'node002': {1, 2, 3, 4}}
 
 
-def test_resource_manager_exclusive_predecessor(
-        all_resources: Resources, model: Model,
-        requirements: Dict[Reference, ResourceRequirements]) -> None:
+def test_planner_exclusive_predecessor(
+        all_resources: Resources, configuration: Configuration) -> None:
     planner = Planner(all_resources)
-    model_graph = ModelGraph(model)
-    allocations = planner.allocate_all(
-            model_graph, requirements, {model.components[0]})
+    configuration.implementations[Reference('init')].can_share_resources = (
+            False)
+    allocations = planner.allocate_all(configuration)
 
     assert allocations[Reference('init')].cores == {'node001': {1, 2, 3, 4}}
     assert allocations[Reference('macro')].cores == {'node001': {1, 2, 3, 4}}
@@ -157,15 +169,13 @@ def test_resource_manager_exclusive_predecessor(
 
 
 def test_oversubscribe(
-        all_resources: Resources, model: Model,
-        requirements: Dict[Reference, ResourceRequirements]) -> None:
+        all_resources: Resources, configuration: Configuration) -> None:
 
     for i in range(3):
-        model.components[i].multiplicity = [5]
+        configuration.model.components[i].multiplicity = [5]
 
     planner = Planner(all_resources)
-    model_graph = ModelGraph(model)
-    allocations = planner.allocate_all(model_graph, requirements, set())
+    allocations = planner.allocate_all(configuration)
 
     assert allocations[Reference('init[0]')].cores == {'node001': {1, 2, 3, 4}}
     assert allocations[Reference('init[1]')].cores == {'node002': {1, 2, 3, 4}}
@@ -197,24 +207,65 @@ def test_oversubscribe(
 
 
 def test_oversubscribe_single_instance_threaded() -> None:
-    model = Model('single_instance', [Component('x', ports=Ports())])
-    reqs = {Reference('x'): ThreadedResReq(Reference('x'), 24)}
+    model = Model('single_instance', [Component('x', 'x', ports=Ports())])
+    impl = [Implementation(Reference('x'), script='x')]
+    reqs = {
+            Reference('x'): ThreadedResReq(Reference('x'), 24)
+            }   # type: Dict[Reference, ResourceRequirements]
+    config = Configuration(model, None, impl, reqs)
+
     res = Resources({'node001': {1, 2, 3, 4}})
 
     planner = Planner(res)
-    model_graph = ModelGraph(model)
-    allocations = planner.allocate_all(model_graph, reqs, set())
+    allocations = planner.allocate_all(config)
 
     assert allocations[Reference('x')].cores == {'node001': {1, 2, 3, 4}}
 
 
 def test_oversubscribe_single_instance_mpi() -> None:
-    model = Model('single_instance', [Component('x', ports=Ports())])
-    reqs = {Reference('x'): MPICoresResReq(Reference('x'), 24)}
+    model = Model('single_instance', [Component('x', 'x', ports=Ports())])
+    impl = [Implementation(Reference('x'), script='x')]
+    reqs = {
+            Reference('x'): MPICoresResReq(Reference('x'), 24)
+            }   # type: Dict[Reference, ResourceRequirements]
+    config = Configuration(model, None, impl, reqs)
+
     res = Resources({'node001': {1, 2, 3, 4}})
 
     planner = Planner(res)
-    model_graph = ModelGraph(model)
-    allocations = planner.allocate_all(model_graph, reqs, set())
+    allocations = planner.allocate_all(config)
 
     assert allocations[Reference('x')].cores == {'node001': {1, 2, 3, 4}}
+
+
+def test_virtual_allocation() -> None:
+    model = Model('ensemble', [Component('x', 'x', 9, ports=Ports())])
+    impl = [Implementation(Reference('x'), script='x')]
+    reqs = {
+            Reference('x'): MPICoresResReq(Reference('x'), 13)
+            }   # type: Dict[Reference, ResourceRequirements]
+    config = Configuration(model, None, impl, reqs)
+
+    res = Resources({'node000001': {1, 2, 3, 4}})
+
+    planner = Planner(res)
+    allocations = planner.allocate_all(config, virtual=True)
+
+    assert res.total_cores() == 120
+    assert allocations[Reference('x[0]')].total_cores() == 13
+    assert allocations[Reference('x[8]')].total_cores() == 13
+
+
+def test_impossible_virtual_allocation() -> None:
+    model = Model('ensemble', [Component('x', 'x', 9, ports=Ports())])
+    impl = [Implementation(Reference('x'), script='x')]
+    reqs = {
+            Reference('x'): ThreadedResReq(Reference('x'), 13)
+            }   # type: Dict[Reference, ResourceRequirements]
+    config = Configuration(model, None, impl, reqs)
+
+    res = Resources({'node000001': {1, 2, 3, 4}})
+
+    planner = Planner(res)
+    with pytest.raises(InsufficientResourcesAvailable):
+        planner.allocate_all(config, virtual=True)

@@ -11,7 +11,7 @@ from libmuscle.manager.instantiator import (
         InstantiationRequest, ProcessStatus, ShutdownRequest)
 from libmuscle.manager.qcgpj_instantiator import Process, QCGPJInstantiator
 from libmuscle.manager.run_dir import RunDir
-from libmuscle.planner.planner import ModelGraph, Planner, Resources
+from libmuscle.planner.planner import Planner, Resources
 
 
 _logger = logging.getLogger(__name__)
@@ -94,27 +94,20 @@ class InstanceManager:
 
     def start_all(self) -> None:
         """Starts all the instances of the model."""
-        model_graph = ModelGraph(self._configuration.model)
-        requirements = self._configuration.resources
-        implementations = self._configuration.implementations
-        exclusive = {
-                c for c in model_graph.components()
-                if (c.implementation and
-                    not implementations[c.implementation].can_share_resources)}
-        allocations = self._planner.allocate_all(
-                model_graph, requirements, exclusive)
-
+        allocations = self._planner.allocate_all(self._configuration)
         for instance, resources in allocations.items():
             _logger.info(f'Planned {instance} on {resources}')
 
+        components = {c.name: c for c in self._configuration.model.components}
         for instance, resources in allocations.items():
-            component = model_graph.component(instance.without_trailing_ints())
+            component = components[instance.without_trailing_ints()]
             if component.implementation is None:
                 _logger.warning(
                         f'No implementation specified for {component.name}'
                         ', not starting it.')
                 continue
-            implementation = implementations[component.implementation]
+            implementation = self._configuration.implementations[
+                    component.implementation]
             idir = self._run_dir.add_instance_dir(instance)
             workdir = idir / 'workdir'
             workdir.mkdir()
@@ -122,7 +115,8 @@ class InstanceManager:
             stderr_path = idir / 'stderr.txt'
 
             request = InstantiationRequest(
-                    instance, implementation, requirements[component.name],
+                    instance, implementation,
+                    self._configuration.resources[component.name],
                     resources, idir, workdir, stdout_path, stderr_path)
             _logger.info(f'Instantiating {instance} on {resources}')
             self._requests_out.put(request)

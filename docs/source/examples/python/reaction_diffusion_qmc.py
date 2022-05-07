@@ -6,7 +6,7 @@ import sobol_seq
 
 from libmuscle import Grid, Instance, Message
 from libmuscle.runner import run_simulation
-from ymmsl import (ComputeElement, Conduit, Configuration, Model, Operator,
+from ymmsl import (Component, Conduit, Configuration, Model, Operator,
                    Settings)
 
 
@@ -244,10 +244,10 @@ def qmc_driver() -> None:
 
 if __name__ == '__main__':
     elements = [
-            ComputeElement('qmc', 'qmc_driver'),
-            ComputeElement('rr', 'load_balancer'),
-            ComputeElement('macro', 'diffusion', [10]),
-            ComputeElement('micro', 'reaction', [10])]
+            Component('qmc', 'qmc_driver'),
+            Component('rr', 'load_balancer'),
+            Component('macro', 'diffusion', [10]),
+            Component('micro', 'reaction', [10])]
 
     conduits = [
             Conduit('qmc.parameters_out', 'rr.front_in'),

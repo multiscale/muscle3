@@ -6,7 +6,7 @@ import numpy as np
 
 from libmuscle import Grid, Instance, Message
 from libmuscle.runner import run_simulation
-from ymmsl import (ComputeElement, Conduit, Configuration, Model, Operator,
+from ymmsl import (Component, Conduit, Configuration, Model, Operator,
                    Settings)
 
 
@@ -125,8 +125,8 @@ def diffusion() -> None:
 
 if __name__ == '__main__':
     elements = [
-            ComputeElement('macro', 'diffusion'),
-            ComputeElement('micro', 'reaction')]
+            Component('macro', 'diffusion'),
+            Component('micro', 'reaction')]
 
     conduits = [
             Conduit('macro.state_out', 'micro.initial_state'),

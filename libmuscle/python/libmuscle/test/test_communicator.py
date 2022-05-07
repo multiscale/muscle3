@@ -558,6 +558,7 @@ def test_get_message(communicator, message) -> None:
             'other.in[13]') == ref_message
 
 
+@patch('libmuscle.communicator.client_types', [DirectClient])
 @patch('libmuscle.mcp.direct_client.registered_servers')
 def test_get_client(mock_servers, communicator) -> None:
     mock_servers.__contains__.return_value = True

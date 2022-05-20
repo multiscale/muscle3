@@ -6,6 +6,7 @@
 
 #include <libmuscle/mcp/server.hpp>
 
+#include <condition_variable>
 #include <thread>
 #include <netdb.h>
 

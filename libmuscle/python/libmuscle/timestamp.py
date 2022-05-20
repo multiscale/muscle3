@@ -1,7 +1,5 @@
 import datetime
 
-import google.protobuf.timestamp_pb2 as pbts
-
 
 class Timestamp:
     """A timestamp, as the number of seconds since the UNIX epoch.
@@ -22,25 +20,3 @@ class Timestamp:
         date_time = datetime.datetime.fromtimestamp(self.seconds)
         whole_part = date_time.strftime('%Y-%m-%d %H:%M:%S')
         return '%s,%03d' % (whole_part, date_time.time().microsecond / 1000)
-
-    @staticmethod
-    def from_grpc(timestamp: pbts.Timestamp) -> 'Timestamp':
-        """Creates a Timestamp from a gRPC Timestamp message.
-
-        Args:
-            timestamp: A gRPC Timestamp from a gRPC call.
-
-        Returns:
-            The same timestamp as a Timestamp object.
-        """
-        return Timestamp(timestamp.seconds + timestamp.nanos * 1e-9)
-
-    def to_grpc(self) -> pbts.Timestamp:
-        """Converts a Timestamp to the gRPC type.
-
-        Returns:
-            The same timestamp, as a gRPC object.
-        """
-        seconds = int(self.seconds)
-        nanos = int((self.seconds - seconds) * 10**9)
-        return pbts.Timestamp(seconds=seconds, nanos=nanos)

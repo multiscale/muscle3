@@ -3,7 +3,6 @@
 #include <stdexcept>
 #include <string>
 
-#include "libmuscle/operator.hpp"
 #include <ymmsl/ymmsl.hpp>
 
 

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <libmuscle/operator.hpp>
 #include <libmuscle/util.hpp>
 #include <ymmsl/ymmsl.hpp>
 

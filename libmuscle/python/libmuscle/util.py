@@ -2,22 +2,7 @@ from pathlib import Path
 import sys
 from typing import Generator, List, Optional, cast
 
-from ymmsl import Conduit, Reference
-
-import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
-
-
-def conduit_to_grpc(conduit: Conduit) -> mmp.Conduit:
-    """Converts a ymmsl.Conduit to the corresponding mmp.Conduit.
-
-    Args:
-        conduit: A conduit.
-
-    Returns:
-        The same conduit, but grpc type.
-    """
-    return mmp.Conduit(sender=str(conduit.sender),
-                       receiver=str(conduit.receiver))
+from ymmsl import Reference
 
 
 def instance_to_kernel(instance: Reference) -> Reference:

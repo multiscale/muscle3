@@ -12,7 +12,6 @@
 #include <libmuscle/communicator.cpp>
 #include <libmuscle/data.cpp>
 #include <libmuscle/endpoint.cpp>
-#include <libmuscle/operator.cpp>
 #include <libmuscle/mcp/data_pack.cpp>
 #include <libmuscle/mcp/message.cpp>
 #include <libmuscle/mcp/client.cpp>

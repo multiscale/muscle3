@@ -1,39 +1,25 @@
 #pragma once
 
 #include <libmuscle/timestamp.hpp>
-#include <muscle_manager_protocol/muscle_manager_protocol.pb.h>
+
+#include <string>
 
 
 namespace libmuscle { namespace impl {
 
 /** Log levels for MUSCLE 3.
  *
- * These match the levels in the MUSCLE Manager Protocol, and should be kept
- * identical to those. They also match the Python logging log levels, although
- * not numerically.
+ * These match the Python log levels in name and value, which is what's used
+ * in the MUSCLE Manager Protocol. So they must be kept the same or things
+ * will break.
  */
 enum class LogLevel {
-    CRITICAL = 5,
-    ERROR = 4,
-    WARNING = 3,
-    INFO = 1,
-    DEBUG = 0
+    CRITICAL = 50,
+    ERROR = 40,
+    WARNING = 30,
+    INFO = 20,
+    DEBUG = 10
 };
-
-/** Creates a log level from a gRPC-generated LogLevel.
- *
- * @param level A log level, received from gRPC.
- * @return The same log level, as a libmuscle.LogLevel.
- */
-LogLevel log_level_from_grpc(muscle_manager_protocol::LogLevel level);
-
-/** Converts the log level to the gRPC-generated type.
- *
- * @param level A log level.
- * @return The same log level, as mmp.LogLevel.
- */
-muscle_manager_protocol::LogLevel log_level_to_grpc(LogLevel level);
-
 
 /** A log message as used by MUSCLE 3.
  */
@@ -60,13 +46,6 @@ class LogMessage {
         LogMessage(
                 std::string const & instance_id, Timestamp timestamp,
                 LogLevel level, std::string const & text);
-
-        /** Convert the log message to the gRPC-generated type.
-         *
-         * @param message A log message.
-         * @return The same log message, as the gRPC type.
-         */
-        muscle_manager_protocol::LogMessage to_grpc() const;
 };
 
 } }

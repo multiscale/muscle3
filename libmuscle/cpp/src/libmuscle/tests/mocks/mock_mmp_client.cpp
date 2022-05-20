@@ -14,6 +14,8 @@ MockMMPClient::MockMMPClient(std::string const & location) {
     last_location = location;
 }
 
+void MockMMPClient::close() {}
+
 void MockMMPClient::submit_log_message(LogMessage const & message) {
     last_submitted_log_message = message;
 }

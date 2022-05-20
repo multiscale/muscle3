@@ -89,6 +89,7 @@ class Manager:
 
     def stop(self) -> None:
         """Shuts down the manager."""
+        # self._server.stop()
         self._server.stop()
         self._logger.close()
 

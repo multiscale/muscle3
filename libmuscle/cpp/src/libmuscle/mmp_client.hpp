@@ -11,8 +11,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include <libmuscle/data.hpp>
 #include <libmuscle/logging.hpp>
-#include <muscle_manager_protocol/muscle_manager_protocol.grpc.pb.h>
+#include <libmuscle/mcp/tcp_transport_client.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 
@@ -23,8 +24,7 @@ namespace libmuscle { namespace impl {
  * This class connects to the Manager and communicates with it on behalf of the
  * rest of libmuscle.
  *
- * It manages the connection, and converts between our native types and the
- * gRPC generated types.
+ * It manages the connection, and encodes and decodes MsgPack.
  */
 class MMPClient {
     public:
@@ -33,6 +33,13 @@ class MMPClient {
          * @param location A connection string of the form hostname:port.
          */
         explicit MMPClient(std::string const & location);
+
+        /** Close the connection
+         *
+         * This closes the connection. After this no other member functions
+         * can be called.
+         */
+        void close();
 
         /** Send a log message to the manager.
          *
@@ -83,7 +90,11 @@ class MMPClient {
         void deregister_instance(::ymmsl::Reference const & name);
 
     private:
-        std::unique_ptr<muscle_manager_protocol::MuscleManager::Stub> client_;
+        mcp::TcpTransportClient transport_client_;
+
+        /* Helper function that encodes/decodes and calls the manager.
+         */
+        DataConstRef call_manager_(DataConstRef const & request);
 };
 
 } }

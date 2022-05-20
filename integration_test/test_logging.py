@@ -52,6 +52,7 @@ def do_logging_test(caplog):
             assert rec.message == 'Integration testing'
             break
 
+    client.close()
     manager.stop()
 
 

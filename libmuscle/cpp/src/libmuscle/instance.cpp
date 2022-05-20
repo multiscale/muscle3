@@ -524,7 +524,7 @@ std::string Instance::Impl::extract_manager_location_(
     if (prefix != nullptr)
         return std::string(prefix);
 
-    return "localhost:9000";
+    return "tcp:default.example.com:9000";
 }
 
 /* Returns the compute element name of this instance, i.e. without the index.
@@ -823,6 +823,7 @@ void Instance::Impl::shutdown_() {
             close_ports_();
             communicator_->shutdown();
             deregister_();
+            manager_->close();
 #ifdef MUSCLE_ENABLE_MPI
         }
         mpi_barrier_.shutdown();

@@ -12,9 +12,6 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
-#include <iostream>
-#include <ostream>
-
 
 namespace {
 
@@ -22,7 +19,6 @@ namespace {
  * into a list of addresses.
  */
 std::vector<std::string> split_location(std::string const & location) {
-    std::cout << "Original location: " << location << std::endl;
     std::vector<std::string> addresses;
 
     // start at 4 to skip the initial tcp: bit
@@ -40,7 +36,6 @@ std::vector<std::string> split_location(std::string const & location) {
 
 
 int connect(std::string const & address) {
-    std::cout << "Connecting to " << address << std::endl;
     std::size_t split = address.rfind(':');
     std::string host = address.substr(0, split);
     if (host.front() == '[') {

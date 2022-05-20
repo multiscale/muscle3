@@ -11,15 +11,15 @@ def test_registration(log_file_in_tmpdir, mmp_server):
     instance_name = Reference('test_instance')
     port = Port(Reference('test_in'), Operator.S)
 
-    client.register_instance(instance_name, ['tcp://localhost:10000'],
+    client.register_instance(instance_name, ['tcp:localhost:10000'],
                              [port])
 
-    servicer = mmp_server._servicer
-    registry = servicer._MMPServicer__instance_registry
+    registry = mmp_server._handler._instance_registry
 
-    assert registry.get_locations(instance_name) == ['tcp://localhost:10000']
+    assert registry.get_locations(instance_name) == ['tcp:localhost:10000']
     assert registry.get_ports(instance_name)[0].name == 'test_in'
     assert registry.get_ports(instance_name)[0].operator == Operator.S
+    client.close()
 
 
 def test_wiring(log_file_in_tmpdir, mmp_server_process):
@@ -67,3 +67,4 @@ def test_wiring(log_file_in_tmpdir, mmp_server_process):
 
     assert peer_dims[Reference('micro')] == [10]
     assert peer_locations['micro[7]'] == ['direct:micro[7]']
+    client.close()

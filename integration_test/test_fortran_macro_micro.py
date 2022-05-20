@@ -11,8 +11,9 @@ from ymmsl import Operator
 from .conftest import skip_if_python_only
 
 
-def run_macro(instance_id: str):
-    sys.argv.append('--muscle-instance={}'.format(instance_id))
+def run_macro(instance_id: str, manager_location: str):
+    sys.argv.append(f'--muscle-instance={instance_id}')
+    sys.argv.append(f'--muscle-manager={manager_location}')
     macro()
 
 
@@ -64,10 +65,14 @@ def test_fortran_macro_micro(mmp_server_process_simple):
             'libmuscle' / 'tests')
     fortran_test_micro = fortran_test_dir / 'fortran_micro_model_test'
     micro_result = subprocess.Popen(
-            [str(fortran_test_micro), '--muscle-instance=micro'], env=env)
+            [
+                str(fortran_test_micro), '--muscle-instance=micro',
+                f'--muscle-manager={mmp_server_process_simple}'
+                ], env=env)
 
     # run macro model
-    macro_process = mp.Process(target=run_macro, args=('macro',))
+    macro_process = mp.Process(
+            target=run_macro, args=('macro', mmp_server_process_simple))
     macro_process.start()
 
     # check results

@@ -7,7 +7,7 @@ from libmuscle.mmp_client import MMPClient
 
 
 def test_registration(log_file_in_tmpdir, mmp_server):
-    client = MMPClient('localhost:9000')
+    client = MMPClient(mmp_server.get_location())
     instance_name = Reference('test_instance')
     port = Port(Reference('test_in'), Operator.S)
 
@@ -23,7 +23,8 @@ def test_registration(log_file_in_tmpdir, mmp_server):
 
 
 def test_wiring(log_file_in_tmpdir, mmp_server_process):
-    client = MMPClient('localhost:9000')
+    # mmp_server_process starts a server and returns its location
+    client = MMPClient(mmp_server_process)
 
     client.register_instance(Reference('macro'), ['direct:macro'], [])
 

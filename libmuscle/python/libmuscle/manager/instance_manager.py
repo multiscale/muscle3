@@ -108,6 +108,7 @@ class InstanceManager:
                 continue
             implementation = self._configuration.implementations[
                     component.implementation]
+            implementation.env['MUSCLE_MANAGER'] = self._manager_location
             idir = self._run_dir.add_instance_dir(instance)
             workdir = idir / 'workdir'
             workdir.mkdir()

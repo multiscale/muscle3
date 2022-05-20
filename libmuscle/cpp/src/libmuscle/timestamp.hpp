@@ -33,10 +33,8 @@ class Timestamp {
          */
         std::unique_ptr<google::protobuf::Timestamp> to_grpc() const;
 
-    private:
-        double seconds_;
-
-        friend class TestTimestamp;
+        /// Number of seconds since the UNIX epoch
+        double seconds;
 };
 
 } }

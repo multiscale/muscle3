@@ -20,13 +20,7 @@ def test_start_script(tmpdir):
 
     # find our test components and their requirements
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
-    lib_paths = [
-            cpp_build_dir / 'grpc' / 'c-ares' / 'c-ares' / 'lib',
-            cpp_build_dir / 'grpc' / 'zlib' / 'zlib' / 'lib',
-            cpp_build_dir / 'grpc' / 'openssl' / 'openssl' / 'lib',
-            cpp_build_dir / 'protobuf' / 'protobuf' / 'lib',
-            cpp_build_dir / 'grpc' / 'grpc' / 'lib',
-            cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
+    lib_paths = [cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
     ld_lib_path = ':'.join(map(str, lib_paths))
 
     cpp_test_dir = cpp_build_dir / 'libmuscle' / 'tests'

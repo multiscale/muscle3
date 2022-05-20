@@ -3,11 +3,8 @@
 #include <gtest/gtest.h>
 
 #include <libmuscle/port.hpp>
-#include <muscle_manager_protocol/muscle_manager_protocol.pb.h>
 #include <ymmsl/ymmsl.hpp>
 
-
-namespace mmp = muscle_manager_protocol;
 
 using libmuscle::impl::Port;
 using ymmsl::Identifier;

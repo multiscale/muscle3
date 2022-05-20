@@ -34,7 +34,6 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8'],
 
-    # packages=['muscle_manager', 'muscle_manager_protocol', 'libmuscle', 'libmuscle.mcp'],
     packages=_muscle3_packages,
     package_dir={
         'muscle3': 'muscle3',
@@ -48,19 +47,15 @@ setup(
     python_requires='>=3.5, <4',
     install_requires=[
         'click>=6',
-        'grpcio>=1.24.3, <2',
         'msgpack',
         'netifaces',
         'numpy>=1.12,<1.23',
-        'protobuf>=3.10.0, <3.13',
         'qcg-pilotjob==0.13',
         'typing_extensions<4',
         'ymmsl @ git+https://github.com/multiscale/ymmsl-python.git@develop#egg=ymmsl'          # Also in CI, update there as well
     ],
     extras_require={
         'dev': [
-            'grpcio-tools==1.17.1',
-            'mypy-protobuf',
             'sphinx<3.2',
             'sphinx_rtd_theme',
             'sphinx-fortran',

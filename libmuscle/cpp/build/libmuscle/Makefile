@@ -102,13 +102,9 @@ ifeq "$(filter $(MAKECMDGOALS),$(cleantargets))" ""
 
 # Dependencies
 $(info pcextra: $(PKG_CONFIG_EXTRA_DIRS))
-CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --cflags protobuf)
-CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --cflags grpc++)
 CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --cflags msgpack)
 
-LDFLAGS += -L$(CURDIR)/../muscle_manager_protocol -lmmp -L$(CURDIR)/../ymmsl -lymmsl
-LDFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs protobuf)
-LDFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs grpc++)
+LDFLAGS += -L$(CURDIR)/../ymmsl -lymmsl
 LDFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs msgpack)
 
 # Automatic header dependencies
@@ -211,7 +207,7 @@ libmuscle.pc:
 	@echo 'URL: https://muscle3.readthedocs.io' >>$@
 	@echo 'Version: $(muscle_version)' >>$@
 	@echo 'Requires: ymmsl = $(muscle_version)' >>$@
-	@echo 'Requires.private: grpc++ >= 1.24.3, protobuf >= 3.10.0, msgpack >= 3.1.0' >>$@
+	@echo 'Requires.private: msgpack >= 3.1.0' >>$@
 	@echo 'Cflags: -I$${includedir}' >>$@
 	@echo 'Libs: -L$${libdir} -lmuscle' >>$@
 
@@ -226,7 +222,7 @@ libmuscle_mpi.pc:
 	@echo 'URL: https://muscle3.readthedocs.io' >>$@
 	@echo 'Version: $(muscle_version)' >>$@
 	@echo 'Requires: ymmsl = $(muscle_version)' >>$@
-	@echo 'Requires.private: grpc++ >= 1.24.3, protobuf >= 3.10.0, msgpack >= 3.1.0' >>$@
+	@echo 'Requires.private: msgpack >= 3.1.0' >>$@
 	@echo 'Cflags: -I$${includedir} -DMUSCLE_ENABLE_MPI' >>$@
 	@echo 'Libs: -L$${libdir} -lmuscle_mpi' >>$@
 

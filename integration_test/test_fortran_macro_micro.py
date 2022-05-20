@@ -51,13 +51,7 @@ def test_fortran_macro_micro(mmp_server_process_simple):
     # create Fortran micro model
     # see libmuscle/fortran/src/libmuscle/tests/fortran_micro_model_test.f03
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
-    lib_paths = [
-            cpp_build_dir / 'grpc' / 'c-ares' / 'c-ares' / 'lib',
-            cpp_build_dir / 'grpc' / 'zlib' / 'zlib' / 'lib',
-            cpp_build_dir / 'grpc' / 'openssl' / 'openssl' / 'lib',
-            cpp_build_dir / 'protobuf' / 'protobuf' / 'lib',
-            cpp_build_dir / 'grpc' / 'grpc' / 'lib',
-            cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
+    lib_paths = [cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
     env = {
             'LD_LIBRARY_PATH': ':'.join(map(str, lib_paths))}
     fortran_test_dir = (

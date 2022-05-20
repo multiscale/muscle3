@@ -45,12 +45,12 @@ LDFLAGS += -pthread $(CURDIR)/../libmuscle_fortran.a $(CURDIR)/../../ymmsl/libym
 LDFLAGS += $(CPP_BUILD_DIR)/libmuscle/libmuscle_d.a $(CPP_BUILD_DIR)/ymmsl/libymmsl_d.a
 
 LDFLAGS2 := $(LDFLAGS)
-LDFLAGS2 += $(CURDIR)/../../../../cpp/build/muscle_manager_protocol/libmmp.a
-LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs protobuf)
-LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs grpc++)
 LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIGPATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs msgpack)
 LDFLAGS2 += $(EXTRA_LINK_DIRS)
 LDFLAGS2 += -lstdc++
+
+LINK_DEPS = $(CURDIR)/../libmuscle_fortran.a $(CURDIR)/../../ymmsl/libymmsl_fortran.a
+LINK_DEPS += $(CPP_BUILD_DIR)/libmuscle/libmuscle_d.a $(CPP_BUILD_DIR)/ymmsl/libymmsl_d.a
 
 endif
 
@@ -60,10 +60,10 @@ assert.o: $(libmuscle_testdir)/assert.f03
 %.o: $(libmuscle_testdir)/%.f03 assert.o
 	$(FC) $(FFLAGS) $(DEBUGFLAGS) -c $< -o $@
 
-test_%: test_%.o assert.o
+test_%: test_%.o assert.o $(LINK_DEPS)
 	$(FC) $(FFLAGS) $(DEBUGFLAGS) $^ -o $@ $(LDFLAGS2)
 
-%_test: %_test.o assert.o
+%_test: %_test.o assert.o $(LINK_DEPS)
 	$(FC) $(FFLAGS) $(DEBUGFLAGS) $^ -o $@ $(LDFLAGS2)
 
 

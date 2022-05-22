@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <msgpack.hpp>
 
-#include <libmuscle/mcp/message.hpp>
+#include <libmuscle/mpp_message.hpp>
 #include <libmuscle/mcp/tcp_transport_server.hpp>
 #include <libmuscle/mpp_client.hpp>
 
@@ -16,7 +16,7 @@
 
 using libmuscle::impl::Data;
 using libmuscle::impl::DataConstRef;
-using libmuscle::impl::mcp::Message;
+using libmuscle::impl::MPPMessage;
 using libmuscle::impl::MPPClient;
 using libmuscle::impl::mcp::TcpTransportServer;
 using libmuscle::impl::PostOffice;
@@ -33,7 +33,7 @@ TEST(test_tcp_communication, send_receive) {
     PostOffice post_office;
     Reference receiver("test_receiver.port");
 
-    Message msg(
+    MPPMessage msg(
             "test_sender.port", receiver, 10,
             0.0, 1.0,
             Data::dict("par1", 13),
@@ -45,7 +45,7 @@ TEST(test_tcp_communication, send_receive) {
     std::vector<std::string> locations = {server.get_location()};
     MPPClient client(locations);
     DataConstRef bytes = client.receive(receiver);
-    Message m = Message::from_bytes(bytes);
+    MPPMessage m = MPPMessage::from_bytes(bytes);
 
     ASSERT_EQ(m.sender, "test_sender.port");
     ASSERT_EQ(m.receiver, "test_receiver.port");

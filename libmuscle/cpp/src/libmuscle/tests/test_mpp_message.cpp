@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <msgpack.hpp>
 
-#include <libmuscle/mcp/message.hpp>
+#include <libmuscle/mpp_message.hpp>
 
 #include <libmuscle/data.hpp>
 #include <libmuscle/mcp/data_pack.hpp>
@@ -12,7 +12,7 @@
 
 
 using libmuscle::impl::Data;
-using libmuscle::impl::mcp::Message;
+using libmuscle::impl::MPPMessage;
 using ymmsl::Reference;
 
 
@@ -25,7 +25,7 @@ TEST(test_mcp_message, create_mcp_message) {
     Data test("test");
     Data abc("abc");
 
-    Message m(
+    MPPMessage m(
             Reference("sender.port"), Reference("receiver.port"),
             10,
             100.1, 101.0,
@@ -44,7 +44,7 @@ TEST(test_mcp_message, create_mcp_message) {
 TEST(test_mcp_message, create_mcp_message_minimal) {
     Data test, abc;
 
-    Message m(
+    MPPMessage m(
             Reference("sender.port"), Reference("receiver.port"),
             {},
             100.1, {},
@@ -76,7 +76,7 @@ TEST(test_mcp_message, from_bytes) {
 
     Data msg_bytes = Data::byte_array(sbuf.data(), sbuf.size());
 
-    auto m = Message::from_bytes(msg_bytes);
+    auto m = MPPMessage::from_bytes(msg_bytes);
 
     ASSERT_EQ(m.sender, "sender.port");
     ASSERT_EQ(m.receiver, "receiver.port");

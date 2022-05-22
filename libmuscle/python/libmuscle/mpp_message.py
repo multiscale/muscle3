@@ -141,7 +141,7 @@ def _ext_decoder(code: int, data: bytes) -> msgpack.ExtType:
     return msgpack.ExtType(code, data)
 
 
-class Message:
+class MPPMessage:
     """A MUSCLE Communication Protocol message.
 
     Messages carry the identity of their sender and receiver, so that
@@ -153,7 +153,7 @@ class Message:
                  timestamp: float, next_timestamp: Optional[float],
                  settings_overlay: Settings, data: Any
                  ) -> None:
-        """Create an MCPMessage.
+        """Create an MPPMessage.
 
         Senders and receivers are refered to by a Reference, which
         contains Instance[InstanceNumber].Port[Slot].
@@ -183,8 +183,8 @@ class Message:
             self.data = data
 
     @staticmethod
-    def from_bytes(message: bytes) -> 'Message':
-        """Create an MCP Message from an encoded buffer.
+    def from_bytes(message: bytes) -> 'MPPMessage':
+        """Create an MPP Message from an encoded buffer.
 
         Args:
             message: MessagePack encoded message data.
@@ -199,8 +199,9 @@ class Message:
         settings_overlay = message_dict["settings_overlay"]
 
         data = message_dict["data"]
-        return Message(sender, receiver, port_length, timestamp,
-                       next_timestamp, settings_overlay, data)
+        return MPPMessage(
+                sender, receiver, port_length, timestamp, next_timestamp,
+                settings_overlay, data)
 
     def encoded(self) -> bytes:
         """Encode the message and return as a bytes buffer.

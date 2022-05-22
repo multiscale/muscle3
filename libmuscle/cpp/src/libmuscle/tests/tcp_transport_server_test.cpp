@@ -3,7 +3,7 @@
  */
 #include <libmuscle/data.hpp>
 #include <libmuscle/mcp/data_pack.hpp>
-#include <libmuscle/mcp/message.hpp>
+#include <libmuscle/mpp_message.hpp>
 #include <libmuscle/mcp/tcp_transport_server.hpp>
 #include <libmuscle/post_office.hpp>
 #include <ymmsl/ymmsl.hpp>
@@ -19,7 +19,7 @@
 using libmuscle::impl::PostOffice;
 using libmuscle::impl::Data;
 using libmuscle::impl::DataConstRef;
-using libmuscle::impl::mcp::Message;
+using libmuscle::impl::MPPMessage;
 using libmuscle::impl::mcp::TcpTransportServer;
 using ymmsl::Reference;
 using ymmsl::Settings;
@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
 
     auto data_dict = Data::dict("var1", 1, "var2", 2.0, "var3", "3");
 
-    Message msg(
+    MPPMessage msg(
             "test_sender.port", receiver, 10,
             0.0, 1.0,
             overlay_settings,

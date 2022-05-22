@@ -11,8 +11,8 @@
 #include <libmuscle/util.hpp>
 #include <libmuscle/data.hpp>
 #include <libmuscle/mcp/data_pack.hpp>
-#include <libmuscle/mcp/message.hpp>
 #include <libmuscle/mcp/protocol.hpp>
+#include <libmuscle/mpp_message.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 
@@ -22,7 +22,7 @@ using libmuscle::impl::Optional;
 using libmuscle::impl::Outbox;
 using libmuscle::impl::PostOffice;
 using libmuscle::impl::RequestType;
-using libmuscle::impl::mcp::Message;
+using libmuscle::impl::MPPMessage;
 using ymmsl::Reference;
 
 
@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
 }
 
 std::unique_ptr<DataConstRef> make_message() {
-    Message msg(
+    MPPMessage msg(
             "test_sender.port", "test_receiver.port",
             Optional<int>(),
             0.0, 1.0,

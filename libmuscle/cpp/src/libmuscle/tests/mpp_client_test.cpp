@@ -3,7 +3,7 @@
  */
 #include <libmuscle/data.hpp>
 #include <libmuscle/mcp/data_pack.hpp>
-#include <libmuscle/mcp/message.hpp>
+#include <libmuscle/mpp_message.hpp>
 #include <libmuscle/mpp_client.hpp>
 #include <ymmsl/ymmsl.hpp>
 
@@ -14,7 +14,7 @@
 
 
 using libmuscle::impl::DataConstRef;
-using libmuscle::impl::mcp::Message;
+using libmuscle::impl::MPPMessage;
 using libmuscle::impl::MPPClient;
 using libmuscle::impl::mcp::unpack_data;
 using ymmsl::Reference;
@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
     // receive a message
     Reference receiver("test_receiver.test_port2");
     DataConstRef bytes = client.receive(receiver);
-    Message message = Message::from_bytes(bytes);
+    MPPMessage message = MPPMessage::from_bytes(bytes);
 
     // check message
     assert(message.sender == Reference("test_sender.test_port"));

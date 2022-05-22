@@ -10,7 +10,7 @@ from ymmsl import (Identifier, Operator, SettingValue, Port, Reference,
 from libmuscle.communicator import Communicator, Message
 from libmuscle.settings_manager import SettingsManager
 from libmuscle.logging_handler import MuscleManagerHandler
-from libmuscle.mcp.message import ClosePort
+from libmuscle.mpp_message import ClosePort
 from libmuscle.mmp_client import MMPClient
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEventType

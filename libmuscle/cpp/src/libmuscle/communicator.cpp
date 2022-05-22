@@ -3,7 +3,7 @@
 #include <libmuscle/close_port.hpp>
 #include <libmuscle/data.hpp>
 #include <libmuscle/mcp/ext_types.hpp>
-#include <libmuscle/mcp/message.hpp>
+#include <libmuscle/mpp_message.hpp>
 #include <libmuscle/mcp/tcp_transport_server.hpp>
 #include <libmuscle/mpp_client.hpp>
 
@@ -129,15 +129,15 @@ void Communicator::send_message(
     if (ports_.at(port_name).is_resizable())
         port_length = ports_.at(port_name).get_length();
 
-    mcp::Message mcp_message(
+    MPPMessage mpp_message(
             snd_endpoint.ref(), recv_endpoint.ref(),
             port_length, message.timestamp(), Optional<double>(),
             settings_overlay, message.data());
 
     if (message.has_next_timestamp())
-        mcp_message.next_timestamp = message.next_timestamp();
+        mpp_message.next_timestamp = message.next_timestamp();
 
-    auto message_bytes = std::make_unique<DataConstRef>(mcp_message.encoded());
+    auto message_bytes = std::make_unique<DataConstRef>(mpp_message.encoded());
     post_office_.deposit(recv_endpoint.ref(), std::move(message_bytes));
 
     // TODO: stop and complete profile event
@@ -180,20 +180,20 @@ Message Communicator::receive_message(
     Endpoint snd_endpoint = peer_manager_->get_peer_endpoint(
             recv_endpoint.port, slot_list);
     MPPClient & client = get_client_(snd_endpoint.instance());
-    auto mcp_message = mcp::Message::from_bytes(
+    auto mpp_message = MPPMessage::from_bytes(
             client.receive(recv_endpoint.ref()));
 
-    Settings overlay_settings(mcp_message.settings_overlay.as<Settings>());
+    Settings overlay_settings(mpp_message.settings_overlay.as<Settings>());
 
-    if (mcp_message.port_length.is_set())
+    if (mpp_message.port_length.is_set())
         if (port.is_resizable())
-            port.set_length(mcp_message.port_length.get());
+            port.set_length(mpp_message.port_length.get());
 
     Message message(
-            mcp_message.timestamp, mcp_message.data, overlay_settings);
+            mpp_message.timestamp, mpp_message.data, overlay_settings);
 
-    if (mcp_message.next_timestamp.is_set())
-        message.set_next_timestamp(mcp_message.next_timestamp.get());
+    if (mpp_message.next_timestamp.is_set())
+        message.set_next_timestamp(mpp_message.next_timestamp.get());
 
     if (is_close_port(message.data())) {
         if (slot.is_set())

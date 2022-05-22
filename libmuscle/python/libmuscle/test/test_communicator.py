@@ -1,5 +1,5 @@
 from libmuscle.communicator import Communicator, Endpoint, Message
-from libmuscle.mcp.message import ClosePort, Message as MCPMessage
+from libmuscle.mpp_message import ClosePort, MPPMessage
 from libmuscle.port import Port
 
 from ymmsl import Conduit, Identifier, Operator, Reference, Settings
@@ -275,7 +275,7 @@ def test_send_message(communicator, message) -> None:
     assert 'other.in[13]' in communicator._post_office._outboxes
     msg_bytes = communicator._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
-    msg = MCPMessage.from_bytes(msg_bytes)
+    msg = MPPMessage.from_bytes(msg_bytes)
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
     assert msg.timestamp == 0.0
@@ -300,7 +300,7 @@ def test_send_msgpack(communicator, message2) -> None:
     assert 'other.in[13]' in communicator._post_office._outboxes
     msg_bytes = communicator._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
-    msg = MCPMessage.from_bytes(msg_bytes)
+    msg = MPPMessage.from_bytes(msg_bytes)
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
     assert msg.settings_overlay == Settings()
@@ -314,7 +314,7 @@ def test_send_message_with_slot(communicator2, message) -> None:
         communicator2._post_office._outboxes
     msg_bytes = communicator2._post_office._outboxes[
             'kernel[13].in']._Outbox__queue.get()
-    msg = MCPMessage.from_bytes(msg_bytes)
+    msg = MPPMessage.from_bytes(msg_bytes)
     assert msg.sender == 'other.out[13]'
     assert msg.receiver == 'kernel[13].in'
     assert msg.settings_overlay == Settings()
@@ -331,7 +331,7 @@ def test_send_message_resizable(communicator3, message) -> None:
     assert 'other.in[13]' in communicator3._post_office._outboxes
     msg_bytes = communicator3._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
-    msg = MCPMessage.from_bytes(msg_bytes)
+    msg = MPPMessage.from_bytes(msg_bytes)
     assert msg.sender == 'kernel.out[13]'
     assert msg.receiver == 'other.in[13]'
     assert msg.port_length == 20
@@ -344,7 +344,7 @@ def test_send_message_with_settings(communicator, message) -> None:
     assert 'other.in[13]' in communicator._post_office._outboxes
     msg_bytes = communicator._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
-    msg = MCPMessage.from_bytes(msg_bytes)
+    msg = MPPMessage.from_bytes(msg_bytes)
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
     assert msg.settings_overlay.as_ordered_dict() == {'test2': 'testing'}
@@ -359,7 +359,7 @@ def test_send_settings(communicator, message) -> None:
     assert 'other.in[13]' in communicator._post_office._outboxes
     msg_bytes = communicator._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
-    msg = MCPMessage.from_bytes(msg_bytes)
+    msg = MPPMessage.from_bytes(msg_bytes)
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
     assert msg.settings_overlay == Settings()
@@ -372,7 +372,7 @@ def test_close_port(communicator) -> None:
     assert 'other.in[13]' in communicator._post_office._outboxes
     msg_bytes = communicator._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
-    msg = MCPMessage.from_bytes(msg_bytes)
+    msg = MPPMessage.from_bytes(msg_bytes)
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
     assert msg.timestamp == float('inf')
@@ -383,7 +383,7 @@ def test_close_port(communicator) -> None:
 
 def test_receive_message(communicator) -> None:
     client_mock = MagicMock()
-    client_mock.receive.return_value = MCPMessage(
+    client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
             None, 0.0, None, Settings({'test1': 12}),
             b'test').encoded()
@@ -422,7 +422,7 @@ def test_receive_on_invalid_port(communicator) -> None:
 
 def test_receive_msgpack(communicator) -> None:
     client_mock = MagicMock()
-    client_mock.receive.return_value = MCPMessage(
+    client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
             None, 0.0, None, Settings({'test1': 12}),
             {'test': 13}).encoded()
@@ -439,7 +439,7 @@ def test_receive_msgpack(communicator) -> None:
 
 def test_receive_with_slot(communicator2) -> None:
     client_mock = MagicMock()
-    client_mock.receive.return_value = MCPMessage(
+    client_mock.receive.return_value = MPPMessage(
             Reference('kernel[13].out'), Reference('other.in[13]'),
             None, 0.0, None, Settings({'test': 'testing'}),
             b'test').encoded()
@@ -457,7 +457,7 @@ def test_receive_with_slot(communicator2) -> None:
 
 def test_receive_message_resizable(communicator3) -> None:
     client_mock = MagicMock()
-    client_mock.receive.return_value = MCPMessage(
+    client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel.in[13]'),
             20, 0.0, None, Settings({'test': 'testing'}),
             b'test').encoded()
@@ -475,7 +475,7 @@ def test_receive_message_resizable(communicator3) -> None:
 
 def test_receive_with_settings(communicator) -> None:
     client_mock = MagicMock()
-    client_mock.receive.return_value = MCPMessage(
+    client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
             None, 0.0, None, Settings({'test2': 3.1}),
             b'test').encoded()
@@ -493,7 +493,7 @@ def test_receive_with_settings(communicator) -> None:
 
 def test_receive_msgpack_with_slot_and_settings(communicator2) -> None:
     client_mock = MagicMock()
-    client_mock.receive.return_value = MCPMessage(
+    client_mock.receive.return_value = MPPMessage(
             Reference('kernel[13].out'), Reference('other.in[13]'),
             None, 0.0, 1.0,
             Settings({'test': 'testing'}), 'test').encoded()
@@ -511,7 +511,7 @@ def test_receive_msgpack_with_slot_and_settings(communicator2) -> None:
 
 def test_receive_settings(communicator) -> None:
     client_mock = MagicMock()
-    client_mock.receive.return_value = MCPMessage(
+    client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
             None, 0.0, None, Settings({'test1': 12}),
             Settings({'test': 13})).encoded()
@@ -529,7 +529,7 @@ def test_receive_settings(communicator) -> None:
 
 def test_receive_close_port(communicator) -> None:
     client_mock = MagicMock()
-    client_mock.receive.return_value = MCPMessage(
+    client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
             None, 0.0, None, Settings(), ClosePort()).encoded()
     get_client_mock = MagicMock(return_value=client_mock)
@@ -543,7 +543,7 @@ def test_receive_close_port(communicator) -> None:
 
 def test_get_message(communicator, message) -> None:
     communicator.send_message('out', message)
-    ref_message = MCPMessage(
+    ref_message = MPPMessage(
             Reference('kernel[13].out'), Reference('other.in[13]'),
             None, 0.0, None, Settings(), b'test').encoded()
     assert communicator._post_office.get_message(

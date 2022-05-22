@@ -5,16 +5,16 @@
 #include <ymmsl/ymmsl.hpp>
 
 
-namespace libmuscle { namespace impl { namespace mcp {
+namespace libmuscle { namespace impl {
 
-/** A MUSCLE Communication Protocol message.
+/** A MUSCLE Peer Protocol message.
  *
  * Messages carry the identity of their sender and receiver, so that they can
  * be routed by a MUSCLE Transport Overlay when we get to multi-site running in
  * the future.
  */
-struct Message {
-    /** Create an MCP Message.
+struct MPPMessage {
+    /** Create an MPP Message.
      *
      * Senders and receivers are referred to by a Reference, which
      * contains Instance[InstanceNumber].Port[Slot].
@@ -28,7 +28,7 @@ struct Message {
      * This is the on-the-wire object, the user-facing one is in
      * libmuscle/communicator.hpp.
      */
-    Message(
+    MPPMessage(
             ::ymmsl::Reference const & sender, ::ymmsl::Reference const & receiver,
             ::libmuscle::impl::Optional<int> port_length,
             double timestamp, ::libmuscle::impl::Optional<double> next_timestamp,
@@ -39,7 +39,7 @@ struct Message {
      *
      * @param data A DataConstRef containing a byte array with encoded data.
      */
-    static Message from_bytes(DataConstRef const & data);
+    static MPPMessage from_bytes(DataConstRef const & data);
 
     /** Encode the message and return as a byte buffer.
      *
@@ -56,5 +56,5 @@ struct Message {
     DataConstRef data;
 };
 
-} } }
+} }
 

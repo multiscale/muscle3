@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 import msgpack
 
 from libmuscle.mcp.tcp_transport_server import TcpTransportServer
-from libmuscle.mcp.message import Message
+from libmuscle.mpp_message import MPPMessage
 from libmuscle.mcp.protocol import RequestType
 
 from ymmsl import Reference, Settings
@@ -19,7 +19,7 @@ def tcp_server_process(control_pipe):
     settings = Settings({'test_setting': 42})
     data = {'test1': 10, 'test2': [None, True, 'testing']}
     receiver = Reference('test_receiver.test_port2')
-    message = Message(
+    message = MPPMessage(
             Reference('test_sender.test_port'),
             receiver,
             10, 1.0, 2.0, settings, data).encoded()

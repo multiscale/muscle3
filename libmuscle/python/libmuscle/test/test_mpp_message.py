@@ -6,7 +6,7 @@ import numpy as np
 from ymmsl import Reference, Settings
 
 from libmuscle.grid import Grid
-from libmuscle.mcp.message import Message
+from libmuscle.mpp_message import MPPMessage
 
 
 def test_create() -> None:
@@ -16,8 +16,9 @@ def test_create() -> None:
     next_timestamp = 11.0
     settings_overlay = (6789).to_bytes(2, 'little', signed=True)
     data = (12345).to_bytes(2, 'little', signed=True)
-    msg = Message(sender, receiver, None, timestamp, next_timestamp,
-                  settings_overlay, data)
+    msg = MPPMessage(
+            sender, receiver, None, timestamp, next_timestamp,
+            settings_overlay, data)
     assert msg.sender == sender
     assert msg.receiver == receiver
     assert msg.port_length is None
@@ -40,8 +41,9 @@ def test_grid_encode() -> None:
               [10.0, 11.0, 12.0]]], np.float32)
 
     grid = Grid(array, ['x', 'y', 'z'])
-    msg = Message(sender, receiver, None, timestamp, next_timestamp,
-                  Settings(), grid)
+    msg = MPPMessage(
+            sender, receiver, None, timestamp, next_timestamp, Settings(),
+            grid)
 
     wire_data = msg.encoded()
     mcp_decoded = msgpack.unpackb(wire_data, raw=False)
@@ -88,7 +90,7 @@ def test_grid_decode() -> None:
 
     wire_data = msgpack.packb(msg_dict, use_bin_type=True)
 
-    msg = Message.from_bytes(wire_data)
+    msg = MPPMessage.from_bytes(wire_data)
 
     assert isinstance(msg.data, Grid)
     assert msg.data.array.dtype == np.int32
@@ -103,7 +105,7 @@ def test_grid_decode() -> None:
     grid_data = msgpack.packb(grid_dict, use_bin_type=True)
     msg_dict['data'] = msgpack.ExtType(2, grid_data)
     wire_data = msgpack.packb(msg_dict, use_bin_type=True)
-    msg = Message.from_bytes(wire_data)
+    msg = MPPMessage.from_bytes(wire_data)
 
     assert isinstance(msg.data, Grid)
     assert msg.data.array.dtype == np.int32
@@ -131,11 +133,12 @@ def test_grid_roundtrip() -> None:
         assert array[0, 0, 0] == 1.0
 
         grid = Grid(array, ['x', 'y', 'z'])
-        msg = Message(sender, receiver, None, timestamp, next_timestamp,
-                      Settings(), grid)
+        msg = MPPMessage(
+                sender, receiver, None, timestamp, next_timestamp, Settings(),
+                grid)
 
         wire_data = msg.encoded()
-        msg_out = Message.from_bytes(wire_data)
+        msg_out = MPPMessage.from_bytes(wire_data)
 
         assert isinstance(msg_out.data, Grid)
         grid_out = msg_out.data
@@ -164,11 +167,12 @@ def test_non_contiguous_grid_roundtrip() -> None:
     assert array.imag[0, 0, 0] == 0.125
 
     grid = Grid(array.real, ['a', 'b', 'c'])
-    msg = Message(sender, receiver, None, timestamp, next_timestamp,
-                  Settings(), grid)
+    msg = MPPMessage(
+            sender, receiver, None, timestamp, next_timestamp, Settings(),
+            grid)
 
     wire_data = msg.encoded()
-    msg_out = Message.from_bytes(wire_data)
+    msg_out = MPPMessage.from_bytes(wire_data)
 
     assert isinstance(msg_out.data, Grid)
     grid_out = msg_out.data

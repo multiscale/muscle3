@@ -3,7 +3,7 @@ import subprocess
 
 from libmuscle.mpp_client import MPPClient
 from libmuscle.mcp.tcp_transport_client import TcpTransportClient
-from libmuscle.mcp.message import Message
+from libmuscle.mpp_message import MPPMessage
 
 from ymmsl import Reference, Settings
 
@@ -32,7 +32,7 @@ def test_cpp_tcp_server(log_file_in_tmpdir):
     assert TcpTransportClient.can_connect_to(location)
 
     client = MPPClient([location])
-    msg = Message.from_bytes(client.receive(Reference('test_receiver.port')))
+    msg = MPPMessage.from_bytes(client.receive(Reference('test_receiver.port')))
     client.close()
 
     # assert stuff

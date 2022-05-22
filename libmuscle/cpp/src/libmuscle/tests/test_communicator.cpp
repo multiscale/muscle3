@@ -13,7 +13,7 @@
 #include <libmuscle/data.cpp>
 #include <libmuscle/endpoint.cpp>
 #include <libmuscle/mcp/data_pack.cpp>
-#include <libmuscle/mcp/message.cpp>
+#include <libmuscle/mpp_message.cpp>
 #include <libmuscle/mcp/tcp_transport_client.cpp>
 #include <libmuscle/mcp/tcp_util.cpp>
 #include <libmuscle/mcp/transport_client.cpp>

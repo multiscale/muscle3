@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libmuscle/mcp/message.hpp>
+#include <libmuscle/mpp_message.hpp>
 
 #include <ymmsl/ymmsl.hpp>
 
@@ -27,7 +27,7 @@ class MockMPPClient {
         static void reset();
 
         static int num_constructed;
-        static mcp::Message next_receive_message;
+        static MPPMessage next_receive_message;
         static ::ymmsl::Reference last_receiver;
 
     private:

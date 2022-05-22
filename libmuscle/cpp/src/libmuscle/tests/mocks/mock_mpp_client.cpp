@@ -43,7 +43,7 @@ Settings MockMPPClient::make_overlay_() {
     return s;
 }
 
-mcp::Message MockMPPClient::next_receive_message(
+MPPMessage MockMPPClient::next_receive_message(
         "test.out", "test2.in", 0, 0.0, 1.0, make_overlay_(), Data::dict("test1", 12));
 
 Reference MockMPPClient::last_receiver("_none");

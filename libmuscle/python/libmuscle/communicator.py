@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple, cast
 from ymmsl import Conduit, Identifier, Operator, Reference, Settings
 
 from libmuscle.endpoint import Endpoint
-from libmuscle.mcp.message import ClosePort, Message as MCPMessage
+from libmuscle.mpp_message import ClosePort, MPPMessage
 from libmuscle.mpp_client import MPPClient
 from libmuscle.mcp.transport_server import TransportServer
 from libmuscle.mcp.type_registry import transport_server_types
@@ -216,7 +216,7 @@ class Communicator:
         if self._ports[port_name].is_resizable():
             port_length = self._ports[port_name].get_length()
 
-        mcp_message = MCPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
+        mcp_message = MPPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
                                  port_length,
                                  message.timestamp, message.next_timestamp,
                                  cast(Settings, message.settings),
@@ -293,7 +293,7 @@ class Communicator:
                 recv_endpoint.port, slot_list)
         client = self.__get_client(snd_endpoint.instance())
         mcp_message_bytes = client.receive(recv_endpoint.ref())
-        mcp_message = MCPMessage.from_bytes(mcp_message_bytes)
+        mcp_message = MPPMessage.from_bytes(mcp_message_bytes)
 
         if mcp_message.port_length is not None:
             if port.is_resizable():

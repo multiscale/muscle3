@@ -1,4 +1,4 @@
-#include <libmuscle/mcp/message.hpp>
+#include <libmuscle/mpp_message.hpp>
 #include <libmuscle/mcp/data_pack.hpp>
 #include <ymmsl/identity.hpp>
 
@@ -8,9 +8,9 @@
 #include <utility>
 
 
-namespace libmuscle { namespace impl { namespace mcp {
+namespace libmuscle { namespace impl {
 
-Message::Message(
+MPPMessage::MPPMessage(
             ::ymmsl::Reference const & sender,
             ::ymmsl::Reference const & receiver,
             ::libmuscle::impl::Optional<int> port_length,
@@ -27,10 +27,10 @@ Message::Message(
         , data(data)
     {}
 
-Message Message::from_bytes(DataConstRef const & data) {
+MPPMessage MPPMessage::from_bytes(DataConstRef const & data) {
     // decode
     auto zone = std::make_shared<msgpack::zone>();
-    DataConstRef dict = unpack_data(zone, data.as_byte_array(), data.size());
+    DataConstRef dict = mcp::unpack_data(zone, data.as_byte_array(), data.size());
 
     // create message
     libmuscle::impl::Optional<int> port_length;
@@ -41,7 +41,7 @@ Message Message::from_bytes(DataConstRef const & data) {
     if (dict["next_timestamp"].is_a<double>())
         next_timestamp = dict["next_timestamp"].as<double>();
 
-    return Message(
+    return MPPMessage(
             dict["sender"].as<std::string>(),
             dict["receiver"].as<std::string>(),
             port_length,
@@ -51,7 +51,7 @@ Message Message::from_bytes(DataConstRef const & data) {
             dict["data"]);
 }
 
-DataConstRef Message::encoded() const {
+DataConstRef MPPMessage::encoded() const {
     Data port_length_data;
     if (port_length.is_set())
         port_length_data = port_length.get();
@@ -79,5 +79,5 @@ DataConstRef Message::encoded() const {
     return bytes;
 }
 
-} } }
+} }
 

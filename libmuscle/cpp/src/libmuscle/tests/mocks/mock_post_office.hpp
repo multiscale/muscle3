@@ -3,7 +3,7 @@
 #include <ymmsl/ymmsl.hpp>
 
 #include <libmuscle/data.hpp>
-#include <libmuscle/mcp/message.hpp>
+#include <libmuscle/mpp_message.hpp>
 #include <libmuscle/mcp/transport_server.hpp>
 #include <libmuscle/outbox.hpp>
 
@@ -31,7 +31,7 @@ class MockPostOffice : public mcp::RequestHandler {
         static void reset();
 
         static ymmsl::Reference last_receiver;
-        static std::unique_ptr<mcp::Message> last_message;
+        static std::unique_ptr<MPPMessage> last_message;
 };
 
 using PostOffice = MockPostOffice;

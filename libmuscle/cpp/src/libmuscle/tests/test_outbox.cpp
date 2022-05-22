@@ -6,14 +6,14 @@
 
 #include <libmuscle/util.hpp>
 #include <libmuscle/data.hpp>
-#include <libmuscle/mcp/message.hpp>
+#include <libmuscle/mpp_message.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 
 using libmuscle::impl::DataConstRef;
 using libmuscle::impl::Optional;
 using libmuscle::impl::Outbox;
-using libmuscle::impl::mcp::Message;
+using libmuscle::impl::MPPMessage;
 using ymmsl::Reference;
 
 
@@ -31,7 +31,7 @@ TEST(libmuscle_outbox, test_create_outbox) {
 TEST(libmuscle_outbox, test_deposit_retrieve_message) {
     Outbox box;
 
-    Message message(
+    MPPMessage message(
             Reference("sender.out"), Reference("receiver.in"),
             Optional<int>(),
             0.0, 1.0,

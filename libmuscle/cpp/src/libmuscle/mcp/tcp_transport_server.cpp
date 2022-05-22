@@ -203,6 +203,7 @@ class TcpTransportServerWorker {
                         ::close(polled_fd.fd);
                         std::lock_guard<std::mutex> lock(mutex_);
                         connections_.erase(connections_.begin() + j);
+                        connections_changed_ = true;
                     }
                 }
             }

@@ -10,9 +10,6 @@
 #include <unistd.h>
 #include <unordered_map>
 
-#include <iostream>
-#include <ostream>
-
 
 using namespace std::string_literals;
 
@@ -108,12 +105,10 @@ class TcpTransportServerWorker {
                 std::size_t i = 0;
                 for (auto & conn: connections_) {
                     if (conn.response_fd != -1) {
-                        std::cout << i << ": response" << std::endl;
                         polled_fds_[i].fd = conn.response_fd;
                         polled_fd_types_[i] = FdType_::response;
                     }
                     else {
-                        std::cout << i << ": request" << std::endl;
                         polled_fds_[i].fd = conn.request_fd;
                         polled_fd_types_[i] = FdType_::request;
                     }
@@ -144,17 +139,14 @@ class TcpTransportServerWorker {
                             req_buf_.resize(length);
                             recv_all(polled_fd.fd, req_buf_.data(), length);
 
-                            std::cout << "Received request" << std::endl;
                             int res_fd = handler_.handle_request(req_buf_.data(), length, res_buf_);
                             if (res_fd < 0) {
                                 // got a response immediately, send it
-                                std::cout << "Got immediate response" << std::endl;
                                 send_response_(polled_fd.fd);
                             }
                             else {
                                 // response not yet available, wait for it
                                 std::lock_guard<std::mutex> lock(mutex_);
-                                std::cout << "Got fd " << res_fd << std::endl;
                                 connections_[i].response_fd = res_fd;
                                 connections_changed_ = true;
                             }
@@ -165,13 +157,10 @@ class TcpTransportServerWorker {
                         }
                     }
                     else {  // response ready
-                        std::cout << "Reading dummy byte" << std::endl;
                         char dummy;
                         read(polled_fd.fd, &dummy, 1);
 
-                        std::cout << "Getting response" << std::endl;
                         handler_.get_response(polled_fd.fd, res_buf_);
-                        std::cout << "Sending response" << std::endl;
 
                         int fd;
                         {
@@ -208,7 +197,6 @@ class TcpTransportServerWorker {
         void remove_closed_ports_() {
             for (std::size_t i = polled_fds_.size(); i > 0; --i) {
                 std::size_t j = i - 1;
-                std::cout << "Check remove " << j << ": " << int(polled_fd_types_[j]) << ", " << (polled_fds_[j].revents & POLLHUP) << std::endl;
                 if (polled_fd_types_[j] == FdType_::request) {
                     auto const & polled_fd = polled_fds_[j];
                     if (polled_fd.revents & POLLHUP) {
@@ -474,11 +462,9 @@ void TcpTransportServer::server_thread_(TcpTransportServer * self) {
         }
     }
 
-    std::cout << "Closing sockets" << std::endl;
     for (int socket_fd: socket_fds)
         ::close(socket_fd);
 
-    std::cout << "Shutting down workers" << std::endl;
     for (auto & worker: workers)
         worker->shutdown();
 }

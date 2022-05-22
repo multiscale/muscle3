@@ -3,8 +3,6 @@ from unittest.mock import MagicMock
 import pytest
 from ymmsl import Reference
 
-from libmuscle.mcp.direct_server import DirectServer
-from libmuscle.mcp.tcp_server import TcpServer
 from libmuscle.mcp.tcp_transport_server import TcpTransportServer
 from libmuscle.mcp.message import Message
 from libmuscle.outbox import Outbox
@@ -25,18 +23,6 @@ def post_office(receiver):
             return self.outboxes[receiver].retrieve()
 
     return MockPO()
-
-
-@pytest.fixture
-def direct_server(post_office):
-    return DirectServer('test_sender', post_office)
-
-
-@pytest.fixture
-def tcp_server(post_office):
-    server = TcpServer('test_sender', post_office)
-    yield server
-    server.close()
 
 
 @pytest.fixture

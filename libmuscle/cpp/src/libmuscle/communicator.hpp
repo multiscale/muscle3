@@ -4,11 +4,11 @@
 #include LIBMUSCLE_MOCK_COMMUNICATOR
 #else
 
-#include <libmuscle/mcp/client.hpp>
 #include <libmuscle/data.hpp>
 #include <libmuscle/logger.hpp>
-#include <libmuscle/mcp/server.hpp>
+#include <libmuscle/mcp/transport_server.hpp>
 #include <libmuscle/message.hpp>
+#include <libmuscle/mpp_client.hpp>
 #include <libmuscle/peer_manager.hpp>
 #include <libmuscle/port.hpp>
 #include <libmuscle/ports_description.hpp>
@@ -178,7 +178,7 @@ class Communicator {
         Ports_ ports_from_conduits_(
                 std::vector<ymmsl::Conduit> const & conduits) const;
         Port settings_in_port_(std::vector<ymmsl::Conduit> const & conduits) const;
-        mcp::Client & get_client_(ymmsl::Reference const & instance);
+        MPPClient & get_client_(ymmsl::Reference const & instance);
 
         Endpoint get_endpoint_(
                 std::string const & port_name,
@@ -194,8 +194,8 @@ class Communicator {
         PostOffice post_office_;
         Logger & logger_;
         int profiler_;
-        std::vector<std::unique_ptr<mcp::Server>> servers_;
-        std::unordered_map<ymmsl::Reference, std::unique_ptr<mcp::Client>> clients_;
+        std::vector<std::unique_ptr<mcp::TransportServer>> servers_;
+        std::unordered_map<ymmsl::Reference, std::unique_ptr<MPPClient>> clients_;
         Ports_ ports_;
         std::unique_ptr<PeerManager> peer_manager_;
         Optional<Port> muscle_settings_in_;

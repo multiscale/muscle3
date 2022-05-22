@@ -2,12 +2,15 @@
 
 namespace libmuscle { namespace impl {
 
-bool MockPostOffice::has_message(ymmsl::Reference const & receiver) {
-    return false;
+int MockPostOffice::handle_request(
+        char const * res_buf, std::size_t res_len,
+        std::unique_ptr<DataConstRef> & response) {
+    response = std::make_unique<DataConstRef>(
+            mcp::Message("test.out", "test2.in", 0, 0.0, 1.0, Data(), Data()).encoded());
+    return -1;
 }
 
-std::unique_ptr<DataConstRef> MockPostOffice::get_message(
-        ymmsl::Reference const & receiver) {
+std::unique_ptr<DataConstRef> MockPostOffice::get_response(int fd) {
     return std::make_unique<DataConstRef>(
             mcp::Message("test.out", "test2.in", 0, 0.0, 1.0, Data(), Data()).encoded());
 }

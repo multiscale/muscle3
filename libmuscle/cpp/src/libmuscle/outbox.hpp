@@ -24,7 +24,16 @@ class Outbox {
     public:
         /** Create an empty Outbox.
          */
-        Outbox() = default;
+        Outbox();
+
+        /** Lock this Outbox so other threads can't access it.
+         *
+         * If multiple threads may access this object, then it must be locked
+         * while calling any member function.
+         *
+         * @return A unique_lock holding an internal mutex.
+         */
+        std::unique_lock<std::mutex> lock();
 
         /** Returns true iff the outbox is empty.
          */
@@ -42,17 +51,31 @@ class Outbox {
         /** Retrieve a message from the Outbox.
          *
          * The message will be removed from the front of the queue, and
-         * returned to the caller. Blocks if the queue is empty, until a
-         * message is deposited.
+         * returned to the caller. It is an error if no message is present
+         * in the queue.
          *
          * @return The next message.
+         *
+         * @throws std::runtime_error If no message is available.
          */
         std::unique_ptr<DataConstRef> retrieve();
 
+        /** Sets fd to notify deposition on.
+         *
+         * @param fd The fd to send a byte to when a message is deposited.
+         */
+        void set_notification_fd(int fd);
+
+        /** Resets notification fd and returns original value.
+         *
+         * @return The current notification fd.
+         */
+        int return_notification_fd();
+
     private:
-        std::vector<std::unique_ptr<DataConstRef>> queue_;
         mutable std::mutex mutex_;
-        mutable std::condition_variable deposited_;
+        std::vector<std::unique_ptr<DataConstRef>> queue_;
+        int notification_fd_;
 };
 
 } }

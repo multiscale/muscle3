@@ -2,8 +2,8 @@
 #include <msgpack.hpp>
 
 #include <libmuscle/mcp/message.hpp>
-#include <libmuscle/mcp/tcp_client.hpp>
-#include <libmuscle/mcp/tcp_server.hpp>
+#include <libmuscle/mcp/tcp_transport_server.hpp>
+#include <libmuscle/mpp_client.hpp>
 
 #include <libmuscle/data.hpp>
 #include <libmuscle/post_office.hpp>
@@ -17,8 +17,8 @@
 using libmuscle::impl::Data;
 using libmuscle::impl::DataConstRef;
 using libmuscle::impl::mcp::Message;
-using libmuscle::impl::mcp::TcpClient;
-using libmuscle::impl::mcp::TcpServer;
+using libmuscle::impl::MPPClient;
+using libmuscle::impl::mcp::TcpTransportServer;
 using libmuscle::impl::PostOffice;
 
 using ymmsl::Reference;
@@ -41,10 +41,9 @@ TEST(test_tcp_communication, send_receive) {
     auto msg_data = std::make_unique<DataConstRef>(msg.encoded());
     post_office.deposit(receiver, std::move(msg_data));
 
-    TcpServer server("test_sender", post_office);
-    std::string location = server.get_location();
-    ASSERT_TRUE(TcpClient::can_connect_to(location));
-    TcpClient client("test_receiver", location);
+    TcpTransportServer server(post_office);
+    std::vector<std::string> locations = {server.get_location()};
+    MPPClient client(locations);
     DataConstRef bytes = client.receive(receiver);
     Message m = Message::from_bytes(bytes);
 

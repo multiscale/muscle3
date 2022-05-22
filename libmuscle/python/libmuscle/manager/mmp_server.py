@@ -55,7 +55,7 @@ class MMPRequestHandler(RequestHandler):
         self._instance_registry = instance_registry
         self._topology_store = topology_store
 
-    def handle(self, request: bytes) -> bytes:
+    def handle_request(self, request: bytes) -> bytes:
         """Handles a manager request.
 
         Args:

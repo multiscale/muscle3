@@ -3,19 +3,25 @@
 #include <memory>
 #include <thread>
 #include <vector>
+#include <unistd.h>
+#include <fcntl.h>
 
 #include <gtest/gtest.h>
 
 #include <libmuscle/util.hpp>
 #include <libmuscle/data.hpp>
+#include <libmuscle/mcp/data_pack.hpp>
 #include <libmuscle/mcp/message.hpp>
+#include <libmuscle/mcp/protocol.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 
+using libmuscle::impl::Data;
 using libmuscle::impl::DataConstRef;
 using libmuscle::impl::Optional;
 using libmuscle::impl::Outbox;
 using libmuscle::impl::PostOffice;
+using libmuscle::impl::RequestType;
 using libmuscle::impl::mcp::Message;
 using ymmsl::Reference;
 
@@ -34,12 +40,25 @@ std::unique_ptr<DataConstRef> make_message() {
     return std::make_unique<DataConstRef>(msg.encoded());
 }
 
+std::unique_ptr<msgpack::sbuffer> make_request(std::string const & receiver) {
+    auto request = Data::list(
+            static_cast<int>(RequestType::get_next_message),
+            receiver);
+    auto sbuf = std::make_unique<msgpack::sbuffer>();
+    msgpack::pack(*sbuf, request);
+    return sbuf;
+}
+
 TEST(libmuscle_post_office, test_deposit_get_message) {
     PostOffice po;
     auto msg = make_message();
     auto msg_addr = msg.get();
     po.deposit("test_receiver.port", std::move(msg));
-    auto msg2 = po.get_message("test_receiver.port");
+
+    auto request = make_request("test_receiver.port");
+    std::unique_ptr<DataConstRef> msg2;
+    int fd = po.handle_request(request->data(), request->size(), msg2);
+    ASSERT_EQ(fd, -1);
     ASSERT_EQ(msg2.get(), msg_addr);
 }
 
@@ -53,27 +72,37 @@ TEST(libmuscle_post_office, test_individual_slots) {
     auto msg2_addr = msg2.get();
     po.deposit("test_receiver2.port", std::move(msg2));
 
-    msg1 = po.get_message("test_receiver1.port");
-    msg2 = po.get_message("test_receiver2.port");
+    auto request1 = make_request("test_receiver1.port");
+    auto request2 = make_request("test_receiver2.port");
+    po.handle_request(request1->data(), request1->size(), msg1);
+    po.handle_request(request2->data(), request2->size(), msg2);
     ASSERT_EQ(msg1.get(), msg1_addr);
     ASSERT_EQ(msg2.get(), msg2_addr);
 }
 
 
-void get_message(PostOffice * po) {
-    auto msg_data = po->get_message("test_receiver.port");
-    auto msg = Message::from_bytes(*msg_data);
-    ASSERT_EQ(msg.sender, "test_sender.port");
-}
-
-
 TEST(libmuscle_post_office, test_get_before_deposit) {
     PostOffice po;
+
+    auto request = make_request("test_receiver.port");
+    std::unique_ptr<DataConstRef> msg_out;
+    int fd = po.handle_request(request->data(), request->size(), msg_out);
+    ASSERT_NE(fd, -1);
+    ASSERT_TRUE(!msg_out);
+
     auto msg = make_message();
-    std::thread thread(get_message, &po);
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    auto msg_addr = msg.get();
     po.deposit("test_receiver.port", std::move(msg));
-    thread.join();
+
+    int flags = fcntl(fd, F_GETFL, 0);
+    fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+    std::vector<char> buf(10);
+    ssize_t num_read = read(fd, buf.data(), buf.size());
+    perror("Read error");
+    ASSERT_EQ(num_read, 1);
+
+    auto response = po.get_response(fd);
+    ASSERT_EQ(response.get(), msg_addr);
 }
 
 
@@ -82,8 +111,11 @@ void get_messages(
         std::string receiver,
         std::vector<DataConstRef*> const & expected)
 {
+    auto request = make_request(receiver);
     for (int i = 0; i < 10; ++i) {
-        auto msg = po->get_message(receiver);
+        std::unique_ptr<DataConstRef> msg;
+        int fd = po->handle_request(request->data(), request->size(), msg);
+        ASSERT_EQ(fd, -1);
         ASSERT_EQ(msg.get(), expected[i]);
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }

@@ -8,12 +8,12 @@ def test_tcp_transport():
     request = b'request'
     response = b'response'
 
-    def handle(request: bytes) -> bytes:
+    def handle_request(request: bytes) -> bytes:
         assert request == b'request'
         return response
 
     handler = MagicMock()
-    handler.handle = handle
+    handler.handle_request = handle_request
 
     # create server
     server = TcpTransportServer(handler)

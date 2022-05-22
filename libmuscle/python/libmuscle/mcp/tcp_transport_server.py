@@ -34,7 +34,7 @@ class TcpHandler(ss.BaseRequestHandler):
 
         while request is not None:
             server = cast(TcpTransportServerImpl, self.server).transport_server
-            response = server._handler.handle(request)
+            response = server._handler.handle_request(request)
 
             send_int64(self.request, len(response))
             self.request.sendall(response)

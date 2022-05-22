@@ -4,8 +4,8 @@
 #include <libmuscle/data.hpp>
 #include <libmuscle/mcp/ext_types.hpp>
 #include <libmuscle/mcp/message.hpp>
-#include <libmuscle/mcp/tcp_client.hpp>
-#include <libmuscle/mcp/tcp_server.hpp>
+#include <libmuscle/mcp/tcp_transport_server.hpp>
+#include <libmuscle/mpp_client.hpp>
 
 #include <limits>
 
@@ -14,8 +14,8 @@ using libmuscle::impl::ClosePort;
 using libmuscle::impl::Data;
 using libmuscle::impl::DataConstRef;
 using libmuscle::impl::mcp::ExtTypeId;
-using libmuscle::impl::mcp::TcpClient;
-using libmuscle::impl::mcp::TcpServer;
+using libmuscle::impl::MPPClient;
+using libmuscle::impl::mcp::TcpTransportServer;
 
 using ymmsl::Conduit;
 using ymmsl::Identifier;
@@ -40,7 +40,7 @@ Communicator::Communicator(
     , clients_()
     , ports_()
 {
-    servers_.emplace_back(new TcpServer(instance_id_(), post_office_));
+    servers_.emplace_back(new TcpTransportServer(post_office_));
 }
 
 std::vector<std::string> Communicator::get_locations() const {
@@ -179,7 +179,7 @@ Message Communicator::receive_message(
 
     Endpoint snd_endpoint = peer_manager_->get_peer_endpoint(
             recv_endpoint.port, slot_list);
-    mcp::Client & client = get_client_(snd_endpoint.instance());
+    MPPClient & client = get_client_(snd_endpoint.instance());
     auto mcp_message = mcp::Message::from_bytes(
             client.receive(recv_endpoint.ref()));
 
@@ -233,8 +233,6 @@ void Communicator::close_port(
 void Communicator::shutdown() {
     for (auto & client : clients_)
         client.second->close();
-
-    TcpClient::shutdown(instance_id_());
 
     post_office_.wait_for_receivers();
 
@@ -321,20 +319,12 @@ Port Communicator::settings_in_port_(std::vector<Conduit> const & conduits) cons
     return Port("muscle_settings_in", Operator::F_INIT, false, false, index_.size(), {});
 }
 
-mcp::Client & Communicator::get_client_(Reference const & instance) {
-    if (clients_.count(instance) != 0)
-        return *clients_.at(instance);
-
-    for (auto const & location : peer_manager_->get_peer_locations(instance)) {
-        if (TcpClient::can_connect_to(location)) {
-            auto client = std::make_unique<TcpClient>(instance_id_(), location);
-            clients_[instance] = std::move(client);
-            return *clients_.at(instance);
-        }
+MPPClient & Communicator::get_client_(Reference const & instance) {
+    if (clients_.count(instance) == 0) {
+        auto const & locations = peer_manager_->get_peer_locations(instance);
+        clients_[instance] = std::make_unique<MPPClient>(locations);
     }
-    std::ostringstream oss;
-    oss << "Could not find a matching protocol for " << instance;
-    throw std::runtime_error(oss.str());
+    return *clients_.at(instance);
 }
 
 Endpoint Communicator::get_endpoint_(

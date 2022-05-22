@@ -1,7 +1,8 @@
 from pathlib import Path
 import subprocess
 
-from libmuscle.mcp.tcp_client import TcpClient
+from libmuscle.mpp_client import MPPClient
+from libmuscle.mcp.tcp_transport_client import TcpTransportClient
 from libmuscle.mcp.message import Message
 
 from ymmsl import Reference, Settings
@@ -13,13 +14,13 @@ from .conftest import skip_if_python_only
 def test_cpp_tcp_server(log_file_in_tmpdir):
     # create C++ server
     # it serves a message for us to receive
-    # see libmuscle/cpp/src/libmuscle/tests/mmp_server_test.cpp
+    # see libmuscle/cpp/src/libmuscle/tests/mpp_server_test.cpp
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
     lib_paths = [cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
     env = {
             'LD_LIBRARY_PATH': ':'.join(map(str, lib_paths))}
     cpp_test_dir = cpp_build_dir / 'libmuscle' / 'tests'
-    cpp_test_server = cpp_test_dir / 'tcp_server_test'
+    cpp_test_server = cpp_test_dir / 'tcp_transport_server_test'
     server = subprocess.Popen(
             [str(cpp_test_server)], env=env, stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
@@ -28,9 +29,9 @@ def test_cpp_tcp_server(log_file_in_tmpdir):
     # get server location
     location = server.stdout.readline()
 
-    assert TcpClient.can_connect_to(location)
+    assert TcpTransportClient.can_connect_to(location)
 
-    client = TcpClient(Reference('test_receiver'), location)
+    client = MPPClient([location])
     msg = Message.from_bytes(client.receive(Reference('test_receiver.port')))
     client.close()
 

@@ -4,9 +4,9 @@ from ymmsl import Conduit, Identifier, Operator, Reference, Settings
 
 from libmuscle.endpoint import Endpoint
 from libmuscle.mcp.message import ClosePort, Message as MCPMessage
-from libmuscle.mcp.client import Client as MCPClient
-from libmuscle.mcp.server import Server as MCPServer, ServerNotSupported
-from libmuscle.mcp.type_registry import client_types, server_types
+from libmuscle.mpp_client import MPPClient
+from libmuscle.mcp.transport_server import TransportServer
+from libmuscle.mcp.type_registry import transport_server_types
 from libmuscle.peer_manager import PeerManager
 from libmuscle.post_office import PostOffice
 from libmuscle.port import Port
@@ -85,17 +85,14 @@ class Communicator:
         self._post_office = PostOffice()
         self._profiler = profiler
 
-        self._servers = list()  # type: List[MCPServer]
+        self._servers = list()  # type: List[TransportServer]
 
         # indexed by remote instance id
-        self._clients = dict()  # type: Dict[Reference, MCPClient]
+        self._clients = dict()  # type: Dict[Reference, MPPClient]
 
-        for server_type in server_types:
-            try:
-                server = server_type(self.__instance_id(), self._post_office)
-                self._servers.append(server)
-            except ServerNotSupported:
-                pass
+        for server_type in transport_server_types:
+            server = server_type(self._post_office)
+            self._servers.append(server)
 
         self._ports = dict()   # type: Dict[str, Port]
 
@@ -349,8 +346,6 @@ class Communicator:
         """
         for client in self._clients.values():
             client.close()
-        for client_type in client_types:
-            client_type.shutdown(self.__instance_id())
 
         self._post_office.wait_for_receivers()
 
@@ -436,7 +431,7 @@ class Communicator:
         return Port('muscle_settings_in', Operator.F_INIT, False, False,
                     len(self._index), [])
 
-    def __get_client(self, instance: Reference) -> MCPClient:
+    def __get_client(self, instance: Reference) -> MPPClient:
         """Get or create a client to connect to the given instance.
 
         Args:
@@ -445,17 +440,11 @@ class Communicator:
         Returns:
             An existing or new MCP client.
         """
-        if instance in self._clients:
-            return self._clients[instance]
+        if instance not in self._clients:
+            locations = self._peer_manager.get_peer_locations(instance)
+            self._clients[instance] = MPPClient(locations)
 
-        for ClientType in client_types:
-            for location in self._peer_manager.get_peer_locations(instance):
-                if ClientType.can_connect_to(location):
-                    client = ClientType(self.__instance_id(), location)
-                    self._clients[instance] = client
-                    return client
-        raise RuntimeError('Could not find a matching protocol for {}'.format(
-                instance))
+        return self._clients[instance]
 
     def __get_endpoint(self, port_name: str, slot: List[int]) -> Endpoint:
         """Determines the endpoint on our side.

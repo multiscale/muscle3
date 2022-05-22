@@ -13,7 +13,7 @@ def test_request(tcp_transport_server):
     request = b'testing'
     response = b'response'
 
-    tcp_transport_server._handler.handle.return_value = response
+    tcp_transport_server._handler.handle_request.return_value = response
 
     location = tcp_transport_server._server.server_address
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:

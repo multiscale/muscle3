@@ -6,8 +6,8 @@
 
 #include <mpi.h>
 
-#include <libmuscle/mcp/tcp_client.hpp>
-#include <libmuscle/mcp/tcp_server.hpp>
+#include <libmuscle/mcp/tcp_transport_client.hpp>
+#include <libmuscle/mcp/tcp_transport_server.hpp>
 #include <libmuscle/post_office.hpp>
 
 
@@ -56,8 +56,8 @@ class MPITcpBarrier {
         MPI_Comm mpi_comm_;
 
         std::unique_ptr<PostOffice> post_office_;
-        std::unique_ptr<mcp::TcpServer> server_;
-        std::unique_ptr<mcp::TcpClient> client_;
+        std::unique_ptr<mcp::TcpTransportServer> server_;
+        std::unique_ptr<mcp::TcpTransportClient> client_;
 };
 
 

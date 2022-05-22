@@ -18,7 +18,7 @@ def test_log_message(mmp_request_handler, caplog):
             'Testing log message']
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
-    result = mmp_request_handler.handle(encoded_request)
+    result = mmp_request_handler.handle_request(encoded_request)
 
     decoded_result = msgpack.unpackb(result, raw=False)
 
@@ -35,7 +35,7 @@ def test_get_settings(settings, mmp_request_handler):
     request = [RequestType.GET_SETTINGS.value]
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
-    result = mmp_request_handler.handle(encoded_request)
+    result = mmp_request_handler.handle_request(encoded_request)
     decoded_result = msgpack.unpackb(result, raw=False)
 
     assert len(decoded_result) == 2
@@ -49,7 +49,7 @@ def test_get_settings(settings, mmp_request_handler):
     settings['test5'] = [2.3, 7.4]
     settings['test6'] = [[1.0, 2.0], [2.0, 1.0]]
 
-    result = mmp_request_handler.handle(encoded_request)
+    result = mmp_request_handler.handle_request(encoded_request)
     decoded_result = msgpack.unpackb(result, raw=False)
     assert len(decoded_result) == 2
     assert decoded_result[0] == ResponseType.SUCCESS.value
@@ -74,7 +74,7 @@ def test_register_instance(mmp_request_handler, instance_registry):
             [['test_in', 'F_INIT']]]
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
-    result = mmp_request_handler.handle(encoded_request)
+    result = mmp_request_handler.handle_request(encoded_request)
     decoded_result = msgpack.unpackb(result, raw=False)
 
     assert decoded_result[0] == ResponseType.SUCCESS.value
@@ -94,12 +94,12 @@ def test_double_register_instance(mmp_request_handler):
             [['test_in', 'F_INIT']]]
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
-    result = mmp_request_handler.handle(encoded_request)
+    result = mmp_request_handler.handle_request(encoded_request)
     decoded_result = msgpack.unpackb(result, raw=False)
 
     assert decoded_result[0] == ResponseType.SUCCESS.value
 
-    result = mmp_request_handler.handle(encoded_request)
+    result = mmp_request_handler.handle_request(encoded_request)
     decoded_result = msgpack.unpackb(result, raw=False)
 
     assert decoded_result[0] == ResponseType.ERROR.value
@@ -113,7 +113,7 @@ def test_deregister_instance(
     request = [RequestType.DEREGISTER_INSTANCE.value, 'macro']
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
-    result = registered_mmp_request_handler.handle(encoded_request)
+    result = registered_mmp_request_handler.handle_request(encoded_request)
     decoded_result = msgpack.unpackb(result, raw=False)
 
     assert decoded_result[0] == ResponseType.SUCCESS.value
@@ -124,7 +124,7 @@ def test_get_peers_pending(mmp_request_handler):
     request = [RequestType.GET_PEERS.value, 'micro[0][0]']
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
-    result = mmp_request_handler.handle(encoded_request)
+    result = mmp_request_handler.handle_request(encoded_request)
     decoded_result = msgpack.unpackb(result, raw=False)
 
     assert decoded_result[0] == ResponseType.PENDING.value
@@ -134,7 +134,7 @@ def test_request_peers_fanout(registered_mmp_request_handler):
     request = [RequestType.GET_PEERS.value, 'macro']
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
-    result = registered_mmp_request_handler.handle(encoded_request)
+    result = registered_mmp_request_handler.handle_request(encoded_request)
     decoded_result = msgpack.unpackb(result, raw=False)
 
     status, conduits, dims, locations = decoded_result
@@ -156,7 +156,7 @@ def test_request_peers_fanin(registered_mmp_request_handler):
     request = [RequestType.GET_PEERS.value, 'micro[4][3]']
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
-    result = registered_mmp_request_handler.handle(encoded_request)
+    result = registered_mmp_request_handler.handle_request(encoded_request)
     decoded_result = msgpack.unpackb(result, raw=False)
 
     status, conduits, dims, locations = decoded_result
@@ -176,7 +176,7 @@ def test_request_peers_bidir(registered_mmp_request_handler2):
     request = [RequestType.GET_PEERS.value, 'meso[2]']
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
-    result = registered_mmp_request_handler2.handle(encoded_request)
+    result = registered_mmp_request_handler2.handle_request(encoded_request)
     decoded_result = msgpack.unpackb(result, raw=False)
 
     status, conduits, dims, locations = decoded_result
@@ -205,7 +205,7 @@ def test_request_peers_own_conduits(registered_mmp_request_handler2):
     request = [RequestType.GET_PEERS.value, 'macro']
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
-    result = registered_mmp_request_handler2.handle(encoded_request)
+    result = registered_mmp_request_handler2.handle_request(encoded_request)
     decoded_result = msgpack.unpackb(result, raw=False)
 
     status, conduits, dims, locations = decoded_result
@@ -221,7 +221,7 @@ def test_request_peers_unknown(registered_mmp_request_handler2):
     request = [RequestType.GET_PEERS.value, 'does_not_exist']
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
-    result = registered_mmp_request_handler2.handle(encoded_request)
+    result = registered_mmp_request_handler2.handle_request(encoded_request)
     decoded_result = msgpack.unpackb(result, raw=False)
 
     status, error_msg = decoded_result

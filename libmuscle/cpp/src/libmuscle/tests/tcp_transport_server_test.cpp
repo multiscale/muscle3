@@ -4,8 +4,7 @@
 #include <libmuscle/data.hpp>
 #include <libmuscle/mcp/data_pack.hpp>
 #include <libmuscle/mcp/message.hpp>
-#include <libmuscle/mcp/server.hpp>
-#include <libmuscle/mcp/tcp_server.hpp>
+#include <libmuscle/mcp/tcp_transport_server.hpp>
 #include <libmuscle/post_office.hpp>
 #include <ymmsl/ymmsl.hpp>
 
@@ -21,8 +20,7 @@ using libmuscle::impl::PostOffice;
 using libmuscle::impl::Data;
 using libmuscle::impl::DataConstRef;
 using libmuscle::impl::mcp::Message;
-using libmuscle::impl::mcp::Server;
-using libmuscle::impl::mcp::TcpServer;
+using libmuscle::impl::mcp::TcpTransportServer;
 using ymmsl::Reference;
 using ymmsl::Settings;
 
@@ -44,7 +42,7 @@ int main(int argc, char *argv[]) {
     auto msg_data = std::make_unique<DataConstRef>(msg.encoded());
     post_office.deposit(receiver, std::move(msg_data));
 
-    TcpServer server("test_sender", post_office);
+    TcpTransportServer server(post_office);
     std::cout << server.get_location() << std::endl;
 
     post_office.wait_for_receivers();

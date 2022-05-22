@@ -4,9 +4,11 @@
 #include <libmuscle/mcp/tcp_util.hpp>
 
 #include <arpa/inet.h>
+#include <chrono>
 #include <cstring>
 #include <ifaddrs.h>
 #include <poll.h>
+#include <thread>
 #include <unistd.h>
 #include <unordered_map>
 
@@ -222,10 +224,16 @@ class TcpTransportServerWorker {
         static void worker_thread_(TcpTransportServerWorker * self) {
             while (true) {
                 self->update_polled_fds_();
-                poll(self->polled_fds_.data(), self->polled_fds_.size(), 1000);
-
-                self->handle_ready_fds_();
-                self->remove_closed_ports_();
+                if (!self->polled_fds_.empty()) {
+                    poll(self->polled_fds_.data(), self->polled_fds_.size(), 1000);
+                    self->handle_ready_fds_();
+                    self->remove_closed_ports_();
+                }
+                else {
+                    // Avoid blocking the CPU while waiting for clients to
+                    // connect.
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                }
 
                 {
                     std::lock_guard<std::mutex> lock(self->mutex_);

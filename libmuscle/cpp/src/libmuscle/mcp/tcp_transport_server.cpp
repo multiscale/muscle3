@@ -1,7 +1,8 @@
-#include <libmuscle/mcp/tcp_transport_server.hpp>
+#include "libmuscle/mcp/tcp_transport_server.hpp"
 
-#include <libmuscle/mcp/transport_server.hpp>
-#include <libmuscle/mcp/tcp_util.hpp>
+#include "libmuscle/data.hpp"
+#include "libmuscle/mcp/transport_server.hpp"
+#include "libmuscle/mcp/tcp_util.hpp"
 
 #include <arpa/inet.h>
 #include <chrono>
@@ -15,6 +16,7 @@
 
 using namespace std::string_literals;
 
+using libmuscle::impl::DataConstRef;
 using libmuscle::impl::mcp::recv_all;
 using libmuscle::impl::mcp::send_all;
 using libmuscle::impl::mcp::recv_int64;
@@ -141,10 +143,11 @@ class TcpTransportServerWorker {
                             req_buf_.resize(length);
                             recv_all(polled_fd.fd, req_buf_.data(), length);
 
-                            int res_fd = handler_.handle_request(req_buf_.data(), length, res_buf_);
+                            std::unique_ptr<DataConstRef> res_buf;
+                            int res_fd = handler_.handle_request(req_buf_.data(), length, res_buf);
                             if (res_fd < 0) {
                                 // got a response immediately, send it
-                                send_response_(polled_fd.fd);
+                                send_response_(polled_fd.fd, std::move(res_buf));
                             }
                             else {
                                 // response not yet available, wait for it
@@ -162,7 +165,8 @@ class TcpTransportServerWorker {
                         char dummy;
                         read(polled_fd.fd, &dummy, 1);
 
-                        handler_.get_response(polled_fd.fd, res_buf_);
+                        std::unique_ptr<DataConstRef> res_buf;
+                        res_buf = handler_.get_response(polled_fd.fd);
 
                         int fd;
                         {
@@ -171,7 +175,7 @@ class TcpTransportServerWorker {
                             connections_[i].response_fd = -1;
                             connections_changed_ = true;
                         }
-                        send_response_(fd);
+                        send_response_(fd, std::move(res_buf));
                     }
                 }
             }
@@ -179,13 +183,14 @@ class TcpTransportServerWorker {
 
         /* Send contents of response buffer to the given fd.
          *
-         * This saves some duplication in the code above. Reads res_buf_.
+         * This saves some duplication in the code above. Takes ownership of
+         * res_buf and discards it after sending.
          *
          * @param fd The fd to send the data on
          */
-        void send_response_(int fd) {
-            send_int64(fd, res_buf_.size());
-            send_all(fd, res_buf_.data(), res_buf_.size());
+        void send_response_(int fd, std::unique_ptr<DataConstRef> res_buf) {
+            send_int64(fd, res_buf->size());
+            send_all(fd, res_buf->as_byte_array(), res_buf->size());
         }
 
         /* Detects ports that have closed and removes those connections.
@@ -197,7 +202,7 @@ class TcpTransportServerWorker {
          * Called by the worker thread.
          */
         void remove_closed_ports_() {
-            for (std::size_t i = polled_fds_.size(); i > 0; --i) {
+            for (std::size_t i = polled_fds_.size(); i > 0u; --i) {
                 std::size_t j = i - 1;
                 if (polled_fd_types_[j] == FdType_::request) {
                     auto const & polled_fd = polled_fds_[j];
@@ -225,7 +230,7 @@ class TcpTransportServerWorker {
             while (true) {
                 self->update_polled_fds_();
                 if (!self->polled_fds_.empty()) {
-                    poll(self->polled_fds_.data(), self->polled_fds_.size(), 1000);
+                    poll(self->polled_fds_.data(), self->polled_fds_.size(), 100);
                     self->handle_ready_fds_();
                     self->remove_closed_ports_();
                 }
@@ -234,7 +239,6 @@ class TcpTransportServerWorker {
                     // connect.
                     std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 }
-
                 {
                     std::lock_guard<std::mutex> lock(self->mutex_);
                     if (self->connections_.empty() && self->shutting_down_)
@@ -265,7 +269,7 @@ class TcpTransportServerWorker {
         std::vector<pollfd> polled_fds_;
         std::vector<FdType_> polled_fd_types_;
 
-        mutable std::vector<char> req_buf_, res_buf_;
+        mutable std::vector<char> req_buf_;
 
         // mutex before thread, it needs to be initialised before the thread
         // is started.

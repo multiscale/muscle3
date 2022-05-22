@@ -1,6 +1,7 @@
-#include <libmuscle/mcp/tcp_transport_client.hpp>
+#include "libmuscle/mcp/tcp_transport_client.hpp"
 
-#include <libmuscle/mcp/tcp_util.hpp>
+#include "libmuscle/data.hpp"
+#include "libmuscle/mcp/tcp_util.hpp"
 
 #include <algorithm>
 #include <cstring>
@@ -115,15 +116,16 @@ TcpTransportClient::~TcpTransportClient() {
         close();
 }
 
-void TcpTransportClient::call(
-        char const * req_buf, std::size_t req_len, std::vector<char> & result
+DataConstRef TcpTransportClient::call(
+        char const * req_buf, std::size_t req_len
 ) const {
     send_int64(socket_fd_, req_len);
     send_all(socket_fd_, req_buf, req_len);
 
     int64_t length = recv_int64(socket_fd_);
-    result.resize(length);
-    recv_all(socket_fd_, result.data(), length);
+    auto result = Data::byte_array(length);
+    recv_all(socket_fd_, result.as_byte_array(), result.size());
+    return result;
 }
 
 void TcpTransportClient::close() {

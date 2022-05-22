@@ -1,17 +1,20 @@
 #include <gtest/gtest.h>
 
+#include <libmuscle/data.hpp>
 #include <libmuscle/mcp/transport_server.hpp>
 #include <libmuscle/mcp/tcp_transport_client.hpp>
 #include <libmuscle/mcp/tcp_transport_server.hpp>
 
+#include <msgpack.hpp>
+
 #include <algorithm>
 #include <string>
+#include <unistd.h>
 #include <vector>
 
-#include <iostream>
-#include <ostream>
 
-
+using libmuscle::impl::Data;
+using libmuscle::impl::DataConstRef;
 using libmuscle::impl::mcp::RequestHandler;
 using libmuscle::impl::mcp::TcpTransportClient;
 using libmuscle::impl::mcp::TcpTransportServer;
@@ -26,21 +29,23 @@ int main(int argc, char *argv[]) {
 class MockHandlerDirect : public RequestHandler {
 public:
     virtual int handle_request(
-            char const * req_buf, std::size_t req_len, std::vector<char> & res_buf
+            char const * req_buf, std::size_t req_len,
+            std::unique_ptr<DataConstRef> & res_buf
     ) override {
         std::string request(req_buf, req_len);
         if (request != "TestRequest")
             throw std::runtime_error("Unexpected request " + request);
 
         std::string response("TestResponse");
-        res_buf.resize(response.size());
-        std::copy(response.cbegin(), response.cend(), res_buf.begin());
+        auto response_data = std::make_unique<Data>(Data::byte_array(response.size()));
+        memcpy(response_data->as_byte_array(), response.data(), response_data->size());
+        res_buf = std::move(response_data);
         return -1;
     };
 
-    virtual void get_response(int fd, std::vector<char> & res_buf) override {
+    virtual std::unique_ptr<DataConstRef> get_response(int fd) override {
         // Should not be called if we return -1 above
-        ASSERT_TRUE(false);
+        throw std::runtime_error("Should not be called");
     };
 
 };
@@ -58,9 +63,9 @@ public:
     }
 
     virtual int handle_request(
-            char const * req_buf, std::size_t req_len, std::vector<char> & res_buf
+            char const * req_buf, std::size_t req_len,
+            std::unique_ptr<DataConstRef> & res_buf
     ) override {
-        std::cout << "handle_request" << std::endl;
         std::string request(req_buf, req_len);
         if (request != "TestRequest")
             throw std::runtime_error("Unexpected request " + request);
@@ -68,20 +73,19 @@ public:
         return pipe_fds[0];
     };
 
-    virtual void get_response(int fd, std::vector<char> & res_buf) override {
-        std::cout << "get_response" << std::endl;
+    virtual std::unique_ptr<DataConstRef> get_response(int fd) override {
         if (fd != pipe_fds[0])
             throw std::runtime_error("Unexpected fd in get_response");
 
         std::string response("TestResponse");
-        res_buf.resize(response.size());
-        std::copy(response.cbegin(), response.cend(), res_buf.begin());
+        auto response_data = std::make_unique<Data>(Data::byte_array(response.size()));
+        memcpy(response_data->as_byte_array(), response.data(), response_data->size());
+        return response_data;
     };
 
     void send_response() {
         if (write(pipe_fds[1], "\0", 1) != 1)
             throw std::runtime_error("Error writing to signal pipe");
-        std::cout << "Wrote" << std::endl;
     };
 
     int pipe_fds[2];
@@ -95,11 +99,10 @@ TEST(test_tcp_communication, send_receive_direct) {
     ASSERT_TRUE(TcpTransportClient::can_connect_to(location));
     TcpTransportClient client(location);
 
-    std::vector<char> result;
-    client.call("TestRequest", strlen("TestRequest"), result);
+    auto result = client.call("TestRequest", strlen("TestRequest"));
 
     std::string response(result.size(), ' ');
-    std::copy(result.cbegin(), result.cend(), response.begin());
+    std::copy(result.as_byte_array(), result.as_byte_array() + result.size(), response.begin());
 
     ASSERT_EQ(response, "TestResponse");
 
@@ -117,19 +120,14 @@ TEST(test_tcp_communication, send_receive_delayed) {
 
     handler.send_response();
 
-    std::vector<char> result;
-    client.call("TestRequest", strlen("TestRequest"), result);
-    std::cout << "call done" << std::endl;
+    auto result = client.call("TestRequest", strlen("TestRequest"));
 
     std::string response(result.size(), ' ');
-    std::copy(result.cbegin(), result.cend(), response.begin());
+    std::copy(result.as_byte_array(), result.as_byte_array() + result.size(), response.begin());
 
     ASSERT_EQ(response, "TestResponse");
 
-    std::cout << "closing client" << std::endl;
     client.close();
-    std::cout << "closing server" << std::endl;
     server.close();
-    std::cout << "done" << std::endl;
 }
 

@@ -4,7 +4,8 @@
 #include LIBMUSCLE_MOCK_MCP_TCP_TRANSPORT_CLIENT
 #else
 
-#include <libmuscle/mcp/transport_client.hpp>
+#include "libmuscle/mcp/transport_client.hpp"
+#include "libmuscle/data.hpp"
 
 
 namespace libmuscle { namespace impl { namespace mcp {
@@ -40,12 +41,12 @@ class TcpTransportClient : public TransportClient {
          *
          * @param req_buf Pointer to the request to send
          * @param req_len Length of the request in bytes
-         * @param result Buffer to put the result into, will be resized as
-         *      needed.
+         *
+         * @return A DataConstRef containing a byte array with the received
+         *         data.
          */
-        virtual void call(
-                char const * req_buf, std::size_t req_len,
-                std::vector<char> & result) const override;
+        virtual DataConstRef call(
+                char const * req_buf, std::size_t req_len) const override;
 
         /** Closes this client.
          *

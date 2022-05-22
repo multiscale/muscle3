@@ -1,5 +1,7 @@
 #pragma once
 
+#include "libmuscle/data.hpp"
+
 #include <string>
 #include <vector>
 
@@ -52,12 +54,12 @@ class TransportClient {
          *
          * @param req_buf Pointer to the request to send
          * @param req_len Length of the request in bytes
-         * @param result Buffer to put the result into, will be resized as
-         *      needed.
+         *
+         * @return DataConstRef containing a byte array with the received
+         *         data.
          */
-        virtual void call(
-                char const * req_buf, std::size_t req_len,
-                std::vector<char> & result) const = 0;
+        virtual DataConstRef call(
+                char const * req_buf, std::size_t req_len) const = 0;
 
         /** Closes this client.
          *

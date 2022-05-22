@@ -1,5 +1,8 @@
 #pragma once
 
+#include "libmuscle/data.hpp"
+
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,27 +17,38 @@ namespace libmuscle { namespace impl { namespace mcp {
  * encoded response.
  */
 class RequestHandler {
-public:
-    /** Handle a request
-     *
-     * Requests may be handled immediately, or they may be deferred if a
-     * response is not available yet. In the first case, this will resize
-     * res_buf to fit the response, write it into res_buf, and return -1.
-     * In the second case, res_buf is unmodified, and a file descriptor is
-     * returned. When the response is available, a single byte can and must
-     * be read from this file descriptor, and get_response must be called to
-     * pick up the response.
-     */
-    virtual int handle_request(char const * req_buf, std::size_t req_len, std::vector<char> & res_buf) = 0;
+    public:
+        /** Handle a request
+         *
+         * Requests may be handled immediately, or they may be deferred if a
+         * response is not available yet. In the first case, this will place
+         * the response as a byte array wrapped in a Data object into res_buf,
+         * and return -1.
+         *
+         * In the second case, res_buf is unmodified, and a file descriptor is
+         * returned. When the response is available, a single byte can and must
+         * be read from this file descriptor, and get_response must be called to
+         * pick up the response.
+         *
+         * @param req_buf Pointer to request bytes
+         * @param req_len Number of bytes in request
+         * @param res_buf Out parameter to put the response into, if available
+         */
+        virtual int handle_request(
+                char const * req_buf, std::size_t req_len,
+                std::unique_ptr<DataConstRef> & res_buf) = 0;
 
-    /** Get a response
-     *
-     * This function must be called only when a previous call to
-     * handle_request returned a file descriptor. When this file descriptor
-     * becomes ready, read a byte from it and call this function, passing the
-     * file descriptor. The response will then be written into res_buf.
-     */
-    virtual void get_response(int fd, std::vector<char> & res_buf) = 0;
+        /** Get a response
+         *
+         * This function must be called only when a previous call to
+         * handle_request returned a file descriptor. When this file descriptor
+         * becomes ready, read a byte from it and call this function, passing the
+         * file descriptor. The response will then be written into res_buf.
+         *
+         * @param fd File descriptor to return
+         * @return A byte array wrapped in a DataConstRef with the response
+         */
+        virtual std::unique_ptr<DataConstRef> get_response(int fd) = 0;
 };
 
 

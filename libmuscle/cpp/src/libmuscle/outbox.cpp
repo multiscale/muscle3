@@ -22,7 +22,7 @@ bool Outbox::is_empty() const {
 
 void Outbox::deposit(std::unique_ptr<DataConstRef> message) {
     queue_.insert(queue_.begin(), std::move(message));
-    if (notification_fd_ != -1) {
+    if (queue_.size() == 1u && notification_fd_ != -1) {
         char dummy = '\0';
         write(notification_fd_, &dummy, 1);
     }

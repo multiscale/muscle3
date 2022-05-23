@@ -9,7 +9,7 @@ test: tests
 	$(MAKE) -C libmuscle test
 
 .PHONY: install
-install: all
+install: all msgpack_install
 	$(MAKE) -C ymmsl install
 	$(MAKE) -C libmuscle install
 

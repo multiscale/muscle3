@@ -36,7 +36,7 @@ def do_logging_test(caplog):
     manager = Manager(ymmsl_doc)
 
     # create client
-    client = MMPClient('localhost:9000')
+    client = MMPClient(manager.get_server_location())
     message = LogMessage(
             instance_id='test_logging',
             timestamp=Timestamp(2.0),
@@ -52,6 +52,7 @@ def do_logging_test(caplog):
             assert rec.message == 'Integration testing'
             break
 
+    client.close()
     manager.stop()
 
 

@@ -44,13 +44,7 @@ def test_mpi_macro_micro(tmpdir, mmp_server_process_simple):
     # create C++ micro model
     # see libmuscle/cpp/src/libmuscle/tests/micro_model_test.cpp
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
-    lib_paths = [
-            cpp_build_dir / 'grpc' / 'c-ares' / 'c-ares' / 'lib',
-            cpp_build_dir / 'grpc' / 'zlib' / 'zlib' / 'lib',
-            cpp_build_dir / 'grpc' / 'openssl' / 'openssl' / 'lib',
-            cpp_build_dir / 'protobuf' / 'protobuf' / 'lib',
-            cpp_build_dir / 'grpc' / 'grpc' / 'lib',
-            cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
+    lib_paths = [cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
     env = {
             'LD_LIBRARY_PATH': ':'.join(map(str, lib_paths)),
             'PATH': '/usr/bin'}     # allow mpirun to find ssh and not complain

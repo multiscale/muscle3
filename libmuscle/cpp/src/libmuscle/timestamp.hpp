@@ -1,7 +1,5 @@
 #pragma once
 
-#include <muscle_manager_protocol/muscle_manager_protocol.pb.h>
-
 
 namespace libmuscle { namespace impl {
 
@@ -9,6 +7,10 @@ namespace libmuscle { namespace impl {
  */
 class Timestamp {
     public:
+        /** Number of seconds since the UNIX epoch.
+         */
+        double seconds;
+
         /** Create a Timestamp.
          *
          * @param seconds The number of seconds since the UNIX epoch.
@@ -18,25 +20,6 @@ class Timestamp {
         /** Create a Timestamp representing the current time.
          */
         static Timestamp now();
-
-        /** Create a Timestamp from a gRPC Timestamp message.
-         *
-         * @param timestamp A gRPC Timestamp from a gRPC call.
-         * @return The same timestamp as a Timestamp object.
-         */
-        static Timestamp from_grpc(
-                ::google::protobuf::Timestamp const & timestamp);
-
-        /** Convert a Timestamp to the gRPC type.
-         *
-         * @return This timestamp as a gRPC object.
-         */
-        std::unique_ptr<google::protobuf::Timestamp> to_grpc() const;
-
-    private:
-        double seconds_;
-
-        friend class TestTimestamp;
 };
 
 } }

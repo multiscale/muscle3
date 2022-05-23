@@ -3,11 +3,10 @@ from pathlib import Path
 import subprocess
 
 import ymmsl
-from ymmsl import Port, Reference
+from ymmsl import Operator, Port, Reference
 
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
-from libmuscle.operator import Operator
 
 from .conftest import skip_if_python_only
 
@@ -58,18 +57,13 @@ def do_mmp_client_test(tmpdir, caplog):
     # it runs through the various RPC calls
     # see libmuscle/cpp/src/libmuscle/tests/mmp_client_test.cpp
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
-    lib_paths = [
-            cpp_build_dir / 'grpc' / 'c-ares' / 'c-ares' / 'lib',
-            cpp_build_dir / 'grpc' / 'zlib' / 'zlib' / 'lib',
-            cpp_build_dir / 'grpc' / 'openssl' / 'openssl' / 'lib',
-            cpp_build_dir / 'protobuf' / 'protobuf' / 'lib',
-            cpp_build_dir / 'grpc' / 'grpc' / 'lib',
-            cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
+    lib_paths = [cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
     env = {
             'LD_LIBRARY_PATH': ':'.join(map(str, lib_paths))}
     cpp_test_dir = cpp_build_dir / 'libmuscle' / 'tests'
     cpp_test_client = cpp_test_dir / 'mmp_client_test'
-    result = subprocess.run([str(cpp_test_client)], env=env)
+    result = subprocess.run(
+            [str(cpp_test_client), manager.get_server_location()], env=env)
 
     # check that C++-side checks were successful
     assert result.returncode == 0

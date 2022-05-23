@@ -4,14 +4,13 @@ import os
 import sys
 from typing import cast, Dict, List, Optional, Tuple
 
-import grpc
 from ymmsl import (Identifier, Operator, SettingValue, Port, Reference,
                    Settings)
 
 from libmuscle.communicator import Communicator, Message
 from libmuscle.settings_manager import SettingsManager
 from libmuscle.logging_handler import MuscleManagerHandler
-from libmuscle.mcp.message import ClosePort
+from libmuscle.mpp_message import ClosePort
 from libmuscle.mmp_client import MMPClient
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEventType
@@ -132,6 +131,7 @@ class Instance:
             self.__close_ports()
             self._communicator.shutdown()
             self._deregister()
+            self.__manager.close()
         return do_reuse
 
     def error_shutdown(self, message: str) -> None:
@@ -355,13 +355,7 @@ class Instance:
         port_list = self.__list_declared_ports()
         self.__manager.register_instance(self._instance_name(), locations,
                                          port_list)
-        try:
-            register_event.stop()
-        except grpc._channel._Rendezvous:
-            # This may happen if we're the last submodel to quit, and the
-            # manager is already gone. Nothing we can do in that case, and this
-            # final Register event will be lost, which is not a big issue.
-            pass
+        register_event.stop()
 
     def _connect(self) -> None:
         """Connect this instance to the given peers / conduits.
@@ -404,7 +398,7 @@ class Instance:
             if arg.startswith(prefix):
                 return arg[len(prefix):]
 
-        return os.environ.get('MUSCLE_MANAGER', 'localhost:9000')
+        return os.environ.get('MUSCLE_MANAGER', 'tcp:localhost:9000')
 
     def __set_up_logging(self) -> None:
         """Adds logging handlers for one or more instances.
@@ -758,4 +752,5 @@ class Instance:
             self.__close_ports()
             self._communicator.shutdown()
             self._deregister()
+            self.__manager.close()
             self.__is_shut_down = True

@@ -8,6 +8,7 @@
 #include <cassert>
 #include <tuple>
 
+
 using libmuscle::impl::LogLevel;
 using libmuscle::impl::LogMessage;
 using libmuscle::impl::MMPClient;
@@ -68,7 +69,7 @@ void test_deregister_instance(MMPClient & client) {
 }
 
 int main(int argc, char *argv[]) {
-    auto client = MMPClient("localhost:9000");
+    MMPClient client(argv[1]);
 
     test_get_settings(client);
     test_submit_log_message(client);

@@ -3,7 +3,6 @@ import multiprocessing as mp
 import os
 from pathlib import Path
 import sys
-from typing import Generator
 
 import pytest
 import yatiml
@@ -28,7 +27,7 @@ def yatiml_log_warning():
 def start_mmp_server(control_pipe, ymmsl_doc, run_dir):
     control_pipe[0].close()
     manager = Manager(ymmsl_doc, run_dir)
-    control_pipe[1].send(True)
+    control_pipe[1].send(manager.get_server_location())
     control_pipe[1].recv()
     control_pipe[1].close()
     manager.stop()
@@ -43,8 +42,7 @@ def make_server_process(ymmsl_doc, tmpdir):
     process.start()
     control_pipe[1].close()
     # wait for start
-    control_pipe[0].recv()
-    yield None
+    yield control_pipe[0].recv()
     control_pipe[0].send(True)
     control_pipe[0].close()
     process.join()
@@ -138,14 +136,6 @@ def mmp_server(yatiml_log_warning):
     manager = Manager(ymmsl_doc)
     yield manager._server
     manager.stop()
-
-
-@pytest.fixture
-def sys_argv_manager() -> Generator[None, None, None]:
-    old_argv = sys.argv
-    sys.argv = sys.argv + ['--muscle-manager=localhost:9000']
-    yield None
-    sys.argv = old_argv
 
 
 @pytest.fixture

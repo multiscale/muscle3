@@ -1,8 +1,5 @@
 from enum import Enum
 import logging
-from typing import Dict
-
-import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
 
 from libmuscle.timestamp import Timestamp
 
@@ -10,15 +7,15 @@ from libmuscle.timestamp import Timestamp
 class LogLevel(Enum):
     """Log levels for MUSCLE 3.
 
-    These match the levels in the MUSCLE Manager Protocol, and should \
-    be kept identical to those. They also match the Python logging log \
-    levels, although not numerically.
+    These match the levels in the MUSCLE Manager Protocol, and should
+    be kept identical to those. They also match the Python logging log
+    levels.
     """
-    CRITICAL = 5
-    ERROR = 4
-    WARNING = 3
-    INFO = 1
-    DEBUG = 0
+    CRITICAL = 50
+    ERROR = 40
+    WARNING = 30
+    INFO = 20
+    DEBUG = 10
 
     @staticmethod
     def from_python_level(level: int) -> 'LogLevel':
@@ -49,45 +46,6 @@ class LogLevel(Enum):
                 LogLevel.INFO: logging.INFO,
                 LogLevel.DEBUG: logging.DEBUG}
         return to_python_level[self]
-
-    @staticmethod
-    def from_grpc(
-            level: mmp.LogLevel
-            ) -> 'LogLevel':
-        """Creates a log level from a gRPC-generated LogLevel message.
-
-        Args:
-            level: A log level, received from gRPC.
-
-        Returns:
-            The same log level, as a LogLevel.
-        """
-        log_level_map = {
-                mmp.LOG_LEVEL_DEBUG: LogLevel.DEBUG,
-                mmp.LOG_LEVEL_INFO: LogLevel.INFO,
-                mmp.LOG_LEVEL_WARNING: LogLevel.WARNING,
-                mmp.LOG_LEVEL_ERROR: LogLevel.ERROR,
-                mmp.LOG_LEVEL_CRITICAL: LogLevel.CRITICAL
-                }  # type: Dict[mmp.LogLevel, LogLevel]
-        return log_level_map[level]
-
-    def to_grpc(self) -> mmp.LogLevel:
-        """Converts the log level to the gRPC generated type.
-
-        Args:
-            level: A log level.
-
-        Returns:
-            The same log level, as the gRPC type.
-        """
-        log_level_map = {
-                LogLevel.DEBUG: mmp.LOG_LEVEL_DEBUG,
-                LogLevel.INFO: mmp.LOG_LEVEL_INFO,
-                LogLevel.WARNING: mmp.LOG_LEVEL_WARNING,
-                LogLevel.ERROR: mmp.LOG_LEVEL_ERROR,
-                LogLevel.CRITICAL: mmp.LOG_LEVEL_CRITICAL
-                }  # type: Dict[LogLevel, mmp.LogLevel]
-        return log_level_map[self]
 
 
 class LogMessage:
@@ -121,18 +79,3 @@ class LogMessage:
         self.timestamp = timestamp
         self.level = level
         self.text = text
-
-    def to_grpc(self) -> mmp.LogMessage:
-        """Converts the log message to the gRPC-generated type.
-
-        Args:
-            message: A log message.
-
-        Returns:
-            The same log message, as the gRPC type.
-        """
-        return mmp.LogMessage(
-                instance_id=self.instance_id,
-                timestamp=self.timestamp.to_grpc(),
-                level=self.level.to_grpc(),
-                text=self.text)

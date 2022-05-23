@@ -17,6 +17,7 @@ namespace mcp {
  * object_handle. That keeps MessagePack out of the public API, and avoids the
  * whole interface/factory rigmarole.
  *
+ * @param zone Zone to allocate on
  * @param begin Pointer to beginning of buffer to read from.
  * @param buf Length of the buffer to read from.
  * @return A Data object with the unpacked data.

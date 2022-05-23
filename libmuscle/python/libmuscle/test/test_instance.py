@@ -7,7 +7,7 @@ from ymmsl import Operator, Reference, Settings
 
 from libmuscle.communicator import Message
 from libmuscle.instance import Instance
-from libmuscle.mcp.message import ClosePort
+from libmuscle.mpp_message import ClosePort
 from libmuscle.settings_manager import SettingsManager
 
 

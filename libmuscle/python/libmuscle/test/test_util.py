@@ -1,17 +1,9 @@
 from typing import List
 
 import pytest
-from ymmsl import Conduit, Reference
+from ymmsl import Reference
 
-from libmuscle.util import (conduit_to_grpc, instance_indices,
-                            instance_to_kernel)
-
-
-def test_conduit_to_grpc() -> None:
-    conduit = Conduit(Reference('kernel1.out'), Reference('kernel2.in'))
-    mmp_conduit = conduit_to_grpc(conduit)
-    assert mmp_conduit.sender == 'kernel1.out'
-    assert mmp_conduit.receiver == 'kernel2.in'
+from libmuscle.util import instance_indices, instance_to_kernel
 
 
 @pytest.fixture

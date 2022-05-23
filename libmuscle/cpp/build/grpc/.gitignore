@@ -1,8 +1,0 @@
-*
-!.gitignore
-!Makefile
-!grpc_issue_14844.patch
-!/c-ares
-!/zlib
-!/protobuf
-!/openssl

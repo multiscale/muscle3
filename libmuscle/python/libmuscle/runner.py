@@ -5,12 +5,12 @@ useful for testing and prototyping. So we have a little bit of
 support for it in this module.
 """
 import multiprocessing as mp
+import multiprocessing.connection as mpc
 import sys
 from typing import Callable, Dict, List, Tuple, cast
 
 from ymmsl import Configuration, Identifier, Model, Reference
 
-from libmuscle.mcp import pipe_multiplexer as mux
 from libmuscle.util import generate_indices
 from libmuscle.manager.manager import Manager
 
@@ -18,20 +18,25 @@ from libmuscle.manager.manager import Manager
 __all__ = ['run_simulation']
 
 
-Pipe = Tuple[mp.connection.Connection, mp.connection.Connection]
+Pipe = Tuple[mpc.Connection, mpc.Connection]
 
 
 class MMPServerController:
-    def __init__(self, process: mp.Process, control_pipe: Pipe) -> None:
+    def __init__(
+            self, process: mp.Process, control_pipe: Pipe,
+            manager_location: str) -> None:
         """Create an MMPServerController.
 
         This class controls a manager running in a separate process.
 
         Args:
-            pipe: The control pipe for the server process.
+            process: The process the server is running in
+            control_pipe: The control pipe for the server process
+            manager_location: Network location of the manager
         """
         self._process = process
         self._control_pipe = control_pipe
+        self.manager_location = manager_location
 
     def stop(self) -> None:
         """Stop the server process.
@@ -53,7 +58,7 @@ def manager_process(control_pipe: Pipe, configuration: Configuration) -> None:
     """
     control_pipe[0].close()
     manager = Manager(configuration)
-    control_pipe[1].send(True)
+    control_pipe[1].send(manager.get_server_location())
 
     # wait for shutdown command
     control_pipe[1].recv()
@@ -77,12 +82,14 @@ def start_server_process(configuration: Configuration) -> MMPServerController:
     process.start()
     control_pipe[1].close()
     # wait for start
-    control_pipe[0].recv()
+    manager_location = control_pipe[0].recv()
 
-    return MMPServerController(process, control_pipe)
+    return MMPServerController(process, control_pipe, manager_location)
 
 
-def implementation_process(instance_id: str, implementation: Callable) -> None:
+def implementation_process(
+        instance_id: str, manager_location: str,
+        implementation: Callable) -> None:
     prefix_tag = '--muscle-prefix='
     name_prefix = str()
     index_prefix = list()   # type: List[int]
@@ -104,6 +111,12 @@ def implementation_process(instance_id: str, implementation: Callable) -> None:
             break
     else:
         sys.argv.append('--muscle-instance={}'.format(instance_id))
+
+    for arg in sys.argv:
+        if arg.startswith('--muscle-manager='):
+            break
+    else:
+        sys.argv.append(f'--muscle-manager={manager_location}')
 
     # chain call
     implementation()
@@ -183,7 +196,8 @@ def _split_reference(ref: Reference) -> Tuple[Reference, List[int]]:
     return name, index
 
 
-def run_instances(instances: Dict[str, Callable]) -> None:
+def run_instances(
+        instances: Dict[str, Callable], manager_location: str) -> None:
     """Runs the given instances and waits for them to finish.
 
     The instances are described in a dictionary with their instance
@@ -192,31 +206,24 @@ def run_instances(instances: Dict[str, Callable]) -> None:
     will be run in a separate process.
 
     Args:
-        instances: A dictionary of instances to run.
+        instances: A dictionary of instances to run
+        manager_location: Network location of the manager
     """
     instance_processes = list()
     for instance_id_str, implementation in instances.items():
-        mux.add_instance(Reference(instance_id_str))
-
-    for instance_id_str, implementation in instances.items():
         instance_id = Reference(instance_id_str)
-        process = mp.Process(target=implementation_process,
-                             args=(instance_id_str, implementation),
-                             name='Instance-{}'.format(instance_id))
+        process = mp.Process(
+                target=implementation_process,
+                args=(instance_id_str, manager_location, implementation),
+                name='Instance-{}'.format(instance_id))
         process.start()
-        mux.close_instance_ends(instance_id)
         instance_processes.append(process)
-
-    mux_process = mp.Process(target=mux.run, name='PipeCommMultiplexer')
-    mux_process.start()
-    mux.close_all_pipes()
 
     failed_processes = list()
     for instance_process in instance_processes:
         instance_process.join()
         if instance_process.exitcode != 0:
             failed_processes.append(instance_process)
-    mux_process.join()
 
     if len(failed_processes) > 0:
         failed_names = map(lambda x: x.name, failed_processes)
@@ -263,6 +270,6 @@ def run_simulation(
 
     controller = start_server_process(configuration)
     try:
-        run_instances(instances)
+        run_instances(instances, controller.manager_location)
     finally:
         controller.stop()

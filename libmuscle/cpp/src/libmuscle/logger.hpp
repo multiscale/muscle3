@@ -7,6 +7,8 @@
 #include <libmuscle/mmp_client.hpp>
 #include <libmuscle/logging.hpp>
 
+#include <string>
+
 
 namespace libmuscle { namespace impl {
 

@@ -1,209 +1,242 @@
-from concurrent import futures
 import logging
-import socket
-from typing import cast, Generator, List
+from typing import Any, cast, Generator, List
 
-import grpc
-from ymmsl import Reference, Settings
+import msgpack
+from ymmsl import Conduit, Identifier, Operator, Port, Reference, Settings
 
-from libmuscle.port import port_from_grpc
-from libmuscle.logging import LogLevel, Timestamp
+from libmuscle.logging import LogLevel
 from libmuscle.manager.instance_registry import (
         AlreadyRegistered, InstanceRegistry)
 from libmuscle.manager.logger import Logger
 from libmuscle.manager.topology_store import TopologyStore
-from libmuscle.util import (conduit_to_grpc, generate_indices,
-                            instance_indices, instance_to_kernel)
-
-import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
-import muscle_manager_protocol.muscle_manager_protocol_pb2_grpc as mmp_grpc
+from libmuscle.mcp.protocol import RequestType, ResponseType
+from libmuscle.mcp.tcp_transport_server import TcpTransportServer
+from libmuscle.mcp.transport_server import RequestHandler
+from libmuscle.timestamp import Timestamp
+from libmuscle.util import generate_indices, instance_indices
 
 
 _logger = logging.getLogger(__name__)
 
 
-class MMPServicer(mmp_grpc.MuscleManagerServicer):
-    """The MUSCLE Manager Protocol server.
+def decode_operator(data: str) -> Operator:
+    """Create an Operator from a MsgPack-compatible value."""
+    return Operator[data]
 
-    This class handles incoming requests from the instances comprising \
-    the multiscale simulation to be executed.
 
-    Args:
-        logger: The Logger component to log messages to.
-        settings: The global settings to serve to instances.
-        instance_registry: The database for instances.
-        topology_store: Keeps track of how to connect things.
-    """
+def decode_port(data: List[str]) -> Port:
+    """Create a Port from a MsgPack-compatible value."""
+    return Port(Identifier(data[0]), decode_operator(data[1]))
+
+
+def encode_conduit(conduit: Conduit) -> List[str]:
+    """Convert a Conduit to a MsgPack-compatible value."""
+    return [str(conduit.sender), str(conduit.receiver)]
+
+
+class MMPRequestHandler(RequestHandler):
+    """Handles Manager requests."""
     def __init__(
             self,
             logger: Logger,
             settings: Settings,
             instance_registry: InstanceRegistry,
-            topology_store: TopologyStore
-            ) -> None:
-        self.__logger = logger
-        self.__settings = settings
-        self.__instance_registry = instance_registry
-        self.__topology_store = topology_store
+            topology_store: TopologyStore):
+        """Create an MMPRequestHandler.
 
-    def SubmitLogMessage(
-            self,
-            request: mmp.LogMessage,
-            context: grpc.ServicerContext
-            ) -> mmp.LogResult:
-        """Forwards a submitted log message to the Logger."""
-        self.__logger.log_message(
-                request.instance_id,
-                Timestamp.from_grpc(request.timestamp),
-                LogLevel.from_grpc(request.level),
-                request.text)
-        return mmp.LogResult()
+        Args:
+            logger: The Logger component to log messages to.
+            settings: The global settings to serve to instances.
+            instance_registry: The database for instances.
+            topology_store: Keeps track of how to connect things.
+        """
+        self._logger = logger
+        self._settings = settings
+        self._instance_registry = instance_registry
+        self._topology_store = topology_store
 
-    def SubmitProfileEvents(
-            self,
-            request: mmp.Profile,
-            context: grpc.ServicerContext
-            ) -> mmp.ProfileResult:
-        """Forwards a submitted log message to the ProfilingStore."""
-        # TODO: store
-        return mmp.ProfileResult()
+    def handle_request(self, request: bytes) -> bytes:
+        """Handles a manager request.
 
-    def RequestSettings(
-            self,
-            request: mmp.SettingsRequest,
-            context: grpc.ServicerContext
-            ) -> mmp.SettingsResult:
-        """Returns the central base settings."""
-        settings = list()   # type: List[mmp.Setting]
-        for name, value in self.__settings.items():
-            if isinstance(value, str):
-                setting = mmp.Setting(
-                        name=str(name),
-                        value_type=mmp.SETTING_VALUE_TYPE_STRING,
-                        value_string=value)
-            elif isinstance(value, bool):
-                # a bool is an int in Python, so this needs to go before the
-                # branch for int
-                setting = mmp.Setting(
-                        name=str(name),
-                        value_type=mmp.SETTING_VALUE_TYPE_BOOL,
-                        value_bool=value)
-            elif isinstance(value, int):
-                setting = mmp.Setting(
-                        name=str(name),
-                        value_type=mmp.SETTING_VALUE_TYPE_INT,
-                        value_int=value)
-            elif isinstance(value, float):
-                setting = mmp.Setting(
-                        name=str(name),
-                        value_type=mmp.SETTING_VALUE_TYPE_FLOAT,
-                        value_float=value)
-            elif isinstance(value, list):
-                if len(value) == 0 or isinstance(value[0], float):
-                    value = cast(List[float], value)
-                    mmp_values = mmp.ListOfDouble(values=value)
-                    setting = mmp.Setting(
-                            name=str(name),
-                            value_type=mmp.SETTING_VALUE_TYPE_LIST_FLOAT,
-                            value_list_float=mmp_values)
-                elif isinstance(value[0], list):
-                    value = cast(List[List[float]], value)
-                    rows = list()
-                    for row in value:
-                        mmp_row = mmp.ListOfDouble(values=row)
-                        rows.append(mmp_row)
-                    mmp_rows = mmp.ListOfListOfDouble(values=rows)
+        Args:
+            request: The encoded request
 
-                    LLF = mmp.SETTING_VALUE_TYPE_LIST_LIST_FLOAT
-                    setting = mmp.Setting(
-                            name=str(name),
-                            value_type=LLF,
-                            value_list_list_float=mmp_rows)
-            settings.append(setting)
+        Returns:
+            response: An encoded response
+        """
+        req_list = msgpack.unpackb(request, raw=False)
+        req_type = req_list[0]
+        req_args = req_list[1:]
+        if req_type == RequestType.REGISTER_INSTANCE.value:
+            response = self._register_instance(*req_args)
+        elif req_type == RequestType.GET_PEERS.value:
+            response = self._get_peers(*req_args)
+        elif req_type == RequestType.DEREGISTER_INSTANCE.value:
+            response = self._deregister_instance(*req_args)
+        elif req_type == RequestType.GET_SETTINGS.value:
+            response = self._get_settings(*req_args)
+        elif req_type == RequestType.SUBMIT_LOG_MESSAGE.value:
+            response = self._submit_log_message(*req_args)
+        elif req_type == RequestType.SUBMIT_PROFILE_EVENTS.value:
+            response = self._submit_profile_events(*req_args)
 
-        return mmp.SettingsResult(setting_values=settings)
+        return cast(bytes, msgpack.packb(response, use_bin_type=True))
 
-    def RegisterInstance(
-            self,
-            request: mmp.RegistrationRequest,
-            context: grpc.ServicerContext
-            ) -> mmp.RegistrationResult:
-        """Handles an instance registration request."""
+    def _register_instance(
+            self, instance_id: str, locations: List[str],
+            ports: List[List[str]]) -> Any:
+        """Handle a register instance request.
+
+        Args:
+            instance_id: ID of the instance to register
+            locations: Locations where it can be reached
+
+        Returns:
+            A list containing the following values:
+
+            status (ResponseType): SUCCESS or ERROR
+            error_msg (str): An error message, only present if status
+                equals ERROR
+        """
+        port_objs = [decode_port(p) for p in ports]
         try:
-            ports = list(map(port_from_grpc, request.ports))
-            self.__instance_registry.add(
-                    Reference(str(request.instance_name)),
-                    list(request.network_locations),
-                    ports)
-            _logger.info(f'Registered instance {request.instance_name}')
-            return mmp.RegistrationResult(status=mmp.RESULT_STATUS_SUCCESS)
+            self._instance_registry.add(
+                Reference(instance_id), locations, port_objs)
+
+            _logger.info(f'Registered instance {instance_id}')
+            return [ResponseType.SUCCESS.value]
         except AlreadyRegistered:
-            return mmp.RegistrationResult(
-                    status=mmp.RESULT_STATUS_ERROR,
-                    error_message=('An instance with name {} was already'
-                                   ' registered').format(
-                                           request.instance_name))
+            return [
+                    ResponseType.ERROR.value,
+                    f'An instance with name {instance_id} was already'
+                    ' registered. Did you start a non-MPI component using'
+                    ' mpirun?']
 
-    def RequestPeers(
-            self,
-            request: mmp.PeerRequest,
-            context: grpc.ServicerContext
-            ) -> mmp.PeerResult:
-        """Handles a peer request."""
+    def _get_peers(self, instance_id: str) -> Any:
+        """Handle a get peers request.
+
+        Args:
+            instance_id: ID of the instance requesting peers
+
+        Returns:
+            A list containing the following values on success:
+
+            status (ResponseType): SUCCESS
+            conduits (List[List[str]]): Conduits from/to peers
+            dimensions (Dict[str, List[int]]): Dimensions of peer
+                components
+            locations (Dict[str, List[str]]): Locations where peer
+                instances can be contacted.
+
+            Or the following values on error:
+
+            status (ResponseType): ERROR
+            error_msg (str): An error message
+
+            Or the following values if the result is not yet available:
+
+            status (ResponseType): PENDING
+            status_msg (str): A message on what we're waiting for.
+        """
         # get info from yMMSL
-        instance = Reference(request.instance_name)
-        kernel = instance_to_kernel(instance)
-        if not self.__topology_store.has_kernel(kernel):
-            return mmp.PeerResult(status=mmp.RESULT_STATUS_ERROR,
-                                  error_message='Unknown kernel {}'.format(
-                                      kernel))
+        instance = Reference(instance_id)
+        component = instance.without_trailing_ints()
+        if not self._topology_store.has_kernel(component):
+            return [ResponseType.ERROR.value, f'Unknown component {component}']
 
-        conduits = self.__topology_store.get_conduits(kernel)
-        mmp_conduits = [conduit_to_grpc(c) for c in conduits]
+        conduits = self._topology_store.get_conduits(component)
+        mmp_conduits = [encode_conduit(c) for c in conduits]
 
-        peer_dims = self.__topology_store.get_peer_dimensions(kernel)
-        mmp_dimensions = [
-                mmp.PeerResult.PeerDimensions(peer_name=str(name),
-                                              dimensions=dims)
-                for name, dims in peer_dims.items()]
+        peer_dims = self._topology_store.get_peer_dimensions(component)
+        mmp_dimensions = {str(name): dims for name, dims in peer_dims.items()}
 
         # generate instances
-        peer_instances = self.__generate_peer_instances(instance)
         try:
-            instance_locations = [
-                    mmp.PeerResult.PeerLocations(
-                        instance_name=str(instance),
-                        locations=self.__instance_registry.get_locations(
-                            instance))
-                    for instance in peer_instances]
+            instance_locations = {
+                    str(peer): self._instance_registry.get_locations(peer)
+                    for peer in self._generate_peer_instances(instance)}
         except KeyError as e:
-            return mmp.PeerResult(status=mmp.RESULT_STATUS_PENDING,
-                                  error_message='Waiting for kernel {}'.format(
-                                      e.args[0]))
+            return [
+                    ResponseType.PENDING.value,
+                    f'Waiting for component {e.args[0]}']
 
-        _logger.debug(f'Sent peers to {request.instance_name}')
-        return mmp.PeerResult(
-                status=mmp.RESULT_STATUS_SUCCESS,
-                conduits=mmp_conduits,
-                peer_dimensions=mmp_dimensions,
-                peer_locations=instance_locations)
+        _logger.debug(f'Sent peers to {instance_id}')
+        return [
+                ResponseType.SUCCESS.value,
+                mmp_conduits, mmp_dimensions, instance_locations]
 
-    def DeregisterInstance(self, request: mmp.DeregistrationRequest,
-                           context: grpc.ServicerContext
-                           ) -> mmp.DeregistrationResult:
-        """Handles an instance deregistration request."""
+    def _deregister_instance(self, instance_id: str) -> Any:
+        """Handle a deregister instance request.
+
+        Args:
+            instance_id: ID of the instance to deregister
+
+        Returns:
+            A list containing the following values on success:
+
+            status (ResponseType): SUCCESS
+
+            Or the following if an error occurred:
+
+            status (ResponseType): ERROR
+            error_msg (str): An error message
+        """
         try:
-            self.__instance_registry.remove(Reference(request.instance_name))
-            _logger.info(f'Deregistered instance {request.instance_name}')
-            return mmp.DeregistrationResult(status=mmp.RESULT_STATUS_SUCCESS)
+            self._instance_registry.remove(Reference(instance_id))
+            _logger.info(f'Deregistered instance {instance_id}')
+            return [ResponseType.SUCCESS.value]
         except ValueError:
-            return mmp.DeregistrationResult(
-                    status=mmp.RESULT_STATUS_ERROR,
-                    error_message=('No instance with name {} was registered'
-                                   ).format(request.instance_name))
+            return [
+                    ResponseType.ERROR.value,
+                    f'No instance with name {instance_id} was registered']
 
-    def __generate_peer_instances(self, instance: Reference
-                                  ) -> Generator[Reference, None, None]:
+    def _get_settings(self) -> Any:
+        """Handle a get settings request.
+
+        Returns:
+            A list containing the following values on success:
+
+            status (ResponseType): SUCCESS
+            settings (Dict[str, SettingValue]): The global settings
+        """
+        return [
+                ResponseType.SUCCESS.value,
+                self._settings.as_ordered_dict()]
+
+    def _submit_log_message(
+            self, instance_id: str, timestamp: float, level: int, text: str
+            ) -> Any:
+        """Handle a submit log message request.
+
+        Args:
+            instance_id: Sending instance
+            timestamp: Time since epoch of the logged event
+            level: Log level of the message
+            text: Message text
+
+        Returns:
+            A list containing the following values on success:
+
+            status (ResponseType): SUCCESS
+        """
+        self._logger.log_message(
+                instance_id, Timestamp(timestamp), LogLevel(level), text)
+        return [ResponseType.SUCCESS.value]
+
+    def _submit_profile_events(self, events: List[List[Any]]) -> Any:
+        """Handle a submit profile events request.
+
+        Not implemented yet.
+
+        Returns:
+            A list containing the following values on success:
+
+            status (ResponseType): SUCCESS
+        """
+        return [ResponseType.SUCCESS.value]
+
+    def _generate_peer_instances(
+            self, instance: Reference) -> Generator[Reference, None, None]:
         """Generates the names of all peer instances of an instance.
 
         Args:
@@ -212,10 +245,10 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
         Yields:
             All peer instance identifiers.
         """
-        kernel = instance_to_kernel(instance)
+        component = instance.without_trailing_ints()
         indices = instance_indices(instance)
-        dims = self.__topology_store.kernel_dimensions[kernel]
-        all_peer_dims = self.__topology_store.get_peer_dimensions(kernel)
+        dims = self._topology_store.kernel_dimensions[component]
+        all_peer_dims = self._topology_store.get_peer_dimensions(component)
         for peer, peer_dims in all_peer_dims.items():
             base = peer
             for i in range(min(len(dims), len(peer_dims))):
@@ -224,17 +257,16 @@ class MMPServicer(mmp_grpc.MuscleManagerServicer):
             if dims >= peer_dims:
                 yield base
             else:
-
                 for peer_indices in generate_indices(peer_dims[len(dims):]):
                     yield base + peer_indices
 
 
-class MMPServer():
+class MMPServer:
     """The MUSCLE Manager Protocol server.
 
-    This class accepts connections from the instances comprising \
-    the multiscale model to be executed, and services them using an \
-    MMPServicer.
+    This class accepts connections from the instances comprising
+    the multiscale model to be executed, and services them using an
+    MMPRequestHandler.
     """
     def __init__(
             self,
@@ -243,22 +275,29 @@ class MMPServer():
             instance_registry: InstanceRegistry,
             topology_store: TopologyStore
             ) -> None:
-        self._instance_registry = instance_registry
-        self._servicer = MMPServicer(
+        """Create an MMPServer.
+
+        This starts a TCP Transport server and connects it to an
+        MMPRequestHandler, which uses the given components to service
+        the requests.
+
+        Args:
+            logger: Logger to send log messages to
+            settings: Settings component to get settings from
+            instance_registry: To register instances with and get
+                peer locations from
+            topology_store: To get peers and conduits from
+        """
+        self._handler = MMPRequestHandler(
                 logger, settings, instance_registry, topology_store)
-        self._server = grpc.server(futures.ThreadPoolExecutor())
-        mmp_grpc.add_MuscleManagerServicer_to_server(  # type: ignore
-                self._servicer, self._server)
-        self._server.add_insecure_port('[::]:9000')
-        self._server.start()
+        self._server = TcpTransportServer(self._handler)
 
     def get_location(self) -> str:
         """Returns this server's network location.
 
-        This is a string of the form <hostname>:<port>.
+        This is a string of the form tcp:<hostname>:<port>.
         """
-        hostname = socket.getfqdn()
-        return '{}:{}'.format(hostname, 9000)
+        return self._server.get_location()
 
     def stop(self) -> None:
         """Stops the server.
@@ -266,4 +305,4 @@ class MMPServer():
         This makes the server stop serving requests, and shuts down its
         background threads.
         """
-        self._server.stop(0)
+        self._server.close()

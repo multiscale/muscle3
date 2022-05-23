@@ -17,6 +17,8 @@ class MockMMPClient {
     public:
         explicit MockMMPClient(std::string const & location);
 
+        void close();
+
         void submit_log_message(LogMessage const & message);
 
         ymmsl::Settings get_settings();

@@ -27,19 +27,6 @@ int main(int argc, char *argv[]) {
     return RUN_ALL_TESTS();
 }
 
-// Helpers for accessing internal state
-namespace libmuscle { namespace impl {
-
-struct TestTimestamp {
-    static double seconds_(Timestamp const & timestamp) {
-        return timestamp.seconds_;
-    }
-};
-
-} }
-
-using libmuscle::impl::TestTimestamp;
-
 /* Mocks have internal state, which needs to be reset before each test. This
  * means that the tests are not reentrant, and cannot be run in parallel.
  * It's all fast enough, so that's not a problem.
@@ -57,7 +44,7 @@ TEST(libmuscle_logging, test_logger) {
 
     auto const & msg = MockMMPClient::last_submitted_log_message;
     ASSERT_EQ(msg.instance_id, "test_instance[10]");
-    ASSERT_GT(TestTimestamp::seconds_(msg.timestamp), 0.0);
+    ASSERT_GT(msg.timestamp.seconds, 0.0);
     ASSERT_EQ(msg.level, LogLevel::CRITICAL);
     ASSERT_EQ(msg.text, "Testing: 10 == 10");
 }

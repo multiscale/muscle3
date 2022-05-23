@@ -38,7 +38,8 @@ MPITcpBarrier::MPITcpBarrier(MPI_Comm const & communicator, int root)
         MPI_Bcast(&addr_size, 1, MPI_INT, root_, mpi_comm_);
         std::string addr(addr_size, ' ');
         MPI_Bcast(&addr[0], addr_size, MPI_SIGNED_CHAR, root_, mpi_comm_);
-        client_ = std::make_unique<TcpTransportClient>(addr);
+        std::vector<std::string> addrs = {addr};
+        client_ = std::make_unique<MPPClient>(addrs);
     }
 }
 

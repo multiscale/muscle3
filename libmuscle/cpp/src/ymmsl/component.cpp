@@ -1,4 +1,4 @@
-#include <ymmsl/compute_element.hpp>
+#include <ymmsl/component.hpp>
 
 
 namespace ymmsl { namespace impl {

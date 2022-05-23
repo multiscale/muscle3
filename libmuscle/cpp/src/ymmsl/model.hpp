@@ -7,10 +7,10 @@
 
 namespace ymmsl { namespace impl {
 
-/** A conduit transports data between compute elements.
+/** A conduit transports data between simulation components.
  *
- * A conduit has two endpoints, which are references to a Port on a Compute
- * Element. These references must be of one of the following forms:
+ * A conduit has two endpoints, which are references to a Port on a Component.
+ * These references must be of one of the following forms:
  *
  * - submodel.port
  * - namespace.submodel.port (or several namespace prefixes)
@@ -25,9 +25,9 @@ class Conduit {
         /** Create a Conduit.
          *
          * @param sender The sending port that this conduit is connected to,
-         *      including the compute element name and the port name.
+         *      including the component name and the port name.
          * @param receiver The receiving port that this conduit is connected
-         *      to, including the compute element name and the port name.
+         *      to, including the component name and the port name.
          */
         Conduit(std::string const & sender, std::string const & receiver);
 
@@ -42,9 +42,9 @@ class Conduit {
          */
         bool operator==(Conduit const & rhs) const;
 
-        /** Returns a reference to the sending compute element.
+        /** Returns a reference to the sending component.
          */
-        Reference sending_compute_element() const;
+        Reference sending_component() const;
 
         /** Returns the identity of the sending port.
          */
@@ -61,9 +61,9 @@ class Conduit {
          */
         std::vector<int> sending_slot() const;
 
-        /** Returns a reference to the receiving compute element.
+        /** Returns a reference to the receiving component.
          */
-        Reference receiving_compute_element() const;
+        Reference receiving_component() const;
 
         /** Returns the identity of the receiving port.
          */

@@ -527,7 +527,7 @@ std::string Instance::Impl::extract_manager_location_(
     return "tcp:default.example.com:9000";
 }
 
-/* Returns the compute element name of this instance, i.e. without the index.
+/* Returns the component name of this instance, i.e. without the index.
  */
 Reference Instance::Impl::name_() const {
     auto it = instance_name_.cbegin();
@@ -537,7 +537,7 @@ Reference Instance::Impl::name_() const {
     return Reference(instance_name_.cbegin(), it);
 }
 
-/* Returns the index of this instance, i.e. without the compute element.
+/* Returns the index of this instance, i.e. without the component.
  */
 std::vector<int> Instance::Impl::index_() const {
     std::vector<int> result;
@@ -579,7 +579,7 @@ void Instance::Impl::check_port_(std::string const & port_name) {
         std::ostringstream oss;
         oss << "Port '" << port_name << "' does not exist on '";
         oss << instance_name_ << "'. Please check the name and the list of";
-        oss << " ports you gave for this compute element.";
+        oss << " ports you gave for this component.";
         logger_->critical(oss.str());
         shutdown_();
         throw std::logic_error(oss.str());

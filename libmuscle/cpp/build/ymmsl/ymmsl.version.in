@@ -105,10 +105,10 @@
             "ymmsl::impl::Conduit::operator std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >() const";
             "ymmsl::impl::Conduit::operator std::string() const";
             "ymmsl::impl::Conduit::operator==(ymmsl::impl::Conduit const&) const";
-            "ymmsl::impl::Conduit::sending_compute_element() const";
+            "ymmsl::impl::Conduit::sending_component() const";
             "ymmsl::impl::Conduit::sending_port() const";
             "ymmsl::impl::Conduit::sending_slot() const";
-            "ymmsl::impl::Conduit::receiving_compute_element() const";
+            "ymmsl::impl::Conduit::receiving_component() const";
             "ymmsl::impl::Conduit::receiving_port() const";
             "ymmsl::impl::Conduit::receiving_slot() const";
             "ymmsl::impl::Conduit::check_reference_(ymmsl::impl::Reference const&) const";

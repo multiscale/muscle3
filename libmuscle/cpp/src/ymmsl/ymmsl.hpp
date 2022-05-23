@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ymmsl/compute_element.hpp>
+#include <ymmsl/component.hpp>
 #include <ymmsl/identity.hpp>
 #include <ymmsl/model.hpp>
 #include <ymmsl/settings.hpp>

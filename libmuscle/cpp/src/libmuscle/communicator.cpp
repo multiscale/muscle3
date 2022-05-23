@@ -280,17 +280,17 @@ Communicator::Ports_ Communicator::ports_from_conduits_(
         Operator oper;
         std::vector<int> port_peer_dims;
 
-        if (conduit.sending_compute_element() == kernel_) {
+        if (conduit.sending_component() == kernel_) {
             port_id = conduit.sending_port();
             oper = Operator::O_F;
             port_peer_dims = peer_manager_->get_peer_dims(
-                    conduit.receiving_compute_element());
+                    conduit.receiving_component());
         }
-        else if (conduit.receiving_compute_element() == kernel_) {
+        else if (conduit.receiving_component() == kernel_) {
             port_id = conduit.receiving_port();
             oper = Operator::F_INIT;
             port_peer_dims = peer_manager_->get_peer_dims(
-                    conduit.sending_compute_element());
+                    conduit.sending_component());
         }
         else
             continue;
@@ -308,12 +308,12 @@ Communicator::Ports_ Communicator::ports_from_conduits_(
 
 Port Communicator::settings_in_port_(std::vector<Conduit> const & conduits) const {
     for (auto const & conduit : conduits) {
-        if (conduit.receiving_compute_element() == kernel_) {
+        if (conduit.receiving_component() == kernel_) {
             Identifier port_id = conduit.receiving_port();
             if (port_id == "muscle_settings_in")
                 return Port(port_id, Operator::F_INIT, false,
                         peer_manager_->is_connected(port_id), index_.size(),
-                        peer_manager_->get_peer_dims(conduit.sending_compute_element()));
+                        peer_manager_->get_peer_dims(conduit.sending_component()));
         }
     }
     return Port("muscle_settings_in", Operator::F_INIT, false, false, index_.size(), {});

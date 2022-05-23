@@ -14,7 +14,7 @@
 
 namespace libmuscle { namespace impl {
 
-/** Represents a compute element instance in a MUSCLE3 simulation.
+/** Represents a component instance in a MUSCLE3 simulation.
  *
  * This class provides a low-level send/receive API for the instance to use.
  */
@@ -22,7 +22,7 @@ class Instance {
     public:
         /** Create an Instance.
          *
-         * For MPI-based compute elements, creating an Instance is a
+         * For MPI-based components, creating an Instance is a
          * collective operation, so it must be done in all processes
          * simultaneously, with the same communicator and the same root.
          *
@@ -49,7 +49,7 @@ class Instance {
          *     {Operator::O_F, {"port3[]"}}
          *     });
          *
-         * For MPI-based compute elements, creating an Instance is a
+         * For MPI-based components, creating an Instance is a
          * collective operation, so it must be done in all processes
          * simultaneously, with the same communicator and the same root.
          *
@@ -97,7 +97,7 @@ class Instance {
          * i.e. before the F_INIT operator, and its return value should
          * decide whether to enter that loop again.
          *
-         * MPI-based compute elements must execute the reuse loop in each
+         * MPI-based components must execute the reuse loop in each
          * process in parallel, and call this function at the top of the
          * reuse loop in each process.
          *
@@ -126,7 +126,7 @@ class Instance {
          * sit around waiting forever for a message that this instance was
          * supposed to send.
          *
-         * MPI-based compute elements may either call this function in all
+         * MPI-based components may either call this function in all
          * processes, or only in the root process (as passed to the
          * constructor).
          *
@@ -136,7 +136,7 @@ class Instance {
 
         /** Returns the value of a model setting.
          *
-         * MPI-based compute elements may call this function at any time
+         * MPI-based components may call this function at any time
          * within the reuse loop, in any or all processes, simultaneously or
          * not.
          *
@@ -148,7 +148,7 @@ class Instance {
 
         /** Returns the value of a model setting.
          *
-         * MPI-based compute elements may call this function at any time
+         * MPI-based components may call this function at any time
          * within the reuse loop, in any or all processes, simultaneously or
          * not.
          *
@@ -170,7 +170,7 @@ class Instance {
          * difference is that the port names never have `[]` at the end, even
          * if the port is a vector port.
          *
-         * MPI-based compute elements may call this function only in the
+         * MPI-based components may call this function only in the
          * root process.
          *
          * @return A map, indexed by operator, containing lists of port names.
@@ -181,7 +181,7 @@ class Instance {
 
         /** Returns whether the given port is connected.
          *
-         * MPI-based compute elements may call this function only in the
+         * MPI-based components may call this function only in the
          * root process.
          *
          * @param port The name of the port to inspect.
@@ -197,7 +197,7 @@ class Instance {
          * can pass a 'slot' argument when sending or receiving. It's like the
          * port is a vector of slots on which you can send or receive messages.
          *
-         * MPI-based compute elements may call this function only in the
+         * MPI-based components may call this function only in the
          * root process.
          *
          * This function returns True if the given port is a vector port, and
@@ -212,7 +212,7 @@ class Instance {
          * Scalar ports are never resizable. Whether a vector port is resizable
          * depends on what it is connected to.
          *
-         * MPI-based compute elements may call this function only in the
+         * MPI-based components may call this function only in the
          * root process.
          *
          * @param port Name of the port to inspect.
@@ -223,7 +223,7 @@ class Instance {
 
         /** Returns the current length of the port.
          *
-         * MPI-based compute elements may call this function only in the
+         * MPI-based components may call this function only in the
          * root process.
          *
          * @param port The name of the port to measure.
@@ -235,10 +235,10 @@ class Instance {
         /** Resizes the port to the given length.
          *
          * You should check whether the port is resizable using is_resizable()
-         * first; whether it is depends on how this compute element is wired up,
+         * first; whether it is depends on how this component is wired up,
          * so you should check.
          *
-         * MPI-based compute elements may call this function only in the
+         * MPI-based components may call this function only in the
          * root process.
          *
          * @param port Name of the port to resize.
@@ -253,7 +253,7 @@ class Instance {
          * Sending is non-blocking, a copy of the message will be made and
          * stored until the receiver is ready to receive it.
          *
-         * MPI-based compute elements may call this function either in all
+         * MPI-based components may call this function either in all
          * processes, or only in the root process. In both cases, the message
          * given by the root process will be sent, the others ignored.
          *
@@ -267,7 +267,7 @@ class Instance {
          * Sending is non-blocking, a copy of the message will be made and
          * stored until the receiver is ready to receive it.
          *
-         * MPI-based compute elements may call this function either in all
+         * MPI-based components may call this function either in all
          * processes, or only in the root process. In both cases, the message
          * given by the root process will be sent, the others ignored. You may
          * want to do a gather operation first to collect all the information
@@ -289,7 +289,7 @@ class Instance {
          * If the port you are receiving on is not connected, an exception will
          * be thrown.
          *
-         * MPI-based compute elements must call this function in all processes
+         * MPI-based components must call this function in all processes
          * simultaneously. The received message will be returned in the root
          * process, all other processes will receive a dummy message. It is
          * therefore up to the model code to scatter or broadcast the received
@@ -313,7 +313,7 @@ class Instance {
          * If the port you are receiving on is not connected, the default value
          * you specified will be returned exactly as you passed it.
          *
-         * MPI-based compute elements must call this function in all processes
+         * MPI-based components must call this function in all processes
          * simultaneously. The received message will be returned in the root
          * process, all other processes will receive a dummy message. It is
          * therefore up to the model code to scatter or broadcast the received
@@ -341,7 +341,7 @@ class Instance {
          * If the port you are receiving on is not connected, an exception will
          * be thrown.
          *
-         * MPI-based compute elements must call this function in all processes
+         * MPI-based components must call this function in all processes
          * simultaneously. The received message will be returned in the root
          * process, all other processes will receive a dummy message. It is
          * therefore up to the model code to scatter or broadcast the received
@@ -370,7 +370,7 @@ class Instance {
          * default, you really need the outside input) and the port is not
          * connected, you'll get a std::runtime_error thrown.
          *
-         * MPI-based compute elements must call this function in all processes
+         * MPI-based components must call this function in all processes
          * simultaneously. The received message will be returned in the root
          * process, all other processes will receive a dummy message. It is
          * therefore up to the model code to scatter or broadcast the received
@@ -394,7 +394,7 @@ class Instance {
         /** Receive a message with attached settings overlay.
          *
          * This function should not be used in submodels. It is intended for
-         * use by special compute elements that are ensemble-aware and have to
+         * use by special components that are ensemble-aware and have to
          * pass on overlay settings explicitly.
          *
          * Receiving is a blocking operation. This function will contact the
@@ -404,7 +404,7 @@ class Instance {
          * If the port you are receiving on is not connected, an exception will
          * be thrown.
          *
-         * MPI-based compute elements must call this function in all processes
+         * MPI-based components must call this function in all processes
          * simultaneously. The received message will be returned in the root
          * process, all other processes will receive a dummy message. It is
          * therefore up to the model code to scatter or broadcast the received
@@ -422,7 +422,7 @@ class Instance {
         /** Receive a message with attached settings overlay.
          *
          * This function should not be used in submodels. It is intended for
-         * use by special compute elements that are ensemble-aware and have to
+         * use by special components that are ensemble-aware and have to
          * pass on overlay settings explicitly.
          *
          * Receiving is a blocking operation. This function will contact the
@@ -432,7 +432,7 @@ class Instance {
          * If the port you are receiving on is not connected, an exception will
          * be thrown.
          *
-         * MPI-based compute elements must call this function in all processes
+         * MPI-based components must call this function in all processes
          * simultaneously. The received message will be returned in the root
          * process, all other processes will receive a dummy message. It is
          * therefore up to the model code to scatter or broadcast the received
@@ -451,7 +451,7 @@ class Instance {
         /** Receive a message with attached settings overlay.
          *
          * This function should not be used in submodels. It is intended for
-         * use by special compute elements that are ensemble-aware and have to
+         * use by special components that are ensemble-aware and have to
          * pass on overlay settings explicitly.
          *
          * Receiving is a blocking operation. This function will contact the
@@ -464,7 +464,7 @@ class Instance {
          * default, you really need the outside input) and the port is not
          * connected, you'll get a std::runtime_error thrown.
          *
-         * MPI-based compute elements must call this function in all processes
+         * MPI-based components must call this function in all processes
          * simultaneously. The received message will be returned in the root
          * process, all other processes will receive a dummy message. It is
          * therefore up to the model code to scatter or broadcast the received
@@ -486,7 +486,7 @@ class Instance {
         /** Receive a message with attached settings overlay.
          *
          * This function should not be used in submodels. It is intended for
-         * use by special compute elements that are ensemble-aware and have to
+         * use by special components that are ensemble-aware and have to
          * pass on overlay settings explicitly.
          *
          * Receiving is a blocking operation. This function will contact the
@@ -499,7 +499,7 @@ class Instance {
          * default, you really need the outside input) and the port is not
          * connected, you'll get a std::runtime_error thrown.
          *
-         * MPI-based compute elements must call this function in all processes
+         * MPI-based components must call this function in all processes
          * simultaneously. The received message will be returned in the root
          * process, all other processes will receive a dummy message. It is
          * therefore up to the model code to scatter or broadcast the received

@@ -5,7 +5,7 @@
 
 namespace libmuscle { namespace impl {
 
-/** Manages the current settings for a compute element instance.
+/** Manages the current settings for a component instance.
  */
 class SettingsManager {
     public:

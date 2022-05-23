@@ -70,7 +70,7 @@ class Communicator {
          * indexed by a Reference to an instance. Instance sets are multi-
          * dimensional arrays with sizes given by peer_dims.
          *
-         * @param conduits A list of conduits attached to this compute element,
+         * @param conduits A list of conduits attached to this component,
          *      as received from the manager.
          * @param peer_dims For each peer we share a conduit with, the
          *      dimensions of the instance set.

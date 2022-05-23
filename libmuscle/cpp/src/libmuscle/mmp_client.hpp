@@ -53,7 +53,7 @@ class MMPClient {
          */
         ymmsl::Settings get_settings();
 
-        /** Register a compute element instance with the manager.
+        /** Register a component instance with the manager.
          *
          * @param name Name of the instance in the simulation.
          * @param locations List of places where the instance can be reached.

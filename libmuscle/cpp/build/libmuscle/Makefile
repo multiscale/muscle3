@@ -208,7 +208,7 @@ libmuscle.pc:
 	@echo 'Version: $(muscle_version)' >>$@
 	@echo 'Requires: ymmsl = $(muscle_version)' >>$@
 	@echo 'Requires.private: msgpack >= 3.1.0' >>$@
-	@echo 'Cflags: -I$${includedir}' >>$@
+	@echo 'Cflags: -I$${includedir} -pthread' >>$@
 	@echo 'Libs: -L$${libdir} -lmuscle' >>$@
 
 libmuscle_mpi.pc:
@@ -223,6 +223,6 @@ libmuscle_mpi.pc:
 	@echo 'Version: $(muscle_version)' >>$@
 	@echo 'Requires: ymmsl = $(muscle_version)' >>$@
 	@echo 'Requires.private: msgpack >= 3.1.0' >>$@
-	@echo 'Cflags: -I$${includedir} -DMUSCLE_ENABLE_MPI' >>$@
+	@echo 'Cflags: -I$${includedir} -pthread -DMUSCLE_ENABLE_MPI' >>$@
 	@echo 'Libs: -L$${libdir} -lmuscle_mpi' >>$@
 

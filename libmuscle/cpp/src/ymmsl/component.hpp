@@ -21,7 +21,6 @@ enum class Operator {
     F_INIT = 1,
     O_I = 2,
     S = 3,
-    B = 4,
     O_F = 5
 };
 

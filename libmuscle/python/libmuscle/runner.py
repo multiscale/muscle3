@@ -5,6 +5,7 @@ useful for testing and prototyping. So we have a little bit of
 support for it in this module.
 """
 import multiprocessing as mp
+import multiprocessing.connection as mpc
 import sys
 from typing import Callable, Dict, List, Tuple, cast
 
@@ -17,7 +18,7 @@ from libmuscle.manager.manager import Manager
 __all__ = ['run_simulation']
 
 
-Pipe = Tuple[mp.connection.Connection, mp.connection.Connection]
+Pipe = Tuple[mpc.Connection, mpc.Connection]
 
 
 class MMPServerController:

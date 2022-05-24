@@ -17,10 +17,10 @@ TEST(ymmsl_model, conduit) {
     ASSERT_EQ(test_conduit.receiver[0], Identifier("submodel2"));
     ASSERT_EQ(test_conduit.receiver[1], Identifier("port2"));
 
-    ASSERT_EQ(test_conduit.sending_compute_element(), Identifier("submodel1"));
+    ASSERT_EQ(test_conduit.sending_component(), Identifier("submodel1"));
     ASSERT_EQ(test_conduit.sending_port(), Identifier("port1"));
     ASSERT_TRUE(test_conduit.sending_slot().empty());
-    ASSERT_EQ(test_conduit.receiving_compute_element(), Identifier("submodel2"));
+    ASSERT_EQ(test_conduit.receiving_component(), Identifier("submodel2"));
     ASSERT_EQ(test_conduit.receiving_port(), Identifier("port2"));
     ASSERT_TRUE(test_conduit.receiving_slot().empty());
 
@@ -39,11 +39,11 @@ TEST(ymmsl_model, conduit) {
     Conduit test_conduit3("x.y[1][2]", "a.b[3]");
     ASSERT_EQ(test_conduit3.sender[2], ReferencePart(1));
     ASSERT_EQ(test_conduit3.sender[3], ReferencePart(2));
-    ASSERT_EQ(test_conduit3.sending_compute_element(), Identifier("x"));
+    ASSERT_EQ(test_conduit3.sending_component(), Identifier("x"));
     ASSERT_EQ(test_conduit3.sending_port(), Identifier("y"));
     ASSERT_EQ(test_conduit3.sending_slot(), (std::vector<int>{1, 2}));
     ASSERT_EQ(test_conduit3.receiver[2], ReferencePart(3));
-    ASSERT_EQ(test_conduit3.receiving_compute_element(), Identifier("a"));
+    ASSERT_EQ(test_conduit3.receiving_component(), Identifier("a"));
     ASSERT_EQ(test_conduit3.receiving_port(), Identifier("b"));
     ASSERT_EQ(test_conduit3.receiving_slot(), std::vector<int>{3});
 }

@@ -55,6 +55,8 @@ namespace {
             case ymmsl::Operator::O_F:
                 return Data("O_F");
         }
+        // can't happen, but silence compiler warning
+        throw std::runtime_error("Invalid operator");
     }
 
     Data encode_port(ymmsl::Port const & port) {

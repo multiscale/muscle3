@@ -1,4 +1,4 @@
-#include <ymmsl/compute_element.hpp>
+#include <ymmsl/component.hpp>
 
 
 namespace ymmsl { namespace impl {
@@ -12,8 +12,7 @@ bool allows_sending(Operator op) {
 bool allows_receiving(Operator op) {
     return (op == Operator::NONE) ||
            (op == Operator::F_INIT) ||
-           (op == Operator::S) ||
-           (op == Operator::B);
+           (op == Operator::S);
 }
 
 Port::Port(Identifier const & name, Operator oper)

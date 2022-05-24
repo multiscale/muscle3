@@ -3,15 +3,15 @@
 #include <ymmsl/identity.hpp>
 
 
-/** @file compute_element.hpp
+/** @file component.hpp
  *
- * Contains helper classes for defining compute elements.
+ * Contains helper classes for defining simulation components.
  */
 
 /** The global ymmsl namespace. */
 namespace ymmsl { namespace impl {
 
-/** An operator of a Compute Element.
+/** An operator of a component.
  *
  * This is a combination of the Submodel Execution Loop operators,
  * and operators for other components such as mappers.
@@ -21,7 +21,6 @@ enum class Operator {
     F_INIT = 1,
     O_I = 2,
     S = 3,
-    B = 4,
     O_F = 5
 };
 
@@ -39,10 +38,10 @@ bool allows_sending(Operator op);
  */
 bool allows_receiving(Operator op);
 
-/** A port on a compute element.
+/** A port on a component.
  *
- * Ports are used by compute elements to send or receive messages on. They are
- * connected by conduits to enable communication between compute elements.
+ * Ports are used by components to send or receive messages on. They are
+ * connected by conduits to enable communication between components.
  */
 struct Port {
     Identifier name;    /// The name of the port.

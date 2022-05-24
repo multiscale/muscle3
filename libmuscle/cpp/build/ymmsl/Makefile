@@ -14,7 +14,7 @@ dobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.do)
 dlobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.dlo)
 deps := $(source_files:$(srcdir)%.cpp=$(objdir)%.d)
 
-public_headers := ymmsl/compute_element.hpp ymmsl/identity.hpp ymmsl/model.hpp
+public_headers := ymmsl/component.hpp ymmsl/identity.hpp ymmsl/model.hpp
 public_headers += ymmsl/settings.hpp ymmsl/settings.tpp ymmsl/ymmsl.hpp
 installed_headers := $(public_headers:%=$(PREFIX)/include/%)
 

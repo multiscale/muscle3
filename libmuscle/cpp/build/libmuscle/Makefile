@@ -93,6 +93,8 @@ install: all $(installed_headers) $(installed_pkg_config_files)
 	@mkdir -p $(PREFIX)/lib
 	cp libmuscle*.a $(PREFIX)/lib
 	cp libmuscle*.so $(PREFIX)/lib
+	@mkdir -p $(PREFIX)/bin
+	sed -e 's@%PREFIX%@$(PREFIX)@g' muscle3.env.in >$(PREFIX)/bin/muscle3.env
 	for pc in $(PREFIX)/lib/pkgconfig/* ; do sed -i -e 's@^prefix=.*$$@prefix=$(PREFIX)@' $$pc ; done
 
 

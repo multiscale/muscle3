@@ -6,6 +6,7 @@ export major_version := $(shell sed -e 's/^\([0-9]*\)\..*/\1/' $(version_file))
 export minor_version := $(shell sed -e 's/^[0-9]*\.\([0-9]*\)\..*/\1/' $(version_file))
 export patch_version := $(shell sed -e 's/^[0-9]*\.[0-9]*\.\([0-9]*\).*/\1/' $(version_file))
 
+include $(TOOLDIR)/check_tools.make
 
 .PHONY: all
 all: cpp fortran

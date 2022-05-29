@@ -1,5 +1,3 @@
-include check_tools.make
-
 .PHONY: all
 all: ymmsl libmuscle
 

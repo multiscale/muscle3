@@ -2,7 +2,7 @@ FC ?= gfortran
 FFLAGS += -std=f2003 -g $(shell pkg-config --cflags libmuscle_fortran ymmsl_fortran)
 LDFLAGS := $(shell pkg-config --libs libmuscle_fortran ymmsl_fortran)
 
-ifdef MUSCLE_ENABLE_MPI
+ifdef MUSCLE_ENABLE_FORTRAN_MPI
     MPIFC ?= mpifort
     MPI_FFLAGS := -std=f2003 -g $(shell pkg-config --cflags libmuscle_mpi_fortran ymmsl_fortran)
     MPI_LDFLAGS := $(shell pkg-config --libs libmuscle_mpi_fortran ymmsl_fortran)
@@ -12,7 +12,7 @@ endif
 binaries := reaction diffusion mc_driver load_balancer
 mpi_binaries := reaction_mpi
 
-ifdef MUSCLE_ENABLE_MPI
+ifdef MUSCLE_ENABLE_FORTRAN_MPI
     binaries += $(mpi_binaries)
 endif
 

@@ -35,23 +35,23 @@ endif
 
 .PHONY: python
 python:
-	make -C python all
+	$(MAKE) -C python all
 
 .PHONY: cpp
 cpp:
-	make -C cpp all
+	$(MAKE) -C cpp all
 
 .PHONY: fortran
 fortran:
-	make -C fortran all
+	$(MAKE) -C fortran all
 
 rd_implementations.ymmsl: rd_implementations.ymmsl.in
 	sed -e "s^MUSCLE3_EXAMPLES^$(shell pwd)^g" $^ | sed -e "s^MUSCLE3_HOME^${MUSCLE3_HOME}^g" >$@
 
 .PHONY: clean
 clean:
-	make -C cpp clean
-	make -C fortran clean
-	make -C python clean
+	$(MAKE) -C cpp clean
+	$(MAKE) -C fortran clean
+	$(MAKE) -C python clean
 	rm -f rd_implementations.ymmsl
 	rm -rf run_*

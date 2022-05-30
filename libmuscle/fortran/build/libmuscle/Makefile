@@ -43,23 +43,23 @@ libmuscle: $(libs)
 
 .PHONY: tests
 tests:
-	make -C tests tests
+	$(MAKE) -C tests tests
 
 .PHONY: test
 test: tests
-	make -C tests test
+	$(MAKE) -C tests test
 
 .PHONY: clean
 clean:
 	rm -f *.o *.lo *.mo *.mlo *.mod *.a *.so
 	rm -f mod_dump/*.mod
 	rm -f libmuscle_fortran.pc libmuscle_mpi_fortran.pc
-	make -C tests clean
+	$(MAKE) -C tests clean
 
 .PHONY: distclean
 distclean: clean
 	rm -f $(objects) $(modules) $(libs)
-	make -C tests distclean
+	$(MAKE) -C tests distclean
 
 .PHONY: install
 install: $(installed_sources) $(installed_modules) $(installed_pkg_config_files)

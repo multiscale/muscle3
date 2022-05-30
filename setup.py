@@ -50,7 +50,7 @@ setup(
         'click>=6',
         'msgpack',
         'netifaces',
-        'numpy>=1.12,<1.23',
+        'numpy>=1.12,<=1.25',
         'qcg-pilotjob==0.13',
         'typing_extensions<4',
         'ymmsl @ git+https://github.com/multiscale/ymmsl-python.git@develop#egg=ymmsl'          # Also in CI, update there as well

@@ -1,3 +1,5 @@
+ifeq "$(filter $(MAKECMDGOALS), clean)" ""
+
 CXX ?= g++
 CXXFLAGS += -std=c++14 -g $(shell pkg-config --cflags libmuscle ymmsl)
 LDFLAGS += $(shell pkg-config --libs libmuscle ymmsl)
@@ -8,6 +10,7 @@ ifdef MUSCLE_ENABLE_CPP_MPI
     MPI_LDFLAGS := $(shell pkg-config --libs libmuscle_mpi ymmsl)
 endif
 
+endif
 
 binaries := reaction diffusion mc_driver load_balancer
 mpi_binaries := reaction_mpi

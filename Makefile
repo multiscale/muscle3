@@ -10,11 +10,13 @@ include $(TOOLDIR)/check_tools.make
 
 .PHONY: all
 all: cpp fortran
+ifeq "$(filter $(MAKECMDGOALS), install)" ""
 	@echo
 	@echo '    All done, now you can install MUSCLE 3 using:'
 	@echo
 	@echo '        PREFIX=/path/to/install make install'
 	@echo
+endif
 
 .PHONY: test
 test: test_python test_scripts test_cpp test_fortran

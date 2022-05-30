@@ -1,3 +1,5 @@
+ifeq "$(filter $(MAKECMDGOALS), clean)" ""
+
 FC ?= gfortran
 FFLAGS += -std=f2003 -g $(shell pkg-config --cflags libmuscle_fortran ymmsl_fortran)
 LDFLAGS := $(shell pkg-config --libs libmuscle_fortran ymmsl_fortran)
@@ -8,6 +10,7 @@ ifdef MUSCLE_ENABLE_FORTRAN_MPI
     MPI_LDFLAGS := $(shell pkg-config --libs libmuscle_mpi_fortran ymmsl_fortran)
 endif
 
+endif
 
 binaries := reaction diffusion mc_driver load_balancer
 mpi_binaries := reaction_mpi

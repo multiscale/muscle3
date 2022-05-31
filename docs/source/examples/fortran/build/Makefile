@@ -29,8 +29,8 @@ clean:
 
 
 %: ../%.f03
-	LD_LIBRARY_PATH=$(MUSCLE3_HOME)/lib:$(LD_LIBRARY_PATH) $(FC) $(FFLAGS) -o $@ $^ $(LDFLAGS)
+	$(FC) $(FFLAGS) -o $@ $^ $(LDFLAGS)
 
 %_mpi: ../%_mpi.f03
-	LD_LIBRARY_PATH=$(MUSCLE3_HOME)/lib:$(LD_LIBRARY_PATH) $(MPIFC) $(MPI_FFLAGS) -o $@ $^ $(MPI_LDFLAGS)
+	$(MPIFC) $(MPI_FFLAGS) -o $@ $^ $(MPI_LDFLAGS)
 

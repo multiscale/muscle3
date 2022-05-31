@@ -29,8 +29,8 @@ clean:
 
 
 %: ../%.cpp
-	LD_LIBRARY_PATH=$(MUSCLE3_HOME)/lib:$(LD_LIBRARY_PATH) $(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 %_mpi: ../%_mpi.cpp
-	LD_LIBRARY_PATH=$(MUSCLE3_HOME)/lib:$(LD_LIBRARY_PATH) $(MPICXX) $(MPI_CXXFLAGS) -o $@ $^ $(MPI_LDFLAGS)
+	$(MPICXX) $(MPI_CXXFLAGS) -o $@ $^ $(MPI_LDFLAGS)
 

@@ -6,14 +6,17 @@ export major_version := $(shell sed -e 's/^\([0-9]*\)\..*/\1/' $(version_file))
 export minor_version := $(shell sed -e 's/^[0-9]*\.\([0-9]*\)\..*/\1/' $(version_file))
 export patch_version := $(shell sed -e 's/^[0-9]*\.[0-9]*\.\([0-9]*\).*/\1/' $(version_file))
 
+include $(TOOLDIR)/check_tools.make
 
 .PHONY: all
 all: cpp fortran
+ifeq "$(filter $(MAKECMDGOALS), install)" ""
 	@echo
 	@echo '    All done, now you can install MUSCLE 3 using:'
 	@echo
 	@echo '        PREFIX=/path/to/install make install'
 	@echo
+endif
 
 .PHONY: test
 test: test_python test_scripts test_cpp test_fortran
@@ -44,7 +47,7 @@ test_install:
 
 .PHONY: test_examples
 test_examples: test_install
-	export MUSCLE3_HOME=$(CURDIR)/libmuscle/build/test_install && $(MAKE) -C docs/source/examples test
+	. $(CURDIR)/libmuscle/build/test_install/bin/muscle3.env && $(MAKE) -C docs/source/examples test
 
 
 .PHONY: install
@@ -56,46 +59,45 @@ install: all
 	@echo '*                                                                  *'
 	@echo "    MUSCLE 3 is now installed in $(PREFIX)."
 	@echo '*                                                                  *'
-	@echo '*   To build your model with MUSCLE 3, use the following options   *'
-	@echo "*   on your compiler's command line:                               *"
+	@echo '*   To set up your environment, run:                               *'
+	@echo '*                                                                  *'
+	@echo "    source $(PREFIX)/bin/muscle3.env"
+	@echo '*                                                                  *'
+	@echo '*   To then build your model with MUSCLE 3, use the following      *'
+	@echo "*   options on your compiler's command line:                       *"
 	@echo '*                                                                  *'
 	@echo '*   C++ without MPI:                                               *'
 	@echo '*                                                                  *'
-	@echo "        Compiling: -I$(PREFIX)/include"
-	@echo "        Linking: -L$(PREFIX)/lib -lymmsl -lmuscle"
+	@echo '*       Compiling: -I$${MUSCLE3_HOME}/include                       *'
+	@echo '*       Linking: -L$${MUSCLE3_HOME}/lib -lymmsl -lmuscle            *'
 	@echo '*                                                                  *'
 	@echo '*   C++ with MPI:                                                  *'
 	@echo '*                                                                  *'
-	@echo "        Compiling: -I$(PREFIX)/include -DMUSCLE_ENABLE_MPI"
-	@echo "        Linking: -L$(PREFIX)/lib -lymmsl -lmuscle_mpi"
+	@echo '*       Compiling: -I$${MUSCLE3_HOME}/include -DMUSCLE_ENABLE_MPI   *'
+	@echo '*       Linking: -L$${MUSCLE3_HOME}/lib -lymmsl -lmuscle_mpi        *'
 	@echo '*                                                                  *'
 	@echo '*   Fortran without MPI:                                           *'
 	@echo '*                                                                  *'
-	@echo "        Compiling: -I$(PREFIX)/include"
-	@echo "        Linking: -L$(PREFIX)/lib -lymmsl_fortran"
-	@echo "                 -lmuscle_fortran -lymmsl -lmuscle"
+	@echo '*       Compiling: -I$${MUSCLE3_HOME}/include                       *'
+	@echo '*       Linking: -L$${MUSCLE3_HOME}/lib -lymmsl_fortran             *'
+	@echo '*                -lmuscle_fortran -lymmsl -lmuscle                 *'
 	@echo '*                                                                  *'
 	@echo '*   Fortran with MPI:                                              *'
 	@echo '*                                                                  *'
-	@echo "        Compiling: -I$(PREFIX)/include"
-	@echo "        Linking: -L$(PREFIX)/lib -lymmsl_fortran"
-	@echo "                 -lmuscle_mpi_fortran -lymmsl -lmuscle_mpi"
+	@echo '*       Compiling: -I$${MUSCLE3_HOME}/include                       *'
+	@echo '*       Linking: -L$${MUSCLE3_HOME}/lib -lymmsl_fortran             *'
+	@echo '*                -lmuscle_mpi_fortran -lymmsl -lmuscle_mpi         *'
 	@echo '*                                                                  *'
 	@echo '*                                                                  *'
-	@echo "    You can also use pkg-config. Add $(PREFIX)/lib/pkgconfig"
-	@echo '*   to your PKG_CONFIG_PATH environment variable and use module    *'
-	@echo '*   names libmuscle, libmuscle_mpi, libmuscle_fortran or           *'
-	@echo '*   libmuscle_mpi_fortran and ymmsl or ymmsl_fortran.              *'
-	@echo '*                                                                  *'
-	@echo '*   If the directory you installed MUSCLE 3 in is not in your      *'
-	@echo "*   system's library search path, then you have to set             *"
-	@echo '*   LD_LIBRARY_PATH before compiling, linking or running:          *'
-	@echo '*                                                                  *'
-	@echo "       export LD_LIBRARY_PATH=\$$LD_LIBRARY_PATH:$(PREFIX)/lib"
+	@echo '*   You can also use pkg-config, with module names libmuscle,      *'
+	@echo '*   libmuscle_mpi, libmuscle_fortran, or libmuscle_mpi_fortran,    *'
+	@echo '*   and for ymmsl either ymmsl or ymmsl_fortran. Be sure to        *'
+	@echo '*   source the env file as described above, or pkg-config will not *'
+	@echo '*   be able to find MUSCLE3.                                       *'
 	@echo '*                                                                  *'
 	@echo '*   If you get a "cannot open shared object file" error which      *'
-	@echo '*   mentions libmuscle or ymmsl, then this is most likely the      *'
-	@echo '*   problem, and setting LD_LIBRARY_PATH will fix it.              *'
+	@echo '*   mentions libmuscle or ymmsl, then you have probably forgotten  *'
+	@echo '*   source the env file.                                           *'
 	@echo '*                                                                  *'
 	@echo '********************************************************************'
 
@@ -149,11 +151,11 @@ fortran_tests: fortran cpp_tests
 .PHONY: bindings
 bindings:
 	scripts/make_ymmsl_api.py --fortran-c-wrappers >libmuscle/cpp/src/ymmsl/bindings/ymmsl_fortran_c.cpp
-	scripts/make_ymmsl_api.py --fortran-module >libmuscle/fortran/src/ymmsl/ymmsl.f03
+	scripts/make_ymmsl_api.py --fortran-module >libmuscle/fortran/src/ymmsl/ymmsl.f90
 	scripts/make_ymmsl_api.py --fortran-exports libmuscle/cpp/build/ymmsl/ymmsl.version.in libmuscle/cpp/build/ymmsl/ymmsl.version
 	scripts/make_libmuscle_api.py --fortran-c-wrappers >libmuscle/cpp/src/libmuscle/bindings/libmuscle_fortran_c.cpp
-	scripts/make_libmuscle_api.py --fortran-module >libmuscle/fortran/src/libmuscle/libmuscle.f03
+	scripts/make_libmuscle_api.py --fortran-module >libmuscle/fortran/src/libmuscle/libmuscle.f90
 	scripts/make_libmuscle_api.py --fortran-exports libmuscle/cpp/build/libmuscle/libmuscle.version.in libmuscle/cpp/build/libmuscle/libmuscle.version
 	scripts/make_libmuscle_api.py --fortran-mpi-c-wrappers >libmuscle/cpp/src/libmuscle/bindings/libmuscle_mpi_fortran_c.cpp
-	scripts/make_libmuscle_api.py --fortran-mpi-module >libmuscle/fortran/src/libmuscle/libmuscle_mpi.f03
+	scripts/make_libmuscle_api.py --fortran-mpi-module >libmuscle/fortran/src/libmuscle/libmuscle_mpi.f90
 	scripts/make_libmuscle_api.py --fortran-mpi-exports libmuscle/cpp/build/libmuscle/libmuscle.version.in libmuscle/cpp/build/libmuscle/libmuscle_mpi.version

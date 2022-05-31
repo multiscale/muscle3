@@ -1,11 +1,11 @@
 # Get source paths
 srcdir := $(CURDIR)/../../src/ymmsl
 
-sources := $(srcdir)/ymmsl.f03
-objects := $(sources:$(srcdir)/%.f03=%.o)
-lobjects := $(sources:$(srcdir)/%.f03=%.lo)
+sources := $(srcdir)/ymmsl.f90
+objects := $(sources:$(srcdir)/%.f90=%.o)
+lobjects := $(sources:$(srcdir)/%.f90=%.lo)
 libs := libymmsl_fortran.a libymmsl_fortran.so
-modules := $(sources:$(srcdir)/%.f03=%.mod)
+modules := $(sources:$(srcdir)/%.f90=%.mod)
 pkg_config_files := ymmsl_fortran.pc
 
 installed_sources := $(sources:$(srcdir)/%=$(PREFIX)/include/%)
@@ -39,10 +39,10 @@ distclean: clean
 .PHONY: install
 install: $(installed_sources) $(installed_modules) $(installed_libs) $(installed_pkg_config_files)
 
-%.o: $(srcdir)/%.f03
+%.o: $(srcdir)/%.f90
 	$(FC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS)
 
-%.lo: $(srcdir)/%.f03
+%.lo: $(srcdir)/%.f90
 	$(FC) -c -fPIC -Jmod_dump $(FFLAGS) $< -o $@ $(LDFLAGS)
 
 %.mod: %.o
@@ -53,7 +53,7 @@ lib%_fortran.a: %.o
 lib%_fortran.so: %.lo
 	$(FC) -shared -o $@ $^ $(LDFLAGS)
 
-$(PREFIX)/include/%.f03: $(srcdir)/%.f03
+$(PREFIX)/include/%.f90: $(srcdir)/%.f90
 	@mkdir -p $(@D)
 	cp $< $@
 

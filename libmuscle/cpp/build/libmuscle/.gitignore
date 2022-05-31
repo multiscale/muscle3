@@ -4,4 +4,5 @@
 !libmuscle.version
 !libmuscle_mpi.version
 !libmuscle.version.in
+!muscle3.env.in
 !tests

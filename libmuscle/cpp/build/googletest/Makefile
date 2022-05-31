@@ -20,5 +20,5 @@ googletest-release-$(googletest_VERSION): release-$(googletest_VERSION).tar.gz
 googletest: googletest-release-$(googletest_VERSION)
 	cd googletest-release-$(googletest_VERSION) && mkdir -p build
 	cd googletest-release-$(googletest_VERSION)/build && cmake -DCMAKE_INSTALL_PREFIX=$(CURDIR)/googletest ..
-	cd googletest-release-$(googletest_VERSION)/build && make -j $(NCORES) && make install
+	cd googletest-release-$(googletest_VERSION)/build && $(MAKE) -j $(NCORES) && make install
 

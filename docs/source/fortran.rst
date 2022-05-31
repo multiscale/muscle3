@@ -115,8 +115,8 @@ the state in a loop until we reach the final simulation time.
 
 The MUSCLE version in Fortran looks quite similar to the Python version:
 
-.. literalinclude:: examples/fortran/reaction.f03
-  :caption: ``docs/source/examples/fortran/reaction.f03``
+.. literalinclude:: examples/fortran/reaction.f90
+  :caption: ``docs/source/examples/fortran/reaction.f90``
   :language: fortran
 
 
@@ -475,8 +475,8 @@ If you've studied the above carefully, and have seen the Python version of the
 diffusion model, then you should now be able to understand the Fortran diffusion
 model below:
 
-.. literalinclude:: examples/fortran/diffusion.f03
-  :caption: ``docs/source/examples/fortran/diffusion.f03``
+.. literalinclude:: examples/fortran/diffusion.f90
+  :caption: ``docs/source/examples/fortran/diffusion.f90``
   :language: fortran
 
 

@@ -26,13 +26,14 @@ setup(
     license='Apache License 2.0',
     keywords=['multiscale', 'coupling', 'MUSCLE'],
     classifiers=[
-        'Development Status :: 1 - Planning',
+        'Development Status :: 4 - Beta',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: POSIX :: Linux',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8'],
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10'],
 
     packages=_muscle3_packages,
     package_dir={
@@ -44,12 +45,12 @@ setup(
             'muscle_manager=muscle3.muscle_manager:manage_simulation',
             'muscle3=muscle3.muscle3:muscle3']
     },
-    python_requires='>=3.5, <4',
+    python_requires='>=3.6, <4',
     install_requires=[
         'click>=6',
         'msgpack',
         'netifaces',
-        'numpy>=1.12,<1.23',
+        'numpy>=1.12,<=1.25',
         'qcg-pilotjob==0.13',
         'typing_extensions<4',
         'ymmsl @ git+https://github.com/multiscale/ymmsl-python.git@develop#egg=ymmsl'          # Also in CI, update there as well
@@ -58,9 +59,7 @@ setup(
         'dev': [
             'sphinx<3.2',
             'sphinx_rtd_theme',
-            'sphinx-fortran',
-            'yapf',
-            'isort'
+            'sphinx-fortran'
         ]
     },
 )

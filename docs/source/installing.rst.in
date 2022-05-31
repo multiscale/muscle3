@@ -424,9 +424,9 @@ almost compatible. The one issue is that the ``.mod`` files created by the GNU
 compiler (and installed when you install ``libmuscle``) cannot be read by the
 Intel compiler.
 
-To solve this, you need to use the corresponding ``.f03`` files instead. These
-are installed by in ``<PREFIX>/include``, and are called ``libmuscle.f03``,
-``ymmsl.f03``, and ``libmuscle_mpi.f03``. You compile these as you would any
+To solve this, you need to use the corresponding ``.f90`` files instead. These
+are installed by in ``<PREFIX>/include``, and are called ``libmuscle.f90``,
+``ymmsl.f90``, and ``libmuscle_mpi.f90``. You compile these as you would any
 other source file in your submodel, and then link them with rest of the submodel
 and the shared library as described above.
 

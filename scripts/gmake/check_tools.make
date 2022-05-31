@@ -38,23 +38,65 @@ else
     $(info - Will compile C++ files using $(CXX).)
 endif
 
-# Check MPI C++ compiler, if MPI is enabled
-ifdef MUSCLE_ENABLE_MPI
-    $(info )
-    $(info Looking for MPI C++ compiler...)
-    tool_var := MPICXX
-    include $(TOOLDIR)/check_override.make
+# Check MPI C++ compiler, and enable MPI if found
+$(info )
+$(info Looking for MPI C++ compiler...)
+tool_var := MPICXX
+include $(TOOLDIR)/check_override.make
 
-    tool_command := mpi$(CXX)
-    include $(TOOLDIR)/detect_tool.make
-    tool_command := mpic++
-    include $(TOOLDIR)/detect_tool.make
+tool_command := mpi$(CXX)
+include $(TOOLDIR)/detect_tool.make
+tool_command := mpic++
+include $(TOOLDIR)/detect_tool.make
 
-    ifndef MPICXX
-        $(error - No MPI C++ compiler found! Maybe there's no MPI installed?)
-    else
-        $(info - Will compile MPI C++ files using $(MPICXX).)
-    endif
+ifndef MPICXX
+    $(info - No MPI C++ compiler found! Maybe there's no MPI installed?)
+    $(info - Building without MPI support)
+else
+    $(info - Will compile MPI C++ files using $(MPICXX).)
+    export MUSCLE_ENABLE_CPP_MPI := 1
+endif
+
+# Check Fortran compiler
+$(info )
+$(info Looking for Fortran compiler...)
+tool_var := FC
+include $(TOOLDIR)/check_override.make
+
+tool_command := gfortran
+include $(TOOLDIR)/detect_tool_implicit.make
+tool_command := f95
+include $(TOOLDIR)/detect_tool_implicit.make
+tool_command := f77
+include $(TOOLDIR)/detect_tool_implicit.make
+
+ifeq ($(origin FC), default)
+    $(info - No Fortran compiler found! Please install gfortran.)
+    $(info - Not building Fortran bindings.)
+    export MUSCLE_DISABLE_FORTRAN := 1
+else
+    $(info - Will compile Fortran files using $(FC).)
+endif
+
+# Check MPI Fortran compiler
+$(info )
+$(info Looking for MPI Fortran compiler...)
+tool_var := MPIFC
+include $(TOOLDIR)/check_override.make
+
+tool_command := mpi$(FC)
+include $(TOOLDIR)/detect_tool.make
+tool_command := mpifort
+include $(TOOLDIR)/detect_tool.make
+tool_command := mpif90
+include $(TOOLDIR)/detect_tool.make
+
+ifndef MPIFC
+    $(info - No MPI Fortran compiler found!)
+    $(info - Not building Fortran MPI bindings.)
+else
+    $(info - Will compile MPI Fortran files using $(MPIFC).)
+    export MUSCLE_ENABLE_FORTRAN_MPI := 1
 endif
 
 # Check download tool (for downloading dependencies)

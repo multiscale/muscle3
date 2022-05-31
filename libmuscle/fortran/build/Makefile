@@ -1,5 +1,3 @@
-include check_tools.make
-
 CPP_BUILD_DIR := $(CURDIR)/../../cpp/build
 
 DEP_DIRS := $(CPP_BUILD_DIR)/msgpack/msgpack

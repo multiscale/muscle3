@@ -49,7 +49,7 @@ def macro():
 @skip_if_python_only
 def test_fortran_macro_micro(mmp_server_process_simple):
     # create Fortran micro model
-    # see libmuscle/fortran/src/libmuscle/tests/fortran_micro_model_test.f03
+    # see libmuscle/fortran/src/libmuscle/tests/fortran_micro_model_test.f90
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
     lib_paths = [cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
     env = {

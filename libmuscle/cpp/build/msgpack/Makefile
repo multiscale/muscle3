@@ -27,5 +27,5 @@ msgpack: msgpack-$(msgpack_VERSION)
 	cd msgpack-$(msgpack_VERSION) && mkdir -p build && cd build && \
 		export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) && \
 		cmake -DCMAKE_INSTALL_PREFIX=$(CURDIR)/msgpack -DMSGPACK_CXX11=ON -DMSGPACK_BUILD_EXAMPLES=OFF .. && \
-		make -j $(NCORES) && make install
+		$(MAKE) -j $(NCORES) && make install
 

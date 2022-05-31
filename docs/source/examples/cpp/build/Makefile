@@ -1,18 +1,21 @@
+ifeq "$(filter $(MAKECMDGOALS), clean)" ""
+
 CXX ?= g++
 CXXFLAGS += -std=c++14 -g $(shell pkg-config --cflags libmuscle ymmsl)
 LDFLAGS += $(shell pkg-config --libs libmuscle ymmsl)
 
-ifdef MUSCLE_ENABLE_MPI
+ifdef MUSCLE_ENABLE_CPP_MPI
     MPICXX := mpic++
     MPI_CXXFLAGS := -std=c++14 -g $(shell pkg-config --cflags libmuscle_mpi ymmsl)
     MPI_LDFLAGS := $(shell pkg-config --libs libmuscle_mpi ymmsl)
 endif
 
+endif
 
 binaries := reaction diffusion mc_driver load_balancer
 mpi_binaries := reaction_mpi
 
-ifdef MUSCLE_ENABLE_MPI
+ifdef MUSCLE_ENABLE_CPP_MPI
     binaries += $(mpi_binaries)
 endif
 
@@ -26,8 +29,8 @@ clean:
 
 
 %: ../%.cpp
-	LD_LIBRARY_PATH=$(MUSCLE3_HOME)/lib:$(LD_LIBRARY_PATH) $(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 %_mpi: ../%_mpi.cpp
-	LD_LIBRARY_PATH=$(MUSCLE3_HOME)/lib:$(LD_LIBRARY_PATH) $(MPICXX) $(MPI_CXXFLAGS) -o $@ $^ $(MPI_LDFLAGS)
+	$(MPICXX) $(MPI_CXXFLAGS) -o $@ $^ $(MPI_LDFLAGS)
 

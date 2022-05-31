@@ -28,9 +28,9 @@ clean:
 	rm -f $(binaries) $(mpi_binaries)
 
 
-%: ../%.f03
+%: ../%.f90
 	$(FC) $(FFLAGS) -o $@ $^ $(LDFLAGS)
 
-%_mpi: ../%_mpi.f03
+%_mpi: ../%_mpi.f90
 	$(MPIFC) $(MPI_FFLAGS) -o $@ $^ $(MPI_LDFLAGS)
 

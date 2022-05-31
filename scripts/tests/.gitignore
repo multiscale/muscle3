@@ -5,4 +5,4 @@
 !echolib.cpp
 !echolib.hpp
 !*.py
-!test_use_echolib.f03
+!test_use_echolib.f90

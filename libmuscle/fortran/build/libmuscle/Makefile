@@ -1,16 +1,16 @@
 # Get source paths
 srcdir := $(CURDIR)/../../src/libmuscle
 
-sources := $(srcdir)/libmuscle.f03
-mpi_sources := $(srcdir)/libmuscle_mpi.f03
-objects := $(sources:$(srcdir)/%.f03=%.o)
-lobjects := $(sources:$(srcdir)/%.f03=%.lo)
-mobjects := $(mpi_sources:$(srcdir)/%.f03=%.mo)
-mlobjects := $(mpi_sources:$(srcdir)/%.f03=%.mlo)
+sources := $(srcdir)/libmuscle.f90
+mpi_sources := $(srcdir)/libmuscle_mpi.f90
+objects := $(sources:$(srcdir)/%.f90=%.o)
+lobjects := $(sources:$(srcdir)/%.f90=%.lo)
+mobjects := $(mpi_sources:$(srcdir)/%.f90=%.mo)
+mlobjects := $(mpi_sources:$(srcdir)/%.f90=%.mlo)
 libs := libmuscle_fortran.a libmuscle_fortran.so
 mpi_libs := libmuscle_mpi_fortran.a libmuscle_mpi_fortran.so
-modules := $(sources:$(srcdir)/%.f03=%.mod)
-mpi_modules := $(mpi_sources:$(srcdir)/%.f03=%.mod)
+modules := $(sources:$(srcdir)/%.f90=%.mod)
+mpi_modules := $(mpi_sources:$(srcdir)/%.f90=%.mod)
 pkg_config_files := libmuscle_fortran.pc
 
 ifeq ($(if $(or $(MUSCLE_ENABLE_FORTRAN_MPI),$(and $(findstring install,$(MAKECMDGOALS)),$(wildcard libmuscle_mpi_fortran.so))),1,0),1)
@@ -69,16 +69,16 @@ install: $(installed_sources) $(installed_modules) $(installed_pkg_config_files)
 	cp libmuscle*.a $(PREFIX)/lib
 	cp libmuscle*.so $(PREFIX)/lib
 
-%.o: $(srcdir)/%.f03
+%.o: $(srcdir)/%.f90
 	$(FC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS)
 
-%.lo: $(srcdir)/%.f03
+%.lo: $(srcdir)/%.f90
 	$(FC) -c -fPIC -Jmod_dump $(FFLAGS) $^ -o $@ $(LDFLAGS)
 
-%.mo: $(srcdir)/%.f03
+%.mo: $(srcdir)/%.f90
 	$(MPIFC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS_MPI)
 
-%.mlo: $(srcdir)/%.f03
+%.mlo: $(srcdir)/%.f90
 	$(MPIFC) -c -fPIC -Jmod_dump $(FFLAGS) $^ -o $@ $(LDFLAGS_MPI)
 
 %.mod: %.o
@@ -95,7 +95,7 @@ libmuscle_mpi_fortran.a: $(mobjects)
 libmuscle_mpi_fortran.so: $(mlobjects)
 	$(MPIFC) -shared -o $@ $^ $(LDFLAGS_MPI)
 
-$(PREFIX)/include/%.f03: $(srcdir)/%.f03
+$(PREFIX)/include/%.f90: $(srcdir)/%.f90
 	@mkdir -p $(@D)
 	cp $< $@
 

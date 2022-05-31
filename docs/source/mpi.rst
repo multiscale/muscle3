@@ -78,8 +78,8 @@ Here is the C++-and-MPI version of the reaction model:
 
 And this is the Fortran-and-MPI version of the reaction model:
 
-.. literalinclude:: examples/fortran/reaction_mpi.f03
-  :caption: ``docs/source/examples/fortran/reaction_mpi.f03``
+.. literalinclude:: examples/fortran/reaction_mpi.f90
+  :caption: ``docs/source/examples/fortran/reaction_mpi.f90``
   :language: fortran
 
 

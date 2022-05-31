@@ -2,13 +2,13 @@ src_dir := $(CURDIR)/../../../src
 libmuscle_testdir := $(src_dir)/libmuscle/tests
 VPATH := $(libmuscle_testdir)
 
-unit_tests := $(wildcard $(libmuscle_testdir)/test*.f03)
-integration_tests := $(wildcard $(libmuscle_testdir)/*test.f03)
-all_sources := $(wildcard $(libmuscle_testdir)/*.f03)
+unit_tests := $(wildcard $(libmuscle_testdir)/test*.f90)
+integration_tests := $(wildcard $(libmuscle_testdir)/*test.f90)
+all_sources := $(wildcard $(libmuscle_testdir)/*.f90)
 
-unit_test_bins := $(unit_tests:$(libmuscle_testdir)/%.f03=%)
-integration_test_bins := $(integration_tests:$(libmuscle_testdir)/%.f03=%)
-objects := $(all_sources:$(libmuscle_testdir)/%.f03=%.o)
+unit_test_bins := $(unit_tests:$(libmuscle_testdir)/%.f90=%)
+integration_test_bins := $(integration_tests:$(libmuscle_testdir)/%.f90=%)
+objects := $(all_sources:$(libmuscle_testdir)/%.f90=%.o)
 
 ifndef MUSCLE_ENABLE_MPI
 integration_tests := $(filter-out mpi%,$(integration_tests))
@@ -54,10 +54,10 @@ LINK_DEPS += $(CPP_BUILD_DIR)/libmuscle/libmuscle_d.a $(CPP_BUILD_DIR)/ymmsl/lib
 
 endif
 
-assert.o: $(libmuscle_testdir)/assert.f03
+assert.o: $(libmuscle_testdir)/assert.f90
 	$(FC) $(FFLAGS) $(DEBUGFLAGS) -c $< -o $@
 
-%.o: $(libmuscle_testdir)/%.f03 assert.o
+%.o: $(libmuscle_testdir)/%.f90 assert.o
 	$(FC) $(FFLAGS) $(DEBUGFLAGS) -c $< -o $@
 
 test_%: test_%.o assert.o $(LINK_DEPS)

@@ -194,7 +194,7 @@ class QCGPJInstantiator(mp.Process):
         """Converts and sends QCG available resources."""
         resources = Resources()
         for node in self._qcg_resources.nodes:
-            resources.cores[node.name] = set(node.free_ids)
+            resources.cores[node.name] = set(map(int, node.free_ids))
 
         self._resources_out.put(resources)
 

@@ -9,7 +9,7 @@ namespace libmuscle { namespace impl { namespace mcp {
 
 ssize_t send_all(int fd, char const * data, ssize_t length) {
     for (ssize_t sent = 0; sent < length; ) {
-        ssize_t sent_now = send(fd, data + sent, length - sent, 0);
+        ssize_t sent_now = send(fd, data + sent, length - sent, MSG_NOSIGNAL);
         if (sent_now == -1)
             return -1;
         sent += sent_now;

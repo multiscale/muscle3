@@ -321,7 +321,12 @@ std::vector<std::string> TcpTransportServer::get_interfaces_() const {
             if ((family == AF_INET) || (family == AF_INET6)) {
                 char addr_buf[INET6_ADDRSTRLEN];
                 inet_ntop(family, &(addr->sin_addr), addr_buf, INET6_ADDRSTRLEN);
-                addresses.push_back(addr_buf);
+                std::string addr_str(addr_buf);
+                if (addr_str.rfind("127.", 0) == 0)
+                    continue;
+                if (addr_str == "[::1]")
+                    continue;
+                addresses.push_back(std::move(addr_str));
             }
         }
     }

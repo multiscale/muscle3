@@ -57,10 +57,10 @@ int connect(std::string const & address) {
 
     addrinfo *res;
     err_code = getaddrinfo(host.c_str(), port.c_str(), &hints, &res);
-    auto address_info = std::unique_ptr<addrinfo, void (*)(addrinfo*)>(res, &freeaddrinfo);
     if (err_code != 0)
         throw std::runtime_error("Could not connect to " + host + " on port "
                 + port + ": " + gai_strerror(err_code));
+    auto address_info = std::unique_ptr<addrinfo, void (*)(addrinfo*)>(res, &freeaddrinfo);
 
     // try to connect to each in turn until we find one that works
     addrinfo * p;

@@ -1,6 +1,8 @@
 import asyncio
 import logging
 import multiprocessing as mp
+import os
+from pathlib import Path
 import queue
 import sys
 import traceback
@@ -8,6 +10,7 @@ from typing import Dict, List, Tuple
 
 from qcg.pilotjob.allocation import (
         Allocation as qcg_Allocation, NodeAllocation as qcg_NodeAllocation)
+from qcg.pilotjob.config import Config as qcg_Config
 from qcg.pilotjob.errors import InternalError as qcg_InternalError
 from qcg.pilotjob.executor import Executor as qcg_Executor
 from qcg.pilotjob.joblist import (
@@ -91,7 +94,7 @@ class QCGPJInstantiator(mp.Process):
     """Background process for interacting with the QCG-PJ executor."""
     def __init__(
             self, resources: mp.Queue, requests: mp.Queue, results: mp.Queue,
-            log_records: mp.Queue) -> None:
+            log_records: mp.Queue, run_dir: Path) -> None:
         """Create a QCGPJProcessManager.
 
         Args:
@@ -105,13 +108,22 @@ class QCGPJInstantiator(mp.Process):
         self._requests_in = requests
         self._results_out = results
         self._log_records_out = log_records
+        self._run_dir = run_dir
 
     def run(self) -> None:
         """Entry point for the process."""
+        # Put QCG-PJ output in run dir
+        # The configuration setting below is ignored by the agents
+        # due to a bug in QCG-PJ
+        qcgpj_dir = self._run_dir / 'qcgpj'
+        qcgpj_dir.mkdir(exist_ok=True)
+        os.chdir(qcgpj_dir)
+
         self._reconfigure_logging()
 
         # Executor needs to be instantiated before we go async
-        qcg_config = {}     # type: Dict[str, str]
+        qcg_config = {
+                qcg_Config.AUX_DIR: str(qcgpj_dir)}     # type: Dict[str, str]
         self._qcg_resources = qcg_get_resources(qcg_config)
         self._state_tracker = StateTracker()
         self._executor = qcg_Executor(

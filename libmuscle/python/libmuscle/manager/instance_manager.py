@@ -72,7 +72,7 @@ class InstanceManager:
 
         self._instantiator = QCGPJInstantiator(
                 self._resources_in, self._requests_out, self._results_in,
-                self._log_records_in)
+                self._log_records_in, self._run_dir.path)
         self._instantiator.start()
 
         self._log_handler = LogHandlingThread(self._log_records_in)

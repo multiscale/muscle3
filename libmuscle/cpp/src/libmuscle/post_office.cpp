@@ -92,7 +92,7 @@ std::unique_ptr<DataConstRef> PostOffice::get_response(int fd) {
 
     return_pipe_(Pipe(sending_fd, fd));
     retrieved_.notify_one();
-    return std::move(result);
+    return result;
 }
 
 void PostOffice::deposit(

@@ -95,9 +95,9 @@ install: all
 	@echo '*   source the env file as described above, or pkg-config will not *'
 	@echo '*   be able to find MUSCLE3.                                       *'
 	@echo '*                                                                  *'
-	@echo '*   If you get a "cannot open shared object file" error which      *'
+	@echo '*   If you get a "Cannot open shared object file" error which      *'
 	@echo '*   mentions libmuscle or ymmsl, then you have probably forgotten  *'
-	@echo '*   source the env file.                                           *'
+	@echo '*   to source the env file.                                        *'
 	@echo '*                                                                  *'
 	@echo '********************************************************************'
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ostream>
+
 
 namespace libmuscle { namespace impl {
 
@@ -21,6 +23,8 @@ class Timestamp {
          */
         static Timestamp now();
 };
+
+std::ostream & operator<<(std::ostream & os, Timestamp ts);
 
 } }
 

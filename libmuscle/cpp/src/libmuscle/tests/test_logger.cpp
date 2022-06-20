@@ -38,7 +38,7 @@ void reset_mocks() {
 TEST(libmuscle_logging, test_logger) {
     reset_mocks();
     MockMMPClient manager("");
-    Logger logger("test_instance[10]", manager);
+    Logger logger("test_instance[10]", "", manager);
 
     logger.log(LogLevel::CRITICAL, "Testing: ", 10, " == ", 10.0);
 
@@ -52,7 +52,7 @@ TEST(libmuscle_logging, test_logger) {
 TEST(libmuscle_logging, test_set_level) {
     reset_mocks();
     MockMMPClient manager("");
-    Logger logger("test_instance", manager);
+    Logger logger("test_instance", "", manager);
 
     // default is WARNING
     logger.log(LogLevel::WARNING, "WARNING");

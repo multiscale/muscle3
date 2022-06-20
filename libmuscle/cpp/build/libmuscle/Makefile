@@ -55,11 +55,11 @@ endif
 
 installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
 
-CXXFLAGS += -Wall -pedantic -std=c++14 -pthread
+CXXFLAGS += -Wall -pedantic -std=c++14 -pthread -O3
 export CXXFLAGS
 MPIFLAGS := -DMUSCLE_ENABLE_MPI
 export MPIFLAGS
-DEBUGFLAGS := -g
+DEBUGFLAGS := -g -O0
 export DEBUGFLAGS
 
 
@@ -132,12 +132,12 @@ $(objdir)/%.lo: %.cpp $(objdir)/%.o
 # depends on .o to daisy-chain automatic dependencies
 $(objdir)/%.do: %.cpp $(objdir)/%.o
 	@mkdir -p $(@D)
-	$(CXX) $(CPPFLAGS) $(DEBUGFLAGS) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@
 
 # depends on .o to daisy-chain automatic dependencies
 $(objdir)/%.dlo: %.cpp $(objdir)/%.o
 	@mkdir -p $(@D)
-	$(CXX) $(CPPFLAGS) $(DEBUGFLAGS) $(CXXFLAGS) -fPIC -c $< -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -fPIC -c $< -o $@
 
 $(objdir)/%.mo: %.cpp
 	@mkdir -p $(@D)
@@ -149,11 +149,11 @@ $(objdir)/%.mlo: %.cpp
 
 $(objdir)/%.mdo: %.cpp
 	@mkdir -p $(@D)
-	$(MPICXX) $(CPPFLAGS) $(DEBUGFLAGS) $(CXXFLAGS) $(MPIFLAGS) -c $< -o $@
+	$(MPICXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) $(MPIFLAGS) -c $< -o $@
 
 $(objdir)/%.mdlo: %.cpp
 	@mkdir -p $(@D)
-	$(MPICXX) $(CPPFLAGS) $(DEBUGFLAGS) $(CXXFLAGS) $(MPIFLAGS) -fPIC -c $< -o $@
+	$(MPICXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) $(MPIFLAGS) -fPIC -c $< -o $@
 
 
 version.h: version.h.in

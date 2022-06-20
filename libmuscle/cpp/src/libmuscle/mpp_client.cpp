@@ -29,6 +29,8 @@ DataConstRef MPPClient::receive(Reference const & receiver) {
             std::string(receiver));
 
     msgpack::sbuffer sbuf;
+    // TODO: can we put in an 8-byte dummy value here, which we
+    // can then overwrite after encoding with the length?
     msgpack::pack(sbuf, request);
 
     return transport_client_->call(sbuf.data(), sbuf.size());

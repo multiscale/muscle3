@@ -11,11 +11,13 @@ class LogLevel(Enum):
     be kept identical to those. They also match the Python logging log
     levels.
     """
+    DISABLE = 100
     CRITICAL = 50
     ERROR = 40
     WARNING = 30
     INFO = 20
     DEBUG = 10
+    LOCAL = 0
 
     @staticmethod
     def from_python_level(level: int) -> 'LogLevel':
@@ -44,7 +46,8 @@ class LogLevel(Enum):
                 LogLevel.ERROR: logging.ERROR,
                 LogLevel.WARNING: logging.WARNING,
                 LogLevel.INFO: logging.INFO,
-                LogLevel.DEBUG: logging.DEBUG}
+                LogLevel.DEBUG: logging.DEBUG,
+                LogLevel.LOCAL: logging.DEBUG}
         return to_python_level[self]
 
 

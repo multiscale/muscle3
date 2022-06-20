@@ -14,7 +14,7 @@ installed_libs := $(libs:%=$(PREFIX)/lib/%)
 installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
 
 LDFLAGS := -L../../../cpp/build/ymmsl -lymmsl
-FFLAGS := -std=f2003
+FFLAGS := -std=f2003 -O3
 
 .PHONY: all
 all: ymmsl

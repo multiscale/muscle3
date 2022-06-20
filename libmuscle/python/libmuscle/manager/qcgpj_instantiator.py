@@ -1,6 +1,8 @@
 import asyncio
 import logging
 import multiprocessing as mp
+import os
+from pathlib import Path
 import queue
 import sys
 import traceback
@@ -8,6 +10,7 @@ from typing import Dict, List, Tuple
 
 from qcg.pilotjob.allocation import (
         Allocation as qcg_Allocation, NodeAllocation as qcg_NodeAllocation)
+from qcg.pilotjob.config import Config as qcg_Config
 from qcg.pilotjob.errors import InternalError as qcg_InternalError
 from qcg.pilotjob.executor import Executor as qcg_Executor
 from qcg.pilotjob.joblist import (
@@ -18,8 +21,7 @@ from qcg.pilotjob.manager import (
         SchedulingJob as qcg_SchedulingJob)
 from qcg.pilotjob.parseres import get_resources as qcg_get_resources
 from qcg.pilotjob.resources import (
-        Node as qcg_Node, Resources as qcg_Resources,
-        ResourcesType as qcg_ResourcesType)
+        Node as qcg_Node, ResourcesType as qcg_ResourcesType)
 
 from ymmsl import ExecutionModel, MPICoresResReq, Reference, ThreadedResReq
 
@@ -92,7 +94,7 @@ class QCGPJInstantiator(mp.Process):
     """Background process for interacting with the QCG-PJ executor."""
     def __init__(
             self, resources: mp.Queue, requests: mp.Queue, results: mp.Queue,
-            log_records: mp.Queue) -> None:
+            log_records: mp.Queue, run_dir: Path) -> None:
         """Create a QCGPJProcessManager.
 
         Args:
@@ -106,10 +108,28 @@ class QCGPJInstantiator(mp.Process):
         self._requests_in = requests
         self._results_out = results
         self._log_records_out = log_records
+        self._run_dir = run_dir
 
     def run(self) -> None:
         """Entry point for the process."""
+        # Put QCG-PJ output in run dir
+        # The configuration setting below is ignored by the agents
+        # due to a bug in QCG-PJ
+        qcgpj_dir = self._run_dir / 'qcgpj'
+        qcgpj_dir.mkdir(exist_ok=True)
+        os.chdir(qcgpj_dir)
+
         self._reconfigure_logging()
+
+        # Executor needs to be instantiated before we go async
+        qcg_config = {
+                qcg_Config.AUX_DIR: str(qcgpj_dir)}     # type: Dict[str, str]
+        self._qcg_resources = qcg_get_resources(qcg_config)
+        self._state_tracker = StateTracker()
+        self._executor = qcg_Executor(
+                self._state_tracker, qcg_config, self._qcg_resources)
+
+        self._send_resources()
 
         try:
             loop = asyncio.get_event_loop()
@@ -126,13 +146,6 @@ class QCGPJInstantiator(mp.Process):
         jobs, stopping them, or shutting down. Results of finished jobs
         are returned via the results queue.
         """
-        qcg_config = {}     # type: Dict[str, str]
-        qcg_resources = qcg_get_resources(qcg_config)
-        self._state_tracker = StateTracker()
-        executor = qcg_Executor(self._state_tracker, qcg_config, qcg_resources)
-
-        self._send_resources(qcg_resources)
-
         qcg_iters = dict()  # type: Dict[Reference, qcg_SchedulingIteration]
 
         shutting_down = False
@@ -148,19 +161,19 @@ class QCGPJInstantiator(mp.Process):
 
                     elif isinstance(request, CancelAllRequest):
                         _logger.debug('Got CancelAllRequest')
-                        await self._cancel_all(executor, qcg_iters)
+                        await self._cancel_all(qcg_iters)
                         _logger.debug('Done CancelAllRequest')
 
                     elif isinstance(request, InstantiationRequest):
                         if not shutting_down:
                             qcg_alloc, qcg_iter = self._create_job(
-                                    request, qcg_resources.rtype)
+                                    request, self._qcg_resources.rtype)
                             qcg_iters[request.instance] = qcg_iter
                             self._state_tracker.processes[request.instance] = (
                                     Process(
                                         request.instance, request.resources))
                             self._state_tracker.queued_to_execute += 1
-                            await executor.execute(qcg_alloc, qcg_iter)
+                            await self._executor.execute(qcg_alloc, qcg_iter)
 
                 except queue.Empty:
                     break
@@ -178,7 +191,7 @@ class QCGPJInstantiator(mp.Process):
                 done = len(self._state_tracker.processes) == 0
 
         _logger.debug('Stopping executor')
-        await executor.stop()
+        await self._executor.stop()
 
     def _reconfigure_logging(self) -> None:
         """Reconfigure logging to send to log_records_out."""
@@ -189,17 +202,16 @@ class QCGPJInstantiator(mp.Process):
         handler = QueueingLogHandler(self._log_records_out)
         root_logger.addHandler(handler)
 
-    def _send_resources(self, qcg_resources: qcg_Resources) -> None:
+    def _send_resources(self) -> None:
         """Converts and sends QCG available resources."""
         resources = Resources()
-        for node in qcg_resources.nodes:
-            resources.cores[node.name] = set(node.free_ids)
+        for node in self._qcg_resources.nodes:
+            resources.cores[node.name] = set(map(int, node.free_ids))
 
         self._resources_out.put(resources)
 
     async def _cancel_all(
-            self, executor: qcg_Executor,
-            qcg_iters: Dict[Reference, qcg_SchedulingIteration]) -> None:
+            self, qcg_iters: Dict[Reference, qcg_SchedulingIteration]) -> None:
         """Cancels all running jobs."""
         # Repeat cancel until they're gone to work around QCG-PJ
         # race condition.
@@ -213,7 +225,7 @@ class QCGPJInstantiator(mp.Process):
 
                 qcg_iter = qcg_iters[instance]
                 try:
-                    await executor.cancel_iteration(
+                    await self._executor.cancel_iteration(
                             qcg_iter.job, qcg_iter.iteration)
                     _logger.debug(f'Canceled {instance}')
                 except qcg_InternalError:

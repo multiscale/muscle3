@@ -98,9 +98,10 @@ class TcpTransportServer(TransportServer):
         for interface in ifs:
             addrs = netifaces.ifaddresses(interface)
             for props in addrs.get(netifaces.AF_INET, []):
-                all_addresses.append(props['addr'])
+                if not props['addr'].startswith('127.'):
+                    all_addresses.append(props['addr'])
             for props in addrs.get(netifaces.AF_INET6, []):
                 # filter out link-local addresses with a scope id
-                if '%' not in props['addr']:
+                if '%' not in props['addr'] and props['addr'] != '::1':
                     all_addresses.append('[' + props['addr'] + ']')
         return all_addresses

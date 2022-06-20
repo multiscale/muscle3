@@ -188,10 +188,10 @@ class Communicator:
             slot: The slot to send the message on, if any.
         """
         if slot is None:
-            _logger.info('Sending message on {}'.format(port_name))
+            _logger.debug('Sending message on {}'.format(port_name))
             slot_list = []  # type: List[int]
         else:
-            _logger.info('Sending message on {}[{}]'.format(port_name, slot))
+            _logger.debug('Sending message on {}[{}]'.format(port_name, slot))
             slot_list = [slot]
             slot_length = self._ports[port_name].get_length()
             if slot_length <= slot:
@@ -257,10 +257,10 @@ class Communicator:
                 connected.
         """
         if slot is None:
-            _logger.info('Waiting for message on {}'.format(port_name))
+            _logger.debug('Waiting for message on {}'.format(port_name))
             slot_list = []      # type: List[int]
         else:
-            _logger.info('Waiting for message on {}[{}]'.format(
+            _logger.debug('Waiting for message on {}[{}]'.format(
                 port_name, slot))
             slot_list = [slot]
 
@@ -273,7 +273,7 @@ class Communicator:
                                     ' given. Either specify a default, or'
                                     ' connect a sending component to this'
                                     ' port.').format(port_name))
-            _logger.info(
+            _logger.debug(
                     'No message received on {} as it is not connected'.format(
                         port_name))
             return default
@@ -312,13 +312,13 @@ class Communicator:
         profile_event.message_size = len(mcp_message_bytes)
 
         if slot is None:
-            _logger.info('Received message on {}'.format(port_name))
+            _logger.debug('Received message on {}'.format(port_name))
             if isinstance(mcp_message.data, ClosePort):
-                _logger.info('Port {} is now closed'.format(port_name))
+                _logger.debug('Port {} is now closed'.format(port_name))
         else:
-            _logger.info('Received message on {}[{}]'.format(port_name, slot))
+            _logger.debug('Received message on {}[{}]'.format(port_name, slot))
             if isinstance(mcp_message.data, ClosePort):
-                _logger.info('Port {}[{}] is now closed'.format(
+                _logger.debug('Port {}[{}] is now closed'.format(
                     port_name, slot))
 
         return message
@@ -336,9 +336,9 @@ class Communicator:
         """
         message = Message(float('inf'), None, ClosePort(), Settings())
         if slot is None:
-            _logger.info('Closing port {}'.format(port_name))
+            _logger.debug('Closing port {}'.format(port_name))
         else:
-            _logger.info('Closing port {}[{}]'.format(port_name, slot))
+            _logger.debug('Closing port {}[{}]'.format(port_name, slot))
         self.send_message(port_name, message, slot)
 
     def shutdown(self) -> None:
@@ -442,6 +442,7 @@ class Communicator:
         """
         if instance not in self._clients:
             locations = self._peer_manager.get_peer_locations(instance)
+            _logger.info(f'Connecting to peer {instance} at {locations}')
             self._clients[instance] = MPPClient(locations)
 
         return self._clients[instance]

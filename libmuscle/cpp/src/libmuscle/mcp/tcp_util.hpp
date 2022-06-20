@@ -38,5 +38,9 @@ void send_int64(int fd, int64_t data);
  */
 int64_t recv_int64(int fd);
 
+/* Send a message on a socket, prefixed by its length.
+ */
+ssize_t send_frame(int fd, char const * data, ssize_t length);
+
 } } }
 

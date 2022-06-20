@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <netinet/tcp.h>
 
 
 namespace {
@@ -109,6 +110,10 @@ TcpTransportClient::TcpTransportClient(std::string const & location)
         throw std::runtime_error(
                 "Could not connect to any server at locations " + location
                 + ": " + errors);
+
+    int flags;
+    setsockopt(socket_fd_, SOL_TCP, TCP_NODELAY, &flags, sizeof(flags));
+    setsockopt(socket_fd_, SOL_TCP, TCP_QUICKACK, &flags, sizeof(flags));
 }
 
 TcpTransportClient::~TcpTransportClient() {
@@ -119,8 +124,7 @@ TcpTransportClient::~TcpTransportClient() {
 DataConstRef TcpTransportClient::call(
         char const * req_buf, std::size_t req_len
 ) const {
-    send_int64(socket_fd_, req_len);
-    send_all(socket_fd_, req_buf, req_len);
+    send_frame(socket_fd_, req_buf, req_len);
 
     int64_t length = recv_int64(socket_fd_);
     auto result = Data::byte_array(length);

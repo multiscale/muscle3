@@ -8,19 +8,21 @@
 #include <chrono>
 #include <cstring>
 #include <ifaddrs.h>
+#include <netinet/tcp.h>
 #include <poll.h>
 #include <thread>
 #include <unistd.h>
 #include <unordered_map>
+#include <sys/types.h>
+#include <sys/socket.h>
 
 
 using namespace std::string_literals;
 
 using libmuscle::impl::DataConstRef;
 using libmuscle::impl::mcp::recv_all;
-using libmuscle::impl::mcp::send_all;
+using libmuscle::impl::mcp::send_frame;
 using libmuscle::impl::mcp::recv_int64;
-using libmuscle::impl::mcp::send_int64;
 using libmuscle::impl::mcp::RequestHandler;
 
 
@@ -189,8 +191,7 @@ class TcpTransportServerWorker {
          * @param fd The fd to send the data on
          */
         void send_response_(int fd, std::unique_ptr<DataConstRef> res_buf) {
-            send_int64(fd, res_buf->size());
-            send_all(fd, res_buf->as_byte_array(), res_buf->size());
+            send_frame(fd, res_buf->as_byte_array(), res_buf->size());
         }
 
         /* Detects ports that have closed and removes those connections.
@@ -463,6 +464,9 @@ void TcpTransportServer::server_thread_(TcpTransportServer * self) {
         for (std::size_t i = 1u; i < poll_fds.size(); ++i) {
             if (poll_fds[i].revents & POLLIN) {
                 int new_fd = accept(poll_fds[i].fd, nullptr, nullptr);
+                int flags;
+                setsockopt(new_fd, SOL_TCP, TCP_NODELAY, &flags, sizeof(flags));
+                setsockopt(new_fd, SOL_TCP, TCP_QUICKACK, &flags, sizeof(flags));
 
                 // TODO: there's a trait<size_t>::max, isn't there?
                 std::size_t min_size = static_cast<std::size_t>(-1);

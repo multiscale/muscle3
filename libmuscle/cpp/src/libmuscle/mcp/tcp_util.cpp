@@ -1,6 +1,8 @@
 #include <libmuscle/mcp/tcp_util.hpp>
 
+#include <algorithm>
 #include <stdexcept>
+#include <vector>
 
 #include <sys/socket.h>
 
@@ -41,6 +43,23 @@ int64_t recv_int64(int fd) {
     if (err != 8)
         throw std::runtime_error("Error receiving data on socket");
     return data;
+}
+
+ssize_t send_frame(int fd, char const * data, ssize_t length) {
+    static_assert(sizeof(ssize_t) == 8, "MUSCLE3 needs a 64-bit machine/OS to compile");
+    char * len_data = reinterpret_cast<char*>(&length);
+
+    std::vector<char> buf(length + 8);
+    std::copy(len_data, len_data + 8, buf.data());
+    std::copy(data, data + length, buf.data() + 8);
+
+    for (ssize_t sent = 0; sent < length + 8; ) {
+        ssize_t sent_now = send(fd, buf.data() + sent, length + 8 - sent, MSG_NOSIGNAL);
+        if (sent_now == -1)
+            return -1;
+        sent += sent_now;
+    }
+    return length;
 }
 
 } } }

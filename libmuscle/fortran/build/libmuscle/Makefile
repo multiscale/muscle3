@@ -33,7 +33,7 @@ LDFLAGS_MPI := -L../ymmsl -lymmsl_fortran
 LDFLAGS_MPI += -L../../../cpp/build/libmuscle -lmuscle_mpi
 LDFLAGS_MPI += -L../../../cpp/build/ymmsl -lymmsl
 
-FFLAGS := -std=f2003 -I../ymmsl
+FFLAGS := -std=f2003 -O3 -I../ymmsl
 
 .PHONY: all
 all: libmuscle

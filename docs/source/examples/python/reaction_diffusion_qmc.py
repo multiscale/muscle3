@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import logging
 import os
 
 import numpy as np
@@ -243,6 +244,9 @@ def qmc_driver() -> None:
 
 
 if __name__ == '__main__':
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.DEBUG)
+
     elements = [
             Component('qmc', 'qmc_driver'),
             Component('rr', 'load_balancer'),

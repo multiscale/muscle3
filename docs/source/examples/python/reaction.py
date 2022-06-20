@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 
 from libmuscle import Grid, Instance, Message
@@ -33,4 +34,6 @@ def reaction() -> None:
 
 
 if __name__ == '__main__':
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.INFO)
     reaction()

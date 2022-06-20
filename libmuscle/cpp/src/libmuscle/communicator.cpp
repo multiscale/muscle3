@@ -95,9 +95,9 @@ void Communicator::send_message(
         Optional<int> slot)
 {
     if (slot.is_set())
-        logger_.info("Sending message on ", port_name, "[", slot.get(), "]");
+        logger_.debug("Sending message on ", port_name, "[", slot.get(), "]");
     else
-        logger_.info("Sending message on ", port_name);
+        logger_.debug("Sending message on ", port_name);
     std::vector<int> slot_list;
     if (slot.is_set()) {
         slot_list.push_back(slot.get());
@@ -149,9 +149,9 @@ Message Communicator::receive_message(
         Optional<Message> const & default_msg)
 {
     if (slot.is_set())
-        logger_.info("Waiting for message on ", port_name, "[", slot.get(), "]");
+        logger_.debug("Waiting for message on ", port_name, "[", slot.get(), "]");
     else
-        logger_.info("Waiting for message on ", port_name);
+        logger_.debug("Waiting for message on ", port_name);
     std::vector<int> slot_list;
     if (slot.is_set())
         slot_list.emplace_back(slot.get());
@@ -168,7 +168,7 @@ Message Communicator::receive_message(
             throw std::runtime_error(oss.str());
         }
         else {
-            logger_.info("No message received on ", port_name, " as it is not connected");
+            logger_.debug("No message received on ", port_name, " as it is not connected");
             return default_msg.get();
         }
     }
@@ -205,15 +205,15 @@ Message Communicator::receive_message(
     // TODO stop and finalise profile event
 
     if (slot.is_set())
-        logger_.info("Received message on ", port_name, "[", slot.get(), "]");
+        logger_.debug("Received message on ", port_name, "[", slot.get(), "]");
     else
-        logger_.info("Received message on ", port_name);
+        logger_.debug("Received message on ", port_name);
 
     if (is_close_port(message.data())) {
         if (slot.is_set())
-            logger_.info("Port ", port_name, "[", slot.get(), "] is now closed");
+            logger_.debug("Port ", port_name, "[", slot.get(), "] is now closed");
         else
-            logger_.info("Port ", port_name, " is now closed");
+            logger_.debug("Port ", port_name, " is now closed");
     }
     return message;
 }
@@ -224,9 +224,9 @@ void Communicator::close_port(
             std::numeric_limits<double>::infinity(),
             ClosePort(), Settings());
     if (slot.is_set())
-        logger_.info("Closing port ", port_name, "[", slot.get(), "]");
+        logger_.debug("Closing port ", port_name, "[", slot.get(), "]");
     else
-        logger_.info("Closing port ", port_name);
+        logger_.debug("Closing port ", port_name);
     send_message(port_name, message, slot);
 }
 
@@ -322,6 +322,15 @@ Port Communicator::settings_in_port_(std::vector<Conduit> const & conduits) cons
 MPPClient & Communicator::get_client_(Reference const & instance) {
     if (clients_.count(instance) == 0) {
         auto const & locations = peer_manager_->get_peer_locations(instance);
+        std::ostringstream oss;
+        oss << "Connecting to peer " << instance << " at [";
+        for (std::size_t i = 0u; i < locations.size(); ++i) {
+            if (i != 0u)
+                oss << ", ";
+            oss << locations[i];
+        }
+        oss << "]";
+        logger_.info(oss.str());
         clients_[instance] = std::make_unique<MPPClient>(locations);
     }
     return *clients_.at(instance);

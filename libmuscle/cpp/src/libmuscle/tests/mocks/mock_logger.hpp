@@ -9,9 +9,13 @@ namespace libmuscle { namespace impl {
 class MockLogger {
     public:
         MockLogger();
-        MockLogger(std::string const & instance_id, MMPClient & manager);
+        MockLogger(
+                std::string const & instance_id,
+                std::string const & log_file, MMPClient & manager);
 
         void set_remote_level(LogLevel level) {}
+
+        void set_local_level(LogLevel level) {}
 
         template <typename... Args>
         void log(LogLevel level, Args... args) {}

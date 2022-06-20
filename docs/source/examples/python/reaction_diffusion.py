@@ -124,6 +124,9 @@ def diffusion() -> None:
 
 
 if __name__ == '__main__':
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.INFO)
+
     elements = [
             Component('macro', 'diffusion'),
             Component('micro', 'reaction')]

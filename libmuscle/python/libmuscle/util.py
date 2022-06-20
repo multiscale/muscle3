@@ -88,7 +88,6 @@ def extract_log_file_location(filename: str) -> Optional[Path]:
     argument is given, this function returns None.
 
     Args:
-        run_dir: Default directory to use.
         filename: Default file name to use.
 
     Returns:

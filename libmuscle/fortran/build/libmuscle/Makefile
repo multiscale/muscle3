@@ -124,7 +124,9 @@ libmuscle_fortran.pc:
 	@echo 'Requires: ymmsl_fortran = $(muscle_version)' >>$@
 	@echo 'Requires.private: libmuscle = $(muscle_version)' >>$@
 	@echo 'Cflags: -I$${includedir}' >>$@
+	@echo 'Cflags.private: -pthread' >>$@
 	@echo 'Libs: -L$${libdir} -lmuscle_fortran' >>$@
+	@echo 'Libs.private: -pthread' >>$@
 
 libmuscle_mpi_fortran.pc:
 	@echo 'prefix=$(PREFIX)' >$@
@@ -139,5 +141,7 @@ libmuscle_mpi_fortran.pc:
 	@echo 'Requires: ymmsl_fortran = $(muscle_version)' >>$@
 	@echo 'Requires.private: libmuscle_mpi = $(muscle_version)' >>$@
 	@echo 'Cflags: -I$${includedir}' >>$@
+	@echo 'Cflags.private: -pthread' >>$@
 	@echo 'Libs: -L$${libdir} -lmuscle_mpi_fortran' >>$@
+	@echo 'Libs.private: -pthread' >>$@
 

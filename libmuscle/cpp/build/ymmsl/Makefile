@@ -123,5 +123,6 @@ ymmsl.pc:
 	@echo 'URL: https://muscle3.readthedocs.io' >>$@
 	@echo 'Version: $(muscle_version)' >>$@
 	@echo 'Cflags: -I$${includedir}' >>$@
+	@echo 'Cflags.private: -pthread' >>$@
 	@echo 'Libs: -L$${libdir} -lymmsl' >>$@
-
+	@echo 'Libs.private: -pthread' >>$@

@@ -335,75 +335,79 @@ std::vector<std::string> TcpTransportServer::get_interfaces_() const {
     return addresses;
 }
 
-TcpTransportServer::AddrInfoList_ TcpTransportServer::get_address_info_(
-        std::string const & address) const
-{
-    int err = 0;
+int TcpTransportServer::create_socket_() const {
+    const int backlog = 10;
+    int sockfd;
+    int reuse = 1;
 
-    addrinfo hints;
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
+    // try dual IPv6/IPv4
+    if ((sockfd = socket(AF_INET6, SOCK_STREAM, 0)) != -1) {
+        setsockopt(
+                sockfd, SOL_SOCKET, SO_REUSEADDR,
+                reinterpret_cast<char*>(&reuse), sizeof(reuse));
 
-    addrinfo *servinfo;
-    if ((err = getaddrinfo(address.c_str(), "0", &hints, &servinfo)) != 0)
-        throw std::runtime_error(
-                "Could not get address information: "s
-                + gai_strerror(err));
-
-    return AddrInfoList_(servinfo, &freeaddrinfo);
-}
-
-std::vector<int> TcpTransportServer::create_sockets_(addrinfo const * addresses) const {
-    // TODO: just listen on 0.0.0.0
-    std::vector<int> result;
-    for (addrinfo const *p = addresses; p != nullptr; p = p->ai_next) {
-        int sockfd;
-        if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1)
-            continue;
+        struct sockaddr_in6 addr;
+        memset(&addr, 0, sizeof(addr));
+        addr.sin6_family = AF_INET6;
+        addr.sin6_addr = in6addr_any;
+        addr.sin6_port = htons(0);
 
         int err = 0;
-        if ((err = bind(sockfd, p->ai_addr, p->ai_addrlen)) == -1) {
+        if ((err = bind(sockfd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr))) == -1) {
             ::close(sockfd);
-            continue;
+            throw std::runtime_error("Failed to bind TCP6 socket");
         }
 
-        const int backlog = 10;
         if ((err = listen(sockfd, backlog)) == -1)
-            throw std::runtime_error("Failed to listen on TCP socket");
-
-        result.push_back(sockfd);
+            throw std::runtime_error("Failed to listen on TCP6 socket");
     }
-    return result;
+    else {
+        // IPv4 only
+        if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+            throw std::runtime_error("Failed to create TCP socket");
+
+        setsockopt(
+                sockfd, SOL_SOCKET, SO_REUSEADDR,
+                reinterpret_cast<char*>(&reuse), sizeof(reuse));
+
+        struct sockaddr_in addr;
+        memset(&addr, 0, sizeof(addr));
+        addr.sin_family = AF_INET;
+        addr.sin_addr.s_addr = INADDR_ANY;
+        addr.sin_port = htons(0);
+
+        int err = 0;
+        if ((err = bind(sockfd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr))) == -1) {
+            ::close(sockfd);
+            throw std::runtime_error("Failed to bind TCP4 socket");
+        }
+
+        if ((err = listen(sockfd, backlog)) == -1)
+            throw std::runtime_error("Failed to listen on TCP4 socket");
+    }
+    return sockfd;
 }
 
-std::string TcpTransportServer::get_address_string_(int sockfd) const {
-    std::string location;
+std::string TcpTransportServer::get_port_string_(int sockfd) const {
+    int port = -1;
 
     sockaddr_storage bound_addr;
     socklen_t addr_len = sizeof bound_addr;
     getsockname(sockfd, reinterpret_cast<sockaddr*>(&bound_addr), &addr_len);
 
-    char addr_buf[INET6_ADDRSTRLEN];
-
     auto family = reinterpret_cast<sockaddr*>(&bound_addr)->sa_family;
     if (family == AF_INET) {
         auto ipv4_addr = reinterpret_cast<sockaddr_in*>(&bound_addr);
-        inet_ntop(AF_INET, &(ipv4_addr->sin_addr), addr_buf, INET6_ADDRSTRLEN);
-        int port = ntohs(ipv4_addr->sin_port);
-        location = std::string(addr_buf) + ":" + std::to_string(port);
+        port = ntohs(ipv4_addr->sin_port);
     }
     else if (family == AF_INET6) {
         auto ipv6_addr = reinterpret_cast<sockaddr_in6*>(&bound_addr);
-        inet_ntop(AF_INET6, &(ipv6_addr->sin6_addr), addr_buf, INET6_ADDRSTRLEN);
-        int port = ntohs(ipv6_addr->sin6_port);
-        location = "[" + std::string(addr_buf) + "]:" + std::to_string(port);
+        port = ntohs(ipv6_addr->sin6_port);
     }
     else
         throw std::runtime_error("Unknown address family");
 
-    return location;
+    return std::to_string(port);
 }
 
 void TcpTransportServer::set_location_(std::string const & location) {
@@ -412,45 +416,34 @@ void TcpTransportServer::set_location_(std::string const & location) {
     location_set_.notify_all();
 }
 
-std::vector<int> TcpTransportServer::set_up_sockets_() {
-    std::vector<int> all_fds;
+int TcpTransportServer::set_up_socket_() {
+    int sockfd = create_socket_();
 
-    auto interfaces = get_interfaces_();
-    for (auto const & interface: interfaces) {
-        AddrInfoList_ addrinfos = get_address_info_(interface);
-        auto fds = create_sockets_(addrinfos.get());
-        all_fds.insert(all_fds.end(), fds.cbegin(), fds.cend());
-    }
+    std::string port = get_port_string_(sockfd);
 
     std::string addresses;
-    for (int fd : all_fds) {
-        if (addresses.empty())
-            addresses += get_address_string_(fd);
-        else
-            addresses += "," + get_address_string_(fd);
+    for (auto const & interface: get_interfaces_()) {
+        if (!addresses.empty())
+            addresses += ",";
+        addresses += interface + ":" + port;
     }
 
     set_location_("tcp:" + addresses);
-    return all_fds;
+    return sockfd;
 }
 
 void TcpTransportServer::server_thread_(TcpTransportServer * self) {
     std::vector<std::unique_ptr<TcpTransportServerWorker>> workers;
     workers.emplace_back(new TcpTransportServerWorker(self->handler_));
-    std::vector<int> socket_fds = self->set_up_sockets_();
+    int socket_fd = self->set_up_socket_();
 
     while (true) {
         // poll on control pipe and socket
-        std::vector<pollfd> poll_fds(socket_fds.size() + 1u);
+        std::vector<pollfd> poll_fds(2u);
         poll_fds[0].fd = self->control_pipe_[0];
         poll_fds[0].events = POLLIN;
-
-        std::size_t i = 1u;
-        for (int socket_fd: socket_fds) {
-            poll_fds[i].fd = socket_fd;
-            poll_fds[i].events = POLLIN;
-            ++i;
-        }
+        poll_fds[1].fd = socket_fd;
+        poll_fds[1].events = POLLIN;
 
         poll(poll_fds.data(), poll_fds.size(), -1);
 
@@ -461,31 +454,28 @@ void TcpTransportServer::server_thread_(TcpTransportServer * self) {
         }
 
         // TODO: get peer info and log it
-        for (std::size_t i = 1u; i < poll_fds.size(); ++i) {
-            if (poll_fds[i].revents & POLLIN) {
-                int new_fd = accept(poll_fds[i].fd, nullptr, nullptr);
-                int flags;
-                setsockopt(new_fd, SOL_TCP, TCP_NODELAY, &flags, sizeof(flags));
-                setsockopt(new_fd, SOL_TCP, TCP_QUICKACK, &flags, sizeof(flags));
+        if (poll_fds[1].revents & POLLIN) {
+            int new_fd = accept(poll_fds[1].fd, nullptr, nullptr);
+            int flags = 0;
+            setsockopt(new_fd, SOL_TCP, TCP_NODELAY, &flags, sizeof(flags));
+            setsockopt(new_fd, SOL_TCP, TCP_QUICKACK, &flags, sizeof(flags));
 
-                // TODO: there's a trait<size_t>::max, isn't there?
-                std::size_t min_size = static_cast<std::size_t>(-1);
-                std::size_t selected_worker = 0u;
-                for (std::size_t j = 0u; j < workers.size(); ++j) {
-                    std::size_t cur_size = workers[j]->count_active_connections();
-                    if (cur_size < min_size) {
-                        min_size = cur_size;
-                        selected_worker = j;
-                    }
+            // TODO: there's a trait<size_t>::max, isn't there?
+            std::size_t min_size = static_cast<std::size_t>(-1);
+            std::size_t selected_worker = 0u;
+            for (std::size_t j = 0u; j < workers.size(); ++j) {
+                std::size_t cur_size = workers[j]->count_active_connections();
+                if (cur_size < min_size) {
+                    min_size = cur_size;
+                    selected_worker = j;
                 }
-
-                workers[selected_worker]->add_connection(new_fd);
             }
+
+            workers[selected_worker]->add_connection(new_fd);
         }
     }
 
-    for (int socket_fd: socket_fds)
-        ::close(socket_fd);
+    ::close(socket_fd);
 
     for (auto & worker: workers)
         worker->shutdown();

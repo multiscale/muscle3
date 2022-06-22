@@ -43,16 +43,13 @@ class TcpTransportServer : public TransportServer {
     private:
         std::vector<std::string> get_interfaces_() const;
 
-        using AddrInfoList_ = std::unique_ptr<addrinfo, void (*)(addrinfo*)>;
-        AddrInfoList_ get_address_info_(std::string const & address) const;
+        int create_socket_() const;
 
-        std::vector<int> create_sockets_(addrinfo const * addresses) const;
-
-        std::string get_address_string_(int sockfd) const;
+        std::string get_port_string_(int sockfd) const;
 
         void set_location_(std::string const & location);
 
-        std::vector<int> set_up_sockets_();
+        int set_up_socket_();
 
         static void server_thread_(TcpTransportServer * self);
 

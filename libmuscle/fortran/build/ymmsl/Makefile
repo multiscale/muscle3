@@ -81,5 +81,7 @@ ymmsl_fortran.pc:
 	@echo 'Version: $(muscle_version)' >>$@
 	@echo 'Requires.private: ymmsl = $(muscle_version)' >>$@
 	@echo 'Cflags: -I$${includedir}' >>$@
+	@echo 'Cflags.private: -pthread' >>$@
 	@echo 'Libs: -L$${libdir} -lymmsl_fortran' >>$@
+	@echo 'Libs.private: -pthread' >>$@
 

@@ -106,7 +106,7 @@ ifeq "$(filter $(MAKECMDGOALS),$(cleantargets))" ""
 $(info pcextra: $(PKG_CONFIG_EXTRA_DIRS))
 CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --cflags msgpack)
 
-LDFLAGS += -L$(CURDIR)/../ymmsl -lymmsl
+LDFLAGS += -pthread -L$(CURDIR)/../ymmsl -lymmsl
 LDFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs msgpack)
 
 # Automatic header dependencies
@@ -211,7 +211,9 @@ libmuscle.pc:
 	@echo 'Requires: ymmsl = $(muscle_version)' >>$@
 	@echo 'Requires.private: msgpack >= 3.1.0' >>$@
 	@echo 'Cflags: -I$${includedir} -pthread' >>$@
+	@echo 'Cflags.private: -pthread' >>$@
 	@echo 'Libs: -L$${libdir} -lmuscle' >>$@
+	@echo 'Libs.private: -pthread' >>$@
 
 libmuscle_mpi.pc:
 	@echo 'prefix=$(PREFIX)' >$@
@@ -226,5 +228,6 @@ libmuscle_mpi.pc:
 	@echo 'Requires: ymmsl = $(muscle_version)' >>$@
 	@echo 'Requires.private: msgpack >= 3.1.0' >>$@
 	@echo 'Cflags: -I$${includedir} -pthread -DMUSCLE_ENABLE_MPI' >>$@
+	@echo 'Cflags.private: -pthread' >>$@
 	@echo 'Libs: -L$${libdir} -lmuscle_mpi' >>$@
-
+	@echo 'Libs.private: -pthread' >>$@

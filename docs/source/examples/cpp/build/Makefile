@@ -28,9 +28,15 @@ clean:
 	rm -f $(binaries) $(mpi_binaries)
 
 
-%: ../%.cpp
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+%_mpi.o: ../%_mpi.cpp
+	$(MPICXX) -c $(MPI_CXXFLAGS) -o $@ $^
 
-%_mpi: ../%_mpi.cpp
-	$(MPICXX) $(MPI_CXXFLAGS) -o $@ $^ $(MPI_LDFLAGS)
+%_mpi: %_mpi.o
+	$(MPICXX) -o $@ $^ $(MPI_LDFLAGS)
+
+%.o: ../%.cpp
+	$(CXX) -c $(CXXFLAGS) -o $@ $^
+
+%: %.o
+	$(CXX) -o $@ $^ $(LDFLAGS)
 

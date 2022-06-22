@@ -18,9 +18,9 @@ all the time:
     examples$ export MUSCLE3_HOME=/path/to/muscle3
     examples$ make
 
-This will build the C++ and Fortran examples, and create a virtualenv for
-running the Python examples and the manager. You can also build for each
-language separately, using
+This will build the C++ and Fortran examples (if you have a compiler installed),
+and create a virtualenv for running the Python examples and the manager. You can
+also build for each language separately, using
 
 .. code-block: bash
 
@@ -29,9 +29,9 @@ language separately, using
     examples$ MUSCLE3_HOME=/path/to/muscle3 make fortran
 
 
-Note that you need to run the Python build in order to be able to run the C++ or
-Fortran examples, as it does the set-up required to run the manager, which you
-always need to run a MUSCLE simulation.
+Note that the C++ and Fortran builds will run the Python one as well, because
+it does the set-up required to run the manager, which you always need to run a
+MUSCLE3 simulation.
 
 Once you've built the examples, you can run them via the MUSCLE manager. By
 specifying different yMMSL files, different scenarios can be run. The various

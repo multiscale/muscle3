@@ -32,7 +32,7 @@ include $(TOOLDIR)/detect_tool_implicit.make
 tool_command := clang++
 include $(TOOLDIR)/detect_tool_implicit.make
 
-ifndef CXX
+ifeq ($(origin CXX), default)
     $(error - No C++ compiler found! Please install either gcc or clang.)
 else
     $(info - Will compile C++ files using $(CXX).)

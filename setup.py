@@ -47,7 +47,7 @@ setup(
     },
     python_requires='>=3.6, <4',
     install_requires=[
-        'click>=6,<9',
+        'click>=7.1,<9',
         'msgpack>=1,<2',
         'netifaces==0.11.0',
         "numpy==1.19.5; python_version=='3.6'",

@@ -56,15 +56,20 @@ class TcpHandler(ss.BaseRequestHandler):
 
 class TcpTransportServer(TransportServer):
     """A TransportServer that uses TCP to communicate."""
-    def __init__(self, handler: RequestHandler) -> None:
+    def __init__(self, handler: RequestHandler, port: int = 0) -> None:
         """Create a TCPServer.
 
         Args:
             handler: A RequestHandler to handle requests
+            port: The port to use.
+
+        Raises:
+            OSError: With errno set to errno.EADDRINUSE if the port is not
+                available.
         """
         super().__init__(handler)
 
-        self._server = TcpTransportServerImpl(('', 0), TcpHandler, self)
+        self._server = TcpTransportServerImpl(('', port), TcpHandler, self)
         self._server_thread = threading.Thread(
                 target=self._server.serve_forever, daemon=True)
         self._server_thread.start()

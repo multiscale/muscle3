@@ -1,3 +1,4 @@
+import errno
 import logging
 from typing import Any, cast, Generator, List
 
@@ -279,7 +280,8 @@ class MMPServer:
 
         This starts a TCP Transport server and connects it to an
         MMPRequestHandler, which uses the given components to service
-        the requests.
+        the requests. By default, we listen on port 9000, unless it's
+        not available in which case we use a random other one.
 
         Args:
             logger: Logger to send log messages to
@@ -290,7 +292,12 @@ class MMPServer:
         """
         self._handler = MMPRequestHandler(
                 logger, settings, instance_registry, topology_store)
-        self._server = TcpTransportServer(self._handler)
+        try:
+            self._server = TcpTransportServer(self._handler, 9000)
+        except OSError as e:
+            if e.errno != errno.EADDRINUSE:
+                raise
+            self._server = TcpTransportServer(self._handler)
 
     def get_location(self) -> str:
         """Returns this server's network location.

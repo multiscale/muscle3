@@ -68,6 +68,9 @@ def resources(
 
       muscle3 resources -c 16 model.ymmsl resources.ymmsl
 
+      num_nodes=$(muscle3 resources -c 16 simulation.ymmsl)
+      sbatch -N ${num_nodes} simulation.sh
+
     """
     partial_config = _load_ymmsl_files(ymmsl_files)
     try:

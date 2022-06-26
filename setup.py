@@ -47,9 +47,9 @@ setup(
     },
     python_requires='>=3.6, <4',
     install_requires=[
-        'click>=6',
-        'msgpack',
-        'netifaces',
+        'click>=6,<9',
+        'msgpack>=1,<2',
+        'netifaces==0.11.0',
         "numpy==1.19.5; python_version=='3.6'",
         "numpy>=1.22,<=1.25; python_version>='3.7'",
         'qcg-pilotjob==0.13.1',

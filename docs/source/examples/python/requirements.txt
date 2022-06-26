@@ -1,7 +1,8 @@
-matplotlib
-numpy
-sobol_seq
-yatiml>=0.7.0
-ymmsl>=0.11.0
-qcg-pilotjob>=0.10
+matplotlib>=3,<4
+numpy==1.19.5; python_version=='3.6'
+numpy>=1.22,<=1.25; python_version>='3.7'
+sobol_seq==0.2.0
+yatiml==0.9.0
+ymmsl@git+https://github.com/multiscale/ymmsl-python.git@develop#egg=ymmsl
+qcg-pilotjob==0.13.1
 

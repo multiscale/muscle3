@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <vector>
 
 #include <libmuscle/libmuscle.hpp>
 #include <ymmsl/ymmsl.hpp>

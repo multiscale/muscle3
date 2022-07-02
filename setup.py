@@ -51,7 +51,8 @@ setup(
         'msgpack>=1,<2',
         'netifaces==0.11.0',
         "numpy==1.19.5; python_version=='3.6'",
-        "numpy>=1.22,<=1.25; python_version>='3.7'",
+        "numpy<1.22; python_version=='3.7'",
+        "numpy>=1.22,<=1.25; python_version>='3.8'",
         'qcg-pilotjob==0.13.1',
         'typing_extensions<4',
         'ymmsl @ git+https://github.com/multiscale/ymmsl-python.git@develop#egg=ymmsl'          # Also in CI, update there as well

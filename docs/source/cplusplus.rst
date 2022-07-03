@@ -20,7 +20,7 @@ subdirectory, make the new installation available, and then run Make:
 .. code-block:: bash
 
   ~/muscle3_source$ cd docs/source/examples
-  ~/muscle3_source/docs/source/examples$ . /path/to/muscle3
+  ~/muscle3_source/docs/source/examples$ . /path/to/muscle3/bin/muscle3.env
   ~/muscle3_source/docs/source/examples$ make cpp
 
 

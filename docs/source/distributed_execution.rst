@@ -95,7 +95,7 @@ This is because there are some examples that mix languages as well.
 As you can see, this looks like the object representation, although there are a
 few more things being specified. You can load a yMMSL file from Python using
 `ymmsl.load
-<https://ymmsl-python.readthedocs.io/en/stable/overview.html#reading-ymmsl-files`_ and
+<https://ymmsl-python.readthedocs.io/en/stable/overview.html#reading-ymmsl-files>`_ and
 save it back using `ymmsl.save
 <https://ymmsl-python.readthedocs.io/en/stable/overview.html#writing-ymmsl-files>`_.
 
@@ -171,16 +171,16 @@ parts that define the Python ones we're using here:
 
 .. code-block:: yaml
 
-implementations:
-  reaction_python:
-    virtual_env: <muscle3_src>/docs/source/examples/python/build/venv
-    executable: python
-    args: <muscle3_src>/docs/source/examples/python/reaction.py
+  implementations:
+    reaction_python:
+      virtual_env: <muscle3_src>/docs/source/examples/python/build/venv
+      executable: python
+      args: <muscle3_src>/docs/source/examples/python/reaction.py
 
-  diffusion_python:
-    virtual_env: <muscle3_src>/docs/source/examples/python/build/venv
-    executable: python
-    args: <muscle3_src>/docs/source/examples/python/diffusion.py
+    diffusion_python:
+      virtual_env: <muscle3_src>/docs/source/examples/python/build/venv
+      executable: python
+      args: <muscle3_src>/docs/source/examples/python/diffusion.py
 
 
 As you can see, there are some absolute paths here, with a prefix shown here as

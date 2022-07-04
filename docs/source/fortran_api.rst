@@ -560,7 +560,7 @@ LIBMUSCLE_Data
         ! Free the retrieved copy of the character
         deallocate(str)
         ! Free the data object
-        call LIBMUSCLE_Data_free(mydat
+        call LIBMUSCLE_Data_free(mydata)
 
     See :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
 

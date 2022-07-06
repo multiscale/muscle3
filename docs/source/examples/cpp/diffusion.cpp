@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <ostream>
+#include <vector>
 
 #include <libmuscle/libmuscle.hpp>
 #include <ymmsl/ymmsl.hpp>

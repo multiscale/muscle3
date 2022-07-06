@@ -103,7 +103,7 @@ def diffusion() -> None:
             Us = np.vstack((Us, U))
             t_cur += dt
 
-        if 'DONTPLOT' not in os.environ:
+        if 'DONTPLOT' not in os.environ and 'SLURM_NODENAME' not in os.environ:
             from matplotlib import pyplot as plt
             plt.figure()
             plt.imshow(

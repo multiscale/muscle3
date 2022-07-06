@@ -3,30 +3,28 @@ MUSCLE 3 Examples
 
 This directory contains examples for MUSCLE 3. Once you've `installed MUSCLE 3
 <https://muscle3.readthedocs.io/en/latest/installing.html>`_, you can build them
-by running Make from this directory, like this:
+by activating the installation and running Make from this directory, like this:
 
 .. code-block: bash
 
-    examples$ MUSCLE3_HOME=/path/to/muscle3 make
-
-
-You can also export the ``MUSCLE3_HOME`` variable to avoid having to type it
-all the time:
-
-.. code-block: bash
-
-    examples$ export MUSCLE3_HOME=/path/to/muscle3
+    examples$ . /path/to/muscle3/bin/muscle3.env
     examples$ make
 
+
+If this gives an error saying that the ``make`` command could not be found,
+then you need to install GNU make using ``apt-get install make`` and try again.
+
 This will build the C++ and Fortran examples (if you have a compiler installed),
-and create a virtualenv for running the Python examples and the manager. You can
-also build for each language separately, using
+and create a virtualenv for running the Python examples and the manager. If you
+have MPI available, then those examples will be built as well.
+
+You can also build for each language separately, using
 
 .. code-block: bash
 
-    examples$ MUSCLE3_HOME=/path/to/muscle3 make python
-    examples$ MUSCLE3_HOME=/path/to/muscle3 make cpp
-    examples$ MUSCLE3_HOME=/path/to/muscle3 make fortran
+    examples$ make python
+    examples$ make cpp
+    examples$ make fortran
 
 
 Note that the C++ and Fortran builds will run the Python one as well, because
@@ -46,7 +44,7 @@ can use:
 
 .. code-block: bash
 
-    examples$ LD_LIBRARY_PATH=${MUSCLE3_HOME}/lib muscle_manager --start-all rd_implementations.ymmsl rd_python.ymmsl rd_settings.ymmsl
+    examples$ muscle_manager --start-all rd_implementations.ymmsl rd_python.ymmsl rd_settings.ymmsl
 
 
 Each run will produce a directory named ``run_<model name>_<date>_<time>`` in

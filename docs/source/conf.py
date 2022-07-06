@@ -44,12 +44,14 @@ if not os.path.exists(version_path):
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-        'sphinx.ext.autodoc',
-        'sphinx.ext.napoleon',
         'breathe',
+        'sphinx.ext.autodoc',
+        'sphinx.ext.autosectionlabel',
+        'sphinx.ext.napoleon',
         'sphinx.ext.todo',
         'sphinx.ext.viewcode',
-        'sphinxfortran.fortran_domain']
+        'sphinxfortran.fortran_domain',
+        'sphinx_tabs.tabs']
 
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ['_templates']

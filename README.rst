@@ -9,12 +9,12 @@
     :target: https://github.com/multiscale/muscle3/actions
     :alt: Build Status
 
-.. image:: https://api.codacy.com/project/badge/Coverage/ea0c833cf1ce4e13840c6498dfe27ff8
-    :target: https://www.codacy.com/app/LourensVeen/muscle3
+.. image:: https://app.codacy.com/project/badge/Coverage/4542a84edcd947ee982a0bfabe617089
+    :target: https://www.codacy.com/gh/multiscale/muscle3/dashboard
     :alt: Code Coverage
 
-.. image:: https://api.codacy.com/project/badge/Grade/ea0c833cf1ce4e13840c6498dfe27ff8
-    :target: https://www.codacy.com/app/LourensVeen/muscle3
+.. image:: https://app.codacy.com/project/badge/Grade/4542a84edcd947ee982a0bfabe617089
+    :target: https://www.codacy.com/gh/multiscale/muscle3/dashboard
     :alt: Codacy Grade
 
 .. image:: https://requires.io/github/multiscale/muscle3/requirements.svg?branch=develop

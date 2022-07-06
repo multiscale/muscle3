@@ -25,13 +25,8 @@ subdirectory, make the new installation available, and then run Make:
 
 
 We also need the Python version of MUSCLE 3 installed, because the MUSCLE
-Manager comes with that, and we need it to run the simulation. To set that up,
-do:
-
-.. code-block:: bash
-
-  ~/muscle3_source/docs/source/examples$ make python
-
+Manager comes with that, and we need it to run the simulation. The above command
+will create a Python virtual env with everything needed as well.
 
 You can then run the examples in the same way as for python, but using a yMMSL
 file that specifies the C++ implementation of one or both of the submodels:

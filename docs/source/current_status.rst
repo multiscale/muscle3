@@ -2,10 +2,10 @@ Current status
 ==============
 
 The current release includes most of the necessary features to run multiscale
-simulations in both non-distributed and distributed mode, in Python 3 and C++.
-This makes this release suitable for prototyping and learning to work with
-MUSCLE 3 and multiscale modeling in general, and for production work using
-Python and C++ models.
+simulations in both non-distributed and distributed mode, in Python 3, C++ and
+Fortran. This makes this release suitable for prototyping and learning to work
+with MUSCLE 3 and multiscale modeling in general, and for production work using
+Python, C++ and Fortran models.
 
 In particular, MUSCLE 3 currently provides the following features:
 
@@ -107,23 +107,18 @@ still needed. This mainly entails porting libmuscle, as the manager is a
 separate program, and writing tools to manipulate yMMSL files is probably best
 done in Python.
 
-Next on the list in terms of language support are C and possibly Java, then
-perhaps other languages. If you feel strongly about support for a specific
-language, please `make an issue on GitHub
+Next on the list in terms of language support are C and possibly Java and
+Octave, then perhaps other languages. If you feel strongly about support for a
+specific language, please `make an issue on GitHub
 <https://github.com/multiscale/muscle3/issues>`_.
 
 Distributed execution
 `````````````````````
 Distributed execution is now officially supported, although not yet widely
-tested. If you want to experiment on your laptop or your supercomputer,
-please have a look at the `Distributed execution`_ section of the manual. We are
-planning to use `QCG PilotJob <https://github.com/vecma-project/QCG-PilotJob>`_
-to make running simulations inside of cluster allocations easier.
-
-In order to avoid writing job scripts and staging files manually, some kind of
-launcher is needed. We are collaborating with the `VECMA project
-<https://www.vecma.eu>`_ on getting MUSCLE 3 support into `FabSim3
-<https://fabsim3.readthedocs.io/en/latest/>`_.
+tested. If you want to experiment on your laptop or your supercomputer, please
+have a look at the `Distributed Execution`_ section of the manual. MUSCLE 3 can
+start all the submodels and other components within a cluster allocation through
+the use of `QCG PilotJob <https://github.com/vecma-project/QCG-PilotJob>`_.
 
 Dynamic instantiation
 `````````````````````
@@ -131,10 +126,8 @@ Some simulations require varying amounts of compute resources over the course of
 a run. For instance, the time taken by a set of micro-models may depend on the
 state of the macro-model, which changes over the course of the simulation. In
 these cases, it may be necessary to change the number of instances of the
-micro-model during the simulation. MUSCLE 3 does not yet support this. Some kind
-of pilot job framework, such as `QCG PilotJob
-<https://github.com/vecma-project/QCG-PilotJob>`_ will have to be integrated
-with MUSCLE 3 to make this work.
+micro-model during the simulation. MUSCLE 3 does not yet support this, but we
+plan to extend it to do so in the future.
 
 It should be noted that in most cases, the resources have been allocated to the
 user by a scheduler, and whether or not they are used does not affect the cost

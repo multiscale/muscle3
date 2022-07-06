@@ -72,7 +72,7 @@ Importing headers
 
   from libmuscle import Grid, Instance, Message
   from libmuscle.runner import run_simulation
-  from ymmsl import (ComputeElement, Conduit, Configuration, Model, Operator,
+  from ymmsl import (Component, Conduit, Configuration, Model, Operator,
                      Settings)
 
 
@@ -403,10 +403,10 @@ simulation. It often helps to draw a diagram first:
   gMMSL diagram of the reaction-diffusion model.
 
 
-This is a gMMSL diagram of the reaction-diffusion model. It shows that there are
-two compute elements named ``macro`` and ``micro``. A conduit connects port
-``state_out`` on ``macro`` to ``state_in`` on ``micro``. The symbols at the ends
-of the conduit show the operators that the ports belong to, O_I for
+This is a gMMSL diagram of the reaction-diffusion model. It shows that there
+are two components named ``macro`` and ``micro``. A conduit connects port
+``state_out`` on ``macro`` to ``state_in`` on ``micro``. The symbols at the
+ends of the conduit show the operators that the ports belong to, O_I for
 ``macro.state_out`` and F_INIT for ``micro.state_in``. Another conduit connects
 port ``micro.final_state`` (O_F) to ``macro.state_in`` (S).
 
@@ -425,21 +425,21 @@ of objects that form a description.
 .. code-block:: python
 
     elements = [
-            ComputeElement('macro', 'diffusion'),
-            ComputeElement('micro', 'reaction')]
+            Component('macro', 'diffusion'),
+            Component('micro', 'reaction')]
 
 
-First, we describe the two compute elements in this model. Compute elements can
-be submodels, or helper components that convert data, control the simulation, or
-otherwise implement required non-model functionality. In this simple example, we
-only have two submodels: one named ``macro`` and one named ``micro``. Macro is
-implemented by an implementation named ``diffusion``, while micro is implemented
-by an implementation named ``reaction``.
+First, we describe the two components in this model. Components can be
+submodels, or helper components that convert data, control the simulation, or
+otherwise implement required non-model functionality. In this simple example,
+we only have two submodels: one named ``macro`` and one named ``micro``. Macro
+is implemented by an implementation named ``diffusion``, while micro is
+implemented by an implementation named ``reaction``.
 
-The name of a compute element is used by MUSCLE as an address for communication
+The name of a component is used by MUSCLE as an address for communication
 between the models. The implementation name is intended for use by a launcher,
-which would start the corresponding program to create an instance of a compute
-element. It is these instances that form the actual running simulation.
+which would start the corresponding program to create an instance of a
+component.  It is these instances that form the actual running simulation.
 
 .. code-block:: python
 
@@ -450,15 +450,14 @@ element. It is these instances that form the actual running simulation.
     model = Model('reaction_diffusion', elements, conduits)
 
 
-Next, we need to connect the compute elements together. This is done by
-conduits, which have a sender and a receiver. Here, we connect sending port
-``state_out`` on compute element ``macro`` to receiving port ``initial_state``
-on compute element ``micro``. Note that these ports are actually defined in the
-implementations, and not in this configuration file, and they are referred to
-here.
+Next, we need to connect the components together. This is done by conduits,
+which have a sender and a receiver. Here, we connect sending port ``state_out``
+on component ``macro`` to receiving port ``initial_state`` on component
+``micro``. Note that these ports are actually defined in the implementations,
+and not in this configuration file, and they are referred to here.
 
-The compute elements and the conduits together form a ``Model``, which has a
-name and those two sets of components.
+The components and the conduits together form a ``Model``, which has a name and
+those two sets of objects.
 
 .. code-block:: python
 
@@ -489,9 +488,9 @@ compatibility with older versions, we'll use an OrderedDict here.)
 Note that there are two duplicated names between the two models: ``t_max`` and
 ``dt``. With MUSCLE 3, you can create a global setting with that name to set it
 to the same value everywhere (handy for settings that are used by multiple
-compute elements), or you can prepend the name of the compute element to set the
+components), or you can prepend the name of the component to set the
 value for a specific one. Specific settings go before generic ones, so if you
-specify both ``micro.t_max`` and ``t_max``, then the ``micro`` compute element
+specify both ``micro.t_max`` and ``t_max``, then the ``micro`` component
 will use ``micro.t_max`` and all others will use ``t_max``.
 
 The model and the settings are combined into a Configuration, which contains

@@ -13,7 +13,7 @@ class InstanceRegistry:
     """Keeps track of running instances.
 
     The InstanceRegistry is a simple in-memory database that stores
-    information about running instances of compute elements.
+    information about running instances of simulation components.
     """
     def __init__(self) -> None:
         """Construct an empty InstanceRegistry"""

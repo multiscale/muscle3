@@ -168,8 +168,8 @@ Modules
 
 Here we tell Fortran that we'll be using the ymmsl and libmuscle modules. These
 mirror the corresponding Python packages. Like in C++, yMMSL support is limited
-to what is needed to implement compute elements. Loading, manipulating and
-saving yMMSL documents is better done in Python.
+to what is needed to implement components. Loading, manipulating and saving
+yMMSL documents is better done in Python.
 
 
 Variables

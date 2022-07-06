@@ -32,7 +32,7 @@ There will also be ten instances of the conduits between ``macro`` and
 ``micro``, which MUSCLE 3 will create automatically. The instances are wired up
 one-on-one, so that ``macro[i]`` connects to ``micro[i]``.
 
-There are two new compute elements: the ``qmc`` element, which implements the
+There are two new components: the ``qmc`` element, which implements the
 quasi-Monte Carlo UQ algorithm, and the ``rr`` element, which distributes the
 ensemble evenly over a given number of model instances.
 
@@ -50,10 +50,10 @@ in a set of parameter values {(k, d)}. It writes these parameters to its
 
 The name of this port in the diagram ends in a pair of square brackets, which
 designates the port a *vector port*. A vector port is a port that is used to
-talk to multiple instances of a connected compute element. It has a number of
-slots on which messages can be sent (or received, if it is a receiving port).
-The number of slots is known as the *length* of a vector port. Since we are
-going to run an ensemble, and we want to be able to run the ensemble members in
+talk to multiple instances of a connected components. It has a number of slots
+on which messages can be sent (or received, if it is a receiving port). The
+number of slots is known as the *length* of a vector port. Since we are going
+to run an ensemble, and we want to be able to run the ensemble members in
 parallel, having a set of concurrent instances is just what we need. Of course,
 we will then receive results from this same set as well, so we'll receive on a
 vector port too, in this case ``states_in``.
@@ -73,12 +73,12 @@ sends out sets of parameters, but ``macro`` has no F_INIT port to receive them.
 It gets its parameter values, via MUSCLE 3, from the central configuration. So
 we need a trick, and MUSCLE 3 provides one in the form of the
 ``muscle_settings_in`` port. This is a special F_INIT port that each MUSCLE 3
-compute element automatically has. It can be connected to a port on a component
-that sends ``Settings`` objects. MUSCLE 3 will automatically receive these
-messages, and overlay the received settings on top of the base settings from the
-central configuration. When the receiving submodel then asks MUSCLE 3 for a
-setting, MUSCLE 3 will look at the overlay settings first. If the setting is
-not found there, then MUSCLE 3 will fall back to the central base configuration.
+component automatically has. It can be connected to a port on a component that
+sends ``Settings`` objects. MUSCLE 3 will automatically receive these messages,
+and overlay the received settings on top of the base settings from the central
+configuration. When the receiving submodel then asks MUSCLE 3 for a setting,
+MUSCLE 3 will look at the overlay settings first. If the setting is not found
+there, then MUSCLE 3 will fall back to the central base configuration.
 
 So, now our diffusion model will ask for the value of ``d`` as it did before,
 but this time, it will actually come from the values sent by ``qmc``, and it
@@ -155,10 +155,10 @@ Sobol sequence.
 Next, we need to configure our output vector port. Since we will have
 ``n_samples`` sets of parameters, we will resize the port to that length. We do
 need to check whether the port is resizable first, because that may or may not
-be the case depending on what is attached to it. In order to preserve modularity
-and reusability of individual compute elements, MUSCLE 3 tries to tell the
-compute element as little as possible about what is on the other side of a port,
-but you can ask it whether the port has a fixed size or not.
+be the case depending on what is attached to it. In order to preserve
+modularity and reusability of individual components, MUSCLE 3 tries to tell the
+components as little as possible about what is on the other side of a port, but
+you can ask it whether the port has a fixed size or not.
 
 So that is what we do here, and we generate an error message if the port's
 length is fixed. We use the function
@@ -216,9 +216,9 @@ receive function here. Rather than :meth:`libmuscle.Instance.receive`, we call
 :meth:`libmuscle.Instance.receive_with_settings`.  The difference has to do
 with the settings overlays.
 
-Recall that each compute element instance has a settings overlay, which can be
-set through the ``muscle_settings_in`` port and is automatically propagated to
-corresponding instances of other compute elements. This propagation is done by
+Recall that each component instance has a settings overlay, which can be set
+through the ``muscle_settings_in`` port and is automatically propagated to
+corresponding instances of other components. This propagation is done by
 sending the overlay along with any messages that are sent.
 
 Since the ``macro`` and ``micro`` instances are connected one-on-one, each pair

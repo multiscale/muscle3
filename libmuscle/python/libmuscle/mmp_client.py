@@ -105,7 +105,7 @@ class MMPClient():
 
     def register_instance(self, name: Reference, locations: List[str],
                           ports: List[Port]) -> None:
-        """Register a compute element instance with the manager.
+        """Register a component instance with the manager.
 
         Args:
             name: Name of the instance in the simulation.
@@ -184,7 +184,7 @@ class MMPClient():
         return conduits, peer_dimensions, peer_locations
 
     def deregister_instance(self, name: Reference) -> None:
-        """Deregister a compute element instance with the manager.
+        """Deregister a component instance with the manager.
 
         Args:
             name: Name of the instance in the simulation.

@@ -7,7 +7,8 @@ reaction-diffusion model given in the Python tutorial.
 <https://github.com/multiscale/muscle3/tree/master/docs/source/examples/fortran>`_.
 You can also go to ``docs/source/examples/fortran`` in the source directory
 (that's easiest, and has some handy scripts and a Makefile), or copy-paste the
-code from here.
+code from here. If you're cloning from GitHub, be sure to use the ``master``
+branch, as ``develop`` may have changes incompatible with the current release.
 
 Building and running the examples
 ---------------------------------

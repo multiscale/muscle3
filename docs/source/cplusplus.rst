@@ -8,7 +8,9 @@ tutorial. It will help to at least read that first.
 `The source code for the examples in this section is here
 <https://github.com/multiscale/muscle3/tree/master/docs/source/examples/cpp>`_.
 You can also go to ``docs/source/examples/cpp`` in the source directory (that's
-easiest, and has a handy Makefile), or copy-paste the code from here.
+easiest, and has a handy Makefile), or copy-paste the code from here. If you are
+cloning from GitHub, be sure to use the ``master`` branch, as ``develop`` may
+have changes incompatible with the current release.
 
 Building and running the examples
 ---------------------------------

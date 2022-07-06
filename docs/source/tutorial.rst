@@ -8,7 +8,8 @@ multiscale simulation in Python.
 <https://github.com/multiscale/muscle3/tree/master/docs/source/examples/python>`_.
 You can also clone the repository or download the source (see the C++ part of
 the Installation section) and go to ``docs/source/examples/python``, or
-copy-paste the code from here.
+copy-paste the code from here. If you're cloning, be sure to use the ``master``
+branch. ``develop`` may have changes incompatible with the current release.
 
 The easiest way to get set up is to create a virtualenv and then install MUSCLE
 3 and the additional requirements inside it. Running ``make`` in the

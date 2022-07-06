@@ -325,7 +325,8 @@ Examples in C++ and Fortran
 ---------------------------
 
 MUSCLE 3 comes with C++ and Fortran versions of this Uncertainty Quantification
-use case. See the C++ or Fortran section for how to run the examples, and the
-``reaction_diffusion_mc_cpp.sh`` and ``reaction_diffusion_mc_fortran.sh``
-scripts respectively. The source code for the components may be found in
-``docs/source/examples/cpp`` and ``docs/source/examples/fortran``.
+use case. They can be run like the other models, but use ``rdmc_settings.ymmsl``
+instead of ``rd_settings.ymmsl``. The models themselves are in
+``rdmc_cpp.ymmsl`` and ``rdmc_fortran.ymmsl``. The source code for the
+components may be found in ``docs/source/examples/cpp`` and
+``docs/source/examples/fortran``.

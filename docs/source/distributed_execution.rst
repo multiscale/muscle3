@@ -109,7 +109,7 @@ Let's have a look at this file:
     name: reaction_diffusion_python
 
 
-This specifies the version of the file format (`v0.1` is currently the only
+This specifies the version of the file format (``v0.1`` is currently the only
 version), and the name of the model.
 
 .. code-block:: yaml
@@ -128,12 +128,13 @@ version), and the name of the model.
         o_f: final_state
 
 
-We have seen the `macro` and `micro` components before. The implementations have
-an added `_python` in their names here, because there are also examples in other
-languages. A new thing is that the ports are now declared in the configuration
-(they are also still in the code, and need to be). The manager needs this
-information to be able to assign resources to the components. You can write a
-list of ports if you have more than one port for an operator, see `ymmsl.Ports
+We have seen the ``macro`` and ``micro`` components before. The implementations
+have an added ``_python`` in their names here, because there are also examples
+in other languages. A new thing is that the ports are now declared in the
+configuration (they are also still in the code, and need to be). The manager
+needs this information to be able to assign resources to the components. You
+can write a list of ports if you have more than one port for an operator, see
+`ymmsl.Ports
 <https://ymmsl-python.readthedocs.io/en/develop/api.html#ymmsl.Ports>`_.
 
 .. code-block:: yaml
@@ -144,9 +145,10 @@ list of ports if you have more than one port for an operator, see `ymmsl.Ports
 
 
 Here are the conduits that connect the models together. The ports used here
-should match those given above, of course. As before, `macro` sends messages on
-its `state_out` port to `micro`s `initial_state`, and `micro` sends its answer
-on its `final_state` port, which is routed to `macro`s `state_in`.
+should match those given above, of course. As before, ``macro`` sends messages
+on its ``state_out`` port to ``micro``s ``initial_state``, and ``micro`` sends
+its answer on its ``final_state`` port, which is routed to ``macro``s
+``state_in``.
 
 .. code-block:: yaml
 
@@ -159,8 +161,11 @@ on its `final_state` port, which is routed to `macro`s `state_in`.
 
 Finally, we need to tell MUSCLE3 which resources each model instance should be
 given. For the moment, only the number of threads or MPI processes can be
-specified. In this case, the implementations are single-threaded Python scripts,
-so we specify one thread each.
+specified. In this case, the implementations are single-threaded Python
+scripts, so we specify one thread each. See `the yMMSL documentation on
+resources
+<https://ymmsl-python.readthedocs.io/en/master/ymmsl_python.html#resources>`_
+for other options.
 
 To be able to instantiate this model, we still need to define the
 ``diffusion_python`` and ``reaction_python`` implementations. We also need some
@@ -245,4 +250,115 @@ to be sent from the instance to the manager to be included in the manager log.
 The local log level determines whether the message will be logged to the local
 Python logger. This is also very useful if something goes wrong and you need to
 debug, of course.
+
+
+High-Performance Computing
+--------------------------
+
+Coupled simulations often take a significant amount of compute resources,
+requiring the use of High-Performance Computing facilities. MUSCLE 3 has support
+for running inside of an allocation on an HPC cluster running the SLURM
+scheduling system. It can determine the available resources (nodes and cores),
+suballocate them to the various instances required to run the simulation, and
+start each instance on its allocated resources. (With thanks to its friend
+`QCG-PilotJob <https://qcg-pilotjob.readthedocs.io/en/stable/>`_.)
+
+Determining resource requirements
+`````````````````````````````````
+
+The MUSCLE Manager will automatically detect when it's inside of a SLURM
+allocation, and instantiate implementations accordingly. However, that
+allocation still needs to be made by the user, and to do that we need to know
+how many resources to request. Since instances may share resources (cores) in
+some cases, this is not easy to see from the configuration.
+
+Fortunately, MUSCLE 3 can do this for us, using the ``muscle3 resources``
+command:
+
+.. code-block:: bash
+
+  muscle3 resources --cores-per-node <n> <ymmsl files>
+
+
+This will print a single number, the number of nodes to allocate, which can then
+be passed to ``sbatch -N <n>``.
+
+For example, for the Python example above, we can run:
+
+.. code-block:: bash
+
+  muscle3 resources --cores-per-node 16 rd_implementations.ymmsl rd_python.ymmsl rd_settings.ymmsl
+
+
+and be informed that we'll need only a single node. (``rd_settings.ymmsl`` is
+actually redundant here and could be omitted, the analysis is based only on the
+model components, conduits, implementations and resources.)
+
+To get more insight into how the instances will be divided over the available
+resources, you can use the ``-v`` option to enable verbose output. For the
+Python model, this prints:
+
+.. code-block::
+
+    A total of 1 node will be needed, as follows:
+
+    macro: Resources(node000001: 0)
+    micro: Resources(node000001: 0)
+
+
+As we can see, the models are allocated a single core each (they are both
+single-threaded), and MUSCLE 3 has determined that they can share a core because
+they won't be computing at the same time due to the macro-micro multiscale
+coupling pattern. For more interesting output, try this command on the example
+from the :ref:`Uncertainty Quantification` section, and increase the number of
+instances a bit.
+
+To determine whether models can overlap, MUSCLE 3 assumes that models do not do
+any significant amount of computation before receiving the F_INIT messages, in
+between having sent the O_I messages and receiving the S messages, and after
+having sent the O_F messages. If an implementation does do this, then the
+simulation will still run, but different models may end up competing for the
+same cores. This will slow down the simulation. To avoid this, an implementation
+may be marked as not being able to share resources:
+
+.. code-block::
+
+  implementations:
+    industrious:
+      executable: /home/user/models/industrious
+      execution_model: openmpi
+      can_share_resources: false
+
+
+If an implementation is marked as such, the MUSCLE Manager will give it a set of
+cores of its own, so that it can compute whenever it wants.
+
+Loading modules
+```````````````
+
+On an HPC machine, you often need to load some environment modules to make
+needed software available. If an implementation needs to have modules available
+to run, then you should use the ``modules`` option when describing the
+implementation:
+
+.. code-block:: yaml
+
+  implementations:
+    on_hpc:
+      modules: c++ openmpi
+      executable: /home/user/models/mpi_model
+      execution_model: openmpi
+
+
+Hyperthreading
+``````````````
+
+If hyperthreading is enabled on the HPC cluster you are running on, then SLURM
+will allocate threads, not cores. This may give you a performance boost, it may
+make no difference, or it may decrease performance. To disable hyperthreading
+and allocate full physical cores, you can pass ``--ntasks-per-node=<x>`` to
+sbatch, with ``<x>`` being the number of physical cores per node. This will
+cause SLURM to tell MUSCLE 3 (via QCG-PilotJob) to only use the first ``x``
+virtual cores on each machine, which then get a physical core to themselves
+because the second set of virtual cores isn't used.
 

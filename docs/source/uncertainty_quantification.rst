@@ -106,8 +106,8 @@ The full Python program implementing this looks like this:
 The reaction model's implementation is completely unchanged, and the diffusion
 model has only been made a bit more modular by removing the visualisation and
 sending the final state on an additional O_F port, as mentioned above. The
-``qmc``
-and ``rr`` components are new however, and deserve a detailed explanation.
+``qmc`` and ``rr`` components are new however, and deserve a detailed
+explanation.
 
 The quasi-Monte Carlo element
 -----------------------------
@@ -130,9 +130,8 @@ out a single set of parameter pairs, and receives back a single set of final
 states. In terms of communication with the outside world, it therefore works
 similarly to a submodel with only O_I and S ports and exactly one state update
 step, so that each of those operators is run once. So that is how we describe it
-to MUSCLE 3. (It may be better to have some Proxy-specific operator names here
-in the future, opinions welcome!) We will send parameter sets on vector port
-``parameters_out``, and receive final states on vector port ``states_in``.
+to MUSCLE 3. We will send parameter sets on vector port ``parameters_out``, and
+receive final states on vector port ``states_in``.
 
 Next, we enter the reuse loop as before, except that we pass ``False`` as an
 argument, which will be explained shortly. We read and check settings in
@@ -143,10 +142,10 @@ Sobol sequence.
 
   # configure output port
   if not instance.is_resizable('parameters_out'):
-      instance.error_shutdown('This component needs a resizable'
-                          ' parameters_out port, but it is connected to'
-                          ' something that cannot be resized. Maybe try'
-                          ' adding a load balancer.')
+      instance.error_shutdown(
+              'This component needs a resizable parameters_out port, but'
+              ' it is connected to something that cannot be resized.'
+              ' Maybe try adding a load balancer.')
       exit(1)
 
   instance.set_port_length('parameters_out', n_samples)

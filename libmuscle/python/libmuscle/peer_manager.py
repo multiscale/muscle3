@@ -23,8 +23,8 @@ class PeerManager:
                     managing.
             index: The index of the instance whose peers we're
                     managing.
-            conduits: A list of conduits attached to this compute
-                    element, as received from the manager.
+            conduits: A list of conduits attached to this component,
+                    as received from the manager.
             peer_dims: For each peer we share a conduit with, the
                     dimensions of the instance set.
             peer_locations: A list of locations for each peer instance

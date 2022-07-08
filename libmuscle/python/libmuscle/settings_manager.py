@@ -44,7 +44,7 @@ def has_setting_type(value: SettingValue, typ: str) -> bool:
 
 
 class SettingsManager:
-    """Manages the current settings for a compute element instance.
+    """Manages the current settings for a component instance.
     """
     def __init__(self) -> None:
         """Create a SettingsManager.

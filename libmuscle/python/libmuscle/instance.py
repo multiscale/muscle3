@@ -25,7 +25,7 @@ _FInitCacheType = Dict[Tuple[str, Optional[int]], Message]
 
 
 class Instance:
-    """Represents a compute element instance in a MUSCLE3 simulation.
+    """Represents a component instance in a MUSCLE3 simulation.
 
     This class provides a low-level send/receive API for the instance
     to use.
@@ -36,7 +36,7 @@ class Instance:
 
         Args:
             ports: A list of port names for each operator of this
-                compute element.
+                component.
         """
         self.__is_shut_down = False
 
@@ -251,7 +251,7 @@ class Instance:
 
         You should check whether the port is resizable using
         `is_resizable()` first; whether it is depends on how this
-        compute element is wired up, so you should check.
+        component is wired up, so you should check.
 
         Args:
             port: Name of the port to resize.
@@ -320,7 +320,7 @@ class Instance:
         """Receive a message with attached settings overlay.
 
         This function should not be used in submodels. It is intended
-        for use by special compute elements that are ensemble-aware and
+        for use by special component that are ensemble-aware and
         have to pass on overlay settings explicitly.
 
         Receiving is a blocking operation. This function will contact
@@ -488,7 +488,7 @@ class Instance:
         """Returns instance name and index.
 
         This takes the argument to the --muscle-instance= command-line
-        option and splits it into a compute element name and an index.
+        option and splits it into a component name and an index.
         """
         def split_reference(ref: Reference) -> Tuple[Reference, List[int]]:
             index = list()     # type: List[int]
@@ -548,8 +548,7 @@ class Instance:
         if not self._communicator.port_exists(port_name):
             err_msg = (('Port "{}" does not exist on "{}". Please check'
                         ' the name and the list of ports you gave for'
-                        ' this compute element.').format(port_name,
-                                                         self._name))
+                        ' this component.').format(port_name, self._name))
             self.__shutdown(err_msg)
             raise RuntimeError(err_msg)
 

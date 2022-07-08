@@ -1,4 +1,3 @@
-from collections import OrderedDict
 import logging
 import os
 
@@ -6,8 +5,8 @@ import numpy as np
 
 from libmuscle import Grid, Instance, Message
 from libmuscle.runner import run_simulation
-from ymmsl import (Component, Conduit, Configuration, Model, Operator,
-                   Settings)
+from ymmsl import (
+        Component, Conduit, Configuration, Model, Operator, Ports, Settings)
 
 
 def reaction() -> None:
@@ -127,25 +126,29 @@ if __name__ == '__main__':
     logging.basicConfig()
     logging.getLogger().setLevel(logging.INFO)
 
-    elements = [
-            Component('macro', 'diffusion'),
-            Component('micro', 'reaction')]
+    components = [
+            Component(
+                'macro', 'diffusion', None,
+                Ports(o_i=['state_out'], s=['state_in'])),
+            Component(
+                'micro', 'reaction', None,
+                Ports(f_init=['initial_state'], o_f=['final_state']))]
 
     conduits = [
             Conduit('macro.state_out', 'micro.initial_state'),
             Conduit('micro.final_state', 'macro.state_in')]
 
-    model = Model('reaction_diffusion', elements, conduits)
-    settings = Settings(OrderedDict([
-                ('micro.t_max', 2.469136e-6),
-                ('micro.dt', 2.469136e-8),
-                ('macro.t_max', 1.234568e-4),
-                ('macro.dt', 2.469136e-6),
-                ('x_max', 1.01),
-                ('dx', 0.01),
-                ('k', -4.05e4),     # reaction parameter
-                ('d', 4.05e-2)      # diffusion parameter
-                ]))
+    model = Model('reaction_diffusion', components, conduits)
+    settings = Settings({
+        'micro.t_max': 2.469136e-6,
+        'micro.dt': 2.469136e-8,
+        'macro.t_max': 1.234568e-4,
+        'macro.dt': 2.469136e-6,
+        'x_max': 1.01,
+        'dx': 0.01,
+        'k': -4.05e4,     # reaction parameter
+        'd': 4.05e-2      # diffusion parameter
+        })
 
     configuration = Configuration(model, settings)
 

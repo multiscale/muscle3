@@ -414,10 +414,10 @@ Fortran
 -------
 
 Once libmuscle is installed, you will have to add some code to your model to
-talk to libmuscle, or you can write a compute element from scratch. Examples of
-how to do that are in the Fortran section of this manual. In order to compile
-and link your code with libmuscle, you have to adjust the compilation and
-linking commands a bit though.
+talk to libmuscle, or you can write a component from scratch. Examples of how
+to do that are in the Fortran section of this manual. In order to compile and
+link your code with libmuscle, you have to adjust the compilation and linking
+commands a bit though.
 
 The Fortran bindings for libmuscle are a wrapper around the C++ implementation.
 They will be built automatically if you follow the instructions above for

@@ -46,7 +46,7 @@ def macro():
 
 
 @skip_if_python_only
-def test_cpp_macro_micro(mmp_server_process_simple):
+def test_cpp_macro_micro(mmp_server_process_simple, tmp_path):
     # create C++ micro model
     # see libmuscle/cpp/src/libmuscle/tests/micro_model_test.cpp
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
@@ -56,8 +56,12 @@ def test_cpp_macro_micro(mmp_server_process_simple):
             'MUSCLE_MANAGER': mmp_server_process_simple}
     cpp_test_dir = cpp_build_dir / 'libmuscle' / 'tests'
     cpp_test_micro = cpp_test_dir / 'micro_model_test'
-    micro_result = subprocess.Popen(
-            [str(cpp_test_micro), '--muscle-instance=micro'], env=env)
+
+    with (tmp_path / 'cpp_stdout.txt').open('w') as f_out:
+        with (tmp_path / 'cpp_stderr.txt').open('w') as f_err:
+            micro_result = subprocess.Popen(
+                    [str(cpp_test_micro), '--muscle-instance=micro'], env=env,
+                    stdout=f_out, stderr=f_err)
 
     # run macro model
     macro_process = mp.Process(

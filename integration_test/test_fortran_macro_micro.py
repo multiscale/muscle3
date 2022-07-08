@@ -47,7 +47,7 @@ def macro():
 
 
 @skip_if_python_only
-def test_fortran_macro_micro(mmp_server_process_simple):
+def test_fortran_macro_micro(mmp_server_process_simple, tmp_path):
     # create Fortran micro model
     # see libmuscle/fortran/src/libmuscle/tests/fortran_micro_model_test.f90
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
@@ -58,15 +58,19 @@ def test_fortran_macro_micro(mmp_server_process_simple):
             Path(__file__).parents[1] / 'libmuscle' / 'fortran' / 'build' /
             'libmuscle' / 'tests')
     fortran_test_micro = fortran_test_dir / 'fortran_micro_model_test'
-    micro_result = subprocess.Popen(
-            [
-                str(fortran_test_micro), '--muscle-instance=micro',
-                f'--muscle-manager={mmp_server_process_simple}'
-                ], env=env)
+
+    with (tmp_path / 'fortran_stdout.txt').open('w') as f_out:
+        with (tmp_path / 'fortran_stderr.txt').open('w') as f_err:
+            micro_result = subprocess.Popen(
+                    [
+                        str(fortran_test_micro), '--muscle-instance=micro',
+                        f'--muscle-manager={mmp_server_process_simple}'
+                        ], env=env, stdout=f_out, stderr=f_err)
 
     # run macro model
     macro_process = mp.Process(
-            target=run_macro, args=('macro', mmp_server_process_simple))
+            target=run_macro,
+            args=('macro', mmp_server_process_simple))
     macro_process.start()
 
     # check results

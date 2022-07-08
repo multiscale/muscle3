@@ -411,16 +411,14 @@ class Instance:
         """
         id_str = str(self._instance_name())
 
-        logfile = extract_log_file_location('muscle_{}.log'.format(id_str))
+        logfile = extract_log_file_location('muscle3.{}.log'.format(id_str))
         if logfile is not None:
             local_handler = logging.FileHandler(str(logfile), mode='w')
             formatter = logging.Formatter(
                     '%(asctime)-15s: %(levelname)-7s %(name)s: %(message)s')
             local_handler.setFormatter(formatter)
             logging.getLogger('libmuscle').addHandler(local_handler)
-            logging.getLogger('libmuscle').setLevel(logging.INFO)
             logging.getLogger('ymmsl').addHandler(local_handler)
-            logging.getLogger('ymmsl').setLevel(logging.INFO)
 
         if self.__manager is not None:
             self._mmp_handler = MuscleManagerHandler(id_str, logging.WARNING,
@@ -672,9 +670,8 @@ class Instance:
                 return
 
             py_level = log_level.as_python_level()
-            self._mmp_handler.setLevel(py_level)
-            if not logging.getLogger().isEnabledFor(py_level):
-                logging.getLogger().setLevel(py_level)
+            logging.getLogger('libmuscle').setLevel(py_level)
+            logging.getLogger('ymmsl').setLevel(py_level)
         except KeyError:
             # muscle_remote_log_level not set, do nothing and keep the default
             pass

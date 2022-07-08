@@ -4,6 +4,7 @@ Starting instances is out of scope for MUSCLE 3, but is also very
 useful for testing and prototyping. So we have a little bit of
 support for it in this module.
 """
+import logging
 import multiprocessing as mp
 import multiprocessing.connection as mpc
 import sys
@@ -118,8 +119,27 @@ def implementation_process(
     else:
         sys.argv.append(f'--muscle-manager={manager_location}')
 
-    # chain call
-    implementation()
+    with open(f'muscle3.{instance}.log', 'w') as log_file:
+        # Redirect an already-configured standard logging setup
+        # Logger.handlers and StreamHandler.stream are private, so this
+        # is dangerous in theory. But this part of the logging code
+        # hasn't changed in two decades, and we can use introspection to
+        # avoid crashes, so in practice, it'll work.
+        root_logger = logging.getLogger()
+        if hasattr(root_logger, 'handlers'):
+            for h in root_logger.handlers:
+                if isinstance(h, logging.StreamHandler):
+                    if hasattr(h, 'stream'):
+                        if h.stream == sys.stderr:
+                            h.stream = log_file
+                        elif h.stream == sys.stdout:
+                            h.stream = log_file
+
+        sys.stderr = log_file
+        sys.stdout = log_file
+
+        # chain call
+        implementation()
 
 
 def _parse_prefix(prefix: str) -> Tuple[str, List[int]]:

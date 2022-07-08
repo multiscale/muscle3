@@ -2,7 +2,6 @@ import logging
 import multiprocessing as mp
 import os
 from pathlib import Path
-import sys
 
 import pytest
 import yatiml
@@ -140,7 +139,9 @@ def mmp_server(yatiml_log_warning):
 
 @pytest.fixture
 def log_file_in_tmpdir(tmpdir):
-    old_argv = sys.argv
-    sys.argv = sys.argv + ['--muscle-log-file={}'.format(tmpdir)]
+    old_workdir = os.getcwd()
+    os.chdir(tmpdir)
+
     yield None
-    sys.argv = old_argv
+
+    os.chdir(old_workdir)

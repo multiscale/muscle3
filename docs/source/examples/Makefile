@@ -108,6 +108,7 @@ clean:
 .PHONY: test_python
 test_python: base
 	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_implementations.ymmsl rd_python.ymmsl rd_settings.ymmsl
+	make -C python test
 
 .PHONY: test_cpp
 test_cpp: base cpp

@@ -1,5 +1,5 @@
 .PHONY: all
-all: venv
+all: installation
 
 
 .PHONY: clean
@@ -9,4 +9,7 @@ clean:
 
 venv:
 	python3 -m venv venv
-	. venv/bin/activate && pip3 install -U pip setuptools wheel && pip3 install -r ../requirements.txt && pip3 install $(CURDIR)/../../../../../
+
+.PHONY: installation
+installation: venv
+	. venv/bin/activate && pip3 install -U pip setuptools wheel && pip3 install -U -r ../requirements.txt && pip3 install -U $(CURDIR)/../../../../../

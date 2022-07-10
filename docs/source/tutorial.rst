@@ -327,6 +327,8 @@ bringing the whole simulation to a halt. To avoid this, an intermediate
 component needs to be inserted, which interpolates the messages. In order to
 send and receive in the correct order, this component needs to know when the
 next message will be sent, and that is when the second timestamp is required.
+See ``docs/source/examples/python/interact_coupling.py`` for a documented
+example.
 
 So, to make your submodel more generically usable, it's good to set the second
 timestamp. But perhaps you're trying to connect an existing codebase that uses

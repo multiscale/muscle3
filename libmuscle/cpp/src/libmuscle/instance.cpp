@@ -567,7 +567,7 @@ std::string Instance::Impl::extract_manager_location_(
     if (prefix != nullptr)
         return std::string(prefix);
 
-    return "tcp:default.example.com:9000";
+    return "tcp:localhost:9000";
 }
 
 /* Returns the component name of this instance, i.e. without the index.

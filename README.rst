@@ -39,7 +39,7 @@ Browse to `the MUSCLE 3 documentation`_ to get started.
 Legal
 =====
 
-MUSCLE 3 is Copyright 2018-2020 University of Amsterdam and Netherlands eScience
+MUSCLE 3 is Copyright 2018-2022 University of Amsterdam and Netherlands eScience
 Center. It is licensed under the Apache License 2.0.
 
 

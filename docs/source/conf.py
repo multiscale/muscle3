@@ -67,7 +67,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'muscle3'
-copyright = '2018-2020 University of Amsterdam and Netherlands eScience Center'
+copyright = '2018-2022 University of Amsterdam and Netherlands eScience Center'
 author = 'Lourens Veen'
 
 # The version info for the project you're documenting, acts as replacement for

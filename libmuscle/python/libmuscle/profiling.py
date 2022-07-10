@@ -8,7 +8,7 @@ from libmuscle.timestamp import Timestamp
 
 
 class ProfileEventType(Enum):
-    """Profiling event types for MUSCLE 3.
+    """Profiling event types for MUSCLE3.
 
     These match the types in the MUSCLE Manager Protocol, and should \
     be kept identical to those.
@@ -21,7 +21,7 @@ class ProfileEventType(Enum):
 
 
 class ProfileEvent:
-    """A profile event as used by MUSCLE 3.
+    """A profile event as used by MUSCLE3.
 
     This represents a single measurement of the timing of some event
     that occurred while executing the simulation.

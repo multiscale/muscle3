@@ -35,7 +35,7 @@ class Formatter(logging.Formatter):
 
 
 class Logger:
-    """The MUSCLE 3 Manager Logger component.
+    """The MUSCLE3 Manager Logger component.
 
     The Logger component configures the local logging system to output
     to the central log file, and it accepts messages from remote

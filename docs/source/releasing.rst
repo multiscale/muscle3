@@ -3,7 +3,7 @@
 Releasing
 ***********
 
-MUSCLE 3 uses Git on GitHub for version management, using the `Git Flow`_
+MUSCLE3 uses Git on GitHub for version management, using the `Git Flow`_
 branching model. Making a release involves quite a few steps, so they're listed
 here to help make the process more reliable; this information is really only
 useful for the maintainers.
@@ -17,7 +17,7 @@ To start the release process, make a release branch
 
   git checkout -b release-x.y.z develop
 
-MUSCLE 3 uses `Semantic Versioning`_, so name the new version accordingly.
+MUSCLE3 uses `Semantic Versioning`_, so name the new version accordingly.
 
 Update the changelog
 --------------------
@@ -121,7 +121,7 @@ Make a GitHub release
 ---------------------
 
 In order to get a DOI for this release, we need to make a release on GitHub. Go
-to the `MUSCLE 3 GitHub repository`_ and click 'Releases'. Select 'Draft a new
+to the `MUSCLE3 GitHub repository`_ and click 'Releases'. Select 'Draft a new
 release', select the x.y.z. tag that we just uploaded, and use 'Release x.y.z'
 as the title. Then copy-paste the description from the change log, convert it
 from ReStructuredText to MarkDown and maybe prepend some text if there is
@@ -184,4 +184,4 @@ and continue developing.
 
 .. _`Git Flow`: http://nvie.com/posts/a-successful-git-branching-model/
 .. _`Semantic Versioning`: http://www.semver.org
-.. _`MUSCLE 3 GitHub repository`: https://github.com/multiscale/muscle3
+.. _`MUSCLE3 GitHub repository`: https://github.com/multiscale/muscle3

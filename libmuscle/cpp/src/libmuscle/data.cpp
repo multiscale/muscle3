@@ -500,7 +500,7 @@ Settings DataConstRef::as<Settings>() const {
     auto oh = msgpack::unpack(ext.data(), ext.size());
 
     if (oh.get().type != msgpack::type::MAP)
-        throw std::runtime_error("Invalid Settings format. Bug in MUSCLE 3?");
+        throw std::runtime_error("Invalid Settings format. Bug in MUSCLE3?");
 
     Settings settings;
     auto zone = std::make_shared<msgpack::zone>();
@@ -626,7 +626,7 @@ StorageOrder DataConstRef::storage_order() const {
             return StorageOrder::first_adjacent;
         else if (order == "la")
             return StorageOrder::last_adjacent;
-        throw std::runtime_error("Invalid data format received, MUSCLE 3 bug?");
+        throw std::runtime_error("Invalid data format received, MUSCLE3 bug?");
     }
     else
         throw std::runtime_error("Tried to get the shape, but this object is not a grid.");
@@ -716,7 +716,7 @@ DataConstRef DataConstRef::grid_dict_() const {
     auto oh = msgpack::unpack(ext.data(), ext.size());
 
     if (oh.get().type != msgpack::type::MAP)
-        throw std::runtime_error("Invalid grid format. Bug in MUSCLE 3?");
+        throw std::runtime_error("Invalid grid format. Bug in MUSCLE3?");
 
     if (!obj_cache_)
         obj_cache_ = std::make_shared<DataConstRef>(

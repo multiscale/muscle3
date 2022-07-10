@@ -3,7 +3,7 @@
 API Documentation for Fortran
 =============================
 
-This page provides full documentation for the Fortran API of MUSCLE 3.
+This page provides full documentation for the Fortran API of MUSCLE3.
 
 A note on types
 ---------------
@@ -24,7 +24,7 @@ sometimes shows up in a function name, so we need some consistent naming to
 avoid confusion.
 
 This is complicated somewhat by the lack of guarantees on which types will be
-available. However, these days, all hardware that is relevant to MUSCLE 3 uses
+available. However, these days, all hardware that is relevant to MUSCLE3 uses
 two's complement integers with sizes of 8, 16, 32 and 64 bits, and IEEE 754
 floating point numbers using 32 and 64-bit precision. So we can standardise on
 these without excluding anyone.
@@ -191,7 +191,7 @@ LIBMUSCLE_Data
     the names of the indexes in order. For instance, if your 2D array
     represents a table and you index it ``data_array(row, column)`` then
     ``"row"`` and ``"column"`` would be reasonable index names here. Note
-    that MUSCLE 3 does not use these names, they are here to make it
+    that MUSCLE3 does not use these names, they are here to make it
     easier to understand the message on the receiver side, or if it is
     saved and analysed later.
 

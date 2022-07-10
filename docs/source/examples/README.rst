@@ -1,7 +1,7 @@
-MUSCLE 3 Examples
-=================
+MUSCLE3 Examples
+================
 
-This directory contains examples for MUSCLE 3. Once you've `installed MUSCLE 3
+This directory contains examples for MUSCLE3. Once you've `installed MUSCLE3
 <https://muscle3.readthedocs.io/en/latest/installing.html>`_, you can build them
 by activating the installation and running Make from this directory, like this:
 

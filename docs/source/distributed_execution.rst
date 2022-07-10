@@ -2,7 +2,7 @@ Distributed execution
 =====================
 
 In the previous section, we created a simple macro-micro multiscale model with
-MUSCLE 3, and ran it as a single Python script. This section briefly explains
+MUSCLE3, and ran it as a single Python script. This section briefly explains
 how to go from there to a distributed simulation, possibly on multiple nodes.
 
 Note that distributed simulations are not as easy to use as we would like them
@@ -256,7 +256,7 @@ High-Performance Computing
 --------------------------
 
 Coupled simulations often take a significant amount of compute resources,
-requiring the use of High-Performance Computing facilities. MUSCLE 3 has support
+requiring the use of High-Performance Computing facilities. MUSCLE3 has support
 for running inside of an allocation on an HPC cluster running the SLURM
 scheduling system. It can determine the available resources (nodes and cores),
 suballocate them to the various instances required to run the simulation, and
@@ -272,7 +272,7 @@ allocation still needs to be made by the user, and to do that we need to know
 how many resources to request. Since instances may share resources (cores) in
 some cases, this is not easy to see from the configuration.
 
-Fortunately, MUSCLE 3 can do this for us, using the ``muscle3 resources``
+Fortunately, MUSCLE3 can do this for us, using the ``muscle3 resources``
 command:
 
 .. code-block:: bash
@@ -307,13 +307,13 @@ Python model, this prints:
 
 
 As we can see, the models are allocated a single core each (they are both
-single-threaded), and MUSCLE 3 has determined that they can share a core because
+single-threaded), and MUSCLE3 has determined that they can share a core because
 they won't be computing at the same time due to the macro-micro multiscale
 coupling pattern. For more interesting output, try this command on the example
 from the :ref:`Uncertainty Quantification` section, and increase the number of
 instances a bit.
 
-To determine whether models can overlap, MUSCLE 3 assumes that models do not do
+To determine whether models can overlap, MUSCLE3 assumes that models do not do
 any significant amount of computation before receiving the F_INIT messages, in
 between having sent the O_I messages and receiving the S messages, and after
 having sent the O_F messages. If an implementation does do this, then the
@@ -358,7 +358,7 @@ will allocate threads, not cores. This may give you a performance boost, it may
 make no difference, or it may decrease performance. To disable hyperthreading
 and allocate full physical cores, you can pass ``--ntasks-per-node=<x>`` to
 sbatch, with ``<x>`` being the number of physical cores per node. This will
-cause SLURM to tell MUSCLE 3 (via QCG-PilotJob) to only use the first ``x``
+cause SLURM to tell MUSCLE3 (via QCG-PilotJob) to only use the first ``x``
 virtual cores on each machine, which then get a physical core to themselves
 because the second set of virtual cores isn't used.
 

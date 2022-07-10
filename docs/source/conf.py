@@ -223,7 +223,7 @@ man_pages = [
 texinfo_documents = [
     (master_doc, 'muscle3', 'MUSCLE3 Documentation',
      author, 'muscle3',
-     'The MUSCLE 3 multiscale coupling library and environment.',
+     'The MUSCLE3 multiscale coupling library and environment.',
      'Miscellaneous'),
 ]
 

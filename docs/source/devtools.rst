@@ -2,9 +2,9 @@
 Development tools
 =================
 
-MUSCLE 3 is a fairly complex piece of software, being a coupling library
+MUSCLE3 is a fairly complex piece of software, being a coupling library
 designed to link together independent bits of software written in different
-languages. To help us develop MUSCLE 3, we use a variety of tools that check our
+languages. To help us develop MUSCLE3, we use a variety of tools that check our
 work and build software and documentation where required. This page describes
 the development tools we use, what they do, and how they are configured.
 
@@ -12,16 +12,16 @@ the development tools we use, what they do, and how they are configured.
 Building and installation
 =========================
 
-The main language for MUSCLE 3 is Python 3. To help install and publish the
-Python parts of MUSCLE 3, we use `setuptools`_. Setuptools reads information
+The main language for MUSCLE3 is Python 3. To help install and publish the
+Python parts of MUSCLE3, we use `setuptools`_. Setuptools reads information
 from the file `setup.py` in the root of the repository. This file contains a
-description of MUSCLE 3 which is used on PyPI (the standard online Python
-package repository), information used by PIP when installing MUSCLE 3, and
+description of MUSCLE3 which is used on PyPI (the standard online Python
+package repository), information used by PIP when installing MUSCLE3, and
 information about required libraries.
 
 The dependencies in `setup.py` are specified with an exact version number,
 rather than an at-least version number. This way, we can be sure that no
-incompatible changes are introduced that break MUSCLE 3. However, it also means
+incompatible changes are introduced that break MUSCLE3. However, it also means
 that the dependencies get out of date, as new versions are released. To keep
 up-to-date on this, we use `Requires.io`_, a web service that scans our
 `setup.py` and checks our versions against the latest releases. It produces a
@@ -29,18 +29,18 @@ button, which we embed in our README.rst, that shows whether we are up-to-date.
 
 We will most likely have outdated dependencies quite often, as rapid updates are
 a fact of life in today's Open Source world. This is not an immediate problem, as
-the older versions will still be available and MUSCLE 3 will work with them, but
+the older versions will still be available and MUSCLE3 will work with them, but
 we should update regularly to stay current and avoid potential security issues.
 
 
 Quality Control
 ===============
 
-MUSCLE 3 is infrastructure used for building infrastructure (models) for doing
+MUSCLE3 is infrastructure used for building infrastructure (models) for doing
 scientific experiments. As such, it is important that it is reliable, easy to
 use, and easy to develop. Furthermore, it will frequently be used by
-inexperienced programmers, who will look at MUSCLE 3 as an example of how to
-write good code. It is therefore important that MUSCLE 3 is a well-implemented,
+inexperienced programmers, who will look at MUSCLE3 as an example of how to
+write good code. It is therefore important that MUSCLE3 is a well-implemented,
 high quality program. To make sure that this happens, we use static checking
 (linting), unit tests, and integration tests.
 
@@ -74,7 +74,7 @@ as appropriate.
 Tests
 -----
 
-MUSCLE 3 has a suite of tests, both unit tests (which test small bits of the
+MUSCLE3 has a suite of tests, both unit tests (which test small bits of the
 code one piece at a time) and integration tests (which test whether it all goes
 together correctly). We run these tests, measure test coverage, and have
 continuous integration just in case we forget to run the tests manually.
@@ -109,7 +109,7 @@ icon to e.g. a pull request to signal whether the tests have passed or not.
 Documentation
 =============
 
-The MUSCLE 3 documentation lives in the repository together with the code. This
+The MUSCLE3 documentation lives in the repository together with the code. This
 is a much preferable arrangement to a separate wiki, as previous MUSCLEs had,
 because wikis tend to get lost.
 

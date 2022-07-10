@@ -12,7 +12,7 @@ include $(TOOLDIR)/check_tools.make
 all: cpp fortran
 ifeq "$(filter $(MAKECMDGOALS), install)" ""
 	@echo
-	@echo '    All done, now you can install MUSCLE 3 using:'
+	@echo '    All done, now you can install MUSCLE3 using:'
 	@echo
 	@echo '        PREFIX=/path/to/install make install'
 	@echo
@@ -57,13 +57,13 @@ install: all
 	@echo
 	@echo '********************************************************************'
 	@echo '*                                                                  *'
-	@echo "    MUSCLE 3 is now installed in $(PREFIX)."
+	@echo "    MUSCLE3 is now installed in $(PREFIX)."
 	@echo '*                                                                  *'
 	@echo '*   To set up your environment, run:                               *'
 	@echo '*                                                                  *'
 	@echo "    source $(PREFIX)/bin/muscle3.env"
 	@echo '*                                                                  *'
-	@echo '*   To then build your model with MUSCLE 3, use the following      *'
+	@echo '*   To then build your model with MUSCLE3, use the following      *'
 	@echo "*   options on your compiler's command line:                       *"
 	@echo '*                                                                  *'
 	@echo '*   C++ without MPI:                                               *'
@@ -108,6 +108,8 @@ docs:
 .PHONY: docsclean
 docsclean:
 	rm -rf docs/build/*
+	rm -rf docs/build/.doctrees
+	rm -f docs/build/.buildinfo
 	rm -rf docs/doxygen/html/*
 	rm -rf docs/doxygen/xml/*
 

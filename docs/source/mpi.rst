@@ -8,7 +8,7 @@ HPC applications use MPI for communication, either directly or through a
 library.
 
 Chances are, therefore, that you will run into a submodel that uses MPI and that
-you want to connect to MUSCLE 3. MUSCLE 3 supports this (only in C++ and
+you want to connect to MUSCLE3. MUSCLE3 supports this (only in C++ and
 Fortran for now), but as always with MPI, some extra care needs to be taken
 because things run in parallel.
 
@@ -23,7 +23,7 @@ receive functions at the same time. Two exceptions are that configuring ports
 may only be done in the root process, and getting settings can be done anytime
 and anywhere.
 
-This section shows how to use MUSCLE 3 with MPI from C++ and Fortran, based on
+This section shows how to use MUSCLE3 with MPI from C++ and Fortran, based on
 the same reaction-diffusion model given in the C++ and Fortran sections, but now
 with a reaction model that uses MPI. It will help if you've read the Python
 tutorial and the C++ or Fortran section first, and some experience with MPI or
@@ -123,7 +123,7 @@ Headers and modules
 
 
         In Fortran, we use the ``mpi`` module to be able to make MPI calls, and
-        ``libmuscle_mpi`` to get the MPI-enabled version of the MUSCLE 3 API.
+        ``libmuscle_mpi`` to get the MPI-enabled version of the MUSCLE3 API.
 
 
 .. tabs::
@@ -184,11 +184,11 @@ Creating an Instance
             call LIBMUSCLE_PortsDescription_free(ports)
 
 
-When MUSCLE 3 is used in MPI mode, the Instance constructor takes two extra
+When MUSCLE3 is used in MPI mode, the Instance constructor takes two extra
 arguments: an MPI communicator, and the rank of the root process. These default
-to MPI_COMM_WORLD and 0, respectively. MUSCLE 3 will create a copy of the given
+to MPI_COMM_WORLD and 0, respectively. MUSCLE3 will create a copy of the given
 communicator for internal use; the one you pass must contain all processes in
-your submodel. MUSCLE 3 will do all communication with other submodels from the
+your submodel. MUSCLE3 will do all communication with other submodels from the
 process with the given root rank, and that process is special when sending and
 receiving as described below.
 
@@ -300,7 +300,7 @@ while all other processes would spin frantically, keeping almost all your cores
 occupied.
 
 Since macro-micro models alternate execution, it's often nice if you can put
-them on the same cores (and MUSCLE 3 will do so for you), but that only works
+them on the same cores (and MUSCLE3 will do so for you), but that only works
 if the waiting model doesn't load them when it's not running. MUSCLE solves
 this problem using a TCP-based barrier. You call ``receive()`` in all
 processes, and they will all block on a network receive call, without using

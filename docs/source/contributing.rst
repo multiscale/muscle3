@@ -1,20 +1,20 @@
-========================
-Contributing to MUSCLE 3
-========================
+=======================
+Contributing to MUSCLE3
+=======================
 
-MUSCLE 3 is developed by a community of contributors, and we welcome anyone and
+MUSCLE3 is developed by a community of contributors, and we welcome anyone and
 everyone to help us build it. Maybe you've found a mistake in the code (it
 happens, we're only human!) that you would like to fix, want to add a new
 feature, or improve the documentation. That's great!
 
-However, because MUSCLE 3 is worked on by different people simultaneously, we do
+However, because MUSCLE3 is worked on by different people simultaneously, we do
 need some system to keep track of all the changes, so that it doesn't become an
 unintelligible mess. We use the Git version control system for this, together
 with the Github hosting platform.
 
 Describing all of Git and Github here would be too much (both have their own
 documentation), but we do describe the process of contributing a change to
-MUSCLE 3 in some detail. We're assuming that you already have Git installed, and
+MUSCLE3 in some detail. We're assuming that you already have Git installed, and
 have a Github account that you're logged in with. Once that's done, please
 proceed as below.
 
@@ -27,7 +27,7 @@ to see that the bug you want to fix or the feature you want to add does not
 already have an issue dedicated to it. If it does, feel free to add to the
 discussion. If not, please make a new issue.
 
-If you have discovered an error in MUSCLE 3, please describe
+If you have discovered an error in MUSCLE3, please describe
 
 * What you were trying to achieve
 * What you did to achieve this
@@ -40,7 +40,7 @@ problem, or to check that a proposed fix has really solved the issue.
 If you would like a new feature (or would like to add it yourself), please
 describe
 
-* The context in which you're using MUSCLE 3
+* The context in which you're using MUSCLE3
 * What you are trying to achieve
 * How the new feature would help you do that
 * What the new feature should do and how it should work
@@ -53,9 +53,9 @@ Get a local repository
 ======================
 
 First, you'll need a public Git repository that you have write access to, and which
-contains MUSCLE 3. If you have write access to the main MUSCLE 3 repository,
+contains MUSCLE3. If you have write access to the main MUSCLE3 repository,
 then you're set already. If not, click the Fork button at the top right of the
-main MUSCLE 3 repository page. This will make a copy of the repository that you
+main MUSCLE3 repository page. This will make a copy of the repository that you
 can write to, under your own account.
 
 Next, you need a copy of this public repository on your local computer, so that
@@ -162,18 +162,18 @@ Make a pull request
 Once you've made all the changes needed to resolve the issue, the next step is
 to make a pull request. Your changes so far are on a branch, either in the main
 repository, or in a fork of the main repository. A pull request is a request to
-the maintainers of MUSCLE 3 to take the changes on your branch, and incorporate
+the maintainers of MUSCLE3 to take the changes on your branch, and incorporate
 them into the main version of the software.
 
 To make a pull request, make sure that you have committed and pushed all your
 changes, and that the tests pass. Then, go to the Github homepage of your fork,
-if you have one, or the main MUSCLE 3 repository. If you've just pushed, then
+if you have one, or the main MUSCLE3 repository. If you've just pushed, then
 Github will show a "Compare & pull request" button. Otherwise, look up your
 branch using the top left drop-down button, and then click the "New pull
 request" button next to it.
 
 This gives you a page describing your pull request. You will want to request a
-merge from your issue branch, to the develop branch in the main MUSCLE 3
+merge from your issue branch, to the develop branch in the main MUSCLE3
 repository. Add a description of the changes you've made, and click "Create pull
 request", and you're all set.
 
@@ -188,4 +188,4 @@ additional commits pushed to your public branch will automatically show up
 there.
 
 Once we're all satisfied with the change, the pull request will be accepted, and
-your code will become part of MUSCLE 3. Thank you!
+your code will become part of MUSCLE3. Thank you!

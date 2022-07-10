@@ -1,7 +1,7 @@
 Tutorial with Python
 ====================
 
-In this section, we'll look at a few examples of how to use MUSCLE 3 to create a
+In this section, we'll look at a few examples of how to use MUSCLE3 to create a
 multiscale simulation in Python.
 
 `The source code for these examples is here
@@ -49,7 +49,7 @@ many timesteps) for every timestep of the macro model. Thus, the macro model
 effectively calls the micro model before each state update, sending it the
 current state and using its output as an input for the state update operation.
 
-Here's how to implement that with MUSCLE 3. (A detailed explanation follows
+Here's how to implement that with MUSCLE3. (A detailed explanation follows
 below the code.)
 
 .. literalinclude:: examples/python/reaction_diffusion.py
@@ -93,7 +93,7 @@ A simple submodel
 Next is the reaction model. It is defined as a single Python function that takes
 no arguments and returns nothing. (Note that this code uses type annotations to
 show the types of function arguments and return values. These are ignored by the
-Python interpreter, and also by MUSCLE 3, so you don't have to use them if you
+Python interpreter, and also by MUSCLE3, so you don't have to use them if you
 don't want to.)
 
 The first step in a MUSCLE model is to create an :class:`libmuscle.Instance`
@@ -244,10 +244,10 @@ simulation time and the current state, converted to a Grid. The optional second
 parameter is a second timestamp, which will be discussed below, and is set to
 ``None`` here.
 
-MUSCLE 3 uses `MessagePack <https://msgpack.org>`_ to encode messages between
+MUSCLE3 uses `MessagePack <https://msgpack.org>`_ to encode messages between
 models. MessagePack is a binary encoding format which can be thought of as a
 binary version of JSON. That means that the message can be an integer, float,
-bool, string, or a list or dictionary containing such, and MUSCLE 3 additionally
+bool, string, or a list or dictionary containing such, and MUSCLE3 additionally
 supports NumPy arrays and byte arrays. Like with JSON, these can be nested, so
 you can send a dictionary containing lists of floats for example.
 
@@ -262,7 +262,7 @@ document, for each port, which data type you're expecting or sending! Your
 future colleagues (and possibly your future self) will thank you.
 
 MessagePack is an extensible format, and since sending grids is very common in
-these kinds of models MUSCLE 3 supports sending NumPy arrays directly. Here, we
+these kinds of models MUSCLE3 supports sending NumPy arrays directly. Here, we
 wrap our array U into a :class:`libmuscle.Grid` object, so that we can add the
 name of the dimensions. In this case there's only one, and ``x`` is not very
 descriptive, so we could have also passed ``U`` directly, in which case MUSCLE
@@ -279,7 +279,7 @@ Finally, if you want to use your own encoding, you can just send a ``bytes``
 object, which will be transmitted as-is, with minimal overhead.
 
 This concludes our reaction model. As you can see, submodels that are used with
-MUSCLE 3 very much look like they would without. With one additional variable,
+MUSCLE3 very much look like they would without. With one additional variable,
 one extra loop, and a few send and receive statements you're ready to connect
 your model into a larger simulation.
 
@@ -313,7 +313,7 @@ on this port. Since our time steps are fixed, this is easy to calculate. We do
 need to take care to send ``None`` if this is the final message on this port
 however, since there won't be another message in that case.
 
-This deserves a bit more explanation. First, MUSCLE 3 does not use the
+This deserves a bit more explanation. First, MUSCLE3 does not use the
 timestamps that are attached to the messages for anything, and in this
 particular case, always sending ``None`` for the second timestamp will work
 fine.  These timestamps are necessary if two submodels with timescale overlap
@@ -354,7 +354,7 @@ state update from the micro-model, which it does by calling
 are passing a default message. The default message is returned if this port is
 not connected. We are cleverly passing the message containing our current
 state, so that if this port is not connected, the model continues from its
-current state. Since MUSCLE 3 will simply ignore a send command on a
+current state. Since MUSCLE3 will simply ignore a send command on a
 disconnected port, this makes it possible to run the diffusion model without a
 micro-model attached.
 
@@ -391,7 +391,7 @@ separate programs on different computers.
 Connecting it all together
 --------------------------
 
-With both models defined, we now need to instruct MUSCLE 3 on how to connect
+With both models defined, we now need to instruct MUSCLE3 on how to connect
 them together. We do this by creating an object of type
 ``ymmsl.Configuration``, which contains all the information needed to run the
 simulation. It often helps to draw a diagram first:
@@ -481,7 +481,7 @@ those two sets of objects.
 
 Finally, we define the settings for our simulation by constructing a
 :class:`ymmsl.Settings` object from a dictionary. Note that there are two
-duplicated names between the two models: ``t_max`` and ``dt``. With MUSCLE 3,
+duplicated names between the two models: ``t_max`` and ``dt``. With MUSCLE3,
 you can create a global setting with that name to set it to the same value
 everywhere (handy for settings that are used by multiple components), or you can
 prepend the name of the component to set the value for a specific one. Specific
@@ -497,7 +497,7 @@ Python-side equivalent to a yMMSL YAML file.
 Launching the simulation
 ------------------------
 
-There are two ways of launching a MUSCLE 3 simulation: locally in a Python
+There are two ways of launching a MUSCLE3 simulation: locally in a Python
 script (as we do here), and by having the MUSCLE Manager start a set of programs
 implementing the components. The first option puts everything into one or more
 Python files and is suitable for testing, experimentation, learning, and small
@@ -555,7 +555,7 @@ and ``muscle3.micro.log``. The first logs the simulation from the perspective of
 the MUSCLE Manager, the others do the same for each submodel. Have a look to see
 what really happened when running the simulation!
 
-By default, Python (and MUSCLE 3) only logs messages at level ``WARNING`` or
+By default, Python (and MUSCLE3) only logs messages at level ``WARNING`` or
 higher. To be able to see better what's going on, we configure it to also log
 messages at ``INFO`` level:
 

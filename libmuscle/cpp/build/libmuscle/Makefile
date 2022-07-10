@@ -205,7 +205,7 @@ libmuscle.pc:
 	@echo 'libdir=$${exec_prefix}/lib' >>$@
 	@echo >>$@
 	@echo 'Name: libmuscle for C++' >>$@
-	@echo 'Description: Library for MUSCLE 3' >>$@
+	@echo 'Description: Library for MUSCLE3' >>$@
 	@echo 'URL: https://muscle3.readthedocs.io' >>$@
 	@echo 'Version: $(muscle_version)' >>$@
 	@echo 'Requires: ymmsl = $(muscle_version)' >>$@
@@ -222,7 +222,7 @@ libmuscle_mpi.pc:
 	@echo 'libdir=$${exec_prefix}/lib' >>$@
 	@echo >>$@
 	@echo 'Name: libmuscle for C++ and MPI' >>$@
-	@echo 'Description: Library for MUSCLE 3' >>$@
+	@echo 'Description: Library for MUSCLE3' >>$@
 	@echo 'URL: https://muscle3.readthedocs.io' >>$@
 	@echo 'Version: $(muscle_version)' >>$@
 	@echo 'Requires: ymmsl = $(muscle_version)' >>$@

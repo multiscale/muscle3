@@ -24,9 +24,9 @@
 
 namespace libmuscle { namespace impl {
 
-/** Communication engine for MUSCLE 3.
+/** Communication engine for MUSCLE3.
  *
- * This class is the mailroom for an instance that uses MUSCLE 3. It manages
+ * This class is the mailroom for an instance that uses MUSCLE3. It manages
  * the sending and receiving of messages, although it leaves the actual data
  * transmission to various protocol-specific servers and clients.
  */

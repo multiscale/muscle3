@@ -55,7 +55,7 @@ class Conduit {
          * If no slot was given, an empty list is returned.
          *
          * Note that conduits connected to specific slots are currently not
-         * supported by MUSCLE 3.
+         * supported by MUSCLE3.
          *
          * @return A list of slot indexes.
          */
@@ -74,7 +74,7 @@ class Conduit {
          * If no slot was given, an empty list is returned.
          *
          * Note that conduits connected to specific slots are currently not
-         * supported by MUSCLE 3.
+         * supported by MUSCLE3.
          *
          * @return A list of slot indexes.
          */

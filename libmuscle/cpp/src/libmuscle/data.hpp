@@ -35,7 +35,7 @@ namespace mcp {
 /** A const reference to some kind of data.
  *
  * This defines a read-only API for variable data objects, which is what
- * MUSCLE 3 sends and receives.
+ * MUSCLE3 sends and receives.
  *
  * As a user, you should be creating Data objects, not DataConstRef objects.
  * Data objects have the same interface as DataConstRef objects, but have
@@ -505,7 +505,7 @@ class DataConstRef {
 
 /** A data object.
  *
- * This represents a data object, which is what MUSCLE 3 sends and receives.
+ * This represents a data object, which is what MUSCLE3 sends and receives.
  *
  * Data objects refer to a simple value of a basic type, or refer to a
  * dictionary or list. They model a reference, so if you copy a Data object to
@@ -693,7 +693,7 @@ class Data : public DataConstRef {
          *
          * \code{.cpp}
          * mylist[3] = 12.4;
-         * mylist[4] = "MUSCLE 3";
+         * mylist[4] = "MUSCLE3";
          * \endcode
          *
          * @param index The index to refer to.

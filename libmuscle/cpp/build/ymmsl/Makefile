@@ -119,7 +119,7 @@ ymmsl.pc:
 	@echo 'libdir=$${exec_prefix}/lib' >>$@
 	@echo >>$@
 	@echo 'Name: yMMSL for C++' >>$@
-	@echo 'Description: Partial yMMSL support library for MUSCLE 3' >>$@
+	@echo 'Description: Partial yMMSL support library for MUSCLE3' >>$@
 	@echo 'URL: https://muscle3.readthedocs.io' >>$@
 	@echo 'Version: $(muscle_version)' >>$@
 	@echo 'Cflags: -I$${includedir}' >>$@

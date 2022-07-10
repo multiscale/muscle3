@@ -8,7 +8,7 @@
 
 namespace libmuscle { namespace impl {
 
-/** Log levels for MUSCLE 3.
+/** Log levels for MUSCLE3.
  *
  * These match the Python log levels in name and value, which is what's used
  * in the MUSCLE Manager Protocol. So they must be kept the same or things
@@ -33,7 +33,7 @@ enum class LogLevel {
 std::ostream & operator<<(std::ostream & o, LogLevel level);
 
 
-/** A log message as used by MUSCLE 3.
+/** A log message as used by MUSCLE3.
  */
 class LogMessage {
     public:

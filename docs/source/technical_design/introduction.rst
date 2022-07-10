@@ -1,6 +1,6 @@
-=========================
-MUSCLE 3 Technical Design
-=========================
+========================
+MUSCLE3 Technical Design
+========================
 
 ------------
 Introduction
@@ -20,13 +20,13 @@ compute resources, that the correct set of submodels is running when needed.
 Thus, the coupling library provides coordination and communication in addition
 to the computing done by the submodels.
 
-MUSCLE 3 is the third major version of the Multiscale Coupling Library and
+MUSCLE3 is the third major version of the Multiscale Coupling Library and
 Environment. MUSCLE is grounded in a solid theoretical basis provided by the
 Multiscale Modelling Language (MML), which is being extended to include a
 mechanism for running large, dynamically sized sets of submodels. Using MUSCLE
 3, submodels written in different programming languages can be coupled
 together, with data exchanged via a network to facilitate distributed
-execution. As such, MUSCLE 3 is a core component of the Multiscale Modelling
+execution. As such, MUSCLE3 is a core component of the Multiscale Modelling
 and Simulation Framework (MMSF) for high-performance distributed computing.
 
 
@@ -34,7 +34,7 @@ and Simulation Framework (MMSF) for high-performance distributed computing.
 Anatomy of a MUSCLE3 simulation
 -------------------------------
 
-A MUSCLE 3 simulation run consists of a set of kernels (which include submodels
+A MUSCLE3 simulation run consists of a set of kernels (which include submodels
 as well as other components), which are separate programs running independently
 and exchanging information while doing so, and a manager that coordinates their
 activity. The simulation starts with a start-up phase, during which the kernels
@@ -50,19 +50,19 @@ clusters, due to constraints imposed by the network architecture (i.e.
 firewalls that are in the way). This is the MUSCLE Transport Overlay (MTO).
 Details about the MTO will be added to this document later.
 
-MUSCLE 3 provides four components for building a simulation. First is the
+MUSCLE3 provides four components for building a simulation. First is the
 central manager, which keeps track of where kernels are executing and informs
 them of each other's location, so that communication channels can be set up. It
 also provides a central facility for kernel configuration, it does centralised
 logging, and it starts extra kernels on demand.
 
 LibMuscle is a library that submodels and other kernels link with, and which
-provides them with all the functionality needed to be part of a MUSCLE 3
+provides them with all the functionality needed to be part of a MUSCLE3
 simulation. LibMuscle will be available in several programming languages, so
 that existing kernels can be used as-is, and so that users are free to choose a
 suitable language.
 
-Besides these two pieces of software, MUSCLE 3 comprises two communication
+Besides these two pieces of software, MUSCLE3 comprises two communication
 protocols. The first is the MUSCLE Manager Protocol (MMP), which is used by
 kernels to communicate with the manager. The second is the MUSCLE Data Protocol
 (MDP), which is used for exchange of data between kernels.
@@ -72,7 +72,7 @@ kernels to communicate with the manager. The second is the MUSCLE Data Protocol
 Simulation walkthrough
 ----------------------
 
-In this section, a MUSCLE 3 simulation is described in a bit more detail. As
+In this section, a MUSCLE3 simulation is described in a bit more detail. As
 described above, a MUSCLE simulation consists of a start-up phase followed by
 an execution phase. We assume that the simulation is initiated by a launcher,
 some external program that starts up the manager and an initial set of kernel
@@ -164,7 +164,7 @@ message on each of its sending endpoints. The mapper may then be restarted, and
 receive-and-send again. A mapper must send a message on each of its sending
 endpoints whenever it receives messages on each of its receiving endpoints.
 
-The Proxy is a new kind of kernel in MUSCLE 3 with a single operator, P, and
+The Proxy is a new kind of kernel in MUSCLE3 with a single operator, P, and
 four sets of conduits. It will be described in more detail later.
 
 
@@ -189,7 +189,7 @@ instance definition specifies which kernel it is an instance of, and it
 contains configuration information for the kernel.
 
 The configuration consists of three parts: the space and time scales of the
-modelled process, MUSCLE 3 built-in settings, and kernel parameters.
+modelled process, MUSCLE3 built-in settings, and kernel parameters.
 
 Scales in MUSCLE are defined by their grain (step or cell size), and extent
 (total size). For a kernel operating on a grid, the space scales specify the
@@ -198,7 +198,7 @@ the size of the time step and the overall duration of the simulation. Spatial
 and temporal scales should be chosen with care, dependent on the spatial and
 temporal characteristics of the modelled phenomenon.
 
-MUSCLE 3 built-in settings are settings that are used by LibMuscle, not by the
+MUSCLE3 built-in settings are settings that are used by LibMuscle, not by the
 user-written kernel code. These include e.g. configuration of the logging
 subsystem.
 

@@ -1,5 +1,5 @@
 .. image:: https://github.com/multiscale/muscle3/raw/develop/docs/source/muscle3_logo_readme.png
-    :alt: MUSCLE 3
+    :alt: MUSCLE3
 
 .. image:: https://readthedocs.org/projects/muscle3/badge/?version=develop
     :target: https://muscle3.readthedocs.io/en/develop/?badge=develop
@@ -29,35 +29,35 @@
 
 |
 
-MUSCLE 3 is the third incarnation of the MUSCLE Multiscale Coupling Library and
+MUSCLE3 is the third incarnation of the MUSCLE Multiscale Coupling Library and
 Environment. It is developed by the e-MUSC project of the University of
 Amsterdam and the Netherlands eScience Center.
 
-Browse to `the MUSCLE 3 documentation`_ to get started.
+Browse to `the MUSCLE3 documentation`_ to get started.
 
 
 Legal
 =====
 
-MUSCLE 3 is Copyright 2018-2022 University of Amsterdam and Netherlands eScience
+MUSCLE3 is Copyright 2018-2022 University of Amsterdam and Netherlands eScience
 Center. It is licensed under the Apache License 2.0.
 
 
 Contributing
 ============
 
-We welcome contributions to MUSCLE 3! For small additions or fixes, please
+We welcome contributions to MUSCLE3! For small additions or fixes, please
 submit a pull request, and we'll review your changes and apply them. If you
 want to add larger features, please make an issue and describe what you want to
 do, so that we can coordinate and avoid double work. For more details, see the
 `documentation on contributing`_.
 
-The MUSCLE 3 community fosters a welcoming atmosphere, and participation is open
+The MUSCLE3 community fosters a welcoming atmosphere, and participation is open
 to everyone. In order to ensure that it stays that way, we have a
 `code of conduct`_, and we will enforce it if necessary. Please treat your
 fellow human beings with respect.
 
 
-.. _`the MUSCLE 3 documentation`: https://muscle3.readthedocs.io
+.. _`the MUSCLE3 documentation`: https://muscle3.readthedocs.io
 .. _`documentation on contributing`: http://muscle3.readthedocs.io/en/latest/contributing.html
 .. _`code of conduct`: https://github.com/multiscale/muscle3/blob/develop/CODE_OF_CONDUCT.md

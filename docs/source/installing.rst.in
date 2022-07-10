@@ -3,18 +3,18 @@
 Installing
 ==========
 
-As described before, MUSCLE 3 consists of several components: libmuscle, the
+As described before, MUSCLE3 consists of several components: libmuscle, the
 YMMSL Python library, and the MUSCLE Manager. Furthermore, libmuscle currently
 has a Python and a C++ version.
 
 Python
 ------
 
-Installing MUSCLE 3 on Python will install all the Python-based components of
+Installing MUSCLE3 on Python will install all the Python-based components of
 the system, i.e. the Python version of libmuscle, the YMMSL Python library, and
 the MUSCLE Manager. This requires at least Python 3.6.
 
-MUSCLE 3 is on PyPI as an ordinary Python package, so it can be installed via
+MUSCLE3 is on PyPI as an ordinary Python package, so it can be installed via
 Pip in the usual way. It's normally a good idea to make a virtual environment
 (virtualenv), if you don't yet have one:
 
@@ -37,18 +37,18 @@ version, and old versions sometimes give problems), ``setuptools`` (same thing)
 and we install ``wheel`` (which can cause packages to fail to install if it's
 not there).
 
-Having made a good environment, we can then install MUSCLE 3 inside of it. Once
-that's done, you can use MUSCLE 3 whenever you have the virtualenv activated.
+Having made a good environment, we can then install MUSCLE3 inside of it. Once
+that's done, you can use MUSCLE3 whenever you have the virtualenv activated.
 This will also install the Python YMMSL library, and any required dependencies.
 
-You can also install MUSCLE 3 without a virtualenv if your system allows that.
+You can also install MUSCLE3 without a virtualenv if your system allows that.
 The advantage of virtual environments is that you can keep different programs
 separate, and reduce the chance of library version mismatches. On the other
 hand, not having to activate the virtual environment saves you a step. If you
 get any error messages, try upgrading pip, setuptools and wheel as shown above,
 and then try again.
 
-If you want to install the Python YMMSL library without installing MUSCLE 3,
+If you want to install the Python YMMSL library without installing MUSCLE3,
 then you can use
 
 .. code-block:: bash
@@ -59,7 +59,7 @@ then you can use
 C++
 ---
 
-To work with MUSCLE 3 from C++, you need to install the C++ version of
+To work with MUSCLE3 from C++, you need to install the C++ version of
 libmuscle. Currently, that means building it from source. This is a bit more
 involved than installing the Python version, but comparable to (and maybe
 slightly easier than) installing most C++ libraries.
@@ -68,7 +68,7 @@ Prerequisites
 `````````````
 
 To build libmuscle, we're going to need some tools. In particular, we need a C++
-compiler and GNU make. MUSCLE 3 uses C++14, so you need at least g++ 4.9.3.
+compiler and GNU make. MUSCLE3 uses C++14, so you need at least g++ 4.9.3.
 Clang is expected to work, but that's not been tested. Using the Intel toolchain
 currently does not work, but see below for information about building submodels
 with the Intel tools.  Other compilers have not been tested. If you want to try,
@@ -87,22 +87,22 @@ that's already available then you don't need ``cmake```. On a cluster, there is
 usually a ``cmake`` module to load.
 
 If your submodels use MPI, then you'll need to compile the MPI support for
-MUSCLE 3. This requires an MPI library to be available. Libmuscle has been
+MUSCLE3. This requires an MPI library to be available. Libmuscle has been
 tested with OpenMPI on Ubuntu, but should work with other MPI implementations
 (this being the point of the MPI standard). On Debian/Ubuntu, ``sudo apt-get
 install libopenmpi-dev`` will install the OpenMPI development files needed to
 compile libmuscle C++ with MPI support. On a cluster, there is probably a
-``module load openmpi`` or similar command to make MPI available. MUSCLE 3 only
-uses very basic MPI functionality, so any version should do. MUSCLE 3 will
+``module load openmpi`` or similar command to make MPI available. MUSCLE3 only
+uses very basic MPI functionality, so any version should do. MUSCLE3 will
 automatically detect the availability of MPI, and build the MPI version of the
 library if MPI is available.
 
 (No) Dependencies
 `````````````````
 
-MUSCLE 3 is mostly self-contained, but it does have twe dependencies, one of
+MUSCLE3 is mostly self-contained, but it does have twe dependencies, one of
 which is required. If you have them available, then they should be detected
-automatically. If not, MUSCLE 3 will **download and install them
+automatically. If not, MUSCLE3 will **download and install them
 automatically**.
 
 The dependencies are:
@@ -113,16 +113,16 @@ The dependencies are:
 
 If your model uses any of these dependencies directly, then it's best to install
 that dependency on your system, either via the package manager or from source,
-and then link both your library and MUSCLE 3 to the dependency. (See below for
+and then link both your library and MUSCLE3 to the dependency. (See below for
 how to point the build to your installation.) This avoids having two different
 versions around and active at the same time. Otherwise, it's easier to rely on
 the automatic installation.
 
-Downloading MUSCLE 3
-````````````````````
+Downloading MUSCLE3
+```````````````````
 
-With the tools available, we can download and install MUSCLE 3. First, we create
-a working directory, download MUSCLE 3 into it, then unpack the downloaded
+With the tools available, we can download and install MUSCLE3. First, we create
+a working directory, download MUSCLE3 into it, then unpack the downloaded
 archive and enter the main directory:
 
 .. code-block:: bash
@@ -137,10 +137,10 @@ archive and enter the main directory:
 Of course, you can put the source anywhere you like.
 
 
-Building MUSCLE 3
-`````````````````
+Building MUSCLE3
+````````````````
 
-The basic command for building MUSCLE 3 is:
+The basic command for building MUSCLE3 is:
 
 .. code-block:: bash
 
@@ -151,33 +151,33 @@ There are a few options that can be added by setting them as environment
 variables. These are as follows:
 
 NCORES=<n>
-    Use the given number of cores to compile MUSCLE 3. By default, MUSCLE 3 will
+    Use the given number of cores to compile MUSCLE3. By default, MUSCLE3 will
     use as many cores (threads) as you have. If you want to use fewer, you can
     set the number here. Using more will not make it go faster, and is not
     recommended.
 
 CXX=<compiler command>
-    By default, MUSCLE 3 will try to compile itself using ``g++`` or
+    By default, MUSCLE3 will try to compile itself using ``g++`` or
     ``clang++``. If you want to use a different compiler, then you can set CXX
     to something else.
 
 MPICXX=<compiler command>
-    To compile MPI code, MUSCLE 3 will try to prefix the CXX command with
+    To compile MPI code, MUSCLE3 will try to prefix the CXX command with
     ``mpi``, and if that's not available try ``mpic++``. To override, set MPICXX
     to the desired command.
 
 FC=<compiler command>
-    Sets the compiler command for Fortran files. MUSCLE 3 will try ``gfortran``,
+    Sets the compiler command for Fortran files. MUSCLE3 will try ``gfortran``,
     ``f95`` and ``f77``. To use something else, set this variable.
 
 MPIFC=<compiler command>
-    The command for compiling Fortran MPI code. MUSCLE 3 will try to prefix FC
+    The command for compiling Fortran MPI code. MUSCLE3 will try to prefix FC
     with ``mpi``, then try ``mpifort`` and ``mpif90``. Setting MPIFC will
     override this choice.
 
 
 DOWNLOAD=<download command>
-    MUSCLE 3 will try to use either ``wget`` or ``curl -LO`` to download
+    MUSCLE3 will try to use either ``wget`` or ``curl -LO`` to download
     dependencies. This lets you override the command to use, or select one
     explicitly. The command should accept a URL as the first argument, and
     download the file to the working directory, saving it under its original
@@ -211,7 +211,7 @@ The plan is for this to always magically work, but operating systems being as
 diverse as they are (especially on HPC machines), it's possible that the build
 will fail. In that case, have a look at the output to see if you can identify
 an error message, and then go to
-`the MUSCLE 3 issues on GitHub <https://github.com/multiscale/muscle3/issues>`_
+`the MUSCLE3 issues on GitHub <https://github.com/multiscale/muscle3/issues>`_
 to see if the problem has been reported already, and if there's a work-around.
 
 If not, please make a new issue with a description of the problem (preferably
@@ -231,7 +231,7 @@ attach it to a GitHub issue, drag it into the text box from your file manager.
 Installing libmuscle C++
 ````````````````````````
 
-Once MUSCLE 3 has been compiled, we need to install it. We recommend installing
+Once MUSCLE3 has been compiled, we need to install it. We recommend installing
 it into a subdirectory of your home directory for now, as opposed to
 ``/usr/local/bin`` or something similar (although ``/opt/muscle3`` would be
 okay), since there is no uninstall command yet that will cleanly remove it. That
@@ -242,7 +242,7 @@ goes like this:
   ~/muscle3_source/muscle3-%%VERSION%%$ PREFIX=~/muscle3 make install
 
 
-This command will install the C++ version of MUSCLE 3 into the directory
+This command will install the C++ version of MUSCLE3 into the directory
 specified by ``PREFIX``, in this case the ``muscle3`` directory in your home
 directory.
 
@@ -270,7 +270,7 @@ headers and libraries. This is done in three steps:
 Making libmuscle available
 ''''''''''''''''''''''''''
 
-The MUSCLE 3 installation comes with a file that you can source into your shell,
+The MUSCLE3 installation comes with a file that you can source into your shell,
 which will set some environment variables needed to compile, link and run with
 libmuscle. Activate it like this:
 
@@ -292,7 +292,7 @@ to the headers, use
 
 
 to your compiler command line. ``MUSCLE3_HOME`` is set by ``muscle3.env``, and
-points to the directory where MUSCLE 3 is installed. If your submodel uses MPI,
+points to the directory where MUSCLE3 is installed. If your submodel uses MPI,
 then you must add
 
 .. code-block::
@@ -382,28 +382,28 @@ command:
        ~$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<PREFIX>/lib
 
 
-If you have just installed MUSCLE 3, then the above bits are currently on your
+If you have just installed MUSCLE3, then the above bits are currently on your
 screen, so you can just copy-paste them from there.
 
 Intel C++ compiler
 ``````````````````
 
-Compiling MUSCLE 3 with the Intel compiler is currently not supported.
+Compiling MUSCLE3 with the Intel compiler is currently not supported.
 Fortunately, in a typical multiscale simulation, only a small amount of time is
-spent communicating through MUSCLE 3. Your submodels will spend most of their
+spent communicating through MUSCLE3. Your submodels will spend most of their
 time either computing or waiting. Therefore, it helps to compile the submodels
 with the Intel compiler for some extra performance, but using the Intel compiler
-for MUSCLE 3 doesn't add much anyway.
+for MUSCLE3 doesn't add much anyway.
 
 To compile your submodels with the Intel compiler, first use the GNU compiler
-to install MUSCLE 3. Then, switch to the Intel compiler, and use it to compile
-and link it to MUSCLE 3 as described above. The compilers are link-compatible,
+to install MUSCLE3. Then, switch to the Intel compiler, and use it to compile
+and link it to MUSCLE3 as described above. The compilers are link-compatible,
 so this should work. (See below if your model is written in Fortran, you need
 to do it slightly differently there.)
 
 Intel has recently made it a bit easier to install their proprietary compilers,
 which should allow us to integrated it into the Continuous Integration system.
-That should enable support for it in MUSCLE 3, and since many people want to use
+That should enable support for it in MUSCLE3, and since many people want to use
 the Intel compilers (especially for compiling Fortran codes) we plan to do so in
 a future release. If this interests you, please add a comment to the `issue on
 Intel compiler support <https://github.com/multiscale/muscle3/issues/25>`_ so we
@@ -438,7 +438,7 @@ headers and libraries. This is done in three steps:
 Making libmuscle available
 ''''''''''''''''''''''''''
 
-The MUSCLE 3 installation comes with a file that you can source into your shell,
+The MUSCLE3 installation comes with a file that you can source into your shell,
 which will set some environment variables needed to compile, link and run with
 libmuscle. Activate it like this:
 
@@ -460,7 +460,7 @@ to the modules, use
 
 
 to your compiler command line. ``MUSCLE3_HOME`` is set by ``muscle3.env``, and
-points to the directory where MUSCLE 3 is installed. In Fortran, there's a
+points to the directory where MUSCLE3 is installed. In Fortran, there's a
 separate module for MPI support, so there's no need for a ``-D`` option. You do
 need to use ``mpifort`` or similar to compile.
 
@@ -543,15 +543,15 @@ command:
        ~$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<PREFIX>/lib
 
 
-If you have just installed MUSCLE 3, then the above bits are currently on your
+If you have just installed MUSCLE3, then the above bits are currently on your
 screen, so you can just copy-paste them from there.
 
 Intel Fortran compiler
 ``````````````````````
 
-MUSCLE 3 cannot currently be compiled with the Intel toolchain (see above under
+MUSCLE3 cannot currently be compiled with the Intel toolchain (see above under
 C++ for details). You can however compile your submodel with the Intel compiler
-and link it to the GNU-compiled MUSCLE 3 library, because the compilers are
+and link it to the GNU-compiled MUSCLE3 library, because the compilers are
 almost compatible. The one issue is that the ``.mod`` files created by the GNU
 compiler (and installed when you install ``libmuscle``) cannot be read by the
 Intel compiler.
@@ -564,7 +564,7 @@ and the shared library as described above.
 
 Intel has recently made it a bit easier to install their proprietary compilers,
 which should allow us to integrated it into the Continuous Integration system.
-That should enable support for it in MUSCLE 3, and since many people want to use
+That should enable support for it in MUSCLE3, and since many people want to use
 the Intel compilers (especially for compiling Fortran codes) we plan to do so in
 a future release. If this interests you, please add a comment to the `issue on
 Intel compiler support <https://github.com/multiscale/muscle3/issues/25>`_ so we

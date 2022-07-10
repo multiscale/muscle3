@@ -5,7 +5,7 @@ from libmuscle.timestamp import Timestamp
 
 
 class LogLevel(Enum):
-    """Log levels for MUSCLE 3.
+    """Log levels for MUSCLE3.
 
     These match the levels in the MUSCLE Manager Protocol, and should
     be kept identical to those. They also match the Python logging log
@@ -52,7 +52,7 @@ class LogLevel(Enum):
 
 
 class LogMessage:
-    """A log message as used by MUSCLE 3.
+    """A log message as used by MUSCLE3.
 
     Args:
         instance_id: The identifier of the instance that generated \

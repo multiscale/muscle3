@@ -56,9 +56,9 @@ class Message:
 
 
 class Communicator:
-    """Communication engine for MUSCLE 3.
+    """Communication engine for MUSCLE3.
 
-    This class is the mailroom for a kernel that uses MUSCLE 3. It
+    This class is the mailroom for a kernel that uses MUSCLE3. It
     manages the sending and receiving of messages, although it
     leaves the actual data transmission to various protocol-specific
     servers and clients.

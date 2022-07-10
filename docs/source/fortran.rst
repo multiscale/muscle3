@@ -1,7 +1,7 @@
 MUSCLE and Fortran
 ==================
 
-This section shows how to use MUSCLE 3 from Fortran, based on the same
+This section shows how to use MUSCLE3 from Fortran, based on the same
 reaction-diffusion model given in the Python tutorial.
 `The source code for the examples in this section is here
 <https://github.com/multiscale/muscle3/tree/master/docs/source/examples/fortran>`_.
@@ -25,7 +25,7 @@ run Make:
   ~/muscle3_source/docs/source/examples$ make fortran
 
 
-We also need the Python version of MUSCLE 3 installed, because the MUSCLE
+We also need the Python version of MUSCLE3 installed, because the MUSCLE
 Manager comes with that, and we need it to run the simulation. The command above
 will also set up a Python virtual env with everything needed.
 
@@ -193,7 +193,7 @@ Variables
 
 Next, it's time to declare our variables. We have a few extra variables here
 compared to the non-MUSCLE version. The :f:type:`LIBMUSCLE_PortsDescription` is
-used to describe the ports we'll use to send and receive to MUSCLE 3. We need a
+used to describe the ports we'll use to send and receive to MUSCLE3. We need a
 :f:type:`LIBMUSCLE_Instance` as the main interface to MUSCLE. We'll receive
 messages into ``rmsg``, a :f:type:`LIBMUSCLE_Message` variable, and extract the
 data from them into ``rdata`` and ``item``. Since received data cannot be
@@ -538,7 +538,7 @@ it will still be slower.)
 Handling errors
 ```````````````
 
-In some cases when you're asking MUSCLE 3 to do something, things can go wrong.
+In some cases when you're asking MUSCLE3 to do something, things can go wrong.
 For example, receiving a message from a port does not work if the port is not
 connected (unless you passed a default message, see
 :f:func:`LIBMUSCLE_Instance_receive`). You cannot extract a real number from a
@@ -546,7 +546,7 @@ connected (unless you passed a default message, see
 as a character string if the user set it to a logical value. There are two ways
 of dealing with these situations: checking in advance if it's going to work and
 acting accordingly, or just trying and checking whether you were successful. If
-you do neither (which is easiest), MUSCLE 3 will print an error message and stop
+you do neither (which is easiest), MUSCLE3 will print an error message and stop
 your program if an error occurs (which is actually usually what you want).
 
 How to check in advance whether an operation can work depends on what you want

@@ -118,7 +118,7 @@ libmuscle_fortran.pc:
 	@echo 'libdir=$${exec_prefix}/lib' >>$@
 	@echo >>$@
 	@echo 'Name: libmuscle for Fortran' >>$@
-	@echo 'Description: Library for MUSCLE 3 - Fortran version' >>$@
+	@echo 'Description: Library for MUSCLE3 - Fortran version' >>$@
 	@echo 'URL: https://muscle3.readthedocs.io' >>$@
 	@echo 'Version: $(muscle_version)' >>$@
 	@echo 'Requires: ymmsl_fortran = $(muscle_version)' >>$@
@@ -135,7 +135,7 @@ libmuscle_mpi_fortran.pc:
 	@echo 'libdir=$${exec_prefix}/lib' >>$@
 	@echo >>$@
 	@echo 'Name: libmuscle for Fortran and MPI' >>$@
-	@echo 'Description: Library for MUSCLE 3 - Fortran-MPI version' >>$@
+	@echo 'Description: Library for MUSCLE3 - Fortran-MPI version' >>$@
 	@echo 'URL: https://muscle3.readthedocs.io' >>$@
 	@echo 'Version: $(muscle_version)' >>$@
 	@echo 'Requires: ymmsl_fortran = $(muscle_version)' >>$@

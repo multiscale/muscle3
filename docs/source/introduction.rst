@@ -1,14 +1,14 @@
 Introduction
 ============
 
-Welcome to MUSCLE 3!
+Welcome to MUSCLE3!
 
-MUSCLE 3 is the third incarnation of the Multiscale Coupling Library and
+MUSCLE3 is the third incarnation of the Multiscale Coupling Library and
 Environment, and the successor to MUSCLE 2. Its purpose is to make creating
 coupled multiscale simulations easy, and to then enable efficient Uncertainty
 Quantification of such models using advanced semi-intrusive algorithms.
 
-MUSCLE 3 uses the Multiscale Modelling and Simulation Language (MMSL) to
+MUSCLE3 uses the Multiscale Modelling and Simulation Language (MMSL) to
 describe the structure of a multiscale model. MMSL can be expressed in the form
 of a diagram (gMMSL; not yet implemented) or as a YAML file (yMMSL; this is
 convenient both for people and for software). The MMSL lets one describe which
@@ -16,7 +16,7 @@ convenient both for people and for software). The MMSL lets one describe which
 etc.) a multiscale model consist of, how many instances of each we need, and how
 they are wired together.
 
-MUSCLE 3 is intended to scale from your laptop to the exascale. At the low end,
+MUSCLE3 is intended to scale from your laptop to the exascale. At the low end,
 it supports a non-distributed but parallel mode in which an entire multiscale
 simulation, including all component implementations and the MMSL configuration,
 is in a single (short) Python file. Next is a distributed mode where the
@@ -27,7 +27,7 @@ combinations of multiple machines. Our goal is to make the transitions between
 these modes as smooth as possible, so that extra compute power can be added
 gradually, as needed.
 
-MUSCLE 3 consist of three components: **libmuscle**, **ymmsl-python**, and
+MUSCLE3 consist of three components: **libmuscle**, **ymmsl-python**, and
 **muscle_manager**. **Libmuscle** is a library that is used to connect
 components implementations (e.g. new or existing models) to a coupled
 simulation.  It offers functions for sending and receiving messages to and from
@@ -43,7 +43,7 @@ for good readability, courtesy of the `YAtiML <https://yatiml.readthedocs.io>`_
 library.  yMMSL files can also contain settings, so that all the information
 needed for a simulation run can be described in a single file.
 
-**muscle_manager** is the central run-time component of MUSCLE 3. It is started
+**muscle_manager** is the central run-time component of MUSCLE3. It is started
 together with the component intances, and provides a central coordination point
 that the instances use to find each other. The manager also collects log
 messages from the individual instances to aid in debugging, and some profiling

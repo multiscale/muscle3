@@ -1,7 +1,7 @@
 MUSCLE and C++
 ==============
 
-This section shows how to use MUSCLE 3 from C++, based on the same
+This section shows how to use MUSCLE3 from C++, based on the same
 reaction-diffusion model as given in the Python-based distributed execution
 tutorial. It will help to at least read that first.
 
@@ -26,7 +26,7 @@ subdirectory, make the new installation available, and then run Make:
   ~/muscle3_source/docs/source/examples$ make cpp
 
 
-We also need the Python version of MUSCLE 3 installed, because the MUSCLE
+We also need the Python version of MUSCLE3 installed, because the MUSCLE
 Manager comes with that, and we need it to run the simulation. The above command
 will create a Python virtual env with everything needed as well.
 
@@ -270,7 +270,7 @@ something wrong somewhere that we need to fix. MUSCLE is designed to let you get
 away with being a bit sloppy as long as things actually go right, but it will
 check for problems and let you know if something goes wrong.
 
-A grid in MUSCLE 3 is an n-dimensional array of numbers or booleans. It has a
+A grid in MUSCLE3 is an n-dimensional array of numbers or booleans. It has a
 shape (size in each dimension), a size (total number of elements), a storage
 order which says in which order the elements are arranged in memory, and
 optionally names for the indexes.
@@ -283,7 +283,7 @@ into itself. We use the :cpp:func:`DataConstRef::elements` to get a pointer to
 the elements, and :cpp:func:`DataConstRef::size` to get the number of elements,
 and that's all we need to create our state vector ``U``.
 
-Note that MUSCLE 3 will in this case check that we have the right type of
+Note that MUSCLE3 will in this case check that we have the right type of
 elements (doubles), but it cannot know and therefore will not check that we're
 expecting a 1D grid. We could check that by hand by checking the length of
 ``msg.data().shape()`` to see if it's 1. See the diffusion model below for an
@@ -329,7 +329,7 @@ numbers in ``U``, and the shape of our grid, which is a 1-element array because
 the grid is 1-dimensional. The third argument contains the names of the indexes,
 which helps to avoid confusion over which index is x and which is y (or
 row/column, or latitude/longitude, or... you get the idea). You are not
-required to add these (and MUSCLE 3 doesn't use them), but you or someone else
+required to add these (and MUSCLE3 doesn't use them), but you or someone else
 using your code will be very grateful you did at some point in the future.
 
 With our data item constructed, we can send a ``Message`` to the ``final_state``

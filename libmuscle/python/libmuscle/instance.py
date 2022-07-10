@@ -103,7 +103,7 @@ class Instance:
                 set this to False. If you don't know what that means,
                 just call `reuse_instance()` without specifying this
                 and everything will be fine. If it turns out that you
-                did need to specify False, MUSCLE 3 will tell you about
+                did need to specify False, MUSCLE3 will tell you about
                 it in an error message and you can add it still.
         """
         do_reuse = self.__receive_settings()

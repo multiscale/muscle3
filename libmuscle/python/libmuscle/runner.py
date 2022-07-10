@@ -1,6 +1,6 @@
 """A simple runner for Python-only models.
 
-Starting instances is out of scope for MUSCLE 3, but is also very
+Starting instances is out of scope for MUSCLE3, but is also very
 useful for testing and prototyping. So we have a little bit of
 support for it in this module.
 """

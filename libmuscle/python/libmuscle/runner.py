@@ -19,6 +19,9 @@ from libmuscle.manager.manager import Manager
 __all__ = ['run_simulation']
 
 
+_logger = logging.getLogger(__name__)
+
+
 Pipe = Tuple[mpc.Connection, mpc.Connection]
 
 
@@ -139,7 +142,13 @@ def implementation_process(
         sys.stdout = log_file
 
         # chain call
-        implementation()
+        try:
+            implementation()
+        except Exception:
+            _logger.exception(
+                    f'Component {instance} crashed, please check the log file'
+                    ' for error messages')
+            raise
 
 
 def _parse_prefix(prefix: str) -> Tuple[str, List[int]]:
@@ -271,6 +280,8 @@ def run_simulation(
     if not isinstance(configuration.model, Model):
         raise ValueError('The model description does not include a model'
                          ' definition, so the simulation can not be run.')
+
+    configuration.model.check_consistent()
 
     instances = dict()
     for ce in configuration.model.components:

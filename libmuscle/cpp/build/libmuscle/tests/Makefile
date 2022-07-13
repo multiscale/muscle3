@@ -16,6 +16,14 @@ endif
 all_tests := $(unit_test_bins) $(integration_test_bins)
 deps := $(all_tests:%=%.d)
 
+# GTest sometimes install in /lib, sometimes in /lib64, depending on platform
+ifneq ("$(wildcard $(googletest_ROOT)/lib/libgtest.a)", "")
+    googletest_LIB := $(googletest_ROOT)/lib/libgtest.a
+else
+    googletest_LIB := $(googletest_ROOT)/lib64/libgtest.a
+endif
+
+
 
 .PHONY: test
 test: $(foreach bin,$(unit_test_bins),run_$(bin)) $(foreach bin,$(api_test_bins),run_$(bin))
@@ -40,7 +48,7 @@ EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-Wl,-rpath-link,$(DIR)/lib)
 CXXFLAGS += -I$(libmuscle_testdir) -isystem $(googletest_ROOT)/include -pthread
 
 LDFLAGS += $(CURDIR)/../libmuscle_d.a $(CURDIR)/../../ymmsl/libymmsl_d.a
-LDFLAGS += $(googletest_ROOT)/lib/libgtest.a -pthread
+LDFLAGS += $(googletest_LIB) -pthread
 
 LDFLAGS2 := $(LDFLAGS)
 LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs msgpack)
@@ -66,19 +74,19 @@ test_communicator.o: test_communicator.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@ -pthread
 
 test_communicator: test_communicator.o $(CURDIR)/../../ymmsl/libymmsl_d.a
-	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_ROOT)/lib/libgtest.a -pthread
+	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_LIB) -pthread
 
 test_instance.o: test_instance.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@ -pthread
 
 test_instance: test_instance.o $(CURDIR)/../../ymmsl/libymmsl_d.a
-	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_ROOT)/lib/libgtest.a -pthread $(LDFLAGS2)
+	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_LIB) -pthread $(LDFLAGS2)
 
 test_logging.o: test_logging.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@ -pthread
 
 test_logging: test_logging.o $(CURDIR)/../../ymmsl/libymmsl_d.a
-	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_ROOT)/lib/libgtest.a -pthread
+	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_LIB) -pthread
 
 mpi_micro_model_test: mpi_micro_model_test.cpp $(CURDIR)/../../ymmsl/libymmsl_d.a $(CURDIR)/../../libmuscle/libmuscle_mpi_d.a
 	$(MPICXX) $(CXXFLAGS) $(DEBUGFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS2)

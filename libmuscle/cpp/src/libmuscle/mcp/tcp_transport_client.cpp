@@ -111,7 +111,7 @@ TcpTransportClient::TcpTransportClient(std::string const & location)
                 "Could not connect to any server at locations " + location
                 + ": " + errors);
 
-    int flags;
+    int flags = 0;
     setsockopt(socket_fd_, SOL_TCP, TCP_NODELAY, &flags, sizeof(flags));
     setsockopt(socket_fd_, SOL_TCP, TCP_QUICKACK, &flags, sizeof(flags));
 }

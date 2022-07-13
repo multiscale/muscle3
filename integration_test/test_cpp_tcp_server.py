@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import subprocess
 
@@ -16,9 +17,13 @@ def test_cpp_tcp_server(log_file_in_tmpdir):
     # it serves a message for us to receive
     # see libmuscle/cpp/src/libmuscle/tests/mpp_server_test.cpp
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
+    env = os.environ.copy()
     lib_paths = [cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
-    env = {
-            'LD_LIBRARY_PATH': ':'.join(map(str, lib_paths))}
+    if 'LD_LIBRARY_PATH' in env:
+        env['LD_LIBRARY_PATH'] += ':' + ':'.join(map(str, lib_paths))
+    else:
+        env['LD_LIBRARY_PATH'] = ':'.join(map(str, lib_paths))
+
     cpp_test_dir = cpp_build_dir / 'libmuscle' / 'tests'
     cpp_test_server = cpp_test_dir / 'tcp_transport_server_test'
     server = subprocess.Popen(

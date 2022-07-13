@@ -41,13 +41,20 @@ def test_mpi_macro_micro(tmpdir, mmp_server_process_simple):
     if 'MUSCLE_ENABLE_MPI' not in os.environ:
         pytest.skip('MPI is not enabled, try with MUSCLE_ENABLE_MPI=1')
 
+
     # create C++ micro model
     # see libmuscle/cpp/src/libmuscle/tests/micro_model_test.cpp
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
+    env = os.environ.copy()
     lib_paths = [cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
-    env = {
-            'LD_LIBRARY_PATH': ':'.join(map(str, lib_paths)),
-            'PATH': '/usr/bin'}     # allow mpirun to find ssh and not complain
+    if 'LD_LIBRARY_PATH' in env:
+        env['LD_LIBRARY_PATH'] += ':' + ':'.join(map(str, lib_paths))
+    else:
+        env['LD_LIBRARY_PATH'] = ':'.join(map(str, lib_paths))
+
+    env['MUSCLE_MANAGER'] = mmp_server_process_simple
+    env['PATH'] = '/usr/bin'    # allow mpirun to find ssh and not complain
+
     cpp_test_dir = cpp_build_dir / 'libmuscle' / 'tests'
     mpi_test_micro = cpp_test_dir / 'mpi_micro_model_test'
     out_file = tmpdir + '/mpi_micro.log'

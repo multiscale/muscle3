@@ -16,6 +16,7 @@ def test_start_mpi(tmpdir):
     if 'MUSCLE_ENABLE_MPI' not in os.environ:
         pytest.skip('MPI is not enabled, try with MUSCLE_ENABLE_MPI=1')
 
+
     tmppath = Path(str(tmpdir))
 
     # find our test components and their requirements
@@ -49,11 +50,11 @@ def test_start_mpi(tmpdir):
             'implementations:\n'
             '  component:\n'
             '    env:\n'
-            '      LD_LIBRARY_PATH: {}\n'
+            '      +LD_LIBRARY_PATH: {}\n'
             '    executable: {}\n'
             '  mpi_component:\n'
             '    env:\n'
-            '      LD_LIBRARY_PATH: {}\n'
+            '      +LD_LIBRARY_PATH: {}\n'
             '    executable: {}\n'
             '    execution_model: openmpi\n'
             'resources:\n'

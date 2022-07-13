@@ -1,4 +1,5 @@
 import multiprocessing as mp
+import os
 from pathlib import Path
 import subprocess
 from unittest.mock import MagicMock
@@ -54,9 +55,13 @@ def test_cpp_tcp_client(log_file_in_tmpdir):
     # it receives and checks settings, and sends a log message
     # see libmuscle/cpp/src/libmuscle/tests/mpp_client_test.cpp
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
+    env = os.environ.copy()
     lib_paths = [cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
-    env = {
-            'LD_LIBRARY_PATH': ':'.join(map(str, lib_paths))}
+    if 'LD_LIBRARY_PATH' in env:
+        env['LD_LIBRARY_PATH'] += ':' + ':'.join(map(str, lib_paths))
+    else:
+        env['LD_LIBRARY_PATH'] = ':'.join(map(str, lib_paths))
+
     cpp_test_dir = cpp_build_dir / 'libmuscle' / 'tests'
     cpp_test_client = cpp_test_dir / 'mpp_client_test'
     result = subprocess.run([str(cpp_test_client), server_loc], env=env)

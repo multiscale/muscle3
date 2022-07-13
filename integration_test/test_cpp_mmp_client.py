@@ -1,4 +1,5 @@
 import multiprocessing as mp
+import os
 from pathlib import Path
 import subprocess
 
@@ -57,9 +58,13 @@ def do_mmp_client_test(tmpdir, caplog):
     # it runs through the various RPC calls
     # see libmuscle/cpp/src/libmuscle/tests/mmp_client_test.cpp
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
+    env = os.environ.copy()
     lib_paths = [cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
-    env = {
-            'LD_LIBRARY_PATH': ':'.join(map(str, lib_paths))}
+    if 'LD_LIBRARY_PATH' in env:
+        env['LD_LIBRARY_PATH'] += ':' + ':'.join(map(str, lib_paths))
+    else:
+        env['LD_LIBRARY_PATH'] = ':'.join(map(str, lib_paths))
+
     cpp_test_dir = cpp_build_dir / 'libmuscle' / 'tests'
     cpp_test_client = cpp_test_dir / 'mmp_client_test'
     result = subprocess.run(

@@ -42,7 +42,7 @@ def test_start_all(tmpdir):
             'implementations:\n'
             '  component:\n'
             '    env:\n'
-            '      LD_LIBRARY_PATH: {}\n'
+            '      +LD_LIBRARY_PATH: {}\n'
             '    executable: {}\n'
             'resources:\n'
             '  macro:\n'

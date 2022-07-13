@@ -1,4 +1,5 @@
 import multiprocessing as mp
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -50,10 +51,14 @@ def test_cpp_macro_micro(mmp_server_process_simple, tmp_path):
     # create C++ micro model
     # see libmuscle/cpp/src/libmuscle/tests/micro_model_test.cpp
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
+    env = os.environ.copy()
     lib_paths = [cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
-    env = {
-            'LD_LIBRARY_PATH': ':'.join(map(str, lib_paths)),
-            'MUSCLE_MANAGER': mmp_server_process_simple}
+    if 'LD_LIBRARY_PATH' in env:
+        env['LD_LIBRARY_PATH'] += ':' + ':'.join(map(str, lib_paths))
+    else:
+        env['LD_LIBRARY_PATH'] = ':'.join(map(str, lib_paths))
+
+    env['MUSCLE_MANAGER'] = mmp_server_process_simple
     cpp_test_dir = cpp_build_dir / 'libmuscle' / 'tests'
     cpp_test_micro = cpp_test_dir / 'micro_model_test'
 

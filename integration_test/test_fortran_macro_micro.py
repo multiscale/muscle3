@@ -1,4 +1,5 @@
 import multiprocessing as mp
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -51,9 +52,15 @@ def test_fortran_macro_micro(mmp_server_process_simple, tmp_path):
     # create Fortran micro model
     # see libmuscle/fortran/src/libmuscle/tests/fortran_micro_model_test.f90
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
+    env = os.environ.copy()
     lib_paths = [cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
-    env = {
-            'LD_LIBRARY_PATH': ':'.join(map(str, lib_paths))}
+    if 'LD_LIBRARY_PATH' in env:
+        env['LD_LIBRARY_PATH'] += ':' + ':'.join(map(str, lib_paths))
+    else:
+        env['LD_LIBRARY_PATH'] = ':'.join(map(str, lib_paths))
+
+    env['MUSCLE_MANAGER'] = mmp_server_process_simple
+
     fortran_test_dir = (
             Path(__file__).parents[1] / 'libmuscle' / 'fortran' / 'build' /
             'libmuscle' / 'tests')

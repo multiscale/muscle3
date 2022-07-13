@@ -25,4 +25,4 @@ test_use_echolib: libecholib.so echolib.f90 test_use_echolib.f90
 	$(FORTRAN) -g -std=f2003 -o $@ echolib.f90 test_use_echolib.f90 -L. -lecholib
 
 test: test_use_echolib
-	LD_LIBRARY_PATH=$(PWD) ./test_use_echolib
+	LD_LIBRARY_PATH=$(PWD):$(LD_LIBRARY_PATH) ./test_use_echolib

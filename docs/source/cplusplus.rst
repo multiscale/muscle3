@@ -68,12 +68,12 @@ implementations are used. These differ a bit from the Python versions:
 
   reaction_cpp:
     env:
-      LD_LIBRARY_PATH: <muscle3_prefix>/lib
+      +LD_LIBRARY_PATH: :<muscle3_prefix>/lib
     executable: <muscle3_src>/docs/source/examples/cpp/build/reaction
 
   diffusion_cpp:
     env:
-      LD_LIBRARY_PATH: <muscle3_prefix>/lib
+      +LD_LIBRARY_PATH: :<muscle3_prefix>/lib
     executable: <muscle3_src>/docs/source/examples/cpp/build/diffusion
 
 
@@ -85,8 +85,13 @@ absolute path to the installation yourself.
 Since we have compiled binaries here which can be executed directly, we don't
 need to run Python, we can just specify their location directly. We do need to
 make sure that the MUSCLE3 libraries, which the executables are linked against,
-can be found. We do that by setting the LD_LIBRARY_PATH to point to their
-location.
+can be found. We do that by setting the ``LD_LIBRARY_PATH`` to point to their
+location. Since ``LD_LIBRARY_PATH`` is a list, and overwriting it may break
+something, we append to it by adding a ``+`` in front of the variable name. Note
+the initial colon in the value: this is the separator used in
+``LD_LIBRARY_PATH``, and MUSCLE3 will not add it automatically, so it needs to
+be there.
+
 
 Reaction-diffusion in C++
 -------------------------

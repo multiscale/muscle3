@@ -244,8 +244,7 @@ class QCGPJInstantiator(mp.Process):
         """Creates a QCG allocation and job for a request."""
         total_cores = sum(map(len, request.resources.cores.values()))
 
-        env = {'MUSCLE_INSTANCE': str(request.instance)}
-        env.update(request.implementation.env)
+        env = self._create_env(request.instance, request.implementation.env)
 
         if request.implementation.script:
             execution = self._qcg_job_execution_with_script(request, env)
@@ -269,6 +268,29 @@ class QCGPJInstantiator(mp.Process):
         sjob = qcg_SchedulingJob(self._state_tracker, qcg_job)
         qcg_iteration = qcg_SchedulingIteration(sjob, None, None, None, [])
         return qcg_allocation, qcg_iteration
+
+    def _create_env(
+            self, instance: Reference, overlay: Dict[str, str]
+            ) -> Dict[str, str]:
+        """Updates the environment with the implementation's env.
+
+        This updates env in-place. Keys from overlay that start with
+        + will have the corresponding value appended to the matching
+        (by key, without the +) value in env, otherwise the value in
+        env gets overwritten.
+        """
+        env = os.environ.copy()
+        env['MUSCLE_INSTANCE'] = str(instance)
+
+        for key, value in overlay.items():
+            if key.startswith('+'):
+                if key[1:] in env:
+                    env[key[1:]] += value
+                else:
+                    env[key[1:]] = value
+            else:
+                env[key] = value
+        return env
 
     def _qcg_job_execution_with_script(
             self, request: InstantiationRequest, env: Dict[str, str]

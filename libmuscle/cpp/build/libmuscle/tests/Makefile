@@ -101,9 +101,9 @@ test_dep_lib_paths := $(subst $(space),:,$(foreach DIR,$(DEP_DIRS),$(DIR)/lib))
 
 .PHONY: run_test%
 run_test%: test%
-	export LD_LIBRARY_PATH=$(test_dep_lib_paths) ; $(VALGRIND) ./$<
+	export LD_LIBRARY_PATH=$(test_dep_lib_paths):$(LD_LIBRARY_PATH) ; $(VALGRIND) ./$<
 
 # This uses setrlimit, which is not compatible with Valgrind, so run without
 .PHONY: run_test_data_memory_use
 run_test_data_memory_use: test_data_memory_use
-	export LD_LIBRARY_PATH=$(test_dep_lib_paths) ; ./$<
+	export LD_LIBRARY_PATH=$(test_dep_lib_paths):$(LD_LIBRARY_PATH) ; ./$<

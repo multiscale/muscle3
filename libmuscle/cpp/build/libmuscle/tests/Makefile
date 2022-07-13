@@ -8,7 +8,7 @@ integration_tests := $(wildcard $(libmuscle_testdir)/*test.cpp)
 unit_test_bins := $(unit_tests:$(libmuscle_testdir)/%.cpp=%)
 integration_test_bins := $(integration_tests:$(libmuscle_testdir)/%.cpp=%)
 
-ifndef MUSCLE_ENABLE_MPI
+ifndef MUSCLE_ENABLE_CPP_MPI
 integration_tests := $(filter-out mpi%,$(integration_tests))
 integration_test_bins := $(filter-out mpi%,$(integration_test_bins))
 endif

@@ -10,7 +10,7 @@ unit_test_bins := $(unit_tests:$(libmuscle_testdir)/%.f90=%)
 integration_test_bins := $(integration_tests:$(libmuscle_testdir)/%.f90=%)
 objects := $(all_sources:$(libmuscle_testdir)/%.f90=%.o)
 
-ifndef MUSCLE_ENABLE_MPI
+ifndef MUSCLE_ENABLE_FORTRAN_MPI
 integration_tests := $(filter-out mpi%,$(integration_tests))
 integration_test_bins := $(filter-out mpi%,$(integration_test_bins))
 endif

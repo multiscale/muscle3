@@ -13,9 +13,8 @@ from .conftest import skip_if_python_only
 @skip_if_python_only
 def test_start_mpi(tmpdir):
     # only run this if MPI is enabled
-    if 'MUSCLE_ENABLE_MPI' not in os.environ:
-        pytest.skip('MPI is not enabled, try with MUSCLE_ENABLE_MPI=1')
-
+    if 'MUSCLE_ENABLE_CPP_MPI' not in os.environ:
+        pytest.skip('MPI support was not detected')
 
     tmppath = Path(str(tmpdir))
 

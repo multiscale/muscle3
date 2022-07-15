@@ -1,7 +1,13 @@
 .PHONY: all
 all:
-	make -C build all
+	$(MAKE) -C build all
+
+.PHONY: test
+test:
+	. build/venv/bin/activate && DONTPLOT=1 python3 reaction_diffusion.py
+	. build/venv/bin/activate && DONTPLOT=1 python3 reaction_diffusion_qmc.py
+	. build/venv/bin/activate && DONTPLOT=1 python3 interact_coupling.py
 
 .PHONY: clean
 clean:
-	make -C build clean
+	$(MAKE) -C build clean

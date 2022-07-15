@@ -1,7 +1,5 @@
 from libmuscle.communicator import Communicator, Endpoint, Message
-from libmuscle.mcp.direct_client import DirectClient
-from libmuscle.mcp.direct_server import DirectServer
-from libmuscle.mcp.message import ClosePort, Message as MCPMessage
+from libmuscle.mpp_message import ClosePort, MPPMessage
 from libmuscle.port import Port
 
 from ymmsl import Conduit, Identifier, Operator, Reference, Settings
@@ -39,116 +37,110 @@ def test_endpoint_instance() -> None:
 
 @pytest.fixture
 def communicator() -> Communicator:
-    # Creating a Communicator will start servers, and some servers are not
-    # fork-compatible. This then crashes the later integration tests, which
-    # fork. So we disable everything except DirectServer.
-    with patch('libmuscle.communicator.server_types', [DirectServer]):
-        instance_id = Reference('kernel')
-        communicator = Communicator(instance_id, [13], None, MagicMock())
-        communicator._peer_manager = MagicMock()
-        pm = communicator._peer_manager
-        pm.is_connected.return_value = True
+    instance_id = Reference('kernel')
+    communicator = Communicator(instance_id, [13], None, MagicMock())
+    communicator._peer_manager = MagicMock()
+    pm = communicator._peer_manager
+    pm.is_connected.return_value = True
 
-        def gpp(x) -> Reference:
-            if 'out' in str(x):
-                return Reference('in')
-            return Reference('out')
+    def gpp(x) -> Reference:
+        if 'out' in str(x):
+            return Reference('in')
+        return Reference('out')
 
-        pm.get_peer_port = gpp
+    pm.get_peer_port = gpp
 
-        pm.get_peer_dims.return_value = []
-        pm.get_peer_locations.return_value = ['direct:test']
+    pm.get_peer_dims.return_value = []
+    pm.get_peer_locations.return_value = ['direct:test']
 
-        def gpe(p, s) -> Reference:
-            endpoint = MagicMock()
-            endpoint.instance.return_value = Reference('other')
-            if 'out' in str(p):
-                endpoint.ref.return_value = Reference('other.in[13]')
-            else:
-                endpoint.ref.return_value = Reference('other.out')
-            return endpoint
+    def gpe(p, s) -> Reference:
+        endpoint = MagicMock()
+        endpoint.instance.return_value = Reference('other')
+        if 'out' in str(p):
+            endpoint.ref.return_value = Reference('other.in[13]')
+        else:
+            endpoint.ref.return_value = Reference('other.out')
+        return endpoint
 
-        pm.get_peer_endpoint = gpe
+    pm.get_peer_endpoint = gpe
 
-        communicator._ports = {
-                'out': Port('out', Operator.O_I, False, True, 1, []),
-                'in': Port('in', Operator.S, False, True, 1, [])}
-        yield communicator
-        communicator.shutdown()
+    communicator._ports = {
+            'out': Port('out', Operator.O_I, False, True, 1, []),
+            'in': Port('in', Operator.S, False, True, 1, [])}
+    yield communicator
+    communicator.shutdown()
 
 
 @pytest.fixture
 def communicator2() -> Communicator:
-    with patch('libmuscle.communicator.server_types', [DirectServer]):
-        instance_id = Reference('other')
-        communicator = Communicator(instance_id, [], None, MagicMock())
-        communicator._peer_manager = MagicMock()
-        pm = communicator._peer_manager
-        pm.is_connected.return_value = True
+    instance_id = Reference('other')
+    communicator = Communicator(instance_id, [], None, MagicMock())
+    communicator._peer_manager = MagicMock()
+    pm = communicator._peer_manager
+    pm.is_connected.return_value = True
 
-        def gpp(x: Reference) -> Reference:
-            if 'out' in str(x):
-                return Reference('in')
-            return Reference('out')
+    def gpp(x: Reference) -> Reference:
+        if 'out' in str(x):
+            return Reference('in')
+        return Reference('out')
 
-        pm.get_peer_port = gpp
+    pm.get_peer_port = gpp
 
-        pm.get_peer_dims.return_value = []
-        pm.get_peer_locations.return_value = ['direct:test']
+    pm.get_peer_dims.return_value = []
+    pm.get_peer_locations.return_value = ['direct:test']
 
-        def gpe(p, s) -> Reference:
-            endpoint = MagicMock()
-            endpoint.instance.return_value = Reference('kernel[13]')
-            if 'out' in str(p):
-                endpoint.ref.return_value = Reference('kernel[13].in')
-            else:
-                endpoint.ref.return_value = Reference('kernel[13].out')
-            return endpoint
+    def gpe(p, s) -> Reference:
+        endpoint = MagicMock()
+        endpoint.instance.return_value = Reference('kernel[13]')
+        if 'out' in str(p):
+            endpoint.ref.return_value = Reference('kernel[13].in')
+        else:
+            endpoint.ref.return_value = Reference('kernel[13].out')
+        return endpoint
 
-        pm.get_peer_endpoint = gpe
+    pm.get_peer_endpoint = gpe
 
-        communicator._ports = {
-                'out': Port('out', Operator.O_I, True, True, 0, [20]),
-                'in': Port('in', Operator.S, True, True, 0, [20])}
-        yield communicator
-        communicator.shutdown()
+    communicator._ports = {
+            'out': Port('out', Operator.O_I, True, True, 0, [20]),
+            'in': Port('in', Operator.S, True, True, 0, [20])}
+    yield communicator
+    communicator.shutdown()
 
 
 @pytest.fixture
 def communicator3() -> Communicator:
-    with patch('libmuscle.communicator.server_types', [DirectServer]):
-        instance_id = Reference('kernel')
-        communicator = Communicator(instance_id, [], None, MagicMock())
-        communicator._peer_manager = MagicMock()
-        pm = communicator._peer_manager
-        pm.is_connected.return_value = True
+    instance_id = Reference('kernel')
+    communicator = Communicator(instance_id, [], None, MagicMock())
+    communicator._peer_manager = MagicMock()
+    pm = communicator._peer_manager
+    pm.is_connected.return_value = True
 
-        def gpp(x: Reference) -> Reference:
-            if 'out' in str(x):
-                return Reference('in')
-            return Reference('out')
+    def gpp(x: Reference) -> Reference:
+        if 'out' in str(x):
+            return Reference('in')
+        return Reference('out')
 
-        pm.get_peer_port = gpp
+    pm.get_peer_port = gpp
 
-        pm.get_peer_dims.return_value = []
-        pm.get_peer_locations.return_value = ['direct:test']
+    pm.get_peer_dims.return_value = []
+    pm.get_peer_locations.return_value = ['direct:test']
 
-        def gpe(p, s) -> Reference:
-            endpoint = MagicMock()
-            endpoint.instance.return_value = Reference('other')
-            if 'out' in str(p):
-                endpoint.ref.return_value = Reference('other.in[13]')
-            else:
-                endpoint.ref.return_value = Reference('other.out[13]')
-            return endpoint
+    def gpe(p, s) -> Reference:
+        endpoint = MagicMock()
+        endpoint.instance.return_value = Reference('other')
+        if 'out' in str(p):
+            endpoint.ref.return_value = Reference('other.in[13]')
+        else:
+            endpoint.ref.return_value = Reference('other.out[13]')
+        return endpoint
 
-        pm.get_peer_endpoint = gpe
+    pm.get_peer_endpoint = gpe
 
-        communicator._ports = {
-                'out': Port('out', Operator.O_I, True, True, 0, []),
-                'in': Port('in', Operator.S, True, True, 0, [])}
-        yield communicator
-        communicator.shutdown()
+    communicator._ports = {
+            'out': Port('out', Operator.O_I, True, True, 0, []),
+            'in': Port('in', Operator.S, True, True, 0, [])}
+    yield communicator
+    communicator.shutdown()
 
 
 def test_create_communicator(communicator) -> None:
@@ -161,7 +153,7 @@ def test_create_communicator(communicator) -> None:
 
 def test_get_locations(communicator) -> None:
     assert len(communicator.get_locations()) == 1
-    assert communicator.get_locations()[0].startswith('direct:')
+    assert communicator.get_locations()[0].startswith('tcp:')
 
 
 def test_connect() -> None:
@@ -283,7 +275,7 @@ def test_send_message(communicator, message) -> None:
     assert 'other.in[13]' in communicator._post_office._outboxes
     msg_bytes = communicator._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
-    msg = MCPMessage.from_bytes(msg_bytes)
+    msg = MPPMessage.from_bytes(msg_bytes)
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
     assert msg.timestamp == 0.0
@@ -308,7 +300,7 @@ def test_send_msgpack(communicator, message2) -> None:
     assert 'other.in[13]' in communicator._post_office._outboxes
     msg_bytes = communicator._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
-    msg = MCPMessage.from_bytes(msg_bytes)
+    msg = MPPMessage.from_bytes(msg_bytes)
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
     assert msg.settings_overlay == Settings()
@@ -322,7 +314,7 @@ def test_send_message_with_slot(communicator2, message) -> None:
         communicator2._post_office._outboxes
     msg_bytes = communicator2._post_office._outboxes[
             'kernel[13].in']._Outbox__queue.get()
-    msg = MCPMessage.from_bytes(msg_bytes)
+    msg = MPPMessage.from_bytes(msg_bytes)
     assert msg.sender == 'other.out[13]'
     assert msg.receiver == 'kernel[13].in'
     assert msg.settings_overlay == Settings()
@@ -339,7 +331,7 @@ def test_send_message_resizable(communicator3, message) -> None:
     assert 'other.in[13]' in communicator3._post_office._outboxes
     msg_bytes = communicator3._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
-    msg = MCPMessage.from_bytes(msg_bytes)
+    msg = MPPMessage.from_bytes(msg_bytes)
     assert msg.sender == 'kernel.out[13]'
     assert msg.receiver == 'other.in[13]'
     assert msg.port_length == 20
@@ -352,7 +344,7 @@ def test_send_message_with_settings(communicator, message) -> None:
     assert 'other.in[13]' in communicator._post_office._outboxes
     msg_bytes = communicator._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
-    msg = MCPMessage.from_bytes(msg_bytes)
+    msg = MPPMessage.from_bytes(msg_bytes)
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
     assert msg.settings_overlay.as_ordered_dict() == {'test2': 'testing'}
@@ -367,7 +359,7 @@ def test_send_settings(communicator, message) -> None:
     assert 'other.in[13]' in communicator._post_office._outboxes
     msg_bytes = communicator._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
-    msg = MCPMessage.from_bytes(msg_bytes)
+    msg = MPPMessage.from_bytes(msg_bytes)
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
     assert msg.settings_overlay == Settings()
@@ -380,7 +372,7 @@ def test_close_port(communicator) -> None:
     assert 'other.in[13]' in communicator._post_office._outboxes
     msg_bytes = communicator._post_office._outboxes[
             'other.in[13]']._Outbox__queue.get()
-    msg = MCPMessage.from_bytes(msg_bytes)
+    msg = MPPMessage.from_bytes(msg_bytes)
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
     assert msg.timestamp == float('inf')
@@ -391,7 +383,7 @@ def test_close_port(communicator) -> None:
 
 def test_receive_message(communicator) -> None:
     client_mock = MagicMock()
-    client_mock.receive.return_value = MCPMessage(
+    client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
             None, 0.0, None, Settings({'test1': 12}),
             b'test').encoded()
@@ -430,7 +422,7 @@ def test_receive_on_invalid_port(communicator) -> None:
 
 def test_receive_msgpack(communicator) -> None:
     client_mock = MagicMock()
-    client_mock.receive.return_value = MCPMessage(
+    client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
             None, 0.0, None, Settings({'test1': 12}),
             {'test': 13}).encoded()
@@ -447,7 +439,7 @@ def test_receive_msgpack(communicator) -> None:
 
 def test_receive_with_slot(communicator2) -> None:
     client_mock = MagicMock()
-    client_mock.receive.return_value = MCPMessage(
+    client_mock.receive.return_value = MPPMessage(
             Reference('kernel[13].out'), Reference('other.in[13]'),
             None, 0.0, None, Settings({'test': 'testing'}),
             b'test').encoded()
@@ -465,7 +457,7 @@ def test_receive_with_slot(communicator2) -> None:
 
 def test_receive_message_resizable(communicator3) -> None:
     client_mock = MagicMock()
-    client_mock.receive.return_value = MCPMessage(
+    client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel.in[13]'),
             20, 0.0, None, Settings({'test': 'testing'}),
             b'test').encoded()
@@ -483,7 +475,7 @@ def test_receive_message_resizable(communicator3) -> None:
 
 def test_receive_with_settings(communicator) -> None:
     client_mock = MagicMock()
-    client_mock.receive.return_value = MCPMessage(
+    client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
             None, 0.0, None, Settings({'test2': 3.1}),
             b'test').encoded()
@@ -501,7 +493,7 @@ def test_receive_with_settings(communicator) -> None:
 
 def test_receive_msgpack_with_slot_and_settings(communicator2) -> None:
     client_mock = MagicMock()
-    client_mock.receive.return_value = MCPMessage(
+    client_mock.receive.return_value = MPPMessage(
             Reference('kernel[13].out'), Reference('other.in[13]'),
             None, 0.0, 1.0,
             Settings({'test': 'testing'}), 'test').encoded()
@@ -519,7 +511,7 @@ def test_receive_msgpack_with_slot_and_settings(communicator2) -> None:
 
 def test_receive_settings(communicator) -> None:
     client_mock = MagicMock()
-    client_mock.receive.return_value = MCPMessage(
+    client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
             None, 0.0, None, Settings({'test1': 12}),
             Settings({'test': 13})).encoded()
@@ -537,7 +529,7 @@ def test_receive_settings(communicator) -> None:
 
 def test_receive_close_port(communicator) -> None:
     client_mock = MagicMock()
-    client_mock.receive.return_value = MCPMessage(
+    client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
             None, 0.0, None, Settings(), ClosePort()).encoded()
     get_client_mock = MagicMock(return_value=client_mock)
@@ -551,24 +543,8 @@ def test_receive_close_port(communicator) -> None:
 
 def test_get_message(communicator, message) -> None:
     communicator.send_message('out', message)
-    ref_message = MCPMessage(
+    ref_message = MPPMessage(
             Reference('kernel[13].out'), Reference('other.in[13]'),
             None, 0.0, None, Settings(), b'test').encoded()
     assert communicator._post_office.get_message(
             'other.in[13]') == ref_message
-
-
-@patch('libmuscle.mcp.direct_client.registered_servers')
-def test_get_client(mock_servers, communicator) -> None:
-    mock_servers.__contains__.return_value = True
-    client = communicator._Communicator__get_client(Reference('other'))
-    mock_servers.__contains__.assert_called_with('test')
-    assert isinstance(client, DirectClient)
-
-    client2 = communicator._Communicator__get_client(Reference('other'))
-    assert client == client2
-
-    gpl = communicator._peer_manager.get_peer_locations
-    gpl.return_value = ['non_existent:test']
-    with pytest.raises(RuntimeError):
-        communicator._Communicator__get_client(Reference('other2'))

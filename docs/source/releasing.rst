@@ -3,21 +3,18 @@
 Releasing
 ***********
 
-MUSCLE 3 uses Git on GitHub for version management, using the `Git Flow`_
+MUSCLE3 uses Git on GitHub for version management, using the `Git Flow`_
 branching model. Making a release involves quite a few steps, so they're listed
 here to help make the process more reliable; this information is really only
 useful for the maintainers.
 
-Make a release branch
----------------------
+Check metadata
+--------------
 
-To start the release process, make a release branch
-
-.. code-block:: bash
-
-  git checkout -b release-x.y.z develop
-
-MUSCLE 3 uses `Semantic Versioning`_, so name the new version accordingly.
+- Check the metadata in ``setup.py``, and update as necessary
+- Check the dependencies, and fix them to an appropriate range of versions
+- Check the copyright date and owners in ``README.rst`` and ``docs/conf.py``
+  and update as necessary.
 
 Update the changelog
 --------------------
@@ -29,6 +26,7 @@ switch to the development branch:
 .. code-block:: bash
 
   git log <your favourite options>
+  git checkout develop
 
 and then edit CHANGELOG.rst and commit.
 
@@ -36,6 +34,17 @@ and then edit CHANGELOG.rst and commit.
 
   git add CHANGELOG.rst
   git commit -m 'Add version x.y.z to the change log'
+
+Make a release branch
+---------------------
+
+To start the release process, make a release branch
+
+.. code-block:: bash
+
+  git checkout -b release-x.y.z develop
+
+MUSCLE3 uses `Semantic Versioning`_, so name the new version accordingly.
 
 Update version
 --------------
@@ -121,12 +130,18 @@ Make a GitHub release
 ---------------------
 
 In order to get a DOI for this release, we need to make a release on GitHub. Go
-to the `MUSCLE 3 GitHub repository`_ and click 'Releases'. Select 'Draft a new
+to the `MUSCLE3 GitHub repository`_ and click 'Releases'. Select 'Draft a new
 release', select the x.y.z. tag that we just uploaded, and use 'Release x.y.z'
-as the title. Then copy-paste the description from the change log, convert it
-from ReStructuredText to MarkDown and maybe prepend some text if there is
-something interesting to mention. Optionally select 'This is a pre-release' if
-it's not a final version, then publish it.
+as the title.
+
+The main text ends up as the description on Zenodo, so start with the first
+three paragraphs from the Introduction section of the documentation to give
+people an idea of what they're looking at. Then copy-paste the description of
+the current release from the change log, and convert it from ReStructuredText
+to MarkDown.
+
+Optionally select 'This is a pre-release' if it's not a final version, then
+publish it.
 
 Build and release to PyPI
 -------------------------
@@ -181,7 +196,14 @@ CHANGELOG.rst comes from the release branch, and VERSION is given a new number,
 probably x.y.{z+1}-dev unless you have big plans. When done, commit the merge
 and continue developing.
 
+Update issues
+-------------
+
+Go through the issues on GitHub and close tho ones for which a fix was
+released. Or if they were created by someone else, ask the user to check that
+the new version solves their problem and close the issue if it does.
+
 
 .. _`Git Flow`: http://nvie.com/posts/a-successful-git-branching-model/
 .. _`Semantic Versioning`: http://www.semver.org
-.. _`MUSCLE 3 GitHub repository`: https://github.com/multiscale/muscle3
+.. _`MUSCLE3 GitHub repository`: https://github.com/multiscale/muscle3

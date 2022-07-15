@@ -44,12 +44,14 @@ if not os.path.exists(version_path):
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-        'sphinx.ext.autodoc',
-        'sphinx.ext.napoleon',
         'breathe',
+        'sphinx.ext.autodoc',
+        'sphinx.ext.autosectionlabel',
+        'sphinx.ext.napoleon',
         'sphinx.ext.todo',
         'sphinx.ext.viewcode',
-        'sphinxfortran.fortran_domain']
+        'sphinxfortran.fortran_domain',
+        'sphinx_tabs.tabs']
 
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ['_templates']
@@ -65,7 +67,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'muscle3'
-copyright = '2018-2020 University of Amsterdam and Netherlands eScience Center'
+copyright = '2018-2022 University of Amsterdam and Netherlands eScience Center'
 author = 'Lourens Veen'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -221,7 +223,7 @@ man_pages = [
 texinfo_documents = [
     (master_doc, 'muscle3', 'MUSCLE3 Documentation',
      author, 'muscle3',
-     'The MUSCLE 3 multiscale coupling library and environment.',
+     'The MUSCLE3 multiscale coupling library and environment.',
      'Miscellaneous'),
 ]
 

@@ -11,6 +11,7 @@
 #include <ymmsl/ymmsl.hpp>
 
 #include <cstdint>
+#include <cstdlib>
 #include <stdexcept>
 
 #ifdef MUSCLE_ENABLE_MPI
@@ -21,6 +22,38 @@
 using ymmsl::Operator;
 using ymmsl::Reference;
 using ymmsl::Settings;
+
+using libmuscle::impl::LogLevel;
+
+
+namespace {
+
+/* Converts a user-input string to a log level.
+ *
+ * The input is case-insensitive.
+ */
+LogLevel string_to_level(std::string const & log_level_str) {
+    // convert to upper case (ASCII/UTF-8 only, which is fine here)
+    std::string log_level(log_level_str);
+    for (char & c : log_level)
+        if (('a' <= c) && (c <= 'z')) c += ('A' - 'a');
+
+    // convert to LogLevel
+    LogLevel level;
+    if (log_level == "DISABLE") level = LogLevel::DISABLE;
+    else if (log_level == "CRITICAL") level = LogLevel::CRITICAL;
+    else if (log_level == "ERROR") level = LogLevel::ERROR;
+    else if (log_level == "WARNING") level = LogLevel::WARNING;
+    else if (log_level == "INFO") level = LogLevel::INFO;
+    else if (log_level == "DEBUG") level = LogLevel::DEBUG;
+    else if (log_level == "LOCAL") level = LogLevel::LOCAL;
+    else {
+        throw std::runtime_error("Invalid log level " + log_level_str);
+    }
+    return level;
+}
+
+}
 
 
 namespace libmuscle { namespace impl {
@@ -89,7 +122,8 @@ class Instance::Impl {
                 std::string const & port_name,
                 Optional<int> slot, bool apply_overlay);
         void pre_receive_f_init_(bool apply_overlay);
-        void set_log_level_();
+        void set_local_log_level_();
+        void set_remote_log_level_();
         void apply_overlay_(Message const & message);
         void check_compatibility_(
                 std::string const & port_name,
@@ -128,11 +162,17 @@ Instance::Impl::Impl(
     if (mpi_barrier_.is_root()) {
 #endif
         manager_.reset(new MMPClient(extract_manager_location_(argc, argv)));
-        logger_.reset(new Logger(static_cast<std::string>(instance_name_), *manager_));
+
+        std::string instance_id = static_cast<std::string>(instance_name_);
+        std::string default_logfile = "muscle_" + instance_id + ".log";
+        std::string log_file = extract_log_file_location(argc, argv, default_logfile);
+        logger_.reset(new Logger(instance_id, log_file, *manager_));
+
         communicator_.reset(new Communicator(name_(), index_(), ports, *logger_, 0));
         register_();
         connect_();
-        set_log_level_();
+        set_local_log_level_();
+        set_remote_log_level_();
 #ifdef MUSCLE_ENABLE_MPI
         auto sbase_data = Data(settings_manager_.base);
         msgpack::sbuffer sbuf;
@@ -171,7 +211,8 @@ bool Instance::Impl::reuse_instance(bool apply_overlay) {
         // something that was sent on the last go-around. At least emit a warning.
         pre_receive_f_init_(apply_overlay);
 
-        set_log_level_();
+        set_local_log_level_();
+        set_remote_log_level_();
 
         auto ports = communicator_->list_ports();
 
@@ -375,6 +416,7 @@ void Instance::Impl::register_() {
     auto port_list = list_declared_ports_();
     manager_->register_instance(instance_name_, locations, port_list);
     // TODO: stop profile
+    logger_->info("Registered with the manager");
 }
 
 /* Connect this instance to the given peers / conduits.
@@ -385,6 +427,7 @@ void Instance::Impl::connect_() {
     communicator_->connect(std::get<0>(peer_info), std::get<1>(peer_info), std::get<2>(peer_info));
     settings_manager_.base = manager_->get_settings();
     // TODO: stop profile
+    logger_->info("Received peer locations and base settings");
 }
 
 /* Deregister this instance from the manager.
@@ -395,6 +438,7 @@ void Instance::Impl::deregister_() {
     // TODO: stop profile
     // This is the last thing we'll profile, so flush messages
     // TODO: shut down profiler
+    logger_->info("Deregistered from the manager");
 }
 
 Message Instance::Impl::receive_message(
@@ -494,8 +538,12 @@ Reference Instance::Impl::make_full_name_(int argc, char const * const argv[]) c
             return Reference(prefix_str);
         }
     }
-    throw std::runtime_error("A --muscle-instance command line argument is"
-            " required to identify this instance. Please add one.");
+    char * prefix_str = getenv("MUSCLE_INSTANCE");
+    if (prefix_str != nullptr)
+        return Reference(prefix_str);
+    throw std::runtime_error("A --muscle-instance command line argument or"
+            " MUSCLE_INSTANCE environment variable is required to"
+            " identify this instance. Please add one.");
 }
 
 /* Gets the manager network location from the command line.
@@ -503,6 +551,9 @@ Reference Instance::Impl::make_full_name_(int argc, char const * const argv[]) c
  * We use a --muscle-manager=<host:port> argument to tell the MUSCLE library
  * how to connect to the manager. This function will extract this argument
  * from the command line arguments, if it is present.
+ *
+ * If not, it will check the MUSCLE_MANAGER environment variable, and if that
+ * is not set, fall back to the default.
  */
 std::string Instance::Impl::extract_manager_location_(
         int argc, char const * const argv[]) const
@@ -512,10 +563,14 @@ std::string Instance::Impl::extract_manager_location_(
         if (strncmp(argv[i], prefix_tag.c_str(), prefix_tag.size()) == 0)
             return std::string(argv[i] + prefix_tag.size());
 
-    return "localhost:9000";
+    char * prefix = getenv("MUSCLE_MANAGER");
+    if (prefix != nullptr)
+        return std::string(prefix);
+
+    return "tcp:localhost:9000";
 }
 
-/* Returns the compute element name of this instance, i.e. without the index.
+/* Returns the component name of this instance, i.e. without the index.
  */
 Reference Instance::Impl::name_() const {
     auto it = instance_name_.cbegin();
@@ -525,7 +580,7 @@ Reference Instance::Impl::name_() const {
     return Reference(instance_name_.cbegin(), it);
 }
 
-/* Returns the index of this instance, i.e. without the compute element.
+/* Returns the index of this instance, i.e. without the component.
  */
 std::vector<int> Instance::Impl::index_() const {
     std::vector<int> result;
@@ -567,7 +622,7 @@ void Instance::Impl::check_port_(std::string const & port_name) {
         std::ostringstream oss;
         oss << "Port '" << port_name << "' does not exist on '";
         oss << instance_name_ << "'. Please check the name and the list of";
-        oss << " ports you gave for this compute element.";
+        oss << " ports you gave for this component.";
         logger_->critical(oss.str());
         shutdown_();
         throw std::logic_error(oss.str());
@@ -629,7 +684,7 @@ void Instance::Impl::pre_receive_f_init_(bool apply_overlay) {
     auto ports = communicator_->list_ports();
     if (ports.count(Operator::F_INIT) == 1) {
         for (auto const & port_name : ports.at(Operator::F_INIT)) {
-            logger_->info("Pre-receiving on port ", port_name);
+            logger_->debug("Pre-receiving on port ", port_name);
             auto const & port = communicator_->get_port(port_name);
             if (!port.is_connected())
                 continue;
@@ -646,32 +701,40 @@ void Instance::Impl::pre_receive_f_init_(bool apply_overlay) {
     }
 }
 
+/* Sets the level a log message must have to be printed locally.
+ *
+ * It gets this from the muscle_local_log_level setting.
+ */
+void Instance::Impl::set_local_log_level_() {
+    try {
+        std::string log_level_str = settings_manager_.get_setting(
+               instance_name_, "muscle_local_log_level").as<std::string>();
+
+        LogLevel level = string_to_level(log_level_str);
+        logger_->set_local_level(level);
+    }
+    catch (std::runtime_error const & e) {
+        logger_->error(e.what() + std::string(" in muscle_local_log_level"));
+    }
+    catch (std::out_of_range const &) {
+        // muscle_local_log_level not set, do nothing and keep the default
+    }
+}
+
 /* Sets the level a log message must have to be sent to the manager.
  *
  * It gets this from the muscle_remote_log_level setting.
  */
-void Instance::Impl::set_log_level_() {
+void Instance::Impl::set_remote_log_level_() {
     try {
         std::string log_level_str = settings_manager_.get_setting(
                instance_name_, "muscle_remote_log_level").as<std::string>();
 
-        // convert to upper case (ASCII/UTF-8 only, which is fine here)
-        std::string log_level(log_level_str);
-        for (char & c : log_level)
-            if (('a' <= c) && (c <= 'z')) c += ('A' - 'a');
-
-        // convert to LogLevel
-        LogLevel level;
-        if (log_level == "CRITICAL") level = LogLevel::CRITICAL;
-        else if (log_level == "ERROR") level = LogLevel::ERROR;
-        else if (log_level == "WARNING") level = LogLevel::WARNING;
-        else if (log_level == "INFO") level = LogLevel::INFO;
-        else if (log_level == "DEBUG") level = LogLevel::DEBUG;
-        else {
-            logger_->error("Invalid log level ", log_level_str," in muscle_remote_log_level");
-            return;
-        }
+        LogLevel level = string_to_level(log_level_str);
         logger_->set_remote_level(level);
+    }
+    catch (std::runtime_error const & e) {
+        logger_->error(e.what() + std::string(" in muscle_remote_log_level"));
     }
     catch (std::out_of_range const &) {
         // muscle_remote_log_level not set, do nothing and keep the default
@@ -811,6 +874,7 @@ void Instance::Impl::shutdown_() {
             close_ports_();
             communicator_->shutdown();
             deregister_();
+            manager_->close();
 #ifdef MUSCLE_ENABLE_MPI
         }
         mpi_barrier_.shutdown();

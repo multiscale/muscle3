@@ -3,11 +3,7 @@ import multiprocessing as mp
 import ymmsl
 
 from libmuscle.logging import LogLevel, LogMessage, Timestamp
-from libmuscle.manager.instance_registry import InstanceRegistry
-from libmuscle.manager.logger import Logger
-from libmuscle.manager.mmp_server import MMPServer
-from libmuscle.manager.manager import elements_for_model
-from libmuscle.manager.topology_store import TopologyStore
+from libmuscle.manager.manager import Manager
 from libmuscle.mmp_client import MMPClient
 
 
@@ -36,16 +32,11 @@ def do_logging_test(caplog):
             )
 
     # create server
-    logger = Logger()
     ymmsl_doc = ymmsl.load(ymmsl_text)
-    expected_elements = elements_for_model(ymmsl_doc.model)
-    instance_registry = InstanceRegistry(expected_elements)
-    topology_store = TopologyStore(ymmsl_doc)
-    server = MMPServer(logger, ymmsl_doc.settings, instance_registry,
-                       topology_store)
+    manager = Manager(ymmsl_doc)
 
     # create client
-    client = MMPClient('localhost:9000')
+    client = MMPClient(manager.get_server_location())
     message = LogMessage(
             instance_id='test_logging',
             timestamp=Timestamp(2.0),
@@ -61,7 +52,8 @@ def do_logging_test(caplog):
             assert rec.message == 'Integration testing'
             break
 
-    server.stop()
+    client.close()
+    manager.stop()
 
 
 def test_logging(log_file_in_tmpdir, caplog):

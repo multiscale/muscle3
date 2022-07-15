@@ -26,7 +26,7 @@ debug_libs := libmuscle_d.a libmuscle_d.so
 
 tests_deps := libmuscle_d.a version.h
 
-ifeq ($(if $(or $(MUSCLE_ENABLE_MPI),$(and $(findstring install,$(MAKECMDGOALS)),$(wildcard libmuscle_mpi.so))),1,0),1)
+ifeq ($(if $(or $(MUSCLE_ENABLE_CPP_MPI),$(and $(findstring install,$(MAKECMDGOALS)),$(wildcard libmuscle_mpi.so))),1,0),1)
 prod_libs += libmuscle_mpi.a libmuscle_mpi.so
 debug_libs += libmuscle_mpi_d.a libmuscle_mpi_d.so
 tests_deps += libmuscle_mpi_d.a
@@ -49,17 +49,17 @@ installed_headers := $(public_headers:%=$(PREFIX)/include/%)
 
 pkg_config_files := libmuscle.pc
 
-ifeq ($(if $(or $(MUSCLE_ENABLE_MPI),$(and $(findstring install,$(MAKECMDGOALS)),$(wildcard libmuscle_mpi.so))),1,0),1)
+ifeq ($(if $(or $(MUSCLE_ENABLE_CPP_MPI),$(and $(findstring install,$(MAKECMDGOALS)),$(wildcard libmuscle_mpi.so))),1,0),1)
     pkg_config_files += libmuscle_mpi.pc
 endif
 
 installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
 
-CXXFLAGS += -Wall -pedantic -std=c++14 -pthread
+CXXFLAGS += -Wall -pedantic -std=c++14 -pthread -O3
 export CXXFLAGS
 MPIFLAGS := -DMUSCLE_ENABLE_MPI
 export MPIFLAGS
-DEBUGFLAGS := -g
+DEBUGFLAGS := -g -O0
 export DEBUGFLAGS
 
 
@@ -93,6 +93,8 @@ install: all $(installed_headers) $(installed_pkg_config_files)
 	@mkdir -p $(PREFIX)/lib
 	cp libmuscle*.a $(PREFIX)/lib
 	cp libmuscle*.so $(PREFIX)/lib
+	@mkdir -p $(PREFIX)/bin
+	sed -e 's@%PREFIX%@$(PREFIX)@g' muscle3.env.in >$(PREFIX)/bin/muscle3.env
 	for pc in $(PREFIX)/lib/pkgconfig/* ; do sed -i -e 's@^prefix=.*$$@prefix=$(PREFIX)@' $$pc ; done
 
 
@@ -102,14 +104,10 @@ ifeq "$(filter $(MAKECMDGOALS),$(cleantargets))" ""
 
 # Dependencies
 $(info pcextra: $(PKG_CONFIG_EXTRA_DIRS))
-CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --cflags protobuf)
-CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --cflags grpc++)
-CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --cflags msgpack)
+CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --cflags msgpack)
 
-LDFLAGS += -L$(CURDIR)/../muscle_manager_protocol -lmmp -L$(CURDIR)/../ymmsl -lymmsl
-LDFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs protobuf)
-LDFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs grpc++)
-LDFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs msgpack)
+LDFLAGS += -pthread -L$(CURDIR)/../ymmsl -lymmsl
+LDFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs msgpack)
 
 # Automatic header dependencies
 -include $(deps)
@@ -134,12 +132,12 @@ $(objdir)/%.lo: %.cpp $(objdir)/%.o
 # depends on .o to daisy-chain automatic dependencies
 $(objdir)/%.do: %.cpp $(objdir)/%.o
 	@mkdir -p $(@D)
-	$(CXX) $(CPPFLAGS) $(DEBUGFLAGS) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@
 
 # depends on .o to daisy-chain automatic dependencies
 $(objdir)/%.dlo: %.cpp $(objdir)/%.o
 	@mkdir -p $(@D)
-	$(CXX) $(CPPFLAGS) $(DEBUGFLAGS) $(CXXFLAGS) -fPIC -c $< -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -fPIC -c $< -o $@
 
 $(objdir)/%.mo: %.cpp
 	@mkdir -p $(@D)
@@ -151,11 +149,11 @@ $(objdir)/%.mlo: %.cpp
 
 $(objdir)/%.mdo: %.cpp
 	@mkdir -p $(@D)
-	$(MPICXX) $(CPPFLAGS) $(DEBUGFLAGS) $(CXXFLAGS) $(MPIFLAGS) -c $< -o $@
+	$(MPICXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) $(MPIFLAGS) -c $< -o $@
 
 $(objdir)/%.mdlo: %.cpp
 	@mkdir -p $(@D)
-	$(MPICXX) $(CPPFLAGS) $(DEBUGFLAGS) $(CXXFLAGS) $(MPIFLAGS) -fPIC -c $< -o $@
+	$(MPICXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) $(MPIFLAGS) -fPIC -c $< -o $@
 
 
 version.h: version.h.in
@@ -207,13 +205,15 @@ libmuscle.pc:
 	@echo 'libdir=$${exec_prefix}/lib' >>$@
 	@echo >>$@
 	@echo 'Name: libmuscle for C++' >>$@
-	@echo 'Description: Library for MUSCLE 3' >>$@
+	@echo 'Description: Library for MUSCLE3' >>$@
 	@echo 'URL: https://muscle3.readthedocs.io' >>$@
 	@echo 'Version: $(muscle_version)' >>$@
 	@echo 'Requires: ymmsl = $(muscle_version)' >>$@
-	@echo 'Requires.private: grpc++ >= 1.24.3, protobuf >= 3.10.0, msgpack >= 3.1.0' >>$@
-	@echo 'Cflags: -I$${includedir}' >>$@
+	@echo 'Requires.private: msgpack >= 3.1.0' >>$@
+	@echo 'Cflags: -I$${includedir} -pthread' >>$@
+	@echo 'Cflags.private: -pthread' >>$@
 	@echo 'Libs: -L$${libdir} -lmuscle' >>$@
+	@echo 'Libs.private: -pthread' >>$@
 
 libmuscle_mpi.pc:
 	@echo 'prefix=$(PREFIX)' >$@
@@ -222,11 +222,12 @@ libmuscle_mpi.pc:
 	@echo 'libdir=$${exec_prefix}/lib' >>$@
 	@echo >>$@
 	@echo 'Name: libmuscle for C++ and MPI' >>$@
-	@echo 'Description: Library for MUSCLE 3' >>$@
+	@echo 'Description: Library for MUSCLE3' >>$@
 	@echo 'URL: https://muscle3.readthedocs.io' >>$@
 	@echo 'Version: $(muscle_version)' >>$@
 	@echo 'Requires: ymmsl = $(muscle_version)' >>$@
-	@echo 'Requires.private: grpc++ >= 1.24.3, protobuf >= 3.10.0, msgpack >= 3.1.0' >>$@
-	@echo 'Cflags: -I$${includedir} -DMUSCLE_ENABLE_MPI' >>$@
+	@echo 'Requires.private: msgpack >= 3.1.0' >>$@
+	@echo 'Cflags: -I$${includedir} -pthread -DMUSCLE_ENABLE_MPI' >>$@
+	@echo 'Cflags.private: -pthread' >>$@
 	@echo 'Libs: -L$${libdir} -lmuscle_mpi' >>$@
-
+	@echo 'Libs.private: -pthread' >>$@

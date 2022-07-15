@@ -26,65 +26,42 @@ setup(
     license='Apache License 2.0',
     keywords=['multiscale', 'coupling', 'MUSCLE'],
     classifiers=[
-        'Development Status :: 1 - Planning',
+        'Development Status :: 4 - Beta',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: POSIX :: Linux',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8'],
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10'],
 
-    # packages=['muscle_manager', 'muscle_manager_protocol', 'libmuscle', 'libmuscle.mcp'],
     packages=_muscle3_packages,
     package_dir={
-        'muscle_manager': 'muscle_manager',
+        'muscle3': 'muscle3',
         'libmuscle': 'libmuscle/python/libmuscle'
     },
     entry_points={
-        'console_scripts': ['muscle_manager=muscle_manager.muscle_manager:manage_simulation']
+        'console_scripts': [
+            'muscle_manager=muscle3.muscle_manager:manage_simulation',
+            'muscle3=muscle3.muscle3:muscle3']
     },
-    python_requires='>=3.5, <4',
+    python_requires='>=3.6, <4',
     install_requires=[
-        'click>=6',
-        'grpcio>=1.24.3, <2',
-        'msgpack',
-        'netifaces',
-        'numpy>=1.12,<1.20',
-        'protobuf>=3.10.0, <4',
-        'typing_extensions',
-        'ymmsl>=0.11.0'          # Also in CI, update there as well
-    ],
-    setup_requires=[
-        'pytest-runner',
-        # dependencies for `python setup.py build_sphinx`
-        'breathe',
-        'sphinx<3.2',
-        'sphinx_rtd_theme',
-        'sphinx-fortran',
-        'recommonmark',
-        'sphinx-rtd-theme'
-    ],
-    tests_require=[
-        'coverage<5',
-        'mypy',
-        'pytest>=3.5,<6.2',
-        'pytest-cov',
-        'pytest-flake8',
-        'pytest-mypy',
-        'importlib-metadata==2.1.0'
+        'click>=7.1,<9',
+        'msgpack>=1,<2',
+        'netifaces==0.11.0',
+        "numpy==1.19.5; python_version=='3.6'",
+        "numpy<1.22; python_version=='3.7'",
+        "numpy>=1.22,<=1.25; python_version>='3.8'",
+        'qcg-pilotjob==0.13.1',
+        'typing_extensions<4',
+        'ymmsl>=0.12.0,<0.13'          # Also in CI, update there as well
     ],
     extras_require={
         'dev': [
-            'grpcio-tools==1.17.1',
-            'mypy-protobuf',
             'sphinx<3.2',
             'sphinx_rtd_theme',
-            'sphinx-fortran',
-            'yapf',
-            'isort'
+            'sphinx-fortran'
         ]
     },
 )
-
-# clean up the version file again
-_libmuscle_version_file.unlink()

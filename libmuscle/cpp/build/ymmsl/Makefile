@@ -14,16 +14,16 @@ dobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.do)
 dlobjects := $(source_files:$(srcdir)%.cpp=$(objdir)%.dlo)
 deps := $(source_files:$(srcdir)%.cpp=$(objdir)%.d)
 
-public_headers := ymmsl/compute_element.hpp ymmsl/identity.hpp ymmsl/model.hpp
+public_headers := ymmsl/component.hpp ymmsl/identity.hpp ymmsl/model.hpp
 public_headers += ymmsl/settings.hpp ymmsl/settings.tpp ymmsl/ymmsl.hpp
 installed_headers := $(public_headers:%=$(PREFIX)/include/%)
 
 pkg_config_files := ymmsl.pc
 installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
 
-CXXFLAGS += -Wall -pedantic -std=c++14 -I$(hdrdir)
+CXXFLAGS += -Wall -pedantic -std=c++14 -O3 -I$(hdrdir)
 export CXXFLAGS
-DEBUGFLAGS := -g
+DEBUGFLAGS := -g -O0
 export DEBUGFLAGS
 
 
@@ -119,9 +119,10 @@ ymmsl.pc:
 	@echo 'libdir=$${exec_prefix}/lib' >>$@
 	@echo >>$@
 	@echo 'Name: yMMSL for C++' >>$@
-	@echo 'Description: Partial yMMSL support library for MUSCLE 3' >>$@
+	@echo 'Description: Partial yMMSL support library for MUSCLE3' >>$@
 	@echo 'URL: https://muscle3.readthedocs.io' >>$@
 	@echo 'Version: $(muscle_version)' >>$@
 	@echo 'Cflags: -I$${includedir}' >>$@
+	@echo 'Cflags.private: -pthread' >>$@
 	@echo 'Libs: -L$${libdir} -lymmsl' >>$@
-
+	@echo 'Libs.private: -pthread' >>$@

@@ -1,4 +1,3 @@
-from collections import OrderedDict
 import logging
 import os
 
@@ -6,8 +5,8 @@ import numpy as np
 
 from libmuscle import Grid, Instance, Message
 from libmuscle.runner import run_simulation
-from ymmsl import (ComputeElement, Conduit, Configuration, Model, Operator,
-                   Settings)
+from ymmsl import (
+        Component, Conduit, Configuration, Model, Operator, Ports, Settings)
 
 
 def reaction() -> None:
@@ -103,7 +102,7 @@ def diffusion() -> None:
             Us = np.vstack((Us, U))
             t_cur += dt
 
-        if 'DONTPLOT' not in os.environ:
+        if 'DONTPLOT' not in os.environ and 'SLURM_NODENAME' not in os.environ:
             from matplotlib import pyplot as plt
             plt.figure()
             plt.imshow(
@@ -124,25 +123,32 @@ def diffusion() -> None:
 
 
 if __name__ == '__main__':
-    elements = [
-            ComputeElement('macro', 'diffusion'),
-            ComputeElement('micro', 'reaction')]
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.INFO)
+
+    components = [
+            Component(
+                'macro', 'diffusion', None,
+                Ports(o_i=['state_out'], s=['state_in'])),
+            Component(
+                'micro', 'reaction', None,
+                Ports(f_init=['initial_state'], o_f=['final_state']))]
 
     conduits = [
             Conduit('macro.state_out', 'micro.initial_state'),
             Conduit('micro.final_state', 'macro.state_in')]
 
-    model = Model('reaction_diffusion', elements, conduits)
-    settings = Settings(OrderedDict([
-                ('micro.t_max', 2.469136e-6),
-                ('micro.dt', 2.469136e-8),
-                ('macro.t_max', 1.234568e-4),
-                ('macro.dt', 2.469136e-6),
-                ('x_max', 1.01),
-                ('dx', 0.01),
-                ('k', -4.05e4),     # reaction parameter
-                ('d', 4.05e-2)      # diffusion parameter
-                ]))
+    model = Model('reaction_diffusion', components, conduits)
+    settings = Settings({
+        'micro.t_max': 2.469136e-6,
+        'micro.dt': 2.469136e-8,
+        'macro.t_max': 1.234568e-4,
+        'macro.dt': 2.469136e-6,
+        'x_max': 1.01,
+        'dx': 0.01,
+        'k': -4.05e4,     # reaction parameter
+        'd': 4.05e-2      # diffusion parameter
+        })
 
     configuration = Configuration(model, settings)
 

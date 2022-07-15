@@ -7,7 +7,7 @@ in the lab, and those measurements are never exact. So every model is subject to
 uncertainty. Uncertainty Quantification (UQ) provides techniques for analysing
 th uncertainty in models, parameters and results. This section shows an example
 of a black-box quasi-Monte Carlo uncertainty quantification of the
-reaction-diffusion model we created before, implemented using MUSCLE 3.
+reaction-diffusion model we created before, implemented using MUSCLE3.
 
 Simulation design
 -----------------
@@ -29,10 +29,10 @@ been good to do that to begin with, using a separate visualisation or
 save-to-disk component attached via a conduit.) The only other change here is
 that there are now ten copies each of the ``macro`` and ``micro`` components.
 There will also be ten instances of the conduits between ``macro`` and
-``micro``, which MUSCLE 3 will create automatically. The instances are wired up
+``micro``, which MUSCLE3 will create automatically. The instances are wired up
 one-on-one, so that ``macro[i]`` connects to ``micro[i]``.
 
-There are two new compute elements: the ``qmc`` element, which implements the
+There are two new components: the ``qmc`` element, which implements the
 quasi-Monte Carlo UQ algorithm, and the ``rr`` element, which distributes the
 ensemble evenly over a given number of model instances.
 
@@ -50,10 +50,10 @@ in a set of parameter values {(k, d)}. It writes these parameters to its
 
 The name of this port in the diagram ends in a pair of square brackets, which
 designates the port a *vector port*. A vector port is a port that is used to
-talk to multiple instances of a connected compute element. It has a number of
-slots on which messages can be sent (or received, if it is a receiving port).
-The number of slots is known as the *length* of a vector port. Since we are
-going to run an ensemble, and we want to be able to run the ensemble members in
+talk to multiple instances of a connected components. It has a number of slots
+on which messages can be sent (or received, if it is a receiving port). The
+number of slots is known as the *length* of a vector port. Since we are going
+to run an ensemble, and we want to be able to run the ensemble members in
 parallel, having a set of concurrent instances is just what we need. Of course,
 we will then receive results from this same set as well, so we'll receive on a
 vector port too, in this case ``states_in``.
@@ -70,15 +70,15 @@ returning final states will be mapped back accordingly.
 
 Next, ``rr`` needs to be connected to the model. This presents a problem: ``rr``
 sends out sets of parameters, but ``macro`` has no F_INIT port to receive them.
-It gets its parameter values, via MUSCLE 3, from the central configuration. So
-we need a trick, and MUSCLE 3 provides one in the form of the
-``muscle_settings_in`` port. This is a special F_INIT port that each MUSCLE 3
-compute element automatically has. It can be connected to a port on a component
-that sends ``Settings`` objects. MUSCLE 3 will automatically receive these
-messages, and overlay the received settings on top of the base settings from the
-central configuration. When the receiving submodel then asks MUSCLE 3 for a
-setting, MUSCLE 3 will look at the overlay settings first. If the setting is
-not found there, then MUSCLE 3 will fall back to the central base configuration.
+It gets its parameter values, via MUSCLE3, from the central configuration. So
+we need a trick, and MUSCLE3 provides one in the form of the
+``muscle_settings_in`` port. This is a special F_INIT port that each MUSCLE3
+component automatically has. It can be connected to a port on a component that
+sends ``Settings`` objects. MUSCLE3 will automatically receive these messages,
+and overlay the received settings on top of the base settings from the central
+configuration. When the receiving submodel then asks MUSCLE3 for a setting,
+MUSCLE3 will look at the overlay settings first. If the setting is not found
+there, then MUSCLE3 will fall back to the central base configuration.
 
 So, now our diffusion model will ask for the value of ``d`` as it did before,
 but this time, it will actually come from the values sent by ``qmc``, and it
@@ -106,8 +106,8 @@ The full Python program implementing this looks like this:
 The reaction model's implementation is completely unchanged, and the diffusion
 model has only been made a bit more modular by removing the visualisation and
 sending the final state on an additional O_F port, as mentioned above. The
-``qmc``
-and ``rr`` components are new however, and deserve a detailed explanation.
+``qmc`` and ``rr`` components are new however, and deserve a detailed
+explanation.
 
 The quasi-Monte Carlo element
 -----------------------------
@@ -130,9 +130,8 @@ out a single set of parameter pairs, and receives back a single set of final
 states. In terms of communication with the outside world, it therefore works
 similarly to a submodel with only O_I and S ports and exactly one state update
 step, so that each of those operators is run once. So that is how we describe it
-to MUSCLE 3. (It may be better to have some Proxy-specific operator names here
-in the future, opinions welcome!) We will send parameter sets on vector port
-``parameters_out``, and receive final states on vector port ``states_in``.
+to MUSCLE3. We will send parameter sets on vector port ``parameters_out``, and
+receive final states on vector port ``states_in``.
 
 Next, we enter the reuse loop as before, except that we pass ``False`` as an
 argument, which will be explained shortly. We read and check settings in
@@ -143,10 +142,10 @@ Sobol sequence.
 
   # configure output port
   if not instance.is_resizable('parameters_out'):
-      instance.error_shutdown('This component needs a resizable'
-                          ' parameters_out port, but it is connected to'
-                          ' something that cannot be resized. Maybe try'
-                          ' adding a load balancer.')
+      instance.error_shutdown(
+              'This component needs a resizable parameters_out port, but'
+              ' it is connected to something that cannot be resized.'
+              ' Maybe try adding a load balancer.')
       exit(1)
 
   instance.set_port_length('parameters_out', n_samples)
@@ -155,10 +154,10 @@ Sobol sequence.
 Next, we need to configure our output vector port. Since we will have
 ``n_samples`` sets of parameters, we will resize the port to that length. We do
 need to check whether the port is resizable first, because that may or may not
-be the case depending on what is attached to it. In order to preserve modularity
-and reusability of individual compute elements, MUSCLE 3 tries to tell the
-compute element as little as possible about what is on the other side of a port,
-but you can ask it whether the port has a fixed size or not.
+be the case depending on what is attached to it. In order to preserve
+modularity and reusability of individual components, MUSCLE3 tries to tell the
+components as little as possible about what is on the other side of a port, but
+you can ask it whether the port has a fixed size or not.
 
 So that is what we do here, and we generate an error message if the port's
 length is fixed. We use the function
@@ -191,7 +190,7 @@ in the central configuration.
 Next, we create a :class:`libmuscle.Message` object to send. Since our models
 will start at time 0, we'll set that as the timestamp, and since we're only
 running them once each, the next timestamp is ``None``. For the data, we send
-the ``Settings`` object. (MUSCLE 3 contains special support for sending
+the ``Settings`` object. (MUSCLE3 contains special support for sending
 ``Settings`` objects, since being objects they're not normally
 MessagePack-serialisable.)
 
@@ -216,9 +215,9 @@ receive function here. Rather than :meth:`libmuscle.Instance.receive`, we call
 :meth:`libmuscle.Instance.receive_with_settings`.  The difference has to do
 with the settings overlays.
 
-Recall that each compute element instance has a settings overlay, which can be
-set through the ``muscle_settings_in`` port and is automatically propagated to
-corresponding instances of other compute elements. This propagation is done by
+Recall that each component instance has a settings overlay, which can be set
+through the ``muscle_settings_in`` port and is automatically propagated to
+corresponding instances of other components. This propagation is done by
 sending the overlay along with any messages that are sent.
 
 Since the ``macro`` and ``micro`` instances are connected one-on-one, each pair
@@ -228,7 +227,7 @@ their settings.  Once the reaction-diffusion simulation is done however, the
 ``rr``, which is transparent in this respect). Thus, the universes meet, and the
 question arises what the settings overlay for ``qmc`` should look like.
 
-As there is no general answer to this, MUSCLE 3 cannot automatically propagate
+As there is no general answer to this, MUSCLE3 cannot automatically propagate
 the overlay from the different ``macro`` instances to ``qmc``, and it will give
 an error message if you try to have it do this by receiving as usual with
 :meth:`libmuscle.Instance.receive`. The
@@ -289,7 +288,7 @@ We use :meth:`libmuscle.Instance.receive_with_settings` everywhere, in order to
 correctly pass on any settings overlays. Since we are using
 :meth:`libmuscle.Instance.receive_with_settings` on an F_INIT port, we passed
 ``False`` to :meth:`libmuscle.Instance.reuse_instance`. It is a technical
-requirement of MUSCLE 3 to do this, and MUSCLE will give an error message if
+requirement of MUSCLE3 to do this, and MUSCLE will give an error message if
 you call :meth:`libmuscle.Instance.receive_with_settings` without having passed
 ``False`` to :meth:`libmuscle.Instance.reuse_instance`. (There's just no other
 way to implement this, or rather, all other options can lead to potentially
@@ -307,7 +306,7 @@ benefits of this approach.
 
 Second, we can see the beginnings of a library of reusable components. The
 round-robin load balancer shown here is completely model-agnostic, and in a
-future version of MUSCLE 3 will become a built-in standard component for general
+future version of MUSCLE3 will become a built-in standard component for general
 use. There are other such components that can be made, such as the duplication
 mapper that MUSCLE 2 already has. With a small extension to MUSCLE, the ``qmc``
 component here can also be made generic and model-agnostic. While some
@@ -319,13 +318,14 @@ The load balancer component described here uses a round-robin algorithm to
 distribute work. This works well in this case, with all model runs taking
 approximately the same amount of compute time. In general however, a more
 flexible algorithm is desirable, which would require another small extension to
-MUSCLE 3. We plan to add this in a future version.
+MUSCLE3. We plan to add this in a future version.
 
 Examples in C++ and Fortran
 ---------------------------
 
-MUSCLE 3 comes with C++ and Fortran versions of this Uncertainty Quantification
-use case. See the C++ or Fortran section for how to run the examples, and the
-``reaction_diffusion_mc_cpp.sh`` and ``reaction_diffusion_mc_fortran.sh``
-scripts respectively. The source code for the components may be found in
-``docs/source/examples/cpp`` and ``docs/source/examples/fortran``.
+MUSCLE3 comes with C++ and Fortran versions of this Uncertainty Quantification
+use case. They can be run like the other models, but use ``rdmc_settings.ymmsl``
+instead of ``rd_settings.ymmsl``. The models themselves are in
+``rdmc_cpp.ymmsl`` and ``rdmc_fortran.ymmsl``. The source code for the
+components may be found in ``docs/source/examples/cpp`` and
+``docs/source/examples/fortran``.

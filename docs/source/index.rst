@@ -3,23 +3,23 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to MUSCLE 3's documentation!
-====================================================
+Welcome to MUSCLE3's documentation!
+===================================
 
-MUSCLE 3 is the third incarnation of the Multiscale Coupling Library and
+MUSCLE3 is the third incarnation of the Multiscale Coupling Library and
 Environment.
 
-With MUSCLE 3, you can connect multiple simulation models together into a
+With MUSCLE3, you can connect multiple simulation models together into a
 multiscale simulation. Simulation models can be as simple as a single Python
 file, or as complex as a combination of multiple separate simulation codes
 written in C++ or Fortran, and running on an HPC machine.
 
-If you use MUSCLE 3 for scientific work, please `cite
-the version of the MUSCLE 3 software you used
+If you use MUSCLE3 for scientific work, please `cite
+the version of the MUSCLE3 software you used
 <https://www.research-software.nl/software/muscle3>`_ and the following paper:
 
 Veen L.E., Hoekstra A.G. (2020) Easing Multiscale Model Design and Coupling
-with MUSCLE 3. In: Krzhizhanovskaya V. et al. (eds) Computational Science –
+with MUSCLE3. In: Krzhizhanovskaya V. et al. (eds) Computational Science –
 ICCS 2020. ICCS 2020.  Lecture Notes in Computer Science, vol 12142. Springer,
 Cham.  `<https://doi.org/10.1007/978-3-030-50433-5_33>`_
 

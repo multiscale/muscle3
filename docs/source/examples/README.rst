@@ -1,42 +1,51 @@
-MUSCLE 3 Examples
-=================
+MUSCLE3 Examples
+================
 
-This directory contains examples for MUSCLE 3. Once you've `installed MUSCLE 3
+This directory contains examples for MUSCLE3. Once you've `installed MUSCLE3
 <https://muscle3.readthedocs.io/en/latest/installing.html>`_, you can build them
-by running Make from this directory, like this:
+by activating the installation and running Make from this directory, like this:
 
 .. code-block: bash
 
-    examples$ MUSCLE3_HOME=/path/to/muscle3 make
+    examples$ . /path/to/muscle3/bin/muscle3.env
+    examples$ make
 
 
-This will build the C++ and Fortran examples, and create a virtualenv for
-running the Python examples and the manager. You can also build for each
-language separately, using
+If this gives an error saying that the ``make`` command could not be found,
+then you need to install GNU make using ``apt-get install make`` and try again.
 
-.. code-block: bash
+This will build the C++ and Fortran examples (if you have a compiler installed),
+and create a virtualenv for running the Python examples and the manager. If you
+have MPI available, then those examples will be built as well.
 
-    examples$ MUSCLE3_HOME=/path/to/muscle3 make python
-    examples$ MUSCLE3_HOME=/path/to/muscle3 make cpp
-    examples$ MUSCLE3_HOME=/path/to/muscle3 make fortran
-
-
-Note that you need to run the Python build in order to be able to run the C++ or
-Fortran examples, as it does the set-up required to run the manager, which you
-always need to run a MUSCLE simulation.
-
-Once you've built the examples, you can run them using the shell scripts in this
-directory, e.g.
+You can also build for each language separately, using
 
 .. code-block: bash
 
-    examples$ MUSCLE3_HOME=/path/to/muscle3 ./reaction_diffusion_cpp.sh
+    examples$ make python
+    examples$ make cpp
+    examples$ make fortran
 
 
-You can also export the ``MUSCLE3_HOME`` variable to avoid having to type it all
-the time:
+Note that the C++ and Fortran builds will run the Python one as well, because
+it does the set-up required to run the manager, which you always need to run a
+MUSCLE3 simulation.
+
+Once you've built the examples, you can run them via the MUSCLE manager. By
+specifying different yMMSL files, different scenarios can be run. The various
+implementations are all listed in the ``rd_implementations.ymmsl`` file. Then
+there are various ``rd_python.ymmsl`` and ``rd_cpp.ymmsl`` and so on files
+which specify different combinations of implementations for the different
+submodels. Finally, you'll want to apply the settings, which are in
+``rd_settings.ymmsl``.
+
+For example, to run the all-Python version of the reaction-diffusion model, you
+can use:
 
 .. code-block: bash
 
-    examples$ export MUSCLE3_HOME=/path/to/muscle3
-    examples$ ./reaction_diffusion_cpp.sh
+    examples$ muscle_manager --start-all rd_implementations.ymmsl rd_python.ymmsl rd_settings.ymmsl
+
+
+Each run will produce a directory named ``run_<model name>_<date>_<time>`` in
+which you can find log files showing what happened.

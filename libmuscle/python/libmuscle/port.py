@@ -2,28 +2,6 @@ from typing import List, Optional
 from ymmsl import Identifier, Operator
 import ymmsl
 
-from libmuscle.operator import operator_from_grpc, operator_to_grpc
-import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
-
-
-# Convert between grpc and ymmsl Port types
-def port_from_grpc(port: mmp.Port) -> ymmsl.Port:
-    return ymmsl.Port(
-            Identifier(port.name),
-            operator_from_grpc(port.operator))
-
-
-def port_to_grpc(port: ymmsl.Port) -> mmp.Port:
-    return mmp.Port(
-            name=str(port.name),
-            operator=operator_to_grpc(port.operator))
-
-
-def optional_port_to_grpc(port: Optional[ymmsl.Port]) -> Optional[mmp.Port]:
-    if port is None:
-        return None
-    return port_to_grpc(port)
-
 
 class Port(ymmsl.Port):
     """Represents a gateway to the outside world.

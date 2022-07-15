@@ -4,6 +4,7 @@
 
 /dist
 /build
+.tox
 .cache
 .pytest_cache
 .mypy_cache

@@ -1,18 +1,17 @@
 from copy import copy
 import logging
 import os
-from pathlib import Path
 import sys
 from typing import cast, Dict, List, Optional, Tuple
 
-import grpc
 from ymmsl import (Identifier, Operator, SettingValue, Port, Reference,
                    Settings)
 
 from libmuscle.communicator import Communicator, Message
 from libmuscle.settings_manager import SettingsManager
+from libmuscle.logging import LogLevel
 from libmuscle.logging_handler import MuscleManagerHandler
-from libmuscle.mcp.message import ClosePort
+from libmuscle.mpp_message import ClosePort
 from libmuscle.mmp_client import MMPClient
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEventType
@@ -26,7 +25,7 @@ _FInitCacheType = Dict[Tuple[str, Optional[int]], Message]
 
 
 class Instance:
-    """Represents a compute element instance in a MUSCLE3 simulation.
+    """Represents a component instance in a MUSCLE3 simulation.
 
     This class provides a low-level send/receive API for the instance
     to use.
@@ -37,7 +36,7 @@ class Instance:
 
         Args:
             ports: A list of port names for each operator of this
-                compute element.
+                component.
         """
         self.__is_shut_down = False
 
@@ -71,7 +70,8 @@ class Instance:
 
         self._register()
         self._connect()
-        self._set_log_level()
+        self._set_local_log_level()
+        self._set_remote_log_level()
 
     def reuse_instance(self, apply_overlay: bool = True) -> bool:
         """Decide whether to run this instance again.
@@ -103,7 +103,7 @@ class Instance:
                 set this to False. If you don't know what that means,
                 just call `reuse_instance()` without specifying this
                 and everything will be fine. If it turns out that you
-                did need to specify False, MUSCLE 3 will tell you about
+                did need to specify False, MUSCLE3 will tell you about
                 it in an error message and you can add it still.
         """
         do_reuse = self.__receive_settings()
@@ -113,7 +113,8 @@ class Instance:
         # At least emit a warning.
         self.__pre_receive_f_init(apply_overlay)
 
-        self._set_log_level()
+        self._set_local_log_level()
+        self._set_remote_log_level()
 
         ports = self._communicator.list_ports()
         f_init_not_connected = all(
@@ -133,6 +134,7 @@ class Instance:
             self.__close_ports()
             self._communicator.shutdown()
             self._deregister()
+            self.__manager.close()
         return do_reuse
 
     def error_shutdown(self, message: str) -> None:
@@ -249,7 +251,7 @@ class Instance:
 
         You should check whether the port is resizable using
         `is_resizable()` first; whether it is depends on how this
-        compute element is wired up, so you should check.
+        component is wired up, so you should check.
 
         Args:
             port: Name of the port to resize.
@@ -318,7 +320,7 @@ class Instance:
         """Receive a message with attached settings overlay.
 
         This function should not be used in submodels. It is intended
-        for use by special compute elements that are ensemble-aware and
+        for use by special component that are ensemble-aware and
         have to pass on overlay settings explicitly.
 
         Receiving is a blocking operation. This function will contact
@@ -356,13 +358,8 @@ class Instance:
         port_list = self.__list_declared_ports()
         self.__manager.register_instance(self._instance_name(), locations,
                                          port_list)
-        try:
-            register_event.stop()
-        except grpc._channel._Rendezvous:
-            # This may happen if we're the last submodel to quit, and the
-            # manager is already gone. Nothing we can do in that case, and this
-            # final Register event will be lost, which is not a big issue.
-            pass
+        register_event.stop()
+        _logger.info('Registered with the manager')
 
     def _connect(self) -> None:
         """Connect this instance to the given peers / conduits.
@@ -373,6 +370,7 @@ class Instance:
         self._communicator.connect(conduits, peer_dims, peer_locations)
         self._settings_manager.base = self.__manager.get_settings()
         connect_event.stop()
+        _logger.info('Received peer locations and base settings')
 
     def _deregister(self) -> None:
         """Deregister this instance from the manager.
@@ -382,6 +380,7 @@ class Instance:
         deregister_event.stop()
         # this is the last thing we'll profile, so flush messages
         self._profiler.shutdown()
+        _logger.info('Deregistered from the manager')
 
     @staticmethod
     def __extract_manager_location() -> str:
@@ -390,7 +389,9 @@ class Instance:
         We use a --muscle-manager=<host:port> argument to tell the
         MUSCLE library how to connect to the manager. This function
         will extract this argument from the command line arguments,
-        if it is present.
+        if it is present. If not, it will check the MUSCLE_MANAGER
+        environment variable, and if that is not set, fall back to
+        the default.
 
         Returns:
             A connection string, or None.
@@ -403,20 +404,21 @@ class Instance:
             if arg.startswith(prefix):
                 return arg[len(prefix):]
 
-        return 'localhost:9000'
+        return os.environ.get('MUSCLE_MANAGER', 'tcp:localhost:9000')
 
     def __set_up_logging(self) -> None:
         """Adds logging handlers for one or more instances.
         """
         id_str = str(self._instance_name())
 
-        logfile = extract_log_file_location(
-                Path.cwd(), 'muscle3.{}.log'.format(id_str))
-        local_handler = logging.FileHandler(str(logfile), mode='w')
-        formatter = logging.Formatter('%(asctime)-15s: %(name)s'
-                                      ' %(levelname)s: %(message)s')
-        local_handler.setFormatter(formatter)
-        logging.getLogger().addHandler(local_handler)
+        logfile = extract_log_file_location('muscle3.{}.log'.format(id_str))
+        if logfile is not None:
+            local_handler = logging.FileHandler(str(logfile), mode='w')
+            formatter = logging.Formatter(
+                    '%(asctime)-15s: %(levelname)-7s %(name)s: %(message)s')
+            local_handler.setFormatter(formatter)
+            logging.getLogger('libmuscle').addHandler(local_handler)
+            logging.getLogger('ymmsl').addHandler(local_handler)
 
         if self.__manager is not None:
             self._mmp_handler = MuscleManagerHandler(id_str, logging.WARNING,
@@ -486,14 +488,14 @@ class Instance:
         """Returns instance name and index.
 
         This takes the argument to the --muscle-instance= command-line
-        option and splits it into a compute element name and an index.
+        option and splits it into a component name and an index.
         """
         def split_reference(ref: Reference) -> Tuple[Reference, List[int]]:
             index = list()     # type: List[int]
             i = 0
             while i < len(ref) and isinstance(ref[i], Identifier):
                 i += 1
-            name = cast(Reference, ref[:i])
+            name = ref[:i]
 
             while i < len(ref) and isinstance(ref[i], int):
                 index.append(cast(int, ref[i]))
@@ -546,8 +548,7 @@ class Instance:
         if not self._communicator.port_exists(port_name):
             err_msg = (('Port "{}" does not exist on "{}". Please check'
                         ' the name and the list of ports you gave for'
-                        ' this compute element.').format(port_name,
-                                                         self._name))
+                        ' this component.').format(port_name, self._name))
             self.__shutdown(err_msg)
             raise RuntimeError(err_msg)
 
@@ -594,7 +595,7 @@ class Instance:
         self._f_init_cache = dict()
         ports = self._communicator.list_ports()
         for port_name in ports.get(Operator.F_INIT, []):
-            _logger.info('Pre-receiving on port {}'.format(port_name))
+            _logger.debug('Pre-receiving on port {}'.format(port_name))
             port = self._communicator.get_port(port_name)
             if not port.is_connected():
                 continue
@@ -607,7 +608,7 @@ class Instance:
                 for slot in range(1, port.get_length()):
                     pre_receive(port_name, slot)
 
-    def _set_log_level(self) -> None:
+    def _set_remote_log_level(self) -> None:
         """Sets the remote log level.
 
         This is the minimum level a message must have to be sent to
@@ -621,24 +622,55 @@ class Instance:
         try:
             log_level_str = cast(
                     str, self.get_setting('muscle_remote_log_level', 'str'))
-            level_map = {
-                    'CRITICAL': logging.CRITICAL,
-                    'ERROR': logging.ERROR,
-                    'WARNING': logging.WARNING,
-                    'INFO': logging.INFO,
-                    'DEBUG': logging.DEBUG}
+        except KeyError:
+            # muscle_remote_log_level not set, do nothing and keep the default
+            return
 
-            if log_level_str.upper() not in level_map:
+        try:
+            log_level = LogLevel[log_level_str.upper()]
+            if log_level == LogLevel.LOCAL:
+                raise KeyError()
+
+            py_level = log_level.as_python_level()
+            self._mmp_handler.setLevel(py_level)
+            if not logging.getLogger().isEnabledFor(py_level):
+                logging.getLogger().setLevel(py_level)
+
+        except KeyError:
+            _logger.warning(
+                ('muscle_remote_log_level is set to {}, which is not a'
+                 ' valid remote log level. Please use one of DEBUG, INFO,'
+                 ' WARNING, ERROR, CRITICAL, or DISABLED').format(
+                     log_level_str))
+            return
+
+    def _set_local_log_level(self) -> None:
+        """Sets the local log level.
+
+        This sets the local log level for libmuscle and ymmsl, from the
+        muscle_local_log_level setting.
+
+        It also attaches a FileHandler which outputs to a local file named
+        after the instance. This name can be overridden by the
+        --muscle-log-file command line option.
+
+        """
+        try:
+            log_level_str = cast(
+                    str, self.get_setting('muscle_local_log_level', 'str'))
+
+            log_level = LogLevel[log_level_str.upper()]
+            if log_level is None:
                 _logger.warning(
                     ('muscle_remote_log_level is set to {}, which is not a'
                      ' valid log level. Please use one of DEBUG, INFO,'
-                     ' WARNING, ERROR, or CRITICAL').format(log_level_str))
+                     ' WARNING, ERROR, CRITICAL, or DISABLED').format(
+                         log_level_str))
                 return
 
-            log_level = level_map[log_level_str]
-            self._mmp_handler.setLevel(log_level)
-            if not logging.getLogger().isEnabledFor(log_level):
-                logging.getLogger().setLevel(log_level)
+            py_level = log_level.as_python_level()
+            logging.getLogger('libmuscle').setLevel(py_level)
+            logging.getLogger('ymmsl').setLevel(py_level)
         except KeyError:
             # muscle_remote_log_level not set, do nothing and keep the default
             pass
@@ -757,4 +789,5 @@ class Instance:
             self.__close_ports()
             self._communicator.shutdown()
             self._deregister()
+            self.__manager.close()
             self.__is_shut_down = True

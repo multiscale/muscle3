@@ -1,23 +1,8 @@
 from pathlib import Path
 import sys
-from typing import Generator, List, cast
+from typing import Generator, List, Optional, cast
 
-from ymmsl import Conduit, Reference
-
-import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
-
-
-def conduit_to_grpc(conduit: Conduit) -> mmp.Conduit:
-    """Converts a ymmsl.Conduit to the corresponding mmp.Conduit.
-
-    Args:
-        conduit: A conduit.
-
-    Returns:
-        The same conduit, but grpc type.
-    """
-    return mmp.Conduit(sender=str(conduit.sender),
-                       receiver=str(conduit.receiver))
+from ymmsl import Reference
 
 
 def instance_to_kernel(instance: Reference) -> Reference:
@@ -30,9 +15,9 @@ def instance_to_kernel(instance: Reference) -> Reference:
         The name of its kernel.
     """
     i = len(instance)
-    while isinstance(instance[i-1], int):
+    while isinstance(instance[i - 1], int):
         i -= 1
-    return cast(Reference, instance[:i])
+    return instance[:i]
 
 
 def instance_indices(instance: Reference) -> List[int]:
@@ -45,7 +30,7 @@ def instance_indices(instance: Reference) -> List[int]:
         The name of its kernel.
     """
     i = len(instance)
-    while isinstance(instance[i-1], int):
+    while isinstance(instance[i - 1], int):
         i -= 1
 
     # Note that the slice operator on References returns a Reference,
@@ -90,7 +75,7 @@ def increment_index(index: List[int], dims: List[int]) -> bool:
     return False
 
 
-def extract_log_file_location(run_dir: Path, filename: str) -> Path:
+def extract_log_file_location(filename: str) -> Optional[Path]:
     """Gets the log file location from the command line.
 
     Extracts the --muscle-log-file=<path> argument to tell the
@@ -100,11 +85,9 @@ def extract_log_file_location(run_dir: Path, filename: str) -> Path:
     directory, <filename> will be written inside of that directory,
     if the path is not an existing directory, then it will be used
     as the name of the log file to write to. If no command line
-    argument is given, <filename> will be written in the specified
-    directory.
+    argument is given, this function returns None.
 
     Args:
-        run_dir: Default directory to use.
         filename: Default file name to use.
 
     Returns:
@@ -114,13 +97,13 @@ def extract_log_file_location(run_dir: Path, filename: str) -> Path:
     # just one option from the command line and ignore the rest.
     # So we do it by hand.
     prefix = '--muscle-log-file='
-    given_path_str = ''
+    given_path_str = None
     for arg in sys.argv[1:]:
         if arg.startswith(prefix):
             given_path_str = arg[len(prefix):]
 
-    if given_path_str == '':
-        return run_dir / filename
+    if not given_path_str:
+        return None
 
     given_path = Path(given_path_str)
 

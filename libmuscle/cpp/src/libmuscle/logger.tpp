@@ -1,14 +1,25 @@
+#include <iostream>
+#include <ostream>
 #include <sstream>
 
 namespace libmuscle { namespace impl {
 
 template <typename... Args>
 void Logger::log(LogLevel level, Args... args) {
-    if (level >= remote_level_) {
+    if ((level >= local_level_) || (level >= remote_level_)) {
+        auto ts = Timestamp::now();
         std::ostringstream oss;
         append_args_(oss, args...);
-        LogMessage msg(instance_id_, Timestamp::now(), level, oss.str());
-        manager_.submit_log_message(msg);
+
+        if (level >= local_level_) {
+            (*local_log_stream_) << instance_id_ << " " << ts << " " << level;
+            (*local_log_stream_) << ": " << oss.str() << std::endl;
+        }
+
+        if (level >= remote_level_) {
+            LogMessage msg(instance_id_, Timestamp::now(), level, oss.str());
+            manager_.submit_log_message(msg);
+        }
     }
 }
 

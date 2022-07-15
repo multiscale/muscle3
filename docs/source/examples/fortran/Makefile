@@ -1,7 +1,11 @@
 .PHONY: all
 all:
-	make -C build all
+	$(MAKE) -C build all
+
+.PHONY: mpi
+mpi:
+	$(MAKE) -C build mpi
 
 .PHONY: clean
 clean:
-	make -C build clean
+	$(MAKE) -C build clean

@@ -1,37 +1,46 @@
 """A simple runner for Python-only models.
 
-Starting instances is out of scope for MUSCLE 3, but is also very
+Starting instances is out of scope for MUSCLE3, but is also very
 useful for testing and prototyping. So we have a little bit of
 support for it in this module.
 """
+import logging
 import multiprocessing as mp
+import multiprocessing.connection as mpc
 import sys
 from typing import Callable, Dict, List, Tuple, cast
 
 from ymmsl import Configuration, Identifier, Model, Reference
 
-from libmuscle.mcp import pipe_multiplexer as mux
 from libmuscle.util import generate_indices
-from libmuscle.manager.manager import start_server
+from libmuscle.manager.manager import Manager
 
 
 __all__ = ['run_simulation']
 
 
-Pipe = Tuple[mp.connection.Connection, mp.connection.Connection]
+_logger = logging.getLogger(__name__)
+
+
+Pipe = Tuple[mpc.Connection, mpc.Connection]
 
 
 class MMPServerController:
-    def __init__(self, process: mp.Process, control_pipe: Pipe) -> None:
+    def __init__(
+            self, process: mp.Process, control_pipe: Pipe,
+            manager_location: str) -> None:
         """Create an MMPServerController.
 
         This class controls a manager running in a separate process.
 
         Args:
-            pipe: The control pipe for the server process.
+            process: The process the server is running in
+            control_pipe: The control pipe for the server process
+            manager_location: Network location of the manager
         """
         self._process = process
         self._control_pipe = control_pipe
+        self.manager_location = manager_location
 
     def stop(self) -> None:
         """Stop the server process.
@@ -52,13 +61,13 @@ def manager_process(control_pipe: Pipe, configuration: Configuration) -> None:
         configuration: The configuration to run.
     """
     control_pipe[0].close()
-    server = start_server(configuration)
-    control_pipe[1].send(True)
+    manager = Manager(configuration)
+    control_pipe[1].send(manager.get_server_location())
 
     # wait for shutdown command
     control_pipe[1].recv()
     control_pipe[1].close()
-    server.stop()
+    manager.stop()
 
 
 def start_server_process(configuration: Configuration) -> MMPServerController:
@@ -77,12 +86,14 @@ def start_server_process(configuration: Configuration) -> MMPServerController:
     process.start()
     control_pipe[1].close()
     # wait for start
-    control_pipe[0].recv()
+    manager_location = control_pipe[0].recv()
 
-    return MMPServerController(process, control_pipe)
+    return MMPServerController(process, control_pipe, manager_location)
 
 
-def implementation_process(instance_id: str, implementation: Callable) -> None:
+def implementation_process(
+        instance_id: str, manager_location: str,
+        implementation: Callable) -> None:
     prefix_tag = '--muscle-prefix='
     name_prefix = str()
     index_prefix = list()   # type: List[int]
@@ -105,8 +116,39 @@ def implementation_process(instance_id: str, implementation: Callable) -> None:
     else:
         sys.argv.append('--muscle-instance={}'.format(instance_id))
 
-    # chain call
-    implementation()
+    for arg in sys.argv:
+        if arg.startswith('--muscle-manager='):
+            break
+    else:
+        sys.argv.append(f'--muscle-manager={manager_location}')
+
+    with open(f'muscle3.{instance}.log', 'w') as log_file:
+        # Redirect an already-configured standard logging setup
+        # Logger.handlers and StreamHandler.stream are private, so this
+        # is dangerous in theory. But this part of the logging code
+        # hasn't changed in two decades, and we can use introspection to
+        # avoid crashes, so in practice, it'll work.
+        root_logger = logging.getLogger()
+        if hasattr(root_logger, 'handlers'):
+            for h in root_logger.handlers:
+                if isinstance(h, logging.StreamHandler):
+                    if hasattr(h, 'stream'):
+                        if h.stream == sys.stderr:
+                            h.stream = log_file
+                        elif h.stream == sys.stdout:
+                            h.stream = log_file
+
+        sys.stderr = log_file
+        sys.stdout = log_file
+
+        # chain call
+        try:
+            implementation()
+        except Exception:
+            _logger.exception(
+                    f'Component {instance} crashed, please check the log file'
+                    ' for error messages')
+            raise
 
 
 def _parse_prefix(prefix: str) -> Tuple[str, List[int]]:
@@ -174,7 +216,7 @@ def _split_reference(ref: Reference) -> Tuple[Reference, List[int]]:
     i = 0
     while i < len(ref) and isinstance(ref[i], Identifier):
         i += 1
-    name = cast(Reference, ref[:i])
+    name = ref[:i]
 
     while i < len(ref) and isinstance(ref[i], int):
         index.append(cast(int, ref[i]))
@@ -183,7 +225,8 @@ def _split_reference(ref: Reference) -> Tuple[Reference, List[int]]:
     return name, index
 
 
-def run_instances(instances: Dict[str, Callable]) -> None:
+def run_instances(
+        instances: Dict[str, Callable], manager_location: str) -> None:
     """Runs the given instances and waits for them to finish.
 
     The instances are described in a dictionary with their instance
@@ -192,31 +235,24 @@ def run_instances(instances: Dict[str, Callable]) -> None:
     will be run in a separate process.
 
     Args:
-        instances: A dictionary of instances to run.
+        instances: A dictionary of instances to run
+        manager_location: Network location of the manager
     """
     instance_processes = list()
     for instance_id_str, implementation in instances.items():
-        mux.add_instance(Reference(instance_id_str))
-
-    for instance_id_str, implementation in instances.items():
         instance_id = Reference(instance_id_str)
-        process = mp.Process(target=implementation_process,
-                             args=(instance_id_str, implementation),
-                             name='Instance-{}'.format(instance_id))
+        process = mp.Process(
+                target=implementation_process,
+                args=(instance_id_str, manager_location, implementation),
+                name='Instance-{}'.format(instance_id))
         process.start()
-        mux.close_instance_ends(instance_id)
         instance_processes.append(process)
-
-    mux_process = mp.Process(target=mux.run, name='PipeCommMultiplexer')
-    mux_process.start()
-    mux.close_all_pipes()
 
     failed_processes = list()
     for instance_process in instance_processes:
         instance_process.join()
         if instance_process.exitcode != 0:
             failed_processes.append(instance_process)
-    mux_process.join()
 
     if len(failed_processes) > 0:
         failed_names = map(lambda x: x.name, failed_processes)
@@ -245,6 +281,8 @@ def run_simulation(
         raise ValueError('The model description does not include a model'
                          ' definition, so the simulation can not be run.')
 
+    configuration.model.check_consistent()
+
     instances = dict()
     for ce in configuration.model.components:
         impl_name = str(ce.implementation)
@@ -263,6 +301,6 @@ def run_simulation(
 
     controller = start_server_process(configuration)
     try:
-        run_instances(instances)
+        run_instances(instances, controller.manager_location)
     finally:
         controller.stop()

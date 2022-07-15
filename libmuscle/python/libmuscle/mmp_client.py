@@ -1,14 +1,12 @@
 from random import uniform
 from time import perf_counter, sleep
-from typing import Dict, Iterable, List, Tuple
+from typing import Any, Dict, Iterable, List, Tuple
 
-import grpc
-from ymmsl import Conduit, Port, Reference, Settings
+import msgpack
+from ymmsl import Conduit, Operator, Port, Reference, Settings
 
-import muscle_manager_protocol.muscle_manager_protocol_pb2 as mmp
-import muscle_manager_protocol.muscle_manager_protocol_pb2_grpc as mmp_grpc
-
-from libmuscle.port import port_to_grpc
+from libmuscle.mcp.protocol import RequestType, ResponseType
+from libmuscle.mcp.tcp_transport_client import TcpTransportClient
 from libmuscle.profiling import ProfileEvent
 from libmuscle.logging import LogMessage
 
@@ -19,43 +17,58 @@ PEER_INTERVAL_MIN = 5.0
 PEER_INTERVAL_MAX = 10.0
 
 
-def conduit_from_grpc(conduit: mmp.Conduit) -> Conduit:
-    """Converts a Conduit from grpc to ymmsl.
+def encode_operator(op: Operator) -> str:
+    """Convert an Operator to a MsgPack-compatible value."""
+    return op.name
+
+
+def encode_port(port: Port) -> List[str]:
+    """Convert a Port to a MsgPack-compatible value."""
+    return [str(port.name), encode_operator(port.operator)]
+
+
+def encode_profile_event(event: ProfileEvent) -> Any:
+    """Converts a ProfileEvent to a list.
 
     Args:
-        conduit: A conduit.
+        event: A profile event
 
     Returns:
-        The same conduit, as ymmsl.Conduit.
+        A list with its attributes, for MMP serialisation.
     """
-    return Conduit(conduit.sender, conduit.receiver)
+    encoded_port = encode_port(event.port) if event.port else None
+    return [
+            str(event.instance_id),
+            event.start_time.seconds, event.stop_time.seconds,
+            event.event_type.value,
+            encoded_port, event.port_length, event.slot,
+            event.message_size]
 
 
 class MMPClient():
     """The client for the MUSCLE Manager Protocol.
 
-    This class connects to the Manager and communicates with it on \
+    This class connects to the Manager and communicates with it on
     behalf of the rest of libmuscle.
 
-    It manages the connection, and converts between our native types \
+    It manages the connection, and converts between our native types
     and the gRPC generated types.
     """
     def __init__(self, location: str) -> None:
-        """Create an MMPClient.
+        """Create an MMPClient
 
         Args:
             location: A connection string of the form hostname:port
         """
-        channel = grpc.insecure_channel(location)
-        ready = grpc.channel_ready_future(channel)
-        try:
-            ready.result(timeout=CONNECTION_TIMEOUT)
-        except grpc.FutureTimeoutError:
-            ready.cancel()
-            channel.close()
-            raise RuntimeError('Failed to connect to the MUSCLE manager')
+        self._transport_client = TcpTransportClient(location)
 
-        self.__client = mmp_grpc.MuscleManagerStub(channel)
+    def close(self) -> None:
+        """Close the connection
+
+        This closes the connection. After this no other member
+        functions can be called.
+        """
+        self._transport_client.close()
 
     def submit_log_message(self, message: LogMessage) -> None:
         """Send a log message to the manager.
@@ -63,7 +76,11 @@ class MMPClient():
         Args:
             message: The message to send.
         """
-        self.__client.SubmitLogMessage(message.to_grpc())
+        request = [
+                RequestType.SUBMIT_LOG_MESSAGE.value,
+                message.instance_id, message.timestamp.seconds,
+                message.level.value, message.text]
+        self._call_manager(request)
 
     def submit_profile_events(self, events: Iterable[ProfileEvent]) -> None:
         """Sends profiling events to the manager.
@@ -71,8 +88,10 @@ class MMPClient():
         Args:
             events: The events to send.
         """
-        self.__client.SubmitProfileEvents(mmp.Profile(events=[
-            e.to_grpc() for e in events]))
+        request = [
+                RequestType.SUBMIT_PROFILE_EVENTS.value,
+                [encode_profile_event(e) for e in events]]
+        self._call_manager(request)
 
     def get_settings(self) -> Settings:
         """Get the central settings from the manager.
@@ -80,31 +99,13 @@ class MMPClient():
         Returns:
             The requested settings.
         """
-        LLF = mmp.SETTING_VALUE_TYPE_LIST_LIST_FLOAT
-        result = self.__client.RequestSettings(mmp.SettingsRequest())
-        settings = Settings()
-        for setting in result.setting_values:
-            if setting.value_type == mmp.SETTING_VALUE_TYPE_STRING:
-                settings[setting.name] = setting.value_string
-            elif setting.value_type == mmp.SETTING_VALUE_TYPE_INT:
-                settings[setting.name] = setting.value_int
-            elif setting.value_type == mmp.SETTING_VALUE_TYPE_FLOAT:
-                settings[setting.name] = setting.value_float
-            elif setting.value_type == mmp.SETTING_VALUE_TYPE_BOOL:
-                settings[setting.name] = setting.value_bool
-            elif setting.value_type == mmp.SETTING_VALUE_TYPE_LIST_FLOAT:
-                settings[setting.name] = list(
-                        setting.value_list_float.values)
-            elif setting.value_type == LLF:
-                rows = list()   # type: List[List[float]]
-                for mmp_row in setting.value_list_list_float.values:
-                    rows.append(list(mmp_row.values))
-                settings[setting.name] = rows
-        return settings
+        request = [RequestType.GET_SETTINGS.value]
+        response = self._call_manager(request)
+        return Settings(response[1])
 
     def register_instance(self, name: Reference, locations: List[str],
                           ports: List[Port]) -> None:
-        """Register a compute element instance with the manager.
+        """Register a component instance with the manager.
 
         Args:
             name: Name of the instance in the simulation.
@@ -112,17 +113,20 @@ class MMPClient():
                     reached.
             ports: List of ports of this instance.
         """
-        grpc_ports = map(port_to_grpc, ports)
-        request = mmp.RegistrationRequest(
-                instance_name=str(name),
-                network_locations=locations,
-                ports=grpc_ports)
-        self.__client.RegisterInstance(request)
+        request = [
+                RequestType.REGISTER_INSTANCE.value,
+                str(name), locations,
+                [encode_port(p) for p in ports]]
+        response = self._call_manager(request)
+        if len(response) > 1:
+            raise RuntimeError(
+                    f'Error registering instance: {response[1]}')
 
-    def request_peers(self, name: Reference
-                      ) -> Tuple[List[Conduit],
-                                 Dict[Reference, List[int]],
-                                 Dict[Reference, List[str]]]:
+    def request_peers(
+            self, name: Reference) -> Tuple[
+                    List[Conduit],
+                    Dict[Reference, List[int]],
+                    Dict[Reference, List[str]]]:
         """Request connection information about peers.
 
         This will repeat the request at an exponentially increasing
@@ -144,47 +148,63 @@ class MMPClient():
         """
         sleep_time = 0.1
         start_time = perf_counter()
-        request = mmp.PeerRequest(instance_name=str(name))
-        result = self.__client.RequestPeers(request)
-        while (result.status == mmp.RESULT_STATUS_PENDING and
+
+        request = [RequestType.GET_PEERS.value, str(name)]
+        response = self._call_manager(request)
+
+        while (response[0] == ResponseType.PENDING.value and
                perf_counter() < start_time + PEER_TIMEOUT and
                sleep_time < PEER_INTERVAL_MIN):
             sleep(sleep_time)
-            result = self.__client.RequestPeers(request)
+            response = self._call_manager(request)
             sleep_time *= 1.5
 
-        while (result.status == mmp.RESULT_STATUS_PENDING and
+        while (response[0] == ResponseType.PENDING.value and
                perf_counter() < start_time + PEER_TIMEOUT):
             sleep(uniform(PEER_INTERVAL_MIN, PEER_INTERVAL_MAX))
-            result = self.__client.RequestPeers(request)
+            response = self._call_manager(request)
 
-        if result.status == mmp.RESULT_STATUS_PENDING:
+        if response[0] == ResponseType.PENDING.value:
             raise RuntimeError('Timeout waiting for peers to appear')
 
-        if result.status == mmp.RESULT_STATUS_ERROR:
+        if response[0] == ResponseType.ERROR.value:
             raise RuntimeError('Error getting peers from manager: {}'.format(
-                    result.error_message))
+                    response[1]))
 
-        conduits = list(map(conduit_from_grpc, result.conduits))
+        conduits = [Conduit(snd, recv) for snd, recv in response[1]]
 
-        peer_dimensions = dict()
-        for peer_dimension in result.peer_dimensions:
-            peer_dimensions[peer_dimension.peer_name] = \
-                    peer_dimension.dimensions
+        peer_dimensions = {
+                Reference(component): dims
+                for component, dims in response[2].items()}
 
-        peer_locations = dict()
-        for peer_location in result.peer_locations:
-            peer_locations[peer_location.instance_name] = \
-                    peer_location.locations
+        peer_locations = {
+                Reference(instance): locs
+                for instance, locs in response[3].items()}
 
         return conduits, peer_dimensions, peer_locations
 
     def deregister_instance(self, name: Reference) -> None:
-        """Deregister a compute element instance with the manager.
+        """Deregister a component instance with the manager.
 
         Args:
             name: Name of the instance in the simulation.
         """
-        request = mmp.DeregistrationRequest(
-                instance_name=str(name))
-        self.__client.DeregisterInstance(request)
+        request = [RequestType.DEREGISTER_INSTANCE.value, str(name)]
+        response = self._call_manager(request)
+
+        if response[0] == ResponseType.ERROR.value:
+            raise RuntimeError('Error deregistering instance: {}'.format(
+                    response[1]))
+
+    def _call_manager(self, request: Any) -> Any:
+        """Call the manager and do en/decoding.
+
+        Args:
+            request: The request to encode and send
+
+        Returns:
+            The decoded response
+        """
+        encoded_request = msgpack.packb(request, use_bin_type=True)
+        response = self._transport_client.call(encoded_request)
+        return msgpack.unpackb(response, raw=False)

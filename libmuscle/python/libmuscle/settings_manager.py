@@ -1,4 +1,4 @@
-from typing import cast, Optional
+from typing import Optional
 
 from ymmsl import SettingValue, Reference, Settings
 
@@ -44,7 +44,7 @@ def has_setting_type(value: SettingValue, typ: str) -> bool:
 
 
 class SettingsManager:
-    """Manages the current settings for a compute element instance.
+    """Manages the current settings for a component instance.
     """
     def __init__(self) -> None:
         """Create a SettingsManager.
@@ -84,7 +84,7 @@ class SettingsManager:
         """
         for i in range(len(instance), -1, -1):
             if i > 0:
-                name = cast(Reference, instance[:i]) + setting_name
+                name = instance[:i] + setting_name
             else:
                 name = setting_name
 

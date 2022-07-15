@@ -27,5 +27,5 @@ class MuscleManagerHandler(logging.Handler):
     def emit(self, record: logging.LogRecord) -> None:
         message = LogMessage(self._instance_id, Timestamp(record.created),
                              LogLevel.from_python_level(record.levelno),
-                             record.message)
+                             record.msg)
         self._manager.submit_log_message(message)

@@ -32,7 +32,7 @@ class PeerManager {
          *
          * @param kernel The kernel for the instance whose peers we're managing.
          * @param index The index of the instance whose peers we're managing.
-         * @param conduits A list of conduits attached to this compute element,
+         * @param conduits A list of conduits attached to this component,
          *      as received from the manager.
          * @param peer_dims For each peer we share a conduit with, the dimensions
          *      of the instance set.

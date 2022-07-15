@@ -1,7 +1,7 @@
 API Documentation for C++
 =========================
 
-This page provides full documentation for the C++ API of MUSCLE 3.
+This page provides full documentation for the C++ API of MUSCLE3.
 
 Note that in a few places, classes are referred to as
 ``libmuscle::impl::<class>``. This is a bug in the documentation rendering

@@ -1,7 +1,7 @@
 // Inject mocks
 #define LIBMUSCLE_MOCK_LOGGER <mocks/mock_logger.hpp>
-#define LIBMUSCLE_MOCK_MCP_TCP_CLIENT <mocks/mcp/mock_tcp_client.hpp>
-#define LIBMUSCLE_MOCK_MCP_TCP_SERVER <mocks/mcp/mock_tcp_server.hpp>
+#define LIBMUSCLE_MOCK_MPP_CLIENT <mocks/mock_mpp_client.hpp>
+#define LIBMUSCLE_MOCK_MCP_TCP_TRANSPORT_SERVER <mocks/mcp/mock_tcp_transport_server.hpp>
 #define LIBMUSCLE_MOCK_PEER_MANAGER <mocks/mock_peer_manager.hpp>
 #define LIBMUSCLE_MOCK_POST_OFFICE <mocks/mock_post_office.hpp>
 
@@ -12,11 +12,12 @@
 #include <libmuscle/communicator.cpp>
 #include <libmuscle/data.cpp>
 #include <libmuscle/endpoint.cpp>
-#include <libmuscle/operator.cpp>
 #include <libmuscle/mcp/data_pack.cpp>
-#include <libmuscle/mcp/message.cpp>
-#include <libmuscle/mcp/client.cpp>
-#include <libmuscle/mcp/server.cpp>
+#include <libmuscle/mpp_message.cpp>
+#include <libmuscle/mcp/tcp_transport_client.cpp>
+#include <libmuscle/mcp/tcp_util.cpp>
+#include <libmuscle/mcp/transport_client.cpp>
+#include <libmuscle/mcp/transport_server.cpp>
 #include <libmuscle/message.cpp>
 #include <libmuscle/port.cpp>
 
@@ -24,8 +25,8 @@
 #include <mocks/mock_logger.cpp>
 #include <mocks/mock_peer_manager.cpp>
 #include <mocks/mock_post_office.cpp>
-#include <mocks/mcp/mock_tcp_client.cpp>
-#include <mocks/mcp/mock_tcp_server.cpp>
+#include <mocks/mock_mpp_client.cpp>
+#include <mocks/mcp/mock_tcp_transport_server.cpp>
 
 
 // Test code dependencies
@@ -33,8 +34,8 @@
 #include <stdexcept>
 #include <gtest/gtest.h>
 #include <libmuscle/communicator.hpp>
-#include <mocks/mcp/mock_tcp_client.hpp>
-#include <mocks/mcp/mock_tcp_server.hpp>
+#include <mocks/mock_mpp_client.hpp>
+#include <mocks/mcp/mock_tcp_transport_server.hpp>
 #include <mocks/mock_logger.hpp>
 #include <mocks/mock_peer_manager.hpp>
 
@@ -50,8 +51,8 @@ using libmuscle::impl::MockPostOffice;
 using libmuscle::impl::Port;
 using libmuscle::impl::PortsDescription;
 using libmuscle::impl::Message;
-using libmuscle::impl::mcp::MockTcpClient;
-using libmuscle::impl::mcp::MockTcpServer;
+using libmuscle::impl::MockMPPClient;
+using libmuscle::impl::mcp::MockTcpTransportServer;
 
 using ymmsl::Conduit;
 using ymmsl::Reference;
@@ -85,8 +86,8 @@ using libmuscle::impl::TestCommunicator;
  */
 void reset_mocks() {
     MockPeerManager::reset();
-    MockTcpClient::reset();
-    MockTcpServer::reset();
+    MockMPPClient::reset();
+    MockTcpTransportServer::reset();
 }
 
 MockLogger & mock_logger() {
@@ -169,9 +170,8 @@ TEST(libmuscle_communicator, create_communicator) {
     reset_mocks();
     Communicator comm(
             Reference("kernel"), {13}, {}, mock_logger(), 0);
-    ASSERT_EQ(MockTcpServer::num_constructed, 1);
-    ASSERT_EQ(MockTcpServer::last_instance_id, "kernel[13]");
-    ASSERT_EQ(MockTcpClient::num_constructed, 0);
+    ASSERT_EQ(MockTcpTransportServer::num_constructed, 1);
+    ASSERT_EQ(MockMPPClient::num_constructed, 0);
 }
 
 TEST(libmuscle_communicator, get_locations) {
@@ -504,13 +504,13 @@ TEST(libmuscle_communicator, close_port) {
 
 TEST(libmuscle_communicator, receive_message) {
     reset_mocks();
-    MockTcpClient::next_receive_message.sender = "other.out[13]";
-    MockTcpClient::next_receive_message.receiver = "kernel[13].in";
+    MockMPPClient::next_receive_message.sender = "other.out[13]";
+    MockMPPClient::next_receive_message.receiver = "kernel[13].in";
 
     auto comm = connected_communicator();
     Message msg = comm->receive_message("in");
 
-    ASSERT_EQ(MockTcpClient::last_receiver, "kernel[13].in");
+    ASSERT_EQ(MockMPPClient::last_receiver, "kernel[13].in");
     ASSERT_TRUE(msg.data().is_a_dict());
     ASSERT_EQ(msg.data()["test1"].as<int>(), 12);
 }
@@ -546,27 +546,27 @@ TEST(libmuscle_communicator, receive_on_invalid_port) {
 
 TEST(libmuscle_communicator, receive_message_with_slot) {
     reset_mocks();
-    MockTcpClient::next_receive_message.sender = "kernel[13].out";
-    MockTcpClient::next_receive_message.receiver = "other.in[13]";
+    MockMPPClient::next_receive_message.sender = "kernel[13].out";
+    MockMPPClient::next_receive_message.receiver = "other.in[13]";
 
     auto comm = connected_communicator2();
     Message msg = comm->receive_message("in", 13);
 
-    ASSERT_EQ(MockTcpClient::last_receiver, "other.in[13]");
+    ASSERT_EQ(MockMPPClient::last_receiver, "other.in[13]");
     ASSERT_TRUE(msg.data().is_a_dict());
     ASSERT_EQ(msg.data()["test1"].as<int>(), 12);
 }
 
 TEST(libmuscle_communicator, receive_message_resizable) {
     reset_mocks();
-    MockTcpClient::next_receive_message.sender = "other.out[13]";
-    MockTcpClient::next_receive_message.receiver = "kernel.in[13]";
-    MockTcpClient::next_receive_message.port_length = 20;
+    MockMPPClient::next_receive_message.sender = "other.out[13]";
+    MockMPPClient::next_receive_message.receiver = "kernel.in[13]";
+    MockMPPClient::next_receive_message.port_length = 20;
 
     auto comm = connected_communicator3();
     Message msg = comm->receive_message("in", 13);
 
-    ASSERT_EQ(MockTcpClient::last_receiver, "kernel.in[13]");
+    ASSERT_EQ(MockMPPClient::last_receiver, "kernel.in[13]");
     ASSERT_TRUE(msg.data().is_a_dict());
     ASSERT_EQ(msg.data()["test1"].as<int>(), 12);
     ASSERT_EQ(comm->get_port("in").get_length(), 20);
@@ -574,13 +574,13 @@ TEST(libmuscle_communicator, receive_message_resizable) {
 
 TEST(libmuscle_communicator, receive_with_settings) {
     reset_mocks();
-    MockTcpClient::next_receive_message.sender = "other.out[13]";
-    MockTcpClient::next_receive_message.receiver = "kernel[13].in";
+    MockMPPClient::next_receive_message.sender = "other.out[13]";
+    MockMPPClient::next_receive_message.receiver = "kernel[13].in";
 
     auto comm = connected_communicator();
     Message msg = comm->receive_message("in");
 
-    ASSERT_EQ(MockTcpClient::last_receiver, "kernel[13].in");
+    ASSERT_EQ(MockMPPClient::last_receiver, "kernel[13].in");
     ASSERT_TRUE(msg.data().is_a_dict());
     ASSERT_EQ(msg.data()["test1"].as<int>(), 12);
     ASSERT_EQ(msg.settings().at("test2"), 3.1);
@@ -588,13 +588,13 @@ TEST(libmuscle_communicator, receive_with_settings) {
 
 TEST(libmuscle_communicator, receive_message_with_slot_and_settings) {
     reset_mocks();
-    MockTcpClient::next_receive_message.sender = "kernel[13].out";
-    MockTcpClient::next_receive_message.receiver = "other.in[13]";
+    MockMPPClient::next_receive_message.sender = "kernel[13].out";
+    MockMPPClient::next_receive_message.receiver = "other.in[13]";
 
     auto comm = connected_communicator2();
     Message msg = comm->receive_message("in", 13);
 
-    ASSERT_EQ(MockTcpClient::last_receiver, "other.in[13]");
+    ASSERT_EQ(MockMPPClient::last_receiver, "other.in[13]");
     ASSERT_TRUE(msg.data().is_a_dict());
     ASSERT_EQ(msg.data()["test1"].as<int>(), 12);
     ASSERT_EQ(msg.settings().at("test2"), 3.1);

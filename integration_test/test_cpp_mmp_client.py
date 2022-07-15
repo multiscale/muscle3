@@ -1,21 +1,18 @@
 import multiprocessing as mp
+import os
 from pathlib import Path
 import subprocess
 
 import ymmsl
-from ymmsl import Port, Reference
+from ymmsl import Operator, Port, Reference
 
-from libmuscle.manager.instance_registry import InstanceRegistry
-from libmuscle.manager.logger import Logger
-from libmuscle.manager.mmp_server import MMPServer
-from libmuscle.manager.manager import elements_for_model
-from libmuscle.manager.topology_store import TopologyStore
-from libmuscle.operator import Operator
+from libmuscle.manager.manager import Manager
+from libmuscle.manager.run_dir import RunDir
 
 from .conftest import skip_if_python_only
 
 
-def do_mmp_client_test(caplog):
+def do_mmp_client_test(tmpdir, caplog):
     ymmsl_text = (
             'ymmsl_version: v0.1\n'
             'model:\n'
@@ -40,13 +37,8 @@ def do_mmp_client_test(caplog):
             )
 
     # create server
-    logger = Logger()
     ymmsl_doc = ymmsl.load(ymmsl_text)
-    expected_elements = elements_for_model(ymmsl_doc.model)
-    instance_registry = InstanceRegistry(expected_elements)
-    topology_store = TopologyStore(ymmsl_doc)
-    server = MMPServer(logger, ymmsl_doc.settings, instance_registry,
-                       topology_store)
+    manager = Manager(ymmsl_doc, RunDir(Path(tmpdir)))
 
     # mock the deregistration
     removed_instance = None
@@ -55,10 +47,10 @@ def do_mmp_client_test(caplog):
         nonlocal removed_instance
         removed_instance = name
 
-    instance_registry.remove = mock_remove
+    manager._instance_registry.remove = mock_remove
 
     # add some peers
-    instance_registry.add(
+    manager._instance_registry.add(
             Reference('macro'), ['tcp:test3', 'tcp:test4'],
             [Port('out', Operator.O_I), Port('in', Operator.S)])
 
@@ -66,18 +58,17 @@ def do_mmp_client_test(caplog):
     # it runs through the various RPC calls
     # see libmuscle/cpp/src/libmuscle/tests/mmp_client_test.cpp
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
-    lib_paths = [
-            cpp_build_dir / 'grpc' / 'c-ares' / 'c-ares' / 'lib',
-            cpp_build_dir / 'grpc' / 'zlib' / 'zlib' / 'lib',
-            cpp_build_dir / 'grpc' / 'openssl' / 'openssl' / 'lib',
-            cpp_build_dir / 'protobuf' / 'protobuf' / 'lib',
-            cpp_build_dir / 'grpc' / 'grpc' / 'lib',
-            cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
-    env = {
-            'LD_LIBRARY_PATH': ':'.join(map(str, lib_paths))}
+    env = os.environ.copy()
+    lib_paths = [cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
+    if 'LD_LIBRARY_PATH' in env:
+        env['LD_LIBRARY_PATH'] += ':' + ':'.join(map(str, lib_paths))
+    else:
+        env['LD_LIBRARY_PATH'] = ':'.join(map(str, lib_paths))
+
     cpp_test_dir = cpp_build_dir / 'libmuscle' / 'tests'
     cpp_test_client = cpp_test_dir / 'mmp_client_test'
-    result = subprocess.run([str(cpp_test_client)], env=env)
+    result = subprocess.run(
+            [str(cpp_test_client), manager.get_server_location()], env=env)
 
     # check that C++-side checks were successful
     assert result.returncode == 0
@@ -88,12 +79,11 @@ def do_mmp_client_test(caplog):
             assert rec.time_stamp == '1970-01-01T00:00:02Z'
             assert rec.levelname == 'CRITICAL'
             assert rec.message == 'Integration testing'
-            break
 
-    # check register_instance
-    assert (instance_registry.get_locations('micro[3]') ==
+    # check instance registry
+    assert (manager._instance_registry.get_locations('micro[3]') ==
             ['tcp:test1', 'tcp:test2'])
-    ports = instance_registry.get_ports('micro[3]')
+    ports = manager._instance_registry.get_ports('micro[3]')
     assert ports[0].name == 'out'
     assert ports[0].operator == Operator.O_F
     assert ports[1].name == 'in'
@@ -102,12 +92,12 @@ def do_mmp_client_test(caplog):
     # check deregister_instance
     assert removed_instance == 'micro[3]'
 
-    server.stop()
+    manager.stop()
 
 
 @skip_if_python_only
-def test_mmp_client(log_file_in_tmpdir, caplog):
-    process = mp.Process(target=do_mmp_client_test, args=(caplog,))
+def test_mmp_client(log_file_in_tmpdir, tmpdir, caplog):
+    process = mp.Process(target=do_mmp_client_test, args=(tmpdir, caplog))
     process.start()
     process.join()
     assert process.exitcode == 0

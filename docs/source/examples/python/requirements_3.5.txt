@@ -1,3 +1,0 @@
-matplotlib<3
-numpy
-sobol_seq

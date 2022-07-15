@@ -3,9 +3,9 @@
 #include <libmuscle/close_port.hpp>
 #include <libmuscle/data.hpp>
 #include <libmuscle/mcp/ext_types.hpp>
-#include <libmuscle/mcp/message.hpp>
-#include <libmuscle/mcp/tcp_client.hpp>
-#include <libmuscle/mcp/tcp_server.hpp>
+#include <libmuscle/mpp_message.hpp>
+#include <libmuscle/mcp/tcp_transport_server.hpp>
+#include <libmuscle/mpp_client.hpp>
 
 #include <limits>
 
@@ -14,8 +14,8 @@ using libmuscle::impl::ClosePort;
 using libmuscle::impl::Data;
 using libmuscle::impl::DataConstRef;
 using libmuscle::impl::mcp::ExtTypeId;
-using libmuscle::impl::mcp::TcpClient;
-using libmuscle::impl::mcp::TcpServer;
+using libmuscle::impl::MPPClient;
+using libmuscle::impl::mcp::TcpTransportServer;
 
 using ymmsl::Conduit;
 using ymmsl::Identifier;
@@ -40,7 +40,7 @@ Communicator::Communicator(
     , clients_()
     , ports_()
 {
-    servers_.emplace_back(new TcpServer(instance_id_(), post_office_));
+    servers_.emplace_back(new TcpTransportServer(post_office_));
 }
 
 std::vector<std::string> Communicator::get_locations() const {
@@ -95,9 +95,9 @@ void Communicator::send_message(
         Optional<int> slot)
 {
     if (slot.is_set())
-        logger_.info("Sending message on ", port_name, "[", slot.get(), "]");
+        logger_.debug("Sending message on ", port_name, "[", slot.get(), "]");
     else
-        logger_.info("Sending message on ", port_name);
+        logger_.debug("Sending message on ", port_name);
     std::vector<int> slot_list;
     if (slot.is_set()) {
         slot_list.push_back(slot.get());
@@ -129,15 +129,15 @@ void Communicator::send_message(
     if (ports_.at(port_name).is_resizable())
         port_length = ports_.at(port_name).get_length();
 
-    mcp::Message mcp_message(
+    MPPMessage mpp_message(
             snd_endpoint.ref(), recv_endpoint.ref(),
             port_length, message.timestamp(), Optional<double>(),
             settings_overlay, message.data());
 
     if (message.has_next_timestamp())
-        mcp_message.next_timestamp = message.next_timestamp();
+        mpp_message.next_timestamp = message.next_timestamp();
 
-    auto message_bytes = std::make_unique<DataConstRef>(mcp_message.encoded());
+    auto message_bytes = std::make_unique<DataConstRef>(mpp_message.encoded());
     post_office_.deposit(recv_endpoint.ref(), std::move(message_bytes));
 
     // TODO: stop and complete profile event
@@ -149,9 +149,9 @@ Message Communicator::receive_message(
         Optional<Message> const & default_msg)
 {
     if (slot.is_set())
-        logger_.info("Waiting for message on ", port_name, "[", slot.get(), "]");
+        logger_.debug("Waiting for message on ", port_name, "[", slot.get(), "]");
     else
-        logger_.info("Waiting for message on ", port_name);
+        logger_.debug("Waiting for message on ", port_name);
     std::vector<int> slot_list;
     if (slot.is_set())
         slot_list.emplace_back(slot.get());
@@ -168,7 +168,7 @@ Message Communicator::receive_message(
             throw std::runtime_error(oss.str());
         }
         else {
-            logger_.info("No message received on ", port_name, " as it is not connected");
+            logger_.debug("No message received on ", port_name, " as it is not connected");
             return default_msg.get();
         }
     }
@@ -179,21 +179,21 @@ Message Communicator::receive_message(
 
     Endpoint snd_endpoint = peer_manager_->get_peer_endpoint(
             recv_endpoint.port, slot_list);
-    mcp::Client & client = get_client_(snd_endpoint.instance());
-    auto mcp_message = mcp::Message::from_bytes(
+    MPPClient & client = get_client_(snd_endpoint.instance());
+    auto mpp_message = MPPMessage::from_bytes(
             client.receive(recv_endpoint.ref()));
 
-    Settings overlay_settings(mcp_message.settings_overlay.as<Settings>());
+    Settings overlay_settings(mpp_message.settings_overlay.as<Settings>());
 
-    if (mcp_message.port_length.is_set())
+    if (mpp_message.port_length.is_set())
         if (port.is_resizable())
-            port.set_length(mcp_message.port_length.get());
+            port.set_length(mpp_message.port_length.get());
 
     Message message(
-            mcp_message.timestamp, mcp_message.data, overlay_settings);
+            mpp_message.timestamp, mpp_message.data, overlay_settings);
 
-    if (mcp_message.next_timestamp.is_set())
-        message.set_next_timestamp(mcp_message.next_timestamp.get());
+    if (mpp_message.next_timestamp.is_set())
+        message.set_next_timestamp(mpp_message.next_timestamp.get());
 
     if (is_close_port(message.data())) {
         if (slot.is_set())
@@ -205,15 +205,15 @@ Message Communicator::receive_message(
     // TODO stop and finalise profile event
 
     if (slot.is_set())
-        logger_.info("Received message on ", port_name, "[", slot.get(), "]");
+        logger_.debug("Received message on ", port_name, "[", slot.get(), "]");
     else
-        logger_.info("Received message on ", port_name);
+        logger_.debug("Received message on ", port_name);
 
     if (is_close_port(message.data())) {
         if (slot.is_set())
-            logger_.info("Port ", port_name, "[", slot.get(), "] is now closed");
+            logger_.debug("Port ", port_name, "[", slot.get(), "] is now closed");
         else
-            logger_.info("Port ", port_name, " is now closed");
+            logger_.debug("Port ", port_name, " is now closed");
     }
     return message;
 }
@@ -224,17 +224,15 @@ void Communicator::close_port(
             std::numeric_limits<double>::infinity(),
             ClosePort(), Settings());
     if (slot.is_set())
-        logger_.info("Closing port ", port_name, "[", slot.get(), "]");
+        logger_.debug("Closing port ", port_name, "[", slot.get(), "]");
     else
-        logger_.info("Closing port ", port_name);
+        logger_.debug("Closing port ", port_name);
     send_message(port_name, message, slot);
 }
 
 void Communicator::shutdown() {
     for (auto & client : clients_)
         client.second->close();
-
-    TcpClient::shutdown(instance_id_());
 
     post_office_.wait_for_receivers();
 
@@ -282,17 +280,17 @@ Communicator::Ports_ Communicator::ports_from_conduits_(
         Operator oper;
         std::vector<int> port_peer_dims;
 
-        if (conduit.sending_compute_element() == kernel_) {
+        if (conduit.sending_component() == kernel_) {
             port_id = conduit.sending_port();
             oper = Operator::O_F;
             port_peer_dims = peer_manager_->get_peer_dims(
-                    conduit.receiving_compute_element());
+                    conduit.receiving_component());
         }
-        else if (conduit.receiving_compute_element() == kernel_) {
+        else if (conduit.receiving_component() == kernel_) {
             port_id = conduit.receiving_port();
             oper = Operator::F_INIT;
             port_peer_dims = peer_manager_->get_peer_dims(
-                    conduit.sending_compute_element());
+                    conduit.sending_component());
         }
         else
             continue;
@@ -310,31 +308,32 @@ Communicator::Ports_ Communicator::ports_from_conduits_(
 
 Port Communicator::settings_in_port_(std::vector<Conduit> const & conduits) const {
     for (auto const & conduit : conduits) {
-        if (conduit.receiving_compute_element() == kernel_) {
+        if (conduit.receiving_component() == kernel_) {
             Identifier port_id = conduit.receiving_port();
             if (port_id == "muscle_settings_in")
                 return Port(port_id, Operator::F_INIT, false,
                         peer_manager_->is_connected(port_id), index_.size(),
-                        peer_manager_->get_peer_dims(conduit.sending_compute_element()));
+                        peer_manager_->get_peer_dims(conduit.sending_component()));
         }
     }
     return Port("muscle_settings_in", Operator::F_INIT, false, false, index_.size(), {});
 }
 
-mcp::Client & Communicator::get_client_(Reference const & instance) {
-    if (clients_.count(instance) != 0)
-        return *clients_.at(instance);
-
-    for (auto const & location : peer_manager_->get_peer_locations(instance)) {
-        if (TcpClient::can_connect_to(location)) {
-            auto client = std::make_unique<TcpClient>(instance_id_(), location);
-            clients_[instance] = std::move(client);
-            return *clients_.at(instance);
+MPPClient & Communicator::get_client_(Reference const & instance) {
+    if (clients_.count(instance) == 0) {
+        auto const & locations = peer_manager_->get_peer_locations(instance);
+        std::ostringstream oss;
+        oss << "Connecting to peer " << instance << " at [";
+        for (std::size_t i = 0u; i < locations.size(); ++i) {
+            if (i != 0u)
+                oss << ", ";
+            oss << locations[i];
         }
+        oss << "]";
+        logger_.info(oss.str());
+        clients_[instance] = std::make_unique<MPPClient>(locations);
     }
-    std::ostringstream oss;
-    oss << "Could not find a matching protocol for " << instance;
-    throw std::runtime_error(oss.str());
+    return *clients_.at(instance);
 }
 
 Endpoint Communicator::get_endpoint_(

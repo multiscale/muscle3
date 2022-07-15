@@ -1,9 +1,9 @@
 ymmsl_version: v0.1
 
-model:
-  name: reaction_diffusion
-
 settings:
+  muscle_local_log_level: INFO
+  muscle_remote_log_level: WARNING
+
   micro.t_max: 2.469136e-06
   micro.dt: 2.469136e-08
   macro.t_max: 0.0001234568

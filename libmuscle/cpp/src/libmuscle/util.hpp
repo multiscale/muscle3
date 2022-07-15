@@ -2,8 +2,32 @@
 
 #include <cstddef>
 #include <ostream>
+#include <string>
+
 
 namespace libmuscle { namespace impl {
+
+
+/* Gets the log file location from the command line.
+ *
+ * Extracts the --muscle-log-file=<path> argument to tell the
+ * MUSCLE library where to write the local log file. This
+ * function will extract this argument from the command line
+ * arguments if it is present. If the given path is to a
+ * directory, <filename> will be written inside of that directory,
+ * if the path is not an existing directory, then it will be used
+ * as the name of the log file to write to. If no command line
+ * argument is given, this function returns None.
+
+ * Args:
+ *     filename: Default file name to use.
+ *
+ * Returns:
+ *     Path to the log file to write.
+ */
+std::string extract_log_file_location(
+        int argc, char const * const argv[], std::string const & filename);
+
 
 /* An optional type template.
  *

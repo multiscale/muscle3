@@ -1,4 +1,4 @@
-from collections import OrderedDict
+import logging
 import os
 
 import numpy as np
@@ -6,8 +6,8 @@ import sobol_seq
 
 from libmuscle import Grid, Instance, Message
 from libmuscle.runner import run_simulation
-from ymmsl import (ComputeElement, Conduit, Configuration, Model, Operator,
-                   Settings)
+from ymmsl import (
+        Component, Conduit, Configuration, Model, Operator, Ports, Settings)
 
 
 def reaction() -> None:
@@ -185,10 +185,10 @@ def qmc_driver() -> None:
 
         # configure output port
         if not instance.is_resizable('parameters_out'):
-            instance.error_shutdown('This component needs a resizable'
-                                ' parameters_out port, but it is connected to'
-                                ' something that cannot be resized. Maybe try'
-                                ' adding a load balancer.')
+            instance.error_shutdown(
+                    'This component needs a resizable parameters_out port, but'
+                    ' it is connected to something that cannot be resized.'
+                    ' Maybe try adding a load balancer.')
             exit(1)
 
         instance.set_port_length('parameters_out', n_samples)
@@ -243,11 +243,26 @@ def qmc_driver() -> None:
 
 
 if __name__ == '__main__':
-    elements = [
-            ComputeElement('qmc', 'qmc_driver'),
-            ComputeElement('rr', 'load_balancer'),
-            ComputeElement('macro', 'diffusion', [10]),
-            ComputeElement('micro', 'reaction', [10])]
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.INFO)
+
+    components = [
+            Component(
+                'qmc', 'qmc_driver', None,
+                Ports(o_i=['parameters_out'], s=['states_in'])),
+            Component(
+                'rr', 'load_balancer', None,
+                Ports(
+                    f_init=['front_in'], o_i=['back_out'],
+                    s=['back_in'], o_f=['front_out'])),
+            Component(
+                'macro', 'diffusion', [10],
+                Ports(
+                    o_i=['state_out'], s=['state_in'], o_f=['final_state_out']
+                    )),
+            Component(
+                'micro', 'reaction', [10],
+                Ports(f_init=['initial_state'], o_f=['final_state']))]
 
     conduits = [
             Conduit('qmc.parameters_out', 'rr.front_in'),
@@ -258,22 +273,22 @@ if __name__ == '__main__':
             Conduit('micro.final_state', 'macro.state_in')
             ]
 
-    model = Model('reaction_diffusion_qmc', elements, conduits)
-    settings = Settings(OrderedDict([
-                ('micro.t_max', 2.469136e-6),
-                ('micro.dt', 2.469136e-8),
-                ('macro.t_max', 1.234568e-4),
-                ('macro.dt', 2.469136e-6),
-                ('qmc.t_max', 1.234568e-4),
-                ('qmc.dt', 2.469136e-6),
-                ('x_max', 1.01),
-                ('dx', 0.01),
-                ('k_min', -4.455e4),
-                ('k_max', -3.645e4),
-                ('d_min', 0.03645),
-                ('d_max', 0.04455),
-                ('n_samples', 100)
-                ]))
+    model = Model('reaction_diffusion_qmc', components, conduits)
+    settings = Settings({
+        'micro.t_max': 2.469136e-6,
+        'micro.dt': 2.469136e-8,
+        'macro.t_max': 1.234568e-4,
+        'macro.dt': 2.469136e-6,
+        'qmc.t_max': 1.234568e-4,
+        'qmc.dt': 2.469136e-6,
+        'x_max': 1.01,
+        'dx': 0.01,
+        'k_min': -4.455e4,
+        'k_max': -3.645e4,
+        'd_min': 0.03645,
+        'd_max': 0.04455,
+        'n_samples': 100
+        })
 
     configuration = Configuration(model, settings)
 

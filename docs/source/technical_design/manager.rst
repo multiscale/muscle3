@@ -2,7 +2,7 @@
 Manager architecture
 ====================
 
-The MUSCLE 3 manager consists of several modules, each with a specific
+The MUSCLE3 manager consists of several modules, each with a specific
 responsibility. Together, they perform all the tasks required of the manager.
 These components are:
 
@@ -150,7 +150,7 @@ ComPat patterns.
 
 LibMML will be based on the Python YAML library, with a shim layer to add some
 syntactic sugar to the file format, to make it easier to type by hand. LibMML
-is not a part of MUSCLE 3, but will be used by it.
+is not a part of MUSCLE3, but will be used by it.
 
 yMML files will contain information on kernels, instances, the connections
 between them, and the parameters to use them with. Information on how to deploy
@@ -162,7 +162,7 @@ related.
 Main
 ----
 
-The Main component of the MUSCLE 3 Manager performs start-up of the manager. It
+The Main component of the MUSCLE3 Manager performs start-up of the manager. It
 parses the command line, setting the log level as given, and reading the yMML
 file location. It then constructs all the other components, loads the yMML file
 and stores the information into the Configuration Store and Topology Store. It

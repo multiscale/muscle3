@@ -3,10 +3,10 @@ from typing import Any, Dict, List, Optional, Tuple, cast
 from ymmsl import Conduit, Identifier, Operator, Reference, Settings
 
 from libmuscle.endpoint import Endpoint
-from libmuscle.mcp.message import ClosePort, Message as MCPMessage
-from libmuscle.mcp.client import Client as MCPClient
-from libmuscle.mcp.server import Server as MCPServer, ServerNotSupported
-from libmuscle.mcp.type_registry import client_types, server_types
+from libmuscle.mpp_message import ClosePort, MPPMessage
+from libmuscle.mpp_client import MPPClient
+from libmuscle.mcp.transport_server import TransportServer
+from libmuscle.mcp.type_registry import transport_server_types
 from libmuscle.peer_manager import PeerManager
 from libmuscle.post_office import PostOffice
 from libmuscle.port import Port
@@ -56,9 +56,9 @@ class Message:
 
 
 class Communicator:
-    """Communication engine for MUSCLE 3.
+    """Communication engine for MUSCLE3.
 
-    This class is the mailroom for a kernel that uses MUSCLE 3. It
+    This class is the mailroom for a kernel that uses MUSCLE3. It
     manages the sending and receiving of messages, although it
     leaves the actual data transmission to various protocol-specific
     servers and clients.
@@ -85,17 +85,14 @@ class Communicator:
         self._post_office = PostOffice()
         self._profiler = profiler
 
-        self._servers = list()  # type: List[MCPServer]
+        self._servers = list()  # type: List[TransportServer]
 
         # indexed by remote instance id
-        self._clients = dict()  # type: Dict[Reference, MCPClient]
+        self._clients = dict()  # type: Dict[Reference, MPPClient]
 
-        for server_type in server_types:
-            try:
-                server = server_type(self.__instance_id(), self._post_office)
-                self._servers.append(server)
-            except ServerNotSupported:
-                pass
+        for server_type in transport_server_types:
+            server = server_type(self._post_office)
+            self._servers.append(server)
 
         self._ports = dict()   # type: Dict[str, Port]
 
@@ -123,8 +120,8 @@ class Communicator:
         multi-dimensional arrays with sizes given by peer_dims.
 
         Args:
-            conduits: A list of conduits attached to this compute
-                    element, as received from the manager.
+            conduits: A list of conduits attached to this component,
+                    as received from the manager.
             peer_dims: For each peer we share a conduit with, the
                     dimensions of the instance set.
             peer_locations: A list of locations for each peer instance
@@ -191,10 +188,10 @@ class Communicator:
             slot: The slot to send the message on, if any.
         """
         if slot is None:
-            _logger.info('Sending message on {}'.format(port_name))
+            _logger.debug('Sending message on {}'.format(port_name))
             slot_list = []  # type: List[int]
         else:
-            _logger.info('Sending message on {}[{}]'.format(port_name, slot))
+            _logger.debug('Sending message on {}[{}]'.format(port_name, slot))
             slot_list = [slot]
             slot_length = self._ports[port_name].get_length()
             if slot_length <= slot:
@@ -219,7 +216,7 @@ class Communicator:
         if self._ports[port_name].is_resizable():
             port_length = self._ports[port_name].get_length()
 
-        mcp_message = MCPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
+        mcp_message = MPPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
                                  port_length,
                                  message.timestamp, message.next_timestamp,
                                  cast(Settings, message.settings),
@@ -260,10 +257,10 @@ class Communicator:
                 connected.
         """
         if slot is None:
-            _logger.info('Waiting for message on {}'.format(port_name))
+            _logger.debug('Waiting for message on {}'.format(port_name))
             slot_list = []      # type: List[int]
         else:
-            _logger.info('Waiting for message on {}[{}]'.format(
+            _logger.debug('Waiting for message on {}[{}]'.format(
                 port_name, slot))
             slot_list = [slot]
 
@@ -276,7 +273,7 @@ class Communicator:
                                     ' given. Either specify a default, or'
                                     ' connect a sending component to this'
                                     ' port.').format(port_name))
-            _logger.info(
+            _logger.debug(
                     'No message received on {} as it is not connected'.format(
                         port_name))
             return default
@@ -296,7 +293,7 @@ class Communicator:
                 recv_endpoint.port, slot_list)
         client = self.__get_client(snd_endpoint.instance())
         mcp_message_bytes = client.receive(recv_endpoint.ref())
-        mcp_message = MCPMessage.from_bytes(mcp_message_bytes)
+        mcp_message = MPPMessage.from_bytes(mcp_message_bytes)
 
         if mcp_message.port_length is not None:
             if port.is_resizable():
@@ -315,13 +312,13 @@ class Communicator:
         profile_event.message_size = len(mcp_message_bytes)
 
         if slot is None:
-            _logger.info('Received message on {}'.format(port_name))
+            _logger.debug('Received message on {}'.format(port_name))
             if isinstance(mcp_message.data, ClosePort):
-                _logger.info('Port {} is now closed'.format(port_name))
+                _logger.debug('Port {} is now closed'.format(port_name))
         else:
-            _logger.info('Received message on {}[{}]'.format(port_name, slot))
+            _logger.debug('Received message on {}[{}]'.format(port_name, slot))
             if isinstance(mcp_message.data, ClosePort):
-                _logger.info('Port {}[{}] is now closed'.format(
+                _logger.debug('Port {}[{}] is now closed'.format(
                     port_name, slot))
 
         return message
@@ -339,9 +336,9 @@ class Communicator:
         """
         message = Message(float('inf'), None, ClosePort(), Settings())
         if slot is None:
-            _logger.info('Closing port {}'.format(port_name))
+            _logger.debug('Closing port {}'.format(port_name))
         else:
-            _logger.info('Closing port {}[{}]'.format(port_name, slot))
+            _logger.debug('Closing port {}[{}]'.format(port_name, slot))
         self.send_message(port_name, message, slot)
 
     def shutdown(self) -> None:
@@ -349,8 +346,6 @@ class Communicator:
         """
         for client in self._clients.values():
             client.close()
-        for client_type in client_types:
-            client_type.shutdown(self.__instance_id())
 
         self._post_office.wait_for_receivers()
 
@@ -378,7 +373,7 @@ class Communicator:
                 is_connected = self._peer_manager.is_connected(port_id)
                 if is_connected:
                     peer_port = self._peer_manager.get_peer_port(port_id)
-                    peer_ce = cast(Reference, peer_port[:-1])
+                    peer_ce = peer_port[:-1]
                     port_peer_dims = self._peer_manager.get_peer_dims(peer_ce)
                 else:
                     port_peer_dims = []
@@ -436,7 +431,7 @@ class Communicator:
         return Port('muscle_settings_in', Operator.F_INIT, False, False,
                     len(self._index), [])
 
-    def __get_client(self, instance: Reference) -> MCPClient:
+    def __get_client(self, instance: Reference) -> MPPClient:
         """Get or create a client to connect to the given instance.
 
         Args:
@@ -445,17 +440,12 @@ class Communicator:
         Returns:
             An existing or new MCP client.
         """
-        if instance in self._clients:
-            return self._clients[instance]
+        if instance not in self._clients:
+            locations = self._peer_manager.get_peer_locations(instance)
+            _logger.info(f'Connecting to peer {instance} at {locations}')
+            self._clients[instance] = MPPClient(locations)
 
-        for ClientType in client_types:
-            for location in self._peer_manager.get_peer_locations(instance):
-                if ClientType.can_connect_to(location):
-                    client = ClientType(self.__instance_id(), location)
-                    self._clients[instance] = client
-                    return client
-        raise RuntimeError('Could not find a matching protocol for {}'.format(
-                instance))
+        return self._clients[instance]
 
     def __get_endpoint(self, port_name: str, slot: List[int]) -> Endpoint:
         """Determines the endpoint on our side.

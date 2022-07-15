@@ -22,10 +22,10 @@ PeerManager::PeerManager(
     , peer_locations_(peer_locations)   // indexed by peer instance id
 {
     for (auto const & conduit : conduits) {
-        if (conduit.sending_compute_element() == kernel_)
+        if (conduit.sending_component() == kernel_)
             // we send on the port this conduit attaches to
             peers_.emplace(conduit.sender, conduit.receiver);
-        if (conduit.receiving_compute_element() == kernel_)
+        if (conduit.receiving_component() == kernel_)
             // we receive on the port this conduit attaches to
             peers_.emplace(conduit.receiver, conduit.sender);
     }

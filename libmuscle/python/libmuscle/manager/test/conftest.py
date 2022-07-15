@@ -6,7 +6,7 @@ from ymmsl import (Component, Conduit, Configuration, Model, Reference,
 
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger
-from libmuscle.manager.mmp_server import MMPServicer
+from libmuscle.manager.mmp_server import MMPRequestHandler
 from libmuscle.manager.topology_store import TopologyStore
 
 
@@ -24,10 +24,7 @@ def settings():
 
 @pytest.fixture
 def instance_registry():
-    expected_instances = ['macro']
-    for i in range(10):
-        expected_instances.append('micro[{}]'.format(i))
-    return InstanceRegistry(expected_instances)
+    return InstanceRegistry()
 
 
 @pytest.fixture
@@ -48,9 +45,9 @@ def topology_store() -> TopologyStore:
 
 
 @pytest.fixture
-def mmp_servicer(logger, settings, instance_registry, topology_store):
-    return MMPServicer(logger, settings, instance_registry,
-                       topology_store)
+def mmp_request_handler(logger, settings, instance_registry, topology_store):
+    return MMPRequestHandler(
+            logger, settings, instance_registry, topology_store)
 
 
 @pytest.fixture
@@ -65,10 +62,10 @@ def loaded_instance_registry(instance_registry):
 
 
 @pytest.fixture
-def registered_mmp_servicer(logger, settings, loaded_instance_registry,
-                            topology_store):
-    return MMPServicer(logger, settings, loaded_instance_registry,
-                       topology_store)
+def registered_mmp_request_handler(
+        logger, settings, loaded_instance_registry, topology_store):
+    return MMPRequestHandler(
+            logger, settings, loaded_instance_registry, topology_store)
 
 
 @pytest.fixture
@@ -93,13 +90,7 @@ def topology_store2() -> TopologyStore:
 
 @pytest.fixture
 def loaded_instance_registry2():
-    expected_instances = ['macro']
-    for i in range(5):
-        expected_instances.append('meso[{}]'.format(i))
-    for j in range(5):
-        for i in range(10):
-            expected_instances.append('micro[{}][{}]'.format(j, i))
-    instance_registry = InstanceRegistry(expected_instances)
+    instance_registry = InstanceRegistry()
 
     instance_registry.add(Reference('macro'), ['direct:macro'], [])
 
@@ -117,7 +108,7 @@ def loaded_instance_registry2():
 
 
 @pytest.fixture
-def registered_mmp_servicer2(
+def registered_mmp_request_handler2(
         logger, settings, loaded_instance_registry2, topology_store2):
-    return MMPServicer(logger, settings, loaded_instance_registry2,
-                       topology_store2)
+    return MMPRequestHandler(
+            logger, settings, loaded_instance_registry2, topology_store2)

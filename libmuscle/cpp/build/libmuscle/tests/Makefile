@@ -8,13 +8,21 @@ integration_tests := $(wildcard $(libmuscle_testdir)/*test.cpp)
 unit_test_bins := $(unit_tests:$(libmuscle_testdir)/%.cpp=%)
 integration_test_bins := $(integration_tests:$(libmuscle_testdir)/%.cpp=%)
 
-ifndef MUSCLE_ENABLE_MPI
+ifndef MUSCLE_ENABLE_CPP_MPI
 integration_tests := $(filter-out mpi%,$(integration_tests))
 integration_test_bins := $(filter-out mpi%,$(integration_test_bins))
 endif
 
 all_tests := $(unit_test_bins) $(integration_test_bins)
 deps := $(all_tests:%=%.d)
+
+# GTest sometimes install in /lib, sometimes in /lib64, depending on platform
+ifneq ("$(wildcard $(googletest_ROOT)/lib/libgtest.a)", "")
+    googletest_LIB := $(googletest_ROOT)/lib/libgtest.a
+else
+    googletest_LIB := $(googletest_ROOT)/lib64/libgtest.a
+endif
+
 
 
 .PHONY: test
@@ -40,13 +48,10 @@ EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-Wl,-rpath-link,$(DIR)/lib)
 CXXFLAGS += -I$(libmuscle_testdir) -isystem $(googletest_ROOT)/include -pthread
 
 LDFLAGS += $(CURDIR)/../libmuscle_d.a $(CURDIR)/../../ymmsl/libymmsl_d.a
-LDFLAGS += $(googletest_ROOT)/lib/libgtest.a -pthread
+LDFLAGS += $(googletest_LIB) -pthread
 
 LDFLAGS2 := $(LDFLAGS)
-LDFLAGS2 += $(CURDIR)/../../muscle_manager_protocol/libmmp.a
-LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs protobuf)
-LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs grpc grpc++)
-LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs msgpack)
+LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs msgpack)
 LDFLAGS2 += $(EXTRA_LINK_DIRS)
 
 -include $(deps)
@@ -69,21 +74,24 @@ test_communicator.o: test_communicator.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@ -pthread
 
 test_communicator: test_communicator.o $(CURDIR)/../../ymmsl/libymmsl_d.a
-	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_ROOT)/lib/libgtest.a -pthread
+	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_LIB) -pthread
 
 test_instance.o: test_instance.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@ -pthread
 
 test_instance: test_instance.o $(CURDIR)/../../ymmsl/libymmsl_d.a
-	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_ROOT)/lib/libgtest.a -pthread $(LDFLAGS2)
+	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_LIB) -pthread $(LDFLAGS2)
 
 test_logging.o: test_logging.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@ -pthread
 
 test_logging: test_logging.o $(CURDIR)/../../ymmsl/libymmsl_d.a
-	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_ROOT)/lib/libgtest.a -pthread
+	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_LIB) -pthread
 
 mpi_micro_model_test: mpi_micro_model_test.cpp $(CURDIR)/../../ymmsl/libymmsl_d.a $(CURDIR)/../../libmuscle/libmuscle_mpi_d.a
+	$(MPICXX) $(CXXFLAGS) $(DEBUGFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS2)
+
+mpi_component_test: mpi_component_test.cpp $(CURDIR)/../../ymmsl/libymmsl_d.a $(CURDIR)/../libmuscle_mpi_d.a
 	$(MPICXX) $(CXXFLAGS) $(DEBUGFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS2)
 
 
@@ -93,9 +101,9 @@ test_dep_lib_paths := $(subst $(space),:,$(foreach DIR,$(DEP_DIRS),$(DIR)/lib))
 
 .PHONY: run_test%
 run_test%: test%
-	export LD_LIBRARY_PATH=$(test_dep_lib_paths) ; $(VALGRIND) ./$<
+	export LD_LIBRARY_PATH=$(test_dep_lib_paths):$(LD_LIBRARY_PATH) ; $(VALGRIND) ./$<
 
 # This uses setrlimit, which is not compatible with Valgrind, so run without
 .PHONY: run_test_data_memory_use
 run_test_data_memory_use: test_data_memory_use
-	export LD_LIBRARY_PATH=$(test_dep_lib_paths) ; ./$<
+	export LD_LIBRARY_PATH=$(test_dep_lib_paths):$(LD_LIBRARY_PATH) ; ./$<

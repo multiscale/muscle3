@@ -121,6 +121,10 @@
             "libmuscle::impl::Data::byte_array(unsigned int)";
             "libmuscle::impl::Data::dict()";
             "libmuscle::impl::Data::init_dict_(unsigned int)";
+            "libmuscle::impl::Data::set_dict_item_(unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, libmuscle::impl::DataConstRef const&)";
+            "libmuscle::impl::Data::set_dict_item_(unsigned int, std::string const&, libmuscle::impl::DataConstRef const&)";
+            "libmuscle::impl::Data::set_dict_item_(unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, libmuscle::impl::Data const&)";
+            "libmuscle::impl::Data::set_dict_item_(unsigned int, std::string const&, libmuscle::impl::Data const&)";
             "libmuscle::impl::Data::list()";
             "libmuscle::impl::Data::init_list_(unsigned int)";
             "libmuscle::impl::Data::nils(unsigned long)";

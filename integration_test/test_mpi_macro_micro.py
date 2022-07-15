@@ -36,28 +36,28 @@ def macro():
 
 
 @skip_if_python_only
-def test_cpp_macro_micro(mmp_server_process_simple):
+def test_mpi_macro_micro(tmpdir, mmp_server_process_simple):
     # only run this if MPI is enabled
-    if 'MUSCLE_ENABLE_MPI' not in os.environ:
-        pytest.skip('MPI is not enabled, try with MUSCLE_ENABLE_MPI=1')
+    if 'MUSCLE_ENABLE_CPP_MPI' not in os.environ:
+        pytest.skip('MPI support was not detected')
 
     # create C++ micro model
     # see libmuscle/cpp/src/libmuscle/tests/micro_model_test.cpp
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
-    lib_paths = [
-            cpp_build_dir / 'grpc' / 'c-ares' / 'c-ares' / 'lib',
-            cpp_build_dir / 'grpc' / 'zlib' / 'zlib' / 'lib',
-            cpp_build_dir / 'grpc' / 'openssl' / 'openssl' / 'lib',
-            cpp_build_dir / 'protobuf' / 'protobuf' / 'lib',
-            cpp_build_dir / 'grpc' / 'grpc' / 'lib',
-            cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
-    env = {
-            'LD_LIBRARY_PATH': ':'.join(map(str, lib_paths)),
-            'PATH': '/usr/bin'}     # allow mpirun to find ssh and not complain
+    env = os.environ.copy()
+    lib_paths = [cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
+    if 'LD_LIBRARY_PATH' in env:
+        env['LD_LIBRARY_PATH'] += ':' + ':'.join(map(str, lib_paths))
+    else:
+        env['LD_LIBRARY_PATH'] = ':'.join(map(str, lib_paths))
+
+    env['MUSCLE_MANAGER'] = mmp_server_process_simple
+
     cpp_test_dir = cpp_build_dir / 'libmuscle' / 'tests'
     mpi_test_micro = cpp_test_dir / 'mpi_micro_model_test'
+    out_file = tmpdir + '/mpi_micro.log'
     micro_result = subprocess.Popen(
-            ['mpirun', '-np', '2', '--output-filename', 'mpi_micro.log',
+            ['mpirun', '-np', '2', '--output-filename', out_file,
              str(mpi_test_micro), '--muscle-instance=micro'], env=env)
 
     # run macro model

@@ -25,7 +25,7 @@ bool Conduit::operator==(Conduit const & rhs) const {
     return sender == rhs.sender && receiver == rhs.receiver;
 }
 
-Reference Conduit::sending_compute_element() const {
+Reference Conduit::sending_component() const {
     Reference stem = stem_(sender);
     return Reference(stem.cbegin(), std::prev(stem.cend()));
 }
@@ -40,7 +40,7 @@ std::vector<int> Conduit::sending_slot() const {
     return slot_(sender);
 }
 
-Reference Conduit::receiving_compute_element() const {
+Reference Conduit::receiving_component() const {
     Reference stem = stem_(receiver);
     return Reference(stem.cbegin(), std::prev(stem.cend()));
 }
@@ -75,9 +75,9 @@ void Conduit::check_reference_(Reference const & ref) const {
     // check that the length is at least 2
     if (stem_(ref).length() < 2) {
         std::ostringstream oss;
-        oss << "Senders and receivers in conduits must have a compute element";
+        oss << "Senders and receivers in conduits must have a component";
         oss << " name, a period, and then a port name and optionally a slot.";
-        oss << " Reference " << ref << " is missing either the compute element";
+        oss << " Reference " << ref << " is missing either the component";
         oss << " or the port.";
         throw std::runtime_error(oss.str());
     }

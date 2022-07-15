@@ -7,7 +7,7 @@
 
 namespace libmuscle { namespace impl {
 
-/** A description of which ports a compute element has.
+/** A description of which ports a component has.
  *
  * You can create one like this:
  *

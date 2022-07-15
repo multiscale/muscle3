@@ -1,14 +1,15 @@
 Tutorial with Python
 ====================
 
-In this section, we'll look at a few examples of how to use MUSCLE 3 to create a
+In this section, we'll look at a few examples of how to use MUSCLE3 to create a
 multiscale simulation in Python.
 
 `The source code for these examples is here
 <https://github.com/multiscale/muscle3/tree/master/docs/source/examples/python>`_.
 You can also clone the repository or download the source (see the C++ part of
 the Installation section) and go to ``docs/source/examples/python``, or
-copy-paste the code from here.
+copy-paste the code from here. If you're cloning, be sure to use the ``master``
+branch. ``develop`` may have changes incompatible with the current release.
 
 The easiest way to get set up is to create a virtualenv and then install MUSCLE
 3 and the additional requirements inside it. Running ``make`` in the
@@ -31,7 +32,7 @@ requirements.txt`` again to fix it. Or if you have administrator rights,
 ``apt-get install python3-wheel`` will also work, and fix this issue for the
 whole system.
 
-You can the run the example described below by activating the virtual
+You can then run the example described below by activating the virtual
 environment, and then running the file ``reaction_diffusion.py``:
 
 .. code-block:: bash
@@ -42,13 +43,13 @@ environment, and then running the file ``reaction_diffusion.py``:
 
 Our first example is a reaction-diffusion model on a 1D grid. It consists of a
 reaction model coupled to a diffusion model in a macro-micro fashion, with the
-diffusion model the macro-model and the reaction model the micro-model. In a
+diffusion model the macro model and the reaction model the micro model. In a
 macro-micro model with timescale separation, the micro model does a full run (of
-many timesteps) for every timestep of the macro-model. Thus, the macro-model
-effectively calls the micro-model before each state update, sending it the
+many timesteps) for every timestep of the macro model. Thus, the macro model
+effectively calls the micro model before each state update, sending it the
 current state and using its output as an input for the state update operation.
 
-Here's how to implement that with MUSCLE 3. (A detailed explanation follows
+Here's how to implement that with MUSCLE3. (A detailed explanation follows
 below the code.)
 
 .. literalinclude:: examples/python/reaction_diffusion.py
@@ -63,7 +64,6 @@ Importing headers
 
 .. code-block:: python
 
-  from collections import OrderedDict
   import logging
   import os
 
@@ -71,8 +71,8 @@ Importing headers
 
   from libmuscle import Grid, Instance, Message
   from libmuscle.runner import run_simulation
-  from ymmsl import (ComputeElement, Conduit, Configuration, Model, Operator,
-                     Settings)
+  from ymmsl import (
+          Component, Conduit, Configuration, Model, Operator, Ports, Settings)
 
 
 As usual, we begin by importing some required libraries. OrderedDict and logging
@@ -81,8 +81,8 @@ functionality. From libmuscle, we import :class:`libmuscle.Instance`, which will
 represent a model instance in the larger simulation, and
 :class:`libmuscle.Message`, which represents a MUSCLE message as passed between
 instances.  The :func:`libmuscle.run_simulation` function allows us to run a
-complete simulation from a single Python file, as opposed to having to start the
-different instances and the manager separately.
+complete simulation from a single Python file, as opposed to having separate
+implementations started by the manager.
 
 In order to describe our model, we use a number of definitions from
 `ymmsl-python`. More about those below.
@@ -93,7 +93,7 @@ A simple submodel
 Next is the reaction model. It is defined as a single Python function that takes
 no arguments and returns nothing. (Note that this code uses type annotations to
 show the types of function arguments and return values. These are ignored by the
-Python interpreter, and also by MUSCLE 3, so you don't have to use them if you
+Python interpreter, and also by MUSCLE3, so you don't have to use them if you
 don't want to.)
 
 The first step in a MUSCLE model is to create an :class:`libmuscle.Instance`
@@ -133,7 +133,7 @@ The reuse loop
 
 Now that we have an :class:`libmuscle.Instance` object, we can start the *reuse
 loop*. In multiscale simulations, submodels often have to run multiple times,
-for instance because they're used as a micro-model or because they are part of
+for instance because they're used as a micro model or because they are part of
 an ensemble that cannot be completely parallelised. In order to accomplish
 this, the entire model is wrapped into a loop. Exactly when this loop ends
 depends on the behaviour of the whole model, and is not easy to determine, but
@@ -185,7 +185,7 @@ array, and we'd get an error message if we tried to modify it.
 
 Finally, we'll initialise our simulation time to the time at which that state is
 valid, which is contained in the ``timestamp`` attribute. This is a
-double-precision float containing the number of simulated (not wall-clock)
+double precision float containing the number of simulated (not wall-clock)
 seconds since the whole simulation started.
 
 The state update loop
@@ -207,9 +207,9 @@ The state update loop
 Having initialised the model, it is now time for the state update loop. This
 code should look familiar: we loop until we reach our maximum time (now
 relative to when we started), and on each iteration update the state according
-to the model equation. This update is called operator S in the Submodel
+to the model equation. This state update is called operator S in the Submodel
 Execution Loop, and in this model, it is determined entirely by the current
-state.  Since no information from outside is needed, we do not receive any
+state. Since no information from outside is needed, we do not receive any
 messages, and in our :class:`libmuscle.Instance` declaration above, we did not
 declare any ports associated with ``Operator.S``.
 
@@ -219,9 +219,8 @@ observations of intermediate states. In other words, here is where you can send
 a message to the outside world with (part of) the current state. In this case,
 the O_I operator is empty; we're not sending anything. While this makes the
 model a bit less reusable (it won't work as a macro-model like this), it is
-perfectly legal. MUSCLE tries hard to let you break the rules unless doing so
-would break the model, and in that case it tries to give a helpful error
-message.
+perfectly legal. MUSCLE tries hard to let you break in places where it doesn't
+break anything, and where it does it tries to give a helpful error message.
 
 Sending the final result
 ------------------------
@@ -241,14 +240,14 @@ Execution Loop, so that is where we declared this port to live in our
 
 To send a message, we specify the port on which to send (which must match the
 declaration by name and operator), and a Message object containing the current
-simulation time and the current state, converted to a plain Python list. The
-optional second parameter is a second timestamp, which will be discussed below,
-and is set to ``None`` here.
+simulation time and the current state, converted to a Grid. The optional second
+parameter is a second timestamp, which will be discussed below, and is set to
+``None`` here.
 
-MUSCLE 3 uses `MessagePack <https://msgpack.org>`_ to encode messages between
+MUSCLE3 uses `MessagePack <https://msgpack.org>`_ to encode messages between
 models. MessagePack is a binary encoding format which can be thought of as a
 binary version of JSON. That means that the message can be an integer, float,
-bool, string, or a list or dictionary containing such, and MUSCLE 3 also
+bool, string, or a list or dictionary containing such, and MUSCLE3 additionally
 supports NumPy arrays and byte arrays. Like with JSON, these can be nested, so
 you can send a dictionary containing lists of floats for example.
 
@@ -263,7 +262,7 @@ document, for each port, which data type you're expecting or sending! Your
 future colleagues (and possibly your future self) will thank you.
 
 MessagePack is an extensible format, and since sending grids is very common in
-these kinds of models MUSCLE 3 supports sending NumPy arrays directly. Here, we
+these kinds of models MUSCLE3 supports sending NumPy arrays directly. Here, we
 wrap our array U into a :class:`libmuscle.Grid` object, so that we can add the
 name of the dimensions. In this case there's only one, and ``x`` is not very
 descriptive, so we could have also passed ``U`` directly, in which case MUSCLE
@@ -280,7 +279,7 @@ Finally, if you want to use your own encoding, you can just send a ``bytes``
 object, which will be transmitted as-is, with minimal overhead.
 
 This concludes our reaction model. As you can see, submodels that are used with
-MUSCLE 3 very much look like they would without. With one additional variable,
+MUSCLE3 very much look like they would without. With one additional variable,
 one extra loop, and a few send and receive statements you're ready to connect
 your model into a larger simulation.
 
@@ -289,7 +288,7 @@ Message timestamps
 ------------------
 
 In order to make a coupled simulation, we need at least two models. The second
-model is the diffusion model. Its overall structure is the same as for the
+model here is the diffusion model. Its overall structure is the same as for the
 reaction model, but it has a few additional features. The first of these is an
 O_I operator.
 
@@ -305,7 +304,7 @@ O_I operator.
 
 Since the diffusion model is the macro-submodel in this model, it needs to send
 its state to the outside world on every timestep. This is done in the O_I
-operator. The message simply contains the state, converted to a
+operator. The message contains the state, converted to a
 :class:`libmuscle.Grid`, and it is sent on the ``state_out`` port, which was
 declared for the O_I operator when we made the :class:`libmuscle.Instance` for
 this model. The message is sent with the current simulation time, and a second
@@ -314,11 +313,11 @@ on this port. Since our time steps are fixed, this is easy to calculate. We do
 need to take care to send ``None`` if this is the final message on this port
 however, since there won't be another message in that case.
 
-This deserves a bit more explanation. First, MUSCLE 3 does not use the
+This deserves a bit more explanation. First, MUSCLE3 does not use the
 timestamps that are attached to the messages for anything, and in this
 particular case, always sending ``None`` for the second timestamp will work
 fine.  These timestamps are necessary if two submodels with timescale overlap
-need to be connected together. In this case, both models will run concurrently,
+need to be connected together. In that case, both models will run concurrently,
 and they will exchange messages between their O_I and S operators.
 
 If their time scales (step sizes) do not match exactly, then the number of
@@ -328,6 +327,8 @@ bringing the whole simulation to a halt. To avoid this, an intermediate
 component needs to be inserted, which interpolates the messages. In order to
 send and receive in the correct order, this component needs to know when the
 next message will be sent, and that is when the second timestamp is required.
+See ``docs/source/examples/python/interact_coupling.py`` for a documented
+example.
 
 So, to make your submodel more generically usable, it's good to set the second
 timestamp. But perhaps you're trying to connect an existing codebase that uses
@@ -353,7 +354,7 @@ state update from the micro-model, which it does by calling
 are passing a default message. The default message is returned if this port is
 not connected. We are cleverly passing the message containing our current
 state, so that if this port is not connected, the model continues from its
-current state. Since MUSCLE 3 will simply ignore a send command on a
+current state. Since MUSCLE3 will simply ignore a send command on a
 disconnected port, this makes it possible to run the diffusion model without a
 micro-model attached.
 
@@ -390,7 +391,7 @@ separate programs on different computers.
 Connecting it all together
 --------------------------
 
-With both models defined, we now need to instruct MUSCLE 3 on how to connect
+With both models defined, we now need to instruct MUSCLE3 on how to connect
 them together. We do this by creating an object of type
 ``ymmsl.Configuration``, which contains all the information needed to run the
 simulation. It often helps to draw a diagram first:
@@ -402,10 +403,10 @@ simulation. It often helps to draw a diagram first:
   gMMSL diagram of the reaction-diffusion model.
 
 
-This is a gMMSL diagram of the reaction-diffusion model. It shows that there are
-two compute elements named ``macro`` and ``micro``. A conduit connects port
-``state_out`` on ``macro`` to ``state_in`` on ``micro``. The symbols at the ends
-of the conduit show the operators that the ports belong to, O_I for
+This is a gMMSL diagram of the reaction-diffusion model. It shows that there
+are two components named ``macro`` and ``micro``. A conduit connects port
+``state_out`` on ``macro`` to ``state_in`` on ``micro``. The symbols at the
+ends of the conduit show the operators that the ports belong to, O_I for
 ``macro.state_out`` and F_INIT for ``micro.state_in``. Another conduit connects
 port ``micro.final_state`` (O_F) to ``macro.state_in`` (S).
 
@@ -423,22 +424,26 @@ of objects that form a description.
 
 .. code-block:: python
 
-    elements = [
-            ComputeElement('macro', 'diffusion'),
-            ComputeElement('micro', 'reaction')]
+    components = [
+            Component(
+                    'macro', 'diffusion', 1,
+                    Ports(o_i=['state_out'], s=['state_in'])),
+            Component(
+                    'micro', 'reaction', 1,
+                    Ports(f_init['initial_state'], o_f=['final_state']))]
 
 
-First, we describe the two compute elements in this model. Compute elements can
-be submodels, or helper components that convert data, control the simulation, or
-otherwise implement required non-model functionality. In this simple example, we
-only have two submodels: one named ``macro`` and one named ``micro``. Macro is
-implemented by an implementation named ``diffusion``, while micro is implemented
-by an implementation named ``reaction``.
+First, we describe the two components in this model. Components can be
+submodels, or helper components that convert data, control the simulation, or
+otherwise implement required non-model functionality. In this simple example,
+we only have two submodels: one named ``macro`` and one named ``micro``. Macro
+is implemented by an implementation named ``diffusion``, while micro is
+implemented by an implementation named ``reaction``.
 
-The name of a compute element is used by MUSCLE as an address for communication
+The name of a component is used by MUSCLE as an address for communication
 between the models. The implementation name is intended for use by a launcher,
-which would start the corresponding program to create an instance of a compute
-element. It is these instances that form the actual running simulation.
+which would start the corresponding program to create an instance of a
+component.  It is these instances that form the actual running simulation.
 
 .. code-block:: python
 
@@ -446,52 +451,43 @@ element. It is these instances that form the actual running simulation.
             Conduit('macro.state_out', 'micro.initial_state'),
             Conduit('micro.final_state', 'macro.state_in')]
 
-    model = Model('reaction_diffusion', elements, conduits)
+    model = Model('reaction_diffusion', components, conduits)
 
 
-Next, we need to connect the compute elements together. This is done by
-conduits, which have a sender and a receiver. Here, we connect sending port
-``state_out`` on compute element ``macro`` to receiving port ``initial_state``
-on compute element ``micro``. Note that these ports are actually defined in the
-implementations, and not in this configuration file, and they are referred to
-here.
+Next, we need to connect the components together. This is done by conduits,
+which have a sender and a receiver. Here, we connect sending port ``state_out``
+on component ``macro`` to receiving port ``initial_state`` on component
+``micro``. Note that these ports are actually defined in the implementations,
+and not in this configuration file, and they are referred to here.
 
-The compute elements and the conduits together form a ``Model``, which has a
-name and those two sets of components.
+The components and the conduits together form a ``Model``, which has a name and
+those two sets of objects.
 
 .. code-block:: python
 
-    settings = Settings(OrderedDict([
-                ('micro.t_max', 2.469136e-6),
-                ('micro.dt', 2.469136e-8),
-                ('macro.t_max', 1.234568e-4),
-                ('macro.dt', 2.469136e-6),
-                ('x_max', 1.01),
-                ('dx', 0.01),
-                ('k', -4.05e4),     # reaction parameter
-                ('d', 4.05e-2)      # diffusion parameter
-                ]))
+    settings = Settings({
+        'micro.t_max': 2.469136e-6,
+        'micro.dt': 2.469136e-8,
+        'macro.t_max': 1.234568e-4,
+        'macro.dt': 2.469136e-6,
+        'x_max': 1.01,
+        'dx': 0.01,
+        'k': -4.05e4,     # reaction parameter
+        'd': 4.05e-2      # diffusion parameter
+        })
 
     configuration = Configuration(model, settings)
 
 
-Finally, we define the settings for our simulation. We are using an
-``OrderedDict`` instead of a normal (unordered) Python dictionary because having
-these in a logical order is really really useful if you're trying to edit them
-and quickly find things. For complex models, you'll have many settings, and
-having them ordered allows you to group them logically. Of course, the order in
-this source code will not change, but if you save this to YAML, you want to
-preserve the order, and for that OrderedDict is required. (Unofficially in
-Python 3.6, and officially in Python 3.7, ``dict`` is now ordered, but for
-compatibility with older versions, we'll use an OrderedDict here.)
-
-Note that there are two duplicated names between the two models: ``t_max`` and
-``dt``. With MUSCLE 3, you can create a global setting with that name to set it
-to the same value everywhere (handy for settings that are used by multiple
-compute elements), or you can prepend the name of the compute element to set the
-value for a specific one. Specific settings go before generic ones, so if you
-specify both ``micro.t_max`` and ``t_max``, then the ``micro`` compute element
-will use ``micro.t_max`` and all others will use ``t_max``.
+Finally, we define the settings for our simulation by constructing a
+:class:`ymmsl.Settings` object from a dictionary. Note that there are two
+duplicated names between the two models: ``t_max`` and ``dt``. With MUSCLE3,
+you can create a global setting with that name to set it to the same value
+everywhere (handy for settings that are used by multiple components), or you can
+prepend the name of the component to set the value for a specific one. Specific
+settings go before generic ones, so if you specify both ``micro.t_max`` and
+``t_max``, then the ``micro`` component will use ``micro.t_max`` and all others
+will use ``t_max``.
 
 The model and the settings are combined into a Configuration, which contains
 everything needed to run the simulation. A Configuration object is also the
@@ -501,12 +497,16 @@ Python-side equivalent to a yMMSL YAML file.
 Launching the simulation
 ------------------------
 
-Launching a simulation is strictly speaking outside of the scope of MUSCLE 3,
-which primarily does coordination (helping instances find each other) and
-communication (sending messages between them). However, for testing,
-experimentation, learning, and small scale production use, having some means of
-running a whole simulation from a single Python file is very nice. So MUSCLE 3
-has a small facility for this in the form of the
+There are two ways of launching a MUSCLE3 simulation: locally in a Python
+script (as we do here), and by having the MUSCLE Manager start a set of programs
+implementing the components. The first option puts everything into one or more
+Python files and is suitable for testing, experimentation, learning, and small
+scale production use on a local machine. The second option, described in the
+`Distributed execution`_ section, is needed for larger simulations possibly on
+HPC machines, or if any of the components is not written in Python.
+
+Here, we're learning, and we have all our models in a Python file already, so
+we'll use the first option to tie them together. This uses the
 :func:`libmuscle.run_simulation` function:
 
 .. code-block:: python
@@ -526,10 +526,6 @@ single machine. That makes this mode of operation a more realistic test case
 for a real distributed run on an HPC machine, smoothing the transition to larger
 compute resources.
 
-
-Log output
-----------
-
 If you run the script, e.g. using
 
 .. code-block:: bash
@@ -545,34 +541,46 @@ display``. In that case, try the below command to disable graphical output:
 
   (venv) python$ DONTPLOT=1 python3 reaction_diffusion.py
 
-You will also find three log files in this directory: ``muscle3_manager.log``,
-``muscle3.macro.log`` and ``muscle3.micro.log``. These contain log output for
-the manager and the submodel instances respectively. You can log messages in the
-usual Python way in your models, and MUSCLE 3 will automatically take care of
-writing them to the log file. Any messages at level ``WARNING`` or higher will
-be sent to the manager log as well. This helps give an overview of what went
-wrong in a single place in case of errors.
 
-Note that by default, Python (and MUSCLE 3) only logs messages at level
-``WARNING`` or higher. So if you add a statement like
+Log output
+----------
+
+Logging for the models is handled by the normal Python logging framework, which
+we configured in ``__main__``, and which prints log messages on the screen.
+Because that gets really difficult to follow with multiple models running
+simultaneously, MUSCLE's ``run_simulation`` automatically redirects each model's
+output to a separate file. After running the simulation, you will find three log
+files in the current directory: ``muscle3_manager.log``, ``muscle3.macro.log``
+and ``muscle3.micro.log``. The first logs the simulation from the perspective of
+the MUSCLE Manager, the others do the same for each submodel. Have a look to see
+what really happened when running the simulation!
+
+By default, Python (and MUSCLE3) only logs messages at level ``WARNING`` or
+higher. To be able to see better what's going on, we configure it to also log
+messages at ``INFO`` level:
 
 .. code-block:: python
 
-  logging.info('Some useful information')
-
-then you'll find that it will not show up in either of the log files, because
-``INFO`` is a lower level than ``WARNING``. To get more or less local log output
-(e.g. in ``muscle3.macro.log``), you can use one of these commands:
-
-.. code-block:: python
-
-  # least output
-  logging.getLogger().setLevel(logging.CRITICAL)
-  logging.getLogger().setLevel(logging.ERROR)
-  logging.getLogger().setLevel(logging.WARNING)
+  logging.basicConfig()
   logging.getLogger().setLevel(logging.INFO)
-  logging.getLogger().setLevel(logging.DEBUG)
-  # most output
+
+
+For even more detail, you can set the log level to ``logging.DEBUG``, but be
+aware that ``matplotlib`` outputs rather a lot of information at that level. So
+it's better to set only ``libmuscle`` to that level, by adding a line to the
+above:
+
+.. code-block:: python
+
+  logging.basicConfig()
+  logging.getLogger().setLevel(logging.INFO)
+  logging.getLogger('libmuscle').setLevel(logging.DEBUG)
+
+
+This will produce a lot more output, including all sorts of technical details
+that you probably don't want to be bothered with at this point. Set it to
+``logging.WARNING`` and ``libmuscle`` will be nice and quiet unless something
+goes wrong.
 
 The minimum log level for sending a message to the central log file
 (``muscle_manager.log``) is set by the ``muscle_remote_log_level`` setting. For
@@ -592,7 +600,29 @@ example, if you change the example to read
                 ('d', 4.05e-2)      # diffusion parameter
                 ]))
 
-then all log messages from all submodels will be sent to the manager log. This
-does slow down the simulation if you have many log statements, so it's good to
-use this to debug and to learn, but do increase the level again for production
-runs.
+then all log messages at level ``DEBUG`` or up from all submodels will be sent
+to the manager log. Note that the local log level will always be kept at least
+as low as the remote one, so the above also sets the local level to ``DEBUG``.
+As a result, those debug messages will also be in the submodel log files.
+
+Unfortunately, ``matplotlib`` produces quite a mess at ``DEBUG`` level, so you
+may want to quiet it down a bit:
+
+.. code-block:: python
+
+  logging.basicConfig()
+  logging.getLogger().setLevel(logging.INFO)
+  logging.getLogger('libmuscle').setLevel(logging.DEBUG)
+  logging.getLogger('matplotlib').setLevel(logging.WARNING)
+
+
+As you may have noticed if you ran with Matplotlib output enabled, logging to
+the manager does slow down the simulation if you have many log statements. So
+it's good to use this to debug and to learn, but do increase the level again for
+production runs.
+
+Finally, ``muscle_local_log_level`` can be used to set the local log level, but
+note that this only affects the ``libmuscle`` library. If you want to be able to
+change the log output of your model as well via a setting, you'll have to read
+the setting (or another setting with a different name) and configure logging
+accordingly yourself.

@@ -1,8 +1,7 @@
 import logging
 import multiprocessing as mp
 import os
-import sys
-from typing import Generator
+from pathlib import Path
 
 import pytest
 import yatiml
@@ -10,11 +9,8 @@ import ymmsl
 
 import integration_test.include_libmuscle   # noqa: F401
 
-from libmuscle.manager.instance_registry import InstanceRegistry
-from libmuscle.manager.logger import Logger
-from libmuscle.manager.mmp_server import MMPServer
-from libmuscle.manager.manager import elements_for_model
-from libmuscle.manager.topology_store import TopologyStore
+from libmuscle.manager.manager import Manager
+from libmuscle.manager.run_dir import RunDir
 
 
 skip_if_python_only = pytest.mark.skipif(
@@ -27,42 +23,32 @@ def yatiml_log_warning():
     yatiml.logger.setLevel(logging.WARNING)
 
 
-def make_server(ymmsl_doc: ymmsl.Configuration):
-    logger = Logger()
-    expected_elements = elements_for_model(ymmsl_doc.model)
-    instance_registry = InstanceRegistry(expected_elements)
-    topology_store = TopologyStore(ymmsl_doc)
-    server = MMPServer(logger, ymmsl_doc.settings, instance_registry,
-                       topology_store)
-    return server
-
-
-def start_mmp_server(control_pipe, ymmsl_doc):
+def start_mmp_server(control_pipe, ymmsl_doc, run_dir):
     control_pipe[0].close()
-    server = make_server(ymmsl_doc)
-    control_pipe[1].send(True)
+    manager = Manager(ymmsl_doc, run_dir)
+    control_pipe[1].send(manager.get_server_location())
     control_pipe[1].recv()
     control_pipe[1].close()
-    server.stop()
+    manager.stop()
 
 
-def make_server_process(ymmsl_doc):
+def make_server_process(ymmsl_doc, tmpdir):
+    run_dir = RunDir(Path(tmpdir))
     control_pipe = mp.Pipe()
     process = mp.Process(target=start_mmp_server,
-                         args=(control_pipe, ymmsl_doc),
-                         name='MMPServer')
+                         args=(control_pipe, ymmsl_doc, run_dir),
+                         name='Manager')
     process.start()
     control_pipe[1].close()
     # wait for start
-    control_pipe[0].recv()
-    yield None
+    yield control_pipe[0].recv()
     control_pipe[0].send(True)
     control_pipe[0].close()
     process.join()
 
 
 @pytest.fixture
-def mmp_server_process(yatiml_log_warning):
+def mmp_server_process(yatiml_log_warning, tmpdir):
     ymmsl_text = (
             'ymmsl_version: v0.1\n'
             'model:\n'
@@ -90,11 +76,11 @@ def mmp_server_process(yatiml_log_warning):
             )
     ymmsl_doc = ymmsl.load(ymmsl_text)
 
-    yield from make_server_process(ymmsl_doc)
+    yield from make_server_process(ymmsl_doc, tmpdir)
 
 
 @pytest.fixture
-def mmp_server_process_simple(yatiml_log_warning):
+def mmp_server_process_simple(tmpdir, yatiml_log_warning):
     ymmsl_text = (
             'ymmsl_version: v0.1\n'
             'model:\n'
@@ -117,7 +103,7 @@ def mmp_server_process_simple(yatiml_log_warning):
             )
     ymmsl_doc = ymmsl.load(ymmsl_text)
 
-    yield from make_server_process(ymmsl_doc)
+    yield from make_server_process(ymmsl_doc, tmpdir)
 
 
 @pytest.fixture
@@ -146,22 +132,16 @@ def mmp_server(yatiml_log_warning):
             )
     ymmsl_doc = ymmsl.load(ymmsl_text)
 
-    server = make_server(ymmsl_doc)
-    yield server
-    server.stop()
-
-
-@pytest.fixture
-def sys_argv_manager() -> Generator[None, None, None]:
-    old_argv = sys.argv
-    sys.argv = sys.argv + ['--muscle-manager=localhost:9000']
-    yield None
-    sys.argv = old_argv
+    manager = Manager(ymmsl_doc)
+    yield manager._server
+    manager.stop()
 
 
 @pytest.fixture
 def log_file_in_tmpdir(tmpdir):
-    old_argv = sys.argv
-    sys.argv = sys.argv + ['--muscle-log-file={}'.format(tmpdir)]
+    old_workdir = os.getcwd()
+    os.chdir(tmpdir)
+
     yield None
-    sys.argv = old_argv
+
+    os.chdir(old_workdir)

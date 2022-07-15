@@ -2,8 +2,8 @@
 LibMuscle architecture
 ======================
 
-LibMuscle is the MUSCLE 3 client library. Kernels link with it to get access to
-functionality that lets them be part of a MUSCLE 3 simulation. As kernels can be
+LibMuscle is the MUSCLE3 client library. Kernels link with it to get access to
+functionality that lets them be part of a MUSCLE3 simulation. As kernels can be
 written in many languages, a version of LibMuscle will have to be made for each
 such language.
 
@@ -34,14 +34,14 @@ Coordination API
 ----------------
 
 The Coordination API consists of a single function, which
-initialises MUSCLE 3, contacts the manager, and performs the
+initialises MUSCLE3, contacts the manager, and performs the
 instance side of the MUSCLE initialisation process. This function
 must always be called first, and should take the form of a
-constructor of a central MUSCLE 3 object that all other communcation
+constructor of a central MUSCLE3 object that all other communcation
 goes through.
 
 The init function is passed (if necessary) the command line
-arguments, and reads and removes the MUSCLE 3-specific ones. These
+arguments, and reads and removes the MUSCLE3-specific ones. These
 tell it where the Manager is, which it uses to initialise the MMP
 Client. It is also passed a description of the kernel, which it
 passes to the Manager via the MMP Client on registration.
@@ -92,7 +92,7 @@ The Logging API is used by the client to log information about its
 progress, errors, etc. If something goes wrong in a distributed
 system, it is often difficult to find out what happened and why.
 Having log output easily available in a single location makes this
-much easier, so MUSCLE 3 provides this convenience. Furthermore, the
+much easier, so MUSCLE3 provides this convenience. Furthermore, the
 logging system can be used to obtain basic performance information,
 which can be used by the planner to allocate resources more
 efficiently.

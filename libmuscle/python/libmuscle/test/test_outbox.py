@@ -1,5 +1,5 @@
 from libmuscle.outbox import Outbox
-from libmuscle.mcp.message import Message
+from libmuscle.mpp_message import MPPMessage
 
 from copy import copy
 import pytest
@@ -15,7 +15,7 @@ def outbox():
 @pytest.fixture
 def message():
     Ref = Reference
-    return Message(
+    return MPPMessage(
             Ref('sender.out'), Ref('receiver.in'),
             None, 0.0, 1.0,
             bytes(),

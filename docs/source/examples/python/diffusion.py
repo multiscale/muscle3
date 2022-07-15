@@ -33,7 +33,8 @@ def diffusion() -> None:
     logger = logging.getLogger()
     instance = Instance({
             Operator.O_I: ['state_out'],
-            Operator.S: ['state_in']})
+            Operator.S: ['state_in'],
+            Operator.O_F: ['final_state_out']})
 
     while instance.reuse_instance():
         # F_INIT
@@ -73,7 +74,11 @@ def diffusion() -> None:
             Us = np.vstack((Us, U))
             t_cur += dt
 
-        if 'DONTPLOT' not in os.environ:
+        # O_F
+        final_state_msg = Message(t_cur, None, Grid(U, ['x']))
+        instance.send('final_state_out', final_state_msg)
+
+        if 'DONTPLOT' not in os.environ and 'SLURM_NODENAME' not in os.environ:
             from matplotlib import pyplot as plt
             plt.figure()
             plt.imshow(
@@ -94,4 +99,6 @@ def diffusion() -> None:
 
 
 if __name__ == '__main__':
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.INFO)
     diffusion()

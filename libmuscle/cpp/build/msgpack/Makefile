@@ -17,14 +17,6 @@ distclean: clean
 	rm -rf $$(find . -type d -name 'msgpack-*')
 	rm -rf msgpack
 
-dep_name := zlib
-dep_version_constraint := >= 1.2
-dep_version := 1.2.11
-dep_pkgconfig_name := zlib
-dep_install := 1
-include $(TOOLDIR)/make_available.make
-
-
 msgpack-$(msgpack_VERSION).tar.gz:
 	$(DOWNLOAD) https://github.com/msgpack/msgpack-c/releases/download/cpp-$(msgpack_VERSION)/msgpack-$(msgpack_VERSION).tar.gz
 
@@ -33,7 +25,7 @@ msgpack-$(msgpack_VERSION): msgpack-$(msgpack_VERSION).tar.gz
 
 msgpack: msgpack-$(msgpack_VERSION)
 	cd msgpack-$(msgpack_VERSION) && mkdir -p build && cd build && \
-		export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS) && \
+		export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) && \
 		cmake -DCMAKE_INSTALL_PREFIX=$(CURDIR)/msgpack -DMSGPACK_CXX11=ON -DMSGPACK_BUILD_EXAMPLES=OFF .. && \
-		make -j $(NCORES) && make install
+		$(MAKE) -j $(NCORES) && make install
 

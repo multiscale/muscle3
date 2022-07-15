@@ -1,4 +1,5 @@
 import multiprocessing as mp
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -11,8 +12,9 @@ from ymmsl import Operator
 from .conftest import skip_if_python_only
 
 
-def run_macro(instance_id: str):
-    sys.argv.append('--muscle-instance={}'.format(instance_id))
+def run_macro(instance_id: str, manager_location: str):
+    sys.argv.append(f'--muscle-instance={instance_id}')
+    sys.argv.append(f'--muscle-manager={manager_location}')
     macro()
 
 
@@ -46,28 +48,36 @@ def macro():
 
 
 @skip_if_python_only
-def test_fortran_macro_micro(mmp_server_process_simple):
-    # create C++ micro model
-    # see libmuscle/fortran/src/libmuscle/tests/fortran_micro_model_test.f03
+def test_fortran_macro_micro(mmp_server_process_simple, tmp_path):
+    # create Fortran micro model
+    # see libmuscle/fortran/src/libmuscle/tests/fortran_micro_model_test.f90
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'
-    lib_paths = [
-            cpp_build_dir / 'grpc' / 'c-ares' / 'c-ares' / 'lib',
-            cpp_build_dir / 'grpc' / 'zlib' / 'zlib' / 'lib',
-            cpp_build_dir / 'grpc' / 'openssl' / 'openssl' / 'lib',
-            cpp_build_dir / 'protobuf' / 'protobuf' / 'lib',
-            cpp_build_dir / 'grpc' / 'grpc' / 'lib',
-            cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
-    env = {
-            'LD_LIBRARY_PATH': ':'.join(map(str, lib_paths))}
+    env = os.environ.copy()
+    lib_paths = [cpp_build_dir / 'msgpack' / 'msgpack' / 'lib']
+    if 'LD_LIBRARY_PATH' in env:
+        env['LD_LIBRARY_PATH'] += ':' + ':'.join(map(str, lib_paths))
+    else:
+        env['LD_LIBRARY_PATH'] = ':'.join(map(str, lib_paths))
+
+    env['MUSCLE_MANAGER'] = mmp_server_process_simple
+
     fortran_test_dir = (
             Path(__file__).parents[1] / 'libmuscle' / 'fortran' / 'build' /
             'libmuscle' / 'tests')
     fortran_test_micro = fortran_test_dir / 'fortran_micro_model_test'
-    micro_result = subprocess.Popen(
-            [str(fortran_test_micro), '--muscle-instance=micro'], env=env)
+
+    with (tmp_path / 'fortran_stdout.txt').open('w') as f_out:
+        with (tmp_path / 'fortran_stderr.txt').open('w') as f_err:
+            micro_result = subprocess.Popen(
+                    [
+                        str(fortran_test_micro), '--muscle-instance=micro',
+                        f'--muscle-manager={mmp_server_process_simple}'
+                        ], env=env, stdout=f_out, stderr=f_err)
 
     # run macro model
-    macro_process = mp.Process(target=run_macro, args=('macro',))
+    macro_process = mp.Process(
+            target=run_macro,
+            args=('macro', mmp_server_process_simple))
     macro_process.start()
 
     # check results

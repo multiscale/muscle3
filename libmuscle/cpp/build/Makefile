@@ -36,7 +36,7 @@ include $(TOOLDIR)/make_available.make
 
 dep_name := googletest
 dep_version_constraint := >= 1.8.1
-dep_version := 1.8.1
+dep_version := 1.12.1
 dep_pkgconfig_name := gtest
 dep_install := 0
 include $(TOOLDIR)/make_available.make

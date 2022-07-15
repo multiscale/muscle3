@@ -5,6 +5,43 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_.
 
+0.5.0
+*****
+
+Added
+-----
+
+* MUSCLE3 now starts submodels and other components (using QCG-PilotJob)
+* Automatic resource management for components on HPC
+
+Improved
+--------
+
+* Build and installation process now even easier
+* Improved error messages and reliability
+* Cleaner and more informative logging output
+* TCP performance and scalability improvements
+
+Fixed
+-----
+
+* Various issues when building and running on HPC clusters
+* Many small fixes
+
+Removed
+-------
+
+* Python 3.5 support
+* Removed gRPC for faster and more reliable builds
+* Pipe-based networking, as it had no benefits and some issues
+
+Thanks
+------
+
+* Stefan, Merijn and Maarten for reporting issues
+* Piotr and Bartek for creating and supporting QCG-PilotJob
+
+
 0.4.0
 *****
 

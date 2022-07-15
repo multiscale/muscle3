@@ -55,7 +55,7 @@ setup(
         "numpy>=1.22,<=1.25; python_version>='3.8'",
         'qcg-pilotjob==0.13.1',
         'typing_extensions<4',
-        'ymmsl @ git+https://github.com/multiscale/ymmsl-python.git@develop#egg=ymmsl'          # Also in CI, update there as well
+        'ymmsl>=0.12.0,<0.13'          # Also in CI, update there as well
     ],
     extras_require={
         'dev': [

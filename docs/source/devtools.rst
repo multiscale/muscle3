@@ -48,13 +48,14 @@ Static checking
 ---------------
 
 The quality control system uses several tools, which are called from the central
-Makefile. In our standard development environment, the command `make test` in
-the top directory will run them all.
+Makefile. In our standard development environment, the command ``make test`` in
+the top directory will run them all. This in turn runs `tox`_, which runs the
+individual tools.
 
 Python has a standard coding standard known as PEP8, which specifies how Python
 code should be formatted. Consistently writing our code according to PEP8 makes
 it easier to read, and makes it easier for new developers to get started. We use
-the `PEP8 plug-in`_ for Pytest (see below) to check the formatting.
+`flake8`_ to check the formatting.
 
 Although Python is a dynamically-typed language, it supports type annotations,
 and using those for static type checking. While writing code with type
@@ -100,7 +101,7 @@ Python coverage library, which is configured in `.coveragerc`, where e.g.
 generated code is excluded from testing.
 
 Tests can be run locally using `make test`, but are also run in the cloud via
-`Travis-CI`_ on every push to the Github repository. After Travis has run the
+Github Actions on every push to the Github repository. After Github has run the
 tests, it reports the code coverage to `Codacy`_, which integrates it with the
 linting results into its dashboard. It also reports back to GitHub, adding an
 icon to e.g. a pull request to signal whether the tests have passed or not.
@@ -128,11 +129,10 @@ documentation and display it online. This uses Sphinx, but does not support
 
 .. _`setuptools`: https://setuptools.readthedocs.io
 .. _`Requires.io`: https://requires.io/
-.. _`PEP8 plug-in`: https://pypi.python.org/pypi/pytest-pep8
+.. _`flake8`: https://github.com/PyCQA/flake8
 .. _`mypy`: https://mypy.readthedocs.io
 .. _`Codacy`: https://support.codacy.com
 .. _`PyTest`: https://pytest.org
-.. _`Travis-CI`: https://docs.travis-ci.com
 .. _`ReStructuredText`: http://docutils.sourceforge.net/rst.html
 .. _`Sphinx`: http://www.sphinx-doc.org
 .. _`sphinx-autodoc`: http://www.sphinx-doc.org/en/master/ext/autodoc.html

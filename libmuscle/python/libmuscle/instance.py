@@ -440,7 +440,7 @@ class Instance:
         if port.operator == Operator.F_INIT:
             if (port_name, slot) in self._f_init_cache:
                 msg = self._f_init_cache[(port_name, slot)]
-                del(self._f_init_cache[(port_name, slot)])
+                del self._f_init_cache[(port_name, slot)]
                 if with_settings and msg.settings is None:
                     err_msg = ('If you use receive_with_settings()'
                                ' on an F_INIT port, then you have to'

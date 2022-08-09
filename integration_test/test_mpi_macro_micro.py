@@ -11,8 +11,9 @@ from ymmsl import Operator
 from .conftest import skip_if_python_only
 
 
-def run_macro(instance_id: str):
+def run_macro(instance_id: str, muscle_manager: str):
     sys.argv.append('--muscle-instance={}'.format(instance_id))
+    sys.argv.append('--muscle-manager={}'.format(muscle_manager))
     macro()
 
 
@@ -61,7 +62,8 @@ def test_mpi_macro_micro(tmpdir, mmp_server_process_simple):
              str(mpi_test_micro), '--muscle-instance=micro'], env=env)
 
     # run macro model
-    macro_process = mp.Process(target=run_macro, args=('macro',))
+    macro_process = mp.Process(target=run_macro,
+                               args=('macro', mmp_server_process_simple))
     macro_process.start()
 
     # check results

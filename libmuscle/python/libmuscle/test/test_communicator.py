@@ -281,6 +281,7 @@ def test_send_message(communicator, message) -> None:
     assert msg.timestamp == 0.0
     assert msg.next_timestamp is None
     assert msg.settings_overlay == Settings()
+    assert msg.message_number == 0
     assert msg.data == b'test'
 
 
@@ -304,6 +305,7 @@ def test_send_msgpack(communicator, message2) -> None:
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
     assert msg.settings_overlay == Settings()
+    assert msg.message_number == 0
     assert msg.data == {'test': 17}
 
 
@@ -318,6 +320,7 @@ def test_send_message_with_slot(communicator2, message) -> None:
     assert msg.sender == 'other.out[13]'
     assert msg.receiver == 'kernel[13].in'
     assert msg.settings_overlay == Settings()
+    assert msg.message_number == 0
     assert msg.data == b'test'
 
 
@@ -348,6 +351,7 @@ def test_send_message_with_settings(communicator, message) -> None:
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
     assert msg.settings_overlay.as_ordered_dict() == {'test2': 'testing'}
+    assert msg.message_number == 0
     assert msg.data == b'test'
 
 
@@ -363,6 +367,7 @@ def test_send_settings(communicator, message) -> None:
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
     assert msg.settings_overlay == Settings()
+    assert msg.message_number == 0
     assert msg.data == Settings({'test1': 'testing'})
 
 
@@ -378,6 +383,7 @@ def test_close_port(communicator) -> None:
     assert msg.timestamp == float('inf')
     assert msg.next_timestamp is None
     assert msg.settings_overlay == Settings()
+    assert msg.message_number == 0
     assert isinstance(msg.data, ClosePort)
 
 
@@ -385,7 +391,7 @@ def test_receive_message(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            None, 0.0, None, Settings({'test1': 12}),
+            None, 0.0, None, Settings({'test1': 12}), 0,
             b'test').encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
@@ -424,7 +430,7 @@ def test_receive_msgpack(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            None, 0.0, None, Settings({'test1': 12}),
+            None, 0.0, None, Settings({'test1': 12}), 0,
             {'test': 13}).encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
@@ -441,7 +447,7 @@ def test_receive_with_slot(communicator2) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('kernel[13].out'), Reference('other.in[13]'),
-            None, 0.0, None, Settings({'test': 'testing'}),
+            None, 0.0, None, Settings({'test': 'testing'}), 0,
             b'test').encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator2._Communicator__get_client = get_client_mock
@@ -459,7 +465,7 @@ def test_receive_message_resizable(communicator3) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel.in[13]'),
-            20, 0.0, None, Settings({'test': 'testing'}),
+            20, 0.0, None, Settings({'test': 'testing'}), 0,
             b'test').encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator3._Communicator__get_client = get_client_mock
@@ -477,7 +483,7 @@ def test_receive_with_settings(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            None, 0.0, None, Settings({'test2': 3.1}),
+            None, 0.0, None, Settings({'test2': 3.1}), 0,
             b'test').encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
@@ -496,7 +502,7 @@ def test_receive_msgpack_with_slot_and_settings(communicator2) -> None:
     client_mock.receive.return_value = MPPMessage(
             Reference('kernel[13].out'), Reference('other.in[13]'),
             None, 0.0, 1.0,
-            Settings({'test': 'testing'}), 'test').encoded()
+            Settings({'test': 'testing'}), 0, 'test').encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator2._Communicator__get_client = get_client_mock
     communicator2._profiler = MagicMock()
@@ -513,7 +519,7 @@ def test_receive_settings(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            None, 0.0, None, Settings({'test1': 12}),
+            None, 0.0, None, Settings({'test1': 12}), 0,
             Settings({'test': 13})).encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
@@ -531,7 +537,7 @@ def test_receive_close_port(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            None, 0.0, None, Settings(), ClosePort()).encoded()
+            None, 0.0, None, Settings(), 0, ClosePort()).encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
     communicator._profiler = MagicMock()
@@ -545,6 +551,6 @@ def test_get_message(communicator, message) -> None:
     communicator.send_message('out', message)
     ref_message = MPPMessage(
             Reference('kernel[13].out'), Reference('other.in[13]'),
-            None, 0.0, None, Settings(), b'test').encoded()
+            None, 0.0, None, Settings(), 0, b'test').encoded()
     assert communicator._post_office.get_message(
             'other.in[13]') == ref_message

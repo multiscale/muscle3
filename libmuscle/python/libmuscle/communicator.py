@@ -79,6 +79,7 @@ class Communicator:
             profiler: The profiler to use for recording sends and
                     receives.
         """
+        # TODO: pass a SnapshotManager and store as self._snapshot_manager
         self._kernel = kernel
         self._index = index
         self._declared_ports = declared_ports
@@ -213,14 +214,16 @@ class Communicator:
                 snd_endpoint.port, slot_list)
 
         port_length = None
-        if self._ports[port_name].is_resizable():
-            port_length = self._ports[port_name].get_length()
+        if port.is_resizable():
+            port_length = port.get_length()
 
         mcp_message = MPPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
                                  port_length,
                                  message.timestamp, message.next_timestamp,
                                  cast(Settings, message.settings),
+                                 port.get_num_messages(slot),
                                  message.data)
+        port.increment_num_messages(slot)
         encoded_message = mcp_message.encoded()
         self._post_office.deposit(recv_endpoint.ref(), encoded_message)
         profile_event.stop()
@@ -257,12 +260,12 @@ class Communicator:
                 connected.
         """
         if slot is None:
-            _logger.debug('Waiting for message on {}'.format(port_name))
+            port_and_slot = port_name
             slot_list = []      # type: List[int]
         else:
-            _logger.debug('Waiting for message on {}[{}]'.format(
-                port_name, slot))
+            port_and_slot = f"{port_name}[{slot}]"
             slot_list = [slot]
+        _logger.debug('Waiting for message on {}'.format(port_and_slot))
 
         recv_endpoint = self.__get_endpoint(port_name, slot_list)
 
@@ -311,15 +314,26 @@ class Communicator:
             profile_event.port_length = port.get_length()
         profile_event.message_size = len(mcp_message_bytes)
 
-        if slot is None:
-            _logger.debug('Received message on {}'.format(port_name))
-            if isinstance(mcp_message.data, ClosePort):
-                _logger.debug('Port {} is now closed'.format(port_name))
-        else:
-            _logger.debug('Received message on {}[{}]'.format(port_name, slot))
-            if isinstance(mcp_message.data, ClosePort):
-                _logger.debug('Port {}[{}] is now closed'.format(
-                    port_name, slot))
+        expected_message_number = port.get_num_messages(slot)
+        # TODO: handle f_init port counts for STATELESS and WEAKLY_STATEFUL
+        # components which didn't load a snapshot
+        if expected_message_number != mcp_message.message_number:
+            if (expected_message_number - 1 == mcp_message.message_number and
+                    port.is_resuming(slot)):
+                _logger.debug(f'Discarding received message on {port_and_slot}'
+                              ': resuming from weakly consistent snapshot')
+                port.set_resumed()
+                return self.receive_message(port_name, slot, default)
+            raise RuntimeError(f'Received message on {port_and_slot} with'
+                               ' unexpected message number'
+                               f' {mcp_message.message_number}. Was expecting'
+                               f' {expected_message_number}. Are you resuming'
+                               ' from an inconsistent snapshot?')
+        port.increment_num_messages(slot)
+
+        _logger.debug('Received message on {}'.format(port_and_slot))
+        if isinstance(mcp_message.data, ClosePort):
+            _logger.debug('Port {} is now closed'.format(port_and_slot))
 
         return message
 
@@ -380,6 +394,8 @@ class Communicator:
                 ports[port_name] = Port(
                         port_name, operator, is_vector, is_connected,
                         len(self._index), port_peer_dims)
+                # TODO: retrieve num_messages[] for this port from
+                # self._snapshot_manager when resuming
         return ports
 
     def __ports_from_conduits(self, conduits: List[Conduit]
@@ -411,6 +427,8 @@ class Communicator:
                 ports[str(port_id)] = Port(
                         str(port_id), operator, is_vector, is_connected,
                         len(self._index), port_peer_dims)
+                # TODO: retrieve num_messages[] for this port from
+                # self._snapshot_manager when resuming
         return ports
 
     def __settings_in_port(self, conduits: List[Conduit]) -> Port:
@@ -430,6 +448,8 @@ class Communicator:
                                     conduit.sending_component()))
         return Port('muscle_settings_in', Operator.F_INIT, False, False,
                     len(self._index), [])
+        # TODO: retrieve num_messages[] for this port from
+        # self._snapshot_manager when resuming
 
     def __get_client(self, instance: Reference) -> MPPClient:
         """Get or create a client to connect to the given instance.

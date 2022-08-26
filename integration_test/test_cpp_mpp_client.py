@@ -23,7 +23,7 @@ def tcp_server_process(control_pipe):
     message = MPPMessage(
             Reference('test_sender.test_port'),
             receiver,
-            10, 1.0, 2.0, settings, data).encoded()
+            10, 1.0, 2.0, settings, 0, data).encoded()
 
     def handle_request(request_bytes):
         request = msgpack.unpackb(request_bytes, raw=False)

@@ -151,7 +151,7 @@ class MPPMessage:
     def __init__(self, sender: Reference, receiver: Reference,
                  port_length: Optional[int],
                  timestamp: float, next_timestamp: Optional[float],
-                 settings_overlay: Settings, data: Any
+                 settings_overlay: Settings, message_number: int, data: Any
                  ) -> None:
         """Create an MPPMessage.
 
@@ -177,6 +177,7 @@ class MPPMessage:
         self.timestamp = timestamp
         self.next_timestamp = next_timestamp
         self.settings_overlay = settings_overlay
+        self.message_number = message_number
         if isinstance(data, np.ndarray):
             self.data = Grid(data)
         else:
@@ -197,11 +198,12 @@ class MPPMessage:
         timestamp = message_dict["timestamp"]
         next_timestamp = message_dict["next_timestamp"]
         settings_overlay = message_dict["settings_overlay"]
+        message_number = message_dict["message_number"]
 
         data = message_dict["data"]
         return MPPMessage(
                 sender, receiver, port_length, timestamp, next_timestamp,
-                settings_overlay, data)
+                settings_overlay, message_number, data)
 
     def encoded(self) -> bytes:
         """Encode the message and return as a bytes buffer.
@@ -213,6 +215,7 @@ class MPPMessage:
                 'timestamp': self.timestamp,
                 'next_timestamp': self.next_timestamp,
                 'settings_overlay': self.settings_overlay,
+                'message_number': self.message_number,
                 'data': self.data
                 }
 

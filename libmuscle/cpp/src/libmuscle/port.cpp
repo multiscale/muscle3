@@ -29,8 +29,7 @@ namespace libmuscle { namespace impl {
 Port::Port(
         std::string const & name, Operator oper,
         bool is_vector, bool is_connected,
-        int our_ndims, std::vector<int> peer_dims,
-        std::vector<int> num_messages)
+        int our_ndims, std::vector<int> peer_dims)
     : ::ymmsl::Port(Identifier(name), oper)
 {
     is_connected_ = is_connected;
@@ -67,12 +66,8 @@ Port::Port(
     }
 
     is_resizable_ = is_vector && (our_ndims == static_cast<int>(peer_dims.size()));
-    if (!num_messages.empty()) {
-        num_messages_ = num_messages;
-        is_resuming_.resize(num_messages_.size(), true);
-    }
-    extend_vector_to_size(num_messages_, std::max(1, length_), 0);
-    extend_vector_to_size(is_resuming_, std::max(1, length_), false);
+    num_messages_.resize(std::max(1, length_), 0);
+    is_resuming_.resize(std::max(1, length_), false);
 }
 
 bool Port::is_connected() const {
@@ -128,6 +123,18 @@ void Port::set_closed() {
 
 void Port::set_closed(int slot) {
     is_open_[slot] = false;
+}
+
+void Port::restore_message_counts(const std::vector<int> &num_messages) {
+    num_messages_ = std::vector<int>(num_messages);
+    is_resuming_.clear();
+    is_resuming_.resize(num_messages_.size(), true);
+    extend_vector_to_size(num_messages_, std::max(1, length_), 0);
+    extend_vector_to_size(is_resuming_, std::max(1, length_), false);
+}
+
+const std::vector<int> & Port::get_message_counts() const {
+    return num_messages_;
 }
 
 void Port::increment_num_messages() {

@@ -32,8 +32,7 @@ class Port(ymmsl.Port):
     """
 
     def __init__(self, name: str, operator: Operator, is_vector: bool,
-                 is_connected: bool, our_ndims: int, peer_dims: List[int],
-                 num_messages: Optional[List[int]] = None
+                 is_connected: bool, our_ndims: int, peer_dims: List[int]
                  ) -> None:
         """Create a Port.
 
@@ -86,13 +85,8 @@ class Port(ymmsl.Port):
             self._is_open = [True]
 
         self._is_resizable = is_vector and (our_ndims == len(peer_dims))
-        self._num_messages = []  # type: List[int]
-        self._is_resuming = []  # type: List[bool]
-        if num_messages is not None:
-            self._num_messages = num_messages
-            self._is_resuming = [True] * len(num_messages)
-        _extend_list_to_size(self._num_messages, self._length or 1, 0)
-        _extend_list_to_size(self._is_resuming, self._length or 1, False)
+        self._num_messages = [0] * (self._length or 1)
+        self._is_resuming = [False] * (self._length or 1)
 
     # Note: I'm not sure how this will develop exactly, so this class has some
     # accessors even if those are un-Pythonic; in the future a simple variable
@@ -167,6 +161,19 @@ class Port(ymmsl.Port):
             self._is_open[slot] = False
         else:
             self._is_open = [False]
+
+    def restore_message_counts(self, num_messages: List[int]) -> None:
+        """Restore message counts from a snapshot
+        """
+        self._num_messages = num_messages
+        self._is_resuming = [True] * len(self._num_messages)
+        _extend_list_to_size(self._num_messages, self._length or 1, 0)
+        _extend_list_to_size(self._is_resuming, self._length or 1, False)
+
+    def get_message_counts(self) -> List[int]:
+        """Get a list of message counts for all slots in this port
+        """
+        return self._num_messages.copy()
 
     def increment_num_messages(self, slot: Optional[int] = None) -> None:
         """Increment amount of messages sent or received.

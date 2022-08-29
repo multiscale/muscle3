@@ -71,8 +71,8 @@ Port::Port(
         num_messages_ = num_messages;
         is_resuming_.resize(num_messages_.size(), true);
     }
-    extend_vector_to_size(num_messages_, std::min(1, length_), 0);
-    extend_vector_to_size(is_resuming_, std::min(1, length_), false);
+    extend_vector_to_size(num_messages_, std::max(1, length_), 0);
+    extend_vector_to_size(is_resuming_, std::max(1, length_), false);
 }
 
 bool Port::is_connected() const {
@@ -117,8 +117,8 @@ void Port::set_length(int length) {
         // Using extend here to not discard any information about message
         // numbers between resizes. Note that _num_messages and _is_resuming
         // may be longer than self._length!
-        extend_vector_to_size(num_messages_, std::min(1, length_), 0);
-        extend_vector_to_size(is_resuming_, std::min(1, length_), false);
+        extend_vector_to_size(num_messages_, std::max(1, length_), 0);
+        extend_vector_to_size(is_resuming_, std::max(1, length_), false);
     }
 }
 
@@ -140,12 +140,26 @@ void Port::increment_num_messages(int slot) {
     set_resumed(slot);
 }
 
+void Port::increment_num_messages(Optional<int> slot) {
+    if(slot.is_set())
+        increment_num_messages(slot.get());
+    else
+        increment_num_messages();
+}
+
 int Port::get_num_messages() const {
     return num_messages_[0];
 }
 
 int Port::get_num_messages(int slot) const {
     return num_messages_[slot];
+}
+
+int Port::get_num_messages(Optional<int> slot) const {
+    if(slot.is_set())
+        return get_num_messages(slot.get());
+    else
+        return get_num_messages();
 }
 
 bool Port::is_resuming() const {
@@ -156,12 +170,26 @@ bool Port::is_resuming(int slot) const {
     return is_resuming_[slot];
 }
 
+bool Port::is_resuming(Optional<int> slot) const {
+    if(slot.is_set())
+        return is_resuming(slot.get());
+    else
+        return is_resuming();
+}
+
 void Port::set_resumed() {
     is_resuming_[0] = false;
 }
 
 void Port::set_resumed(int slot) {
     is_resuming_[slot] = false;
+}
+
+void Port::set_resumed(Optional<int> slot) {
+    if(slot.is_set())
+        set_resumed(slot.get());
+    else
+        set_resumed();
 }
 
 } }

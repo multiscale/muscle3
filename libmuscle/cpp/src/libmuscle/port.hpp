@@ -121,6 +121,12 @@ class Port : public ::ymmsl::Port {
          */
         void increment_num_messages(int slot);
 
+        /** Increment amount of messages sent or received.
+         *
+         * @param slot The slot that is sent/received on
+         */
+        void increment_num_messages(Optional<int> slot);
+
         /** Get the amount of messages sent or received
          */
         int get_num_messages() const;
@@ -132,6 +138,12 @@ class Port : public ::ymmsl::Port {
          * @param slot The slot that is sent/received on
          */
         int get_num_messages(int slot) const;
+
+        /** Get the amount of messages sent or received
+         *
+         * @param slot The slot that is sent/received on
+         */
+        int get_num_messages(Optional<int> slot) const;
 
         /** True when this port has resumed.
          *
@@ -151,6 +163,15 @@ class Port : public ::ymmsl::Port {
          */
         bool is_resuming(int slot) const;
 
+        /** True when this port has resumed.
+         *
+         * After resumption, each port/slot may discard exactly one message.
+         * is_resuming keeps track of this state.
+         *
+         * @param slot The slot that is sent/received on
+         */
+        bool is_resuming(Optional<int> slot) const;
+
         /** Mark that this port has resumed and may no longer discard messages.
          */
         void set_resumed();
@@ -162,6 +183,12 @@ class Port : public ::ymmsl::Port {
          * @param slot The slot that is sent/received on
          */
         void set_resumed(int slot);
+
+        /** Mark that this port has resumed and may no longer discard messages.
+         *
+         * @param slot The slot that is sent/received on
+         */
+        void set_resumed(Optional<int> slot);
 
     private:
         bool is_connected_;

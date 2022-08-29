@@ -322,7 +322,7 @@ class Communicator:
                     port.is_resuming(slot)):
                 _logger.debug(f'Discarding received message on {port_and_slot}'
                               ': resuming from weakly consistent snapshot')
-                port.set_resumed()
+                port.set_resumed(slot)
                 return self.receive_message(port_name, slot, default)
             raise RuntimeError(f'Received message on {port_and_slot} with'
                                ' unexpected message number'

@@ -30,8 +30,7 @@ class Port : public ::ymmsl::Port {
         Port(
                 std::string const & name, ::ymmsl::Operator oper,
                 bool is_vector, bool is_connected,
-                int our_ndims, std::vector<int> peer_dims,
-                std::vector<int> num_messages=std::vector<int>(0));
+                int our_ndims, std::vector<int> peer_dims);
 
         // Note: we only ever use this Port in libmuscle, and only use
         // ymmsl::Port in ymmsl. Port objects are always handled by value, so
@@ -108,6 +107,16 @@ class Port : public ::ymmsl::Port {
          * @param slot The slot to mark as closed.
          */
         void set_closed(int slot);
+
+        /** Restore message counts from a snapshot.
+         *
+         * @param num_messages message counts of the snapshot
+         */
+        void restore_message_counts(const std::vector<int> &num_messages);
+
+        /** Get the message counts for all slots in this port
+         */
+        const std::vector<int> & get_message_counts() const;
 
         /** Increment amount of messages sent or received.
          */

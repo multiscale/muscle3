@@ -11,12 +11,26 @@ using ymmsl::Identifier;
 using ymmsl::Operator;
 
 
+namespace {
+
+template< typename T>
+inline void extend_vector_to_size(
+        std::vector<T> &vec, const int minsize, const T &val) {
+    if(static_cast<int>(vec.size()) < minsize) {
+        vec.resize(minsize, val);
+    }
+}
+
+}
+
+
 namespace libmuscle { namespace impl {
 
 Port::Port(
         std::string const & name, Operator oper,
         bool is_vector, bool is_connected,
-        int our_ndims, std::vector<int> peer_dims)
+        int our_ndims, std::vector<int> peer_dims,
+        std::vector<int> num_messages)
     : ::ymmsl::Port(Identifier(name), oper)
 {
     is_connected_ = is_connected;
@@ -53,6 +67,12 @@ Port::Port(
     }
 
     is_resizable_ = is_vector && (our_ndims == static_cast<int>(peer_dims.size()));
+    if (!num_messages.empty()) {
+        num_messages_ = num_messages;
+        is_resuming_.resize(num_messages_.size(), true);
+    }
+    extend_vector_to_size(num_messages_, std::min(1, length_), 0);
+    extend_vector_to_size(is_resuming_, std::min(1, length_), false);
 }
 
 bool Port::is_connected() const {
@@ -94,6 +114,11 @@ void Port::set_length(int length) {
     if (length != length_) {
         length_ = length;
         is_open_ = std::vector<bool>(length_, true);
+        // Using extend here to not discard any information about message
+        // numbers between resizes. Note that _num_messages and _is_resuming
+        // may be longer than self._length!
+        extend_vector_to_size(num_messages_, std::min(1, length_), 0);
+        extend_vector_to_size(is_resuming_, std::min(1, length_), false);
     }
 }
 
@@ -103,6 +128,40 @@ void Port::set_closed() {
 
 void Port::set_closed(int slot) {
     is_open_[slot] = false;
+}
+
+void Port::increment_num_messages() {
+    num_messages_[0] ++;
+    set_resumed();
+}
+
+void Port::increment_num_messages(int slot) {
+    num_messages_[slot] ++;
+    set_resumed(slot);
+}
+
+int Port::get_num_messages() const {
+    return num_messages_[0];
+}
+
+int Port::get_num_messages(int slot) const {
+    return num_messages_[slot];
+}
+
+bool Port::is_resuming() const {
+    return is_resuming_[0];
+}
+
+bool Port::is_resuming(int slot) const {
+    return is_resuming_[slot];
+}
+
+void Port::set_resumed() {
+    is_resuming_[0] = false;
+}
+
+void Port::set_resumed(int slot) {
+    is_resuming_[slot] = false;
 }
 
 } }

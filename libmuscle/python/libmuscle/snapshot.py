@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Dict, List, Optional, cast
+from typing import Dict, List, Optional, cast
 
 import msgpack
+from ymmsl import Reference, Settings
 
-if TYPE_CHECKING:
-    # prevent circular import
-    from libmuscle.communicator import Message
+from libmuscle.mpp_message import MPPMessage
+from libmuscle import communicator
 
 
 class Snapshot(ABC):
@@ -21,7 +21,7 @@ class Snapshot(ABC):
                  wallclocktime: float,
                  port_message_counts: Dict[str, List[int]],
                  is_final_snapshot: bool,
-                 message: 'Message') -> None:
+                 message: 'communicator.Message') -> None:
         self.triggers = triggers
         self.wallclocktime = wallclocktime
         self.port_message_counts = port_message_counts
@@ -62,7 +62,7 @@ class MsgPackSnapshot(Snapshot):
                    dct['wallclocktime'],
                    dct['port_message_counts'],
                    dct['is_final_snapshot'],
-                   dct['message'])
+                   cls.bytes_to_message(dct['message']))
 
     def to_bytes(self) -> bytes:
         return cast(bytes, msgpack.dumps({
@@ -70,8 +70,25 @@ class MsgPackSnapshot(Snapshot):
             'wallclocktime': self.wallclocktime,
             'port_message_counts': self.port_message_counts,
             'is_final_snapshot': self.is_final_snapshot,
-            'message': self.message
+            'message': self.message_to_bytes(self.message)
         }))
+
+    @staticmethod
+    def message_to_bytes(message: 'communicator.Message') -> bytes:
+        """Use MPPMessage serializer for serializing the message object
+        """
+        return MPPMessage(Reference('_'), Reference('_'), None,
+                          message.timestamp, message.next_timestamp,
+                          Settings(), 0, message.data).encoded()
+
+    @staticmethod
+    def bytes_to_message(data: bytes) -> 'communicator.Message':
+        """Use MPPMessage deserializer for serializing the message object
+        """
+        mpp_message = MPPMessage.from_bytes(data)
+        return communicator.Message(mpp_message.timestamp,
+                                    mpp_message.next_timestamp,
+                                    mpp_message.data)
 
 
 @dataclass

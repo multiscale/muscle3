@@ -96,7 +96,7 @@ class MMPClient():
 
     def submit_snapshot_metadata(self, snapshot_metadata: SnapshotMetadata
                                  ) -> None:
-        ... # TODO
+        ...  # TODO
 
     def get_settings(self) -> Settings:
         """Get the central settings from the manager.

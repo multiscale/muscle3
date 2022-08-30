@@ -9,6 +9,7 @@ from libmuscle.mcp.protocol import RequestType, ResponseType
 from libmuscle.mcp.tcp_transport_client import TcpTransportClient
 from libmuscle.profiling import ProfileEvent
 from libmuscle.logging import LogMessage
+from libmuscle.snapshot import SnapshotMetadata
 
 
 CONNECTION_TIMEOUT = 300
@@ -92,6 +93,10 @@ class MMPClient():
                 RequestType.SUBMIT_PROFILE_EVENTS.value,
                 [encode_profile_event(e) for e in events]]
         self._call_manager(request)
+
+    def submit_snapshot_metadata(self, snapshot_metadata: SnapshotMetadata
+                                 ) -> None:
+        ... # TODO
 
     def get_settings(self) -> Settings:
         """Get the central settings from the manager.

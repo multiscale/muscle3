@@ -183,9 +183,9 @@ class TriggerManager:
     """Manages all checkpoint triggers and checks if a snapshot must be saved.
     """
 
-    def __init__(self, reference_utctime: datetime, checkpoints: Checkpoints
+    def __init__(self, utc_reference: datetime, checkpoints: Checkpoints
                  ) -> None:
-        self._monotonic_reference = _utc_to_monotonic(reference_utctime)
+        self._monotonic_reference = _utc_to_monotonic(utc_reference)
 
         self._wall = CombinedCheckpointTriggers(checkpoints.wallclocktime)
         self._prevwall = 0.0
@@ -280,27 +280,30 @@ class TriggerManager:
             self._should_save_final_called = False
             self._saved_final_checkpoint = False
 
-    def update_checkpoints(self, simulationtime: float, final: bool) -> float:
+    def update_checkpoints(self, timestamp: float,
+                           next_timestamp: Optional[float], final: bool
+                           ) -> None:
         """Update last and next checkpoint times when a snapshot is made
 
         Args:
-            simulationtime: next timestamp as reported by the instance (if
-                available, otherwise current timestamp)
-
-        Returns:
-            Current elapsed walltime
+            timestamp: timestamp as reported by the instance
+            next_timestamp: next timestamp as reported by the instance
         """
         self._prevwall = self.elapsed_walltime()
         self._nextwall = self._wall.next_checkpoint(self._prevwall)
 
         if final and self._max_f_init_next_timestamp is not None:
             simulationtime = self._max_f_init_next_timestamp
+        else:
+            if next_timestamp is None:
+                simulationtime = timestamp
+            else:
+                simulationtime = next_timestamp
         self._prevsim = simulationtime
         self._nextsim = self._sim.next_checkpoint(simulationtime)
 
         self._should_have_saved = False
         self._saved_final_checkpoint = final
-        return self._prevwall
 
     def get_triggers(self) -> List[str]:
         """Get trigger description(s) for the current reason for checkpointing.

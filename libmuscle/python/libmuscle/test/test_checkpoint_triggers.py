@@ -162,7 +162,7 @@ def test_trigger_manager():
     assert "wallclocktime" in triggers[0]
     with pytest.raises(RuntimeError):  # did not call save in between
         trigger_manager.should_save_snapshot(t, t_next)
-    trigger_manager.update_checkpoints(t_next, False)
+    trigger_manager.update_checkpoints(t, t_next, False)
 
     t, t_next = 0.2, 0.9
     assert not trigger_manager.should_save_snapshot(t, t_next)
@@ -170,7 +170,7 @@ def test_trigger_manager():
     t, t_next = 0.9, 3.1
     assert trigger_manager.should_save_snapshot(t, t_next)
     assert len(trigger_manager.get_triggers()) == 1
-    trigger_manager.update_checkpoints(t_next, False)
+    trigger_manager.update_checkpoints(t, t_next, False)
 
     t, t_next = 3.1, None
     assert trigger_manager.should_save_final_snapshot(t)
@@ -179,7 +179,7 @@ def test_trigger_manager():
     with pytest.raises(RuntimeError):  # did not call save in between
         trigger_manager.should_save_final_snapshot(t)
     assert len(trigger_manager.get_triggers()) > 0
-    trigger_manager.update_checkpoints(t, True)
+    trigger_manager.update_checkpoints(t, t_next, True)
 
     trigger_manager.reuse_instance(None)
 
@@ -191,7 +191,7 @@ def test_trigger_manager():
     assert trigger_manager.should_save_final_snapshot(t)
     with pytest.raises(RuntimeError):  # not saved
         trigger_manager.reuse_instance(None)
-    trigger_manager.update_checkpoints(t, True)
+    trigger_manager.update_checkpoints(t, t_next, True)
 
     trigger_manager.reuse_instance(None)
 

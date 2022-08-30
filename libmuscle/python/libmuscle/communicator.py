@@ -366,6 +366,30 @@ class Communicator:
         for server in self._servers:
             server.close()
 
+    def restore_message_counts(self, port_message_counts: Dict[str, List[int]]
+                               ) -> None:
+        """Restore message counts on all ports
+        """
+        for port_name, num_messages in port_message_counts.items():
+            if port_name == "muscle_settings_in":
+                self._muscle_settings_in.restore_message_counts(num_messages)
+            elif port_name in self._ports:
+                self._ports[port_name].restore_message_counts(num_messages)
+            else:
+                raise RuntimeError(f'Unknown port {port_name} in snapshot.'
+                                   ' Have your port definitions changed since'
+                                   ' the snapshot was taken?')
+        # TODO decide if we should check whether all ports are covered
+
+    def get_message_counts(self) -> Dict[str, List[int]]:
+        """Get message counts for all ports on the communicator
+        """
+        port_message_counts = {port_name: port.get_message_counts()
+                               for port_name, port in self._ports.items()}
+        port_message_counts["muscle_settings_in"] = \
+            self._muscle_settings_in.get_message_counts()
+        return port_message_counts
+
     def __instance_id(self) -> Reference:
         """Returns our complete instance id.
         """

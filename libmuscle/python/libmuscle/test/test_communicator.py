@@ -649,7 +649,7 @@ def test_port_discard_error_on_resume(caplog, communicator):
     # In the next block, the first message with message_number=1 is discarded.
     # The RuntimeError is raised when 'receiving' the second message with
     # message_number=1
-    with caplog.at_level(logging.DEBUG):
+    with caplog.at_level(logging.DEBUG, 'libmuscle.communicator'):
         with pytest.raises(RuntimeError):
             communicator.receive_message('in')
         # records 0, 2 and 3 are debug logs for starting/receiving on port
@@ -674,7 +674,7 @@ def test_port_discard_success_on_resume(caplog, communicator):
         assert port._is_resuming == [True]
         assert port.is_resuming(None)
 
-    with caplog.at_level(logging.DEBUG):
+    with caplog.at_level(logging.DEBUG, 'libmuscle.communicator'):
         msg = communicator.receive_message('in')
         # records 0, 2 and 3 are debug logs for starting/receiving on port
         assert 'Discarding received message' in caplog.records[1].message

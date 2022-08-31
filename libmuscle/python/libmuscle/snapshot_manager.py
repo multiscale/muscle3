@@ -67,6 +67,11 @@ class SnapshotManager:
             snapshot = cast(Snapshot, self._resume_from_snapshot)
             self._communicator.restore_message_counts(
                 snapshot.port_message_counts)
+            if self._trigger:
+                self._trigger.update_checkpoints(
+                    snapshot.message.timestamp,
+                    snapshot.message.next_timestamp,
+                    snapshot.is_final_snapshot)
 
     def reuse_instance(self,
                        max_f_init_next_timestamp: Optional[float],
@@ -135,8 +140,8 @@ class SnapshotManager:
             final: True iff called from save_final_snapshot
         """
         if self._trigger is None:
-            _logger.warning('Saving a snapshot but no checkpoints requested'
-                            ' by the workflow.')
+            _logger.info('Saving a snapshot but no checkpoints requested'
+                         ' by the workflow.')
             triggers = []
             wallclocktime = 0.0
         else:
@@ -167,7 +172,7 @@ class SnapshotManager:
                                ' and can be read.')
 
         # TODO: encapsulate I/O errors?
-        with snapshot_location.open("rb") as snapshot_file:
+        with snapshot_location.open('rb') as snapshot_file:
             version = snapshot_file.read(1)
             data = snapshot_file.read()
 

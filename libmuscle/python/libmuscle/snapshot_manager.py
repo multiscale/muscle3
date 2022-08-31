@@ -46,10 +46,10 @@ class SnapshotManager:
         self._snapshot_directory = None     # type: Optional[Path]
         self._next_snapshot_num = 1
 
-    def registered(self,
-                   utc_reference: datetime,
-                   checkpoints: Checkpoints,
-                   resume: Optional[Path]) -> None:
+    def set_checkpoint_info(self,
+                            utc_reference: datetime,
+                            checkpoints: Checkpoints,
+                            resume: Optional[Path]) -> None:
         """Callback after registering with the manager.
 
         Provide the snapshot manager with info on workflow checkpoints and if we
@@ -75,7 +75,7 @@ class SnapshotManager:
 
     def reuse_instance(self,
                        max_f_init_next_timestamp: Optional[float],
-                       snapshot_directory: Path,
+                       snapshot_directory: Optional[Path],
                        ) -> None:
         """Callback on Instance.reuse_instance
 

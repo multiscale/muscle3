@@ -1,9 +1,10 @@
+from datetime import datetime, timezone
 import sys
 from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
-from ymmsl import Operator, Reference, Settings
+from ymmsl import Operator, Reference, Settings, Checkpoints
 
 from libmuscle.communicator import Message
 from libmuscle.instance import Instance
@@ -48,6 +49,8 @@ def instance(sys_argv_instance):
 
         mmp_client_object = MagicMock()
         mmp_client_object.request_peers.return_value = (None, None, None)
+        checkpoint_info = (datetime.now(timezone.utc), Checkpoints(), None)
+        mmp_client_object.register_instance.return_value = checkpoint_info
         mmp_client.return_value = mmp_client_object
 
         instance = Instance({
@@ -64,6 +67,8 @@ def instance2(sys_argv_instance):
          patch('libmuscle.instance.Communicator'):
         mmp_client_object = MagicMock()
         mmp_client_object.request_peers.return_value = (None, None, None)
+        checkpoint_info = (datetime.now(timezone.utc), Checkpoints(), None)
+        mmp_client_object.register_instance.return_value = checkpoint_info
         mmp_client.return_value = mmp_client_object
         instance = Instance({
             Operator.F_INIT: ['in[]'],
@@ -77,6 +82,8 @@ def test_create_instance(
          patch('libmuscle.instance.Communicator') as comm_type:
         mmp_client_object = MagicMock()
         mmp_client_object.request_peers.return_value = (None, None, None)
+        checkpoint_info = (datetime.now(timezone.utc), Checkpoints(), None)
+        mmp_client_object.register_instance.return_value = checkpoint_info
         mmp_client.return_value = mmp_client_object
         ports = {
             Operator.F_INIT: ['in'],

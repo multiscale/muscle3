@@ -18,12 +18,12 @@ class Snapshot(ABC):
 
     def __init__(self,
                  triggers: List[str],
-                 wallclocktime: float,
+                 wallclock_time: float,
                  port_message_counts: Dict[str, List[int]],
                  is_final_snapshot: bool,
                  message: 'communicator.Message') -> None:
         self.triggers = triggers
-        self.wallclocktime = wallclocktime
+        self.wallclock_time = wallclock_time
         self.port_message_counts = port_message_counts
         self.is_final_snapshot = is_final_snapshot
         self.message = message
@@ -59,7 +59,7 @@ class MsgPackSnapshot(Snapshot):
     def from_bytes(cls, data: bytes) -> 'Snapshot':
         dct = msgpack.loads(data)
         return cls(dct['triggers'],
-                   dct['wallclocktime'],
+                   dct['wallclock_time'],
                    dct['port_message_counts'],
                    dct['is_final_snapshot'],
                    cls.bytes_to_message(dct['message']))
@@ -67,7 +67,7 @@ class MsgPackSnapshot(Snapshot):
     def to_bytes(self) -> bytes:
         return cast(bytes, msgpack.dumps({
             'triggers': self.triggers,
-            'wallclocktime': self.wallclocktime,
+            'wallclock_time': self.wallclock_time,
             'port_message_counts': self.port_message_counts,
             'is_final_snapshot': self.is_final_snapshot,
             'message': self.message_to_bytes(self.message)
@@ -100,7 +100,7 @@ class SnapshotMetadata:
     """Metadata of a snapshot for sending to the muscle_manager.
     """
     triggers: List[str]
-    wallclocktime: float
+    wallclock_time: float
     timestamp: float
     next_timestamp: Optional[float]
     port_message_counts: Dict[str, List[int]]
@@ -115,7 +115,7 @@ class SnapshotMetadata:
         """
         return SnapshotMetadata(
             snapshot.triggers,
-            snapshot.wallclocktime,
+            snapshot.wallclock_time,
             snapshot.message.timestamp,
             snapshot.message.next_timestamp,
             snapshot.port_message_counts,

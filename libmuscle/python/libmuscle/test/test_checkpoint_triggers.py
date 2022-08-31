@@ -150,8 +150,8 @@ def test_trigger_manager_reference_time():
 def test_trigger_manager():
     reference = datetime.now(timezone.utc)
     trigger_manager = TriggerManager(reference, Checkpoints(
-            wallclocktime=CheckpointRules(at=[1e-12]),
-            simulationtime=CheckpointRules(at=[1, 3, 5])))
+            wallclock_time=CheckpointRules(at=[1e-12]),
+            simulation_time=CheckpointRules(at=[1, 3, 5])))
 
     trigger_manager.reuse_instance(7)
 
@@ -159,7 +159,7 @@ def test_trigger_manager():
     assert trigger_manager.should_save_snapshot(t, t_next)
     triggers = trigger_manager.get_triggers()
     assert len(triggers) == 1
-    assert "wallclocktime" in triggers[0]
+    assert "wallclock_time" in triggers[0]
     with pytest.raises(RuntimeError):  # did not call save in between
         trigger_manager.should_save_snapshot(t, t_next)
     trigger_manager.update_checkpoints(t, t_next, False)
@@ -202,7 +202,7 @@ def test_trigger_manager_warnings(caplog: pytest.LogCaptureFixture,
 
     reference = datetime.now(timezone.utc)
     trigger_manager = TriggerManager(reference, Checkpoints(
-            simulationtime=CheckpointRules(at=[1, 3, 5])))
+            simulation_time=CheckpointRules(at=[1, 3, 5])))
 
     trigger_manager.reuse_instance(2)
 

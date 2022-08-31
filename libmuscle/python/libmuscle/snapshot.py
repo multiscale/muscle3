@@ -77,9 +77,12 @@ class MsgPackSnapshot(Snapshot):
     def message_to_bytes(message: 'communicator.Message') -> bytes:
         """Use MPPMessage serializer for serializing the message object
         """
+        settings = Settings()
+        if message.settings is not None:
+            settings = message.settings
         return MPPMessage(Reference('_'), Reference('_'), None,
                           message.timestamp, message.next_timestamp,
-                          Settings(), 0, message.data).encoded()
+                          settings, 0, message.data).encoded()
 
     @staticmethod
     def bytes_to_message(data: bytes) -> 'communicator.Message':
@@ -88,7 +91,8 @@ class MsgPackSnapshot(Snapshot):
         mpp_message = MPPMessage.from_bytes(data)
         return communicator.Message(mpp_message.timestamp,
                                     mpp_message.next_timestamp,
-                                    mpp_message.data)
+                                    mpp_message.data,
+                                    mpp_message.settings_overlay)
 
 
 @dataclass

@@ -18,7 +18,8 @@ def test_no_checkpointing(caplog: pytest.LogCaptureFixture, tmp_path: Path
     communicator.get_message_counts.return_value = {}
     snapshot_manager = SnapshotManager(Reference('test'), manager, communicator)
 
-    snapshot_manager.registered(datetime.now(timezone.utc), Checkpoints(), None)
+    snapshot_manager.set_checkpoint_info(
+            datetime.now(timezone.utc), Checkpoints(), None)
 
     snapshot_manager.reuse_instance(None, Path(tmp_path))
     assert not snapshot_manager.resuming()
@@ -42,7 +43,8 @@ def test_save_load_checkpoint(tmp_path: Path) -> None:
     snapshot_manager = SnapshotManager(instance_id, manager, communicator)
 
     checkpoints = Checkpoints(simulation_time=CheckpointRules(every=1))
-    snapshot_manager.registered(datetime.now(timezone.utc), checkpoints, None)
+    snapshot_manager.set_checkpoint_info(
+            datetime.now(timezone.utc), checkpoints, None)
 
     snapshot_manager.reuse_instance(None, tmp_path)
     with pytest.raises(RuntimeError):
@@ -68,7 +70,8 @@ def test_save_load_checkpoint(tmp_path: Path) -> None:
 
     snapshot_manager2 = SnapshotManager(instance_id, manager, communicator)
 
-    snapshot_manager2.registered(datetime.now(timezone.utc), checkpoints, fpath)
+    snapshot_manager2.set_checkpoint_info(
+            datetime.now(timezone.utc), checkpoints, fpath)
     communicator.restore_message_counts.assert_called_with(port_message_counts)
 
     assert snapshot_manager2.resuming()

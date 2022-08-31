@@ -1,11 +1,13 @@
 from copy import copy
+from datetime import datetime
 import logging
 import os
+from pathlib import Path
 import sys
 from typing import cast, Dict, List, Optional, Tuple
 
 from ymmsl import (Identifier, Operator, SettingValue, Port, Reference,
-                   Settings)
+                   Settings, Checkpoints)
 
 from libmuscle.communicator import Communicator, Message
 from libmuscle.settings_manager import SettingsManager
@@ -15,6 +17,7 @@ from libmuscle.mpp_message import ClosePort
 from libmuscle.mmp_client import MMPClient
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEventType
+from libmuscle.snapshot_manager import SnapshotManager
 from libmuscle.util import extract_log_file_location
 
 
@@ -63,13 +66,20 @@ class Instance:
         self._settings_manager = SettingsManager()
         """Settings for this instance."""
 
+        self._snapshot_manager = SnapshotManager(
+                self._instance_name(), self.__manager, self._communicator)
+        """Keeps track of checkpointing and snapshots"""
+
         self._first_run = True
         """Keeps track of whether this is the first reuse run."""
 
         self._f_init_cache = dict()     # type: _FInitCacheType
 
-        self._register()
+        checkpoint_info = self._register()
         self._connect()
+        # Note: SnapshotManager.set_checkpoint_info needs to have the ports
+        # initialized so it comes after self._connect()
+        self._snapshot_manager.set_checkpoint_info(*checkpoint_info)
         self._set_local_log_level()
         self._set_remote_log_level()
 
@@ -105,6 +115,17 @@ class Instance:
                 and everything will be fine. If it turns out that you
                 did need to specify False, MUSCLE3 will tell you about
                 it in an error message and you can add it still.
+
+        Raises:
+            RuntimeError:
+                When implementing the checkpointing API, but libmuscle detected
+                incorrect API calls. The description of the RuntimeError
+                indicates which calls are incorrect or missing. For more
+                information see the checkpointing API documentation in
+                :meth:`resuming`, :meth:`load_snapshot`,
+                :meth:`should_save_snapshot`, :meth:`save_snapshot`,
+                :meth:`should_save_final_snapshot` and
+                :meth:`save_final_snapshot`, or the checkpointing tutorial.
         """
         do_reuse = self.__receive_settings()
 
@@ -129,6 +150,22 @@ class Instance:
             for message in self._f_init_cache.values():
                 if isinstance(message.data, ClosePort):
                     do_reuse = False
+
+        max_f_init_next_timestamp = max(
+                (msg.next_timestamp
+                 for msg in self._f_init_cache.values()
+                 if msg.next_timestamp is not None),
+                default=None)
+        # Note: muscle_snapshot_directory setting is provided by muscle_manager
+        # when checkpointing is enabled for this run. When checkpointing is not
+        # enabled, it might not exist and a KeyError is raised.
+        try:
+            snapshot_dir = self.get_setting('muscle_snapshot_directory', 'str')
+            snapshot_path = Path(cast(str, snapshot_dir))
+        except KeyError:
+            snapshot_path = None
+        self._snapshot_manager.reuse_instance(
+                max_f_init_next_timestamp, snapshot_path)
 
         if not do_reuse:
             self.__close_ports()
@@ -350,16 +387,161 @@ class Instance:
         """
         return self.__receive_message(port_name, slot, default, True)
 
-    def _register(self) -> None:
+    def resuming(self) -> bool:
+        """Check if this instance is resuming from a snapshot.
+
+        Must be used by submodels that implement the checkpointing API. You'll
+        get a RuntimeError when not calling this method in an iteration of the
+        reuse loop.
+
+        This method returns True for the first iteration of the reuse loop after
+        resuming from a previously taken snapshot. When resuming from a
+        snapshot, the submodel must load its state from the snapshot as returned
+        by :meth:`load_snapshot` and the F_INIT step must be skipped.
+
+        Returns:
+            True iff the submodel must resume from a snapshot instead of the
+            usual F_INIT step during this iteration of the reuse loop.
+        """
+        return self._snapshot_manager.resuming()
+
+    def load_snapshot(self) -> Message:
+        """Load a snapshot.
+
+        Must only be called when :meth:`resuming` returns True.
+
+        Returns:
+            Message object containing the state as saved in a previous run
+            through :meth:`save_snapshot` or :meth:`save_final_snapshot`
+
+        Raises:
+            RuntimeError: if not resuming from a snapshot.
+        """
+        return self._snapshot_manager.load_snapshot()
+
+    def should_save_snapshot(
+            self, timestamp: float, next_timestamp: Optional[float]) -> bool:
+        """Check if a snapshot should be saved inside a time-integration loop.
+
+        This method checks if a snapshot should be saved right now, based on the
+        provided timestamps and passed wallclock time.
+
+        When the next timestamp is provided, this value will be used to
+        determine if a checkpoint will be passed between now and the next time
+        step. A submodel should always provide the next timestamp if available,
+        since this is the most reliable way to get consistent snapshots across
+        all submodels in the run.
+
+        When a submodel cannot provide the next timestamp, a best efford is made
+        to get consistent snapshots (based on the current timestamp). See the
+        checkpointing tutorial for more information.
+
+        When this method returns True, the submodel must also save a snapshot
+        through :meth:`save_snapshot`. A RuntimeError will be generated when not
+        doing so.
+
+        See also :meth:`should_save_final_snapshot` for the variant that must be
+        called at the end of a time-integration loop, or when a submodel does
+        not have a time-integration loop.
+
+        Args:
+            timestamp: current timestamp of the submodel
+            next_timestamp: timestamp of the next iteration of the time
+                integration loop of the submodel or ``None`` if not available
+
+        Returns:
+            True iff a snapshot should be taken by the submodel according to the
+            checkpoint rules provided in the ymmsl configuration.
+        """
+        return self._snapshot_manager.should_save_snapshot(
+                timestamp, next_timestamp)
+
+    def save_snapshot(self, message: Message) -> None:
+        """Save a snapshot inside a time-integration loop.
+
+        Before saving a snapshot, you should check using
+        :meth:`should_save_snapshot` if a snapshot should be saved according to
+        the checkpoint rules specified in the ymmsl configuration. You should
+        use the same timestamp and next_timestamp in the provided Message object
+        as used to query `should_save_snapshot`.
+
+        Although it is allowed to save a snapshot even when
+        :meth:`should_save_snapshot` returns False, you should avoid this: this
+        situation is not likely to lead to a consistent snapshot over all
+        submodels of the run (and therefore it is not useful to restart from).
+        It could also lead to a lot of snapshot files clogging your file system.
+
+        See also :meth:`save_final_snapshot` for the variant that must be called
+        at the end of a time-integration loop, or when a submodel does not have
+        a time-integration loop.
+
+        Args:
+            message: Message object that is saved as snapshot. The message
+                timestamp and next_timestamp attributes should be the same as
+                passed to :meth:`should_save_snapshot`. The data attribute can
+                be used to store the internal state of the submodel.
+        """
+        return self._snapshot_manager.save_snapshot(message)
+
+    def should_save_final_snapshot(self, timestamp: float) -> bool:
+        """Check if a snapshot should be saved before O_F.
+
+        This method checks if a snapshot should be saved right now, based on the
+        provided timestamp and passed wallclock time.
+
+        When this method returns True, the submodel must also save a snapshot
+        through :meth:`save_final_snapshot`. A RuntimeError will be generated
+        when not doing so.
+
+        See also :meth:`should_save_snapshot` for the variant that may be called
+        inside of a time-integration loop of the submodel.
+
+        Args:
+            timestamp: current timestamp of the submodel
+
+        Returns:
+            True iff a final snapshot should be taken by the submodel according
+            to the checkpoint rules provided in the ymmsl configuration.
+        """
+        return self._snapshot_manager.should_save_final_snapshot(timestamp)
+
+    def save_final_snapshot(self, message: Message) -> None:
+        """Save a snapshot before O_F.
+
+        Before saving a snapshot, you should check using
+        :meth:`should_save_final_snapshot` if a snapshot should be saved
+        according to the checkpoint rules specified in the ymmsl configuration.
+        You should use the same timestamp in the provided Message object as used
+        to query `should_save_final_snapshot`.
+
+        Although it is allowed to save a snapshot even when
+        :meth:`should_save_final_snapshot` returns False, you should avoid this:
+        this situation is not likely to lead to a consistent snapshot over all
+        submodels of the run (and therefore it is not useful to restart from).
+        It could also lead to a lot of snapshot files clogging your file system.
+
+        See also :meth:`save_snapshot` for the variant that may be called inside
+        of a time-integration loop of the submodel.
+
+        Args:
+            message: Message object that is saved as snapshot. The message
+                timestamp should be the same as passed to
+                :meth:`should_save_snapshot`. The data attribute can be used to
+                store the internal state of the submodel.
+        """
+        return self._snapshot_manager.save_final_snapshot(message)
+
+    def _register(self) -> Tuple[datetime, Checkpoints, Optional[Path]]:
         """Register this instance with the manager.
         """
         register_event = self._profiler.start(ProfileEventType.REGISTER)
         locations = self._communicator.get_locations()
         port_list = self.__list_declared_ports()
-        self.__manager.register_instance(self._instance_name(), locations,
-                                         port_list)
+        checkpoint_info = self.__manager.register_instance(
+                self._instance_name(), locations, port_list)
         register_event.stop()
         _logger.info('Registered with the manager')
+        return checkpoint_info
 
     def _connect(self) -> None:
         """Connect this instance to the given peers / conduits.

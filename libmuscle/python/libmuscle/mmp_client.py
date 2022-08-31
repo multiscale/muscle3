@@ -1,9 +1,11 @@
+from datetime import datetime
+from pathlib import Path
 from random import uniform
 from time import perf_counter, sleep
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import msgpack
-from ymmsl import Conduit, Operator, Port, Reference, Settings
+from ymmsl import Conduit, Operator, Port, Reference, Settings, Checkpoints
 
 from libmuscle.mcp.protocol import RequestType, ResponseType
 from libmuscle.mcp.tcp_transport_client import TcpTransportClient
@@ -109,7 +111,8 @@ class MMPClient():
         return Settings(response[1])
 
     def register_instance(self, name: Reference, locations: List[str],
-                          ports: List[Port]) -> None:
+                          ports: List[Port]
+                          ) -> Tuple[datetime, Checkpoints, Optional[Path]]:
         """Register a component instance with the manager.
 
         Args:
@@ -126,6 +129,8 @@ class MMPClient():
         if len(response) > 1:
             raise RuntimeError(
                     f'Error registering instance: {response[1]}')
+        # TODO
+        return (datetime.now(), Checkpoints(), None)
 
     def request_peers(
             self, name: Reference) -> Tuple[

@@ -56,7 +56,7 @@ class SnapshotManager:
         should resume from a previous snapshot.
 
         Args:
-            utc_reference: datetime (in UTC timezone) indicating wallclocktime=0
+            utc_reference: datetime (in UTC) indicating wallclock_time=0
             checkpoints: requested workflow checkpoints
             resume: previous snapshot to resume from (or None if not resuming)
         """
@@ -143,14 +143,14 @@ class SnapshotManager:
             _logger.info('Saving a snapshot but no checkpoints requested'
                          ' by the workflow.')
             triggers = []
-            wallclocktime = 0.0
+            wallclock_time = 0.0
         else:
             triggers = self._trigger.get_triggers()
-            wallclocktime = self._trigger.elapsed_walltime()
+            wallclock_time = self._trigger.elapsed_walltime()
 
         port_message_counts = self._communicator.get_message_counts()
         snapshot = MsgPackSnapshot(
-            triggers, wallclocktime, port_message_counts, final, msg)
+            triggers, wallclock_time, port_message_counts, final, msg)
 
         path = self.__store_snapshot(snapshot)
         metadata = SnapshotMetadata.from_snapshot(snapshot, str(path))

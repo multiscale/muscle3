@@ -8,14 +8,14 @@ from libmuscle.snapshot import Snapshot, MsgPackSnapshot, SnapshotMetadata
 @pytest.fixture
 def snapshot() -> Snapshot:
     triggers = ['test triggers']
-    wallclocktime = 15.3
+    wallclock_time = 15.3
     port_message_counts = {'in': [1], 'out': [4], 'muscle_settings_in': [0]}
     is_final = True
     message = Message(1.2, None, 'test_data')
     snapshot = MsgPackSnapshot(
-            triggers, wallclocktime, port_message_counts, is_final, message)
+            triggers, wallclock_time, port_message_counts, is_final, message)
     assert snapshot.triggers == triggers
-    assert snapshot.wallclocktime == wallclocktime
+    assert snapshot.wallclock_time == wallclock_time
     assert snapshot.port_message_counts == port_message_counts
     assert snapshot.is_final_snapshot == is_final
     assert snapshot.message == message
@@ -31,7 +31,7 @@ def test_snapshot(snapshot: Snapshot) -> None:
     snapshot2 = MsgPackSnapshot.from_bytes(binary_snapshot)
 
     assert snapshot2.triggers == snapshot.triggers
-    assert snapshot2.wallclocktime == snapshot.wallclocktime
+    assert snapshot2.wallclock_time == snapshot.wallclock_time
     assert snapshot2.port_message_counts == snapshot.port_message_counts
     assert snapshot2.is_final_snapshot == snapshot.is_final_snapshot
     assert snapshot2.message.timestamp == snapshot.message.timestamp
@@ -43,7 +43,7 @@ def test_snapshot_metadata(snapshot: Snapshot) -> None:
     metadata = SnapshotMetadata.from_snapshot(snapshot, 'test')
 
     assert metadata.triggers == snapshot.triggers
-    assert metadata.wallclocktime == snapshot.wallclocktime
+    assert metadata.wallclock_time == snapshot.wallclock_time
     assert metadata.port_message_counts == snapshot.port_message_counts
     assert metadata.is_final_snapshot == snapshot.is_final_snapshot
     assert metadata.timestamp == snapshot.message.timestamp

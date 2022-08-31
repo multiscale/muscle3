@@ -187,11 +187,11 @@ class TriggerManager:
                  ) -> None:
         self._monotonic_reference = _utc_to_monotonic(utc_reference)
 
-        self._wall = CombinedCheckpointTriggers(checkpoints.wallclocktime)
+        self._wall = CombinedCheckpointTriggers(checkpoints.wallclock_time)
         self._prevwall = 0.0
         self._nextwall = self._wall.next_checkpoint(0.0)  # type: Optional[float]
 
-        self._sim = CombinedCheckpointTriggers(checkpoints.simulationtime)
+        self._sim = CombinedCheckpointTriggers(checkpoints.simulation_time)
         self._prevsim = None        # type: Optional[float]
         self._nextsim = None        # type: Optional[float]
         self._sim_reset = True
@@ -206,7 +206,7 @@ class TriggerManager:
         self._saved_final_checkpoint = False
 
     def elapsed_walltime(self) -> float:
-        """Returns elapsed wallclocktime in seconds.
+        """Returns elapsed wallclock_time in seconds.
         """
         return time.monotonic() - self._monotonic_reference
 
@@ -293,17 +293,17 @@ class TriggerManager:
         self._nextwall = self._wall.next_checkpoint(self._prevwall)
 
         if final and self._max_f_init_next_timestamp is not None:
-            simulationtime = self._max_f_init_next_timestamp
+            simulation_time = self._max_f_init_next_timestamp
         else:
             if next_timestamp is None:
-                simulationtime = timestamp
+                simulation_time = timestamp
             else:
-                simulationtime = next_timestamp
-        self._prevsim = simulationtime
-        self._nextsim = self._sim.next_checkpoint(simulationtime)
+                simulation_time = next_timestamp
+        self._prevsim = simulation_time
+        self._nextsim = self._sim.next_checkpoint(simulation_time)
 
         # this method is also called during resume, after which we no longer
-        # consider the simulationtime as reset
+        # consider the simulation_time as reset
         self._sim_reset = False
         self._should_have_saved = False
         self._saved_final_checkpoint = final
@@ -315,29 +315,29 @@ class TriggerManager:
         self._last_triggers = []
         return triggers
 
-    def __should_save(self, walltime: float, simulationtime: float) -> bool:
+    def __should_save(self, walltime: float, simulation_time: float) -> bool:
         """Check if a checkpoint should be taken
 
         Args:
             walltime: current wallclock time (elapsed since reference)
-            simulationtime: current/next timestamp as reported by the instance
+            simulation_time: current/next timestamp as reported by the instance
         """
         if self._sim_reset:
             # we cannot make assumptions about the start time of a simulation,
             # a t=-1000 could make sense if t represents years since CE
             # and we should not disallow checkpointing for negative t
-            previous = self._sim.previous_checkpoint(simulationtime)
+            previous = self._sim.previous_checkpoint(simulation_time)
             if previous is not None:
                 # there is a checkpoint rule before the current moment, assume
                 # we should have taken a snapshot back then
                 self._nextsim = previous
             else:
-                self._nextsim = self._sim.next_checkpoint(simulationtime)
+                self._nextsim = self._sim.next_checkpoint(simulation_time)
             self._sim_reset = False
 
         self._last_triggers = []
         if self._nextwall is not None and walltime >= self._nextwall:
-            self._last_triggers.append(f"wallclocktime >= {self._nextwall}")
-        if self._nextsim is not None and simulationtime >= self._nextsim:
-            self._last_triggers.append(f"simulationtime >= {self._nextsim}")
+            self._last_triggers.append(f"wallclock_time >= {self._nextwall}")
+        if self._nextsim is not None and simulation_time >= self._nextsim:
+            self._last_triggers.append(f"simulation_time >= {self._nextsim}")
         return bool(self._last_triggers)

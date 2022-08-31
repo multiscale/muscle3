@@ -41,7 +41,7 @@ def test_save_load_checkpoint(tmp_path: Path) -> None:
     instance_id = Reference('test[1]')
     snapshot_manager = SnapshotManager(instance_id, manager, communicator)
 
-    checkpoints = Checkpoints(simulationtime=CheckpointRules(every=1))
+    checkpoints = Checkpoints(simulation_time=CheckpointRules(every=1))
     snapshot_manager.registered(datetime.now(timezone.utc), checkpoints, None)
 
     snapshot_manager.reuse_instance(None, tmp_path)
@@ -57,7 +57,7 @@ def test_save_load_checkpoint(tmp_path: Path) -> None:
     metadata = manager.submit_snapshot_metadata.call_args.args[0]
     assert isinstance(metadata, SnapshotMetadata)
     assert metadata.triggers
-    assert metadata.wallclocktime > 0.0
+    assert metadata.wallclock_time > 0.0
     assert metadata.timestamp == 0.2
     assert metadata.next_timestamp == 0.4
     assert metadata.port_message_counts == port_message_counts
@@ -86,7 +86,7 @@ def test_save_load_checkpoint(tmp_path: Path) -> None:
     metadata = manager.submit_snapshot_metadata.call_args.args[0]
     assert isinstance(metadata, SnapshotMetadata)
     assert metadata.triggers
-    assert metadata.wallclocktime > 0.0
+    assert metadata.wallclock_time > 0.0
     assert metadata.timestamp == 0.6
     assert metadata.next_timestamp is None
     assert metadata.port_message_counts == port_message_counts

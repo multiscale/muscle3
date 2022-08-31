@@ -302,6 +302,9 @@ class TriggerManager:
         self._prevsim = simulationtime
         self._nextsim = self._sim.next_checkpoint(simulationtime)
 
+        # this method is also called during resume, after which we no longer
+        # consider the simulationtime as reset
+        self._sim_reset = False
         self._should_have_saved = False
         self._saved_final_checkpoint = final
 

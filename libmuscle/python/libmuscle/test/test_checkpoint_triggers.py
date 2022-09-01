@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 import logging
 import time
 import pytest
-from ymmsl import CheckpointRange, CheckpointRules, Checkpoints
+from ymmsl import CheckpointRangeRule, CheckpointAtRule, Checkpoints
 
 from libmuscle.checkpoint_triggers import (
     CombinedCheckpointTriggers, AtCheckpointTrigger, RangeCheckpointTrigger,
@@ -10,7 +10,7 @@ from libmuscle.checkpoint_triggers import (
 
 
 def test_at_checkpoint_trigger():
-    trigger = AtCheckpointTrigger([1, 3, 4, 4.5, 9])
+    trigger = AtCheckpointTrigger([CheckpointAtRule([1, 3, 4, 4.5, 9])])
 
     assert trigger.next_checkpoint(0) == 1
     assert trigger.previous_checkpoint(0) is None
@@ -39,7 +39,7 @@ def test_at_checkpoint_trigger():
 
 
 def test_range_checkpoint_trigger():
-    range = CheckpointRange(start=0, stop=20, step=1.2)
+    range = CheckpointRangeRule(start=0, stop=20, every=1.2)
     trigger = RangeCheckpointTrigger(range)
 
     assert trigger.next_checkpoint(-1) == 0
@@ -59,7 +59,7 @@ def test_range_checkpoint_trigger():
 
 
 def test_range_checkpoint_trigger_default_stop():
-    range = CheckpointRange(start=1, step=1.2)
+    range = CheckpointRangeRule(start=1, every=1.2)
     trigger = RangeCheckpointTrigger(range)
 
     assert trigger.next_checkpoint(-1.) == 1
@@ -73,7 +73,7 @@ def test_range_checkpoint_trigger_default_stop():
 
 
 def test_range_checkpoint_trigger_default_start():
-    range = CheckpointRange(step=1.2, stop=10)
+    range = CheckpointRangeRule(every=1.2, stop=10)
     trigger = RangeCheckpointTrigger(range)
 
     assert trigger.next_checkpoint(10) is None
@@ -87,7 +87,7 @@ def test_range_checkpoint_trigger_default_start():
 
 
 def test_combined_checkpoint_trigger_every_at():
-    rules = CheckpointRules(every=10, at=[3, 7, 13, 17])
+    rules = [CheckpointRangeRule(every=10), CheckpointAtRule([3, 7, 13, 17])]
     trigger = CombinedCheckpointTriggers(rules)
 
     assert trigger.next_checkpoint(-11.) == pytest.approx(-10)
@@ -107,9 +107,9 @@ def test_combined_checkpoint_trigger_every_at():
 
 
 def test_combined_checkpoint_trigger_at_ranges():
-    rules = CheckpointRules(at=[3, 7, 13, 17], ranges=[
-                    CheckpointRange(start=0, step=5, stop=20),
-                    CheckpointRange(start=20, step=20, stop=100)])
+    rules = [CheckpointAtRule([3, 7, 13, 17]),
+             CheckpointRangeRule(start=0, every=5, stop=20),
+             CheckpointRangeRule(start=20, every=20, stop=100)]
     trigger = CombinedCheckpointTriggers(rules)
 
     assert trigger.next_checkpoint(-11.) == pytest.approx(0)
@@ -150,8 +150,8 @@ def test_trigger_manager_reference_time():
 def test_trigger_manager():
     reference = datetime.now(timezone.utc)
     trigger_manager = TriggerManager(reference, Checkpoints(
-            wallclock_time=CheckpointRules(at=[1e-12]),
-            simulation_time=CheckpointRules(at=[1, 3, 5])))
+            wallclock_time=[CheckpointAtRule([1e-12])],
+            simulation_time=[CheckpointAtRule([1, 3, 5])]))
 
     trigger_manager.reuse_instance(7)
 
@@ -202,7 +202,7 @@ def test_trigger_manager_warnings(caplog: pytest.LogCaptureFixture,
 
     reference = datetime.now(timezone.utc)
     trigger_manager = TriggerManager(reference, Checkpoints(
-            simulation_time=CheckpointRules(at=[1, 3, 5])))
+            simulation_time=[CheckpointAtRule([1, 3, 5])]))
 
     trigger_manager.reuse_instance(2)
 

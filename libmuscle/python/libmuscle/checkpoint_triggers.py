@@ -5,7 +5,8 @@ import os
 import time
 from typing import List, Optional, Union
 
-from ymmsl import CheckpointRange, CheckpointRules, Checkpoints
+from ymmsl import (
+        CheckpointRangeRule, CheckpointAtRule, CheckpointRule, Checkpoints)
 
 
 _logger = logging.getLogger(__name__)
@@ -52,14 +53,16 @@ class AtCheckpointTrigger(CheckpointTrigger):
     This triggers at the specified times.
     """
 
-    def __init__(self, at: List[Union[float, int]]) -> None:
+    def __init__(self, at_rules: List[CheckpointAtRule]) -> None:
         """Create an "at" checkpoint trigger
 
         Args:
             at: list of checkpoint moments
         """
-        self._at = at
-        self._at.sort()  # ymmsl already sorts, but just to be sure
+        self._at = []
+        for at_rule in at_rules:
+            self._at.extend(at_rule.at)
+        self._at.sort()
 
     def next_checkpoint(self, cur_time: float) -> Optional[float]:
         if cur_time >= self._at[-1]:
@@ -92,7 +95,7 @@ class RangeCheckpointTrigger(CheckpointTrigger):
     omitted, and is handled by this class as well
     """
 
-    def __init__(self, range: CheckpointRange) -> None:
+    def __init__(self, range: CheckpointRangeRule) -> None:
         """Create a range of checkpoints
 
         Args:
@@ -100,12 +103,12 @@ class RangeCheckpointTrigger(CheckpointTrigger):
         """
         self._start = range.start
         self._stop = range.stop
-        self._step = range.step
+        self._every = range.every
         self._last = None  # type: Union[int, float, None]
         if self._stop is not None:
             start = 0 if self._start is None else self._start
             diff = self._stop - start
-            self._last = start + (diff // self._step) * self._step
+            self._last = start + (diff // self._every) * self._every
 
     def next_checkpoint(self, cur_time: float) -> Optional[float]:
         if self._start is not None and cur_time < self._start:
@@ -114,7 +117,7 @@ class RangeCheckpointTrigger(CheckpointTrigger):
             return None
         start = 0 if self._start is None else self._start
         diff = cur_time - start
-        return float(start + (diff // self._step + 1) * self._step)
+        return float(start + (diff // self._every + 1) * self._every)
 
     def previous_checkpoint(self, cur_time: float) -> Optional[float]:
         if self._start is not None and cur_time < self._start:
@@ -123,30 +126,31 @@ class RangeCheckpointTrigger(CheckpointTrigger):
             return float(self._last)
         start = 0 if self._start is None else self._start
         diff = cur_time - start
-        return float(start + (diff // self._step) * self._step)
+        return float(start + (diff // self._every) * self._every)
 
 
 class CombinedCheckpointTriggers(CheckpointTrigger):
     """Checkpoint trigger based on a combination of "every", "at" and "ranges"
     """
 
-    def __init__(self, checkpoint_rules: Optional[CheckpointRules]) -> None:
+    def __init__(self, checkpoint_rules: List[CheckpointRule]) -> None:
         """Create a new combined checkpoint trigger from the given rules
 
         Args:
-            checkpoint_rules: checkpoint rules (from ymmsl) defining "every",
-                "at", and/or "ranges" rules
+            checkpoint_rules: checkpoint rules (from ymmsl)
         """
-        self._triggers = []  # type: List[CheckpointTrigger]
-        if checkpoint_rules is None:
-            return
-        if checkpoint_rules.every is not None:
-            cp_range = CheckpointRange(step=checkpoint_rules.every)
-            self._triggers.append(RangeCheckpointTrigger(cp_range))
-        if checkpoint_rules.at:
-            self._triggers.append(AtCheckpointTrigger(checkpoint_rules.at))
-        for cp_range in checkpoint_rules.ranges:
-            self._triggers.append(RangeCheckpointTrigger(cp_range))
+        self._triggers = []     # type: List[CheckpointTrigger]
+        at_rules = []           # type: List[CheckpointAtRule]
+        for rule in checkpoint_rules:
+            if isinstance(rule, CheckpointAtRule):
+                if rule.at:
+                    at_rules.append(rule)
+            elif isinstance(rule, CheckpointRangeRule):
+                self._triggers.append(RangeCheckpointTrigger(rule))
+            else:
+                raise RuntimeError('Unknown checkpoint rule')
+        if at_rules:
+            self._triggers.append(AtCheckpointTrigger(at_rules))
 
     def next_checkpoint(self, cur_time: float) -> Optional[float]:
         checkpoints = (trigger.next_checkpoint(cur_time)

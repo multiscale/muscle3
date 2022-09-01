@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from ymmsl import Reference, Checkpoints, CheckpointRules
+from ymmsl import Reference, Checkpoints, CheckpointRangeRule
 
 from libmuscle.communicator import Message
 from libmuscle.snapshot import SnapshotMetadata
@@ -42,7 +42,7 @@ def test_save_load_checkpoint(tmp_path: Path) -> None:
     instance_id = Reference('test[1]')
     snapshot_manager = SnapshotManager(instance_id, manager, communicator)
 
-    checkpoints = Checkpoints(simulation_time=CheckpointRules(every=1))
+    checkpoints = Checkpoints(simulation_time=[CheckpointRangeRule(every=1)])
     snapshot_manager.set_checkpoint_info(
             datetime.now(timezone.utc), checkpoints, None)
 

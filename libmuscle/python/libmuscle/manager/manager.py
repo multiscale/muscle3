@@ -58,7 +58,7 @@ class Manager:
             pass
 
         self._server = MMPServer(
-                self._logger, self._configuration.settings,
+                self._logger, self._configuration,
                 self._instance_registry, self._topology_store)
 
         if self._instance_manager:

@@ -1,9 +1,12 @@
+from datetime import datetime, timezone
 import errno
 import logging
-from typing import Any, cast, Generator, List
+from typing import Any, Dict, Optional, Tuple, cast, Generator, List
 
 import msgpack
-from ymmsl import Conduit, Identifier, Operator, Port, Reference, Settings
+from ymmsl import (
+        Conduit, Identifier, Operator, Port, Reference, PartialConfiguration,
+        Checkpoints)
 
 from libmuscle.logging import LogLevel
 from libmuscle.manager.instance_registry import (
@@ -18,6 +21,8 @@ from libmuscle.util import generate_indices, instance_indices
 
 
 _logger = logging.getLogger(__name__)
+
+_EncodedCheckpointType = Dict[str, List[Dict[str, Any]]]
 
 
 def decode_operator(data: str) -> Operator:
@@ -35,12 +40,20 @@ def encode_conduit(conduit: Conduit) -> List[str]:
     return [str(conduit.sender), str(conduit.receiver)]
 
 
+def encode_checkpoints(checkpoints: Checkpoints) -> _EncodedCheckpointType:
+    """Convert a Checkpoins to a MsgPack-compatible value."""
+    return {
+        "wallclock_time": [vars(rule) for rule in checkpoints.wallclock_time],
+        "simulation_time": [vars(rule) for rule in checkpoints.simulation_time]
+    }
+
+
 class MMPRequestHandler(RequestHandler):
     """Handles Manager requests."""
     def __init__(
             self,
             logger: Logger,
-            settings: Settings,
+            configuration: PartialConfiguration,
             instance_registry: InstanceRegistry,
             topology_store: TopologyStore):
         """Create an MMPRequestHandler.
@@ -52,9 +65,10 @@ class MMPRequestHandler(RequestHandler):
             topology_store: Keeps track of how to connect things.
         """
         self._logger = logger
-        self._settings = settings
+        self._configuration = configuration
         self._instance_registry = instance_registry
         self._topology_store = topology_store
+        self._reference_time = datetime.now(timezone.utc)
 
     def handle_request(self, request: bytes) -> bytes:
         """Handles a manager request.
@@ -98,14 +112,22 @@ class MMPRequestHandler(RequestHandler):
             status (ResponseType): SUCCESS or ERROR
             error_msg (str): An error message, only present if status
                 equals ERROR
+            checkpoint_info (Tuple[str, bytes, Optional[str]]): Checkpoint info,
+                only present if status equals SUCCESS. The first item is an
+                ISO8601 encoding of the wallclock reference time (see
+                :meth:`datetime.datetime.isoformat`). The second item is a
+                yaml-encoded ymmsl.Checkpoints object. The final item is the
+                checkpoint filename that the registered instance should resume
+                from, or None if no resume is requested.
         """
         port_objs = [decode_port(p) for p in ports]
+        instance = Reference(instance_id)
         try:
-            self._instance_registry.add(
-                Reference(instance_id), locations, port_objs)
+            self._instance_registry.add(instance, locations, port_objs)
 
             _logger.info(f'Registered instance {instance_id}')
-            return [ResponseType.SUCCESS.value]
+            checkpoint_info = self._get_checkpoint_info(instance)
+            return [ResponseType.SUCCESS.value, checkpoint_info]
         except AlreadyRegistered:
             return [
                     ResponseType.ERROR.value,
@@ -202,7 +224,7 @@ class MMPRequestHandler(RequestHandler):
         """
         return [
                 ResponseType.SUCCESS.value,
-                self._settings.as_ordered_dict()]
+                self._configuration.settings.as_ordered_dict()]
 
     def _submit_log_message(
             self, instance_id: str, timestamp: float, level: int, text: str
@@ -261,6 +283,29 @@ class MMPRequestHandler(RequestHandler):
                 for peer_indices in generate_indices(peer_dims[len(dims):]):
                     yield base + peer_indices
 
+    def _get_checkpoint_info(
+                self,
+                instance: Reference
+                ) -> Tuple[str, _EncodedCheckpointType, Optional[str]]:
+        """Get checkpoint info for an instance
+
+        Args:
+            instance: The instance whose checkpoint info to get
+
+        Returns:
+            wallclock_reference_time: :meth:`datetime.datetime.isoformat`
+                encoded UTC reference for wallclock time = 0
+            checkpoints: yaml-encoded ymmsl.Checkpoints object
+            resume: path of the snapshot file to resume from (or None if not
+                resuming)
+        """
+        resume = None
+        if instance in self._configuration.resume:
+            resume = str(self._configuration.resume[instance])
+        return (self._reference_time.isoformat(),
+                encode_checkpoints(self._configuration.checkpoints),
+                resume)
+
 
 class MMPServer:
     """The MUSCLE Manager Protocol server.
@@ -272,7 +317,7 @@ class MMPServer:
     def __init__(
             self,
             logger: Logger,
-            settings: Settings,
+            configuration: PartialConfiguration,
             instance_registry: InstanceRegistry,
             topology_store: TopologyStore
             ) -> None:
@@ -285,13 +330,14 @@ class MMPServer:
 
         Args:
             logger: Logger to send log messages to
-            settings: Settings component to get settings from
+            configuration: Configuration component to get settings, checkpoints
+                and resumes from
             instance_registry: To register instances with and get
                 peer locations from
             topology_store: To get peers and conduits from
         """
         self._handler = MMPRequestHandler(
-                logger, settings, instance_registry, topology_store)
+                logger, configuration, instance_registry, topology_store)
         try:
             self._server = TcpTransportServer(self._handler, 9000)
         except OSError as e:

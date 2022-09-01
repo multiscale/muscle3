@@ -105,7 +105,7 @@ void MMPClient::register_instance(
 
     auto response = call_manager_(request);
 
-    if (response.size() > 1)
+    if (response[0].as<int>() == static_cast<int>(ResponseType::error))
         throw std::runtime_error(
                 "Error registering instance: " + response[1].as<std::string>());
 }

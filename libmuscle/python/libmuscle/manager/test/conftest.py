@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 from ymmsl import (Component, Conduit, Configuration, Model, Reference,
-                   Settings)
+                   PartialConfiguration)
 
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger
@@ -18,8 +18,8 @@ def logger(tmpdir):
 
 
 @pytest.fixture
-def settings():
-    return Settings()
+def mmp_configuration():
+    return PartialConfiguration()
 
 
 @pytest.fixture
@@ -45,9 +45,10 @@ def topology_store() -> TopologyStore:
 
 
 @pytest.fixture
-def mmp_request_handler(logger, settings, instance_registry, topology_store):
+def mmp_request_handler(
+        logger, mmp_configuration, instance_registry, topology_store):
     return MMPRequestHandler(
-            logger, settings, instance_registry, topology_store)
+            logger, mmp_configuration, instance_registry, topology_store)
 
 
 @pytest.fixture
@@ -63,9 +64,9 @@ def loaded_instance_registry(instance_registry):
 
 @pytest.fixture
 def registered_mmp_request_handler(
-        logger, settings, loaded_instance_registry, topology_store):
+        logger, mmp_configuration, loaded_instance_registry, topology_store):
     return MMPRequestHandler(
-            logger, settings, loaded_instance_registry, topology_store)
+            logger, mmp_configuration, loaded_instance_registry, topology_store)
 
 
 @pytest.fixture
@@ -109,6 +110,7 @@ def loaded_instance_registry2():
 
 @pytest.fixture
 def registered_mmp_request_handler2(
-        logger, settings, loaded_instance_registry2, topology_store2):
+        logger, mmp_configuration, loaded_instance_registry2, topology_store2):
     return MMPRequestHandler(
-            logger, settings, loaded_instance_registry2, topology_store2)
+            logger, mmp_configuration,
+            loaded_instance_registry2, topology_store2)

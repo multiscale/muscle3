@@ -6,9 +6,10 @@ from libmuscle.manager.mmp_server import MMPRequestHandler
 from libmuscle.mcp.protocol import RequestType, ResponseType
 
 
-def test_create_servicer(logger, settings, instance_registry,
+def test_create_servicer(logger, mmp_configuration, instance_registry,
                          topology_store):
-    MMPRequestHandler(logger, settings, instance_registry, topology_store)
+    MMPRequestHandler(
+            logger, mmp_configuration, instance_registry, topology_store)
 
 
 def test_log_message(mmp_request_handler, caplog):
@@ -31,7 +32,7 @@ def test_log_message(mmp_request_handler, caplog):
     assert caplog.records[0].message == 'Testing log message'
 
 
-def test_get_settings(settings, mmp_request_handler):
+def test_get_settings(mmp_configuration, mmp_request_handler):
     request = [RequestType.GET_SETTINGS.value]
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
@@ -42,12 +43,12 @@ def test_get_settings(settings, mmp_request_handler):
     assert decoded_result[0] == ResponseType.SUCCESS.value
     assert decoded_result[1] == {}
 
-    settings['test1'] = 13
-    settings['test2'] = 12.3
-    settings['test3'] = 'testing'
-    settings['test4'] = True
-    settings['test5'] = [2.3, 7.4]
-    settings['test6'] = [[1.0, 2.0], [2.0, 1.0]]
+    mmp_configuration.settings['test1'] = 13
+    mmp_configuration.settings['test2'] = 12.3
+    mmp_configuration.settings['test3'] = 'testing'
+    mmp_configuration.settings['test4'] = True
+    mmp_configuration.settings['test5'] = [2.3, 7.4]
+    mmp_configuration.settings['test6'] = [[1.0, 2.0], [2.0, 1.0]]
 
     result = mmp_request_handler.handle_request(encoded_request)
     decoded_result = msgpack.unpackb(result, raw=False)
@@ -63,7 +64,7 @@ def test_get_settings(settings, mmp_request_handler):
     assert result_dict['test4'] is True
     assert result_dict['test5'] == [2.3, 7.4]
     assert result_dict['test6'] == [[1.0, 2.0], [2.0, 1.0]]
-    assert result_dict == settings.as_ordered_dict()
+    assert result_dict == mmp_configuration.settings.as_ordered_dict()
 
 
 def test_register_instance(mmp_request_handler, instance_registry):

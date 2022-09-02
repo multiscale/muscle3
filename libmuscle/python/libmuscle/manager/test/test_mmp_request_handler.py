@@ -1,5 +1,8 @@
+from datetime import datetime, timezone
+from pathlib import Path
 import msgpack
-from ymmsl import Operator, Reference
+from ymmsl import (
+        Operator, Reference, Checkpoints, CheckpointRangeRule, CheckpointAtRule)
 
 from libmuscle.logging import LogLevel
 from libmuscle.manager.mmp_server import MMPRequestHandler
@@ -85,6 +88,41 @@ def test_register_instance(mmp_request_handler, instance_registry):
     registered_ports = instance_registry._ports
     assert registered_ports['test_instance'][0].name == 'test_in'
     assert registered_ports['test_instance'][0].operator == Operator.F_INIT
+
+
+def test_register_instance_checkpoint_info(
+        mmp_configuration, mmp_request_handler):
+    resume_path = Path('/path/to/resume.pack')
+    mmp_configuration.resume = {Reference('test_instance'): resume_path}
+    mmp_configuration.checkpoints = Checkpoints([CheckpointRangeRule(every=10),
+                                                 CheckpointAtRule([1, 2, 3.0])])
+
+    request = [
+            RequestType.REGISTER_INSTANCE.value,
+            'test_instance',
+            ['tcp://localhost:10000'],
+            [['test_in', 'F_INIT']]]
+    encoded_request = msgpack.packb(request, use_bin_type=True)
+
+    result = mmp_request_handler.handle_request(encoded_request)
+    decoded_result = msgpack.unpackb(result, raw=False)
+
+    assert decoded_result[0] == ResponseType.SUCCESS.value
+    timestamp, checkpoints, resume = decoded_result[1]
+
+    ref_time = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+    assert ref_time == mmp_request_handler._reference_time
+
+    assert isinstance(checkpoints, dict)
+    assert checkpoints.keys() == {'wallclock_time', 'simulation_time'}
+    assert checkpoints['simulation_time'] == []
+    wallclock_time = checkpoints['wallclock_time']
+    assert len(wallclock_time) == 2
+    assert wallclock_time[0] == {'start': None, 'stop': None, 'every': 10}
+    assert wallclock_time[1] == {'at': [1, 2, 3.0]}
+
+    assert resume is not None
+    assert Path(resume) == resume_path
 
 
 def test_double_register_instance(mmp_request_handler):

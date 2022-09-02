@@ -22,7 +22,6 @@ from libmuscle.util import generate_indices, instance_indices
 
 _logger = logging.getLogger(__name__)
 
-_EncodedTimeType = Tuple[int, int, int, int, int, int, int]
 _EncodedCheckpointType = Dict[str, List[Dict[str, Any]]]
 
 
@@ -69,10 +68,8 @@ class MMPRequestHandler(RequestHandler):
         self._configuration = configuration
         self._instance_registry = instance_registry
         self._topology_store = topology_store
-        reftime = datetime.now(timezone.utc)
-        self._reference_time_tuple = (reftime.year, reftime.month, reftime.day,
-                                      reftime.hour, reftime.minute,
-                                      reftime.second, reftime.microsecond)
+        self._reference_time = datetime.now(timezone.utc)
+        self._reference_timestamp = self._reference_time.timestamp()
 
     def handle_request(self, request: bytes) -> bytes:
         """Handles a manager request.
@@ -290,9 +287,7 @@ class MMPRequestHandler(RequestHandler):
     def _get_checkpoint_info(
                 self,
                 instance: Reference
-                ) -> Tuple[_EncodedTimeType,
-                           _EncodedCheckpointType,
-                           Optional[str]]:
+                ) -> Tuple[float, _EncodedCheckpointType, Optional[str]]:
         """Get checkpoint info for an instance
 
         Args:
@@ -308,7 +303,7 @@ class MMPRequestHandler(RequestHandler):
         resume = None
         if instance in self._configuration.resume:
             resume = str(self._configuration.resume[instance])
-        return (self._reference_time_tuple,
+        return (self._reference_timestamp,
                 encode_checkpoints(self._configuration.checkpoints),
                 resume)
 

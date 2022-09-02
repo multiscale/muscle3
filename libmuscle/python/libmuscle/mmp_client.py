@@ -60,15 +60,15 @@ def decode_checkpoint_rule(rule: Dict[str, Any]) -> CheckpointRule:
 
 
 def decode_checkpoint_info(
-        utc_walltime_reference: Tuple[int, int, int, int, int, int, int],
+        reference_timestamp: float,
         checkpoints_dict: Dict[str, List[Dict[str, Any]]],
         resume: Optional[str]
         ) -> Tuple[datetime, Checkpoints, Optional[Path]]:
     """Decode checkpoint info from a MsgPack-compatible value.
 
     Args:
-        utc_walltime_reference: tuple (year, month, day, hour, minute, second,
-            microsecond) in UTC timezone
+        reference_timestamp: seconds since UNIX epoch in UTC timezone to use as
+            wallclock_time = 0
         checkpoints_dict: dictionary of checkpoint definitions
         resume: optional string indicating resume path
 
@@ -77,7 +77,7 @@ def decode_checkpoint_info(
         checkpoints: checkpoint configuration
         resume: path to the resume snapshot
     """
-    ref_time = datetime(*utc_walltime_reference, tzinfo=timezone.utc)
+    ref_time = datetime.fromtimestamp(reference_timestamp, tz=timezone.utc)
     checkpoints = Checkpoints(
             wallclock_time=[decode_checkpoint_rule(rule)
                             for rule in checkpoints_dict["wallclock_time"]],

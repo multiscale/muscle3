@@ -74,12 +74,8 @@ def test_get_settings(mocked_mmp_client) -> None:
 def test_register_instance(mocked_mmp_client) -> None:
     client, stub = mocked_mmp_client
 
-    reftime = datetime.now(timezone.utc)
-    reference_time_tuple = (reftime.year, reftime.month, reftime.day,
-                            reftime.hour, reftime.minute,
-                            reftime.second, reftime.microsecond)
     result = [ResponseType.SUCCESS.value,
-              (reference_time_tuple,
+              (datetime.now(timezone.utc).timestamp(),
                {'wallclock_time': [], 'simulation_time': []},
                None)]
     stub.call.return_value = msgpack.packb(result, use_bin_type=True)

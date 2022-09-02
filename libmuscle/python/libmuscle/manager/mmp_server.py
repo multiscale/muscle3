@@ -22,6 +22,7 @@ from libmuscle.util import generate_indices, instance_indices
 
 _logger = logging.getLogger(__name__)
 
+_EncodedTimeType = Tuple[int, int, int, int, int, int, int]
 _EncodedCheckpointType = Dict[str, List[Dict[str, Any]]]
 
 
@@ -68,7 +69,10 @@ class MMPRequestHandler(RequestHandler):
         self._configuration = configuration
         self._instance_registry = instance_registry
         self._topology_store = topology_store
-        self._reference_time = datetime.now(timezone.utc)
+        reftime = datetime.now(timezone.utc)
+        self._reference_time_tuple = (reftime.year, reftime.month, reftime.day,
+                                      reftime.hour, reftime.minute,
+                                      reftime.second, reftime.microsecond)
 
     def handle_request(self, request: bytes) -> bytes:
         """Handles a manager request.
@@ -113,10 +117,10 @@ class MMPRequestHandler(RequestHandler):
             error_msg (str): An error message, only present if status
                 equals ERROR
             checkpoint_info (Tuple[str, bytes, Optional[str]]): Checkpoint info,
-                only present if status equals SUCCESS. The first item is an
-                ISO8601 encoding of the wallclock reference time (see
-                :meth:`datetime.datetime.isoformat`). The second item is a
-                yaml-encoded ymmsl.Checkpoints object. The final item is the
+                only present if status equals SUCCESS. The first item is a tuple
+                encoding of the wallclock reference time (year, month, day,
+                hour, minute, second, microsecond) in UTC. The second item is a
+                dict encoding a ymmsl.Checkpoints object. The final item is the
                 checkpoint filename that the registered instance should resume
                 from, or None if no resume is requested.
         """
@@ -286,15 +290,17 @@ class MMPRequestHandler(RequestHandler):
     def _get_checkpoint_info(
                 self,
                 instance: Reference
-                ) -> Tuple[str, _EncodedCheckpointType, Optional[str]]:
+                ) -> Tuple[_EncodedTimeType,
+                           _EncodedCheckpointType,
+                           Optional[str]]:
         """Get checkpoint info for an instance
 
         Args:
             instance: The instance whose checkpoint info to get
 
         Returns:
-            wallclock_reference_time: :meth:`datetime.datetime.isoformat`
-                encoded UTC reference for wallclock time = 0
+            wallclock_reference_time: tuple encoding UTC reference for wallclock
+                time = 0: (year, month, day, hour, minute, second, microsecond)
             checkpoints: yaml-encoded ymmsl.Checkpoints object
             resume: path of the snapshot file to resume from (or None if not
                 resuming)
@@ -302,7 +308,7 @@ class MMPRequestHandler(RequestHandler):
         resume = None
         if instance in self._configuration.resume:
             resume = str(self._configuration.resume[instance])
-        return (self._reference_time.isoformat(),
+        return (self._reference_time_tuple,
                 encode_checkpoints(self._configuration.checkpoints),
                 resume)
 

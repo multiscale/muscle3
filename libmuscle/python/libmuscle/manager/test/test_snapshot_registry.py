@@ -167,6 +167,35 @@ def test_connections(uq: Configuration) -> None:
         assert not (info & _ConnectionInfo.PEER_IS_VECTOR)
 
 
+def test_multiplicity(uq: Configuration) -> None:
+    snapshot_registry = SnapshotRegistry(uq)
+    assert snapshot_registry._multiplicity(Reference('qmc')) == []
+    assert snapshot_registry._multiplicity(Reference('rr')) == []
+    assert snapshot_registry._multiplicity(Reference('macro')) == [5]
+    assert snapshot_registry._multiplicity(Reference('micro')) == [5]
+
+
+def test_implementation(uq: Configuration) -> None:
+    snapshot_registry = SnapshotRegistry(uq)
+
+    qmc_impl = snapshot_registry._implementation(Reference('qmc'))
+    assert qmc_impl.name == 'qmc_impl'
+
+    missing_impl = snapshot_registry._implementation(Reference('missing'))
+    assert missing_impl is None
+
+
+def test_stateful(uq: Configuration, micro_is_stateless: bool) -> None:
+    uq.implementations['macro_impl'].stateful = IState.WEAKLY_STATEFUL
+    snapshot_registry = SnapshotRegistry(uq)
+
+    assert snapshot_registry._is_stateful(Reference('macro'))
+    stateful = snapshot_registry._is_stateful(Reference('micro'))
+    assert stateful is not micro_is_stateless
+
+    assert snapshot_registry._is_stateful(Reference('unknown'))
+
+
 def test_macro_micro_snapshots(
         macro_micro: Configuration, micro_is_stateless: bool) -> None:
     snapshot_registry = SnapshotRegistry(macro_micro)

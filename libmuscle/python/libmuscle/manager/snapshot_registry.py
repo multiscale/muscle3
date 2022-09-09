@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Flag, auto
+from functools import lru_cache
 from itertools import chain, zip_longest
 from operator import attrgetter
 from typing import Dict, Optional, Set, List, Tuple, TypeVar
@@ -330,6 +331,11 @@ class SnapshotRegistry:
 
     def _cleanup_snapshots(
             self, selected_snapshots: List[SnapshotNode]) -> None:
+        """Remove all snapshots that are older than the selected snapshots.
+
+        Args:
+            selected_snapshots: All snapshot nodes of a workflow snapshot
+        """
         # remove all snapshots older than the selected ones
         removed_snapshots = set()  # type: Set[SnapshotNode]
         for snapshot in selected_snapshots:
@@ -349,8 +355,20 @@ class SnapshotRegistry:
                 peer_snapshot.consistent_peers[snapshot.instance].remove(
                         snapshot)
 
-    # TODO: add caching decorator or move into an instance variable
+    @lru_cache(maxsize=None)
     def _get_stateful_peers(self, instance: Reference) -> Set[Reference]:
+        """Return the set of stateful peers for the given instance.
+
+        Note: instance is assumed to contain the full index, not just the kernel
+        name.
+
+        Args:
+            instance: Instance to get stateful peers of. See
+                :meth:`_is_stateful`.
+
+        Returns:
+            Set with all stateful peer instances (including their index).
+        """
         peers = set()  # type: Set[Reference]
         kernel = instance.without_trailing_ints()
         index = [int(instance[i]) for i in range(len(kernel), len(instance))]
@@ -376,9 +394,30 @@ class SnapshotRegistry:
                 peers.add(peer_kernel + index[:-1])
         return peers
 
-    # TODO: add caching decorator or move into an instance variable
+    @lru_cache(maxsize=None)
     def _get_connections(self, instance: Reference, peer: Reference
                          ) -> List[_ConnectionType]:
+        """Get the list of connections between instance and peer.
+
+        Args:
+            instance: Instance reference (including index)
+            peer: Peer reference (including index)
+
+        Returns:
+            A list of tuples describing all conduits between instance and peer:
+                instance_port (Reference): the port of instance that is
+                    connected to
+                peer_port (Reference): the port on the peer instance
+                info (_ConnectionInfo): flag describing the connection. The
+                    instance is sending when
+                    ``info & _ConnectionInfo.SELF_IS_SENDING`` and receiving
+                    otherwise. When the instance port is a vector port and the
+                    peer port is a non-vector port, the flag
+                    ``_ConnectionInfo.SELF_IS_VECTOR`` is set. In the reverse
+                    situation the flag ``_ConnectionInfo.PEER_IS_VECTOR`` is
+                    set. When both ports are vector or non-vector, neither flag
+                    is set.
+        """
         instance_kernel = instance.without_trailing_ints()
         peer_kernel = peer.without_trailing_ints()
 
@@ -412,15 +451,26 @@ class SnapshotRegistry:
                         conn_type))
         return connected_ports
 
-    # TODO: add caching decorator or move into an instance variable
+    @lru_cache(maxsize=None)
     def _multiplicity(self, kernel: Reference) -> List[int]:
+        """Return the multiplicity of a kernel
+        """
         for component in self._configuration.model.components:
             if component.name == kernel:
                 return component.multiplicity
         raise KeyError(str(kernel))
 
-    # TODO: add caching decorator or move into an instance variable
+    @lru_cache(maxsize=None)
     def _implementation(self, kernel: Reference) -> Optional[Implementation]:
+        """Return the implementation of a kernel.
+
+        Args:
+            kernel: The kernel to get the implementation for.
+
+        Returns:
+            Implementation for the kernel, or None if not provided in the
+            configuration.
+        """
         implementation = None
         for component in self._configuration.model.components:
             if component.name == kernel:
@@ -429,7 +479,18 @@ class SnapshotRegistry:
             return self._configuration.implementations[implementation]
         return None
 
+    @lru_cache(maxsize=None)
     def _is_stateful(self, kernel: Reference) -> bool:
+        """Check if a kernel has a stateful implementation.
+
+        A kernel is considered stateful if:
+        - There is no Implementation given for the kernel
+        - Implementation.stateful = ImplementationState.STATEFUL
+        - Implementation.stateful = ImplementationState.WEAKLY_STATEFUL and the
+            implementation supports checkpointing. In this case we assume to get
+            snapshots from these kernels and we take them into account in the
+            snapshot graph.
+        """
         implementation = self._implementation(kernel)
         if implementation is None:
             return True  # assume stateful

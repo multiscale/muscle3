@@ -1,15 +1,20 @@
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Flag, auto
 from functools import lru_cache
 from itertools import chain, zip_longest
 from operator import attrgetter
+from pathlib import Path
 from typing import Dict, Optional, Set, List, Tuple, TypeVar
 
-from ymmsl import Reference, Configuration, Identifier, Implementation
-from ymmsl import ImplementationState as IState
+from ymmsl import (
+        Reference, Configuration, Identifier, Implementation, save,
+        PartialConfiguration, ImplementationState as IState)
 
 from libmuscle.snapshot import SnapshotMetadata
 
+
+_MAX_FILE_EXISTS_CHECK = 100
 
 _SnapshotDictType = Dict[Reference, List["SnapshotNode"]]
 _ConnectionType = Tuple[Identifier, Identifier, "_ConnectionInfo"]
@@ -162,13 +167,15 @@ class SnapshotRegistry:
     :meth:`register_snapshot`.
     """
 
-    def __init__(self, configuration: Configuration) -> None:
+    def __init__(
+            self, configuration: Configuration, snapshot_folder: Path) -> None:
         """Create a snapshot graph using provided configuration.
 
         Args:
             configuration: ymmsl configuration describing the workflow.
         """
         self._configuration = configuration
+        self._snapshot_folder = snapshot_folder
 
         self._snapshots = {}                # type: _SnapshotDictType
 
@@ -326,8 +333,69 @@ class SnapshotRegistry:
         return selected_snapshots
 
     def _write_snapshot_ymmsl(
-            self, selected_snapshot: List[SnapshotNode]) -> None:
-        ...
+            self, selected_snapshots: List[SnapshotNode]) -> None:
+        """Write the snapshot ymmsl file to the snapshot folder.
+
+        Args:
+            selected_snapshots: All snapshot nodes of the workflow snapshot.
+        """
+        now = datetime.now()
+        config = self._generate_snapshot_config(selected_snapshots, now)
+        time = now.strftime('%Y%m%d_%H%M%S')
+        for i in range(_MAX_FILE_EXISTS_CHECK):
+            if i:
+                snapshot_filename = f'snapshot_{time}_{i}.ymmsl'
+            else:
+                snapshot_filename = f'snapshot_{time}.ymmsl'
+            savepath = self._snapshot_folder / snapshot_filename
+            if not savepath.exists():
+                save(config, savepath)
+                return
+        raise RuntimeError('Could not find an available filename for storing'
+                           f' the next workflow snapshot: {savepath} already'
+                           ' exists.')
+
+    def _generate_snapshot_config(
+                self, selected_snapshots: List[SnapshotNode], now: datetime
+                ) -> PartialConfiguration:
+        """Generate ymmsl configuration for snapshot file
+        """
+        selected_snapshots.sort(key=attrgetter('instance'))
+        resume = {}
+        for node in selected_snapshots:
+            resume[node.instance] = Path(node.snapshot.snapshot_filename)
+        description = self._generate_description(selected_snapshots, now)
+        return PartialConfiguration(resume=resume, description=description)
+
+    def _generate_description(
+            self, selected_snapshots: List[SnapshotNode], now: datetime) -> str:
+        """Generate a human-readable description of the workflow snapshot.
+        """
+        triggers = {}   # type: Dict[str, List[str]]
+        component_info = []
+        max_instance_len = len('Instance ')
+        for node in selected_snapshots:
+            for trigger in node.snapshot.triggers:
+                triggers.setdefault(trigger, []).append(str(node.instance))
+            component_info.append((
+                    str(node.instance),
+                    f'{node.snapshot.timestamp:<11.6g}',
+                    f'{node.snapshot.wallclock_time:<11.6g}'))
+            max_instance_len = max(max_instance_len, len(str(node.instance)))
+        instance_with_padding = 'Instance'.ljust(max_instance_len)
+        component_table = [
+                f'{instance_with_padding} t           wallclock time',
+                f'{"-" * (max_instance_len + 27)}']
+        component_table += [
+                f'{name.ljust(max_instance_len)} {timestamp} {walltime}'
+                for name, timestamp, walltime in component_info]
+        return (f'Workflow snapshot for {self._configuration.model.name}'
+                f' taken on {now.strftime("%Y-%m-%d %H:%M:%S")}.\n'
+                'Snapshot triggers:\n' +
+                '\n'.join(f'- {trigger} ({", ".join(triggers[trigger])})'
+                          for trigger in sorted(triggers)) +
+                '\n\n' +
+                '\n'.join(component_table))
 
     def _cleanup_snapshots(
             self, selected_snapshots: List[SnapshotNode]) -> None:

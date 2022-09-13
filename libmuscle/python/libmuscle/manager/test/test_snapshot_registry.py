@@ -3,7 +3,6 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from libmuscle.snapshot import SnapshotMetadata
 from ymmsl import (
         Configuration, Model, Component, Conduit, Implementation,
         ImplementationState as IState, Reference)
@@ -11,6 +10,8 @@ from ymmsl import (
 from libmuscle.manager.snapshot_registry import (
     SnapshotNode, SnapshotRegistry, calc_consistency, calc_consistency_list, safe_get,
     _ConnectionInfo)
+from libmuscle.manager.topology_store import TopologyStore
+from libmuscle.snapshot import SnapshotMetadata
 
 
 def make_snapshot(**msg_counts) -> SnapshotMetadata:
@@ -100,8 +101,9 @@ def test_calc_consistency_list() -> None:
 
 
 def test_write_ymmsl(tmp_path: Path):
+    configuration = Configuration(Model('empty', []))
     snapshot_registry = SnapshotRegistry(
-            Configuration(Model('empty', [])), tmp_path)
+            configuration, tmp_path, TopologyStore(configuration))
     snapshot_registry._write_snapshot_ymmsl([])
 
     paths = list(tmp_path.iterdir())
@@ -121,8 +123,9 @@ def test_write_ymmsl(tmp_path: Path):
 
 
 def test_snapshot_config():
+    configuration = Configuration(Model('empty', []))
     snapshot_registry = SnapshotRegistry(
-            Configuration(Model('empty', [])), None)
+            configuration, None, TopologyStore(configuration))
     micro_metadata = SnapshotMetadata(
             ['simulation_time >= 24.0', 'wallclocktime >= 10'],
             10.123456789, 24.3456789, None, {}, False, 'micro_snapshot')
@@ -156,7 +159,7 @@ def test_snapshot_config():
 
 
 def test_stateful_peers(uq: Configuration, micro_is_stateless: bool) -> None:
-    snapshot_registry = SnapshotRegistry(uq, None)
+    snapshot_registry = SnapshotRegistry(uq, None, TopologyStore(uq))
     macro = Reference('macro')
     micro = Reference('micro')
     qmc = Reference('qmc')
@@ -177,7 +180,7 @@ def test_stateful_peers(uq: Configuration, micro_is_stateless: bool) -> None:
 
 
 def test_connections(uq: Configuration) -> None:
-    snapshot_registry = SnapshotRegistry(uq, None)
+    snapshot_registry = SnapshotRegistry(uq, None, TopologyStore(uq))
     macro = Reference('macro')
     micro = Reference('micro')
     qmc = Reference('qmc')
@@ -225,16 +228,8 @@ def test_connections(uq: Configuration) -> None:
         assert not (info & _ConnectionInfo.PEER_IS_VECTOR)
 
 
-def test_multiplicity(uq: Configuration) -> None:
-    snapshot_registry = SnapshotRegistry(uq, None)
-    assert snapshot_registry._multiplicity(Reference('qmc')) == []
-    assert snapshot_registry._multiplicity(Reference('rr')) == []
-    assert snapshot_registry._multiplicity(Reference('macro')) == [5]
-    assert snapshot_registry._multiplicity(Reference('micro')) == [5]
-
-
 def test_implementation(uq: Configuration) -> None:
-    snapshot_registry = SnapshotRegistry(uq, None)
+    snapshot_registry = SnapshotRegistry(uq, None, TopologyStore(uq))
 
     qmc_impl = snapshot_registry._implementation(Reference('qmc'))
     assert qmc_impl.name == 'qmc_impl'
@@ -245,7 +240,7 @@ def test_implementation(uq: Configuration) -> None:
 
 def test_stateful(uq: Configuration, micro_is_stateless: bool) -> None:
     uq.implementations['macro_impl'].stateful = IState.WEAKLY_STATEFUL
-    snapshot_registry = SnapshotRegistry(uq, None)
+    snapshot_registry = SnapshotRegistry(uq, None, TopologyStore(uq))
 
     assert snapshot_registry._is_stateful(Reference('macro'))
     stateful = snapshot_registry._is_stateful(Reference('micro'))
@@ -256,7 +251,8 @@ def test_stateful(uq: Configuration, micro_is_stateless: bool) -> None:
 
 def test_macro_micro_snapshots(
         macro_micro: Configuration, micro_is_stateless: bool) -> None:
-    snapshot_registry = SnapshotRegistry(macro_micro, None)
+    snapshot_registry = SnapshotRegistry(
+            macro_micro, None, TopologyStore(macro_micro))
     # prevent actually writing a ymmsl file, testing that separately
     snapshot_registry._write_snapshot_ymmsl = MagicMock()
     macro = Reference('macro')
@@ -319,7 +315,7 @@ def test_macro_micro_snapshots(
 
 
 def test_uq(uq: Configuration, micro_is_stateless: bool) -> None:
-    snapshot_registry = SnapshotRegistry(uq, None)
+    snapshot_registry = SnapshotRegistry(uq, None, TopologyStore(uq))
     # prevent actually writing a ymmsl file, testing that separately
     snapshot_registry._write_snapshot_ymmsl = MagicMock()
     macro = Reference('macro')
@@ -384,7 +380,7 @@ def test_heuristic_rollbacks() -> None:
 
     comp1, comp2, comp3, comp4 = (Reference(f'comp{i}') for i in range(4))
 
-    snapshot_registry = SnapshotRegistry(config, None)
+    snapshot_registry = SnapshotRegistry(config, None, TopologyStore(config))
     # prevent actually writing a ymmsl file, testing that separately
     snapshot_registry._write_snapshot_ymmsl = MagicMock()
 

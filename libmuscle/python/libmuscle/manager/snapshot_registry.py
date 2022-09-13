@@ -6,6 +6,7 @@ from itertools import chain, zip_longest
 from operator import attrgetter
 from pathlib import Path
 from typing import Dict, Optional, Set, List, Tuple, TypeVar
+from libmuscle.manager.topology_store import TopologyStore
 
 from ymmsl import (
         Reference, Model, Identifier, Implementation, save,
@@ -168,8 +169,8 @@ class SnapshotRegistry:
     """
 
     def __init__(
-            self, config: PartialConfiguration, snapshot_folder: Path
-            ) -> None:
+            self, config: PartialConfiguration, snapshot_folder: Path,
+            topology_store: TopologyStore) -> None:
         """Create a snapshot graph using provided configuration.
 
         Args:
@@ -182,6 +183,7 @@ class SnapshotRegistry:
         self._configuration = config
         self._model = config.model
         self._snapshot_folder = snapshot_folder
+        self._topology_store = topology_store
 
         self._snapshots = {}                # type: _SnapshotDictType
 
@@ -443,30 +445,10 @@ class SnapshotRegistry:
         Returns:
             Set with all stateful peer instances (including their index).
         """
-        peers = set()  # type: Set[Reference]
-        kernel = instance.without_trailing_ints()
-        index = [int(instance[i]) for i in range(len(kernel), len(instance))]
-        for conduit in self._model.conduits:
-            if conduit.sending_component() == kernel:
-                peer_kernel = conduit.receiving_component()
-            elif conduit.receiving_component() == kernel:
-                peer_kernel = conduit.sending_component()
-            else:
-                continue
-            if not self._is_stateful(peer_kernel):
-                continue
-            if len(index) == len(self._multiplicity(peer_kernel)):
-                # we must be sending to the peer with the same index as us
-                peers.add(peer_kernel + index)
-            elif len(index) + 1 == len(self._multiplicity(peer_kernel)):
-                # we are sending on a vector port, peer is receiving non-vector
-                # generate all peer indices
-                for i in range(self._multiplicity(peer_kernel)[-1]):
-                    peers.add(peer_kernel + index + i)
-            elif len(index) - 1 == len(self._multiplicity(peer_kernel)):
-                # we are sending to a vector port, strip last of our indices
-                peers.add(peer_kernel + index[:-1])
-        return peers
+        return set(
+                peer
+                for peer in self._topology_store.get_peer_instances(instance)
+                if self._is_stateful(peer.without_trailing_ints()))
 
     @lru_cache(maxsize=None)
     def _get_connections(self, instance: Reference, peer: Reference
@@ -524,15 +506,6 @@ class SnapshotRegistry:
                         conduit.sending_port(),
                         conn_type))
         return connected_ports
-
-    @lru_cache(maxsize=None)
-    def _multiplicity(self, kernel: Reference) -> List[int]:
-        """Return the multiplicity of a kernel
-        """
-        for component in self._model.components:
-            if component.name == kernel:
-                return component.multiplicity
-        raise KeyError(str(kernel))
 
     @lru_cache(maxsize=None)
     def _implementation(self, kernel: Reference) -> Optional[Implementation]:

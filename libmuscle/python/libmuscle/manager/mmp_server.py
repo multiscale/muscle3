@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 import errno
 import logging
-from typing import Any, Dict, Optional, Tuple, cast, Generator, List
+from typing import Any, Dict, Optional, Tuple, cast, List
 
 import msgpack
 from ymmsl import (
@@ -19,7 +19,6 @@ from libmuscle.mcp.tcp_transport_server import TcpTransportServer
 from libmuscle.mcp.transport_server import RequestHandler
 from libmuscle.snapshot import SnapshotMetadata
 from libmuscle.timestamp import Timestamp
-from libmuscle.util import generate_indices, instance_indices
 
 
 _logger = logging.getLogger(__name__)
@@ -182,9 +181,10 @@ class MMPRequestHandler(RequestHandler):
 
         # generate instances
         try:
+            peers = self._topology_store.get_peer_instances(instance)
             instance_locations = {
                     str(peer): self._instance_registry.get_locations(peer)
-                    for peer in self._generate_peer_instances(instance)}
+                    for peer in peers}
         except KeyError as e:
             return [
                     ResponseType.PENDING.value,
@@ -278,31 +278,6 @@ class MMPRequestHandler(RequestHandler):
         instance = Reference(instance_id)
         self._snapshot_registry.register_snapshot(instance, snapshot_obj)
         return [ResponseType.SUCCESS.value]
-
-    def _generate_peer_instances(
-            self, instance: Reference) -> Generator[Reference, None, None]:
-        """Generates the names of all peer instances of an instance.
-
-        Args:
-            instance: The instance whose peers to generate.
-
-        Yields:
-            All peer instance identifiers.
-        """
-        component = instance.without_trailing_ints()
-        indices = instance_indices(instance)
-        dims = self._topology_store.kernel_dimensions[component]
-        all_peer_dims = self._topology_store.get_peer_dimensions(component)
-        for peer, peer_dims in all_peer_dims.items():
-            base = peer
-            for i in range(min(len(dims), len(peer_dims))):
-                base += indices[i]
-
-            if dims >= peer_dims:
-                yield base
-            else:
-                for peer_indices in generate_indices(peer_dims[len(dims):]):
-                    yield base + peer_indices
 
     def _get_checkpoint_info(
                 self,

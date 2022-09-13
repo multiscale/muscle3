@@ -1,3 +1,4 @@
+import dataclasses
 from datetime import datetime, timezone
 from pathlib import Path
 from random import uniform
@@ -135,9 +136,20 @@ class MMPClient():
                 [encode_profile_event(e) for e in events]]
         self._call_manager(request)
 
-    def submit_snapshot_metadata(self, snapshot_metadata: SnapshotMetadata
-                                 ) -> None:
-        ...  # TODO
+    def submit_snapshot_metadata(
+                self, name: Reference, snapshot_metadata: SnapshotMetadata
+                ) -> None:
+        """Send snapshot metadata to the manager.
+
+        Args:
+            name: Name of the instance in the simulation.
+            snapshot_metadata: Snapshot metadata to supply to the manager.
+        """
+        request = [
+                RequestType.SUBMIT_SNAPSHOT.value,
+                str(name),
+                dataclasses.asdict(snapshot_metadata)]
+        self._call_manager(request)
 
     def get_settings(self) -> Settings:
         """Get the central settings from the manager.

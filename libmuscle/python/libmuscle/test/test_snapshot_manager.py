@@ -56,7 +56,8 @@ def test_save_load_checkpoint(tmp_path: Path) -> None:
 
     communicator.get_message_counts.assert_called_with()
     manager.submit_snapshot_metadata.assert_called()
-    metadata = manager.submit_snapshot_metadata.call_args[0][0]
+    instance, metadata = manager.submit_snapshot_metadata.call_args[0]
+    assert instance == instance_id
     assert isinstance(metadata, SnapshotMetadata)
     assert metadata.triggers
     assert metadata.wallclock_time > 0.0
@@ -86,7 +87,8 @@ def test_save_load_checkpoint(tmp_path: Path) -> None:
     assert snapshot_manager2.should_save_final_snapshot(0.6)
     snapshot_manager2.save_final_snapshot(Message(0.6, None, 'test data2'))
 
-    metadata = manager.submit_snapshot_metadata.call_args[0][0]
+    instance, metadata = manager.submit_snapshot_metadata.call_args[0]
+    assert instance == instance_id
     assert isinstance(metadata, SnapshotMetadata)
     assert metadata.triggers
     assert metadata.wallclock_time > 0.0

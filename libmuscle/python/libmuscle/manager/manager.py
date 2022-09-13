@@ -59,6 +59,11 @@ class Manager:
                     self._configuration,
                     self._run_dir.path / 'configuration.ymmsl')
 
+        # TODO: decide if this should be a setting or part of checkpoint_info
+        # TODO: separate folder per intance
+        self._configuration.settings.setdefault(
+                'muscle_snapshot_directory', str(snapshot_dir))
+
         self._instance_manager = None    # type: Optional[InstanceManager]
         try:
             configuration = self._configuration.as_configuration()

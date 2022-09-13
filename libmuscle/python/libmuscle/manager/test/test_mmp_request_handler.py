@@ -1,5 +1,8 @@
+import dataclasses
 from datetime import datetime, timezone
 from pathlib import Path
+from unittest.mock import MagicMock
+
 import msgpack
 from ymmsl import (
         Operator, Reference, Checkpoints, CheckpointRangeRule, CheckpointAtRule)
@@ -7,12 +10,14 @@ from ymmsl import (
 from libmuscle.logging import LogLevel
 from libmuscle.manager.mmp_server import MMPRequestHandler
 from libmuscle.mcp.protocol import RequestType, ResponseType
+from libmuscle.snapshot import SnapshotMetadata
 
 
 def test_create_servicer(logger, mmp_configuration, instance_registry,
-                         topology_store):
+                         topology_store, snapshot_registry):
     MMPRequestHandler(
-            logger, mmp_configuration, instance_registry, topology_store)
+            logger, mmp_configuration, instance_registry, topology_store,
+            snapshot_registry)
 
 
 def test_log_message(mmp_request_handler, caplog):
@@ -267,3 +272,24 @@ def test_request_peers_unknown(registered_mmp_request_handler2):
     assert status == ResponseType.ERROR.value
     assert error_msg is not None
     assert 'does_not_exist' in error_msg
+
+
+def test_submit_snapshot(registered_mmp_request_handler):
+    register_snapshot = MagicMock()
+    registered_mmp_request_handler._snapshot_registry.register_snapshot = \
+        register_snapshot
+
+    instance_id = 'micro[1][2]'
+    snapshot = SnapshotMetadata(
+            ['1', '2'], 1.234, 2.345, 3.456,
+            {'in': [1], 'out': [0]}, True, 'fname')
+    snapshot_dict = dataclasses.asdict(snapshot)
+
+    request = [RequestType.SUBMIT_SNAPSHOT.value, instance_id, snapshot_dict]
+    encoded_request = msgpack.packb(request, use_bin_type=True)
+
+    result = registered_mmp_request_handler.handle_request(encoded_request)
+    decoded_result = msgpack.unpackb(result, raw=False)
+
+    assert decoded_result[0] == ResponseType.SUCCESS.value
+    register_snapshot.assert_called_once_with(Reference(instance_id), snapshot)

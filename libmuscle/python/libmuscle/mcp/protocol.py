@@ -20,6 +20,7 @@ class RequestType(Enum):
     GET_SETTINGS = 4
     SUBMIT_LOG_MESSAGE = 5
     SUBMIT_PROFILE_EVENTS = 6
+    SUBMIT_SNAPSHOT = 7
 
     # MUSCLE Peer Protocol
     GET_NEXT_MESSAGE = 21

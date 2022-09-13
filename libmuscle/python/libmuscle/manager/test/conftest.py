@@ -1,12 +1,12 @@
 from pathlib import Path
 
 import pytest
-from ymmsl import (Component, Conduit, Configuration, Model, Reference,
-                   PartialConfiguration)
+from ymmsl import Component, Conduit, Configuration, Model, Reference
 
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger
 from libmuscle.manager.mmp_server import MMPRequestHandler
+from libmuscle.manager.snapshot_registry import SnapshotRegistry
 from libmuscle.manager.topology_store import TopologyStore
 
 
@@ -19,17 +19,7 @@ def logger(tmpdir):
 
 @pytest.fixture
 def mmp_configuration():
-    return PartialConfiguration()
-
-
-@pytest.fixture
-def instance_registry():
-    return InstanceRegistry()
-
-
-@pytest.fixture
-def topology_store() -> TopologyStore:
-    config = Configuration(
+    return Configuration(
             Model(
                 'test_model',
                 [
@@ -41,14 +31,29 @@ def topology_store() -> TopologyStore:
                     Conduit('micro.out', 'macro.in')
                 ]))
 
-    return TopologyStore(config)
+
+@pytest.fixture
+def instance_registry():
+    return InstanceRegistry()
+
+
+@pytest.fixture
+def topology_store(mmp_configuration) -> TopologyStore:
+    return TopologyStore(mmp_configuration)
+
+
+@pytest.fixture
+def snapshot_registry(mmp_configuration) -> SnapshotRegistry:
+    return SnapshotRegistry(mmp_configuration, None)
 
 
 @pytest.fixture
 def mmp_request_handler(
-        logger, mmp_configuration, instance_registry, topology_store):
+        logger, mmp_configuration, instance_registry, topology_store,
+        snapshot_registry):
     return MMPRequestHandler(
-            logger, mmp_configuration, instance_registry, topology_store)
+            logger, mmp_configuration, instance_registry, topology_store,
+            snapshot_registry)
 
 
 @pytest.fixture
@@ -64,14 +69,16 @@ def loaded_instance_registry(instance_registry):
 
 @pytest.fixture
 def registered_mmp_request_handler(
-        logger, mmp_configuration, loaded_instance_registry, topology_store):
+        logger, mmp_configuration, loaded_instance_registry, topology_store,
+        snapshot_registry):
     return MMPRequestHandler(
-            logger, mmp_configuration, loaded_instance_registry, topology_store)
+            logger, mmp_configuration, loaded_instance_registry, topology_store,
+            snapshot_registry)
 
 
 @pytest.fixture
-def topology_store2() -> TopologyStore:
-    config = Configuration(
+def mmp_configuration2():
+    return Configuration(
             Model(
                 'test_model',
                 [
@@ -86,7 +93,15 @@ def topology_store2() -> TopologyStore:
                     Conduit('meso.out', 'macro.in')
                 ]))
 
-    return TopologyStore(config)
+
+@pytest.fixture
+def topology_store2(mmp_configuration2) -> TopologyStore:
+    return TopologyStore(mmp_configuration2)
+
+
+@pytest.fixture
+def snapshot_registry2(mmp_configuration2) -> SnapshotRegistry:
+    return SnapshotRegistry(mmp_configuration2, None)
 
 
 @pytest.fixture
@@ -110,7 +125,8 @@ def loaded_instance_registry2():
 
 @pytest.fixture
 def registered_mmp_request_handler2(
-        logger, mmp_configuration, loaded_instance_registry2, topology_store2):
+        logger, mmp_configuration, loaded_instance_registry2, topology_store2,
+        snapshot_registry2):
     return MMPRequestHandler(
             logger, mmp_configuration,
-            loaded_instance_registry2, topology_store2)
+            loaded_instance_registry2, topology_store2, snapshot_registry2)

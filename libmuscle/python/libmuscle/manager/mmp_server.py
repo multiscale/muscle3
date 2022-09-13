@@ -12,10 +12,12 @@ from libmuscle.logging import LogLevel
 from libmuscle.manager.instance_registry import (
         AlreadyRegistered, InstanceRegistry)
 from libmuscle.manager.logger import Logger
+from libmuscle.manager.snapshot_registry import SnapshotRegistry
 from libmuscle.manager.topology_store import TopologyStore
 from libmuscle.mcp.protocol import RequestType, ResponseType
 from libmuscle.mcp.tcp_transport_server import TcpTransportServer
 from libmuscle.mcp.transport_server import RequestHandler
+from libmuscle.snapshot import SnapshotMetadata
 from libmuscle.timestamp import Timestamp
 from libmuscle.util import generate_indices, instance_indices
 
@@ -55,7 +57,8 @@ class MMPRequestHandler(RequestHandler):
             logger: Logger,
             configuration: PartialConfiguration,
             instance_registry: InstanceRegistry,
-            topology_store: TopologyStore):
+            topology_store: TopologyStore,
+            snapshot_registry: SnapshotRegistry):
         """Create an MMPRequestHandler.
 
         Args:
@@ -68,6 +71,7 @@ class MMPRequestHandler(RequestHandler):
         self._configuration = configuration
         self._instance_registry = instance_registry
         self._topology_store = topology_store
+        self._snapshot_registry = snapshot_registry
         self._reference_time = datetime.now(timezone.utc)
         self._reference_timestamp = self._reference_time.timestamp()
 
@@ -95,6 +99,8 @@ class MMPRequestHandler(RequestHandler):
             response = self._submit_log_message(*req_args)
         elif req_type == RequestType.SUBMIT_PROFILE_EVENTS.value:
             response = self._submit_profile_events(*req_args)
+        elif req_type == RequestType.SUBMIT_SNAPSHOT.value:
+            response = self._submit_snapshot(*req_args)
 
         return cast(bytes, msgpack.packb(response, use_bin_type=True))
 
@@ -259,6 +265,20 @@ class MMPRequestHandler(RequestHandler):
         """
         return [ResponseType.SUCCESS.value]
 
+    def _submit_snapshot(
+            self, instance_id: str, snapshot: Dict[str, Any]) -> Any:
+        """Handle a submit snapshot request.
+
+        Returns:
+            A list containing the following values on success:
+
+            status (ResponseType): SUCCESS
+        """
+        snapshot_obj = SnapshotMetadata(**snapshot)
+        instance = Reference(instance_id)
+        self._snapshot_registry.register_snapshot(instance, snapshot_obj)
+        return [ResponseType.SUCCESS.value]
+
     def _generate_peer_instances(
             self, instance: Reference) -> Generator[Reference, None, None]:
         """Generates the names of all peer instances of an instance.
@@ -320,7 +340,8 @@ class MMPServer:
             logger: Logger,
             configuration: PartialConfiguration,
             instance_registry: InstanceRegistry,
-            topology_store: TopologyStore
+            topology_store: TopologyStore,
+            snapshot_registry: SnapshotRegistry
             ) -> None:
         """Create an MMPServer.
 
@@ -338,7 +359,8 @@ class MMPServer:
             topology_store: To get peers and conduits from
         """
         self._handler = MMPRequestHandler(
-                logger, configuration, instance_registry, topology_store)
+                logger, configuration, instance_registry, topology_store,
+                snapshot_registry)
         try:
             self._server = TcpTransportServer(self._handler, 9000)
         except OSError as e:

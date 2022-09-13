@@ -154,7 +154,7 @@ class SnapshotManager:
 
         path = self.__store_snapshot(snapshot)
         metadata = SnapshotMetadata.from_snapshot(snapshot, str(path))
-        self._manager.submit_snapshot_metadata(metadata)
+        self._manager.submit_snapshot_metadata(self._instance_id, metadata)
 
         if self._trigger is not None:
             self._trigger.update_checkpoints(

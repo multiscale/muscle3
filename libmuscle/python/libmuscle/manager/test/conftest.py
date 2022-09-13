@@ -43,8 +43,8 @@ def topology_store(mmp_configuration) -> TopologyStore:
 
 
 @pytest.fixture
-def snapshot_registry(mmp_configuration) -> SnapshotRegistry:
-    return SnapshotRegistry(mmp_configuration, None)
+def snapshot_registry(mmp_configuration, topology_store) -> SnapshotRegistry:
+    return SnapshotRegistry(mmp_configuration, None, topology_store)
 
 
 @pytest.fixture
@@ -100,8 +100,8 @@ def topology_store2(mmp_configuration2) -> TopologyStore:
 
 
 @pytest.fixture
-def snapshot_registry2(mmp_configuration2) -> SnapshotRegistry:
-    return SnapshotRegistry(mmp_configuration2, None)
+def snapshot_registry2(mmp_configuration2, topology_store) -> SnapshotRegistry:
+    return SnapshotRegistry(mmp_configuration2, None, topology_store)
 
 
 @pytest.fixture

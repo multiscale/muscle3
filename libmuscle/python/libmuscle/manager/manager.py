@@ -51,7 +51,8 @@ class Manager:
                 _logger.warning('Checkpoints are configured but no run'
                                 ' directory is provided. Snapshots will be'
                                 ' stored in the current working directory.')
-        self._snapshot_registry = SnapshotRegistry(configuration, snapshot_dir)
+        self._snapshot_registry = SnapshotRegistry(
+                configuration, snapshot_dir, self._topology_store)
 
         if self._run_dir:
             save_ymmsl(

@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Dict, Optional, Set, List, Tuple, TypeVar
 
 from ymmsl import (
-        Reference, Configuration, Identifier, Implementation, save,
+        Reference, Model, Identifier, Implementation, save,
         PartialConfiguration, ImplementationState as IState)
 
 from libmuscle.snapshot import SnapshotMetadata
@@ -168,20 +168,26 @@ class SnapshotRegistry:
     """
 
     def __init__(
-            self, configuration: Configuration, snapshot_folder: Path) -> None:
+            self, config: PartialConfiguration, snapshot_folder: Path
+            ) -> None:
         """Create a snapshot graph using provided configuration.
 
         Args:
-            configuration: ymmsl configuration describing the workflow.
+            config: ymmsl configuration describing the workflow.
         """
-        self._configuration = configuration
+        if config.model is None or not isinstance(config.model, Model):
+            raise ValueError('The yMMSL experiment description does not'
+                             ' contain a (complete) model section, so there'
+                             ' is nothing to run!')
+        self._configuration = config
+        self._model = config.model
         self._snapshot_folder = snapshot_folder
 
         self._snapshots = {}                # type: _SnapshotDictType
 
         self._instances = set()             # type: Set[Reference]
         self._stateful_instances = set()    # type: Set[Reference]
-        for component in configuration.model.components:
+        for component in config.model.components:
             instances = set(component.instances())
             self._instances.update(instances)
             if self._is_stateful(component.name):
@@ -389,7 +395,7 @@ class SnapshotRegistry:
         component_table += [
                 f'{name.ljust(max_instance_len)} {timestamp} {walltime}'
                 for name, timestamp, walltime in component_info]
-        return (f'Workflow snapshot for {self._configuration.model.name}'
+        return (f'Workflow snapshot for {self._model.name}'
                 f' taken on {now.strftime("%Y-%m-%d %H:%M:%S")}.\n'
                 'Snapshot triggers:\n' +
                 '\n'.join(f'- {trigger} ({", ".join(triggers[trigger])})'
@@ -440,7 +446,7 @@ class SnapshotRegistry:
         peers = set()  # type: Set[Reference]
         kernel = instance.without_trailing_ints()
         index = [int(instance[i]) for i in range(len(kernel), len(instance))]
-        for conduit in self._configuration.model.conduits:
+        for conduit in self._model.conduits:
             if conduit.sending_component() == kernel:
                 peer_kernel = conduit.receiving_component()
             elif conduit.receiving_component() == kernel:
@@ -490,7 +496,7 @@ class SnapshotRegistry:
         peer_kernel = peer.without_trailing_ints()
 
         connected_ports = []  # type: List[_ConnectionType]
-        for conduit in self._configuration.model.conduits:
+        for conduit in self._model.conduits:
             if (conduit.sending_component() == instance_kernel and
                     conduit.receiving_component() == peer_kernel):
                 conn_type = _ConnectionInfo.SELF_IS_SENDING
@@ -523,7 +529,7 @@ class SnapshotRegistry:
     def _multiplicity(self, kernel: Reference) -> List[int]:
         """Return the multiplicity of a kernel
         """
-        for component in self._configuration.model.components:
+        for component in self._model.components:
             if component.name == kernel:
                 return component.multiplicity
         raise KeyError(str(kernel))
@@ -540,7 +546,7 @@ class SnapshotRegistry:
             configuration.
         """
         implementation = None
-        for component in self._configuration.model.components:
+        for component in self._model.components:
             if component.name == kernel:
                 implementation = component.implementation
         if implementation in self._configuration.implementations:

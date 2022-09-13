@@ -11,6 +11,7 @@ from libmuscle.manager.logger import Logger
 from libmuscle.manager.mmp_server import MMPServer
 from libmuscle.manager.instance_manager import InstanceManager
 from libmuscle.manager.run_dir import RunDir
+from libmuscle.manager.snapshot_registry import SnapshotRegistry
 from libmuscle.manager.topology_store import TopologyStore
 
 
@@ -42,6 +43,15 @@ class Manager:
         self._logger = Logger(log_dir, log_level)
         self._topology_store = TopologyStore(configuration)
         self._instance_registry = InstanceRegistry()
+        if run_dir is not None:
+            snapshot_dir = run_dir.snapshot_dir()
+        else:
+            snapshot_dir = Path.cwd()
+            if self._configuration.checkpoints:
+                _logger.warning('Checkpoints are configured but no run'
+                                ' directory is provided. Snapshots will be'
+                                ' stored in the current working directory.')
+        self._snapshot_registry = SnapshotRegistry(configuration, snapshot_dir)
 
         if self._run_dir:
             save_ymmsl(
@@ -59,7 +69,8 @@ class Manager:
 
         self._server = MMPServer(
                 self._logger, self._configuration,
-                self._instance_registry, self._topology_store)
+                self._instance_registry, self._topology_store,
+                self._snapshot_registry)
 
         if self._instance_manager:
             self._instance_manager.set_manager_location(

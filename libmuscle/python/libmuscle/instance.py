@@ -132,7 +132,9 @@ class Instance:
         # TODO: _f_init_cache should be empty here, or the user didn't
         # receive something that was sent on the last go-around.
         # At least emit a warning.
-        self.__pre_receive_f_init(apply_overlay)
+        if not (self.resuming() and self._first_run):
+            # when resuming we skip receiving on f_init in the first run
+            self.__pre_receive_f_init(apply_overlay)
 
         self._set_local_log_level()
         self._set_remote_log_level()
@@ -145,11 +147,11 @@ class Instance:
 
         if f_init_not_connected and no_settings_in:
             do_reuse = self._first_run
-            self._first_run = False
         else:
             for message in self._f_init_cache.values():
                 if isinstance(message.data, ClosePort):
                     do_reuse = False
+        self._first_run = False
 
         max_f_init_next_timestamp = max(
                 (msg.next_timestamp

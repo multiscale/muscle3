@@ -72,6 +72,8 @@ class RunDir:
             The path to the snapshot directory
         """
         if name is None:
-            return self.path / 'snapshots'
+            path = self.path / 'snapshots'
         else:
-            return self.instance_dir(name) / 'snapshots'
+            path = self.instance_dir(name) / 'snapshots'
+        path.mkdir(exist_ok=True)
+        return path

@@ -202,6 +202,7 @@ class TriggerManager:
 
         self._last_triggers = []    # type: List[str]
         self._first_reuse = True
+        self._max_f_init_next_timestamp = None  # type: Optional[float]
 
         # These attributes are only used to check if implementations are
         # following the guidelines

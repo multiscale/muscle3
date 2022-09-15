@@ -8,12 +8,12 @@ from pathlib import Path
 from queue import Queue
 from threading import Thread
 from typing import Dict, Optional, Set, List, Tuple, TypeVar
-from libmuscle.manager.topology_store import TopologyStore
 
 from ymmsl import (
         Reference, Model, Identifier, Implementation, save,
         PartialConfiguration, ImplementationState as IState)
 
+from libmuscle.manager.topology_store import TopologyStore
 from libmuscle.snapshot import SnapshotMetadata
 
 

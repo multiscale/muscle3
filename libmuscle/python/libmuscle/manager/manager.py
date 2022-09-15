@@ -51,8 +51,6 @@ class Manager:
                 _logger.warning('Checkpoints are configured but no run'
                                 ' directory is provided. Snapshots will be'
                                 ' stored in the current working directory.')
-        self._snapshot_registry = SnapshotRegistry(
-                configuration, snapshot_dir, self._topology_store)
 
         if self._run_dir:
             save_ymmsl(
@@ -72,6 +70,12 @@ class Manager:
                         configuration, self._run_dir)
         except ValueError:
             pass
+
+        # SnapshotRegistry creates a worker thread, must be created after
+        # instance_manager which forks the process
+        self._snapshot_registry = SnapshotRegistry(
+                configuration, snapshot_dir, self._topology_store)
+        self._snapshot_registry.start()
 
         self._server = MMPServer(
                 self._logger, self._configuration,
@@ -108,6 +112,8 @@ class Manager:
         """Shuts down the manager."""
         # self._server.stop()
         self._server.stop()
+        self._snapshot_registry.shutdown()
+        self._snapshot_registry.join()
         self._logger.close()
 
     def wait(self) -> bool:

@@ -5,6 +5,8 @@ from functools import lru_cache
 from itertools import chain, zip_longest
 from operator import attrgetter
 from pathlib import Path
+from queue import Queue
+from threading import Thread
 from typing import Dict, Optional, Set, List, Tuple, TypeVar
 from libmuscle.manager.topology_store import TopologyStore
 
@@ -19,6 +21,7 @@ _MAX_FILE_EXISTS_CHECK = 100
 
 _SnapshotDictType = Dict[Reference, List["SnapshotNode"]]
 _ConnectionType = Tuple[Identifier, Identifier, "_ConnectionInfo"]
+_QueueItemType = Optional[Tuple[Reference, SnapshotMetadata]]
 _T = TypeVar("_T")
 
 
@@ -157,7 +160,7 @@ class SnapshotNode:
         return True
 
 
-class SnapshotRegistry:
+class SnapshotRegistry(Thread):
     """Registry of all snapshots taken by instances.
 
     Current snapshots are stored in a graph. Every node represents a snapshot
@@ -176,6 +179,8 @@ class SnapshotRegistry:
         Args:
             config: ymmsl configuration describing the workflow.
         """
+        super().__init__(name='SnapshotRegistry')
+
         if config.model is None or not isinstance(config.model, Model):
             raise ValueError('The yMMSL experiment description does not'
                              ' contain a (complete) model section, so there'
@@ -185,6 +190,7 @@ class SnapshotRegistry:
         self._snapshot_folder = snapshot_folder
         self._topology_store = topology_store
 
+        self._queue = Queue()               # type: Queue[_QueueItemType]
         self._snapshots = {}                # type: _SnapshotDictType
 
         self._instances = set()             # type: Set[Reference]
@@ -196,6 +202,30 @@ class SnapshotRegistry:
                 self._stateful_instances.update(instances)
 
     def register_snapshot(
+            self, instance: Reference, snapshot: SnapshotMetadata) -> None:
+        """Register a new snapshot.
+
+        Args:
+            instance: The instance that created the snapshot
+            snapshot: Metadata describing the snapshot
+        """
+        self._queue.put((instance, snapshot))
+
+    def run(self) -> None:
+        """Code executed in a separate thread
+        """
+        while True:
+            item = self._queue.get()
+            if item is None:
+                return
+            self._add_snapshot(*item)
+
+    def shutdown(self) -> None:
+        """Stop the snapshot registry thread
+        """
+        self._queue.put(None)
+
+    def _add_snapshot(
             self, instance: Reference, snapshot: SnapshotMetadata) -> None:
         """Register a new snapshot.
 

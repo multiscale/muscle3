@@ -259,7 +259,7 @@ def test_macro_micro_snapshots(
     micro = Reference('micro')
 
     macro_snapshot = make_snapshot(o_i=[3], s=[3])
-    snapshot_registry.register_snapshot(macro, macro_snapshot)
+    snapshot_registry._add_snapshot(macro, macro_snapshot)
 
     assert len(snapshot_registry._snapshots[macro]) == 1
     node = snapshot_registry._snapshots[macro][0]
@@ -281,14 +281,14 @@ def test_macro_micro_snapshots(
         # the macro snapshot above. However, it's still useful for testing the
         # consistency algorithm
         micro_snapshot = make_snapshot(f_i=[2], o_f=[1])
-        snapshot_registry.register_snapshot(micro, micro_snapshot)
+        snapshot_registry._add_snapshot(micro, micro_snapshot)
 
         assert len(snapshot_registry._snapshots[micro]) == 1
         assert not snapshot_registry._snapshots[micro][0].consistent
         snapshot_registry._write_snapshot_ymmsl.assert_not_called()
 
         micro_snapshot = make_snapshot(f_i=[3], o_f=[2])
-        snapshot_registry.register_snapshot(micro, micro_snapshot)
+        snapshot_registry._add_snapshot(micro, micro_snapshot)
 
         # micro snapshots should be cleaned up now!
         assert len(snapshot_registry._snapshots[micro]) == 1
@@ -299,7 +299,7 @@ def test_macro_micro_snapshots(
         snapshot_registry._write_snapshot_ymmsl.reset_mock()
 
         micro_snapshot = make_snapshot(f_i=[4], o_f=[3])
-        snapshot_registry.register_snapshot(micro, micro_snapshot)
+        snapshot_registry._add_snapshot(micro, micro_snapshot)
 
         # micro snapshots should be cleaned up now!
         assert len(snapshot_registry._snapshots[micro]) == 1
@@ -310,7 +310,7 @@ def test_macro_micro_snapshots(
         snapshot_registry._write_snapshot_ymmsl.reset_mock()
 
     macro_snapshot = make_snapshot(o_i=[4], s=[4])
-    snapshot_registry.register_snapshot(macro, macro_snapshot)
+    snapshot_registry._add_snapshot(macro, macro_snapshot)
     snapshot_registry._write_snapshot_ymmsl.assert_called_once()
 
 
@@ -324,14 +324,14 @@ def test_uq(uq: Configuration, micro_is_stateless: bool) -> None:
     rr = Reference('rr')
 
     qmc_snapshot = make_snapshot(parameters_out=[], states_in=[])
-    snapshot_registry.register_snapshot(qmc, qmc_snapshot)
+    snapshot_registry._add_snapshot(qmc, qmc_snapshot)
 
     rr_snapshot = make_snapshot(
             front_in=[1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
             front_out=[0] * 10,
             back_out=[1, 1, 1, 1, 1],
             back_in=[0] * 5)
-    snapshot_registry.register_snapshot(rr, rr_snapshot)
+    snapshot_registry._add_snapshot(rr, rr_snapshot)
     node = snapshot_registry._snapshots[rr][-1]
     assert qmc in node.consistent_peers
     snapshot_registry._write_snapshot_ymmsl.assert_not_called()
@@ -339,7 +339,7 @@ def test_uq(uq: Configuration, micro_is_stateless: bool) -> None:
     macro_snapshot = make_snapshot(
             muscle_settings_in=[1], final_state_out=[0], o_i=[0], s=[0])
     for i in range(5):
-        snapshot_registry.register_snapshot(macro + i, macro_snapshot)
+        snapshot_registry._add_snapshot(macro + i, macro_snapshot)
         node = snapshot_registry._snapshots[macro + i][-1]
         assert node.consistent_peers.keys() == {rr}
         if micro_is_stateless and i == 4:
@@ -351,7 +351,7 @@ def test_uq(uq: Configuration, micro_is_stateless: bool) -> None:
     if not micro_is_stateless:
         micro_snapshot = make_snapshot(f_i=[1], o_f=[0])
         for i in range(5):
-            snapshot_registry.register_snapshot(micro + i, micro_snapshot)
+            snapshot_registry._add_snapshot(micro + i, micro_snapshot)
             node = snapshot_registry._snapshots[micro + i][-1]
             assert node.consistent_peers.keys() == {macro + i}
             if i == 4:
@@ -361,7 +361,7 @@ def test_uq(uq: Configuration, micro_is_stateless: bool) -> None:
                 snapshot_registry._write_snapshot_ymmsl.assert_not_called()
 
     qmc_snapshot = make_snapshot(parameters_out=[1, 1, 1, 1, 1], states_in=[])
-    snapshot_registry.register_snapshot(qmc, qmc_snapshot)
+    snapshot_registry._add_snapshot(qmc, qmc_snapshot)
     node = snapshot_registry._snapshots[qmc][-1]
     assert node.consistent_peers.keys() == {rr}
     snapshot_registry._write_snapshot_ymmsl.assert_called_once()
@@ -385,25 +385,25 @@ def test_heuristic_rollbacks() -> None:
     snapshot_registry._write_snapshot_ymmsl = MagicMock()
 
     for i in range(4):
-        snapshot_registry.register_snapshot(comp1, make_snapshot(o_f=[i]))
+        snapshot_registry._add_snapshot(comp1, make_snapshot(o_f=[i]))
     assert len(snapshot_registry._snapshots[comp1]) == 4
 
     for i in range(10):
-        snapshot_registry.register_snapshot(
+        snapshot_registry._add_snapshot(
                 comp2, make_snapshot(f_i=[1], o_f=[0]))
-        snapshot_registry.register_snapshot(
+        snapshot_registry._add_snapshot(
                 comp3, make_snapshot(f_i=[1], o_f=[0]))
     assert len(snapshot_registry._snapshots[comp2]) == 10
     assert len(snapshot_registry._snapshots[comp3]) == 10
 
-    snapshot_registry.register_snapshot(comp2, make_snapshot(f_i=[2], o_f=[1]))
+    snapshot_registry._add_snapshot(comp2, make_snapshot(f_i=[2], o_f=[1]))
     assert len(snapshot_registry._snapshots[comp2]) == 11
-    snapshot_registry.register_snapshot(comp2, make_snapshot(f_i=[3], o_f=[2]))
+    snapshot_registry._add_snapshot(comp2, make_snapshot(f_i=[3], o_f=[2]))
     assert len(snapshot_registry._snapshots[comp2]) == 12
 
     snapshot_registry._write_snapshot_ymmsl.assert_not_called()
 
-    snapshot_registry.register_snapshot(
+    snapshot_registry._add_snapshot(
             comp4, make_snapshot(f_i=[1]))
     snapshot_registry._write_snapshot_ymmsl.assert_called()
 

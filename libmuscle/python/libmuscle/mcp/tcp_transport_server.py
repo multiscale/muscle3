@@ -71,7 +71,7 @@ class TcpTransportServer(TransportServer):
 
         self._server = TcpTransportServerImpl(('', port), TcpHandler, self)
         self._server_thread = threading.Thread(
-                target=self._server.serve_forever, daemon=True)
+                target=self._server.serve_forever, args=(0.1,), daemon=True)
         self._server_thread.start()
 
     def get_location(self) -> str:

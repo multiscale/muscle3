@@ -148,9 +148,12 @@ class QCGPJInstantiator(mp.Process):
         """
         qcg_iters = dict()  # type: Dict[Reference, qcg_SchedulingIteration]
 
+        await asyncio.sleep(0.01)  # allow requests_in queue to be populated
+
         shutting_down = False
         done = False
         while not done:
+            do_sleep = True
             while not shutting_down:
                 try:
                     request = self._requests_in.get_nowait()
@@ -158,6 +161,7 @@ class QCGPJInstantiator(mp.Process):
                         _logger.debug('Got ShutdownRequest')
                         self._state_tracker.stop_processing = True
                         shutting_down = True
+                        do_sleep = False
 
                     elif isinstance(request, CancelAllRequest):
                         _logger.debug('Got CancelAllRequest')
@@ -178,7 +182,8 @@ class QCGPJInstantiator(mp.Process):
                 except queue.Empty:
                     break
 
-            await asyncio.sleep(0.1)
+            if do_sleep:
+                await asyncio.sleep(0.1)
 
             for name, process in list(self._state_tracker.processes.items()):
                 if process.status.is_finished():

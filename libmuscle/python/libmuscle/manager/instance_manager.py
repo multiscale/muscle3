@@ -41,7 +41,7 @@ class LogHandlingThread(Thread):
         """The thread's entry point."""
         while True:
             try:
-                record = self._queue.get(True, 1.0)
+                record = self._queue.get(True, 0.1)
                 logger = logging.getLogger(record.name)
                 logger.handle(record)
             except queue.Empty:

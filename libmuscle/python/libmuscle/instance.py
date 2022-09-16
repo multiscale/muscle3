@@ -2,7 +2,9 @@ from copy import copy
 import logging
 import os
 import sys
-from typing import Literal, cast, Dict, List, Optional, Tuple, overload
+from typing import cast, Dict, List, Optional, Tuple, overload
+# TODO: import from typing module when dropping support for python 3.7
+from typing_extensions import Literal
 
 from ymmsl import (Identifier, Operator, SettingValue, Port, Reference,
                    Settings)

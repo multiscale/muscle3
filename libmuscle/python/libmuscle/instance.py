@@ -2,7 +2,9 @@ from copy import copy
 import logging
 import os
 import sys
-from typing import cast, Dict, List, Optional, Tuple
+from typing import cast, Dict, List, Optional, Tuple, overload
+# TODO: import from typing module when dropping support for python 3.7
+from typing_extensions import Literal
 
 from ymmsl import (Identifier, Operator, SettingValue, Port, Reference,
                    Settings)
@@ -156,6 +158,35 @@ class Instance:
             message: An error message describing the problem.
         """
         self.__shutdown(message)
+
+    @overload
+    def get_setting(self, name: str, typ: Literal['str']) -> str:
+        ...
+
+    @overload
+    def get_setting(self, name: str, typ: Literal['int']) -> int:
+        ...
+
+    @overload
+    def get_setting(self, name: str, typ: Literal['float']) -> float:
+        ...
+
+    @overload
+    def get_setting(self, name: str, typ: Literal['bool']) -> bool:
+        ...
+
+    @overload
+    def get_setting(self, name: str, typ: Literal['[float]']) -> List[float]:
+        ...
+
+    @overload
+    def get_setting(
+            self, name: str, typ: Literal['[[float]]']) -> List[List[float]]:
+        ...
+
+    @overload
+    def get_setting(self, name: str, typ: None = None) -> SettingValue:
+        ...
 
     def get_setting(self, name: str, typ: Optional[str] = None
                     ) -> SettingValue:
@@ -620,8 +651,7 @@ class Instance:
 
         """
         try:
-            log_level_str = cast(
-                    str, self.get_setting('muscle_remote_log_level', 'str'))
+            log_level_str = self.get_setting('muscle_remote_log_level', 'str')
         except KeyError:
             # muscle_remote_log_level not set, do nothing and keep the default
             return
@@ -656,8 +686,7 @@ class Instance:
 
         """
         try:
-            log_level_str = cast(
-                    str, self.get_setting('muscle_local_log_level', 'str'))
+            log_level_str = self.get_setting('muscle_local_log_level', 'str')
 
             log_level = LogLevel[log_level_str.upper()]
             if log_level is None:

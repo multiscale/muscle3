@@ -79,7 +79,6 @@ class Communicator:
             profiler: The profiler to use for recording sends and
                     receives.
         """
-        # TODO: pass a SnapshotManager and store as self._snapshot_manager
         self._kernel = kernel
         self._index = index
         self._declared_ports = declared_ports
@@ -418,8 +417,6 @@ class Communicator:
                 ports[port_name] = Port(
                         port_name, operator, is_vector, is_connected,
                         len(self._index), port_peer_dims)
-                # TODO: retrieve num_messages[] for this port from
-                # self._snapshot_manager when resuming
         return ports
 
     def __ports_from_conduits(self, conduits: List[Conduit]
@@ -451,8 +448,6 @@ class Communicator:
                 ports[str(port_id)] = Port(
                         str(port_id), operator, is_vector, is_connected,
                         len(self._index), port_peer_dims)
-                # TODO: retrieve num_messages[] for this port from
-                # self._snapshot_manager when resuming
         return ports
 
     def __settings_in_port(self, conduits: List[Conduit]) -> Port:
@@ -472,8 +467,6 @@ class Communicator:
                                     conduit.sending_component()))
         return Port('muscle_settings_in', Operator.F_INIT, False, False,
                     len(self._index), [])
-        # TODO: retrieve num_messages[] for this port from
-        # self._snapshot_manager when resuming
 
     def __get_client(self, instance: Reference) -> MPPClient:
         """Get or create a client to connect to the given instance.

@@ -165,7 +165,7 @@ class Instance:
         # enabled, it might not exist and a KeyError is raised.
         try:
             snapshot_dir = self.get_setting('muscle_snapshot_directory', 'str')
-            snapshot_path = Path(cast(str, snapshot_dir))
+            snapshot_path = Path(snapshot_dir)
         except KeyError:
             snapshot_path = None
         self._snapshot_manager.reuse_instance(

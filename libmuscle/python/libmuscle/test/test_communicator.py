@@ -1,3 +1,4 @@
+from typing import List
 from libmuscle.communicator import Communicator, Endpoint, Message
 from libmuscle.mpp_message import ClosePort, MPPMessage
 from libmuscle.port import Port
@@ -43,26 +44,26 @@ def communicator() -> Communicator:
     pm = communicator._peer_manager
     pm.is_connected.return_value = True
 
-    def gpp(x) -> Reference:
+    def gpp(x) -> List[Reference]:
         if 'out' in str(x):
-            return Reference('in')
-        return Reference('out')
+            return [Reference('in')]
+        return [Reference('out')]
 
-    pm.get_peer_port = gpp
+    pm.get_peer_ports = gpp
 
     pm.get_peer_dims.return_value = []
     pm.get_peer_locations.return_value = ['direct:test']
 
-    def gpe(p, s) -> Reference:
+    def gpe(p, s) -> List[Reference]:
         endpoint = MagicMock()
         endpoint.instance.return_value = Reference('other')
         if 'out' in str(p):
             endpoint.ref.return_value = Reference('other.in[13]')
         else:
             endpoint.ref.return_value = Reference('other.out')
-        return endpoint
+        return [endpoint]
 
-    pm.get_peer_endpoint = gpe
+    pm.get_peer_endpoints = gpe
 
     communicator._ports = {
             'out': Port('out', Operator.O_I, False, True, 1, []),
@@ -79,26 +80,26 @@ def communicator2() -> Communicator:
     pm = communicator._peer_manager
     pm.is_connected.return_value = True
 
-    def gpp(x: Reference) -> Reference:
+    def gpp(x) -> List[Reference]:
         if 'out' in str(x):
-            return Reference('in')
-        return Reference('out')
+            return [Reference('in')]
+        return [Reference('out')]
 
-    pm.get_peer_port = gpp
+    pm.get_peer_ports = gpp
 
     pm.get_peer_dims.return_value = []
     pm.get_peer_locations.return_value = ['direct:test']
 
-    def gpe(p, s) -> Reference:
+    def gpe(p, s) -> List[Reference]:
         endpoint = MagicMock()
         endpoint.instance.return_value = Reference('kernel[13]')
         if 'out' in str(p):
             endpoint.ref.return_value = Reference('kernel[13].in')
         else:
             endpoint.ref.return_value = Reference('kernel[13].out')
-        return endpoint
+        return [endpoint]
 
-    pm.get_peer_endpoint = gpe
+    pm.get_peer_endpoints = gpe
 
     communicator._ports = {
             'out': Port('out', Operator.O_I, True, True, 0, [20]),
@@ -115,26 +116,26 @@ def communicator3() -> Communicator:
     pm = communicator._peer_manager
     pm.is_connected.return_value = True
 
-    def gpp(x: Reference) -> Reference:
+    def gpp(x) -> List[Reference]:
         if 'out' in str(x):
-            return Reference('in')
-        return Reference('out')
+            return [Reference('in')]
+        return [Reference('out')]
 
-    pm.get_peer_port = gpp
+    pm.get_peer_ports = gpp
 
     pm.get_peer_dims.return_value = []
     pm.get_peer_locations.return_value = ['direct:test']
 
-    def gpe(p, s) -> Reference:
+    def gpe(p, s) -> List[Reference]:
         endpoint = MagicMock()
         endpoint.instance.return_value = Reference('other')
         if 'out' in str(p):
             endpoint.ref.return_value = Reference('other.in[13]')
         else:
             endpoint.ref.return_value = Reference('other.out[13]')
-        return endpoint
+        return [endpoint]
 
-    pm.get_peer_endpoint = gpe
+    pm.get_peer_endpoints = gpe
 
     communicator._ports = {
             'out': Port('out', Operator.O_I, True, True, 0, []),

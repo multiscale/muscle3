@@ -34,15 +34,21 @@ class PeerManager:
         self.__index = index
 
         # peer port ids, indexed by local kernel.port id
-        self.__peers = dict()  # type: Dict[Reference, Reference]
+        self.__peers = dict()  # type: Dict[Reference, List[Reference]]
 
         for conduit in conduits:
             if str(conduit.sending_component()) == str(kernel):
                 # we send on the port this conduit attaches to
-                self.__peers[conduit.sender] = conduit.receiver
+                self.__peers.setdefault(
+                        conduit.sender, []).append(conduit.receiver)
             if str(conduit.receiving_component()) == str(kernel):
                 # we receive on the port this conduit attaches to
-                self.__peers[conduit.receiver] = conduit.sender
+                if conduit.receiver in self.__peers:
+                    raise RuntimeError(('Receiving port "{}" is connected by'
+                                        ' multiple conduits, but at most one'
+                                        ' is allowed.'
+                                        ).format(conduit.receiving_port()))
+                self.__peers[conduit.receiver] = [conduit.sender]
 
         self.__peer_dims = peer_dims    # indexed by kernel id
         self.__peer_locations = peer_locations  # indexed by instance id
@@ -56,8 +62,8 @@ class PeerManager:
         recv_port_full = self.__kernel + port
         return recv_port_full in self.__peers
 
-    def get_peer_port(self, port: Identifier) -> Reference:
-        """Get a reference for the peer port.
+    def get_peer_ports(self, port: Identifier) -> List[Reference]:
+        """Get a reference for the peer ports.
 
         Args:
             port: Name of the port on this side.
@@ -83,8 +89,8 @@ class PeerManager:
         """
         return self.__peer_locations[peer_instance]
 
-    def get_peer_endpoint(self, port: Identifier, slot: List[int]
-                          ) -> Endpoint:
+    def get_peer_endpoints(self, port: Identifier, slot: List[int]
+                           ) -> List[Endpoint]:
         """Determine the peer endpoint for the given port and slot.
 
         Args:
@@ -94,14 +100,20 @@ class PeerManager:
         Returns:
             The peer endpoint.
         """
-        peer = self.__peers[self.__kernel + port]
-        peer_kernel = peer[:-1]
-        peer_port = cast(Identifier, peer[-1])
+        peers = self.__peers[self.__kernel + port]
+        endpoints = []
 
-        total_index = self.__index + slot
+        for peer in peers:
+            peer_kernel = peer[:-1]
+            peer_port = cast(Identifier, peer[-1])
 
-        # rebalance the indices
-        peer_dim = len(self.__peer_dims[peer_kernel])
-        peer_index = total_index[0:peer_dim]
-        peer_slot = total_index[peer_dim:]
-        return Endpoint(peer_kernel, peer_index, peer_port, peer_slot)
+            total_index = self.__index + slot
+
+            # rebalance the indices
+            peer_dim = len(self.__peer_dims[peer_kernel])
+            peer_index = total_index[0:peer_dim]
+            peer_slot = total_index[peer_dim:]
+            endpoints.append(
+                    Endpoint(peer_kernel, peer_index, peer_port, peer_slot))
+
+        return endpoints

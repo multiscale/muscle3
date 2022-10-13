@@ -386,13 +386,13 @@ class Communicator:
                         if port_peer_dims != self._peer_manager.get_peer_dims(
                                 peer_ce):
                             port_strs = ', '.join(map(str, peer_ports))
-                            raise RuntimeError(('Broadcast port "{}" is'
+                            raise RuntimeError(('Multicast port "{}" is'
                                                 ' connected to peers with'
                                                 ' different dimensions. All'
                                                 ' peer components that this'
                                                 ' port is connected to must'
                                                 ' have the same multiplicity.'
-                                                ' Connected ports: {}.'
+                                                ' Connected to ports: {}.'
                                                 ).format(port_name, port_strs))
                 else:
                     port_peer_dims = []

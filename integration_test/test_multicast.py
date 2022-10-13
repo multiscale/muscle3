@@ -5,7 +5,7 @@ from libmuscle import Instance, Message
 from libmuscle.runner import run_simulation
 
 
-def broadcaster():
+def multicaster():
     instance = Instance({Operator.O_F: ['out']})
 
     while instance.reuse_instance():
@@ -23,7 +23,7 @@ def receiver():
         assert msg.data == 'testing'
 
 
-def test_broadcast(log_file_in_tmpdir):
+def test_multicast(log_file_in_tmpdir):
     elements = [
             Component('broadcast', 'broadcaster'),
             Component('first', 'receiver'),
@@ -39,6 +39,6 @@ def test_broadcast(log_file_in_tmpdir):
     configuration = Configuration(model, settings)
 
     implementations = {
-            'broadcaster': broadcaster,
+            'broadcaster': multicaster,
             'receiver': receiver}
     run_simulation(configuration, implementations)

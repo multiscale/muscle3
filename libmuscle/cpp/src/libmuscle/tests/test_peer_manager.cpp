@@ -82,16 +82,16 @@ TEST(libmuscle_peer_manager, is_connected) {
 
 TEST(libmuscle_peer_manager, get_peer_port) {
     auto pm = peer_manager();
-    ASSERT_EQ(pm.get_peer_port("out"), "other.in");
-    ASSERT_EQ(pm.get_peer_port("in"), "other.out");
+    ASSERT_EQ(pm.get_peer_ports("out"), std::vector<Reference>({"other.in"}));
+    ASSERT_EQ(pm.get_peer_ports("in"), std::vector<Reference>({"other.out"}));
 
     auto pm2 = peer_manager2();
-    ASSERT_EQ(pm2.get_peer_port("out"), "kernel.in");
-    ASSERT_EQ(pm2.get_peer_port("in"), "kernel.out");
+    ASSERT_EQ(pm2.get_peer_ports("out"), std::vector<Reference>({"kernel.in"}));
+    ASSERT_EQ(pm2.get_peer_ports("in"), std::vector<Reference>({"kernel.out"}));
 
     auto pm3 = peer_manager3();
-    ASSERT_EQ(pm3.get_peer_port("out"), "other.in");
-    ASSERT_EQ(pm3.get_peer_port("in"), "other.out");
+    ASSERT_EQ(pm3.get_peer_ports("out"), std::vector<Reference>({"other.in"}));
+    ASSERT_EQ(pm3.get_peer_ports("in"), std::vector<Reference>({"other.out"}));
 }
 
 TEST(libmuscle_peer_manager, get_peer_dims) {
@@ -121,16 +121,16 @@ TEST(libmuscle_peer_manager, get_peer_locations) {
 
 TEST(libmuscle_peer_manager, get_peer_endpoint) {
     auto pm = peer_manager();
-    ASSERT_EQ(std::string(pm.get_peer_endpoint("out", {})), "other.in[13]");
-    ASSERT_EQ(std::string(pm.get_peer_endpoint("in", {})), "other.out[13]");
+    ASSERT_EQ(std::string(pm.get_peer_endpoints("out", {})[0]), "other.in[13]");
+    ASSERT_EQ(std::string(pm.get_peer_endpoints("in", {})[0]), "other.out[13]");
 
     auto pm2 = peer_manager2();
-    ASSERT_EQ(std::string(pm2.get_peer_endpoint("out", {11})), "kernel[11].in");
-    ASSERT_EQ(std::string(pm2.get_peer_endpoint("in", {11})), "kernel[11].out");
+    ASSERT_EQ(std::string(pm2.get_peer_endpoints("out", {11})[0]), "kernel[11].in");
+    ASSERT_EQ(std::string(pm2.get_peer_endpoints("in", {11})[0]), "kernel[11].out");
 
     auto pm3 = peer_manager3();
-    ASSERT_EQ(std::string(pm3.get_peer_endpoint("out", {42})), "other.in[42]");
-    ASSERT_EQ(std::string(pm3.get_peer_endpoint("in", {42})), "other.out[42]");
+    ASSERT_EQ(std::string(pm3.get_peer_endpoints("out", {42})[0]), "other.in[42]");
+    ASSERT_EQ(std::string(pm3.get_peer_endpoints("in", {42})[0]), "other.out[42]");
 
 }
 

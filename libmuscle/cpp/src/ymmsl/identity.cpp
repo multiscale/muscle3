@@ -10,7 +10,7 @@
 using namespace std::string_literals;
 
 
-::std::size_t ::std::hash<::ymmsl::impl::Identifier>::operator()(
+::std::size_t (::std::hash<::ymmsl::impl::Identifier>::operator())(
         argument_type const & id) const noexcept
 {
     return hash<std::string>()(id.data_);

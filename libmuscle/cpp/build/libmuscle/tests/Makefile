@@ -61,6 +61,9 @@ endif
 %.d: %.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -E -MM -MT $(@:.d=.o) $< -o $@
 
+mpi%.d: mpi%.cpp
+	$(MPICXX) $(CPPFLAGS) $(CXXFLAGS) -E -MM -MT $(@:.d=.o) $< -o $@
+
 %.o: %.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@
 

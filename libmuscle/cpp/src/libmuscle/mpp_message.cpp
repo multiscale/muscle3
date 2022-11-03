@@ -76,7 +76,7 @@ DataConstRef MPPMessage::encoded() const {
     auto bytes = Data::byte_array(sbuf.size());
     memcpy(bytes.as_byte_array(), sbuf.data(), sbuf.size());
 
-    return bytes;
+    return std::move(bytes);
 }
 
 } }

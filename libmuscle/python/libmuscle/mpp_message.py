@@ -171,6 +171,11 @@ class MPPMessage:
             settings_overlay: The serialised overlay settings.
             data: The serialised contents of the message.
         """
+        # make sure timestamp and next_timestamp are floats
+        timestamp = float(timestamp)
+        if next_timestamp is not None:
+            next_timestamp = float(next_timestamp)
+
         self.sender = sender
         self.receiver = receiver
         self.port_length = port_length

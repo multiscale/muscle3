@@ -686,13 +686,13 @@ class Instance:
         else:
             msg = self._communicator.receive_message(
                     port_name, slot, default)
-            if port.is_connected and not port.is_open(slot):
+            if port.is_connected() and not port.is_open(slot):
                 err_msg = (('Port {} was closed while trying to'
                             ' receive on it, did the peer crash?'
                             ).format(port_name))
                 self.__shutdown(err_msg)
                 raise RuntimeError(err_msg)
-            if port.is_connected and not with_settings:
+            if port.is_connected() and not with_settings:
                 self.__check_compatibility(port_name, msg.settings)
             if not with_settings:
                 msg.settings = None

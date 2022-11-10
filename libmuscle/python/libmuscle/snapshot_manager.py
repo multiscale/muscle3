@@ -70,7 +70,6 @@ class SnapshotManager:
             if self._trigger:
                 self._trigger.update_checkpoints(
                     snapshot.message.timestamp,
-                    snapshot.message.next_timestamp,
                     snapshot.is_final_snapshot)
 
     def reuse_instance(self,
@@ -99,6 +98,17 @@ class SnapshotManager:
         """
         return self._resume_from_snapshot is not None
 
+    def should_init(self) -> bool:
+        """Check if F_INIT should be run in this reuse loop.
+
+        Returns:
+            True: when not resuming this reuse loop, or when resuming from a
+                final snapshot.
+            False: otherwise
+        """
+        return (self._resume_from_snapshot is None or
+                self._resume_from_snapshot.is_final_snapshot)
+
     def load_snapshot(self) -> Message:
         """Get the Message to resume from
         """
@@ -107,20 +117,19 @@ class SnapshotManager:
                                ' to check if a snapshot is available')
         return self._resume_from_snapshot.message
 
-    def should_save_snapshot(self, timestamp: float,
-                             next_timestamp: Optional[float]) -> bool:
+    def should_save_snapshot(self, timestamp: float) -> bool:
         """See :meth:`TriggerManager.should_save_snapshot`
         """
         if self._trigger is None:
             return False  # checkpointing disabled
-        return self._trigger.should_save_snapshot(timestamp, next_timestamp)
+        return self._trigger.should_save_snapshot(timestamp)
 
-    def should_save_final_snapshot(self, timestamp: float) -> bool:
+    def should_save_final_snapshot(self) -> bool:
         """See :meth:`TriggerManager.should_save_final_snapshot`
         """
         if self._trigger is None:
             return False  # checkpointing disabled
-        return self._trigger.should_save_final_snapshot(timestamp)
+        return self._trigger.should_save_final_snapshot()
 
     def save_snapshot(self, msg: Message) -> None:
         """Save snapshot contained in the message object.
@@ -158,7 +167,7 @@ class SnapshotManager:
 
         if self._trigger is not None:
             self._trigger.update_checkpoints(
-                msg.timestamp, msg.next_timestamp, final)
+                msg.timestamp, final)
 
     def __load_snapshot(self, snapshot_location: Path) -> None:
         """Load a previously stored snapshot from the filesystem

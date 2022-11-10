@@ -215,8 +215,7 @@ class TriggerManager:
         """
         return time.monotonic() - self._monotonic_reference
 
-    def should_save_snapshot(self, timestamp: float,
-                             next_timestamp: Optional[float]) -> bool:
+    def should_save_snapshot(self, timestamp: float) -> bool:
         """Handles instance.should_save_snapshot
         """
         if self._should_have_saved:
@@ -224,19 +223,12 @@ class TriggerManager:
                               '"should_save_final_snapshot" returned positive'
                               ' but no snapshot was saved before the next call')
 
-        value = False
         elapsed_walltime = self.elapsed_walltime()
-        if next_timestamp is None:
-            _logger.warning('No "next_timestamp" provided. Workflow may not'
-                            ' be able to create a consistent snapshot. See '
-                            'https://muscle3.readthedocs.io/en/latest/checkpoints.html')
-            value = self.__should_save(elapsed_walltime, timestamp)
-        else:
-            value = self.__should_save(elapsed_walltime, next_timestamp)
+        value = self.__should_save(elapsed_walltime, timestamp)
         self._should_have_saved = value
         return value
 
-    def should_save_final_snapshot(self, timestamp: float) -> bool:
+    def should_save_final_snapshot(self) -> bool:
         """Handles instance.should_save_final_snapshot
         """
         if self._should_have_saved:
@@ -285,9 +277,7 @@ class TriggerManager:
             self._should_save_final_called = False
             self._saved_final_checkpoint = False
 
-    def update_checkpoints(self, timestamp: float,
-                           next_timestamp: Optional[float], final: bool
-                           ) -> None:
+    def update_checkpoints(self, timestamp: float, final: bool) -> None:
         """Update last and next checkpoint times when a snapshot is made
 
         Args:
@@ -300,10 +290,7 @@ class TriggerManager:
         if final and self._max_f_init_next_timestamp is not None:
             simulation_time = self._max_f_init_next_timestamp
         else:
-            if next_timestamp is None:
-                simulation_time = timestamp
-            else:
-                simulation_time = next_timestamp
+            simulation_time = timestamp
         self._prevsim = simulation_time
         self._nextsim = self._sim.next_checkpoint(simulation_time)
 

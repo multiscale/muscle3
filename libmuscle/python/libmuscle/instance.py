@@ -430,13 +430,27 @@ class Instance:
         This method returns True for the first iteration of the reuse loop after
         resuming from a previously taken snapshot. When resuming from a
         snapshot, the submodel must load its state from the snapshot as returned
-        by :meth:`load_snapshot` and the F_INIT step must be skipped.
+        by :meth:`load_snapshot`.
 
         Returns:
             True iff the submodel must resume from a snapshot instead of the
             usual F_INIT step during this iteration of the reuse loop.
         """
         return self._snapshot_manager.resuming()
+
+    def should_init(self) -> bool:
+        """Check if this instance should initialize.
+
+        Must be used by submodels that implement the checkpointing API.
+
+        When resuming from a previous snapshot, instances need not always
+        execute the F_INIT phase of the submodel execution loop. Use this method
+        before attempting to receive data on F_INIT ports.
+
+        Returns:
+            True iff the submodel must skip the F_INIT step
+        """
+        return self._snapshot_manager.should_init()
 
     def load_snapshot(self) -> Message:
         """Load a snapshot.
@@ -452,42 +466,27 @@ class Instance:
         """
         return self._snapshot_manager.load_snapshot()
 
-    def should_save_snapshot(
-            self, timestamp: float, next_timestamp: Optional[float]) -> bool:
+    def should_save_snapshot(self, timestamp: float) -> bool:
         """Check if a snapshot should be saved inside a time-integration loop.
 
         This method checks if a snapshot should be saved right now, based on the
-        provided timestamps and passed wallclock time.
-
-        When the next timestamp is provided, this value will be used to
-        determine if a checkpoint will be passed between now and the next time
-        step. A submodel should always provide the next timestamp if available,
-        since this is the most reliable way to get consistent snapshots across
-        all submodels in the run.
-
-        When a submodel cannot provide the next timestamp, a best efford is made
-        to get consistent snapshots (based on the current timestamp). See the
-        checkpointing tutorial for more information.
+        provided timestamp and passed wallclock time.
 
         When this method returns True, the submodel must also save a snapshot
         through :meth:`save_snapshot`. A RuntimeError will be generated when not
         doing so.
 
         See also :meth:`should_save_final_snapshot` for the variant that must be
-        called at the end of a time-integration loop, or when a submodel does
-        not have a time-integration loop.
+        called at the end of the reuse loop.
 
         Args:
             timestamp: current timestamp of the submodel
-            next_timestamp: timestamp of the next iteration of the time
-                integration loop of the submodel or ``None`` if not available
 
         Returns:
             True iff a snapshot should be taken by the submodel according to the
             checkpoint rules provided in the ymmsl configuration.
         """
-        return self._snapshot_manager.should_save_snapshot(
-                timestamp, next_timestamp)
+        return self._snapshot_manager.should_save_snapshot(timestamp)
 
     def save_snapshot(self, message: Message) -> None:
         """Save a snapshot inside a time-integration loop.
@@ -495,8 +494,8 @@ class Instance:
         Before saving a snapshot, you should check using
         :meth:`should_save_snapshot` if a snapshot should be saved according to
         the checkpoint rules specified in the ymmsl configuration. You should
-        use the same timestamp and next_timestamp in the provided Message object
-        as used to query `should_save_snapshot`.
+        use the same timestamp in the provided Message object as used to query
+        `should_save_snapshot`.
 
         Although it is allowed to save a snapshot even when
         :meth:`should_save_snapshot` returns False, you should avoid this: this
@@ -505,18 +504,17 @@ class Instance:
         It could also lead to a lot of snapshot files clogging your file system.
 
         See also :meth:`save_final_snapshot` for the variant that must be called
-        at the end of a time-integration loop, or when a submodel does not have
-        a time-integration loop.
+        at the end of the reuse loop.
 
         Args:
             message: Message object that is saved as snapshot. The message
-                timestamp and next_timestamp attributes should be the same as
-                passed to :meth:`should_save_snapshot`. The data attribute can
-                be used to store the internal state of the submodel.
+                timestamp attribute should be the same as passed to
+                :meth:`should_save_snapshot`. The data attribute can be used to
+                store the internal state of the submodel.
         """
         return self._snapshot_manager.save_snapshot(message)
 
-    def should_save_final_snapshot(self, timestamp: float) -> bool:
+    def should_save_final_snapshot(self) -> bool:
         """Check if a snapshot should be saved before O_F.
 
         This method checks if a snapshot should be saved right now, based on the
@@ -529,14 +527,11 @@ class Instance:
         See also :meth:`should_save_snapshot` for the variant that may be called
         inside of a time-integration loop of the submodel.
 
-        Args:
-            timestamp: current timestamp of the submodel
-
         Returns:
             True iff a final snapshot should be taken by the submodel according
             to the checkpoint rules provided in the ymmsl configuration.
         """
-        return self._snapshot_manager.should_save_final_snapshot(timestamp)
+        return self._snapshot_manager.should_save_final_snapshot()
 
     def save_final_snapshot(self, message: Message) -> None:
         """Save a snapshot before O_F.
@@ -544,8 +539,6 @@ class Instance:
         Before saving a snapshot, you should check using
         :meth:`should_save_final_snapshot` if a snapshot should be saved
         according to the checkpoint rules specified in the ymmsl configuration.
-        You should use the same timestamp in the provided Message object as used
-        to query `should_save_final_snapshot`.
 
         Although it is allowed to save a snapshot even when
         :meth:`should_save_final_snapshot` returns False, you should avoid this:
@@ -557,10 +550,9 @@ class Instance:
         of a time-integration loop of the submodel.
 
         Args:
-            message: Message object that is saved as snapshot. The message
-                timestamp should be the same as passed to
-                :meth:`should_save_snapshot`. The data attribute can be used to
-                store the internal state of the submodel.
+            message: Message object that is saved as snapshot. The data
+                attribute can be used to store the internal state of the
+                submodel.
         """
         return self._snapshot_manager.save_final_snapshot(message)
 

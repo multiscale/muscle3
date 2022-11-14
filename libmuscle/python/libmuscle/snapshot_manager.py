@@ -72,19 +72,14 @@ class SnapshotManager:
                     snapshot.message.timestamp,
                     snapshot.is_final_snapshot)
 
-    def reuse_instance(self,
-                       max_f_init_next_timestamp: Optional[float],
-                       snapshot_directory: Optional[Path],
-                       ) -> None:
+    def reuse_instance(self, snapshot_directory: Optional[Path]) -> None:
         """Callback on Instance.reuse_instance
 
         Args:
-            max_f_init_next_timestamp: maximum next_timestamp of all F_INIT
-                messages. May be None if no message has next_timestamp set or
-                if no F_INIT messages were received.
+            snapshot_directory: Path to store this instance's snapshots in.
         """
         if self._trigger is not None:
-            self._trigger.reuse_instance(max_f_init_next_timestamp)
+            self._trigger.reuse_instance()
 
         self._snapshot_directory = snapshot_directory
 
@@ -124,7 +119,10 @@ class SnapshotManager:
             return False  # checkpointing disabled
         return self._trigger.should_save_snapshot(timestamp)
 
-    def should_save_final_snapshot(self) -> bool:
+    def should_save_final_snapshot(
+            self, do_reuse: bool,
+            f_init_max_timestamp: Optional[float]
+            ) -> bool:
         """See :meth:`TriggerManager.should_save_final_snapshot`
         """
         if self._trigger is None:

@@ -252,16 +252,9 @@ class TriggerManager:
         self._should_save_final_called = True
         return value
 
-    def reuse_instance(self, max_f_init_next_timestamp: Optional[float]
-                       ) -> None:
+    def reuse_instance(self) -> None:
         """Cleanup between instance reuse
-
-        Args:
-            max_f_init_next_timestamp: the maximum next_timestamp of all
-                messages pre--received during F_INIT.
         """
-        self._max_f_init_next_timestamp = max_f_init_next_timestamp
-
         if self._first_reuse:
             self._first_reuse = False
         else:

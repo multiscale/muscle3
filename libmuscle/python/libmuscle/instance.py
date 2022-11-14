@@ -74,6 +74,8 @@ class Instance:
 
         self._first_run = True
         """Keeps track of whether this is the first reuse run."""
+        self._do_reuse = None           # type: Optional[bool]
+        """Caching variable for result from :meth:`__check_reuse_instance`"""
 
         self._f_init_cache = dict()     # type: _FInitCacheType
 
@@ -129,37 +131,12 @@ class Instance:
                 :meth:`should_save_final_snapshot` and
                 :meth:`save_final_snapshot`, or the checkpointing tutorial.
         """
-        do_reuse = self.__receive_settings()
+        do_reuse = self._do_reuse
+        if do_reuse is None:
+            # should_save_final_snapshot not called, so we need to check_reuse
+            do_reuse = self.__check_reuse_instance(apply_overlay)
+        self._do_reuse = None
 
-        # TODO: _f_init_cache should be empty here, or the user didn't
-        # receive something that was sent on the last go-around.
-        # At least emit a warning.
-        if not (self.resuming() and self._first_run):
-            # when resuming we skip receiving on f_init in the first run
-            self.__pre_receive_f_init(apply_overlay)
-
-        self._set_local_log_level()
-        self._set_remote_log_level()
-
-        ports = self._communicator.list_ports()
-        f_init_not_connected = all(
-                [not self.is_connected(port)
-                 for port in ports.get(Operator.F_INIT, [])])
-        no_settings_in = not self._communicator.settings_in_connected()
-
-        if f_init_not_connected and no_settings_in:
-            do_reuse = self._first_run
-        else:
-            for message in self._f_init_cache.values():
-                if isinstance(message.data, ClosePort):
-                    do_reuse = False
-        self._first_run = False
-
-        max_f_init_next_timestamp = max(
-                (msg.next_timestamp
-                 for msg in self._f_init_cache.values()
-                 if msg.next_timestamp is not None),
-                default=None)
         # Note: muscle_snapshot_directory setting is provided by muscle_manager
         # when checkpointing is enabled for this run. When checkpointing is not
         # enabled, it might not exist and a KeyError is raised.
@@ -168,14 +145,8 @@ class Instance:
             snapshot_path = Path(snapshot_dir)
         except KeyError:
             snapshot_path = None
-        self._snapshot_manager.reuse_instance(
-                max_f_init_next_timestamp, snapshot_path)
+        self._snapshot_manager.reuse_instance(snapshot_path)
 
-        if not do_reuse:
-            self.__close_ports()
-            self._communicator.shutdown()
-            self._deregister()
-            self.__manager.close()
         return do_reuse
 
     def error_shutdown(self, message: str) -> None:
@@ -514,7 +485,7 @@ class Instance:
         """
         return self._snapshot_manager.save_snapshot(message)
 
-    def should_save_final_snapshot(self) -> bool:
+    def should_save_final_snapshot(self, *, apply_overlay: bool = True) -> bool:
         """Check if a snapshot should be saved before O_F.
 
         This method checks if a snapshot should be saved right now, based on the
@@ -527,11 +498,32 @@ class Instance:
         See also :meth:`should_save_snapshot` for the variant that may be called
         inside of a time-integration loop of the submodel.
 
+        .. note::
+            This method will block until it can determine whether a final
+            snapshot should be taken. This means it must also determine if this
+            instance is reused. The optional keword-only argument
+            `apply_overlay` has the same meaning as for :meth:`reuse_instance`.
+
+        Args:
+            apply_overlay: Whether to apply the received settings
+                overlay or to save it. If you're going to use
+                :meth:`receive_with_settings` on your F_INIT ports, set this to
+                False. If you don't know what that means, just call
+                `reuse_instance()` without specifying this and everything will
+                be fine. If it turns out that you did need to specify False,
+                MUSCLE3 will tell you about it in an error message and you can
+                add it still.
+
         Returns:
             True iff a final snapshot should be taken by the submodel according
             to the checkpoint rules provided in the ymmsl configuration.
         """
-        return self._snapshot_manager.should_save_final_snapshot()
+        self._do_reuse = self.__check_reuse_instance(apply_overlay)
+        f_init_max_timestamp = max(
+                (msg.timestamp for msg in self._f_init_cache.values()),
+                default=None)
+        return self._snapshot_manager.should_save_final_snapshot(
+                self._do_reuse, f_init_max_timestamp)
 
     def save_final_snapshot(self, message: Message) -> None:
         """Save a snapshot before O_F.
@@ -632,6 +624,46 @@ class Instance:
                                                      self.__manager)
             logging.getLogger().addHandler(self._mmp_handler)
 
+    def __check_reuse_instance(self, apply_overlay: bool) -> bool:
+        """Pre-receive F_INIT messages and detect if this instance is reused.
+
+        This is called during :meth:`should_save_final_snapshot` to detect if a
+        snapshot must be taken. If an instance does implement checkpointing,
+        :meth:`reuse_instance` will call it instead.
+        """
+        do_reuse = self.__receive_settings()
+
+        # TODO: _f_init_cache should be empty here, or the user didn't
+        # receive something that was sent on the last go-around.
+        # At least emit a warning.
+        if not (self.resuming() and self._first_run):
+            # when resuming we skip receiving on f_init in the first run
+            self.__pre_receive_f_init(apply_overlay)
+
+        self._set_local_log_level()
+        self._set_remote_log_level()
+
+        ports = self._communicator.list_ports()
+        f_init_not_connected = all(
+                [not self.is_connected(port)
+                 for port in ports.get(Operator.F_INIT, [])])
+        no_settings_in = not self._communicator.settings_in_connected()
+
+        if f_init_not_connected and no_settings_in:
+            do_reuse = self._first_run
+        else:
+            for message in self._f_init_cache.values():
+                if isinstance(message.data, ClosePort):
+                    do_reuse = False
+        self._first_run = False
+
+        if not do_reuse:
+            self.__close_ports()
+            self._communicator.shutdown()
+            self._deregister()
+            self.__manager.close()
+        return do_reuse
+
     def __receive_message(
             self, port_name: str, slot: Optional[int],
             default: Optional[Message], with_settings: bool
@@ -651,9 +683,10 @@ class Instance:
                 if with_settings and msg.settings is None:
                     err_msg = ('If you use receive_with_settings()'
                                ' on an F_INIT port, then you have to'
-                               ' pass False to reuse_instance(),'
-                               ' otherwise the settings will already'
-                               ' have been applied by MUSCLE.')
+                               ' pass apply_overlay=False to reuse_instance() '
+                               ' and should_save_final_snapshot(),'
+                               ' if applicable, otherwise the settings will'
+                               ' already have been applied by MUSCLE.')
                     self.__shutdown(err_msg)
                     raise RuntimeError(err_msg)
             else:

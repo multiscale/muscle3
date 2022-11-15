@@ -91,14 +91,14 @@ class PeerManager:
 
     def get_peer_endpoints(self, port: Identifier, slot: List[int]
                            ) -> List[Endpoint]:
-        """Determine the peer endpoint for the given port and slot.
+        """Determine the peer endpoints for the given port and slot.
 
         Args:
             port: The port on our side to send or receive on.
             slot: The slot to send or receive on.
 
         Returns:
-            The peer endpoint.
+            The peer endpoints.
         """
         peers = self.__peers[self.__kernel + port]
         endpoints = []

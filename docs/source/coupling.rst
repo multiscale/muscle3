@@ -4,8 +4,8 @@ Coupling your model
 Multicast
 ---------
 
-With MUSCLE3 you can connect an output port to multiple input ports. This is
-called multicast. When a submodel sends a message on a port that is connected to
+With MUSCLE3 you can connect an output port to multiple input ports.
+When a submodel sends a message on a port that is connected to
 multiple input ports, the message is copied and sent to each connected port.
 
 .. note::

@@ -49,6 +49,11 @@ class Message:
             data: An object to send or that was received.
             settings: Overlay settings to send or that were received.
         """
+        # make sure timestamp and next_timestamp are floats
+        timestamp = float(timestamp)
+        if next_timestamp is not None:
+            next_timestamp = float(next_timestamp)
+
         self.timestamp = timestamp
         self.next_timestamp = next_timestamp
         self.data = data

@@ -187,8 +187,20 @@ class TriggerManager:
     """Manages all checkpoint triggers and checks if a snapshot must be saved.
     """
 
-    def __init__(self, utc_reference: datetime, checkpoints: Checkpoints
-                 ) -> None:
+    def __init__(self) -> None:
+        self._has_checkpoints = False
+        self._last_triggers = []    # type: List[str]
+        self._monotonic_reference = time.monotonic()
+
+    def set_checkpoint_info(
+            self, utc_reference: datetime, checkpoints: Checkpoints) -> None:
+        """Register checkpoint info received from the muscle manager.
+        """
+        if not checkpoints:
+            self._has_checkpoints = False
+            return
+
+        self._has_checkpoints = True
         self._monotonic_reference = _utc_to_monotonic(utc_reference)
 
         self._wall = CombinedCheckpointTriggers(checkpoints.wallclock_time)
@@ -200,7 +212,6 @@ class TriggerManager:
         self._nextsim = None        # type: Optional[float]
         self._sim_reset = True
 
-        self._last_triggers = []    # type: List[str]
         self._first_reuse = True
         self._max_f_init_next_timestamp = None  # type: Optional[float]
 
@@ -218,6 +229,9 @@ class TriggerManager:
     def should_save_snapshot(self, timestamp: float) -> bool:
         """Handles instance.should_save_snapshot
         """
+        if not self._has_checkpoints:
+            return False
+
         if self._should_have_saved:
             _checkpoint_error('"should_save_snapshot" or '
                               '"should_save_final_snapshot" returned positive'
@@ -231,6 +245,9 @@ class TriggerManager:
     def should_save_final_snapshot(self) -> bool:
         """Handles instance.should_save_final_snapshot
         """
+        if not self._has_checkpoints:
+            return False
+
         if self._should_have_saved:
             _checkpoint_error('"should_save_snapshot" or '
                               '"should_save_final_snapshot" returned positive'
@@ -255,6 +272,8 @@ class TriggerManager:
     def reuse_instance(self) -> None:
         """Cleanup between instance reuse
         """
+        if not self._has_checkpoints:
+            return
         if self._first_reuse:
             self._first_reuse = False
         else:
@@ -277,6 +296,14 @@ class TriggerManager:
             timestamp: timestamp as reported by the instance
             next_timestamp: next timestamp as reported by the instance
         """
+        if not self._has_checkpoints:
+            _logger.info('Saving a snapshot, but no snapshots requested by the'
+                         ' workflow. Hint: use Instance.should_save_snapshot(),'
+                         ' Instance.should_save_final_snapshot() or'
+                         ' Instance.snapshots_enabled() to test if it is useful'
+                         ' to save a snapshot.')
+            return
+
         self._prevwall = self.elapsed_walltime()
         self._nextwall = self._wall.next_checkpoint(self._prevwall)
 

@@ -141,7 +141,8 @@ def test_trigger_manager_reference_time():
     monotonic_now = time.monotonic()
     utcnow = datetime.now(timezone.utc)
     reference = utcnow - timedelta(seconds=15)
-    trigger_manager = TriggerManager(reference, Checkpoints())
+    trigger_manager = TriggerManager()
+    trigger_manager.set_checkpoint_info(reference, Checkpoints(at_end=True))
     elapsed_walltime = trigger_manager.elapsed_walltime()
     elapsed_monotonic = time.monotonic() - monotonic_now
     assert 15.0 < elapsed_walltime <= (15.0 + elapsed_monotonic)
@@ -150,7 +151,8 @@ def test_trigger_manager_reference_time():
 @pytest.mark.skip("To be updated")
 def test_trigger_manager():
     reference = datetime.now(timezone.utc)
-    trigger_manager = TriggerManager(reference, Checkpoints(
+    trigger_manager = TriggerManager()
+    trigger_manager.set_checkpoint_info(reference, Checkpoints(
             wallclock_time=[CheckpointAtRule([1e-12])],
             simulation_time=[CheckpointAtRule([1, 3, 5])]))
 
@@ -203,7 +205,8 @@ def test_trigger_manager_warnings(caplog: pytest.LogCaptureFixture,
     monkeypatch.setenv("MUSCLE_DISABLE_CHECKPOINT_ERRORS", "1")
 
     reference = datetime.now(timezone.utc)
-    trigger_manager = TriggerManager(reference, Checkpoints(
+    trigger_manager = TriggerManager()
+    trigger_manager.set_checkpoint_info(reference, Checkpoints(
             simulation_time=[CheckpointAtRule([1, 3, 5])]))
 
     trigger_manager.reuse_instance(2)

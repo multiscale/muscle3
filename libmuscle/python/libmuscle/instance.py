@@ -1,5 +1,4 @@
 from copy import copy
-from datetime import datetime
 import logging
 import os
 from pathlib import Path
@@ -9,7 +8,7 @@ from typing import cast, Dict, List, Optional, Tuple, overload
 from typing_extensions import Literal
 
 from ymmsl import (Identifier, Operator, SettingValue, Port, Reference,
-                   Settings, Checkpoints)
+                   Settings)
 
 from libmuscle.communicator import Communicator, Message
 from libmuscle.settings_manager import SettingsManager
@@ -79,11 +78,11 @@ class Instance:
 
         self._f_init_cache = dict()     # type: _FInitCacheType
 
-        checkpoint_info = self._register()
+        self._register()
         self._connect()
-        # Note: SnapshotManager.set_checkpoint_info needs to have the ports
+        # Note: SnapshotManager.get_checkpoint_info needs to have the ports
         # initialized so it comes after self._connect()
-        self._snapshot_manager.set_checkpoint_info(*checkpoint_info)
+        self._snapshot_manager.get_checkpoint_info()
         self._set_local_log_level()
         self._set_remote_log_level()
 
@@ -548,17 +547,16 @@ class Instance:
         """
         return self._snapshot_manager.save_final_snapshot(message)
 
-    def _register(self) -> Tuple[datetime, Checkpoints, Optional[Path]]:
+    def _register(self) -> None:
         """Register this instance with the manager.
         """
         register_event = self._profiler.start(ProfileEventType.REGISTER)
         locations = self._communicator.get_locations()
         port_list = self.__list_declared_ports()
-        checkpoint_info = self.__manager.register_instance(
+        self.__manager.register_instance(
                 self._instance_name(), locations, port_list)
         register_event.stop()
         _logger.info('Registered with the manager')
-        return checkpoint_info
 
     def _connect(self) -> None:
         """Connect this instance to the given peers / conduits.

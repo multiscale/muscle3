@@ -57,12 +57,12 @@ def decode_checkpoint_rule(rule: Dict[str, Any]) -> CheckpointRule:
         return CheckpointAtRule(**rule)
     if rule.keys() == {'start', 'stop', 'every'}:
         return CheckpointRangeRule(**rule)
-    raise ValueError('Cannot convert {rule} to a checkpoint rule.')
+    raise ValueError(f'Cannot convert {rule} to a checkpoint rule.')
 
 
 def decode_checkpoint_info(
         reference_timestamp: float,
-        checkpoints_dict: Dict[str, List[Dict[str, Any]]],
+        checkpoints_dict: Dict[str, Any],
         resume: Optional[str]
         ) -> Tuple[datetime, Checkpoints, Optional[Path]]:
     """Decode checkpoint info from a MsgPack-compatible value.
@@ -80,6 +80,7 @@ def decode_checkpoint_info(
     """
     ref_time = datetime.fromtimestamp(reference_timestamp, tz=timezone.utc)
     checkpoints = Checkpoints(
+            at_end=checkpoints_dict["at_end"],
             wallclock_time=[decode_checkpoint_rule(rule)
                             for rule in checkpoints_dict["wallclock_time"]],
             simulation_time=[decode_checkpoint_rule(rule)
@@ -161,9 +162,21 @@ class MMPClient():
         response = self._call_manager(request)
         return Settings(response[1])
 
+    def get_checkpoint_info(self, name: Reference
+                            ) -> Tuple[datetime, Checkpoints, Optional[Path]]:
+        """Get the checkpoint info from the manager.
+
+        Returns:
+            wallclock_time_reference: UTC time where wallclock_time = 0
+            checkpoints: checkpoint configuration
+            resume: path to the resume snapshot
+        """
+        request = [RequestType.GET_CHECKPOINT_INFO.value, str(name)]
+        response = self._call_manager(request)
+        return decode_checkpoint_info(*response[1:])
+
     def register_instance(self, name: Reference, locations: List[str],
-                          ports: List[Port]
-                          ) -> Tuple[datetime, Checkpoints, Optional[Path]]:
+                          ports: List[Port]) -> None:
         """Register a component instance with the manager.
 
         Args:
@@ -171,11 +184,6 @@ class MMPClient():
             locations: List of places where the instance can be
                     reached.
             ports: List of ports of this instance.
-
-        Returns:
-            wallclock_time_reference: UTC time where wallclock_time = 0
-            checkpoints: checkpoint configuration
-            resume: path to the resume snapshot
         """
         request = [
                 RequestType.REGISTER_INSTANCE.value,
@@ -185,7 +193,6 @@ class MMPClient():
         if response[0] == ResponseType.ERROR.value:
             raise RuntimeError(
                     f'Error registering instance: {response[1]}')
-        return decode_checkpoint_info(*response[1])
 
     def request_peers(
             self, name: Reference) -> Tuple[

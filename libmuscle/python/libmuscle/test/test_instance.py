@@ -50,7 +50,7 @@ def instance(sys_argv_instance):
         mmp_client_object = MagicMock()
         mmp_client_object.request_peers.return_value = (None, None, None)
         checkpoint_info = (datetime.now(timezone.utc), Checkpoints(), None)
-        mmp_client_object.register_instance.return_value = checkpoint_info
+        mmp_client_object.get_checkpoint_info.return_value = checkpoint_info
         mmp_client.return_value = mmp_client_object
 
         instance = Instance({
@@ -68,7 +68,7 @@ def instance2(sys_argv_instance):
         mmp_client_object = MagicMock()
         mmp_client_object.request_peers.return_value = (None, None, None)
         checkpoint_info = (datetime.now(timezone.utc), Checkpoints(), None)
-        mmp_client_object.register_instance.return_value = checkpoint_info
+        mmp_client_object.get_checkpoint_info.return_value = checkpoint_info
         mmp_client.return_value = mmp_client_object
         instance = Instance({
             Operator.F_INIT: ['in[]'],
@@ -83,7 +83,7 @@ def test_create_instance(
         mmp_client_object = MagicMock()
         mmp_client_object.request_peers.return_value = (None, None, None)
         checkpoint_info = (datetime.now(timezone.utc), Checkpoints(), None)
-        mmp_client_object.register_instance.return_value = checkpoint_info
+        mmp_client_object.get_checkpoint_info.return_value = checkpoint_info
         mmp_client.return_value = mmp_client_object
         ports = {
             Operator.F_INIT: ['in'],

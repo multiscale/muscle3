@@ -46,14 +46,17 @@ class SnapshotManager:
         self._snapshot_directory = None     # type: Optional[Path]
         self._next_snapshot_num = 1
 
-    def set_checkpoint_info(self,
-                            utc_reference: datetime,
-                            checkpoints: Checkpoints,
-                            resume: Optional[Path]) -> None:
-        """Callback after registering with the manager.
+    def get_checkpoint_info(self) -> None:
+        """Request checkpoint info from the muscle manager.
+        """
+        checkpoint_info = self._manager.get_checkpoint_info(self._instance_id)
+        self._set_checkpoint_info(*checkpoint_info)
 
-        Provide the snapshot manager with info on workflow checkpoints and if we
-        should resume from a previous snapshot.
+    def _set_checkpoint_info(self,
+                             utc_reference: datetime,
+                             checkpoints: Checkpoints,
+                             resume: Optional[Path]) -> None:
+        """Apply checkpoint info received from the manager.
 
         Args:
             utc_reference: datetime (in UTC) indicating wallclock_time=0

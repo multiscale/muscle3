@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 import errno
 import logging
-from typing import Any, Dict, Optional, Tuple, cast, List
+from typing import Any, Dict, cast, List
 
 import msgpack
 from ymmsl import (
@@ -23,8 +23,6 @@ from libmuscle.timestamp import Timestamp
 
 _logger = logging.getLogger(__name__)
 
-_EncodedCheckpointType = Dict[str, List[Dict[str, Any]]]
-
 
 def decode_operator(data: str) -> Operator:
     """Create an Operator from a MsgPack-compatible value."""
@@ -41,9 +39,10 @@ def encode_conduit(conduit: Conduit) -> List[str]:
     return [str(conduit.sender), str(conduit.receiver)]
 
 
-def encode_checkpoints(checkpoints: Checkpoints) -> _EncodedCheckpointType:
+def encode_checkpoints(checkpoints: Checkpoints) -> Dict[str, Any]:
     """Convert a Checkpoins to a MsgPack-compatible value."""
     return {
+        "at_end": checkpoints.at_end,
         "wallclock_time": [vars(rule) for rule in checkpoints.wallclock_time],
         "simulation_time": [vars(rule) for rule in checkpoints.simulation_time]
     }
@@ -100,6 +99,8 @@ class MMPRequestHandler(RequestHandler):
             response = self._submit_profile_events(*req_args)
         elif req_type == RequestType.SUBMIT_SNAPSHOT.value:
             response = self._submit_snapshot(*req_args)
+        elif req_type == RequestType.GET_CHECKPOINT_INFO.value:
+            response = self._get_checkpoint_info(*req_args)
 
         return cast(bytes, msgpack.packb(response, use_bin_type=True))
 
@@ -118,13 +119,6 @@ class MMPRequestHandler(RequestHandler):
             status (ResponseType): SUCCESS or ERROR
             error_msg (str): An error message, only present if status
                 equals ERROR
-            checkpoint_info (Tuple[str, bytes, Optional[str]]): Checkpoint info,
-                only present if status equals SUCCESS. The first item is a tuple
-                encoding of the wallclock reference time (year, month, day,
-                hour, minute, second, microsecond) in UTC. The second item is a
-                dict encoding a ymmsl.Checkpoints object. The final item is the
-                checkpoint filename that the registered instance should resume
-                from, or None if no resume is requested.
         """
         port_objs = [decode_port(p) for p in ports]
         instance = Reference(instance_id)
@@ -132,8 +126,7 @@ class MMPRequestHandler(RequestHandler):
             self._instance_registry.add(instance, locations, port_objs)
 
             _logger.info(f'Registered instance {instance_id}')
-            checkpoint_info = self._get_checkpoint_info(instance)
-            return [ResponseType.SUCCESS.value, checkpoint_info]
+            return [ResponseType.SUCCESS.value]
         except AlreadyRegistered:
             return [
                     ResponseType.ERROR.value,
@@ -279,28 +272,29 @@ class MMPRequestHandler(RequestHandler):
         self._snapshot_registry.register_snapshot(instance, snapshot_obj)
         return [ResponseType.SUCCESS.value]
 
-    def _get_checkpoint_info(
-                self,
-                instance: Reference
-                ) -> Tuple[float, _EncodedCheckpointType, Optional[str]]:
+    def _get_checkpoint_info(self, instance_id: str) -> Any:
         """Get checkpoint info for an instance
 
         Args:
             instance: The instance whose checkpoint info to get
 
         Returns:
-            wallclock_reference_time: tuple encoding UTC reference for wallclock
-                time = 0: (year, month, day, hour, minute, second, microsecond)
-            checkpoints: yaml-encoded ymmsl.Checkpoints object
-            resume: path of the snapshot file to resume from (or None if not
-                resuming)
+            A list containing the following values on success:
+
+            status (ResponseType): SUCCESS
+            wallclock_reference_time (float): Unix timestamp (in UTC) indicating
+                wallclock time of the start of the workflow.
+            checkpoints (dict): Dictionary encdoing a ymmsl.Checkpoints object.
+            resume_path (Optional[str]): Checkpoint filename to resume from.
         """
+        instance = Reference(instance_id)
         resume = None
         if instance in self._configuration.resume:
             resume = str(self._configuration.resume[instance])
-        return (self._reference_timestamp,
+        return [ResponseType.SUCCESS.value,
+                self._reference_timestamp,
                 encode_checkpoints(self._configuration.checkpoints),
-                resume)
+                resume]
 
 
 class MMPServer:

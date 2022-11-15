@@ -206,6 +206,8 @@ class Communicator:
             return
 
         port = self._ports[port_name]
+        profile_event = self._profiler.start(ProfileEventType.SEND, port,
+                                             None, slot, None)
 
         recv_endpoints = self._peer_manager.get_peer_endpoints(
                 snd_endpoint.port, slot_list)
@@ -215,9 +217,6 @@ class Communicator:
             port_length = self._ports[port_name].get_length()
 
         for recv_endpoint in recv_endpoints:
-            profile_event = self._profiler.start(ProfileEventType.SEND, port,
-                                                 None, slot, None)
-
             mcp_message = MPPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
                                      port_length,
                                      message.timestamp, message.next_timestamp,
@@ -226,10 +225,10 @@ class Communicator:
             encoded_message = mcp_message.encoded()
             self._post_office.deposit(recv_endpoint.ref(), encoded_message)
 
-            profile_event.stop()
-            if port.is_vector():
-                profile_event.port_length = port.get_length()
-            profile_event.message_size = len(encoded_message)
+        profile_event.stop()
+        if port.is_vector():
+            profile_event.port_length = port.get_length()
+        profile_event.message_size = len(encoded_message)
 
     def receive_message(self, port_name: str, slot: Optional[int] = None,
                         default: Optional[Message] = None

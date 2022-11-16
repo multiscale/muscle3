@@ -46,13 +46,16 @@ class Instance:
         self._name, self._index = self.__make_full_name()
         """Name and index of this instance."""
 
+        self._instance_id = self._name + self._index
+        """Full id of this instance."""
+
         mmp_location = self.__extract_manager_location()
         self.__manager = MMPClient(mmp_location)
         """Client object for talking to the manager."""
 
         self.__set_up_logging()
 
-        self._profiler = Profiler(self._instance_name(), self.__manager)
+        self._profiler = Profiler(self._instance_id, self.__manager)
         """Profiler for this instance."""
 
         self._communicator = Communicator(
@@ -207,7 +210,7 @@ class Instance:
                     as expected.
         """
         return self._settings_manager.get_setting(
-                self._instance_name(), Reference(name), typ)
+                self._instance_id, Reference(name), typ)
 
     def list_ports(self) -> Dict[Operator, List[str]]:
         """Returns a description of the ports that this CE has.
@@ -387,7 +390,7 @@ class Instance:
         register_event = self._profiler.start(ProfileEventType.REGISTER)
         locations = self._communicator.get_locations()
         port_list = self.__list_declared_ports()
-        self.__manager.register_instance(self._instance_name(), locations,
+        self.__manager.register_instance(self._instance_id, locations,
                                          port_list)
         register_event.stop()
         _logger.info('Registered with the manager')
@@ -397,7 +400,7 @@ class Instance:
         """
         connect_event = self._profiler.start(ProfileEventType.CONNECT)
         conduits, peer_dims, peer_locations = self.__manager.request_peers(
-                self._instance_name())
+                self._instance_id)
         self._communicator.connect(conduits, peer_dims, peer_locations)
         self._settings_manager.base = self.__manager.get_settings()
         connect_event.stop()
@@ -407,7 +410,7 @@ class Instance:
         """Deregister this instance from the manager.
         """
         deregister_event = self._profiler.start(ProfileEventType.DEREGISTER)
-        self.__manager.deregister_instance(self._instance_name())
+        self.__manager.deregister_instance(self._instance_id)
         deregister_event.stop()
         # this is the last thing we'll profile, so flush messages
         self._profiler.shutdown()
@@ -440,7 +443,7 @@ class Instance:
     def __set_up_logging(self) -> None:
         """Adds logging handlers for one or more instances.
         """
-        id_str = str(self._instance_name())
+        id_str = str(self._instance_id)
 
         logfile = extract_log_file_location('muscle3.{}.log'.format(id_str))
         if logfile is not None:
@@ -570,11 +573,6 @@ class Instance:
                     result.append(Port(Identifier(name), operator))
         return result
 
-    def _instance_name(self) -> Reference:
-        """Returns the full instance name.
-        """
-        return self._name + self._index
-
     def __check_port(self, port_name: str) -> None:
         if not self._communicator.port_exists(port_name):
             err_msg = (('Port "{}" does not exist on "{}". Please check'
@@ -599,7 +597,7 @@ class Instance:
                        ' muscle_settings_in that is not a'
                        ' Settings. It seems that your'
                        ' simulation is miswired or the sending'
-                       ' instance is broken.'.format(self._instance_name()))
+                       ' instance is broken.'.format(self._instance_id))
             self.__shutdown(err_msg)
             raise RuntimeError(err_msg)
 

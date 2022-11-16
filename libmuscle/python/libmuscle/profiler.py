@@ -24,7 +24,8 @@ class Profiler:
 
     def start(self, event_type: ProfileEventType, port: Optional[Port] = None,
               port_length: Optional[int] = None, slot: Optional[int] = None,
-              message_size: Optional[int] = None
+              message_size: Optional[int] = None,
+              message_timestamp: Optional[float] = None
               ) -> ProfileEvent:
         """Start measuring an event.
 
@@ -38,6 +39,7 @@ class Profiler:
             port_length: Length of the port, if vector.
             slot: Slot that was sent or received on.
             message_size: Size in bytes of the message.
+            message_timestamp: Timestamp of the message.
 
         Returns:
             A new ProfileEvent.
@@ -46,8 +48,10 @@ class Profiler:
             self.__flush()
 
         now = Timestamp(time())
-        event = ProfileEvent(self._instance_id, now, now, event_type, port,
-                             port_length, slot, message_size)
+        event = ProfileEvent(
+                self._instance_id, now, now, event_type, port, port_length,
+                slot, message_size, message_timestamp)
+
         self._events.append(event)
         return event
 

@@ -10,7 +10,7 @@ from libmuscle.timestamp import Timestamp
 class ProfileEventType(Enum):
     """Profiling event types for MUSCLE3.
 
-    These match the types in the MUSCLE Manager Protocol, and should \
+    These match the types in the MUSCLE Manager Protocol, and should
     be kept identical to those.
     """
     REGISTER = 0
@@ -27,30 +27,34 @@ class ProfileEvent:
     that occurred while executing the simulation.
 
     Args:
-        instance_id: The identifier of the instance that generated \
+        instance_id: The identifier of the instance that generated
                 this message.
-        start_time: When the event started (real-world, not \
+        start_time: When the event started (real-world, not
                 simulation time).
-        stop_time: When the event ended (real-world, not simulation \
+        stop_time: When the event ended (real-world, not simulation
                 time).
         event_type: Type of event that was measured.
         port: Port used for sending or receiving, if applicable.
         port_length: Length of that port, if a vector.
         slot: Slot that was sent or received on, if applicable.
         message_size: Size of the message involved, if applicable.
+        message_timestamp: Timestamp sent with the message, if
+                applicable.
 
     Attributes:
-        instance_id: The identifier of the instance that generated \
+        instance_id: The identifier of the instance that generated
                 this message.
-        start_time: When the event started (real-world, not \
+        start_time: When the event started (real-world, not
                 simulation time).
-        stop_time: When the event ended (real-world, not simulation \
+        stop_time: When the event ended (real-world, not simulation
                 time).
         event_type: Type of event that was measured.
         port: Port used for sending or receiving, if applicable.
         port_length: Length of that port, if a vector.
         slot: Slot that was sent or received on, if applicable.
         message_size: Size of the message involved, if applicable.
+        message_timestamp: Timestamp sent with the message, if
+                applicable.
     """
     def __init__(
             self,
@@ -61,7 +65,8 @@ class ProfileEvent:
             port: Optional[Port] = None,
             port_length: Optional[int] = None,
             slot: Optional[int] = None,
-            message_size: Optional[int] = None
+            message_size: Optional[int] = None,
+            message_timestamp: Optional[float] = None
             ) -> None:
 
         self.instance_id = instance_id
@@ -72,6 +77,7 @@ class ProfileEvent:
         self.port_length = port_length
         self.slot = slot
         self.message_size = message_size
+        self.message_timestamp = message_timestamp
 
     def stop(self) -> None:
         """Sets stop_time to the current time.

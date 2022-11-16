@@ -7,12 +7,11 @@ from libmuscle.mmp_client import MMPClient
 
 
 def test_registration(log_file_in_tmpdir, mmp_server):
-    client = MMPClient(mmp_server.get_location())
     instance_name = Reference('test_instance')
+    client = MMPClient(instance_name, mmp_server.get_location())
     port = Port(Reference('test_in'), Operator.S)
 
-    client.register_instance(instance_name, ['tcp:localhost:10000'],
-                             [port])
+    client.register_instance(['tcp:localhost:10000'], [port])
 
     registry = mmp_server._handler._instance_registry
 
@@ -24,12 +23,13 @@ def test_registration(log_file_in_tmpdir, mmp_server):
 
 def test_wiring(log_file_in_tmpdir, mmp_server_process):
     # mmp_server_process starts a server and returns its location
-    client = MMPClient(mmp_server_process)
+    client = MMPClient(Reference('macro'), mmp_server_process)
 
-    client.register_instance(Reference('macro'), ['direct:macro'], [])
+    client.register_instance(['direct:macro'], [])
 
-    conduits, peer_dims, peer_locations = client.request_peers(
-            Reference('micro[0]'))
+    client2 = MMPClient(Reference('micro[0]'), mmp_server_process)
+    conduits, peer_dims, peer_locations = client2.request_peers()
+    client2.close()
 
     assert Conduit('macro.out', 'micro.in') in conduits
     assert Conduit('micro.out', 'macro.in') in conduits
@@ -41,26 +41,29 @@ def test_wiring(log_file_in_tmpdir, mmp_server_process):
             patch('libmuscle.mmp_client.PEER_INTERVAL_MIN', 0.01), \
             patch('libmuscle.mmp_client.PEER_INTERVAL_MAX', 0.1):
         with pytest.raises(RuntimeError):
-            client.request_peers(Reference('macro'))
+            client.request_peers()
 
     for i in range(5):
         instance = Reference('micro[{}]'.format(i))
+        client2 = MMPClient(instance, mmp_server_process)
         location = 'direct:{}'.format(instance)
-        client.register_instance(instance, [location], [])
+        client2.register_instance([location], [])
+        client2.close()
 
     with patch('libmuscle.mmp_client.PEER_TIMEOUT', 0.1), \
             patch('libmuscle.mmp_client.PEER_INTERVAL_MIN', 0.01), \
             patch('libmuscle.mmp_client.PEER_INTERVAL_MAX', 0.1):
         with pytest.raises(RuntimeError):
-            client.request_peers(Reference('macro'))
+            client.request_peers()
 
     for i in range(5, 10):
         instance = Reference('micro[{}]'.format(i))
+        client2 = MMPClient(instance, mmp_server_process)
         location = 'direct:{}'.format(instance)
-        client.register_instance(instance, [location], [])
+        client2.register_instance([location], [])
+        client2.close()
 
-    conduits, peer_dims, peer_locations = client.request_peers(
-            Reference('macro'))
+    conduits, peer_dims, peer_locations = client.request_peers()
 
     assert Conduit('macro.out', 'micro.in') in conduits
     assert Conduit('micro.out', 'macro.in') in conduits

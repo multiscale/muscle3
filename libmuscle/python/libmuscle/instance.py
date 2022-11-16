@@ -16,7 +16,8 @@ from libmuscle.logging_handler import MuscleManagerHandler
 from libmuscle.mpp_message import ClosePort
 from libmuscle.mmp_client import MMPClient
 from libmuscle.profiler import Profiler
-from libmuscle.profiling import ProfileEventType
+from libmuscle.profiling import ProfileEvent, ProfileEventType
+from libmuscle.timestamp import Timestamp
 from libmuscle.util import extract_log_file_location
 
 
@@ -50,12 +51,12 @@ class Instance:
         """Full id of this instance."""
 
         mmp_location = self.__extract_manager_location()
-        self.__manager = MMPClient(mmp_location)
+        self.__manager = MMPClient(self._instance_id, mmp_location)
         """Client object for talking to the manager."""
 
         self.__set_up_logging()
 
-        self._profiler = Profiler(self._instance_id, self.__manager)
+        self._profiler = Profiler(self.__manager)
         """Profiler for this instance."""
 
         self._communicator = Communicator(
@@ -387,31 +388,31 @@ class Instance:
     def _register(self) -> None:
         """Register this instance with the manager.
         """
-        register_event = self._profiler.start(ProfileEventType.REGISTER)
+        register_event = ProfileEvent(ProfileEventType.REGISTER, Timestamp())
         locations = self._communicator.get_locations()
         port_list = self.__list_declared_ports()
-        self.__manager.register_instance(self._instance_id, locations,
+        self.__manager.register_instance(locations,
                                          port_list)
-        register_event.stop()
+        self._profiler.record_event(register_event)
         _logger.info('Registered with the manager')
 
     def _connect(self) -> None:
         """Connect this instance to the given peers / conduits.
         """
-        connect_event = self._profiler.start(ProfileEventType.CONNECT)
-        conduits, peer_dims, peer_locations = self.__manager.request_peers(
-                self._instance_id)
+        connect_event = ProfileEvent(ProfileEventType.CONNECT, Timestamp())
+        conduits, peer_dims, peer_locations = self.__manager.request_peers()
         self._communicator.connect(conduits, peer_dims, peer_locations)
         self._settings_manager.base = self.__manager.get_settings()
-        connect_event.stop()
+        self._profiler.record_event(connect_event)
         _logger.info('Received peer locations and base settings')
 
     def _deregister(self) -> None:
         """Deregister this instance from the manager.
         """
-        deregister_event = self._profiler.start(ProfileEventType.DEREGISTER)
-        self.__manager.deregister_instance(self._instance_id)
-        deregister_event.stop()
+        deregister_event = ProfileEvent(
+                ProfileEventType.DEREGISTER, Timestamp())
+        self.__manager.deregister_instance()
+        self._profiler.record_event(deregister_event)
         # this is the last thing we'll profile, so flush messages
         self._profiler.shutdown()
         _logger.info('Deregistered from the manager')

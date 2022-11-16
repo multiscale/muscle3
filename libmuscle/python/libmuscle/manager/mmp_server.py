@@ -224,7 +224,8 @@ class MMPRequestHandler(RequestHandler):
                 instance_id, Timestamp(timestamp), LogLevel(level), text)
         return [ResponseType.SUCCESS.value]
 
-    def _submit_profile_events(self, events: List[List[Any]]) -> Any:
+    def _submit_profile_events(
+            self, instance: str, events: List[List[Any]]) -> Any:
         """Handle a submit profile events request.
 
         Not implemented yet.

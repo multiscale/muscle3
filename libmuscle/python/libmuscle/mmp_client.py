@@ -36,11 +36,15 @@ def encode_profile_event(event: ProfileEvent) -> Any:
     Returns:
         A list with its attributes, for MMP serialisation.
     """
+    if event.start_time is None or event.stop_time is None:
+        raise RuntimeError(
+                'Incomplete ProfileEvent sent. This is a bug, please'
+                ' report it.')
+
     encoded_port = encode_port(event.port) if event.port else None
     return [
-            str(event.instance_id),
-            event.start_time.seconds, event.stop_time.seconds,
             event.event_type.value,
+            event.start_time.seconds, event.stop_time.seconds,
             encoded_port, event.port_length, event.slot,
             event.message_size, event.message_timestamp]
 
@@ -54,12 +58,13 @@ class MMPClient():
     It manages the connection, and converts between our native types
     and the gRPC generated types.
     """
-    def __init__(self, location: str) -> None:
+    def __init__(self, instance_id: Reference, location: str) -> None:
         """Create an MMPClient
 
         Args:
             location: A connection string of the form hostname:port
         """
+        self._instance_id = instance_id
         self._transport_client = TcpTransportClient(location)
 
     def close(self) -> None:
@@ -90,6 +95,7 @@ class MMPClient():
         """
         request = [
                 RequestType.SUBMIT_PROFILE_EVENTS.value,
+                str(self._instance_id),
                 [encode_profile_event(e) for e in events]]
         self._call_manager(request)
 
@@ -103,39 +109,34 @@ class MMPClient():
         response = self._call_manager(request)
         return Settings(response[1])
 
-    def register_instance(self, name: Reference, locations: List[str],
-                          ports: List[Port]) -> None:
+    def register_instance(
+            self, locations: List[str], ports: List[Port]) -> None:
         """Register a component instance with the manager.
 
         Args:
-            name: Name of the instance in the simulation.
             locations: List of places where the instance can be
                     reached.
             ports: List of ports of this instance.
         """
         request = [
                 RequestType.REGISTER_INSTANCE.value,
-                str(name), locations,
+                str(self._instance_id), locations,
                 [encode_port(p) for p in ports]]
         response = self._call_manager(request)
         if len(response) > 1:
             raise RuntimeError(
                     f'Error registering instance: {response[1]}')
 
-    def request_peers(
-            self, name: Reference) -> Tuple[
-                    List[Conduit],
-                    Dict[Reference, List[int]],
-                    Dict[Reference, List[str]]]:
+    def request_peers(self) -> Tuple[
+            List[Conduit],
+            Dict[Reference, List[int]],
+            Dict[Reference, List[str]]]:
         """Request connection information about peers.
 
         This will repeat the request at an exponentially increasing
         query interval at first, until it reaches the interval
         specified by PEER_INTERVAL_MIN and PEER_INTERVAL_MAX. From
         there on, intervals are drawn randomly from that range.
-
-        Args:
-            name: Name of the current instance.
 
         Returns:
             A tuple containing a list of conduits that this instance is
@@ -149,7 +150,7 @@ class MMPClient():
         sleep_time = 0.1
         start_time = perf_counter()
 
-        request = [RequestType.GET_PEERS.value, str(name)]
+        request = [RequestType.GET_PEERS.value, str(self._instance_id)]
         response = self._call_manager(request)
 
         while (response[0] == ResponseType.PENDING.value and
@@ -183,13 +184,11 @@ class MMPClient():
 
         return conduits, peer_dimensions, peer_locations
 
-    def deregister_instance(self, name: Reference) -> None:
+    def deregister_instance(self) -> None:
         """Deregister a component instance with the manager.
-
-        Args:
-            name: Name of the instance in the simulation.
         """
-        request = [RequestType.DEREGISTER_INSTANCE.value, str(name)]
+        request = [
+                RequestType.DEREGISTER_INSTANCE.value, str(self._instance_id)]
         response = self._call_manager(request)
 
         if response[0] == ResponseType.ERROR.value:

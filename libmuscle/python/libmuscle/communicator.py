@@ -11,7 +11,8 @@ from libmuscle.peer_manager import PeerManager
 from libmuscle.post_office import PostOffice
 from libmuscle.port import Port
 from libmuscle.profiler import Profiler
-from libmuscle.profiling import ProfileEventType
+from libmuscle.profiling import ProfileEvent, ProfileEventType
+from libmuscle.timestamp import Timestamp
 
 
 _logger = logging.getLogger(__name__)
@@ -211,9 +212,9 @@ class Communicator:
             return
 
         port = self._ports[port_name]
-        profile_event = self._profiler.start(
-                ProfileEventType.SEND, port, None, slot, None,
-                message.timestamp)
+        profile_event = ProfileEvent(
+                ProfileEventType.SEND, Timestamp(), None, port, None, slot,
+                None, message.timestamp)
 
         recv_endpoints = self._peer_manager.get_peer_endpoints(
                 snd_endpoint.port, slot_list)
@@ -235,6 +236,7 @@ class Communicator:
         if port.is_vector():
             profile_event.port_length = port.get_length()
         profile_event.message_size = len(encoded_message)
+        self._profiler.record_event(profile_event)
 
     def receive_message(self, port_name: str, slot: Optional[int] = None,
                         default: Optional[Message] = None
@@ -294,8 +296,8 @@ class Communicator:
             # built-in automatic ports.
             port = self._muscle_settings_in
 
-        profile_event = self._profiler.start(
-                ProfileEventType.RECEIVE, port, None, slot)
+        profile_event = ProfileEvent(
+                ProfileEventType.RECEIVE, Timestamp(), None, port, None, slot)
 
         # peer_manager already checks that there is at most one snd_endpoint
         # connected to the port we receive on
@@ -321,6 +323,7 @@ class Communicator:
         if port.is_vector():
             profile_event.port_length = port.get_length()
         profile_event.message_size = len(mcp_message_bytes)
+        self._profiler.record_event(profile_event)
 
         if slot is None:
             _logger.debug('Received message on {}'.format(port_name))

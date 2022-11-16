@@ -83,7 +83,7 @@ class PeerManager {
          * @param slot The slot to send or receive on.
          * @return The peer endpoints.
          */
-        std::vector<Endpoint> const get_peer_endpoints(
+        std::vector<Endpoint> get_peer_endpoints(
                 ymmsl::Identifier const & port,
                 std::vector<int> const & slot) const;
 

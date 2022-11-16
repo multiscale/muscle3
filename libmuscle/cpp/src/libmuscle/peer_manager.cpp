@@ -65,7 +65,7 @@ std::vector<std::string> PeerManager::get_peer_locations(
     return peer_locations_.at(peer_instance);
 }
 
-std::vector<Endpoint> const PeerManager::get_peer_endpoints(
+std::vector<Endpoint> PeerManager::get_peer_endpoints(
         Identifier const & port,
         std::vector<int> const & slot
         ) const

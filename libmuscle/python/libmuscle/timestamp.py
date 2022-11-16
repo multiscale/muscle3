@@ -1,4 +1,6 @@
 import datetime
+import time
+from typing import Optional
 
 
 class Timestamp:
@@ -7,7 +9,9 @@ class Timestamp:
     Args:
         seconds: The number of seconds since the start of 1970.
     """
-    def __init__(self, seconds: float) -> None:
+    def __init__(self, seconds: Optional[float] = None) -> None:
+        if seconds is None:
+            seconds = time.time()
         self.seconds = seconds
 
     def to_asctime(self) -> str:

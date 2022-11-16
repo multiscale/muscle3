@@ -1,4 +1,3 @@
-from time import time
 from typing import List, Optional
 
 from ymmsl import Port, Reference
@@ -47,7 +46,7 @@ class Profiler:
         if len(self._events) >= 100:
             self.__flush()
 
-        now = Timestamp(time())
+        now = Timestamp()
         event = ProfileEvent(
                 self._instance_id, now, now, event_type, port, port_length,
                 slot, message_size, message_timestamp)

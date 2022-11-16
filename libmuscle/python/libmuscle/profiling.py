@@ -1,5 +1,4 @@
 from enum import Enum
-import time
 from typing import Optional
 
 from ymmsl import Port, Reference
@@ -82,4 +81,4 @@ class ProfileEvent:
     def stop(self) -> None:
         """Sets stop_time to the current time.
         """
-        self.stop_time = Timestamp(time.time())
+        self.stop_time = Timestamp()

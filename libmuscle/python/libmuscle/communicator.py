@@ -211,8 +211,9 @@ class Communicator:
             return
 
         port = self._ports[port_name]
-        profile_event = self._profiler.start(ProfileEventType.SEND, port,
-                                             None, slot, None)
+        profile_event = self._profiler.start(
+                ProfileEventType.SEND, port, None, slot, None,
+                message.timestamp)
 
         recv_endpoints = self._peer_manager.get_peer_endpoints(
                 snd_endpoint.port, slot_list)
@@ -293,8 +294,8 @@ class Communicator:
             # built-in automatic ports.
             port = self._muscle_settings_in
 
-        profile_event = self._profiler.start(ProfileEventType.RECEIVE, port,
-                                             None, slot, None)
+        profile_event = self._profiler.start(
+                ProfileEventType.RECEIVE, port, None, slot)
 
         # peer_manager already checks that there is at most one snd_endpoint
         # connected to the port we receive on
@@ -316,6 +317,7 @@ class Communicator:
                 mcp_message.data, mcp_message.settings_overlay)
 
         profile_event.stop()
+        profile_event.message_timestamp = message.timestamp
         if port.is_vector():
             profile_event.port_length = port.get_length()
         profile_event.message_size = len(mcp_message_bytes)

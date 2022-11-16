@@ -962,7 +962,7 @@ DataConstRef DataConstRef::grid_data_<bool>(
         Data result = Data::byte_array(num_elems);
         char * data_copy = result.as_byte_array();
         std::copy(data, data + num_elems, data_copy);
-        return std::move(result);
+        return result;
     }
 }
 

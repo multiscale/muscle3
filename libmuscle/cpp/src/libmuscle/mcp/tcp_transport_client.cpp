@@ -129,7 +129,7 @@ DataConstRef TcpTransportClient::call(
     int64_t length = recv_int64(socket_fd_);
     auto result = Data::byte_array(length);
     recv_all(socket_fd_, result.as_byte_array(), result.size());
-    return std::move(result);
+    return result;
 }
 
 void TcpTransportClient::close() {

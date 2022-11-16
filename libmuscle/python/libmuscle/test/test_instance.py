@@ -95,7 +95,8 @@ def test_create_instance(
         assert isinstance(instance._settings_manager, SettingsManager)
         assert len(instance._settings_manager.base) == 0
         assert len(instance._settings_manager.overlay) == 0
-        mmp_client.assert_called_once_with('localhost:9000')
+        mmp_client.assert_called_once_with(
+                Reference('test_instance[13][42]'), 'localhost:9000')
         assert mmp_client_object._register.called_with()
         assert mmp_client_object._connect.called_with()
         comm_type.assert_called_with(Reference('test_instance'), [13, 42],

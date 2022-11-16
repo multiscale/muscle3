@@ -142,7 +142,7 @@ def _ext_decoder(code: int, data: bytes) -> msgpack.ExtType:
 
 
 class MPPMessage:
-    """A MUSCLE Communication Protocol message.
+    """A MUSCLE Peer Protocol message.
 
     Messages carry the identity of their sender and receiver, so that
     they can be routed by a MUSCLE Transport Overlay when we get to

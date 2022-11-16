@@ -24,10 +24,11 @@ def test_connection_fail() -> None:
             MMPClient(Reference([]), 'tcp:localhost:255')
 
 
-def test_submit_log_message(mocked_mmp_client) -> None:
+def test_submit_log_message(mocked_mmp_client, profile_data) -> None:
     client, stub = mocked_mmp_client
     result = [ResponseType.SUCCESS.value]
-    stub.call.return_value = msgpack.packb(result, use_bin_type=True)
+    stub.call.return_value = (
+            msgpack.packb(result, use_bin_type=True), profile_data)
 
     message = LogMessage(
             'test_mmp_client',
@@ -47,7 +48,7 @@ def test_submit_log_message(mocked_mmp_client) -> None:
             'Testing the MMPClient']
 
 
-def test_get_settings(mocked_mmp_client) -> None:
+def test_get_settings(mocked_mmp_client, profile_data) -> None:
     client, stub = mocked_mmp_client
 
     settings_msg = {
@@ -58,7 +59,8 @@ def test_get_settings(mocked_mmp_client) -> None:
             'test5': [1.2, 3.4],
             'test6': [[1.2, 3.4], [5.6, 7.8]]}
     transport_result = [ResponseType.SUCCESS.value, settings_msg]
-    stub.call.return_value = msgpack.packb(transport_result, use_bin_type=True)
+    stub.call.return_value = (
+            msgpack.packb(transport_result, use_bin_type=True), profile_data)
 
     settings = client.get_settings()
     assert len(settings) == 6
@@ -70,11 +72,12 @@ def test_get_settings(mocked_mmp_client) -> None:
     assert settings['test6'] == [[1.2, 3.4], [5.6, 7.8]]
 
 
-def test_register_instance(mocked_mmp_client) -> None:
+def test_register_instance(mocked_mmp_client, profile_data) -> None:
     client, stub = mocked_mmp_client
 
     result = [ResponseType.SUCCESS.value]
-    stub.call.return_value = msgpack.packb(result, use_bin_type=True)
+    stub.call.return_value = (
+            msgpack.packb(result, use_bin_type=True), profile_data)
 
     client.register_instance(
             ['direct:test', 'tcp:test'],
@@ -87,7 +90,7 @@ def test_register_instance(mocked_mmp_client) -> None:
             ['direct:test', 'tcp:test'], [['out', 'O_I'], ['in', 'S']]]
 
 
-def test_request_peers(mocked_mmp_client) -> None:
+def test_request_peers(mocked_mmp_client, profile_data) -> None:
     client, stub = mocked_mmp_client
 
     result_msg = [
@@ -95,7 +98,8 @@ def test_request_peers(mocked_mmp_client) -> None:
             [['kernel.out', 'other.in']],
             {'other': [20]},
             {'other': ['direct:test', 'tcp:test']}]
-    stub.call.return_value = msgpack.packb(result_msg, use_bin_type=True)
+    stub.call.return_value = (
+            msgpack.packb(result_msg, use_bin_type=True), profile_data)
 
     result = client.request_peers()
 
@@ -116,21 +120,23 @@ def test_request_peers(mocked_mmp_client) -> None:
     assert result[2]['other'] == ['direct:test', 'tcp:test']
 
 
-def test_request_peers_error(mocked_mmp_client) -> None:
+def test_request_peers_error(mocked_mmp_client, profile_data) -> None:
     client, stub = mocked_mmp_client
 
     result_msg = [ResponseType.ERROR.value, 'test_error_message']
-    stub.call.return_value = msgpack.packb(result_msg, use_bin_type=True)
+    stub.call.return_value = (
+            msgpack.packb(result_msg, use_bin_type=True), profile_data)
 
     with pytest.raises(RuntimeError):
         client.request_peers()
 
 
-def test_request_peers_timeout(mocked_mmp_client) -> None:
+def test_request_peers_timeout(mocked_mmp_client, profile_data) -> None:
     client, stub = mocked_mmp_client
 
     result_msg = [ResponseType.PENDING.value, 'test_status_message']
-    stub.call.return_value = msgpack.packb(result_msg, use_bin_type=True)
+    stub.call.return_value = (
+            msgpack.packb(result_msg, use_bin_type=True), profile_data)
 
     with patch('libmuscle.mmp_client.PEER_TIMEOUT', 1), \
             patch('libmuscle.mmp_client.PEER_INTERVAL_MIN', 0.1), \
@@ -139,11 +145,12 @@ def test_request_peers_timeout(mocked_mmp_client) -> None:
             client.request_peers()
 
 
-def test_deregister_instance(mocked_mmp_client) -> None:
+def test_deregister_instance(mocked_mmp_client, profile_data) -> None:
     client, stub = mocked_mmp_client
 
     result = [ResponseType.SUCCESS.value]
-    stub.call.return_value = msgpack.packb(result, use_bin_type=True)
+    stub.call.return_value = (
+            msgpack.packb(result, use_bin_type=True), profile_data)
 
     client.deregister_instance()
 
@@ -152,11 +159,12 @@ def test_deregister_instance(mocked_mmp_client) -> None:
     assert sent_msg == [RequestType.DEREGISTER_INSTANCE.value, 'component[13]']
 
 
-def test_deregister_instance_error(mocked_mmp_client) -> None:
+def test_deregister_instance_error(mocked_mmp_client, profile_data) -> None:
     client, stub = mocked_mmp_client
 
     result = [ResponseType.ERROR.value, 'Instance component[13] unknown']
-    stub.call.return_value = msgpack.packb(result, use_bin_type=True)
+    stub.call.return_value = (
+            msgpack.packb(result, use_bin_type=True), profile_data)
 
     with pytest.raises(RuntimeError):
         client.deregister_instance()

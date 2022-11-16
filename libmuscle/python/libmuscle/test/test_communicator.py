@@ -382,12 +382,12 @@ def test_close_port(communicator) -> None:
     assert isinstance(msg.data, ClosePort)
 
 
-def test_receive_message(communicator) -> None:
+def test_receive_message(communicator, profile_data) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
             None, 0.0, None, Settings({'test1': 12}),
-            b'test').encoded()
+            b'test').encoded(), profile_data
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
     communicator._profiler = MagicMock()
@@ -421,12 +421,12 @@ def test_receive_on_invalid_port(communicator) -> None:
         communicator.receive_message('@$Invalid_id')
 
 
-def test_receive_msgpack(communicator) -> None:
+def test_receive_msgpack(communicator, profile_data) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
             None, 0.0, None, Settings({'test1': 12}),
-            {'test': 13}).encoded()
+            {'test': 13}).encoded(), profile_data
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
     communicator._profiler = MagicMock()
@@ -438,12 +438,12 @@ def test_receive_msgpack(communicator) -> None:
     assert msg.data == {'test': 13}
 
 
-def test_receive_with_slot(communicator2) -> None:
+def test_receive_with_slot(communicator2, profile_data) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('kernel[13].out'), Reference('other.in[13]'),
             None, 0.0, None, Settings({'test': 'testing'}),
-            b'test').encoded()
+            b'test').encoded(), profile_data
     get_client_mock = MagicMock(return_value=client_mock)
     communicator2._Communicator__get_client = get_client_mock
     communicator2._profiler = MagicMock()
@@ -456,12 +456,12 @@ def test_receive_with_slot(communicator2) -> None:
     assert msg.settings['test'] == 'testing'
 
 
-def test_receive_message_resizable(communicator3) -> None:
+def test_receive_message_resizable(communicator3, profile_data) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel.in[13]'),
             20, 0.0, None, Settings({'test': 'testing'}),
-            b'test').encoded()
+            b'test').encoded(), profile_data
     get_client_mock = MagicMock(return_value=client_mock)
     communicator3._Communicator__get_client = get_client_mock
     communicator3._profiler = MagicMock()
@@ -474,12 +474,12 @@ def test_receive_message_resizable(communicator3) -> None:
     assert communicator3.get_port('in').get_length() == 20
 
 
-def test_receive_with_settings(communicator) -> None:
+def test_receive_with_settings(communicator, profile_data) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
             None, 0.0, None, Settings({'test2': 3.1}),
-            b'test').encoded()
+            b'test').encoded(), profile_data
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
     communicator._profiler = MagicMock()
@@ -492,12 +492,13 @@ def test_receive_with_settings(communicator) -> None:
     assert msg.settings['test2'] == 3.1
 
 
-def test_receive_msgpack_with_slot_and_settings(communicator2) -> None:
+def test_receive_msgpack_with_slot_and_settings(
+        communicator2, profile_data) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('kernel[13].out'), Reference('other.in[13]'),
             None, 0.0, 1.0,
-            Settings({'test': 'testing'}), 'test').encoded()
+            Settings({'test': 'testing'}), 'test').encoded(), profile_data
     get_client_mock = MagicMock(return_value=client_mock)
     communicator2._Communicator__get_client = get_client_mock
     communicator2._profiler = MagicMock()
@@ -510,12 +511,12 @@ def test_receive_msgpack_with_slot_and_settings(communicator2) -> None:
     assert msg.settings['test'] == 'testing'
 
 
-def test_receive_settings(communicator) -> None:
+def test_receive_settings(communicator, profile_data) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
             None, 0.0, None, Settings({'test1': 12}),
-            Settings({'test': 13})).encoded()
+            Settings({'test': 13})).encoded(), profile_data
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
     communicator._profiler = MagicMock()
@@ -528,11 +529,11 @@ def test_receive_settings(communicator) -> None:
     assert msg.data['test'] == 13
 
 
-def test_receive_close_port(communicator) -> None:
+def test_receive_close_port(communicator, profile_data) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            None, 0.0, None, Settings(), ClosePort()).encoded()
+            None, 0.0, None, Settings(), ClosePort()).encoded(), profile_data
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
     communicator._profiler = MagicMock()

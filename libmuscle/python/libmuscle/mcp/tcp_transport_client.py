@@ -1,8 +1,10 @@
 import socket
-from typing import Optional
+from time import time
+from typing import Optional, Tuple
 
-from libmuscle.mcp.transport_client import TransportClient
+from libmuscle.mcp.transport_client import ProfileData, TransportClient
 from libmuscle.mcp.tcp_util import recv_all, recv_int64, send_int64
+from libmuscle.timestamp import Timestamp
 
 
 class TcpTransportClient(TransportClient):
@@ -49,7 +51,7 @@ class TcpTransportClient(TransportClient):
                 sock.setsockopt(socket.SOL_TCP, socket.TCP_QUICKACK, 1)
             self._socket = sock
 
-    def call(self, request: bytes) -> bytes:
+    def call(self, request: bytes) -> Tuple[bytes, ProfileData]:
         """Send a request to the server and receive the response.
 
         This is a blocking call.
@@ -60,11 +62,16 @@ class TcpTransportClient(TransportClient):
         Returns:
             The received response
         """
+        start_wait = Timestamp(time())
         send_int64(self._socket, len(request))
         self._socket.sendall(request)
 
         length = recv_int64(self._socket)
-        return recv_all(self._socket, length)
+        start_transfer = Timestamp(time())
+
+        response = recv_all(self._socket, length)
+        stop_transfer = Timestamp(time())
+        return response, (start_wait, start_transfer, stop_transfer)
 
     def close(self) -> None:
         """Closes this client.

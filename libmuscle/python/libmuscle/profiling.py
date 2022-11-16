@@ -17,6 +17,9 @@ class ProfileEventType(Enum):
     DEREGISTER = 1
     SEND = 2
     RECEIVE = 3
+    RECEIVE_WAIT = 5
+    RECEIVE_TRANSFER = 6
+    RECEIVE_DECODE = 7
 
 
 class ProfileEvent:

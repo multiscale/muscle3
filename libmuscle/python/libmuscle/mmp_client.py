@@ -283,5 +283,5 @@ class MMPClient():
             The decoded response
         """
         encoded_request = msgpack.packb(request, use_bin_type=True)
-        response = self._transport_client.call(encoded_request)
+        response, _ = self._transport_client.call(encoded_request)
         return msgpack.unpackb(response, raw=False)

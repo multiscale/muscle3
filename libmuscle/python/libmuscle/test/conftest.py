@@ -5,7 +5,9 @@ from ymmsl import Reference, Settings
 
 from libmuscle.api_guard import APIGuard
 from libmuscle.communicator import Message
+from libmuscle.mcp.transport_client import ProfileData
 from libmuscle.mmp_client import MMPClient
+from libmuscle.timestamp import Timestamp
 
 
 @pytest.fixture
@@ -27,3 +29,8 @@ def message2() -> Message:
 @pytest.fixture
 def guard() -> APIGuard:
     return APIGuard(True)
+
+
+@pytest.fixture
+def profile_data() -> ProfileData:
+    return Timestamp(0.0), Timestamp(0.0), Timestamp(0.0)

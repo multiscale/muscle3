@@ -227,14 +227,14 @@ class Communicator:
             port_length = port.get_length()
 
         for recv_endpoint in recv_endpoints:
-            mcp_message = MPPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
+            mpp_message = MPPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
                                      port_length,
                                      message.timestamp, message.next_timestamp,
                                      cast(Settings, message.settings),
                                      port.get_num_messages(slot),
                                      checkpoints_considered_until,
                                      message.data)
-            encoded_message = mcp_message.encoded()
+            encoded_message = mpp_message.encoded()
             self._post_office.deposit(recv_endpoint.ref(), encoded_message)
 
         port.increment_num_messages(slot)
@@ -304,7 +304,7 @@ class Communicator:
             # built-in automatic ports.
             port = self._muscle_settings_in
 
-        profile_event = ProfileEvent(
+        receive_event = ProfileEvent(
                 ProfileEventType.RECEIVE, Timestamp(), None, port, None, slot)
 
         # peer_manager already checks that there is at most one snd_endpoint
@@ -312,8 +312,13 @@ class Communicator:
         snd_endpoint = self._peer_manager.get_peer_endpoints(
                 recv_endpoint.port, slot_list)[0]
         client = self.__get_client(snd_endpoint.instance())
-        mpp_message_bytes = client.receive(recv_endpoint.ref())
+        mpp_message_bytes, profile = client.receive(recv_endpoint.ref())
+
+        recv_decode_event = ProfileEvent(
+                ProfileEventType.RECEIVE_DECODE, Timestamp(), None, port, None,
+                slot, len(mpp_message_bytes))
         mpp_message = MPPMessage.from_bytes(mpp_message_bytes)
+        self._profiler.record_event(recv_decode_event)
 
         if mpp_message.port_length is not None:
             if port.is_resizable():
@@ -326,11 +331,22 @@ class Communicator:
                 mpp_message.timestamp, mpp_message.next_timestamp,
                 mpp_message.data, mpp_message.settings_overlay)
 
-        profile_event.stop()
-        profile_event.message_timestamp = message.timestamp
+        recv_wait_event = ProfileEvent(
+                ProfileEventType.RECEIVE_WAIT, profile[0], profile[1], port,
+                mpp_message.port_length, slot)
+        self._profiler.record_event(recv_wait_event)
+
+        recv_xfer_event = ProfileEvent(
+                ProfileEventType.RECEIVE_TRANSFER, profile[1], profile[2],
+                port, mpp_message.port_length, slot, len(mpp_message_bytes),
+                message.timestamp)
+        self._profiler.record_event(recv_xfer_event)
+
+        receive_event.message_timestamp = message.timestamp
         if port.is_vector():
-            profile_event.port_length = port.get_length()
-        profile_event.message_size = len(mpp_message_bytes)
+            receive_event.port_length = port.get_length()
+        receive_event.message_size = len(mpp_message_bytes)
+        self._profiler.record_event(receive_event)
 
         expected_message_number = port.get_num_messages(slot)
         if expected_message_number != mpp_message.message_number:

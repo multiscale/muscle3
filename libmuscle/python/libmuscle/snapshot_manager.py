@@ -41,7 +41,7 @@ class SnapshotManager:
         self._manager = manager
 
         self._first_reuse = True
-        self._trigger = TriggerManager()
+        self._trigger_manager = TriggerManager()
         self._resume_from_snapshot = None   # type: Optional[Snapshot]
         self._snapshot_directory = None     # type: Optional[Path]
         self._next_snapshot_num = 1
@@ -63,13 +63,13 @@ class SnapshotManager:
             checkpoints: requested workflow checkpoints
             resume: previous snapshot to resume from (or None if not resuming)
         """
-        self._trigger.set_checkpoint_info(utc_reference, checkpoints)
+        self._trigger_manager.set_checkpoint_info(utc_reference, checkpoints)
         if resume is not None:
             self.__load_snapshot(resume)
             snapshot = cast(Snapshot, self._resume_from_snapshot)
             self._communicator.restore_message_counts(
                 snapshot.port_message_counts)
-            self._trigger.update_checkpoints(
+            self._trigger_manager.update_checkpoints(
                 snapshot.message.timestamp,
                 snapshot.is_final_snapshot)
 
@@ -79,7 +79,7 @@ class SnapshotManager:
         Args:
             snapshot_directory: Path to store this instance's snapshots in.
         """
-        self._trigger.reuse_instance()
+        self._trigger_manager.reuse_instance()
 
         self._snapshot_directory = snapshot_directory
 
@@ -87,6 +87,11 @@ class SnapshotManager:
             self._first_reuse = False
         else:
             self._resume_from_snapshot = None
+
+    def snapshots_enabled(self) -> bool:
+        """Check if the current workflow has snapshots enabled.
+        """
+        return self._trigger_manager.snapshots_enabled()
 
     def resuming(self) -> bool:
         """Check if we are resuming during this reuse iteration.
@@ -115,15 +120,15 @@ class SnapshotManager:
     def should_save_snapshot(self, timestamp: float) -> bool:
         """See :meth:`TriggerManager.should_save_snapshot`
         """
-        return self._trigger.should_save_snapshot(timestamp)
+        return self._trigger_manager.should_save_snapshot(timestamp)
 
     def should_save_final_snapshot(
-            self, do_reuse: bool,
-            f_init_max_timestamp: Optional[float]
+            self, do_reuse: bool, f_init_max_timestamp: Optional[float]
             ) -> bool:
         """See :meth:`TriggerManager.should_save_final_snapshot`
         """
-        return self._trigger.should_save_final_snapshot()
+        return self._trigger_manager.should_save_final_snapshot(
+                do_reuse, f_init_max_timestamp)
 
     def save_snapshot(self, msg: Message) -> None:
         """Save snapshot contained in the message object.
@@ -142,8 +147,8 @@ class SnapshotManager:
             msg: message object representing the snapshot
             final: True iff called from save_final_snapshot
         """
-        triggers = self._trigger.get_triggers()
-        wallclock_time = self._trigger.elapsed_walltime()
+        triggers = self._trigger_manager.get_triggers()
+        wallclock_time = self._trigger_manager.elapsed_walltime()
 
         port_message_counts = self._communicator.get_message_counts()
         snapshot = MsgPackSnapshot(
@@ -153,7 +158,7 @@ class SnapshotManager:
         metadata = SnapshotMetadata.from_snapshot(snapshot, str(path))
         self._manager.submit_snapshot_metadata(self._instance_id, metadata)
 
-        self._trigger.update_checkpoints(msg.timestamp, final)
+        self._trigger_manager.update_checkpoints(msg.timestamp, final)
 
     def __load_snapshot(self, snapshot_location: Path) -> None:
         """Load a previously stored snapshot from the filesystem

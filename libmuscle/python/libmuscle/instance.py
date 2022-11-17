@@ -390,6 +390,17 @@ class Instance:
         """
         return self.__receive_message(port_name, slot, default, True)
 
+    def snapshots_enabled(self) -> bool:
+        """Check if the current workflow has snapshots enabled.
+
+        When snapshots are not enabled, all calls to should_save_snapshot and
+        should_save_final_snapshot will return False.
+
+        Returns:
+            True iff checkpoint rules are defined in the workflow yMMSL.
+        """
+        return self._snapshot_manager.snapshots_enabled()
+
     def resuming(self) -> bool:
         """Check if this instance is resuming from a snapshot.
 
@@ -517,6 +528,10 @@ class Instance:
             True iff a final snapshot should be taken by the submodel according
             to the checkpoint rules provided in the ymmsl configuration.
         """
+        if self._do_reuse is not None:
+            raise RuntimeError(
+                    'You may not call should_save_final_snapshot more than once'
+                    ' per reuse loop.')
         self._do_reuse = self.__check_reuse_instance(apply_overlay)
         f_init_max_timestamp = max(
                 (msg.timestamp for msg in self._f_init_cache.values()),

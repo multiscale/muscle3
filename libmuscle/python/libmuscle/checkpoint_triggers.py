@@ -203,6 +203,8 @@ class TriggerManager:
         self._has_checkpoints = True
         self._monotonic_reference = _utc_to_monotonic(utc_reference)
 
+        self._checkpoint_at_end = checkpoints.at_end
+
         self._wall = CombinedCheckpointTriggers(checkpoints.wallclock_time)
         self._prevwall = 0.0
         self._nextwall = self._wall.next_checkpoint(0.0)  # type: Optional[float]
@@ -213,7 +215,6 @@ class TriggerManager:
         self._sim_reset = True
 
         self._first_reuse = True
-        self._max_f_init_next_timestamp = None  # type: Optional[float]
 
         # These attributes are only used to check if implementations are
         # following the guidelines
@@ -226,44 +227,47 @@ class TriggerManager:
         """
         return time.monotonic() - self._monotonic_reference
 
+    def snapshots_enabled(self) -> bool:
+        """Check if the current workflow has snapshots enabled.
+        """
+        return self._has_checkpoints
+
     def should_save_snapshot(self, timestamp: float) -> bool:
         """Handles instance.should_save_snapshot
         """
         if not self._has_checkpoints:
             return False
 
-        if self._should_have_saved:
-            _checkpoint_error('"should_save_snapshot" or '
-                              '"should_save_final_snapshot" returned positive'
-                              ' but no snapshot was saved before the next call')
+        self.__check_should_have_saved()
 
         elapsed_walltime = self.elapsed_walltime()
         value = self.__should_save(elapsed_walltime, timestamp)
         self._should_have_saved = value
         return value
 
-    def should_save_final_snapshot(self) -> bool:
+    def should_save_final_snapshot(
+            self, do_reuse: bool, f_init_max_timestamp: Optional[float]
+            ) -> bool:
         """Handles instance.should_save_final_snapshot
         """
         if not self._has_checkpoints:
             return False
 
-        if self._should_have_saved:
-            _checkpoint_error('"should_save_snapshot" or '
-                              '"should_save_final_snapshot" returned positive'
-                              ' but no snapshot was saved before the next call')
+        self.__check_should_have_saved()
 
         value = False
-        if self._max_f_init_next_timestamp is None:
-            # If the messages on F_INIT do not supply a next_timestamp, we will
-            # always snapshot just before O_I
+        if not do_reuse and self._checkpoint_at_end:
             value = True
-            self._last_triggers = ['No "next_timestamp" provided on F_INIT'
-                                   ' messages']
+            self._last_triggers.append('at_end')
+        elif f_init_max_timestamp is None:
+            # No F_INIT messages received: reuse triggered on muscle_settings_in
+            # message.
+            _logger.debug('Reuse triggered by muscle_settings_in.'
+                          ' Not creating a snapshot.')
+            self._sim_reset = True
         else:
             elapsed_walltime = self.elapsed_walltime()
-            value = self.__should_save(elapsed_walltime,
-                                       self._max_f_init_next_timestamp)
+            value = self.__should_save(elapsed_walltime, f_init_max_timestamp)
 
         self._should_have_saved = value
         self._should_save_final_called = True
@@ -303,16 +307,15 @@ class TriggerManager:
                          ' Instance.snapshots_enabled() to test if it is useful'
                          ' to save a snapshot.')
             return
+        if final and self._saved_final_checkpoint:
+            raise RuntimeError(
+                    'You may only save a final snapshot once per reuse loop.')
 
         self._prevwall = self.elapsed_walltime()
         self._nextwall = self._wall.next_checkpoint(self._prevwall)
 
-        if final and self._max_f_init_next_timestamp is not None:
-            simulation_time = self._max_f_init_next_timestamp
-        else:
-            simulation_time = timestamp
-        self._prevsim = simulation_time
-        self._nextsim = self._sim.next_checkpoint(simulation_time)
+        self._prevsim = timestamp
+        self._nextsim = self._sim.next_checkpoint(timestamp)
 
         # this method is also called during resume, after which we no longer
         # consider the simulation_time as reset
@@ -326,6 +329,17 @@ class TriggerManager:
         triggers = self._last_triggers
         self._last_triggers = []
         return triggers
+
+    def __check_should_have_saved(self) -> None:
+        """Check if a snapshot is saved when required."""
+        if self._should_have_saved:
+            _checkpoint_error('"should_save_snapshot" or '
+                              '"should_save_final_snapshot" returned positive'
+                              ' but no snapshot was saved before the next call'
+                              ' to a should_save_ method.'
+                              ' You must call the corresponding save_snapshot'
+                              ' or save_final_snapshot method when should_save_'
+                              ' returns True.')
 
     def __should_save(self, walltime: float, simulation_time: float) -> bool:
         """Check if a checkpoint should be taken

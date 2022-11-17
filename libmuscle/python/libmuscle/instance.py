@@ -146,6 +146,10 @@ class Instance:
             snapshot_path = None
         self._snapshot_manager.reuse_instance(snapshot_path)
 
+        if not do_reuse:
+            self._deregister()
+            self.__manager.close()
+
         return do_reuse
 
     def error_shutdown(self, message: str) -> None:
@@ -677,8 +681,6 @@ class Instance:
         if not do_reuse:
             self.__close_ports()
             self._communicator.shutdown()
-            self._deregister()
-            self.__manager.close()
         return do_reuse
 
     def __receive_message(

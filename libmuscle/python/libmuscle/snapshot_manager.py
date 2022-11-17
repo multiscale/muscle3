@@ -135,12 +135,16 @@ class SnapshotManager:
         """
         self.__save_snapshot(msg, False)
 
-    def save_final_snapshot(self, msg: Message) -> None:
+    def save_final_snapshot(
+            self, msg: Message, f_init_max_timestamp: Optional[float]) -> None:
         """Save final snapshot contained in the message object
         """
-        self.__save_snapshot(msg, True)
+        self.__save_snapshot(msg, True, f_init_max_timestamp)
 
-    def __save_snapshot(self, msg: Message, final: bool) -> None:
+    def __save_snapshot(
+            self, msg: Message, final: bool,
+            f_init_max_timestamp: Optional[float] = None
+            ) -> None:
         """Actual implementation used by save_(final_)snapshot.
 
         Args:
@@ -158,7 +162,12 @@ class SnapshotManager:
         metadata = SnapshotMetadata.from_snapshot(snapshot, str(path))
         self._manager.submit_snapshot_metadata(self._instance_id, metadata)
 
-        self._trigger_manager.update_checkpoints(msg.timestamp, final)
+        timestamp = msg.timestamp
+        if final and f_init_max_timestamp is not None:
+            # For final snapshots f_init_max_snapshot is the reference time (see
+            # should_save_Final_snapshot).
+            timestamp = f_init_max_timestamp
+        self._trigger_manager.update_checkpoints(timestamp, final)
 
     def __load_snapshot(self, snapshot_location: Path) -> None:
         """Load a previously stored snapshot from the filesystem

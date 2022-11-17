@@ -294,11 +294,12 @@ class TriggerManager:
             self._saved_final_checkpoint = False
 
     def update_checkpoints(self, timestamp: float, final: bool) -> None:
-        """Update last and next checkpoint times when a snapshot is made
+        """Update last and next checkpoint times when a snapshot is made.
 
         Args:
-            timestamp: timestamp as reported by the instance
-            next_timestamp: next timestamp as reported by the instance
+            timestamp: timestamp as reported by the instance (or from incoming
+                F_INIT messages when final=True).
+            final: True iff this is coming from a save_final_snapshot call.
         """
         if not self._has_checkpoints:
             _logger.info('Saving a snapshot, but no snapshots requested by the'

@@ -560,7 +560,11 @@ class Instance:
                 attribute can be used to store the internal state of the
                 submodel.
         """
-        return self._snapshot_manager.save_final_snapshot(message)
+        f_init_max_timestamp = max(
+                (msg.timestamp for msg in self._f_init_cache.values()),
+                default=None)
+        return self._snapshot_manager.save_final_snapshot(
+                message, f_init_max_timestamp)
 
     def _register(self) -> None:
         """Register this instance with the manager.

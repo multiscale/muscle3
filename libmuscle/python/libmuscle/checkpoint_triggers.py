@@ -302,7 +302,7 @@ class TriggerManager:
             final: True iff this is coming from a save_final_snapshot call.
         """
         if not self._has_checkpoints:
-            _logger.info('Saving a snapshot, but no snapshots requested by the'
+            _logger.info('Saving a snapshot but no checkpoints requested by the'
                          ' workflow. Hint: use Instance.should_save_snapshot(),'
                          ' Instance.should_save_final_snapshot() or'
                          ' Instance.snapshots_enabled() to test if it is useful'

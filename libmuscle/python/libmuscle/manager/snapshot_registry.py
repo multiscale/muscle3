@@ -7,11 +7,11 @@ from operator import attrgetter
 from pathlib import Path
 from queue import Queue
 from threading import Thread
-from typing import Dict, Optional, Set, List, Tuple, TypeVar
+from typing import Dict, Optional, Set, FrozenSet, List, Tuple, TypeVar
 
 from ymmsl import (
         Reference, Model, Identifier, Implementation, save,
-        PartialConfiguration, ImplementationState as IState)
+        PartialConfiguration)
 
 from libmuscle.manager.topology_store import TopologyStore
 from libmuscle.snapshot import SnapshotMetadata
@@ -91,15 +91,14 @@ class SnapshotNode:
             snapshots always have a higher num.
         instance: Which instance this is a snapshot of.
         snapshot: The snapshot metadata reported by the instance.
-        stateful_peers: The set of peers that the instance is connected to that
-            have state, which we need to check consistency with.
+        peers: The set of peers that the instance is connected to.
         consistent_peers: Keeps track of snapshots per peer that are consistent
             with this one.
     """
     num: int
     instance: Reference
     snapshot: SnapshotMetadata
-    stateful_peers: Set[Reference]
+    peers: FrozenSet[Reference]
     consistent_peers: Dict[Reference, List["SnapshotNode"]] = field(
             default_factory=dict, repr=False)
 
@@ -108,10 +107,9 @@ class SnapshotNode:
 
     @property
     def consistent(self) -> bool:
-        """Returns True iff there is a consistent checkpoint will all stateful
-        peers.
+        """Returns True iff there is a consistent checkpoint with all peers.
         """
-        return self.consistent_peers.keys() == self.stateful_peers
+        return self.consistent_peers.keys() == self.peers
 
     def do_consistency_check(
             self,
@@ -194,12 +192,9 @@ class SnapshotRegistry(Thread):
         self._snapshots = {}                # type: _SnapshotDictType
 
         self._instances = set()             # type: Set[Reference]
-        self._stateful_instances = set()    # type: Set[Reference]
         for component in config.model.components:
-            instances = set(component.instances())
-            self._instances.update(instances)
-            if self._is_stateful(component.name):
-                self._stateful_instances.update(instances)
+            self._instances.update(component.instances())
+        # TODO: create snapshot nodes for starting from scratch
 
     def register_snapshot(
             self, instance: Reference, snapshot: SnapshotMetadata) -> None:
@@ -233,7 +228,7 @@ class SnapshotRegistry(Thread):
             instance: The instance that created the snapshot
             snapshot: Metadata describing the snapshot
         """
-        stateful_peers = self._get_stateful_peers(instance)
+        stateful_peers = self._get_peers(instance)
 
         i_snapshots = self._snapshots.setdefault(instance, [])
         # get next number of the snapshot
@@ -257,45 +252,44 @@ class SnapshotRegistry(Thread):
             snapshotnode: The snapshot node that must be part of the workflow
                 snapshot.
         """
-        selected_snapshots = self._get_workflow_snapshot(snapshotnode)
-        if selected_snapshots is not None:
-            self._write_snapshot_ymmsl(selected_snapshots)
-            self._cleanup_snapshots(selected_snapshots)
+        workflow_snapshots = self._get_workflow_snapshots(snapshotnode)
+        for workflow_snapshot in workflow_snapshots:
+            self._write_snapshot_ymmsl(workflow_snapshot)
+        self._cleanup_snapshots(workflow_snapshots)
 
-    def _get_workflow_snapshot(
-            self, snapshot: SnapshotNode) -> Optional[List[SnapshotNode]]:
-        """Check if a workflow snapshot exists that contains the provided node.
-
-        Note: if the provided snapshot node is part of multiple workflow
-        snapshots, only the most recent is detected and written to disk.
+    def _get_workflow_snapshots(
+            self, snapshot: SnapshotNode) -> List[List[SnapshotNode]]:
+        """Return all workflow snapshots which contain the provided node.
 
         Args:
             snapshotnode: The snapshot node that must be part of the workflow
                 snapshot.
+
+        Returns:
+            List of workflow snapshots. Each workflow snapshot is a list of
+            instance snapshot nodes.
         """
-        # This implements a greedy assignment algorithm.
         if not snapshot.consistent:
-            return None
+            return []
 
         # Instances that don't have a snapshot node chosen yet:
-        instances_to_cover = list(
-                self._stateful_instances - {snapshot.instance})
+        instances_to_cover = list(self._instances - {snapshot.instance})
         # Allowed snapshots per instance. This is updated during the heuristic
         # to further restrict the sets of snapshots as peer snapshots are
         # selected.
         # First restriction is that the snapshots have to be locally consistent.
-        allowed_snapshots = {}  # type: Dict[Reference, Set[SnapshotNode]]
+        allowed_snapshots = {}  # type: Dict[Reference, FrozenSet[SnapshotNode]]
         for instance in instances_to_cover:
-            allowed_snapshots[instance] = set(
+            allowed_snapshots[instance] = frozenset(
                     i_snapshot
                     for i_snapshot in self._snapshots.get(instance, [])
                     if i_snapshot.consistent)
             if not allowed_snapshots[instance]:
                 # there cannot be a workflow snapshot if this instance has no
                 # consistent snapshot nodes
-                return None
+                return []
         instance = snapshot.instance
-        allowed_snapshots[instance] = {snapshot}
+        allowed_snapshots[instance] = frozenset({snapshot})
 
         def num_allowed_snapshots(instance: Reference) -> int:
             """Get number of allowed snapshots at this point for this instance.
@@ -305,18 +299,23 @@ class SnapshotRegistry(Thread):
             """
             return len(allowed_snapshots[instance])
 
+        # Do a full, depth-first search for all workflow snapshots
+        # ========================================================
+
+        workflow_snapshots = []
         selected_snapshots = [snapshot]
         # This stack stores history of allowed_snapshots and enables roll back
-        stack = []  # type: List[Dict[Reference, Set[SnapshotNode]]]
+        stack = []  # type: List[Dict[Reference, FrozenSet[SnapshotNode]]]
 
-        # update allowed_snapshots for peers
+        # Update allowed_snapshots for peers of the selected snapshot
         for peer, snapshots in snapshot.consistent_peers.items():
-            allowed_snapshots[peer].intersection_update(snapshots)
-            if not allowed_snapshots[peer]:
-                return None
+            intersection = allowed_snapshots[peer].intersection(snapshots)
+            if not intersection:
+                return []
+            allowed_snapshots[peer] = intersection
 
-        while instances_to_cover:
-            # select most constrained instance
+        while True:
+            # 1. Select most constrained instance
             #
             # Note: we're only interested in the instance with the least allowed
             # snapshots. Better performance may be possible by not doing a full
@@ -331,44 +330,46 @@ class SnapshotRegistry(Thread):
             instances_to_cover.sort(key=num_allowed_snapshots, reverse=True)
             instance = instances_to_cover.pop()
 
-            # select latest snapshot of this instance
-            snapshot = max(allowed_snapshots[instance], key=attrgetter("num"))
+            # 2. Select the oldest snapshot of this instance
+            snapshot = min(allowed_snapshots[instance], key=attrgetter('num'))
             selected_snapshots.append(snapshot)
-            # we put a shallow copy on the stack, so we are not allowed to
-            # modify the sets in the dictionary (see below)
+            # A shallow copy is ok: the values are immutable frozensets
             stack.append(allowed_snapshots.copy())
 
-            # update allowed snapshots with the currently selected
-            allowed_snapshots[instance] = {snapshot}
+            # 3. Update allowed snapshots based on the newly selected
+            allowed_snapshots[instance] = frozenset({snapshot})
             for peer, snapshots in snapshot.consistent_peers.items():
-                # not updating in place to preserve set objects in the stack
                 intersection = allowed_snapshots[peer].intersection(snapshots)
                 if not intersection:
                     break  # roll back
                 allowed_snapshots[peer] = intersection
             else:
-                # not rolling back, go into next iteration of the while-loop
-                continue
+                # 4. Selected snapshot is okay to explore further
+                if instances_to_cover:
+                    # 4a. There are still instance to cover, return to the start
+                    #     of the while loop.
+                    continue
+                # 4b. We have found a complete workflow snapshot
+                workflow_snapshots.append(selected_snapshots.copy())
+                # Next: perform a roll-back to continue the search
 
-            # roll back should stop when selected_snapshots only contains the
-            # one we forced to be part of the workflow snapshot
+            # 5. Roll back
+            # stop when selected_snapshots only contains the one we forced to be
+            # part of the workflow snapshot
             while len(selected_snapshots) > 1:
-                # roll back
                 snapshot = selected_snapshots.pop()
                 instance = snapshot.instance
                 instances_to_cover.append(instance)
                 allowed_snapshots = stack.pop()
-                allowed_snapshots[instance].remove(snapshot)
-                if allowed_snapshots[instance]:
-                    # we have a valid next snapshot to try for this instance
+                intersection = allowed_snapshots[instance] - {snapshot}
+                allowed_snapshots[instance] = intersection
+                if intersection:
+                    # We have a valid next snapshot to try for this instance
                     break
-                # no allowed_snapshots, try another roll back
+                # No allowed_snapshots, try another roll back
             else:
-                # we've exhausted roll back possibilities, there is no
-                # consistent checkpoint
-                return None
-
-        return selected_snapshots
+                # Exhausted all roll back possibilities, so we are done now
+                return workflow_snapshots
 
     def _write_snapshot_ymmsl(
             self, selected_snapshots: List[SnapshotNode]) -> None:
@@ -436,20 +437,32 @@ class SnapshotRegistry(Thread):
                 '\n'.join(component_table))
 
     def _cleanup_snapshots(
-            self, selected_snapshots: List[SnapshotNode]) -> None:
+            self, workflow_snapshots: List[List[SnapshotNode]]) -> None:
         """Remove all snapshots that are older than the selected snapshots.
 
         Args:
             selected_snapshots: All snapshot nodes of a workflow snapshot
         """
-        # remove all snapshots older than the selected ones
+        if not workflow_snapshots:
+            return
+
+        # Find the newest snapshots per instance
+        newest_snapshots = {snapshot.instance: snapshot
+                            for snapshot in workflow_snapshots[0]}
+        for workflow_snapshot in workflow_snapshots[1:]:
+            for snapshot in workflow_snapshot:
+                if newest_snapshots[snapshot.instance].num < snapshot.num:
+                    newest_snapshots[snapshot.instance] = snapshot
+
+        # Remove all snapshots that are older than the newest snapshots
         removed_snapshots = set()  # type: Set[SnapshotNode]
-        for snapshot in selected_snapshots:
+        for snapshot in newest_snapshots.values():
             all_snapshots = self._snapshots[snapshot.instance]
             idx = all_snapshots.index(snapshot)
             self._snapshots[snapshot.instance] = all_snapshots[idx:]
             removed_snapshots.update(all_snapshots[:idx])
-        # remove all references in SnapshotNode.peer_snapshot to the snapshots
+
+        # Remove all references in SnapshotNode.peer_snapshot to the snapshots
         # that are cleaned up
         for snapshot in removed_snapshots:
             for peer_snapshot in chain.from_iterable(
@@ -462,23 +475,19 @@ class SnapshotRegistry(Thread):
                         snapshot)
 
     @lru_cache(maxsize=None)
-    def _get_stateful_peers(self, instance: Reference) -> Set[Reference]:
-        """Return the set of stateful peers for the given instance.
+    def _get_peers(self, instance: Reference) -> FrozenSet[Reference]:
+        """Return the set of peers for the given instance.
 
-        Note: instance is assumed to contain the full index, not just the kernel
-        name.
+        Note: instance is assumed to contain the full index, not just the
+        component name.
 
         Args:
-            instance: Instance to get stateful peers of. See
-                :meth:`_is_stateful`.
+            instance: Instance to get peers of.
 
         Returns:
-            Set with all stateful peer instances (including their index).
+            Frozen set with all peer instances (including their index).
         """
-        return set(
-                peer
-                for peer in self._topology_store.get_peer_instances(instance)
-                if self._is_stateful(peer.without_trailing_ints()))
+        return frozenset(self._topology_store.get_peer_instances(instance))
 
     @lru_cache(maxsize=None)
     def _get_connections(self, instance: Reference, peer: Reference
@@ -555,22 +564,3 @@ class SnapshotRegistry(Thread):
         if implementation in self._configuration.implementations:
             return self._configuration.implementations[implementation]
         return None
-
-    @lru_cache(maxsize=None)
-    def _is_stateful(self, kernel: Reference) -> bool:
-        """Check if a kernel has a stateful implementation.
-
-        A kernel is considered stateful if:
-        - There is no Implementation given for the kernel
-        - Implementation.stateful = ImplementationState.STATEFUL
-        - Implementation.stateful = ImplementationState.WEAKLY_STATEFUL and the
-            implementation supports checkpointing. In this case we assume to get
-            snapshots from these kernels and we take them into account in the
-            snapshot graph.
-        """
-        implementation = self._implementation(kernel)
-        if implementation is None:
-            return True  # assume stateful
-        return (implementation.stateful is IState.STATEFUL or
-                implementation.stateful is IState.WEAKLY_STATEFUL and
-                implementation.supports_checkpoint)

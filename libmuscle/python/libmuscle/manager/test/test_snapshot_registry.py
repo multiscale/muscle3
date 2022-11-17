@@ -158,25 +158,23 @@ def test_snapshot_config():
     print(config.description)
 
 
-def test_stateful_peers(uq: Configuration, micro_is_stateless: bool) -> None:
+def test_peers(uq: Configuration) -> None:
     snapshot_registry = SnapshotRegistry(uq, None, TopologyStore(uq))
     macro = Reference('macro')
     micro = Reference('micro')
     qmc = Reference('qmc')
     rr = Reference('rr')
 
-    expected_stateful = {qmc, rr} | {macro + i for i in range(5)}
-    if not micro_is_stateless:
-        expected_stateful.update(micro + i for i in range(5))
-    assert snapshot_registry._stateful_instances == expected_stateful
+    all_instances = {qmc, rr} | {macro + i for i in range(5)}
+    all_instances.update(micro + i for i in range(5))
+    assert snapshot_registry._instances == all_instances
 
-    assert snapshot_registry._get_stateful_peers(qmc) == {rr}
+    assert snapshot_registry._get_peers(qmc) == {rr}
     expected_rr_peers = {qmc} | {macro + i for i in range(5)}
-    assert snapshot_registry._get_stateful_peers(rr) == expected_rr_peers
+    assert snapshot_registry._get_peers(rr) == expected_rr_peers
     for i in range(5):
-        expected_peers = {rr} if micro_is_stateless else {rr, micro + i}
-        assert snapshot_registry._get_stateful_peers(macro + i) == expected_peers
-        assert snapshot_registry._get_stateful_peers(micro + i) == {macro + i}
+        assert snapshot_registry._get_peers(macro + i) == {rr, micro + i}
+        assert snapshot_registry._get_peers(micro + i) == {macro + i}
 
 
 def test_connections(uq: Configuration) -> None:
@@ -238,19 +236,7 @@ def test_implementation(uq: Configuration) -> None:
     assert missing_impl is None
 
 
-def test_stateful(uq: Configuration, micro_is_stateless: bool) -> None:
-    uq.implementations['macro_impl'].stateful = IState.WEAKLY_STATEFUL
-    snapshot_registry = SnapshotRegistry(uq, None, TopologyStore(uq))
-
-    assert snapshot_registry._is_stateful(Reference('macro'))
-    stateful = snapshot_registry._is_stateful(Reference('micro'))
-    assert stateful is not micro_is_stateless
-
-    assert snapshot_registry._is_stateful(Reference('unknown'))
-
-
-def test_macro_micro_snapshots(
-        macro_micro: Configuration, micro_is_stateless: bool) -> None:
+def test_macro_micro_snapshots(macro_micro: Configuration) -> None:
     snapshot_registry = SnapshotRegistry(
             macro_micro, None, TopologyStore(macro_micro))
     # prevent actually writing a ymmsl file, testing that separately
@@ -263,58 +249,71 @@ def test_macro_micro_snapshots(
 
     assert len(snapshot_registry._snapshots[macro]) == 1
     node = snapshot_registry._snapshots[macro][0]
-    assert node.consistent is micro_is_stateless
+    assert node.consistent is False
     assert node.consistent_peers == {}
     assert node.instance == macro
     assert node.num == 1
     assert node.snapshot is macro_snapshot
-    if micro_is_stateless:
-        assert node.stateful_peers == set()
-        snapshot_registry._write_snapshot_ymmsl.assert_called_once_with([node])
-        snapshot_registry._write_snapshot_ymmsl.reset_mock()
-    else:
-        assert node.stateful_peers == {micro}
-        snapshot_registry._write_snapshot_ymmsl.assert_not_called()
+    assert node.peers == {micro}
+    snapshot_registry._write_snapshot_ymmsl.assert_not_called()
 
-    if not micro_is_stateless:
-        # Note: this snapshot is not realistic, it should have come in before
-        # the macro snapshot above. However, it's still useful for testing the
-        # consistency algorithm
-        micro_snapshot = make_snapshot(f_i=[2], o_f=[1])
-        snapshot_registry._add_snapshot(micro, micro_snapshot)
+    # Note: this snapshot is not realistic, it should have come in before
+    # the macro snapshot above. However, it's still useful for testing the
+    # consistency algorithm
+    micro_snapshot = make_snapshot(f_i=[2], o_f=[1])
+    snapshot_registry._add_snapshot(micro, micro_snapshot)
 
-        assert len(snapshot_registry._snapshots[micro]) == 1
-        assert not snapshot_registry._snapshots[micro][0].consistent
-        snapshot_registry._write_snapshot_ymmsl.assert_not_called()
+    assert len(snapshot_registry._snapshots[micro]) == 1
+    assert snapshot_registry._snapshots[micro][0].consistent is False
+    snapshot_registry._write_snapshot_ymmsl.assert_not_called()
 
-        micro_snapshot = make_snapshot(f_i=[3], o_f=[2])
-        snapshot_registry._add_snapshot(micro, micro_snapshot)
+    micro_snapshot = make_snapshot(f_i=[3], o_f=[2])
+    snapshot_registry._add_snapshot(micro, micro_snapshot)
 
-        # micro snapshots should be cleaned up now!
-        assert len(snapshot_registry._snapshots[micro]) == 1
-        micro_node = snapshot_registry._snapshots[micro][0]
-        assert micro_node.consistent
-        snapshot_registry._write_snapshot_ymmsl.assert_called_with(
-                [micro_node, node])
-        snapshot_registry._write_snapshot_ymmsl.reset_mock()
+    # The first micro snapshots should be cleaned up now
+    assert len(snapshot_registry._snapshots[micro]) == 1
+    micro_node = snapshot_registry._snapshots[micro][0]
+    assert micro_node.consistent
+    snapshot_registry._write_snapshot_ymmsl.assert_called_once_with(
+            [micro_node, node])
+    snapshot_registry._write_snapshot_ymmsl.reset_mock()
 
+    # 3 micro snapshots in the same reuse:
+    for _ in range(3):
         micro_snapshot = make_snapshot(f_i=[4], o_f=[3])
         snapshot_registry._add_snapshot(micro, micro_snapshot)
 
-        # micro snapshots should be cleaned up now!
-        assert len(snapshot_registry._snapshots[micro]) == 1
-        micro_node = snapshot_registry._snapshots[micro][0]
-        assert micro_node.consistent
-        snapshot_registry._write_snapshot_ymmsl.assert_called_with(
-                [micro_node, node])
-        snapshot_registry._write_snapshot_ymmsl.reset_mock()
+    # Previous micro snapshot should be cleaned up now
+    assert len(snapshot_registry._snapshots[micro]) == 1
+    micro_node = snapshot_registry._snapshots[micro][-1]
+    assert snapshot_registry._write_snapshot_ymmsl.call_count == 3
+    snapshot_registry._write_snapshot_ymmsl.assert_called_with(
+            [micro_node, node])
+    snapshot_registry._write_snapshot_ymmsl.reset_mock()
 
     macro_snapshot = make_snapshot(o_i=[4], s=[4])
     snapshot_registry._add_snapshot(macro, macro_snapshot)
     snapshot_registry._write_snapshot_ymmsl.assert_called_once()
+    snapshot_registry._write_snapshot_ymmsl.reset_mock()
+
+    # 3 micro snapshots in the same reuse, but inconcistent with previous macro
+    for _ in range(3):
+        micro_snapshot = make_snapshot(f_i=[6], o_f=[5])
+        snapshot_registry._add_snapshot(micro, micro_snapshot)
+
+    # All three should be present now in addition to the one last used in
+    # workflow snapshot
+    assert len(snapshot_registry._snapshots[micro]) == 4
+    snapshot_registry._write_snapshot_ymmsl.assert_not_called()
+
+    macro_snapshot = make_snapshot(o_i=[6], s=[6])
+    snapshot_registry._add_snapshot(macro, macro_snapshot)
+    assert snapshot_registry._write_snapshot_ymmsl.call_count == 3
+    assert len(snapshot_registry._snapshots[micro]) == 1
+    assert len(snapshot_registry._snapshots[macro]) == 1
 
 
-def test_uq(uq: Configuration, micro_is_stateless: bool) -> None:
+def test_uq(uq: Configuration) -> None:
     snapshot_registry = SnapshotRegistry(uq, None, TopologyStore(uq))
     # prevent actually writing a ymmsl file, testing that separately
     snapshot_registry._write_snapshot_ymmsl = MagicMock()
@@ -342,23 +341,18 @@ def test_uq(uq: Configuration, micro_is_stateless: bool) -> None:
         snapshot_registry._add_snapshot(macro + i, macro_snapshot)
         node = snapshot_registry._snapshots[macro + i][-1]
         assert node.consistent_peers.keys() == {rr}
-        if micro_is_stateless and i == 4:
+        snapshot_registry._write_snapshot_ymmsl.assert_not_called()
+
+    micro_snapshot = make_snapshot(f_i=[1], o_f=[0])
+    for i in range(5):
+        snapshot_registry._add_snapshot(micro + i, micro_snapshot)
+        node = snapshot_registry._snapshots[micro + i][-1]
+        assert node.consistent_peers.keys() == {macro + i}
+        if i == 4:
             snapshot_registry._write_snapshot_ymmsl.assert_called_once()
             snapshot_registry._write_snapshot_ymmsl.reset_mock()
         else:
             snapshot_registry._write_snapshot_ymmsl.assert_not_called()
-
-    if not micro_is_stateless:
-        micro_snapshot = make_snapshot(f_i=[1], o_f=[0])
-        for i in range(5):
-            snapshot_registry._add_snapshot(micro + i, micro_snapshot)
-            node = snapshot_registry._snapshots[micro + i][-1]
-            assert node.consistent_peers.keys() == {macro + i}
-            if i == 4:
-                snapshot_registry._write_snapshot_ymmsl.assert_called_once()
-                snapshot_registry._write_snapshot_ymmsl.reset_mock()
-            else:
-                snapshot_registry._write_snapshot_ymmsl.assert_not_called()
 
     qmc_snapshot = make_snapshot(parameters_out=[1, 1, 1, 1, 1], states_in=[])
     snapshot_registry._add_snapshot(qmc, qmc_snapshot)

@@ -3,12 +3,11 @@
 name: native_compatibility_ubuntu22.04_clang
 on:
   schedule:
-    - cron: '0 3 * * 0'
+    - cron: '30 4 * * 0'
   push:
     branches:
       - 'release-*'
       - fix_native_compatibility_ci
-      - feature/clang_build
 jobs:
   build:
     runs-on: ubuntu-latest

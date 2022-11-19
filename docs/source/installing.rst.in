@@ -86,6 +86,12 @@ helpdesk. ``cmake`` is only needed to build the MessagePack dependency, so if
 that's already available then you don't need ``cmake```. On a cluster, there is
 usually a ``cmake`` module to load.
 
+MUSCLE3 can be built with **clang** as well, if you prefer. You'll need to
+install it using something like ``sudo apt-get install clang``, and modify the
+build command a bit, see below. Note that clang does not have a production-ready
+Fortran compiler yet, but the commands below will help you build the C++ part
+with clang, and the Fortran part with gfortran.
+
 If your submodels use MPI, then you'll need to compile the MPI support for
 MUSCLE3. This requires an MPI library to be available. Libmuscle has been
 tested with OpenMPI on Ubuntu, but should work with other MPI implementations
@@ -202,6 +208,20 @@ As an example, to build libmuscle using 2 cores, you would do:
 
 This will take a few minutes (including building the dependencies), depending on
 the speed of your machine.
+
+**Building with clang**
+
+To build with clang, use
+
+.. code-block:: bash
+
+  ~/mucle3_source/muscle3-0.5.0$ CXXFLAGS=-fPIE OMPI_CXX=clang++ CXX=clang++ make
+
+
+This will tell the build system to use clang for compiling the C++ code and its
+MPI support, but still use gfortran to compile the Fortran code (if gfortran is
+installed). The extra ``-fPIE`` switch is needed to make that combination work
+on some common platforms.
 
 
 Getting help

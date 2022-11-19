@@ -66,6 +66,10 @@ class TransportServer {
          */
         TransportServer(RequestHandler & handler);
 
+        /** Destroy the Transport Server object
+         */
+        virtual ~TransportServer() = default;
+
         /** Returns the location this server listens on.
          *
          * @return A string containing the location.

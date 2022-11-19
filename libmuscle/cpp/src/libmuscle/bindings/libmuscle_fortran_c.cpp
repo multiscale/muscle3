@@ -472,6 +472,7 @@ bool LIBMUSCLE_DataConstRef_as_logical_(std::intptr_t self, int * err_code, char
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return false;
 }
 
 void LIBMUSCLE_DataConstRef_as_character_(std::intptr_t self, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -563,6 +564,7 @@ int LIBMUSCLE_DataConstRef_as_int_(std::intptr_t self, int * err_code, char ** e
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 char LIBMUSCLE_DataConstRef_as_int1_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -607,6 +609,7 @@ char LIBMUSCLE_DataConstRef_as_int1_(std::intptr_t self, int * err_code, char **
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 short int LIBMUSCLE_DataConstRef_as_int2_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -651,6 +654,7 @@ short int LIBMUSCLE_DataConstRef_as_int2_(std::intptr_t self, int * err_code, ch
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 int32_t LIBMUSCLE_DataConstRef_as_int4_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -695,6 +699,7 @@ int32_t LIBMUSCLE_DataConstRef_as_int4_(std::intptr_t self, int * err_code, char
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 int64_t LIBMUSCLE_DataConstRef_as_int8_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -739,6 +744,7 @@ int64_t LIBMUSCLE_DataConstRef_as_int8_(std::intptr_t self, int * err_code, char
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 float LIBMUSCLE_DataConstRef_as_real4_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -783,6 +789,7 @@ float LIBMUSCLE_DataConstRef_as_real4_(std::intptr_t self, int * err_code, char 
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0.0;
 }
 
 double LIBMUSCLE_DataConstRef_as_real8_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -827,6 +834,7 @@ double LIBMUSCLE_DataConstRef_as_real8_(std::intptr_t self, int * err_code, char
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0.0;
 }
 
 std::intptr_t LIBMUSCLE_DataConstRef_as_settings_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -871,6 +879,7 @@ std::intptr_t LIBMUSCLE_DataConstRef_as_settings_(std::intptr_t self, int * err_
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 void LIBMUSCLE_DataConstRef_as_byte_array_(
@@ -918,6 +927,7 @@ std::intptr_t LIBMUSCLE_DataConstRef_get_item_by_key_(
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 std::intptr_t LIBMUSCLE_DataConstRef_get_item_by_index_(
@@ -945,6 +955,7 @@ std::intptr_t LIBMUSCLE_DataConstRef_get_item_by_index_(
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 std::size_t LIBMUSCLE_DataConstRef_num_dims_(
@@ -963,6 +974,7 @@ std::size_t LIBMUSCLE_DataConstRef_num_dims_(
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 void LIBMUSCLE_DataConstRef_shape_(std::intptr_t self, std::size_t ** shp, std::size_t * shp_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -1209,6 +1221,7 @@ bool LIBMUSCLE_DataConstRef_has_indexes_(std::intptr_t self, int * err_code, cha
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return false;
 }
 
 void LIBMUSCLE_DataConstRef_index_(std::intptr_t self, std::size_t i, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -1709,6 +1722,7 @@ bool LIBMUSCLE_Data_as_logical_(std::intptr_t self, int * err_code, char ** err_
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return false;
 }
 
 void LIBMUSCLE_Data_as_character_(std::intptr_t self, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -1800,6 +1814,7 @@ int LIBMUSCLE_Data_as_int_(std::intptr_t self, int * err_code, char ** err_msg, 
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 char LIBMUSCLE_Data_as_int1_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -1844,6 +1859,7 @@ char LIBMUSCLE_Data_as_int1_(std::intptr_t self, int * err_code, char ** err_msg
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 short int LIBMUSCLE_Data_as_int2_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -1888,6 +1904,7 @@ short int LIBMUSCLE_Data_as_int2_(std::intptr_t self, int * err_code, char ** er
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 int32_t LIBMUSCLE_Data_as_int4_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -1932,6 +1949,7 @@ int32_t LIBMUSCLE_Data_as_int4_(std::intptr_t self, int * err_code, char ** err_
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 int64_t LIBMUSCLE_Data_as_int8_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -1976,6 +1994,7 @@ int64_t LIBMUSCLE_Data_as_int8_(std::intptr_t self, int * err_code, char ** err_
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 float LIBMUSCLE_Data_as_real4_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -2020,6 +2039,7 @@ float LIBMUSCLE_Data_as_real4_(std::intptr_t self, int * err_code, char ** err_m
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0.0;
 }
 
 double LIBMUSCLE_Data_as_real8_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -2064,6 +2084,7 @@ double LIBMUSCLE_Data_as_real8_(std::intptr_t self, int * err_code, char ** err_
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0.0;
 }
 
 std::intptr_t LIBMUSCLE_Data_as_settings_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -2108,6 +2129,7 @@ std::intptr_t LIBMUSCLE_Data_as_settings_(std::intptr_t self, int * err_code, ch
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 void LIBMUSCLE_Data_as_byte_array_(
@@ -2155,6 +2177,7 @@ std::intptr_t LIBMUSCLE_Data_get_item_by_key_(
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 std::intptr_t LIBMUSCLE_Data_get_item_by_index_(
@@ -2182,6 +2205,7 @@ std::intptr_t LIBMUSCLE_Data_get_item_by_index_(
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 std::size_t LIBMUSCLE_Data_num_dims_(
@@ -2200,6 +2224,7 @@ std::size_t LIBMUSCLE_Data_num_dims_(
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 void LIBMUSCLE_Data_shape_(std::intptr_t self, std::size_t ** shp, std::size_t * shp_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -2446,6 +2471,7 @@ bool LIBMUSCLE_Data_has_indexes_(std::intptr_t self, int * err_code, char ** err
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return false;
 }
 
 void LIBMUSCLE_Data_index_(std::intptr_t self, std::size_t i, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -3444,6 +3470,7 @@ std::intptr_t LIBMUSCLE_Data_value_(
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 std::intptr_t LIBMUSCLE_PortsDescription_create_() {
@@ -3721,6 +3748,7 @@ bool LIBMUSCLE_Instance_is_setting_a_character_(std::intptr_t self, char * name,
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return false;
 }
 
 bool LIBMUSCLE_Instance_is_setting_a_int8_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -3766,6 +3794,7 @@ bool LIBMUSCLE_Instance_is_setting_a_int8_(std::intptr_t self, char * name, std:
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return false;
 }
 
 bool LIBMUSCLE_Instance_is_setting_a_real8_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -3811,6 +3840,7 @@ bool LIBMUSCLE_Instance_is_setting_a_real8_(std::intptr_t self, char * name, std
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return false;
 }
 
 bool LIBMUSCLE_Instance_is_setting_a_logical_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -3856,6 +3886,7 @@ bool LIBMUSCLE_Instance_is_setting_a_logical_(std::intptr_t self, char * name, s
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return false;
 }
 
 bool LIBMUSCLE_Instance_is_setting_a_real8array_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -3901,6 +3932,7 @@ bool LIBMUSCLE_Instance_is_setting_a_real8array_(std::intptr_t self, char * name
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return false;
 }
 
 bool LIBMUSCLE_Instance_is_setting_a_real8array2_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -3946,6 +3978,7 @@ bool LIBMUSCLE_Instance_is_setting_a_real8array2_(std::intptr_t self, char * nam
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return false;
 }
 
 void LIBMUSCLE_Instance_get_setting_as_character_(std::intptr_t self, char * name, std::size_t name_size, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -4039,6 +4072,7 @@ int64_t LIBMUSCLE_Instance_get_setting_as_int8_(std::intptr_t self, char * name,
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 double LIBMUSCLE_Instance_get_setting_as_real8_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -4084,6 +4118,7 @@ double LIBMUSCLE_Instance_get_setting_as_real8_(std::intptr_t self, char * name,
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0.0;
 }
 
 bool LIBMUSCLE_Instance_get_setting_as_logical_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -4129,6 +4164,7 @@ bool LIBMUSCLE_Instance_get_setting_as_logical_(std::intptr_t self, char * name,
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return false;
 }
 
 void LIBMUSCLE_Instance_get_setting_as_real8array_(std::intptr_t self, char * name, std::size_t name_size, double ** value, std::size_t * value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -4337,6 +4373,7 @@ std::intptr_t LIBMUSCLE_Instance_receive_p_(std::intptr_t self, char * port_name
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 std::intptr_t LIBMUSCLE_Instance_receive_pd_(std::intptr_t self, char * port_name, std::size_t port_name_size, std::intptr_t default_msg, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -4383,6 +4420,7 @@ std::intptr_t LIBMUSCLE_Instance_receive_pd_(std::intptr_t self, char * port_nam
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 std::intptr_t LIBMUSCLE_Instance_receive_ps_(std::intptr_t self, char * port_name, std::size_t port_name_size, int slot, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -4428,6 +4466,7 @@ std::intptr_t LIBMUSCLE_Instance_receive_ps_(std::intptr_t self, char * port_nam
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 std::intptr_t LIBMUSCLE_Instance_receive_psd_(std::intptr_t self, char * port_name, std::size_t port_name_size, int slot, std::intptr_t default_message, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -4474,6 +4513,7 @@ std::intptr_t LIBMUSCLE_Instance_receive_psd_(std::intptr_t self, char * port_na
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 std::intptr_t LIBMUSCLE_Instance_receive_with_settings_p_(std::intptr_t self, char * port_name, std::size_t port_name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -4519,6 +4559,7 @@ std::intptr_t LIBMUSCLE_Instance_receive_with_settings_p_(std::intptr_t self, ch
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 std::intptr_t LIBMUSCLE_Instance_receive_with_settings_pd_(std::intptr_t self, char * port_name, std::size_t port_name_size, std::intptr_t default_msg, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -4565,6 +4606,7 @@ std::intptr_t LIBMUSCLE_Instance_receive_with_settings_pd_(std::intptr_t self, c
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 std::intptr_t LIBMUSCLE_Instance_receive_with_settings_ps_(std::intptr_t self, char * port_name, std::size_t port_name_size, int slot, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -4610,6 +4652,7 @@ std::intptr_t LIBMUSCLE_Instance_receive_with_settings_ps_(std::intptr_t self, c
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 std::intptr_t LIBMUSCLE_Instance_receive_with_settings_psd_(std::intptr_t self, char * port_name, std::size_t port_name_size, int slot, std::intptr_t default_msg, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -4656,6 +4699,7 @@ std::intptr_t LIBMUSCLE_Instance_receive_with_settings_psd_(std::intptr_t self, 
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 std::intptr_t LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(int count) {

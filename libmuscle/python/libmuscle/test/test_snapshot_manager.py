@@ -87,7 +87,8 @@ def test_save_load_checkpoint(tmp_path: Path) -> None:
 
     assert not snapshot_manager2.should_save_snapshot(0.4)
     assert snapshot_manager2.should_save_final_snapshot(True, 1.2)
-    snapshot_manager2.save_final_snapshot(Message(0.6, None, 'test data2'), 1.2)
+    snapshot_manager2.save_final_snapshot(
+            Message(0.6, None, 'test data2'), 1.2, True)
 
     instance, metadata = manager.submit_snapshot_metadata.call_args[0]
     assert instance == instance_id

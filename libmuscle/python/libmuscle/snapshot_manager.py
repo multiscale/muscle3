@@ -1,9 +1,9 @@
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, cast
+from typing import Optional
 
-from ymmsl import Checkpoints, Reference
+from ymmsl import Checkpoints, Reference, Operator
 
 from libmuscle.checkpoint_triggers import TriggerManager
 from libmuscle.communicator import Communicator, Message
@@ -65,8 +65,8 @@ class SnapshotManager:
         """
         self._trigger_manager.set_checkpoint_info(utc_reference, checkpoints)
         if resume is not None:
-            self.__load_snapshot(resume)
-            snapshot = cast(Snapshot, self._resume_from_snapshot)
+            snapshot = self.load_snapshot_from_file(resume)
+            self._resume_from_snapshot = snapshot
             self._communicator.restore_message_counts(
                 snapshot.port_message_counts)
             self._trigger_manager.update_checkpoints(
@@ -136,14 +136,16 @@ class SnapshotManager:
         self.__save_snapshot(msg, False)
 
     def save_final_snapshot(
-            self, msg: Message, f_init_max_timestamp: Optional[float]) -> None:
+            self, msg: Message, f_init_max_timestamp: Optional[float],
+            do_reuse: Optional[bool]) -> None:
         """Save final snapshot contained in the message object
         """
-        self.__save_snapshot(msg, True, f_init_max_timestamp)
+        self.__save_snapshot(msg, True, f_init_max_timestamp, do_reuse)
 
     def __save_snapshot(
             self, msg: Message, final: bool,
-            f_init_max_timestamp: Optional[float] = None
+            f_init_max_timestamp: Optional[float] = None,
+            do_reuse: Optional[bool] = None
             ) -> None:
         """Actual implementation used by save_(final_)snapshot.
 
@@ -155,6 +157,18 @@ class SnapshotManager:
         wallclock_time = self._trigger_manager.elapsed_walltime()
 
         port_message_counts = self._communicator.get_message_counts()
+        if final:
+            # Decrease F_INIT port counts by one: F_INIT messages are already
+            # pre-received, but not yet processed by the user code. Therefore,
+            # the snapshot state should treat these as not-received.
+            all_ports = self._communicator.list_ports()
+            ports = all_ports.get(Operator.F_INIT, [])
+            if self._communicator.settings_in_connected():
+                ports.append('muscle_settings_in')
+            for port_name in ports:
+                new_counts = [i - 1 for i in port_message_counts[port_name]]
+                port_message_counts[port_name] = new_counts
+
         snapshot = MsgPackSnapshot(
             triggers, wallclock_time, port_message_counts, final, msg)
 
@@ -169,7 +183,8 @@ class SnapshotManager:
             timestamp = f_init_max_timestamp
         self._trigger_manager.update_checkpoints(timestamp, final)
 
-    def __load_snapshot(self, snapshot_location: Path) -> None:
+    @staticmethod
+    def load_snapshot_from_file(snapshot_location: Path) -> Snapshot:
         """Load a previously stored snapshot from the filesystem
 
         Args:
@@ -186,13 +201,12 @@ class SnapshotManager:
             data = snapshot_file.read()
 
             if version == MsgPackSnapshot.SNAPSHOT_VERSION_BYTE:
-                self._resume_from_snapshot = MsgPackSnapshot.from_bytes(data)
-            else:
-                raise RuntimeError('Unable to load snapshot from'
-                                   f' {snapshot_location}: unknown version of'
-                                   ' snapshot file. Was the file saved with a'
-                                   ' different version of libmuscle or'
-                                   ' tampered with?')
+                return MsgPackSnapshot.from_bytes(data)
+            raise RuntimeError('Unable to load snapshot from'
+                               f' {snapshot_location}: unknown version of'
+                               ' snapshot file. Was the file saved with a'
+                               ' different version of libmuscle or'
+                               ' tampered with?')
 
     def __store_snapshot(self, snapshot: Snapshot) -> Path:
         """Store a snapshot on the filesystem

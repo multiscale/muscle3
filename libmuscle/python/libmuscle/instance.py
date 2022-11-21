@@ -147,6 +147,8 @@ class Instance:
         self._snapshot_manager.reuse_instance(snapshot_path)
 
         if not do_reuse:
+            self.__close_ports()
+            self._communicator.shutdown()
             self._deregister()
             self.__manager.close()
 
@@ -568,7 +570,7 @@ class Instance:
                 (msg.timestamp for msg in self._f_init_cache.values()),
                 default=None)
         return self._snapshot_manager.save_final_snapshot(
-                message, f_init_max_timestamp)
+                message, f_init_max_timestamp, self._do_reuse)
 
     def _register(self) -> None:
         """Register this instance with the manager.
@@ -657,8 +659,7 @@ class Instance:
         # TODO: _f_init_cache should be empty here, or the user didn't
         # receive something that was sent on the last go-around.
         # At least emit a warning.
-        if not (self.resuming() and self._first_run):
-            # when resuming we skip receiving on f_init in the first run
+        if self.should_init() or not self._first_run:
             self.__pre_receive_f_init(apply_overlay)
 
         self._set_local_log_level()
@@ -678,9 +679,6 @@ class Instance:
                     do_reuse = False
         self._first_run = False
 
-        if not do_reuse:
-            self.__close_ports()
-            self._communicator.shutdown()
         return do_reuse
 
     def __receive_message(

@@ -53,12 +53,13 @@ class PeerManager {
          */
         bool is_connected(ymmsl::Identifier const & port) const;
 
-        /** Get a reference for the peer port.
+        /** Get a reference for all the peer ports.
          *
          * @param port Name of the port on this side.
-         * @return Name of the port on the peer.
+         * @return Names of the port on the peers.
          */
-        ymmsl::Reference get_peer_port(ymmsl::Identifier const & port) const;
+        std::vector<ymmsl::Reference> const & get_peer_ports(
+                ymmsl::Identifier const & port) const;
 
         /** Get the dimensions of a peer kernel.
          *
@@ -76,20 +77,20 @@ class PeerManager {
         std::vector<std::string> get_peer_locations(
                 ymmsl::Reference const & peer_instance) const;
 
-        /** Determine the peer endpoint for the given port and slot.
+        /** Determine the peer endpoints for the given port and slot.
          *
          * @param port The port on our side to send or receive on.
          * @param slot The slot to send or receive on.
-         * @return The peer endpoint.
+         * @return The peer endpoints.
          */
-        Endpoint get_peer_endpoint(
+        std::vector<Endpoint> get_peer_endpoints(
                 ymmsl::Identifier const & port,
                 std::vector<int> const & slot) const;
 
     private:
         ymmsl::Reference kernel_;
         std::vector<int> index_;
-        std::unordered_map<ymmsl::Reference, ymmsl::Reference> peers_;
+        std::unordered_map<ymmsl::Reference, std::vector<ymmsl::Reference>> peers_;
         PeerDims peer_dims_;
         PeerLocations peer_locations_;
 };

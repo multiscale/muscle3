@@ -419,15 +419,17 @@ class SnapshotRegistry(Thread):
             component_info.append((
                     str(node.instance),
                     f'{node.snapshot.timestamp:<11.6g}',
-                    f'{node.snapshot.wallclock_time:<11.6g}'))
+                    f'{node.snapshot.wallclock_time:<11.6g}',
+                    ("Intermediate", "Final")[node.snapshot.is_final_snapshot]))
             max_instance_len = max(max_instance_len, len(str(node.instance)))
         instance_with_padding = 'Instance'.ljust(max_instance_len)
         component_table = [
-                f'{instance_with_padding} t           wallclock time',
-                f'{"-" * (max_instance_len + 27)}']
+                f'{instance_with_padding} t           Wallclock time  Type',
+                f'{"-" * (max_instance_len + 41)}']
         component_table += [
                 f'{name.ljust(max_instance_len)} {timestamp} {walltime}'
-                for name, timestamp, walltime in component_info]
+                f'     {typ}'
+                for name, timestamp, walltime, typ in component_info]
         return (f'Workflow snapshot for {self._model.name}'
                 f' taken on {now.strftime("%Y-%m-%d %H:%M:%S")}.\n'
                 'Snapshot triggers:\n' +

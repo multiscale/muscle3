@@ -87,6 +87,7 @@ bool YMMSL_Settings_is_a_character_(std::intptr_t self, char * key, std::size_t 
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return false;
 }
 
 bool YMMSL_Settings_is_a_int4_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -132,6 +133,7 @@ bool YMMSL_Settings_is_a_int4_(std::intptr_t self, char * key, std::size_t key_s
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return false;
 }
 
 bool YMMSL_Settings_is_a_int8_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -177,6 +179,7 @@ bool YMMSL_Settings_is_a_int8_(std::intptr_t self, char * key, std::size_t key_s
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return false;
 }
 
 bool YMMSL_Settings_is_a_real8_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -222,6 +225,7 @@ bool YMMSL_Settings_is_a_real8_(std::intptr_t self, char * key, std::size_t key_
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return false;
 }
 
 bool YMMSL_Settings_is_a_logical_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -267,6 +271,7 @@ bool YMMSL_Settings_is_a_logical_(std::intptr_t self, char * key, std::size_t ke
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return false;
 }
 
 bool YMMSL_Settings_is_a_real8array_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -312,6 +317,7 @@ bool YMMSL_Settings_is_a_real8array_(std::intptr_t self, char * key, std::size_t
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return false;
 }
 
 bool YMMSL_Settings_is_a_real8array2_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -357,6 +363,7 @@ bool YMMSL_Settings_is_a_real8array2_(std::intptr_t self, char * key, std::size_
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return false;
 }
 
 void YMMSL_Settings_set_character_(std::intptr_t self, char * key, std::size_t key_size, char * value, std::size_t value_size) {
@@ -506,6 +513,7 @@ int32_t YMMSL_Settings_get_as_int4_(std::intptr_t self, char * key, std::size_t 
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 int64_t YMMSL_Settings_get_as_int8_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -551,6 +559,7 @@ int64_t YMMSL_Settings_get_as_int8_(std::intptr_t self, char * key, std::size_t 
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0;
 }
 
 double YMMSL_Settings_get_as_real8_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -596,6 +605,7 @@ double YMMSL_Settings_get_as_real8_(std::intptr_t self, char * key, std::size_t 
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return 0.0;
 }
 
 bool YMMSL_Settings_get_as_logical_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
@@ -641,6 +651,7 @@ bool YMMSL_Settings_get_as_logical_(std::intptr_t self, char * key, std::size_t 
         *err_msg = const_cast<char*>(msg.data());
         *err_msg_len = msg.size();
     }
+    return false;
 }
 
 void YMMSL_Settings_get_as_real8array_(std::intptr_t self, char * key, std::size_t key_size, double ** value, std::size_t * value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {

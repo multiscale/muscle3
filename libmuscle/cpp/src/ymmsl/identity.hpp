@@ -109,8 +109,8 @@ class Identifier {
         friend bool operator==(std::string const & lhs, Identifier const & rhs);
         friend bool operator!=(std::string const & lhs, Identifier const & rhs);
         friend std::ostream & operator<<(std::ostream & os, Identifier const & i);
-        friend ::std::size_t ::std::hash<::ymmsl::impl::Identifier>::operator()(
-                ::ymmsl::impl::Identifier const & id) const;
+        friend ::std::size_t (::std::hash<::ymmsl::impl::Identifier>::operator())(
+                ::ymmsl::impl::Identifier const & id) const noexcept;
         std::string data_;
 };
 

@@ -214,22 +214,25 @@ class Communicator:
         profile_event = self._profiler.start(ProfileEventType.SEND, port,
                                              None, slot, None)
 
-        recv_endpoint = self._peer_manager.get_peer_endpoint(
+        recv_endpoints = self._peer_manager.get_peer_endpoints(
                 snd_endpoint.port, slot_list)
 
         port_length = None
         if port.is_resizable():
             port_length = port.get_length()
 
-        mcp_message = MPPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
-                                 port_length,
-                                 message.timestamp, message.next_timestamp,
-                                 cast(Settings, message.settings),
-                                 port.get_num_messages(slot),
-                                 message.data)
+        for recv_endpoint in recv_endpoints:
+            mcp_message = MPPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
+                                     port_length,
+                                     message.timestamp, message.next_timestamp,
+                                     cast(Settings, message.settings),
+                                     port.get_num_messages(slot),
+                                     message.data)
+            encoded_message = mcp_message.encoded()
+            self._post_office.deposit(recv_endpoint.ref(), encoded_message)
+
         port.increment_num_messages(slot)
-        encoded_message = mcp_message.encoded()
-        self._post_office.deposit(recv_endpoint.ref(), encoded_message)
+
         profile_event.stop()
         if port.is_vector():
             profile_event.port_length = port.get_length()
@@ -296,8 +299,10 @@ class Communicator:
         profile_event = self._profiler.start(ProfileEventType.RECEIVE, port,
                                              None, slot, None)
 
-        snd_endpoint = self._peer_manager.get_peer_endpoint(
-                recv_endpoint.port, slot_list)
+        # peer_manager already checks that there is at most one snd_endpoint
+        # connected to the port we receive on
+        snd_endpoint = self._peer_manager.get_peer_endpoints(
+                recv_endpoint.port, slot_list)[0]
         client = self.__get_client(snd_endpoint.instance())
         mcp_message_bytes = client.receive(recv_endpoint.ref())
         mcp_message = MPPMessage.from_bytes(mcp_message_bytes)
@@ -414,9 +419,23 @@ class Communicator:
                 port_id = Identifier(port_name)
                 is_connected = self._peer_manager.is_connected(port_id)
                 if is_connected:
-                    peer_port = self._peer_manager.get_peer_port(port_id)
+                    peer_ports = self._peer_manager.get_peer_ports(port_id)
+                    peer_port = peer_ports[0]
                     peer_ce = peer_port[:-1]
                     port_peer_dims = self._peer_manager.get_peer_dims(peer_ce)
+                    for peer_port in peer_ports[1:]:
+                        peer_ce = peer_port[:-1]
+                        if port_peer_dims != self._peer_manager.get_peer_dims(
+                                peer_ce):
+                            port_strs = ', '.join(map(str, peer_ports))
+                            raise RuntimeError(('Multicast port "{}" is'
+                                                ' connected to peers with'
+                                                ' different dimensions. All'
+                                                ' peer components that this'
+                                                ' port is connected to must'
+                                                ' have the same multiplicity.'
+                                                ' Connected to ports: {}.'
+                                                ).format(port_name, port_strs))
                 else:
                     port_peer_dims = []
                 ports[port_name] = Port(

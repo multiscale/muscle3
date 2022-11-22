@@ -26,14 +26,14 @@ class MockPeerManager {
 
         bool is_connected(ymmsl::Identifier const & port) const;
 
-        ymmsl::Reference get_peer_port(ymmsl::Identifier const & port) const;
+        std::vector<ymmsl::Reference> get_peer_ports(ymmsl::Identifier const & port) const;
 
         std::vector<int> get_peer_dims(ymmsl::Reference const & peer_kernel) const;
 
         std::vector<std::string> get_peer_locations(
                 ymmsl::Reference const & peer_instance) const;
 
-        Endpoint get_peer_endpoint(
+        std::vector<Endpoint> get_peer_endpoints(
                 ymmsl::Identifier const & port,
                 std::vector<int> const & slot) const;
 
@@ -48,11 +48,11 @@ class MockPeerManager {
         static PeerLocations last_constructed_peer_locations;
 
         static bool is_connected_return_value;
-        static std::unordered_map<ymmsl::Identifier, ymmsl::Reference>
+        static std::unordered_map<ymmsl::Identifier, std::vector<ymmsl::Reference>>
             get_peer_port_table;
         static std::unordered_map<ymmsl::Reference, std::vector<int>>
             get_peer_dims_table;
-        static std::unordered_map<ymmsl::Reference, Endpoint>
+        static std::unordered_map<ymmsl::Reference, std::vector<Endpoint>>
             get_peer_endpoint_table;
 };
 

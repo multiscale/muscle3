@@ -194,7 +194,12 @@ class SnapshotRegistry(Thread):
         self._instances = set()             # type: Set[Reference]
         for component in config.model.components:
             self._instances.update(component.instances())
-        # TODO: create snapshot nodes for starting from scratch
+
+        # Create snapshot nodes for starting from scratch
+        self._null_snapshot = SnapshotMetadata(
+                ["Instance start"], 0, 0, None, {}, True, '')
+        for instance in self._instances:
+            self.register_snapshot(instance, self._null_snapshot)
 
     def register_snapshot(
             self, instance: Reference, snapshot: SnapshotMetadata) -> None:
@@ -243,7 +248,8 @@ class SnapshotRegistry(Thread):
                         peer_snapshot, self._get_connections(instance, peer))
 
         # finally, check if this snapshotnode is now part of a workflow snapshot
-        self._save_workflow_snapshot(snapshotnode)
+        if snapshot is not self._null_snapshot:
+            self._save_workflow_snapshot(snapshotnode)
 
     def _save_workflow_snapshot(self, snapshotnode: SnapshotNode) -> None:
         """Save snapshot if a workflow snapshot exists with the provided node.
@@ -402,7 +408,11 @@ class SnapshotRegistry(Thread):
         selected_snapshots.sort(key=attrgetter('instance'))
         resume = {}
         for node in selected_snapshots:
-            resume[node.instance] = Path(node.snapshot.snapshot_filename)
+            if node.snapshot is not self._null_snapshot:
+                # Only store resume information when it is an actual snapshot
+                # created by the instance. Otherwise the instance can just be
+                # restarted from the beginning.
+                resume[node.instance] = Path(node.snapshot.snapshot_filename)
         description = self._generate_description(selected_snapshots, now)
         return PartialConfiguration(resume=resume, description=description)
 
@@ -436,7 +446,7 @@ class SnapshotRegistry(Thread):
                 '\n'.join(f'- {trigger} ({", ".join(triggers[trigger])})'
                           for trigger in sorted(triggers)) +
                 '\n\n' +
-                '\n'.join(component_table))
+                '\n'.join(component_table) + '\n')
 
     def _cleanup_snapshots(
             self, workflow_snapshots: List[List[SnapshotNode]]) -> None:

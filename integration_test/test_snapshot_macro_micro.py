@@ -161,16 +161,19 @@ def test_snapshot_macro_micro(tmp_path, base_config):
     assert len(micro_snapshots) == 6  # 0, 0.4, 0.8, 1.2, 1.6, final
     snapshots_ymmsl = sorted(run_dir1.snapshot_dir().glob('snapshot_*.ymmsl'))
     snapshot_docs = list(map(load, snapshots_ymmsl))
-    assert snapshot_docs[0].resume['macro'] == macro_snapshots[0]
+    assert 'macro' not in snapshot_docs[0].resume
     assert snapshot_docs[0].resume['micro'] == micro_snapshots[0]
     assert snapshot_docs[1].resume['macro'] == macro_snapshots[0]
-    assert snapshot_docs[1].resume['micro'] == micro_snapshots[1]
-    for i in range(2, 7):
-        assert snapshot_docs[i].resume['macro'] == macro_snapshots[i - 1]
-        assert snapshot_docs[i].resume['micro'] == micro_snapshots[i - 1]
+    assert snapshot_docs[1].resume['micro'] == micro_snapshots[0]
+    assert snapshot_docs[2].resume['macro'] == macro_snapshots[0]
+    assert snapshot_docs[2].resume['micro'] == micro_snapshots[1]
+    for i in range(3, 8):
+        assert snapshot_docs[i].resume['macro'] == macro_snapshots[i - 2]
+        assert snapshot_docs[i].resume['micro'] == micro_snapshots[i - 2]
 
+    # resume from the snapshots taken at t>=1.2
     run_dir2 = RunDir(tmp_path / 'run2')
-    base_config.update(snapshot_docs[4])  # concatenate resume info
+    base_config.update(snapshot_docs[5])  # add resume info
     run_manager_with_actors(
             dump(base_config), run_dir2.path,
             python_actors={'macro': macro, 'micro': micro})
@@ -181,6 +184,15 @@ def test_snapshot_macro_micro(tmp_path, base_config):
     assert len(micro_snapshots) == 2  # 1.6, final
     snapshots_ymmsl = sorted(run_dir2.snapshot_dir().glob('snapshot_*.ymmsl'))
     assert len(snapshots_ymmsl) == 2
+
+    # resume from the first workflow snapshot (this restarts macro from scratch)
+    run_dir3 = RunDir(tmp_path / 'run3')
+    base_config.resume = {}                     # clear resume information
+    base_config.update(snapshot_docs[0])        # add resume info
+    base_config.settings['macro.t_max'] = 0.6   # run shorter
+    run_manager_with_actors(
+            dump(base_config), run_dir3.path,
+            python_actors={'macro': macro, 'micro': micro})
 
 
 def test_snapshot_macro_vector_micro(tmp_path, base_config):
@@ -198,10 +210,10 @@ def test_snapshot_macro_vector_micro(tmp_path, base_config):
     micro_snapshots = sorted(run_dir1.snapshot_dir().glob('micro*'))
     assert len(micro_snapshots) == 6 * 2  # 0, 0.4, 0.8, 1.2, 1.6, final
     snapshots_ymmsl = sorted(run_dir1.snapshot_dir().glob('snapshot_*.ymmsl'))
-    assert len(snapshots_ymmsl) == 8
+    assert len(snapshots_ymmsl) == 10
 
     run_dir2 = RunDir(tmp_path / 'run2')
-    base_config.update(load(snapshots_ymmsl[-3]))  # concatenate resume info
+    base_config.update(load(snapshots_ymmsl[-3]))  # add resume info
     run_manager_with_actors(
             dump(base_config), run_dir2.path,
             python_actors={'macro': macro_vector,

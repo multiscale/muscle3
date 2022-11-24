@@ -47,6 +47,7 @@ extensions = [
         'breathe',
         'sphinx.ext.autodoc',
         'sphinx.ext.autosectionlabel',
+        'sphinx.ext.intersphinx',
         'sphinx.ext.napoleon',
         'sphinx.ext.todo',
         'sphinx.ext.viewcode',
@@ -108,6 +109,15 @@ breathe_projects = { 'libmuscle': str(_rootpath / 'docs' / 'doxygen' / 'xml') }
 breathe_default_project = 'libmuscle'
 
 breathe_default_members = ('members',)
+
+# Configuration of sphinx.ext.intersphinx
+# See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3/", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
+    "ymmsl": ("https://ymmsl-python.readthedocs.io/en/stable", None),
+}
+
 
 # -- Patch version into installation instructions --
 def patch_installation_version():

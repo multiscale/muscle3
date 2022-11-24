@@ -40,8 +40,12 @@ class Instance:
         """Create an Instance.
 
         Args:
-            ports: A list of port names for each operator of this
-                component.
+            ports: A list of port names for each
+                :external:py:class:`~ymmsl.Operator` of this component.
+            stateful: Indicate whether this instance carries state between
+                iterations of the reuse loop. See
+                :external:py:class:`ymmsl.ImplementationState` for a description
+                of the options.
         """
         self.__is_shut_down = False
 
@@ -124,7 +128,7 @@ class Instance:
                 overlay or to save it. If you're going to use
                 :meth:`receive_with_settings` on your F_INIT ports,
                 set this to False. If you don't know what that means,
-                just call `reuse_instance()` without specifying this
+                just call :meth:`reuse_instance()` without specifying this
                 and everything will be fine. If it turns out that you
                 did need to specify False, MUSCLE3 will tell you about
                 it in an error message and you can add it still.
@@ -236,7 +240,7 @@ class Instance:
                 self._instance_name(), Reference(name), typ)
 
     def list_ports(self) -> Dict[Operator, List[str]]:
-        """Returns a description of the ports that this CE has.
+        """Returns a description of the ports that this Instance has.
 
         Note that the result has almost the same format as the port
         declarations you pass when making an Instance. The only
@@ -244,9 +248,9 @@ class Instance:
         even if the port is a vector port.
 
         Returns:
-            A dictionary, indexed by Operator, containing lists of
-            port names. Operators with no associated ports are not
-            included.
+            A dictionary, indexed by :external:py:class:`~ymmsl.Operator`,
+            containing lists of port names. Operators with no associated ports
+            are not included.
         """
         return self._communicator.list_ports()
 
@@ -299,7 +303,8 @@ class Instance:
         Args:
             port: The name of the port to measure.
 
-        Raises: RuntimeError if this is a scalar port.
+        Raises:
+            RuntimeError: If this is a scalar port.
         """
         return self._communicator.get_port(port).get_length()
 
@@ -307,7 +312,7 @@ class Instance:
         """Resizes the port to the given length.
 
         You should check whether the port is resizable using
-        `is_resizable()` first; whether it is depends on how this
+        :meth:`is_resizable()` first; whether it is depends on how this
         component is wired up, so you should check.
 
         Args:
@@ -324,7 +329,7 @@ class Instance:
         """Send a message to the outside world.
 
         Sending is non-blocking, a copy of the message will be made
-        and stored until the receiver is ready to receive it.
+        and stored in memory until the receiver is ready to receive it.
 
         Args:
             port_name: The port on which this message is to be sent.
@@ -410,8 +415,9 @@ class Instance:
     def snapshots_enabled(self) -> bool:
         """Check if the current workflow has snapshots enabled.
 
-        When snapshots are not enabled, all calls to should_save_snapshot and
-        should_save_final_snapshot will return False.
+        When snapshots are not enabled, all calls to
+        :meth:`should_save_snapshot` and :meth:`should_save_final_snapshot` will
+        return False.
 
         Returns:
             True iff checkpoint rules are defined in the workflow yMMSL.
@@ -446,7 +452,7 @@ class Instance:
         before attempting to receive data on F_INIT ports.
 
         Returns:
-            True iff the submodel must skip the F_INIT step
+            True if the submodel must execute the F_INIT step, False otherwise.
         """
         return self._snapshot_manager.should_init()
 
@@ -465,7 +471,8 @@ class Instance:
         return self._snapshot_manager.load_snapshot()
 
     def should_save_snapshot(self, timestamp: float) -> bool:
-        """Check if a snapshot should be saved inside a time-integration loop.
+        """Check if a snapshot should be saved after the S Operator of the
+        submodel.
 
         This method checks if a snapshot should be saved right now, based on the
         provided timestamp and passed wallclock time.
@@ -487,7 +494,7 @@ class Instance:
         return self._snapshot_manager.should_save_snapshot(timestamp)
 
     def save_snapshot(self, message: Message) -> None:
-        """Save a snapshot inside a time-integration loop.
+        """Save a snapshot after the S Operator of the submodel.
 
         Before saving a snapshot, you should check using
         :meth:`should_save_snapshot` if a snapshot should be saved according to
@@ -513,14 +520,13 @@ class Instance:
         return self._snapshot_manager.save_snapshot(message)
 
     def should_save_final_snapshot(self, *, apply_overlay: bool = True) -> bool:
-        """Check if a snapshot should be saved before O_F.
+        """Check if a snapshot should be saved at the end of the reuse loop.
 
-        This method checks if a snapshot should be saved right now, based on the
-        provided timestamp and passed wallclock time.
+        This method checks if a snapshot should be saved now.
 
         When this method returns True, the submodel must also save a snapshot
-        through :meth:`save_final_snapshot`. A RuntimeError will be generated
-        when not doing so.
+        through :meth:`save_final_snapshot`. A :class:`RuntimeError` will be
+        generated when not doing so.
 
         See also :meth:`should_save_snapshot` for the variant that may be called
         inside of a time-integration loop of the submodel.
@@ -528,7 +534,7 @@ class Instance:
         .. note::
             This method will block until it can determine whether a final
             snapshot should be taken. This means it must also determine if this
-            instance is reused. The optional keword-only argument
+            instance is reused. The optional keyword-only argument
             `apply_overlay` has the same meaning as for :meth:`reuse_instance`.
 
         Args:
@@ -536,10 +542,10 @@ class Instance:
                 overlay or to save it. If you're going to use
                 :meth:`receive_with_settings` on your F_INIT ports, set this to
                 False. If you don't know what that means, just call
-                `reuse_instance()` without specifying this and everything will
-                be fine. If it turns out that you did need to specify False,
-                MUSCLE3 will tell you about it in an error message and you can
-                add it still.
+                :meth:`should_save_final_snapshot()` without specifying this and
+                everything will be fine. If it turns out that you did need to
+                specify False, MUSCLE3 will tell you about it in an error
+                message and you can add it still.
 
         Returns:
             True iff a final snapshot should be taken by the submodel according
@@ -554,7 +560,7 @@ class Instance:
                 self._do_reuse, self.__f_init_max_timestamp)
 
     def save_final_snapshot(self, message: Message) -> None:
-        """Save a snapshot before O_F.
+        """Save a snapshot at the end of the reuse loop.
 
         Before saving a snapshot, you should check using
         :meth:`should_save_final_snapshot` if a snapshot should be saved
@@ -566,8 +572,8 @@ class Instance:
         submodels of the run (and therefore it is not useful to restart from).
         It could also lead to a lot of snapshot files clogging your file system.
 
-        See also :meth:`save_snapshot` for the variant that may be called inside
-        of a time-integration loop of the submodel.
+        See also :meth:`save_snapshot` for the variant that may be called after
+        each S Operator of the submodel.
 
         Args:
             message: Message object that is saved as snapshot. The data

@@ -1,3 +1,4 @@
+import socket
 import socketserver as ss
 import threading
 from typing import cast, List, Optional, Tuple
@@ -19,6 +20,10 @@ class TcpTransportServerImpl(ss.ThreadingMixIn, ss.TCPServer):
                  ) -> None:
         super().__init__(host_port_tuple, streamhandler)
         self.transport_server = transport_server
+        if hasattr(socket, "TCP_NODELAY"):
+            self.socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
+        if hasattr(socket, "TCP_QUICKACK"):
+            self.socket.setsockopt(socket.SOL_TCP, socket.TCP_QUICKACK, 1)
 
 
 class TcpHandler(ss.BaseRequestHandler):

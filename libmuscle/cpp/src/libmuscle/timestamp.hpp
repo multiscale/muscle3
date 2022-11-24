@@ -13,15 +13,15 @@ class Timestamp {
          */
         double seconds;
 
+        /** Create a Timestamp representing the current time.
+         */
+        Timestamp();
+
         /** Create a Timestamp.
          *
          * @param seconds The number of seconds since the UNIX epoch.
          */
         Timestamp(double seconds);
-
-        /** Create a Timestamp representing the current time.
-         */
-        static Timestamp now();
 };
 
 std::ostream & operator<<(std::ostream & os, Timestamp ts);

@@ -7,11 +7,7 @@ from libmuscle.timestamp import Timestamp
 
 
 class ProfileEventType(Enum):
-    """Profiling event types for MUSCLE3.
-
-    These match the types in the MUSCLE Manager Protocol, and should
-    be kept identical to those.
-    """
+    """Profiling event types for MUSCLE3."""
     REGISTER = 0
     CONNECT = 4
     DEREGISTER = 1
@@ -27,9 +23,6 @@ class ProfileEvent:
 
     This represents a single measurement of the timing of some event
     that occurred while executing the simulation.
-
-    Note that instance_id gets set by the profiler after submitting
-    the event, so it doesn't get passed in the constructor.
 
     Args:
         event_type: Type of event that was measured.

@@ -273,6 +273,13 @@ class TriggerManager:
         self._should_save_final_called = True
         return value
 
+    @property
+    def save_final_snapshot_called(self) -> bool:
+        """Check if :meth:`save_final_snapshot` was called during this
+        reuse loop.
+        """
+        return self._saved_final_checkpoint
+
     def reuse_instance(self) -> None:
         """Cleanup between instance reuse
         """

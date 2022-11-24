@@ -21,7 +21,7 @@ class Snapshot(ABC):
                  wallclock_time: float,
                  port_message_counts: Dict[str, List[int]],
                  is_final_snapshot: bool,
-                 message: 'communicator.Message') -> None:
+                 message: Optional['communicator.Message']) -> None:
         self.triggers = triggers
         self.wallclock_time = wallclock_time
         self.port_message_counts = port_message_counts
@@ -74,9 +74,11 @@ class MsgPackSnapshot(Snapshot):
         }))
 
     @staticmethod
-    def message_to_bytes(message: 'communicator.Message') -> bytes:
+    def message_to_bytes(message: Optional['communicator.Message']) -> bytes:
         """Use MPPMessage serializer for serializing the message object
         """
+        if message is None:
+            return b''
         settings = Settings()
         if message.settings is not None:
             settings = message.settings
@@ -85,9 +87,11 @@ class MsgPackSnapshot(Snapshot):
                           settings, 0, message.data).encoded()
 
     @staticmethod
-    def bytes_to_message(data: bytes) -> 'communicator.Message':
+    def bytes_to_message(data: bytes) -> Optional['communicator.Message']:
         """Use MPPMessage deserializer for serializing the message object
         """
+        if not data:
+            return None
         mpp_message = MPPMessage.from_bytes(data)
         return communicator.Message(mpp_message.timestamp,
                                     mpp_message.next_timestamp,
@@ -116,8 +120,8 @@ class SnapshotMetadata:
         return SnapshotMetadata(
             snapshot.triggers,
             snapshot.wallclock_time,
-            snapshot.message.timestamp,
-            snapshot.message.next_timestamp,
+            snapshot.message.timestamp if snapshot.message else float('NaN'),
+            snapshot.message.next_timestamp if snapshot.message else None,
             snapshot.port_message_counts,
             snapshot.is_final_snapshot,
             snapshot_filename

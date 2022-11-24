@@ -8,7 +8,7 @@ from typing import cast, Dict, List, Optional, Tuple, overload
 from typing_extensions import Literal
 
 from ymmsl import (Identifier, Operator, SettingValue, Port, Reference,
-                   Settings)
+                   Settings, ImplementationState)
 
 from libmuscle.communicator import Communicator, Message
 from libmuscle.settings_manager import SettingsManager
@@ -34,7 +34,8 @@ class Instance:
     This class provides a low-level send/receive API for the instance
     to use.
     """
-    def __init__(self, ports: Optional[Dict[Operator, List[str]]] = None
+    def __init__(self, ports: Optional[Dict[Operator, List[str]]] = None,
+                 stateful: ImplementationState = ImplementationState.STATEFUL
                  ) -> None:
         """Create an Instance.
 
@@ -43,6 +44,14 @@ class Instance:
                 component.
         """
         self.__is_shut_down = False
+
+        if not isinstance(stateful, ImplementationState):
+            raise ValueError(
+                    f'Invalid value supplied for "stateful": {stateful}.'
+                    ' Expected one of ImplementationState.STATEFUL,'
+                    ' ImplementationState.STATELESS or ImplementationState.'
+                    'WEAKLY_STATEFUL.')
+        self._stateful = stateful
 
         # Note that these are accessed by Muscle3, but otherwise private.
         self._name, self._index = self.__make_full_name()
@@ -68,7 +77,8 @@ class Instance:
         """Settings for this instance."""
 
         self._snapshot_manager = SnapshotManager(
-                self._instance_name(), self.__manager, self._communicator)
+                self._instance_name(), self.__manager, self._communicator,
+                self._stateful)
         """Keeps track of checkpointing and snapshots"""
 
         self._first_run = True
@@ -144,7 +154,8 @@ class Instance:
             snapshot_path = Path(snapshot_dir)
         except KeyError:
             snapshot_path = None
-        self._snapshot_manager.reuse_instance(snapshot_path)
+        self._snapshot_manager.reuse_instance(
+                snapshot_path, do_reuse, self.__f_init_max_timestamp)
 
         if not do_reuse:
             self.__close_ports()
@@ -539,11 +550,8 @@ class Instance:
                     'You may not call should_save_final_snapshot more than once'
                     ' per reuse loop.')
         self._do_reuse = self.__check_reuse_instance(apply_overlay)
-        f_init_max_timestamp = max(
-                (msg.timestamp for msg in self._f_init_cache.values()),
-                default=None)
         return self._snapshot_manager.should_save_final_snapshot(
-                self._do_reuse, f_init_max_timestamp)
+                self._do_reuse, self.__f_init_max_timestamp)
 
     def save_final_snapshot(self, message: Message) -> None:
         """Save a snapshot before O_F.
@@ -566,11 +574,16 @@ class Instance:
                 attribute can be used to store the internal state of the
                 submodel.
         """
-        f_init_max_timestamp = max(
+        return self._snapshot_manager.save_final_snapshot(
+                message, self.__f_init_max_timestamp)
+
+    @property
+    def __f_init_max_timestamp(self) -> Optional[float]:
+        """Return max timestamp of pre-received F_INIT messages
+        """
+        return max(
                 (msg.timestamp for msg in self._f_init_cache.values()),
                 default=None)
-        return self._snapshot_manager.save_final_snapshot(
-                message, f_init_max_timestamp, self._do_reuse)
 
     def _register(self) -> None:
         """Register this instance with the manager.

@@ -1,9 +1,9 @@
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import cast, Optional
 
-from ymmsl import Checkpoints, Reference, Operator
+from ymmsl import Checkpoints, Reference, Operator, ImplementationState
 
 from libmuscle.checkpoint_triggers import TriggerManager
 from libmuscle.communicator import Communicator, Message
@@ -13,6 +13,11 @@ from libmuscle.snapshot import MsgPackSnapshot, Snapshot, SnapshotMetadata
 _logger = logging.getLogger(__name__)
 
 _MAX_FILE_EXISTS_CHECK = 10000
+
+# error text for save_snapshot when msg = None
+_NO_MESSAGE_PROVIDED = (
+        'Invalid message provided to `{}`. Please create a Message object to'
+        ' store the state of the instance in a snapshot.')
 
 
 class SnapshotManager:
@@ -25,7 +30,8 @@ class SnapshotManager:
     def __init__(self,
                  instance_id: Reference,
                  manager: MMPClient,
-                 communicator: Communicator) -> None:
+                 communicator: Communicator,
+                 stateful: ImplementationState) -> None:
         """Create a new snapshot manager
 
         Args:
@@ -39,6 +45,7 @@ class SnapshotManager:
         self._safe_id = str(instance_id).replace("[", "-").replace("]", "")
         self._communicator = communicator
         self._manager = manager
+        self._stateful = stateful
 
         self._first_reuse = True
         self._trigger_manager = TriggerManager()
@@ -66,19 +73,37 @@ class SnapshotManager:
         self._trigger_manager.set_checkpoint_info(utc_reference, checkpoints)
         if resume is not None:
             snapshot = self.load_snapshot_from_file(resume)
-            self._resume_from_snapshot = snapshot
+            if snapshot.message is not None:
+                # snapshot.message is None for implicit snapshots
+                self._resume_from_snapshot = snapshot
+                self._trigger_manager.update_checkpoints(
+                    snapshot.message.timestamp,
+                    snapshot.is_final_snapshot)
             self._communicator.restore_message_counts(
                 snapshot.port_message_counts)
-            self._trigger_manager.update_checkpoints(
-                snapshot.message.timestamp,
-                snapshot.is_final_snapshot)
 
-    def reuse_instance(self, snapshot_directory: Optional[Path]) -> None:
+    def reuse_instance(self, snapshot_directory: Optional[Path],
+                       do_reuse: bool, f_init_max_timestamp: Optional[float]
+                       ) -> None:
         """Callback on Instance.reuse_instance
 
         Args:
             snapshot_directory: Path to store this instance's snapshots in.
+            do_reuse: Used for implicit snapshots of stateless instances. See
+                :meth:`should_save_final_snapshot`.
+            f_init_max_timestamp: Used for implicit snapshots of stateless
+                instances. See :meth:`should_save_final_snapshot`.
         """
+        # Implicit snapshots for stateless / weakly stateful instances
+        # Only create implicit snapshot if not already explicitly done
+        # And not in the first reuse_instance()
+        if (self._stateful is not ImplementationState.STATEFUL and
+                not self._trigger_manager.save_final_snapshot_called and
+                not self._first_reuse):
+            if self.should_save_final_snapshot(do_reuse, f_init_max_timestamp):
+                # create an empty message object to store
+                self.__save_snapshot(None, True, f_init_max_timestamp)
+
         self._trigger_manager.reuse_instance()
 
         self._snapshot_directory = snapshot_directory
@@ -110,22 +135,22 @@ class SnapshotManager:
                 self._resume_from_snapshot.is_final_snapshot)
 
     def load_snapshot(self) -> Message:
-        """Get the Message to resume from
+        """Get the Message to resume from.
         """
         if self._resume_from_snapshot is None:
             raise RuntimeError('No snapshot to load. Use "instance.resuming()"'
                                ' to check if a snapshot is available')
-        return self._resume_from_snapshot.message
+        return cast(Message, self._resume_from_snapshot.message)
 
     def should_save_snapshot(self, timestamp: float) -> bool:
-        """See :meth:`TriggerManager.should_save_snapshot`
+        """See :meth:`TriggerManager.should_save_snapshot`.
         """
         return self._trigger_manager.should_save_snapshot(timestamp)
 
     def should_save_final_snapshot(
             self, do_reuse: bool, f_init_max_timestamp: Optional[float]
             ) -> bool:
-        """See :meth:`TriggerManager.should_save_final_snapshot`
+        """See :meth:`TriggerManager.should_save_final_snapshot`.
         """
         return self._trigger_manager.should_save_final_snapshot(
                 do_reuse, f_init_max_timestamp)
@@ -133,25 +158,27 @@ class SnapshotManager:
     def save_snapshot(self, msg: Message) -> None:
         """Save snapshot contained in the message object.
         """
+        if not isinstance(msg, Message):
+            raise ValueError(_NO_MESSAGE_PROVIDED.format('save_snapshot'))
         self.__save_snapshot(msg, False)
 
     def save_final_snapshot(
-            self, msg: Message, f_init_max_timestamp: Optional[float],
-            do_reuse: Optional[bool]) -> None:
-        """Save final snapshot contained in the message object
+            self, msg: Message, f_init_max_timestamp: Optional[float]) -> None:
+        """Save final snapshot contained in the message object.
         """
-        self.__save_snapshot(msg, True, f_init_max_timestamp, do_reuse)
+        if not isinstance(msg, Message):
+            raise ValueError(_NO_MESSAGE_PROVIDED.format('save_final_snapshot'))
+        self.__save_snapshot(msg, True, f_init_max_timestamp)
 
     def __save_snapshot(
-            self, msg: Message, final: bool,
-            f_init_max_timestamp: Optional[float] = None,
-            do_reuse: Optional[bool] = None
+            self, msg: Optional[Message], final: bool,
+            f_init_max_timestamp: Optional[float] = None
             ) -> None:
         """Actual implementation used by save_(final_)snapshot.
 
         Args:
-            msg: message object representing the snapshot
-            final: True iff called from save_final_snapshot
+            msg: Message object representing the snapshot.
+            final: True iff called from save_final_snapshot.
         """
         triggers = self._trigger_manager.get_triggers()
         wallclock_time = self._trigger_manager.elapsed_walltime()
@@ -176,10 +203,10 @@ class SnapshotManager:
         metadata = SnapshotMetadata.from_snapshot(snapshot, str(path))
         self._manager.submit_snapshot_metadata(self._instance_id, metadata)
 
-        timestamp = msg.timestamp
+        timestamp = msg.timestamp if msg is not None else -1.0
         if final and f_init_max_timestamp is not None:
             # For final snapshots f_init_max_snapshot is the reference time (see
-            # should_save_Final_snapshot).
+            # should_save_final_snapshot).
             timestamp = f_init_max_timestamp
         self._trigger_manager.update_checkpoints(timestamp, final)
 
@@ -190,6 +217,7 @@ class SnapshotManager:
         Args:
             snapshot_location: path where the snapshot is stored
         """
+        _logger.debug(f'Loading snapshot from {snapshot_location}')
         if not snapshot_location.is_file():
             raise RuntimeError(f'Unable to load snapshot: {snapshot_location}'
                                ' is not a file. Please ensure this path exists'
@@ -206,7 +234,7 @@ class SnapshotManager:
                                f' {snapshot_location}: unknown version of'
                                ' snapshot file. Was the file saved with a'
                                ' different version of libmuscle or'
-                               ' tampered with?')
+                               ' edited?')
 
     def __store_snapshot(self, snapshot: Snapshot) -> Path:
         """Store a snapshot on the filesystem
@@ -217,6 +245,7 @@ class SnapshotManager:
         Returns:
             Path where the snapshot is stored
         """
+        _logger.debug(f'Saving snapshot to {self._snapshot_directory}')
         if self._snapshot_directory is None:
             raise RuntimeError('Unknown snapshot directory. Did you try to'
                                ' save a snapshot before entering the reuse'

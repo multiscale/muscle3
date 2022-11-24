@@ -61,3 +61,15 @@ def test_message_with_settings() -> None:
 
     snapshot2 = MsgPackSnapshot.from_bytes(binary_snapshot)
     assert snapshot2.message.settings.get('setting') is True
+
+
+def test_implicit_snapshot() -> None:
+    message = None
+    snapshot = MsgPackSnapshot([], 0, {}, True, message)
+    assert snapshot.message is None
+
+    binary_snapshot = snapshot.to_bytes()
+    assert isinstance(binary_snapshot, bytes)
+
+    snapshot2 = MsgPackSnapshot.from_bytes(binary_snapshot)
+    assert snapshot2.message is None

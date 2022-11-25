@@ -24,6 +24,9 @@ _ConnectionType = Tuple[Identifier, Identifier, "_ConnectionInfo"]
 _QueueItemType = Optional[Tuple[Reference, SnapshotMetadata]]
 _T = TypeVar("_T")
 
+# this snapshot is used as a placeholder for restarting from scratch
+_NULL_SNAPSHOT = SnapshotMetadata(["Instance start"], 0, 0, None, {}, True, '')
+
 
 def safe_get(lst: List[_T], index: int, default: _T) -> _T:
     """Get an item from the list, returning default when it does not exist.
@@ -45,40 +48,48 @@ class _ConnectionInfo(Flag):
     PEER_IS_VECTOR = auto()
 
 
-def calc_consistency(num1: int, num2: int, first_is_sent: bool) -> bool:
+def calc_consistency(
+        num1: int, num2: int, first_is_sent: bool, num2_is_restart: bool
+        ) -> bool:
     """Calculate consistency of message counts.
 
     Args:
         num1: message count of instance 1
         num2: message count of instance 2
         first_is_sent: True iff instance 1 is sending messages over this conduit
+        num2_is_restart: True iff the snapshot of num2 is a full restart
 
     Returns:
         True iff the two message counts are consistent
     """
     return (num1 == num2 or                             # strong
             num1 + 1 == num2 and first_is_sent or       # weak (1 = sent)
-            num2 + 1 == num1 and not first_is_sent)     # weak (2 = sent)
+            # weak (2 = sent) - only allow if num2 is not a restart
+            num2 + 1 == num1 and not first_is_sent and not num2_is_restart)
 
 
 def calc_consistency_list(
-        num1: List[int], num2: List[int], first_is_sent: bool) -> bool:
+        num1: List[int], num2: List[int], first_is_sent: bool,
+        num2_is_restart: bool) -> bool:
     """Calculate consistency of message counts.
 
     Args:
         num1: message count of instance 1
         num2: message count of instance 2
         first_is_sent: True iff instance 1 is sending messages over this conduit
+        num2_is_restart: True iff the snapshot of num2 is a full restart
 
     Returns:
         True iff the two message counts are consistent
     """
     if first_is_sent:
+        allow_weak = True
         slot_iter = zip_longest(num1, num2, fillvalue=0)
     else:
+        allow_weak = not num2_is_restart
         slot_iter = zip_longest(num2, num1, fillvalue=0)
-    return all(slot_sent == slot_received or        # strong
-               slot_sent + 1 == slot_received       # weak
+    return all(slot_sent == slot_received or                    # strong
+               slot_sent + 1 == slot_received and allow_weak    # weak
                for slot_sent, slot_received in slot_iter)
 
 
@@ -129,6 +140,7 @@ class SnapshotNode:
         """
         i_snapshot = self.snapshot
         p_snapshot = peer_node.snapshot
+        peer_is_restart = p_snapshot is _NULL_SNAPSHOT
         for connection in connections:
             i_port, p_port, conn = connection
             is_sending = bool(conn & _ConnectionInfo.SELF_IS_SENDING)
@@ -139,16 +151,16 @@ class SnapshotNode:
                 consistent = calc_consistency(
                         safe_get(i_msg_counts, slot, 0),
                         safe_get(p_msg_counts, 0, 0),
-                        is_sending)
+                        is_sending, peer_is_restart)
             elif conn & _ConnectionInfo.PEER_IS_VECTOR:
                 slot = int(self.instance[-1])
                 consistent = calc_consistency(
                         safe_get(i_msg_counts, 0, 0),
                         safe_get(p_msg_counts, slot, 0),
-                        is_sending)
+                        is_sending, peer_is_restart)
             else:
                 consistent = calc_consistency_list(
-                        i_msg_counts, p_msg_counts, is_sending)
+                        i_msg_counts, p_msg_counts, is_sending, peer_is_restart)
             if not consistent:  # not consistent
                 return False
         self.consistent_peers.setdefault(
@@ -196,10 +208,8 @@ class SnapshotRegistry(Thread):
             self._instances.update(component.instances())
 
         # Create snapshot nodes for starting from scratch
-        self._null_snapshot = SnapshotMetadata(
-                ["Instance start"], 0, 0, None, {}, True, '')
         for instance in self._instances:
-            self.register_snapshot(instance, self._null_snapshot)
+            self.register_snapshot(instance, _NULL_SNAPSHOT)
 
     def register_snapshot(
             self, instance: Reference, snapshot: SnapshotMetadata) -> None:
@@ -248,7 +258,7 @@ class SnapshotRegistry(Thread):
                         peer_snapshot, self._get_connections(instance, peer))
 
         # finally, check if this snapshotnode is now part of a workflow snapshot
-        if snapshot is not self._null_snapshot:
+        if snapshot is not _NULL_SNAPSHOT:
             self._save_workflow_snapshot(snapshotnode)
 
     def _save_workflow_snapshot(self, snapshotnode: SnapshotNode) -> None:
@@ -408,7 +418,7 @@ class SnapshotRegistry(Thread):
         selected_snapshots.sort(key=attrgetter('instance'))
         resume = {}
         for node in selected_snapshots:
-            if node.snapshot is not self._null_snapshot:
+            if node.snapshot is not _NULL_SNAPSHOT:
                 # Only store resume information when it is an actual snapshot
                 # created by the instance. Otherwise the instance can just be
                 # restarted from the beginning.

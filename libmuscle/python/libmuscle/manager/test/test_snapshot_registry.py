@@ -8,8 +8,8 @@ from ymmsl import (
         ImplementationState as IState, Reference)
 
 from libmuscle.manager.snapshot_registry import (
-    SnapshotNode, SnapshotRegistry, calc_consistency, calc_consistency_list, safe_get,
-    _ConnectionInfo)
+    SnapshotNode, SnapshotRegistry, calc_consistency, calc_consistency_list,
+    safe_get, _ConnectionInfo)
 from libmuscle.manager.topology_store import TopologyStore
 from libmuscle.snapshot import SnapshotMetadata
 
@@ -78,26 +78,39 @@ def test_safe_get() -> None:
 def test_calc_consistency() -> None:
     num_sent = 3
     for num_received in [2, 3, 4, 5]:
-        consistent = num_received in [3, 4]
-        assert calc_consistency(num_sent, num_received, True) is consistent
-        assert calc_consistency(num_received, num_sent, False) is consistent
+        expect = num_received in [3, 4]
+        assert calc_consistency(num_sent, num_received, True, False) is expect
+        assert calc_consistency(num_received, num_sent, False, False) is expect
 
     num_received = 10
     for num_sent in [8, 9, 10, 11]:
-        consistent = num_sent in [9, 10]
-        assert calc_consistency(num_sent, num_received, True) is consistent
-        assert calc_consistency(num_received, num_sent, False) is consistent
+        expect = num_sent in [9, 10]
+        assert calc_consistency(num_sent, num_received, True, False) is expect
+        assert calc_consistency(num_received, num_sent, False, False) is expect
+
+
+def test_calc_consistency_with_restart() -> None:
+    # Check normal rules
+    assert calc_consistency(0, 0, True, True)
+    assert calc_consistency(0, 0, False, True)
+    assert not calc_consistency(1, 0, True, True)
+    assert not calc_consistency(1, 0, True, False)
+    assert calc_consistency(1, 0, False, False)
+    # Different: num2 == 0 comes from the restarted actor, we do not want a
+    # resume file to be created in this instance (because an instance further in
+    # the call chain is ahead of the one that would be restarted):
+    assert not calc_consistency(1, 0, False, True)
 
 
 def test_calc_consistency_list() -> None:
     num_sent = [3, 3]
     for num_received in [[2, 3], [3, 2], [3, 5], [], [4, 4, 0, 0, 2]]:
-        assert not calc_consistency_list(num_sent, num_received, True)
-        assert not calc_consistency_list(num_received, num_sent, False)
+        assert not calc_consistency_list(num_sent, num_received, True, False)
+        assert not calc_consistency_list(num_received, num_sent, False, False)
     for num_received in [[3, 3], [3, 4], [4, 3], [4, 4],
                          [3, 3, 1], [4, 4, 0, 0, 0, 1, 0, 1]]:
-        assert calc_consistency_list(num_sent, num_received, True)
-        assert calc_consistency_list(num_received, num_sent, False)
+        assert calc_consistency_list(num_sent, num_received, True, False)
+        assert calc_consistency_list(num_received, num_sent, False, False)
 
 
 def test_write_ymmsl(tmp_path: Path):

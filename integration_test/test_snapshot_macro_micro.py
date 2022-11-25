@@ -145,6 +145,17 @@ def stateless_micro():
         instance.send('o_f', Message(t_cur, None, i))
 
 
+def data_transformer():
+    instance = Instance({
+            Operator.F_INIT: ['f_i'],
+            Operator.O_F: ['o_f']},
+            stateful=ImplementationState.STATELESS)
+
+    while instance.reuse_instance():
+        msg = instance.receive('f_i')
+        instance.send('o_f', msg)
+
+
 @pytest.fixture
 def base_config():
     return load(f"""ymmsl_version: v0.1
@@ -169,11 +180,27 @@ checkpoints:
   - every: 0.4""")
 
 
+@pytest.fixture
+def config_with_transformer(base_config):
+    base_config.update(load("""ymmsl_version: v0.1
+model:
+  name: test_snapshot
+  components:
+    transformer1: transformer
+    transformer2: transformer
+  conduits:
+    macro.o_i: transformer1.f_i
+    transformer1.o_f: micro.f_i
+    micro.o_f: transformer2.f_i
+    transformer2.o_f: macro.s"""))
+    return base_config
+
+
 def test_snapshot_macro_micro(tmp_path, base_config):
+    actors = {'macro': macro, 'micro': micro}
     run_dir1 = RunDir(tmp_path / 'run1')
     run_manager_with_actors(
-            dump(base_config), run_dir1.path,
-            python_actors={'macro': macro, 'micro': micro})
+            dump(base_config), run_dir1.path, python_actors=actors)
 
     # Note: sorted only works because we have fewer than 10 snapshots, otherwise
     # _10 would be sorted right after _1
@@ -183,22 +210,20 @@ def test_snapshot_macro_micro(tmp_path, base_config):
     assert len(micro_snapshots) == 6  # 0, 0.4, 0.8, 1.2, 1.6, final
     snapshots_ymmsl = sorted(run_dir1.snapshot_dir().glob('snapshot_*.ymmsl'))
     snapshot_docs = list(map(load, snapshots_ymmsl))
-    assert 'macro' not in snapshot_docs[0].resume
+    assert len(snapshot_docs) == 7
+    assert snapshot_docs[0].resume['macro'] == macro_snapshots[0]
     assert snapshot_docs[0].resume['micro'] == micro_snapshots[0]
     assert snapshot_docs[1].resume['macro'] == macro_snapshots[0]
-    assert snapshot_docs[1].resume['micro'] == micro_snapshots[0]
-    assert snapshot_docs[2].resume['macro'] == macro_snapshots[0]
-    assert snapshot_docs[2].resume['micro'] == micro_snapshots[1]
-    for i in range(3, 8):
-        assert snapshot_docs[i].resume['macro'] == macro_snapshots[i - 2]
-        assert snapshot_docs[i].resume['micro'] == micro_snapshots[i - 2]
+    assert snapshot_docs[1].resume['micro'] == micro_snapshots[1]
+    for i in range(2, 7):
+        assert snapshot_docs[i].resume['macro'] == macro_snapshots[i - 1]
+        assert snapshot_docs[i].resume['micro'] == micro_snapshots[i - 1]
 
     # resume from the snapshots taken at t>=1.2
     run_dir2 = RunDir(tmp_path / 'run2')
-    base_config.update(snapshot_docs[5])  # add resume info
+    base_config.update(snapshot_docs[4])  # add resume info
     run_manager_with_actors(
-            dump(base_config), run_dir2.path,
-            python_actors={'macro': macro, 'micro': micro})
+            dump(base_config), run_dir2.path, python_actors=actors)
 
     macro_snapshots = sorted(run_dir2.snapshot_dir().glob('macro*'))
     assert len(macro_snapshots) == 2  # 1.6, final
@@ -213,15 +238,14 @@ def test_snapshot_macro_micro(tmp_path, base_config):
     base_config.update(snapshot_docs[0])        # add resume info
     base_config.settings['macro.t_max'] = 0.6   # run shorter
     run_manager_with_actors(
-            dump(base_config), run_dir3.path,
-            python_actors={'macro': macro, 'micro': micro})
+            dump(base_config), run_dir3.path, python_actors=actors)
 
 
 def test_snapshot_macro_stateless_micro(tmp_path, base_config):
+    actors = {'macro': macro, 'micro': stateless_micro}
     run_dir1 = RunDir(tmp_path / 'run1')
     run_manager_with_actors(
-            dump(base_config), run_dir1.path,
-            python_actors={'macro': macro, 'micro': stateless_micro})
+            dump(base_config), run_dir1.path, python_actors=actors)
 
     # Note: sorted only works because we have fewer than 10 snapshots, otherwise
     # _10 would be sorted right after _1
@@ -237,8 +261,7 @@ def test_snapshot_macro_stateless_micro(tmp_path, base_config):
     run_dir2 = RunDir(tmp_path / 'run2')
     base_config.update(snapshot_docs[3])  # add resume info
     run_manager_with_actors(
-            dump(base_config), run_dir2.path,
-            python_actors={'macro': macro, 'micro': stateless_micro})
+            dump(base_config), run_dir2.path, python_actors=actors)
 
     macro_snapshots = sorted(run_dir2.snapshot_dir().glob('macro*'))
     assert len(macro_snapshots) == 2  # 1.6, final
@@ -250,28 +273,23 @@ def test_snapshot_macro_stateless_micro(tmp_path, base_config):
 
 def test_snapshot_macro_vector_micro(tmp_path, base_config):
     base_config.model.components[1].multiplicity = [2]
+    actors = {'macro': macro_vector, 'micro[0]': micro, 'micro[1]': micro}
 
     run_dir1 = RunDir(tmp_path / 'run1')
     run_manager_with_actors(
-            dump(base_config), run_dir1.path,
-            python_actors={'macro': macro_vector,
-                           'micro[0]': micro,
-                           'micro[1]': micro})
+            dump(base_config), run_dir1.path, python_actors=actors)
 
     macro_snapshots = sorted(run_dir1.snapshot_dir().glob('macro*'))
     assert len(macro_snapshots) == 6  # 0, 0.4, 0.8, 1.2, 1.6, final
     micro_snapshots = sorted(run_dir1.snapshot_dir().glob('micro*'))
     assert len(micro_snapshots) == 6 * 2  # 0, 0.4, 0.8, 1.2, 1.6, final
     snapshots_ymmsl = sorted(run_dir1.snapshot_dir().glob('snapshot_*.ymmsl'))
-    assert len(snapshots_ymmsl) == 10
+    assert len(snapshots_ymmsl) == 8
 
     run_dir2 = RunDir(tmp_path / 'run2')
     base_config.update(load(snapshots_ymmsl[-3]))  # add resume info
     run_manager_with_actors(
-            dump(base_config), run_dir2.path,
-            python_actors={'macro': macro_vector,
-                           'micro[0]': micro,
-                           'micro[1]': micro})
+            dump(base_config), run_dir2.path, python_actors=actors)
 
     macro_snapshots = sorted(run_dir2.snapshot_dir().glob('macro*'))
     assert len(macro_snapshots) == 2  # 1.6, final
@@ -279,3 +297,24 @@ def test_snapshot_macro_vector_micro(tmp_path, base_config):
     assert len(micro_snapshots) == 2 * 2  # 1.6, final
     snapshots_ymmsl = sorted(run_dir2.snapshot_dir().glob('snapshot_*.ymmsl'))
     assert len(snapshots_ymmsl) == 2
+
+
+def test_snapshot_macro_transformer_micro(tmp_path, config_with_transformer):
+    actors = {'macro': macro, 'micro': micro, 'transformer1': data_transformer,
+              'transformer2': data_transformer}
+
+    run_dir1 = RunDir(tmp_path / 'run1')
+    run_manager_with_actors(
+            dump(config_with_transformer), run_dir1.path, python_actors=actors)
+
+    snapshots_ymmsl = sorted(run_dir1.snapshot_dir().glob('snapshot_*.ymmsl'))
+    assert len(snapshots_ymmsl) == 8
+
+    # pick one to resume from
+    run_dir2 = RunDir(tmp_path / 'run2')
+    config_with_transformer.update(load(snapshots_ymmsl[4]))  # add resume info
+    run_manager_with_actors(
+            dump(config_with_transformer), run_dir2.path, python_actors=actors)
+
+    snapshots_ymmsl = sorted(run_dir2.snapshot_dir().glob('snapshot_*.ymmsl'))
+    assert len(snapshots_ymmsl) == 3

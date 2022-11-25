@@ -43,6 +43,10 @@ class TcpTransportClient(TransportClient):
             raise RuntimeError('Could not connect to the server at location'
                                ' {}'.format(location))
         else:
+            if hasattr(socket, "TCP_NODELAY"):
+                sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
+            if hasattr(socket, "TCP_QUICKACK"):
+                sock.setsockopt(socket.SOL_TCP, socket.TCP_QUICKACK, 1)
             self._socket = sock
 
     def call(self, request: bytes) -> bytes:

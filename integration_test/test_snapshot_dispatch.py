@@ -96,7 +96,6 @@ checkpoints:
 
 def test_snapshot_dispatch(tmp_path, dispatch_config):
     actors = {f'comp{i + 1}': component for i in range(5)}
-    (tmp_path / 'run1').mkdir()
     run_dir1 = RunDir(tmp_path / 'run1')
     run_manager_with_actors(
             dump(dispatch_config), run_dir1.path, python_actors=actors)
@@ -109,19 +108,15 @@ def test_snapshot_dispatch(tmp_path, dispatch_config):
 
     snapshots_ymmsl = ls_snapshots(run_dir1)
     snapshot_docs = list(map(load, snapshots_ymmsl))
+    # More ymmsl restarts files may be possible, depending on the sequence of
+    # incoming SnapshotMetadata...
     assert len(snapshot_docs) == 16
 
     # resume from the snapshots taken at t>=2.3
-    (tmp_path / 'run2').mkdir()
     run_dir2 = RunDir(tmp_path / 'run2')
-    dispatch_config.update(snapshot_docs[3])  # add resume info
-    # validate resume info
-    resume = snapshot_docs[3].resume
-    assert resume['comp1'] == ls_snapshots(run_dir1, 'comp1')[1]
-    assert resume['comp2'] == ls_snapshots(run_dir1, 'comp2')[1]
-    assert 'comp3' not in resume
-    assert 'comp4' not in resume
-    assert 'comp5' not in resume
+    dispatch_config.resume = {
+        'comp1': ls_snapshots(run_dir1, 'comp1')[1],
+        'comp2': ls_snapshots(run_dir1, 'comp2')[1]}
 
     run_manager_with_actors(
             dump(dispatch_config), run_dir2.path, python_actors=actors)

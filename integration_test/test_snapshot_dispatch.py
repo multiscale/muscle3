@@ -108,7 +108,9 @@ def test_snapshot_dispatch(tmp_path, dispatch_config):
 
     snapshots_ymmsl = ls_snapshots(run_dir1)
     snapshot_docs = list(map(load, snapshots_ymmsl))
-    assert len(snapshot_docs) == 16
+    # More ymmsl restarts files may be possible, depending on the sequence of
+    # incoming SnapshotMetadata...
+    assert len(snapshot_docs) >= 16
 
     # resume from the snapshots taken at t>=2.3
     run_dir2 = RunDir(tmp_path / 'run2')
@@ -121,4 +123,6 @@ def test_snapshot_dispatch(tmp_path, dispatch_config):
     assert len(ls_snapshots(run_dir2, 'comp3')) == 3  # t=2.5, 5, at_end
     assert len(ls_snapshots(run_dir2, 'comp4')) == 3  # t=5, 7.5, at_end
     assert len(ls_snapshots(run_dir2, 'comp5')) == 3  # t=7.5, 10, at_end
-    assert len(ls_snapshots(run_dir2)) == 13
+    # More ymmsl restarts files may be possible, depending on the sequence of
+    # incoming SnapshotMetadata...
+    assert len(ls_snapshots(run_dir2)) >= 13

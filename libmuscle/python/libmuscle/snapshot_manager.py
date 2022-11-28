@@ -82,6 +82,10 @@ class SnapshotManager:
                     snapshot.is_final_snapshot)
             self._communicator.restore_message_counts(
                 snapshot.port_message_counts)
+            # Store a copy of the snapshot in the current run directory
+            path = self.__store_snapshot(snapshot)
+            metadata = SnapshotMetadata.from_snapshot(snapshot, str(path))
+            self._manager.submit_snapshot_metadata(self._instance_id, metadata)
 
     def reuse_instance(self,
                        do_reuse: bool, f_init_max_timestamp: Optional[float]
@@ -202,7 +206,7 @@ class SnapshotManager:
         metadata = SnapshotMetadata.from_snapshot(snapshot, str(path))
         self._manager.submit_snapshot_metadata(self._instance_id, metadata)
 
-        timestamp = msg.timestamp if msg is not None else -1.0
+        timestamp = msg.timestamp if msg is not None else float('-inf')
         if final and f_init_max_timestamp is not None:
             # For final snapshots f_init_max_snapshot is the reference time (see
             # should_save_final_snapshot).

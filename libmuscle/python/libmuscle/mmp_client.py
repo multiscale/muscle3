@@ -56,7 +56,7 @@ def encode_profile_event(event: ProfileEvent) -> Any:
 
 def decode_checkpoint_rule(rule: Dict[str, Any]) -> CheckpointRule:
     """Decode a checkpoint rule from a MsgPack-compatible value."""
-    if rule.keys() == {'in'}:
+    if rule.keys() == {'at'}:
         return CheckpointAtRule(**rule)
     if rule.keys() == {'start', 'stop', 'every'}:
         return CheckpointRangeRule(**rule)

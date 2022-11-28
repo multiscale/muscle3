@@ -297,8 +297,8 @@ class TriggerManager:
                 _checkpoint_error('You must call "should_save_final" exactly'
                                   ' once in the reuse loop of an instance that'
                                   ' supports checkpointing.')
-            self._should_save_final_called = False
-            self._saved_final_checkpoint = False
+        self._should_save_final_called = False
+        self._saved_final_checkpoint = False
 
     def update_checkpoints(self, timestamp: float, final: bool) -> None:
         """Update last and next checkpoint times when a snapshot is made.

@@ -106,7 +106,7 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
     assert metadata.is_final_snapshot
     snapshot_path = Path(metadata.snapshot_filename)
     assert snapshot_path.parent == tmp_path
-    assert snapshot_path.name == 'test-1_2.pack'
+    assert snapshot_path.name == 'test-1_3.pack'
 
     assert snapshot_manager2.resuming()
     snapshot_manager2.reuse_instance(True, None)
@@ -143,6 +143,8 @@ def test_save_load_implicit_snapshot(tmp_path: Path) -> None:
     snapshot_manager2._set_checkpoint_info(
             datetime.now(timezone.utc), checkpoints, snapshot_path, tmp_path)
     communicator.restore_message_counts.assert_called_with(port_message_counts)
+    manager.submit_snapshot_metadata.assert_called_once()
+    manager.submit_snapshot_metadata.reset_mock()
 
     assert not snapshot_manager2.resuming()
     snapshot_manager2.reuse_instance(True, 1.5)

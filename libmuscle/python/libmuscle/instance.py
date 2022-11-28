@@ -670,6 +670,8 @@ class Instance:
         # receive something that was sent on the last go-around.
         # At least emit a warning.
         if self.should_init() or not self._first_run:
+            # self.should_init() might be False in first should_save_final(),
+            # but self._first_run is already updated by then
             self.__pre_receive_f_init(apply_overlay)
 
         self._set_local_log_level()
@@ -682,7 +684,8 @@ class Instance:
         no_settings_in = not self._communicator.settings_in_connected()
 
         if f_init_not_connected and no_settings_in:
-            do_reuse = self._first_run
+            do_reuse = self._first_run and (not self.resuming() or
+                                            not self.should_init())
         else:
             for message in self._f_init_cache.values():
                 if isinstance(message.data, ClosePort):

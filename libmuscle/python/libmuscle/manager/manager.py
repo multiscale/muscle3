@@ -57,11 +57,6 @@ class Manager:
                     self._configuration,
                     self._run_dir.path / 'configuration.ymmsl')
 
-        # TODO: decide if this should be a setting or part of checkpoint_info
-        # TODO: separate folder per intance
-        self._configuration.settings.setdefault(
-                'muscle_snapshot_directory', str(snapshot_dir))
-
         self._instance_manager = None    # type: Optional[InstanceManager]
         try:
             configuration = self._configuration.as_configuration()
@@ -80,7 +75,7 @@ class Manager:
         self._server = MMPServer(
                 self._logger, self._configuration,
                 self._instance_registry, self._topology_store,
-                self._snapshot_registry)
+                self._snapshot_registry, run_dir)
 
         if self._instance_manager:
             self._instance_manager.set_manager_location(

@@ -22,10 +22,10 @@ def test_no_checkpointing(caplog: pytest.LogCaptureFixture, tmp_path: Path
             ImplementationState.STATEFUL)
 
     snapshot_manager._set_checkpoint_info(
-            datetime.now(timezone.utc), Checkpoints(), None)
+            datetime.now(timezone.utc), Checkpoints(), None, tmp_path)
 
     assert not snapshot_manager.resuming()
-    snapshot_manager.reuse_instance(tmp_path, True, None)
+    snapshot_manager.reuse_instance(True, None)
     assert not snapshot_manager.resuming()
     assert not snapshot_manager.should_save_snapshot(1)
     assert not snapshot_manager.should_save_snapshot(5000)
@@ -49,10 +49,10 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
 
     checkpoints = Checkpoints(simulation_time=[CheckpointRangeRule(every=1)])
     snapshot_manager._set_checkpoint_info(
-            datetime.now(timezone.utc), checkpoints, None)
+            datetime.now(timezone.utc), checkpoints, None, tmp_path)
 
     assert not snapshot_manager.resuming()
-    snapshot_manager.reuse_instance(tmp_path, True, None)
+    snapshot_manager.reuse_instance(True, None)
     with pytest.raises(RuntimeError):
         snapshot_manager.load_snapshot()
 
@@ -79,11 +79,11 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
             instance_id, manager, communicator, ImplementationState.STATEFUL)
 
     snapshot_manager2._set_checkpoint_info(
-            datetime.now(timezone.utc), checkpoints, snapshot_path)
+            datetime.now(timezone.utc), checkpoints, snapshot_path, tmp_path)
     communicator.restore_message_counts.assert_called_with(port_message_counts)
 
     assert snapshot_manager2.resuming()
-    snapshot_manager2.reuse_instance(tmp_path, True, None)
+    snapshot_manager2.reuse_instance(True, None)
     assert snapshot_manager2.resuming()
     msg = snapshot_manager2.load_snapshot()
     assert msg.timestamp == 0.2
@@ -109,7 +109,7 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
     assert snapshot_path.name == 'test-1_2.pack'
 
     assert snapshot_manager2.resuming()
-    snapshot_manager2.reuse_instance(tmp_path, True, None)
+    snapshot_manager2.reuse_instance(True, None)
     assert not snapshot_manager2.resuming()
 
 
@@ -125,11 +125,11 @@ def test_save_load_implicit_snapshot(tmp_path: Path) -> None:
 
     checkpoints = Checkpoints(simulation_time=[CheckpointRangeRule(every=1)])
     snapshot_manager._set_checkpoint_info(
-            datetime.now(timezone.utc), checkpoints, None)
+            datetime.now(timezone.utc), checkpoints, None, tmp_path)
 
     assert not snapshot_manager.resuming()
-    snapshot_manager.reuse_instance(tmp_path, True, None)
-    snapshot_manager.reuse_instance(tmp_path, True, 1.5)
+    snapshot_manager.reuse_instance(True, None)
+    snapshot_manager.reuse_instance(True, 1.5)
     manager.submit_snapshot_metadata.assert_called_once()
     instance, metadata = manager.submit_snapshot_metadata.call_args[0]
     assert instance == instance_id
@@ -141,11 +141,11 @@ def test_save_load_implicit_snapshot(tmp_path: Path) -> None:
             instance_id, manager, communicator, ImplementationState.STATELESS)
 
     snapshot_manager2._set_checkpoint_info(
-            datetime.now(timezone.utc), checkpoints, snapshot_path)
+            datetime.now(timezone.utc), checkpoints, snapshot_path, tmp_path)
     communicator.restore_message_counts.assert_called_with(port_message_counts)
 
     assert not snapshot_manager2.resuming()
-    snapshot_manager2.reuse_instance(tmp_path, True, 1.5)
+    snapshot_manager2.reuse_instance(True, 1.5)
     assert not snapshot_manager2.resuming()
-    snapshot_manager2.reuse_instance(tmp_path, True, 2.5)
+    snapshot_manager2.reuse_instance(True, 2.5)
     manager.submit_snapshot_metadata.assert_called_once()

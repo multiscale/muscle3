@@ -75,5 +75,5 @@ class RunDir:
             path = self.path / 'snapshots'
         else:
             path = self.instance_dir(name) / 'snapshots'
-        path.mkdir(exist_ok=True)
+        path.mkdir(parents=True, exist_ok=True)
         return path

@@ -22,6 +22,9 @@ PEER_TIMEOUT = 600
 PEER_INTERVAL_MIN = 5.0
 PEER_INTERVAL_MAX = 10.0
 
+_CheckpointInfoType = Tuple[
+        datetime, Checkpoints, Optional[Path], Optional[Path]]
+
 
 def encode_operator(op: Operator) -> str:
     """Convert an Operator to a MsgPack-compatible value."""
@@ -63,8 +66,9 @@ def decode_checkpoint_rule(rule: Dict[str, Any]) -> CheckpointRule:
 def decode_checkpoint_info(
         reference_timestamp: float,
         checkpoints_dict: Dict[str, Any],
-        resume: Optional[str]
-        ) -> Tuple[datetime, Checkpoints, Optional[Path]]:
+        resume: Optional[str],
+        snapshot_dir: Optional[str]
+        ) -> _CheckpointInfoType:
     """Decode checkpoint info from a MsgPack-compatible value.
 
     Args:
@@ -72,11 +76,13 @@ def decode_checkpoint_info(
             wallclock_time = 0
         checkpoints_dict: dictionary of checkpoint definitions
         resume: optional string indicating resume path
+        snapshot_dir: optional string indicating path to store snapshots in
 
     Returns:
         wallclock_time_reference: UTC time where wallclock_time = 0
         checkpoints: checkpoint configuration
         resume: path to the resume snapshot
+        snapshot_dir: optional path to store snapshots in
     """
     ref_time = datetime.fromtimestamp(reference_timestamp, tz=timezone.utc)
     checkpoints = Checkpoints(
@@ -86,7 +92,8 @@ def decode_checkpoint_info(
             simulation_time=[decode_checkpoint_rule(rule)
                              for rule in checkpoints_dict["simulation_time"]])
     resume_path = None if resume is None else Path(resume)
-    return (ref_time, checkpoints, resume_path)
+    snapshot_path = None if snapshot_dir is None else Path(snapshot_dir)
+    return (ref_time, checkpoints, resume_path, snapshot_path)
 
 
 class MMPClient():
@@ -162,14 +169,14 @@ class MMPClient():
         response = self._call_manager(request)
         return Settings(response[1])
 
-    def get_checkpoint_info(self, name: Reference
-                            ) -> Tuple[datetime, Checkpoints, Optional[Path]]:
+    def get_checkpoint_info(self, name: Reference) -> _CheckpointInfoType:
         """Get the checkpoint info from the manager.
 
         Returns:
             wallclock_time_reference: UTC time where wallclock_time = 0
             checkpoints: checkpoint configuration
             resume: path to the resume snapshot
+            snapshot_directory: path to store snapshots
         """
         request = [RequestType.GET_CHECKPOINT_INFO.value, str(name)]
         response = self._call_manager(request)

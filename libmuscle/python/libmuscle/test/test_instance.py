@@ -37,7 +37,7 @@ def sys_argv_instance() -> Generator[None, None, None]:
 
 
 @pytest.fixture
-def instance(sys_argv_instance):
+def instance(sys_argv_instance, tmp_path):
     with patch('libmuscle.instance.MMPClient') as mmp_client, \
          patch('libmuscle.instance.Communicator') as comm_type:
         communicator = MagicMock()
@@ -49,7 +49,8 @@ def instance(sys_argv_instance):
 
         mmp_client_object = MagicMock()
         mmp_client_object.request_peers.return_value = (None, None, None)
-        checkpoint_info = (datetime.now(timezone.utc), Checkpoints(), None)
+        checkpoint_info = (datetime.now(timezone.utc), Checkpoints(), None,
+                           tmp_path)
         mmp_client_object.get_checkpoint_info.return_value = checkpoint_info
         mmp_client.return_value = mmp_client_object
 
@@ -62,12 +63,13 @@ def instance(sys_argv_instance):
 
 
 @pytest.fixture
-def instance2(sys_argv_instance):
+def instance2(sys_argv_instance, tmp_path):
     with patch('libmuscle.instance.MMPClient') as mmp_client, \
          patch('libmuscle.instance.Communicator'):
         mmp_client_object = MagicMock()
         mmp_client_object.request_peers.return_value = (None, None, None)
-        checkpoint_info = (datetime.now(timezone.utc), Checkpoints(), None)
+        checkpoint_info = (datetime.now(timezone.utc), Checkpoints(), None,
+                           tmp_path)
         mmp_client_object.get_checkpoint_info.return_value = checkpoint_info
         mmp_client.return_value = mmp_client_object
         instance = Instance({
@@ -77,12 +79,13 @@ def instance2(sys_argv_instance):
 
 
 def test_create_instance(
-        sys_argv_instance, log_file_in_tmpdir, sys_argv_manager):
+        sys_argv_instance, log_file_in_tmpdir, sys_argv_manager, tmp_path):
     with patch('libmuscle.instance.MMPClient') as mmp_client, \
          patch('libmuscle.instance.Communicator') as comm_type:
         mmp_client_object = MagicMock()
         mmp_client_object.request_peers.return_value = (None, None, None)
-        checkpoint_info = (datetime.now(timezone.utc), Checkpoints(), None)
+        checkpoint_info = (datetime.now(timezone.utc), Checkpoints(), None,
+                           tmp_path)
         mmp_client_object.get_checkpoint_info.return_value = checkpoint_info
         mmp_client.return_value = mmp_client_object
         ports = {

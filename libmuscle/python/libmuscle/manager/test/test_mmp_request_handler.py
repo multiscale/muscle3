@@ -17,7 +17,7 @@ def test_create_servicer(logger, mmp_configuration, instance_registry,
                          topology_store, snapshot_registry):
     MMPRequestHandler(
             logger, mmp_configuration, instance_registry, topology_store,
-            snapshot_registry)
+            snapshot_registry, None)
 
 
 def test_log_message(mmp_request_handler, caplog):
@@ -109,7 +109,7 @@ def test_get_checkpoint_info(mmp_configuration, mmp_request_handler):
     decoded_result = msgpack.unpackb(result, raw=False)
 
     assert decoded_result[0] == ResponseType.SUCCESS.value
-    timestamp, checkpoints, resume = decoded_result[1:]
+    timestamp, checkpoints, resume, snapshot_directory = decoded_result[1:]
 
     ref_time = datetime.fromtimestamp(timestamp, tz=timezone.utc)
     assert ref_time == mmp_request_handler._reference_time
@@ -125,6 +125,21 @@ def test_get_checkpoint_info(mmp_configuration, mmp_request_handler):
 
     assert resume is not None
     assert Path(resume) == resume_path
+
+    assert snapshot_directory is None
+
+
+def test_get_checkpoint_info2(registered_mmp_request_handler2, tmp_path):
+    request = [RequestType.GET_CHECKPOINT_INFO.value, 'test_instance']
+    encoded_request = msgpack.packb(request, use_bin_type=True)
+
+    result = registered_mmp_request_handler2.handle_request(encoded_request)
+    decoded_result = msgpack.unpackb(result, raw=False)
+
+    assert decoded_result[0] == ResponseType.SUCCESS.value
+    snapshot_directory = decoded_result[4]
+    assert snapshot_directory == (
+            str(tmp_path) + '/instances/test_instance/snapshots')
 
 
 def test_double_register_instance(mmp_request_handler):

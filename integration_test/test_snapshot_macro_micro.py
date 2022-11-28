@@ -204,11 +204,11 @@ def test_snapshot_macro_micro(tmp_path, base_config):
 
     # Note: sorted only works because we have fewer than 10 snapshots, otherwise
     # _10 would be sorted right after _1
-    macro_snapshots = sorted(run_dir1.snapshot_dir().glob('macro*'))
+    macro_snapshots = sorted(run_dir1.snapshot_dir('macro').iterdir())
     assert len(macro_snapshots) == 6  # 0, 0.4, 0.8, 1.2, 1.6, final
-    micro_snapshots = sorted(run_dir1.snapshot_dir().glob('micro*'))
+    micro_snapshots = sorted(run_dir1.snapshot_dir('micro').iterdir())
     assert len(micro_snapshots) == 6  # 0, 0.4, 0.8, 1.2, 1.6, final
-    snapshots_ymmsl = sorted(run_dir1.snapshot_dir().glob('snapshot_*.ymmsl'))
+    snapshots_ymmsl = sorted(run_dir1.snapshot_dir().iterdir())
     snapshot_docs = list(map(load, snapshots_ymmsl))
     assert len(snapshot_docs) == 7
     assert snapshot_docs[0].resume['macro'] == macro_snapshots[0]
@@ -225,11 +225,11 @@ def test_snapshot_macro_micro(tmp_path, base_config):
     run_manager_with_actors(
             dump(base_config), run_dir2.path, python_actors=actors)
 
-    macro_snapshots = sorted(run_dir2.snapshot_dir().glob('macro*'))
+    macro_snapshots = sorted(run_dir2.snapshot_dir('macro').iterdir())
     assert len(macro_snapshots) == 2  # 1.6, final
-    micro_snapshots = sorted(run_dir2.snapshot_dir().glob('micro*'))
+    micro_snapshots = sorted(run_dir2.snapshot_dir('micro').iterdir())
     assert len(micro_snapshots) == 2  # 1.6, final
-    snapshots_ymmsl = sorted(run_dir2.snapshot_dir().glob('snapshot_*.ymmsl'))
+    snapshots_ymmsl = sorted(run_dir2.snapshot_dir().iterdir())
     assert len(snapshots_ymmsl) == 2
 
     # resume from the first workflow snapshot (this restarts macro from scratch)
@@ -249,11 +249,11 @@ def test_snapshot_macro_stateless_micro(tmp_path, base_config):
 
     # Note: sorted only works because we have fewer than 10 snapshots, otherwise
     # _10 would be sorted right after _1
-    macro_snapshots = sorted(run_dir1.snapshot_dir().glob('macro*'))
+    macro_snapshots = sorted(run_dir1.snapshot_dir('macro').iterdir())
     assert len(macro_snapshots) == 6  # 0, 0.4, 0.8, 1.2, 1.6, final
-    micro_snapshots = sorted(run_dir1.snapshot_dir().glob('micro*'))
+    micro_snapshots = sorted(run_dir1.snapshot_dir('micro').iterdir())
     assert len(micro_snapshots) == 6  # 0, 0.4, 0.8, 1.2, 1.6, final
-    snapshots_ymmsl = sorted(run_dir1.snapshot_dir().glob('snapshot_*.ymmsl'))
+    snapshots_ymmsl = sorted(run_dir1.snapshot_dir().iterdir())
     snapshot_docs = list(map(load, snapshots_ymmsl))
     assert len(snapshot_docs) == 6
 
@@ -263,11 +263,11 @@ def test_snapshot_macro_stateless_micro(tmp_path, base_config):
     run_manager_with_actors(
             dump(base_config), run_dir2.path, python_actors=actors)
 
-    macro_snapshots = sorted(run_dir2.snapshot_dir().glob('macro*'))
+    macro_snapshots = sorted(run_dir2.snapshot_dir('macro').iterdir())
     assert len(macro_snapshots) == 2  # 1.6, final
-    micro_snapshots = sorted(run_dir2.snapshot_dir().glob('micro*'))
+    micro_snapshots = sorted(run_dir2.snapshot_dir('micro').iterdir())
     assert len(micro_snapshots) == 3  # 1.2, 1.6, final
-    snapshots_ymmsl = sorted(run_dir2.snapshot_dir().glob('snapshot_*.ymmsl'))
+    snapshots_ymmsl = sorted(run_dir2.snapshot_dir().iterdir())
     assert len(snapshots_ymmsl) == 2
 
 
@@ -279,11 +279,13 @@ def test_snapshot_macro_vector_micro(tmp_path, base_config):
     run_manager_with_actors(
             dump(base_config), run_dir1.path, python_actors=actors)
 
-    macro_snapshots = sorted(run_dir1.snapshot_dir().glob('macro*'))
+    macro_snapshots = sorted(run_dir1.snapshot_dir('macro').iterdir())
     assert len(macro_snapshots) == 6  # 0, 0.4, 0.8, 1.2, 1.6, final
-    micro_snapshots = sorted(run_dir1.snapshot_dir().glob('micro*'))
-    assert len(micro_snapshots) == 6 * 2  # 0, 0.4, 0.8, 1.2, 1.6, final
-    snapshots_ymmsl = sorted(run_dir1.snapshot_dir().glob('snapshot_*.ymmsl'))
+    micro_snapshots = sorted(run_dir1.snapshot_dir('micro[0]').iterdir())
+    assert len(micro_snapshots) == 6  # 0, 0.4, 0.8, 1.2, 1.6, final
+    micro_snapshots = sorted(run_dir1.snapshot_dir('micro[1]').iterdir())
+    assert len(micro_snapshots) == 6  # 0, 0.4, 0.8, 1.2, 1.6, final
+    snapshots_ymmsl = sorted(run_dir1.snapshot_dir().iterdir())
     assert len(snapshots_ymmsl) == 8
 
     run_dir2 = RunDir(tmp_path / 'run2')
@@ -291,11 +293,13 @@ def test_snapshot_macro_vector_micro(tmp_path, base_config):
     run_manager_with_actors(
             dump(base_config), run_dir2.path, python_actors=actors)
 
-    macro_snapshots = sorted(run_dir2.snapshot_dir().glob('macro*'))
+    macro_snapshots = sorted(run_dir2.snapshot_dir('macro').iterdir())
     assert len(macro_snapshots) == 2  # 1.6, final
-    micro_snapshots = sorted(run_dir2.snapshot_dir().glob('micro*'))
-    assert len(micro_snapshots) == 2 * 2  # 1.6, final
-    snapshots_ymmsl = sorted(run_dir2.snapshot_dir().glob('snapshot_*.ymmsl'))
+    micro_snapshots = sorted(run_dir2.snapshot_dir('micro[0]').iterdir())
+    assert len(micro_snapshots) == 2  # 1.6, final
+    micro_snapshots = sorted(run_dir2.snapshot_dir('micro[1]').iterdir())
+    assert len(micro_snapshots) == 2  # 1.6, final
+    snapshots_ymmsl = sorted(run_dir2.snapshot_dir().iterdir())
     assert len(snapshots_ymmsl) == 2
 
 
@@ -307,7 +311,7 @@ def test_snapshot_macro_transformer_micro(tmp_path, config_with_transformer):
     run_manager_with_actors(
             dump(config_with_transformer), run_dir1.path, python_actors=actors)
 
-    snapshots_ymmsl = sorted(run_dir1.snapshot_dir().glob('snapshot_*.ymmsl'))
+    snapshots_ymmsl = sorted(run_dir1.snapshot_dir().iterdir())
     assert len(snapshots_ymmsl) == 8
 
     # pick one to resume from
@@ -316,5 +320,5 @@ def test_snapshot_macro_transformer_micro(tmp_path, config_with_transformer):
     run_manager_with_actors(
             dump(config_with_transformer), run_dir2.path, python_actors=actors)
 
-    snapshots_ymmsl = sorted(run_dir2.snapshot_dir().glob('snapshot_*.ymmsl'))
+    snapshots_ymmsl = sorted(run_dir2.snapshot_dir().iterdir())
     assert len(snapshots_ymmsl) == 3

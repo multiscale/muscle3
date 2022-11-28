@@ -1,7 +1,6 @@
 from copy import copy
 import logging
 import os
-from pathlib import Path
 import sys
 from typing import cast, Dict, List, Optional, Tuple, overload
 # TODO: import from typing module when dropping support for python 3.7
@@ -150,16 +149,8 @@ class Instance:
             do_reuse = self.__check_reuse_instance(apply_overlay)
         self._do_reuse = None
 
-        # Note: muscle_snapshot_directory setting is provided by muscle_manager
-        # when checkpointing is enabled for this run. When checkpointing is not
-        # enabled, it might not exist and a KeyError is raised.
-        try:
-            snapshot_dir = self.get_setting('muscle_snapshot_directory', 'str')
-            snapshot_path = Path(snapshot_dir)
-        except KeyError:
-            snapshot_path = None
         self._snapshot_manager.reuse_instance(
-                snapshot_path, do_reuse, self.__f_init_max_timestamp)
+                do_reuse, self.__f_init_max_timestamp)
 
         if not do_reuse:
             self.__close_ports()

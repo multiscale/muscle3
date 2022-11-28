@@ -6,6 +6,7 @@ from ymmsl import Component, Conduit, Configuration, Model, Reference
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger
 from libmuscle.manager.mmp_server import MMPRequestHandler
+from libmuscle.manager.run_dir import RunDir
 from libmuscle.manager.snapshot_registry import SnapshotRegistry
 from libmuscle.manager.topology_store import TopologyStore
 
@@ -53,7 +54,7 @@ def mmp_request_handler(
         snapshot_registry):
     return MMPRequestHandler(
             logger, mmp_configuration, instance_registry, topology_store,
-            snapshot_registry)
+            snapshot_registry, None)
 
 
 @pytest.fixture
@@ -73,7 +74,7 @@ def registered_mmp_request_handler(
         snapshot_registry):
     return MMPRequestHandler(
             logger, mmp_configuration, loaded_instance_registry, topology_store,
-            snapshot_registry)
+            snapshot_registry, None)
 
 
 @pytest.fixture
@@ -126,7 +127,8 @@ def loaded_instance_registry2():
 @pytest.fixture
 def registered_mmp_request_handler2(
         logger, mmp_configuration, loaded_instance_registry2, topology_store2,
-        snapshot_registry2):
+        snapshot_registry2, tmp_path):
     return MMPRequestHandler(
             logger, mmp_configuration,
-            loaded_instance_registry2, topology_store2, snapshot_registry2)
+            loaded_instance_registry2, topology_store2, snapshot_registry2,
+            RunDir(tmp_path))

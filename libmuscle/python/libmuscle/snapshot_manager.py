@@ -50,7 +50,6 @@ class SnapshotManager:
         self._first_reuse = True
         self._trigger_manager = TriggerManager()
         self._resume_from_snapshot = None   # type: Optional[Snapshot]
-        self._snapshot_directory = None     # type: Optional[Path]
         self._next_snapshot_num = 1
 
     def get_checkpoint_info(self) -> None:
@@ -62,7 +61,8 @@ class SnapshotManager:
     def _set_checkpoint_info(self,
                              utc_reference: datetime,
                              checkpoints: Checkpoints,
-                             resume: Optional[Path]) -> None:
+                             resume: Optional[Path],
+                             snapshot_directory: Optional[Path]) -> None:
         """Apply checkpoint info received from the manager.
 
         Args:
@@ -71,6 +71,7 @@ class SnapshotManager:
             resume: previous snapshot to resume from (or None if not resuming)
         """
         self._trigger_manager.set_checkpoint_info(utc_reference, checkpoints)
+        self._snapshot_directory = snapshot_directory or Path.cwd()
         if resume is not None:
             snapshot = self.load_snapshot_from_file(resume)
             if snapshot.message is not None:
@@ -82,7 +83,7 @@ class SnapshotManager:
             self._communicator.restore_message_counts(
                 snapshot.port_message_counts)
 
-    def reuse_instance(self, snapshot_directory: Optional[Path],
+    def reuse_instance(self,
                        do_reuse: bool, f_init_max_timestamp: Optional[float]
                        ) -> None:
         """Callback on Instance.reuse_instance
@@ -105,8 +106,6 @@ class SnapshotManager:
                 self.__save_snapshot(None, True, f_init_max_timestamp)
 
         self._trigger_manager.reuse_instance()
-
-        self._snapshot_directory = snapshot_directory
 
         if self._first_reuse:
             self._first_reuse = False
@@ -246,10 +245,6 @@ class SnapshotManager:
             Path where the snapshot is stored
         """
         _logger.debug(f'Saving snapshot to {self._snapshot_directory}')
-        if self._snapshot_directory is None:
-            raise RuntimeError('Unknown snapshot directory. Did you try to'
-                               ' save a snapshot before entering the reuse'
-                               ' loop?')
         for _ in range(_MAX_FILE_EXISTS_CHECK):
             # Expectation is that muscle_snapshot_directory is empty initially
             # and we succeed in the first loop. Still wrapping in a for-loop

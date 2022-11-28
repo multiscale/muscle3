@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 import errno
 import logging
-from typing import Any, Dict, cast, List
+from typing import Any, Dict, cast, List, Optional
 
 import msgpack
 from ymmsl import (
@@ -12,6 +12,7 @@ from libmuscle.logging import LogLevel
 from libmuscle.manager.instance_registry import (
         AlreadyRegistered, InstanceRegistry)
 from libmuscle.manager.logger import Logger
+from libmuscle.manager.run_dir import RunDir
 from libmuscle.manager.snapshot_registry import SnapshotRegistry
 from libmuscle.manager.topology_store import TopologyStore
 from libmuscle.mcp.protocol import RequestType, ResponseType
@@ -56,7 +57,9 @@ class MMPRequestHandler(RequestHandler):
             configuration: PartialConfiguration,
             instance_registry: InstanceRegistry,
             topology_store: TopologyStore,
-            snapshot_registry: SnapshotRegistry):
+            snapshot_registry: SnapshotRegistry,
+            run_dir: Optional[RunDir]
+            ) -> None:
         """Create an MMPRequestHandler.
 
         Args:
@@ -70,6 +73,7 @@ class MMPRequestHandler(RequestHandler):
         self._instance_registry = instance_registry
         self._topology_store = topology_store
         self._snapshot_registry = snapshot_registry
+        self._run_dir = run_dir
         self._reference_time = datetime.now(timezone.utc)
         self._reference_timestamp = self._reference_time.timestamp()
 
@@ -286,15 +290,23 @@ class MMPRequestHandler(RequestHandler):
                 wallclock time of the start of the workflow.
             checkpoints (dict): Dictionary encdoing a ymmsl.Checkpoints object.
             resume_path (Optional[str]): Checkpoint filename to resume from.
+            snapshot_directory (Optional[str]): Directory to store instance
+                snapshots.
         """
         instance = Reference(instance_id)
         resume = None
         if instance in self._configuration.resume:
             resume = str(self._configuration.resume[instance])
+
+        snapshot_directory = None
+        if self._run_dir is not None:
+            snapshot_directory = str(self._run_dir.snapshot_dir(instance))
+
         return [ResponseType.SUCCESS.value,
                 self._reference_timestamp,
                 encode_checkpoints(self._configuration.checkpoints),
-                resume]
+                resume,
+                snapshot_directory]
 
 
 class MMPServer:
@@ -310,7 +322,8 @@ class MMPServer:
             configuration: PartialConfiguration,
             instance_registry: InstanceRegistry,
             topology_store: TopologyStore,
-            snapshot_registry: SnapshotRegistry
+            snapshot_registry: SnapshotRegistry,
+            run_dir: Optional[RunDir]
             ) -> None:
         """Create an MMPServer.
 
@@ -329,7 +342,7 @@ class MMPServer:
         """
         self._handler = MMPRequestHandler(
                 logger, configuration, instance_registry, topology_store,
-                snapshot_registry)
+                snapshot_registry, run_dir)
         try:
             self._server = TcpTransportServer(self._handler, 9000)
         except OSError as e:

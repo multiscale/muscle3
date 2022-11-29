@@ -133,7 +133,8 @@ def snapshot(
         typ = 'Final' if snapshot.is_final_snapshot else 'Intermediate'
         properties = OrderedDict([
             ('Snapshot type', typ),
-            ('Snapshot timestamp', snapshot.message.timestamp),
+            ('Snapshot timestamp',
+             snapshot.message.timestamp if snapshot.message else float('-inf')),
             ('Snapshot wallclock time', snapshot.wallclock_time),
             ('Snapshot triggers', snapshot.triggers),
         ])
@@ -146,7 +147,10 @@ def snapshot(
             click.echo(prop_value)
         if data:
             click.secho('Snapshot data:', bold=True)
-            click.echo(snapshot.message.data)
+            if snapshot.message is not None:
+                click.echo(snapshot.message.data)
+            else:
+                click.secho("No data available", italic=True)
         click.echo()
 
 

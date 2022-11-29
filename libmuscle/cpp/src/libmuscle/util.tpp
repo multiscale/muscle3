@@ -21,10 +21,11 @@ Optional<T>::Optional(std::initializer_list<T> l)
 }
 
 template <typename T>
-Optional<T>::Optional(T const & t)
+template <typename U>
+Optional<T>::Optional(U const & u)
     : is_set_(true)
 {
-    new (&t_) T(t);
+    new (&t_) T(u);
 }
 
 template <typename T>

@@ -58,9 +58,10 @@ class Optional {
          * is_set() will return true for this object, and get() will return it.
          * Also implicitly converts, of course.
          *
-         * @param t An object to copy
+         * @param u An object to copy.
          */
-        Optional(T const & t);
+        template <typename U>
+        Optional(U const & u);
 
         /** Copy an Optional.
          *

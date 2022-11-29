@@ -6,6 +6,8 @@
 #include <libmuscle/mpp_message.hpp>
 #include <libmuscle/mcp/tcp_transport_server.hpp>
 #include <libmuscle/mpp_client.hpp>
+#include <libmuscle/profiling.hpp>
+#include <libmuscle/timestamp.hpp>
 
 #include <limits>
 
@@ -118,7 +120,9 @@ void Communicator::send_message(
 
     Port & port = ports_.at(port_name);
 
-    // TODO start profile event
+    ProfileEvent profile_event(
+            ProfileEventType::send, Timestamp(), {}, port, {}, slot,
+            {}, message.timestamp());
 
     auto recv_endpoints = peer_manager_->get_peer_endpoints(
             snd_endpoint.port, slot_list);
@@ -140,12 +144,16 @@ void Communicator::send_message(
             mpp_message.next_timestamp = message.next_timestamp();
 
         auto message_bytes = std::make_unique<DataConstRef>(mpp_message.encoded());
+        profile_event.message_size = message_bytes->size();
         post_office_.deposit(recv_endpoint.ref(), std::move(message_bytes));
     }
 
     port.increment_num_messages(slot);
 
-    // TODO: stop and complete profile event
+    profile_event.stop();
+    if (port.is_vector())
+        profile_event.port_length = port.get_length();
+    profiler_.record_event(std::move(profile_event));
 }
 
 Message Communicator::receive_message(

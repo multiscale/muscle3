@@ -7,6 +7,7 @@
 #include <libmuscle/mmp_client.hpp>
 #include <libmuscle/peer_manager.hpp>
 #include <libmuscle/profiler.hpp>
+#include <libmuscle/profiling.hpp>
 #include <libmuscle/settings_manager.hpp>
 
 #include <ymmsl/ymmsl.hpp>
@@ -14,6 +15,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <stdexcept>
+#include <utility>
 
 #ifdef MUSCLE_ENABLE_MPI
 #include <libmuscle/mpi_tcp_barrier.hpp>
@@ -25,6 +27,8 @@ using ymmsl::Reference;
 using ymmsl::Settings;
 
 using libmuscle::impl::LogLevel;
+using libmuscle::impl::ProfileEvent;
+using libmuscle::impl::ProfileEventType;
 
 
 namespace {
@@ -416,31 +420,31 @@ void Instance::Impl::send(
 /* Register this instance with the manager.
  */
 void Instance::Impl::register_() {
-    // TODO: profile this
+    ProfileEvent register_event(ProfileEventType::register_, Timestamp());
     auto locations = communicator_->get_locations();
     auto port_list = list_declared_ports_();
     manager_->register_instance(locations, port_list);
-    // TODO: stop profile
+    profiler_->record_event(std::move(register_event));
     logger_->info("Registered with the manager");
 }
 
 /* Connect this instance to the given peers / conduits.
  */
 void Instance::Impl::connect_() {
-    // TODO: profile this
+    ProfileEvent connect_event(ProfileEventType::connect, Timestamp());
     auto peer_info = manager_->request_peers();
     communicator_->connect(std::get<0>(peer_info), std::get<1>(peer_info), std::get<2>(peer_info));
     settings_manager_.base = manager_->get_settings();
-    // TODO: stop profile
+    profiler_->record_event(std::move(connect_event));
     logger_->info("Received peer locations and base settings");
 }
 
 /* Deregister this instance from the manager.
  */
 void Instance::Impl::deregister_() {
-    // TODO: profile this
+    ProfileEvent deregister_event(ProfileEventType::deregister, Timestamp());
     manager_->deregister_instance();
-    // TODO: stop profile
+    profiler_->record_event(std::move(deregister_event));
     // This is the last thing we'll profile, so flush messages
     profiler_->shutdown();
     logger_->info("Deregistered from the manager");

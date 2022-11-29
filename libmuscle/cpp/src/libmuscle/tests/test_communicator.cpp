@@ -21,6 +21,8 @@
 #include <libmuscle/mcp/transport_server.cpp>
 #include <libmuscle/message.cpp>
 #include <libmuscle/port.cpp>
+#include <libmuscle/profiling.cpp>
+#include <libmuscle/timestamp.cpp>
 
 // then add mock implementations as needed.
 #include <mocks/mock_logger.cpp>
@@ -49,7 +51,6 @@ using libmuscle::impl::Endpoint;
 using libmuscle::impl::Optional;
 using libmuscle::impl::PeerDims;
 using libmuscle::impl::PeerLocations;
-using libmuscle::impl::Port;
 using libmuscle::impl::PortsDescription;
 using libmuscle::impl::Message;
 using libmuscle::impl::MockLogger;
@@ -73,7 +74,7 @@ int main(int argc, char *argv[]) {
 namespace libmuscle { namespace impl {
 
 struct TestCommunicator {
-    static std::unordered_map<std::string, Port> const & ports_(
+    static std::unordered_map<std::string, libmuscle::impl::Port> const & ports_(
             Communicator const & comm)
     {
         return comm.ports_;

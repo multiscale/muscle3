@@ -12,7 +12,7 @@ ProfileEvent::ProfileEvent(
         ProfileEventType event_type,
         Optional<Timestamp> start_time,
         Optional<Timestamp> stop_time,
-        Optional<Port> const & port,
+        Optional<ymmsl::Port> const & port,
         Optional<int> port_length,
         Optional<int> slot,
         Optional<std::size_t> message_size,

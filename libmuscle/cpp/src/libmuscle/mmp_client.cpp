@@ -23,6 +23,8 @@
 using libmuscle::impl::Data;
 using libmuscle::impl::DataConstRef;
 using libmuscle::impl::mcp::unpack_data;
+using libmuscle::impl::Optional;
+using libmuscle::impl::ProfileEvent;
 using std::chrono::steady_clock;
 using ymmsl::Conduit;
 using ymmsl::Reference;
@@ -63,6 +65,34 @@ namespace {
     Data encode_port(ymmsl::Port const & port) {
         return Data::list(std::string(port.name), encode_operator(port.oper));
     }
+
+    template <class T>
+    Data encode_optional(Optional<T> const & value) {
+        Data encoded;
+        if (value.is_set())
+            encoded = value.get();
+        return encoded;
+    }
+
+    Data encode_profile_event(ProfileEvent const & event) {
+        if (!event.start_time.is_set() || !event.stop_time.is_set()) {
+            throw std::runtime_error(
+                    "Incomplete ProfileEvent sent. This is a bug, please"
+                    " report it.");
+        }
+
+        Data encoded_port;
+        if (event.port.is_set())
+            encoded_port = encode_port(event.port.get());
+
+        return Data::list(
+                static_cast<int>(event.event_type),
+                event.start_time.get().seconds,
+                event.stop_time.get().seconds,
+                encoded_port, encode_optional(event.port_length),
+                encode_optional(event.slot), encode_optional(event.message_size),
+                encode_optional(event.message_timestamp));
+    }
 }
 
 namespace libmuscle { namespace impl {
@@ -86,6 +116,21 @@ void MMPClient::submit_log_message(LogMessage const & message) {
             message.text);
 
     call_manager_(request);
+}
+
+void MMPClient::submit_profile_events(
+        std::vector<ProfileEvent> const & events)
+{
+    auto event_list = Data::nils(events.size());
+    for (std::size_t i = 0u; i < events.size(); ++i)
+        event_list[i] = encode_profile_event(events[i]);
+
+    auto request = Data::list(
+            static_cast<int>(RequestType::submit_profile_events),
+            static_cast<std::string>(instance_id_),
+            event_list);
+
+    auto response = call_manager_(request);
 }
 
 void MMPClient::register_instance(

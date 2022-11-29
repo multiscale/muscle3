@@ -13,6 +13,7 @@
 #include <libmuscle/port.hpp>
 #include <libmuscle/ports_description.hpp>
 #include <libmuscle/post_office.hpp>
+#include <libmuscle/profiler.hpp>
 #include <libmuscle/util.hpp>
 
 #include <ymmsl/ymmsl.hpp>
@@ -44,12 +45,11 @@ class Communicator {
          * @param logger The logger for this instance.
          * @param profiler The profiler to use for recording sends and receives.
          */
-        // TODO: use actual Profiler
         Communicator(
                 ymmsl::Reference const & kernel,
                 std::vector<int> const & index,
                 Optional<PortsDescription> const & declared_ports,
-                Logger & logger, int profiler);
+                Logger & logger, Profiler & profiler);
 
 
         /** Returns a list of locations that we can be reached at.
@@ -193,7 +193,7 @@ class Communicator {
         Optional<PortsDescription> declared_ports_;
         PostOffice post_office_;
         Logger & logger_;
-        int profiler_;
+        Profiler & profiler_;
         std::vector<std::unique_ptr<mcp::TransportServer>> servers_;
         std::unordered_map<ymmsl::Reference, std::unique_ptr<MPPClient>> clients_;
         Ports_ ports_;

@@ -161,7 +161,8 @@ Instance::Impl::Impl(
     MPI_Comm_dup(communicator, &mpi_comm_);
     if (mpi_barrier_.is_root()) {
 #endif
-        manager_.reset(new MMPClient(extract_manager_location_(argc, argv)));
+        manager_.reset(
+                new MMPClient(instance_name_, extract_manager_location_(argc, argv)));
 
         std::string instance_id = static_cast<std::string>(instance_name_);
         std::string default_logfile = "muscle_" + instance_id + ".log";
@@ -414,7 +415,7 @@ void Instance::Impl::register_() {
     // TODO: profile this
     auto locations = communicator_->get_locations();
     auto port_list = list_declared_ports_();
-    manager_->register_instance(instance_name_, locations, port_list);
+    manager_->register_instance(locations, port_list);
     // TODO: stop profile
     logger_->info("Registered with the manager");
 }
@@ -423,7 +424,7 @@ void Instance::Impl::register_() {
  */
 void Instance::Impl::connect_() {
     // TODO: profile this
-    auto peer_info = manager_->request_peers(instance_name_);
+    auto peer_info = manager_->request_peers();
     communicator_->connect(std::get<0>(peer_info), std::get<1>(peer_info), std::get<2>(peer_info));
     settings_manager_.base = manager_->get_settings();
     // TODO: stop profile
@@ -434,7 +435,7 @@ void Instance::Impl::connect_() {
  */
 void Instance::Impl::deregister_() {
     // TODO: profile this
-    manager_->deregister_instance(instance_name_);
+    manager_->deregister_instance();
     // TODO: stop profile
     // This is the last thing we'll profile, so flush messages
     // TODO: shut down profiler

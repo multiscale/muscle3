@@ -32,7 +32,9 @@ class MMPClient {
          *
          * @param location A connection string of the form hostname:port.
          */
-        explicit MMPClient(std::string const & location);
+        explicit MMPClient(
+                ymmsl::Reference const & instance_id,
+                std::string const & location);
 
         /** Close the connection
          *
@@ -55,12 +57,10 @@ class MMPClient {
 
         /** Register a component instance with the manager.
          *
-         * @param name Name of the instance in the simulation.
          * @param locations List of places where the instance can be reached.
          * @param ports List of ports of this instance.
          */
         void register_instance(
-                ::ymmsl::Reference const & name,
                 std::vector<std::string> const & locations,
                 std::vector<::ymmsl::Port> const & ports);
 
@@ -71,7 +71,6 @@ class MMPClient {
          * peer_interval_min and peer_interval_max. From there on, intervals
          * are drawn randomly from that range.
          *
-         * @param name Name of the current instance.
          * @return A tuple containng a list of conduits that this instance is
          *      attached to, a dictionary of peer dimensions, which is indexed
          *      by Reference to the peer kernel and specifies how many
@@ -80,16 +79,17 @@ class MMPClient {
          *      containing for each peer instance a list of network location
          *      strings at which it can be reached.
          */
-        auto request_peers(::ymmsl::Reference const & name) ->
+        auto request_peers() ->
             std::tuple<
                 std::vector<::ymmsl::Conduit>,
                 std::unordered_map<::ymmsl::Reference, std::vector<int>>,
                 std::unordered_map<::ymmsl::Reference, std::vector<std::string>>
             >;
 
-        void deregister_instance(::ymmsl::Reference const & name);
+        void deregister_instance();
 
     private:
+        ymmsl::Reference instance_id_;
         mcp::TcpTransportClient transport_client_;
 
         /* Helper function that encodes/decodes and calls the manager.

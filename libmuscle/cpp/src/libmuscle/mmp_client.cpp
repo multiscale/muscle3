@@ -62,13 +62,14 @@ namespace {
     Data encode_port(ymmsl::Port const & port) {
         return Data::list(std::string(port.name), encode_operator(port.oper));
     }
-
 }
 
 namespace libmuscle { namespace impl {
 
-MMPClient::MMPClient(std::string const & location)
-    : transport_client_(location)
+MMPClient::MMPClient(
+        Reference const & instance_id, std::string const & location)
+    : instance_id_(instance_id)
+    , transport_client_(location)
 {}
 
 void MMPClient::close() {
@@ -87,7 +88,6 @@ void MMPClient::submit_log_message(LogMessage const & message) {
 }
 
 void MMPClient::register_instance(
-        Reference const & name,
         std::vector<std::string> const & locations,
         std::vector<::ymmsl::Port> const & ports)
 {
@@ -101,7 +101,8 @@ void MMPClient::register_instance(
 
     auto request = Data::list(
             static_cast<int>(RequestType::register_instance),
-            std::string(name), encoded_locs, encoded_ports);
+            static_cast<std::string>(instance_id_), encoded_locs,
+            encoded_ports);
 
     auto response = call_manager_(request);
 
@@ -124,7 +125,7 @@ ymmsl::Settings MMPClient::get_settings() {
     return settings;
 }
 
-auto MMPClient::request_peers(Reference const & name) ->
+auto MMPClient::request_peers() ->
         std::tuple<
             std::vector<::ymmsl::Conduit>,
             std::unordered_map<::ymmsl::Reference, std::vector<int>>,
@@ -134,7 +135,9 @@ auto MMPClient::request_peers(Reference const & name) ->
     int sleep_time = 100;   // milliseconds
     auto start_time = steady_clock::now();
 
-    auto request = Data::list(static_cast<int>(RequestType::get_peers), std::string(name));
+    auto request = Data::list(
+            static_cast<int>(RequestType::get_peers),
+            static_cast<std::string>(instance_id_));
     auto response = call_manager_(request);
 
     const int status_pending = static_cast<int>(ResponseType::pending);
@@ -197,9 +200,10 @@ auto MMPClient::request_peers(Reference const & name) ->
             std::move(peer_locations));
 }
 
-void MMPClient::deregister_instance(Reference const & name) {
+void MMPClient::deregister_instance() {
     auto request = Data::list(
-            static_cast<int>(RequestType::deregister_instance), std::string(name));
+            static_cast<int>(RequestType::deregister_instance),
+            static_cast<std::string>(instance_id_));
     auto response = call_manager_(request);
     if (response[0].as<int>() == static_cast<int>(ResponseType::error)) {
         std::ostringstream oss;

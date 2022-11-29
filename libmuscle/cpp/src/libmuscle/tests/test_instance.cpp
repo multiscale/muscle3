@@ -95,9 +95,9 @@ TEST(libmuscle_instance, create_instance) {
 
     ASSERT_EQ(TestInstance::instance_name_(instance), "test_instance[13][42]");
     ASSERT_EQ(MockMMPClient::num_constructed, 1);
+    ASSERT_EQ(MockMMPClient::last_instance_id, "test_instance[13][42]");
     ASSERT_EQ(MockMMPClient::last_location, "node042:9000");
     ASSERT_EQ(MockCommunicator::num_constructed, 1);
-    ASSERT_EQ(MockMMPClient::last_registered_name, "test_instance[13][42]");
     ASSERT_EQ(MockMMPClient::last_registered_locations.at(0), "tcp:test1,test2");
     ASSERT_EQ(MockMMPClient::last_registered_locations.at(1), "tcp:test3");
     ASSERT_EQ(MockMMPClient::last_registered_ports.size(), 3);

@@ -42,12 +42,12 @@ void test_submit_log_message(MMPClient & client) {
 
 void test_register_instance(MMPClient & client) {
     client.register_instance(
-            Reference("micro[3]"), {"tcp:test1", "tcp:test2"},
+            {"tcp:test1", "tcp:test2"},
             {Port("out", Operator::O_F), Port("in", Operator::F_INIT)});
 }
 
 void test_request_peers(MMPClient & client) {
-    auto result = client.request_peers("micro[3]");
+    auto result = client.request_peers();
     assert(std::get<0>(result).size() == 2);
     assert(std::get<0>(result)[0].sender == "macro.out");
     assert(std::get<0>(result)[0].receiver == "micro.in");
@@ -65,11 +65,11 @@ void test_request_peers(MMPClient & client) {
 }
 
 void test_deregister_instance(MMPClient & client) {
-    client.deregister_instance(Reference("micro[3]"));
+    client.deregister_instance();
 }
 
 int main(int argc, char *argv[]) {
-    MMPClient client(argv[1]);
+    MMPClient client(Reference("micro[3]"), argv[1]);
 
     test_get_settings(client);
     test_submit_log_message(client);

@@ -15,7 +15,8 @@ namespace libmuscle { namespace impl {
 
 class MockMMPClient {
     public:
-        explicit MockMMPClient(std::string const & location);
+        explicit MockMMPClient(
+                ymmsl::Reference const & instance_id, std::string const & location);
 
         void close();
 
@@ -24,24 +25,23 @@ class MockMMPClient {
         ymmsl::Settings get_settings();
 
         void register_instance(
-                ::ymmsl::Reference const & name,
                 std::vector<std::string> const & locations,
                 std::vector<::ymmsl::Port> const & ports);
 
-        auto request_peers(::ymmsl::Reference const & name) ->
+        auto request_peers() ->
             std::tuple<
                 std::vector<::ymmsl::Conduit>,
                 std::unordered_map<::ymmsl::Reference, std::vector<int>>,
                 std::unordered_map<::ymmsl::Reference, std::vector<std::string>>
             >;
 
-        void deregister_instance(::ymmsl::Reference const & name);
+        void deregister_instance();
 
         static void reset();
 
+        static ::ymmsl::Reference last_instance_id;
         static int num_constructed;
         static std::string last_location;
-        static ::ymmsl::Reference last_registered_name;
         static std::vector<std::string> last_registered_locations;
         static std::vector<::ymmsl::Port> last_registered_ports;
         static LogMessage last_submitted_log_message;

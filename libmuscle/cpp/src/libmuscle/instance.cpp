@@ -6,6 +6,7 @@
 #include <libmuscle/logger.hpp>
 #include <libmuscle/mmp_client.hpp>
 #include <libmuscle/peer_manager.hpp>
+#include <libmuscle/profiler.hpp>
 #include <libmuscle/settings_manager.hpp>
 
 #include <ymmsl/ymmsl.hpp>
@@ -95,6 +96,7 @@ class Instance::Impl {
         ::ymmsl::Reference instance_name_;
         std::unique_ptr<MMPClient> manager_;
         std::unique_ptr<Logger> logger_;
+        std::unique_ptr<Profiler> profiler_;
         std::unique_ptr<Communicator> communicator_;
 #ifdef MUSCLE_ENABLE_MPI
         int mpi_root_;
@@ -168,8 +170,10 @@ Instance::Impl::Impl(
         std::string default_logfile = "muscle_" + instance_id + ".log";
         std::string log_file = extract_log_file_location(argc, argv, default_logfile);
         logger_.reset(new Logger(instance_id, log_file, *manager_));
+        profiler_.reset(new Profiler(*manager_));
 
-        communicator_.reset(new Communicator(name_(), index_(), ports, *logger_, 0));
+        communicator_.reset(
+                new Communicator(name_(), index_(), ports, *logger_, *profiler_));
         register_();
         connect_();
         set_local_log_level_();
@@ -438,7 +442,7 @@ void Instance::Impl::deregister_() {
     manager_->deregister_instance();
     // TODO: stop profile
     // This is the last thing we'll profile, so flush messages
-    // TODO: shut down profiler
+    profiler_->shutdown();
     logger_->info("Deregistered from the manager");
 }
 

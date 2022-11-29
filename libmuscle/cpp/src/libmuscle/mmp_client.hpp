@@ -14,6 +14,7 @@
 #include <libmuscle/data.hpp>
 #include <libmuscle/logging.hpp>
 #include <libmuscle/mcp/tcp_transport_client.hpp>
+#include <libmuscle/profiling.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 
@@ -48,6 +49,12 @@ class MMPClient {
          * @param message The message to send.
          */
         void submit_log_message(LogMessage const & message);
+
+        /** Sends profiling events to the manager.
+         *
+         * @param events The events to send.
+         */
+        void submit_profile_events(std::vector<ProfileEvent> const & events);
 
         /** Get the global settings from the manager.
          *

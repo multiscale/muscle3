@@ -2,6 +2,7 @@
 #define LIBMUSCLE_MOCK_COMMUNICATOR <mocks/mock_communicator.hpp>
 #define LIBMUSCLE_MOCK_LOGGER <mocks/mock_logger.hpp>
 #define LIBMUSCLE_MOCK_MMP_CLIENT <mocks/mock_mmp_client.hpp>
+#define LIBMUSCLE_MOCK_PROFILER <mocks/mock_profiler.hpp>
 
 // into the real implementation,
 #include <ymmsl/ymmsl.hpp>
@@ -20,7 +21,7 @@
 #include <mocks/mock_communicator.cpp>
 #include <mocks/mock_logger.cpp>
 #include <mocks/mock_mmp_client.cpp>
-
+#include <mocks/mock_profiler.cpp>
 
 // Test code dependencies
 #include <memory>

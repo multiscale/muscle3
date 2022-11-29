@@ -30,7 +30,7 @@ Communicator::Communicator(
         ymmsl::Reference const & kernel,
         std::vector<int> const & index,
         Optional<PortsDescription> const & declared_ports,
-        Logger & logger, int profiler)
+        Logger & logger, Profiler & profiler)
     : kernel_(kernel)
     , index_(index)
     , declared_ports_(declared_ports)

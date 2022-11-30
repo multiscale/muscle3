@@ -324,8 +324,6 @@ class Communicator:
         profile_event.message_size = len(mcp_message_bytes)
 
         expected_message_number = port.get_num_messages(slot)
-        # TODO: handle f_init port counts for STATELESS and WEAKLY_STATEFUL
-        # components which didn't load a snapshot
         if expected_message_number != mcp_message.message_number:
             if (expected_message_number - 1 == mcp_message.message_number and
                     port.is_resuming(slot)):
@@ -388,7 +386,6 @@ class Communicator:
                 raise RuntimeError(f'Unknown port {port_name} in snapshot.'
                                    ' Have your port definitions changed since'
                                    ' the snapshot was taken?')
-        # TODO decide if we should check whether all ports are covered
 
     def get_message_counts(self) -> Dict[str, List[int]]:
         """Get message counts for all ports on the communicator

@@ -161,7 +161,7 @@ class SnapshotNode:
             else:
                 consistent = calc_consistency_list(
                         i_msg_counts, p_msg_counts, is_sending, peer_is_restart)
-            if not consistent:  # not consistent
+            if not consistent:
                 return False
         self.consistent_peers.setdefault(
                 peer_node.instance, []).append(peer_node)

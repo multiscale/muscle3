@@ -22,7 +22,7 @@ proceed as below.
 Make an Issue
 =============
 
-Issues are found in a tab at the top of the repository home page. Please check
+`Issues`_ are found in a tab at the top of `the repository home page`_. Please check
 to see that the bug you want to fix or the feature you want to add does not
 already have an issue dedicated to it. If it does, feel free to add to the
 discussion. If not, please make a new issue.
@@ -47,6 +47,9 @@ describe
 
 If you want to fix the bug or implement the feature yourself, you'll have to set
 up a development environment.
+
+.. _Issues: https://github.com/multiscale/muscle3/issues
+.. _the repository home page: https://github.com/multiscale/muscle3/
 
 
 Get a local repository

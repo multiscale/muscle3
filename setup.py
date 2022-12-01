@@ -29,7 +29,6 @@ setup(
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: POSIX :: Linux',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
@@ -45,12 +44,11 @@ setup(
             'muscle_manager=muscle3.muscle_manager:manage_simulation',
             'muscle3=muscle3.muscle3:muscle3']
     },
-    python_requires='>=3.6, <4',
+    python_requires='>=3.7, <4',
     install_requires=[
         'click>=7.1,<9',
         'msgpack>=1,<2',
         'netifaces==0.11.0',
-        "numpy==1.19.5; python_version=='3.6'",
         "numpy<1.22; python_version=='3.7'",
         "numpy>=1.22,<=1.25; python_version>='3.8'",
         'qcg-pilotjob==0.13.1',

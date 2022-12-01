@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <string>
+#include <tuple>
 #include <unistd.h>
 #include <vector>
 
@@ -99,7 +100,8 @@ TEST(test_tcp_communication, send_receive_direct) {
     ASSERT_TRUE(TcpTransportClient::can_connect_to(location));
     TcpTransportClient client(location);
 
-    auto result = client.call("TestRequest", strlen("TestRequest"));
+    auto res = client.call("TestRequest", strlen("TestRequest"));
+    auto result = std::get<0>(res);
 
     std::string response(result.size(), ' ');
     std::copy(result.as_byte_array(), result.as_byte_array() + result.size(), response.begin());
@@ -120,7 +122,8 @@ TEST(test_tcp_communication, send_receive_delayed) {
 
     handler.send_response();
 
-    auto result = client.call("TestRequest", strlen("TestRequest"));
+    auto res = client.call("TestRequest", strlen("TestRequest"));
+    auto result = std::get<0>(res);
 
     std::string response(result.size(), ' ');
     std::copy(result.as_byte_array(), result.as_byte_array() + result.size(), response.begin());

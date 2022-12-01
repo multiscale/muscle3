@@ -1,14 +1,21 @@
 #pragma once
 
 #include <libmuscle/mpp_message.hpp>
+#include <libmuscle/mcp/transport_client.hpp>
+#include <libmuscle/timestamp.hpp>
 
 #include <ymmsl/ymmsl.hpp>
 
 #include <string>
+#include <tuple>
 #include <vector>
 
 
 namespace libmuscle { namespace impl {
+
+
+using ProfileData = std::tuple<Timestamp, Timestamp, Timestamp>;
+
 
 class MockMPPClient {
     public:
@@ -19,7 +26,8 @@ class MockMPPClient {
         MockMPPClient & operator=(MockMPPClient && rhs) = delete;
         ~MockMPPClient();
 
-        DataConstRef receive(::ymmsl::Reference const & receiver);
+        std::tuple<DataConstRef, ProfileData> receive(
+                ::ymmsl::Reference const & receiver);
 
         void close();
 

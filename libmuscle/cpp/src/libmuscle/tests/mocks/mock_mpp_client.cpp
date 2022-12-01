@@ -2,9 +2,11 @@
 
 #include <libmuscle/data.hpp>
 #include <libmuscle/mcp/data_pack.hpp>
+#include <libmuscle/timestamp.hpp>
 
 #include <cstring>
 #include <string>
+#include <tuple>
 #include <vector>
 
 
@@ -16,10 +18,13 @@ MockMPPClient::MockMPPClient(std::vector<std::string> const & locations) {
 
 MockMPPClient::~MockMPPClient() {}
 
-DataConstRef MockMPPClient::receive(::ymmsl::Reference const & receiver) {
+std::tuple<DataConstRef, ProfileData> MockMPPClient::receive(
+        ::ymmsl::Reference const & receiver) {
     last_receiver = receiver;
 
-    return next_receive_message.encoded();
+    return std::make_tuple(
+            next_receive_message.encoded(), std::make_tuple(
+                Timestamp(1.0), Timestamp(2.0), Timestamp(3.0)));
 }
 
 void MockMPPClient::close() {}

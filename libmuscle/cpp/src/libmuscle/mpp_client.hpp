@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 
 
@@ -52,13 +53,14 @@ class MPPClient {
         /** Receive a message from a port this client connects to.
          *
          * This returns a DataConstRef holding a byte array with the received
-         * data.
+         * data, and profiling data.
          *
          * @param The receiving (local) port.
          *
          * @return The received message.
          */
-        DataConstRef receive(::ymmsl::Reference const & receiver);
+        std::tuple<DataConstRef, mcp::ProfileData> receive(
+                ::ymmsl::Reference const & receiver);
 
         /** Closes this client.
          *

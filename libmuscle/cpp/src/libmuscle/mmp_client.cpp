@@ -262,7 +262,8 @@ DataConstRef MMPClient::call_manager_(DataConstRef const & request) {
     msgpack::sbuffer sbuf;
     msgpack::pack(sbuf, request);
 
-    auto result = transport_client_.call(sbuf.data(), sbuf.size());
+    auto res = transport_client_.call(sbuf.data(), sbuf.size());
+    auto const & result = std::get<0>(res);
 
     auto zone = std::make_shared<msgpack::zone>();
     return unpack_data(zone, result.as_byte_array(), result.size());

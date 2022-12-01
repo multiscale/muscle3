@@ -44,7 +44,7 @@ TEST(test_tcp_communication, send_receive) {
     TcpTransportServer server(post_office);
     std::vector<std::string> locations = {server.get_location()};
     MPPClient client(locations);
-    DataConstRef bytes = client.receive(receiver);
+    DataConstRef bytes = std::get<0>(client.receive(receiver));
     MPPMessage m = MPPMessage::from_bytes(bytes);
 
     ASSERT_EQ(m.sender, "test_sender.port");

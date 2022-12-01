@@ -185,17 +185,24 @@ Message Communicator::receive_message(
 
     Port & port = (ports_.count(port_name)) ? (ports_.at(port_name)) : muscle_settings_in_.get();
 
-    // TODO start profile event
+    ProfileEvent receive_event(
+            ProfileEventType::receive, Timestamp(), {}, port, {}, slot);
 
     // peer_manager already checks that there is at most one snd_endpoint
     // connected to the port we receive on
     Endpoint snd_endpoint = peer_manager_->get_peer_endpoints(
             recv_endpoint.port, slot_list).at(0);
     MPPClient & client = get_client_(snd_endpoint.instance());
-    auto mpp_message = MPPMessage::from_bytes(
-            client.receive(recv_endpoint.ref()));
+    auto msg_and_profile = client.receive(recv_endpoint.ref());
 
+    ProfileEvent recv_decode_event(
+            ProfileEventType::receive_decode, Timestamp(), {}, port, {}, slot,
+            std::get<0>(msg_and_profile).size());
+
+    auto mpp_message = MPPMessage::from_bytes(std::get<0>(msg_and_profile));
     Settings overlay_settings(mpp_message.settings_overlay.as<Settings>());
+
+    profiler_.record_event(std::move(recv_decode_event));
 
     if (mpp_message.port_length.is_set())
         if (port.is_resizable())
@@ -214,7 +221,23 @@ Message Communicator::receive_message(
             port.set_closed();
     }
 
-    // TODO stop and finalise profile event
+    auto profile = std::get<1>(msg_and_profile);
+    ProfileEvent recv_wait_event(
+            ProfileEventType::receive_wait, std::get<0>(profile),
+            std::get<1>(profile), port, mpp_message.port_length, slot);
+    profiler_.record_event(std::move(recv_wait_event));
+
+    ProfileEvent recv_xfer_event(
+            ProfileEventType::receive_transfer, std::get<1>(profile),
+            std::get<2>(profile), port, mpp_message.port_length, slot,
+            std::get<0>(msg_and_profile).size(), message.timestamp());
+    profiler_.record_event(std::move(recv_xfer_event));
+
+    receive_event.message_timestamp = message.timestamp();
+    if (port.is_vector())
+        receive_event.port_length = port.get_length();
+    receive_event.message_size = std::get<0>(msg_and_profile).size();
+    profiler_.record_event(std::move(receive_event));
 
     if (slot.is_set())
         logger_.debug("Received message on ", port_name, "[", slot.get(), "]");

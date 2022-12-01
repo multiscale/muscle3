@@ -11,6 +11,7 @@
 
 using libmuscle::impl::Data;
 using libmuscle::impl::DataConstRef;
+using libmuscle::impl::mcp::ProfileData;
 using libmuscle::impl::mcp::TcpTransportClient;
 using ymmsl::Reference;
 
@@ -23,7 +24,9 @@ MPPClient::MPPClient(std::vector<std::string> const & locations) {
         throw std::runtime_error("Could not connect to peer");
 }
 
-DataConstRef MPPClient::receive(Reference const & receiver) {
+std::tuple<DataConstRef, ProfileData> MPPClient::receive(
+        Reference const & receiver)
+{
     auto request = Data::list(
             static_cast<int>(RequestType::get_next_message),
             std::string(receiver));

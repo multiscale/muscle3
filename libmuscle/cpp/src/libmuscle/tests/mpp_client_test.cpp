@@ -9,6 +9,7 @@
 
 #include <cassert>
 #include <memory>
+#include <tuple>
 
 #include <msgpack.hpp>
 
@@ -32,7 +33,7 @@ int main(int argc, char *argv[]) {
 
     // receive a message
     Reference receiver("test_receiver.test_port2");
-    DataConstRef bytes = client.receive(receiver);
+    DataConstRef bytes = std::get<0>(client.receive(receiver));
     MPPMessage message = MPPMessage::from_bytes(bytes);
 
     // check message

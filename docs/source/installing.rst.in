@@ -12,7 +12,7 @@ Python
 
 Installing MUSCLE3 on Python will install all the Python-based components of
 the system, i.e. the Python version of libmuscle, the YMMSL Python library, and
-the MUSCLE Manager. This requires at least Python 3.6.
+the MUSCLE Manager. This requires at least Python 3.7.
 
 MUSCLE3 is on PyPI as an ordinary Python package, so it can be installed via
 Pip in the usual way. It's normally a good idea to make a virtual environment

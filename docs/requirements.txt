@@ -7,5 +7,6 @@ qcg-pilotjob
 six
 sphinx-fortran
 sphinx-tabs
+sphinx-click
 typing==3.6.6
 ymmsl

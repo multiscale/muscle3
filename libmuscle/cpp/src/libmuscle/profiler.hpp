@@ -42,6 +42,8 @@ class Profiler {
         void record_event(ProfileEvent && event);
 
     private:
+        friend class TestProfiler;
+
         MMPClient & manager_;
         std::vector<ProfileEvent> events_;
 

@@ -23,6 +23,10 @@ void MockMMPClient::submit_log_message(LogMessage const & message) {
     last_submitted_log_message = message;
 }
 
+void MockMMPClient::submit_profile_events(std::vector<ProfileEvent> const & event) {
+    last_submitted_profile_events = event;
+}
+
 void MockMMPClient::register_instance(
         std::vector<std::string> const & locations,
         std::vector<::ymmsl::Port> const & ports)
@@ -83,6 +87,8 @@ std::vector<::ymmsl::Port> MockMMPClient::last_registered_ports({});
 
 LogMessage MockMMPClient::last_submitted_log_message(
         "", Timestamp(-1.0), LogLevel::DEBUG, "");
+
+std::vector<ProfileEvent> MockMMPClient::last_submitted_profile_events;
 
 } }
 

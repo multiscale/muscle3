@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <libmuscle/logging.hpp>
+#include <libmuscle/profiling.hpp>
 #include <libmuscle/timestamp.hpp>
 
 #include <ymmsl/ymmsl.hpp>
@@ -21,6 +22,8 @@ class MockMMPClient {
         void close();
 
         void submit_log_message(LogMessage const & message);
+
+        void submit_profile_events(std::vector<ProfileEvent> const & event);
 
         ymmsl::Settings get_settings();
 
@@ -45,6 +48,7 @@ class MockMMPClient {
         static std::vector<std::string> last_registered_locations;
         static std::vector<::ymmsl::Port> last_registered_ports;
         static LogMessage last_submitted_log_message;
+        static std::vector<ProfileEvent> last_submitted_profile_events;
 };
 
 using MMPClient = MockMMPClient;

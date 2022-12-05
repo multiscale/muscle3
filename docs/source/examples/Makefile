@@ -101,6 +101,7 @@ clean:
 	$(MAKE) -C fortran clean
 	$(MAKE) -C python clean
 	rm -f rd_implementations.ymmsl
+	rm -rf run_*/
 
 
 # Tests
@@ -108,6 +109,7 @@ clean:
 .PHONY: test_python
 test_python: base
 	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_implementations.ymmsl rd_python.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints.ymmsl rd_settings.ymmsl
 	make -C python test
 
 .PHONY: test_cpp

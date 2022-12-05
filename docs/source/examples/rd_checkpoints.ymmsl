@@ -1,0 +1,31 @@
+ymmsl_version: v0.1
+
+model:
+  name: checkpointing_reaction_diffusion_python
+
+  components:
+    macro:
+      implementation: checkpointing_diffusion_python
+      ports:
+        o_i: state_out
+        s: state_in
+
+    micro:
+      implementation: checkpointing_reaction_python
+      ports:
+        f_init: initial_state
+        o_f: final_state
+
+  conduits:
+    macro.state_out: micro.initial_state
+    micro.final_state: macro.state_in
+
+resources:
+  macro:
+    threads: 1
+  micro:
+    threads: 1
+
+checkpoints:
+  simulation_time:
+  - every: 2.0e-05

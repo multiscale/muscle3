@@ -233,9 +233,10 @@ class TriggerManager:
             return False
 
         value = False
-        if not do_reuse and self._checkpoint_at_end:
-            value = True
-            self._last_triggers.append('at_end')
+        if not do_reuse:
+            if self._checkpoint_at_end:
+                value = True
+                self._last_triggers.append('at_end')
         elif f_init_max_timestamp is None:
             # No F_INIT messages received: reuse triggered on muscle_settings_in
             # message.

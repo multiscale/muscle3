@@ -20,6 +20,10 @@ capabilities to your MUSCLE3 component. Finally, the :ref:`checkpointing
 deep-dive` describes in detail the (inner) working of checkpointing in MUSCLE3;
 though this level of detail is not required for general usage of the API.
 
+.. contents:: Contents
+    :local:
+    :depth: 1
+
 
 Glossary
 --------
@@ -45,6 +49,14 @@ Glossary
 
 User tutorial
 -------------
+
+This user tutorial explains all you need to know about checkpointing for running
+and resuming simulations. Some details are deliberately left out, though you
+can read all about those in the :ref:`developer tutorial` or :ref:`checkpointing
+deep-dive`.
+
+.. contents:: User totorial contents
+    :local:
 
 
 Defining checkpoints
@@ -208,7 +220,7 @@ rules to set checkpoint moments for these:
 
     yMMSL API reference: :external:py:class:`ymmsl.Checkpoints`,
     :external:py:class:`ymmsl.CheckpointAtRule`,
-    :external:py:class:`ymmsl.CheckpointRangeRule`
+    :external:py:class:`ymmsl.CheckpointRangeRule`.
 
 
 Simulation time checkpoints
@@ -395,8 +407,8 @@ Example: resuming the reaction-diffusion model
 
 To resume the reaction-diffusion model from a snapshot created in the
 :ref:`previous section <Example: running the reaction-diffusion model with
-checkpoints`, replace ``<date>`` and ``<time>`` in the following command to poin
-to the snapshot you want to resume from and execute it.
+checkpoints>`, replace ``<date>`` and ``<time>`` in the following command to
+point to the snapshot you want to resume from.
 
 .. code-block:: bash
     :caption: Resume from an earlier snapshot. Replace ``<date>`` and ``<time>`` to point to an actual snapshot file.
@@ -520,7 +532,9 @@ github.
         can find that configuration in ``run1/configuration.ymmsl``. Try
         resuming with that configuration first to see if this is the real
         problem::
+
             $ muscle_manager --run-dir run2 run1/configuration.ymmsl run1/snapshots/snapshot_xyz.ymmsl
+
     -   One of your components has a bug with resuming from a previous snapshot,
         or perhaps your snapshot belonged to a different version of the
         component. Please ask your component developer(s) for help.
@@ -530,10 +544,572 @@ github.
 Developer tutorial
 ------------------
 
-TODO
+This developer tutorial explains all you need to know about implementing
+checkpointing in your MUSCLE3 simulation component. If you're not a developer
+and want to learn how to define checkpoints and resume simulations, please have
+a look at the :ref:`user tutorial`.
+
+Some details are deliberately left out in this developer tutorial, though you
+can read all about those in the :ref:`checkpointing deep-dive`.
+
+.. contents:: Developer totorial contents
+    :local:
+
+
+Start situation: components without checkpointing
+`````````````````````````````````````````````````
+
+In this tutorial we will add checkpointing to the reaction and diffusion
+components from the :ref:`Python <Tutorial with Python>`, :ref:`C++ <MUSCLE and C++>`
+and :ref:`Fortran <MUSCLE and Fortran>` tutorials.
+
+Additionally, we will do the same for a generic MUSCLE3 component template.
+These templates illustrate the structure of a MUSCLE3 component, but they are
+not complete and cannot be executed.
+
+.. tabs::
+
+    .. group-tab:: Reaction model
+
+        .. tabs::
+
+            .. group-tab:: Python
+
+                .. literalinclude:: examples/python/reaction.py
+                    :caption: ``docs/source/examples/python/reaction.py``
+                    :language: python
+
+            .. group-tab:: C++
+
+                .. literalinclude:: examples/cpp/reaction.cpp
+                    :caption: ``docs/source/examples/cpp/reaction.cpp``
+                    :language: c++
+
+            .. group-tab:: Fortran
+
+                .. literalinclude:: examples/fortran/reaction.f90
+                    :caption: ``docs/source/examples/fortran/reaction.f90``
+                    :language: fortran
+
+    .. group-tab:: Diffusion model
+
+        .. tabs::
+
+            .. group-tab:: Python
+
+                .. literalinclude:: examples/python/diffusion.py
+                    :caption: ``docs/source/examples/python/diffusion.py``
+                    :language: python
+
+            .. group-tab:: C++
+
+                .. literalinclude:: examples/cpp/diffusion.cpp
+                    :caption: ``docs/source/examples/cpp/diffusion.cpp``
+                    :language: c++
+
+            .. group-tab:: Fortran
+
+                .. literalinclude:: examples/fortran/diffusion.f90
+                    :caption: ``docs/source/examples/fortran/diffusion.f90``
+                    :language: fortran
+
+    .. group-tab:: Generic template
+
+        .. tabs::
+
+            .. group-tab:: Python
+
+                .. literalinclude:: templates/instance.py
+                    :caption: ``docs/source/templates/instance.py``
+                    :language: python
+
+            .. group-tab:: C++
+
+                .. literalinclude:: templates/instance.cpp
+                    :caption: ``docs/source/templates/instance.cpp``
+                    :language: c++
+
+            .. group-tab:: Fortran
+
+                .. literalinclude:: templates/instance.f90
+                    :caption: ``docs/source/templates/instance.f90``
+                    :language: fortran
+
+
+Step 1: implement checkpoint hooks
+``````````````````````````````````
+
+The first step in implementing the checkpointing API is implementing the
+checkpoint hooks. These are the points where your component can make
+checkpoints:
+
+1.  :ref:`Intermediate snapshots`
+
+    Intermediate snapshots are taken inside the reuse-loop, **immediately
+    after** the ``S`` Operator of your component.
+
+2.  :ref:`Final snapshots`
+
+    Final snapshots are taken at the **end of the reuse-loop**, after the
+    ``O_F`` Operator of your component.
+
+
+Intermediate snapshots
+''''''''''''''''''''''
+
+Intermediate snapshots are taken inside the reuse-loop, **immediately after**
+the ``S`` Operator of your component.
+
+Taking intermediate snapshots is optional. However, we recommend implementing
+intermediate snapshots when any of the following points holds for your
+component:
+
+1.  Your component has a loop containing ``O_I`` and ``S``, and you communicate
+    during Operator ``O_I`` or Operator ``S``.
+
+    Implementing intermediate checkpointing allows submodels connected to your
+    component to also create checkpoints.
+
+    .. warning::
+
+        If you do not implement intermediate checkpoints in this case, then it
+        is likely that a large amount of user-provided checkpoints will not lead
+        to consistent :term:`workflow snapshots <workflow snapshot>`. Please
+        implement intermediate snapshots to give the users of your component a
+        good checkpointing experience.
+
+2.  There is no communication during ``O_I`` and ``S``, but the state update
+    ``S`` is executed in a (time-integration) loop which takes a relatively long
+    time.
+
+    In this case, intermediate checkpointing allows users to create checkpoints
+    of your component during long-running computations.
+
+In all other cases, there usually is little or no added value in implementing
+intermediate snapshots in addition to :ref:`Final snapshots`.
+
+You implement taking intermediate snapshots as follows:
+
+1.  Find out where in your code to implement the checkpointing calls. Typically
+    there is a state update loop (e.g. a ``while`` or ``for`` loop) in a
+    component. You should implement the checkpointing calls **at the end** of
+    this state update loop. In this way, your code can resume immediately at the
+    begin of that loop. This allows for consistent restarts with the least
+    amount of code.
+2.  Ask libmuscle if you need to store your state and create an intermediate
+    snapshot with the API call ``should_save_snapshot(t)``. You must provide the
+    current time ``t`` in your simulation, such that MUSCLE3 can determine if
+    :ref:`Simulation time checkpoints` are triggered.
+3.  Collect the state that you need to store.
+4.  Create a ``libmuscle.Message`` object to put your state in.
+5.  Store the snapshot Message with the API call ``save_snapshot(message)``.
+
+See :ref:`Example: implemented checkpoint hooks` for example implementations in
+the reaction-diffusion models and the component template.
+
+.. seealso::
+    Python API documentation:
+    :py:meth:`~libmuscle.Instance.should_save_snapshot`,
+    :py:meth:`~libmuscle.Instance.save_snapshot`.
+
+
+Final snapshots
+'''''''''''''''
+
+Final snapshots **must** be implemented by all components supporting
+checkpointing. You implement taking final snapshot as follows:
+
+1.  You must implement the checkpoint calls at the end of the :ref:`reuse loop
+    <The reuse loop>`.
+2.  Ask libmuscle if you need to store your state and create a final snapshot
+    with the API call ``should_save_final_checkpoint()``. Contrary to the
+    intermediate checkpoints, this call may block to determine if a checkpoint
+    is needed (this is also the reason it must happen at the end of the reuse
+    loop).
+3.  Collect the state that you need to store.
+4.  Create a ``libmuscle.Message`` object to put your state in.
+5.  Store the snapshot Message with the API call
+    ``save_final_snapshot(message)``.
+
+See :ref:`Example: implemented checkpoint hooks` for example implementations in
+the reaction-diffusion models and the component template.
+
+.. seealso::
+    Python API documentation:
+    :py:meth:`~libmuscle.Instance.should_save_final_snapshot`,
+    :py:meth:`~libmuscle.Instance.save_final_snapshot`.
+
+
+Example: implemented checkpoint hooks
+'''''''''''''''''''''''''''''''''''''
+
+Note that below examples only shows the changes compared to the :ref:`start
+situation <Start situation: components without checkpointing>`. You can view the
+full contents of the files in the git repository.
+
+.. tabs::
+
+    .. group-tab:: Reaction model
+
+        .. rubric:: Intermediate snapshots
+
+        The state we need to store consists of three parts: the current ``U``,
+        the current time ``t_cur`` and the end-time for the time integration
+        ``t_stop``. The current time is stored as the ``timestamp`` attribute of
+        the ``Message`` object. The rest is stored in ``Message.data``.
+
+        .. rubric:: Final snapshots
+
+        For the final snapshot there is no state that is required for resuming.
+        The complete state will be received with the next message on the
+        ``initial_state`` port.
+
+        .. tabs::
+
+            .. group-tab:: Python
+
+                .. literalinclude:: tutorial_code/checkpointing_reaction_partial.py
+                    :caption: ``docs/source/tutorial_code/checkpointing_reaction_partial.py``
+                    :language: python
+                    :diff: examples/python/reaction.py
+
+            ..
+                group-tab:: C++
+
+                .. literalinclude:: examples/cpp/reaction.cpp
+                    :caption: ``docs/source/examples/cpp/reaction.cpp``
+                    :language: c++
+
+                TODO
+
+            ..
+                group-tab:: Fortran
+
+                .. literalinclude:: examples/fortran/reaction.f90
+                    :caption: ``docs/source/examples/fortran/reaction.f90``
+                    :language: fortran
+
+                TODO
+
+    .. group-tab:: Diffusion model
+
+        .. rubric:: Intermediate snapshots
+
+        The state we need to store consists of two parts: the current time
+        ``t_cur`` and the history of ``U``: ``Us``. Note that the last value of
+        ``U`` is contained in ``Us``, so we do not need to save ``U``
+        explicitly. The current time is stored as the ``timestamp`` attribute of
+        the ``Message`` object. ``Us`` is stored in ``Message.data``.
+
+        .. rubric:: Final snapshots
+
+        The same state is stored as for intermediate snapshots.
+
+        .. tabs::
+
+            .. group-tab:: Python
+
+                .. literalinclude:: tutorial_code/checkpointing_diffusion_partial.py
+                    :caption: ``docs/source/tutorial_code/checkpointing_diffusion_partial.py``
+                    :language: python
+                    :diff: examples/python/diffusion.py
+
+            ..
+                group-tab:: C++
+
+                .. literalinclude:: examples/cpp/diffusion.cpp
+                    :caption: ``docs/source/examples/cpp/diffusion.cpp``
+                    :language: c++
+
+                TODO
+
+            ..
+                group-tab:: Fortran
+
+                .. literalinclude:: examples/fortran/diffusion.f90
+                    :caption: ``docs/source/examples/fortran/diffusion.f90``
+                    :language: fortran
+
+                TODO
+
+    .. group-tab:: Generic template
+
+        .. tabs::
+
+            .. group-tab:: Python
+
+                .. literalinclude:: tutorial_code/checkpointing_instance_partial.py
+                    :caption: ``docs/source/tutorial_code/checkpointing_instance_partial.py``
+                    :language: python
+                    :diff: templates/instance.py
+
+            ..
+                group-tab:: C++
+
+                .. literalinclude:: templates/instance.cpp
+                    :caption: ``docs/source/templates/instance.cpp``
+                    :language: c++
+
+                TODO
+
+            ..
+                group-tab:: Fortran
+
+                .. literalinclude:: templates/instance.f90
+                    :caption: ``docs/source/templates/instance.f90``
+                    :language: fortran
+
+                TODO
+
+
+Step 2: implement resume
+````````````````````````
+
+Now that the checkpoint hooks are implemented, we can add support for resuming
+from a previously created checkpoint. When resuming, there are two options:
+resuming from an intermediate checkpoint and resuming from a final checkpoint.
+
+When resuming from an intermediate checkpoint, your component first loads its
+state from the checkpoint. However, we cannot just continue with the ``F_INIT``
+Operator, and instead we need to skip ahead to the point where the checkpoint
+was taken.
+
+When resuming from a final checkpoint, your component first loads its state from
+the checkpoint. Next, your component executes the ``F_INIT`` operator as usual.
+
+Steps to implement the resumption logic:
+
+1.  At the start of -- but inside -- the reuse loop you check if you need to
+    resume from a previous snapshot with the API call ``resuming()``.
+
+    .. note::
+
+        This takes place inside the reuse loop. Currently resuming can only
+        happen during the first iteration of the reuse loop. However, additional
+        checkpointing features are planned that would allow a model to resume
+        multiple times inside one run. By implementing the resume logic inside
+        the reuse loop, your component will be forwards-compatible with this.
+
+2.  When resuming, you load the previously stored snapshot with
+    ``load_snapshot()`` and restore the state of your component.
+3.  Afterwards check if initialization is required with ``should_init()`` and
+    run the regular initialization logic.
+4.  Continue with the time-integration loop.
+
+See :ref:`Example: implemented checkpoint hooks and resume` for example
+implementations in the reaction-diffusion models and the component template.
+
+.. seealso::
+    Python API documentation: :py:meth:`~libmuscle.Instance.resuming`,
+    :py:meth:`~libmuscle.Instance.load_snapshot`,
+    :py:meth:`~libmuscle.Instance.should_init`.
+
+Reload settings when resuming
+'''''''''''''''''''''''''''''
+
+You will notice in the :ref:`examples <Example: implemented checkpoint hooks and
+resume>` that the resume logic is not executed first in the reuse-loop.
+Instead, the components all retrieve settings. The reason behind this is that it
+allows the user to resume a simulation with slightly different settings and have
+those settings take effect immediately after resuming.
+
+It is not required to do this, so you get to decide if (and when) you reload
+settings after resuming. Be sure to include the behaviour of your component in
+the documentation, such that users of your component know what they can expect.
+
+
+Example: implemented checkpoint hooks and resume
+''''''''''''''''''''''''''''''''''''''''''''''''
+
+Note that below examples only shows the changes compared to the :ref:`start
+situation <Start situation: components without checkpointing>`. You can view the
+full contents of the files in the git repository.
+
+
+.. tabs::
+
+    .. group-tab:: Reaction model
+
+        .. rubric:: Resume logic
+
+        In :ref:`Example: implemented checkpoint hooks` we made the choice to
+        store different data in the message for intermediate and final
+        snapshots. When resuming we therefore need to handle these two cases.
+
+        .. tabs::
+
+            .. group-tab:: Python
+
+                .. literalinclude:: examples/python/checkpointing_reaction.py
+                    :caption: ``docs/source/examples/python/checkpointing_reaction.py``
+                    :language: python
+                    :diff: examples/python/reaction.py
+
+            ..
+                group-tab:: C++
+
+                .. literalinclude:: examples/cpp/reaction.cpp
+                    :caption: ``docs/source/examples/cpp/reaction.cpp``
+                    :language: c++
+
+                TODO
+
+            ..
+                group-tab:: Fortran
+
+                .. literalinclude:: examples/fortran/reaction.f90
+                    :caption: ``docs/source/examples/fortran/reaction.f90``
+                    :language: fortran
+
+                TODO
+
+    .. group-tab:: Diffusion model
+
+        .. rubric:: Resume logic
+
+        For the diffusion model we stored the same state for intermediate and
+        final snapshots. This makes resuming easier because we do not have to
+        distinguish between the data stored in the loaded ``Message`` object.
+
+        .. tabs::
+
+            .. group-tab:: Python
+
+                .. literalinclude:: examples/python/checkpointing_diffusion.py
+                    :caption: ``docs/source/examples/python/checkpointing_diffusion.py``
+                    :language: python
+                    :diff: examples/python/diffusion.py
+
+            ..
+                group-tab:: C++
+
+                .. literalinclude:: examples/cpp/diffusion.cpp
+                    :caption: ``docs/source/examples/cpp/diffusion.cpp``
+                    :language: c++
+
+                TODO
+
+            ..
+                group-tab:: Fortran
+
+                .. literalinclude:: examples/fortran/diffusion.f90
+                    :caption: ``docs/source/examples/fortran/diffusion.f90``
+                    :language: fortran
+
+                TODO
+
+    .. group-tab:: Generic template
+
+        .. tabs::
+
+            .. group-tab:: Python
+
+                .. literalinclude:: templates/checkpointing_instance.py
+                    :caption: ``docs/source/templates/checkpointing_instance.py``
+                    :language: python
+                    :diff: templates/instance.py
+
+            ..
+                group-tab:: C++
+
+                .. literalinclude:: templates/instance.cpp
+                    :caption: ``docs/source/templates/instance.cpp``
+                    :language: c++
+
+                TODO
+
+            ..
+                group-tab:: Fortran
+
+                .. literalinclude:: templates/instance.f90
+                    :caption: ``docs/source/templates/instance.f90``
+                    :language: fortran
+
+                TODO
+
+
+Stateless components
+````````````````````
+
+Some components do not need to store data between reuses. An example of that is
+the reaction model from above examples. In the final snapshot, no state needs
+to be stored to allow properly resuming this component, see
+:ref:`Example: implemented checkpoint hooks`. These components are called
+stateless.
+
+.. note::
+
+    *Stateless* in this context means that the component does not store any
+    state between iterations of the reuse loop. Although there is a state inside
+    the loop (e.g. ``cur_t`` and ``U``), the component is still considered
+    *stateless*.
+
+Other examples of stateless components may be data transformers, receiving data
+on an ``F_INIT`` port and sending the converted data on an ``O_F`` port.
+
+If you indicate to libmuscle that these components are *stateless*, libmuscle
+automatically provides checkpointing for your component. See below example for
+a stateless variant of the example reaction model.
+
+.. tabs::
+
+    .. group-tab:: Python
+
+        .. literalinclude:: examples/python/stateless_reaction.py
+            :caption: ``docs/source/examples/python/stateless_reaction.py``
+            :language: python
+            :diff: examples/python/reaction.py
+
+    ..
+        group-tab:: C++
+
+        .. literalinclude:: examples/cpp/reaction.cpp
+            :caption: ``docs/source/examples/cpp/reaction.cpp``
+            :language: c++
+
+        TODO
+
+    ..
+        group-tab:: Fortran
+
+        .. literalinclude:: examples/fortran/reaction.f90
+            :caption: ``docs/source/examples/fortran/reaction.f90``
+            :language: fortran
+
+        TODO
+
+.. seealso::
+    Python API documentation: :py:class:`libmuscle.Instance`.
+
+
+Builtin validation
+``````````````````
+
+MUSCLE3's checkpointing API was carefully designed to allow consistenly resuming
+a simulation. This is only possible when components carefully implement the
+checkpointing API. To support you in this task, MUSCLE3 tries to detect any
+issues with the checkpointing implementation. When MUSCLE3 detects a problem, an
+error is raised to indicate what went wrong and point you in the right direction
+for fixing the problem.
+
+Some of these errors can be turned into a warning by setting the environment
+variable ``MUSCLE_DISABLE_CHECKPOINT_VALIDATION`` to any value. Note that it is
+discouraged to use this: the errors are there to ensure proper exeuction and
+resuming. Not adhering to the rules may lead to deadlocks or crashes of your
+simulations.
+
+..
+    TODO: create an overview of the validation rules
 
 
 Checkpointing deep-dive
 -----------------------
 
-TODO
+This checkpointing deep-dive explains the details of the distributed
+checkpointing implemented in MUSCLE3. Usually you will not need to read or
+understand these details when you want to run simulations with checkpointing
+(see :ref:`User tutorial`) or implement checkpointing in a MUSCLE3 component
+(see :ref:`Developer tutorial`).
+
+.. contents:: Checkpointing deep-dive contents
+    :local:

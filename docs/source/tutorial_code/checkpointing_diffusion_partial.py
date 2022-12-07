@@ -44,20 +44,13 @@ def diffusion() -> None:
         dx = instance.get_setting('dx', 'float')
         d = instance.get_setting('d', 'float')
 
-        if instance.resuming():
-            msg = instance.load_snapshot()
-            Us = msg.data.array.copy()
-            U = Us[-1]
-            t_cur = msg.timestamp
+        U = np.zeros(int(round(x_max / dx))) + 1e-20
+        U[25] = 2.0
+        U[50] = 2.0
+        U[75] = 2.0
+        Us = U
 
-        if instance.should_init():
-            U = np.zeros(int(round(x_max / dx))) + 1e-20
-            U[25] = 2.0
-            U[50] = 2.0
-            U[75] = 2.0
-            Us = U
-            t_cur = 0.0
-
+        t_cur = 0.0
         while t_cur + dt <= t_max:
             # O_I
             t_next = t_cur + dt

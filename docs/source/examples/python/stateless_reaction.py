@@ -1,7 +1,7 @@
 import logging
 
 from libmuscle import Grid, Instance, Message
-from ymmsl import Operator
+from ymmsl import Operator, ImplementationState
 
 
 def reaction() -> None:
@@ -9,7 +9,8 @@ def reaction() -> None:
     """
     instance = Instance({
             Operator.F_INIT: ['initial_state'],     # list of float
-            Operator.O_F: ['final_state']})         # list of float
+            Operator.O_F: ['final_state']},         # list of float
+            stateful=ImplementationState.STATELESS)
 
     while instance.reuse_instance():
         # F_INIT

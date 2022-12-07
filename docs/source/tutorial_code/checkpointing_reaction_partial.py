@@ -12,26 +12,16 @@ def reaction() -> None:
             Operator.O_F: ['final_state']})         # list of float
 
     while instance.reuse_instance():
+        # F_INIT
         t_max = instance.get_setting('t_max', 'float')
         dt = instance.get_setting('dt', 'float')
         k = instance.get_setting('k', 'float')
 
-        if instance.resuming():
-            msg = instance.load_snapshot()
-            if msg.data is not None:
-                # A final snapshot does not have data in it, but that's fine: we
-                # will do the F_INIT step inside `should_init()` below.
-                U = msg.data[0].array.copy()
-                t_cur = msg.timestamp
-                t_stop = msg.data[1]
+        msg = instance.receive('initial_state')
+        U = msg.data.array.copy()
 
-        # F_INIT
-        if instance.should_init():
-            msg = instance.receive('initial_state')
-            U = msg.data.array.copy()
-            t_cur = msg.timestamp
-            t_stop = msg.timestamp + t_max
-
+        t_cur = msg.timestamp
+        t_stop = msg.timestamp + t_max
         while t_cur + dt < t_stop:
             # O_I
 

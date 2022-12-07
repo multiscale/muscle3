@@ -10,6 +10,7 @@ from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger
 from libmuscle.manager.mmp_server import MMPServer
 from libmuscle.manager.instance_manager import InstanceManager
+from libmuscle.manager.profile_store import ProfileStore
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.manager.topology_store import TopologyStore
 
@@ -40,6 +41,7 @@ class Manager:
         self._run_dir = run_dir
         log_dir = self._run_dir.path if self._run_dir else Path.cwd()
         self._logger = Logger(log_dir, log_level)
+        self._profile_store = ProfileStore(log_dir)
         self._topology_store = TopologyStore(configuration)
         self._instance_registry = InstanceRegistry()
 
@@ -58,8 +60,9 @@ class Manager:
             pass
 
         self._server = MMPServer(
-                self._logger, self._configuration.settings,
-                self._instance_registry, self._topology_store)
+                self._logger, self._profile_store,
+                self._configuration.settings, self._instance_registry,
+                self._topology_store)
 
         if self._instance_manager:
             self._instance_manager.set_manager_location(

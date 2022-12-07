@@ -1,4 +1,5 @@
 from pathlib import Path
+import sqlite3
 
 import numpy as np
 
@@ -36,6 +37,34 @@ def macro():
             assert msg.timestamp == i * 10.0
 
 
+def check_profile_output(tmp_path):
+    conn = sqlite3.connect(tmp_path / 'performance.sqlite')
+    cur = conn.cursor()
+
+    def check(instance: str, typ: str, port: str, operator: str) -> None:
+        cur.execute(
+                "SELECT * FROM all_events"
+                f"    WHERE instance = '{instance}' AND type = '{typ}'"
+                "    ORDER BY start_time")
+        res = cur.fetchall()
+        assert len(res) == 2
+        assert res[0][4:8] == (port, operator, None, None)
+        assert res[0][8] > 0
+        assert res[0][9] == 0.0
+
+        assert res[1][4:8] == (port, operator, None, None)
+        assert res[1][8] > 0
+        assert res[1][9] == 10.0
+
+    check('macro', 'SEND', 'out', 'O_I')
+    check('micro', 'RECEIVE_TRANSFER', 'in', 'F_INIT')
+    check('micro', 'SEND', 'out', 'O_F')
+    check('macro', 'RECEIVE_DECODE', 'in', 'S')
+
+    cur.close()
+    conn.close()
+
+
 @skip_if_python_only
 def test_cpp_macro_micro(mmp_server_config_simple, tmp_path):
     # create C++ micro model
@@ -46,3 +75,5 @@ def test_cpp_macro_micro(mmp_server_config_simple, tmp_path):
             {'micro': Path('libmuscle') / 'tests' / 'micro_model_test'},
             {},
             {'macro': macro})
+
+    check_profile_output(tmp_path)

@@ -6,9 +6,10 @@ from libmuscle.manager.mmp_server import MMPRequestHandler
 from libmuscle.mcp.protocol import RequestType, ResponseType
 
 
-def test_create_servicer(logger, settings, instance_registry,
-                         topology_store):
-    MMPRequestHandler(logger, settings, instance_registry, topology_store)
+def test_create_servicer(
+        logger, profile_store, settings, instance_registry, topology_store):
+    MMPRequestHandler(
+            logger, profile_store, settings, instance_registry, topology_store)
 
 
 def test_log_message(mmp_request_handler, caplog):

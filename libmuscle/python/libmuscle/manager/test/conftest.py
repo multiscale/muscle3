@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pytest
 from ymmsl import (Component, Conduit, Configuration, Model, Reference,
                    Settings)
@@ -8,13 +6,21 @@ from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger
 from libmuscle.manager.mmp_server import MMPRequestHandler
 from libmuscle.manager.topology_store import TopologyStore
+from libmuscle.manager.profile_store import ProfileStore
 
 
 @pytest.fixture
-def logger(tmpdir):
-    test_logger = Logger(Path(str(tmpdir)))
+def logger(tmp_path):
+    test_logger = Logger(tmp_path)
     yield test_logger
     test_logger.close()
+
+
+@pytest.fixture
+def profile_store(tmp_path):
+    test_profile_store = ProfileStore(tmp_path)
+    yield test_profile_store
+    test_profile_store.close()
 
 
 @pytest.fixture
@@ -45,9 +51,10 @@ def topology_store() -> TopologyStore:
 
 
 @pytest.fixture
-def mmp_request_handler(logger, settings, instance_registry, topology_store):
+def mmp_request_handler(
+        logger, profile_store, settings, instance_registry, topology_store):
     return MMPRequestHandler(
-            logger, settings, instance_registry, topology_store)
+            logger, profile_store, settings, instance_registry, topology_store)
 
 
 @pytest.fixture
@@ -63,9 +70,11 @@ def loaded_instance_registry(instance_registry):
 
 @pytest.fixture
 def registered_mmp_request_handler(
-        logger, settings, loaded_instance_registry, topology_store):
+        logger, profile_store, settings, loaded_instance_registry,
+        topology_store):
     return MMPRequestHandler(
-            logger, settings, loaded_instance_registry, topology_store)
+            logger, profile_store, settings, loaded_instance_registry,
+            topology_store)
 
 
 @pytest.fixture
@@ -109,6 +118,8 @@ def loaded_instance_registry2():
 
 @pytest.fixture
 def registered_mmp_request_handler2(
-        logger, settings, loaded_instance_registry2, topology_store2):
+        logger, profile_store, settings, loaded_instance_registry2,
+        topology_store2):
     return MMPRequestHandler(
-            logger, settings, loaded_instance_registry2, topology_store2)
+            logger, profile_store, settings, loaded_instance_registry2,
+            topology_store2)

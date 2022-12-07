@@ -58,6 +58,11 @@ class TcpHandler(ss.BaseRequestHandler):
         except SocketClosed:
             return None
 
+    def finish(self) -> None:
+        """Called when shutting down the thread?"""
+        server = cast(TcpTransportServerImpl, self.server).transport_server
+        server._handler.close()
+
 
 class TcpTransportServer(TransportServer):
     """A TransportServer that uses TCP to communicate."""

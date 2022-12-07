@@ -19,6 +19,8 @@ from libmuscle.manager.topology_store import TopologyStore
 from libmuscle.mcp.protocol import RequestType, ResponseType
 from libmuscle.mcp.tcp_transport_server import TcpTransportServer
 from libmuscle.mcp.transport_server import RequestHandler
+from libmuscle.manager.profile_store import ProfileStore
+from libmuscle.profiling import ProfileEvent, ProfileEventType
 from libmuscle.snapshot import SnapshotMetadata
 from libmuscle.timestamp import Timestamp
 
@@ -55,6 +57,7 @@ class MMPRequestHandler(RequestHandler):
     def __init__(
             self,
             logger: Logger,
+            profile_store: ProfileStore,
             configuration: PartialConfiguration,
             instance_registry: InstanceRegistry,
             topology_store: TopologyStore,
@@ -70,6 +73,7 @@ class MMPRequestHandler(RequestHandler):
             topology_store: Keeps track of how to connect things.
         """
         self._logger = logger
+        self._profile_store = profile_store
         self._configuration = configuration
         self._instance_registry = instance_registry
         self._topology_store = topology_store
@@ -107,6 +111,14 @@ class MMPRequestHandler(RequestHandler):
             response = self._get_checkpoint_info(*req_args)
 
         return cast(bytes, msgpack.packb(response, use_bin_type=True))
+
+    def close(self) -> None:
+        """Free per-thread resources.
+
+        On shutdown of the server, this will be called by each server
+        thread before it shuts down.
+        """
+        self._profile_store.close()
 
     def _register_instance(
             self, instance_id: str, locations: List[str],
@@ -261,16 +273,26 @@ class MMPRequestHandler(RequestHandler):
         return [ResponseType.SUCCESS.value]
 
     def _submit_profile_events(
-            self, instance: str, events: List[List[Any]]) -> Any:
+            self, instance_id: str, events: List[List[Any]]) -> Any:
         """Handle a submit profile events request.
 
-        Not implemented yet.
+        Args:
+            instance_id: Instance that sent these events
+            events: Profiling events to store
 
         Returns:
             A list containing the following values on success:
 
             status (ResponseType): SUCCESS
         """
+        ev = [
+                ProfileEvent(
+                    ProfileEventType(e[0]), Timestamp(e[1]), Timestamp(e[2]),
+                    Port(e[3][0], Operator[e[3][1]]) if e[3] else None,
+                    e[4], e[5], e[6], e[7])
+                for e in events]
+
+        self._profile_store.add_events(Reference(instance_id), ev)
         return [ResponseType.SUCCESS.value]
 
     def _submit_snapshot(
@@ -330,6 +352,7 @@ class MMPServer:
     def __init__(
             self,
             logger: Logger,
+            profile_store: ProfileStore,
             configuration: PartialConfiguration,
             instance_registry: InstanceRegistry,
             topology_store: TopologyStore,
@@ -345,15 +368,18 @@ class MMPServer:
 
         Args:
             logger: Logger to send log messages to
+            profile_store: ProfileStore to store profile data in
             configuration: Configuration component to get settings, checkpoints
                 and resumes from
             instance_registry: To register instances with and get
                 peer locations from
             topology_store: To get peers and conduits from
+            snapshot_registry: To register snapshots with
+            run_dir: To save snapshots to
         """
         self._handler = MMPRequestHandler(
-                logger, configuration, instance_registry, topology_store,
-                snapshot_registry, run_dir)
+                logger, profile_store, configuration, instance_registry,
+                topology_store, snapshot_registry, run_dir)
         try:
             self._server = TcpTransportServer(self._handler, 9000)
         except OSError as e:

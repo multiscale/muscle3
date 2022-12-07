@@ -13,11 +13,12 @@ from libmuscle.mcp.protocol import RequestType, ResponseType
 from libmuscle.snapshot import SnapshotMetadata
 
 
-def test_create_servicer(logger, mmp_configuration, instance_registry,
-                         topology_store, snapshot_registry):
+def test_create_servicer(
+        logger, profile_store, mmp_configuration, instance_registry,
+        topology_store, snapshot_registry):
     MMPRequestHandler(
-            logger, mmp_configuration, instance_registry, topology_store,
-            snapshot_registry, None)
+            logger, profile_store, mmp_configuration, instance_registry,
+            topology_store, snapshot_registry, None)
 
 
 def test_log_message(mmp_request_handler, caplog):

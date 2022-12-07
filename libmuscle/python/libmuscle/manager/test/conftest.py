@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pytest
 from ymmsl import Component, Conduit, Configuration, Model, Reference
 
@@ -9,11 +7,12 @@ from libmuscle.manager.mmp_server import MMPRequestHandler
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.manager.snapshot_registry import SnapshotRegistry
 from libmuscle.manager.topology_store import TopologyStore
+from libmuscle.manager.profile_store import ProfileStore
 
 
 @pytest.fixture
-def logger(tmpdir):
-    test_logger = Logger(Path(str(tmpdir)))
+def logger(tmp_path):
+    test_logger = Logger(tmp_path)
     yield test_logger
     test_logger.close()
 
@@ -34,6 +33,13 @@ def mmp_configuration():
 
 
 @pytest.fixture
+def profile_store(tmp_path):
+    test_profile_store = ProfileStore(tmp_path)
+    yield test_profile_store
+    test_profile_store.close()
+
+
+@pytest.fixture
 def instance_registry():
     return InstanceRegistry()
 
@@ -50,11 +56,11 @@ def snapshot_registry(mmp_configuration, topology_store) -> SnapshotRegistry:
 
 @pytest.fixture
 def mmp_request_handler(
-        logger, mmp_configuration, instance_registry, topology_store,
-        snapshot_registry):
+        logger, profile_store, mmp_configuration, instance_registry,
+        topology_store, snapshot_registry):
     return MMPRequestHandler(
-            logger, mmp_configuration, instance_registry, topology_store,
-            snapshot_registry, None)
+            logger, profile_store, mmp_configuration, instance_registry,
+            topology_store, snapshot_registry, None)
 
 
 @pytest.fixture
@@ -70,11 +76,11 @@ def loaded_instance_registry(instance_registry):
 
 @pytest.fixture
 def registered_mmp_request_handler(
-        logger, mmp_configuration, loaded_instance_registry, topology_store,
-        snapshot_registry):
+        logger, profile_store, mmp_configuration, loaded_instance_registry,
+        topology_store, snapshot_registry):
     return MMPRequestHandler(
-            logger, mmp_configuration, loaded_instance_registry, topology_store,
-            snapshot_registry, None)
+            logger, profile_store, mmp_configuration, loaded_instance_registry,
+            topology_store, snapshot_registry, None)
 
 
 @pytest.fixture
@@ -126,9 +132,9 @@ def loaded_instance_registry2():
 
 @pytest.fixture
 def registered_mmp_request_handler2(
-        logger, mmp_configuration, loaded_instance_registry2, topology_store2,
-        snapshot_registry2, tmp_path):
+        logger, profile_store, mmp_configuration, loaded_instance_registry2,
+        topology_store2, snapshot_registry2, tmp_path):
     return MMPRequestHandler(
-            logger, mmp_configuration,
+            logger, profile_store, mmp_configuration,
             loaded_instance_registry2, topology_store2, snapshot_registry2,
             RunDir(tmp_path))

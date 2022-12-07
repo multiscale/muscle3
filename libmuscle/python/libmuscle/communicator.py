@@ -236,7 +236,8 @@ class Communicator:
         if port.is_vector():
             profile_event.port_length = port.get_length()
         profile_event.message_size = len(encoded_message)
-        self._profiler.record_event(profile_event)
+        if not isinstance(message.data, ClosePort):
+            self._profiler.record_event(profile_event)
 
     def receive_message(self, port_name: str, slot: Optional[int] = None,
                         default: Optional[Message] = None
@@ -310,7 +311,7 @@ class Communicator:
                 ProfileEventType.RECEIVE_DECODE, Timestamp(), None, port, None,
                 slot, len(mcp_message_bytes))
         mcp_message = MPPMessage.from_bytes(mcp_message_bytes)
-        self._profiler.record_event(recv_decode_event)
+        recv_decode_event.stop()
 
         if mcp_message.port_length is not None:
             if port.is_resizable():
@@ -325,20 +326,30 @@ class Communicator:
 
         recv_wait_event = ProfileEvent(
                 ProfileEventType.RECEIVE_WAIT, profile[0], profile[1], port,
-                mcp_message.port_length, slot)
-        self._profiler.record_event(recv_wait_event)
+                mcp_message.port_length, slot, len(mcp_message_bytes),
+                message.timestamp)
 
         recv_xfer_event = ProfileEvent(
                 ProfileEventType.RECEIVE_TRANSFER, profile[1], profile[2],
                 port, mcp_message.port_length, slot, len(mcp_message_bytes),
                 message.timestamp)
-        self._profiler.record_event(recv_xfer_event)
 
+        recv_decode_event.message_timestamp = message.timestamp
         receive_event.message_timestamp = message.timestamp
+
         if port.is_vector():
             receive_event.port_length = port.get_length()
+            recv_wait_event.port_length = port.get_length()
+            recv_xfer_event.port_length = port.get_length()
+            recv_decode_event.port_length = port.get_length()
+
         receive_event.message_size = len(mcp_message_bytes)
-        self._profiler.record_event(receive_event)
+
+        if not isinstance(mcp_message.data, ClosePort):
+            self._profiler.record_event(recv_wait_event)
+            self._profiler.record_event(recv_xfer_event)
+            self._profiler.record_event(recv_decode_event)
+            self._profiler.record_event(receive_event)
 
         if slot is None:
             _logger.debug('Received message on {}'.format(port_name))

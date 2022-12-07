@@ -153,7 +153,8 @@ void Communicator::send_message(
     profile_event.stop();
     if (port.is_vector())
         profile_event.port_length = port.get_length();
-    profiler_.record_event(std::move(profile_event));
+    if (!is_close_port(message.data()))
+        profiler_.record_event(std::move(profile_event));
 }
 
 Message Communicator::receive_message(
@@ -205,7 +206,7 @@ Message Communicator::receive_message(
     auto mpp_message = MPPMessage::from_bytes(std::get<0>(msg_and_profile));
     Settings overlay_settings(mpp_message.settings_overlay.as<Settings>());
 
-    profiler_.record_event(std::move(recv_decode_event));
+    recv_decode_event.stop();
 
     if (mpp_message.port_length.is_set())
         if (port.is_resizable())
@@ -227,20 +228,32 @@ Message Communicator::receive_message(
     auto profile = std::get<1>(msg_and_profile);
     ProfileEvent recv_wait_event(
             ProfileEventType::receive_wait, std::get<0>(profile),
-            std::get<1>(profile), port, mpp_message.port_length, slot);
-    profiler_.record_event(std::move(recv_wait_event));
+            std::get<1>(profile), port, mpp_message.port_length, slot,
+            std::get<0>(msg_and_profile).size(), message.timestamp());
 
     ProfileEvent recv_xfer_event(
             ProfileEventType::receive_transfer, std::get<1>(profile),
             std::get<2>(profile), port, mpp_message.port_length, slot,
             std::get<0>(msg_and_profile).size(), message.timestamp());
-    profiler_.record_event(std::move(recv_xfer_event));
 
+    recv_decode_event.message_timestamp = message.timestamp();
     receive_event.message_timestamp = message.timestamp();
-    if (port.is_vector())
+
+    if (port.is_vector()) {
         receive_event.port_length = port.get_length();
+        recv_wait_event.port_length = port.get_length();
+        recv_xfer_event.port_length = port.get_length();
+        recv_decode_event.port_length = port.get_length();
+    }
+
     receive_event.message_size = std::get<0>(msg_and_profile).size();
-    profiler_.record_event(std::move(receive_event));
+
+    if (!is_close_port(message.data())) {
+        profiler_.record_event(std::move(recv_wait_event));
+        profiler_.record_event(std::move(recv_xfer_event));
+        profiler_.record_event(std::move(recv_decode_event));
+        profiler_.record_event(std::move(receive_event));
+    }
 
     int expected_message_number = port.get_num_messages(slot);
     // TODO: handle f_init port counts for STATELESS and WEAKLY_STATEFUL

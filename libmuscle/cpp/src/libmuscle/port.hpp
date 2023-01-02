@@ -119,58 +119,16 @@ class Port : public ::ymmsl::Port {
         const std::vector<int> & get_message_counts() const;
 
         /** Increment amount of messages sent or received.
-         */
-        void increment_num_messages();
-
-        /** Increment amount of messages sent or received.
-         *
-         * Only valid for vector ports.
          *
          * @param slot The slot that is sent/received on
          */
-        void increment_num_messages(int slot);
-
-        /** Increment amount of messages sent or received.
-         *
-         * @param slot The slot that is sent/received on
-         */
-        void increment_num_messages(Optional<int> slot);
-
-        /** Get the amount of messages sent or received
-         */
-        int get_num_messages() const;
-
-        /** Get the amount of messages sent or received
-         *
-         * Only valid for vector ports.
-         *
-         * @param slot The slot that is sent/received on
-         */
-        int get_num_messages(int slot) const;
+        void increment_num_messages(Optional<int> slot = {});
 
         /** Get the amount of messages sent or received
          *
          * @param slot The slot that is sent/received on
          */
-        int get_num_messages(Optional<int> slot) const;
-
-        /** True when this port has resumed.
-         *
-         * After resumption, each port/slot may discard exactly one message.
-         * is_resuming keeps track of this state.
-         */
-        bool is_resuming() const;
-
-        /** True when this port has resumed.
-         *
-         * After resumption, each port/slot may discard exactly one message.
-         * is_resuming keeps track of this state.
-         *
-         * Only valid for vector ports.
-         *
-         * @param slot The slot that is sent/received on
-         */
-        bool is_resuming(int slot) const;
+        int get_num_messages(Optional<int> slot = {}) const;
 
         /** True when this port has resumed.
          *
@@ -179,25 +137,13 @@ class Port : public ::ymmsl::Port {
          *
          * @param slot The slot that is sent/received on
          */
-        bool is_resuming(Optional<int> slot) const;
-
-        /** Mark that this port has resumed and may no longer discard messages.
-         */
-        void set_resumed();
-
-        /** Mark that this port has resumed and may no longer discard messages.
-         *
-         * Only valid for vector ports.
-         *
-         * @param slot The slot that is sent/received on
-         */
-        void set_resumed(int slot);
+        bool is_resuming(Optional<int> slot = {}) const;
 
         /** Mark that this port has resumed and may no longer discard messages.
          *
          * @param slot The slot that is sent/received on
          */
-        void set_resumed(Optional<int> slot);
+        void set_resumed(Optional<int> slot = {});
 
     private:
         bool is_connected_;

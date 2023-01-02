@@ -219,7 +219,7 @@ Message Communicator::receive_message(
             if (slot.is_set())
                 logger_.debug("Discarding received message on ", port_name,
                               "[", slot.get(), "]: resuming from weakly",
-                              " constistent snapshot");
+                              " consistent snapshot");
             else
                 logger_.debug("Discarding received message on ", port_name,
                               ": resuming from weakly constistent snapshot");

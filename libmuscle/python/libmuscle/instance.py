@@ -661,7 +661,7 @@ class Instance:
         """Pre-receive F_INIT messages and detect if this instance is reused.
 
         This is called during :meth:`should_save_final_snapshot` to detect if a
-        snapshot must be taken. If an instance does implement checkpointing,
+        snapshot must be taken. If an instance doesn't implement checkpointing,
         :meth:`reuse_instance` will call it instead.
         """
         do_reuse = self.__receive_settings()

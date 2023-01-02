@@ -288,7 +288,7 @@ class MMPRequestHandler(RequestHandler):
             status (ResponseType): SUCCESS
             wallclock_reference_time (float): Unix timestamp (in UTC) indicating
                 wallclock time of the start of the workflow.
-            checkpoints (dict): Dictionary encdoing a ymmsl.Checkpoints object.
+            checkpoints (dict): Dictionary encoding a ymmsl.Checkpoints object.
             resume_path (Optional[str]): Checkpoint filename to resume from.
             snapshot_directory (Optional[str]): Directory to store instance
                 snapshots.

@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 from unittest.mock import patch
 
 import msgpack
@@ -74,10 +73,7 @@ def test_get_settings(mocked_mmp_client) -> None:
 def test_register_instance(mocked_mmp_client) -> None:
     client, stub = mocked_mmp_client
 
-    result = [ResponseType.SUCCESS.value,
-              (datetime.now(timezone.utc).timestamp(),
-               {'wallclock_time': [], 'simulation_time': []},
-               None)]
+    result = [ResponseType.SUCCESS.value]
     stub.call.return_value = msgpack.packb(result, use_bin_type=True)
 
     client.register_instance(

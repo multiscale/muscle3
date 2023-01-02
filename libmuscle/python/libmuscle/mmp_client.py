@@ -74,15 +74,15 @@ def decode_checkpoint_info(
     Args:
         reference_timestamp: seconds since UNIX epoch in UTC timezone to use as
             wallclock_time = 0
-        checkpoints_dict: dictionary of checkpoint definitions
-        resume: optional string indicating resume path
-        snapshot_dir: optional string indicating path to store snapshots in
+        checkpoints_dict: checkpoint definitions from the MsgPack
+        resume: path to the snapshot we should resume from, if any
+        snapshot_dir: path to the directory to store new snapshots in
 
     Returns:
         wallclock_time_reference: UTC time where wallclock_time = 0
         checkpoints: checkpoint configuration
         resume: path to the resume snapshot
-        snapshot_dir: optional path to store snapshots in
+        snapshot_dir: path to store the snapshots in
     """
     ref_time = datetime.fromtimestamp(reference_timestamp, tz=timezone.utc)
     checkpoints = Checkpoints(

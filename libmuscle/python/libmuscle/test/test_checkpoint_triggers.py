@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone
-import logging
 import time
 import pytest
 from ymmsl import CheckpointRangeRule, CheckpointAtRule, Checkpoints
@@ -156,15 +155,11 @@ def test_trigger_manager():
             wallclock_time=[CheckpointAtRule([1e-12])],
             simulation_time=[CheckpointAtRule([1, 3, 5])]))
 
-    trigger_manager.reuse_instance()
-
     assert trigger_manager.should_save_snapshot(0.1)
     triggers = trigger_manager.get_triggers()
     assert len(triggers) == 1
     assert "wallclock_time" in triggers[0]
-    with pytest.raises(RuntimeError):  # did not call save in between
-        trigger_manager.should_save_snapshot(0.1)
-    trigger_manager.update_checkpoints(0.1, False)
+    trigger_manager.update_checkpoints(0.1)
 
     assert not trigger_manager.should_save_snapshot(0.99)
 
@@ -172,46 +167,13 @@ def test_trigger_manager():
     triggers = trigger_manager.get_triggers()
     assert len(triggers) == 1
     assert "simulation_time" in triggers[0]
-    trigger_manager.update_checkpoints(3.2, False)
+    trigger_manager.update_checkpoints(3.2)
 
     assert trigger_manager.should_save_final_snapshot(True, 7.0)
-    with pytest.raises(RuntimeError):  # did not call save in between
-        trigger_manager.should_save_snapshot(4.0)
-    with pytest.raises(RuntimeError):  # did not call save in between
-        trigger_manager.should_save_final_snapshot(True, 7.0)
     assert len(trigger_manager.get_triggers()) > 0
-    trigger_manager.update_checkpoints(7.0, True)
-
-    trigger_manager.reuse_instance()
+    trigger_manager.update_checkpoints(7.0)
 
     assert not trigger_manager.should_save_snapshot(7.1)
-    with pytest.raises(RuntimeError):  # no should_save_final called
-        trigger_manager.reuse_instance()
 
     assert trigger_manager.should_save_final_snapshot(False, None)
-    with pytest.raises(RuntimeError):  # not saved
-        trigger_manager.reuse_instance()
-    trigger_manager.update_checkpoints(7.1, True)
-
-    trigger_manager.reuse_instance()
-
-
-def test_trigger_manager_warnings(caplog: pytest.LogCaptureFixture,
-                                  monkeypatch: pytest.MonkeyPatch):
-    monkeypatch.setenv("MUSCLE_DISABLE_CHECKPOINT_ERRORS", "1")
-
-    reference = datetime.now(timezone.utc)
-    trigger_manager = TriggerManager()
-    trigger_manager.set_checkpoint_info(reference, Checkpoints(
-            simulation_time=[CheckpointAtRule([1, 3, 5])]))
-
-    trigger_manager.reuse_instance()
-
-    with caplog.at_level(logging.WARN):
-        n_records = len(caplog.records)
-        assert trigger_manager.should_save_snapshot(1.5)
-        assert len(caplog.records) == n_records
-
-        trigger_manager.reuse_instance()  # suppressed error
-        assert len(caplog.records) > n_records
-        assert "Suppressed checkpoint error" in caplog.records[-1].message
+    trigger_manager.update_checkpoints(7.1)

@@ -1,7 +1,6 @@
 import bisect
 from datetime import datetime, timezone
 import logging
-import os
 import time
 from typing import List, Optional, Union
 
@@ -10,13 +9,6 @@ from ymmsl import (
 
 
 _logger = logging.getLogger(__name__)
-
-
-def _checkpoint_error(description: str) -> None:
-    if "MUSCLE_DISABLE_CHECKPOINT_ERRORS" in os.environ:
-        _logger.warning(f"Suppressed checkpoint error: {description}")
-    else:
-        raise RuntimeError(description)
 
 
 class CheckpointTrigger:
@@ -59,10 +51,7 @@ class AtCheckpointTrigger(CheckpointTrigger):
         Args:
             at: list of checkpoint moments
         """
-        self._at = []
-        for at_rule in at_rules:
-            self._at.extend(at_rule.at)
-        self._at.sort()
+        self._at = sorted([a for r in at_rules for a in r.at])
 
     def next_checkpoint(self, cur_time: float) -> Optional[float]:
         if cur_time >= self._at[-1]:
@@ -214,14 +203,6 @@ class TriggerManager:
         self._nextsim = None        # type: Optional[float]
         self._sim_reset = True
 
-        self._first_reuse = True
-
-        # These attributes are only used to check if implementations are
-        # following the guidelines
-        self._should_have_saved = False
-        self._should_save_final_called = False
-        self._saved_final_checkpoint = False
-
     def elapsed_walltime(self) -> float:
         """Returns elapsed wallclock_time in seconds.
         """
@@ -238,12 +219,8 @@ class TriggerManager:
         if not self._has_checkpoints:
             return False
 
-        self.__check_should_have_saved()
-
         elapsed_walltime = self.elapsed_walltime()
-        value = self.__should_save(elapsed_walltime, timestamp)
-        self._should_have_saved = value
-        return value
+        return self.__should_save(elapsed_walltime, timestamp)
 
     def should_save_final_snapshot(
             self, do_reuse: bool, f_init_max_timestamp: Optional[float]
@@ -252,8 +229,6 @@ class TriggerManager:
         """
         if not self._has_checkpoints:
             return False
-
-        self.__check_should_have_saved()
 
         value = False
         if not do_reuse and self._checkpoint_at_end:
@@ -269,56 +244,15 @@ class TriggerManager:
             elapsed_walltime = self.elapsed_walltime()
             value = self.__should_save(elapsed_walltime, f_init_max_timestamp)
 
-        self._should_have_saved = value
-        self._should_save_final_called = True
         return value
 
-    @property
-    def save_final_snapshot_called(self) -> bool:
-        """Check if :meth:`save_final_snapshot` was called during this
-        reuse loop.
-        """
-        return self._saved_final_checkpoint
-
-    def reuse_instance(self) -> None:
-        """Cleanup between instance reuse
-        """
-        if not self._has_checkpoints:
-            return
-        if self._first_reuse:
-            self._first_reuse = False
-        else:
-            if self._should_have_saved:
-                _checkpoint_error('"should_save_snapshot" or '
-                                  '"should_save_final_snapshot" returned'
-                                  ' positive but no snapshot was saved before'
-                                  ' exiting the reuse loop.')
-            if not (self._should_save_final_called or self._saved_final_checkpoint):
-                _checkpoint_error('You must call "should_save_final" exactly'
-                                  ' once in the reuse loop of an instance that'
-                                  ' supports checkpointing.')
-        self._should_save_final_called = False
-        self._saved_final_checkpoint = False
-
-    def update_checkpoints(self, timestamp: float, final: bool) -> None:
+    def update_checkpoints(self, timestamp: float) -> None:
         """Update last and next checkpoint times when a snapshot is made.
 
         Args:
             timestamp: timestamp as reported by the instance (or from incoming
-                F_INIT messages when final=True).
-            final: True iff this is coming from a save_final_snapshot call.
+                F_INIT messages for save_final_snapshot).
         """
-        if not self._has_checkpoints:
-            _logger.info('Saving a snapshot but no checkpoints requested by the'
-                         ' workflow. Hint: use Instance.should_save_snapshot(),'
-                         ' Instance.should_save_final_snapshot() or'
-                         ' Instance.snapshots_enabled() to test if it is useful'
-                         ' to save a snapshot.')
-            return
-        if final and self._saved_final_checkpoint:
-            raise RuntimeError(
-                    'You may only save a final snapshot once per reuse loop.')
-
         self._prevwall = self.elapsed_walltime()
         self._nextwall = self._wall.next_checkpoint(self._prevwall)
 
@@ -328,8 +262,6 @@ class TriggerManager:
         # this method is also called during resume, after which we no longer
         # consider the simulation_time as reset
         self._sim_reset = False
-        self._should_have_saved = False
-        self._saved_final_checkpoint = final
 
     def get_triggers(self) -> List[str]:
         """Get trigger description(s) for the current reason for checkpointing.
@@ -337,17 +269,6 @@ class TriggerManager:
         triggers = self._last_triggers
         self._last_triggers = []
         return triggers
-
-    def __check_should_have_saved(self) -> None:
-        """Check if a snapshot is saved when required."""
-        if self._should_have_saved:
-            _checkpoint_error('"should_save_snapshot" or '
-                              '"should_save_final_snapshot" returned positive'
-                              ' but no snapshot was saved before the next call'
-                              ' to a should_save_ method.'
-                              ' You must call the corresponding save_snapshot'
-                              ' or save_final_snapshot method when should_save_'
-                              ' returns True.')
 
     def __should_save(self, walltime: float, simulation_time: float) -> bool:
         """Check if a checkpoint should be taken

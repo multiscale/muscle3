@@ -1,9 +1,7 @@
 from datetime import datetime, timezone
-import logging
 from pathlib import Path
 from unittest.mock import MagicMock
 
-import pytest
 from ymmsl import (
         Reference, Checkpoints, CheckpointRangeRule, ImplementationState)
 
@@ -12,8 +10,7 @@ from libmuscle.snapshot import SnapshotMetadata
 from libmuscle.snapshot_manager import SnapshotManager
 
 
-def test_no_checkpointing(caplog: pytest.LogCaptureFixture, tmp_path: Path
-                          ) -> None:
+def test_no_checkpointing(tmp_path: Path) -> None:
     manager = MagicMock()
     communicator = MagicMock()
     communicator.get_message_counts.return_value = {}
@@ -30,11 +27,6 @@ def test_no_checkpointing(caplog: pytest.LogCaptureFixture, tmp_path: Path
     assert not snapshot_manager.should_save_snapshot(1)
     assert not snapshot_manager.should_save_snapshot(5000)
     assert not snapshot_manager.should_save_final_snapshot(False, None)
-
-    with caplog.at_level(logging.INFO, 'libmuscle'):
-        snapshot_manager.save_snapshot(Message(1.0, None, None))
-        assert caplog.records[0].levelname == "INFO"
-        assert "no checkpoints" in caplog.records[0].message
 
 
 def test_save_load_snapshot(tmp_path: Path) -> None:
@@ -53,8 +45,6 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
 
     assert not snapshot_manager.resuming()
     snapshot_manager.reuse_instance(True, None)
-    with pytest.raises(RuntimeError):
-        snapshot_manager.load_snapshot()
 
     assert not snapshot_manager.resuming()
     assert snapshot_manager.should_save_snapshot(0.2)

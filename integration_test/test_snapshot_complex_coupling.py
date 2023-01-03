@@ -26,13 +26,17 @@ def cache_component(max_channels=2):
     nil_msg = Message(0.0, None, None)
 
     while instance.reuse_instance():
-        cache_valid_range = instance.get_setting('cache_valid', '[float]')
-        if max_cache_age is None:
-            max_cache_age = random.uniform(*cache_valid_range)
+        if instance.resuming():
+            instance.load_snapshot()
 
-        msgs = [instance.receive(port, default=nil_msg)
-                for port in ports[Operator.F_INIT]]
-        cur_t = msgs[0].timestamp
+        if instance.should_init():
+            cache_valid_range = instance.get_setting('cache_valid', '[float]')
+            if max_cache_age is None:
+                max_cache_age = random.uniform(*cache_valid_range)
+
+            msgs = [instance.receive(port, default=nil_msg)
+                    for port in ports[Operator.F_INIT]]
+            cur_t = msgs[0].timestamp
 
         if cur_t - cache_t >= max_cache_age:
             # Cached value is no longer valid, run submodel for updated data

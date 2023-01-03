@@ -9,6 +9,7 @@ from typing_extensions import Literal
 from ymmsl import (Identifier, Operator, SettingValue, Port, Reference,
                    Settings, ImplementationState)
 
+from libmuscle.api_guard import APIGuard
 from libmuscle.communicator import Communicator, Message
 from libmuscle.settings_manager import SettingsManager
 from libmuscle.logging import LogLevel
@@ -65,6 +66,9 @@ class Instance:
         """Client object for talking to the manager."""
 
         self.__set_up_logging()
+
+        self._api_guard = APIGuard()
+        """Checks that the user uses the API correctly."""
 
         self._profiler = Profiler(self._instance_name(), self.__manager)
         """Profiler for this instance."""
@@ -143,6 +147,7 @@ class Instance:
                 :meth:`should_save_final_snapshot` and
                 :meth:`save_final_snapshot`, or the checkpointing tutorial.
         """
+        self._api_guard.verify_reuse_instance()
         do_reuse = self._do_reuse
         if do_reuse is None:
             # should_save_final_snapshot not called, so we need to check_reuse
@@ -158,6 +163,7 @@ class Instance:
             self._deregister()
             self.__manager.close()
 
+        self._api_guard.reuse_instance_done(do_reuse)
         return do_reuse
 
     def error_shutdown(self, message: str) -> None:
@@ -431,7 +437,10 @@ class Instance:
             True iff the submodel must resume from a snapshot instead of the
             usual F_INIT step during this iteration of the reuse loop.
         """
-        return self._snapshot_manager.resuming()
+        self._api_guard.verify_resuming()
+        result = self._snapshot_manager.resuming()
+        self._api_guard.resuming_done(result)
+        return result
 
     def should_init(self) -> bool:
         """Check if this instance should initialize.
@@ -445,7 +454,10 @@ class Instance:
         Returns:
             True if the submodel must execute the F_INIT step, False otherwise.
         """
-        return self._snapshot_manager.should_init()
+        self._api_guard.verify_should_init()
+        result = self._snapshot_manager.should_init()
+        self._api_guard.should_init_done()
+        return result
 
     def load_snapshot(self) -> Message:
         """Load a snapshot.
@@ -459,7 +471,10 @@ class Instance:
         Raises:
             RuntimeError: if not resuming from a snapshot.
         """
-        return self._snapshot_manager.load_snapshot()
+        self._api_guard.verify_load_snapshot()
+        result = self._snapshot_manager.load_snapshot()
+        self._api_guard.load_snapshot_done()
+        return result
 
     def should_save_snapshot(self, timestamp: float) -> bool:
         """Check if a snapshot should be saved after the S Operator of the
@@ -482,7 +497,10 @@ class Instance:
             True iff a snapshot should be taken by the submodel according to the
             checkpoint rules provided in the ymmsl configuration.
         """
-        return self._snapshot_manager.should_save_snapshot(timestamp)
+        self._api_guard.verify_should_save_snapshot()
+        result = self._snapshot_manager.should_save_snapshot(timestamp)
+        self._api_guard.should_save_snapshot_done(result)
+        return result
 
     def save_snapshot(self, message: Message) -> None:
         """Save a snapshot after the S Operator of the submodel.
@@ -508,7 +526,9 @@ class Instance:
                 :meth:`should_save_snapshot`. The data attribute can be used to
                 store the internal state of the submodel.
         """
-        return self._snapshot_manager.save_snapshot(message)
+        self._api_guard.verify_save_snapshot()
+        self._snapshot_manager.save_snapshot(message)
+        self._api_guard.save_snapshot_done()
 
     def should_save_final_snapshot(self, *, apply_overlay: bool = True) -> bool:
         """Check if a snapshot should be saved at the end of the reuse loop.
@@ -542,13 +562,12 @@ class Instance:
             True iff a final snapshot should be taken by the submodel according
             to the checkpoint rules provided in the ymmsl configuration.
         """
-        if self._do_reuse is not None:
-            raise RuntimeError(
-                    'You may not call should_save_final_snapshot more than once'
-                    ' per reuse loop.')
+        self._api_guard.verify_should_save_final_snapshot()
         self._do_reuse = self.__check_reuse_instance(apply_overlay)
-        return self._snapshot_manager.should_save_final_snapshot(
+        result = self._snapshot_manager.should_save_final_snapshot(
                 self._do_reuse, self.__f_init_max_timestamp)
+        self._api_guard.should_save_final_snapshot_done(result)
+        return result
 
     def save_final_snapshot(self, message: Message) -> None:
         """Save a snapshot at the end of the reuse loop.
@@ -571,8 +590,10 @@ class Instance:
                 attribute can be used to store the internal state of the
                 submodel.
         """
-        return self._snapshot_manager.save_final_snapshot(
+        self._api_guard.verify_save_final_snapshot()
+        self._snapshot_manager.save_final_snapshot(
                 message, self.__f_init_max_timestamp)
+        self._api_guard.save_final_snapshot_done()
 
     @property
     def __f_init_max_timestamp(self) -> Optional[float]:
@@ -669,7 +690,7 @@ class Instance:
         # TODO: _f_init_cache should be empty here, or the user didn't
         # receive something that was sent on the last go-around.
         # At least emit a warning.
-        if self.should_init() or not self._first_run:
+        if self._snapshot_manager.should_init() or not self._first_run:
             # self.should_init() might be False in first should_save_final(),
             # but self._first_run is already updated by then
             self.__pre_receive_f_init(apply_overlay)
@@ -684,8 +705,9 @@ class Instance:
         no_settings_in = not self._communicator.settings_in_connected()
 
         if f_init_not_connected and no_settings_in:
-            do_reuse = self._first_run and (not self.resuming() or
-                                            not self.should_init())
+            do_reuse = self._first_run and (
+                    not self._snapshot_manager.resuming() or
+                    not self._snapshot_manager.should_init())
         else:
             for message in self._f_init_cache.values():
                 if isinstance(message.data, ClosePort):

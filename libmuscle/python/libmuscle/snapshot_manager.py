@@ -52,6 +52,8 @@ class SnapshotManager:
         self._resume_from_snapshot = None   # type: Optional[Snapshot]
         self._next_snapshot_num = 1
 
+        self._should_save_final_called = False
+
     def get_checkpoint_info(self) -> None:
         """Request checkpoint info from the muscle manager.
         """
@@ -78,8 +80,8 @@ class SnapshotManager:
                 # snapshot.message is None for implicit snapshots
                 self._resume_from_snapshot = snapshot
                 self._trigger_manager.update_checkpoints(
-                    snapshot.message.timestamp,
-                    snapshot.is_final_snapshot)
+                    snapshot.message.timestamp)
+                self._should_save_final_called = snapshot.is_final_snapshot
             self._communicator.restore_message_counts(
                 snapshot.port_message_counts)
             # Store a copy of the snapshot in the current run directory
@@ -103,18 +105,18 @@ class SnapshotManager:
         # Only create implicit snapshot if not already explicitly done
         # And not in the first reuse_instance()
         if (self._stateful is not ImplementationState.STATEFUL and
-                not self._trigger_manager.save_final_snapshot_called and
+                not self._should_save_final_called and
                 not self._first_reuse):
             if self.should_save_final_snapshot(do_reuse, f_init_max_timestamp):
                 # create an empty message object to store
                 self.__save_snapshot(None, True, f_init_max_timestamp)
 
-        self._trigger_manager.reuse_instance()
-
         if self._first_reuse:
             self._first_reuse = False
         else:
             self._resume_from_snapshot = None
+
+        self._should_save_final_called = False
 
     def snapshots_enabled(self) -> bool:
         """Check if the current workflow has snapshots enabled.
@@ -140,10 +142,8 @@ class SnapshotManager:
     def load_snapshot(self) -> Message:
         """Get the Message to resume from.
         """
-        if self._resume_from_snapshot is None:
-            raise RuntimeError('No snapshot to load. Use "instance.resuming()"'
-                               ' to check if a snapshot is available')
-        return cast(Message, self._resume_from_snapshot.message)
+        snapshot = cast(Snapshot, self._resume_from_snapshot)
+        return cast(Message, snapshot.message)
 
     def should_save_snapshot(self, timestamp: float) -> bool:
         """See :meth:`TriggerManager.should_save_snapshot`.
@@ -155,6 +155,7 @@ class SnapshotManager:
             ) -> bool:
         """See :meth:`TriggerManager.should_save_final_snapshot`.
         """
+        self._should_save_final_called = True
         return self._trigger_manager.should_save_final_snapshot(
                 do_reuse, f_init_max_timestamp)
 
@@ -211,7 +212,7 @@ class SnapshotManager:
             # For final snapshots f_init_max_snapshot is the reference time (see
             # should_save_final_snapshot).
             timestamp = f_init_max_timestamp
-        self._trigger_manager.update_checkpoints(timestamp, final)
+        self._trigger_manager.update_checkpoints(timestamp)
 
     @staticmethod
     def load_snapshot_from_file(snapshot_location: Path) -> Snapshot:

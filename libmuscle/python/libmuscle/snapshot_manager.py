@@ -1,11 +1,9 @@
 import logging
-from datetime import datetime
 from pathlib import Path
-from typing import cast, Optional
+from typing import cast, List, Optional
 
-from ymmsl import Checkpoints, Reference, Operator
+from ymmsl import Reference, Operator
 
-from libmuscle.checkpoint_triggers import TriggerManager
 from libmuscle.communicator import Communicator, Message
 from libmuscle.mmp_client import MMPClient
 from libmuscle.snapshot import MsgPackSnapshot, Snapshot, SnapshotMetadata
@@ -45,37 +43,37 @@ class SnapshotManager:
         self._communicator = communicator
         self._manager = manager
 
-        self._trigger_manager = TriggerManager()
         self._resume_from_snapshot = None   # type: Optional[Snapshot]
         self._next_snapshot_num = 1
 
-    def get_checkpoint_info(self) -> None:
-        """Request checkpoint info from the muscle manager.
-        """
-        checkpoint_info = self._manager.get_checkpoint_info(self._instance_id)
-        self._set_checkpoint_info(*checkpoint_info)
-
-    def _set_checkpoint_info(self,
-                             utc_reference: datetime,
-                             checkpoints: Checkpoints,
-                             resume: Optional[Path],
-                             snapshot_directory: Optional[Path]) -> None:
+    def prepare_resume(
+            self, resume_snapshot: Optional[Path],
+            snapshot_directory: Optional[Path]) -> Optional[float]:
         """Apply checkpoint info received from the manager.
 
+        If there is a snapshot to resume from, this loads it and does
+        any resume work that libmuscle should do, including restoring
+        message counts and storing the resumed-from snapshot again as
+        our first snapshot.
+
         Args:
-            utc_reference: datetime (in UTC) indicating wallclock_time=0
-            checkpoints: requested workflow checkpoints
-            resume: previous snapshot to resume from (or None if not resuming)
+            resume_snapshot: Snapshot to resume from (or None if not
+                resuming)
+            snapshot_directory: directory to save snapshots in
+
+        Returns:
+            Time at which the initial snapshot was saved, if resuming.
         """
-        self._trigger_manager.set_checkpoint_info(utc_reference, checkpoints)
+        result = None       # type: Optional[float]
         self._snapshot_directory = snapshot_directory or Path.cwd()
-        if resume is not None:
-            snapshot = self.load_snapshot_from_file(resume)
+        if resume_snapshot is not None:
+            snapshot = self.load_snapshot_from_file(resume_snapshot)
+
             if snapshot.message is not None:
                 # snapshot.message is None for implicit snapshots
                 self._resume_from_snapshot = snapshot
-                self._trigger_manager.update_checkpoints(
-                    snapshot.message.timestamp)
+                result = snapshot.message.timestamp
+
             self._communicator.restore_message_counts(
                 snapshot.port_message_counts)
             # Store a copy of the snapshot in the current run directory
@@ -83,13 +81,11 @@ class SnapshotManager:
             metadata = SnapshotMetadata.from_snapshot(snapshot, str(path))
             self._manager.submit_snapshot_metadata(self._instance_id, metadata)
 
-    def snapshots_enabled(self) -> bool:
-        """Check if the current workflow has snapshots enabled.
-        """
-        return self._trigger_manager.snapshots_enabled()
+        return result
 
     def resuming_from_intermediate(self) -> bool:
         """Check whether we have an intermediate snapshot.
+
         Doesn't say whether we should resume now, just that we were
         given an intermediate snapshot to resume from by the manager.
         """
@@ -99,9 +95,10 @@ class SnapshotManager:
 
     def resuming_from_final(self) -> bool:
         """Check whether we have a final snapshot.
+
         Doesn't say whether we should resume now, just that we were
         given an intermediate snapshot to resume from by the manager.
-         """
+        """
         return (
                 self._resume_from_snapshot is not None and
                 self._resume_from_snapshot.is_final_snapshot)
@@ -112,54 +109,23 @@ class SnapshotManager:
         snapshot = cast(Snapshot, self._resume_from_snapshot)
         return cast(Message, snapshot.message)
 
-    def should_save_snapshot(self, timestamp: float) -> bool:
-        """See :meth:`TriggerManager.should_save_snapshot`.
-        """
-        return self._trigger_manager.should_save_snapshot(timestamp)
-
-    def should_save_final_snapshot(
-            self, do_reuse: bool, f_init_max_timestamp: Optional[float]
-            ) -> bool:
-        """See :meth:`TriggerManager.should_save_final_snapshot`.
-        """
-        return self._trigger_manager.should_save_final_snapshot(
-                do_reuse, f_init_max_timestamp)
-
-    def save_snapshot(self, msg: Message) -> None:
-        """Save snapshot contained in the message object.
-        """
-        if not isinstance(msg, Message):
-            raise ValueError(_NO_MESSAGE_PROVIDED.format('save_snapshot'))
-        self.__save_snapshot(msg, False)
-
-    def save_final_snapshot(
-            self, msg: Message, f_init_max_timestamp: Optional[float]) -> None:
-        """Save final snapshot contained in the message object.
-        """
-        if not isinstance(msg, Message):
-            raise ValueError(_NO_MESSAGE_PROVIDED.format('save_final_snapshot'))
-        self.__save_snapshot(msg, True, f_init_max_timestamp)
-
-    def save_implicit_snapshot(
-            self, f_init_max_timestamp: Optional[float]) -> None:
-        """Save final snapshot without a message.
-        """
-        self.__save_snapshot(None, True, f_init_max_timestamp)
-
-    def __save_snapshot(
+    def save_snapshot(
             self, msg: Optional[Message], final: bool,
-            f_init_max_timestamp: Optional[float] = None
-            ) -> None:
-        """Actual implementation used by save_(final_)snapshot.
+            triggers: List[str], wallclock_time: float,
+            f_init_max_timestamp: Optional[float] = None,
+            ) -> float:
+        """Save a (final) snapshot.
 
         Args:
             msg: Message object representing the snapshot.
             final: True iff called from save_final_snapshot.
+            triggers: Description of checkpoints that triggered this.
+            wallclock_time: Wallclock time when saving.
             f_init_max_timestamp: Timestamp for final snapshots.
-        """
-        triggers = self._trigger_manager.get_triggers()
-        wallclock_time = self._trigger_manager.elapsed_walltime()
 
+        Returns:
+            Simulation time at which the snapshot was made
+        """
         port_message_counts = self._communicator.get_message_counts()
         if final:
             # Decrease F_INIT port counts by one: F_INIT messages are already
@@ -185,7 +151,7 @@ class SnapshotManager:
             # For final snapshots f_init_max_snapshot is the reference time (see
             # should_save_final_snapshot).
             timestamp = f_init_max_timestamp
-        self._trigger_manager.update_checkpoints(timestamp)
+        return timestamp
 
     @staticmethod
     def load_snapshot_from_file(snapshot_location: Path) -> Snapshot:

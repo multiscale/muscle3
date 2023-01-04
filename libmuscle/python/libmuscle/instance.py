@@ -10,6 +10,7 @@ from ymmsl import (Identifier, Operator, SettingValue, Port, Reference,
                    Settings, ImplementationState)
 
 from libmuscle.api_guard import APIGuard
+from libmuscle.checkpoint_triggers import TriggerManager
 from libmuscle.communicator import Communicator, Message
 from libmuscle.settings_manager import SettingsManager
 from libmuscle.logging import LogLevel
@@ -85,7 +86,10 @@ class Instance:
 
         self._snapshot_manager = SnapshotManager(
                 self._instance_name(), self.__manager, self._communicator)
-        """Keeps track of checkpointing and snapshots"""
+        """Resumes, loads and saves snapshots."""
+
+        self._trigger_manager = TriggerManager()
+        """Keeps track of checkpoints and triggers snapshots."""
 
         self._first_run = None          # type: Optional[bool]
         """Whether this is the first iteration of the reuse loop"""
@@ -108,9 +112,22 @@ class Instance:
 
         self._register()
         self._connect()
-        # Note: SnapshotManager.get_checkpoint_info needs to have the ports
-        # initialized so it comes after self._connect()
-        self._snapshot_manager.get_checkpoint_info()
+
+        # Note: get_checkpoint_info needs to have the ports initialized
+        # so it comes after self._connect()
+        checkpoint_info = self.__manager.get_checkpoint_info(
+                self._instance_name())
+
+        utc_reference, checkpoints = checkpoint_info[0:2]
+        self._trigger_manager.set_checkpoint_info(utc_reference, checkpoints)
+
+        resume_snapshot, snapshot_dir = checkpoint_info[2:4]
+        saved_at = self._snapshot_manager.prepare_resume(
+                resume_snapshot, snapshot_dir)
+
+        if saved_at is not None:
+            self._trigger_manager.update_checkpoints(saved_at)
+
         self._set_local_log_level()
         self._set_remote_log_level()
 
@@ -175,11 +192,10 @@ class Instance:
                 self._stateful is not ImplementationState.STATEFUL)
 
         if do_implicit_checkpoint:
-            if self._snapshot_manager.should_save_final_snapshot(
+            if self._trigger_manager.should_save_final_snapshot(
                     do_reuse, self.__f_init_max_timestamp):
                 # store a None instead of a Message
-                self._snapshot_manager.save_implicit_snapshot(
-                        self.__f_init_max_timestamp)
+                self._save_snapshot(None, True, self.__f_init_max_timestamp)
 
         if not do_reuse:
             self.__close_ports()
@@ -443,7 +459,7 @@ class Instance:
         Returns:
             True iff checkpoint rules are defined in the workflow yMMSL.
         """
-        return self._snapshot_manager.snapshots_enabled()
+        return self._trigger_manager.snapshots_enabled()
 
     def resuming(self) -> bool:
         """Check if this instance is resuming from a snapshot.
@@ -520,7 +536,7 @@ class Instance:
             checkpoint rules provided in the ymmsl configuration.
         """
         self._api_guard.verify_should_save_snapshot()
-        result = self._snapshot_manager.should_save_snapshot(timestamp)
+        result = self._trigger_manager.should_save_snapshot(timestamp)
         self._api_guard.should_save_snapshot_done(result)
         return result
 
@@ -549,7 +565,7 @@ class Instance:
                 store the internal state of the submodel.
         """
         self._api_guard.verify_save_snapshot()
-        self._snapshot_manager.save_snapshot(message)
+        self._save_snapshot(message, False)
         self._api_guard.save_snapshot_done()
 
     def should_save_final_snapshot(self, *, apply_overlay: bool = True) -> bool:
@@ -585,9 +601,11 @@ class Instance:
             to the checkpoint rules provided in the ymmsl configuration.
         """
         self._api_guard.verify_should_save_final_snapshot()
+
         self._do_reuse = self._decide_reuse_instance(apply_overlay)
-        result = self._snapshot_manager.should_save_final_snapshot(
+        result = self._trigger_manager.should_save_final_snapshot(
                 self._do_reuse, self.__f_init_max_timestamp)
+
         self._api_guard.should_save_final_snapshot_done(result)
         return result
 
@@ -613,8 +631,7 @@ class Instance:
                 submodel.
         """
         self._api_guard.verify_save_final_snapshot()
-        self._snapshot_manager.save_final_snapshot(
-                message, self.__f_init_max_timestamp)
+        self._save_snapshot(message, True, self.__f_init_max_timestamp)
         self._api_guard.save_final_snapshot_done()
 
     @property
@@ -745,6 +762,24 @@ class Instance:
         got_f_init_messages = self._pre_receive(apply_overlay)
         self._do_init = got_f_init_messages
         return got_f_init_messages
+
+    def _save_snapshot(
+            self, message: Optional[Message], final: bool,
+            f_init_max_timestamp: Optional[float] = None) -> None:
+        """Save a snapshot to disk and notify manager.
+
+        Args:
+            message: The data to save
+            final: Whether this is a final snapshot or an intermediate
+                one
+            f_init_max_timestamp: Timestamp for final snapshots
+        """
+        triggers = self._trigger_manager.get_triggers()
+        walltime = self._trigger_manager.elapsed_walltime()
+        timestamp = self._snapshot_manager.save_snapshot(
+                message, final, triggers, walltime,
+                f_init_max_timestamp)
+        self._trigger_manager.update_checkpoints(timestamp)
 
     def __receive_message(
             self, port_name: str, slot: Optional[int],

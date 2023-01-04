@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import cast, Optional
 
-from ymmsl import Checkpoints, Reference, Operator, ImplementationState
+from ymmsl import Checkpoints, Reference, Operator
 
 from libmuscle.checkpoint_triggers import TriggerManager
 from libmuscle.communicator import Communicator, Message
@@ -30,8 +30,7 @@ class SnapshotManager:
     def __init__(self,
                  instance_id: Reference,
                  manager: MMPClient,
-                 communicator: Communicator,
-                 stateful: ImplementationState) -> None:
+                 communicator: Communicator) -> None:
         """Create a new snapshot manager
 
         Args:
@@ -45,14 +44,10 @@ class SnapshotManager:
         self._safe_id = str(instance_id).replace("[", "-").replace("]", "")
         self._communicator = communicator
         self._manager = manager
-        self._stateful = stateful
 
-        self._first_reuse = True
         self._trigger_manager = TriggerManager()
         self._resume_from_snapshot = None   # type: Optional[Snapshot]
         self._next_snapshot_num = 1
-
-        self._should_save_final_called = False
 
     def get_checkpoint_info(self) -> None:
         """Request checkpoint info from the muscle manager.
@@ -81,7 +76,6 @@ class SnapshotManager:
                 self._resume_from_snapshot = snapshot
                 self._trigger_manager.update_checkpoints(
                     snapshot.message.timestamp)
-                self._should_save_final_called = snapshot.is_final_snapshot
             self._communicator.restore_message_counts(
                 snapshot.port_message_counts)
             # Store a copy of the snapshot in the current run directory
@@ -89,54 +83,27 @@ class SnapshotManager:
             metadata = SnapshotMetadata.from_snapshot(snapshot, str(path))
             self._manager.submit_snapshot_metadata(self._instance_id, metadata)
 
-    def reuse_instance(self,
-                       do_reuse: bool, f_init_max_timestamp: Optional[float]
-                       ) -> None:
-        """Callback on Instance.reuse_instance
-
-        Args:
-            snapshot_directory: Path to store this instance's snapshots in.
-            do_reuse: Used for implicit snapshots of stateless instances. See
-                :meth:`should_save_final_snapshot`.
-            f_init_max_timestamp: Used for implicit snapshots of stateless
-                instances. See :meth:`should_save_final_snapshot`.
-        """
-        # Implicit snapshots for stateless / weakly stateful instances
-        # Only create implicit snapshot if not already explicitly done
-        # And not in the first reuse_instance()
-        if (self._stateful is not ImplementationState.STATEFUL and
-                not self._should_save_final_called and
-                not self._first_reuse):
-            if self.should_save_final_snapshot(do_reuse, f_init_max_timestamp):
-                # create an empty message object to store
-                self.__save_snapshot(None, True, f_init_max_timestamp)
-
-        if self._first_reuse:
-            self._first_reuse = False
-        else:
-            self._resume_from_snapshot = None
-
-        self._should_save_final_called = False
-
     def snapshots_enabled(self) -> bool:
         """Check if the current workflow has snapshots enabled.
         """
         return self._trigger_manager.snapshots_enabled()
 
-    def resuming(self) -> bool:
-        """Check if we are resuming during this reuse iteration.
+    def resuming_from_intermediate(self) -> bool:
+        """Check whether we have an intermediate snapshot.
+        Doesn't say whether we should resume now, just that we were
+        given an intermediate snapshot to resume from by the manager.
         """
-        return self._resume_from_snapshot is not None
+        return (
+                self._resume_from_snapshot is not None and
+                not self._resume_from_snapshot.is_final_snapshot)
 
-    def should_init(self) -> bool:
-        """Check if F_INIT should be run in this reuse loop.
-
-        Returns:
-            True: when not resuming this reuse loop, or when resuming from a
-                final snapshot.
-            False: otherwise
-        """
-        return (self._resume_from_snapshot is None or
+    def resuming_from_final(self) -> bool:
+        """Check whether we have a final snapshot.
+        Doesn't say whether we should resume now, just that we were
+        given an intermediate snapshot to resume from by the manager.
+         """
+        return (
+                self._resume_from_snapshot is not None and
                 self._resume_from_snapshot.is_final_snapshot)
 
     def load_snapshot(self) -> Message:
@@ -155,7 +122,6 @@ class SnapshotManager:
             ) -> bool:
         """See :meth:`TriggerManager.should_save_final_snapshot`.
         """
-        self._should_save_final_called = True
         return self._trigger_manager.should_save_final_snapshot(
                 do_reuse, f_init_max_timestamp)
 
@@ -174,6 +140,12 @@ class SnapshotManager:
             raise ValueError(_NO_MESSAGE_PROVIDED.format('save_final_snapshot'))
         self.__save_snapshot(msg, True, f_init_max_timestamp)
 
+    def save_implicit_snapshot(
+            self, f_init_max_timestamp: Optional[float]) -> None:
+        """Save final snapshot without a message.
+        """
+        self.__save_snapshot(None, True, f_init_max_timestamp)
+
     def __save_snapshot(
             self, msg: Optional[Message], final: bool,
             f_init_max_timestamp: Optional[float] = None
@@ -183,6 +155,7 @@ class SnapshotManager:
         Args:
             msg: Message object representing the snapshot.
             final: True iff called from save_final_snapshot.
+            f_init_max_timestamp: Timestamp for final snapshots.
         """
         triggers = self._trigger_manager.get_triggers()
         wallclock_time = self._trigger_manager.elapsed_walltime()

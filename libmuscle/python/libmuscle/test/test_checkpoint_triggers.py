@@ -177,3 +177,13 @@ def test_trigger_manager():
 
     assert trigger_manager.should_save_final_snapshot(False, None)
     trigger_manager.update_checkpoints(7.1)
+
+
+def test_no_checkpointing() -> None:
+    trigger_manager = TriggerManager()
+    trigger_manager.set_checkpoint_info(
+            datetime.now(timezone.utc), Checkpoints())
+
+    assert not trigger_manager.should_save_snapshot(1)
+    assert not trigger_manager.should_save_snapshot(5000)
+    assert not trigger_manager.should_save_final_snapshot(False, None)

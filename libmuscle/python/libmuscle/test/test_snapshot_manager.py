@@ -2,8 +2,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from ymmsl import (
-        Reference, Checkpoints, CheckpointRangeRule, ImplementationState)
+from ymmsl import Reference, Checkpoints, CheckpointRangeRule
 
 from libmuscle.communicator import Message
 from libmuscle.snapshot import SnapshotMetadata
@@ -14,19 +13,13 @@ def test_no_checkpointing(tmp_path: Path) -> None:
     manager = MagicMock()
     communicator = MagicMock()
     communicator.get_message_counts.return_value = {}
-    snapshot_manager = SnapshotManager(
-            Reference('test'), manager, communicator,
-            ImplementationState.STATEFUL)
+    snapshot_manager = SnapshotManager(Reference('test'), manager, communicator)
 
     snapshot_manager._set_checkpoint_info(
             datetime.now(timezone.utc), Checkpoints(), None, tmp_path)
 
-    assert not snapshot_manager.resuming()
-    snapshot_manager.reuse_instance(True, None)
-    assert not snapshot_manager.resuming()
-    assert not snapshot_manager.should_save_snapshot(1)
-    assert not snapshot_manager.should_save_snapshot(5000)
-    assert not snapshot_manager.should_save_final_snapshot(False, None)
+    assert not snapshot_manager.resuming_from_intermediate()
+    assert not snapshot_manager.resuming_from_final()
 
 
 def test_save_load_snapshot(tmp_path: Path) -> None:
@@ -36,18 +29,15 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
     communicator.get_message_counts.return_value = port_message_counts
 
     instance_id = Reference('test[1]')
-    snapshot_manager = SnapshotManager(
-            instance_id, manager, communicator, ImplementationState.STATEFUL)
+    snapshot_manager = SnapshotManager(instance_id, manager, communicator)
 
     checkpoints = Checkpoints(simulation_time=[CheckpointRangeRule(every=1)])
     snapshot_manager._set_checkpoint_info(
             datetime.now(timezone.utc), checkpoints, None, tmp_path)
 
-    assert not snapshot_manager.resuming()
-    snapshot_manager.reuse_instance(True, None)
-
-    assert not snapshot_manager.resuming()
     assert snapshot_manager.should_save_snapshot(0.2)
+    assert not snapshot_manager.resuming_from_intermediate()
+    assert not snapshot_manager.resuming_from_final()
     snapshot_manager.save_snapshot(Message(0.2, None, 'test data'))
 
     communicator.get_message_counts.assert_called_with()
@@ -65,16 +55,14 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
     assert snapshot_path.parent == tmp_path
     assert snapshot_path.name == 'test-1_1.pack'
 
-    snapshot_manager2 = SnapshotManager(
-            instance_id, manager, communicator, ImplementationState.STATEFUL)
+    snapshot_manager2 = SnapshotManager(instance_id, manager, communicator)
 
     snapshot_manager2._set_checkpoint_info(
             datetime.now(timezone.utc), checkpoints, snapshot_path, tmp_path)
     communicator.restore_message_counts.assert_called_with(port_message_counts)
 
-    assert snapshot_manager2.resuming()
-    snapshot_manager2.reuse_instance(True, None)
-    assert snapshot_manager2.resuming()
+    assert snapshot_manager2.resuming_from_intermediate()
+    assert not snapshot_manager2.resuming_from_final()
     msg = snapshot_manager2.load_snapshot()
     assert msg.timestamp == 0.2
     assert msg.next_timestamp is None
@@ -98,9 +86,11 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
     assert snapshot_path.parent == tmp_path
     assert snapshot_path.name == 'test-1_3.pack'
 
-    assert snapshot_manager2.resuming()
-    snapshot_manager2.reuse_instance(True, None)
-    assert not snapshot_manager2.resuming()
+    assert snapshot_manager2.resuming_from_intermediate()
+    assert not snapshot_manager2.resuming_from_final()
+    snapshot_manager2.load_snapshot()
+    assert snapshot_manager2.resuming_from_intermediate()
+    assert not snapshot_manager2.resuming_from_final()
 
 
 def test_save_load_implicit_snapshot(tmp_path: Path) -> None:
@@ -110,16 +100,15 @@ def test_save_load_implicit_snapshot(tmp_path: Path) -> None:
     communicator.get_message_counts.return_value = port_message_counts
 
     instance_id = Reference('test[1]')
-    snapshot_manager = SnapshotManager(
-            instance_id, manager, communicator, ImplementationState.STATELESS)
+    snapshot_manager = SnapshotManager(instance_id, manager, communicator)
 
     checkpoints = Checkpoints(simulation_time=[CheckpointRangeRule(every=1)])
     snapshot_manager._set_checkpoint_info(
             datetime.now(timezone.utc), checkpoints, None, tmp_path)
 
-    assert not snapshot_manager.resuming()
-    snapshot_manager.reuse_instance(True, None)
-    snapshot_manager.reuse_instance(True, 1.5)
+    assert not snapshot_manager.resuming_from_intermediate()
+    assert not snapshot_manager.resuming_from_final()
+    snapshot_manager.save_implicit_snapshot(1.5)
     manager.submit_snapshot_metadata.assert_called_once()
     instance, metadata = manager.submit_snapshot_metadata.call_args[0]
     assert instance == instance_id
@@ -127,8 +116,7 @@ def test_save_load_implicit_snapshot(tmp_path: Path) -> None:
     snapshot_path = Path(metadata.snapshot_filename)
     manager.submit_snapshot_metadata.reset_mock()
 
-    snapshot_manager2 = SnapshotManager(
-            instance_id, manager, communicator, ImplementationState.STATELESS)
+    snapshot_manager2 = SnapshotManager(instance_id, manager, communicator)
 
     snapshot_manager2._set_checkpoint_info(
             datetime.now(timezone.utc), checkpoints, snapshot_path, tmp_path)
@@ -136,8 +124,7 @@ def test_save_load_implicit_snapshot(tmp_path: Path) -> None:
     manager.submit_snapshot_metadata.assert_called_once()
     manager.submit_snapshot_metadata.reset_mock()
 
-    assert not snapshot_manager2.resuming()
-    snapshot_manager2.reuse_instance(True, 1.5)
-    assert not snapshot_manager2.resuming()
-    snapshot_manager2.reuse_instance(True, 2.5)
+    assert not snapshot_manager2.resuming_from_intermediate()
+    assert not snapshot_manager2.resuming_from_final()
+    snapshot_manager2.save_implicit_snapshot(2.5)
     manager.submit_snapshot_metadata.assert_called_once()

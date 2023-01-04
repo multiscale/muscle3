@@ -84,16 +84,27 @@ class Instance:
         """Settings for this instance."""
 
         self._snapshot_manager = SnapshotManager(
-                self._instance_name(), self.__manager, self._communicator,
-                self._stateful)
+                self._instance_name(), self.__manager, self._communicator)
         """Keeps track of checkpointing and snapshots"""
 
-        self._first_run = True
-        """Keeps track of whether this is the first reuse run."""
+        self._first_run = None          # type: Optional[bool]
+        """Whether this is the first iteration of the reuse loop"""
+
         self._do_reuse = None           # type: Optional[bool]
-        """Caching variable for result from :meth:`__check_reuse_instance`"""
+        """Whether to enter this iteration of the reuse loop
+
+        This is None during the reuse loop, and set between
+        should_save_final_snapshot and reuse_instance.
+        """
+
+        self._do_resume = False
+        """Whether to resume on this iteration of the reuse loop"""
+
+        self._do_init = False
+        """Whether to do f_init on this iteration of the reuse loop"""
 
         self._f_init_cache = dict()     # type: _FInitCacheType
+        """Stores pre-received messages for f_init ports"""
 
         self._register()
         self._connect()
@@ -148,14 +159,27 @@ class Instance:
                 :meth:`save_final_snapshot`, or the checkpointing tutorial.
         """
         self._api_guard.verify_reuse_instance()
-        do_reuse = self._do_reuse
-        if do_reuse is None:
-            # should_save_final_snapshot not called, so we need to check_reuse
-            do_reuse = self.__check_reuse_instance(apply_overlay)
-        self._do_reuse = None
 
-        self._snapshot_manager.reuse_instance(
-                do_reuse, self.__f_init_max_timestamp)
+        if self._do_reuse is not None:
+            # thank you, should_save_final_snapshot, for running this already
+            do_reuse = self._do_reuse
+            self._do_reuse = None
+        else:
+            do_reuse = self._decide_reuse_instance(apply_overlay)
+
+        # now _first_run, _do_resume and _do_init are also set correctly
+
+        do_implicit_checkpoint = (
+                not self._first_run and
+                not self._api_guard.uses_checkpointing() and
+                self._stateful is not ImplementationState.STATEFUL)
+
+        if do_implicit_checkpoint:
+            if self._snapshot_manager.should_save_final_snapshot(
+                    do_reuse, self.__f_init_max_timestamp):
+                # store a None instead of a Message
+                self._snapshot_manager.save_implicit_snapshot(
+                        self.__f_init_max_timestamp)
 
         if not do_reuse:
             self.__close_ports()
@@ -438,9 +462,8 @@ class Instance:
             usual F_INIT step during this iteration of the reuse loop.
         """
         self._api_guard.verify_resuming()
-        result = self._snapshot_manager.resuming()
-        self._api_guard.resuming_done(result)
-        return result
+        self._api_guard.resuming_done(self._do_resume)
+        return self._do_resume
 
     def should_init(self) -> bool:
         """Check if this instance should initialize.
@@ -455,9 +478,8 @@ class Instance:
             True if the submodel must execute the F_INIT step, False otherwise.
         """
         self._api_guard.verify_should_init()
-        result = self._snapshot_manager.should_init()
         self._api_guard.should_init_done()
-        return result
+        return self._do_init
 
     def load_snapshot(self) -> Message:
         """Load a snapshot.
@@ -563,7 +585,7 @@ class Instance:
             to the checkpoint rules provided in the ymmsl configuration.
         """
         self._api_guard.verify_should_save_final_snapshot()
-        self._do_reuse = self.__check_reuse_instance(apply_overlay)
+        self._do_reuse = self._decide_reuse_instance(apply_overlay)
         result = self._snapshot_manager.should_save_final_snapshot(
                 self._do_reuse, self.__f_init_max_timestamp)
         self._api_guard.should_save_final_snapshot_done(result)
@@ -678,43 +700,51 @@ class Instance:
                                                      self.__manager)
             logging.getLogger().addHandler(self._mmp_handler)
 
-    def __check_reuse_instance(self, apply_overlay: bool) -> bool:
-        """Pre-receive F_INIT messages and detect if this instance is reused.
+    def _decide_reuse_instance(self, apply_overlay: bool) -> bool:
+        """Decide whether and how to reuse the instance.
 
-        This is called during :meth:`should_save_final_snapshot` to detect if a
-        snapshot must be taken. If an instance doesn't implement checkpointing,
-        :meth:`reuse_instance` will call it instead.
+        This sets self._first_run, self._do_resume and self._do_init, and
+        returns whether to reuse one more time. This is the real top of
+        the reuse loop, and it gets called by reuse_instance and
+        should_save_final_snapshot.
         """
-        do_reuse = self.__receive_settings()
+        if self._first_run is None:
+            self._first_run = True
+        elif self._first_run:
+            self._first_run = False
 
-        # TODO: _f_init_cache should be empty here, or the user didn't
-        # receive something that was sent on the last go-around.
-        # At least emit a warning.
-        if self._snapshot_manager.should_init() or not self._first_run:
-            # self.should_init() might be False in first should_save_final(),
-            # but self._first_run is already updated by then
-            self.__pre_receive_f_init(apply_overlay)
+        # resume from intermediate
+        if self._first_run and self._snapshot_manager.resuming_from_intermediate():
+            self._do_resume = True
+            self._do_init = False
+            return True
 
-        self._set_local_log_level()
-        self._set_remote_log_level()
+        f_init_connected = self._have_f_init_connections()
 
-        ports = self._communicator.list_ports()
-        f_init_not_connected = all(
-                [not self.is_connected(port)
-                 for port in ports.get(Operator.F_INIT, [])])
-        no_settings_in = not self._communicator.settings_in_connected()
+        # resume from final
+        if self._first_run and self._snapshot_manager.resuming_from_final():
+            if f_init_connected:
+                got_f_init_messages = self._pre_receive(apply_overlay)
+                self._do_resume = True
+                self._do_init = True
+                return got_f_init_messages
+            else:
+                self._do_resume = False     # unused
+                self._do_init = False       # unused
+                return False
 
-        if f_init_not_connected and no_settings_in:
-            do_reuse = self._first_run and (
-                    not self._snapshot_manager.resuming() or
-                    not self._snapshot_manager.should_init())
-        else:
-            for message in self._f_init_cache.values():
-                if isinstance(message.data, ClosePort):
-                    do_reuse = False
-        self._first_run = False
+        # fresh start or resuming from implicit snapshot
+        self._do_resume = False
 
-        return do_reuse
+        # simple straight single run without resuming
+        if not f_init_connected:
+            self._do_init = self._first_run
+            return self._first_run
+
+        # not resuming and f_init connected, run while we get messages
+        got_f_init_messages = self._pre_receive(apply_overlay)
+        self._do_init = got_f_init_messages
+        return got_f_init_messages
 
     def __receive_message(
             self, port_name: str, slot: Optional[int],
@@ -843,6 +873,32 @@ class Instance:
                         ' this component.').format(port_name, self._name))
             self.__shutdown(err_msg)
             raise RuntimeError(err_msg)
+
+    def _have_f_init_connections(self) -> bool:
+        """Checks whether we have connected F_INIT ports.
+
+        This includes muscle_settings_in, and any user-defined ports.
+        """
+        ports = self._communicator.list_ports()
+        f_init_connected = any(
+                [self.is_connected(port)
+                 for port in ports.get(Operator.F_INIT, [])])
+        return f_init_connected or self._communicator.settings_in_connected()
+
+    def _pre_receive(self, apply_overlay: bool) -> bool:
+        """Pre-receives on all ports.
+
+        This includes muscle_settings_in and all user-defined ports.
+
+        Returns:
+            True iff no ClosePort messages were received.
+        """
+        all_ports_open = self.__receive_settings()
+        self.__pre_receive_f_init(apply_overlay)
+        for message in self._f_init_cache.values():
+            if isinstance(message.data, ClosePort):
+                all_ports_open = False
+        return all_ports_open
 
     def __receive_settings(self) -> bool:
         """Receives settings on muscle_settings_in.

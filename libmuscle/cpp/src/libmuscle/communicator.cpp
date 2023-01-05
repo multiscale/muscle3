@@ -133,7 +133,8 @@ void Communicator::send_message(
         MPPMessage mpp_message(
                 snd_endpoint.ref(), recv_endpoint.ref(),
                 port_length, message.timestamp(), Optional<double>(),
-                settings_overlay, port.get_num_messages(slot), message.data());
+                settings_overlay, port.get_num_messages(slot), -1.0,
+                message.data());
 
         if (message.has_next_timestamp())
             mpp_message.next_timestamp = message.next_timestamp();

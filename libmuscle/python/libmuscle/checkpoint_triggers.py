@@ -1,5 +1,4 @@
 import bisect
-from datetime import datetime, timezone
 import logging
 import time
 from typing import List, Optional, Union
@@ -160,18 +159,6 @@ class CombinedCheckpointTriggers(CheckpointTrigger):
                    default=None)  # return None if all triggers return None
 
 
-def _utc_to_monotonic(utc: datetime) -> float:
-    """Convert UTC time point to a reference value of time.monotonic()
-
-    Args:
-        utc: datetime in UTC timezone
-    """
-    curmono = time.monotonic()
-    curutc = datetime.now(timezone.utc)
-    elapsed_seconds = (curutc - utc).total_seconds()
-    return curmono - elapsed_seconds
-
-
 class TriggerManager:
     """Manages all checkpoint triggers and checks if a snapshot must be saved.
     """
@@ -179,18 +166,19 @@ class TriggerManager:
     def __init__(self) -> None:
         self._has_checkpoints = False
         self._last_triggers = []    # type: List[str]
-        self._monotonic_reference = time.monotonic()
+        self._cpts_considered_until = float('-inf')
 
     def set_checkpoint_info(
-            self, utc_reference: datetime, checkpoints: Checkpoints) -> None:
+            self, elapsed: float, checkpoints: Checkpoints) -> None:
         """Register checkpoint info received from the muscle manager.
         """
+        self._mono_to_elapsed = elapsed - time.monotonic()
+
         if not checkpoints:
             self._has_checkpoints = False
             return
 
         self._has_checkpoints = True
-        self._monotonic_reference = _utc_to_monotonic(utc_reference)
 
         self._checkpoint_at_end = checkpoints.at_end
 
@@ -206,7 +194,19 @@ class TriggerManager:
     def elapsed_walltime(self) -> float:
         """Returns elapsed wallclock_time in seconds.
         """
-        return time.monotonic() - self._monotonic_reference
+        return time.monotonic() + self._mono_to_elapsed
+
+    def checkpoints_considered_until(self) -> float:
+        """Return elapsed time of last should_save*
+        """
+        return self._cpts_considered_until
+
+    def harmonise_wall_time(self, at_least: float) -> None:
+        """Ensure our elapsed time is at least the given value
+        """
+        cur = self.elapsed_walltime()
+        if cur < at_least:
+            self._mono_to_elapsed += at_least - cur
 
     def snapshots_enabled(self) -> bool:
         """Check if the current workflow has snapshots enabled.
@@ -219,8 +219,7 @@ class TriggerManager:
         if not self._has_checkpoints:
             return False
 
-        elapsed_walltime = self.elapsed_walltime()
-        return self.__should_save(elapsed_walltime, timestamp)
+        return self.__should_save(timestamp)
 
     def should_save_final_snapshot(
             self, do_reuse: bool, f_init_max_timestamp: Optional[float]
@@ -241,8 +240,7 @@ class TriggerManager:
                           ' Not creating a snapshot.')
             self._sim_reset = True
         else:
-            elapsed_walltime = self.elapsed_walltime()
-            value = self.__should_save(elapsed_walltime, f_init_max_timestamp)
+            value = self.__should_save(f_init_max_timestamp)
 
         return value
 
@@ -270,11 +268,10 @@ class TriggerManager:
         self._last_triggers = []
         return triggers
 
-    def __should_save(self, walltime: float, simulation_time: float) -> bool:
+    def __should_save(self, simulation_time: float) -> bool:
         """Check if a checkpoint should be taken
 
         Args:
-            walltime: current wallclock time (elapsed since reference)
             simulation_time: current/next timestamp as reported by the instance
         """
         if self._sim_reset:
@@ -289,6 +286,9 @@ class TriggerManager:
             else:
                 self._nextsim = self._sim.next_checkpoint(simulation_time)
             self._sim_reset = False
+
+        walltime = self.elapsed_walltime()
+        self._cpts_considered_until = walltime
 
         self._last_triggers = []
         if self._nextwall is not None and walltime >= self._nextwall:

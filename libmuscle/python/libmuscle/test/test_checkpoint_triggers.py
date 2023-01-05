@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta, timezone
 import time
 import pytest
 from ymmsl import CheckpointRangeRule, CheckpointAtRule, Checkpoints
@@ -137,20 +136,19 @@ def test_combined_checkpoint_trigger_at_ranges():
 
 
 def test_trigger_manager_reference_time():
-    monotonic_now = time.monotonic()
-    utcnow = datetime.now(timezone.utc)
-    reference = utcnow - timedelta(seconds=15)
+    monotonic_start = time.monotonic()
+    ref_elapsed = 15.0
     trigger_manager = TriggerManager()
-    trigger_manager.set_checkpoint_info(reference, Checkpoints(at_end=True))
+    trigger_manager.set_checkpoint_info(ref_elapsed, Checkpoints(at_end=True))
     elapsed_walltime = trigger_manager.elapsed_walltime()
-    elapsed_monotonic = time.monotonic() - monotonic_now
-    assert 15.0 < elapsed_walltime <= (15.0 + elapsed_monotonic)
+    duration = time.monotonic() - monotonic_start
+    assert ref_elapsed < elapsed_walltime <= (ref_elapsed + duration)
 
 
 def test_trigger_manager():
-    reference = datetime.now(timezone.utc)
+    ref_elapsed = 0.0
     trigger_manager = TriggerManager()
-    trigger_manager.set_checkpoint_info(reference, Checkpoints(
+    trigger_manager.set_checkpoint_info(ref_elapsed, Checkpoints(
             at_end=True,
             wallclock_time=[CheckpointAtRule([1e-12])],
             simulation_time=[CheckpointAtRule([1, 3, 5])]))
@@ -181,8 +179,7 @@ def test_trigger_manager():
 
 def test_no_checkpointing() -> None:
     trigger_manager = TriggerManager()
-    trigger_manager.set_checkpoint_info(
-            datetime.now(timezone.utc), Checkpoints())
+    trigger_manager.set_checkpoint_info(0.0, Checkpoints())
 
     assert not trigger_manager.should_save_snapshot(1)
     assert not trigger_manager.should_save_snapshot(5000)

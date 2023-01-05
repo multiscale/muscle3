@@ -1,6 +1,6 @@
-from datetime import datetime, timezone
 import errno
 import logging
+import time
 from typing import Any, Dict, cast, List, Optional
 
 import msgpack
@@ -74,8 +74,7 @@ class MMPRequestHandler(RequestHandler):
         self._topology_store = topology_store
         self._snapshot_registry = snapshot_registry
         self._run_dir = run_dir
-        self._reference_time = datetime.now(timezone.utc)
-        self._reference_timestamp = self._reference_time.timestamp()
+        self._reference_time = time.monotonic()
 
     def handle_request(self, request: bytes) -> bytes:
         """Handles a manager request.
@@ -303,7 +302,7 @@ class MMPRequestHandler(RequestHandler):
             snapshot_directory = str(self._run_dir.snapshot_dir(instance))
 
         return [ResponseType.SUCCESS.value,
-                self._reference_timestamp,
+                time.monotonic() - self._reference_time,
                 encode_checkpoints(self._configuration.checkpoints),
                 resume,
                 snapshot_directory]

@@ -1,5 +1,4 @@
 import dataclasses
-from datetime import datetime, timezone
 from pathlib import Path
 from random import uniform
 from time import perf_counter, sleep
@@ -23,7 +22,7 @@ PEER_INTERVAL_MIN = 5.0
 PEER_INTERVAL_MAX = 10.0
 
 _CheckpointInfoType = Tuple[
-        datetime, Checkpoints, Optional[Path], Optional[Path]]
+        float, Checkpoints, Optional[Path], Optional[Path]]
 
 
 def encode_operator(op: Operator) -> str:
@@ -64,7 +63,7 @@ def decode_checkpoint_rule(rule: Dict[str, Any]) -> CheckpointRule:
 
 
 def decode_checkpoint_info(
-        reference_timestamp: float,
+        elapsed_time: float,
         checkpoints_dict: Dict[str, Any],
         resume: Optional[str],
         snapshot_dir: Optional[str]
@@ -72,19 +71,17 @@ def decode_checkpoint_info(
     """Decode checkpoint info from a MsgPack-compatible value.
 
     Args:
-        reference_timestamp: seconds since UNIX epoch in UTC timezone to use as
-            wallclock_time = 0
+        elapsed_time: current elapsed time according to the manager
         checkpoints_dict: checkpoint definitions from the MsgPack
         resume: path to the snapshot we should resume from, if any
         snapshot_dir: path to the directory to store new snapshots in
 
     Returns:
-        wallclock_time_reference: UTC time where wallclock_time = 0
+        elapsed_time: current elapsed time according to the manager
         checkpoints: checkpoint configuration
-        resume: path to the resume snapshot
-        snapshot_dir: path to store the snapshots in
+        resume: path to the snapshot we should resume from, if any
+        snapshot_dir: path to the directory to store new snapshots in
     """
-    ref_time = datetime.fromtimestamp(reference_timestamp, tz=timezone.utc)
     checkpoints = Checkpoints(
             at_end=checkpoints_dict["at_end"],
             wallclock_time=[decode_checkpoint_rule(rule)
@@ -93,7 +90,7 @@ def decode_checkpoint_info(
                              for rule in checkpoints_dict["simulation_time"]])
     resume_path = None if resume is None else Path(resume)
     snapshot_path = None if snapshot_dir is None else Path(snapshot_dir)
-    return (ref_time, checkpoints, resume_path, snapshot_path)
+    return (elapsed_time, checkpoints, resume_path, snapshot_path)
 
 
 class MMPClient():
@@ -173,7 +170,7 @@ class MMPClient():
         """Get the checkpoint info from the manager.
 
         Returns:
-            wallclock_time_reference: UTC time where wallclock_time = 0
+            elapsed_time: current elapsed time
             checkpoints: checkpoint configuration
             resume: path to the resume snapshot
             snapshot_directory: path to store snapshots

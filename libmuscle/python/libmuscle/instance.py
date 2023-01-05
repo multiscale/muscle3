@@ -118,8 +118,8 @@ class Instance:
         checkpoint_info = self.__manager.get_checkpoint_info(
                 self._instance_name())
 
-        utc_reference, checkpoints = checkpoint_info[0:2]
-        self._trigger_manager.set_checkpoint_info(utc_reference, checkpoints)
+        elapsed_time, checkpoints = checkpoint_info[0:2]
+        self._trigger_manager.set_checkpoint_info(elapsed_time, checkpoints)
 
         resume_snapshot, snapshot_dir = checkpoint_info[2:4]
         saved_at = self._snapshot_manager.prepare_resume(
@@ -378,7 +378,9 @@ class Instance:
             message = copy(message)
             message.settings = self._settings_manager.overlay
 
-        self._communicator.send_message(port_name, message, slot)
+        self._communicator.send_message(
+                port_name, message, slot,
+                self._trigger_manager.checkpoints_considered_until())
 
     def receive(self, port_name: str, slot: Optional[int] = None,
                 default: Optional[Message] = None
@@ -826,7 +828,7 @@ class Instance:
                     raise RuntimeError(err_msg)
 
         else:
-            msg = self._communicator.receive_message(
+            msg, saved_until = self._communicator.receive_message(
                     port_name, slot, default)
             if port.is_connected() and not port.is_open(slot):
                 err_msg = (('Port {} was closed while trying to'
@@ -838,6 +840,7 @@ class Instance:
                 self.__check_compatibility(port_name, msg.settings)
             if not with_settings:
                 msg.settings = None
+            self._trigger_manager.harmonise_wall_time(saved_until)
         return msg
 
     def __make_full_name(self
@@ -942,7 +945,7 @@ class Instance:
             False iff the port is connnected and ClosePort was received.
         """
         default_message = Message(0.0, None, Settings(), Settings())
-        message = self._communicator.receive_message(
+        message, saved_until = self._communicator.receive_message(
                 'muscle_settings_in', None, default_message)
         if isinstance(message.data, ClosePort):
             return False
@@ -959,6 +962,8 @@ class Instance:
         for key, value in message.data.items():
             settings[key] = value
         self._settings_manager.overlay = settings
+
+        self._trigger_manager.harmonise_wall_time(saved_until)
         return True
 
     def __pre_receive_f_init(self, apply_overlay: bool) -> None:
@@ -968,12 +973,14 @@ class Instance:
         in self._f_init_cache.
         """
         def pre_receive(port_name: str, slot: Optional[int]) -> None:
-            msg = self._communicator.receive_message(port_name, slot)
+            msg, saved_until = self._communicator.receive_message(
+                    port_name, slot)
             self._f_init_cache[(port_name, slot)] = msg
             if apply_overlay:
                 self.__apply_overlay(msg)
                 self.__check_compatibility(port_name, msg.settings)
                 msg.settings = None
+            self._trigger_manager.harmonise_wall_time(saved_until)
 
         self._f_init_cache = dict()
         ports = self._communicator.list_ports()

@@ -1,5 +1,4 @@
 import dataclasses
-from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -109,10 +108,9 @@ def test_get_checkpoint_info(mmp_configuration, mmp_request_handler):
     decoded_result = msgpack.unpackb(result, raw=False)
 
     assert decoded_result[0] == ResponseType.SUCCESS.value
-    timestamp, checkpoints, resume, snapshot_directory = decoded_result[1:]
+    elapsed_time, checkpoints, resume, snapshot_directory = decoded_result[1:]
 
-    ref_time = datetime.fromtimestamp(timestamp, tz=timezone.utc)
-    assert ref_time == mmp_request_handler._reference_time
+    assert elapsed_time > 0.0
 
     assert isinstance(checkpoints, dict)
     assert checkpoints.keys() == {'at_end', 'wallclock_time', 'simulation_time'}

@@ -84,7 +84,7 @@ class MsgPackSnapshot(Snapshot):
             settings = message.settings
         return MPPMessage(Reference('_'), Reference('_'), None,
                           message.timestamp, message.next_timestamp,
-                          settings, 0, message.data).encoded()
+                          settings, 0, -1.0, message.data).encoded()
 
     @staticmethod
     def bytes_to_message(data: bytes) -> Optional['communicator.Message']:

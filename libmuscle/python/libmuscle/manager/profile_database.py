@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 import sqlite3
 import threading
@@ -5,6 +6,9 @@ from typing import Iterable, Optional, Tuple
 
 from libmuscle.profiling import ProfileEvent, ProfileEventType
 from ymmsl import Operator, Reference
+
+
+_logger = logging.getLogger(__name__)
 
 
 class ProfileDatabase:
@@ -21,8 +25,12 @@ class ProfileDatabase:
             db_file: The file to create and initialise.
         """
         if db_file.exists():
-            # TODO: maybe allow multiple objects to open the same file?
-            raise RuntimeError(f'File {db_file} exists, not overwriting it.')
+            _logger.info(f'Overwriting profiling database {db_file}')
+            try:
+                # from Python 3.8, we can use missing_ok=True
+                db_file.unlink()
+            except FileNotFoundError:
+                pass
 
         # Exactly how the sqlite3 Python module's automatic
         # transactions work is a bit mysterious, and the documentation

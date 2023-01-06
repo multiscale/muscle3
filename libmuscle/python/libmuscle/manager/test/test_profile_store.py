@@ -1,16 +1,16 @@
 from libmuscle.profiling import ProfileEvent, ProfileEventType
-from libmuscle.manager.profile_database import ProfileDatabase
+from libmuscle.manager.profile_store import ProfileStore
 from libmuscle.timestamp import Timestamp
 from ymmsl import Operator, Port, Reference
 
 import sqlite3
 
 
-def test_create_profile_database(tmp_path):
-    db_path = tmp_path / 'test.db'
-    db = ProfileDatabase(db_path)
+def test_create_profile_store(tmp_path):
+    db = ProfileStore(tmp_path)
     db.close()
 
+    db_path = tmp_path / 'performance.sqlite'
     conn = sqlite3.connect(db_path, isolation_level=None)
     cur = conn.cursor()
     cur.execute("BEGIN TRANSACTION")
@@ -44,8 +44,9 @@ def test_create_profile_database(tmp_path):
 
 
 def test_add_events(tmp_path):
-    db_path = tmp_path / 'test.db'
-    db = ProfileDatabase(db_path)
+    db = ProfileStore(tmp_path)
+
+    db_path = tmp_path / 'performance.sqlite'
     conn = sqlite3.connect(db_path, isolation_level=None)
     cur = conn.cursor()
 

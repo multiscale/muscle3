@@ -7,7 +7,6 @@
 #include <libmuscle/mcp/tcp_transport_server.hpp>
 #include <libmuscle/mpp_client.hpp>
 #include <libmuscle/profiling.hpp>
-#include <libmuscle/timestamp.hpp>
 
 #include <limits>
 
@@ -121,7 +120,7 @@ void Communicator::send_message(
     Port & port = ports_.at(port_name);
 
     ProfileEvent profile_event(
-            ProfileEventType::send, Timestamp(), {}, port, {}, slot,
+            ProfileEventType::send, ProfileTimestamp(), {}, port, {}, slot,
             {}, message.timestamp());
 
     auto recv_endpoints = peer_manager_->get_peer_endpoints(
@@ -190,7 +189,7 @@ Message Communicator::receive_message(
     Port & port = (ports_.count(port_name)) ? (ports_.at(port_name)) : muscle_settings_in_.get();
 
     ProfileEvent receive_event(
-            ProfileEventType::receive, Timestamp(), {}, port, {}, slot);
+            ProfileEventType::receive, ProfileTimestamp(), {}, port, {}, slot);
 
     // peer_manager already checks that there is at most one snd_endpoint
     // connected to the port we receive on
@@ -200,7 +199,7 @@ Message Communicator::receive_message(
     auto msg_and_profile = client.receive(recv_endpoint.ref());
 
     ProfileEvent recv_decode_event(
-            ProfileEventType::receive_decode, Timestamp(), {}, port, {}, slot,
+            ProfileEventType::receive_decode, ProfileTimestamp(), {}, port, {}, slot,
             std::get<0>(msg_and_profile).size());
 
     auto mpp_message = MPPMessage::from_bytes(std::get<0>(msg_and_profile));

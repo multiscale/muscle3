@@ -2,7 +2,7 @@
 
 #include <libmuscle/data.hpp>
 
-#include <libmuscle/timestamp.hpp>
+#include <libmuscle/profiling.hpp>
 
 #include <string>
 #include <tuple>
@@ -12,7 +12,8 @@
 namespace libmuscle { namespace impl { namespace mcp {
 
 
-using ProfileData = std::tuple<Timestamp, Timestamp, Timestamp>;
+using ProfileData = std::tuple<
+        ProfileTimestamp, ProfileTimestamp, ProfileTimestamp>;
 
 
 /** A client that connects to an MCP transport server.

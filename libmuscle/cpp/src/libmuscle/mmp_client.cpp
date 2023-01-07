@@ -33,7 +33,7 @@ using ymmsl::SettingValue;
 
 namespace {
     const float connection_timeout = 300.0f;
-    const std::chrono::milliseconds peer_timeout(600000);   // milliseconds
+    const std::chrono::milliseconds peer_timeout(600000);
     const int peer_interval_min = 5000;     // milliseconds
     const int peer_interval_max = 10000;    // milliseconds
 
@@ -87,8 +87,8 @@ namespace {
 
         return Data::list(
                 static_cast<int>(event.event_type),
-                event.start_time.get().seconds,
-                event.stop_time.get().seconds,
+                event.start_time.get().nanoseconds,
+                event.stop_time.get().nanoseconds,
                 encoded_port, encode_optional(event.port_length),
                 encode_optional(event.slot), encode_optional(event.message_size),
                 encode_optional(event.message_timestamp));

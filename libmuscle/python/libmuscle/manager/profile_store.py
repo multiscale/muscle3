@@ -76,8 +76,8 @@ class ProfileStore(ProfileDatabase):
             port_operator = None if e.port is None else e.port.operator.value
 
             return (
-                    instance_oid, e.event_type.value, e.start_time.seconds,
-                    e.stop_time.seconds, port_name, port_operator,
+                    instance_oid, e.event_type.value, e.start_time.nanoseconds,
+                    e.stop_time.nanoseconds, port_name, port_operator,
                     e.port_length, e.slot, e.message_size, e.message_timestamp)
 
         cur.executemany(
@@ -131,8 +131,8 @@ class ProfileStore(ProfileDatabase):
                 "CREATE TABLE events ("
                 "    instance INTEGER NOT NULL REFERENCES instances(oid),"
                 "    event_type INTEGER NOT NULL REFERENCES event_types(oid),"
-                "    start_time DOUBLE NOT NULL,"
-                "    stop_time DOUBLE NOT NULL,"
+                "    start_time INTEGER NOT NULL,"
+                "    stop_time INTEGER NOT NULL,"
                 "    port_name TEXT,"
                 "    port_operator INTEGER REFERENCES port_operators(oid),"
                 "    port_length INTEGER,"

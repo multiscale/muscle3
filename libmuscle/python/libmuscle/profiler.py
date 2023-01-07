@@ -1,8 +1,7 @@
 from typing import List
 
 from libmuscle.mmp_client import MMPClient
-from libmuscle.profiling import ProfileEvent
-from libmuscle.timestamp import Timestamp
+from libmuscle.profiling import ProfileEvent, ProfileTimestamp
 
 
 class Profiler:
@@ -34,7 +33,7 @@ class Profiler:
             event: The event to record.
         """
         if event.stop_time is None:
-            event.stop_time = Timestamp()
+            event.stop_time = ProfileTimestamp()
         self._events.append(event)
         if len(self._events) >= 100:
             self.__flush()

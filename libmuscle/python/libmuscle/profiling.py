@@ -1,9 +1,8 @@
 from enum import Enum
+from time import perf_counter_ns, time_ns
 from typing import Optional
 
 from ymmsl import Port
-
-from libmuscle.timestamp import Timestamp
 
 
 class ProfileEventType(Enum):
@@ -16,6 +15,24 @@ class ProfileEventType(Enum):
     RECEIVE_WAIT = 5
     RECEIVE_TRANSFER = 6
     RECEIVE_DECODE = 7
+
+
+class ProfileTimestamp:
+    """A timestamp for profiling.
+
+    This has higher resolution than Timestamp, storing a number of
+    nanoseconds since the UNIX epoch in an int.
+
+    Attributes:
+        nanoseconds: Nanoseconds since the UNIX epoch.
+    """
+    _time_ref = time_ns() - perf_counter_ns()
+
+    def __init__(self, nanoseconds: Optional[int] = None) -> None:
+        """Create a timestamp representing now."""
+        if nanoseconds is None:
+            nanoseconds = perf_counter_ns() + self._time_ref
+        self.nanoseconds = nanoseconds
 
 
 class ProfileEvent:
@@ -53,8 +70,8 @@ class ProfileEvent:
     def __init__(
             self,
             event_type: ProfileEventType,
-            start_time: Optional[Timestamp] = None,
-            stop_time: Optional[Timestamp] = None,
+            start_time: Optional[ProfileTimestamp] = None,
+            stop_time: Optional[ProfileTimestamp] = None,
             port: Optional[Port] = None,
             port_length: Optional[int] = None,
             slot: Optional[int] = None,
@@ -74,9 +91,9 @@ class ProfileEvent:
     def start(self) -> None:
         """Sets start_time to the current time.
         """
-        self.start_time = Timestamp()
+        self.start_time = ProfileTimestamp()
 
     def stop(self) -> None:
         """Sets stop_time to the current time.
         """
-        self.stop_time = Timestamp()
+        self.stop_time = ProfileTimestamp()

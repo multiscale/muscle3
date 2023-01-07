@@ -11,8 +11,8 @@ from libmuscle.peer_manager import PeerManager
 from libmuscle.post_office import PostOffice
 from libmuscle.port import Port
 from libmuscle.profiler import Profiler
-from libmuscle.profiling import ProfileEvent, ProfileEventType
-from libmuscle.timestamp import Timestamp
+from libmuscle.profiling import (
+        ProfileEvent, ProfileEventType, ProfileTimestamp)
 
 
 _logger = logging.getLogger(__name__)
@@ -216,8 +216,8 @@ class Communicator:
 
         port = self._ports[port_name]
         profile_event = ProfileEvent(
-                ProfileEventType.SEND, Timestamp(), None, port, None, slot,
-                None, message.timestamp)
+                ProfileEventType.SEND, ProfileTimestamp(), None, port, None,
+                slot, None, message.timestamp)
 
         recv_endpoints = self._peer_manager.get_peer_endpoints(
                 snd_endpoint.port, slot_list)
@@ -306,7 +306,8 @@ class Communicator:
             port = self._muscle_settings_in
 
         receive_event = ProfileEvent(
-                ProfileEventType.RECEIVE, Timestamp(), None, port, None, slot)
+                ProfileEventType.RECEIVE, ProfileTimestamp(), None, port, None,
+                slot)
 
         # peer_manager already checks that there is at most one snd_endpoint
         # connected to the port we receive on
@@ -316,8 +317,8 @@ class Communicator:
         mpp_message_bytes, profile = client.receive(recv_endpoint.ref())
 
         recv_decode_event = ProfileEvent(
-                ProfileEventType.RECEIVE_DECODE, Timestamp(), None, port, None,
-                slot, len(mpp_message_bytes))
+                ProfileEventType.RECEIVE_DECODE, ProfileTimestamp(), None,
+                port, None, slot, len(mpp_message_bytes))
         mpp_message = MPPMessage.from_bytes(mpp_message_bytes)
         recv_decode_event.stop()
 

@@ -20,7 +20,8 @@ from libmuscle.mcp.protocol import RequestType, ResponseType
 from libmuscle.mcp.tcp_transport_server import TcpTransportServer
 from libmuscle.mcp.transport_server import RequestHandler
 from libmuscle.manager.profile_store import ProfileStore
-from libmuscle.profiling import ProfileEvent, ProfileEventType
+from libmuscle.profiling import (
+        ProfileEvent, ProfileEventType, ProfileTimestamp)
 from libmuscle.snapshot import SnapshotMetadata
 from libmuscle.timestamp import Timestamp
 
@@ -287,7 +288,8 @@ class MMPRequestHandler(RequestHandler):
         """
         ev = [
                 ProfileEvent(
-                    ProfileEventType(e[0]), Timestamp(e[1]), Timestamp(e[2]),
+                    ProfileEventType(e[0]), ProfileTimestamp(e[1]),
+                    ProfileTimestamp(e[2]),
                     Port(e[3][0], Operator[e[3][1]]) if e[3] else None,
                     e[4], e[5], e[6], e[7])
                 for e in events]

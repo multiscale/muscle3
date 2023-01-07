@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 
 #include <libmuscle/timestamp.hpp>
 #include <libmuscle/util.hpp>
@@ -27,6 +28,34 @@ enum class ProfileEventType {
 };
 
 
+/** A timestamp for profiling.
+ *
+ * This has higher resolution than Timestamp, storing a number of
+ * nanoseconds since the epoch in an int64_t. The epoch is usually
+ * close to the UNIX epoch.
+ */
+class ProfileTimestamp {
+    public:
+        /** Create a timestamp.
+         */
+        ProfileTimestamp();
+
+        /** Create a timestamp for a given time point.
+         *
+         * @param nanoseconds: Time to set. If unset, use the current time.
+         */
+        ProfileTimestamp(int64_t nanoseconds);
+
+        /// Number of nanoseconds since the epoch.
+        int64_t nanoseconds;
+
+    private:
+        static int64_t time_ref_;
+};
+
+std::ostream & operator<<(std::ostream & os, ProfileTimestamp ts);
+
+
 /** A profile event as used by MUSCLE3.
  *
  * This represents a single measurement of the timing of some event that
@@ -50,8 +79,8 @@ class ProfileEvent {
          */
         ProfileEvent(
                 ProfileEventType event_type,
-                Optional<Timestamp> start_time = Optional<Timestamp>(),
-                Optional<Timestamp> stop_time = Optional<Timestamp>(),
+                Optional<ProfileTimestamp> start_time = Optional<ProfileTimestamp>(),
+                Optional<ProfileTimestamp> stop_time = Optional<ProfileTimestamp>(),
                 Optional<ymmsl::Port> const & port = Optional<ymmsl::Port>(),
                 Optional<int> port_length = Optional<int>(),
                 Optional<int> slot = Optional<int>(),
@@ -68,10 +97,10 @@ class ProfileEvent {
         ProfileEventType event_type;
 
         /// When the event started (real-world, not simulation time).
-        Optional<Timestamp> start_time;
+        Optional<ProfileTimestamp> start_time;
 
         /// When the event ended (real-world, not simulation time).
-        Optional<Timestamp> stop_time;
+        Optional<ProfileTimestamp> stop_time;
 
         /// Port used for sending or receiving, if applicable.
         Optional<ymmsl::Port> port;

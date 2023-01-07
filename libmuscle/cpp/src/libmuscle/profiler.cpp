@@ -1,9 +1,6 @@
 #include <libmuscle/profiler.hpp>
 
-#include <libmuscle/timestamp.hpp>
-
-
-using libmuscle::impl::Timestamp;
+#include <libmuscle/profiling.hpp>
 
 
 namespace libmuscle { namespace impl {
@@ -19,7 +16,7 @@ void Profiler::shutdown() {
 
 void Profiler::record_event(ProfileEvent && event) {
     if (!event.stop_time.is_set())
-        event.stop_time = Timestamp();
+        event.stop_time = ProfileTimestamp();
     events_.push_back(std::move(event));
     if (events_.size() >= 100)
         flush_();

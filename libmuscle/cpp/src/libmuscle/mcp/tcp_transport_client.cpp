@@ -2,7 +2,6 @@
 
 #include <libmuscle/data.hpp>
 #include <libmuscle/mcp/tcp_util.hpp>
-#include <libmuscle/timestamp.hpp>
 
 #include <algorithm>
 #include <cstring>
@@ -125,14 +124,14 @@ TcpTransportClient::~TcpTransportClient() {
 std::tuple<DataConstRef, ProfileData> TcpTransportClient::call(
         char const * req_buf, std::size_t req_len
 ) const {
-    Timestamp start_wait;
+    ProfileTimestamp start_wait;
     send_frame(socket_fd_, req_buf, req_len);
 
     int64_t length = recv_int64(socket_fd_);
-    Timestamp start_transfer;
+    ProfileTimestamp start_transfer;
     auto result = Data::byte_array(length);
     recv_all(socket_fd_, result.as_byte_array(), result.size());
-    Timestamp stop_transfer;
+    ProfileTimestamp stop_transfer;
     return std::make_tuple(
             result, std::make_tuple(start_wait, start_transfer, stop_transfer));
 }

@@ -21,6 +21,7 @@
 using libmuscle::impl::Profiler;
 using libmuscle::impl::ProfileEvent;
 using libmuscle::impl::ProfileEventType;
+using libmuscle::impl::ProfileTimestamp;
 using libmuscle::impl::MockMMPClient;
 using ymmsl::Port;
 
@@ -43,8 +44,12 @@ struct TestProfiler {
 
 
 // Helpers for comparison, not needed in the main code so put here.
-bool operator==(Timestamp const & lhs, Timestamp const & rhs) {
-    return lhs.seconds == rhs.seconds;
+bool operator==(ProfileTimestamp const & lhs, ProfileTimestamp const & rhs) {
+    return lhs.nanoseconds == rhs.nanoseconds;
+}
+
+bool operator<(ProfileTimestamp const & lhs, ProfileTimestamp const & rhs) {
+    return lhs.nanoseconds < rhs.nanoseconds;
 }
 
 bool operator==(Port const & lhs, Port const & rhs) {
@@ -98,7 +103,7 @@ TEST(libmuscle_profiler, test_recording_events) {
     MockMMPClient mock_mmp_client(Reference("test_instance[10]"), "");
     Profiler profiler(mock_mmp_client);
 
-    Timestamp t1, t2;
+    ProfileTimestamp t1, t2;
     ProfileEvent e(ProfileEventType::register_, t1, t2);
 
     profiler.record_event(ProfileEvent(e));
@@ -114,7 +119,7 @@ TEST(libmuscle_profiler, test_auto_stop_time) {
     MockMMPClient mock_mmp_client(Reference("test_instance[10]"), "");
     Profiler profiler(mock_mmp_client);
 
-    Timestamp t1;
+    ProfileTimestamp t1;
     ProfileEvent e(ProfileEventType::send, t1);
 
     profiler.record_event(std::move(e));
@@ -122,7 +127,7 @@ TEST(libmuscle_profiler, test_auto_stop_time) {
     auto const & e2 = TestProfiler::events_(profiler).at(0);
     ASSERT_EQ(e2.start_time, t1);
     ASSERT_TRUE(e2.stop_time.is_set());
-    ASSERT_TRUE(e2.start_time.get().seconds < e2.stop_time.get().seconds);
+    ASSERT_TRUE(e2.start_time.get() < e2.stop_time.get());
 }
 
 TEST(libmuscle_profiler, test_send_to_mock_mmp_client) {
@@ -130,17 +135,20 @@ TEST(libmuscle_profiler, test_send_to_mock_mmp_client) {
     MockMMPClient mock_mmp_client(Reference("test_instance[10]"), "");
     Profiler profiler(mock_mmp_client);
 
-    ProfileEvent e1(ProfileEventType::receive, Timestamp(), Timestamp());
+    ProfileEvent e1(
+            ProfileEventType::receive, ProfileTimestamp(), ProfileTimestamp());
     profiler.record_event(ProfileEvent(e1));
 
     for (int i = 1; i < 99; ++i) {
-        ProfileEvent e(ProfileEventType::send, Timestamp(), Timestamp());
+        ProfileEvent e(
+                ProfileEventType::send, ProfileTimestamp(), ProfileTimestamp());
         profiler.record_event(std::move(e));
     }
 
     ASSERT_EQ(mock_mmp_client.last_submitted_profile_events.size(), 0u);
 
-    ProfileEvent e2(ProfileEventType::receive_transfer, Timestamp(), Timestamp());
+    ProfileEvent e2(
+            ProfileEventType::receive_transfer, ProfileTimestamp(), ProfileTimestamp());
     profiler.record_event(ProfileEvent(e2));
 
     ASSERT_EQ(mock_mmp_client.last_submitted_profile_events.size(), 100u);

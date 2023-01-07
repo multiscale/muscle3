@@ -44,7 +44,7 @@ def encode_profile_event(event: ProfileEvent) -> Any:
     encoded_port = encode_port(event.port) if event.port else None
     return [
             event.event_type.value,
-            event.start_time.seconds, event.stop_time.seconds,
+            event.start_time.nanoseconds, event.stop_time.nanoseconds,
             encoded_port, event.port_length, event.slot,
             event.message_size, event.message_timestamp]
 

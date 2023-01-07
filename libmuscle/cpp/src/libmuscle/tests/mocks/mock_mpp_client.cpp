@@ -2,7 +2,7 @@
 
 #include <libmuscle/data.hpp>
 #include <libmuscle/mcp/data_pack.hpp>
-#include <libmuscle/timestamp.hpp>
+#include <libmuscle/profiling.hpp>
 
 #include <cstring>
 #include <string>
@@ -24,7 +24,8 @@ std::tuple<DataConstRef, ProfileData> MockMPPClient::receive(
 
     return std::make_tuple(
             next_receive_message.encoded(), std::make_tuple(
-                Timestamp(1.0), Timestamp(2.0), Timestamp(3.0)));
+                ProfileTimestamp(1.0), ProfileTimestamp(2.0),
+                ProfileTimestamp(3.0)));
 }
 
 void MockMPPClient::close() {}

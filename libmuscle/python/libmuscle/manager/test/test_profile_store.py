@@ -1,6 +1,6 @@
-from libmuscle.profiling import ProfileEvent, ProfileEventType
+from libmuscle.profiling import (
+        ProfileEvent, ProfileEventType, ProfileTimestamp)
 from libmuscle.manager.profile_store import ProfileStore
-from libmuscle.timestamp import Timestamp
 from ymmsl import Operator, Port, Reference
 
 import sqlite3
@@ -52,12 +52,15 @@ def test_add_events(tmp_path):
 
     events = [
             ProfileEvent(
-                ProfileEventType.REGISTER, Timestamp(0.0), Timestamp(0.1)),
+                ProfileEventType.REGISTER, ProfileTimestamp(0),
+                ProfileTimestamp(1000)),
             ProfileEvent(
-                ProfileEventType.SEND, Timestamp(0.8), Timestamp(0.812),
+                ProfileEventType.SEND, ProfileTimestamp(800),
+                ProfileTimestamp(812),
                 Port('out_port', Operator.O_I), 10, 3, 12345, 13.42),
             ProfileEvent(
-                ProfileEventType.DEREGISTER, Timestamp(1.0), Timestamp(1.1))]
+                ProfileEventType.DEREGISTER, ProfileTimestamp(1000000000000),
+                ProfileTimestamp(1100000000000))]
 
     def check_send_event(instance):
         cur.execute("BEGIN TRANSACTION")
@@ -73,7 +76,7 @@ def test_add_events(tmp_path):
         assert len(events2) == 1
         e = events2[0]
         assert e[1:10] == (
-                ProfileEventType.SEND.value, 0.8, 0.812, 'out_port',
+                ProfileEventType.SEND.value, 800, 812, 'out_port',
                 Operator.O_I.value, 10, 3, 12345, 13.42)
         assert e[11] == 'instance[0]'
         assert e[13] == 'SEND'
@@ -102,8 +105,8 @@ def test_add_events(tmp_path):
         assert set(events2) == {
                 ('instance[0]', start, stop), ('instance[1]', start, stop)}
 
-    check_register_event('REGISTER', 0.0, 0.1)
-    check_register_event('DEREGISTER', 1.0, 1.1)
+    check_register_event('REGISTER', 0, 1000)
+    check_register_event('DEREGISTER', 1000000000000, 1100000000000)
 
     cur.close()
     conn.close()

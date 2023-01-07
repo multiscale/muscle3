@@ -1,12 +1,12 @@
-from libmuscle.profiling import ProfileEvent, ProfileEventType
-from libmuscle.timestamp import Timestamp
+from libmuscle.profiling import (
+        ProfileEvent, ProfileEventType, ProfileTimestamp)
 
 
 def test_recording_events(mocked_profiler) -> None:
     profiler, _ = mocked_profiler
 
-    t1 = Timestamp()
-    t2 = Timestamp()
+    t1 = ProfileTimestamp()
+    t2 = ProfileTimestamp()
     e = ProfileEvent(ProfileEventType.REGISTER, t1, t2)
 
     profiler.record_event(e)
@@ -19,26 +19,26 @@ def test_recording_events(mocked_profiler) -> None:
 def test_auto_stop_time(mocked_profiler) -> None:
     profiler, _ = mocked_profiler
 
-    t1 = Timestamp()
+    t1 = ProfileTimestamp()
     e = ProfileEvent(ProfileEventType.SEND, t1)
 
     profiler.record_event(e)
 
     assert e.start_time == t1
     assert e.stop_time is not None
-    assert e.start_time.seconds < e.stop_time.seconds
+    assert e.start_time.nanoseconds < e.stop_time.nanoseconds
 
 
 def test_send_to_manager(mocked_profiler) -> None:
     profiler, mock_mmp_client = mocked_profiler
 
     for i in range(99):
-        e1 = ProfileEvent(ProfileEventType.RECEIVE, Timestamp())
+        e1 = ProfileEvent(ProfileEventType.RECEIVE, ProfileTimestamp())
         profiler.record_event(e1)
 
     assert mock_mmp_client.sent_events is None
 
-    e2 = ProfileEvent(ProfileEventType.RECEIVE, Timestamp())
+    e2 = ProfileEvent(ProfileEventType.RECEIVE, ProfileTimestamp())
     profiler.record_event(e2)
 
     assert mock_mmp_client.sent_events is not None

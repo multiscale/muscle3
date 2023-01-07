@@ -16,8 +16,8 @@ from libmuscle.logging_handler import MuscleManagerHandler
 from libmuscle.mpp_message import ClosePort
 from libmuscle.mmp_client import MMPClient
 from libmuscle.profiler import Profiler
-from libmuscle.profiling import ProfileEvent, ProfileEventType
-from libmuscle.timestamp import Timestamp
+from libmuscle.profiling import (
+        ProfileEvent, ProfileEventType, ProfileTimestamp)
 from libmuscle.util import extract_log_file_location
 
 
@@ -388,7 +388,8 @@ class Instance:
     def _register(self) -> None:
         """Register this instance with the manager.
         """
-        register_event = ProfileEvent(ProfileEventType.REGISTER, Timestamp())
+        register_event = ProfileEvent(
+                ProfileEventType.REGISTER, ProfileTimestamp())
         locations = self._communicator.get_locations()
         port_list = self.__list_declared_ports()
         self.__manager.register_instance(locations,
@@ -399,7 +400,8 @@ class Instance:
     def _connect(self) -> None:
         """Connect this instance to the given peers / conduits.
         """
-        connect_event = ProfileEvent(ProfileEventType.CONNECT, Timestamp())
+        connect_event = ProfileEvent(
+                ProfileEventType.CONNECT, ProfileTimestamp())
         conduits, peer_dims, peer_locations = self.__manager.request_peers()
         self._communicator.connect(conduits, peer_dims, peer_locations)
         self._settings_manager.base = self.__manager.get_settings()
@@ -410,7 +412,7 @@ class Instance:
         """Deregister this instance from the manager.
         """
         deregister_event = ProfileEvent(
-                ProfileEventType.DEREGISTER, Timestamp())
+                ProfileEventType.DEREGISTER, ProfileTimestamp())
         self.__manager.deregister_instance()
         self._profiler.record_event(deregister_event)
         # this is the last thing we'll profile, so flush messages

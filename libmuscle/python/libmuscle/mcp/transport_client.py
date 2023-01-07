@@ -1,9 +1,9 @@
 from typing import Tuple
 
-from libmuscle.timestamp import Timestamp
+from libmuscle.profiling import ProfileTimestamp
 
 
-ProfileData = Tuple[Timestamp, Timestamp, Timestamp]
+ProfileData = Tuple[ProfileTimestamp, ProfileTimestamp, ProfileTimestamp]
 
 
 class TransportClient:

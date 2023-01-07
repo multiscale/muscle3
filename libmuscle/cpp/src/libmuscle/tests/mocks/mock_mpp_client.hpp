@@ -2,7 +2,7 @@
 
 #include <libmuscle/mpp_message.hpp>
 #include <libmuscle/mcp/transport_client.hpp>
-#include <libmuscle/timestamp.hpp>
+#include <libmuscle/profiling.hpp>
 
 #include <ymmsl/ymmsl.hpp>
 
@@ -14,7 +14,8 @@
 namespace libmuscle { namespace impl {
 
 
-using ProfileData = std::tuple<Timestamp, Timestamp, Timestamp>;
+using ProfileData = std::tuple<
+        ProfileTimestamp, ProfileTimestamp, ProfileTimestamp>;
 
 
 class MockMPPClient {

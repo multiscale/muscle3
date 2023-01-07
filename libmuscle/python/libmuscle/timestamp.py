@@ -10,6 +10,10 @@ class Timestamp:
         seconds: The number of seconds since the start of 1970.
     """
     def __init__(self, seconds: Optional[float] = None) -> None:
+        """Create a Timestamp representing the given time, or now.
+
+        If seconds is None, the current time is used.
+        """
         if seconds is None:
             seconds = time.time()
         self.seconds = seconds

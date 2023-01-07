@@ -420,7 +420,7 @@ void Instance::Impl::send(
 /* Register this instance with the manager.
  */
 void Instance::Impl::register_() {
-    ProfileEvent register_event(ProfileEventType::register_, Timestamp());
+    ProfileEvent register_event(ProfileEventType::register_, ProfileTimestamp());
     auto locations = communicator_->get_locations();
     auto port_list = list_declared_ports_();
     manager_->register_instance(locations, port_list);
@@ -431,7 +431,7 @@ void Instance::Impl::register_() {
 /* Connect this instance to the given peers / conduits.
  */
 void Instance::Impl::connect_() {
-    ProfileEvent connect_event(ProfileEventType::connect, Timestamp());
+    ProfileEvent connect_event(ProfileEventType::connect, ProfileTimestamp());
     auto peer_info = manager_->request_peers();
     communicator_->connect(std::get<0>(peer_info), std::get<1>(peer_info), std::get<2>(peer_info));
     settings_manager_.base = manager_->get_settings();
@@ -442,7 +442,7 @@ void Instance::Impl::connect_() {
 /* Deregister this instance from the manager.
  */
 void Instance::Impl::deregister_() {
-    ProfileEvent deregister_event(ProfileEventType::deregister, Timestamp());
+    ProfileEvent deregister_event(ProfileEventType::deregister, ProfileTimestamp());
     manager_->deregister_instance();
     profiler_->record_event(std::move(deregister_event));
     // This is the last thing we'll profile, so flush messages

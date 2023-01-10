@@ -50,13 +50,7 @@ class Instance:
         """
         self.__is_shut_down = False
 
-        if not isinstance(stateful, ImplementationState):
-            raise ValueError(
-                    f'Invalid value supplied for "stateful": {stateful}.'
-                    ' Expected one of ImplementationState.STATEFUL,'
-                    ' ImplementationState.STATELESS or ImplementationState.'
-                    'WEAKLY_STATEFUL.')
-        self._stateful = stateful
+        self._stateful = ImplementationState(stateful)
 
         # Note that these are accessed by Muscle3, but otherwise private.
         self._name, self._index = self.__make_full_name()

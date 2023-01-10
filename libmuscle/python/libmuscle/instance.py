@@ -561,6 +561,8 @@ class Instance:
                 store the internal state of the submodel.
         """
         self._api_guard.verify_save_snapshot()
+        if message is None:
+            raise RuntimeError('Please specify a Message to save as snapshot.')
         self._save_snapshot(message, False)
         self._api_guard.save_snapshot_done()
 
@@ -627,6 +629,8 @@ class Instance:
                 submodel.
         """
         self._api_guard.verify_save_final_snapshot()
+        if message is None:
+            raise RuntimeError('Please specify a Message to save as snapshot.')
         self._save_snapshot(message, True, self.__f_init_max_timestamp)
         self._api_guard.save_final_snapshot_done()
 

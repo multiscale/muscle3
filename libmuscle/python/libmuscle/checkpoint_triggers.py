@@ -206,6 +206,9 @@ class TriggerManager:
         """
         cur = self.elapsed_walltime()
         if cur < at_least:
+            _logger.debug(
+                    'Harmonise wall time: advancing clock by %f seconds',
+                    at_least - cur)
             self._mono_to_elapsed += at_least - cur
 
     def snapshots_enabled(self) -> bool:

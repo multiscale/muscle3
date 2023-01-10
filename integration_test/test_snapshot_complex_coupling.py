@@ -2,7 +2,7 @@ import random
 import time
 
 import pytest
-from ymmsl import ImplementationState, Operator, load, dump
+from ymmsl import KeepsStateForNextUse, Operator, load, dump
 
 from libmuscle import Instance, Message
 from libmuscle.manager.run_dir import RunDir
@@ -57,7 +57,7 @@ def cache_component(max_channels=2):
 def echo_component(max_channels=2):
     ports = {Operator.F_INIT: [f'in{i+1}' for i in range(max_channels)],
              Operator.O_F: [f'out{i+1}' for i in range(max_channels)]}
-    instance = Instance(ports, stateful=ImplementationState.STATELESS)
+    instance = Instance(ports, keeps_state_for_next_use=KeepsStateForNextUse.NO)
 
     while instance.reuse_instance():
         for p_in, p_out in zip(ports[Operator.F_INIT], ports[Operator.O_F]):

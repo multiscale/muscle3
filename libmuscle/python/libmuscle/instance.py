@@ -7,7 +7,7 @@ from typing import cast, Dict, List, Optional, Tuple, overload
 from typing_extensions import Literal
 
 from ymmsl import (Identifier, Operator, SettingValue, Port, Reference,
-                   Settings, ImplementationState)
+                   Settings, KeepsStateForNextUse)
 
 from libmuscle.api_guard import APIGuard
 from libmuscle.checkpoint_triggers import TriggerManager
@@ -35,22 +35,23 @@ class Instance:
     This class provides a low-level send/receive API for the instance
     to use.
     """
-    def __init__(self, ports: Optional[Dict[Operator, List[str]]] = None,
-                 stateful: ImplementationState = ImplementationState.STATEFUL
-                 ) -> None:
+    def __init__(
+            self, ports: Optional[Dict[Operator, List[str]]] = None,
+            keeps_state_for_next_use: KeepsStateForNextUse
+            = KeepsStateForNextUse.NECESSARY) -> None:
         """Create an Instance.
 
         Args:
             ports: A list of port names for each
                 :external:py:class:`~ymmsl.Operator` of this component.
-            stateful: Indicate whether this instance carries state between
-                iterations of the reuse loop. See
-                :external:py:class:`ymmsl.ImplementationState` for a description
-                of the options.
+            keeps_state_for_next_use: Indicate whether this instance carries
+                state between iterations of the reuse loop. See
+                :external:py:class:`ymmsl.KeepsStateForNextUse` for a
+                description of the options.
         """
         self.__is_shut_down = False
 
-        self._stateful = ImplementationState(stateful)
+        self._keeps_state = KeepsStateForNextUse(keeps_state_for_next_use)
 
         # Note that these are accessed by Muscle3, but otherwise private.
         self._name, self._index = self.__make_full_name()
@@ -183,7 +184,7 @@ class Instance:
         do_implicit_checkpoint = (
                 not self._first_run and
                 not self._api_guard.uses_checkpointing() and
-                self._stateful is not ImplementationState.STATEFUL)
+                self._keeps_state is not KeepsStateForNextUse.NECESSARY)
 
         if do_implicit_checkpoint:
             if self._trigger_manager.should_save_final_snapshot(

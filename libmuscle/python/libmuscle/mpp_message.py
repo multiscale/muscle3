@@ -93,7 +93,7 @@ def _decode_grid(code: int, data: bytes) -> Grid:
             ExtTypeId.GRID_INT64: np.int64,
             ExtTypeId.GRID_FLOAT32: np.float32,
             ExtTypeId.GRID_FLOAT64: np.float64,
-            ExtTypeId.GRID_BOOL: np.bool8}
+            ExtTypeId.GRID_BOOL: np.bool_}
 
     order_map = {
             'fa': 'F',

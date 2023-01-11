@@ -1,7 +1,8 @@
 import pytest
-from ymmsl import KeepsStateForNextUse, Operator, load, dump
+from ymmsl import Operator, load, dump
 
-from libmuscle import Instance, Message
+from libmuscle import (
+        Instance, Message, HAS_NO_STATE_FOR_NEXT_USE, USES_CHECKPOINT_API)
 from libmuscle.manager.run_dir import RunDir
 
 from .conftest import run_manager_with_actors, ls_snapshots
@@ -13,7 +14,7 @@ _LOG_LEVEL = 'INFO'  # set to DEBUG for additional debug info
 def macro():
     instance = Instance({
             Operator.O_I: ['o_i'],
-            Operator.S: ['s']})
+            Operator.S: ['s']}, USES_CHECKPOINT_API)
 
     while instance.reuse_instance():
         dt = instance.get_setting('dt', 'float')
@@ -52,7 +53,7 @@ def macro():
 def macro_vector():
     instance = Instance({
             Operator.O_I: ['o_i[]'],
-            Operator.S: ['s[]']})
+            Operator.S: ['s[]']}, USES_CHECKPOINT_API)
 
     while instance.reuse_instance():
         dt = instance.get_setting('dt', 'float')
@@ -93,7 +94,7 @@ def macro_vector():
 def micro():
     instance = Instance({
             Operator.F_INIT: ['f_i'],
-            Operator.O_F: ['o_f']})
+            Operator.O_F: ['o_f']}, USES_CHECKPOINT_API)
 
     while instance.reuse_instance():
         dt = instance.get_setting('dt', 'float')
@@ -127,7 +128,7 @@ def stateless_micro():
     instance = Instance({
             Operator.F_INIT: ['f_i'],
             Operator.O_F: ['o_f']},
-            keeps_state_for_next_use=KeepsStateForNextUse.NO)
+            HAS_NO_STATE_FOR_NEXT_USE)
 
     while instance.reuse_instance():
         dt = instance.get_setting('dt', 'float')
@@ -149,7 +150,7 @@ def data_transformer():
     instance = Instance({
             Operator.F_INIT: ['f_i'],
             Operator.O_F: ['o_f']},
-            keeps_state_for_next_use=KeepsStateForNextUse.NO)
+            HAS_NO_STATE_FOR_NEXT_USE)
 
     while instance.reuse_instance():
         msg = instance.receive('f_i')

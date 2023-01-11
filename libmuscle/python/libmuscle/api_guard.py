@@ -1,5 +1,4 @@
 from enum import auto, Enum
-from typing import Optional
 
 
 class APIPhase(Enum):
@@ -27,9 +26,6 @@ class APIPhase(Enum):
 
     BEFORE_REUSE_INSTANCE = auto()
     """Before calling reuse_instance"""
-
-    AFTER_REUSE_INSTANCE = auto()
-    """At the top of the reuse loop"""
 
     BEFORE_RESUMING = auto()
     """Between reuse_instance and resuming"""
@@ -62,13 +58,13 @@ class APIGuard:
     called to signal that the corresponding function finished
     successfully, and that we are moving on to the next phase.
     """
-    def __init__(self) -> None:
+    def __init__(self, uses_checkpointing: bool) -> None:
         """Create an APIPhaseTracker.
 
         This starts the tracker in BEFORE_FIRST_REUSE_INSTANCE.
         """
         self._phase = APIPhase.BEFORE_FIRST_REUSE_INSTANCE
-        self._uses_checkpointing = None     # type: Optional[bool]
+        self._uses_checkpointing = uses_checkpointing
 
     def _generic_error_messages(self, verify_phase: str) -> None:
         if self._phase in (
@@ -80,10 +76,6 @@ class APIGuard:
                     'Please do not call {verify_phase} after'
                     ' should_save_final_snapshot. should_save_final_snapshot'
                     ' should be at the end of the reuse loop.')
-        elif self._phase == APIPhase.AFTER_REUSE_INSTANCE:
-            msg = (
-                    'Please call resuming first in the reuse loop, before'
-                    f' {verify_phase}')
         elif self._phase == APIPhase.BEFORE_RESUMING:
             msg = 'Inside the reuse loop you must call resuming first.'
         elif self._phase == APIPhase.BEFORE_LOAD_SNAPSHOT:
@@ -106,30 +98,9 @@ class APIGuard:
             return
         raise RuntimeError(msg)
 
-    def uses_checkpointing(self) -> bool:
-        """Return whether the code is using checkpointing.
-
-        We can only determine that the code doesn't use checkpointing
-        if there are no checkpointing calls between the first and
-        second calls to reuse_instance. So this function should only
-        be called after the second call to verify_reuse_instance, or
-        it may raise if the code does not use checkpointing.
-
-        Raises:
-            RuntimeError: if we are at a point where we cannot know
-                the answer yet.
-        """
-        if self._uses_checkpointing is not None:
-            return self._uses_checkpointing
-        raise RuntimeError(
-                'The API was implemented incorrectly, please consult the'
-                ' documentation.')
-
     def verify_reuse_instance(self) -> None:
         """Check reuse_instance()"""
-        if self._phase == APIPhase.AFTER_REUSE_INSTANCE:
-            self._uses_checkpointing = False
-        elif self._phase not in (
+        if self._phase not in (
                 APIPhase.BEFORE_REUSE_INSTANCE,
                 APIPhase.BEFORE_FIRST_REUSE_INSTANCE):
             raise RuntimeError(
@@ -146,17 +117,19 @@ class APIGuard:
         if not reusing:
             self._phase = APIPhase.AFTER_REUSE_LOOP
         else:
-            if self._uses_checkpointing is None:
-                self._phase = APIPhase.AFTER_REUSE_INSTANCE
-            elif self._uses_checkpointing:
+            if self._uses_checkpointing:
                 self._phase = APIPhase.BEFORE_RESUMING
             else:
                 self._phase = APIPhase.BEFORE_REUSE_INSTANCE
 
     def verify_resuming(self) -> None:
         """Check resuming()"""
-        if self._phase not in (
-                APIPhase.BEFORE_RESUMING, APIPhase.AFTER_REUSE_INSTANCE):
+        if not self._uses_checkpointing:
+            raise RuntimeError(
+                    'Please add the flag'
+                    ' :attr:`InstanceFlag.USES_CHECKPOINT_API` to your'
+                    ' instance to use the MUSCLE3 checkpointing API.')
+        if self._phase != APIPhase.BEFORE_RESUMING:
             raise RuntimeError(
                     'Please call resuming() only as the first thing in the'
                     ' reuse loop.')

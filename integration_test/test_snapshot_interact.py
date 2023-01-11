@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from ymmsl import Operator, load, dump
 
-from libmuscle import Instance, Message
+from libmuscle import Instance, Message, USES_CHECKPOINT_API
 from libmuscle.manager.run_dir import RunDir
 
 from .conftest import run_manager_with_actors, ls_snapshots
@@ -21,7 +21,7 @@ _LOG_LEVEL = 'INFO'  # set to DEBUG for additional debug info
 def component():
     instance = Instance({
             Operator.O_I: ['o_i'],
-            Operator.S: ['s']})
+            Operator.S: ['s']}, USES_CHECKPOINT_API)
 
     while instance.reuse_instance():
         t0 = instance.get_setting('t0', 'float')

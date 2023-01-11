@@ -40,10 +40,10 @@ class InstanceFlags(Flag):
     .. code-block:: python
 
         from libmuscle import (
-                Instance, USES_CHECKPOINT_API, KEEPS_STATE_FOR_NEXT_USE)
+                Instance, USES_CHECKPOINT_API, DONT_APPLY_OVERLAY)
 
         ports = ...
-        flags = USES_CHECKPOINT_API | KEEPS_STATE_FOR_NEXT_USE
+        flags = USES_CHECKPOINT_API | DONT_APPLY_OVERLAY
         instance = Instance(ports, flags)
     """
 

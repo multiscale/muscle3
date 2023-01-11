@@ -19,7 +19,7 @@ def message():
             Ref('sender.out'), Ref('receiver.in'),
             None, 0.0, 1.0,
             bytes(),
-            0,
+            0, 1.0,
             'testing'.encode('utf-8'))
 
 

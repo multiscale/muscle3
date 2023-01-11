@@ -23,29 +23,32 @@ def cache_component(max_channels=2):
     cache_t = float('-inf')
     cache_data = []
     max_cache_age = None
-    while instance.reuse_instance():
-        cache_valid_range = instance.get_setting('cache_valid', '[float]')
-        if max_cache_age is None:
-            max_cache_age = random.uniform(*cache_valid_range)
+    nil_msg = Message(0.0, None, None)
 
-        msgs = [instance.receive(port) if instance.is_connected(port) else None
-                for port in ports[Operator.F_INIT]]
-        cur_t = msgs[0].timestamp
+    while instance.reuse_instance():
+        if instance.resuming():
+            instance.load_snapshot()
+
+        if instance.should_init():
+            cache_valid_range = instance.get_setting('cache_valid', '[float]')
+            if max_cache_age is None:
+                max_cache_age = random.uniform(*cache_valid_range)
+
+            msgs = [instance.receive(port, default=nil_msg)
+                    for port in ports[Operator.F_INIT]]
+            cur_t = msgs[0].timestamp
 
         if cur_t - cache_t >= max_cache_age:
             # Cached value is no longer valid, run submodel for updated data
             for msg, port in zip(msgs, ports[Operator.O_I]):
-                if msg is not None:
-                    instance.send(port, Message(cur_t, None, msg.data))
-            cache_data = [instance.receive(port).data
-                          if instance.is_connected(port) else None
+                instance.send(port, Message(cur_t, None, msg.data))
+            cache_data = [instance.receive(port, default=nil_msg).data
                           for port in ports[Operator.S]]
             cache_t = cur_t
             max_cache_age = random.uniform(*cache_valid_range)
 
         for data, port in zip(cache_data, ports[Operator.O_F]):
-            if data is not None:
-                instance.send(port, Message(cur_t, None, data))
+            instance.send(port, Message(cur_t, None, data))
 
         if instance.should_save_final_snapshot():
             instance.save_final_snapshot(Message(cur_t, None, []))

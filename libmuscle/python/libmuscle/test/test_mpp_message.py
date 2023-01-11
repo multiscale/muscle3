@@ -15,10 +15,12 @@ def test_create() -> None:
     timestamp = 10.0
     next_timestamp = 11.0
     settings_overlay = (6789).to_bytes(2, 'little', signed=True)
+    message_number = 0
+    saved_until = 1.6
     data = (12345).to_bytes(2, 'little', signed=True)
     msg = MPPMessage(
             sender, receiver, None, timestamp, next_timestamp,
-            settings_overlay, 0, data)
+            settings_overlay, message_number, saved_until, data)
     assert msg.sender == sender
     assert msg.receiver == receiver
     assert msg.port_length is None
@@ -26,6 +28,7 @@ def test_create() -> None:
     assert msg.next_timestamp == 11.0
     assert msg.settings_overlay == settings_overlay
     assert msg.message_number == 0
+    assert msg.saved_until == 1.6
     assert msg.data == data
 
 
@@ -44,7 +47,7 @@ def test_grid_encode() -> None:
     grid = Grid(array, ['x', 'y', 'z'])
     msg = MPPMessage(
             sender, receiver, None, timestamp, next_timestamp, Settings(),
-            0, grid)
+            0, 1.0, grid)
 
     wire_data = msg.encoded()
     mcp_decoded = msgpack.unpackb(wire_data, raw=False)
@@ -88,6 +91,7 @@ def test_grid_decode() -> None:
             'next_timestamp': None,
             'settings_overlay': msgpack.ExtType(1, settings_data),
             'message_number': 0,
+            'saved_until': 9.9,
             'data': msgpack.ExtType(2, grid_data)}
 
     wire_data = msgpack.packb(msg_dict, use_bin_type=True)
@@ -137,7 +141,7 @@ def test_grid_roundtrip() -> None:
         grid = Grid(array, ['x', 'y', 'z'])
         msg = MPPMessage(
                 sender, receiver, None, timestamp, next_timestamp, Settings(),
-                0, grid)
+                0, 1.0, grid)
 
         wire_data = msg.encoded()
         msg_out = MPPMessage.from_bytes(wire_data)
@@ -171,7 +175,7 @@ def test_non_contiguous_grid_roundtrip() -> None:
     grid = Grid(array.real, ['a', 'b', 'c'])
     msg = MPPMessage(
             sender, receiver, None, timestamp, next_timestamp, Settings(),
-            0, grid)
+            0, 7.7, grid)
 
     wire_data = msg.encoded()
     msg_out = MPPMessage.from_bytes(wire_data)

@@ -16,7 +16,7 @@ MPPMessage::MPPMessage(
             ::libmuscle::impl::Optional<int> port_length,
             double timestamp, ::libmuscle::impl::Optional<double> next_timestamp,
             DataConstRef const & settings_overlay,
-            int message_number,
+            int message_number, double saved_until,
             DataConstRef const & data
             )
         : sender(sender)
@@ -26,6 +26,7 @@ MPPMessage::MPPMessage(
         , next_timestamp(next_timestamp)
         , settings_overlay(settings_overlay)
         , message_number(message_number)
+        , saved_until(saved_until)
         , data(data)
     {}
 
@@ -51,6 +52,7 @@ MPPMessage MPPMessage::from_bytes(DataConstRef const & data) {
             next_timestamp,
             dict["settings_overlay"],
             dict["message_number"].as<int>(),
+            dict["saved_until"].as<double>(),
             dict["data"]);
 }
 
@@ -71,6 +73,7 @@ DataConstRef MPPMessage::encoded() const {
             "next_timestamp", next_timestamp_data,
             "settings_overlay", settings_overlay,
             "message_number", message_number,
+            "saved_until", saved_until,
             "data", data
             );
 

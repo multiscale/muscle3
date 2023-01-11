@@ -137,66 +137,25 @@ const std::vector<int> & Port::get_message_counts() const {
     return num_messages_;
 }
 
-void Port::increment_num_messages() {
-    num_messages_[0] ++;
-    set_resumed();
-}
-
-void Port::increment_num_messages(int slot) {
-    num_messages_[slot] ++;
-    set_resumed(slot);
-}
-
 void Port::increment_num_messages(Optional<int> slot) {
-    if(slot.is_set())
-        increment_num_messages(slot.get());
-    else
-        increment_num_messages();
-}
-
-int Port::get_num_messages() const {
-    return num_messages_[0];
-}
-
-int Port::get_num_messages(int slot) const {
-    return num_messages_[slot];
+    int s = slot.is_set() ? slot.get() : 0;
+    num_messages_[s] ++;
+    set_resumed(s);
 }
 
 int Port::get_num_messages(Optional<int> slot) const {
-    if(slot.is_set())
-        return get_num_messages(slot.get());
-    else
-        return get_num_messages();
-}
-
-bool Port::is_resuming() const {
-    return is_resuming_[0];
-}
-
-bool Port::is_resuming(int slot) const {
-    return is_resuming_[slot];
+    int s = slot.is_set() ? slot.get() : 0;
+    return num_messages_[s];
 }
 
 bool Port::is_resuming(Optional<int> slot) const {
-    if(slot.is_set())
-        return is_resuming(slot.get());
-    else
-        return is_resuming();
-}
-
-void Port::set_resumed() {
-    is_resuming_[0] = false;
-}
-
-void Port::set_resumed(int slot) {
-    is_resuming_[slot] = false;
+    int s = slot.is_set() ? slot.get() : 0;
+    return is_resuming_[s];
 }
 
 void Port::set_resumed(Optional<int> slot) {
-    if(slot.is_set())
-        set_resumed(slot.get());
-    else
-        set_resumed();
+    int s = slot.is_set() ? slot.get() : 0;
+    is_resuming_[s] = false;
 }
 
 } }

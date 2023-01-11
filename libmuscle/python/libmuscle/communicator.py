@@ -181,7 +181,8 @@ class Communicator:
 
     def send_message(
             self, port_name: str, message: Message,
-            slot: Optional[int] = None) -> None:
+            slot: Optional[int] = None,
+            checkpoints_considered_until: float = float('-inf')) -> None:
         """Send a message and settings to the outside world.
 
         Sending is non-blocking, a copy of the message will be made
@@ -191,6 +192,8 @@ class Communicator:
             port_name: The port on which this message is to be sent.
             message: The message to be sent.
             slot: The slot to send the message on, if any.
+            checkpoints_considered_until: When we last checked if we
+                should save a snapshot (wallclock time).
         """
         if slot is None:
             _logger.debug('Sending message on {}'.format(port_name))
@@ -227,6 +230,7 @@ class Communicator:
                                      message.timestamp, message.next_timestamp,
                                      cast(Settings, message.settings),
                                      port.get_num_messages(slot),
+                                     checkpoints_considered_until,
                                      message.data)
             encoded_message = mcp_message.encoded()
             self._post_office.deposit(recv_endpoint.ref(), encoded_message)
@@ -240,7 +244,7 @@ class Communicator:
 
     def receive_message(self, port_name: str, slot: Optional[int] = None,
                         default: Optional[Message] = None
-                        ) -> Message:
+                        ) -> Tuple[Message, float]:
         """Receive a message and attached settings overlay.
 
         Receiving is a blocking operation. This function will contact
@@ -260,7 +264,8 @@ class Communicator:
         Returns:
             The received message, with message.settings holding
             the settings overlay. The settings attribute is
-            guaranteed to not be None.
+            guaranteed to not be None. Secondly, the saved_until
+            metadata field from the received message.
 
         Raises:
             RuntimeError: If no default was given and the port is not
@@ -286,7 +291,7 @@ class Communicator:
             _logger.debug(
                     'No message received on {} as it is not connected'.format(
                         port_name))
-            return default
+            return default, float('-inf')
 
         if port_name in self._ports:
             port = self._ports[port_name]
@@ -304,28 +309,28 @@ class Communicator:
         snd_endpoint = self._peer_manager.get_peer_endpoints(
                 recv_endpoint.port, slot_list)[0]
         client = self.__get_client(snd_endpoint.instance())
-        mcp_message_bytes = client.receive(recv_endpoint.ref())
-        mcp_message = MPPMessage.from_bytes(mcp_message_bytes)
+        mpp_message_bytes = client.receive(recv_endpoint.ref())
+        mpp_message = MPPMessage.from_bytes(mpp_message_bytes)
 
-        if mcp_message.port_length is not None:
+        if mpp_message.port_length is not None:
             if port.is_resizable():
-                port.set_length(mcp_message.port_length)
+                port.set_length(mpp_message.port_length)
 
-        if isinstance(mcp_message.data, ClosePort):
+        if isinstance(mpp_message.data, ClosePort):
             port.set_closed(slot)
 
         message = Message(
-                mcp_message.timestamp, mcp_message.next_timestamp,
-                mcp_message.data, mcp_message.settings_overlay)
+                mpp_message.timestamp, mpp_message.next_timestamp,
+                mpp_message.data, mpp_message.settings_overlay)
 
         profile_event.stop()
         if port.is_vector():
             profile_event.port_length = port.get_length()
-        profile_event.message_size = len(mcp_message_bytes)
+        profile_event.message_size = len(mpp_message_bytes)
 
         expected_message_number = port.get_num_messages(slot)
-        if expected_message_number != mcp_message.message_number:
-            if (expected_message_number - 1 == mcp_message.message_number and
+        if expected_message_number != mpp_message.message_number:
+            if (expected_message_number - 1 == mpp_message.message_number and
                     port.is_resuming(slot)):
                 _logger.debug(f'Discarding received message on {port_and_slot}'
                               ': resuming from weakly consistent snapshot')
@@ -333,16 +338,16 @@ class Communicator:
                 return self.receive_message(port_name, slot, default)
             raise RuntimeError(f'Received message on {port_and_slot} with'
                                ' unexpected message number'
-                               f' {mcp_message.message_number}. Was expecting'
+                               f' {mpp_message.message_number}. Was expecting'
                                f' {expected_message_number}. Are you resuming'
                                ' from an inconsistent snapshot?')
         port.increment_num_messages(slot)
 
         _logger.debug('Received message on {}'.format(port_and_slot))
-        if isinstance(mcp_message.data, ClosePort):
+        if isinstance(mpp_message.data, ClosePort):
             _logger.debug('Port {} is now closed'.format(port_and_slot))
 
-        return message
+        return message, mpp_message.saved_until
 
     def close_port(self, port_name: str, slot: Optional[int] = None
                    ) -> None:

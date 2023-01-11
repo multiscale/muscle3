@@ -11,6 +11,19 @@ using ymmsl::Identifier;
 using ymmsl::Operator;
 
 
+namespace {
+
+template< typename T>
+inline void extend_vector_to_size(
+        std::vector<T> &vec, const int minsize, const T &val) {
+    if(static_cast<int>(vec.size()) < minsize) {
+        vec.resize(minsize, val);
+    }
+}
+
+}
+
+
 namespace libmuscle { namespace impl {
 
 Port::Port(
@@ -53,6 +66,8 @@ Port::Port(
     }
 
     is_resizable_ = is_vector && (our_ndims == static_cast<int>(peer_dims.size()));
+    num_messages_.resize(std::max(1, length_), 0);
+    is_resuming_.resize(std::max(1, length_), false);
 }
 
 bool Port::is_connected() const {
@@ -94,6 +109,11 @@ void Port::set_length(int length) {
     if (length != length_) {
         length_ = length;
         is_open_ = std::vector<bool>(length_, true);
+        // Using extend here to not discard any information about message
+        // numbers between resizes. Note that _num_messages and _is_resuming
+        // may be longer than self._length!
+        extend_vector_to_size(num_messages_, std::max(1, length_), 0);
+        extend_vector_to_size(is_resuming_, std::max(1, length_), false);
     }
 }
 
@@ -103,6 +123,39 @@ void Port::set_closed() {
 
 void Port::set_closed(int slot) {
     is_open_[slot] = false;
+}
+
+void Port::restore_message_counts(const std::vector<int> &num_messages) {
+    num_messages_ = std::vector<int>(num_messages);
+    is_resuming_.clear();
+    is_resuming_.resize(num_messages_.size(), true);
+    extend_vector_to_size(num_messages_, std::max(1, length_), 0);
+    extend_vector_to_size(is_resuming_, std::max(1, length_), false);
+}
+
+const std::vector<int> & Port::get_message_counts() const {
+    return num_messages_;
+}
+
+void Port::increment_num_messages(Optional<int> slot) {
+    int s = slot.is_set() ? slot.get() : 0;
+    num_messages_[s] ++;
+    set_resumed(s);
+}
+
+int Port::get_num_messages(Optional<int> slot) const {
+    int s = slot.is_set() ? slot.get() : 0;
+    return num_messages_[s];
+}
+
+bool Port::is_resuming(Optional<int> slot) const {
+    int s = slot.is_set() ? slot.get() : 0;
+    return is_resuming_[s];
+}
+
+void Port::set_resumed(Optional<int> slot) {
+    int s = slot.is_set() ? slot.get() : 0;
+    is_resuming_[s] = false;
 }
 
 } }

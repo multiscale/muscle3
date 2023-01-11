@@ -36,7 +36,7 @@ TEST(test_tcp_communication, send_receive) {
     MPPMessage msg(
             "test_sender.port", receiver, 10,
             0.0, 1.0,
-            Data::dict("par1", 13),
+            Data::dict("par1", 13), 1, 4.0,
             Data::dict("var1", 1, "var2", 2.0, "var3", "3"));
     auto msg_data = std::make_unique<DataConstRef>(msg.encoded());
     post_office.deposit(receiver, std::move(msg_data));
@@ -53,6 +53,8 @@ TEST(test_tcp_communication, send_receive) {
     ASSERT_EQ(m.timestamp, 0.0);
     ASSERT_EQ(m.next_timestamp, 1.0);
     ASSERT_EQ(m.settings_overlay["par1"].as<int>(), 13);
+    ASSERT_EQ(m.message_number, 1);
+    ASSERT_EQ(m.saved_until, 4.0);
     ASSERT_EQ(m.data["var1"].as<int>(), 1);
     ASSERT_EQ(m.data["var2"].as<double>(), 2.0);
     ASSERT_EQ(m.data["var3"].as<std::string>(), "3");

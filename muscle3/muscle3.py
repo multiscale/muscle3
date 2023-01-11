@@ -1,12 +1,16 @@
 import sys
+from collections import OrderedDict
+from pathlib import Path
 from typing import Sequence
 
 import click
 import ymmsl
-from ymmsl import Identifier, PartialConfiguration
+from ymmsl import PartialConfiguration
 
 
-from libmuscle.planner.planner import Planner, Resources
+from libmuscle.planner.planner import (
+        Planner, Resources, InsufficientResourcesAvailable)
+from libmuscle.snapshot_manager import SnapshotManager
 
 
 _RESOURCES_INCOMPLETE_MODEL = """
@@ -17,13 +21,11 @@ your yMMSL file(s).
 
 
 @click.group()
-def muscle3():
+def muscle3() -> None:
     """MUSCLE3 command line interface
 
-    In the future, this command will provide various functions for
-    running coupled simulations using MUSCLE3. For now, it does only
-    one thing, which is to calculate the number of cluster nodes
-    needed for a given simulation to run without oversubscribing.
+    This command provides various functions for running coupled simulations
+    using MUSCLE3.
 
     Use muscle3 <command> --help for help with individual commands.
     """
@@ -105,6 +107,51 @@ def resources(
         click.echo(f'{num_nodes}', nl=False)
 
     sys.exit(0)
+
+
+@muscle3.command(short_help='Display details of a stored snapshot')
+@click.argument(
+        'snapshot_files', nargs=-1, required=True, type=click.Path(
+            exists=True, file_okay=True, dir_okay=False, readable=True,
+            allow_dash=True, resolve_path=True, path_type=Path))
+@click.option(
+        '-d', '--data', is_flag=True,
+        help='Display stored data. Note this may result in a lot of output!')
+@click.option(
+        '-v', '--verbose', is_flag=True, help='Display more metadata.')
+def snapshot(
+        snapshot_files: Sequence[Path], data: bool, verbose: bool) -> None:
+    """Display information about stored snapshots.
+
+    Per provided snapshot, display metadata. Stored data can also be output by
+    supplying the '-d' or '--data' flags. Note that this may result in a lot of
+    data displayed.
+    """
+    for file in snapshot_files:
+        snapshot = SnapshotManager.load_snapshot_from_file(file)
+        click.echo(f'Snapshot at {file}:')
+        typ = 'Final' if snapshot.is_final_snapshot else 'Intermediate'
+        properties = OrderedDict([
+            ('Snapshot type', typ),
+            ('Snapshot timestamp',
+             snapshot.message.timestamp if snapshot.message else float('-inf')),
+            ('Snapshot wallclock time', snapshot.wallclock_time),
+            ('Snapshot triggers', snapshot.triggers),
+        ])
+        if verbose:
+            properties.update([
+                ('Internal: Port message counts', snapshot.port_message_counts),
+            ])
+        for prop_name, prop_value in properties.items():
+            click.secho(f'{prop_name}: ', nl=False, bold=True)
+            click.echo(prop_value)
+        if data:
+            click.secho('Snapshot data:', bold=True)
+            if snapshot.message is not None:
+                click.echo(snapshot.message.data)
+            else:
+                click.secho("No data available", italic=True)
+        click.echo()
 
 
 def _load_ymmsl_files(ymmsl_files: Sequence[str]) -> PartialConfiguration:

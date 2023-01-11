@@ -116,7 +116,7 @@ void Communicator::send_message(
         // log sending on disconnected port
         return;
 
-    // Port const & port = ports_.at(port_name);
+    Port & port = ports_.at(port_name);
 
     // TODO start profile event
 
@@ -126,14 +126,15 @@ void Communicator::send_message(
     Data settings_overlay(message.settings());
 
     Optional<int> port_length;
-    if (ports_.at(port_name).is_resizable())
-        port_length = ports_.at(port_name).get_length();
+    if (port.is_resizable())
+        port_length = port.get_length();
 
     for (auto recv_endpoint : recv_endpoints) {
         MPPMessage mpp_message(
                 snd_endpoint.ref(), recv_endpoint.ref(),
                 port_length, message.timestamp(), Optional<double>(),
-                settings_overlay, message.data());
+                settings_overlay, port.get_num_messages(slot), -1.0,
+                message.data());
 
         if (message.has_next_timestamp())
             mpp_message.next_timestamp = message.next_timestamp();
@@ -141,6 +142,9 @@ void Communicator::send_message(
         auto message_bytes = std::make_unique<DataConstRef>(mpp_message.encoded());
         post_office_.deposit(recv_endpoint.ref(), std::move(message_bytes));
     }
+
+    port.increment_num_messages(slot);
+
     // TODO: stop and complete profile event
 }
 
@@ -206,6 +210,33 @@ Message Communicator::receive_message(
     }
 
     // TODO stop and finalise profile event
+
+    int expected_message_number = port.get_num_messages(slot);
+    // TODO: handle f_init port counts for STATELESS and WEAKLY_STATEFUL
+    // components which didn't load a snapshot
+    if (expected_message_number != mpp_message.message_number) {
+        if (expected_message_number - 1 == mpp_message.message_number and
+                port.is_resuming(slot)) {
+            if (slot.is_set())
+                logger_.debug("Discarding received message on ", port_name,
+                              "[", slot.get(), "]: resuming from weakly",
+                              " consistent snapshot");
+            else
+                logger_.debug("Discarding received message on ", port_name,
+                              ": resuming from weakly constistent snapshot");
+            port.set_resumed(slot);
+            return receive_message(port_name, slot, default_msg);
+        }
+        std::ostringstream oss;
+        oss << "Received message on " << port_name;
+        if (slot.is_set())
+            oss << "[" << slot.get() << "]";
+        oss << " with unexpected message number " << mpp_message.message_number;
+        oss << ". Was expecting " << expected_message_number;
+        oss << ". Are you resuming from an inconsistent snapshot?";
+        throw std::runtime_error(oss.str());
+    }
+    port.increment_num_messages(slot);
 
     if (slot.is_set())
         logger_.debug("Received message on ", port_name, "[", slot.get(), "]");

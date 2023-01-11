@@ -1,3 +1,4 @@
+import logging
 from typing import List
 from libmuscle.communicator import Communicator, Endpoint, Message
 from libmuscle.mpp_message import ClosePort, MPPMessage
@@ -68,6 +69,8 @@ def communicator() -> Communicator:
     communicator._ports = {
             'out': Port('out', Operator.O_I, False, True, 1, []),
             'in': Port('in', Operator.S, False, True, 1, [])}
+    communicator._muscle_settings_in = \
+        communicator._Communicator__settings_in_port([])
     yield communicator
     communicator.shutdown()
 
@@ -104,6 +107,8 @@ def communicator2() -> Communicator:
     communicator._ports = {
             'out': Port('out', Operator.O_I, True, True, 0, [20]),
             'in': Port('in', Operator.S, True, True, 0, [20])}
+    communicator._muscle_settings_in = \
+        communicator._Communicator__settings_in_port([])
     yield communicator
     communicator.shutdown()
 
@@ -282,6 +287,7 @@ def test_send_message(communicator, message) -> None:
     assert msg.timestamp == 0.0
     assert msg.next_timestamp is None
     assert msg.settings_overlay == Settings()
+    assert msg.message_number == 0
     assert msg.data == b'test'
 
 
@@ -305,6 +311,7 @@ def test_send_msgpack(communicator, message2) -> None:
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
     assert msg.settings_overlay == Settings()
+    assert msg.message_number == 0
     assert msg.data == {'test': 17}
 
 
@@ -319,6 +326,7 @@ def test_send_message_with_slot(communicator2, message) -> None:
     assert msg.sender == 'other.out[13]'
     assert msg.receiver == 'kernel[13].in'
     assert msg.settings_overlay == Settings()
+    assert msg.message_number == 0
     assert msg.data == b'test'
 
 
@@ -349,6 +357,7 @@ def test_send_message_with_settings(communicator, message) -> None:
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
     assert msg.settings_overlay.as_ordered_dict() == {'test2': 'testing'}
+    assert msg.message_number == 0
     assert msg.data == b'test'
 
 
@@ -364,6 +373,7 @@ def test_send_settings(communicator, message) -> None:
     assert msg.sender == 'kernel[13].out'
     assert msg.receiver == 'other.in[13]'
     assert msg.settings_overlay == Settings()
+    assert msg.message_number == 0
     assert msg.data == Settings({'test1': 'testing'})
 
 
@@ -379,6 +389,7 @@ def test_close_port(communicator) -> None:
     assert msg.timestamp == float('inf')
     assert msg.next_timestamp is None
     assert msg.settings_overlay == Settings()
+    assert msg.message_number == 0
     assert isinstance(msg.data, ClosePort)
 
 
@@ -386,28 +397,31 @@ def test_receive_message(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            None, 0.0, None, Settings({'test1': 12}),
+            None, 0.0, None, Settings({'test1': 12}), 0, 2.0,
             b'test').encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
     communicator._profiler = MagicMock()
 
-    msg = communicator.receive_message('in')
+    msg, last_saved = communicator.receive_message('in')
 
     get_client_mock.assert_called_with(Reference('other'))
     client_mock.receive.assert_called_with(Reference('kernel[13].in'))
     assert msg.data == b'test'
     assert msg.settings['test1'] == 12
+    assert last_saved == 2.0
 
 
 def test_receive_message_default(communicator) -> None:
     communicator._peer_manager.is_connected.return_value = False
     default_msg = Message(3.0, 4.0, 'test', Settings())
-    msg = communicator.receive_message('not_connected', default=default_msg)
+    msg, last_saved = communicator.receive_message(
+            'not_connected', default=default_msg)
     assert msg.timestamp == 3.0
     assert msg.next_timestamp == 4.0
     assert msg.data == 'test'
     assert len(msg.settings) == 0
+    assert last_saved == float('-inf')
 
 
 def test_receive_message_no_default(communicator) -> None:
@@ -425,71 +439,75 @@ def test_receive_msgpack(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            None, 0.0, None, Settings({'test1': 12}),
+            None, 0.0, None, Settings({'test1': 12}), 0, 1.0,
             {'test': 13}).encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
     communicator._profiler = MagicMock()
 
-    msg = communicator.receive_message('in')
+    msg, last_saved = communicator.receive_message('in')
 
     get_client_mock.assert_called_with(Reference('other'))
     client_mock.receive.assert_called_with(Reference('kernel[13].in'))
     assert msg.data == {'test': 13}
+    assert last_saved == 1.0
 
 
 def test_receive_with_slot(communicator2) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('kernel[13].out'), Reference('other.in[13]'),
-            None, 0.0, None, Settings({'test': 'testing'}),
+            None, 0.0, None, Settings({'test': 'testing'}), 0, 3.0,
             b'test').encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator2._Communicator__get_client = get_client_mock
     communicator2._profiler = MagicMock()
 
-    msg = communicator2.receive_message('in', 13)
+    msg, last_saved = communicator2.receive_message('in', 13)
 
     get_client_mock.assert_called_with(Reference('kernel[13]'))
     client_mock.receive.assert_called_with(Reference('other.in[13]'))
     assert msg.data == b'test'
     assert msg.settings['test'] == 'testing'
+    assert last_saved == 3.0
 
 
 def test_receive_message_resizable(communicator3) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel.in[13]'),
-            20, 0.0, None, Settings({'test': 'testing'}),
+            20, 0.0, None, Settings({'test': 'testing'}), 0, 12.3,
             b'test').encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator3._Communicator__get_client = get_client_mock
     communicator3._profiler = MagicMock()
 
-    msg = communicator3.receive_message('in', 13)
+    msg, last_saved = communicator3.receive_message('in', 13)
 
     get_client_mock.assert_called_with(Reference('other'))
     client_mock.receive.assert_called_with(Reference('kernel.in[13]'))
     assert msg.data == b'test'
     assert communicator3.get_port('in').get_length() == 20
+    assert last_saved == 12.3
 
 
 def test_receive_with_settings(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            None, 0.0, None, Settings({'test2': 3.1}),
+            None, 0.0, None, Settings({'test2': 3.1}), 0, 0.1,
             b'test').encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
     communicator._profiler = MagicMock()
 
-    msg = communicator.receive_message('in')
+    msg, last_saved = communicator.receive_message('in')
 
     get_client_mock.assert_called_with(Reference('other'))
     client_mock.receive.assert_called_with(Reference('kernel[13].in'))
     assert msg.data == b'test'
     assert msg.settings['test2'] == 3.1
+    assert last_saved == 0.1
 
 
 def test_receive_msgpack_with_slot_and_settings(communicator2) -> None:
@@ -497,55 +515,179 @@ def test_receive_msgpack_with_slot_and_settings(communicator2) -> None:
     client_mock.receive.return_value = MPPMessage(
             Reference('kernel[13].out'), Reference('other.in[13]'),
             None, 0.0, 1.0,
-            Settings({'test': 'testing'}), 'test').encoded()
+            Settings({'test': 'testing'}), 0, 1.0, 'test').encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator2._Communicator__get_client = get_client_mock
     communicator2._profiler = MagicMock()
 
-    msg = communicator2.receive_message('in', 13)
+    msg, last_saved = communicator2.receive_message('in', 13)
 
     get_client_mock.assert_called_with(Reference('kernel[13]'))
     client_mock.receive.assert_called_with(Reference('other.in[13]'))
     assert msg.data == 'test'
     assert msg.settings['test'] == 'testing'
+    assert last_saved == 1.0
 
 
 def test_receive_settings(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            None, 0.0, None, Settings({'test1': 12}),
+            None, 0.0, None, Settings({'test1': 12}), 0, 1.0,
             Settings({'test': 13})).encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
     communicator._profiler = MagicMock()
 
-    msg = communicator.receive_message('in')
+    msg, last_saved = communicator.receive_message('in')
 
     get_client_mock.assert_called_with(Reference('other'))
     client_mock.receive.assert_called_with(Reference('kernel[13].in'))
     assert isinstance(msg.data, Settings)
     assert msg.data['test'] == 13
+    assert last_saved == 1.0
 
 
 def test_receive_close_port(communicator) -> None:
     client_mock = MagicMock()
     client_mock.receive.return_value = MPPMessage(
             Reference('other.out[13]'), Reference('kernel[13].in'),
-            None, 0.0, None, Settings(), ClosePort()).encoded()
+            None, 0.0, None, Settings(), 0, 0.1, ClosePort()).encoded()
     get_client_mock = MagicMock(return_value=client_mock)
     communicator._Communicator__get_client = get_client_mock
     communicator._profiler = MagicMock()
 
-    msg = communicator.receive_message('in')
+    msg, _ = communicator.receive_message('in')
 
     assert isinstance(msg.data, ClosePort)
 
 
 def test_get_message(communicator, message) -> None:
-    communicator.send_message('out', message)
+    communicator.send_message('out', message, None, 2.0)
     ref_message = MPPMessage(
             Reference('kernel[13].out'), Reference('other.in[13]'),
-            None, 0.0, None, Settings(), b'test').encoded()
+            None, 0.0, None, Settings(), 0, 2.0, b'test').encoded()
     assert communicator._post_office.get_message(
             'other.in[13]') == ref_message
+
+
+def test_port_message_counts(communicator, message) -> None:
+    communicator.send_message('out', message)
+    msg_counts = communicator.get_message_counts()
+    assert msg_counts == {'out': [1],
+                          'in': [0],
+                          'muscle_settings_in': [0]}
+
+    communicator.restore_message_counts({'out': [3],
+                                         'in': [2],
+                                         'muscle_settings_in': [4]})
+    communicator.send_message('out', message)
+    msg_counts = communicator.get_message_counts()
+    assert msg_counts == {'out': [4],
+                          'in': [2],
+                          'muscle_settings_in': [4]}
+
+    # empty post office
+    communicator._post_office.get_message('other.in[13]')
+    communicator._post_office.get_message('other.in[13]')
+
+    with pytest.raises(RuntimeError):
+        communicator.restore_message_counts({"x?invalid_port": 3})
+
+
+def test_vector_port_message_counts(communicator2, message) -> None:
+    msg_counts = communicator2.get_message_counts()
+    assert msg_counts == {'out': [0] * 20,
+                          'in': [0] * 20,
+                          'muscle_settings_in': [0]}
+
+    communicator2.send_message('out', message, 13)
+    msg_counts = communicator2.get_message_counts()
+    assert msg_counts == {'out': [0] * 13 + [1] + [0] * 6,
+                          'in': [0] * 20,
+                          'muscle_settings_in': [0]}
+
+    communicator2.restore_message_counts({'out': list(range(20)),
+                                          'in': list(range(20)),
+                                          'muscle_settings_in': [4]})
+    communicator2.send_message('out', message, 13)
+    msg_counts = communicator2.get_message_counts()
+    assert msg_counts == {'out': list(range(13)) + [14] + list(range(14, 20)),
+                          'in': list(range(20)),
+                          'muscle_settings_in': [4]}
+
+    # empty post office
+    communicator2._post_office.get_message('kernel[13].in')
+    communicator2._post_office.get_message('kernel[13].in')
+
+
+def test_port_count_validation(communicator):
+    client_mock = MagicMock()
+    client_mock.receive.return_value = MPPMessage(
+            Reference('other.out[13]'), Reference('kernel[13].in'),
+            None, 0.0, None, Settings({'test1': 12}), 0, 7.6,
+            b'test').encoded()
+    get_client_mock = MagicMock(return_value=client_mock)
+    communicator._Communicator__get_client = get_client_mock
+    communicator._profiler = MagicMock()
+
+    communicator.receive_message('in')
+    assert communicator.get_message_counts()['in'] == [1]
+
+    with pytest.raises(RuntimeError):
+        # the message received has message_number = 0 again
+        communicator.receive_message('in')
+
+
+def test_port_discard_error_on_resume(caplog, communicator):
+    client_mock = MagicMock()
+    client_mock.receive.return_value = MPPMessage(
+            Reference('other.out[13]'), Reference('kernel[13].in'),
+            None, 0.0, None, Settings({'test1': 12}), 1, 2.3,
+            b'test').encoded()
+    get_client_mock = MagicMock(return_value=client_mock)
+    communicator._Communicator__get_client = get_client_mock
+    communicator._profiler = MagicMock()
+
+    communicator.restore_message_counts({'out': [0],
+                                         'in': [2],
+                                         'muscle_settings_in': [0]})
+    for port in communicator._ports.values():
+        assert port._is_resuming == [True]
+        assert port.is_resuming(None)
+
+    # In the next block, the first message with message_number=1 is discarded.
+    # The RuntimeError is raised when 'receiving' the second message with
+    # message_number=1
+    with caplog.at_level(logging.DEBUG, 'libmuscle.communicator'):
+        with pytest.raises(RuntimeError):
+            communicator.receive_message('in')
+        # records 0, 2 and 3 are debug logs for starting/receiving on port
+        assert 'Discarding received message' in caplog.records[1].message
+
+
+def test_port_discard_success_on_resume(caplog, communicator):
+    client_mock = MagicMock()
+    client_mock.receive.side_effect = [MPPMessage(
+            Reference('other.out[13]'), Reference('kernel[13].in'),
+            None, 0.0, None, Settings({'test1': 12}), message_number, 1.0,
+            {'this is message': message_number}).encoded()
+            for message_number in [1, 2]]
+    get_client_mock = MagicMock(return_value=client_mock)
+    communicator._Communicator__get_client = get_client_mock
+    communicator._profiler = MagicMock()
+
+    communicator.restore_message_counts({'out': [0],
+                                         'in': [2],
+                                         'muscle_settings_in': [0]})
+    for port in communicator._ports.values():
+        assert port._is_resuming == [True]
+        assert port.is_resuming(None)
+
+    with caplog.at_level(logging.DEBUG, 'libmuscle.communicator'):
+        msg, _ = communicator.receive_message('in')
+        # records 0, 2 and 3 are debug logs for starting/receiving on port
+        assert 'Discarding received message' in caplog.records[1].message
+    # message_number=1 should be discarded:
+    assert msg.data == {'this is message': 2}
+    assert communicator.get_message_counts()['in'] == [3]

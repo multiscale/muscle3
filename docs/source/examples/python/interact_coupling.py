@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Optional, Tuple
+from typing import Any, Optional, Tuple, Dict
 
 from libmuscle import Instance, Message
 from libmuscle.runner import run_simulation
@@ -129,7 +129,8 @@ class Peer:
     via the instance object.
     """
     def __init__(
-            self, instance: Instance, in_port: str, out_port: str) -> None:
+            self, instance: Instance, in_port: str, out_port: str,
+            resume_from_state: Any = None) -> None:
         """Create a Peer object.
 
         This also receives an initial message from the peer model, and
@@ -145,11 +146,20 @@ class Peer:
         self.out_port = out_port
         self.cache = DataCache()
 
-        msg = self.instance.receive(self.in_port)
-        self.cache.add_data(msg.timestamp, msg.data)
-        self.rcvd = msg.timestamp
-        self.to_send = msg.timestamp
-        self.next = msg.next_timestamp
+        if resume_from_state:
+            self.cache.t_cur = resume_from_state['cache.t_cur']
+            self.cache.data_cur = resume_from_state['cache.data_cur']
+            self.cache.t_next = resume_from_state['cache.t_next']
+            self.cache.data_next = resume_from_state['cache.data_next']
+            self.rcvd = resume_from_state['rcvd']
+            self.to_send = resume_from_state['to_send']
+            self.next = resume_from_state['next']
+        else:
+            msg = self.instance.receive(self.in_port)
+            self.cache.add_data(msg.timestamp, msg.data)
+            self.rcvd = msg.timestamp
+            self.to_send = msg.timestamp
+            self.next = msg.next_timestamp
 
     def done(self) -> bool:
         """Return whether we are done commmunicating with this peer."""
@@ -200,6 +210,17 @@ class Peer:
         self.instance.send(self.out_port, Message(t, self.next, data))
         self.to_send = self.next
 
+    def get_state(self) -> Dict[str, Any]:
+        """Return the current state of this object as a MUSCLE-serializable dict
+        """
+        return {'cache.t_cur': self.cache.t_cur,
+                'cache.data_cur': self.cache.data_cur,
+                'cache.t_next': self.cache.t_next,
+                'cache.data_next': self.cache.data_next,
+                'rcvd': self.rcvd,
+                'to_send': self.to_send,
+                'next': self.next}
+
 
 def temporal_coupler() -> None:
     """Model component connecting two scale-overlapping submodels.
@@ -239,6 +260,56 @@ def temporal_coupler() -> None:
             elif b.can_send(a.rcvd, a.next):
                 t, data = a.cache.get_data(b.to_send)
                 b.send(t, data)
+
+
+def checkpointing_temporal_coupler() -> None:
+    """Model component connecting two scale-overlapping submodels.
+
+    This component sits in between two scale-overlapping submodels
+    running at different (and potentially variable) timesteps and
+    ensures that each of these peers receives a message whenever it
+    expects one, and can send a message whenever it expects to do so.
+
+    This function extends :func:`temporal_coupler` with checkpointing
+    capabilities.
+    """
+    instance = Instance({
+        Operator.O_I: ['a_out', 'b_out'],
+        Operator.S: ['a_in', 'b_in']})
+
+    while instance.reuse_instance():
+        if instance.resuming():
+            state = instance.load_snapshot().data
+            if state is not None:
+                a = Peer(instance, 'a_in', 'a_out', state['a'])
+                b = Peer(instance, 'b_in', 'b_out', state['b'])
+
+        if instance.should_init():
+            # Receive initial messages and initialise state
+            a = Peer(instance, 'a_in', 'a_out')
+            b = Peer(instance, 'b_in', 'b_out')
+
+        # Send and receive as needed
+        while not a.done() or not b.done():
+            if a.can_receive():
+                a.receive()
+            elif b.can_receive():
+                b.receive()
+            elif a.can_send(b.rcvd, b.next):
+                t, data = b.cache.get_data(a.to_send)
+                a.send(t, data)
+            elif b.can_send(a.rcvd, a.next):
+                t, data = a.cache.get_data(b.to_send)
+                b.send(t, data)
+
+            t_cur = min(a.rcvd, b.rcvd)
+            if instance.should_save_snapshot(t_cur):
+                instance.save_snapshot(Message(
+                        t_cur, None, {'a': a.get_state(), 'b': b.get_state()}))
+
+        t_cur = min(a.rcvd, b.rcvd)
+        if instance.should_save_final_snapshot():
+            instance.save_final_snapshot(Message(t_cur, None, None))
 
 
 if __name__ == '__main__':

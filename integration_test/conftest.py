@@ -26,6 +26,12 @@ def yatiml_log_warning():
     yatiml.logger.setLevel(logging.WARNING)
 
 
+def ls_snapshots(run_dir, instance=None):
+    """List all snapshots of the instance or workflow"""
+    return sorted(run_dir.snapshot_dir(instance).iterdir(),
+                  key=lambda path: tuple(map(int, path.stem.split("_")[1:])))
+
+
 def start_mmp_server(control_pipe, ymmsl_doc, run_dir):
     control_pipe[0].close()
     manager = Manager(ymmsl_doc, run_dir)
@@ -108,7 +114,8 @@ def run_manager_with_actors(
         for instance_name, callable in python_actors.items():
             proc = mp.Process(
                     target=_python_wrapper,
-                    args=(instance_name, env['MUSCLE_MANAGER'], callable))
+                    args=(instance_name, env['MUSCLE_MANAGER'], callable),
+                    name=instance_name)
             proc.start()
             python_processes.append(proc)
 

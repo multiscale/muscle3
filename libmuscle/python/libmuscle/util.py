@@ -1,3 +1,4 @@
+import itertools
 from pathlib import Path
 import sys
 from typing import Generator, List, Optional, cast
@@ -47,32 +48,8 @@ def generate_indices(dims: List[int]) -> Generator[List[int], None, None]:
     Yields:
         Lists of indices, one for each point in the block.
     """
-    index = [0] * len(dims)
-    done = False
-    while not done:
-        yield index
-        done = increment_index(index, dims)
-
-
-def increment_index(index: List[int], dims: List[int]) -> bool:
-    """Increments an index.
-
-    Args:
-        index: The index to be incremented.
-        dims: The dimensions of the block this index is in.
-
-    Returns:
-        True iff the index overflowed and is now all zeros again.
-    """
-    cur = len(index) - 1
-    index[cur] += 1
-    while index[cur] == dims[cur]:
-        index[cur] = 0
-        if cur == 0:
-            return True
-        cur -= 1
-        index[cur] += 1
-    return False
+    for index in itertools.product(*map(range, dims)):
+        yield list(index)
 
 
 def extract_log_file_location(filename: str) -> Optional[Path]:

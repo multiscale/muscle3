@@ -3,7 +3,7 @@ from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
-from ymmsl import Operator, Reference, Settings
+from ymmsl import Operator, Reference, Settings, Checkpoints
 
 from libmuscle.communicator import Message
 from libmuscle.instance import Instance
@@ -36,18 +36,20 @@ def sys_argv_instance() -> Generator[None, None, None]:
 
 
 @pytest.fixture
-def instance(sys_argv_instance):
+def instance(sys_argv_instance, tmp_path):
     with patch('libmuscle.instance.MMPClient') as mmp_client, \
          patch('libmuscle.instance.Communicator') as comm_type:
         communicator = MagicMock()
         settings = Settings()
         settings['test1'] = 12
         msg = Message(0.0, 1.0, 'message', settings)
-        communicator.receive_message.return_value = msg
+        communicator.receive_message.return_value = msg, 10.0
         comm_type.return_value = communicator
 
         mmp_client_object = MagicMock()
         mmp_client_object.request_peers.return_value = (None, None, None)
+        checkpoint_info = (0.0, Checkpoints(), None, tmp_path)
+        mmp_client_object.get_checkpoint_info.return_value = checkpoint_info
         mmp_client.return_value = mmp_client_object
 
         instance = Instance({
@@ -59,11 +61,13 @@ def instance(sys_argv_instance):
 
 
 @pytest.fixture
-def instance2(sys_argv_instance):
+def instance2(sys_argv_instance, tmp_path):
     with patch('libmuscle.instance.MMPClient') as mmp_client, \
          patch('libmuscle.instance.Communicator'):
         mmp_client_object = MagicMock()
         mmp_client_object.request_peers.return_value = (None, None, None)
+        checkpoint_info = (0.0, Checkpoints(), None, tmp_path)
+        mmp_client_object.get_checkpoint_info.return_value = checkpoint_info
         mmp_client.return_value = mmp_client_object
         instance = Instance({
             Operator.F_INIT: ['in[]'],
@@ -72,11 +76,13 @@ def instance2(sys_argv_instance):
 
 
 def test_create_instance(
-        sys_argv_instance, log_file_in_tmpdir, sys_argv_manager):
+        sys_argv_instance, log_file_in_tmpdir, sys_argv_manager, tmp_path):
     with patch('libmuscle.instance.MMPClient') as mmp_client, \
          patch('libmuscle.instance.Communicator') as comm_type:
         mmp_client_object = MagicMock()
         mmp_client_object.request_peers.return_value = (None, None, None)
+        checkpoint_info = (0.0, Checkpoints(), None, tmp_path)
+        mmp_client_object.get_checkpoint_info.return_value = checkpoint_info
         mmp_client.return_value = mmp_client_object
         ports = {
             Operator.F_INIT: ['in'],
@@ -159,9 +165,10 @@ def test_is_vector_port(instance):
 
 
 def test_send(instance, message):
+    instance._trigger_manager._cpts_considered_until = 17.0
     instance.send('out', message, 1)
     assert instance._communicator.send_message.called_with(
-            'out', message, 1)
+            'out', message, 1, 17.0)
 
 
 def test_send_invalid_port(instance, message):
@@ -232,7 +239,8 @@ def test_reuse_instance_receive_overlay(instance):
     test_overlay = Settings()
     test_overlay['test2'] = 'abc'
     recv = instance._communicator.receive_message
-    recv.return_value = Message(0.0, None, test_overlay, test_base_settings)
+    msg = Message(0.0, None, test_overlay, test_base_settings)
+    recv.return_value = msg, 0.0
     instance.reuse_instance()
     assert instance._communicator.receive_message.called_with(
         'muscle_settings_in')
@@ -244,9 +252,9 @@ def test_reuse_instance_receive_overlay(instance):
 def test_reuse_instance_closed_port(instance):
     def receive_message(port_name, slot=None, default=None):
         if port_name == 'muscle_settings_in':
-            return Message(0.0, None, Settings(), Settings())
+            return Message(0.0, None, Settings(), Settings()), 0.0
         elif port_name == 'in':
-            return Message(0.0, None, ClosePort(), Settings())
+            return Message(0.0, None, ClosePort(), Settings()), 1.0
         assert False    # pragma: no cover
 
     def get_port(port_name):
@@ -272,10 +280,10 @@ def test_reuse_instance_closed_port(instance):
 def test_reuse_instance_vector_port(instance2):
     def receive_message(port_name, slot=None, default=None):
         if port_name == 'muscle_settings_in':
-            return Message(0.0, None, Settings(), Settings())
+            return Message(0.0, None, Settings(), Settings()), 0.0
         elif port_name == 'in':
             data = 'test {}'.format(slot)
-            return Message(0.0, None, data, Settings())
+            return Message(0.0, None, data, Settings()), 0.0
         assert False    # pragma: no cover
 
     instance2._communicator.receive_message = receive_message
@@ -300,7 +308,7 @@ def test_reuse_instance_vector_port(instance2):
 
 def test_reuse_instance_no_f_init_ports(instance):
     instance._communicator.receive_message.return_value = Message(
-            0.0, None, Settings(), Settings())
+            0.0, None, Settings(), Settings()), 0.0
     instance._communicator.list_ports.return_value = {}
     instance._communicator.settings_in_connected.return_value = False
     do_reuse = instance.reuse_instance()

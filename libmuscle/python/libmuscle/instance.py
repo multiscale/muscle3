@@ -7,8 +7,10 @@ from typing import cast, Dict, List, Optional, Tuple, overload
 from typing_extensions import Literal
 
 from ymmsl import (Identifier, Operator, SettingValue, Port, Reference,
-                   Settings)
+                   Settings, KeepsStateForNextUse)
 
+from libmuscle.api_guard import APIGuard
+from libmuscle.checkpoint_triggers import TriggerManager
 from libmuscle.communicator import Communicator, Message
 from libmuscle.settings_manager import SettingsManager
 from libmuscle.logging import LogLevel
@@ -17,6 +19,7 @@ from libmuscle.mpp_message import ClosePort
 from libmuscle.mmp_client import MMPClient
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import ProfileEventType
+from libmuscle.snapshot_manager import SnapshotManager
 from libmuscle.util import extract_log_file_location
 
 
@@ -32,15 +35,23 @@ class Instance:
     This class provides a low-level send/receive API for the instance
     to use.
     """
-    def __init__(self, ports: Optional[Dict[Operator, List[str]]] = None
-                 ) -> None:
+    def __init__(
+            self, ports: Optional[Dict[Operator, List[str]]] = None,
+            keeps_state_for_next_use: KeepsStateForNextUse
+            = KeepsStateForNextUse.NECESSARY) -> None:
         """Create an Instance.
 
         Args:
-            ports: A list of port names for each operator of this
-                component.
+            ports: A list of port names for each
+                :external:py:class:`~ymmsl.Operator` of this component.
+            keeps_state_for_next_use: Indicate whether this instance carries
+                state between iterations of the reuse loop. See
+                :external:py:class:`ymmsl.KeepsStateForNextUse` for a
+                description of the options.
         """
         self.__is_shut_down = False
+
+        self._keeps_state = KeepsStateForNextUse(keeps_state_for_next_use)
 
         # Note that these are accessed by Muscle3, but otherwise private.
         self._name, self._index = self.__make_full_name()
@@ -51,6 +62,9 @@ class Instance:
         """Client object for talking to the manager."""
 
         self.__set_up_logging()
+
+        self._api_guard = APIGuard()
+        """Checks that the user uses the API correctly."""
 
         self._profiler = Profiler(self._instance_name(), self.__manager)
         """Profiler for this instance."""
@@ -65,13 +79,50 @@ class Instance:
         self._settings_manager = SettingsManager()
         """Settings for this instance."""
 
-        self._first_run = True
-        """Keeps track of whether this is the first reuse run."""
+        self._snapshot_manager = SnapshotManager(
+                self._instance_name(), self.__manager, self._communicator)
+        """Resumes, loads and saves snapshots."""
+
+        self._trigger_manager = TriggerManager()
+        """Keeps track of checkpoints and triggers snapshots."""
+
+        self._first_run = None          # type: Optional[bool]
+        """Whether this is the first iteration of the reuse loop"""
+
+        self._do_reuse = None           # type: Optional[bool]
+        """Whether to enter this iteration of the reuse loop
+
+        This is None during the reuse loop, and set between
+        should_save_final_snapshot and reuse_instance.
+        """
+
+        self._do_resume = False
+        """Whether to resume on this iteration of the reuse loop"""
+
+        self._do_init = False
+        """Whether to do f_init on this iteration of the reuse loop"""
 
         self._f_init_cache = dict()     # type: _FInitCacheType
+        """Stores pre-received messages for f_init ports"""
 
         self._register()
         self._connect()
+
+        # Note: get_checkpoint_info needs to have the ports initialized
+        # so it comes after self._connect()
+        checkpoint_info = self.__manager.get_checkpoint_info(
+                self._instance_name())
+
+        elapsed_time, checkpoints = checkpoint_info[0:2]
+        self._trigger_manager.set_checkpoint_info(elapsed_time, checkpoints)
+
+        resume_snapshot, snapshot_dir = checkpoint_info[2:4]
+        saved_at = self._snapshot_manager.prepare_resume(
+                resume_snapshot, snapshot_dir)
+
+        if saved_at is not None:
+            self._trigger_manager.update_checkpoints(saved_at)
+
         self._set_local_log_level()
         self._set_remote_log_level()
 
@@ -103,40 +154,51 @@ class Instance:
                 overlay or to save it. If you're going to use
                 :meth:`receive_with_settings` on your F_INIT ports,
                 set this to False. If you don't know what that means,
-                just call `reuse_instance()` without specifying this
+                just call :meth:`reuse_instance()` without specifying this
                 and everything will be fine. If it turns out that you
                 did need to specify False, MUSCLE3 will tell you about
                 it in an error message and you can add it still.
+
+        Raises:
+            RuntimeError:
+                When implementing the checkpointing API, but libmuscle detected
+                incorrect API calls. The description of the RuntimeError
+                indicates which calls are incorrect or missing. For more
+                information see the checkpointing API documentation in
+                :meth:`resuming`, :meth:`load_snapshot`,
+                :meth:`should_save_snapshot`, :meth:`save_snapshot`,
+                :meth:`should_save_final_snapshot` and
+                :meth:`save_final_snapshot`, or the checkpointing tutorial.
         """
-        do_reuse = self.__receive_settings()
+        self._api_guard.verify_reuse_instance()
 
-        # TODO: _f_init_cache should be empty here, or the user didn't
-        # receive something that was sent on the last go-around.
-        # At least emit a warning.
-        self.__pre_receive_f_init(apply_overlay)
-
-        self._set_local_log_level()
-        self._set_remote_log_level()
-
-        ports = self._communicator.list_ports()
-        f_init_not_connected = all(
-                [not self.is_connected(port)
-                 for port in ports.get(Operator.F_INIT, [])])
-        no_settings_in = not self._communicator.settings_in_connected()
-
-        if f_init_not_connected and no_settings_in:
-            do_reuse = self._first_run
-            self._first_run = False
+        if self._do_reuse is not None:
+            # thank you, should_save_final_snapshot, for running this already
+            do_reuse = self._do_reuse
+            self._do_reuse = None
         else:
-            for message in self._f_init_cache.values():
-                if isinstance(message.data, ClosePort):
-                    do_reuse = False
+            do_reuse = self._decide_reuse_instance(apply_overlay)
+
+        # now _first_run, _do_resume and _do_init are also set correctly
+
+        do_implicit_checkpoint = (
+                not self._first_run and
+                not self._api_guard.uses_checkpointing() and
+                self._keeps_state is not KeepsStateForNextUse.NECESSARY)
+
+        if do_implicit_checkpoint:
+            if self._trigger_manager.should_save_final_snapshot(
+                    do_reuse, self.__f_init_max_timestamp):
+                # store a None instead of a Message
+                self._save_snapshot(None, True, self.__f_init_max_timestamp)
 
         if not do_reuse:
             self.__close_ports()
             self._communicator.shutdown()
             self._deregister()
             self.__manager.close()
+
+        self._api_guard.reuse_instance_done(do_reuse)
         return do_reuse
 
     def error_shutdown(self, message: str) -> None:
@@ -210,7 +272,7 @@ class Instance:
                 self._instance_name(), Reference(name), typ)
 
     def list_ports(self) -> Dict[Operator, List[str]]:
-        """Returns a description of the ports that this CE has.
+        """Returns a description of the ports that this Instance has.
 
         Note that the result has almost the same format as the port
         declarations you pass when making an Instance. The only
@@ -218,9 +280,9 @@ class Instance:
         even if the port is a vector port.
 
         Returns:
-            A dictionary, indexed by Operator, containing lists of
-            port names. Operators with no associated ports are not
-            included.
+            A dictionary, indexed by :external:py:class:`~ymmsl.Operator`,
+            containing lists of port names. Operators with no associated ports
+            are not included.
         """
         return self._communicator.list_ports()
 
@@ -273,7 +335,8 @@ class Instance:
         Args:
             port: The name of the port to measure.
 
-        Raises: RuntimeError if this is a scalar port.
+        Raises:
+            RuntimeError: If this is a scalar port.
         """
         return self._communicator.get_port(port).get_length()
 
@@ -281,7 +344,7 @@ class Instance:
         """Resizes the port to the given length.
 
         You should check whether the port is resizable using
-        `is_resizable()` first; whether it is depends on how this
+        :meth:`is_resizable()` first; whether it is depends on how this
         component is wired up, so you should check.
 
         Args:
@@ -298,7 +361,7 @@ class Instance:
         """Send a message to the outside world.
 
         Sending is non-blocking, a copy of the message will be made
-        and stored until the receiver is ready to receive it.
+        and stored in memory until the receiver is ready to receive it.
 
         Args:
             port_name: The port on which this message is to be sent.
@@ -310,7 +373,9 @@ class Instance:
             message = copy(message)
             message.settings = self._settings_manager.overlay
 
-        self._communicator.send_message(port_name, message, slot)
+        self._communicator.send_message(
+                port_name, message, slot,
+                self._trigger_manager.checkpoints_considered_until())
 
     def receive(self, port_name: str, slot: Optional[int] = None,
                 default: Optional[Message] = None
@@ -381,14 +446,211 @@ class Instance:
         """
         return self.__receive_message(port_name, slot, default, True)
 
+    def snapshots_enabled(self) -> bool:
+        """Check if the current workflow has snapshots enabled.
+
+        When snapshots are not enabled, all calls to
+        :meth:`should_save_snapshot` and :meth:`should_save_final_snapshot` will
+        return False.
+
+        Returns:
+            True iff checkpoint rules are defined in the workflow yMMSL.
+        """
+        return self._trigger_manager.snapshots_enabled()
+
+    def resuming(self) -> bool:
+        """Check if this instance is resuming from a snapshot.
+
+        Must be used by submodels that implement the checkpointing API. You'll
+        get a RuntimeError when not calling this method in an iteration of the
+        reuse loop.
+
+        This method returns True for the first iteration of the reuse loop after
+        resuming from a previously taken snapshot. When resuming from a
+        snapshot, the submodel must load its state from the snapshot as returned
+        by :meth:`load_snapshot`.
+
+        Returns:
+            True iff the submodel must resume from a snapshot instead of the
+            usual F_INIT step during this iteration of the reuse loop.
+        """
+        self._api_guard.verify_resuming()
+        self._api_guard.resuming_done(self._do_resume)
+        return self._do_resume
+
+    def should_init(self) -> bool:
+        """Check if this instance should initialize.
+
+        Must be used by submodels that implement the checkpointing API.
+
+        When resuming from a previous snapshot, instances need not always
+        execute the F_INIT phase of the submodel execution loop. Use this method
+        before attempting to receive data on F_INIT ports.
+
+        Returns:
+            True if the submodel must execute the F_INIT step, False otherwise.
+        """
+        self._api_guard.verify_should_init()
+        self._api_guard.should_init_done()
+        return self._do_init
+
+    def load_snapshot(self) -> Message:
+        """Load a snapshot.
+
+        Must only be called when :meth:`resuming` returns True.
+
+        Returns:
+            Message object containing the state as saved in a previous run
+            through :meth:`save_snapshot` or :meth:`save_final_snapshot`
+
+        Raises:
+            RuntimeError: if not resuming from a snapshot.
+        """
+        self._api_guard.verify_load_snapshot()
+        result = self._snapshot_manager.load_snapshot()
+        self._api_guard.load_snapshot_done()
+        return result
+
+    def should_save_snapshot(self, timestamp: float) -> bool:
+        """Check if a snapshot should be saved after the S Operator of the
+        submodel.
+
+        This method checks if a snapshot should be saved right now, based on the
+        provided timestamp and passed wallclock time.
+
+        When this method returns True, the submodel must also save a snapshot
+        through :meth:`save_snapshot`. A RuntimeError will be generated when not
+        doing so.
+
+        See also :meth:`should_save_final_snapshot` for the variant that must be
+        called at the end of the reuse loop.
+
+        Args:
+            timestamp: current timestamp of the submodel
+
+        Returns:
+            True iff a snapshot should be taken by the submodel according to the
+            checkpoint rules provided in the ymmsl configuration.
+        """
+        self._api_guard.verify_should_save_snapshot()
+        result = self._trigger_manager.should_save_snapshot(timestamp)
+        self._api_guard.should_save_snapshot_done(result)
+        return result
+
+    def save_snapshot(self, message: Message) -> None:
+        """Save a snapshot after the S Operator of the submodel.
+
+        Before saving a snapshot, you should check using
+        :meth:`should_save_snapshot` if a snapshot should be saved according to
+        the checkpoint rules specified in the ymmsl configuration. You should
+        use the same timestamp in the provided Message object as used to query
+        `should_save_snapshot`.
+
+        Although it is allowed to save a snapshot even when
+        :meth:`should_save_snapshot` returns False, you should avoid this: this
+        situation is not likely to lead to a consistent snapshot over all
+        submodels of the run (and therefore it is not useful to restart from).
+        It could also lead to a lot of snapshot files clogging your file system.
+
+        See also :meth:`save_final_snapshot` for the variant that must be called
+        at the end of the reuse loop.
+
+        Args:
+            message: Message object that is saved as snapshot. The message
+                timestamp attribute should be the same as passed to
+                :meth:`should_save_snapshot`. The data attribute can be used to
+                store the internal state of the submodel.
+        """
+        self._api_guard.verify_save_snapshot()
+        if message is None:
+            raise RuntimeError('Please specify a Message to save as snapshot.')
+        self._save_snapshot(message, False)
+        self._api_guard.save_snapshot_done()
+
+    def should_save_final_snapshot(self, *, apply_overlay: bool = True) -> bool:
+        """Check if a snapshot should be saved at the end of the reuse loop.
+
+        This method checks if a snapshot should be saved now.
+
+        When this method returns True, the submodel must also save a snapshot
+        through :meth:`save_final_snapshot`. A :class:`RuntimeError` will be
+        generated when not doing so.
+
+        See also :meth:`should_save_snapshot` for the variant that may be called
+        inside of a time-integration loop of the submodel.
+
+        .. note::
+            This method will block until it can determine whether a final
+            snapshot should be taken. This means it must also determine if this
+            instance is reused. The optional keyword-only argument
+            `apply_overlay` has the same meaning as for :meth:`reuse_instance`.
+
+        Args:
+            apply_overlay: Whether to apply the received settings
+                overlay or to save it. If you're going to use
+                :meth:`receive_with_settings` on your F_INIT ports, set this to
+                False. If you don't know what that means, just call
+                :meth:`should_save_final_snapshot()` without specifying this and
+                everything will be fine. If it turns out that you did need to
+                specify False, MUSCLE3 will tell you about it in an error
+                message and you can add it still.
+
+        Returns:
+            True iff a final snapshot should be taken by the submodel according
+            to the checkpoint rules provided in the ymmsl configuration.
+        """
+        self._api_guard.verify_should_save_final_snapshot()
+
+        self._do_reuse = self._decide_reuse_instance(apply_overlay)
+        result = self._trigger_manager.should_save_final_snapshot(
+                self._do_reuse, self.__f_init_max_timestamp)
+
+        self._api_guard.should_save_final_snapshot_done(result)
+        return result
+
+    def save_final_snapshot(self, message: Message) -> None:
+        """Save a snapshot at the end of the reuse loop.
+
+        Before saving a snapshot, you should check using
+        :meth:`should_save_final_snapshot` if a snapshot should be saved
+        according to the checkpoint rules specified in the ymmsl configuration.
+
+        Although it is allowed to save a snapshot even when
+        :meth:`should_save_final_snapshot` returns False, you should avoid this:
+        this situation is not likely to lead to a consistent snapshot over all
+        submodels of the run (and therefore it is not useful to restart from).
+        It could also lead to a lot of snapshot files clogging your file system.
+
+        See also :meth:`save_snapshot` for the variant that may be called after
+        each S Operator of the submodel.
+
+        Args:
+            message: Message object that is saved as snapshot. The data
+                attribute can be used to store the internal state of the
+                submodel.
+        """
+        self._api_guard.verify_save_final_snapshot()
+        if message is None:
+            raise RuntimeError('Please specify a Message to save as snapshot.')
+        self._save_snapshot(message, True, self.__f_init_max_timestamp)
+        self._api_guard.save_final_snapshot_done()
+
+    @property
+    def __f_init_max_timestamp(self) -> Optional[float]:
+        """Return max timestamp of pre-received F_INIT messages
+        """
+        return max(
+                (msg.timestamp for msg in self._f_init_cache.values()),
+                default=None)
+
     def _register(self) -> None:
         """Register this instance with the manager.
         """
         register_event = self._profiler.start(ProfileEventType.REGISTER)
         locations = self._communicator.get_locations()
         port_list = self.__list_declared_ports()
-        self.__manager.register_instance(self._instance_name(), locations,
-                                         port_list)
+        self.__manager.register_instance(
+                self._instance_name(), locations, port_list)
         register_event.stop()
         _logger.info('Registered with the manager')
 
@@ -456,6 +718,70 @@ class Instance:
                                                      self.__manager)
             logging.getLogger().addHandler(self._mmp_handler)
 
+    def _decide_reuse_instance(self, apply_overlay: bool) -> bool:
+        """Decide whether and how to reuse the instance.
+
+        This sets self._first_run, self._do_resume and self._do_init, and
+        returns whether to reuse one more time. This is the real top of
+        the reuse loop, and it gets called by reuse_instance and
+        should_save_final_snapshot.
+        """
+        if self._first_run is None:
+            self._first_run = True
+        elif self._first_run:
+            self._first_run = False
+
+        # resume from intermediate
+        if self._first_run and self._snapshot_manager.resuming_from_intermediate():
+            self._do_resume = True
+            self._do_init = False
+            return True
+
+        f_init_connected = self._have_f_init_connections()
+
+        # resume from final
+        if self._first_run and self._snapshot_manager.resuming_from_final():
+            if f_init_connected:
+                got_f_init_messages = self._pre_receive(apply_overlay)
+                self._do_resume = True
+                self._do_init = True
+                return got_f_init_messages
+            else:
+                self._do_resume = False     # unused
+                self._do_init = False       # unused
+                return False
+
+        # fresh start or resuming from implicit snapshot
+        self._do_resume = False
+
+        # simple straight single run without resuming
+        if not f_init_connected:
+            self._do_init = self._first_run
+            return self._first_run
+
+        # not resuming and f_init connected, run while we get messages
+        got_f_init_messages = self._pre_receive(apply_overlay)
+        self._do_init = got_f_init_messages
+        return got_f_init_messages
+
+    def _save_snapshot(
+            self, message: Optional[Message], final: bool,
+            f_init_max_timestamp: Optional[float] = None) -> None:
+        """Save a snapshot to disk and notify manager.
+
+        Args:
+            message: The data to save
+            final: Whether this is a final snapshot or an intermediate
+                one
+            f_init_max_timestamp: Timestamp for final snapshots
+        """
+        triggers = self._trigger_manager.get_triggers()
+        walltime = self._trigger_manager.elapsed_walltime()
+        timestamp = self._snapshot_manager.save_snapshot(
+                message, final, triggers, walltime,
+                f_init_max_timestamp)
+        self._trigger_manager.update_checkpoints(timestamp)
+
     def __receive_message(
             self, port_name: str, slot: Optional[int],
             default: Optional[Message], with_settings: bool
@@ -475,9 +801,10 @@ class Instance:
                 if with_settings and msg.settings is None:
                     err_msg = ('If you use receive_with_settings()'
                                ' on an F_INIT port, then you have to'
-                               ' pass False to reuse_instance(),'
-                               ' otherwise the settings will already'
-                               ' have been applied by MUSCLE.')
+                               ' pass apply_overlay=False to reuse_instance() '
+                               ' and should_save_final_snapshot(),'
+                               ' if applicable, otherwise the settings will'
+                               ' already have been applied by MUSCLE.')
                     self.__shutdown(err_msg)
                     raise RuntimeError(err_msg)
             else:
@@ -500,7 +827,7 @@ class Instance:
                     raise RuntimeError(err_msg)
 
         else:
-            msg = self._communicator.receive_message(
+            msg, saved_until = self._communicator.receive_message(
                     port_name, slot, default)
             if port.is_connected() and not port.is_open(slot):
                 err_msg = (('Port {} was closed while trying to'
@@ -512,6 +839,7 @@ class Instance:
                 self.__check_compatibility(port_name, msg.settings)
             if not with_settings:
                 msg.settings = None
+            self._trigger_manager.harmonise_wall_time(saved_until)
         return msg
 
     def __make_full_name(self
@@ -583,6 +911,32 @@ class Instance:
             self.__shutdown(err_msg)
             raise RuntimeError(err_msg)
 
+    def _have_f_init_connections(self) -> bool:
+        """Checks whether we have connected F_INIT ports.
+
+        This includes muscle_settings_in, and any user-defined ports.
+        """
+        ports = self._communicator.list_ports()
+        f_init_connected = any(
+                [self.is_connected(port)
+                 for port in ports.get(Operator.F_INIT, [])])
+        return f_init_connected or self._communicator.settings_in_connected()
+
+    def _pre_receive(self, apply_overlay: bool) -> bool:
+        """Pre-receives on all ports.
+
+        This includes muscle_settings_in and all user-defined ports.
+
+        Returns:
+            True iff no ClosePort messages were received.
+        """
+        all_ports_open = self.__receive_settings()
+        self.__pre_receive_f_init(apply_overlay)
+        for message in self._f_init_cache.values():
+            if isinstance(message.data, ClosePort):
+                all_ports_open = False
+        return all_ports_open
+
     def __receive_settings(self) -> bool:
         """Receives settings on muscle_settings_in.
 
@@ -590,7 +944,7 @@ class Instance:
             False iff the port is connnected and ClosePort was received.
         """
         default_message = Message(0.0, None, Settings(), Settings())
-        message = self._communicator.receive_message(
+        message, saved_until = self._communicator.receive_message(
                 'muscle_settings_in', None, default_message)
         if isinstance(message.data, ClosePort):
             return False
@@ -607,6 +961,8 @@ class Instance:
         for key, value in message.data.items():
             settings[key] = value
         self._settings_manager.overlay = settings
+
+        self._trigger_manager.harmonise_wall_time(saved_until)
         return True
 
     def __pre_receive_f_init(self, apply_overlay: bool) -> None:
@@ -616,12 +972,14 @@ class Instance:
         in self._f_init_cache.
         """
         def pre_receive(port_name: str, slot: Optional[int]) -> None:
-            msg = self._communicator.receive_message(port_name, slot)
+            msg, saved_until = self._communicator.receive_message(
+                    port_name, slot)
             self._f_init_cache[(port_name, slot)] = msg
             if apply_overlay:
                 self.__apply_overlay(msg)
                 self.__check_compatibility(port_name, msg.settings)
                 msg.settings = None
+            self._trigger_manager.harmonise_wall_time(saved_until)
 
         self._f_init_cache = dict()
         ports = self._communicator.list_ports()

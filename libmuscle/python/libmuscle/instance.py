@@ -446,18 +446,6 @@ class Instance:
         """
         return self.__receive_message(port_name, slot, default, True)
 
-    def snapshots_enabled(self) -> bool:
-        """Check if the current workflow has snapshots enabled.
-
-        When snapshots are not enabled, all calls to
-        :meth:`should_save_snapshot` and :meth:`should_save_final_snapshot` will
-        return False.
-
-        Returns:
-            True iff checkpoint rules are defined in the workflow yMMSL.
-        """
-        return self._trigger_manager.snapshots_enabled()
-
     def resuming(self) -> bool:
         """Check if this instance is resuming from a snapshot.
 

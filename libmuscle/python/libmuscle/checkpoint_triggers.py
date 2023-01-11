@@ -211,11 +211,6 @@ class TriggerManager:
                     at_least - cur)
             self._mono_to_elapsed += at_least - cur
 
-    def snapshots_enabled(self) -> bool:
-        """Check if the current workflow has snapshots enabled.
-        """
-        return self._has_checkpoints
-
     def should_save_snapshot(self, timestamp: float) -> bool:
         """Handles instance.should_save_snapshot
         """

@@ -1,5 +1,5 @@
 import pytest
-from ymmsl import ImplementationState, Operator, load, dump
+from ymmsl import KeepsStateForNextUse, Operator, load, dump
 
 from libmuscle import Instance, Message
 from libmuscle.manager.run_dir import RunDir
@@ -47,7 +47,7 @@ def stateless_component():
     instance = Instance({
             Operator.F_INIT: ['f_i'],
             Operator.O_F: ['o_f']},
-            stateful=ImplementationState.STATELESS)
+            stateful=KeepsStateForNextUse.NO)
 
     while instance.reuse_instance():
         dt = instance.get_setting('dt', 'float')

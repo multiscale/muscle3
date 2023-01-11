@@ -7,7 +7,7 @@ from typing import cast, Dict, List, Optional, Tuple, overload
 from typing_extensions import Literal
 
 from ymmsl import (Identifier, Operator, SettingValue, Port, Reference,
-                   Settings, ImplementationState)
+                   Settings, KeepsStateForNextUse)
 
 from libmuscle.api_guard import APIGuard
 from libmuscle.checkpoint_triggers import TriggerManager
@@ -35,28 +35,23 @@ class Instance:
     This class provides a low-level send/receive API for the instance
     to use.
     """
-    def __init__(self, ports: Optional[Dict[Operator, List[str]]] = None,
-                 stateful: ImplementationState = ImplementationState.STATEFUL
-                 ) -> None:
+    def __init__(
+            self, ports: Optional[Dict[Operator, List[str]]] = None,
+            keeps_state_for_next_use: KeepsStateForNextUse
+            = KeepsStateForNextUse.NECESSARY) -> None:
         """Create an Instance.
 
         Args:
             ports: A list of port names for each
                 :external:py:class:`~ymmsl.Operator` of this component.
-            stateful: Indicate whether this instance carries state between
-                iterations of the reuse loop. See
-                :external:py:class:`ymmsl.ImplementationState` for a description
-                of the options.
+            keeps_state_for_next_use: Indicate whether this instance carries
+                state between iterations of the reuse loop. See
+                :external:py:class:`ymmsl.KeepsStateForNextUse` for a
+                description of the options.
         """
         self.__is_shut_down = False
 
-        if not isinstance(stateful, ImplementationState):
-            raise ValueError(
-                    f'Invalid value supplied for "stateful": {stateful}.'
-                    ' Expected one of ImplementationState.STATEFUL,'
-                    ' ImplementationState.STATELESS or ImplementationState.'
-                    'WEAKLY_STATEFUL.')
-        self._stateful = stateful
+        self._keeps_state = KeepsStateForNextUse(keeps_state_for_next_use)
 
         # Note that these are accessed by Muscle3, but otherwise private.
         self._name, self._index = self.__make_full_name()
@@ -189,7 +184,7 @@ class Instance:
         do_implicit_checkpoint = (
                 not self._first_run and
                 not self._api_guard.uses_checkpointing() and
-                self._stateful is not ImplementationState.STATEFUL)
+                self._keeps_state is not KeepsStateForNextUse.NECESSARY)
 
         if do_implicit_checkpoint:
             if self._trigger_manager.should_save_final_snapshot(
@@ -567,6 +562,8 @@ class Instance:
                 store the internal state of the submodel.
         """
         self._api_guard.verify_save_snapshot()
+        if message is None:
+            raise RuntimeError('Please specify a Message to save as snapshot.')
         self._save_snapshot(message, False)
         self._api_guard.save_snapshot_done()
 
@@ -633,6 +630,8 @@ class Instance:
                 submodel.
         """
         self._api_guard.verify_save_final_snapshot()
+        if message is None:
+            raise RuntimeError('Please specify a Message to save as snapshot.')
         self._save_snapshot(message, True, self.__f_init_max_timestamp)
         self._api_guard.save_final_snapshot_done()
 

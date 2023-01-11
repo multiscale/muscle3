@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 from ymmsl import (
         Configuration, Model, Component, Conduit, Implementation,
-        ImplementationState as IState, Reference)
+        KeepsStateForNextUse, Reference)
 
 from libmuscle.manager.snapshot_registry import (
     SnapshotNode, SnapshotRegistry, calc_consistency, calc_consistency_list,
@@ -35,14 +35,14 @@ def macro_micro(micro_is_stateless: bool) -> Configuration:
 
     if micro_is_stateless:
         micro_impl = Implementation(
-                'micro_impl', stateful=IState.STATELESS, executable='pass')
+                'micro_impl',
+                keeps_state_for_next_use=KeepsStateForNextUse.NO,
+                executable='pass')
     else:
-        micro_impl = Implementation(
-                'micro_impl', supports_checkpoint=True, executable='pass')
+        micro_impl = Implementation('micro_impl', executable='pass')
 
     implementations = [
-            Implementation(
-                    'macro_impl', supports_checkpoint=True, executable='pass'),
+            Implementation('macro_impl', executable='pass'),
             micro_impl]
 
     return Configuration(model, implementations=implementations)
@@ -60,9 +60,9 @@ def uq(macro_micro: Configuration) -> Configuration:
             Conduit('rr.back_out', 'macro.muscle_settings_in'),
             Conduit('macro.final_state_out', 'rr.back_in')])
     macro_micro.implementations[Reference('qmc_impl')] = Implementation(
-            'qmc_impl', supports_checkpoint=True, executable='pass')
+            'qmc_impl', executable='pass')
     macro_micro.implementations[Reference('rr_impl')] = Implementation(
-            'rr_impl', supports_checkpoint=True, executable='pass')
+            'rr_impl', executable='pass')
     return macro_micro
 
 
@@ -381,7 +381,7 @@ def test_heuristic_rollbacks() -> None:
     conduits = [Conduit(f'comp{i}.o_f', f'comp{i+1}.f_i') for i in range(3)]
     model = Model('linear', components, conduits)
     implementations = [
-            Implementation(f'impl{i}', supports_checkpoint=True, script='xyz')
+            Implementation(f'impl{i}', script='xyz')
             for i in range(4)]
     config = Configuration(model, implementations=implementations)
 

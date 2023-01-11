@@ -1,5 +1,5 @@
 import pytest
-from ymmsl import ImplementationState, Operator, load, dump
+from ymmsl import KeepsStateForNextUse, Operator, load, dump
 
 from libmuscle import Instance, Message
 from libmuscle.manager.run_dir import RunDir
@@ -127,7 +127,7 @@ def stateless_micro():
     instance = Instance({
             Operator.F_INIT: ['f_i'],
             Operator.O_F: ['o_f']},
-            stateful=ImplementationState.STATELESS)
+            keeps_state_for_next_use=KeepsStateForNextUse.NO)
 
     while instance.reuse_instance():
         dt = instance.get_setting('dt', 'float')
@@ -149,7 +149,7 @@ def data_transformer():
     instance = Instance({
             Operator.F_INIT: ['f_i'],
             Operator.O_F: ['o_f']},
-            stateful=ImplementationState.STATELESS)
+            keeps_state_for_next_use=KeepsStateForNextUse.NO)
 
     while instance.reuse_instance():
         msg = instance.receive('f_i')

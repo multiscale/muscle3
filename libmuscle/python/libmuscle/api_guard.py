@@ -22,6 +22,9 @@ class APIPhase(Enum):
     we know that we should expect resume() after reuse_instance() and
     we use BEFORE_RESUMING accordingly.
     """
+    BEFORE_FIRST_REUSE_INSTANCE = auto()
+    """Before the first time calling reuse_instance"""
+
     BEFORE_REUSE_INSTANCE = auto()
     """Before calling reuse_instance"""
 
@@ -62,10 +65,46 @@ class APIGuard:
     def __init__(self) -> None:
         """Create an APIPhaseTracker.
 
-        This starts the tracker in BEFORE_REUSE_INSTANCE.
+        This starts the tracker in BEFORE_FIRST_REUSE_INSTANCE.
         """
-        self._phase = APIPhase.BEFORE_REUSE_INSTANCE
+        self._phase = APIPhase.BEFORE_FIRST_REUSE_INSTANCE
         self._uses_checkpointing = None     # type: Optional[bool]
+
+    def _generic_error_messages(self, verify_phase: str) -> None:
+        if self._phase in (
+                APIPhase.BEFORE_FIRST_REUSE_INSTANCE,
+                APIPhase.AFTER_REUSE_LOOP):
+            msg = f'Please only call {verify_phase} inside the reuse loop.'
+        elif self._phase == APIPhase.BEFORE_REUSE_INSTANCE:
+            msg = (
+                    'Please do not call {verify_phase} after'
+                    ' should_save_final_snapshot. should_save_final_snapshot'
+                    ' should be at the end of the reuse loop.')
+        elif self._phase == APIPhase.AFTER_REUSE_INSTANCE:
+            msg = (
+                    'Please call resuming first in the reuse loop, before'
+                    f' {verify_phase}')
+        elif self._phase == APIPhase.BEFORE_RESUMING:
+            msg = 'Inside the reuse loop you must call resuming first.'
+        elif self._phase == APIPhase.BEFORE_LOAD_SNAPSHOT:
+            msg = (
+                    'If resuming returns True, then you must call'
+                    ' load_snapshot first.')
+        elif self._phase == APIPhase.BEFORE_SHOULD_INIT:
+            msg = 'After calling resuming, you must call should_init first.'
+        elif self._phase == APIPhase.BEFORE_SHOULD_SAVE_SNAPSHOT:
+            msg = 'You must call save_snapshot or save_final_snapshot first.'
+        elif self._phase == APIPhase.BEFORE_SAVE_SNAPSHOT:
+            msg = (
+                    'If should_save_snapshot returns True, then you must'
+                    ' call save_snapshot first.')
+        elif self._phase == APIPhase.BEFORE_SAVE_FINAL_SNAPSHOT:
+            msg = (
+                    'If should_save_final_snapshot returns True, then you'
+                    ' must call save_final_snapshot first.')
+        else:
+            return
+        raise RuntimeError(msg)
 
     def uses_checkpointing(self) -> bool:
         """Return whether the code is using checkpointing.
@@ -90,8 +129,13 @@ class APIGuard:
         """Check reuse_instance()"""
         if self._phase == APIPhase.AFTER_REUSE_INSTANCE:
             self._uses_checkpointing = False
-        elif self._phase != APIPhase.BEFORE_REUSE_INSTANCE:
-            raise RuntimeError()
+        elif self._phase not in (
+                APIPhase.BEFORE_REUSE_INSTANCE,
+                APIPhase.BEFORE_FIRST_REUSE_INSTANCE):
+            raise RuntimeError(
+                    'We reached the end of the reuse loop without checking'
+                    ' if a snapshot should be saved. Please add at least'
+                    ' a should_save_final_snapshot and save_final_snapshot.')
 
     def reuse_instance_done(self, reusing: bool) -> None:
         """Update phase on successful reuse_instance().
@@ -154,10 +198,8 @@ class APIGuard:
     def verify_should_save_snapshot(self) -> None:
         """Check should_save_snapshot()"""
         if self._phase != APIPhase.BEFORE_SHOULD_SAVE_SNAPSHOT:
-            raise RuntimeError(
-                    'We reached the end of the reuse loop without checking'
-                    ' if a snapshot should be saved. Please add at least'
-                    ' a should_save_final_snapshot and save_final_snapshot.')
+            self._generic_error_messages('should_save_snapshot')
+            raise RuntimeError()  # should be unreachable
 
     def should_save_snapshot_done(self, should_save: bool) -> None:
         """Update phase on successful should_save_snapshot().
@@ -169,9 +211,10 @@ class APIGuard:
             self._phase = APIPhase.BEFORE_SAVE_SNAPSHOT
 
     def verify_save_snapshot(self) -> None:
-        """Check should_save_snapshot()"""
+        """Check save_snapshot()"""
         if self._phase != APIPhase.BEFORE_SAVE_SNAPSHOT:
-            raise RuntimeError()
+            self._generic_error_messages('save_snapshot')
+            raise RuntimeError()  # should be unreachable
 
     def save_snapshot_done(self) -> None:
         """Update phase on successful save_snapshot()"""
@@ -180,25 +223,8 @@ class APIGuard:
     def verify_should_save_final_snapshot(self) -> None:
         """Check should_save_final_snapshot()."""
         if self._phase != APIPhase.BEFORE_SHOULD_SAVE_SNAPSHOT:
-            if self._phase in (
-                    APIPhase.BEFORE_REUSE_INSTANCE, APIPhase.AFTER_REUSE_LOOP):
-                msg = (
-                        'Please only call should_save_final_snapshot inside'
-                        ' the reuse loop.')
-            elif self._phase == APIPhase.BEFORE_SAVE_FINAL_SNAPSHOT:
-                msg = (
-                        'If should_save_final_snapshot returns True, then you'
-                        ' must call save_final_snapshot immediately.')
-            elif self._phase == APIPhase.BEFORE_SAVE_SNAPSHOT:
-                msg = (
-                        'If should_save_snapshot returns True, then you must'
-                        ' call save_snapshot first.')
-            else:
-                msg = (
-                        'Please only call should_save_final_snapshot at the'
-                        ' end of the reuse loop.')
-
-            raise RuntimeError(msg)
+            self._generic_error_messages('should_save_final_snapshot')
+            raise RuntimeError()  # should be unreachable
 
     def should_save_final_snapshot_done(self, should_save: bool) -> None:
         """Update phase on successful should_save_snapshot().
@@ -214,7 +240,8 @@ class APIGuard:
     def verify_save_final_snapshot(self) -> None:
         """Check should_save_final_snapshot()"""
         if self._phase != APIPhase.BEFORE_SAVE_FINAL_SNAPSHOT:
-            raise RuntimeError()
+            self._generic_error_messages('save_final_snapshot')
+            raise RuntimeError()  # should be unreachable
 
     def save_final_snapshot_done(self) -> None:
         """Updates state on successful save_final_snapshot()"""

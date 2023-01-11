@@ -189,7 +189,6 @@ class TriggerManager:
         self._sim = CombinedCheckpointTriggers(checkpoints.simulation_time)
         self._prevsim = None        # type: Optional[float]
         self._nextsim = None        # type: Optional[float]
-        self._sim_reset = True
 
     def elapsed_walltime(self) -> float:
         """Returns elapsed wallclock_time in seconds.
@@ -237,7 +236,6 @@ class TriggerManager:
             # message.
             _logger.debug('Reuse triggered by muscle_settings_in.'
                           ' Not creating a snapshot.')
-            self._sim_reset = True
         else:
             value = self.__should_save(f_init_max_timestamp)
 
@@ -256,10 +254,6 @@ class TriggerManager:
         self._prevsim = timestamp
         self._nextsim = self._sim.next_checkpoint(timestamp)
 
-        # this method is also called during resume, after which we no longer
-        # consider the simulation_time as reset
-        self._sim_reset = False
-
     def get_triggers(self) -> List[str]:
         """Get trigger description(s) for the current reason for checkpointing.
         """
@@ -273,7 +267,7 @@ class TriggerManager:
         Args:
             simulation_time: current/next timestamp as reported by the instance
         """
-        if self._sim_reset:
+        if self._nextsim is None and self._prevsim is None:
             # we cannot make assumptions about the start time of a simulation,
             # a t=-1000 could make sense if t represents years since CE
             # and we should not disallow checkpointing for negative t
@@ -284,7 +278,6 @@ class TriggerManager:
                 self._nextsim = previous
             else:
                 self._nextsim = self._sim.next_checkpoint(simulation_time)
-            self._sim_reset = False
 
         walltime = self.elapsed_walltime()
         self._cpts_considered_until = walltime

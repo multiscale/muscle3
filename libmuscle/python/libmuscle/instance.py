@@ -119,6 +119,10 @@ class Instance:
         resume_snapshot, snapshot_dir = checkpoint_info[2:4]
         saved_at = self._snapshot_manager.prepare_resume(
                 resume_snapshot, snapshot_dir)
+        # Resume settings overlay
+        overlay = self._snapshot_manager._resume_overlay
+        if overlay is not None:
+            self._settings_manager.overlay = overlay
 
         if saved_at is not None:
             self._trigger_manager.update_checkpoints(saved_at)
@@ -767,7 +771,7 @@ class Instance:
         walltime = self._trigger_manager.elapsed_walltime()
         timestamp = self._snapshot_manager.save_snapshot(
                 message, final, triggers, walltime,
-                f_init_max_timestamp)
+                f_init_max_timestamp, self._settings_manager.overlay)
         self._trigger_manager.update_checkpoints(timestamp)
 
     def __receive_message(

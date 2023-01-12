@@ -4,6 +4,7 @@ import msgpack
 import pytest
 from ymmsl import Conduit, Operator, Port, Reference
 
+import libmuscle
 from libmuscle.logging import LogLevel, LogMessage, Timestamp
 from libmuscle.mcp.protocol import RequestType, ResponseType
 from libmuscle.mmp_client import MMPClient
@@ -85,7 +86,8 @@ def test_register_instance(mocked_mmp_client) -> None:
     sent_msg = msgpack.unpackb(stub.call.call_args[0][0], raw=False)
     assert sent_msg == [
             RequestType.REGISTER_INSTANCE.value, 'kernel[13]',
-            ['direct:test', 'tcp:test'], [['out', 'O_I'], ['in', 'S']]]
+            ['direct:test', 'tcp:test'], [['out', 'O_I'], ['in', 'S']],
+            libmuscle.__version__]
 
 
 def test_request_peers(mocked_mmp_client) -> None:

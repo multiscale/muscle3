@@ -6,6 +6,7 @@ import msgpack
 from ymmsl import (
         Operator, Reference, Checkpoints, CheckpointRangeRule, CheckpointAtRule)
 
+import libmuscle
 from libmuscle.logging import LogLevel
 from libmuscle.manager.mmp_server import MMPRequestHandler
 from libmuscle.mcp.protocol import RequestType, ResponseType
@@ -79,7 +80,8 @@ def test_register_instance(mmp_request_handler, instance_registry):
             RequestType.REGISTER_INSTANCE.value,
             'test_instance',
             ['tcp://localhost:10000'],
-            [['test_in', 'F_INIT']]]
+            [['test_in', 'F_INIT']],
+            libmuscle.__version__]
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
     result = mmp_request_handler.handle_request(encoded_request)
@@ -92,6 +94,37 @@ def test_register_instance(mmp_request_handler, instance_registry):
     registered_ports = instance_registry._ports
     assert registered_ports['test_instance'][0].name == 'test_in'
     assert registered_ports['test_instance'][0].operator == Operator.F_INIT
+
+
+def test_register_instance_no_version(mmp_request_handler):
+    request = [
+            RequestType.REGISTER_INSTANCE.value,
+            'test_instance',
+            ['tcp://localhost:10000'],
+            [['test_in', 'F_INIT']]]
+    encoded_request = msgpack.packb(request, use_bin_type=True)
+
+    result = mmp_request_handler.handle_request(encoded_request)
+    decoded_result = msgpack.unpackb(result, raw=False)
+
+    assert decoded_result[0] == ResponseType.ERROR.value
+    assert 'version' in decoded_result[1]
+
+
+def test_register_instance_version_mismatch(mmp_request_handler):
+    request = [
+            RequestType.REGISTER_INSTANCE.value,
+            'test_instance',
+            ['tcp://localhost:10000'],
+            [['test_in', 'F_INIT']],
+            libmuscle.__version__ + "dev"]
+    encoded_request = msgpack.packb(request, use_bin_type=True)
+
+    result = mmp_request_handler.handle_request(encoded_request)
+    decoded_result = msgpack.unpackb(result, raw=False)
+
+    assert decoded_result[0] == ResponseType.ERROR.value
+    assert 'version' in decoded_result[1]
 
 
 def test_get_checkpoint_info(mmp_configuration, mmp_request_handler):
@@ -145,7 +178,8 @@ def test_double_register_instance(mmp_request_handler):
             RequestType.REGISTER_INSTANCE.value,
             'test_instance',
             ['tcp://localhost:10000'],
-            [['test_in', 'F_INIT']]]
+            [['test_in', 'F_INIT']],
+            libmuscle.__version__]
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
     result = mmp_request_handler.handle_request(encoded_request)

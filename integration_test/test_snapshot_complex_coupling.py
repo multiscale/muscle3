@@ -5,7 +5,7 @@ import pytest
 from ymmsl import Operator, load, dump
 
 from libmuscle import (
-        Instance, Message, HAS_NO_STATE_FOR_NEXT_USE, USES_CHECKPOINT_API)
+        Instance, Message, KEEPS_NO_STATE_FOR_NEXT_USE, USES_CHECKPOINT_API)
 from libmuscle.manager.run_dir import RunDir
 
 from .conftest import run_manager_with_actors, ls_snapshots
@@ -58,7 +58,7 @@ def cache_component(max_channels=2):
 def echo_component(max_channels=2):
     ports = {Operator.F_INIT: [f'in{i+1}' for i in range(max_channels)],
              Operator.O_F: [f'out{i+1}' for i in range(max_channels)]}
-    instance = Instance(ports, HAS_NO_STATE_FOR_NEXT_USE)
+    instance = Instance(ports, KEEPS_NO_STATE_FOR_NEXT_USE)
 
     while instance.reuse_instance():
         for p_in, p_out in zip(ports[Operator.F_INIT], ports[Operator.O_F]):

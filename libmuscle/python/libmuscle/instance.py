@@ -64,25 +64,25 @@ class InstanceFlags(Flag):
     You may not use any checkpointing API calls when this flag is not supplied.
     """
 
-    HAS_NO_STATE_FOR_NEXT_USE = auto()
+    KEEPS_NO_STATE_FOR_NEXT_USE = auto()
     """Indicate this instance does not carry state between iterations of the
     reuse loop.
 
     This corresponds to :external:py:attr:`ymmsl.KeepsStateForNextUse.NO`.
 
-    If neither :attr:`HAS_NO_STATE_FOR_NEXT_USE` and
-    :attr:`STATE_FOR_NEXT_USE_NOT_REQUIRED` are supplied, this corresponds to
+    If neither :attr:`KEEPS_NO_STATE_FOR_NEXT_USE` and
+    :attr:`STATE_NOT_REQUIRED_FOR_NEXT_USE` are supplied, this corresponds to
     :external:py:attr:`ymmsl.KeepsStateForNextUse.REQUIRED`.
     """
 
-    STATE_FOR_NEXT_USE_NOT_REQUIRED = auto()
+    STATE_NOT_REQUIRED_FOR_NEXT_USE = auto()
     """Indicate this instance carries state between iterations of the
     reuse loop, however this state is not required for restarting.
 
     This corresponds to :external:py:attr:`ymmsl.KeepsStateForNextUse.HELPFUL`.
 
-    If neither :attr:`HAS_NO_STATE_FOR_NEXT_USE` and
-    :attr:`STATE_FOR_NEXT_USE_NOT_REQUIRED` are supplied, this corresponds to
+    If neither :attr:`KEEPS_NO_STATE_FOR_NEXT_USE` and
+    :attr:`STATE_NOT_REQUIRED_FOR_NEXT_USE` are supplied, this corresponds to
     :external:py:attr:`ymmsl.KeepsStateForNextUse.REQUIRED`.
     """
 
@@ -231,8 +231,8 @@ class Instance:
         do_implicit_checkpoint = (
                 not self._first_run and
                 InstanceFlags.USES_CHECKPOINT_API not in self._flags and
-                (InstanceFlags.STATE_FOR_NEXT_USE_NOT_REQUIRED in self._flags or
-                 InstanceFlags.HAS_NO_STATE_FOR_NEXT_USE in self._flags))
+                (InstanceFlags.STATE_NOT_REQUIRED_FOR_NEXT_USE in self._flags or
+                 InstanceFlags.KEEPS_NO_STATE_FOR_NEXT_USE in self._flags))
 
         if do_implicit_checkpoint:
             if self._trigger_manager.should_save_final_snapshot(

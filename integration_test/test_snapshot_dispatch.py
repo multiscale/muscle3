@@ -2,7 +2,7 @@ import pytest
 from ymmsl import Operator, load, dump
 
 from libmuscle import (
-        Instance, Message, HAS_NO_STATE_FOR_NEXT_USE, USES_CHECKPOINT_API)
+        Instance, Message, KEEPS_NO_STATE_FOR_NEXT_USE, USES_CHECKPOINT_API)
 from libmuscle.manager.run_dir import RunDir
 
 from .conftest import run_manager_with_actors, ls_snapshots
@@ -48,7 +48,7 @@ def stateless_component():
     instance = Instance({
             Operator.F_INIT: ['f_i'],
             Operator.O_F: ['o_f']},
-            HAS_NO_STATE_FOR_NEXT_USE)
+            KEEPS_NO_STATE_FOR_NEXT_USE)
 
     while instance.reuse_instance():
         dt = instance.get_setting('dt', 'float')

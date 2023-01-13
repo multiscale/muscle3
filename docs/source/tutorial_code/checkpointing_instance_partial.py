@@ -3,14 +3,14 @@
 Note that this template is not executable as is, please have a look at the
 examples in ``docs/source/examples`` to see working components."""
 
-from libmuscle import Instance, Message
+from libmuscle import Instance, Message, USES_CHECKPOINT_API
 from ymmsl import Operator
 
 instance = Instance({
         Operator.F_INIT: ["F_INIT_Port"],
         Operator.O_I: ["O_I_Port"],
         Operator.S: ["S_Port"],
-        Operator.O_F: ["O_F_Port"]})
+        Operator.O_F: ["O_F_Port"]}, USES_CHECKPOINT_API)
 
 while instance.reuse_instance():
     # F_INIT
@@ -37,13 +37,13 @@ while instance.reuse_instance():
 
         if instance.should_save_snapshot(t_cur):
             state = ...  # component implementation
-            msg = Message(t_cur, None, state)
+            msg = Message(t_cur, data=state)
             instance.save_snapshot(msg)
 
     # O_F
-    instance.send("O_F_Port", Message(t_cur, None, data))
+    instance.send("O_F_Port", Message(t_cur, data=data))
 
     if instance.should_save_final_snapshot():
         state = ...  # component implementation
-        msg = Message(t_cur, None, state)
+        msg = Message(t_cur, data=state)
         instance.save_final_snapshot(msg)

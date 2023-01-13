@@ -1,6 +1,6 @@
 import logging
 
-from libmuscle import Grid, Instance, Message
+from libmuscle import Grid, Instance, Message, USES_CHECKPOINT_API
 from ymmsl import Operator
 
 
@@ -9,7 +9,8 @@ def reaction() -> None:
     """
     instance = Instance({
             Operator.F_INIT: ['initial_state'],     # list of float
-            Operator.O_F: ['final_state']})         # list of float
+            Operator.O_F: ['final_state']},         # list of float
+            USES_CHECKPOINT_API)
 
     while instance.reuse_instance():
         # F_INIT
@@ -30,14 +31,14 @@ def reaction() -> None:
             t_cur += dt
 
             if instance.should_save_snapshot(t_cur):
-                msg = Message(t_cur, None, [Grid(U, ['x']), t_stop])
+                msg = Message(t_cur, data=[Grid(U, ['x']), t_stop])
                 instance.save_snapshot(msg)
 
         # O_F
-        instance.send('final_state', Message(t_cur, None, Grid(U, ['x'])))
+        instance.send('final_state', Message(t_cur, data=Grid(U, ['x'])))
 
         if instance.should_save_final_snapshot():
-            msg = Message(t_cur, None, None)
+            msg = Message(t_cur)
             instance.save_final_snapshot(msg)
 
 

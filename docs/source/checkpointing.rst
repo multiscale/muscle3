@@ -3,7 +3,7 @@ Simulation checkpoints
 
 When you execute a long-running simulation, it can be very helpful to store the
 state of a simulation at certain intervals. For example, your simulation running
-on a HPC cluster may crash, just before it's finished, due to insufficient
+on a HPC cluster may crash due to insufficient
 memory available. Instead of restarting this simulation from scratch, you could
 restart it -- with an increased memory allocation -- from a checkpoint, which
 would save a lot of compute time!
@@ -12,6 +12,14 @@ Checkpointing in distributed simulations is difficult. Fortunately, MUSCLE3
 comes with built-in checkpointing support. This page describes in detail how to
 use the MUSCLE3 checkpointing API, how to specify checkpoints in the workflow
 configuration and how to resume a workflow.
+
+.. warning::
+
+    Checkpointing in MUSCLE3 version 0.6.0 is still in development: the API may
+    change in a future MUSCLE3 release.
+
+    Checkpointing is only available in the Python API. C++ and Fortran support
+    is planned for version 0.7.0.
 
 In the :ref:`user tutorial`, you can read about the checkpointing concepts and
 how to use the API when running and resuming MUSCLE3 simulations. This is
@@ -272,13 +280,19 @@ initialization of ``muscle_manager``.
     in the simulation will create a snapshot when requested, there is no
     guarantee that all snapshots are :ref:`consistent <Snapshot consistency>`.
 
-    When a simulation has relatively simple coupling between components, i.e.
-    only one peer instance per :external:py:class:`~ymmsl.Operator`,
+    When a simulation has relatively simple coupling between components,
     checkpointing based on wallclock time usually works fine.
 
     However for co-simulation (the *interact* coupling type) and more complex
     coupling, it is likely that not all checkpoints lead to a consistent
     :term:`workflow snapshot`.
+
+    If you intend to use wallclock time checkpoints and find that you often
+    don't get a consistent workflow snapshot, you may try the following
+    workaround: instead of requesting a wallclock time checkpoint at (for
+    example) 600 seconds, you can specify checkpoints at 600, 601, 602, 603, 604
+    and 605 seconds. The "right" interval to use will depend on the typical
+    compute times of your components and coupling in the simulation.
 
 
 Running a simulation with checkpoints
@@ -443,7 +457,6 @@ Resuming from *at_end* snapshots
 
 .. warning::
     Resuming from only ``at_end`` snapshot will immediately complete.
-    TODO: Need to think about this still.
 
 
 Snapshot consistency
@@ -636,7 +649,46 @@ not complete and cannot be executed.
                     :language: fortran
 
 
-Step 1: implement checkpoint hooks
+Step 1: Set ``USES_CHECKPOINT_API`` on instance creation
+````````````````````````````````````````````````````````
+
+As first step, you need to indicate that you intend to use the checkpoint API.
+You do this through the :attr:`~InstanceFlags.USES_CHECKPOINT_API` flag when
+creating the instance:
+
+.. tabs::
+
+    .. group-tab:: Python
+
+        .. code-block:: Python
+
+            from libmuscle import Instance, USES_CHECKPOINT_API
+
+            ...
+
+            ports = ...
+            instance = Instance(ports, USES_CHECKPOINT_API)
+
+    ..
+        group-tab:: C++
+
+        .. code-block:: C++
+
+            TODO
+
+    ..
+        group-tab:: Fortran
+
+        .. code-block:: Fortran
+
+            TODO
+
+
+If you do not set this flag, you'll get a runtime error when trying to use any
+of the checkpointing API calls on the Instance object.
+
+
+Step 2: Implement checkpoint hooks
 ``````````````````````````````````
 
 The first step in implementing the checkpointing API is implementing the
@@ -862,7 +914,7 @@ full contents of the files in the git repository.
                 TODO
 
 
-Step 2: implement resume
+Step 3: Implement resume
 ````````````````````````
 
 Now that the checkpoint hooks are implemented, we can add support for resuming
@@ -904,6 +956,7 @@ implementations in the reaction-diffusion models and the component template.
     :py:meth:`~libmuscle.Instance.load_snapshot`,
     :py:meth:`~libmuscle.Instance.should_init`.
 
+
 Reload settings when resuming
 '''''''''''''''''''''''''''''
 
@@ -919,7 +972,7 @@ the documentation, such that users of your component know what they can expect.
 
 
 Example: implemented checkpoint hooks and resume
-''''''''''''''''''''''''''''''''''''''''''''''''
+````````````````````````````````````````````````
 
 Note that below examples only shows the changes compared to the :ref:`start
 situation <Start situation: components without checkpointing>`. You can view the
@@ -1028,35 +1081,29 @@ full contents of the files in the git repository.
                 TODO
 
 
-Stateless components
-````````````````````
+Components that do not keep state between reuse
+```````````````````````````````````````````````
 
-Some components do not need to store data between reuses. An example of that is
+Some components do not need to keep state between reuses. An example of that is
 the reaction model from above examples. In the final snapshot, no state needs
 to be stored to allow properly resuming this component, see
-:ref:`Example: implemented checkpoint hooks`. These components are called
-stateless.
+:ref:`Example: implemented checkpoint hooks`.
 
-.. note::
-
-    *Stateless* in this context means that the component does not store any
-    state between iterations of the reuse loop. Although there is a state inside
-    the loop (e.g. ``cur_t`` and ``U``), the component is still considered
-    *stateless*.
-
-Other examples of stateless components may be data transformers, receiving data
+Other examples of such components may be data transformers, receiving data
 on an ``F_INIT`` port and sending the converted data on an ``O_F`` port.
 
-If you indicate to libmuscle that these components are *stateless*, libmuscle
-automatically provides checkpointing for your component. See below example for
-a stateless variant of the example reaction model.
+If you indicate to libmuscle that your component does not keep state between
+reuse, libmuscle automatically provides checkpointing for your component. You do
+this by providing the :attr:`~InstanceFlags.KEEPS_NO_STATE_FOR_NEXT_USE` flag
+when creating the instance. See below example for a variant of the example
+reaction model.
 
 .. tabs::
 
     .. group-tab:: Python
 
-        .. literalinclude:: examples/python/stateless_reaction.py
-            :caption: ``docs/source/examples/python/stateless_reaction.py``
+        .. literalinclude:: examples/python/reaction_no_state_for_next_use.py
+            :caption: ``docs/source/examples/python/reaction_no_state_for_next_use.py``
             :language: python
             :diff: examples/python/reaction.py
 
@@ -1091,12 +1138,6 @@ checkpointing API. To support you in this task, MUSCLE3 tries to detect any
 issues with the checkpointing implementation. When MUSCLE3 detects a problem, an
 error is raised to indicate what went wrong and point you in the right direction
 for fixing the problem.
-
-Some of these errors can be turned into a warning by setting the environment
-variable ``MUSCLE_DISABLE_CHECKPOINT_VALIDATION`` to any value. Note that it is
-discouraged to use this: the errors are there to ensure proper exeuction and
-resuming. Not adhering to the rules may lead to deadlocks or crashes of your
-simulations.
 
 ..
     TODO: create an overview of the validation rules

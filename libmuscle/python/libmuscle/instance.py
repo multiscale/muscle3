@@ -108,6 +108,11 @@ class Instance:
         self.__is_shut_down = False
 
         self._flags = InstanceFlags(flags)
+        if InstanceFlags.USES_CHECKPOINT_API in self._flags:
+            warnings.warn(
+                    'Checkpointing in MUSCLE3 version 0.6.0 is still in'
+                    ' development: the API may change in a future MUSCLE3'
+                    ' release.')
 
         # Note that these are accessed by Muscle3, but otherwise private.
         self._name, self._index = self.__make_full_name()

@@ -87,6 +87,12 @@ class InstanceFlags(Flag):
     """
 
 
+_CHECKPOINT_SUPPORT_MASK = (
+        InstanceFlags.USES_CHECKPOINT_API |
+        InstanceFlags.KEEPS_NO_STATE_FOR_NEXT_USE |
+        InstanceFlags.STATE_NOT_REQUIRED_FOR_NEXT_USE)
+
+
 class Instance:
     """Represents a component instance in a MUSCLE3 simulation.
 
@@ -177,6 +183,13 @@ class Instance:
 
         elapsed_time, checkpoints = checkpoint_info[0:2]
         self._trigger_manager.set_checkpoint_info(elapsed_time, checkpoints)
+
+        if checkpoints and not (self._flags & _CHECKPOINT_SUPPORT_MASK):
+            raise RuntimeError(
+                    'The workflow has requested checkpoints, but this instance'
+                    ' does not support checkpointing. Please consult the'
+                    ' MUSCLE3 checkpointing documentation how to add'
+                    ' checkpointing support.')
 
         resume_snapshot, snapshot_dir = checkpoint_info[2:4]
         saved_at = self._snapshot_manager.prepare_resume(

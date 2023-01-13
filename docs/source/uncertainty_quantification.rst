@@ -174,7 +174,7 @@ this case, the port will be resizable and it will work as intended.
       uq_parameters = Settings({
           'd': ds[sample],
           'k': ks[sample]})
-      msg = Message(0.0, None, uq_parameters)
+      msg = Message(0.0, data=uq_parameters)
       instance.send('parameters_out', msg, sample)
 
 Since we only run our O_I and S once, we do not have a state update loop that
@@ -189,7 +189,7 @@ in the central configuration.
 
 Next, we create a :class:`libmuscle.Message` object to send. Since our models
 will start at time 0, we'll set that as the timestamp, and since we're only
-running them once each, the next timestamp is ``None``. For the data, we send
+running them once each, we omit the next timestamp. For the data, we send
 the ``Settings`` object. (MUSCLE3 contains special support for sending
 ``Settings`` objects, since being objects they're not normally
 MessagePack-serialisable.)

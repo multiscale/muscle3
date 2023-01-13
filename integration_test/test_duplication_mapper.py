@@ -14,7 +14,7 @@ def duplication_mapper():
         # o_f
         out_ports = instance.list_ports()[Operator.O_F]
 
-        message = Message(0.0, None, 'testing')
+        message = Message(0.0, data='testing')
         for out_port in out_ports:
             instance.send(out_port, message)
 

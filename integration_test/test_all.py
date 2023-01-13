@@ -56,7 +56,7 @@ def micro():
                 'int': 42,
                 'float': 3.1416,
                 'grid': Grid(np.array([[12.0, 34.0, 56.0], [1.0, 2.0, 3.0]]))}
-        instance.send('out', Message(0.1, None, result))
+        instance.send('out', Message(0.1, data=result))
 
 
 def test_all(log_file_in_tmpdir):

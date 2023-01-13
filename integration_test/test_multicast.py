@@ -10,7 +10,7 @@ def multicaster():
 
     while instance.reuse_instance():
         # o_f
-        message = Message(0.0, None, 'testing')
+        message = Message(0.0, data='testing')
         instance.send('out', message)
 
 

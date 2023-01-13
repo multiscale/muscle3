@@ -33,7 +33,7 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
     assert not snapshot_manager.resuming_from_final()
 
     snapshot_manager.save_snapshot(
-            Message(0.2, None, 'test data'), False, ['test'], 13.0)
+            Message(0.2, data='test data'), False, ['test'], 13.0)
 
     communicator.get_message_counts.assert_called_with()
     manager.submit_snapshot_metadata.assert_called()
@@ -63,7 +63,7 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
     assert msg.data == 'test data'
 
     snapshot_manager2.save_snapshot(
-            Message(0.6, None, 'test data2'), True, ['test'], 42.2, 1.2)
+            Message(0.6, data='test data2'), True, ['test'], 42.2, 1.2)
 
     instance, metadata = manager.submit_snapshot_metadata.call_args[0]
     assert instance == instance_id

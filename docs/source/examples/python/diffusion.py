@@ -75,7 +75,7 @@ def diffusion() -> None:
             t_cur += dt
 
         # O_F
-        final_state_msg = Message(t_cur, None, Grid(U, ['x']))
+        final_state_msg = Message(t_cur, data=Grid(U, ['x']))
         instance.send('final_state_out', final_state_msg)
 
         if 'DONTPLOT' not in os.environ and 'SLURM_NODENAME' not in os.environ:

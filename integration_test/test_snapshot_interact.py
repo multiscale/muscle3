@@ -58,10 +58,10 @@ def component():
             i += 1
 
             if instance.should_save_snapshot(t_cur):
-                instance.save_snapshot(Message(t_cur, None, [i, t_stop]))
+                instance.save_snapshot(Message(t_cur, data=[i, t_stop]))
 
         if instance.should_save_final_snapshot():
-            instance.save_final_snapshot(Message(t_cur, None, [i, t_stop]))
+            instance.save_final_snapshot(Message(t_cur, data=[i, t_stop]))
 
 
 def test_snapshot_interact_lockstep(tmp_path):

@@ -25,7 +25,7 @@ def component():
             i, t_stop = msg.data
 
         if instance.should_init():
-            msg = instance.receive('f_i', default=Message(0, None, 0))
+            msg = instance.receive('f_i', default=Message(0, data=0))
             t_cur = msg.timestamp
             i = msg.data
             t_stop = t_cur + t_max
@@ -35,12 +35,12 @@ def component():
             t_cur += dt
 
             if instance.should_save_snapshot(t_cur):
-                instance.save_snapshot(Message(t_cur, None, [i, t_stop]))
+                instance.save_snapshot(Message(t_cur, data=[i, t_stop]))
 
-        instance.send('o_f', Message(t_cur, None, i))
+        instance.send('o_f', Message(t_cur, data=i))
 
         if instance.should_save_final_snapshot():
-            instance.save_final_snapshot(Message(t_cur, None, [i, t_stop]))
+            instance.save_final_snapshot(Message(t_cur, data=[i, t_stop]))
 
 
 def stateless_component():
@@ -53,7 +53,7 @@ def stateless_component():
         dt = instance.get_setting('dt', 'float')
         t_max = instance.get_setting('t_max', 'float')
 
-        msg = instance.receive('f_i', default=Message(0, None, 0))
+        msg = instance.receive('f_i', default=Message(0, data=0))
         t_cur = msg.timestamp
         i = msg.data
         t_stop = t_cur + t_max
@@ -62,7 +62,7 @@ def stateless_component():
             # faux time-integration for testing snapshots
             t_cur += dt
 
-        instance.send('o_f', Message(t_cur, None, i))
+        instance.send('o_f', Message(t_cur, data=i))
 
 
 @pytest.fixture

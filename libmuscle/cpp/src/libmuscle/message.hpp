@@ -21,7 +21,7 @@ class Message {
          *
          * @param timestamp Simulation time for which this data is valid.
          */
-        Message(double timestamp);
+        explicit Message(double timestamp);
 
         /** Create a Message.
          *

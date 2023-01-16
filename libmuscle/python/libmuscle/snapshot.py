@@ -21,12 +21,16 @@ class Snapshot(ABC):
                  wallclock_time: float,
                  port_message_counts: Dict[str, List[int]],
                  is_final_snapshot: bool,
-                 message: Optional['communicator.Message']) -> None:
+                 message: Optional['communicator.Message'],
+                 settings_overlay: Settings) -> None:
         self.triggers = triggers
         self.wallclock_time = wallclock_time
         self.port_message_counts = port_message_counts
         self.is_final_snapshot = is_final_snapshot
         self.message = message
+        # self.message is None for implicit snapshots, so we cannot store the
+        # Settings overlay in that message object.
+        self.settings_overlay = settings_overlay
 
     @classmethod
     @abstractmethod
@@ -62,7 +66,8 @@ class MsgPackSnapshot(Snapshot):
                    dct['wallclock_time'],
                    dct['port_message_counts'],
                    dct['is_final_snapshot'],
-                   cls.bytes_to_message(dct['message']))
+                   cls.bytes_to_message(dct['message']),
+                   Settings(dct['settings_overlay']))
 
     def to_bytes(self) -> bytes:
         return cast(bytes, msgpack.dumps({
@@ -70,7 +75,8 @@ class MsgPackSnapshot(Snapshot):
             'wallclock_time': self.wallclock_time,
             'port_message_counts': self.port_message_counts,
             'is_final_snapshot': self.is_final_snapshot,
-            'message': self.message_to_bytes(self.message)
+            'message': self.message_to_bytes(self.message),
+            'settings_overlay': self.settings_overlay.as_ordered_dict()
         }))
 
     @staticmethod

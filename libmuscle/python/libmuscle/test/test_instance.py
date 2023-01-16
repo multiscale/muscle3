@@ -1,3 +1,4 @@
+from contextlib import nullcontext as does_not_raise
 import sys
 from typing import Generator
 from unittest.mock import MagicMock, patch
@@ -6,7 +7,7 @@ import pytest
 from ymmsl import Operator, Reference, Settings, Checkpoints
 
 from libmuscle.communicator import Message
-from libmuscle.instance import Instance
+from libmuscle.instance import Instance, InstanceFlags as IFlags
 from libmuscle.mpp_message import ClosePort
 from libmuscle.settings_manager import SettingsManager
 
@@ -320,3 +321,23 @@ def test_reuse_instance_no_f_init_ports(instance):
 def test_reuse_instance_miswired(instance):
     with pytest.raises(RuntimeError):
         instance.reuse_instance()
+
+
+@pytest.mark.parametrize('flags, expectation', [
+        (IFlags(0), pytest.raises(RuntimeError)),
+        (IFlags.USES_CHECKPOINT_API, does_not_raise()),
+        (IFlags.KEEPS_NO_STATE_FOR_NEXT_USE, does_not_raise()),
+        (IFlags.STATE_NOT_REQUIRED_FOR_NEXT_USE, does_not_raise())])
+def test_checkpoint_support(sys_argv_instance, tmp_path, flags, expectation):
+    with patch('libmuscle.instance.MMPClient') as mmp_client, \
+         patch('libmuscle.instance.Communicator') as comm_type:
+        comm_type.return_value = MagicMock()
+
+        mmp_client_object = MagicMock()
+        mmp_client_object.request_peers.return_value = (None, None, None)
+        checkpoint_info = (0.0, Checkpoints(at_end=True), None, tmp_path)
+        mmp_client_object.get_checkpoint_info.return_value = checkpoint_info
+        mmp_client.return_value = mmp_client_object
+
+        with expectation:
+            Instance(flags=flags)

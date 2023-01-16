@@ -26,4 +26,4 @@ def message2() -> Message:
 
 @pytest.fixture
 def guard() -> APIGuard:
-    return APIGuard()
+    return APIGuard(True)

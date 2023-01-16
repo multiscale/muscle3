@@ -2,9 +2,10 @@ import random
 import time
 
 import pytest
-from ymmsl import KeepsStateForNextUse, Operator, load, dump
+from ymmsl import Operator, load, dump
 
-from libmuscle import Instance, Message
+from libmuscle import (
+        Instance, Message, KEEPS_NO_STATE_FOR_NEXT_USE, USES_CHECKPOINT_API)
 from libmuscle.manager.run_dir import RunDir
 
 from .conftest import run_manager_with_actors, ls_snapshots
@@ -18,7 +19,7 @@ def cache_component(max_channels=2):
              Operator.O_I: [f'sub_out{i+1}' for i in range(max_channels)],
              Operator.S: [f'sub_in{i+1}' for i in range(max_channels)],
              Operator.O_F: [f'out{i+1}' for i in range(max_channels)]}
-    instance = Instance(ports)
+    instance = Instance(ports, USES_CHECKPOINT_API)
 
     cache_t = float('-inf')
     cache_data = []
@@ -57,7 +58,7 @@ def cache_component(max_channels=2):
 def echo_component(max_channels=2):
     ports = {Operator.F_INIT: [f'in{i+1}' for i in range(max_channels)],
              Operator.O_F: [f'out{i+1}' for i in range(max_channels)]}
-    instance = Instance(ports, keeps_state_for_next_use=KeepsStateForNextUse.NO)
+    instance = Instance(ports, KEEPS_NO_STATE_FOR_NEXT_USE)
 
     while instance.reuse_instance():
         for p_in, p_out in zip(ports[Operator.F_INIT], ports[Operator.O_F]):
@@ -69,7 +70,7 @@ def main_component():
     instance = Instance({
             Operator.O_I: ['state_out'],
             Operator.S: ['Ai', 'Bi', 'Ci', 'Di'],
-            Operator.O_F: ['o_f']})
+            Operator.O_F: ['o_f']}, USES_CHECKPOINT_API)
 
     while instance.reuse_instance():
         dt = instance.get_setting('dt', 'float')

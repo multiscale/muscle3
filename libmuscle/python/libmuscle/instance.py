@@ -1,13 +1,15 @@
 from copy import copy
+from enum import Flag, auto
 import logging
 import os
 import sys
 from typing import cast, Dict, List, Optional, Tuple, overload
 # TODO: import from typing module when dropping support for python 3.7
 from typing_extensions import Literal
+import warnings
 
 from ymmsl import (Identifier, Operator, SettingValue, Port, Reference,
-                   Settings, KeepsStateForNextUse)
+                   Settings)
 
 from libmuscle.api_guard import APIGuard
 from libmuscle.checkpoint_triggers import TriggerManager
@@ -29,6 +31,62 @@ _logger = logging.getLogger(__name__)
 _FInitCacheType = Dict[Tuple[str, Optional[int]], Message]
 
 
+class InstanceFlags(Flag):
+    """Enumeration of properties that an instance may have.
+
+    You may combine multiple flags using the bitwise OR operator `|`. For
+    example:
+
+    .. code-block:: python
+
+        from libmuscle import (
+                Instance, USES_CHECKPOINT_API, DONT_APPLY_OVERLAY)
+
+        ports = ...
+        flags = USES_CHECKPOINT_API | DONT_APPLY_OVERLAY
+        instance = Instance(ports, flags)
+    """
+
+    DONT_APPLY_OVERLAY = auto()
+    """Do not apply the received settings overlay during prereceive of F_INIT
+    messages. If you're going to use :meth:`Instance.receive_with_settings` on
+    your F_INIT ports, you need to set this flag when creating an
+    :class:`Instance`.
+
+    If you don't know what that means, do not specify this flag and everything
+    will be fine. If it turns out that you did need to specify the flag, MUSCLE3
+    will tell you about it in an error message and you can add it still.
+    """
+
+    USES_CHECKPOINT_API = auto()
+    """Indicate that this instance supports checkpointing.
+
+    You may not use any checkpointing API calls when this flag is not supplied.
+    """
+
+    KEEPS_NO_STATE_FOR_NEXT_USE = auto()
+    """Indicate this instance does not carry state between iterations of the
+    reuse loop.
+
+    This corresponds to :external:py:attr:`ymmsl.KeepsStateForNextUse.NO`.
+
+    If neither :attr:`KEEPS_NO_STATE_FOR_NEXT_USE` and
+    :attr:`STATE_NOT_REQUIRED_FOR_NEXT_USE` are supplied, this corresponds to
+    :external:py:attr:`ymmsl.KeepsStateForNextUse.REQUIRED`.
+    """
+
+    STATE_NOT_REQUIRED_FOR_NEXT_USE = auto()
+    """Indicate this instance carries state between iterations of the
+    reuse loop, however this state is not required for restarting.
+
+    This corresponds to :external:py:attr:`ymmsl.KeepsStateForNextUse.HELPFUL`.
+
+    If neither :attr:`KEEPS_NO_STATE_FOR_NEXT_USE` and
+    :attr:`STATE_NOT_REQUIRED_FOR_NEXT_USE` are supplied, this corresponds to
+    :external:py:attr:`ymmsl.KeepsStateForNextUse.REQUIRED`.
+    """
+
+
 class Instance:
     """Represents a component instance in a MUSCLE3 simulation.
 
@@ -37,21 +95,19 @@ class Instance:
     """
     def __init__(
             self, ports: Optional[Dict[Operator, List[str]]] = None,
-            keeps_state_for_next_use: KeepsStateForNextUse
-            = KeepsStateForNextUse.NECESSARY) -> None:
+            flags: InstanceFlags = InstanceFlags(0)) -> None:
         """Create an Instance.
 
         Args:
             ports: A list of port names for each
                 :external:py:class:`~ymmsl.Operator` of this component.
-            keeps_state_for_next_use: Indicate whether this instance carries
-                state between iterations of the reuse loop. See
-                :external:py:class:`ymmsl.KeepsStateForNextUse` for a
-                description of the options.
+            flags: Indicate properties for this instance. See
+                :py:class:`InstanceFlags` for a detailed description of possible
+                flags.
         """
         self.__is_shut_down = False
 
-        self._keeps_state = KeepsStateForNextUse(keeps_state_for_next_use)
+        self._flags = InstanceFlags(flags)
 
         # Note that these are accessed by Muscle3, but otherwise private.
         self._name, self._index = self.__make_full_name()
@@ -63,7 +119,8 @@ class Instance:
 
         self.__set_up_logging()
 
-        self._api_guard = APIGuard()
+        self._api_guard = APIGuard(
+                InstanceFlags.USES_CHECKPOINT_API in self._flags)
         """Checks that the user uses the API correctly."""
 
         self._profiler = Profiler(self._instance_name(), self.__manager)
@@ -130,7 +187,7 @@ class Instance:
         self._set_local_log_level()
         self._set_remote_log_level()
 
-    def reuse_instance(self, apply_overlay: bool = True) -> bool:
+    def reuse_instance(self, apply_overlay: Optional[bool] = None) -> bool:
         """Decide whether to run this instance again.
 
         In a multiscale simulation, instances get reused all the time.
@@ -152,16 +209,6 @@ class Instance:
         This method must be called at the beginning of the reuse loop,
         i.e. before the F_INIT operator, and its return value should
         decide whether to enter that loop again.
-
-        Args:
-            apply_overlay: Whether to apply the received settings
-                overlay or to save it. If you're going to use
-                :meth:`receive_with_settings` on your F_INIT ports,
-                set this to False. If you don't know what that means,
-                just call :meth:`reuse_instance()` without specifying this
-                and everything will be fine. If it turns out that you
-                did need to specify False, MUSCLE3 will tell you about
-                it in an error message and you can add it still.
 
         Raises:
             RuntimeError:
@@ -187,8 +234,9 @@ class Instance:
 
         do_implicit_checkpoint = (
                 not self._first_run and
-                not self._api_guard.uses_checkpointing() and
-                self._keeps_state is not KeepsStateForNextUse.NECESSARY)
+                InstanceFlags.USES_CHECKPOINT_API not in self._flags and
+                (InstanceFlags.STATE_NOT_REQUIRED_FOR_NEXT_USE in self._flags or
+                 InstanceFlags.KEEPS_NO_STATE_FOR_NEXT_USE in self._flags))
 
         if do_implicit_checkpoint:
             if self._trigger_manager.should_save_final_snapshot(
@@ -559,7 +607,7 @@ class Instance:
         self._save_snapshot(message, False)
         self._api_guard.save_snapshot_done()
 
-    def should_save_final_snapshot(self, *, apply_overlay: bool = True) -> bool:
+    def should_save_final_snapshot(self) -> bool:
         """Check if a snapshot should be saved at the end of the reuse loop.
 
         This method checks if a snapshot should be saved now.
@@ -593,7 +641,7 @@ class Instance:
         """
         self._api_guard.verify_should_save_final_snapshot()
 
-        self._do_reuse = self._decide_reuse_instance(apply_overlay)
+        self._do_reuse = self._decide_reuse_instance()
         result = self._trigger_manager.should_save_final_snapshot(
                 self._do_reuse, self.__f_init_max_timestamp)
 
@@ -710,7 +758,8 @@ class Instance:
                                                      self.__manager)
             logging.getLogger().addHandler(self._mmp_handler)
 
-    def _decide_reuse_instance(self, apply_overlay: bool) -> bool:
+    def _decide_reuse_instance(
+            self, apply_overlay: Optional[bool] = None) -> bool:
         """Decide whether and how to reuse the instance.
 
         This sets self._first_run, self._do_resume and self._do_init, and
@@ -793,10 +842,11 @@ class Instance:
                 if with_settings and msg.settings is None:
                     err_msg = ('If you use receive_with_settings()'
                                ' on an F_INIT port, then you have to'
-                               ' pass apply_overlay=False to reuse_instance() '
-                               ' and should_save_final_snapshot(),'
-                               ' if applicable, otherwise the settings will'
-                               ' already have been applied by MUSCLE.')
+                               ' set the flag'
+                               ' :attr:`InstanceFlag.DONT_APPLY_OVERLAY` when'
+                               ' creating the :class:`Instance`, otherwise the'
+                               ' settings will already have been applied by'
+                               ' MUSCLE.')
                     self.__shutdown(err_msg)
                     raise RuntimeError(err_msg)
             else:
@@ -914,7 +964,7 @@ class Instance:
                  for port in ports.get(Operator.F_INIT, [])])
         return f_init_connected or self._communicator.settings_in_connected()
 
-    def _pre_receive(self, apply_overlay: bool) -> bool:
+    def _pre_receive(self, apply_overlay: Optional[bool]) -> bool:
         """Pre-receives on all ports.
 
         This includes muscle_settings_in and all user-defined ports.
@@ -957,12 +1007,20 @@ class Instance:
         self._trigger_manager.harmonise_wall_time(saved_until)
         return True
 
-    def __pre_receive_f_init(self, apply_overlay: bool) -> None:
+    def __pre_receive_f_init(self, apply_overlay: Optional[bool]) -> None:
         """Receives on all ports connected to F_INIT.
 
         This receives all incoming messages on F_INIT and stores them
         in self._f_init_cache.
         """
+        if apply_overlay is not None:
+            warnings.warn(
+                    'Explicitly providing apply_overlay in reuse_instance is'
+                    ' deprecated. Use InstanceFlags.DONT_APPLY_OVERLAY when'
+                    ' creating the instance instead.', DeprecationWarning)
+        else:
+            apply_overlay = InstanceFlags.DONT_APPLY_OVERLAY not in self._flags
+
         def pre_receive(port_name: str, slot: Optional[int]) -> None:
             msg, saved_until = self._communicator.receive_message(
                     port_name, slot)

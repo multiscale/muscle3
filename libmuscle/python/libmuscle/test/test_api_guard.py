@@ -5,20 +5,17 @@ import pytest
 from libmuscle.api_guard import APIGuard
 
 
-def test_no_checkpointing_support(guard):
+def test_no_checkpointing_support():
+    guard = APIGuard(False)
     for _ in range(3):
         guard.verify_reuse_instance()
         guard.reuse_instance_done(True)
 
-    assert not guard.uses_checkpointing()
-
     guard.verify_reuse_instance()
     guard.reuse_instance_done(False)
 
-    assert not guard.uses_checkpointing()
 
-
-def test_final_snapshot_only(guard):
+def test_final_snapshot_only(guard: APIGuard):
     for i in range(4):
         guard.verify_reuse_instance()
         guard.reuse_instance_done(True)
@@ -48,7 +45,7 @@ def test_final_snapshot_only(guard):
     guard.reuse_instance_done(False)
 
 
-def test_full_checkpointing(guard):
+def test_full_checkpointing(guard: APIGuard):
     for i in range(4):
         guard.verify_reuse_instance()
         guard.reuse_instance_done(True)
@@ -133,20 +130,19 @@ def test_missing_step(guard, fun):
     check_all_raise_except(guard, {fun})
 
 
-def test_missing_resuming(guard):
+def test_missing_resuming(guard: APIGuard):
     run_until_before(guard, APIGuard.verify_resuming)
-    check_all_raise_except(guard, {
-        APIGuard.verify_resuming, APIGuard.verify_reuse_instance})
+    check_all_raise_except(guard, {APIGuard.verify_resuming})
 
 
-def test_missing_should_save_final(guard):
+def test_missing_should_save_final(guard: APIGuard):
     run_until_before(guard, APIGuard.verify_should_save_final_snapshot)
     check_all_raise_except(guard, {
         APIGuard.verify_should_save_snapshot,
         APIGuard.verify_should_save_final_snapshot})
 
 
-def test_double_should_save(guard):
+def test_double_should_save(guard: APIGuard):
     run_until_before(guard, APIGuard.verify_should_save_snapshot)
     guard.verify_should_save_snapshot()
     guard.should_save_snapshot_done(True)

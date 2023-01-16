@@ -16,10 +16,14 @@ _muscle3_packages = [
         p for p in find_packages() + find_packages('libmuscle/python')
         if p != 'integration_test']
 
+_long_desc = (_here / 'README.rst').read_text()
+
 setup(
     name='muscle3',
     version=_version,
     description='Version 3 of the MUltiScale Coupling Library and Environment',
+    long_description=_long_desc,
+    long_description_content_type='text/x-rst',
     author='Lourens Veen',
     author_email='l.veen@esciencecenter.nl',
     url='https://github.com/multiscale/muscle3',

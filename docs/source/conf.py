@@ -69,7 +69,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'muscle3'
-copyright = '2018-2022 University of Amsterdam and Netherlands eScience Center, 2022 The ITER Organization'
+copyright = '2018-2022 University of Amsterdam and Netherlands eScience Center, 2023 Netherlands eScience Center, and 2022-2023 The ITER Organization'
 author = 'Lourens Veen'
 
 # The version info for the project you're documenting, acts as replacement for

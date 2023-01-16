@@ -13,12 +13,15 @@ def snapshot() -> Snapshot:
     is_final = True
     message = Message(1.2, data='test_data')
     snapshot = MsgPackSnapshot(
-            triggers, wallclock_time, port_message_counts, is_final, message)
+            triggers, wallclock_time, port_message_counts, is_final, message,
+            Settings({'test': 1}))
     assert snapshot.triggers == triggers
     assert snapshot.wallclock_time == wallclock_time
     assert snapshot.port_message_counts == port_message_counts
     assert snapshot.is_final_snapshot == is_final
     assert snapshot.message == message
+    assert snapshot.settings_overlay.keys() == {'test'}
+    assert snapshot.settings_overlay['test'] == 1
     return snapshot
 
 
@@ -53,7 +56,7 @@ def test_snapshot_metadata(snapshot: Snapshot) -> None:
 
 def test_message_with_settings() -> None:
     message = Message(1.0, 2.0, 'test_data', Settings({'setting': True}))
-    snapshot = MsgPackSnapshot([], 0, {}, False, message)
+    snapshot = MsgPackSnapshot([], 0, {}, False, message, Settings())
     assert snapshot.message.settings.get('setting') is True
 
     binary_snapshot = snapshot.to_bytes()
@@ -65,7 +68,7 @@ def test_message_with_settings() -> None:
 
 def test_implicit_snapshot() -> None:
     message = None
-    snapshot = MsgPackSnapshot([], 0, {}, True, message)
+    snapshot = MsgPackSnapshot([], 0, {}, True, message, Settings())
     assert snapshot.message is None
 
     binary_snapshot = snapshot.to_bytes()

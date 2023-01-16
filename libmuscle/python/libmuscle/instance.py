@@ -119,6 +119,10 @@ class Instance:
         resume_snapshot, snapshot_dir = checkpoint_info[2:4]
         saved_at = self._snapshot_manager.prepare_resume(
                 resume_snapshot, snapshot_dir)
+        # Resume settings overlay
+        overlay = self._snapshot_manager._resume_overlay
+        if overlay is not None:
+            self._settings_manager.overlay = overlay
 
         if saved_at is not None:
             self._trigger_manager.update_checkpoints(saved_at)
@@ -446,18 +450,6 @@ class Instance:
         """
         return self.__receive_message(port_name, slot, default, True)
 
-    def snapshots_enabled(self) -> bool:
-        """Check if the current workflow has snapshots enabled.
-
-        When snapshots are not enabled, all calls to
-        :meth:`should_save_snapshot` and :meth:`should_save_final_snapshot` will
-        return False.
-
-        Returns:
-            True iff checkpoint rules are defined in the workflow yMMSL.
-        """
-        return self._trigger_manager.snapshots_enabled()
-
     def resuming(self) -> bool:
         """Check if this instance is resuming from a snapshot.
 
@@ -779,7 +771,7 @@ class Instance:
         walltime = self._trigger_manager.elapsed_walltime()
         timestamp = self._snapshot_manager.save_snapshot(
                 message, final, triggers, walltime,
-                f_init_max_timestamp)
+                f_init_max_timestamp, self._settings_manager.overlay)
         self._trigger_manager.update_checkpoints(timestamp)
 
     def __receive_message(

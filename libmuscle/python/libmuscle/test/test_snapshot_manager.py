@@ -1,7 +1,7 @@
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from ymmsl import Reference
+from ymmsl import Reference, Settings
 
 from libmuscle.communicator import Message
 from libmuscle.snapshot import SnapshotMetadata
@@ -33,7 +33,8 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
     assert not snapshot_manager.resuming_from_final()
 
     snapshot_manager.save_snapshot(
-            Message(0.2, data='test data'), False, ['test'], 13.0)
+            Message(0.2, None, 'test data'), False, ['test'], 13.0, None,
+            Settings())
 
     communicator.get_message_counts.assert_called_with()
     manager.submit_snapshot_metadata.assert_called()
@@ -63,7 +64,8 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
     assert msg.data == 'test data'
 
     snapshot_manager2.save_snapshot(
-            Message(0.6, data='test data2'), True, ['test'], 42.2, 1.2)
+            Message(0.6, None, 'test data2'), True, ['test'], 42.2, 1.2,
+            Settings())
 
     instance, metadata = manager.submit_snapshot_metadata.call_args[0]
     assert instance == instance_id
@@ -99,7 +101,8 @@ def test_save_load_implicit_snapshot(tmp_path: Path) -> None:
     assert not snapshot_manager.resuming_from_intermediate()
     assert not snapshot_manager.resuming_from_final()
     # save implicit snapshot
-    snapshot_manager.save_snapshot(None, True, ['implicit'], 1.0, 1.5)
+    snapshot_manager.save_snapshot(
+            None, True, ['implicit'], 1.0, 1.5, Settings())
 
     manager.submit_snapshot_metadata.assert_called_once()
     instance, metadata = manager.submit_snapshot_metadata.call_args[0]
@@ -117,5 +120,6 @@ def test_save_load_implicit_snapshot(tmp_path: Path) -> None:
 
     assert not snapshot_manager2.resuming_from_intermediate()
     assert not snapshot_manager2.resuming_from_final()
-    snapshot_manager2.save_snapshot(None, True, ['implicit'], 12.3, 2.5)
+    snapshot_manager2.save_snapshot(
+            None, True, ['implicit'], 12.3, 2.5, Settings())
     manager.submit_snapshot_metadata.assert_called_once()

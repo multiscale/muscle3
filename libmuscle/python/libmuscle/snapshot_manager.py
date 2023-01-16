@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 from typing import cast, List, Optional
 
-from ymmsl import Reference, Operator
+from ymmsl import Reference, Operator, Settings
 
 from libmuscle.communicator import Communicator, Message
 from libmuscle.mmp_client import MMPClient
@@ -44,6 +44,7 @@ class SnapshotManager:
         self._manager = manager
 
         self._resume_from_snapshot = None   # type: Optional[Snapshot]
+        self._resume_overlay = Settings()
         self._next_snapshot_num = 1
 
     def prepare_resume(
@@ -73,6 +74,7 @@ class SnapshotManager:
                 # snapshot.message is None for implicit snapshots
                 self._resume_from_snapshot = snapshot
                 result = snapshot.message.timestamp
+            self._resume_overlay = snapshot.settings_overlay
 
             self._communicator.restore_message_counts(
                 snapshot.port_message_counts)
@@ -112,7 +114,8 @@ class SnapshotManager:
     def save_snapshot(
             self, msg: Optional[Message], final: bool,
             triggers: List[str], wallclock_time: float,
-            f_init_max_timestamp: Optional[float] = None,
+            f_init_max_timestamp: Optional[float],
+            settings_overlay: Settings
             ) -> float:
         """Save a (final) snapshot.
 
@@ -140,7 +143,8 @@ class SnapshotManager:
                 port_message_counts[port_name] = new_counts
 
         snapshot = MsgPackSnapshot(
-            triggers, wallclock_time, port_message_counts, final, msg)
+                triggers, wallclock_time, port_message_counts, final, msg,
+                settings_overlay)
 
         path = self.__store_snapshot(snapshot)
         metadata = SnapshotMetadata.from_snapshot(snapshot, str(path))

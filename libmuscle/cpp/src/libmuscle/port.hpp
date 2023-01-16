@@ -11,6 +11,10 @@ namespace libmuscle { namespace impl {
  * Ports can be used to send or receive messages. They have a name and an
  * operator, as well as a set of dimensions that determines the valid slot
  * indices for sending or receiving on this port.
+ *
+ * Ports keep track of the amount of messages sent or received on the port.
+ * However, the actual incrementing and validation is done in
+ * Communicator.
  */
 class Port : public ::ymmsl::Port {
     public:
@@ -104,11 +108,50 @@ class Port : public ::ymmsl::Port {
          */
         void set_closed(int slot);
 
+        /** Restore message counts from a snapshot.
+         *
+         * @param num_messages message counts of the snapshot
+         */
+        void restore_message_counts(const std::vector<int> &num_messages);
+
+        /** Get the message counts for all slots in this port
+         */
+        const std::vector<int> & get_message_counts() const;
+
+        /** Increment amount of messages sent or received.
+         *
+         * @param slot The slot that is sent/received on
+         */
+        void increment_num_messages(Optional<int> slot = {});
+
+        /** Get the amount of messages sent or received
+         *
+         * @param slot The slot that is sent/received on
+         */
+        int get_num_messages(Optional<int> slot = {}) const;
+
+        /** True when this port has resumed.
+         *
+         * After resumption, each port/slot may discard exactly one message.
+         * is_resuming keeps track of this state.
+         *
+         * @param slot The slot that is sent/received on
+         */
+        bool is_resuming(Optional<int> slot = {}) const;
+
+        /** Mark that this port has resumed and may no longer discard messages.
+         *
+         * @param slot The slot that is sent/received on
+         */
+        void set_resumed(Optional<int> slot = {});
+
     private:
         bool is_connected_;
         int length_;
         bool is_resizable_;
         std::vector<bool> is_open_;
+        std::vector<int> num_messages_;
+        std::vector<bool> is_resuming_;
 };
 
 } }

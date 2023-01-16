@@ -35,7 +35,7 @@ def reaction() -> None:
             t_cur += dt
 
         # O_F
-        instance.send('final_state', Message(t_cur, None, Grid(U, ['x'])))
+        instance.send('final_state', Message(t_cur, data=Grid(U, ['x'])))
 
 
 def laplacian(Z: np.array, dx: float) -> np.array:
@@ -105,7 +105,7 @@ def diffusion() -> None:
             t_cur += dt
 
         # O_F
-        instance.send('final_state_out', Message(t_cur, None, Grid(U, ['x'])))
+        instance.send('final_state_out', Message(t_cur, data=Grid(U, ['x'])))
 
 
 def load_balancer() -> None:
@@ -200,7 +200,7 @@ def qmc_driver() -> None:
             uq_parameters = Settings({
                 'd': ds[sample],
                 'k': ks[sample]})
-            msg = Message(0.0, None, uq_parameters)
+            msg = Message(0.0, data=uq_parameters)
             instance.send('parameters_out', msg, sample)
 
         # S

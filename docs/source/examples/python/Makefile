@@ -11,3 +11,4 @@ test:
 .PHONY: clean
 clean:
 	$(MAKE) -C build clean
+	rm -f *.log

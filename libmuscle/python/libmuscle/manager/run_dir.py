@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 from ymmsl import Reference
 
@@ -8,18 +9,23 @@ class RunDir:
 
     The directory is laid out as follows:
 
-    <run_dir>/
-        input/
-        1_<name>.ymmsl
-        2_<name>.ymmsl
-        muscle_manager.log
-        muscle_stats.sqlite
-        instances/
-            <instance_name[i]>/
-                run_script.sh
-                <instance_name[i]>.out
-                <instance_name[i]>.err
-                work_dir/
+    .. code-block::
+
+        <run_dir>/
+            input/
+            1_<name>.ymmsl
+            2_<name>.ymmsl
+            muscle_manager.log
+            muscle_stats.sqlite
+            instances/
+                <instance_name[i]>/
+                    run_script.sh
+                    <instance_name[i]>.out
+                    <instance_name[i]>.err
+                    work_dir/
+                    snapshots/
+            snapshots/
+
     """
     def __init__(self, run_dir: Path) -> None:
         """Create a RunDir managing the given directory.
@@ -57,3 +63,20 @@ class RunDir:
         make it.
         """
         return self.path / 'instances' / str(name)
+
+    def snapshot_dir(self, name: Optional[Reference] = None) -> Path:
+        """Return the snapshot directory for the workflow or for an instance.
+
+        Args:
+            name: Name of the instance. May be None to get the workflow snapshot
+                directory.
+
+        Returns:
+            The path to the snapshot directory
+        """
+        if name is None:
+            path = self.path / 'snapshots'
+        else:
+            path = self.instance_dir(name) / 'snapshots'
+        path.mkdir(parents=True, exist_ok=True)
+        return path

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 import sys
 from typing import Optional, Sequence
@@ -68,12 +68,15 @@ def manage_simulation(
     else:
         run_dir_path = Path(run_dir).resolve()
 
+    run_dir_obj = RunDir(run_dir_path)
     if start_all:
-        run_dir_obj = RunDir(run_dir_path)
         manager = Manager(configuration, run_dir_obj, log_level)
         manager.start_instances()
     else:
-        manager = Manager(configuration, None, log_level)
+        if run_dir is None:
+            manager = Manager(configuration, None, log_level)
+        else:
+            manager = Manager(configuration, run_dir_obj, log_level)
         print(manager.get_server_location())
 
     success = manager.wait()

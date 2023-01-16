@@ -34,7 +34,7 @@ def reaction() -> None:
             t_cur += dt
 
         # O_F
-        instance.send('final_state', Message(t_cur, None, Grid(U, ['x'])))
+        instance.send('final_state', Message(t_cur, data=Grid(U, ['x'])))
 
 
 def laplacian(Z: np.array, dx: float) -> np.array:

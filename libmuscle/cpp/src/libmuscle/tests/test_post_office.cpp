@@ -36,7 +36,7 @@ std::unique_ptr<DataConstRef> make_message() {
             "test_sender.port", "test_receiver.port",
             Optional<int>(),
             0.0, 1.0,
-            DataConstRef(), DataConstRef());
+            DataConstRef(), 0, 5.0, DataConstRef());
     return std::make_unique<DataConstRef>(msg.encoded());
 }
 

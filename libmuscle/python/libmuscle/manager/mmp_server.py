@@ -1,20 +1,26 @@
 import errno
 import logging
-from typing import Any, cast, Generator, List
+import time
+from typing import Any, Dict, cast, List, Optional
 
 import msgpack
-from ymmsl import Conduit, Identifier, Operator, Port, Reference, Settings
+from ymmsl import (
+        Conduit, Identifier, Operator, Port, Reference, PartialConfiguration,
+        Checkpoints)
 
+import libmuscle
 from libmuscle.logging import LogLevel
 from libmuscle.manager.instance_registry import (
         AlreadyRegistered, InstanceRegistry)
 from libmuscle.manager.logger import Logger
+from libmuscle.manager.run_dir import RunDir
+from libmuscle.manager.snapshot_registry import SnapshotRegistry
 from libmuscle.manager.topology_store import TopologyStore
 from libmuscle.mcp.protocol import RequestType, ResponseType
 from libmuscle.mcp.tcp_transport_server import TcpTransportServer
 from libmuscle.mcp.transport_server import RequestHandler
+from libmuscle.snapshot import SnapshotMetadata
 from libmuscle.timestamp import Timestamp
-from libmuscle.util import generate_indices, instance_indices
 
 
 _logger = logging.getLogger(__name__)
@@ -35,14 +41,26 @@ def encode_conduit(conduit: Conduit) -> List[str]:
     return [str(conduit.sender), str(conduit.receiver)]
 
 
+def encode_checkpoints(checkpoints: Checkpoints) -> Dict[str, Any]:
+    """Convert a Checkpoins to a MsgPack-compatible value."""
+    return {
+        "at_end": checkpoints.at_end,
+        "wallclock_time": [vars(rule) for rule in checkpoints.wallclock_time],
+        "simulation_time": [vars(rule) for rule in checkpoints.simulation_time]
+    }
+
+
 class MMPRequestHandler(RequestHandler):
     """Handles Manager requests."""
     def __init__(
             self,
             logger: Logger,
-            settings: Settings,
+            configuration: PartialConfiguration,
             instance_registry: InstanceRegistry,
-            topology_store: TopologyStore):
+            topology_store: TopologyStore,
+            snapshot_registry: SnapshotRegistry,
+            run_dir: Optional[RunDir]
+            ) -> None:
         """Create an MMPRequestHandler.
 
         Args:
@@ -52,9 +70,12 @@ class MMPRequestHandler(RequestHandler):
             topology_store: Keeps track of how to connect things.
         """
         self._logger = logger
-        self._settings = settings
+        self._configuration = configuration
         self._instance_registry = instance_registry
         self._topology_store = topology_store
+        self._snapshot_registry = snapshot_registry
+        self._run_dir = run_dir
+        self._reference_time = time.monotonic()
 
     def handle_request(self, request: bytes) -> bytes:
         """Handles a manager request.
@@ -80,17 +101,23 @@ class MMPRequestHandler(RequestHandler):
             response = self._submit_log_message(*req_args)
         elif req_type == RequestType.SUBMIT_PROFILE_EVENTS.value:
             response = self._submit_profile_events(*req_args)
+        elif req_type == RequestType.SUBMIT_SNAPSHOT.value:
+            response = self._submit_snapshot(*req_args)
+        elif req_type == RequestType.GET_CHECKPOINT_INFO.value:
+            response = self._get_checkpoint_info(*req_args)
 
         return cast(bytes, msgpack.packb(response, use_bin_type=True))
 
     def _register_instance(
             self, instance_id: str, locations: List[str],
-            ports: List[List[str]]) -> Any:
+            ports: List[List[str]], version: str = '') -> Any:
         """Handle a register instance request.
 
         Args:
             instance_id: ID of the instance to register
             locations: Locations where it can be reached
+            ports: Ports of this instance
+            version: Version of libmuscle that this instance uses
 
         Returns:
             A list containing the following values:
@@ -99,10 +126,18 @@ class MMPRequestHandler(RequestHandler):
             error_msg (str): An error message, only present if status
                 equals ERROR
         """
+        if version != libmuscle.__version__:
+            return [
+                    ResponseType.ERROR.value,
+                    f'Instance libmuscle version ({version}) does not match'
+                    f' manager libmuscle version ({libmuscle.__version__}).'
+                    ' Please ensure that the instance and the manager use the'
+                    ' same version of libmuscle.']
+
         port_objs = [decode_port(p) for p in ports]
+        instance = Reference(instance_id)
         try:
-            self._instance_registry.add(
-                Reference(instance_id), locations, port_objs)
+            self._instance_registry.add(instance, locations, port_objs)
 
             _logger.info(f'Registered instance {instance_id}')
             return [ResponseType.SUCCESS.value]
@@ -153,9 +188,10 @@ class MMPRequestHandler(RequestHandler):
 
         # generate instances
         try:
+            peers = self._topology_store.get_peer_instances(instance)
             instance_locations = {
                     str(peer): self._instance_registry.get_locations(peer)
-                    for peer in self._generate_peer_instances(instance)}
+                    for peer in peers}
         except KeyError as e:
             return [
                     ResponseType.PENDING.value,
@@ -202,7 +238,7 @@ class MMPRequestHandler(RequestHandler):
         """
         return [
                 ResponseType.SUCCESS.value,
-                self._settings.as_ordered_dict()]
+                self._configuration.settings.as_ordered_dict()]
 
     def _submit_log_message(
             self, instance_id: str, timestamp: float, level: int, text: str
@@ -236,30 +272,51 @@ class MMPRequestHandler(RequestHandler):
         """
         return [ResponseType.SUCCESS.value]
 
-    def _generate_peer_instances(
-            self, instance: Reference) -> Generator[Reference, None, None]:
-        """Generates the names of all peer instances of an instance.
+    def _submit_snapshot(
+            self, instance_id: str, snapshot: Dict[str, Any]) -> Any:
+        """Handle a submit snapshot request.
+
+        Returns:
+            A list containing the following values on success:
+
+            status (ResponseType): SUCCESS
+        """
+        snapshot_obj = SnapshotMetadata(**snapshot)
+        instance = Reference(instance_id)
+        self._snapshot_registry.register_snapshot(instance, snapshot_obj)
+        return [ResponseType.SUCCESS.value]
+
+    def _get_checkpoint_info(self, instance_id: str) -> Any:
+        """Get checkpoint info for an instance
 
         Args:
-            instance: The instance whose peers to generate.
+            instance: The instance whose checkpoint info to get
 
-        Yields:
-            All peer instance identifiers.
+        Returns:
+            A list containing the following values on success:
+
+            status (ResponseType): SUCCESS
+            wallclock_reference_time (float): Unix timestamp (in UTC) indicating
+                wallclock time of the start of the workflow.
+            checkpoints (dict): Dictionary encoding a ymmsl.Checkpoints object.
+            resume_path (Optional[str]): Checkpoint filename to resume from.
+            snapshot_directory (Optional[str]): Directory to store instance
+                snapshots.
         """
-        component = instance.without_trailing_ints()
-        indices = instance_indices(instance)
-        dims = self._topology_store.kernel_dimensions[component]
-        all_peer_dims = self._topology_store.get_peer_dimensions(component)
-        for peer, peer_dims in all_peer_dims.items():
-            base = peer
-            for i in range(min(len(dims), len(peer_dims))):
-                base += indices[i]
+        instance = Reference(instance_id)
+        resume = None
+        if instance in self._configuration.resume:
+            resume = str(self._configuration.resume[instance])
 
-            if dims >= peer_dims:
-                yield base
-            else:
-                for peer_indices in generate_indices(peer_dims[len(dims):]):
-                    yield base + peer_indices
+        snapshot_directory = None
+        if self._run_dir is not None:
+            snapshot_directory = str(self._run_dir.snapshot_dir(instance))
+
+        return [ResponseType.SUCCESS.value,
+                time.monotonic() - self._reference_time,
+                encode_checkpoints(self._configuration.checkpoints),
+                resume,
+                snapshot_directory]
 
 
 class MMPServer:
@@ -272,9 +329,11 @@ class MMPServer:
     def __init__(
             self,
             logger: Logger,
-            settings: Settings,
+            configuration: PartialConfiguration,
             instance_registry: InstanceRegistry,
-            topology_store: TopologyStore
+            topology_store: TopologyStore,
+            snapshot_registry: SnapshotRegistry,
+            run_dir: Optional[RunDir]
             ) -> None:
         """Create an MMPServer.
 
@@ -285,13 +344,15 @@ class MMPServer:
 
         Args:
             logger: Logger to send log messages to
-            settings: Settings component to get settings from
+            configuration: Configuration component to get settings, checkpoints
+                and resumes from
             instance_registry: To register instances with and get
                 peer locations from
             topology_store: To get peers and conduits from
         """
         self._handler = MMPRequestHandler(
-                logger, settings, instance_registry, topology_store)
+                logger, configuration, instance_registry, topology_store,
+                snapshot_registry, run_dir)
         try:
             self._server = TcpTransportServer(self._handler, 9000)
         except OSError as e:

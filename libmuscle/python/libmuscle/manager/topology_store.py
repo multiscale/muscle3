@@ -1,4 +1,5 @@
 from typing import Dict, List
+from libmuscle.util import generate_indices, instance_indices
 
 from ymmsl import Conduit, PartialConfiguration, Model, Reference
 
@@ -77,3 +78,30 @@ class TopologyStore:
                 snd = conduit.sending_component()
                 ret[snd] = self.kernel_dimensions[snd]
         return ret
+
+    def get_peer_instances(self, instance: Reference) -> List[Reference]:
+        """Generates the names of all peer instances of an instance.
+
+        Args:
+            instance: The instance whose peers to generate.
+
+        Returns:
+            All peer instance identifiers.
+        """
+        component = instance.without_trailing_ints()
+        indices = instance_indices(instance)
+        dims = self.kernel_dimensions[component]
+        all_peer_dims = self.get_peer_dimensions(component)
+
+        peers = []
+        for peer, peer_dims in all_peer_dims.items():
+            base = peer
+            for i in range(min(len(dims), len(peer_dims))):
+                base += indices[i]
+
+            if dims >= peer_dims:
+                peers.append(base)
+            else:
+                for peer_indices in generate_indices(peer_dims[len(dims):]):
+                    peers.append(base + peer_indices)
+        return peers

@@ -32,8 +32,8 @@ struct MPPMessage {
             ::ymmsl::Reference const & sender, ::ymmsl::Reference const & receiver,
             ::libmuscle::impl::Optional<int> port_length,
             double timestamp, ::libmuscle::impl::Optional<double> next_timestamp,
-            DataConstRef const & settings_overlay,
-            DataConstRef const & data);
+            DataConstRef const & settings_overlay, int message_number,
+            double saved_until, DataConstRef const & data);
 
     /** Create an MCP Message from an encoded buffer.
      *
@@ -53,6 +53,8 @@ struct MPPMessage {
     double timestamp;
     ::libmuscle::impl::Optional<double> next_timestamp;
     DataConstRef settings_overlay;
+    int message_number;
+    double saved_until;
     DataConstRef data;
 };
 

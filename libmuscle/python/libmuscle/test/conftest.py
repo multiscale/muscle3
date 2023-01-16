@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from ymmsl import Settings
 
+from libmuscle.api_guard import APIGuard
 from libmuscle.communicator import Message
 from libmuscle.mmp_client import MMPClient
 
@@ -21,3 +22,8 @@ def message() -> Message:
 @pytest.fixture
 def message2() -> Message:
     return Message(0.0, None, {'test': 17}, Settings())
+
+
+@pytest.fixture
+def guard() -> APIGuard:
+    return APIGuard(True)

@@ -17,6 +17,12 @@ namespace libmuscle { namespace impl {
 // out on the wire. See libmuscle::mcp::Message for that.
 class Message {
     public:
+        /** Create an empty Message.
+         *
+         * @param timestamp Simulation time for which this data is valid.
+         */
+        explicit Message(double timestamp);
+
         /** Create a Message.
          *
          * @param timestamp Simulation time for which this data is valid.

@@ -3,7 +3,7 @@ from collections import OrderedDict
 from ymmsl import (Component, Conduit, Configuration, Model, Operator,
                    Settings)
 
-from libmuscle import Instance, Message
+from libmuscle import Instance, Message, DONT_APPLY_OVERLAY
 from libmuscle.runner import run_simulation
 
 
@@ -22,8 +22,7 @@ def qmc():
         length = instance.get_port_length('settings_out')
         assert length == 10
         for slot in range(length):
-            instance.send('settings_out',
-                          Message(0.0, None, settings0), slot)
+            instance.send('settings_out', Message(0.0, data=settings0), slot)
 
 
 def macro():
@@ -49,9 +48,10 @@ def explicit_relay():
     having MUSCLE handle them. This just passes all information on.
     """
     instance = Instance({
-            Operator.F_INIT: ['in[]'], Operator.O_F: ['out[]']})
+            Operator.F_INIT: ['in[]'], Operator.O_F: ['out[]']},
+            DONT_APPLY_OVERLAY)
 
-    while instance.reuse_instance(False):
+    while instance.reuse_instance():
         # f_init
         assert instance.get_setting('test2', 'float') == 13.3
         assert instance.get_port_length('in') == instance.get_port_length(
@@ -87,7 +87,7 @@ def micro():
         #     instance.receive_with_settings('in')
 
         # o_f
-        instance.send('out', Message(0.1, None, 'testing back'))
+        instance.send('out', Message(0.1, data='testing back'))
 
 
 def test_settings_overlays(log_file_in_tmpdir):

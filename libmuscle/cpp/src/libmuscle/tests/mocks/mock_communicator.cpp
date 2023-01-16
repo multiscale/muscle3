@@ -107,7 +107,7 @@ void MockCommunicator::reset() {
     next_received_message.clear();
     list_ports_return_value.clear();
     last_sent_port = "";
-    last_sent_message = Message(0.0, Data());
+    last_sent_message = Message(0.0);
     last_sent_slot = {};
 }
 
@@ -126,7 +126,7 @@ PortsDescription MockCommunicator::list_ports_return_value;
 
 std::string MockCommunicator::last_sent_port;
 
-Message MockCommunicator::last_sent_message(0.0, Data());
+Message MockCommunicator::last_sent_message(0.0);
 
 Optional<int> MockCommunicator::last_sent_slot;
 

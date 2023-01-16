@@ -38,14 +38,13 @@ Cham.  `<https://doi.org/10.1007/978-3-030-50433-5_33>`_
    fortran
    mpi
    uncertainty_quantification
+   checkpointing
    python_api
    cpp_api
    fortran_api
    command_line_tools
 
-   contributing
-   devtools
-   releasing
+   for_developers
 
 
 Indices and tables

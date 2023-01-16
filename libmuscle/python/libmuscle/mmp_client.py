@@ -9,6 +9,7 @@ from ymmsl import (
         Conduit, Operator, Port, Reference, Settings, Checkpoints,
         CheckpointRule, CheckpointRangeRule, CheckpointAtRule)
 
+import libmuscle
 from libmuscle.mcp.protocol import RequestType, ResponseType
 from libmuscle.mcp.tcp_transport_client import TcpTransportClient
 from libmuscle.profiling import ProfileEvent
@@ -192,7 +193,8 @@ class MMPClient():
         request = [
                 RequestType.REGISTER_INSTANCE.value,
                 str(name), locations,
-                [encode_port(p) for p in ports]]
+                [encode_port(p) for p in ports],
+                libmuscle.__version__]
         response = self._call_manager(request)
         if response[0] == ResponseType.ERROR.value:
             raise RuntimeError(

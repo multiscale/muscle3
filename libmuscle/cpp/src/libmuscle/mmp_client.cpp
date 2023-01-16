@@ -3,6 +3,7 @@
 #include "libmuscle/data.hpp"
 #include "libmuscle/mcp/data_pack.hpp"
 #include "libmuscle/mcp/protocol.hpp"
+#include "libmuscle/version.h"
 
 #include <chrono>
 #include <iterator>
@@ -101,7 +102,8 @@ void MMPClient::register_instance(
 
     auto request = Data::list(
             static_cast<int>(RequestType::register_instance),
-            std::string(name), encoded_locs, encoded_ports);
+            std::string(name), encoded_locs, encoded_ports,
+            MUSCLE3_VERSION);
 
     auto response = call_manager_(request);
 

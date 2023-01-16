@@ -8,6 +8,7 @@ from ymmsl import (
         Conduit, Identifier, Operator, Port, Reference, PartialConfiguration,
         Checkpoints)
 
+import libmuscle
 from libmuscle.logging import LogLevel
 from libmuscle.manager.instance_registry import (
         AlreadyRegistered, InstanceRegistry)
@@ -109,12 +110,14 @@ class MMPRequestHandler(RequestHandler):
 
     def _register_instance(
             self, instance_id: str, locations: List[str],
-            ports: List[List[str]]) -> Any:
+            ports: List[List[str]], version: str = '') -> Any:
         """Handle a register instance request.
 
         Args:
             instance_id: ID of the instance to register
             locations: Locations where it can be reached
+            ports: Ports of this instance
+            version: Version of libmuscle that this instance uses
 
         Returns:
             A list containing the following values:
@@ -123,6 +126,14 @@ class MMPRequestHandler(RequestHandler):
             error_msg (str): An error message, only present if status
                 equals ERROR
         """
+        if version != libmuscle.__version__:
+            return [
+                    ResponseType.ERROR.value,
+                    f'Instance libmuscle version ({version}) does not match'
+                    f' manager libmuscle version ({libmuscle.__version__}).'
+                    ' Please ensure that the instance and the manager use the'
+                    ' same version of libmuscle.']
+
         port_objs = [decode_port(p) for p in ports]
         instance = Reference(instance_id)
         try:

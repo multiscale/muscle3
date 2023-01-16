@@ -45,6 +45,7 @@ public_headers := libmuscle/data.hpp libmuscle/data.tpp libmuscle/instance.hpp
 public_headers += libmuscle/libmuscle.hpp libmuscle/mcp/data_pack.hpp
 public_headers += libmuscle/mcp/data_pack.tpp libmuscle/message.hpp
 public_headers += libmuscle/ports_description.hpp libmuscle/util.hpp libmuscle/util.tpp
+public_headers += libmuscle/version.h
 installed_headers := $(public_headers:%=$(PREFIX)/include/%)
 
 pkg_config_files := libmuscle.pc
@@ -76,7 +77,7 @@ test: tests
 
 .PHONY: clean
 clean:
-	rm -f libmuscle.a libmuscle.so libmuscle_d.a libmuscle_d.so version.h
+	rm -f libmuscle.a libmuscle.so libmuscle_d.a libmuscle_d.so $(srcdir)/version.h
 	rm -f libmuscle_mpi.a libmuscle_mpi.so libmuscle_mpi_d.a libmuscle_mpi_d.so
 	rm -f libmuscle.pc libmuscle_mpi.pc
 	rm -rf $(objdir)
@@ -116,11 +117,11 @@ LDFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_
 endif
 
 
-$(objdir)/%.d: %.cpp
+$(objdir)/%.d: %.cpp $(srcdir)/version.h
 	@mkdir -p $(@D)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -E -MM -MT $(@:.d=.o) $< -o $@
 
-$(objdir)/%.o: %.cpp
+$(objdir)/%.o: %.cpp $(srcdir)/version.h
 	@mkdir -p $(@D)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
@@ -139,28 +140,29 @@ $(objdir)/%.dlo: %.cpp $(objdir)/%.o
 	@mkdir -p $(@D)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -fPIC -c $< -o $@
 
-$(objdir)/%.mo: %.cpp
+$(objdir)/%.mo: %.cpp $(srcdir)/version.h
 	@mkdir -p $(@D)
 	$(MPICXX) $(CPPFLAGS) $(CXXFLAGS) $(MPIFLAGS) -c $< -o $@
 
-$(objdir)/%.mlo: %.cpp
+$(objdir)/%.mlo: %.cpp $(srcdir)/version.h
 	@mkdir -p $(@D)
 	$(MPICXX) $(CPPFLAGS) $(CXXFLAGS) $(MPIFLAGS) -fPIC -c $< -o $@
 
-$(objdir)/%.mdo: %.cpp
+$(objdir)/%.mdo: %.cpp $(srcdir)/version.h
 	@mkdir -p $(@D)
 	$(MPICXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) $(MPIFLAGS) -c $< -o $@
 
-$(objdir)/%.mdlo: %.cpp
+$(objdir)/%.mdlo: %.cpp $(srcdir)/version.h
 	@mkdir -p $(@D)
 	$(MPICXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) $(MPIFLAGS) -fPIC -c $< -o $@
 
 
-version.h: version.h.in
+$(srcdir)/version.h: version.h.in
 	cp $< $@
 	sed -i -e 's/@PROJECT_VERSION_MAJOR@/$(major_version)/' $@
 	sed -i -e 's/@PROJECT_VERSION_MINOR@/$(minor_version)/' $@
 	sed -i -e 's/@PROJECT_VERSION_PATCH@/$(patch_version)/' $@
+	sed -i -e 's/@PROJECT_VERSION@/$(muscle_version)/' $@
 
 libmuscle.a: $(objects)
 	ar rcs $@ $^
@@ -185,6 +187,10 @@ libmuscle_mpi_d.a: $(mdobjects)
 
 libmuscle_mpi_d.so: $(mdlobjects)
 	$(MPICXX) -shared -Wl,--version-script=libmuscle_mpi.version -o $@ $^ $(LDFLAGS)
+
+$(PREFIX)/include/libmuscle/version.h: $(srcdir)/version.h
+	@mkdir -p $(@D)
+	cp $< $@
 
 $(PREFIX)/include/%.hpp: $(hdrdir)/%.hpp
 	@mkdir -p $(@D)

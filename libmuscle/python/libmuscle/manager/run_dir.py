@@ -9,20 +9,23 @@ class RunDir:
 
     The directory is laid out as follows:
 
-    <run_dir>/
-        input/
-        1_<name>.ymmsl
-        2_<name>.ymmsl
-        muscle_manager.log
-        muscle_stats.sqlite
-        instances/
-            <instance_name[i]>/
-                run_script.sh
-                <instance_name[i]>.out
-                <instance_name[i]>.err
-                work_dir/
-                snapshots/
-        snapshots/
+    .. code-block::
+
+        <run_dir>/
+            input/
+            1_<name>.ymmsl
+            2_<name>.ymmsl
+            muscle_manager.log
+            muscle_stats.sqlite
+            instances/
+                <instance_name[i]>/
+                    run_script.sh
+                    <instance_name[i]>.out
+                    <instance_name[i]>.err
+                    work_dir/
+                    snapshots/
+            snapshots/
+
     """
     def __init__(self, run_dir: Path) -> None:
         """Create a RunDir managing the given directory.

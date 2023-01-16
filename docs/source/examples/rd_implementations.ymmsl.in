@@ -62,3 +62,13 @@ implementations:
     env:
       +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
     executable: MUSCLE3_EXAMPLES/fortran/build/load_balancer
+
+  checkpointing_reaction_python:
+    virtual_env: MUSCLE3_EXAMPLES/python/build/venv
+    executable: python
+    args: MUSCLE3_EXAMPLES/python/checkpointing_reaction.py
+
+  checkpointing_diffusion_python:
+    virtual_env: MUSCLE3_EXAMPLES/python/build/venv
+    executable: python
+    args: MUSCLE3_EXAMPLES/python/checkpointing_diffusion.py

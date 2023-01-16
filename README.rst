@@ -17,10 +17,6 @@
     :target: https://www.codacy.com/gh/multiscale/muscle3/dashboard
     :alt: Codacy Grade
 
-.. image:: https://requires.io/github/multiscale/muscle3/requirements.svg?branch=develop
-     :target: https://requires.io/github/multiscale/muscle3/requirements/?branch=develop
-     :alt: Requirements Status
-
 .. image:: https://zenodo.org/badge/122876985.svg
    :target: https://zenodo.org/badge/latestdoi/122876985
 

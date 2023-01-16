@@ -393,7 +393,8 @@ class QCGPJInstantiator(mp.Process):
                 modules=impl.modules,
                 venv=str(impl.virtual_env) if impl.virtual_env else None,
                 wd=str(request.work_dir),
-                model=qcg_execution_model)
+                model=qcg_execution_model,
+                model_opts={'srun_opts': ['--overlap']})
 
     def _with_local_open_mpi(
             self, executable: str, args: List[str], num_processes: int

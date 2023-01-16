@@ -42,10 +42,7 @@ Cham.  `<https://doi.org/10.1007/978-3-030-50433-5_33>`_
    python_api
    cpp_api
    fortran_api
-
-   contributing
-   devtools
-   releasing
+   for_developers
 
 
 Indices and tables

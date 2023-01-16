@@ -129,7 +129,7 @@ class SnapshotNode:
         """Check if the snapshot of the peer is consistent with us.
 
         When the peer snapshot is consistent, adds it to our list of consistent
-        peer snapshots (in :attribute:`consistent_peers`) and vice versa.
+        peer snapshots (in :attr:`consistent_peers`) and vice versa.
 
         Args:
             peer_node: Snapshot of one of our peers

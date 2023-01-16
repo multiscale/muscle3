@@ -129,6 +129,7 @@ documentation and display it online. This uses Sphinx, but does not support
 
 .. _`setuptools`: https://setuptools.readthedocs.io
 .. _`Requires.io`: https://requires.io/
+.. _`tox`: https://tox.wiki
 .. _`flake8`: https://github.com/PyCQA/flake8
 .. _`mypy`: https://mypy.readthedocs.io
 .. _`Codacy`: https://support.codacy.com

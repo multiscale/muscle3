@@ -1257,6 +1257,13 @@ LIBMUSCLE_Message
     will be overlaid onto the receiving model's settings; this is normally only
     used by special simulation components.
 
+.. f:function:: LIBMUSCLE_Message_create(timestamp)
+
+    Create a new Message object.
+
+    :p LIBMUSCLE_real8 timestamp: The simulated time to which the data in this
+            message applies.
+
 .. f:function:: LIBMUSCLE_Message_create(timestamp, data)
 
     Create a new Message object.

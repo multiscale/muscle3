@@ -305,11 +305,11 @@ def checkpointing_temporal_coupler() -> None:
             t_cur = min(a.rcvd, b.rcvd)
             if instance.should_save_snapshot(t_cur):
                 instance.save_snapshot(Message(
-                        t_cur, None, {'a': a.get_state(), 'b': b.get_state()}))
+                        t_cur, data={'a': a.get_state(), 'b': b.get_state()}))
 
         t_cur = min(a.rcvd, b.rcvd)
         if instance.should_save_final_snapshot():
-            instance.save_final_snapshot(Message(t_cur, None, None))
+            instance.save_final_snapshot(Message(t_cur))
 
 
 if __name__ == '__main__':

@@ -11,7 +11,7 @@ def snapshot() -> Snapshot:
     wallclock_time = 15.3
     port_message_counts = {'in': [1], 'out': [4], 'muscle_settings_in': [0]}
     is_final = True
-    message = Message(1.2, None, 'test_data')
+    message = Message(1.2, data='test_data')
     snapshot = MsgPackSnapshot(
             triggers, wallclock_time, port_message_counts, is_final, message,
             Settings({'test': 1}))

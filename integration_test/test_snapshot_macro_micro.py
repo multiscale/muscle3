@@ -43,10 +43,10 @@ def macro():
             t_cur += dt
 
             if instance.should_save_snapshot(t_cur):
-                instance.save_snapshot(Message(t_cur, None, i))
+                instance.save_snapshot(Message(t_cur, data=i))
 
         if instance.should_save_final_snapshot():
-            instance.save_final_snapshot(Message(t_cur, None, i))
+            instance.save_final_snapshot(Message(t_cur, data=i))
 
 
 def macro_vector():
@@ -84,10 +84,10 @@ def macro_vector():
             t_cur += dt
 
             if instance.should_save_snapshot(t_cur):
-                instance.save_snapshot(Message(t_cur, None, i))
+                instance.save_snapshot(Message(t_cur, data=i))
 
         if instance.should_save_final_snapshot():
-            instance.save_final_snapshot(Message(t_cur, None, i))
+            instance.save_final_snapshot(Message(t_cur, data=i))
 
 
 def micro():
@@ -115,12 +115,12 @@ def micro():
             t_cur += dt
 
             if instance.should_save_snapshot(t_cur):
-                instance.save_snapshot(Message(t_cur, None, [i, t_stop]))
+                instance.save_snapshot(Message(t_cur, data=[i, t_stop]))
 
-        instance.send('o_f', Message(t_cur, None, i))
+        instance.send('o_f', Message(t_cur, data=i))
 
         if instance.should_save_final_snapshot():
-            instance.save_final_snapshot(Message(t_cur, None, [i, t_stop]))
+            instance.save_final_snapshot(Message(t_cur, data=[i, t_stop]))
 
 
 def stateless_micro():
@@ -142,7 +142,7 @@ def stateless_micro():
             # faux time-integration for testing snapshots
             t_cur += dt
 
-        instance.send('o_f', Message(t_cur, None, i))
+        instance.send('o_f', Message(t_cur, data=i))
 
 
 def data_transformer():

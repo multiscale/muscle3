@@ -36,8 +36,8 @@ class Message:
     """
     # Note: This is for communication with the user, it's not what
     # actually goes out on the wire, see libmuscle.mcp.Message for that.
-    def __init__(self, timestamp: float, next_timestamp: Optional[float],
-                 data: MessageObject,
+    def __init__(self, timestamp: float, next_timestamp: Optional[float] = None,
+                 data: MessageObject = None,
                  settings: Optional[Settings] = None
                  ) -> None:
         """Create a Message.

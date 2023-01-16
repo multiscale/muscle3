@@ -3549,6 +3549,11 @@ void LIBMUSCLE_PortsDescription_get_(std::intptr_t self, int op, std::size_t i, 
     }
 }
 
+std::intptr_t LIBMUSCLE_Message_create_t_(double timestamp) {
+    Message * result = new Message(timestamp);
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
 std::intptr_t LIBMUSCLE_Message_create_td_(double timestamp, std::intptr_t data) {
     Data * data_p = reinterpret_cast<Data *>(data);
     Message * result = new Message(timestamp, *data_p);

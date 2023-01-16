@@ -22,8 +22,7 @@ def qmc():
         length = instance.get_port_length('settings_out')
         assert length == 10
         for slot in range(length):
-            instance.send('settings_out',
-                          Message(0.0, None, settings0), slot)
+            instance.send('settings_out', Message(0.0, data=settings0), slot)
 
 
 def macro():
@@ -87,7 +86,7 @@ def micro():
         #     instance.receive_with_settings('in')
 
         # o_f
-        instance.send('out', Message(0.1, None, 'testing back'))
+        instance.send('out', Message(0.1, data='testing back'))
 
 
 def test_settings_overlays(log_file_in_tmpdir):

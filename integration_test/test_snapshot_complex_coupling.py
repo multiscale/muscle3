@@ -23,7 +23,7 @@ def cache_component(max_channels=2):
     cache_t = float('-inf')
     cache_data = []
     max_cache_age = None
-    nil_msg = Message(0.0, None, None)
+    nil_msg = Message(0.0)
 
     while instance.reuse_instance():
         if instance.resuming():
@@ -41,17 +41,17 @@ def cache_component(max_channels=2):
         if cur_t - cache_t >= max_cache_age:
             # Cached value is no longer valid, run submodel for updated data
             for msg, port in zip(msgs, ports[Operator.O_I]):
-                instance.send(port, Message(cur_t, None, msg.data))
+                instance.send(port, Message(cur_t, data=msg.data))
             cache_data = [instance.receive(port, default=nil_msg).data
                           for port in ports[Operator.S]]
             cache_t = cur_t
             max_cache_age = random.uniform(*cache_valid_range)
 
         for data, port in zip(cache_data, ports[Operator.O_F]):
-            instance.send(port, Message(cur_t, None, data))
+            instance.send(port, Message(cur_t, data=data))
 
         if instance.should_save_final_snapshot():
-            instance.save_final_snapshot(Message(cur_t, None, []))
+            instance.save_final_snapshot(Message(cur_t, data=[]))
 
 
 def echo_component(max_channels=2):
@@ -87,7 +87,7 @@ def main_component():
             i = 0
 
         while time.monotonic() < monotonic_end:
-            instance.send('state_out', Message(t_cur, None, i))
+            instance.send('state_out', Message(t_cur, data=i))
             for port in ('Ai', 'Bi', 'Ci', 'Di'):
                 instance.receive(port)
 
@@ -97,12 +97,12 @@ def main_component():
 
             if instance.should_save_snapshot(t_cur):
                 instance.save_snapshot(Message(
-                        t_cur, None, [i, monotonic_end - time.monotonic()]))
+                        t_cur, data=[i, monotonic_end - time.monotonic()]))
 
-        instance.send('o_f', Message(t_cur, None, i))
+        instance.send('o_f', Message(t_cur, data=i))
 
         if instance.should_save_final_snapshot():
-            instance.save_final_snapshot(Message(t_cur, None, [i, 0]))
+            instance.save_final_snapshot(Message(t_cur, data=[i, 0]))
 
 
 @pytest.fixture

@@ -63,7 +63,7 @@ and resuming simulations. Some details are deliberately left out, though you
 can read all about those in the :ref:`developer tutorial` or :ref:`checkpointing
 deep-dive`.
 
-.. contents:: User totorial contents
+.. contents:: User tutorial contents
     :local:
 
 
@@ -106,7 +106,7 @@ rules to set checkpoint moments for these:
 
 .. _at checkpoint rule:
 
-#. ``at`` rules define specific moments. The example rule above request a
+#. ``at`` rules select specific moments. The example rule above request a
    checkpoint to be taken at 300, 600 and 1800 seconds after the start of the
    simulation. You can define multiple times in one ``at`` rule, but you may
    also add multiple ``at`` rules. The following definitions are all equivalent:
@@ -235,7 +235,7 @@ Simulation time checkpoints
 '''''''''''''''''''''''''''
 
 Checkpoints defined in the ``simulation_time`` section are taken based on the
-time inside your simulation. It will only work correctly if all components in
+time inside your simulation. This will only work correctly if all components in
 the simulation have a shared concept of time, which only increases during the
 simulation. This should be no problem for physics-based simulations, though it
 does require that the instances make correct use of the :ref:`timestamp in
@@ -319,11 +319,11 @@ yMMSL file that can be used to :ref:`resume the simulation <Resuming a
 simulation>`.
 
 During the simulation, all of the created snapshots are stored on the file
-system. See below table for the directories where MUSCLE3 stores the files.
+system. See the table below for the directories where MUSCLE3 stores the files.
 Note: a run-directory is automatically created when using the ``--start-all``
 flag for ``muscle_manager``. You may also specify a custom run directory through
 the ``--run-dir DIRECTORY`` option. When you do not provide a run directory, the
-last column in below table indicates where snapshots are stored.
+last column in the table below indicates where snapshots are stored.
 
 .. list-table:: Directories where MUSCLE3 stores snapshot files.
     :header-rows: 1
@@ -371,7 +371,7 @@ repository. Then execute the following command:
 
         $ make test_examples
 
-Above command runs the ``muscle_manager`` and starts all components (the
+The above command runs the ``muscle_manager`` and starts all components (the
 reaction model and the diffusion model). The ``rd_checkpoints.ymmsl`` file
 contains the checkpoint definitions used in this example:
 
@@ -456,7 +456,7 @@ Resuming from *at_end* snapshots
 ''''''''''''''''''''''''''''''''
 
 .. warning::
-    Resuming from only ``at_end`` snapshot will immediately complete.
+    Resuming from an ``at_end`` snapshot only will immediately complete.
 
 
 Snapshot consistency
@@ -466,16 +466,16 @@ MUSCLE3 checkpointing was designed for consistency: no messages between the
 components must be lost when restarting. When we fulfill this criterium, a
 simulation can resume from a checkpoint as if it was never interrupted.
 
-During a simulation run, each component creates snapshots independent from all
-other components. For :ref:`simulation time checkpoints`, the MUSCLE3
+During a simulation run, each component creates snapshots independently from
+all other components. For :ref:`simulation time checkpoints`, the MUSCLE3
 checkpointing algorithm is guaranteed to give consistent :term:`workflow
 snapshots <workflow snapshot>` when all components adhere to the
 :ref:`Multiscale Modeling and Simulation Framework (MMSF) <citation needed>`.
 
 :ref:`Wallclock time checkpoints` in the currrent implementation are less
 reliable: components may take snapshots while messages are still in transit.
-When that happens, it would lead to an inconsistent state and no workflow
-snapshots would be written by ``muscle_manager``.
+When that happens an inconsistent state is produced and no workflow snapshots
+are written by ``muscle_manager``.
 
 MUSCLE3 does not support combining inconsistent snapshots, so it is not possible
 to freely mix snapshots produced during a simulation. When resuming, MUSCLE3
@@ -510,10 +510,10 @@ General troubleshooting strategy:
     this usually happens when a peer component has crashed and it is typically
     not the root cause of your simulation crash.
 
-Once you find the root cause of your problem, check below list for common issues
-and their resolutions. You may also have found a bug in MUSCLE3: please help us
-and your fellow MUSCLE3 users by :ref:`creating an issue <Make an issue>` on
-github.
+Once you find the root cause of your problem, check the list below for common
+issues and their resolutions. You may also have found a bug in MUSCLE3: please
+help us and your fellow MUSCLE3 users by :ref:`creating an issue <Make an
+issue>` on GitHub.
 
 1. The simulation crashes when using checkpoints.
     The first thing you should check is: does the simulation run error-free when
@@ -548,9 +548,10 @@ github.
 
             $ muscle_manager --run-dir run2 run1/configuration.ymmsl run1/snapshots/snapshot_xyz.ymmsl
 
-    -   One of your components has a bug with resuming from a previous snapshot,
-        or perhaps your snapshot belonged to a different version of the
-        component. Please ask your component developer(s) for help.
+    -   One of your components has a bug that is triggered when resuming from a
+        previous snapshot, or perhaps your snapshot belonged to a different
+        version of the component. Please ask your component developer(s) for
+        help.
 
 
 
@@ -769,7 +770,7 @@ Final snapshots
 '''''''''''''''
 
 Final snapshots **must** be implemented by all components supporting
-checkpointing. You implement taking final snapshot as follows:
+checkpointing. You implement taking a final snapshot as follows:
 
 1.  You must implement the checkpoint calls at the end of the :ref:`reuse loop
     <The reuse loop>`.
@@ -922,12 +923,13 @@ from a previously created checkpoint. When resuming, there are two options:
 resuming from an intermediate checkpoint and resuming from a final checkpoint.
 
 When resuming from an intermediate checkpoint, your component first loads its
-state from the checkpoint. However, we cannot just continue with the ``F_INIT``
-Operator, and instead we need to skip ahead to the point where the checkpoint
-was taken.
+state from the checkpoint. Then it should continue where it left off, which is
+at the beginning of ``O_I``. This means that it has to skip ``F_INIT`` in
+order to run as if it had never stopped.
 
 When resuming from a final checkpoint, your component first loads its state from
-the checkpoint. Next, your component executes the ``F_INIT`` operator as usual.
+the checkpoint. Next, your component executes the ``F_INIT`` operator as usual,
+as it would have had it continued after writing the snapshot.
 
 Steps to implement the resumption logic:
 
@@ -1085,8 +1087,8 @@ Components that do not keep state between reuse
 ```````````````````````````````````````````````
 
 Some components do not need to keep state between reuses. An example of that is
-the reaction model from above examples. In the final snapshot, no state needs
-to be stored to allow properly resuming this component, see
+the reaction model from the above examples. In the final snapshot, no state
+needs to be stored to allow properly resuming this component, see
 :ref:`Example: implemented checkpoint hooks`.
 
 Other examples of such components may be data transformers, receiving data
@@ -1095,7 +1097,7 @@ on an ``F_INIT`` port and sending the converted data on an ``O_F`` port.
 If you indicate to libmuscle that your component does not keep state between
 reuse, libmuscle automatically provides checkpointing for your component. You do
 this by providing the :attr:`~InstanceFlags.KEEPS_NO_STATE_FOR_NEXT_USE` flag
-when creating the instance. See below example for a variant of the example
+when creating the instance. See the below example for a variant of the example
 reaction model.
 
 .. tabs::

@@ -22,8 +22,8 @@ void reaction(int argc, char * argv[]) {
     MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
 
     Instance instance(argc, argv, {
-            {Operator::F_INIT, {"initial_state"}},  // list of double
-            {Operator::O_F, {"final_state"}}},      // list of double
+            {Operator::F_INIT, {"initial_state"}},  // 1D Grid
+            {Operator::O_F, {"final_state"}}},      // 1D Grid
             MPI_COMM_WORLD, root_rank);
 
     while (instance.reuse_instance()) {

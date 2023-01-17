@@ -37,7 +37,13 @@ ifeq "$(filter $(MAKECMDGOALS),$(cleantargets))" ""
 
 EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-Wl,-rpath-link,$(DIR)/lib)
 
-FFLAGS += -std=f2003 -g -I. -I.. -I../../ymmsl
+FFLAGS += -g -I. -I.. -I../../ymmsl
+ifeq ($(FC), ifort)
+	FFLAGS += -e03
+else
+	FFLAGS += -std=f2003
+endif
+
 
 CPP_BUILD_DIR := $(CURDIR)/../../../../cpp/build
 

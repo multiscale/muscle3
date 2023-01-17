@@ -14,7 +14,16 @@ installed_libs := $(libs:%=$(PREFIX)/lib/%)
 installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
 
 LDFLAGS := -L../../../cpp/build/ymmsl -lymmsl
-FFLAGS := -std=f2003 -O3
+
+FFLAGS := -O3
+ifeq ($(FC), ifort)
+	FFLAGS += -e03
+	MOD_DUMP := -module mod_dump
+else
+	FFLAGS += -std=f2003
+	MOD_DUMP := -Jmod_dump
+endif
+
 
 .PHONY: all
 all: ymmsl
@@ -43,7 +52,7 @@ install: $(installed_sources) $(installed_modules) $(installed_libs) $(installed
 	$(FC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS)
 
 %.lo: $(srcdir)/%.f90
-	$(FC) -c -fPIC -Jmod_dump $(FFLAGS) $< -o $@ $(LDFLAGS)
+	$(FC) -c -fPIC $(MOD_DUMP) $(FFLAGS) $< -o $@ $(LDFLAGS)
 
 %.mod: %.o
 

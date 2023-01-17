@@ -33,7 +33,15 @@ LDFLAGS_MPI := -L../ymmsl -lymmsl_fortran
 LDFLAGS_MPI += -L../../../cpp/build/libmuscle -lmuscle_mpi
 LDFLAGS_MPI += -L../../../cpp/build/ymmsl -lymmsl
 
-FFLAGS := -std=f2003 -O3 -I../ymmsl
+FFLAGS := -O3 -I../ymmsl
+ifeq ($(FC), ifort)
+	FFLAGS += -e03
+	MOD_DUMP := -module mod_dump
+else
+	FFLAGS += -std=f2003
+	MOD_DUMP := -Jmod_dump
+endif
+
 
 .PHONY: all
 all: libmuscle
@@ -73,13 +81,13 @@ install: $(installed_sources) $(installed_modules) $(installed_pkg_config_files)
 	$(FC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS)
 
 %.lo: $(srcdir)/%.f90
-	$(FC) -c -fPIC -Jmod_dump $(FFLAGS) $^ -o $@ $(LDFLAGS)
+	$(FC) -c -fPIC $(MOD_DUMP) $(FFLAGS) $^ -o $@ $(LDFLAGS)
 
 %.mo: $(srcdir)/%.f90
 	$(MPIFC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS_MPI)
 
 %.mlo: $(srcdir)/%.f90
-	$(MPIFC) -c -fPIC -Jmod_dump $(FFLAGS) $^ -o $@ $(LDFLAGS_MPI)
+	$(MPIFC) -c -fPIC $(MOD_DUMP) $(FFLAGS) $^ -o $@ $(LDFLAGS_MPI)
 
 %.mod: %.o
 

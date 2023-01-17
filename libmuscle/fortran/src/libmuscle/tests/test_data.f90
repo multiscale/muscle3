@@ -157,6 +157,7 @@ contains
         call YMMSL_Settings_free(s1)
         call YMMSL_Settings_free(s2)
         call LIBMUSCLE_Data_free(d1)
+        call LIBMUSCLE_Data_free(d2)
         print *, '[       OK ] data.settings'
     end subroutine test_data_settings
 

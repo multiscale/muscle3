@@ -6829,7 +6829,7 @@ contains
         end if
 
         call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
-        shp = f_ret_ptr
+        shp(1:ret_val_size) = f_ret_ptr
     end subroutine LIBMUSCLE_DataConstRef_shape
 
     subroutine LIBMUSCLE_DataConstRef_elements_1_logical( &
@@ -12281,7 +12281,7 @@ contains
         end if
 
         call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
-        shp = f_ret_ptr
+        shp(1:ret_val_size) = f_ret_ptr
     end subroutine LIBMUSCLE_Data_shape
 
     subroutine LIBMUSCLE_Data_elements_1_logical( &

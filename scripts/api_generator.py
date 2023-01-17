@@ -400,7 +400,7 @@ class VecSizet(Par):
 
     def f_return_result(self, return_name: str, result_name: str) -> str:
         return ('    call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))\n'
-                '    {} = f_ret_ptr\n').format(return_name)
+                '    {}(1:ret_val_size) = f_ret_ptr\n').format(return_name)
 
     def fi_type(self) -> str:
         return self._regular_type(

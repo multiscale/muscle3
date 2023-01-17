@@ -1,7 +1,7 @@
 all: test_use_echolib
 
 CXX?=g++
-FORTRAN?=gfortran
+FC?=gfortran
 
 
 .PHONY: clean
@@ -22,7 +22,7 @@ libecholib.so: echolib.hpp echolib.cpp echolib_fortran_c.cpp cmdlineargs.cpp
 	$(CXX) -g -o $@ -std=c++14 -pedantic -I. -fPIC -shared echolib.cpp cmdlineargs.cpp echolib_fortran_c.cpp
 
 test_use_echolib: libecholib.so echolib.f90 test_use_echolib.f90
-	$(FORTRAN) -g -std=f2003 -o $@ echolib.f90 test_use_echolib.f90 -L. -lecholib
+	$(FC) -g -std=f2003 -o $@ echolib.f90 test_use_echolib.f90 -L. -lecholib
 
 test: test_use_echolib
-	LD_LIBRARY_PATH=$(PWD):$(LD_LIBRARY_PATH) ./test_use_echolib
+	LD_LIBRARY_PATH=$(PWD):$(LD_LIBRARY_PATH) $(VALGRIND) ./test_use_echolib

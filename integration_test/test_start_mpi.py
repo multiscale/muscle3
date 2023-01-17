@@ -11,7 +11,7 @@ from .conftest import skip_if_python_only
 
 
 @skip_if_python_only
-def test_start_mpi(tmpdir):
+def test_start_mpi(tmpdir, mpi_exec_model):
     # only run this if MPI is enabled
     if 'MUSCLE_ENABLE_CPP_MPI' not in os.environ:
         pytest.skip('MPI support was not detected')
@@ -55,14 +55,15 @@ def test_start_mpi(tmpdir):
             '    env:\n'
             '      +LD_LIBRARY_PATH: :{}\n'
             '    executable: {}\n'
-            '    execution_model: openmpi\n'
+            '    execution_model: {}\n'
             'resources:\n'
             '  macro:\n'
             '    threads: 1\n'
             '  micro:\n'
             '    mpi_processes: 2\n'
             ).format(
-                ld_lib_path, test_component, ld_lib_path, mpi_test_component))
+                ld_lib_path, test_component, ld_lib_path, mpi_test_component,
+                mpi_exec_model))
 
     config = ymmsl.load(ymmsl_text)
 

@@ -210,3 +210,29 @@ def log_file_in_tmpdir(tmpdir):
     yield None
 
     os.chdir(old_workdir)
+
+
+@pytest.fixture
+def mpi_is_intel():
+    if 'MUSCLE_ENABLE_CPP_MPI' not in os.environ:
+        return None
+
+    result = subprocess.run(
+            ['mpirun', '--version'], capture_output=True, check=True)
+    return 'Intel' in result.stdout.decode('utf-8')
+
+
+@pytest.fixture
+def mpirun_outfile_arg(mpi_is_intel):
+    if mpi_is_intel:
+        return '-outfile-pattern'
+    else:
+        return '--output-filename'
+
+
+@pytest.fixture
+def mpi_exec_model(mpi_is_intel):
+    if mpi_is_intel:
+        return 'intelmpi'
+    else:
+        return 'openmpi'

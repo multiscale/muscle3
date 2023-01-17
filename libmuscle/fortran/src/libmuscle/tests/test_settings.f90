@@ -1,4 +1,4 @@
-module tests
+module settings_tests
     use assert
     implicit none
 contains
@@ -218,10 +218,10 @@ contains
         call YMMSL_Settings_free(s1)
         print *, '[       OK ] settings.key'
     end subroutine test_settings_key
-end module tests
+end module settings_tests
 
 program test_settings
-    use tests
+    use settings_tests
     implicit none
 
     print *, ''

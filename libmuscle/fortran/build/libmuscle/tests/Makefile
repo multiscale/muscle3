@@ -37,7 +37,13 @@ ifeq "$(filter $(MAKECMDGOALS),$(cleantargets))" ""
 
 EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-Wl,-rpath-link,$(DIR)/lib)
 
-FFLAGS += -std=f2003 -g -I. -I.. -I../../ymmsl
+FFLAGS += -g -I. -I.. -I../../ymmsl
+ifneq (,$(filter ifort ifx, $(FC)))
+	FFLAGS += -e03
+else
+	FFLAGS += -std=f2003
+endif
+
 
 CPP_BUILD_DIR := $(CURDIR)/../../../../cpp/build
 
@@ -73,5 +79,5 @@ test_dep_lib_paths := $(subst $(space),:,$(foreach DIR,$(DEP_DIRS),$(DIR)/lib))
 
 .PHONY: run_test%
 run_test%: test%
-	export LD_LIBRARY_PATH=$(test_dep_lib_paths):$(LD_LIBRARY_PATH) ; ./$<
+	export LD_LIBRARY_PATH=$(test_dep_lib_paths):$(LD_LIBRARY_PATH) ; $(VALGRIND) ./$<
 

@@ -1,4 +1,4 @@
-module tests
+module ports_description_tests
     use assert
     implicit none
 contains
@@ -18,10 +18,10 @@ contains
         call LIBMUSCLE_PortsDescription_free(pd)
         print *, '[       OK ] ports_description.use'
     end subroutine test_ports_description_use
-end module tests
+end module ports_description_tests
 
 program test_ports_description
-    use tests
+    use ports_description_tests
     implicit none
 
     print *, ''

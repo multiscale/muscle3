@@ -51,7 +51,7 @@ class PostOffice : public mcp::RequestHandler {
 
         /** Destruct a PostOffice.
          */
-        ~PostOffice();
+        virtual ~PostOffice();
 
         /** Handle a request
          *

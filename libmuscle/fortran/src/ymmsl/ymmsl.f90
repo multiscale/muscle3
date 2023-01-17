@@ -644,6 +644,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -700,6 +701,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -756,6 +758,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -812,6 +815,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -868,6 +872,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -924,6 +929,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -980,6 +986,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -1146,6 +1153,8 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+                allocate (character(0) :: YMMSL_Settings_get_as_character)
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -1205,6 +1214,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -1260,6 +1270,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -1315,6 +1326,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -1371,6 +1383,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -1432,6 +1445,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -1494,6 +1508,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -1598,6 +1613,8 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+                allocate (character(0) :: YMMSL_Settings_key)
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))

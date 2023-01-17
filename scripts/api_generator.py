@@ -71,6 +71,9 @@ class Par:
     def f_return_result(self, return_name: str, result_name: str) -> str:
         return '    {} = {}\n'.format(return_name, result_name)
 
+    def f_return_dummy_result(self, return_name: str) -> str:
+        return ''
+
     def _regular_type(self,
                       short_type: Union[str, List[Union[str, Tuple[str, str]]]]
                       ) -> List[Tuple[str, str]]:
@@ -167,6 +170,9 @@ class String(Par):
                 '    do i_loop = 1, ret_val_size\n'
                 '        {0}(i_loop:i_loop) = f_ret_ptr(i_loop)\n'
                 '    end do\n').format(return_name)
+
+    def f_return_dummy_result(self, return_name: str) -> str:
+        return '            allocate (character(0) :: {0})\n'.format(return_name)
 
     def fi_type(self) -> str:
         return self._regular_type(
@@ -394,7 +400,7 @@ class VecSizet(Par):
 
     def f_return_result(self, return_name: str, result_name: str) -> str:
         return ('    call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))\n'
-                '    {} = f_ret_ptr\n').format(return_name)
+                '    {}(1:ret_val_size) = f_ret_ptr\n').format(return_name)
 
     def fi_type(self) -> str:
         return self._regular_type(
@@ -1425,6 +1431,7 @@ class MemFun(Member):
             result += '                    err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)\n'
             result += '                end do\n'
             result += '            end if\n'
+            result += '{}\n'.format(self.ret_type.f_return_dummy_result(result_name))
             result += '            return\n'
             result += '        else\n'
             result += '            call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))\n'

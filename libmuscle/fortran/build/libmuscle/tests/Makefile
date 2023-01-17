@@ -38,7 +38,7 @@ ifeq "$(filter $(MAKECMDGOALS),$(cleantargets))" ""
 EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-Wl,-rpath-link,$(DIR)/lib)
 
 FFLAGS += -g -I. -I.. -I../../ymmsl
-ifeq ($(FC), ifort)
+ifneq (,$(filter ifort ifx, $(FC)))
 	FFLAGS += -e03
 else
 	FFLAGS += -std=f2003

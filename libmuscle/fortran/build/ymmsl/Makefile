@@ -16,7 +16,7 @@ installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
 LDFLAGS := -L../../../cpp/build/ymmsl -lymmsl
 
 FFLAGS := -O3
-ifeq ($(FC), ifort)
+ifneq (,$(filter ifort ifx, $(FC)))
 	FFLAGS += -e03
 	MOD_DUMP := -module mod_dump
 else

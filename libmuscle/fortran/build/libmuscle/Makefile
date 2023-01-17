@@ -34,7 +34,7 @@ LDFLAGS_MPI += -L../../../cpp/build/libmuscle -lmuscle_mpi
 LDFLAGS_MPI += -L../../../cpp/build/ymmsl -lymmsl
 
 FFLAGS := -O3 -I../ymmsl
-ifeq ($(FC), ifort)
+ifneq (,$(filter ifort ifx, $(FC)))
 	FFLAGS += -e03
 	MOD_DUMP := -module mod_dump
 else

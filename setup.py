@@ -57,7 +57,7 @@ setup(
         "numpy>=1.22,<=1.25; python_version>='3.8'",
         'qcg-pilotjob==0.13.1',
         'typing_extensions<4',
-        'ymmsl>=0.12.0,<0.13'          # Also in CI, update there as well
+        'ymmsl>=0.13.0,<0.14'          # Also in CI, update there as well
     ],
     extras_require={
         'dev': [

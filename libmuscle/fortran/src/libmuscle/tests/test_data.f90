@@ -1,4 +1,4 @@
-module tests
+module data_tests
     use assert
     implicit none
 contains
@@ -505,10 +505,10 @@ contains
 
         print *, '[       OK ] data.byte_array'
     end subroutine test_data_byte_array
-end module tests
+end module data_tests
 
 program test_data
-    use tests
+    use data_tests
     implicit none
 
     print *, ''

@@ -1,4 +1,4 @@
-module tests
+module operator_tests
     use assert
     implicit none
 contains
@@ -16,10 +16,10 @@ contains
         o1 = YMMSL_Operator_O_F
         print *, '[       OK ] operator.use'
     end subroutine test_operator_use
-end module tests
+end module operator_tests
 
 program test_operator
-    use tests
+    use operator_tests
     implicit none
 
     print *, ''

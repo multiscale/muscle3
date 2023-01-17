@@ -5,6 +5,37 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_.
 
+0.6.0
+*****
+
+Added
+-----
+
+* Connecting multiple conduits to outgoing ports
+* Checkpointing (preview, not fully reliable and open to change)
+* Clang support
+* Intel® compiler support
+* Error in case different versions of MUSCLE3 are used
+
+Improved
+--------
+
+* TCP latency (performance)
+* More helpful messages for configuration errors
+* Small documentation improvements
+
+Removed
+-------
+
+* Python 3.6 support
+
+Thanks
+------
+
+* Maarten at Ignition Computing for implementing much of the above
+* The ITER Organisation for funding much of this work
+
+
 0.5.0
 *****
 

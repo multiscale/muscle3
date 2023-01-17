@@ -18,6 +18,9 @@ namespace libmuscle { namespace impl { namespace mcp {
  */
 class RequestHandler {
     public:
+        /** Destruct the object */
+        virtual ~RequestHandler();
+
         /** Handle a request
          *
          * Requests may be handled immediately, or they may be deferred if a

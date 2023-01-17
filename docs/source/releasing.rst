@@ -20,10 +20,9 @@ ensures we get working online documentation. So this needs to be checked:
 - Check the other languages too
 
 If the Python API docs are missing, then it's likely to be a dependency problem.
-Sphinx needs dependencies installed, and that's done differently by tox (which
-uses `setup.py`) and RTD (which uses `docs/requirements.txt`). If the latter is
-outdated, the Python API docs don't render because Sphinx fails to import the
-packages.
+Sphinx needs dependencies installed, and that's now done via tox so that the
+dependencies come from ``setup.py`` and local builds should match what RTD does,
+but it's still not the same process, so it's best to check.
 
 Check metadata
 --------------

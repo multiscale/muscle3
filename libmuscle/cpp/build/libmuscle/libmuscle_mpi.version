@@ -303,6 +303,7 @@
         LIBMUSCLE_PortsDescription_add_;
         LIBMUSCLE_PortsDescription_num_ports_;
         LIBMUSCLE_PortsDescription_get_;
+        LIBMUSCLE_Message_create_t_;
         LIBMUSCLE_Message_create_td_;
         LIBMUSCLE_Message_create_tnd_;
         LIBMUSCLE_Message_create_tds_;

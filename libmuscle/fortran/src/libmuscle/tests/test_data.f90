@@ -1,4 +1,4 @@
-module tests
+module data_tests
     use assert
     implicit none
 contains
@@ -157,6 +157,7 @@ contains
         call YMMSL_Settings_free(s1)
         call YMMSL_Settings_free(s2)
         call LIBMUSCLE_Data_free(d1)
+        call LIBMUSCLE_Data_free(d2)
         print *, '[       OK ] data.settings'
     end subroutine test_data_settings
 
@@ -504,10 +505,10 @@ contains
 
         print *, '[       OK ] data.byte_array'
     end subroutine test_data_byte_array
-end module tests
+end module data_tests
 
 program test_data
-    use tests
+    use data_tests
     implicit none
 
     print *, ''

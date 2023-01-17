@@ -451,6 +451,7 @@ dataconstref_desc = Class('DataConstRef', None, [
                 '        *err_msg = const_cast<char*>(msg.data());\n'
                 '        *err_msg_len = msg.size();\n'
                 '    }\n'
+                '    return 0;\n'
                 '}\n\n')
             ),
     MemFun(Obj('DataConstRef', 'value'), 'get_item_by_index', [Sizet('i')], True,
@@ -480,6 +481,7 @@ dataconstref_desc = Class('DataConstRef', None, [
                 '        *err_msg = const_cast<char*>(msg.data());\n'
                 '        *err_msg_len = msg.size();\n'
                 '    }\n'
+                '    return 0;\n'
                 '}\n\n')
             ),
     OverloadSet('get_item', [
@@ -503,6 +505,7 @@ dataconstref_desc = Class('DataConstRef', None, [
                 '        *err_msg = const_cast<char*>(msg.data());\n'
                 '        *err_msg_len = msg.size();\n'
                 '    }\n'
+                '    return 0;\n'
                 '}\n\n')
             ),
     MemFun(VecSizet('shp'), 'shape', [], True),
@@ -623,6 +626,7 @@ data_desc = Class('Data', dataconstref_desc, [
                 '        *err_msg = const_cast<char*>(msg.data());\n'
                 '        *err_msg_len = msg.size();\n'
                 '    }\n'
+                '    return 0;\n'
                 '}\n\n')
             ),
     MemFun(Obj('Data', 'value'), 'get_item_by_index', [Sizet('i')], True,
@@ -652,6 +656,7 @@ data_desc = Class('Data', dataconstref_desc, [
                 '        *err_msg = const_cast<char*>(msg.data());\n'
                 '        *err_msg_len = msg.size();\n'
                 '    }\n'
+                '    return 0;\n'
                 '}\n\n')
             ),
     OverloadSet('get_item', [
@@ -743,12 +748,14 @@ data_desc = Class('Data', dataconstref_desc, [
                 '        *err_msg = const_cast<char*>(msg.data());\n'
                 '        *err_msg_len = msg.size();\n'
                 '    }\n'
+                '    return 0;\n'
                 '}\n\n')
             ),
     ])
 
 
 message_desc = Class('Message', None, [
+    Constructor([Double('timestamp')], 'create_t'),
     Constructor([Double('timestamp'), Obj('Data', 'data')], 'create_td'),
     Constructor(
         [Double('timestamp'), Double('next_timestamp'), Obj('Data', 'data')],
@@ -761,7 +768,7 @@ message_desc = Class('Message', None, [
             Obj('Settings', 'settings')],
         'create_tnds'),
     OverloadSet('create', [
-        'create_td', 'create_tnd', 'create_tds', 'create_tnds']),
+        'create_t', 'create_td', 'create_tnd', 'create_tds', 'create_tnds']),
     Destructor(),
     MemFun(Double(), 'timestamp'),
     MemFun(Void(), 'set_timestamp', [Double('timestamp')]),

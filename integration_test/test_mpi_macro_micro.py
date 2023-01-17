@@ -11,8 +11,9 @@ from ymmsl import Operator
 from .conftest import skip_if_python_only
 
 
-def run_macro(instance_id: str):
+def run_macro(instance_id: str, muscle_manager: str):
     sys.argv.append('--muscle-instance={}'.format(instance_id))
+    sys.argv.append('--muscle-manager={}'.format(muscle_manager))
     macro()
 
 
@@ -36,7 +37,8 @@ def macro():
 
 
 @skip_if_python_only
-def test_mpi_macro_micro(tmpdir, mmp_server_process_simple):
+def test_mpi_macro_micro(
+        tmpdir, mmp_server_process_simple, mpirun_outfile_arg):
     # only run this if MPI is enabled
     if 'MUSCLE_ENABLE_CPP_MPI' not in os.environ:
         pytest.skip('MPI support was not detected')
@@ -57,11 +59,12 @@ def test_mpi_macro_micro(tmpdir, mmp_server_process_simple):
     mpi_test_micro = cpp_test_dir / 'mpi_micro_model_test'
     out_file = tmpdir + '/mpi_micro.log'
     micro_result = subprocess.Popen(
-            ['mpirun', '-np', '2', '--output-filename', out_file,
+            ['mpirun', '-np', '2', mpirun_outfile_arg, out_file,
              str(mpi_test_micro), '--muscle-instance=micro'], env=env)
 
     # run macro model
-    macro_process = mp.Process(target=run_macro, args=('macro',))
+    macro_process = mp.Process(target=run_macro,
+                               args=('macro', mmp_server_process_simple))
     macro_process.start()
 
     # check results

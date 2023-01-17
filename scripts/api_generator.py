@@ -71,6 +71,9 @@ class Par:
     def f_return_result(self, return_name: str, result_name: str) -> str:
         return '    {} = {}\n'.format(return_name, result_name)
 
+    def f_return_dummy_result(self, return_name: str) -> str:
+        return ''
+
     def _regular_type(self,
                       short_type: Union[str, List[Union[str, Tuple[str, str]]]]
                       ) -> List[Tuple[str, str]]:
@@ -132,6 +135,9 @@ class Void(Par):
     def f_return_result(self, return_name: str, result_name: str) -> str:
         return ''
 
+    def fc_return_default(self) -> str:
+        return ''  # memfun has void signature
+
 
 class String(Par):
     """Represents a string-typed parameter.
@@ -165,6 +171,9 @@ class String(Par):
                 '        {0}(i_loop:i_loop) = f_ret_ptr(i_loop)\n'
                 '    end do\n').format(return_name)
 
+    def f_return_dummy_result(self, return_name: str) -> str:
+        return '            allocate (character(0) :: {0})\n'.format(return_name)
+
     def fi_type(self) -> str:
         return self._regular_type(
                 ['character',
@@ -196,6 +205,9 @@ class String(Par):
         return ('    *{0} = const_cast<char*>(result.c_str());\n'
                 '    *{0}_size = result.size();\n'
                 '    return;\n').format(self.name)
+
+    def fc_return_default(self) -> str:
+        return ''  # memfun has void signature
 
 
 class VecDbl(Par):
@@ -262,6 +274,9 @@ class VecDbl(Par):
         return ('    *{0} = result.data();\n'
                 '    *{0}_size = result.size();\n'
                 '    return;\n').format(self.name)
+
+    def fc_return_default(self) -> str:
+        return ''  # memfun has void signature
 
 
 class Vec2Dbl(Par):
@@ -350,6 +365,9 @@ class Vec2Dbl(Par):
 
         return textwrap.indent(result.format(self.name), '    ')
 
+    def fc_return_default(self) -> str:
+        return ''  # memfun has void signature
+
 
 class VecSizet(Par):
     """Represents a vector of size_t parameter.
@@ -382,7 +400,7 @@ class VecSizet(Par):
 
     def f_return_result(self, return_name: str, result_name: str) -> str:
         return ('    call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))\n'
-                '    {} = f_ret_ptr\n').format(return_name)
+                '    {}(1:ret_val_size) = f_ret_ptr\n').format(return_name)
 
     def fi_type(self) -> str:
         return self._regular_type(
@@ -415,6 +433,9 @@ class VecSizet(Par):
         return ('    *{0} = result.data();\n'
                 '    *{0}_size = result.size();\n'
                 '    return;\n').format(self.name)
+
+    def fc_return_default(self) -> str:
+        return ''  # memfun has void signature
 
 
 class Array(Par):
@@ -557,6 +578,9 @@ class Array(Par):
                               self.ndims),
                 '    ')
 
+    def fc_return_default(self) -> str:
+        return ''  # memfun has void signature
+
     def _f_dims(self) -> str:
         return ', '.join([':'] * self.ndims)
 
@@ -624,6 +648,9 @@ class Bytes(Par):
                 '    *{0}_size = result.size();\n'
                 '    return;\n').format(self.name)
 
+    def fc_return_default(self) -> str:
+        return ''  # memfun has void signature
+
 
 class Obj(Par):
     """Represents an object of a type to pass.
@@ -686,6 +713,9 @@ class Obj(Par):
     def f_return_result(self, return_name: str, result_name: str) -> str:
         return '    {}%ptr = {}\n'.format(return_name, result_name)
 
+    def fc_return_default(self) -> str:
+        return '    return 0;\n'
+
 
 class Bool(Par):
     """Represents a bool-typed parameter.
@@ -731,6 +761,9 @@ class Bool(Par):
 
     def f_return_result(self, return_name: str, result_name: str) -> str:
         return '    {} = {}\n'.format(return_name, result_name)
+
+    def fc_return_default(self) -> str:
+        return '    return false;\n'
 
 
 class EnumVal(Par):
@@ -784,6 +817,9 @@ class EnumVal(Par):
     def fc_return(self) -> str:
         return '    return static_cast<int>(result);\n'
 
+    def fc_return_default(self) -> str:
+        return '    return 0;\n'
+
 
 class Int(Par):
     """Represents an int-typed parameter.
@@ -820,6 +856,9 @@ class Int(Par):
 
     def fc_return(self) -> str:
         return '    return result;\n'
+
+    def fc_return_default(self) -> str:
+        return '    return 0;\n'
 
 
 class Char(Par):
@@ -859,6 +898,9 @@ class Char(Par):
     def fc_return(self) -> str:
         return '    return result;\n'
 
+    def fc_return_default(self) -> str:
+        return '    return 0;\n'
+
 
 class Int16t(Par):
     """Represents an int16_t-typed parameter.
@@ -895,6 +937,9 @@ class Int16t(Par):
 
     def fc_return(self) -> str:
         return '    return result;\n'
+
+    def fc_return_default(self) -> str:
+        return '    return 0;\n'
 
 
 class Int32t(Par):
@@ -934,6 +979,9 @@ class Int32t(Par):
     def fc_return(self) -> str:
         return '    return result;\n'
 
+    def fc_return_default(self) -> str:
+        return '    return 0;\n'
+
 
 class Int64t(Par):
     """Represents an int64_t-typed parameter.
@@ -970,6 +1018,9 @@ class Int64t(Par):
 
     def fc_return(self) -> str:
         return '    return result;\n'
+
+    def fc_return_default(self) -> str:
+        return '    return 0;\n'
 
 
 class Sizet(Par):
@@ -1009,6 +1060,9 @@ class Sizet(Par):
     def fc_return(self) -> str:
         return '    return result;\n'
 
+    def fc_return_default(self) -> str:
+        return '    return 0;\n'
+
 
 class Float(Par):
     """Represents a single precision float parameter.
@@ -1047,6 +1101,9 @@ class Float(Par):
     def fc_return(self) -> str:
         return '    return result;\n'
 
+    def fc_return_default(self) -> str:
+        return '    return 0.0;\n'
+
 
 class Double(Par):
     """Represents a double precision float parameter.
@@ -1084,6 +1141,9 @@ class Double(Par):
 
     def fc_return(self) -> str:
         return '    return result;\n'
+
+    def fc_return_default(self) -> str:
+        return '    return 0.0;\n'
 
 
 class T(Par):
@@ -1227,6 +1287,7 @@ class MemFun(Member):
                     catch += '    *err_msg_len = msg.size();\n'
                     catch += '}\n'
                     result += textwrap.indent(catch, 4*' ')
+            result += self._fc_return_default()
         else:
             result += self._fc_cpp_call()
             result += self._fc_return()
@@ -1370,6 +1431,7 @@ class MemFun(Member):
             result += '                    err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)\n'
             result += '                end do\n'
             result += '            end if\n'
+            result += '{}\n'.format(self.ret_type.f_return_dummy_result(result_name))
             result += '            return\n'
             result += '        else\n'
             result += '            call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))\n'
@@ -1435,6 +1497,9 @@ class MemFun(Member):
 
     def _fc_return(self) -> str:
         return self.ret_type.fc_return()
+
+    def _fc_return_default(self) -> str:
+        return self.ret_type.fc_return_default()
 
     def _fc_in_parameters(self) -> List[str]:
         """Create a list of input parameters.

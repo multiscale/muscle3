@@ -12,7 +12,7 @@ Python
 
 Installing MUSCLE3 on Python will install all the Python-based components of
 the system, i.e. the Python version of libmuscle, the YMMSL Python library, and
-the MUSCLE Manager. This requires at least Python 3.6.
+the MUSCLE Manager. This requires at least Python 3.7.
 
 MUSCLE3 is on PyPI as an ordinary Python package, so it can be installed via
 Pip in the usual way. It's normally a good idea to make a virtual environment
@@ -69,11 +69,10 @@ Prerequisites
 
 To build libmuscle, we're going to need some tools. In particular, we need a C++
 compiler and GNU make. MUSCLE3 uses C++14, so you need at least g++ 4.9.3.
-Clang is expected to work, but that's not been tested. Using the Intel toolchain
-currently does not work, but see below for information about building submodels
-with the Intel tools.  Other compilers have not been tested. If you want to try,
-go right ahead, we'd love to have feedback on this. Building has been tested
-with gmake 3.82 and 4.1.
+Clang is also supported, as are the proprietary Intel® [#f1]_ compilers; see the
+instructions below for how to use them. Other compilers have not been tested.
+If you want to try, go right ahead, we'd love to have feedback on this. Building
+has been tested with gmake 3.82 and 4.1.
 
 If you're doing C++ development on a reasonably modern Linux, then you probably
 already have a suitable compiler installed. If not, on a Debian (or Ubuntu)
@@ -86,13 +85,26 @@ helpdesk. ``cmake`` is only needed to build the MessagePack dependency, so if
 that's already available then you don't need ``cmake```. On a cluster, there is
 usually a ``cmake`` module to load.
 
+MUSCLE3 can be built with **clang** as well, if you prefer. You'll need to
+install it using something like ``sudo apt-get install clang``, and modify the
+build command a bit, see below. Note that clang does not have a production-ready
+Fortran compiler yet, but the commands below will help you build the C++ part
+with clang, and the Fortran part with gfortran.
+
+For Intel®, you will have to install the Intel® oneAPI according to the
+instructions on the Intel® website. If you're on Ubuntu and you chose to use the
+repository, then you need at least ``intel-oneapi-compiler-dpcpp-cpp``
+and ``intel-oneapi-compiler-fortran``.
+
 If your submodels use MPI, then you'll need to compile the MPI support for
 MUSCLE3. This requires an MPI library to be available. Libmuscle has been
 tested with OpenMPI on Ubuntu, but should work with other MPI implementations
 (this being the point of the MPI standard). On Debian/Ubuntu, ``sudo apt-get
 install libopenmpi-dev`` will install the OpenMPI development files needed to
 compile libmuscle C++ with MPI support. On a cluster, there is probably a
-``module load openmpi`` or similar command to make MPI available. MUSCLE3 only
+``module load openmpi`` or similar command to make MPI available. If you are
+using the Intel® compiler, then you'll probably want to use Intel® MPI as well,
+which you can get from the ``intel-oneapi-mpi-devel`` package. MUSCLE3 only
 uses very basic MPI functionality, so any version should do. MUSCLE3 will
 automatically detect the availability of MPI, and build the MPI version of the
 library if MPI is available.
@@ -202,6 +214,34 @@ As an example, to build libmuscle using 2 cores, you would do:
 
 This will take a few minutes (including building the dependencies), depending on
 the speed of your machine.
+
+**Building with clang**
+
+To build with clang, use
+
+.. code-block:: bash
+
+  ~/mucle3_source/muscle3-%%VERSION%%$ CXXFLAGS=-fPIE OMPI_CXX=clang++ CXX=clang++ make
+
+
+This will tell the build system to use clang for compiling the C++ code and its
+MPI support, but still use gfortran to compile the Fortran code (if gfortran is
+installed). The extra ``-fPIE`` switch is needed to make that combination work
+on some common platforms.
+
+**Building with Intel®**
+
+To build with the Intel® compiler, use
+
+.. code-block:: bash
+
+  ~/muscle3_source/muscle3-%%VERSION%%$ CXX=icpx MPICXX='mpiicpc -cxx=icpx' FC=ifx MPIFC='mpiifort -fc=ifx' make
+
+
+This will tell the build system to use the Intel® C++ and Fortran compilers to
+compile MUSCLE3. Note that the Classic compilers (``icc`` and ``ifort``) seem to
+work for the library but not for the test suite. As they are obsolete, this will
+not be fixed.
 
 
 Getting help
@@ -385,29 +425,14 @@ command:
 If you have just installed MUSCLE3, then the above bits are currently on your
 screen, so you can just copy-paste them from there.
 
-Intel C++ compiler
+Intel® C++ compiler
 ``````````````````
 
-Compiling MUSCLE3 with the Intel compiler is currently not supported.
-Fortunately, in a typical multiscale simulation, only a small amount of time is
-spent communicating through MUSCLE3. Your submodels will spend most of their
-time either computing or waiting. Therefore, it helps to compile the submodels
-with the Intel compiler for some extra performance, but using the Intel compiler
-for MUSCLE3 doesn't add much anyway.
-
-To compile your submodels with the Intel compiler, first use the GNU compiler
-to install MUSCLE3. Then, switch to the Intel compiler, and use it to compile
-and link it to MUSCLE3 as described above. The compilers are link-compatible,
-so this should work. (See below if your model is written in Fortran, you need
-to do it slightly differently there.)
-
-Intel has recently made it a bit easier to install their proprietary compilers,
-which should allow us to integrated it into the Continuous Integration system.
-That should enable support for it in MUSCLE3, and since many people want to use
-the Intel compilers (especially for compiling Fortran codes) we plan to do so in
-a future release. If this interests you, please add a comment to the `issue on
-Intel compiler support <https://github.com/multiscale/muscle3/issues/25>`_ so we
-know.
+You can compile MUSCLE3 with the Intel® compiler as described above, and then
+use it for your model as well. It is also possible to compile MUSCLE3 with the
+GNU compiler and your model with the Intel® compiler, and link them together.
+(See below if your model is written in Fortran, you need to do it slightly
+differently there.)
 
 
 Fortran
@@ -546,15 +571,18 @@ command:
 If you have just installed MUSCLE3, then the above bits are currently on your
 screen, so you can just copy-paste them from there.
 
-Intel Fortran compiler
-``````````````````````
+Intel® Fortran compiler
+```````````````````````
 
-MUSCLE3 cannot currently be compiled with the Intel toolchain (see above under
-C++ for details). You can however compile your submodel with the Intel compiler
-and link it to the GNU-compiled MUSCLE3 library, because the compilers are
-almost compatible. The one issue is that the ``.mod`` files created by the GNU
-compiler (and installed when you install ``libmuscle``) cannot be read by the
-Intel compiler.
+MUSCLE3 can be compiled with the Intel® compilers as described above, after
+which you can compile your model with the Intel® Fortran compiler as well and
+link with libmuscle.
+
+Alternatively, you can compile MUSCLE3 with the GNU compilers, and then compile
+your model with the Intel® compilers and link it to the GNU-compiled MUSCLE3
+library, because the compilers are almost compatible. The one issue is that the
+``.mod`` files created by the GNU compiler (and installed when you install
+``libmuscle``) cannot be read by the Intel® compiler.
 
 To solve this, you need to use the corresponding ``.f90`` files instead. These
 are installed by in ``<PREFIX>/include``, and are called ``libmuscle.f90``,
@@ -562,11 +590,9 @@ are installed by in ``<PREFIX>/include``, and are called ``libmuscle.f90``,
 other source file in your submodel, and then link them with rest of the submodel
 and the shared library as described above.
 
-Intel has recently made it a bit easier to install their proprietary compilers,
-which should allow us to integrated it into the Continuous Integration system.
-That should enable support for it in MUSCLE3, and since many people want to use
-the Intel compilers (especially for compiling Fortran codes) we plan to do so in
-a future release. If this interests you, please add a comment to the `issue on
-Intel compiler support <https://github.com/multiscale/muscle3/issues/25>`_ so we
-know.
+
+.. rubric:: Footnotes
+
+.. [#f1] Intel and the Intel logo are trademarks of Intel Corporation or its
+         subsidiaries.
 

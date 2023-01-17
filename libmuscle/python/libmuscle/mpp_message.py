@@ -93,7 +93,7 @@ def _decode_grid(code: int, data: bytes) -> Grid:
             ExtTypeId.GRID_INT64: np.int64,
             ExtTypeId.GRID_FLOAT32: np.float32,
             ExtTypeId.GRID_FLOAT64: np.float64,
-            ExtTypeId.GRID_BOOL: np.bool8}
+            ExtTypeId.GRID_BOOL: np.bool_}
 
     order_map = {
             'fa': 'F',
@@ -151,7 +151,8 @@ class MPPMessage:
     def __init__(self, sender: Reference, receiver: Reference,
                  port_length: Optional[int],
                  timestamp: float, next_timestamp: Optional[float],
-                 settings_overlay: Settings, data: Any
+                 settings_overlay: Settings, message_number: int,
+                 saved_until: float, data: Any
                  ) -> None:
         """Create an MPPMessage.
 
@@ -169,14 +170,24 @@ class MPPMessage:
             receiver: The receiving endpoint.
             port_length: Length of the slot, where applicable.
             settings_overlay: The serialised overlay settings.
+            message_number: Sequence number on this conduit.
+            saved_until: Elapsed time until which the sender has
+                processed checkpoints.
             data: The serialised contents of the message.
         """
+        # make sure timestamp and next_timestamp are floats
+        timestamp = float(timestamp)
+        if next_timestamp is not None:
+            next_timestamp = float(next_timestamp)
+
         self.sender = sender
         self.receiver = receiver
         self.port_length = port_length
         self.timestamp = timestamp
         self.next_timestamp = next_timestamp
         self.settings_overlay = settings_overlay
+        self.message_number = message_number
+        self.saved_until = saved_until
         if isinstance(data, np.ndarray):
             self.data = Grid(data)
         else:
@@ -197,11 +208,13 @@ class MPPMessage:
         timestamp = message_dict["timestamp"]
         next_timestamp = message_dict["next_timestamp"]
         settings_overlay = message_dict["settings_overlay"]
+        message_number = message_dict["message_number"]
+        saved_until = message_dict["saved_until"]
 
         data = message_dict["data"]
         return MPPMessage(
                 sender, receiver, port_length, timestamp, next_timestamp,
-                settings_overlay, data)
+                settings_overlay, message_number, saved_until, data)
 
     def encoded(self) -> bytes:
         """Encode the message and return as a bytes buffer.
@@ -213,6 +226,8 @@ class MPPMessage:
                 'timestamp': self.timestamp,
                 'next_timestamp': self.next_timestamp,
                 'settings_overlay': self.settings_overlay,
+                'message_number': self.message_number,
+                'saved_until': self.saved_until,
                 'data': self.data
                 }
 

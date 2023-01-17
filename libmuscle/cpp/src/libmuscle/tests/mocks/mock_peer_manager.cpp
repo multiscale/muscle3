@@ -28,7 +28,7 @@ bool MockPeerManager::is_connected(Identifier const & port) const {
     return is_connected_return_value;
 }
 
-Reference MockPeerManager::get_peer_port(Identifier const & port) const {
+std::vector<Reference> MockPeerManager::get_peer_ports(Identifier const & port) const {
     return get_peer_port_table.at(port);
 }
 
@@ -42,7 +42,7 @@ std::vector<std::string> MockPeerManager::get_peer_locations(
     return std::vector<std::string>({std::string("tcp:test")});
 }
 
-Endpoint MockPeerManager::get_peer_endpoint(
+std::vector<Endpoint> MockPeerManager::get_peer_endpoints(
         Identifier const & port,
         std::vector<int> const & slot
         ) const
@@ -74,9 +74,9 @@ PeerDims MockPeerManager::last_constructed_peer_dims;
 PeerLocations MockPeerManager::last_constructed_peer_locations;
 
 bool MockPeerManager::is_connected_return_value;
-std::unordered_map<Identifier, Reference> MockPeerManager::get_peer_port_table;
+std::unordered_map<Identifier, std::vector<Reference>> MockPeerManager::get_peer_port_table;
 std::unordered_map<Reference, std::vector<int>> MockPeerManager::get_peer_dims_table;
-std::unordered_map<Reference, Endpoint> MockPeerManager::get_peer_endpoint_table;
+std::unordered_map<Reference, std::vector<Endpoint>> MockPeerManager::get_peer_endpoint_table;
 
 } }
 

@@ -109,8 +109,10 @@ std::unique_ptr<Communicator> connected_communicator() {
             {Reference("other"), {"tcp:test"}}});
 
     MockPeerManager::get_peer_dims_table.emplace("other", std::vector<int>({1}));
-    MockPeerManager::get_peer_endpoint_table.emplace("out", Endpoint("other", {}, "in", {13}));
-    MockPeerManager::get_peer_endpoint_table.emplace("in", Endpoint("other", {}, "out", {13}));
+    MockPeerManager::get_peer_endpoint_table.emplace("out",
+            std::vector<Endpoint>({Endpoint("other", {}, "in", {13})}));
+    MockPeerManager::get_peer_endpoint_table.emplace("in",
+            std::vector<Endpoint>({Endpoint("other", {}, "out", {13})}));
 
     comm->connect(conduits, peer_dims, peer_locations);
     return std::move(comm);
@@ -130,8 +132,10 @@ std::unique_ptr<Communicator> connected_communicator2() {
             {Reference("kernel"), {"tcp:test"}}});
 
     MockPeerManager::get_peer_dims_table.emplace("kernel", std::vector<int>({20}));
-    MockPeerManager::get_peer_endpoint_table.emplace("in[13]", Endpoint("kernel", {13}, "out", {}));
-    MockPeerManager::get_peer_endpoint_table.emplace("out[13]", Endpoint("kernel", {13}, "in", {}));
+    MockPeerManager::get_peer_endpoint_table.emplace("in[13]",
+            std::vector<Endpoint>({Endpoint("kernel", {13}, "out", {})}));
+    MockPeerManager::get_peer_endpoint_table.emplace("out[13]",
+            std::vector<Endpoint>({Endpoint("kernel", {13}, "in", {})}));
 
     comm->connect(conduits, peer_dims, peer_locations);
     return std::move(comm);
@@ -156,10 +160,14 @@ std::unique_ptr<Communicator> connected_communicator3() {
             {Reference("other"), {"tcp:test"}}});
 
     MockPeerManager::get_peer_dims_table.emplace("other", std::vector<int>({}));
-    MockPeerManager::get_peer_endpoint_table.emplace("out[13]", Endpoint("other", {}, "in", {13}));
-    MockPeerManager::get_peer_endpoint_table.emplace("in[13]", Endpoint("other", {}, "out", {13}));
-    MockPeerManager::get_peer_port_table.emplace("out", "other.in");
-    MockPeerManager::get_peer_port_table.emplace("in", "other.out");
+    MockPeerManager::get_peer_endpoint_table.emplace("out[13]",
+            std::vector<Endpoint>({Endpoint("other", {}, "in", {13})}));
+    MockPeerManager::get_peer_endpoint_table.emplace("in[13]",
+            std::vector<Endpoint>({Endpoint("other", {}, "out", {13})}));
+    MockPeerManager::get_peer_port_table.emplace("out",
+            std::vector<Reference>({"other.in"}));
+    MockPeerManager::get_peer_port_table.emplace("in",
+            std::vector<Reference>({"other.out"}));
 
     comm->connect(conduits, peer_dims, peer_locations);
     return std::move(comm);
@@ -239,9 +247,12 @@ TEST(libmuscle_communicator, test_connect_vector_ports) {
             {Reference("other3"), {"tcp:test3"}}
             });
 
-    MockPeerManager::get_peer_port_table.emplace("in", "other1.out");
-    MockPeerManager::get_peer_port_table.emplace("out1", "other.in");
-    MockPeerManager::get_peer_port_table.emplace("out2", "other3.in");
+    MockPeerManager::get_peer_port_table.emplace("in",
+            std::vector<Reference>({"other1.out"}));
+    MockPeerManager::get_peer_port_table.emplace("out1",
+            std::vector<Reference>({"other.in"}));
+    MockPeerManager::get_peer_port_table.emplace("out2",
+            std::vector<Reference>({"other3.in"}));
 
     MockPeerManager::get_peer_dims_table.emplace("other1", std::vector<int>({20, 7}));
     MockPeerManager::get_peer_dims_table.emplace("other", std::vector<int>({25}));
@@ -294,7 +305,8 @@ TEST(libmuscle_communicator, test_connect_multidimensional_ports) {
             {Reference("other"), {"tcp:test"}}
             });
 
-    MockPeerManager::get_peer_port_table.emplace("in", "other.out");
+    MockPeerManager::get_peer_port_table.emplace("in",
+            std::vector<Reference>({"other.out"}));
     MockPeerManager::get_peer_dims_table.emplace("other", std::vector<int>({20, 7, 30}));
 
     ASSERT_THROW(
@@ -330,9 +342,12 @@ TEST(libmuscle_communicator, test_connect_inferred_ports) {
             {Reference("other2"), {"tcp:test2"}}
             });
 
-    MockPeerManager::get_peer_port_table.emplace("in", "other1.out");
-    MockPeerManager::get_peer_port_table.emplace("out1", "other.in");
-    MockPeerManager::get_peer_port_table.emplace("out3", "other2.in");
+    MockPeerManager::get_peer_port_table.emplace("in",
+            std::vector<Reference>({"other1.out"}));
+    MockPeerManager::get_peer_port_table.emplace("out1",
+            std::vector<Reference>({"other.in"}));
+    MockPeerManager::get_peer_port_table.emplace("out3",
+            std::vector<Reference>({"other2.in"}));
 
     MockPeerManager::get_peer_dims_table.emplace("other1", std::vector<int>({20, 7}));
     MockPeerManager::get_peer_dims_table.emplace("other", std::vector<int>({25}));

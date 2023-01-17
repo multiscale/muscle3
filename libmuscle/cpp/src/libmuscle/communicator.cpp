@@ -116,29 +116,34 @@ void Communicator::send_message(
         // log sending on disconnected port
         return;
 
-    // Port const & port = ports_.at(port_name);
+    Port & port = ports_.at(port_name);
 
     // TODO start profile event
 
-    Endpoint recv_endpoint = peer_manager_->get_peer_endpoint(
+    auto recv_endpoints = peer_manager_->get_peer_endpoints(
             snd_endpoint.port, slot_list);
 
     Data settings_overlay(message.settings());
 
     Optional<int> port_length;
-    if (ports_.at(port_name).is_resizable())
-        port_length = ports_.at(port_name).get_length();
+    if (port.is_resizable())
+        port_length = port.get_length();
 
-    MPPMessage mpp_message(
-            snd_endpoint.ref(), recv_endpoint.ref(),
-            port_length, message.timestamp(), Optional<double>(),
-            settings_overlay, message.data());
+    for (auto recv_endpoint : recv_endpoints) {
+        MPPMessage mpp_message(
+                snd_endpoint.ref(), recv_endpoint.ref(),
+                port_length, message.timestamp(), Optional<double>(),
+                settings_overlay, port.get_num_messages(slot), -1.0,
+                message.data());
 
-    if (message.has_next_timestamp())
-        mpp_message.next_timestamp = message.next_timestamp();
+        if (message.has_next_timestamp())
+            mpp_message.next_timestamp = message.next_timestamp();
 
-    auto message_bytes = std::make_unique<DataConstRef>(mpp_message.encoded());
-    post_office_.deposit(recv_endpoint.ref(), std::move(message_bytes));
+        auto message_bytes = std::make_unique<DataConstRef>(mpp_message.encoded());
+        post_office_.deposit(recv_endpoint.ref(), std::move(message_bytes));
+    }
+
+    port.increment_num_messages(slot);
 
     // TODO: stop and complete profile event
 }
@@ -177,8 +182,10 @@ Message Communicator::receive_message(
 
     // TODO start profile event
 
-    Endpoint snd_endpoint = peer_manager_->get_peer_endpoint(
-            recv_endpoint.port, slot_list);
+    // peer_manager already checks that there is at most one snd_endpoint
+    // connected to the port we receive on
+    Endpoint snd_endpoint = peer_manager_->get_peer_endpoints(
+            recv_endpoint.port, slot_list).at(0);
     MPPClient & client = get_client_(snd_endpoint.instance());
     auto mpp_message = MPPMessage::from_bytes(
             client.receive(recv_endpoint.ref()));
@@ -203,6 +210,33 @@ Message Communicator::receive_message(
     }
 
     // TODO stop and finalise profile event
+
+    int expected_message_number = port.get_num_messages(slot);
+    // TODO: handle f_init port counts for STATELESS and WEAKLY_STATEFUL
+    // components which didn't load a snapshot
+    if (expected_message_number != mpp_message.message_number) {
+        if (expected_message_number - 1 == mpp_message.message_number and
+                port.is_resuming(slot)) {
+            if (slot.is_set())
+                logger_.debug("Discarding received message on ", port_name,
+                              "[", slot.get(), "]: resuming from weakly",
+                              " consistent snapshot");
+            else
+                logger_.debug("Discarding received message on ", port_name,
+                              ": resuming from weakly constistent snapshot");
+            port.set_resumed(slot);
+            return receive_message(port_name, slot, default_msg);
+        }
+        std::ostringstream oss;
+        oss << "Received message on " << port_name;
+        if (slot.is_set())
+            oss << "[" << slot.get() << "]";
+        oss << " with unexpected message number " << mpp_message.message_number;
+        oss << ". Was expecting " << expected_message_number;
+        oss << ". Are you resuming from an inconsistent snapshot?";
+        throw std::runtime_error(oss.str());
+    }
+    port.increment_num_messages(slot);
 
     if (slot.is_set())
         logger_.debug("Received message on ", port_name, "[", slot.get(), "]");
@@ -260,9 +294,31 @@ Communicator::Ports_ Communicator::ports_from_declared_() {
             bool is_connected = peer_manager_->is_connected(port_name);
             std::vector<int> port_peer_dims;
             if (is_connected) {
-                Reference peer_port = peer_manager_->get_peer_port(port_name);
+                auto peer_ports = peer_manager_->get_peer_ports(port_name);
+                Reference peer_port = peer_ports.at(0);
                 Reference peer_ce(peer_port.cbegin(), std::prev(peer_port.cend()));
                 port_peer_dims = peer_manager_->get_peer_dims(peer_ce);
+                for (std::size_t i = 1; i < peer_ports.size(); i++) {
+                    peer_port = peer_ports.at(i);
+                    peer_ce = Reference(peer_port.cbegin(), std::prev(peer_port.cend()));
+                    if (port_peer_dims != peer_manager_->get_peer_dims(peer_ce)) {
+                        std::stringstream ss;
+                        ss << "Multicast port \"" << port_name;
+                        ss << "\" is connected to peers with different";
+                        ss << " dimensions. All peer components that this";
+                        ss << " port is connected to must have the same";
+                        ss << " multiplicity. Connected to ports: ";
+                        bool first = true;
+                        for (auto port : peer_ports) {
+                            if (first)
+                                first = false;
+                            else
+                                ss << ", ";
+                            ss << port;
+                        }
+                        throw std::runtime_error(ss.str());
+                    }
+                }
             }
             ports.emplace(port_name, Port(
                     port_name, ppo.first, is_vector, is_connected,

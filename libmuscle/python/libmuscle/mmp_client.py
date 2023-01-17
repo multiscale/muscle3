@@ -1,20 +1,29 @@
+import dataclasses
+from pathlib import Path
 from random import uniform
 from time import perf_counter, sleep
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import msgpack
-from ymmsl import Conduit, Operator, Port, Reference, Settings
+from ymmsl import (
+        Conduit, Operator, Port, Reference, Settings, Checkpoints,
+        CheckpointRule, CheckpointRangeRule, CheckpointAtRule)
 
+import libmuscle
 from libmuscle.mcp.protocol import RequestType, ResponseType
 from libmuscle.mcp.tcp_transport_client import TcpTransportClient
 from libmuscle.profiling import ProfileEvent
 from libmuscle.logging import LogMessage
+from libmuscle.snapshot import SnapshotMetadata
 
 
 CONNECTION_TIMEOUT = 300
 PEER_TIMEOUT = 600
 PEER_INTERVAL_MIN = 5.0
 PEER_INTERVAL_MAX = 10.0
+
+_CheckpointInfoType = Tuple[
+        float, Checkpoints, Optional[Path], Optional[Path]]
 
 
 def encode_operator(op: Operator) -> str:
@@ -43,6 +52,46 @@ def encode_profile_event(event: ProfileEvent) -> Any:
             event.event_type.value,
             encoded_port, event.port_length, event.slot,
             event.message_size]
+
+
+def decode_checkpoint_rule(rule: Dict[str, Any]) -> CheckpointRule:
+    """Decode a checkpoint rule from a MsgPack-compatible value."""
+    if rule.keys() == {'at'}:
+        return CheckpointAtRule(**rule)
+    if rule.keys() == {'start', 'stop', 'every'}:
+        return CheckpointRangeRule(**rule)
+    raise ValueError(f'Cannot convert {rule} to a checkpoint rule.')
+
+
+def decode_checkpoint_info(
+        elapsed_time: float,
+        checkpoints_dict: Dict[str, Any],
+        resume: Optional[str],
+        snapshot_dir: Optional[str]
+        ) -> _CheckpointInfoType:
+    """Decode checkpoint info from a MsgPack-compatible value.
+
+    Args:
+        elapsed_time: current elapsed time according to the manager
+        checkpoints_dict: checkpoint definitions from the MsgPack
+        resume: path to the snapshot we should resume from, if any
+        snapshot_dir: path to the directory to store new snapshots in
+
+    Returns:
+        elapsed_time: current elapsed time according to the manager
+        checkpoints: checkpoint configuration
+        resume: path to the snapshot we should resume from, if any
+        snapshot_dir: path to the directory to store new snapshots in
+    """
+    checkpoints = Checkpoints(
+            at_end=checkpoints_dict["at_end"],
+            wallclock_time=[decode_checkpoint_rule(rule)
+                            for rule in checkpoints_dict["wallclock_time"]],
+            simulation_time=[decode_checkpoint_rule(rule)
+                             for rule in checkpoints_dict["simulation_time"]])
+    resume_path = None if resume is None else Path(resume)
+    snapshot_path = None if snapshot_dir is None else Path(snapshot_dir)
+    return (elapsed_time, checkpoints, resume_path, snapshot_path)
 
 
 class MMPClient():
@@ -93,6 +142,21 @@ class MMPClient():
                 [encode_profile_event(e) for e in events]]
         self._call_manager(request)
 
+    def submit_snapshot_metadata(
+                self, name: Reference, snapshot_metadata: SnapshotMetadata
+                ) -> None:
+        """Send snapshot metadata to the manager.
+
+        Args:
+            name: Name of the instance in the simulation.
+            snapshot_metadata: Snapshot metadata to supply to the manager.
+        """
+        request = [
+                RequestType.SUBMIT_SNAPSHOT.value,
+                str(name),
+                dataclasses.asdict(snapshot_metadata)]
+        self._call_manager(request)
+
     def get_settings(self) -> Settings:
         """Get the central settings from the manager.
 
@@ -102,6 +166,19 @@ class MMPClient():
         request = [RequestType.GET_SETTINGS.value]
         response = self._call_manager(request)
         return Settings(response[1])
+
+    def get_checkpoint_info(self, name: Reference) -> _CheckpointInfoType:
+        """Get the checkpoint info from the manager.
+
+        Returns:
+            elapsed_time: current elapsed time
+            checkpoints: checkpoint configuration
+            resume: path to the resume snapshot
+            snapshot_directory: path to store snapshots
+        """
+        request = [RequestType.GET_CHECKPOINT_INFO.value, str(name)]
+        response = self._call_manager(request)
+        return decode_checkpoint_info(*response[1:])
 
     def register_instance(self, name: Reference, locations: List[str],
                           ports: List[Port]) -> None:
@@ -116,9 +193,10 @@ class MMPClient():
         request = [
                 RequestType.REGISTER_INSTANCE.value,
                 str(name), locations,
-                [encode_port(p) for p in ports]]
+                [encode_port(p) for p in ports],
+                libmuscle.__version__]
         response = self._call_manager(request)
-        if len(response) > 1:
+        if response[0] == ResponseType.ERROR.value:
             raise RuntimeError(
                     f'Error registering instance: {response[1]}')
 

@@ -17,10 +17,6 @@
     :target: https://www.codacy.com/gh/multiscale/muscle3/dashboard
     :alt: Codacy Grade
 
-.. image:: https://requires.io/github/multiscale/muscle3/requirements.svg?branch=master
-     :target: https://requires.io/github/multiscale/muscle3/requirements/?branch=master
-     :alt: Requirements Status
-
 .. image:: https://zenodo.org/badge/122876985.svg
    :target: https://zenodo.org/badge/latestdoi/122876985
 
@@ -40,7 +36,8 @@ Legal
 =====
 
 MUSCLE3 is Copyright 2018-2022 University of Amsterdam and Netherlands eScience
-Center. It is licensed under the Apache License 2.0.
+Center, Copyright 2023 Netherlands eScience Center, and Copyright 2022-2023 The
+ITER Organisation. It is licensed under the Apache License 2.0.
 
 
 Contributing

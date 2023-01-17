@@ -148,6 +148,8 @@ class QCGPJInstantiator(mp.Process):
         """
         qcg_iters = dict()  # type: Dict[Reference, qcg_SchedulingIteration]
 
+        await asyncio.sleep(0.01)  # allow requests_in queue to be populated
+
         shutting_down = False
         done = False
         while not done:
@@ -178,8 +180,6 @@ class QCGPJInstantiator(mp.Process):
                 except queue.Empty:
                     break
 
-            await asyncio.sleep(0.1)
-
             for name, process in list(self._state_tracker.processes.items()):
                 if process.status.is_finished():
                     _logger.debug(f'Reporting {name} done')
@@ -189,6 +189,9 @@ class QCGPJInstantiator(mp.Process):
             if shutting_down:
                 _logger.debug(f'Done: {self._state_tracker.processes}')
                 done = len(self._state_tracker.processes) == 0
+
+            if not done:
+                await asyncio.sleep(0.1)
 
         _logger.debug('Stopping executor')
         await self._executor.stop()
@@ -390,7 +393,8 @@ class QCGPJInstantiator(mp.Process):
                 modules=impl.modules,
                 venv=str(impl.virtual_env) if impl.virtual_env else None,
                 wd=str(request.work_dir),
-                model=qcg_execution_model)
+                model=qcg_execution_model,
+                model_opts={'srun_opts': ['--overlap']})
 
     def _with_local_open_mpi(
             self, executable: str, args: List[str], num_processes: int

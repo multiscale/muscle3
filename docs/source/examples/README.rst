@@ -5,7 +5,7 @@ This directory contains examples for MUSCLE3. Once you've `installed MUSCLE3
 <https://muscle3.readthedocs.io/en/latest/installing.html>`_, you can build them
 by activating the installation and running Make from this directory, like this:
 
-.. code-block: bash
+.. code-block:: bash
 
     examples$ . /path/to/muscle3/bin/muscle3.env
     examples$ make
@@ -20,7 +20,7 @@ have MPI available, then those examples will be built as well.
 
 You can also build for each language separately, using
 
-.. code-block: bash
+.. code-block:: bash
 
     examples$ make python
     examples$ make cpp
@@ -42,7 +42,7 @@ submodels. Finally, you'll want to apply the settings, which are in
 For example, to run the all-Python version of the reaction-diffusion model, you
 can use:
 
-.. code-block: bash
+.. code-block:: bash
 
     examples$ muscle_manager --start-all rd_implementations.ymmsl rd_python.ymmsl rd_settings.ymmsl
 

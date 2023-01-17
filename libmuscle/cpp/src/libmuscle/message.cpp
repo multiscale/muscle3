@@ -7,6 +7,14 @@ using ymmsl::Settings;
 namespace libmuscle { namespace impl {
 
 Message::Message(
+        double timestamp)
+    : timestamp_(timestamp)
+    , next_timestamp_()
+    , data_()
+    , settings_()
+{}
+
+Message::Message(
         double timestamp,
         DataConstRef const & data)
     : timestamp_(timestamp)

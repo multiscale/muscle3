@@ -20,7 +20,7 @@ MUSCLE3 is intended to scale from your laptop to the exascale. At the low end,
 it supports a non-distributed but parallel mode in which an entire multiscale
 simulation, including all component implementations and the MMSL configuration,
 is in a single (short) Python file. Next is a distributed mode where the
-manager and component instances are started on multiple nodes in a cluster, and
+manager and component instances run on multiple nodes in a cluster, and
 communicate directly with one another. Beyond that, additional components and
 optimisations are envisioned that would allow scaling to huge machines or
 combinations of multiple machines. Our goal is to make the transitions between

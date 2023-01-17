@@ -13,8 +13,8 @@ def reaction() -> None:
     """A simple exponential reaction model on a 1D grid.
     """
     instance = Instance({
-            Operator.F_INIT: ['initial_state'],     # list of float
-            Operator.O_F: ['final_state']})         # list of float
+            Operator.F_INIT: ['initial_state'],     # 1D Grid
+            Operator.O_F: ['final_state']})         # 1D Grid
 
     while instance.reuse_instance():
         # F_INIT
@@ -34,7 +34,7 @@ def reaction() -> None:
             t_cur += dt
 
         # O_F
-        instance.send('final_state', Message(t_cur, None, Grid(U, ['x'])))
+        instance.send('final_state', Message(t_cur, data=Grid(U, ['x'])))
 
 
 def laplacian(Z: np.array, dx: float) -> np.array:

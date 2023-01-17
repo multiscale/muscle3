@@ -47,11 +47,13 @@ extensions = [
         'breathe',
         'sphinx.ext.autodoc',
         'sphinx.ext.autosectionlabel',
+        'sphinx.ext.intersphinx',
         'sphinx.ext.napoleon',
         'sphinx.ext.todo',
         'sphinx.ext.viewcode',
         'sphinxfortran.fortran_domain',
-        'sphinx_tabs.tabs']
+        'sphinx_tabs.tabs',
+        'sphinx_click']
 
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ['_templates']
@@ -67,7 +69,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'muscle3'
-copyright = '2018-2022 University of Amsterdam and Netherlands eScience Center'
+copyright = '2018-2022 University of Amsterdam and Netherlands eScience Center, 2023 Netherlands eScience Center, and 2022-2023 The ITER Organization'
 author = 'Lourens Veen'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -108,6 +110,15 @@ breathe_projects = { 'libmuscle': str(_rootpath / 'docs' / 'doxygen' / 'xml') }
 breathe_default_project = 'libmuscle'
 
 breathe_default_members = ('members',)
+
+# Configuration of sphinx.ext.intersphinx
+# See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3/", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
+    "ymmsl": ("https://ymmsl-python.readthedocs.io/en/stable", None),
+}
+
 
 # -- Patch version into installation instructions --
 def patch_installation_version():

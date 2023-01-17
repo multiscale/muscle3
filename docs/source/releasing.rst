@@ -8,6 +8,22 @@ branching model. Making a release involves quite a few steps, so they're listed
 here to help make the process more reliable; this information is really only
 useful for the maintainers.
 
+Check online documentation
+--------------------------
+
+Online documentation rendering on ReadTheDoc works a bit differently than local
+builds, as a result of which checking a local documentation build only partially
+ensures we get working online documentation. So this needs to be checked:
+
+- Check develop branch documentation is there
+- Specifically, check the Python API documentation page
+- Check the other languages too
+
+If the Python API docs are missing, then it's likely to be a dependency problem.
+Sphinx needs dependencies installed, and that's now done via tox so that the
+dependencies come from ``setup.py`` and local builds should match what RTD does,
+but it's still not the same process, so it's best to check.
+
 Check metadata
 --------------
 

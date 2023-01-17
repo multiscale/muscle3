@@ -18,6 +18,9 @@ namespace libmuscle { namespace impl { namespace mcp {
  */
 class RequestHandler {
     public:
+        /** Destruct the object */
+        virtual ~RequestHandler();
+
         /** Handle a request
          *
          * Requests may be handled immediately, or they may be deferred if a
@@ -65,6 +68,10 @@ class TransportServer {
          * @param handler: A handler to handle requests
          */
         TransportServer(RequestHandler & handler);
+
+        /** Destroy the Transport Server object
+         */
+        virtual ~TransportServer() = default;
 
         /** Returns the location this server listens on.
          *

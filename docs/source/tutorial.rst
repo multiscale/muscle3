@@ -228,7 +228,7 @@ Sending the final result
 .. code-block:: python
 
   # O_F
-  instance.send('final_state', Message(t_cur, None, Grid(U, ['x'])))
+  instance.send('final_state', Message(t_cur, data=Grid(U, ['x'])))
 
 
 After the update loop is done, the model has arrived at its final state. We
@@ -240,9 +240,7 @@ Execution Loop, so that is where we declared this port to live in our
 
 To send a message, we specify the port on which to send (which must match the
 declaration by name and operator), and a Message object containing the current
-simulation time and the current state, converted to a Grid. The optional second
-parameter is a second timestamp, which will be discussed below, and is set to
-``None`` here.
+simulation time and the current state, converted to a Grid.
 
 MUSCLE3 uses `MessagePack <https://msgpack.org>`_ to encode messages between
 models. MessagePack is a binary encoding format which can be thought of as a
@@ -334,7 +332,8 @@ So, to make your submodel more generically usable, it's good to set the second
 timestamp. But perhaps you're trying to connect an existing codebase that uses
 varying timestep sizes, and it's not easy to get it to tell you how big the
 next timestep will be. In that case, if you're not doing time scale overlap,
-just put ``None`` there and move on to the next problem, it'll work just fine.
+just create your message via ``Message(timestamp, data=...)`` or put ``None``
+as ``next_timestamp`` and move on to the next problem, it'll work just fine.
 
 Receiving messages with a default
 ---------------------------------

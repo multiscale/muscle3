@@ -1,4 +1,4 @@
-module tests
+module message_tests
     use assert
     implicit none
 contains
@@ -141,10 +141,10 @@ contains
         call LIBMUSCLE_Message_free(m1)
         print *, '[       OK ] message.settings'
     end subroutine test_message_settings
-end module tests
+end module message_tests
 
 program test_message
-    use tests
+    use message_tests
     implicit none
 
     print *, ''

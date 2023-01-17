@@ -1,14 +1,23 @@
-import msgpack
-from ymmsl import Operator, Reference
+import dataclasses
+from pathlib import Path
+from unittest.mock import MagicMock
 
+import msgpack
+from ymmsl import (
+        Operator, Reference, Checkpoints, CheckpointRangeRule, CheckpointAtRule)
+
+import libmuscle
 from libmuscle.logging import LogLevel
 from libmuscle.manager.mmp_server import MMPRequestHandler
 from libmuscle.mcp.protocol import RequestType, ResponseType
+from libmuscle.snapshot import SnapshotMetadata
 
 
-def test_create_servicer(logger, settings, instance_registry,
-                         topology_store):
-    MMPRequestHandler(logger, settings, instance_registry, topology_store)
+def test_create_servicer(logger, mmp_configuration, instance_registry,
+                         topology_store, snapshot_registry):
+    MMPRequestHandler(
+            logger, mmp_configuration, instance_registry, topology_store,
+            snapshot_registry, None)
 
 
 def test_log_message(mmp_request_handler, caplog):
@@ -31,7 +40,7 @@ def test_log_message(mmp_request_handler, caplog):
     assert caplog.records[0].message == 'Testing log message'
 
 
-def test_get_settings(settings, mmp_request_handler):
+def test_get_settings(mmp_configuration, mmp_request_handler):
     request = [RequestType.GET_SETTINGS.value]
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
@@ -42,12 +51,12 @@ def test_get_settings(settings, mmp_request_handler):
     assert decoded_result[0] == ResponseType.SUCCESS.value
     assert decoded_result[1] == {}
 
-    settings['test1'] = 13
-    settings['test2'] = 12.3
-    settings['test3'] = 'testing'
-    settings['test4'] = True
-    settings['test5'] = [2.3, 7.4]
-    settings['test6'] = [[1.0, 2.0], [2.0, 1.0]]
+    mmp_configuration.settings['test1'] = 13
+    mmp_configuration.settings['test2'] = 12.3
+    mmp_configuration.settings['test3'] = 'testing'
+    mmp_configuration.settings['test4'] = True
+    mmp_configuration.settings['test5'] = [2.3, 7.4]
+    mmp_configuration.settings['test6'] = [[1.0, 2.0], [2.0, 1.0]]
 
     result = mmp_request_handler.handle_request(encoded_request)
     decoded_result = msgpack.unpackb(result, raw=False)
@@ -63,7 +72,7 @@ def test_get_settings(settings, mmp_request_handler):
     assert result_dict['test4'] is True
     assert result_dict['test5'] == [2.3, 7.4]
     assert result_dict['test6'] == [[1.0, 2.0], [2.0, 1.0]]
-    assert result_dict == settings.as_ordered_dict()
+    assert result_dict == mmp_configuration.settings.as_ordered_dict()
 
 
 def test_register_instance(mmp_request_handler, instance_registry):
@@ -71,7 +80,8 @@ def test_register_instance(mmp_request_handler, instance_registry):
             RequestType.REGISTER_INSTANCE.value,
             'test_instance',
             ['tcp://localhost:10000'],
-            [['test_in', 'F_INIT']]]
+            [['test_in', 'F_INIT']],
+            libmuscle.__version__]
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
     result = mmp_request_handler.handle_request(encoded_request)
@@ -86,12 +96,90 @@ def test_register_instance(mmp_request_handler, instance_registry):
     assert registered_ports['test_instance'][0].operator == Operator.F_INIT
 
 
-def test_double_register_instance(mmp_request_handler):
+def test_register_instance_no_version(mmp_request_handler):
     request = [
             RequestType.REGISTER_INSTANCE.value,
             'test_instance',
             ['tcp://localhost:10000'],
             [['test_in', 'F_INIT']]]
+    encoded_request = msgpack.packb(request, use_bin_type=True)
+
+    result = mmp_request_handler.handle_request(encoded_request)
+    decoded_result = msgpack.unpackb(result, raw=False)
+
+    assert decoded_result[0] == ResponseType.ERROR.value
+    assert 'version' in decoded_result[1]
+
+
+def test_register_instance_version_mismatch(mmp_request_handler):
+    request = [
+            RequestType.REGISTER_INSTANCE.value,
+            'test_instance',
+            ['tcp://localhost:10000'],
+            [['test_in', 'F_INIT']],
+            libmuscle.__version__ + "dev"]
+    encoded_request = msgpack.packb(request, use_bin_type=True)
+
+    result = mmp_request_handler.handle_request(encoded_request)
+    decoded_result = msgpack.unpackb(result, raw=False)
+
+    assert decoded_result[0] == ResponseType.ERROR.value
+    assert 'version' in decoded_result[1]
+
+
+def test_get_checkpoint_info(mmp_configuration, mmp_request_handler):
+    resume_path = Path('/path/to/resume.pack')
+    mmp_configuration.resume = {Reference('test_instance'): resume_path}
+    mmp_configuration.checkpoints = Checkpoints(
+            True,
+            [CheckpointRangeRule(every=10), CheckpointAtRule([1, 2, 3.0])])
+
+    request = [RequestType.GET_CHECKPOINT_INFO.value, 'test_instance']
+    encoded_request = msgpack.packb(request, use_bin_type=True)
+
+    result = mmp_request_handler.handle_request(encoded_request)
+    decoded_result = msgpack.unpackb(result, raw=False)
+
+    assert decoded_result[0] == ResponseType.SUCCESS.value
+    elapsed_time, checkpoints, resume, snapshot_directory = decoded_result[1:]
+
+    assert elapsed_time > 0.0
+
+    assert isinstance(checkpoints, dict)
+    assert checkpoints.keys() == {'at_end', 'wallclock_time', 'simulation_time'}
+    assert checkpoints['at_end'] is True
+    assert checkpoints['simulation_time'] == []
+    wallclock_time = checkpoints['wallclock_time']
+    assert len(wallclock_time) == 2
+    assert wallclock_time[0] == {'start': None, 'stop': None, 'every': 10}
+    assert wallclock_time[1] == {'at': [1, 2, 3.0]}
+
+    assert resume is not None
+    assert Path(resume) == resume_path
+
+    assert snapshot_directory is None
+
+
+def test_get_checkpoint_info2(registered_mmp_request_handler2, tmp_path):
+    request = [RequestType.GET_CHECKPOINT_INFO.value, 'test_instance']
+    encoded_request = msgpack.packb(request, use_bin_type=True)
+
+    result = registered_mmp_request_handler2.handle_request(encoded_request)
+    decoded_result = msgpack.unpackb(result, raw=False)
+
+    assert decoded_result[0] == ResponseType.SUCCESS.value
+    snapshot_directory = decoded_result[4]
+    assert snapshot_directory == (
+            str(tmp_path) + '/instances/test_instance/snapshots')
+
+
+def test_double_register_instance(mmp_request_handler):
+    request = [
+            RequestType.REGISTER_INSTANCE.value,
+            'test_instance',
+            ['tcp://localhost:10000'],
+            [['test_in', 'F_INIT']],
+            libmuscle.__version__]
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
     result = mmp_request_handler.handle_request(encoded_request)
@@ -228,3 +316,24 @@ def test_request_peers_unknown(registered_mmp_request_handler2):
     assert status == ResponseType.ERROR.value
     assert error_msg is not None
     assert 'does_not_exist' in error_msg
+
+
+def test_submit_snapshot(registered_mmp_request_handler):
+    register_snapshot = MagicMock()
+    registered_mmp_request_handler._snapshot_registry.register_snapshot = \
+        register_snapshot
+
+    instance_id = 'micro[1][2]'
+    snapshot = SnapshotMetadata(
+            ['1', '2'], 1.234, 2.345, 3.456,
+            {'in': [1], 'out': [0]}, True, 'fname')
+    snapshot_dict = dataclasses.asdict(snapshot)
+
+    request = [RequestType.SUBMIT_SNAPSHOT.value, instance_id, snapshot_dict]
+    encoded_request = msgpack.packb(request, use_bin_type=True)
+
+    result = registered_mmp_request_handler.handle_request(encoded_request)
+    decoded_result = msgpack.unpackb(result, raw=False)
+
+    assert decoded_result[0] == ResponseType.SUCCESS.value
+    register_snapshot.assert_called_once_with(Reference(instance_id), snapshot)

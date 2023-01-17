@@ -402,6 +402,7 @@ module libmuscle
     end type LIBMUSCLE_Message
     public :: LIBMUSCLE_Message
 
+    public :: LIBMUSCLE_Message_create_t
     public :: LIBMUSCLE_Message_create_td
     public :: LIBMUSCLE_Message_create_tnd
     public :: LIBMUSCLE_Message_create_tds
@@ -2784,6 +2785,13 @@ module libmuscle
             integer (c_size_t), intent(out) :: err_msg_len
         end subroutine LIBMUSCLE_PortsDescription_get_
 
+        integer (c_intptr_t) function LIBMUSCLE_Message_create_t_(timestamp) &
+                bind(C, name="LIBMUSCLE_Message_create_t_")
+
+            use iso_c_binding
+            real (c_double), value, intent(in) :: timestamp
+        end function LIBMUSCLE_Message_create_t_
+
         integer (c_intptr_t) function LIBMUSCLE_Message_create_td_( &
                 timestamp, &
                 data) &
@@ -3798,6 +3806,7 @@ module libmuscle
 
     interface LIBMUSCLE_Message_create
         module procedure &
+            LIBMUSCLE_Message_create_t, &
             LIBMUSCLE_Message_create_td, &
             LIBMUSCLE_Message_create_tnd, &
             LIBMUSCLE_Message_create_tds, &
@@ -6009,6 +6018,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -6067,6 +6077,8 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+                allocate (character(0) :: LIBMUSCLE_DataConstRef_as_character)
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -6123,6 +6135,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -6175,6 +6188,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -6227,6 +6241,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -6279,6 +6294,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -6331,6 +6347,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -6383,6 +6400,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -6435,6 +6453,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -6488,6 +6507,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -6546,6 +6566,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -6603,6 +6624,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -6659,6 +6681,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -6711,6 +6734,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -6769,6 +6793,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -6786,7 +6811,7 @@ contains
         end if
 
         call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
-        shp = f_ret_ptr
+        shp(1:ret_val_size) = f_ret_ptr
     end subroutine LIBMUSCLE_DataConstRef_shape
 
     subroutine LIBMUSCLE_DataConstRef_elements_1_logical( &
@@ -9238,6 +9263,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -9299,6 +9325,8 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+                allocate (character(0) :: LIBMUSCLE_DataConstRef_index)
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -11442,6 +11470,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -11500,6 +11529,8 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+                allocate (character(0) :: LIBMUSCLE_Data_as_character)
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -11556,6 +11587,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -11608,6 +11640,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -11660,6 +11693,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -11712,6 +11746,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -11764,6 +11799,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -11816,6 +11852,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -11868,6 +11905,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -11921,6 +11959,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -11979,6 +12018,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -12036,6 +12076,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -12092,6 +12133,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -12144,6 +12186,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -12202,6 +12245,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -12219,7 +12263,7 @@ contains
         end if
 
         call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
-        shp = f_ret_ptr
+        shp(1:ret_val_size) = f_ret_ptr
     end subroutine LIBMUSCLE_Data_shape
 
     subroutine LIBMUSCLE_Data_elements_1_logical( &
@@ -14671,6 +14715,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -14732,6 +14777,8 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+                allocate (character(0) :: LIBMUSCLE_Data_index)
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -14977,6 +15024,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -15032,6 +15080,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -15087,6 +15136,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -15142,6 +15192,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -15197,6 +15248,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -15252,6 +15304,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -15307,6 +15360,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -15362,6 +15416,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -15417,6 +15472,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -15472,6 +15528,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -15527,6 +15584,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -15582,6 +15640,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -15637,6 +15696,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -15692,6 +15752,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -15747,6 +15808,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -15802,6 +15864,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -15857,6 +15920,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -15912,6 +15976,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -15972,6 +16037,8 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+                allocate (character(0) :: LIBMUSCLE_Data_key)
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -16032,6 +16099,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -16149,6 +16217,8 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+                allocate (character(0) :: LIBMUSCLE_PortsDescription_get)
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -16171,6 +16241,20 @@ contains
             LIBMUSCLE_PortsDescription_get(i_loop:i_loop) = f_ret_ptr(i_loop)
         end do
     end function LIBMUSCLE_PortsDescription_get
+
+    function LIBMUSCLE_Message_create_t( &
+            timestamp)
+        implicit none
+        real (LIBMUSCLE_real8), intent(in) :: timestamp
+        type(LIBMUSCLE_Message) :: LIBMUSCLE_Message_create_t
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Message_create_t_( &
+            timestamp)
+
+        LIBMUSCLE_Message_create_t%ptr = ret_val
+    end function LIBMUSCLE_Message_create_t
 
     function LIBMUSCLE_Message_create_td( &
             timestamp, &
@@ -16556,6 +16640,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -16612,6 +16697,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -16668,6 +16754,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -16724,6 +16811,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -16780,6 +16868,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -16836,6 +16925,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -16897,6 +16987,8 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+                allocate (character(0) :: LIBMUSCLE_Instance_get_setting_as_character)
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -16956,6 +17048,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -17011,6 +17104,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -17067,6 +17161,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -17128,6 +17223,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -17190,6 +17286,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -17376,6 +17473,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -17435,6 +17533,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -17494,6 +17593,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -17556,6 +17656,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -17612,6 +17713,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -17671,6 +17773,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -17730,6 +17833,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
@@ -17792,6 +17896,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
+
                 return
             else
                 call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))

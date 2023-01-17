@@ -30,7 +30,7 @@ double Echo::echo_double(double value) const {
 }
 
 bool Echo::echo_bool(bool value) const {
-    assert(value == true);
+    assert(value);
     return value;
 }
 

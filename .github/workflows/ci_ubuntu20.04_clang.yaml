@@ -1,0 +1,19 @@
+# Run Continuous Integration for the latest Ubuntu release
+# This mainly checks for issues/regressions in the native build
+name: native_compatibility_ubuntu20.04_clang
+on:
+  schedule:
+    - cron: '30 3 * * 0'
+  push:
+    branches:
+      - 'release-*'
+      - fix_native_compatibility_ci
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Run tests on Ubuntu 20.04 with Clang
+      run: docker run -v "${GITHUB_WORKSPACE}:/workspace" --env LC_ALL=C.UTF-8 --env LANG=C.UTF-8 --env DEBIAN_FRONTEND=noninteractive ubuntu:20.04 /bin/bash -c 'apt-get update && apt-get -y dist-upgrade && apt-get -y install build-essential clang cmake gfortran git valgrind libopenmpi-dev pkg-config python3 python3-pip python3-venv curl && apt-get -y remove libssl-dev zlib1g-dev && useradd -m -d /home/muscle3 muscle3 && su muscle3 -c -- "cp -r --preserve=mode /workspace /home/muscle3/muscle3" && su muscle3 -c -- "pip3 install --user -U \"pip<22\" setuptools wheel" && su muscle3 -c -- "pip3 install --user \"ymmsl>=0.13.0,<0.14\" qcg-pilotjob==0.13.1" && su muscle3 -c -- "cd /home/muscle3/muscle3 && CXXFLAGS=-fPIE OMPI_CXX=clang++ CXX=clang++ make test_examples"'

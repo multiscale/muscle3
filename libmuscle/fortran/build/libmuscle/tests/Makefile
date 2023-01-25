@@ -47,6 +47,10 @@ endif
 
 CPP_BUILD_DIR := $(CURDIR)/../../../../cpp/build
 
+LDFLAGS += -L../../ymmsl
+LDFLAGS += -L../../../../cpp/build/libmuscle
+LDFLAGS += -L../../../../cpp/build/ymmsl
+
 LDFLAGS += -pthread $(CURDIR)/../libmuscle_fortran.a $(CURDIR)/../../ymmsl/libymmsl_fortran.a
 LDFLAGS += $(CPP_BUILD_DIR)/libmuscle/libmuscle_d.a $(CPP_BUILD_DIR)/ymmsl/libymmsl_d.a
 

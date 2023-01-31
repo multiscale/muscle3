@@ -919,6 +919,11 @@ Instance::Instance(
                 , communicator, root
 #endif
                 ))
+#ifdef MUSCLE_ENABLE_MPI
+    , has_mpi_(true)
+#else
+    , has_mpi_(false)
+#endif
 {}
 
 Instance::~Instance() = default;
@@ -1045,10 +1050,24 @@ Message Instance::receive_with_settings(
 }
 
 Instance::Impl const * Instance::impl_() const {
+# ifdef MUSCLE_ENABLE_MPI
+    if (! has_mpi_)
+        throw std::runtime_error("Object constructed without MPI");
+# else
+    if (has_mpi_)
+        throw std::runtime_error("Object constructed with MPI");
+# endif
     return pimpl_.get();
 }
 
 Instance::Impl * Instance::impl_() {
+# ifdef MUSCLE_ENABLE_MPI
+    if (! has_mpi_)
+        throw std::runtime_error("Object constructed without MPI");
+# else
+    if (has_mpi_)
+        throw std::runtime_error("Object constructed with MPI");
+# endif
     return pimpl_.get();
 }
 

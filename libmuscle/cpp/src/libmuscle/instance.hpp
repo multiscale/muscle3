@@ -523,6 +523,7 @@ class Instance {
     private:
         class Impl;
         std::unique_ptr<Impl> pimpl_;
+        bool has_mpi_;
 
         Impl const * impl_() const;
         Impl * impl_();

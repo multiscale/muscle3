@@ -903,6 +903,11 @@ Instance::Instance(
                 , communicator, root
 #endif
                 ))
+#ifdef MUSCLE_ENABLE_MPI
+    , has_mpi_(true)
+#else
+    , has_mpi_(false)
+#endif
 {}
 
 Instance::Instance(

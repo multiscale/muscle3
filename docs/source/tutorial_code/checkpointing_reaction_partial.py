@@ -8,8 +8,8 @@ def reaction() -> None:
     """A simple exponential reaction model on a 1D grid.
     """
     instance = Instance({
-            Operator.F_INIT: ['initial_state'],     # list of float
-            Operator.O_F: ['final_state']},         # list of float
+            Operator.F_INIT: ['initial_state'],     # 1D Grid
+            Operator.O_F: ['final_state']},         # 1D Grid
             USES_CHECKPOINT_API)
 
     while instance.reuse_instance():

@@ -20,7 +20,7 @@ class Profiler:
         # TODO: use a background thread for flushing
         self._instance_id = instance_id
         self._manager = manager
-        self._events = list()   # type: List[ProfileEvent]
+        self._events: List[ProfileEvent] = []
 
     def start(self, event_type: ProfileEventType, port: Optional[Port] = None,
               port_length: Optional[int] = None, slot: Optional[int] = None,

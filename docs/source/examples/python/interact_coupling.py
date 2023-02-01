@@ -55,10 +55,10 @@ class DataCache:
 
         The cache starts out empty.
         """
-        self.t_cur = None       # type: Optional[float]
-        self.data_cur = None    # type: Optional[Any]
-        self.t_next = None      # type: Optional[float]
-        self.data_next = None   # type: Optional[Any]
+        self.t_cur: Optional[float] = None
+        self.data_cur: Optional[Any] = None
+        self.t_next: Optional[float] = None
+        self.data_next: Optional[Any] = None
 
     def add_data(self, t: float, data: Any) -> None:
         """Add new data to the cache.

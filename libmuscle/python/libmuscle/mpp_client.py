@@ -24,7 +24,7 @@ class MPPClient:
         Args:
             locations: The peer's location strings
         """
-        client = None       # type: Optional[TransportClient]
+        client: Optional[TransportClient] = None
         for ClientType in transport_client_types:
             for location in locations:
                 if ClientType.can_connect_to(location):

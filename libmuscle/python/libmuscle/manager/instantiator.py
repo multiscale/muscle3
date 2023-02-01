@@ -47,8 +47,8 @@ class Process:
         self.instance = instance
         self.resources = resources
         self.status = ProcessStatus.STARTED
-        self.exit_code = None   # type: Optional[int]
-        self.error_msg = None   # type: Optional[str]
+        self.exit_code: Optional[int] = None
+        self.error_msg: Optional[str] = None
 
 
 class InstantiatorRequest:

@@ -209,9 +209,8 @@ def test_oversubscribe(
 def test_oversubscribe_single_instance_threaded() -> None:
     model = Model('single_instance', [Component('x', 'x', ports=Ports())])
     impl = [Implementation(Reference('x'), script='x')]
-    reqs = {
-            Reference('x'): ThreadedResReq(Reference('x'), 24)
-            }   # type: Dict[Reference, ResourceRequirements]
+    reqs: Dict[Reference, ResourceRequirements] = {
+            Reference('x'): ThreadedResReq(Reference('x'), 24)}
     config = Configuration(model, None, impl, reqs)
 
     res = Resources({'node001': {1, 2, 3, 4}})
@@ -225,9 +224,8 @@ def test_oversubscribe_single_instance_threaded() -> None:
 def test_oversubscribe_single_instance_mpi() -> None:
     model = Model('single_instance', [Component('x', 'x', ports=Ports())])
     impl = [Implementation(Reference('x'), script='x')]
-    reqs = {
-            Reference('x'): MPICoresResReq(Reference('x'), 24)
-            }   # type: Dict[Reference, ResourceRequirements]
+    reqs: Dict[Reference, ResourceRequirements] = {
+            Reference('x'): MPICoresResReq(Reference('x'), 24)}
     config = Configuration(model, None, impl, reqs)
 
     res = Resources({'node001': {1, 2, 3, 4}})
@@ -241,9 +239,8 @@ def test_oversubscribe_single_instance_mpi() -> None:
 def test_virtual_allocation() -> None:
     model = Model('ensemble', [Component('x', 'x', 9, ports=Ports())])
     impl = [Implementation(Reference('x'), script='x')]
-    reqs = {
-            Reference('x'): MPICoresResReq(Reference('x'), 13)
-            }   # type: Dict[Reference, ResourceRequirements]
+    reqs: Dict[Reference, ResourceRequirements] = {
+            Reference('x'): MPICoresResReq(Reference('x'), 13)}
     config = Configuration(model, None, impl, reqs)
 
     res = Resources({'node000001': {1, 2, 3, 4}})
@@ -259,9 +256,8 @@ def test_virtual_allocation() -> None:
 def test_impossible_virtual_allocation() -> None:
     model = Model('ensemble', [Component('x', 'x', 9, ports=Ports())])
     impl = [Implementation(Reference('x'), script='x')]
-    reqs = {
-            Reference('x'): ThreadedResReq(Reference('x'), 13)
-            }   # type: Dict[Reference, ResourceRequirements]
+    reqs: Dict[Reference, ResourceRequirements] = {
+            Reference('x'): ThreadedResReq(Reference('x'), 13)}
     config = Configuration(model, None, impl, reqs)
 
     res = Resources({'node000001': {1, 2, 3, 4}})

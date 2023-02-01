@@ -10,7 +10,7 @@ class Outbox:
     def __init__(self) -> None:
         """Create an empty Outbox.
         """
-        self.__queue = Queue()  # type: Queue[bytes]
+        self.__queue: Queue[bytes] = Queue()
 
     def is_empty(self) -> bool:
         """Returns True iff the outbox is empty.

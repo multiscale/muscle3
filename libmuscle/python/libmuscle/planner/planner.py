@@ -26,21 +26,21 @@ class ModelGraph:
         """
         self._model = model
 
-        self._direct_superpreds = dict()    # type: _PredSuccType
-        self._direct_predecessors = dict()  # type: _PredSuccType
-        self._direct_subpreds = dict()      # type: _PredSuccType
+        self._direct_superpreds: _PredSuccType = {}
+        self._direct_predecessors: _PredSuccType = {}
+        self._direct_subpreds: _PredSuccType = {}
 
-        self._direct_supersuccs = dict()    # type: _PredSuccType
-        self._direct_successors = dict()    # type: _PredSuccType
-        self._direct_subsuccs = dict()      # type: _PredSuccType
+        self._direct_supersuccs: _PredSuccType = {}
+        self._direct_successors: _PredSuccType = {}
+        self._direct_subsuccs: _PredSuccType = {}
 
-        self._superpreds = dict()           # type: _PredSuccType
-        self._predecessors = dict()         # type: _PredSuccType
-        self._subpreds = dict()             # type: _PredSuccType
+        self._superpreds: _PredSuccType = {}
+        self._predecessors: _PredSuccType = {}
+        self._subpreds: _PredSuccType = {}
 
-        self._supersuccs = dict()           # type: _PredSuccType
-        self._successors = dict()           # type: _PredSuccType
-        self._subsuccs = dict()             # type: _PredSuccType
+        self._supersuccs: _PredSuccType = {}
+        self._successors: _PredSuccType = {}
+        self._subsuccs: _PredSuccType = {}
 
         self._calc_direct_succs_preds()
         self._calc_predecessors()
@@ -158,10 +158,10 @@ class ModelGraph:
                 for c in self._model.components}
 
         todo = set(self._model.components)
-        started = set()     # type: Set[Component]
-        doing = set()       # type: Set[Component]
-        finished = set()    # type: Set[Component]
-        done = set()        # type: Set[Component]
+        started: Set[Component] = set()
+        doing: Set[Component] = set()
+        finished: Set[Component] = set()
+        done: Set[Component] = set()
         while todo or doing:
             started.clear()
             for component in todo:
@@ -234,10 +234,10 @@ class ModelGraph:
                 for c in self._model.components}
 
         todo = set(self._model.components)
-        started = set()     # type: Set[Component]
-        doing = set()       # type: Set[Component]
-        finished = set()    # type: Set[Component]
-        done = set()        # type: Set[Component]
+        started: Set[Component] = set()
+        doing: Set[Component] = set()
+        finished: Set[Component] = set()
+        done: Set[Component] = set()
         while todo or doing:
             started.clear()
             for component in todo:
@@ -346,7 +346,7 @@ class Resources:
             cores: Cores to be designated by this object.
         """
         if cores is None:
-            self.cores = dict()     # type: Dict[str, Set[int]]
+            self.cores: Dict[str, Set[int]] = {}
         else:
             self.cores = cores
 
@@ -429,8 +429,8 @@ class Planner:
                     to be managed by this ResourceManager.
         """
         self._all_resources = all_resources
-        self._allocations = dict()  # type: Dict[Reference, Resources]
-        self._oversubscribed = dict()   # type: Dict[Reference, Resources]
+        self._allocations: Dict[Reference, Resources] = {}
+        self._oversubscribed: Dict[Reference, Resources] = {}
         self._next_virtual_node = 1
 
     def allocate_all(
@@ -458,7 +458,7 @@ class Planner:
         Returns:
             Resources for each instance required by the model.
         """
-        result = dict()     # type: Dict[Reference, Resources]
+        result: Dict[Reference, Resources] = {}
 
         # Analyse model
         model = ModelGraph(configuration.model)
@@ -472,7 +472,7 @@ class Planner:
         # Allocate
         unallocated_instances = [
                 i for c in model.components() for i in c.instances()]
-        leftover_instances = list()     # type: List[Reference]
+        leftover_instances: List[Reference] = []
         while unallocated_instances:
             leftover_instances.clear()
 

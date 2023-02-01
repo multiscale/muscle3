@@ -103,8 +103,7 @@ def _decode_grid(code: int, data: bytes) -> Grid:
     order = order_map[grid_dict['order']]
     shape = tuple(grid_dict['shape'])
     dtype = type_map[ExtTypeId(code)]
-    array = np.ndarray(     # type: ignore
-            shape, dtype, grid_dict['data'], order=order)   # type: ignore
+    array = np.ndarray(shape, dtype, grid_dict['data'], order=order)  # type: ignore
     indexes = grid_dict['indexes']
     if indexes == []:
         indexes = None

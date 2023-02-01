@@ -154,10 +154,10 @@ class Instance:
         self._trigger_manager = TriggerManager()
         """Keeps track of checkpoints and triggers snapshots."""
 
-        self._first_run = None          # type: Optional[bool]
+        self._first_run: Optional[bool] = None
         """Whether this is the first iteration of the reuse loop"""
 
-        self._do_reuse = None           # type: Optional[bool]
+        self._do_reuse: Optional[bool] = None
         """Whether to enter this iteration of the reuse loop
 
         This is None during the reuse loop, and set between
@@ -170,7 +170,7 @@ class Instance:
         self._do_init = False
         """Whether to do f_init on this iteration of the reuse loop"""
 
-        self._f_init_cache = dict()     # type: _FInitCacheType
+        self._f_init_cache: _FInitCacheType = {}
         """Stores pre-received messages for f_init ports"""
 
         self._register()
@@ -910,7 +910,7 @@ class Instance:
         option and splits it into a component name and an index.
         """
         def split_reference(ref: Reference) -> Tuple[Reference, List[int]]:
-            index = list()     # type: List[int]
+            index: List[int] = []
             i = 0
             while i < len(ref) and isinstance(ref[i], Identifier):
                 i += 1

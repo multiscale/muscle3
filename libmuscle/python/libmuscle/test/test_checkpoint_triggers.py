@@ -142,7 +142,7 @@ def test_trigger_manager_reference_time():
     trigger_manager.set_checkpoint_info(ref_elapsed, Checkpoints(at_end=True))
     elapsed_walltime = trigger_manager.elapsed_walltime()
     duration = time.monotonic() - monotonic_start
-    assert ref_elapsed < elapsed_walltime <= (ref_elapsed + duration)
+    assert ref_elapsed < elapsed_walltime < (ref_elapsed + duration)
 
 
 def test_trigger_manager():

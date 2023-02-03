@@ -46,4 +46,31 @@ class Snapshot {
         ::ymmsl::Settings settings_overlay_;
 };
 
+/** Metadata of a snapshot for sending to the muscle_manager.
+ */
+class SnapshotMetadata {
+    public:
+        SnapshotMetadata(
+                std::vector<std::string> triggers,
+                double wallclock_time,
+                double timestamp,
+                Optional<double> next_timestamp,
+                std::unordered_map<std::string, std::vector<int>> port_message_counts,
+                bool is_final_snapshot,
+                std::string snapshot_filename);
+
+        /** Create snapshot metadata from the given snapshot and filename
+         */
+        static SnapshotMetadata from_snapshot(
+                Snapshot const & snapshot, std::string snapshot_filename);
+
+        std::vector<std::string> triggers_;
+        double wallclock_time_;
+        double timestamp_;
+        Optional<double> next_timestamp_;
+        std::unordered_map<std::string, std::vector<int>> port_message_counts_;
+        bool is_final_snapshot_;
+        std::string snapshot_filename_;
+};
+
 } }

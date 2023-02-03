@@ -1,5 +1,7 @@
 #include <libmuscle/snapshot.hpp>
 
+#include <cmath>
+
 #include <msgpack.hpp>
 
 #include <libmuscle/mcp/data_pack.hpp>
@@ -119,6 +121,43 @@ DataConstRef Snapshot::to_bytes() const {
     memcpy(bytes.as_byte_array(), sbuf.data(), sbuf.size());
 
     return bytes;
+}
+
+SnapshotMetadata::SnapshotMetadata(
+            std::vector<std::string> triggers,
+            double wallclock_time,
+            double timestamp,
+            Optional<double> next_timestamp,
+            std::unordered_map<std::string, std::vector<int>> port_message_counts,
+            bool is_final_snapshot,
+            std::string snapshot_filename)
+        : triggers_(triggers)
+        , wallclock_time_(wallclock_time)
+        , timestamp_(timestamp)
+        , next_timestamp_(next_timestamp)
+        , port_message_counts_(port_message_counts)
+        , is_final_snapshot_(is_final_snapshot)
+        , snapshot_filename_(snapshot_filename)
+    {}
+
+SnapshotMetadata SnapshotMetadata::from_snapshot(
+        Snapshot const & snapshot, std::string snapshot_filename) {
+    double timestamp = NAN;
+    Optional<double> next_timestamp;
+    if (snapshot.message_.is_set()) {
+        timestamp = snapshot.message_.get().timestamp();
+        if (snapshot.message_.get().has_next_timestamp()) {
+            next_timestamp = snapshot.message_.get().next_timestamp();
+        }
+    }
+    return SnapshotMetadata(
+            snapshot.triggers_,
+            snapshot.wallclock_time_,
+            timestamp,
+            next_timestamp,
+            snapshot.port_message_counts_,
+            snapshot.is_final_snapshot_,
+            snapshot_filename);
 }
 
 } }

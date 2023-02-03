@@ -4,7 +4,9 @@
 
 using libmuscle::impl::Data;
 using libmuscle::impl::Message;
+using libmuscle::impl::Optional;
 using libmuscle::impl::Snapshot;
+using libmuscle::impl::SnapshotMetadata;
 
 int main(int argc, char *argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
@@ -56,4 +58,43 @@ TEST(libmuscle_snapshot, test_snapshot) {
     ASSERT_EQ(snapshot.message_.get().data().as<std::string>(),
               snapshot2.message_.get().data().as<std::string>());
     ASSERT_EQ(snapshot.settings_overlay_, snapshot2.settings_overlay_);
+}
+
+TEST(libmuscle_snapshot, test_snapshot_metadata) {
+    auto snapshot = create_snapshot();
+
+    auto metadata = SnapshotMetadata::from_snapshot(snapshot, "test");
+    ASSERT_EQ(metadata.triggers_, snapshot.triggers_);
+    ASSERT_EQ(metadata.wallclock_time_, snapshot.wallclock_time_);
+    ASSERT_EQ(metadata.port_message_counts_, snapshot.port_message_counts_);
+    ASSERT_EQ(metadata.is_final_snapshot_, snapshot.is_final_snapshot_);
+    ASSERT_EQ(metadata.timestamp_, snapshot.message_.get().timestamp());
+    ASSERT_EQ(metadata.next_timestamp_.is_set(),
+              snapshot.message_.get().has_next_timestamp());
+    ASSERT_EQ(metadata.snapshot_filename_, "test");
+}
+
+TEST(libmuscle_snapshot, test_message_with_settings) {
+    ::ymmsl::Settings settings;
+    settings["settings"] = true;
+    Message message(1.0, 2.0, "test_data", settings);
+    Snapshot snapshot ({}, 0, {}, false, message, {});
+    ASSERT_TRUE(snapshot.message_.get().settings().at("settings").as<bool>());
+
+    auto binary_snapshot = snapshot.to_bytes();
+    Snapshot snapshot2 = Snapshot::from_bytes(binary_snapshot);
+
+    ASSERT_TRUE(snapshot2.message_.get().settings().at("settings").as<bool>());
+}
+
+TEST(libmuscle_snapshot, test_implicit_snapshot) {
+    Optional<Message> message;
+    Snapshot snapshot({}, 0, {}, true, message, {});
+    ASSERT_FALSE(snapshot.message_.is_set());
+
+
+    auto binary_snapshot = snapshot.to_bytes();
+    Snapshot snapshot2 = Snapshot::from_bytes(binary_snapshot);
+
+    ASSERT_FALSE(snapshot2.message_.is_set());
 }

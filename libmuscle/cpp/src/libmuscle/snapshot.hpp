@@ -16,6 +16,10 @@ namespace libmuscle { namespace impl {
  */
 class Snapshot {
     public:
+        enum class VersionByte : char {
+            MESSAGEPACK = '1'
+        };
+
         Snapshot(
                 std::vector<std::string> triggers,
                 double wallclock_time,
@@ -51,18 +55,18 @@ class Snapshot {
 class SnapshotMetadata {
     public:
         SnapshotMetadata(
-                std::vector<std::string> triggers,
+                std::vector<std::string> const & triggers,
                 double wallclock_time,
                 double timestamp,
                 Optional<double> next_timestamp,
-                std::unordered_map<std::string, std::vector<int>> port_message_counts,
+                std::unordered_map<std::string, std::vector<int>> const & port_message_counts,
                 bool is_final_snapshot,
-                std::string snapshot_filename);
+                std::string const & snapshot_filename);
 
         /** Create snapshot metadata from the given snapshot and filename
          */
         static SnapshotMetadata from_snapshot(
-                Snapshot const & snapshot, std::string snapshot_filename);
+                Snapshot const & snapshot, std::string const & snapshot_filename);
 
         std::vector<std::string> triggers_;
         double wallclock_time_;

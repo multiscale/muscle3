@@ -124,13 +124,13 @@ DataConstRef Snapshot::to_bytes() const {
 }
 
 SnapshotMetadata::SnapshotMetadata(
-            std::vector<std::string> triggers,
+            std::vector<std::string> const & triggers,
             double wallclock_time,
             double timestamp,
             Optional<double> next_timestamp,
-            std::unordered_map<std::string, std::vector<int>> port_message_counts,
+            std::unordered_map<std::string, std::vector<int>> const & port_message_counts,
             bool is_final_snapshot,
-            std::string snapshot_filename)
+            std::string const & snapshot_filename)
         : triggers_(triggers)
         , wallclock_time_(wallclock_time)
         , timestamp_(timestamp)
@@ -141,7 +141,7 @@ SnapshotMetadata::SnapshotMetadata(
     {}
 
 SnapshotMetadata SnapshotMetadata::from_snapshot(
-        Snapshot const & snapshot, std::string snapshot_filename) {
+        Snapshot const & snapshot, std::string const & snapshot_filename) {
     double timestamp = NAN;
     Optional<double> next_timestamp;
     if (snapshot.message_.is_set()) {

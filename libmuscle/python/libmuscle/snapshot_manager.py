@@ -43,7 +43,7 @@ class SnapshotManager:
         self._communicator = communicator
         self._manager = manager
 
-        self._resume_from_snapshot = None   # type: Optional[Snapshot]
+        self._resume_from_snapshot: Optional[Snapshot] = None
         self._resume_overlay = Settings()
         self._next_snapshot_num = 1
 
@@ -65,7 +65,7 @@ class SnapshotManager:
         Returns:
             Time at which the initial snapshot was saved, if resuming.
         """
-        result = None       # type: Optional[float]
+        result: Optional[float] = None
         self._snapshot_directory = snapshot_directory or Path.cwd()
         if resume_snapshot is not None:
             snapshot = self.load_snapshot_from_file(resume_snapshot)

@@ -87,7 +87,7 @@ class TcpTransportServer(TransportServer):
         """
         host, port = self._server.server_address
 
-        locs = list()   # type: List[str]
+        locs: List[str] = []
         for address in self._get_if_addresses():
             locs.append('{}:{}'.format(address, port))
         return 'tcp:{}'.format(','.join(locs))
@@ -103,7 +103,7 @@ class TcpTransportServer(TransportServer):
         self._server.server_close()
 
     def _get_if_addresses(self) -> List[str]:
-        all_addresses = list()  # type: List[str]
+        all_addresses: List[str] = []
         ifs = netifaces.interfaces()
         for interface in ifs:
             addrs = netifaces.ifaddresses(interface)

@@ -57,7 +57,7 @@ class Manager:
                     self._configuration,
                     self._run_dir.path / 'configuration.ymmsl')
 
-        self._instance_manager = None    # type: Optional[InstanceManager]
+        self._instance_manager: Optional[InstanceManager] = None
         try:
             configuration = self._configuration.as_configuration()
             if self._run_dir is not None:

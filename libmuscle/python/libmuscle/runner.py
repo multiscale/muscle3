@@ -96,7 +96,7 @@ def implementation_process(
         implementation: Callable) -> None:
     prefix_tag = '--muscle-prefix='
     name_prefix = str()
-    index_prefix = list()   # type: List[int]
+    index_prefix: List[int] = []
 
     instance = Reference(instance_id)
 
@@ -182,7 +182,7 @@ def _parse_prefix(prefix: str) -> Tuple[str, List[int]]:
         return int(number), i
 
     name = str()
-    index = list()  # type: List[int]
+    index: List[int] = []
     i = 0
 
     if i == len(prefix):
@@ -212,7 +212,7 @@ def _parse_prefix(prefix: str) -> Tuple[str, List[int]]:
 
 
 def _split_reference(ref: Reference) -> Tuple[Reference, List[int]]:
-    index = list()     # type: List[int]
+    index: List[int] = []
     i = 0
     while i < len(ref) and isinstance(ref[i], Identifier):
         i += 1

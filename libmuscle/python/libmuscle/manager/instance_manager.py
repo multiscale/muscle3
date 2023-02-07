@@ -65,10 +65,10 @@ class InstanceManager:
         self._configuration = configuration
         self._run_dir = run_dir
 
-        self._resources_in = Queue()    # type: Queue[Resources]
-        self._requests_out = Queue()    # type: Queue[InstantiatorRequest]
-        self._results_in = Queue()      # type: Queue[_ResultType]
-        self._log_records_in = Queue()  # type: Queue[logging.LogRecord]
+        self._resources_in: Queue[Resources] = Queue()
+        self._requests_out: Queue[InstantiatorRequest] = Queue()
+        self._results_in: Queue[_ResultType] = Queue()
+        self._log_records_in: Queue[logging.LogRecord] = Queue()
 
         self._instantiator = QCGPJInstantiator(
                 self._resources_in, self._requests_out, self._results_in,

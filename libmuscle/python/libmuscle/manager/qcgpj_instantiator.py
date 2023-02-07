@@ -46,7 +46,7 @@ class StateTracker:
     """
     def __init__(self) -> None:
         """Create a StateTracker."""
-        self.processes = dict()     # type: Dict[Reference, Process]
+        self.processes: Dict[Reference, Process] = {}
 
         # These are for communicating with QCG-PJ
         self.queued_to_execute = 0
@@ -122,8 +122,7 @@ class QCGPJInstantiator(mp.Process):
         self._reconfigure_logging()
 
         # Executor needs to be instantiated before we go async
-        qcg_config = {
-                qcg_Config.AUX_DIR: str(qcgpj_dir)}     # type: Dict[str, str]
+        qcg_config: Dict[str, str] = {qcg_Config.AUX_DIR: str(qcgpj_dir)}
         self._qcg_resources = qcg_get_resources(qcg_config)
         self._state_tracker = StateTracker()
         self._executor = qcg_Executor(
@@ -146,7 +145,7 @@ class QCGPJInstantiator(mp.Process):
         jobs, stopping them, or shutting down. Results of finished jobs
         are returned via the results queue.
         """
-        qcg_iters = dict()  # type: Dict[Reference, qcg_SchedulingIteration]
+        qcg_iters: Dict[Reference, qcg_SchedulingIteration] = {}
 
         await asyncio.sleep(0.01)  # allow requests_in queue to be populated
 

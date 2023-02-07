@@ -31,7 +31,7 @@ class TcpTransportClient(TransportClient):
         """
         addresses = location[4:].split(',')
 
-        sock = None     # type: Optional[socket.SocketType]
+        sock: Optional[socket.SocketType] = None
         for address in addresses:
             try:
                 sock = self._connect(address)

@@ -92,7 +92,7 @@ class RangeCheckpointTrigger(CheckpointTrigger):
         self._start = range.start
         self._stop = range.stop
         self._every = range.every
-        self._last = None  # type: Union[int, float, None]
+        self._last: Union[int, float, None] = None
         if self._stop is not None:
             start = 0 if self._start is None else self._start
             diff = self._stop - start
@@ -127,8 +127,8 @@ class CombinedCheckpointTriggers(CheckpointTrigger):
         Args:
             checkpoint_rules: checkpoint rules (from ymmsl)
         """
-        self._triggers = []     # type: List[CheckpointTrigger]
-        at_rules = []           # type: List[CheckpointAtRule]
+        self._triggers: List[CheckpointTrigger] = []
+        at_rules: List[CheckpointAtRule] = []
         for rule in checkpoint_rules:
             if isinstance(rule, CheckpointAtRule):
                 if rule.at:
@@ -165,7 +165,7 @@ class TriggerManager:
 
     def __init__(self) -> None:
         self._has_checkpoints = False
-        self._last_triggers = []    # type: List[str]
+        self._last_triggers: List[str] = []
         self._cpts_considered_until = float('-inf')
 
     def set_checkpoint_info(
@@ -184,11 +184,11 @@ class TriggerManager:
 
         self._wall = CombinedCheckpointTriggers(checkpoints.wallclock_time)
         self._prevwall = 0.0
-        self._nextwall = self._wall.next_checkpoint(0.0)  # type: Optional[float]
+        self._nextwall: Optional[float] = self._wall.next_checkpoint(0.0)
 
         self._sim = CombinedCheckpointTriggers(checkpoints.simulation_time)
-        self._prevsim = None        # type: Optional[float]
-        self._nextsim = None        # type: Optional[float]
+        self._prevsim: Optional[float] = None
+        self._nextsim: Optional[float] = None
 
     def elapsed_walltime(self) -> float:
         """Returns elapsed wallclock_time in seconds.

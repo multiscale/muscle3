@@ -90,16 +90,16 @@ class Communicator:
         self._post_office = PostOffice()
         self._profiler = profiler
 
-        self._servers = list()  # type: List[TransportServer]
+        self._servers: List[TransportServer] = []
 
         # indexed by remote instance id
-        self._clients = dict()  # type: Dict[Reference, MPPClient]
+        self._clients: Dict[Reference, MPPClient] = {}
 
         for server_type in transport_server_types:
             server = server_type(self._post_office)
             self._servers.append(server)
 
-        self._ports = dict()   # type: Dict[str, Port]
+        self._ports: Dict[str, Port] = {}
 
     def get_locations(self) -> List[str]:
         """Returns a list of locations that we can be reached at.
@@ -156,7 +156,7 @@ class Communicator:
             port names. Operators with no associated ports are not
             included.
         """
-        result = dict()     # type: Dict[Operator, List[str]]
+        result: Dict[Operator, List[str]] = {}
         for port_name, port in self._ports.items():
             if port.operator not in result:
                 result[port.operator] = list()
@@ -197,7 +197,7 @@ class Communicator:
         """
         if slot is None:
             _logger.debug('Sending message on {}'.format(port_name))
-            slot_list = []  # type: List[int]
+            slot_list: List[int] = []
         else:
             _logger.debug('Sending message on {}[{}]'.format(port_name, slot))
             slot_list = [slot]
@@ -273,7 +273,7 @@ class Communicator:
         """
         if slot is None:
             port_and_slot = port_name
-            slot_list = []      # type: List[int]
+            slot_list: List[int] = []
         else:
             port_and_slot = f"{port_name}[{slot}]"
             slot_list = [slot]

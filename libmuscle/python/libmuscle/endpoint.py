@@ -51,10 +51,10 @@ class Endpoint:
             port: Name of the port used.
             slot: Slot on which to send or receive.
         """
-        self.kernel = kernel  # type: Reference
-        self.index = index    # type: List[int]
-        self.port = port      # type: Identifier
-        self.slot = slot      # type: List[int]
+        self.kernel = kernel
+        self.index = index
+        self.port = port
+        self.slot = slot
 
     def ref(self) -> Reference:
         """Express as Reference.

@@ -18,8 +18,8 @@ class InstanceRegistry:
     def __init__(self) -> None:
         """Construct an empty InstanceRegistry"""
         self._deregistered_one = Condition()    # doubles as lock
-        self._locations = dict()  # type: Dict[Reference, List[str]]
-        self._ports = dict()  # type: Dict[Reference, List[Port]]
+        self._locations: Dict[Reference, List[str]] = {}
+        self._ports: Dict[Reference, List[Port]] = {}
         self._startup = True
 
     def add(self, name: Reference, locations: List[str], ports: List[Port]

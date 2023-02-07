@@ -200,10 +200,10 @@ class SnapshotRegistry(Thread):
         self._snapshot_folder = snapshot_folder
         self._topology_store = topology_store
 
-        self._queue = Queue()               # type: Queue[_QueueItemType]
-        self._snapshots = {}                # type: _SnapshotDictType
+        self._queue: Queue[_QueueItemType] = Queue()
+        self._snapshots: _SnapshotDictType = {}
 
-        self._instances = set()             # type: Set[Reference]
+        self._instances: Set[Reference] = set()
         for component in config.model.components:
             self._instances.update(component.instances())
 
@@ -294,7 +294,7 @@ class SnapshotRegistry(Thread):
         # to further restrict the sets of snapshots as peer snapshots are
         # selected.
         # First restriction is that the snapshots have to be locally consistent.
-        allowed_snapshots = {}  # type: Dict[Reference, FrozenSet[SnapshotNode]]
+        allowed_snapshots: Dict[Reference, FrozenSet[SnapshotNode]] = {}
         for instance in instances_to_cover:
             allowed_snapshots[instance] = frozenset(
                     i_snapshot
@@ -321,7 +321,7 @@ class SnapshotRegistry(Thread):
         workflow_snapshots = []
         selected_snapshots = [snapshot]
         # This stack stores history of allowed_snapshots and enables roll back
-        stack = []  # type: List[Dict[Reference, FrozenSet[SnapshotNode]]]
+        stack: List[Dict[Reference, FrozenSet[SnapshotNode]]] = []
 
         # Update allowed_snapshots for peers of the selected snapshot
         for peer, snapshots in snapshot.consistent_peers.items():
@@ -430,7 +430,7 @@ class SnapshotRegistry(Thread):
             self, selected_snapshots: List[SnapshotNode], now: datetime) -> str:
         """Generate a human-readable description of the workflow snapshot.
         """
-        triggers = {}   # type: Dict[str, List[str]]
+        triggers: Dict[str, List[str]] = {}
         component_info = []
         max_instance_len = len('Instance ')
         for node in selected_snapshots:
@@ -477,7 +477,7 @@ class SnapshotRegistry(Thread):
                     newest_snapshots[snapshot.instance] = snapshot
 
         # Remove all snapshots that are older than the newest snapshots
-        removed_snapshots = set()  # type: Set[SnapshotNode]
+        removed_snapshots: Set[SnapshotNode] = set()
         for snapshot in newest_snapshots.values():
             all_snapshots = self._snapshots[snapshot.instance]
             idx = all_snapshots.index(snapshot)
@@ -538,7 +538,7 @@ class SnapshotRegistry(Thread):
         instance_kernel = instance.without_trailing_ints()
         peer_kernel = peer.without_trailing_ints()
 
-        connected_ports = []  # type: List[_ConnectionType]
+        connected_ports: List[_ConnectionType] = []
         for conduit in self._model.conduits:
             if (conduit.sending_component() == instance_kernel and
                     conduit.receiving_component() == peer_kernel):

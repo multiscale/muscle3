@@ -197,12 +197,13 @@ Message Communicator::receive_message(
             recv_endpoint.port, slot_list).at(0);
     MPPClient & client = get_client_(snd_endpoint.instance());
     auto msg_and_profile = client.receive(recv_endpoint.ref());
+    auto & msg = std::get<0>(msg_and_profile);
 
     ProfileEvent recv_decode_event(
             ProfileEventType::receive_decode, ProfileTimestamp(), {}, port, {}, slot,
-            std::get<0>(msg_and_profile).size());
+            msg.size());
 
-    auto mpp_message = MPPMessage::from_bytes(std::get<0>(msg_and_profile));
+    auto mpp_message = MPPMessage::from_bytes(msg);
     Settings overlay_settings(mpp_message.settings_overlay.as<Settings>());
 
     recv_decode_event.stop();
@@ -224,16 +225,17 @@ Message Communicator::receive_message(
             port.set_closed();
     }
 
-    auto profile = std::get<1>(msg_and_profile);
+    ProfileTimestamp start_recv, end_wait, end_transfer;
+    std::tie(start_recv, end_wait, end_transfer) = std::get<1>(msg_and_profile);
     ProfileEvent recv_wait_event(
-            ProfileEventType::receive_wait, std::get<0>(profile),
-            std::get<1>(profile), port, mpp_message.port_length, slot,
-            std::get<0>(msg_and_profile).size(), message.timestamp());
+            ProfileEventType::receive_wait, start_recv,
+            end_wait, port, mpp_message.port_length, slot,
+            msg.size(), message.timestamp());
 
     ProfileEvent recv_xfer_event(
-            ProfileEventType::receive_transfer, std::get<1>(profile),
-            std::get<2>(profile), port, mpp_message.port_length, slot,
-            std::get<0>(msg_and_profile).size(), message.timestamp());
+            ProfileEventType::receive_transfer, end_wait,
+            end_transfer, port, mpp_message.port_length, slot,
+            msg.size(), message.timestamp());
 
     recv_decode_event.message_timestamp = message.timestamp();
     receive_event.message_timestamp = message.timestamp();

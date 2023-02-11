@@ -12,6 +12,10 @@
 namespace libmuscle { namespace impl { namespace mcp {
 
 
+/** Timeline of a receive.
+ *
+ * This is (start, end of wait and beginning of transfer, end)
+ */
 using ProfileData = std::tuple<
         ProfileTimestamp, ProfileTimestamp, ProfileTimestamp>;
 

@@ -21,11 +21,11 @@ def test_create_profile_store(tmp_path):
 
     cur.execute("SELECT oid, name FROM event_types")
     etypes = cur.fetchall()
-    assert len(etypes) == len([e for e in ProfileEventType])
+    assert len(etypes) == len(ProfileEventType)
 
     cur.execute("SELECT oid, name FROM port_operators")
     opers = cur.fetchall()
-    assert len(opers) == len([o for o in Operator])
+    assert len(opers) == len(Operator)
 
     cur.execute("SELECT oid, name FROM instances")
     instances = cur.fetchall()

@@ -81,7 +81,7 @@ class ProfileStore(ProfileDatabase):
                 " (instance, event_type, start_time, stop_time, port_name,"
                 "  port_operator, port_length, slot, message_size,"
                 "  message_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                list(map(to_tuple, events)))
+                map(to_tuple, events))
         cur.execute("COMMIT")
         cur.close()
 

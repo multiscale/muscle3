@@ -127,7 +127,7 @@ TEST(libmuscle_profiler, test_auto_stop_time) {
     auto const & e2 = TestProfiler::events_(profiler).at(0);
     ASSERT_EQ(e2.start_time, t1);
     ASSERT_TRUE(e2.stop_time.is_set());
-    ASSERT_TRUE(e2.start_time.get() < e2.stop_time.get());
+    ASSERT_LT(e2.start_time.get(), e2.stop_time.get());
 }
 
 TEST(libmuscle_profiler, test_send_to_mock_mmp_client) {
@@ -152,7 +152,7 @@ TEST(libmuscle_profiler, test_send_to_mock_mmp_client) {
     profiler.record_event(ProfileEvent(e2));
 
     ASSERT_EQ(mock_mmp_client.last_submitted_profile_events.size(), 100u);
-    ASSERT_TRUE(mock_mmp_client.last_submitted_profile_events.at(0) == e1);
-    ASSERT_TRUE(mock_mmp_client.last_submitted_profile_events.at(99) == e2);
+    ASSERT_EQ(mock_mmp_client.last_submitted_profile_events.at(0), e1);
+    ASSERT_EQ(mock_mmp_client.last_submitted_profile_events.at(99), e2);
 }
 

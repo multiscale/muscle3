@@ -44,8 +44,8 @@ def check_profile_output(tmp_path):
     def check(instance: str, typ: str, port: str, operator: str) -> None:
         cur.execute(
                 "SELECT * FROM all_events"
-                f"    WHERE instance = '{instance}' AND type = '{typ}'"
-                "    ORDER BY start_time")
+                "    WHERE instance = ? AND type = ?"
+                "    ORDER BY start_time", (instance, typ))
         res = cur.fetchall()
         assert len(res) == 2
         assert res[0][4:8] == (port, operator, None, None)

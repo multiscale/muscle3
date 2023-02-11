@@ -96,7 +96,7 @@ def test_add_events(tmp_path):
                 "SELECT i.name, e.start_time, e.stop_time"
                 " FROM events AS e, instances AS i, event_types AS et"
                 " WHERE e.instance = i.oid AND e.event_type = et.oid"
-                f" AND et.name = '{typ}'")
+                " AND et.name = ?", (typ,))
 
         events2 = cur.fetchall()
         cur.execute("COMMIT")

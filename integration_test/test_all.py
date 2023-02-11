@@ -70,7 +70,7 @@ def check_profile_output(tmp_path):
     for typ in ('SEND', 'RECEIVE_TRANSFER'):
         cur.execute(
                 "SELECT * FROM all_events"
-                f"    WHERE instance = 'macro' AND type = '{typ}'")
+                "    WHERE instance = 'macro' AND type = ?", (typ,))
         res = cur.fetchall()
         assert len(res) == NUM_MICROS
 

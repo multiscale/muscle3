@@ -54,9 +54,9 @@ class ProfileStore(ProfileDatabase):
             instance_oid = oids[0][0]
         else:
             cur.execute(
-                    "INSERT INTO instances (name) VALUES (?) RETURNING oid",
+                    "INSERT INTO instances (name) VALUES (?)",
                     (str(instance_id),))
-            instance_oid = cur.fetchone()[0]
+            instance_oid = cur.lastrowid
 
         Record = Tuple[
                 int, int, float, float, Optional[str], Optional[int],

@@ -1,6 +1,5 @@
 import logging
 from pathlib import Path
-import sqlite3
 from typing import Iterable, Optional, Tuple
 
 from libmuscle.profiling import ProfileEvent, ProfileEventType
@@ -45,10 +44,7 @@ class ProfileStore(ProfileDatabase):
         Args:
             events: The events to add.
         """
-        if not hasattr(self._local, 'conn'):
-            self._local.conn = sqlite3.connect(
-                    self._db_file, isolation_level=None)
-        cur = self._local.conn.cursor()
+        cur = self._get_cursor()
         cur.execute("BEGIN IMMEDIATE TRANSACTION")
         cur.execute(
                 "SELECT oid FROM instances WHERE name = ?",

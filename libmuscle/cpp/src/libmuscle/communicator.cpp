@@ -6,6 +6,7 @@
 #include <libmuscle/mpp_message.hpp>
 #include <libmuscle/mcp/tcp_transport_server.hpp>
 #include <libmuscle/mpp_client.hpp>
+#include <libmuscle/profiling.hpp>
 
 #include <limits>
 
@@ -30,7 +31,7 @@ Communicator::Communicator(
         ymmsl::Reference const & kernel,
         std::vector<int> const & index,
         Optional<PortsDescription> const & declared_ports,
-        Logger & logger, int profiler)
+        Logger & logger, Profiler & profiler)
     : kernel_(kernel)
     , index_(index)
     , declared_ports_(declared_ports)
@@ -118,7 +119,9 @@ void Communicator::send_message(
 
     Port & port = ports_.at(port_name);
 
-    // TODO start profile event
+    ProfileEvent profile_event(
+            ProfileEventType::send, ProfileTimestamp(), {}, port, {}, slot,
+            {}, message.timestamp());
 
     auto recv_endpoints = peer_manager_->get_peer_endpoints(
             snd_endpoint.port, slot_list);
@@ -140,12 +143,17 @@ void Communicator::send_message(
             mpp_message.next_timestamp = message.next_timestamp();
 
         auto message_bytes = std::make_unique<DataConstRef>(mpp_message.encoded());
+        profile_event.message_size = message_bytes->size();
         post_office_.deposit(recv_endpoint.ref(), std::move(message_bytes));
     }
 
     port.increment_num_messages(slot);
 
-    // TODO: stop and complete profile event
+    profile_event.stop();
+    if (port.is_vector())
+        profile_event.port_length = port.get_length();
+    if (!is_close_port(message.data()))
+        profiler_.record_event(std::move(profile_event));
 }
 
 Message Communicator::receive_message(
@@ -180,17 +188,25 @@ Message Communicator::receive_message(
 
     Port & port = (ports_.count(port_name)) ? (ports_.at(port_name)) : muscle_settings_in_.get();
 
-    // TODO start profile event
+    ProfileEvent receive_event(
+            ProfileEventType::receive, ProfileTimestamp(), {}, port, {}, slot);
 
     // peer_manager already checks that there is at most one snd_endpoint
     // connected to the port we receive on
     Endpoint snd_endpoint = peer_manager_->get_peer_endpoints(
             recv_endpoint.port, slot_list).at(0);
     MPPClient & client = get_client_(snd_endpoint.instance());
-    auto mpp_message = MPPMessage::from_bytes(
-            client.receive(recv_endpoint.ref()));
+    auto msg_and_profile = client.receive(recv_endpoint.ref());
+    auto & msg = std::get<0>(msg_and_profile);
 
+    ProfileEvent recv_decode_event(
+            ProfileEventType::receive_decode, ProfileTimestamp(), {}, port, {}, slot,
+            msg.size());
+
+    auto mpp_message = MPPMessage::from_bytes(msg);
     Settings overlay_settings(mpp_message.settings_overlay.as<Settings>());
+
+    recv_decode_event.stop();
 
     if (mpp_message.port_length.is_set())
         if (port.is_resizable())
@@ -209,7 +225,36 @@ Message Communicator::receive_message(
             port.set_closed();
     }
 
-    // TODO stop and finalise profile event
+    ProfileTimestamp start_recv, end_wait, end_transfer;
+    std::tie(start_recv, end_wait, end_transfer) = std::get<1>(msg_and_profile);
+    ProfileEvent recv_wait_event(
+            ProfileEventType::receive_wait, start_recv,
+            end_wait, port, mpp_message.port_length, slot,
+            msg.size(), message.timestamp());
+
+    ProfileEvent recv_xfer_event(
+            ProfileEventType::receive_transfer, end_wait,
+            end_transfer, port, mpp_message.port_length, slot,
+            msg.size(), message.timestamp());
+
+    recv_decode_event.message_timestamp = message.timestamp();
+    receive_event.message_timestamp = message.timestamp();
+
+    if (port.is_vector()) {
+        receive_event.port_length = port.get_length();
+        recv_wait_event.port_length = port.get_length();
+        recv_xfer_event.port_length = port.get_length();
+        recv_decode_event.port_length = port.get_length();
+    }
+
+    receive_event.message_size = std::get<0>(msg_and_profile).size();
+
+    if (!is_close_port(message.data())) {
+        profiler_.record_event(std::move(recv_wait_event));
+        profiler_.record_event(std::move(recv_xfer_event));
+        profiler_.record_event(std::move(recv_decode_event));
+        profiler_.record_event(std::move(receive_event));
+    }
 
     int expected_message_number = port.get_num_messages(slot);
     // TODO: handle f_init port counts for STATELESS and WEAKLY_STATEFUL

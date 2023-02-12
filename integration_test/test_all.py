@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import sqlite3
 
 import numpy as np
 from ymmsl import (Component, Conduit, Configuration, Model, Operator,
@@ -6,6 +7,9 @@ from ymmsl import (Component, Conduit, Configuration, Model, Operator,
 
 from libmuscle import Grid, Instance, Message
 from libmuscle.runner import run_simulation
+
+
+NUM_MICROS = 10
 
 
 def macro():
@@ -21,11 +25,11 @@ def macro():
 
         # o_i
         assert instance.is_vector_port('out')
-        for slot in range(10):
+        for slot in range(NUM_MICROS):
             instance.send('out', Message(0.0, 10.0, 'testing'), slot)
 
         # s/b
-        for slot in range(10):
+        for slot in range(NUM_MICROS):
             msg = instance.receive('in', slot)
             assert msg.data['string'] == 'testing back'
             assert msg.data['int'] == 42
@@ -59,12 +63,36 @@ def micro():
         instance.send('out', Message(0.1, data=result))
 
 
-def test_all(log_file_in_tmpdir):
+def check_profile_output(tmp_path):
+    conn = sqlite3.connect(tmp_path / 'performance.sqlite')
+    cur = conn.cursor()
+
+    for typ in ('SEND', 'RECEIVE_TRANSFER'):
+        cur.execute(
+                "SELECT * FROM all_events"
+                "    WHERE instance = 'macro' AND type = ?", (typ,))
+        res = cur.fetchall()
+        assert len(res) == NUM_MICROS
+
+    cur.execute(
+            "SELECT * FROM all_events"
+            "    WHERE instance = 'micro[5]' AND type = 'RECEIVE'")
+    res = cur.fetchall()
+    assert len(res) == 1
+    assert res[0][4:8] == ('in', 'F_INIT', None, None)
+    assert res[0][8] > 0
+    assert res[0][9] == 0.0
+
+    cur.close()
+    conn.close()
+
+
+def test_all(log_file_in_tmpdir, tmp_path):
     """A positive all-up test of everything.
     """
     elements = [
             Component('macro', 'macro_impl'),
-            Component('micro', 'micro_impl', [10])]
+            Component('micro', 'micro_impl', [NUM_MICROS])]
 
     conduits = [
             Conduit('macro.out', 'micro.in'),
@@ -83,3 +111,5 @@ def test_all(log_file_in_tmpdir):
 
     implementations = {'macro_impl': macro, 'micro_impl': micro}
     run_simulation(configuration, implementations)
+
+    check_profile_output(tmp_path)

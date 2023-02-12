@@ -23,7 +23,7 @@ def test_tcp_transport():
     assert TcpTransportClient.can_connect_to(server_location)
     client = TcpTransportClient(server_location)
 
-    response2 = client.call(request)
+    response2, _ = client.call(request)
     assert response == response2
 
     client.close()

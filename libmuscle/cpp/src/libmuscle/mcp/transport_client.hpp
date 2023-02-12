@@ -1,12 +1,24 @@
 #pragma once
 
-#include "libmuscle/data.hpp"
+#include <libmuscle/data.hpp>
+
+#include <libmuscle/profiling.hpp>
 
 #include <string>
+#include <tuple>
 #include <vector>
 
 
 namespace libmuscle { namespace impl { namespace mcp {
+
+
+/** Timeline of a receive.
+ *
+ * This is (start, end of wait and beginning of transfer, end)
+ */
+using ProfileData = std::tuple<
+        ProfileTimestamp, ProfileTimestamp, ProfileTimestamp>;
+
 
 /** A client that connects to an MCP transport server.
  *
@@ -50,15 +62,18 @@ class TransportClient {
 
         /** Send a request to the server and receive the response.
          *
-         * This is a blocking call.
+         * This is a blocking call. Besides the result, this function
+         * returns a tuple with three timestamps. These were taken when
+         * the function was first called, when data became available and
+         * the transfer started, and when the transfer stopped.
          *
          * @param req_buf Pointer to the request to send
          * @param req_len Length of the request in bytes
          *
          * @return DataConstRef containing a byte array with the received
-         *         data.
+         *         data, and the timestamps.
          */
-        virtual DataConstRef call(
+        virtual std::tuple<DataConstRef, ProfileData> call(
                 char const * req_buf, std::size_t req_len) const = 0;
 
         /** Closes this client.

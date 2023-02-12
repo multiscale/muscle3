@@ -6,6 +6,8 @@
 #include <libmuscle/logger.hpp>
 #include <libmuscle/mmp_client.hpp>
 #include <libmuscle/peer_manager.hpp>
+#include <libmuscle/profiler.hpp>
+#include <libmuscle/profiling.hpp>
 #include <libmuscle/settings_manager.hpp>
 
 #include <ymmsl/ymmsl.hpp>
@@ -13,6 +15,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <stdexcept>
+#include <utility>
 
 #ifdef MUSCLE_ENABLE_MPI
 #include <libmuscle/mpi_tcp_barrier.hpp>
@@ -24,6 +27,8 @@ using ymmsl::Reference;
 using ymmsl::Settings;
 
 using libmuscle::impl::LogLevel;
+using libmuscle::impl::ProfileEvent;
+using libmuscle::impl::ProfileEventType;
 
 
 namespace {
@@ -95,6 +100,7 @@ class Instance::Impl {
         ::ymmsl::Reference instance_name_;
         std::unique_ptr<MMPClient> manager_;
         std::unique_ptr<Logger> logger_;
+        std::unique_ptr<Profiler> profiler_;
         std::unique_ptr<Communicator> communicator_;
 #ifdef MUSCLE_ENABLE_MPI
         int mpi_root_;
@@ -161,14 +167,17 @@ Instance::Impl::Impl(
     MPI_Comm_dup(communicator, &mpi_comm_);
     if (mpi_barrier_.is_root()) {
 #endif
-        manager_.reset(new MMPClient(extract_manager_location_(argc, argv)));
+        manager_.reset(
+                new MMPClient(instance_name_, extract_manager_location_(argc, argv)));
 
         std::string instance_id = static_cast<std::string>(instance_name_);
         std::string default_logfile = "muscle_" + instance_id + ".log";
         std::string log_file = extract_log_file_location(argc, argv, default_logfile);
         logger_.reset(new Logger(instance_id, log_file, *manager_));
+        profiler_.reset(new Profiler(*manager_));
 
-        communicator_.reset(new Communicator(name_(), index_(), ports, *logger_, 0));
+        communicator_.reset(
+                new Communicator(name_(), index_(), ports, *logger_, *profiler_));
         register_();
         connect_();
         set_local_log_level_();
@@ -411,33 +420,33 @@ void Instance::Impl::send(
 /* Register this instance with the manager.
  */
 void Instance::Impl::register_() {
-    // TODO: profile this
+    ProfileEvent register_event(ProfileEventType::register_, ProfileTimestamp());
     auto locations = communicator_->get_locations();
     auto port_list = list_declared_ports_();
-    manager_->register_instance(instance_name_, locations, port_list);
-    // TODO: stop profile
+    manager_->register_instance(locations, port_list);
+    profiler_->record_event(std::move(register_event));
     logger_->info("Registered with the manager");
 }
 
 /* Connect this instance to the given peers / conduits.
  */
 void Instance::Impl::connect_() {
-    // TODO: profile this
-    auto peer_info = manager_->request_peers(instance_name_);
+    ProfileEvent connect_event(ProfileEventType::connect, ProfileTimestamp());
+    auto peer_info = manager_->request_peers();
     communicator_->connect(std::get<0>(peer_info), std::get<1>(peer_info), std::get<2>(peer_info));
     settings_manager_.base = manager_->get_settings();
-    // TODO: stop profile
+    profiler_->record_event(std::move(connect_event));
     logger_->info("Received peer locations and base settings");
 }
 
 /* Deregister this instance from the manager.
  */
 void Instance::Impl::deregister_() {
-    // TODO: profile this
-    manager_->deregister_instance(instance_name_);
-    // TODO: stop profile
+    ProfileEvent deregister_event(ProfileEventType::deregister, ProfileTimestamp());
+    manager_->deregister_instance();
+    profiler_->record_event(std::move(deregister_event));
     // This is the last thing we'll profile, so flush messages
-    // TODO: shut down profiler
+    profiler_->shutdown();
     logger_->info("Deregistered from the manager");
 }
 

@@ -1,6 +1,7 @@
 import multiprocessing as mp
 
 import ymmsl
+from ymmsl import Reference
 
 from libmuscle.logging import LogLevel, LogMessage, Timestamp
 from libmuscle.manager.manager import Manager
@@ -36,9 +37,10 @@ def do_logging_test(caplog):
     manager = Manager(ymmsl_doc)
 
     # create client
-    client = MMPClient(manager.get_server_location())
+    instance_id = Reference('test_logging')
+    client = MMPClient(instance_id, manager.get_server_location())
     message = LogMessage(
-            instance_id='test_logging',
+            instance_id=str(instance_id),
             timestamp=Timestamp(2.0),
             level=LogLevel.DEBUG,
             text='Integration testing')

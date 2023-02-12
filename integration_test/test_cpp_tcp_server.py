@@ -37,7 +37,8 @@ def test_cpp_tcp_server(log_file_in_tmpdir):
     assert TcpTransportClient.can_connect_to(location)
 
     client = MPPClient([location])
-    msg = MPPMessage.from_bytes(client.receive(Reference('test_receiver.port')))
+    msg_bytes, _ = client.receive(Reference('test_receiver.port'))
+    msg = MPPMessage.from_bytes(msg_bytes)
     client.close()
 
     # assert stuff

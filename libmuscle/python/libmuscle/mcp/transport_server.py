@@ -17,6 +17,14 @@ class RequestHandler:
         """
         raise NotImplementedError()     # pragma: no cover
 
+    def close(self) -> None:
+        """Free per-thread resources.
+
+        On shutdown of the server, this will be called by each server
+        thread before it shuts down.
+        """
+        pass
+
 
 class ServerNotSupported(RuntimeError):
     pass

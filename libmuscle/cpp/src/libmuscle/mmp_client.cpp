@@ -23,6 +23,8 @@
 using libmuscle::impl::Data;
 using libmuscle::impl::DataConstRef;
 using libmuscle::impl::mcp::unpack_data;
+using libmuscle::impl::Optional;
+using libmuscle::impl::ProfileEvent;
 using std::chrono::steady_clock;
 using ymmsl::Conduit;
 using ymmsl::Reference;
@@ -31,7 +33,7 @@ using ymmsl::SettingValue;
 
 namespace {
     const float connection_timeout = 300.0f;
-    const std::chrono::milliseconds peer_timeout(600000);   // milliseconds
+    const std::chrono::milliseconds peer_timeout(600000);
     const int peer_interval_min = 5000;     // milliseconds
     const int peer_interval_max = 10000;    // milliseconds
 
@@ -64,12 +66,41 @@ namespace {
         return Data::list(std::string(port.name), encode_operator(port.oper));
     }
 
+    template <class T>
+    Data encode_optional(Optional<T> const & value) {
+        Data encoded;
+        if (value.is_set())
+            encoded = value.get();
+        return encoded;
+    }
+
+    Data encode_profile_event(ProfileEvent const & event) {
+        if (!event.start_time.is_set() || !event.stop_time.is_set()) {
+            throw std::runtime_error(
+                    "Incomplete ProfileEvent sent. This is a bug, please"
+                    " report it.");
+        }
+
+        Data encoded_port;
+        if (event.port.is_set())
+            encoded_port = encode_port(event.port.get());
+
+        return Data::list(
+                static_cast<int>(event.event_type),
+                event.start_time.get().nanoseconds,
+                event.stop_time.get().nanoseconds,
+                encoded_port, encode_optional(event.port_length),
+                encode_optional(event.slot), encode_optional(event.message_size),
+                encode_optional(event.message_timestamp));
+    }
 }
 
 namespace libmuscle { namespace impl {
 
-MMPClient::MMPClient(std::string const & location)
-    : transport_client_(location)
+MMPClient::MMPClient(
+        Reference const & instance_id, std::string const & location)
+    : instance_id_(instance_id)
+    , transport_client_(location)
 {}
 
 void MMPClient::close() {
@@ -87,8 +118,22 @@ void MMPClient::submit_log_message(LogMessage const & message) {
     call_manager_(request);
 }
 
+void MMPClient::submit_profile_events(
+        std::vector<ProfileEvent> const & events)
+{
+    auto event_list = Data::nils(events.size());
+    for (std::size_t i = 0u; i < events.size(); ++i)
+        event_list[i] = encode_profile_event(events[i]);
+
+    auto request = Data::list(
+            static_cast<int>(RequestType::submit_profile_events),
+            static_cast<std::string>(instance_id_),
+            event_list);
+
+    auto response = call_manager_(request);
+}
+
 void MMPClient::register_instance(
-        Reference const & name,
         std::vector<std::string> const & locations,
         std::vector<::ymmsl::Port> const & ports)
 {
@@ -102,8 +147,8 @@ void MMPClient::register_instance(
 
     auto request = Data::list(
             static_cast<int>(RequestType::register_instance),
-            std::string(name), encoded_locs, encoded_ports,
-            MUSCLE3_VERSION);
+            static_cast<std::string>(instance_id_), encoded_locs,
+            encoded_ports, MUSCLE3_VERSION);
 
     auto response = call_manager_(request);
 
@@ -126,7 +171,7 @@ ymmsl::Settings MMPClient::get_settings() {
     return settings;
 }
 
-auto MMPClient::request_peers(Reference const & name) ->
+auto MMPClient::request_peers() ->
         std::tuple<
             std::vector<::ymmsl::Conduit>,
             std::unordered_map<::ymmsl::Reference, std::vector<int>>,
@@ -136,7 +181,9 @@ auto MMPClient::request_peers(Reference const & name) ->
     int sleep_time = 100;   // milliseconds
     auto start_time = steady_clock::now();
 
-    auto request = Data::list(static_cast<int>(RequestType::get_peers), std::string(name));
+    auto request = Data::list(
+            static_cast<int>(RequestType::get_peers),
+            static_cast<std::string>(instance_id_));
     auto response = call_manager_(request);
 
     const int status_pending = static_cast<int>(ResponseType::pending);
@@ -199,9 +246,10 @@ auto MMPClient::request_peers(Reference const & name) ->
             std::move(peer_locations));
 }
 
-void MMPClient::deregister_instance(Reference const & name) {
+void MMPClient::deregister_instance() {
     auto request = Data::list(
-            static_cast<int>(RequestType::deregister_instance), std::string(name));
+            static_cast<int>(RequestType::deregister_instance),
+            static_cast<std::string>(instance_id_));
     auto response = call_manager_(request);
     if (response[0].as<int>() == static_cast<int>(ResponseType::error)) {
         std::ostringstream oss;
@@ -214,7 +262,8 @@ DataConstRef MMPClient::call_manager_(DataConstRef const & request) {
     msgpack::sbuffer sbuf;
     msgpack::pack(sbuf, request);
 
-    auto result = transport_client_.call(sbuf.data(), sbuf.size());
+    auto res = transport_client_.call(sbuf.data(), sbuf.size());
+    auto const & result = std::get<0>(res);
 
     auto zone = std::make_shared<msgpack::zone>();
     return unpack_data(zone, result.as_byte_array(), result.size());

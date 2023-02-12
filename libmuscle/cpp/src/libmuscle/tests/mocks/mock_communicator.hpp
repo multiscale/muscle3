@@ -5,6 +5,7 @@
 #include <libmuscle/message.hpp>
 #include <libmuscle/peer_manager.hpp>
 #include <libmuscle/port.hpp>
+#include <libmuscle/profiler.hpp>
 #include <libmuscle/util.hpp>
 
 #include <ymmsl/ymmsl.hpp>
@@ -26,7 +27,7 @@ class MockCommunicator {
                 ymmsl::Reference const & kernel,
                 std::vector<int> const & index,
                 Optional<PortsDescription> const & declared_ports,
-                Logger & logger, int profiler);
+                Logger & logger, Profiler & profiler);
 
         std::vector<std::string> get_locations() const;
 

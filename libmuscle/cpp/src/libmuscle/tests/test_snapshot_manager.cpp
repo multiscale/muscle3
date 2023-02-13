@@ -2,6 +2,7 @@
 #define LIBMUSCLE_MOCK_COMMUNICATOR <mocks/mock_communicator.hpp>
 #define LIBMUSCLE_MOCK_LOGGER <mocks/mock_logger.hpp>
 #define LIBMUSCLE_MOCK_MMP_CLIENT <mocks/mock_mmp_client.hpp>
+#define LIBMUSCLE_MOCK_PROFILER <mocks/mock_profiler.hpp>
 
 // into the real implementation,
 #include <ymmsl/ymmsl.hpp>
@@ -21,6 +22,7 @@
 #include <mocks/mock_communicator.cpp>
 #include <mocks/mock_logger.cpp>
 #include <mocks/mock_mmp_client.cpp>
+#include <mocks/mock_profiler.cpp>
 
 // Test code dependencies
 #include <cstdio>
@@ -42,6 +44,7 @@ using libmuscle::impl::Message;
 using libmuscle::impl::MockCommunicator;
 using libmuscle::impl::MockLogger;
 using libmuscle::impl::MockMMPClient;
+using libmuscle::impl::MockProfiler;
 using libmuscle::impl::Optional;
 using libmuscle::impl::Snapshot;
 using libmuscle::impl::SnapshotMetadata;
@@ -65,6 +68,11 @@ void reset_mocks() {
 MockLogger & mock_logger() {
     static MockLogger logger;
     return logger;
+}
+
+MockProfiler & mock_profiler() {
+    static MockProfiler profiler;
+    return profiler;
 }
 
 class libmuscle_snapshot_manager : public ::testing::Test {
@@ -106,8 +114,8 @@ class libmuscle_snapshot_manager : public ::testing::Test {
 TEST_F(libmuscle_snapshot_manager, test_no_checkpointing) {
     reset_mocks();
 
-    MockCommunicator communicator("test", {}, {}, mock_logger(), {});
-    MockMMPClient manager("");
+    MockCommunicator communicator("test", {}, {}, mock_logger(), mock_profiler());
+    MockMMPClient manager("instance", "");
     SnapshotManager snapshot_manager("test", manager, communicator, mock_logger());
 
     snapshot_manager.prepare_resume({}, temp_dir_);
@@ -118,8 +126,8 @@ TEST_F(libmuscle_snapshot_manager, test_no_checkpointing) {
 TEST_F(libmuscle_snapshot_manager, test_save_load_snapshot) {
     reset_mocks();
 
-    MockCommunicator communicator("test", {}, {}, mock_logger(), {});
-    MockMMPClient manager("");
+    MockCommunicator communicator("test", {}, {}, mock_logger(), mock_profiler());
+    MockMMPClient manager("instance", "");
     Reference instance_id("test[1]");
 
     SnapshotManager snapshot_manager(instance_id, manager, communicator, mock_logger());
@@ -189,8 +197,8 @@ TEST_F(libmuscle_snapshot_manager, test_save_load_snapshot) {
 TEST_F(libmuscle_snapshot_manager, test_save_load_implicit_snapshot) {
     reset_mocks();
 
-    MockCommunicator communicator("test", {}, {}, mock_logger(), {});
-    MockMMPClient manager("");
+    MockCommunicator communicator("test", {}, {}, mock_logger(), mock_profiler());
+    MockMMPClient manager("instance", "");
     Reference instance_id("test[1]");
 
     SnapshotManager snapshot_manager(instance_id, manager, communicator, mock_logger());

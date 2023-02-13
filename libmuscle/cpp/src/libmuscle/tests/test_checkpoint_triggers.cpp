@@ -2,6 +2,8 @@
 
 #include <libmuscle/checkpoint_triggers.hpp>
 
+#include <libmuscle/mcp/data_pack.hpp>
+
 using libmuscle::impl::TriggerManager;
 using libmuscle::impl::AtCheckpointTrigger;
 using libmuscle::impl::RangeCheckpointTrigger;
@@ -92,9 +94,9 @@ TEST(libmuscle_checkpoint_triggers, test_range_checkpoint_trigger_default_start)
 }
 
 TEST(libmuscle_checkpoint_triggers, test_combined_checkpoint_trigger_every_at) {
-    auto rules = Data::nils(2);
-    rules[0] = Data::dict("start", Data(), "stop", Data(), "every", 10);
-    rules[1] = Data::dict("at", Data::list(3, 7, 13, 17));
+    auto rules = Data::list(
+        Data::dict("start", Data(), "stop", Data(), "every", 10),
+        Data::dict("at", Data::list(3, 7, 13, 17)));
     CombinedCheckpointTriggers trigger(rules);
 
     ASSERT_DOUBLE_EQ(trigger.next_checkpoint(-11.).get(), -10);
@@ -114,10 +116,10 @@ TEST(libmuscle_checkpoint_triggers, test_combined_checkpoint_trigger_every_at) {
 }
 
 TEST(libmuscle_checkpoint_triggers, test_combined_checkpoint_trigger_at_ranges) {
-    auto rules = Data::nils(3);
-    rules[0] = Data::dict("at", Data::list(3, 7, 13, 17));
-    rules[1] = Data::dict("start", 0, "stop", 20, "every", 5);
-    rules[2] = Data::dict("start", 20, "stop", 100, "every", 20);
+    auto rules = Data::list(
+        Data::dict("at", Data::list(3, 7, 13, 17)),
+        Data::dict("start", 0, "stop", 20, "every", 5),
+        Data::dict("start", 20, "stop", 100, "every", 20));
     CombinedCheckpointTriggers trigger(rules);
 
     ASSERT_DOUBLE_EQ(trigger.next_checkpoint(-11.).get(), 0);
@@ -149,8 +151,7 @@ TEST(libmuscle_checkpoint_triggers, test_trigger_manager_reference_time) {
     auto encoded_checkpoints = Data::dict(
         "at_end", true,
         "wallclock_time", Data::list(),
-        "simulation_time", Data::list()
-    );
+        "simulation_time", Data::list());
 
     auto start = std::chrono::steady_clock::now();
     double ref_elapsed = 15.0;
@@ -169,15 +170,10 @@ TEST(libmuscle_checkpoint_triggers, test_trigger_manager) {
     double ref_elapsed = 0.0;
     TriggerManager trigger_manager;
 
-    auto wallclock_time_list = Data::nils(1);
-    wallclock_time_list[0] = Data::dict("at", Data::list(1e-12));
-    auto simulation_time_list = Data::nils(1);
-    simulation_time_list[0] = Data::dict("at", Data::list(1, 3, 5));
     auto encoded_checkpoints = Data::dict(
         "at_end", true,
-        "wallclock_time", wallclock_time_list,
-        "simulation_time", simulation_time_list
-    );
+        "wallclock_time", Data::list(Data::dict("at", Data::list(1e-12))),
+        "simulation_time", Data::list(Data::dict("at", Data::list(1, 3, 5))));
     trigger_manager.set_checkpoint_info(ref_elapsed, encoded_checkpoints);
 
     ASSERT_TRUE(trigger_manager.should_save_snapshot(0.1));
@@ -209,8 +205,7 @@ TEST(libmuscle_checkpoint_triggers, test_no_checkpointing) {
     auto encoded_checkpoints = Data::dict(
         "at_end", false,
         "wallclock_time", Data::list(),
-        "simulation_time", Data::list()
-    );
+        "simulation_time", Data::list());
     trigger_manager.set_checkpoint_info(0.0, encoded_checkpoints);
     ASSERT_FALSE(trigger_manager.should_save_snapshot(1));
     ASSERT_FALSE(trigger_manager.should_save_snapshot(5000));

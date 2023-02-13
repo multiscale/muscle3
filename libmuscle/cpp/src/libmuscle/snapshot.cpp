@@ -86,7 +86,8 @@ DataConstRef Snapshot::to_bytes() const {
         port_message_counts[kv.first] = counts;
     }
 
-    Data message;
+    Data dict;
+    // Note setting dict in two branches, to avoid a memcopy of the encoded MMPMessage
     if (message_.is_set()) {
         auto msg = message_.get();
         MPPMessage mpp_msg(
@@ -99,20 +100,24 @@ DataConstRef Snapshot::to_bytes() const {
                 0,
                 -1.0,
                 msg.data());
-        auto encoded = mpp_msg.encoded();
-        // unfortunately need to create a copy of the byte array here...
-        message = Data::byte_array(encoded.size());
-        memcpy(message.as_byte_array(), encoded.as_byte_array(), encoded.size());
-    }
-
-    Data dict = Data::dict(
+        // Initializing a Data::dict with a DataConstRef is allowed, but assignment
+        // after creation is not
+        dict = Data::dict(
             "triggers", triggers,
             "wallclock_time", wallclock_time_,
             "port_message_counts", port_message_counts,
             "is_final_snapshot", is_final_snapshot_,
-            "message", message,
-            "settings_overlay", Data(settings_overlay_)
-            );
+            "message", mpp_msg.encoded(),
+            "settings_overlay", Data(settings_overlay_));
+    } else {
+        dict = Data::dict(
+            "triggers", triggers,
+            "wallclock_time", wallclock_time_,
+            "port_message_counts", port_message_counts,
+            "is_final_snapshot", is_final_snapshot_,
+            "message", Data(),
+            "settings_overlay", Data(settings_overlay_));
+    }
 
     msgpack::sbuffer sbuf;
     msgpack::pack(sbuf, dict);

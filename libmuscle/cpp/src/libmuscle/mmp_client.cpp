@@ -25,6 +25,7 @@ using libmuscle::impl::DataConstRef;
 using libmuscle::impl::mcp::unpack_data;
 using libmuscle::impl::Optional;
 using libmuscle::impl::ProfileEvent;
+using libmuscle::impl::SnapshotMetadata;
 using std::chrono::steady_clock;
 using ymmsl::Conduit;
 using ymmsl::Reference;
@@ -74,6 +75,14 @@ namespace {
         return encoded;
     }
 
+    template <typename T>
+    Data encode_vector(std::vector<T> const & value) {
+        auto retval = Data::nils(value.size());
+        for (std::size_t i = 0u; i < value.size(); ++i)
+            retval[i] = value[i];
+        return retval;
+    }
+
     Data encode_profile_event(ProfileEvent const & event) {
         if (!event.start_time.is_set() || !event.stop_time.is_set()) {
             throw std::runtime_error(
@@ -92,6 +101,31 @@ namespace {
                 encoded_port, encode_optional(event.port_length),
                 encode_optional(event.slot), encode_optional(event.message_size),
                 encode_optional(event.message_timestamp));
+    }
+
+    Data encode_snapshot_metadata(SnapshotMetadata const & snapshot_metadata) {
+        auto port_message_counts = Data::dict();
+        for(auto const & kv : snapshot_metadata.port_message_counts)
+            port_message_counts[kv.first] = encode_vector(kv.second);
+
+        auto metadata = Data::dict(
+                "triggers", encode_vector(snapshot_metadata.triggers),
+                "wallclock_time", snapshot_metadata.wallclock_time,
+                "timestamp", snapshot_metadata.timestamp,
+                "next_timsetamp", encode_optional(snapshot_metadata.next_timestamp),
+                "port_message_counts", port_message_counts,
+                "is_final_snapshot", snapshot_metadata.is_final_snapshot,
+                "snapshot_filename", snapshot_metadata.snapshot_filename
+        );
+
+        return metadata;
+    }
+
+    template <typename T>
+    Optional<T> decode_optional(DataConstRef const & data) {
+        if (data.is_nil())
+            return {};
+        return data.as<T>();
     }
 }
 
@@ -133,14 +167,21 @@ void MMPClient::submit_profile_events(
     auto response = call_manager_(request);
 }
 
+void MMPClient::submit_snapshot_metadata(
+        SnapshotMetadata const & snapshot_metadata) {
+    auto request = Data::list(
+            static_cast<int>(RequestType::submit_snapshot),
+            static_cast<std::string>(instance_id_),
+            encode_snapshot_metadata(snapshot_metadata));
+
+    auto response = call_manager_(request);
+}
+
 void MMPClient::register_instance(
         std::vector<std::string> const & locations,
         std::vector<::ymmsl::Port> const & ports)
 {
-    auto encoded_locs = Data::nils(locations.size());
-    for (std::size_t i = 0u; i < locations.size(); ++i)
-        encoded_locs[i] = locations[i];
-
+    auto encoded_locs = encode_vector(locations);
     auto encoded_ports = Data::nils(ports.size());
     for (std::size_t i = 0u; i < ports.size(); ++i)
         encoded_ports[i] = encode_port(ports[i]);
@@ -169,6 +210,30 @@ ymmsl::Settings MMPClient::get_settings() {
         settings[dict.key(i)] = dict.value(i).as<SettingValue>();
 
     return settings;
+}
+
+auto MMPClient::get_checkpoint_info() ->
+        std::tuple<
+            double,
+            DataConstRef,
+            Optional<std::string>,
+            Optional<std::string>
+        >
+{
+    auto request = Data::list(
+            static_cast<int>(RequestType::get_checkpoint_info),
+            static_cast<std::string>(instance_id_));
+    auto response = call_manager_(request);
+
+    if (response[0].as<int>() != static_cast<int>(ResponseType::success)) {
+        throw std::runtime_error("Error getting checkpoint info from manager.");
+    }
+
+    return std::make_tuple(
+            response[1].as<double>(),
+            response[2],
+            decode_optional<std::string>(response[3]),
+            decode_optional<std::string>(response[4]));
 }
 
 auto MMPClient::request_peers() ->

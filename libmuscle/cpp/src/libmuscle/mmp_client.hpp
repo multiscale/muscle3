@@ -15,6 +15,8 @@
 #include <libmuscle/logging.hpp>
 #include <libmuscle/mcp/tcp_transport_client.hpp>
 #include <libmuscle/profiling.hpp>
+#include <libmuscle/snapshot.hpp>
+#include <libmuscle/util.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 
@@ -56,11 +58,33 @@ class MMPClient {
          */
         void submit_profile_events(std::vector<ProfileEvent> const & events);
 
+        /** Send snapshot metadata to the manager.
+         *
+         * @param snapshot_metadata Snapshot metadata to supply to the manager.
+         */
+        void submit_snapshot_metadata(SnapshotMetadata const & snapshot_metadata);
+
         /** Get the global settings from the manager.
          *
          * @return A Settings object with the global settings.
          */
         ymmsl::Settings get_settings();
+
+        /** Get the checkpoint info from the manager.
+         *
+         * @return A tuple containing:
+         *      elapsed_time: current elapsed wallclock time
+         *      checkpoints: encoded checkpoint configuration
+         *      resume: optional path to the resume snapshot
+         *      snapshot_directory: optional path to store snapshots
+         */
+        auto get_checkpoint_info() ->
+            std::tuple<
+                double,
+                DataConstRef,
+                Optional<std::string>,
+                Optional<std::string>
+            >;
 
         /** Register a component instance with the manager.
          *
@@ -78,7 +102,7 @@ class MMPClient {
          * peer_interval_min and peer_interval_max. From there on, intervals
          * are drawn randomly from that range.
          *
-         * @return A tuple containng a list of conduits that this instance is
+         * @return A tuple containing a list of conduits that this instance is
          *      attached to, a dictionary of peer dimensions, which is indexed
          *      by Reference to the peer kernel and specifies how many
          *      instances of the kernel there are, and a dictionary of peer

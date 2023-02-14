@@ -7,7 +7,9 @@
 
 #include <libmuscle/logging.hpp>
 #include <libmuscle/profiling.hpp>
+#include <libmuscle/snapshot.hpp>
 #include <libmuscle/timestamp.hpp>
+#include <libmuscle/util.hpp>
 
 #include <ymmsl/ymmsl.hpp>
 
@@ -25,7 +27,17 @@ class MockMMPClient {
 
         void submit_profile_events(std::vector<ProfileEvent> const & event);
 
+        void submit_snapshot_metadata(SnapshotMetadata const & snapshot_metadata);
+
         ymmsl::Settings get_settings();
+
+        auto get_checkpoint_info() ->
+            std::tuple<
+                double,
+                DataConstRef,
+                Optional<std::string>,
+                Optional<std::string>
+            >;
 
         void register_instance(
                 std::vector<std::string> const & locations,
@@ -49,6 +61,7 @@ class MockMMPClient {
         static std::vector<::ymmsl::Port> last_registered_ports;
         static LogMessage last_submitted_log_message;
         static std::vector<ProfileEvent> last_submitted_profile_events;
+        static Optional<SnapshotMetadata> last_submitted_snapshot_metadata;
 };
 
 using MMPClient = MockMMPClient;

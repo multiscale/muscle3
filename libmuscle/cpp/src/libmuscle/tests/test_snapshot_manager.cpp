@@ -127,6 +127,11 @@ TEST_F(libmuscle_snapshot_manager, test_save_load_snapshot) {
     reset_mocks();
 
     MockCommunicator communicator("test", {}, {}, mock_logger(), mock_profiler());
+    MockCommunicator::PortMessageCounts port_message_counts = {
+            {"in", {1}},
+            {"out", {2}},
+            {"muscle_settings_in", {0}}};
+    MockCommunicator::get_message_counts_return_value = port_message_counts;
     MockMMPClient manager("instance", "");
     Reference instance_id("test[1]");
 
@@ -139,28 +144,21 @@ TEST_F(libmuscle_snapshot_manager, test_save_load_snapshot) {
     snapshot_manager.save_snapshot(
             Message(0.2, "test data"), false, {"test"}, 13.0, {}, {});
 
-    // TODO: need to implement this on the mocks
-    // communicator.get_message_counts.assert_called_with()
-    // manager.submit_snapshot_metadata.assert_called()
-    // instance, metadata = manager.submit_snapshot_metadata.call_args[0]
-    // assert instance == instance_id
-    // assert isinstance(metadata, SnapshotMetadata)
-    // assert metadata.triggers == ['test']
-    // assert metadata.wallclock_time == 13.0
-    // assert metadata.timestamp == 0.2
-    // assert metadata.next_timestamp is None
-    // assert metadata.port_message_counts == port_message_counts
-    // ASSERT_FALSE(metadata.is_final_snapshot);
-    // snapshot_path = Path(metadata.snapshot_filename)
-    // assert snapshot_path.parent == tmp_path
-    // assert snapshot_path.name == 'test-1_1.pack'
-
-    // TODO: get from snapshot metadata instead of hardcoding
-    std::string snapshot_path = temp_dir_ + "/test-1_1.pack";
+    ASSERT_TRUE(MockMMPClient::last_submitted_snapshot_metadata.is_set());
+    auto & metadata = MockMMPClient::last_submitted_snapshot_metadata.get();
+    ASSERT_EQ(metadata.triggers, std::vector<std::string>({"test"}));
+    ASSERT_EQ(metadata.wallclock_time, 13.0);
+    ASSERT_EQ(metadata.timestamp, 0.2);
+    ASSERT_FALSE(metadata.next_timestamp.is_set());
+    ASSERT_EQ(metadata.port_message_counts, port_message_counts);
+    ASSERT_FALSE(metadata.is_final_snapshot);
+    auto snapshot_path = metadata.snapshot_filename;
+    ASSERT_EQ(snapshot_path, temp_dir_ + "/test-1_1.pack");
 
     SnapshotManager snapshot_manager2(
             instance_id, manager, communicator, mock_logger());
     snapshot_manager2.prepare_resume(snapshot_path, temp_dir_);
+    ASSERT_EQ(MockCommunicator::last_restored_message_counts, port_message_counts);
 
     ASSERT_TRUE(snapshot_manager2.resuming_from_intermediate());
     ASSERT_FALSE(snapshot_manager2.resuming_from_final());
@@ -173,19 +171,16 @@ TEST_F(libmuscle_snapshot_manager, test_save_load_snapshot) {
     snapshot_manager2.save_snapshot(
             Message(0.6, "test data2"), true, {"test"}, 42.2, 1.2, {});
 
-    // TODO: need to implement this on the mocks
-    // instance, metadata = manager.submit_snapshot_metadata.call_args[0]
-    // assert instance == instance_id
-    // assert isinstance(metadata, SnapshotMetadata)
-    // assert metadata.triggers == ['test']
-    // assert metadata.wallclock_time == 42.2
-    // assert metadata.timestamp == 0.6
-    // assert metadata.next_timestamp is None
-    // assert metadata.port_message_counts == port_message_counts
-    // assert metadata.is_final_snapshot
-    // snapshot_path = Path(metadata.snapshot_filename)
-    // assert snapshot_path.parent == tmp_path
-    // assert snapshot_path.name == 'test-1_3.pack'
+    ASSERT_TRUE(MockMMPClient::last_submitted_snapshot_metadata.is_set());
+    metadata = MockMMPClient::last_submitted_snapshot_metadata.get();
+    ASSERT_EQ(metadata.triggers, std::vector<std::string>({"test"}));
+    ASSERT_EQ(metadata.wallclock_time, 42.2);
+    ASSERT_EQ(metadata.timestamp, 0.6);
+    ASSERT_FALSE(metadata.next_timestamp.is_set());
+    ASSERT_EQ(metadata.port_message_counts, port_message_counts);
+    ASSERT_TRUE(metadata.is_final_snapshot);
+    snapshot_path = metadata.snapshot_filename;
+    ASSERT_EQ(snapshot_path, temp_dir_ + "/test-1_3.pack");
 
     ASSERT_TRUE(snapshot_manager2.resuming_from_intermediate());
     ASSERT_FALSE(snapshot_manager2.resuming_from_final());
@@ -198,6 +193,11 @@ TEST_F(libmuscle_snapshot_manager, test_save_load_implicit_snapshot) {
     reset_mocks();
 
     MockCommunicator communicator("test", {}, {}, mock_logger(), mock_profiler());
+    MockCommunicator::PortMessageCounts port_message_counts = {
+            {"in", {1}},
+            {"out", {2}},
+            {"muscle_settings_in", {0}}};
+    MockCommunicator::get_message_counts_return_value = port_message_counts;
     MockMMPClient manager("instance", "");
     Reference instance_id("test[1]");
 
@@ -210,29 +210,21 @@ TEST_F(libmuscle_snapshot_manager, test_save_load_implicit_snapshot) {
     // save implicit snapshot, i.e. Message=not set
     snapshot_manager.save_snapshot({}, true, {"implicit"}, 1.0, 1.5, {});
 
-    // TODO: need to implement this on the mocks
-    // manager.submit_snapshot_metadata.assert_called_once()
-    // instance, metadata = manager.submit_snapshot_metadata.call_args[0]
-    // assert instance == instance_id
-    // assert isinstance(metadata, SnapshotMetadata)
-    // snapshot_path = Path(metadata.snapshot_filename)
-    // manager.submit_snapshot_metadata.reset_mock()
-
-    // TODO: get from snapshot metadata instead of hardcoding
-    std::string snapshot_path = temp_dir_ + "/test-1_1.pack";
+    ASSERT_TRUE(MockMMPClient::last_submitted_snapshot_metadata.is_set());
+    auto & metadata = MockMMPClient::last_submitted_snapshot_metadata.get();
+    std::string snapshot_path = metadata.snapshot_filename;
+    MockMMPClient::reset();
 
     SnapshotManager snapshot_manager2(
             instance_id, manager, communicator, mock_logger());
 
     snapshot_manager2.prepare_resume(snapshot_path, temp_dir_);
-    // TODO: need to implement this on the mocks
-    // communicator.restore_message_counts.assert_called_with(port_message_counts)
-    // manager.submit_snapshot_metadata.assert_called_once()
-    // manager.submit_snapshot_metadata.reset_mock()
+    ASSERT_EQ(MockCommunicator::last_restored_message_counts, port_message_counts);
+    ASSERT_TRUE(MockMMPClient::last_submitted_snapshot_metadata.is_set());
+    MockMMPClient::reset();
 
     ASSERT_FALSE(snapshot_manager2.resuming_from_intermediate());
     ASSERT_FALSE(snapshot_manager2.resuming_from_final());
     snapshot_manager2.save_snapshot({}, true, {"implicit"}, 12.3, 2.5, {});
-    // TODO: need to implement this on the mocks
-    // manager.submit_snapshot_metadata.assert_called_once()
+    ASSERT_TRUE(MockMMPClient::last_submitted_snapshot_metadata.is_set());
 }

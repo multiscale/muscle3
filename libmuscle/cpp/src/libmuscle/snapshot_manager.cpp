@@ -81,13 +81,11 @@ Optional<double> SnapshotManager::prepare_resume(
         }
         resume_overlay_ = snapshot.settings_overlay;
 
-        // TODO: implement this on Communicator!
-        // communicator_.restore_message_counts(snapshot.port_message_counts_);
+        communicator_.restore_message_counts(snapshot.port_message_counts);
         // Store a copy of the snapshot in the current run directory
         auto path = store_snapshot_(snapshot);
         auto metadata = SnapshotMetadata::from_snapshot(snapshot, path);
-        // TODO: implement this on MMPClient!
-        // manager_.submit_snapshot_metadata(instance_id_, metadata);
+        manager_.submit_snapshot_metadata(metadata);
     }
 
     return result;
@@ -114,9 +112,7 @@ double SnapshotManager::save_snapshot(
         std::vector<std::string> const & triggers, double wallclock_time,
         Optional<double> f_init_max_timestamp,
         ::ymmsl::Settings settings_overlay) {
-    // TODO: implement this on Communicator!
-    //auto port_message_counts = communicator_.get_message_counts();
-    std::unordered_map<std::string, std::vector<int>> port_message_counts;
+    auto port_message_counts = communicator_.get_message_counts();
 
     if (final) {
         // Decrease F_INIT port counts by one: F_INIT messages are already
@@ -144,8 +140,7 @@ double SnapshotManager::save_snapshot(
 
     auto path = store_snapshot_(snapshot);
     auto metadata = SnapshotMetadata::from_snapshot(snapshot, path);
-    // TODO: implement this on MMPClient!
-    // manager_.submit_snapshot_metadata(instance_id_, metadata);
+    manager_.submit_snapshot_metadata(metadata);
 
     double timestamp = message.is_set() ? message.get().timestamp() : -INFINITY;
     if (final && f_init_max_timestamp.is_set()) {

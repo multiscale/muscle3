@@ -18,12 +18,12 @@ Snapshot::Snapshot(
             Optional<Message> message,
             ::ymmsl::Settings settings_overlay
             )
-        : triggers_(triggers)
-        , wallclock_time_(wallclock_time)
-        , port_message_counts_(port_message_counts)
-        , is_final_snapshot_(is_final_snapshot)
-        , message_(message)
-        , settings_overlay_(settings_overlay)
+        : triggers(triggers)
+        , wallclock_time(wallclock_time)
+        , port_message_counts(port_message_counts)
+        , is_final_snapshot(is_final_snapshot)
+        , message(message)
+        , settings_overlay(settings_overlay)
     {}
 
 Snapshot Snapshot::from_bytes(DataConstRef const & data) {
@@ -72,24 +72,24 @@ Snapshot Snapshot::from_bytes(DataConstRef const & data) {
 }
 
 DataConstRef Snapshot::to_bytes() const {
-    Data triggers = Data::nils(triggers_.size());
-    for (std::size_t i=0; i<triggers_.size(); ++i) {
-        triggers[i] = triggers_[i];
+    Data d_triggers = Data::nils(triggers.size());
+    for (std::size_t i=0; i<triggers.size(); ++i) {
+        d_triggers[i] = triggers[i];
     }
 
-    Data port_message_counts = Data::dict();
-    for (const auto & kv : port_message_counts_) {
+    Data pmc = Data::dict();
+    for (const auto & kv : port_message_counts) {
         Data counts = Data::nils(kv.second.size());
         for (std::size_t i=0; i<kv.second.size(); ++i) {
             counts[i] = kv.second[i];
         }
-        port_message_counts[kv.first] = counts;
+        pmc[kv.first] = counts;
     }
 
     Data dict;
     // Note setting dict in two branches, to avoid a memcopy of the encoded MMPMessage
-    if (message_.is_set()) {
-        auto msg = message_.get();
+    if (message.is_set()) {
+        auto msg = message.get();
         MPPMessage mpp_msg(
                 "_",
                 "_",
@@ -103,20 +103,20 @@ DataConstRef Snapshot::to_bytes() const {
         // Initializing a Data::dict with a DataConstRef is allowed, but assignment
         // after creation is not
         dict = Data::dict(
-            "triggers", triggers,
-            "wallclock_time", wallclock_time_,
-            "port_message_counts", port_message_counts,
-            "is_final_snapshot", is_final_snapshot_,
+            "triggers", d_triggers,
+            "wallclock_time", wallclock_time,
+            "port_message_counts", pmc,
+            "is_final_snapshot", is_final_snapshot,
             "message", mpp_msg.encoded(),
-            "settings_overlay", Data(settings_overlay_));
+            "settings_overlay", Data(settings_overlay));
     } else {
         dict = Data::dict(
-            "triggers", triggers,
-            "wallclock_time", wallclock_time_,
-            "port_message_counts", port_message_counts,
-            "is_final_snapshot", is_final_snapshot_,
+            "triggers", d_triggers,
+            "wallclock_time", wallclock_time,
+            "port_message_counts", pmc,
+            "is_final_snapshot", is_final_snapshot,
             "message", Data(),
-            "settings_overlay", Data(settings_overlay_));
+            "settings_overlay", Data(settings_overlay));
     }
 
     msgpack::sbuffer sbuf;
@@ -136,32 +136,32 @@ SnapshotMetadata::SnapshotMetadata(
             std::unordered_map<std::string, std::vector<int>> const & port_message_counts,
             bool is_final_snapshot,
             std::string const & snapshot_filename)
-        : triggers_(triggers)
-        , wallclock_time_(wallclock_time)
-        , timestamp_(timestamp)
-        , next_timestamp_(next_timestamp)
-        , port_message_counts_(port_message_counts)
-        , is_final_snapshot_(is_final_snapshot)
-        , snapshot_filename_(snapshot_filename)
+        : triggers(triggers)
+        , wallclock_time(wallclock_time)
+        , timestamp(timestamp)
+        , next_timestamp(next_timestamp)
+        , port_message_counts(port_message_counts)
+        , is_final_snapshot(is_final_snapshot)
+        , snapshot_filename(snapshot_filename)
     {}
 
 SnapshotMetadata SnapshotMetadata::from_snapshot(
         Snapshot const & snapshot, std::string const & snapshot_filename) {
     double timestamp = NAN;
     Optional<double> next_timestamp;
-    if (snapshot.message_.is_set()) {
-        timestamp = snapshot.message_.get().timestamp();
-        if (snapshot.message_.get().has_next_timestamp()) {
-            next_timestamp = snapshot.message_.get().next_timestamp();
+    if (snapshot.message.is_set()) {
+        timestamp = snapshot.message.get().timestamp();
+        if (snapshot.message.get().has_next_timestamp()) {
+            next_timestamp = snapshot.message.get().next_timestamp();
         }
     }
     return SnapshotMetadata(
-            snapshot.triggers_,
-            snapshot.wallclock_time_,
+            snapshot.triggers,
+            snapshot.wallclock_time,
             timestamp,
             next_timestamp,
-            snapshot.port_message_counts_,
-            snapshot.is_final_snapshot_,
+            snapshot.port_message_counts,
+            snapshot.is_final_snapshot,
             snapshot_filename);
 }
 

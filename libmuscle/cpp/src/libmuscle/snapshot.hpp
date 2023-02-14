@@ -42,12 +42,12 @@ class Snapshot {
          */
         DataConstRef to_bytes() const;
 
-        std::vector<std::string> triggers_;
-        double wallclock_time_;
-        std::unordered_map<std::string, std::vector<int>> port_message_counts_;
-        bool is_final_snapshot_;
-        Optional<Message> message_;
-        ::ymmsl::Settings settings_overlay_;
+        std::vector<std::string> triggers;
+        double wallclock_time;
+        std::unordered_map<std::string, std::vector<int>> port_message_counts;
+        bool is_final_snapshot;
+        Optional<Message> message;
+        ::ymmsl::Settings settings_overlay;
 };
 
 /** Metadata of a snapshot for sending to the muscle_manager.
@@ -68,13 +68,13 @@ class SnapshotMetadata {
         static SnapshotMetadata from_snapshot(
                 Snapshot const & snapshot, std::string const & snapshot_filename);
 
-        std::vector<std::string> triggers_;
-        double wallclock_time_;
-        double timestamp_;
-        Optional<double> next_timestamp_;
-        std::unordered_map<std::string, std::vector<int>> port_message_counts_;
-        bool is_final_snapshot_;
-        std::string snapshot_filename_;
+        std::vector<std::string> triggers;
+        double wallclock_time;
+        double timestamp;
+        Optional<double> next_timestamp;
+        std::unordered_map<std::string, std::vector<int>> port_message_counts;
+        bool is_final_snapshot;
+        std::string snapshot_filename;
 };
 
 } }

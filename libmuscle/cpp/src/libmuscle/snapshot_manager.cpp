@@ -74,12 +74,12 @@ Optional<double> SnapshotManager::prepare_resume(
     if (resume_snapshot.is_set()) {
         auto snapshot = load_snapshot_from_file(resume_snapshot.get());
 
-        if (snapshot.message_.is_set()) {
+        if (snapshot.message.is_set()) {
             // snapshot.message is not set for implicit snapshots
             resume_from_snapshot_ = snapshot;
-            result = snapshot.message_.get().timestamp();
+            result = snapshot.message.get().timestamp();
         }
-        resume_overlay_ = snapshot.settings_overlay_;
+        resume_overlay_ = snapshot.settings_overlay;
 
         // TODO: implement this on Communicator!
         // communicator_.restore_message_counts(snapshot.port_message_counts_);
@@ -95,18 +95,18 @@ Optional<double> SnapshotManager::prepare_resume(
 
 bool SnapshotManager::resuming_from_intermediate() {
     return (resume_from_snapshot_.is_set() &&
-            !resume_from_snapshot_.get().is_final_snapshot_);
+            !resume_from_snapshot_.get().is_final_snapshot);
 }
 
 bool SnapshotManager::resuming_from_final() {
     return (resume_from_snapshot_.is_set() &&
-            resume_from_snapshot_.get().is_final_snapshot_);
+            resume_from_snapshot_.get().is_final_snapshot);
 }
 
 Message SnapshotManager::load_snapshot() {
     if (!resume_from_snapshot_.is_set())
         throw std::runtime_error("Error: no snapshot to load.");
-    return resume_from_snapshot_.get().message_.get();
+    return resume_from_snapshot_.get().message.get();
 }
 
 double SnapshotManager::save_snapshot(

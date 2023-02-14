@@ -29,49 +29,49 @@ Snapshot create_snapshot() {
 TEST(libmuscle_snapshot, test_snapshot) {
     auto snapshot = create_snapshot();
 
-    ASSERT_EQ(snapshot.triggers_.size(), 1);
-    ASSERT_STREQ(snapshot.triggers_[0].c_str(), "test triggers");
-    ASSERT_DOUBLE_EQ(snapshot.wallclock_time_, 15.3);
-    ASSERT_EQ(snapshot.port_message_counts_.size(), 3);
-    ASSERT_EQ(snapshot.port_message_counts_.at("in"), std::vector<int>({1}));
-    ASSERT_EQ(snapshot.port_message_counts_.at("out"), std::vector<int>({4}));
-    ASSERT_EQ(snapshot.port_message_counts_.at("muscle_settings_in"),
+    ASSERT_EQ(snapshot.triggers.size(), 1);
+    ASSERT_STREQ(snapshot.triggers[0].c_str(), "test triggers");
+    ASSERT_DOUBLE_EQ(snapshot.wallclock_time, 15.3);
+    ASSERT_EQ(snapshot.port_message_counts.size(), 3);
+    ASSERT_EQ(snapshot.port_message_counts.at("in"), std::vector<int>({1}));
+    ASSERT_EQ(snapshot.port_message_counts.at("out"), std::vector<int>({4}));
+    ASSERT_EQ(snapshot.port_message_counts.at("muscle_settings_in"),
               std::vector<int>({0}));
-    ASSERT_TRUE(snapshot.is_final_snapshot_);
-    ASSERT_TRUE(snapshot.message_.is_set());
-    ASSERT_DOUBLE_EQ(snapshot.message_.get().timestamp(), 1.2);
-    ASSERT_FALSE(snapshot.message_.get().has_next_timestamp());
-    ASSERT_FALSE(snapshot.message_.get().has_settings());
-    ASSERT_STREQ(snapshot.message_.get().data().as<std::string>().c_str(),
+    ASSERT_TRUE(snapshot.is_final_snapshot);
+    ASSERT_TRUE(snapshot.message.is_set());
+    ASSERT_DOUBLE_EQ(snapshot.message.get().timestamp(), 1.2);
+    ASSERT_FALSE(snapshot.message.get().has_next_timestamp());
+    ASSERT_FALSE(snapshot.message.get().has_settings());
+    ASSERT_STREQ(snapshot.message.get().data().as<std::string>().c_str(),
                  "test_data");
-    ASSERT_EQ(snapshot.settings_overlay_["test"], 1);
+    ASSERT_EQ(snapshot.settings_overlay["test"], 1);
 
     auto binary_snapshot = snapshot.to_bytes();
     Snapshot snapshot2 = Snapshot::from_bytes(binary_snapshot);
 
-    ASSERT_EQ(snapshot.triggers_, snapshot2.triggers_);
-    ASSERT_EQ(snapshot.wallclock_time_, snapshot2.wallclock_time_);
-    ASSERT_EQ(snapshot.port_message_counts_, snapshot2.port_message_counts_);
-    ASSERT_EQ(snapshot.is_final_snapshot_, snapshot2.is_final_snapshot_);
-    ASSERT_EQ(snapshot.message_.get().timestamp(),
-              snapshot2.message_.get().timestamp());
-    ASSERT_EQ(snapshot.message_.get().data().as<std::string>(),
-              snapshot2.message_.get().data().as<std::string>());
-    ASSERT_EQ(snapshot.settings_overlay_, snapshot2.settings_overlay_);
+    ASSERT_EQ(snapshot.triggers, snapshot2.triggers);
+    ASSERT_EQ(snapshot.wallclock_time, snapshot2.wallclock_time);
+    ASSERT_EQ(snapshot.port_message_counts, snapshot2.port_message_counts);
+    ASSERT_EQ(snapshot.is_final_snapshot, snapshot2.is_final_snapshot);
+    ASSERT_EQ(snapshot.message.get().timestamp(),
+              snapshot2.message.get().timestamp());
+    ASSERT_EQ(snapshot.message.get().data().as<std::string>(),
+              snapshot2.message.get().data().as<std::string>());
+    ASSERT_EQ(snapshot.settings_overlay, snapshot2.settings_overlay);
 }
 
 TEST(libmuscle_snapshot, test_snapshot_metadata) {
     auto snapshot = create_snapshot();
 
     auto metadata = SnapshotMetadata::from_snapshot(snapshot, "test");
-    ASSERT_EQ(metadata.triggers_, snapshot.triggers_);
-    ASSERT_EQ(metadata.wallclock_time_, snapshot.wallclock_time_);
-    ASSERT_EQ(metadata.port_message_counts_, snapshot.port_message_counts_);
-    ASSERT_EQ(metadata.is_final_snapshot_, snapshot.is_final_snapshot_);
-    ASSERT_EQ(metadata.timestamp_, snapshot.message_.get().timestamp());
-    ASSERT_EQ(metadata.next_timestamp_.is_set(),
-              snapshot.message_.get().has_next_timestamp());
-    ASSERT_EQ(metadata.snapshot_filename_, "test");
+    ASSERT_EQ(metadata.triggers, snapshot.triggers);
+    ASSERT_EQ(metadata.wallclock_time, snapshot.wallclock_time);
+    ASSERT_EQ(metadata.port_message_counts, snapshot.port_message_counts);
+    ASSERT_EQ(metadata.is_final_snapshot, snapshot.is_final_snapshot);
+    ASSERT_EQ(metadata.timestamp, snapshot.message.get().timestamp());
+    ASSERT_EQ(metadata.next_timestamp.is_set(),
+              snapshot.message.get().has_next_timestamp());
+    ASSERT_EQ(metadata.snapshot_filename, "test");
 }
 
 TEST(libmuscle_snapshot, test_message_with_settings) {
@@ -79,22 +79,22 @@ TEST(libmuscle_snapshot, test_message_with_settings) {
     settings["settings"] = true;
     Message message(1.0, 2.0, "test_data", settings);
     Snapshot snapshot ({}, 0, {}, false, message, {});
-    ASSERT_TRUE(snapshot.message_.get().settings().at("settings").as<bool>());
+    ASSERT_TRUE(snapshot.message.get().settings().at("settings").as<bool>());
 
     auto binary_snapshot = snapshot.to_bytes();
     Snapshot snapshot2 = Snapshot::from_bytes(binary_snapshot);
 
-    ASSERT_TRUE(snapshot2.message_.get().settings().at("settings").as<bool>());
+    ASSERT_TRUE(snapshot2.message.get().settings().at("settings").as<bool>());
 }
 
 TEST(libmuscle_snapshot, test_implicit_snapshot) {
     Optional<Message> message;
     Snapshot snapshot({}, 0, {}, true, message, {});
-    ASSERT_FALSE(snapshot.message_.is_set());
+    ASSERT_FALSE(snapshot.message.is_set());
 
 
     auto binary_snapshot = snapshot.to_bytes();
     Snapshot snapshot2 = Snapshot::from_bytes(binary_snapshot);
 
-    ASSERT_FALSE(snapshot2.message_.is_set());
+    ASSERT_FALSE(snapshot2.message.is_set());
 }

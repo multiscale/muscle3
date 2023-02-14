@@ -6,6 +6,7 @@
 
 #include <ymmsl/ymmsl.hpp>
 
+#include <functional>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -38,6 +39,8 @@ class MockMPPClient {
         static int num_constructed;
         static MPPMessage next_receive_message;
         static ::ymmsl::Reference last_receiver;
+        // Called after a mocked receive
+        static std::function<void()> side_effect;
 
     private:
         static ::ymmsl::Settings make_overlay_();

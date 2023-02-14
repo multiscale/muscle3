@@ -33,6 +33,8 @@ namespace libmuscle { namespace impl {
  */
 class Communicator {
     public:
+        using PortMessageCounts = std::unordered_map<std::string, std::vector<int>>;
+
         /** Create a Communicator.
          *
          * The instance reference must start with one or more Identifiers,
@@ -169,6 +171,14 @@ class Communicator {
         /** Shuts down the Communicator, closing connections.
          */
         void shutdown();
+
+        /** Get message counts for all ports on the communicator.
+         */
+        PortMessageCounts get_message_counts();
+
+        /** Restore message counts on all ports.
+         */
+        void restore_message_counts(PortMessageCounts const & port_message_counts);
 
     private:
         using Ports_ = std::unordered_map<std::string, Port>;

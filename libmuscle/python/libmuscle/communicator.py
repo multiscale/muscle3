@@ -412,7 +412,7 @@ class Communicator:
 
     def restore_message_counts(self, port_message_counts: Dict[str, List[int]]
                                ) -> None:
-        """Restore message counts on all ports
+        """Restore message counts on all ports.
         """
         for port_name, num_messages in port_message_counts.items():
             if port_name == "muscle_settings_in":
@@ -425,7 +425,7 @@ class Communicator:
                                    ' the snapshot was taken?')
 
     def get_message_counts(self) -> Dict[str, List[int]]:
-        """Get message counts for all ports on the communicator
+        """Get message counts for all ports on the communicator.
         """
         port_message_counts = {port_name: port.get_message_counts()
                                for port_name, port in self._ports.items()}

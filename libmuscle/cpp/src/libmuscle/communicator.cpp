@@ -257,8 +257,6 @@ Message Communicator::receive_message(
     }
 
     int expected_message_number = port.get_num_messages(slot);
-    // TODO: handle f_init port counts for STATELESS and WEAKLY_STATEFUL
-    // components which didn't load a snapshot
     if (expected_message_number != mpp_message.message_number) {
         if (expected_message_number - 1 == mpp_message.message_number and
                 port.is_resuming(slot)) {
@@ -318,6 +316,39 @@ void Communicator::shutdown() {
     for (auto & server : servers_)
         server->close();
 }
+
+Communicator::PortMessageCounts Communicator::get_message_counts() {
+    PortMessageCounts port_message_counts;
+    for(auto const & port_item : ports_)
+        port_message_counts[port_item.first] = port_item.second.get_message_counts();
+
+    assert(muscle_settings_in_.is_set());  // is always created by connect()
+    auto counts = muscle_settings_in_.get().get_message_counts();
+    port_message_counts["muscle_settings_in"] = counts;
+
+    return port_message_counts;
+}
+
+void Communicator::restore_message_counts(
+        Communicator::PortMessageCounts const & port_message_counts) {
+    for (auto const & item : port_message_counts) {
+        if (item.first == "muscle_settings_in") {
+            assert(muscle_settings_in_.is_set());  // is always created by connect()
+            muscle_settings_in_.get().restore_message_counts(item.second);
+        } else {
+            auto port_item = ports_.find(item.first);
+            if (port_item != ports_.end()) {
+                port_item->second.restore_message_counts(item.second);
+            } else {
+                throw std::runtime_error(
+                        "Unknown port " + item.first + " in snapshot."
+                        " Have your port definitions changed since"
+                        " the snapshot was taken?");
+            }
+        }
+    }
+}
+
 
 Reference Communicator::instance_id_() const {
     return kernel_ + index_;

@@ -80,7 +80,7 @@ class SnapshotManager:
             # Store a copy of the snapshot in the current run directory
             path = self.__store_snapshot(snapshot)
             metadata = SnapshotMetadata.from_snapshot(snapshot, str(path))
-            self._manager.submit_snapshot_metadata(self._instance_id, metadata)
+            self._manager.submit_snapshot_metadata(metadata)
 
         return result
 
@@ -148,7 +148,7 @@ class SnapshotManager:
 
         path = self.__store_snapshot(snapshot)
         metadata = SnapshotMetadata.from_snapshot(snapshot, str(path))
-        self._manager.submit_snapshot_metadata(self._instance_id, metadata)
+        self._manager.submit_snapshot_metadata(metadata)
 
         timestamp = msg.timestamp if msg is not None else float('-inf')
         if final and f_init_max_timestamp is not None:

@@ -183,7 +183,7 @@ class Instance:
 
         # Note: get_checkpoint_info needs to have the ports initialized
         # so it comes after self._connect()
-        checkpoint_info = self.__manager.get_checkpoint_info(self._instance_id)
+        checkpoint_info = self.__manager.get_checkpoint_info()
 
         elapsed_time, checkpoints = checkpoint_info[0:2]
         self._trigger_manager.set_checkpoint_info(elapsed_time, checkpoints)

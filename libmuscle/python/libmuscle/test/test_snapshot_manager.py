@@ -38,8 +38,7 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
 
     communicator.get_message_counts.assert_called_with()
     manager.submit_snapshot_metadata.assert_called()
-    instance, metadata = manager.submit_snapshot_metadata.call_args[0]
-    assert instance == instance_id
+    metadata, = manager.submit_snapshot_metadata.call_args[0]
     assert isinstance(metadata, SnapshotMetadata)
     assert metadata.triggers == ['test']
     assert metadata.wallclock_time == 13.0
@@ -67,8 +66,7 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
             Message(0.6, None, 'test data2'), True, ['test'], 42.2, 1.2,
             Settings())
 
-    instance, metadata = manager.submit_snapshot_metadata.call_args[0]
-    assert instance == instance_id
+    metadata, = manager.submit_snapshot_metadata.call_args[0]
     assert isinstance(metadata, SnapshotMetadata)
     assert metadata.triggers == ['test']
     assert metadata.wallclock_time == 42.2
@@ -105,8 +103,7 @@ def test_save_load_implicit_snapshot(tmp_path: Path) -> None:
             None, True, ['implicit'], 1.0, 1.5, Settings())
 
     manager.submit_snapshot_metadata.assert_called_once()
-    instance, metadata = manager.submit_snapshot_metadata.call_args[0]
-    assert instance == instance_id
+    metadata, = manager.submit_snapshot_metadata.call_args[0]
     assert isinstance(metadata, SnapshotMetadata)
     snapshot_path = Path(metadata.snapshot_filename)
     manager.submit_snapshot_metadata.reset_mock()

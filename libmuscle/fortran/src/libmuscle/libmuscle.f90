@@ -467,7 +467,8 @@ module libmuscle
     public :: LIBMUSCLE_Instance_receive_with_settings_ps
     public :: LIBMUSCLE_Instance_receive_with_settings_psd
     public :: LIBMUSCLE_Instance_receive_with_settings_on_slot
-    type :: LIBMUSCLE_InstanceFlags
+    public :: LIBMUSCLE_InstanceFlags
+    type LIBMUSCLE_InstanceFlags
         logical :: DONT_APPLY_OVERLAY = .false.
         logical :: USES_CHECKPOINT_API = .false.
         logical :: KEEPS_NO_STATE_FOR_NEXT_USE = .false.

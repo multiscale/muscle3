@@ -2324,11 +2324,10 @@ class Flags:
         """Create a Fortran type definition for this enum.
         """
         result = ''
-        public = ''
         if self.public:
-            public = ', public'
+            result += f'public :: {self.ns_prefix}_{self.name}\n'
 
-        result += f'type :: {self.ns_prefix}_{self.name}\n'
+        result += f'type {self.ns_prefix}_{self.name}\n'
         for value in self.values:
             result += f'    logical :: {value} = .false.\n'
         result += '\n'

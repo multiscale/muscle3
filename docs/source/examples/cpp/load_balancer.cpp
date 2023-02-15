@@ -8,6 +8,7 @@
 
 using libmuscle::Data;
 using libmuscle::Instance;
+using libmuscle::InstanceFlags;
 using libmuscle::Message;
 using ymmsl::Operator;
 using ymmsl::Settings;
@@ -27,9 +28,10 @@ void load_balancer(int argc, char * argv[]) {
             {Operator::F_INIT, {"front_in[]"}},
             {Operator::O_I, {"back_out[]"}},
             {Operator::S, {"back_in[]"}},
-            {Operator::O_F, {"front_out[]"}}});
+            {Operator::O_F, {"front_out[]"}}},
+            InstanceFlags::DONT_APPLY_OVERLAY);
 
-    while (instance.reuse_instance(false)) {
+    while (instance.reuse_instance()) {
         // F_INIT
         int started = 0;
         int done = 0;

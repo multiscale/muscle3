@@ -27,7 +27,7 @@ program reaction_mpi
     ports = LIBMUSCLE_PortsDescription_create()
     call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_F_INIT, 'initial_state')
     call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_O_F, 'final_state')
-    instance = LIBMUSCLE_Instance_create(ports, MPI_COMM_WORLD, root_rank)
+    instance = LIBMUSCLE_Instance_create(ports, communicator=MPI_COMM_WORLD, root=root_rank)
     call LIBMUSCLE_PortsDescription_free(ports)
 
     do while (LIBMUSCLE_Instance_reuse_instance(instance))

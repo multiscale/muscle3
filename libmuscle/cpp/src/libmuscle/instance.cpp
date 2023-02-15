@@ -67,7 +67,8 @@ class Instance::Impl {
     public:
         Impl(
                 int argc, char const * const argv[],
-                PortsDescription const & ports
+                PortsDescription const & ports,
+                InstanceFlags flags
 #ifdef MUSCLE_ENABLE_MPI
                 , MPI_Comm const & communicator
                 , int root
@@ -112,6 +113,7 @@ class Instance::Impl {
         bool first_run_;
         std::unordered_map<::ymmsl::Reference, Message> f_init_cache_;
         bool is_shut_down_;
+        InstanceFlags flags_;
 
         void register_();
         void connect_();
@@ -146,7 +148,8 @@ class Instance::Impl {
 
 Instance::Impl::Impl(
         int argc, char const * const argv[],
-        PortsDescription const & ports
+        PortsDescription const & ports,
+        InstanceFlags flags
 #ifdef MUSCLE_ENABLE_MPI
         , MPI_Comm const & communicator
         , int root
@@ -162,6 +165,7 @@ Instance::Impl::Impl(
     , first_run_(true)
     , f_init_cache_()
     , is_shut_down_(false)
+    , flags_(flags)
 {
 #ifdef MUSCLE_ENABLE_MPI
     MPI_Comm_dup(communicator, &mpi_comm_);
@@ -907,7 +911,7 @@ Instance::Instance(
 #endif
         )
     : pimpl_(new Impl(
-                argc, argv, {{}}
+                argc, argv, {{}}, InstanceFlags::NONE
 #ifdef MUSCLE_ENABLE_MPI
                 , communicator, root
 #endif
@@ -923,7 +927,40 @@ Instance::Instance(
 #endif
         )
     : pimpl_(new Impl(
-                argc, argv, ports
+                argc, argv, ports, InstanceFlags::NONE
+#ifdef MUSCLE_ENABLE_MPI
+                , communicator, root
+#endif
+                ))
+{}
+
+Instance::Instance(
+        int argc, char const * const argv[],
+        InstanceFlags flags
+#ifdef MUSCLE_ENABLE_MPI
+        , MPI_Comm const & communicator
+        , int root
+#endif
+        )
+    : pimpl_(new Impl(
+                argc, argv, {{}}, flags
+#ifdef MUSCLE_ENABLE_MPI
+                , communicator, root
+#endif
+                ))
+{}
+
+Instance::Instance(
+        int argc, char const * const argv[],
+        PortsDescription const & ports,
+        InstanceFlags flags
+#ifdef MUSCLE_ENABLE_MPI
+        , MPI_Comm const & communicator
+        , int root
+#endif
+        )
+    : pimpl_(new Impl(
+                argc, argv, ports, flags
 #ifdef MUSCLE_ENABLE_MPI
                 , communicator, root
 #endif

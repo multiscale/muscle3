@@ -932,17 +932,7 @@ instance_mpi_constructor = Constructor(
 
 instance_members = [
     Destructor(),
-    MemFun(
-            Bool(), 'reuse_instance_default',
-            cpp_chain_call=lambda **kwargs: 'self_p->reuse_instance()'),
-    MemFun(
-            Bool(), 'reuse_instance_apply', [Bool('apply_overlay')],
-            cpp_chain_call=lambda **kwargs: (
-                'self_p->reuse_instance({})'.format(kwargs['cpp_args']))
-            ),
-    OverloadSet(
-            'reuse_instance',
-            ['reuse_instance_default', 'reuse_instance_apply']),
+    MemFun(Bool(), 'reuse_instance'),
     MemFun(Void(), 'error_shutdown', [String('message')]),
     MemFunTmpl(
         [String(), Int64t(), Double(), Bool(), VecDbl('value'),

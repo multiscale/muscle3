@@ -76,7 +76,7 @@ class Instance::Impl {
                 );
         ~Impl();
 
-        bool reuse_instance(bool apply_overlay = true);
+        bool reuse_instance();
         void error_shutdown(std::string const & message);
         ::ymmsl::SettingValue get_setting(std::string const & name) const;
         template <typename ValueType>
@@ -126,10 +126,8 @@ class Instance::Impl {
         std::vector<::ymmsl::Port> list_declared_ports_() const;
         void check_port_(std::string const & port_name);
         bool receive_settings_();
-        void pre_receive_(
-                std::string const & port_name,
-                Optional<int> slot, bool apply_overlay);
-        void pre_receive_f_init_(bool apply_overlay);
+        void pre_receive_(std::string const & port_name, Optional<int> slot);
+        void pre_receive_f_init_();
         void set_local_log_level_();
         void set_remote_log_level_();
         void apply_overlay_(Message const & message);
@@ -213,7 +211,7 @@ Instance::Impl::~Impl() {
     shutdown_();
 }
 
-bool Instance::Impl::reuse_instance(bool apply_overlay) {
+bool Instance::Impl::reuse_instance() {
     bool do_reuse;
 #ifdef MUSCLE_ENABLE_MPI
     if (mpi_barrier_.is_root()) {
@@ -222,7 +220,7 @@ bool Instance::Impl::reuse_instance(bool apply_overlay) {
 
         // TODO: f_init_cache_ should be empty here, or the user didn't receive
         // something that was sent on the last go-around. At least emit a warning.
-        pre_receive_f_init_(apply_overlay);
+        pre_receive_f_init_();
 
         set_local_log_level_();
         set_remote_log_level_();
@@ -479,8 +477,9 @@ Message Instance::Impl::receive_message(
                 if (with_settings && !result.has_settings()) {
                     std::string msg(
                             "If you use receive_with_settings() on an F_INIT"
-                            " port, then you have to pass false to"
-                            " reuse_instance(), otherwise the settings will"
+                            " port, then you have to set the flag"
+                            " 'InstanceFlags::DONT_APPLY_OVERLAY' when constructing"
+                            " the Instance, otherwise the settings will"
                             " already have been applied by MUSCLE.");
                     logger_->critical(msg);
                     shutdown_();
@@ -672,13 +671,13 @@ bool Instance::Impl::receive_settings_() {
 /* Pre-receive on the given port and slot, if any.
  */
 void Instance::Impl::pre_receive_(
-        std::string const & port_name, Optional<int> slot,
-        bool apply_overlay) {
+        std::string const & port_name, Optional<int> slot) {
     Reference port_ref(port_name);
     if (slot.is_set())
         port_ref += slot.get();
 
     Message msg = communicator_->receive_message(port_name, slot);
+    bool apply_overlay = !(flags_ & InstanceFlags::DONT_APPLY_OVERLAY);
     if (apply_overlay) {
         apply_overlay_(msg);
         check_compatibility_(port_name, msg.settings());
@@ -692,7 +691,7 @@ void Instance::Impl::pre_receive_(
  * This receives all incoming messages on F_INIT and stores them in
  * f_init_cache_.
  */
-void Instance::Impl::pre_receive_f_init_(bool apply_overlay) {
+void Instance::Impl::pre_receive_f_init_() {
     f_init_cache_.clear();
     auto ports = communicator_->list_ports();
     if (ports.count(Operator::F_INIT) == 1) {
@@ -702,13 +701,13 @@ void Instance::Impl::pre_receive_f_init_(bool apply_overlay) {
             if (!port.is_connected())
                 continue;
             if (!port.is_vector())
-                pre_receive_(port_name, {}, apply_overlay);
+                pre_receive_(port_name, {});
             else {
-                pre_receive_(port_name, 0, apply_overlay);
+                pre_receive_(port_name, 0);
                 // The above receives the length, if needed, so now we can get
                 // the rest.
                 for (int slot = 1; slot < port.get_length(); ++slot)
-                    pre_receive_(port_name, slot, apply_overlay);
+                    pre_receive_(port_name, slot);
             }
         }
     }
@@ -969,8 +968,8 @@ Instance::Instance(
 
 Instance::~Instance() = default;
 
-bool Instance::reuse_instance(bool apply_overlay) {
-    return impl_()->reuse_instance(apply_overlay);
+bool Instance::reuse_instance() {
+    return impl_()->reuse_instance();
 }
 
 void Instance::error_shutdown(std::string const & message) {

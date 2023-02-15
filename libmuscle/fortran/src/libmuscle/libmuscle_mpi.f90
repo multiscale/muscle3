@@ -431,8 +431,6 @@ module libmuscle_mpi
 
     public :: LIBMUSCLE_Instance_create
     public :: LIBMUSCLE_Instance_free
-    public :: LIBMUSCLE_Instance_reuse_instance_default
-    public :: LIBMUSCLE_Instance_reuse_instance_apply
     public :: LIBMUSCLE_Instance_reuse_instance
     public :: LIBMUSCLE_Instance_error_shutdown
     public :: LIBMUSCLE_Instance_is_setting_a_character
@@ -2985,22 +2983,12 @@ module libmuscle_mpi
             integer (c_intptr_t), value, intent(in) :: self
         end subroutine LIBMUSCLE_Instance_free_
 
-        logical (c_bool) function LIBMUSCLE_Instance_reuse_instance_default_(self) &
-                bind(C, name="LIBMUSCLE_Instance_reuse_instance_default_")
+        logical (c_bool) function LIBMUSCLE_Instance_reuse_instance_(self) &
+                bind(C, name="LIBMUSCLE_Instance_reuse_instance_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
-        end function LIBMUSCLE_Instance_reuse_instance_default_
-
-        logical (c_bool) function LIBMUSCLE_Instance_reuse_instance_apply_( &
-                self, &
-                apply_overlay) &
-                bind(C, name="LIBMUSCLE_Instance_reuse_instance_apply_")
-
-            use iso_c_binding
-            integer (c_intptr_t), value, intent(in) :: self
-            logical (c_bool), value, intent(in) :: apply_overlay
-        end function LIBMUSCLE_Instance_reuse_instance_apply_
+        end function LIBMUSCLE_Instance_reuse_instance_
 
         subroutine LIBMUSCLE_Instance_error_shutdown_( &
                 self, &
@@ -3825,12 +3813,6 @@ module libmuscle_mpi
         module procedure &
             LIBMUSCLE_Message_set_data_d, &
             LIBMUSCLE_Message_set_data_dcr
-    end interface
-
-    interface LIBMUSCLE_Instance_reuse_instance
-        module procedure &
-            LIBMUSCLE_Instance_reuse_instance_default, &
-            LIBMUSCLE_Instance_reuse_instance_apply
     end interface
 
     interface LIBMUSCLE_Instance_send
@@ -16552,36 +16534,19 @@ contains
             self%ptr)
     end subroutine LIBMUSCLE_Instance_free
 
-    function LIBMUSCLE_Instance_reuse_instance_default( &
+    function LIBMUSCLE_Instance_reuse_instance( &
             self)
         implicit none
         type(LIBMUSCLE_Instance), intent(in) :: self
-        logical :: LIBMUSCLE_Instance_reuse_instance_default
+        logical :: LIBMUSCLE_Instance_reuse_instance
 
         logical (c_bool) :: ret_val
 
-        ret_val = LIBMUSCLE_Instance_reuse_instance_default_( &
+        ret_val = LIBMUSCLE_Instance_reuse_instance_( &
             self%ptr)
 
-        LIBMUSCLE_Instance_reuse_instance_default = ret_val
-    end function LIBMUSCLE_Instance_reuse_instance_default
-
-    function LIBMUSCLE_Instance_reuse_instance_apply( &
-            self, &
-            apply_overlay)
-        implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
-        logical, intent(in) :: apply_overlay
-        logical :: LIBMUSCLE_Instance_reuse_instance_apply
-
-        logical (c_bool) :: ret_val
-
-        ret_val = LIBMUSCLE_Instance_reuse_instance_apply_( &
-            self%ptr, &
-            logical(apply_overlay, c_bool))
-
-        LIBMUSCLE_Instance_reuse_instance_apply = ret_val
-    end function LIBMUSCLE_Instance_reuse_instance_apply
+        LIBMUSCLE_Instance_reuse_instance = ret_val
+    end function LIBMUSCLE_Instance_reuse_instance
 
     subroutine LIBMUSCLE_Instance_error_shutdown( &
             self, &

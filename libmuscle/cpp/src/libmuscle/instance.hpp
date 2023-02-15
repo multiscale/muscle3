@@ -214,17 +214,8 @@ class Instance {
          * MPI-based components must execute the reuse loop in each
          * process in parallel, and call this function at the top of the
          * reuse loop in each process.
-         *
-         * @param apply_overlay Whether to apply the received settings
-         *        overlay or to save it. If you're going to use
-         *        receive_with_settings() on your F_INIT ports,
-         *        set this to false. If you don't know what that means,
-         *        just call reuse_instance() without specifying this
-         *        and everything will be fine. If it turns out that you
-         *        did need to specify false, MUSCLE3 will tell you about
-         *        it in an error message and you can add it.
          */
-        bool reuse_instance(bool apply_overlay = true);
+        bool reuse_instance();
 
         /** Logs an error and shuts down the Instance.
          *

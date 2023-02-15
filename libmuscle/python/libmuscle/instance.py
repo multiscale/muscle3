@@ -208,7 +208,7 @@ class Instance:
         self._set_local_log_level()
         self._set_remote_log_level()
 
-    def reuse_instance(self, apply_overlay: Optional[bool] = None) -> bool:
+    def reuse_instance(self) -> bool:
         """Decide whether to run this instance again.
 
         In a multiscale simulation, instances get reused all the time.
@@ -249,7 +249,7 @@ class Instance:
             do_reuse = self._do_reuse
             self._do_reuse = None
         else:
-            do_reuse = self._decide_reuse_instance(apply_overlay)
+            do_reuse = self._decide_reuse_instance()
 
         # now _first_run, _do_resume and _do_init are also set correctly
 
@@ -780,8 +780,7 @@ class Instance:
                                                      self.__manager)
             logging.getLogger().addHandler(self._mmp_handler)
 
-    def _decide_reuse_instance(
-            self, apply_overlay: Optional[bool] = None) -> bool:
+    def _decide_reuse_instance(self) -> bool:
         """Decide whether and how to reuse the instance.
 
         This sets self._first_run, self._do_resume and self._do_init, and
@@ -805,7 +804,7 @@ class Instance:
         # resume from final
         if self._first_run and self._snapshot_manager.resuming_from_final():
             if f_init_connected:
-                got_f_init_messages = self._pre_receive(apply_overlay)
+                got_f_init_messages = self._pre_receive()
                 self._do_resume = True
                 self._do_init = True
                 return got_f_init_messages
@@ -823,7 +822,7 @@ class Instance:
             return self._first_run
 
         # not resuming and f_init connected, run while we get messages
-        got_f_init_messages = self._pre_receive(apply_overlay)
+        got_f_init_messages = self._pre_receive()
         self._do_init = got_f_init_messages
         return got_f_init_messages
 
@@ -981,7 +980,7 @@ class Instance:
                  for port in ports.get(Operator.F_INIT, [])])
         return f_init_connected or self._communicator.settings_in_connected()
 
-    def _pre_receive(self, apply_overlay: Optional[bool]) -> bool:
+    def _pre_receive(self) -> bool:
         """Pre-receives on all ports.
 
         This includes muscle_settings_in and all user-defined ports.
@@ -990,7 +989,7 @@ class Instance:
             True iff no ClosePort messages were received.
         """
         all_ports_open = self.__receive_settings()
-        self.__pre_receive_f_init(apply_overlay)
+        self.__pre_receive_f_init()
         for message in self._f_init_cache.values():
             if isinstance(message.data, ClosePort):
                 all_ports_open = False
@@ -1024,19 +1023,13 @@ class Instance:
         self._trigger_manager.harmonise_wall_time(saved_until)
         return True
 
-    def __pre_receive_f_init(self, apply_overlay: Optional[bool]) -> None:
+    def __pre_receive_f_init(self) -> None:
         """Receives on all ports connected to F_INIT.
 
         This receives all incoming messages on F_INIT and stores them
         in self._f_init_cache.
         """
-        if apply_overlay is not None:
-            warnings.warn(
-                    'Explicitly providing apply_overlay in reuse_instance is'
-                    ' deprecated. Use InstanceFlags.DONT_APPLY_OVERLAY when'
-                    ' creating the instance instead.', DeprecationWarning)
-        else:
-            apply_overlay = InstanceFlags.DONT_APPLY_OVERLAY not in self._flags
+        apply_overlay = InstanceFlags.DONT_APPLY_OVERLAY not in self._flags
 
         def pre_receive(port_name: str, slot: Optional[int]) -> None:
             msg, saved_until = self._communicator.receive_message(

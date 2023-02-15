@@ -3691,15 +3691,9 @@ void LIBMUSCLE_Instance_free_(std::intptr_t self) {
     return;
 }
 
-bool LIBMUSCLE_Instance_reuse_instance_default_(std::intptr_t self) {
+bool LIBMUSCLE_Instance_reuse_instance_(std::intptr_t self) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     bool result = self_p->reuse_instance();
-    return result;
-}
-
-bool LIBMUSCLE_Instance_reuse_instance_apply_(std::intptr_t self, bool apply_overlay) {
-    Instance * self_p = reinterpret_cast<Instance *>(self);
-    bool result = self_p->reuse_instance(apply_overlay);
     return result;
 }
 

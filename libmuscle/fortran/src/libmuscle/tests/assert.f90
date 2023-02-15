@@ -7,7 +7,7 @@ contains
 
         if (.not. x) then
             print *, 'Assertion failed'
-            stop
+            stop 1
         end if
     end subroutine assert_true
 
@@ -17,7 +17,7 @@ contains
 
         if (x) then
             print *, 'Assertion failed'
-            stop
+            stop 1
         end if
     end subroutine assert_false
 
@@ -28,7 +28,7 @@ contains
 
         if (x .ne. y) then
             print *, 'Assertion failed'
-            stop
+            stop 1
         end if
     end subroutine assert_eq_integer
 
@@ -39,7 +39,7 @@ contains
 
         if (x .ne. y) then
             print *, 'Assertion failed'
-            stop
+            stop 1
         end if
     end subroutine assert_eq_int1
 
@@ -50,7 +50,7 @@ contains
 
         if (x .ne. y) then
             print *, 'Assertion failed'
-            stop
+            stop 1
         end if
     end subroutine assert_eq_int2
 
@@ -61,7 +61,7 @@ contains
 
         if (x .ne. y) then
             print *, 'Assertion failed'
-            stop
+            stop 1
         end if
     end subroutine assert_eq_int4
 
@@ -72,7 +72,7 @@ contains
 
         if (x .ne. y) then
             print *, 'Assertion failed'
-            stop
+            stop 1
         end if
     end subroutine assert_eq_int8
 
@@ -83,7 +83,7 @@ contains
 
         if (x .ne. y) then
             print *, 'Assertion failed'
-            stop
+            stop 1
         end if
     end subroutine assert_eq_size
 
@@ -93,7 +93,7 @@ contains
 
         if (x .neqv. y) then
             print *, 'Assertion failed'
-            stop
+            stop 1
         end if
     end subroutine assert_eq_logical
 
@@ -103,7 +103,7 @@ contains
 
         if (x .ne. y) then
             print *, 'Assertion failed'
-            stop
+            stop 1
         end if
     end subroutine assert_eq_character
 
@@ -114,7 +114,7 @@ contains
 
         if (x .ne. y) then
             print *, 'Assertion failed'
-            stop
+            stop 1
         end if
     end subroutine assert_eq_real4
 
@@ -125,7 +125,7 @@ contains
 
         if (x .ne. y) then
             print *, 'Assertion failed'
-            stop
+            stop 1
         end if
     end subroutine assert_eq_real8
 
@@ -137,7 +137,7 @@ contains
 
         if (.not. all(x .eq. y)) then
             print *, 'Assertion failed'
-            stop
+            stop 1
         end if
     end subroutine assert_eq_real8array
 
@@ -149,7 +149,7 @@ contains
 
         if (.not. all(x .eq. y)) then
             print *, 'Assertion failed'
-            stop
+            stop 1
         end if
     end subroutine assert_eq_real8array2
 end module assert

@@ -3667,21 +3667,18 @@ void LIBMUSCLE_Message_unset_settings_(std::intptr_t self) {
     return;
 }
 
-std::intptr_t LIBMUSCLE_Instance_create_autoports_(std::intptr_t cla) {
-    CmdLineArgs * cla_p = reinterpret_cast<CmdLineArgs *>(cla);
-    Instance * result = new Instance(cla_p->argc(), cla_p->argv());
-    return reinterpret_cast<std::intptr_t>(result);
-}
-
-std::intptr_t LIBMUSCLE_Instance_create_with_ports_(
+std::intptr_t LIBMUSCLE_Instance_create_(
         std::intptr_t cla,
         std::intptr_t ports
 ) {
     CmdLineArgs * cla_p = reinterpret_cast<CmdLineArgs *>(cla);
-    PortsDescription * ports_p = reinterpret_cast<PortsDescription *>(
-            ports);
-    Instance * result = new Instance(
-        cla_p->argc(), cla_p->argv(), *ports_p);
+    Instance * result;
+    if (ports == 0) {
+        result = new Instance(cla_p->argc(), cla_p->argv());
+    } else {
+        PortsDescription * ports_p = reinterpret_cast<PortsDescription *>(ports);
+        result = new Instance(cla_p->argc(), cla_p->argv(), *ports_p);
+    }
     return reinterpret_cast<std::intptr_t>(result);
 }
 

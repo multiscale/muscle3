@@ -428,8 +428,6 @@ module libmuscle
     end type LIBMUSCLE_Instance
     public :: LIBMUSCLE_Instance
 
-    public :: LIBMUSCLE_Instance_create_autoports
-    public :: LIBMUSCLE_Instance_create_with_ports
     public :: LIBMUSCLE_Instance_create
     public :: LIBMUSCLE_Instance_free
     public :: LIBMUSCLE_Instance_reuse_instance_default
@@ -2953,22 +2951,15 @@ module libmuscle
             integer (c_intptr_t), value, intent(in) :: self
         end subroutine LIBMUSCLE_Message_unset_settings_
 
-        integer (c_intptr_t) function LIBMUSCLE_Instance_create_autoports_(cla) &
-                bind(C, name="LIBMUSCLE_Instance_create_autoports_")
-
-            use iso_c_binding
-            integer (c_intptr_t), value, intent(in) :: cla
-        end function LIBMUSCLE_Instance_create_autoports_
-
-        integer (c_intptr_t) function LIBMUSCLE_Instance_create_with_ports_( &
+        integer (c_intptr_t) function LIBMUSCLE_Instance_create_( &
                 cla, &
                 ports) &
-                bind(C, name="LIBMUSCLE_Instance_create_with_ports_")
+                bind(C, name="LIBMUSCLE_Instance_create_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: cla
             integer (c_intptr_t), value, intent(in) :: ports
-        end function LIBMUSCLE_Instance_create_with_ports_
+        end function LIBMUSCLE_Instance_create_
 
         subroutine LIBMUSCLE_Instance_free_(self) &
                 bind(C, name="LIBMUSCLE_Instance_free_")
@@ -3817,12 +3808,6 @@ module libmuscle
         module procedure &
             LIBMUSCLE_Message_set_data_d, &
             LIBMUSCLE_Message_set_data_dcr
-    end interface
-
-    interface LIBMUSCLE_Instance_create
-        module procedure &
-            LIBMUSCLE_Instance_create_autoports, &
-            LIBMUSCLE_Instance_create_with_ports
     end interface
 
     interface LIBMUSCLE_Instance_reuse_instance
@@ -16505,11 +16490,12 @@ contains
             self%ptr)
     end subroutine LIBMUSCLE_Message_unset_settings
 
-    type(LIBMUSCLE_Instance) function LIBMUSCLE_Instance_create_autoports()
+    type(LIBMUSCLE_Instance) function LIBMUSCLE_Instance_create(ports)
         implicit none
 
+        type(LIBMUSCLE_PortsDescription), intent(in), optional :: ports
         integer :: num_args, i, arg_len
-        integer (c_intptr_t) :: cla
+        integer (c_intptr_t) :: cla, ports_ptr
         character (kind=c_char, len=:), allocatable :: cur_arg
 
         num_args = command_argument_count()
@@ -16523,33 +16509,14 @@ contains
                    cla, i, cur_arg, int(len(cur_arg), c_size_t))
             deallocate(cur_arg)
         end do
-        LIBMUSCLE_Instance_create_autoports%ptr = &
-            LIBMUSCLE_Instance_create_autoports_(cla)
+        if (present(ports)) then
+            ports_ptr = ports%ptr
+        else
+            ports_ptr = 0
+        end if
+        LIBMUSCLE_Instance_create%ptr = LIBMUSCLE_Instance_create_(cla, ports_ptr)
         call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_(cla)
-    end function LIBMUSCLE_Instance_create_autoports
-
-    type(LIBMUSCLE_Instance) function LIBMUSCLE_Instance_create_with_ports(ports)
-        implicit none
-
-        type(LIBMUSCLE_PortsDescription) :: ports
-        integer :: num_args, i, arg_len
-        integer (c_intptr_t) :: cla
-        character (kind=c_char, len=:), allocatable :: cur_arg
-
-        num_args = command_argument_count()
-        cla = LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(num_args + 1)
-        do i = 0, num_args
-            call get_command_argument(i, length=arg_len)
-            allocate (character(arg_len+1) :: cur_arg)
-            call get_command_argument(i, value=cur_arg)
-            cur_arg(arg_len+1:arg_len+1) = c_null_char
-            call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg_( &
-                   cla, i, cur_arg, int(len(cur_arg), c_size_t))
-            deallocate(cur_arg)
-        end do
-        LIBMUSCLE_Instance_create_with_ports%ptr = LIBMUSCLE_Instance_create_with_ports_(cla, ports%ptr)
-        call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_(cla)
-    end function LIBMUSCLE_Instance_create_with_ports
+    end function LIBMUSCLE_Instance_create
 
     subroutine LIBMUSCLE_Instance_free( &
             self)

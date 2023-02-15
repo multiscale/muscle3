@@ -322,8 +322,7 @@
         LIBMUSCLE_Message_get_settings_;
         LIBMUSCLE_Message_set_settings_;
         LIBMUSCLE_Message_unset_settings_;
-        LIBMUSCLE_Instance_create_autoports_cr_;
-        LIBMUSCLE_Instance_create_with_ports_cr_;
+        LIBMUSCLE_Instance_create_;
         LIBMUSCLE_Instance_free_;
         LIBMUSCLE_Instance_reuse_instance_default_;
         LIBMUSCLE_Instance_reuse_instance_apply_;

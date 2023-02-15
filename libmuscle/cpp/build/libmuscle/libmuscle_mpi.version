@@ -355,6 +355,7 @@
         LIBMUSCLE_Instance_receive_with_settings_pd_;
         LIBMUSCLE_Instance_receive_with_settings_ps_;
         LIBMUSCLE_Instance_receive_with_settings_psd_;
+        LIBMUSCLE_InstanceFlags_to_int_;
         LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_;
         LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_;
         LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg_;

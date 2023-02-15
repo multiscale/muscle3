@@ -14,6 +14,7 @@ using libmuscle::Data;
 using libmuscle::PortsDescription;
 using libmuscle::Message;
 using libmuscle::Instance;
+using libmuscle::InstanceFlags;
 using libmuscle::impl::bindings::CmdLineArgs;
 using ymmsl::Operator;
 using ymmsl::Settings;
@@ -3670,18 +3671,20 @@ void LIBMUSCLE_Message_unset_settings_(std::intptr_t self) {
 std::intptr_t LIBMUSCLE_Instance_create_(
         std::intptr_t cla,
         std::intptr_t ports,
+        int flags,
         int communicator, int root
 ) {
     CmdLineArgs * cla_p = reinterpret_cast<CmdLineArgs *>(cla);
+    InstanceFlags flags_o = static_cast<InstanceFlags>(flags);
     MPI_Comm communicator_m = MPI_Comm_f2c(communicator);
     Instance * result;
     if (ports == 0) {
         result = new Instance(
-            cla_p->argc(), cla_p->argv(), communicator_m, root);
+            cla_p->argc(), cla_p->argv(), flags_o, communicator_m, root);
     } else {
         PortsDescription * ports_p = reinterpret_cast<PortsDescription *>(ports);
         result = new Instance(
-            cla_p->argc(), cla_p->argv(), *ports_p, communicator_m, root);
+            cla_p->argc(), cla_p->argv(), *ports_p, flags_o, communicator_m, root);
     }
     return reinterpret_cast<std::intptr_t>(result);
 }

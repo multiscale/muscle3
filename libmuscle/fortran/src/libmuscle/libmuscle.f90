@@ -467,6 +467,15 @@ module libmuscle
     public :: LIBMUSCLE_Instance_receive_with_settings_ps
     public :: LIBMUSCLE_Instance_receive_with_settings_psd
     public :: LIBMUSCLE_Instance_receive_with_settings_on_slot
+    type :: LIBMUSCLE_InstanceFlags
+        logical :: DONT_APPLY_OVERLAY = .false.
+        logical :: USES_CHECKPOINT_API = .false.
+        logical :: KEEPS_NO_STATE_FOR_NEXT_USE = .false.
+        logical :: STATE_NOT_REQUIRED_FOR_NEXT_USE = .false.
+
+    contains
+        procedure :: to_int => LIBMUSCLE_InstanceFlags_to_int_
+    end type
 
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_success = 0
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_domain_error = 1
@@ -2953,12 +2962,14 @@ module libmuscle
 
         integer (c_intptr_t) function LIBMUSCLE_Instance_create_( &
                 cla, &
-                ports) &
+                ports, &
+                flags) &
                 bind(C, name="LIBMUSCLE_Instance_create_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: cla
             integer (c_intptr_t), value, intent(in) :: ports
+            integer (c_int), value, intent(in) :: flags
         end function LIBMUSCLE_Instance_create_
 
         subroutine LIBMUSCLE_Instance_free_(self) &
@@ -16490,11 +16501,12 @@ contains
             self%ptr)
     end subroutine LIBMUSCLE_Message_unset_settings
 
-    type(LIBMUSCLE_Instance) function LIBMUSCLE_Instance_create(ports)
+    type(LIBMUSCLE_Instance) function LIBMUSCLE_Instance_create(ports, flags)
         implicit none
 
         type(LIBMUSCLE_PortsDescription), intent(in), optional :: ports
-        integer :: num_args, i, arg_len
+        type(LIBMUSCLE_InstanceFlags), intent(in), optional :: flags
+        integer :: num_args, i, arg_len, iflags
         integer (c_intptr_t) :: cla, ports_ptr
         character (kind=c_char, len=:), allocatable :: cur_arg
 
@@ -16509,12 +16521,12 @@ contains
                    cla, i, cur_arg, int(len(cur_arg), c_size_t))
             deallocate(cur_arg)
         end do
-        if (present(ports)) then
-            ports_ptr = ports%ptr
-        else
-            ports_ptr = 0
-        end if
-        LIBMUSCLE_Instance_create%ptr = LIBMUSCLE_Instance_create_(cla, ports_ptr)
+        ports_ptr = 0
+        if (present(ports)) ports_ptr = ports%ptr
+        iflags = 0
+        if (present(flags)) iflags = flags%to_int()
+        LIBMUSCLE_Instance_create%ptr = LIBMUSCLE_Instance_create_( &
+            cla, ports_ptr, iflags)
         call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_(cla)
     end function LIBMUSCLE_Instance_create
 
@@ -17883,6 +17895,19 @@ contains
         LIBMUSCLE_Instance_receive_with_settings_psd%ptr = ret_val
     end function LIBMUSCLE_Instance_receive_with_settings_psd
 
+    integer function LIBMUSCLE_InstanceFlags_to_int_(flags)
+        implicit none
+
+        class(LIBMUSCLE_InstanceFlags), intent(in) :: flags
+        integer :: ret_val
+
+        ret_val = 0
+        if (flags%DONT_APPLY_OVERLAY) ret_val = ret_val + 1
+        if (flags%USES_CHECKPOINT_API) ret_val = ret_val + 2
+        if (flags%KEEPS_NO_STATE_FOR_NEXT_USE) ret_val = ret_val + 4
+        if (flags%STATE_NOT_REQUIRED_FOR_NEXT_USE) ret_val = ret_val + 8
+        LIBMUSCLE_InstanceFlags_to_int_ = ret_val
+    end function LIBMUSCLE_InstanceFlags_to_int_
 
     function LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create( &
             count)

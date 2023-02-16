@@ -1488,45 +1488,16 @@ LIBMUSCLE_PortsDescription
     :rtype port_name: character
 
 LIBMUSCLE_Instance
-``````````````````````````
+``````````````````
 .. f:type:: LIBMUSCLE_Instance
 
     The Instance class represents a component instance in a
     MUSCLE3 simulation. This class provides a low-level
     send/receive API for the instance to use.
 
-.. f:function:: LIBMUSCLE_Instance_create()
+.. f:function:: LIBMUSCLE_Instance_create(ports, flags, communicator, root)
 
-    Create a new Instance object with ports from the configuration.
-
-    For MPI-based components, this will have libmuscle_mpi use a duplicate of
-    ``MPI_COMM_WORLD`` to communicate, and the designated root process will be
-    that with rank 0.
-
-    This object must be freed when you're done with it using
-    :f:func:`LIBMUSCLE_Instance_free`.
-
-    :r instance: The newly created instance object.
-    :rtype instance: LIBMUSCLE_Instance
-
-.. f:function:: LIBMUSCLE_Instance_create(ports)
-
-    Create a new Instance object with the given ports.
-
-    For MPI-based components, this will have libmuscle_mpi use a duplicate
-    of ``MPI_COMM_WORLD`` to communicate, and the designated root process will
-    be that with rank 0.
-
-    This object must be freed when you're done with it using
-    :f:func:`LIBMUSCLE_Instance_free`.
-
-    :p LIBMUSCLE_PortsDescription ports: The ports of the new instance.
-    :r instance: The newly created instance object.
-    :rtype instance: LIBMUSCLE_Instance
-
-.. f:function:: LIBMUSCLE_Instance_create(communicator, root)
-
-    Create a new Instance object for MPI with ports from the configuration.
+    Create a new Instance object for MPI with the given ports and flags.
 
     For MPI-based components, an MPI communicator and a root rank may be
     passed. The communicator must contain all processes in this instance, and
@@ -1538,30 +1509,11 @@ LIBMUSCLE_Instance
     This object must be freed when you're done with it using
     :f:func:`LIBMUSCLE_Instance_free`.
 
-    :p integer communicator: MPI communicator to use (optional, default
+    :p LIBMUSCLE_PortsDescription ports [optional]: The ports of the new instance.
+    :p LIBMUSCLE_InstanceFlags flags [optional]: The flags to use for the new instance.
+    :p integer communicator [optional]: MPI communicator to use (optional, default
             MPI_COMM_WORLD).
-    :p integer root: Rank of the root process (optional, default 0).
-    :r instance: The newly created instance object.
-    :rtype instance: LIBMUSCLE_Instance
-
-.. f:function:: LIBMUSCLE_Instance_create(ports, communicator, root)
-
-    Create a new Instance object for MPI with the given ports.
-
-    For MPI-based components, an MPI communicator and a root rank may be
-    passed. The communicator must contain all processes in this instance, and
-    ``root`` must be the rank of one of them. MUSCLE will create a duplicate of
-    this communicator for its own use. Creating a :f:type:`LIBMUSCLE_Instance`
-    for an MPI component is a collective operation, so it must be done in
-    all processes simultaneously, with the same communicator and the same root.
-
-    This object must be freed when you're done with it using
-    :f:func:`LIBMUSCLE_Instance_free`.
-
-    :p LIBMUSCLE_PortsDescription ports: The ports of the new instance.
-    :p integer communicator: MPI communicator to use (optional, default
-            MPI_COMM_WORLD).
-    :p integer root: Rank of the root process (optional, default 0).
+    :p integer root [optional]: Rank of the root process (optional, default 0).
     :r instance: The newly created instance object.
     :rtype instance: LIBMUSCLE_Instance
 
@@ -1584,27 +1536,6 @@ LIBMUSCLE_Instance
     process.
 
     :p LIBMUSCLE_Instance self: The object to check for reuse.
-    :r reuse: Whether to enter the reuse loop another time.
-    :rtype reuse: logical
-
-.. f:function:: LIBMUSCLE_Instance_reuse_instance(self, apply_overlay)
-
-    Checks whether to reuse this instance.
-
-    This method must be called at the beginning of the reuse loop, i.e. before
-    the F_INIT operator, and its return value should decide whether to enter
-    that loop again.
-
-    This version of this function lets you choose whether to apply the received
-    settings overlay or to return it with the message. If you're going to use
-    :f:func:`LIBMUSCLE_Instance_receive_with_settings` on your F_INIT ports, set
-    this to ``.false.``. If you don't know what that means, just call
-    ``LIBMUSCLE_Instance_reuse_instance()`` with no arguments and all will be
-    fine. If it turns out that you did need to specify ``.false.`` here, MUSCLE
-    3 will tell you in an error message, and you can add it.
-
-    :p LIBMUSCLE_Instance self: The object to check for reuse.
-    :p logical apply_overlay: Whether to apply the received settings overlay.
     :r reuse: Whether to enter the reuse loop another time.
     :rtype reuse: logical
 
@@ -2184,6 +2115,59 @@ LIBMUSCLE_Instance
     :p character err_msg: An error message output (allocatable, optional).
     :r message: The received message.
     :rtype message: LIBMUSCLE_Message
+
+LIBMUSCLE_InstanceFlags
+```````````````````````
+
+.. f:type:: LIBMUSCLE_InstanceFlags
+
+    The InstanceFlags type represents the flags that can be supplied
+    when creating a new :f:type:`Instance`. Multiple flags may be set simultaneously,
+    for example:
+
+    .. code-block:: fortran
+
+        ports = LIBMUSCLE_PortsDescription_create()
+        ! Specify ports...
+        instance = LIBMUSCLE_Instance_create(ports, &
+            LIBMUSCLE_InstanceFlags(DONT_APPLY_OVERLAY=.true., USES_CHECKPOINT_API=.true.))
+        call LIBMUSCLE_PortsDescription_free(ports)
+
+
+    :f logical DONT_APPLY_OVERLAY: Set to ``.true.`` to not apply the received settings
+            overlay during prereceive of F_INIT messages.
+
+            If you're going to use Instance.receive_with_settings on your F_INIT ports,
+            you need to set this flag when creating an Instance.
+
+            If you don't know what that means, do not specify this flag and everything
+            will be fine. If it turns out that you did need to specify the flag, MUSCLE3
+            will tell you about it in an error message and you can add it still.
+
+    :f logical USES_CHECKPOINT_API: Set to ``.true.`` to indicate that this instance
+            supports checkpointing.
+
+            You may not use any checkpointing API calls when this flag is not supplied.
+
+    :f logical KEEPS_NO_STATE_FOR_NEXT_USE: Indicate this instance does not carry state
+            between iterations of the reuse loop.
+
+            This corresponds to :external:py:attr:`ymmsl.KeepsStateForNextUse.NO`.
+
+            If neither ``KEEPS_NO_STATE_FOR_NEXT_USE`` and
+            ``STATE_NOT_REQUIRED_FOR_NEXT_USE`` are supplied, this corresponds to
+            :external:py:attr:`ymmsl.KeepsStateForNextUse.NECESSARY`.
+
+    :f logical STATE_NOT_REQUIRED_FOR_NEXT_USE: Indicate this instance carries state
+            between iterations of the reuse loop, however this state is not required
+            for restarting.
+
+            This corresponds to :external:py:attr:`ymmsl.KeepsStateForNextUse.HELPFUL`.
+
+            If neither ``KEEPS_NO_STATE_FOR_NEXT_USE`` and
+            ``STATE_NOT_REQUIRED_FOR_NEXT_USE`` are supplied, this corresponds to
+            :external:py:attr:`ymmsl.KeepsStateForNextUse.NECESSARY`.
+
 
 Namespace YMMSL
 ---------------

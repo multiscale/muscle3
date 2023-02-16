@@ -73,7 +73,7 @@ class InstanceFlags(Flag):
 
     If neither :attr:`KEEPS_NO_STATE_FOR_NEXT_USE` and
     :attr:`STATE_NOT_REQUIRED_FOR_NEXT_USE` are supplied, this corresponds to
-    :external:py:attr:`ymmsl.KeepsStateForNextUse.REQUIRED`.
+    :external:py:attr:`ymmsl.KeepsStateForNextUse.NECESSARY`.
     """
 
     STATE_NOT_REQUIRED_FOR_NEXT_USE = auto()
@@ -84,7 +84,7 @@ class InstanceFlags(Flag):
 
     If neither :attr:`KEEPS_NO_STATE_FOR_NEXT_USE` and
     :attr:`STATE_NOT_REQUIRED_FOR_NEXT_USE` are supplied, this corresponds to
-    :external:py:attr:`ymmsl.KeepsStateForNextUse.REQUIRED`.
+    :external:py:attr:`ymmsl.KeepsStateForNextUse.NECESSARY`.
     """
 
 
@@ -643,18 +643,7 @@ class Instance:
         .. note::
             This method will block until it can determine whether a final
             snapshot should be taken. This means it must also determine if this
-            instance is reused. The optional keyword-only argument
-            `apply_overlay` has the same meaning as for :meth:`reuse_instance`.
-
-        Args:
-            apply_overlay: Whether to apply the received settings
-                overlay or to save it. If you're going to use
-                :meth:`receive_with_settings` on your F_INIT ports, set this to
-                False. If you don't know what that means, just call
-                :meth:`should_save_final_snapshot()` without specifying this and
-                everything will be fine. If it turns out that you did need to
-                specify False, MUSCLE3 will tell you about it in an error
-                message and you can add it still.
+            instance is reused.
 
         Returns:
             True iff a final snapshot should be taken by the submodel according

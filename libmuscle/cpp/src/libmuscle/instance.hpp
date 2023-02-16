@@ -16,8 +16,12 @@ namespace libmuscle { namespace impl {
 
 /** Enumeration of properties that an instance may have.
  *
- * You may combine multiple flags using the bitwise OR operator `|`. For
- * example:
+ * You may combine multiple flags using the bitwise OR operator `|`. For example:
+ *
+ * \code{cpp}
+ *      auto flags = InstanceFlags::DONT_APPLY_OVERLAY | InstanceFlags::USES_CHECKPOINT_API;
+ *      Instance instance(argc, argv, flags);
+ * \endcode
  */
 enum class InstanceFlags : int {
     NONE = 0,
@@ -43,22 +47,22 @@ enum class InstanceFlags : int {
     /** Indicate this instance does not carry state between iterations of the
      *      reuse loop.
      *
-     * This corresponds to :external:py:attr:`ymmsl.KeepsStateForNextUse.NO`.
+     * This corresponds to `ymmsl.KeepsStateForNextUse.NO`.
      *
      * If neither KEEPS_NO_STATE_FOR_NEXT_USE and STATE_NOT_REQUIRED_FOR_NEXT_USE
      * are supplied, this corresponds to
-     * :external:py:attr:`ymmsl.KeepsStateForNextUse.REQUIRED`.
+     * `ymmsl.KeepsStateForNextUse.NECESSARY`.
      */
     KEEPS_NO_STATE_FOR_NEXT_USE = 4,
 
     /** Indicate this instance carries state between iterations of the
      *      reuse loop, however this state is not required for restarting.
      *
-     * This corresponds to :external:py:attr:`ymmsl.KeepsStateForNextUse.HELPFUL`.
+     * This corresponds to `ymmsl.KeepsStateForNextUse.HELPFUL`.
      *
      * If neither KEEPS_NO_STATE_FOR_NEXT_USE and STATE_NOT_REQUIRED_FOR_NEXT_USE
      * are supplied, this corresponds to
-     * :external:py:attr:`ymmsl.KeepsStateForNextUse.REQUIRED`.
+     * `ymmsl.KeepsStateForNextUse.NECESSARY`.
      */
     STATE_NOT_REQUIRED_FOR_NEXT_USE = 8,
 };

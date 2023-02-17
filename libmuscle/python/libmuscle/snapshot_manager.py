@@ -43,7 +43,7 @@ class SnapshotManager:
         self._manager = manager
 
         self._resume_from_snapshot: Optional[Snapshot] = None
-        self._resume_overlay = Settings()
+        self.resume_overlay = Settings()
         self._next_snapshot_num = 1
 
     def prepare_resume(
@@ -73,7 +73,7 @@ class SnapshotManager:
                 # snapshot.message is None for implicit snapshots
                 self._resume_from_snapshot = snapshot
                 result = snapshot.message.timestamp
-            self._resume_overlay = snapshot.settings_overlay
+            self.resume_overlay = snapshot.settings_overlay
 
             self._communicator.restore_message_counts(
                 snapshot.port_message_counts)

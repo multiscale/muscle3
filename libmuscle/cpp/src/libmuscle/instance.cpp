@@ -595,13 +595,28 @@ Message Instance::Impl::load_snapshot() {
 
 bool Instance::Impl::should_save_snapshot(double timestamp) {
     api_guard_->verify_should_save_snapshot();
-    auto result = trigger_manager_->should_save_snapshot(timestamp);
+    bool result;
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
+        result = trigger_manager_->should_save_snapshot(timestamp);
+#ifdef MUSCLE_ENABLE_MPI
+        mpi_barrier_.signal();
+        int result_mpi = result;
+        MPI_Bcast(&result_mpi, 1, MPI_INT, mpi_root_, mpi_comm_);
+    } else {
+        mpi_barrier_.wait();
+        int result_mpi;
+        MPI_Bcast(&result_mpi, 1, MPI_INT, mpi_root_, mpi_comm_);
+        result = result_mpi;
+    }
+#endif
     api_guard_->should_save_snapshot_done(result);
     return result;
 }
 
 void Instance::Impl::save_snapshot(Message message) {
-    api_guard_->verify_save_snapshot();
+    api_guard_->verify_save_snapshot();  // API guard verifies we are mpi_root
     save_snapshot_(message, false, {});
     api_guard_->save_snapshot_done();
 }
@@ -610,15 +625,30 @@ bool Instance::Impl::should_save_final_snapshot() {
     api_guard_->verify_should_save_final_snapshot();
 
     do_reuse_ = decide_reuse_instance_();
-    auto result = trigger_manager_->should_save_final_snapshot(
-            do_reuse_.get(), f_init_max_timestamp_());
+    bool result;
+#ifdef MUSCLE_ENABLE_MPI
+    if (mpi_barrier_.is_root()) {
+#endif
+        result = trigger_manager_->should_save_final_snapshot(
+                do_reuse_.get(), f_init_max_timestamp_());
+#ifdef MUSCLE_ENABLE_MPI
+        mpi_barrier_.signal();
+        int result_mpi = result;
+        MPI_Bcast(&result_mpi, 1, MPI_INT, mpi_root_, mpi_comm_);
+    } else {
+        mpi_barrier_.wait();
+        int result_mpi;
+        MPI_Bcast(&result_mpi, 1, MPI_INT, mpi_root_, mpi_comm_);
+        result = result_mpi;
+    }
+#endif
 
     api_guard_->should_save_final_snapshot_done(result);
     return result;
 }
 
 void Instance::Impl::save_final_snapshot(Message message) {
-    api_guard_->verify_save_final_snapshot();
+    api_guard_->verify_save_final_snapshot();  // API guard verifies we are mpi_root
     save_snapshot_(message, true, f_init_max_timestamp_());
     api_guard_->save_final_snapshot_done();
 }

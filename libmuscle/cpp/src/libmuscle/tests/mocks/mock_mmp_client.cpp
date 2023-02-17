@@ -56,7 +56,15 @@ auto MockMMPClient::get_checkpoint_info() ->
                 Optional<std::string>
             >
 {
-    return {};
+    return {
+            0.1,
+            // no checkpoints defined:
+            Data::dict(
+                    "at_end", false,
+                    "wallclock_time", Data::list(),
+                    "simulation_time", Data::list()),
+            {},
+            {}};
 }
 
 auto MockMMPClient::request_peers() ->

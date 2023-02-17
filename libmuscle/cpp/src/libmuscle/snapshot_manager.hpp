@@ -47,6 +47,10 @@ class SnapshotManager {
                 Optional<std::string> const & resume_snapshot,
                 Optional<std::string> const & snapshot_directory);
 
+        /** Get the settings overlay to be used when resuming
+         */
+        ::ymmsl::Settings resume_overlay() const { return resume_overlay_; }
+
         /** Check whether we have an intermediate snapshot.
          *
          * Doesn't say whether we should resume now, just that we were

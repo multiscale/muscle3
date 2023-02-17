@@ -192,7 +192,14 @@ Instance::Impl::Impl(
     , is_shut_down_(false)
     , flags_(flags)
 {
-    api_guard_.reset(new APIGuard(!!(flags_ & InstanceFlags::USES_CHECKPOINT_API)));
+    api_guard_.reset(new APIGuard(
+            !!(flags_ & InstanceFlags::USES_CHECKPOINT_API),
+#ifdef MUSCLE_ENABLE_MPI
+            mpi_barrier_.is_root()
+#else
+            true
+#endif
+            ));
 #ifdef MUSCLE_ENABLE_MPI
     MPI_Comm_dup(communicator, &mpi_comm_);
     if (mpi_barrier_.is_root()) {

@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
 }
 
 TEST(libmuscle_api_guard, test_no_checkpointing_support) {
-    auto guard = APIGuard(false);
+    auto guard = APIGuard(false, true);
     for (int i=0; i<3; ++i) {
         guard.verify_reuse_instance();
         guard.reuse_instance_done(true);
@@ -25,7 +25,7 @@ TEST(libmuscle_api_guard, test_no_checkpointing_support) {
 }
 
 TEST(libmuscle_api_guard, test_final_snapshot_only) {
-    auto guard = APIGuard(true);
+    auto guard = APIGuard(true, true);
     for (int i=0; i<4; ++i) {
         guard.verify_reuse_instance();
         guard.reuse_instance_done(true);
@@ -60,7 +60,7 @@ TEST(libmuscle_api_guard, test_final_snapshot_only) {
 
 
 TEST(libmuscle_api_guard, test_full_checkpointing) {
-    auto guard = APIGuard(true);
+    auto guard = APIGuard(true, true);
     for (int i=0; i<4; ++i) {
         guard.verify_reuse_instance();
         guard.reuse_instance_done(true);
@@ -105,6 +105,24 @@ TEST(libmuscle_api_guard, test_full_checkpointing) {
     guard.reuse_instance_done(false);
 }
 
+TEST(libmsucle_api_guard, test_non_root) {
+    auto guard = APIGuard(true, false);
+    guard.verify_reuse_instance();
+    guard.reuse_instance_done(true);
+    guard.verify_resuming();
+    guard.resuming_done(true);
+    ASSERT_THROW(guard.verify_load_snapshot(), std::runtime_error);
+    guard.verify_should_init();
+    guard.should_init_done();
+    guard.verify_should_save_snapshot();
+    guard.should_save_snapshot_done(true);
+    ASSERT_THROW(guard.verify_save_snapshot(), std::runtime_error);
+    guard.verify_should_save_final_snapshot();
+    guard.should_save_final_snapshot_done(true);
+    ASSERT_THROW(guard.verify_save_final_snapshot(), std::runtime_error);
+    guard.verify_reuse_instance();
+}
+
 static std::vector< std::function<void(APIGuard &)> > api_guard_funs_({
     [](APIGuard & guard){ guard.verify_reuse_instance(); },                 //  0
     [](APIGuard & guard){ guard.reuse_instance_done(true); },               //  1
@@ -141,50 +159,50 @@ void check_all_raise_except(APIGuard & guard, std::set<int> excluded) {
     }
 }
 
-TEST(libmuscle_api_guard, test_missing_resuming){
-    auto guard = APIGuard(true);
+TEST(libmuscle_api_guard, test_missing_resuming) {
+    auto guard = APIGuard(true, true);
     run_until_before(guard, 2);  // 2 = verify_resuming
     check_all_raise_except(guard, {2});
 }
 
 TEST(libmuscle_api_guard, test_missing_load_snapshot) {
-    auto guard = APIGuard(true);
+    auto guard = APIGuard(true, true);
     run_until_before(guard, 4);  // 4 = verify_load_snapshot
     check_all_raise_except(guard, {4});
 }
 
 TEST(libmuscle_api_guard, test_missing_should_init) {
-    auto guard = APIGuard(true);
+    auto guard = APIGuard(true, true);
     run_until_before(guard, 6);  // 6 = verify_should_init
     check_all_raise_except(guard, {6});
 }
 
 TEST(libmuscle_api_guard, test_missing_should_save) {
-    auto guard = APIGuard(true);
+    auto guard = APIGuard(true, true);
     run_until_before(guard, 8);  // 8 = verify_should_save_snapshot
     check_all_raise_except(guard, {8, 12});  // 12 = verify_should_save_final_snapshot
 }
 
 TEST(libmuscle_api_guard, test_missing_save_snapshot) {
-    auto guard = APIGuard(true);
+    auto guard = APIGuard(true, true);
     run_until_before(guard, 10);  // 10 = verify_save_snapshot
     check_all_raise_except(guard, {10});
 }
 
 TEST(libmuscle_api_guard, test_missing_should_save_final) {
-    auto guard = APIGuard(true);
+    auto guard = APIGuard(true, true);
     run_until_before(guard, 12);  // 12 = verify_should_save_final_snapshot
     check_all_raise_except(guard, {12, 8});  // 8 = verify_should_save_snapshot
 }
 
 TEST(libmuscle_api_guard, test_missing_save_final_snapshot) {
-    auto guard = APIGuard(true);
+    auto guard = APIGuard(true, true);
     run_until_before(guard, 14);  // 14 = verify_save_final_snapshot
     check_all_raise_except(guard, {14});
 }
 
 TEST(libmuscle_api_guard, test_double_should_save) {
-    auto guard = APIGuard(true);
+    auto guard = APIGuard(true, true);
     run_until_before(guard, 8);  // 8 = verify_should_save_snapshot
     guard.verify_should_save_snapshot();
     guard.should_save_snapshot_done(true);

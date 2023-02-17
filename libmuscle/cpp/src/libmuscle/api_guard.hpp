@@ -67,8 +67,11 @@ class APIGuard {
         /** Create an APIGuard
          *
          * This starts the tracker in the phase BEFORE_FIRST_REUSE_INSTANCE.
+         *
+         * @param uses_checkpointing Whether this instance wants to use checkpointing.
+         * @param is_root Whether this is the root process (relevant for MPI).
          */
-        explicit APIGuard(bool uses_checkpointing);
+        explicit APIGuard(bool uses_checkpointing, bool is_root);
 
         /** Check reuse_instance()
          */
@@ -145,6 +148,7 @@ class APIGuard {
     private:
         APIPhase phase_;
         bool uses_checkpointing_;
+        bool is_root_;
 
         void generic_error_messages_(std::string verify_phase);
 };

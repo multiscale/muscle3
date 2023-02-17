@@ -4,9 +4,10 @@
 
 namespace libmuscle { namespace impl {
 
-APIGuard::APIGuard(bool uses_checkpointing)
+APIGuard::APIGuard(bool uses_checkpointing, bool is_root)
         : phase_(APIPhase::BEFORE_FIRST_REUSE_INSTANCE),
-          uses_checkpointing_(uses_checkpointing)
+          uses_checkpointing_(uses_checkpointing),
+          is_root_(is_root)
 {}
 
 void APIGuard::verify_reuse_instance() {
@@ -46,7 +47,7 @@ void APIGuard::verify_resuming() {
 }
 
 void APIGuard::resuming_done(bool resuming) {
-    if (resuming) {
+    if (resuming && is_root_) {
         phase_ = APIPhase::BEFORE_LOAD_SNAPSHOT;
     } else {
         phase_ = APIPhase::BEFORE_SHOULD_INIT;
@@ -54,6 +55,9 @@ void APIGuard::resuming_done(bool resuming) {
 }
 
 void APIGuard::verify_load_snapshot() {
+    if (!is_root_)
+        throw std::runtime_error(
+                "load_snapshot may only be called from the root process");
     if (phase_ != APIPhase::BEFORE_LOAD_SNAPSHOT) {
         throw std::runtime_error(
             "Please check that we are resuming by calling resuming()"
@@ -85,12 +89,15 @@ void APIGuard::verify_should_save_snapshot() {
 }
 
 void APIGuard::should_save_snapshot_done(bool should_save) {
-    if (should_save) {
+    if (should_save && is_root_) {
         phase_ = APIPhase::BEFORE_SAVE_SNAPSHOT;
     }
 }
 
 void APIGuard::verify_save_snapshot() {
+    if (!is_root_)
+        throw std::runtime_error(
+                "save_snapshot may only be called from the root process");
     if (phase_ != APIPhase::BEFORE_SAVE_SNAPSHOT) {
         generic_error_messages_("save_snapshot");
         throw std::runtime_error("Should be unreachable.");
@@ -109,7 +116,7 @@ void APIGuard::verify_should_save_final_snapshot() {
 }
 
 void APIGuard::should_save_final_snapshot_done(bool should_save) {
-    if (should_save) {
+    if (should_save && is_root_) {
         phase_ = APIPhase::BEFORE_SAVE_FINAL_SNAPSHOT;
     } else {
         phase_ = APIPhase::BEFORE_REUSE_INSTANCE;
@@ -117,6 +124,9 @@ void APIGuard::should_save_final_snapshot_done(bool should_save) {
 }
 
 void APIGuard::verify_save_final_snapshot() {
+    if (!is_root_)
+        throw std::runtime_error(
+                "save_final_snapshot may only be called from the root process");
     if (phase_ != APIPhase::BEFORE_SAVE_FINAL_SNAPSHOT) {
         generic_error_messages_("save_final_snapshot");
         throw std::runtime_error("Should be unreachable.");

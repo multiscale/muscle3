@@ -486,12 +486,14 @@ std::tuple<std::string, bool> Communicator::split_port_desc_(
     std::string port_name(port_desc);
     bool is_vector = false;
 
-    if (port_desc.rfind("[]") == (port_desc.size() - 2)) {
+    auto found = port_desc.rfind("[]");
+    if (found != std::string::npos && found == (port_desc.size() - 2)) {
         is_vector = true;
         port_name = port_desc.substr(0, port_desc.size() - 2);
     }
 
-    if (port_name.rfind("[]") == (port_name.size() - 2)) {
+    found = port_name.rfind("[]");
+    if (found != std::string::npos && found == (port_name.size() - 2)) {
         std::ostringstream oss;
         oss << "Port description '" << port_desc << "' is invalid: ports can";
         oss << " have at most one dimension.";

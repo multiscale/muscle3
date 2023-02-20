@@ -112,7 +112,7 @@ namespace {
                 "triggers", encode_vector(snapshot_metadata.triggers),
                 "wallclock_time", snapshot_metadata.wallclock_time,
                 "timestamp", snapshot_metadata.timestamp,
-                "next_timsetamp", encode_optional(snapshot_metadata.next_timestamp),
+                "next_timestamp", encode_optional(snapshot_metadata.next_timestamp),
                 "port_message_counts", port_message_counts,
                 "is_final_snapshot", snapshot_metadata.is_final_snapshot,
                 "snapshot_filename", snapshot_metadata.snapshot_filename

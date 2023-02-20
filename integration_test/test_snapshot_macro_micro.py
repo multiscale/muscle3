@@ -5,7 +5,8 @@ from libmuscle import (
         Instance, Message, KEEPS_NO_STATE_FOR_NEXT_USE, USES_CHECKPOINT_API)
 from libmuscle.manager.run_dir import RunDir
 
-from .conftest import run_manager_with_actors, ls_snapshots
+from .conftest import (
+        run_manager_with_actors, ls_snapshots, skip_if_python_only, skip_if_no_mpi_cpp)
 
 
 _LOG_LEVEL = 'INFO'  # set to DEBUG for additional debug info
@@ -197,8 +198,17 @@ model:
     return base_config
 
 
-def test_snapshot_macro_micro(tmp_path, base_config):
-    actors = {'macro': ('python', macro), 'micro': ('python', micro)}
+@pytest.mark.parametrize('actors', [
+    {'macro': ('python', macro), 'micro': ('python', micro)},
+    pytest.param(
+        {'macro': ('cpp', 'snapshot_components_test', 'macro'),
+         'micro': ('cpp', 'snapshot_components_test', 'micro')},
+        marks=skip_if_python_only),
+    pytest.param(
+        {'macro': ('python', macro), 'micro': ('cpp', 'mpi_snapshot_micro_test', '2')},
+        marks=[skip_if_python_only, skip_if_no_mpi_cpp])
+])
+def test_snapshot_macro_micro(tmp_path, base_config, actors):
     run_dir1 = RunDir(tmp_path / 'run1')
     run_manager_with_actors(dump(base_config), run_dir1.path, actors)
 
@@ -234,8 +244,12 @@ def test_snapshot_macro_micro(tmp_path, base_config):
     run_manager_with_actors(dump(base_config), run_dir3.path, actors)
 
 
-def test_snapshot_macro_stateless_micro(tmp_path, base_config):
-    actors = {'macro': ('python', macro), 'micro': ('python', stateless_micro)}
+@pytest.mark.parametrize('micro_actor', [
+    ('python', stateless_micro),
+    ('cpp', 'snapshot_components_test', 'stateless_micro'),
+])
+def test_snapshot_macro_stateless_micro(tmp_path, base_config, micro_actor):
+    actors = {'macro': ('python', macro), 'micro': micro_actor}
     run_dir1 = RunDir(tmp_path / 'run1')
     run_manager_with_actors(dump(base_config), run_dir1.path, actors)
 
@@ -255,9 +269,13 @@ def test_snapshot_macro_stateless_micro(tmp_path, base_config):
     assert len(ls_snapshots(run_dir2)) == 3
 
 
-def test_snapshot_macro_vector_micro(tmp_path, base_config):
+@pytest.mark.parametrize('macro_actor', [
+    ('python', macro_vector),
+    ('cpp', 'snapshot_components_test', 'macro_vector'),
+])
+def test_snapshot_macro_vector_micro(tmp_path, base_config, macro_actor):
     base_config.model.components[1].multiplicity = [2]
-    actors = {'macro': ('python', macro_vector),
+    actors = {'macro': macro_actor,
               'micro[0]': ('python', micro),
               'micro[1]': ('python', micro)}
 

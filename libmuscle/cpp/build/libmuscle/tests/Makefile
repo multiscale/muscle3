@@ -97,6 +97,9 @@ mpi_micro_model_test: mpi_micro_model_test.cpp $(CURDIR)/../../ymmsl/libymmsl_d.
 mpi_component_test: mpi_component_test.cpp $(CURDIR)/../../ymmsl/libymmsl_d.a $(CURDIR)/../libmuscle_mpi_d.a
 	$(MPICXX) $(CXXFLAGS) $(DEBUGFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS2)
 
+mpi_snapshot_micro_test: mpi_snapshot_micro_test.cpp $(CURDIR)/../../ymmsl/libymmsl_d.a $(CURDIR)/../libmuscle_mpi_d.a
+	$(MPICXX) $(CXXFLAGS) $(DEBUGFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS2)
+
 
 empty :=
 space := $(empty) $(empty)

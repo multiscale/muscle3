@@ -1,21 +1,16 @@
-import os
 from pathlib import Path
 
-import pytest
 import ymmsl
 
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
 
-from .conftest import skip_if_python_only
+from .conftest import skip_if_python_only, skip_if_no_mpi_cpp
 
 
 @skip_if_python_only
+@skip_if_no_mpi_cpp
 def test_start_script(tmpdir):
-    # only run this if MPI is enabled
-    if 'MUSCLE_ENABLE_CPP_MPI' not in os.environ:
-        pytest.skip('MPI support was not detected')
-
     tmppath = Path(str(tmpdir))
 
     # find our test components and their requirements

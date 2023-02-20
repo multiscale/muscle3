@@ -20,6 +20,10 @@ skip_if_python_only = pytest.mark.skipif(
         'MUSCLE_TEST_PYTHON_ONLY' in os.environ,
         reason='Python-only tests requested')
 
+skip_if_no_mpi_cpp = pytest.mark.skipif(
+        'MUSCLE_ENABLE_CPP_MPI' not in os.environ,
+        reason='MPI support was not detected')
+
 
 @pytest.fixture
 def yatiml_log_warning():

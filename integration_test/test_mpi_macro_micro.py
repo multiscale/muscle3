@@ -1,14 +1,13 @@
 import multiprocessing as mp
 import os
 from pathlib import Path
-import pytest
 import subprocess
 import sys
 
 from libmuscle import Instance, Message
 from ymmsl import Operator
 
-from .conftest import skip_if_python_only
+from .conftest import skip_if_python_only, skip_if_no_mpi_cpp
 
 
 def run_macro(instance_id: str, muscle_manager: str):
@@ -37,12 +36,9 @@ def macro():
 
 
 @skip_if_python_only
+@skip_if_no_mpi_cpp
 def test_mpi_macro_micro(
         tmpdir, mmp_server_process_simple, mpirun_outfile_arg):
-    # only run this if MPI is enabled
-    if 'MUSCLE_ENABLE_CPP_MPI' not in os.environ:
-        pytest.skip('MPI support was not detected')
-
     # create C++ micro model
     # see libmuscle/cpp/src/libmuscle/tests/micro_model_test.cpp
     cpp_build_dir = Path(__file__).parents[1] / 'libmuscle' / 'cpp' / 'build'

@@ -75,8 +75,8 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors):
         actors: a dictionary of lists containing details for each actor:
             ``{"instance_name": ("language", "details", ...)}``.
 
-            Language can be ``"python"``, ``"cpp"`` or ``"fortran"``. Details
-            differ per language.
+            Language can be ``"python"``, ``"cpp"``, ``"mpi_cpp"`` or ``"fortran"``.
+            Details differ per language.
 
             For python actors, details is a single callable which is executed
             in a ``multiprocessing.Process``.
@@ -84,6 +84,9 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors):
             For cpp actors, details is an executable path with optional arguments.
             The executable paths are assumed to be relative to
             ``../libmuscle/cpp/build/libmuscle/tests``.
+
+            For mpi cpp actors, details is an executable path (see cpp), then number of
+            processes and optionally arguments passed to the executable.
 
             For fortran actors, details is an executable path. Executable paths are
             assumed to be relative to ``../libmuscle/fortran/build/libmuscle/tests``.
@@ -122,13 +125,18 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors):
                 python_processes.append(proc)
                 continue
             elif language == "cpp":
-                build_dir = cpp_build_dir
+                executable = cpp_build_dir / actor
+            elif language == "mpicpp":
+                assert len(args) > 0, "must provide at least number of mpi instances"
+                executable = 'mpirun'
+                out_file = tmpdir / f'mpi_{instance_name}.log'
+                args = ('-np', args[0], mpirun_outfile_arg(), str(out_file),
+                        str(cpp_build_dir / actor), *args[1:])
             elif language == "fortran":
-                build_dir = fortran_build_dir
+                executable = fortran_build_dir / actor
             else:
                 raise ValueError(f"Unknown {language=}")
             # start native code actor
-            executable = build_dir / actor
             f_out = stack.enter_context(
                     (tmpdir / f'{instance_name}_stdout.txt').open('w'))
             f_err = stack.enter_context(
@@ -230,7 +238,6 @@ def log_file_in_tmpdir(tmpdir):
     os.chdir(old_workdir)
 
 
-@pytest.fixture
 def mpi_is_intel():
     if 'MUSCLE_ENABLE_CPP_MPI' not in os.environ:
         return None
@@ -240,17 +247,16 @@ def mpi_is_intel():
     return 'Intel' in result.stdout.decode('utf-8')
 
 
-@pytest.fixture
-def mpirun_outfile_arg(mpi_is_intel):
-    if mpi_is_intel:
+def mpirun_outfile_arg():
+    if mpi_is_intel():
         return '-outfile-pattern'
     else:
         return '--output-filename'
 
 
 @pytest.fixture
-def mpi_exec_model(mpi_is_intel):
-    if mpi_is_intel:
+def mpi_exec_model():
+    if mpi_is_intel():
         return 'intelmpi'
     else:
         return 'openmpi'

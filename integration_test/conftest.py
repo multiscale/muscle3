@@ -50,10 +50,12 @@ def make_server_process(ymmsl_doc, tmpdir):
     process.start()
     control_pipe[1].close()
     # wait for start
-    yield control_pipe[0].recv()
-    control_pipe[0].send(True)
-    control_pipe[0].close()
-    process.join()
+    try:
+        yield control_pipe[0].recv()
+    finally:
+        control_pipe[0].send(True)
+        control_pipe[0].close()
+        process.join()
 
 
 def _python_wrapper(instance_name, muscle_manager, callable):

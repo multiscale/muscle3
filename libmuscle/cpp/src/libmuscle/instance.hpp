@@ -640,6 +640,9 @@ class Instance {
          * snapshot, the submodel must load its state from the snapshot as returned
          * Instance::load_snapshot.
          *
+         * MPI-based components must call this function in all processes
+         * simultaneously.
+         *
          * @return true iff the submodel must resume from a snapshot.
          */
         bool resuming();
@@ -652,6 +655,9 @@ class Instance {
          * execute the F_INIT phase of the submodel execution loop. Use this method
          * before attempting to receive data on F_INIT ports.
          *
+         * MPI-based components must call this function in all processes
+         * simultaneously.
+         *
          * @return true if the submodel must execute the F_INIT step.
          * @return false otherwise.
          */
@@ -660,6 +666,11 @@ class Instance {
         /** Load a snapshot.
          *
          * Must only be called when Instance::resuming returns True.
+         *
+         * MPI-based components may only call this from the root process. An error
+         * is raised when attempting to call this method in any other process. It
+         * is therefore up to the model code to scatter or broadcast the snapshot
+         * state to the non-root processes, if necessary.
          *
          * @return Message containing the state as saved in a previous run
          *      through Instance::save_snapshot or Instance::save_final_snapshot.
@@ -678,6 +689,9 @@ class Instance {
          * See also Instance::should_save_final_snapshot for the variant that must be
          * called at the end of the reuse loop.
          *
+         * MPI-based components must call this function in all processes
+         * simultaneously.
+         *
          * @param timestamp current timestamp of the submodel.
          * @return true iff a snapshot should be taken by the submodel according to the
          *      checkpoint rules provided in the ymmsl configuration.
@@ -691,6 +705,11 @@ class Instance {
          * the checkpoint rules specified in the ymmsl configuration. You should
          * use the same timestamp in the provided Message object as used to query
          * Instance::should_save_snapshot.
+         *
+         * MPI-based components may only call this from the root process. An error
+         * is raised when attempting to call this method in any other process. It
+         * is therefore up to the model code to gather the necessary state from
+         * the non-root processes before saving the snapshot.
          *
          * @param message Message object that is saved as snapshot. The message
          *      timestamp attribute should be the same as passed to
@@ -710,6 +729,9 @@ class Instance {
          * See also Instance::should_save_snapshot for the variant that may be called
          * inside of a time-integration loop of the submodel.
          *
+         * MPI-based components must call this function in all processes
+         * simultaneously.
+         *
          * \note
          * This method will block until it can determine whether a final
          * snapshot should be taken. This means it must also determine if this
@@ -728,6 +750,11 @@ class Instance {
          *
          * See also Instance::save_snapshot for the variant that may be called after
          * each S Operator of the submodel.
+         *
+         * MPI-based components may only call this from the root process. An error
+         * is raised when attempting to call this method in any other process. It
+         * is therefore up to the model code to gather the necessary state from
+         * the non-root processes before saving the snapshot.
          *
          * @param message Message object that is saved as snapshot. The data
          *      attribute can be used to store the internal state of the

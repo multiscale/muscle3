@@ -26,10 +26,10 @@ program load_balancer
     call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_O_I, 'back_out[]')
     call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_S, 'back_in[]')
     call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_O_F, 'front_out[]')
-    instance = LIBMUSCLE_Instance_create(ports)
+    instance = LIBMUSCLE_Instance_create(ports, LIBMUSCLE_InstanceFlags(DONT_APPLY_OVERLAY=.true.))
     call LIBMUSCLE_PortsDescription_free(ports)
 
-    do while (LIBMUSCLE_Instance_reuse_instance(instance, .false.))
+    do while (LIBMUSCLE_Instance_reuse_instance(instance))
         ! F_INIT
         started = 0
         done = 0

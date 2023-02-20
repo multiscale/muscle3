@@ -322,11 +322,9 @@
         LIBMUSCLE_Message_get_settings_;
         LIBMUSCLE_Message_set_settings_;
         LIBMUSCLE_Message_unset_settings_;
-        LIBMUSCLE_Instance_create_autoports_cr_;
-        LIBMUSCLE_Instance_create_with_ports_cr_;
+        LIBMUSCLE_Instance_create_;
         LIBMUSCLE_Instance_free_;
-        LIBMUSCLE_Instance_reuse_instance_default_;
-        LIBMUSCLE_Instance_reuse_instance_apply_;
+        LIBMUSCLE_Instance_reuse_instance_;
         LIBMUSCLE_Instance_error_shutdown_;
         LIBMUSCLE_Instance_is_setting_a_character_;
         LIBMUSCLE_Instance_is_setting_a_int8_;
@@ -356,6 +354,7 @@
         LIBMUSCLE_Instance_receive_with_settings_pd_;
         LIBMUSCLE_Instance_receive_with_settings_ps_;
         LIBMUSCLE_Instance_receive_with_settings_psd_;
+        LIBMUSCLE_InstanceFlags_to_int_;
         LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_;
         LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_;
         LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg_;

@@ -14,6 +14,71 @@
 
 namespace libmuscle { namespace impl {
 
+/** Enumeration of properties that an instance may have.
+ *
+ * You may combine multiple flags using the bitwise OR operator `|`. For example:
+ *
+ * \code{cpp}
+ *      auto flags = InstanceFlags::DONT_APPLY_OVERLAY | InstanceFlags::USES_CHECKPOINT_API;
+ *      Instance instance(argc, argv, flags);
+ * \endcode
+ */
+enum class InstanceFlags : int {
+    NONE = 0,
+
+    /**
+     * Do not apply the received settings overlay during prereceive of F_INIT
+     * messages. If you're going to use Instance.receive_with_settings on
+     * your F_INIT ports, you need to set this flag when creating an
+     * Instance.
+     *
+     * If you don't know what that means, do not specify this flag and everything
+     * will be fine. If it turns out that you did need to specify the flag, MUSCLE3
+     * will tell you about it in an error message and you can add it still.
+     */
+    DONT_APPLY_OVERLAY = 1,
+
+    /** Indicate that this instance supports checkpointing.
+     *
+     * You may not use any checkpointing API calls when this flag is not supplied.
+     */
+    USES_CHECKPOINT_API = 2,
+
+    /** Indicate this instance does not carry state between iterations of the
+     * reuse loop. Specifying this flag is equivalent to
+     * `ymmsl.KeepsStateForNextUse.NO`.
+     *
+     * By default, (if neither KEEPS_NO_STATE_FOR_NEXT_USE nor
+     * STATE_NOT_REQUIRED_FOR_NEXT_USE are provided), the instance is assumed
+     * to keep state between reuses, and to require that state (equivalent to
+     * `ymmsl.KeepsStateForNextUse.NECESSARY`).
+     */
+    KEEPS_NO_STATE_FOR_NEXT_USE = 4,
+
+    /** Indicate this instance carries state between iterations of the
+     * reuse loop, however this state is not required for restarting.
+     * Specifying this flag is equivalent to `ymmsl.KeepsStateForNextUse.HELPFUL`.
+     *
+     * By default, (if neither KEEPS_NO_STATE_FOR_NEXT_USE nor
+     * STATE_NOT_REQUIRED_FOR_NEXT_USE are provided), the instance is assumed
+     * to keep state between reuses, and to require that state (equivalent to
+     * `ymmsl.KeepsStateForNextUse.NECESSARY`).
+     */
+    STATE_NOT_REQUIRED_FOR_NEXT_USE = 8,
+};
+
+inline InstanceFlags operator|(InstanceFlags a, InstanceFlags b) {
+    return static_cast<InstanceFlags>(static_cast<int>(a) | static_cast<int>(b));
+}
+
+inline InstanceFlags operator&(InstanceFlags a, InstanceFlags b) {
+    return static_cast<InstanceFlags>(static_cast<int>(a) & static_cast<int>(b));
+}
+
+inline bool operator!(InstanceFlags a) {
+    return a == InstanceFlags::NONE;
+}
+
 /** Represents a component instance in a MUSCLE3 simulation.
  *
  * This class provides a low-level send/receive API for the instance to use.
@@ -69,6 +134,59 @@ class Instance {
 #endif
                 );
 
+        /** Create an Instance.
+         *
+         * For MPI-based components, creating an Instance is a
+         * collective operation, so it must be done in all processes
+         * simultaneously, with the same communicator and the same root.
+         *
+         * @param argc The number of command-line arguments.
+         * @param argv Command line arguments.
+         * @param flags InstanceFlags for this instance.
+         * @param communicator MPI communicator containing all processes in
+         *      this instance (MPI only).
+         * @param root The designated root process (MPI only).
+         */
+        Instance(
+                int argc, char const * const argv[],
+                InstanceFlags flags
+#ifdef MUSCLE_ENABLE_MPI
+                , MPI_Comm const & communicator = MPI_COMM_WORLD
+                , int root = 0
+#endif
+                );
+
+        /** Create an instance.
+         *
+         * A PortsDescription can be written like this:
+         *
+         * PortsDescription ports({
+         *     {Operator::F_INIT, {"port1", "port2"}},
+         *     {Operator::O_F, {"port3[]"}}
+         *     });
+         *
+         * For MPI-based components, creating an Instance is a
+         * collective operation, so it must be done in all processes
+         * simultaneously, with the same communicator and the same root.
+         *
+         * @param argc The number of command-line arguments.
+         * @param argv Command line arguments.
+         * @param ports A description of the ports that this instance has.
+         * @param flags InstanceFlags for this instance.
+         * @param communicator MPI communicator containing all processes in
+         *      this instance (MPI only).
+         * @param root The designated root process (MPI only).
+         */
+        Instance(
+                int argc, char const * const argv[],
+                PortsDescription const & ports,
+                InstanceFlags flags
+#ifdef MUSCLE_ENABLE_MPI
+                , MPI_Comm const & communicator = MPI_COMM_WORLD
+                , int root = 0
+#endif
+                );
+
         ~Instance();
         Instance(Instance const &);
         Instance(Instance &&);
@@ -100,17 +218,8 @@ class Instance {
          * MPI-based components must execute the reuse loop in each
          * process in parallel, and call this function at the top of the
          * reuse loop in each process.
-         *
-         * @param apply_overlay Whether to apply the received settings
-         *        overlay or to save it. If you're going to use
-         *        receive_with_settings() on your F_INIT ports,
-         *        set this to false. If you don't know what that means,
-         *        just call reuse_instance() without specifying this
-         *        and everything will be fine. If it turns out that you
-         *        did need to specify false, MUSCLE3 will tell you about
-         *        it in an error message and you can add it.
          */
-        bool reuse_instance(bool apply_overlay = true);
+        bool reuse_instance();
 
         /** Logs an error and shuts down the Instance.
          *

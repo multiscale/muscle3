@@ -5,6 +5,29 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_.
 
+0.7.0
+*****
+
+Backwards Incompatible changes
+------------------------------
+
+* `Instance.reuse_instance` no longer accepts `apply_overlay` argument. Use
+  `InstanceFlags.DONT_APPLY_OVERLAY` when creating the instance instead.
+* `LIBMUSCLE_Instance_create` signature has changed, this might lead to errors like:
+
+  .. code-block:: text
+
+       30 |     instance = LIBMUSCLE_Instance_create(ports, MPI_COMM_WORLD, root_rank)
+          |               1
+    Error: Type mismatch in argument ‘flags’ at (1); passed INTEGER(4) to TYPE(libmuscle_instanceflags)
+
+  You may provide an explicit `InstanceFlags()` argument, or use named arguments:
+
+  .. code-block:: fortran
+
+    instance = LIBMUSCLE_Instance_create(ports, LIBMUSCLE_InstanceFlags(), MPI_COMM_WORLD, root_rank)
+    instance = LIBMUSCLE_Instance_create(ports, communicator=MPI_COMM_WORLD, root=root_rank)
+
 0.6.0
 *****
 

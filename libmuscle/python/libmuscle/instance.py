@@ -67,24 +67,25 @@ class InstanceFlags(Flag):
 
     KEEPS_NO_STATE_FOR_NEXT_USE = auto()
     """Indicate this instance does not carry state between iterations of the
-    reuse loop.
+    reuse loop. Specifying this flag is equivalent to
+    :external:py:attr:`ymmsl.KeepsStateForNextUse.NO`.
 
-    This corresponds to :external:py:attr:`ymmsl.KeepsStateForNextUse.NO`.
-
-    If neither :attr:`KEEPS_NO_STATE_FOR_NEXT_USE` and
-    :attr:`STATE_NOT_REQUIRED_FOR_NEXT_USE` are supplied, this corresponds to
-    :external:py:attr:`ymmsl.KeepsStateForNextUse.REQUIRED`.
+    By default, (if neither :attr:`KEEPS_NO_STATE_FOR_NEXT_USE` nor
+    :attr:`STATE_NOT_REQUIRED_FOR_NEXT_USE` are provided), the instance is assumed
+    to keep state between reuses, and to require that state (equivalent to
+    :external:py:attr:`ymmsl.KeepsStateForNextUse.NECESSARY`).
     """
 
     STATE_NOT_REQUIRED_FOR_NEXT_USE = auto()
     """Indicate this instance carries state between iterations of the
     reuse loop, however this state is not required for restarting.
+    Specifying this flag is equivalent to
+    :external:py:attr:`ymmsl.KeepsStateForNextUse.HELPFUL`.
 
-    This corresponds to :external:py:attr:`ymmsl.KeepsStateForNextUse.HELPFUL`.
-
-    If neither :attr:`KEEPS_NO_STATE_FOR_NEXT_USE` and
-    :attr:`STATE_NOT_REQUIRED_FOR_NEXT_USE` are supplied, this corresponds to
-    :external:py:attr:`ymmsl.KeepsStateForNextUse.REQUIRED`.
+    By default, (if neither :attr:`KEEPS_NO_STATE_FOR_NEXT_USE` nor
+    :attr:`STATE_NOT_REQUIRED_FOR_NEXT_USE` are provided), the instance is assumed
+    to keep state between reuses, and to require that state (equivalent to
+    :external:py:attr:`ymmsl.KeepsStateForNextUse.NECESSARY`).
     """
 
 
@@ -208,7 +209,7 @@ class Instance:
         self._set_local_log_level()
         self._set_remote_log_level()
 
-    def reuse_instance(self, apply_overlay: Optional[bool] = None) -> bool:
+    def reuse_instance(self) -> bool:
         """Decide whether to run this instance again.
 
         In a multiscale simulation, instances get reused all the time.
@@ -249,7 +250,7 @@ class Instance:
             do_reuse = self._do_reuse
             self._do_reuse = None
         else:
-            do_reuse = self._decide_reuse_instance(apply_overlay)
+            do_reuse = self._decide_reuse_instance()
 
         # now _first_run, _do_resume and _do_init are also set correctly
 
@@ -643,18 +644,7 @@ class Instance:
         .. note::
             This method will block until it can determine whether a final
             snapshot should be taken. This means it must also determine if this
-            instance is reused. The optional keyword-only argument
-            `apply_overlay` has the same meaning as for :meth:`reuse_instance`.
-
-        Args:
-            apply_overlay: Whether to apply the received settings
-                overlay or to save it. If you're going to use
-                :meth:`receive_with_settings` on your F_INIT ports, set this to
-                False. If you don't know what that means, just call
-                :meth:`should_save_final_snapshot()` without specifying this and
-                everything will be fine. If it turns out that you did need to
-                specify False, MUSCLE3 will tell you about it in an error
-                message and you can add it still.
+            instance is reused.
 
         Returns:
             True iff a final snapshot should be taken by the submodel according
@@ -780,8 +770,7 @@ class Instance:
                                                      self.__manager)
             logging.getLogger().addHandler(self._mmp_handler)
 
-    def _decide_reuse_instance(
-            self, apply_overlay: Optional[bool] = None) -> bool:
+    def _decide_reuse_instance(self) -> bool:
         """Decide whether and how to reuse the instance.
 
         This sets self._first_run, self._do_resume and self._do_init, and
@@ -805,7 +794,7 @@ class Instance:
         # resume from final
         if self._first_run and self._snapshot_manager.resuming_from_final():
             if f_init_connected:
-                got_f_init_messages = self._pre_receive(apply_overlay)
+                got_f_init_messages = self._pre_receive()
                 self._do_resume = True
                 self._do_init = True
                 return got_f_init_messages
@@ -823,7 +812,7 @@ class Instance:
             return self._first_run
 
         # not resuming and f_init connected, run while we get messages
-        got_f_init_messages = self._pre_receive(apply_overlay)
+        got_f_init_messages = self._pre_receive()
         self._do_init = got_f_init_messages
         return got_f_init_messages
 
@@ -981,7 +970,7 @@ class Instance:
                  for port in ports.get(Operator.F_INIT, [])])
         return f_init_connected or self._communicator.settings_in_connected()
 
-    def _pre_receive(self, apply_overlay: Optional[bool]) -> bool:
+    def _pre_receive(self) -> bool:
         """Pre-receives on all ports.
 
         This includes muscle_settings_in and all user-defined ports.
@@ -990,7 +979,7 @@ class Instance:
             True iff no ClosePort messages were received.
         """
         all_ports_open = self.__receive_settings()
-        self.__pre_receive_f_init(apply_overlay)
+        self.__pre_receive_f_init()
         for message in self._f_init_cache.values():
             if isinstance(message.data, ClosePort):
                 all_ports_open = False
@@ -1024,19 +1013,13 @@ class Instance:
         self._trigger_manager.harmonise_wall_time(saved_until)
         return True
 
-    def __pre_receive_f_init(self, apply_overlay: Optional[bool]) -> None:
+    def __pre_receive_f_init(self) -> None:
         """Receives on all ports connected to F_INIT.
 
         This receives all incoming messages on F_INIT and stores them
         in self._f_init_cache.
         """
-        if apply_overlay is not None:
-            warnings.warn(
-                    'Explicitly providing apply_overlay in reuse_instance is'
-                    ' deprecated. Use InstanceFlags.DONT_APPLY_OVERLAY when'
-                    ' creating the instance instead.', DeprecationWarning)
-        else:
-            apply_overlay = InstanceFlags.DONT_APPLY_OVERLAY not in self._flags
+        apply_overlay = InstanceFlags.DONT_APPLY_OVERLAY not in self._flags
 
         def pre_receive(port_name: str, slot: Optional[int]) -> None:
             msg, saved_until = self._communicator.receive_message(

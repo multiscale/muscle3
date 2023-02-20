@@ -14,6 +14,7 @@ Namespace libmuscle
 .. doxygenclass:: libmuscle::impl::Data
 .. doxygenclass:: libmuscle::impl::DataConstRef
 .. doxygenclass:: libmuscle::impl::Instance
+.. doxygenenum:: libmuscle::impl::InstanceFlags
 .. doxygenclass:: libmuscle::impl::Message
 .. doxygentypedef:: libmuscle::impl::PortsDescription
 

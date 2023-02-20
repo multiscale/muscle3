@@ -36,6 +36,7 @@
 
 using libmuscle::impl::ClosePort;
 using libmuscle::impl::Instance;
+using libmuscle::impl::InstanceFlags;
 using libmuscle::impl::Message;
 using libmuscle::impl::MockCommunicator;
 using libmuscle::impl::MockMMPClient;
@@ -289,7 +290,8 @@ TEST(libmuscle_instance, receive_with_settings) {
     Instance instance(argv.size(), argv.data(),
             PortsDescription({
                 {Operator::F_INIT, {"in"}}
-                }));
+                }),
+            InstanceFlags::DONT_APPLY_OVERLAY);
 
     MockCommunicator::list_ports_return_value = PortsDescription({
                 {Operator::F_INIT, {"in"}}
@@ -302,7 +304,7 @@ TEST(libmuscle_instance, receive_with_settings) {
     MockCommunicator::next_received_message["in"] =
         std::make_unique<Message>(1.0, "Testing with settings", recv_settings);
 
-    ASSERT_TRUE(instance.reuse_instance(false));
+    ASSERT_TRUE(instance.reuse_instance());
     Message msg(instance.receive_with_settings("in"));
 
     ASSERT_EQ(msg.timestamp(), 1.0);
@@ -349,7 +351,8 @@ TEST(libmuscle_instance, receive_with_settings_default) {
     Instance instance(argv.size(), argv.data(),
             PortsDescription({
                 {Operator::F_INIT, {"not_connected"}}
-                }));
+                }),
+            InstanceFlags::DONT_APPLY_OVERLAY);
 
     MockCommunicator::list_ports_return_value = PortsDescription({
                 {Operator::F_INIT, {"not_connected"}}
@@ -361,7 +364,7 @@ TEST(libmuscle_instance, receive_with_settings_default) {
     default_settings["test1"] = 12;
     Message default_msg(1.0, "Testing with settings", default_settings);
 
-    ASSERT_TRUE(instance.reuse_instance(false));
+    ASSERT_TRUE(instance.reuse_instance());
     Message msg(instance.receive_with_settings("not_connected", default_msg));
 
     ASSERT_EQ(msg.timestamp(), 1.0);

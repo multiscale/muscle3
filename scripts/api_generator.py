@@ -2286,6 +2286,100 @@ class Enum:
         return textwrap.indent(result, 4*' ')
 
 
+class Flags:
+    def __init__(self, name: str, values: List[str]):
+        """Create a Flags description.
+
+        Flags are an enum class in C++, but a custom derived type with boolean
+        attributes in Fortran.
+
+        Args:
+            name: name of the flags
+            values: list of option names
+        """
+        self.ns_prefix = None       # type: Optional[str]
+        self.public = None          # type: Optional[bool]
+        self.name = name
+        self.values = values
+
+    def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
+        """Sets the namespace prefix correctly for all members.
+
+        Args:
+            ns_for_name: A map from type names to namespace names.
+        """
+        self.ns_prefix = ns_for_name[self.name]
+
+    def set_public(self, public: bool) -> None:
+        """Sets whether this enum should be public.
+
+        Public objects are usable by the Fortran program.
+
+        Args:
+            public: True iff this is public.
+        """
+        self.public = public
+
+    def fortran_type_definition(self) -> str:
+        """Create a Fortran type definition for this enum.
+        """
+        result = ''
+        if self.public:
+            result += f'public :: {self.ns_prefix}_{self.name}\n'
+
+        result += f'type {self.ns_prefix}_{self.name}\n'
+        for value in self.values:
+            result += f'    logical :: {value} = .false.\n'
+        result += '\n'
+        result += 'contains\n'
+        result += f'    procedure :: to_int => {self.ns_prefix}_{self.name}_to_int_\n'
+        result += 'end type\n'
+        return textwrap.indent(result, 4*' ')
+
+    def fortran_exports(self) -> List[str]:
+        """Generates a list of linker exports for the Fortran symbols.
+        """
+        fun_name = f'{self.ns_prefix}_{self.name}_to_int_;'
+        return [fun_name]
+
+    def fortran_c_wrapper(self) -> str:
+        """Create C functions for the members.
+        """
+        return ''
+
+    def fortran_interface(self) -> str:
+        """Create a Fortran interface definition for the C ABI.
+        """
+        return ''
+
+    def fortran_public_declarations(self) -> str:
+        """Creates Fortran declarations making functions public.
+        """
+        return ''
+
+    def fortran_overloads(self) -> str:
+        """Create Fortran overload declarations for any OverloadSets.
+        """
+        return ''
+
+    def fortran_functions(self) -> str:
+        """Create Fortran function definitions for this class.
+        """
+        fun_name = f'{self.ns_prefix}_{self.name}_to_int_'
+        result = f'integer function {fun_name}(flags)\n'
+        result += '    implicit none\n'
+        result += '\n'
+        result += f'    class({self.ns_prefix}_{self.name}), intent(in) :: flags\n'
+        result += '    integer :: ret_val\n'
+        result += '\n'
+        result += '    ret_val = 0\n'
+        for i, value in enumerate(self.values):
+            result += f"    if (flags%{value}) ret_val = ret_val + {1 << i}\n"
+        result += f'    {fun_name} = ret_val\n'
+        result += f'end function {fun_name}\n'
+        return textwrap.indent(result, 4*' ')
+
+
 class Namespace:
     def __init__(self, name: str, public: Optional[bool], prefix: str,
                  enums: List[Enum], classes: List[Class]) -> None:

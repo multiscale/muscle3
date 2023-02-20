@@ -135,7 +135,7 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors):
             elif language == "fortran":
                 executable = fortran_build_dir / actor
             else:
-                raise ValueError(f"Unknown {language=}")
+                raise ValueError(f"Unknown language: {language}")
             # start native code actor
             f_out = stack.enter_context(
                     (tmpdir / f'{instance_name}_stdout.txt').open('w'))

@@ -902,68 +902,40 @@ void Instance::Impl::shutdown_() {
  * These just forward to the hidden implementations above.
  */
 
+#ifdef MUSCLE_ENABLE_MPI
+#define MPI_ARGS_DECL , MPI_Comm const & communicator, int root
+#define MPI_ARGS_CALL , communicator, root
+#else
+#define MPI_ARGS_DECL
+#define MPI_ARGS_CALL
+#endif
+
 Instance::Instance(
         int argc, char const * const argv[]
-#ifdef MUSCLE_ENABLE_MPI
-        , MPI_Comm const & communicator
-        , int root
-#endif
-        )
-    : pimpl_(new Impl(
-                argc, argv, {{}}, InstanceFlags::NONE
-#ifdef MUSCLE_ENABLE_MPI
-                , communicator, root
-#endif
-                ))
+        MPI_ARGS_DECL)
+    : pimpl_(new Impl(argc, argv, {}, InstanceFlags::NONE MPI_ARGS_CALL))
 {}
 
 Instance::Instance(
         int argc, char const * const argv[],
         PortsDescription const & ports
-#ifdef MUSCLE_ENABLE_MPI
-        , MPI_Comm const & communicator
-        , int root
-#endif
-        )
-    : pimpl_(new Impl(
-                argc, argv, ports, InstanceFlags::NONE
-#ifdef MUSCLE_ENABLE_MPI
-                , communicator, root
-#endif
-                ))
+        MPI_ARGS_DECL)
+    : pimpl_(new Impl(argc, argv, ports, InstanceFlags::NONE MPI_ARGS_CALL))
 {}
 
 Instance::Instance(
         int argc, char const * const argv[],
         InstanceFlags flags
-#ifdef MUSCLE_ENABLE_MPI
-        , MPI_Comm const & communicator
-        , int root
-#endif
-        )
-    : pimpl_(new Impl(
-                argc, argv, {{}}, flags
-#ifdef MUSCLE_ENABLE_MPI
-                , communicator, root
-#endif
-                ))
+        MPI_ARGS_DECL)
+    : pimpl_(new Impl(argc, argv, {}, flags MPI_ARGS_CALL))
 {}
 
 Instance::Instance(
         int argc, char const * const argv[],
         PortsDescription const & ports,
         InstanceFlags flags
-#ifdef MUSCLE_ENABLE_MPI
-        , MPI_Comm const & communicator
-        , int root
-#endif
-        )
-    : pimpl_(new Impl(
-                argc, argv, ports, flags
-#ifdef MUSCLE_ENABLE_MPI
-                , communicator, root
-#endif
-                ))
+        MPI_ARGS_DECL)
+    : pimpl_(new Impl(argc, argv, ports, flags MPI_ARGS_CALL))
 {}
 
 Instance::~Instance() = default;

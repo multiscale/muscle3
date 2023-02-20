@@ -96,10 +96,9 @@ checkpoints:
 
 
 def test_snapshot_dispatch(tmp_path, dispatch_config):
-    actors = {f'comp{i + 1}': component for i in range(5)}
+    actors = {f'comp{i + 1}': ('python', component) for i in range(5)}
     run_dir1 = RunDir(tmp_path / 'run1')
-    run_manager_with_actors(
-            dump(dispatch_config), run_dir1.path, python_actors=actors)
+    run_manager_with_actors(dump(dispatch_config), run_dir1.path, actors)
 
     assert len(ls_snapshots(run_dir1, 'comp1')) == 2  # t=0, at_end
     assert len(ls_snapshots(run_dir1, 'comp2')) == 5  # t=0, 2.5, 2.3, 2.8, at_end
@@ -119,8 +118,7 @@ def test_snapshot_dispatch(tmp_path, dispatch_config):
         'comp1': ls_snapshots(run_dir1, 'comp1')[1],
         'comp2': ls_snapshots(run_dir1, 'comp2')[1]}
 
-    run_manager_with_actors(
-            dump(dispatch_config), run_dir2.path, python_actors=actors)
+    run_manager_with_actors(dump(dispatch_config), run_dir2.path, actors)
 
     assert len(ls_snapshots(run_dir2, 'comp1')) == 1  # resume
     assert len(ls_snapshots(run_dir2, 'comp2')) == 4  # resume, t=2.5, 2.8, at_end

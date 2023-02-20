@@ -1,4 +1,3 @@
-from pathlib import Path
 import sqlite3
 
 import numpy as np
@@ -72,8 +71,7 @@ def test_cpp_macro_micro(mmp_server_config_simple, tmp_path):
     run_manager_with_actors(
             mmp_server_config_simple,
             tmp_path,
-            {'micro': Path('libmuscle') / 'tests' / 'micro_model_test'},
-            {},
-            {'macro': macro})
+            {'micro': ('cpp', 'micro_model_test'),
+             'macro': ('python', macro)})
 
     check_profile_output(tmp_path)

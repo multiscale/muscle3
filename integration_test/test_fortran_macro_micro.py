@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import numpy as np
 
 from libmuscle import Instance, Message
@@ -44,6 +42,5 @@ def test_fortran_macro_micro(mmp_server_config_simple, tmp_path):
     run_manager_with_actors(
             mmp_server_config_simple,
             tmp_path,
-            {},
-            {'micro': Path('libmuscle') / 'tests' / 'fortran_micro_model_test'},
-            {'macro': macro})
+            {'micro': ('fortran', 'fortran_micro_model_test'),
+             'macro': ('python', macro)})

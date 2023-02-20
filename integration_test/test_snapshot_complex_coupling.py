@@ -161,15 +161,14 @@ checkpoints:
 
 
 def test_snapshot_complex_coupling(tmp_path, config):
-    actors = {'main': main_component}
+    actors = {'main': ('python', main_component)}
     for c in 'ABC':
-        actors['cache' + c] = cache_component
+        actors['cache' + c] = ('python', cache_component)
     for c in 'ABCD':
-        actors['calc' + c] = echo_component
+        actors['calc' + c] = ('python', echo_component)
 
     run_dir1 = RunDir(tmp_path / 'run1')
-    run_manager_with_actors(
-            dump(config), run_dir1.path, python_actors=actors)
+    run_manager_with_actors(dump(config), run_dir1.path, actors)
 
     assert len(ls_snapshots(run_dir1, 'main')) == 5  # 2.0/0.5, at_end
     assert len(ls_snapshots(run_dir1, 'cacheA')) == 5  # 2.0/0.5, at_end

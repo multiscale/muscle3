@@ -86,10 +86,10 @@ checkpoints:
     stop: 2.0
   - at:
     - 2.5"""
-    actors = {f'comp{i + 1}': component for i in range(2)}
+    actors = {f'comp{i + 1}': ('python', component) for i in range(2)}
 
     run_dir1 = RunDir(tmp_path / 'run1')
-    run_manager_with_actors(config, run_dir1.path, python_actors=actors)
+    run_manager_with_actors(config, run_dir1.path, actors)
 
     assert len(ls_snapshots(run_dir1, 'comp1')) == 3  # t=0.75, 1.75, 2.5
     assert len(ls_snapshots(run_dir1, 'comp2')) == 3  # t=0.75, 1.75, 2.5
@@ -103,8 +103,7 @@ checkpoints:
     config_doc = load(config)
     config_doc.update(snapshot_docs[1])
 
-    run_manager_with_actors(
-            dump(config_doc), run_dir2.path, python_actors=actors)
+    run_manager_with_actors(dump(config_doc), run_dir2.path, actors)
 
     assert len(ls_snapshots(run_dir2, 'comp1')) == 2  # resume, t=2.5
     assert len(ls_snapshots(run_dir2, 'comp2')) == 2  # resume, t=2.5
@@ -138,11 +137,11 @@ checkpoints:
     stop: 2.0
   - at:
     - 2.5"""
-    actors = {f'comp{i + 1}': component for i in range(2)}
-    actors['coupler'] = interact_coupling.checkpointing_temporal_coupler
+    actors = {f'comp{i + 1}': ('python', component) for i in range(2)}
+    actors['coupler'] = ('python', interact_coupling.checkpointing_temporal_coupler)
 
     run_dir1 = RunDir(tmp_path / 'run1')
-    run_manager_with_actors(config, run_dir1.path, python_actors=actors)
+    run_manager_with_actors(config, run_dir1.path, actors)
 
     assert len(ls_snapshots(run_dir1, 'comp1')) == 3  # t=0.75, 1.75, 2.5
     assert len(ls_snapshots(run_dir1, 'comp2')) == 3  # t=0.75, 1.75, 2.5
@@ -156,8 +155,7 @@ checkpoints:
     config_doc = load(config)
     config_doc.update(snapshot_docs[1])
 
-    run_manager_with_actors(
-            dump(config_doc), run_dir2.path, python_actors=actors)
+    run_manager_with_actors(dump(config_doc), run_dir2.path, actors)
 
     assert len(ls_snapshots(run_dir2, 'comp1')) == 2  # resume, t=2.5
     assert len(ls_snapshots(run_dir2, 'comp2')) == 2  # resume, t=2.5

@@ -62,27 +62,34 @@ def _python_wrapper(instance_name, muscle_manager, callable):
     callable()
 
 
-def run_manager_with_actors(
-        ymmsl_text, tmpdir,
-        cpp_actors={}, fortran_actors={}, python_actors={}):
+def run_manager_with_actors(ymmsl_text, tmpdir, actors):
     """Start muscle_manager along with C++ and python actors.
 
-    C++ actors are a dict of instance->executable_path. Executable paths are
-    assumed to be relative to ../libmuscle/cpp/build/. LD_LIBRARY_PATH is
-    automatically updated to include the msgpack library path.
+    Args:
+        actors: a dictionary of lists containing details for each actor:
+            ``{"instance_name": ("language", "details", ...)}``.
 
-    Fortran actors are a dict of instance->executable_path. Executable paths are
-    assumed to be relative to ../libmuscle/fortran/build/. LD_LIBRARY_PATH is
-    automatically updated to include the msgpack library path.
+            Language can be ``"python"``, ``"cpp"`` or ``"fortran"``. Details
+            differ per language.
 
-    Python actors are a dict of instance->callable, where the callable
-    implements the python actor.
+            For python actors, details is a single callable which is executed
+            in a ``multiprocessing.Process``.
+
+            For cpp actors, details is an executable path with optional arguments.
+            The executable paths are assumed to be relative to
+            ``../libmuscle/cpp/build/libmuscle/tests``.
+
+            For fortran actors, details is an executable path. Executable paths are
+            assumed to be relative to ``../libmuscle/fortran/build/libmuscle/tests``.
+
+            For both cpp and Fortran actors, LD_LIBRARY_PATH is automatically updated
+            to include the msgpack library path.
     """
     env = os.environ.copy()
     ymmsl_doc = ymmsl.load(ymmsl_text)
     libmuscle_dir = Path(__file__).parents[1] / 'libmuscle'
-    cpp_build_dir = libmuscle_dir / 'cpp' / 'build'
-    fortran_build_dir = libmuscle_dir / 'fortran' / 'build'
+    cpp_build_dir = libmuscle_dir / 'cpp' / 'build' / 'libmuscle' / 'tests'
+    fortran_build_dir = libmuscle_dir / 'fortran' / 'build' / 'libmuscle' / 'tests'
 
     with ExitStack() as stack:
         # start muscle_manager and extract manager location
@@ -96,28 +103,33 @@ def run_manager_with_actors(
             env['LD_LIBRARY_PATH'] = ':'.join(map(str, lib_paths))
 
         native_processes = []
-        # start native actors
-        for actors, build_dir in ((cpp_actors, cpp_build_dir),
-                                  (fortran_actors, fortran_build_dir)):
-            for instance_name, executable_path in actors.items():
-                executable = build_dir / executable_path
-                f_out = stack.enter_context(
-                        (tmpdir / f'{instance_name}_stdout.txt').open('w'))
-                f_err = stack.enter_context(
-                        (tmpdir / f'{instance_name}_stderr.txt').open('w'))
-                native_processes.append(subprocess.Popen(
-                        [str(executable), f'--muscle-instance={instance_name}'],
-                        env=env, stdout=f_out, stderr=f_err))
-
-        # start python actors
         python_processes = []
-        for instance_name, callable in python_actors.items():
-            proc = mp.Process(
-                    target=_python_wrapper,
-                    args=(instance_name, env['MUSCLE_MANAGER'], callable),
-                    name=instance_name)
-            proc.start()
-            python_processes.append(proc)
+        # start actors
+        for instance_name, (language, actor, *args) in actors.items():
+            if language == "python":
+                # start python actor
+                proc = mp.Process(
+                        target=_python_wrapper,
+                        args=(instance_name, env['MUSCLE_MANAGER'], actor),
+                        name=instance_name)
+                proc.start()
+                python_processes.append(proc)
+                continue
+            elif language == "cpp":
+                build_dir = cpp_build_dir
+            elif language == "fortran":
+                build_dir = fortran_build_dir
+            else:
+                raise ValueError(f"Unknown {language=}")
+            # start native code actor
+            executable = build_dir / actor
+            f_out = stack.enter_context(
+                    (tmpdir / f'{instance_name}_stdout.txt').open('w'))
+            f_err = stack.enter_context(
+                    (tmpdir / f'{instance_name}_stderr.txt').open('w'))
+            native_processes.append(subprocess.Popen(
+                    [str(executable), *args, f'--muscle-instance={instance_name}'],
+                    env=env, stdout=f_out, stderr=f_err))
 
         # check results
         for proc in native_processes:

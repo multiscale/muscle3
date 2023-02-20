@@ -354,6 +354,13 @@
         LIBMUSCLE_Instance_receive_with_settings_pd_;
         LIBMUSCLE_Instance_receive_with_settings_ps_;
         LIBMUSCLE_Instance_receive_with_settings_psd_;
+        LIBMUSCLE_Instance_resuming_;
+        LIBMUSCLE_Instance_should_init_;
+        LIBMUSCLE_Instance_load_snapshot_;
+        LIBMUSCLE_Instance_should_save_snapshot_;
+        LIBMUSCLE_Instance_save_snapshot_;
+        LIBMUSCLE_Instance_should_save_final_snapshot_;
+        LIBMUSCLE_Instance_save_final_snapshot_;
         LIBMUSCLE_InstanceFlags_to_int_;
         LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_;
         LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_;

@@ -205,6 +205,10 @@ model:
          'micro': ('cpp', 'snapshot_components_test', 'micro')},
         marks=skip_if_python_only),
     pytest.param(
+        {'macro': ('fortran', 'fortran_snapshot_macro_test'),
+         'micro': ('fortran', 'fortran_snapshot_micro_test')},
+        marks=skip_if_python_only),
+    pytest.param(
         {'macro': ('python', macro), 'micro': ('cpp', 'mpi_snapshot_micro_test', '2')},
         marks=[skip_if_python_only, skip_if_no_mpi_cpp])
 ])
@@ -248,7 +252,10 @@ def test_snapshot_macro_micro(tmp_path, base_config, actors):
     ('python', stateless_micro),
     pytest.param(
         ('cpp', 'snapshot_components_test', 'stateless_micro'),
-        marks=skip_if_python_only)
+        marks=skip_if_python_only),
+    pytest.param(
+        ('fortran', 'fortran_snapshot_stateless_micro_test'),
+        marks=skip_if_python_only),
 ])
 def test_snapshot_macro_stateless_micro(tmp_path, base_config, micro_actor):
     actors = {'macro': ('python', macro), 'micro': micro_actor}
@@ -275,7 +282,10 @@ def test_snapshot_macro_stateless_micro(tmp_path, base_config, micro_actor):
     ('python', macro_vector),
     pytest.param(
         ('cpp', 'snapshot_components_test', 'macro_vector'),
-        marks=skip_if_python_only)
+        marks=skip_if_python_only),
+    pytest.param(
+        ('fortran', 'fortran_snapshot_macro_vector_test'),
+        marks=skip_if_python_only),
 ])
 def test_snapshot_macro_vector_micro(tmp_path, base_config, macro_actor):
     base_config.model.components[1].multiplicity = [2]

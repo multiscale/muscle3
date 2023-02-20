@@ -246,7 +246,9 @@ def test_snapshot_macro_micro(tmp_path, base_config, actors):
 
 @pytest.mark.parametrize('micro_actor', [
     ('python', stateless_micro),
-    ('cpp', 'snapshot_components_test', 'stateless_micro'),
+    pytest.param(
+        ('cpp', 'snapshot_components_test', 'stateless_micro'),
+        marks=skip_if_python_only)
 ])
 def test_snapshot_macro_stateless_micro(tmp_path, base_config, micro_actor):
     actors = {'macro': ('python', macro), 'micro': micro_actor}
@@ -271,7 +273,9 @@ def test_snapshot_macro_stateless_micro(tmp_path, base_config, micro_actor):
 
 @pytest.mark.parametrize('macro_actor', [
     ('python', macro_vector),
-    ('cpp', 'snapshot_components_test', 'macro_vector'),
+    pytest.param(
+        ('cpp', 'snapshot_components_test', 'macro_vector'),
+        marks=skip_if_python_only)
 ])
 def test_snapshot_macro_vector_micro(tmp_path, base_config, macro_actor):
     base_config.model.components[1].multiplicity = [2]

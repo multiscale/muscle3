@@ -2150,23 +2150,23 @@ LIBMUSCLE_InstanceFlags
             You may not use any checkpointing API calls when this flag is not supplied.
 
     :f logical KEEPS_NO_STATE_FOR_NEXT_USE: Indicate this instance does not carry state
-            between iterations of the reuse loop.
+            between iterations of the reuse loop. Specifying this flag is equivalent to
+            :external:py:attr:`ymmsl.KeepsStateForNextUse.NO`.
 
-            This corresponds to :external:py:attr:`ymmsl.KeepsStateForNextUse.NO`.
-
-            If neither ``KEEPS_NO_STATE_FOR_NEXT_USE`` and
-            ``STATE_NOT_REQUIRED_FOR_NEXT_USE`` are supplied, this corresponds to
-            :external:py:attr:`ymmsl.KeepsStateForNextUse.NECESSARY`.
+            By default, (if neither ``KEEPS_NO_STATE_FOR_NEXT_USE`` nor
+            ``STATE_NOT_REQUIRED_FOR_NEXT_USE`` are provided), the instance is assumed
+            to keep state between reuses, and to require that state (equivalent to
+            :external:py:attr:`ymmsl.KeepsStateForNextUse.NECESSARY`).
 
     :f logical STATE_NOT_REQUIRED_FOR_NEXT_USE: Indicate this instance carries state
             between iterations of the reuse loop, however this state is not required
-            for restarting.
+            for restarting. Specifying this flag is equivalent to
+            :external:py:attr:`ymmsl.KeepsStateForNextUse.HELPFUL`.
 
-            This corresponds to :external:py:attr:`ymmsl.KeepsStateForNextUse.HELPFUL`.
-
-            If neither ``KEEPS_NO_STATE_FOR_NEXT_USE`` and
-            ``STATE_NOT_REQUIRED_FOR_NEXT_USE`` are supplied, this corresponds to
-            :external:py:attr:`ymmsl.KeepsStateForNextUse.NECESSARY`.
+            By default, (if neither ``KEEPS_NO_STATE_FOR_NEXT_USE`` nor
+            ``STATE_NOT_REQUIRED_FOR_NEXT_USE`` are provided), the instance is assumed
+            to keep state between reuses, and to require that state (equivalent to
+            :external:py:attr:`ymmsl.KeepsStateForNextUse.NECESSARY`).
 
 
 Namespace YMMSL

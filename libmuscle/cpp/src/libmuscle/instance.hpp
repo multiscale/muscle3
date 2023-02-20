@@ -45,24 +45,24 @@ enum class InstanceFlags : int {
     USES_CHECKPOINT_API = 2,
 
     /** Indicate this instance does not carry state between iterations of the
-     *      reuse loop.
+     * reuse loop. Specifying this flag is equivalent to
+     * `ymmsl.KeepsStateForNextUse.NO`.
      *
-     * This corresponds to `ymmsl.KeepsStateForNextUse.NO`.
-     *
-     * If neither KEEPS_NO_STATE_FOR_NEXT_USE and STATE_NOT_REQUIRED_FOR_NEXT_USE
-     * are supplied, this corresponds to
-     * `ymmsl.KeepsStateForNextUse.NECESSARY`.
+     * By default, (if neither KEEPS_NO_STATE_FOR_NEXT_USE nor
+     * STATE_NOT_REQUIRED_FOR_NEXT_USE are provided), the instance is assumed
+     * to keep state between reuses, and to require that state (equivalent to
+     * `ymmsl.KeepsStateForNextUse.NECESSARY`).
      */
     KEEPS_NO_STATE_FOR_NEXT_USE = 4,
 
     /** Indicate this instance carries state between iterations of the
-     *      reuse loop, however this state is not required for restarting.
+     * reuse loop, however this state is not required for restarting.
+     * Specifying this flag is equivalent to `ymmsl.KeepsStateForNextUse.HELPFUL`.
      *
-     * This corresponds to `ymmsl.KeepsStateForNextUse.HELPFUL`.
-     *
-     * If neither KEEPS_NO_STATE_FOR_NEXT_USE and STATE_NOT_REQUIRED_FOR_NEXT_USE
-     * are supplied, this corresponds to
-     * `ymmsl.KeepsStateForNextUse.NECESSARY`.
+     * By default, (if neither KEEPS_NO_STATE_FOR_NEXT_USE nor
+     * STATE_NOT_REQUIRED_FOR_NEXT_USE are provided), the instance is assumed
+     * to keep state between reuses, and to require that state (equivalent to
+     * `ymmsl.KeepsStateForNextUse.NECESSARY`).
      */
     STATE_NOT_REQUIRED_FOR_NEXT_USE = 8,
 };

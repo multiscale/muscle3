@@ -67,24 +67,25 @@ class InstanceFlags(Flag):
 
     KEEPS_NO_STATE_FOR_NEXT_USE = auto()
     """Indicate this instance does not carry state between iterations of the
-    reuse loop.
+    reuse loop. Specifying this flag is equivalent to
+    :external:py:attr:`ymmsl.KeepsStateForNextUse.NO`.
 
-    This corresponds to :external:py:attr:`ymmsl.KeepsStateForNextUse.NO`.
-
-    If neither :attr:`KEEPS_NO_STATE_FOR_NEXT_USE` and
-    :attr:`STATE_NOT_REQUIRED_FOR_NEXT_USE` are supplied, this corresponds to
-    :external:py:attr:`ymmsl.KeepsStateForNextUse.NECESSARY`.
+    By default, (if neither :attr:`KEEPS_NO_STATE_FOR_NEXT_USE` nor
+    :attr:`STATE_NOT_REQUIRED_FOR_NEXT_USE` are provided), the instance is assumed
+    to keep state between reuses, and to require that state (equivalent to
+    :external:py:attr:`ymmsl.KeepsStateForNextUse.NECESSARY`).
     """
 
     STATE_NOT_REQUIRED_FOR_NEXT_USE = auto()
     """Indicate this instance carries state between iterations of the
     reuse loop, however this state is not required for restarting.
+    Specifying this flag is equivalent to
+    :external:py:attr:`ymmsl.KeepsStateForNextUse.HELPFUL`.
 
-    This corresponds to :external:py:attr:`ymmsl.KeepsStateForNextUse.HELPFUL`.
-
-    If neither :attr:`KEEPS_NO_STATE_FOR_NEXT_USE` and
-    :attr:`STATE_NOT_REQUIRED_FOR_NEXT_USE` are supplied, this corresponds to
-    :external:py:attr:`ymmsl.KeepsStateForNextUse.NECESSARY`.
+    By default, (if neither :attr:`KEEPS_NO_STATE_FOR_NEXT_USE` nor
+    :attr:`STATE_NOT_REQUIRED_FOR_NEXT_USE` are provided), the instance is assumed
+    to keep state between reuses, and to require that state (equivalent to
+    :external:py:attr:`ymmsl.KeepsStateForNextUse.NECESSARY`).
     """
 
 

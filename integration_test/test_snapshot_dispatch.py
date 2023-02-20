@@ -1,8 +1,7 @@
 import pytest
 from ymmsl import Operator, load, dump
 
-from libmuscle import (
-        Instance, Message, KEEPS_NO_STATE_FOR_NEXT_USE, USES_CHECKPOINT_API)
+from libmuscle import Instance, Message, USES_CHECKPOINT_API
 from libmuscle.manager.run_dir import RunDir
 
 from .conftest import run_manager_with_actors, ls_snapshots
@@ -42,28 +41,6 @@ def component():
 
         if instance.should_save_final_snapshot():
             instance.save_final_snapshot(Message(t_cur, data=[i, t_stop]))
-
-
-def stateless_component():
-    instance = Instance({
-            Operator.F_INIT: ['f_i'],
-            Operator.O_F: ['o_f']},
-            KEEPS_NO_STATE_FOR_NEXT_USE)
-
-    while instance.reuse_instance():
-        dt = instance.get_setting('dt', 'float')
-        t_max = instance.get_setting('t_max', 'float')
-
-        msg = instance.receive('f_i', default=Message(0, data=0))
-        t_cur = msg.timestamp
-        i = msg.data
-        t_stop = t_cur + t_max
-
-        while t_cur < t_stop:
-            # faux time-integration for testing snapshots
-            t_cur += dt
-
-        instance.send('o_f', Message(t_cur, data=i))
 
 
 @pytest.fixture

@@ -109,12 +109,13 @@ clean:
 .PHONY: test_python
 test_python: base
 	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_implementations.ymmsl rd_python.ymmsl rd_settings.ymmsl
-	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl
 	make -C python test
 
 .PHONY: test_cpp
 test_cpp: base cpp
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_cpp.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints_cpp.ymmsl rd_settings.ymmsl
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_python_cpp.ymmsl rd_settings.ymmsl
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rdmc_cpp.ymmsl rdmc_settings.ymmsl
 
@@ -125,6 +126,7 @@ test_cpp_mpi: base cpp_mpi
 .PHONY: test_fortran
 test_fortran: base fortran
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_fortran.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints_fortran.ymmsl rd_settings.ymmsl
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_python_fortran.ymmsl rd_settings.ymmsl
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rdmc_fortran.ymmsl rdmc_settings.ymmsl
 

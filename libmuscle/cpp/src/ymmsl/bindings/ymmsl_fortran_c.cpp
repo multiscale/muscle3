@@ -103,7 +103,7 @@ std::intptr_t YMMSL_Settings_create_() {
 
 void YMMSL_Settings_free_(std::intptr_t self) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
-    delete self_p;
+    if (self != 0) delete self_p;
     return;
 }
 

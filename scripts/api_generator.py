@@ -68,6 +68,9 @@ class Par:
     def f_call_c(self, result_name: str, call: str) -> str:
         return '    {} = {}\n'.format(result_name, call)
 
+    def f_destructor_type(self) -> str:
+        return self.f_type()
+
     def f_return_result(self, return_name: str, result_name: str) -> str:
         return '    {} = {}\n'.format(return_name, result_name)
 
@@ -671,6 +674,10 @@ class Obj(Par):
         return self.class_name
 
     def f_type(self) -> str:
+        return self._regular_type('class({}_{})'.format(
+            self.ns_prefix, self.class_name))
+
+    def f_destructor_type(self) -> str:
         return self._regular_type('type({}_{})'.format(
             self.ns_prefix, self.class_name))
 
@@ -1811,7 +1818,32 @@ class Destructor(MemFun):
 
     def _fc_cpp_call(self) -> str:
         # Destroy object instead of calling something
-        return '    delete self_p;\n'
+        return '    if (self != 0) delete self_p;\n'
+
+    def fortran_function(self) -> str:
+        return textwrap.indent(textwrap.dedent(f"""\
+            subroutine {self.ns_prefix}_{self.class_name}_{self.name}(self)
+                implicit none
+                type({self.ns_prefix}_{self.class_name}), intent(inout) :: self
+
+                call {self.ns_prefix}_{self.class_name}_{self.name}_(self%ptr)
+                self%ptr = 0
+            end subroutine {self.ns_prefix}_{self.class_name}_{self.name}
+
+            """), 4*' ')
+
+    def _f_in_parameters(self) -> List[Tuple[str, str]]:
+        """Returns Fortran input parameters.
+
+        The result is a list of (type, name) tuples.
+        """
+        # FINAL in fortran requires type(...) instead of class(...)
+        result = list()     # type: List[Tuple[str, str]]
+        for param in self.params:
+            type_list = param.f_destructor_type()
+            for type_name, postfix in type_list:
+                result.append((type_name, param.name + postfix))
+        return result
 
 
 class MultiMemFun(Member):
@@ -2192,11 +2224,36 @@ class Class:
                 result += member.fortran_overload()
         return result
 
+    def fortran_contains_definition(self, members=None) -> str:
+        if members is None:
+            members = self.members
+        result = ''
+        for member in members:
+            mem_fun_name = f"{member.ns_prefix}_{member.class_name}_{member.name}"
+            if isinstance(member, Constructor):
+                pass  # constructors are not part of the fortran class definition
+            elif isinstance(member, Destructor):
+                result += f'    final :: {mem_fun_name}\n'
+            elif isinstance(member, MultiMemFun):
+                result += self.fortran_contains_definition(member.instances)
+            elif isinstance(member, OverloadSet):
+                if member.name.startswith("create"):
+                    continue  # skip constructor overload sets
+                mem_fun_names = ', &\n        '.join(member.names)
+                result += f'    generic :: {member.name} => {mem_fun_names}\n'
+            elif member.f_override == '':
+                pass # skip those that have no functions defined (e.g. Elements)
+            else:
+                result += f'    procedure :: {member.name} => {mem_fun_name}\n'
+        return result
+
     def fortran_type_definition(self) -> str:
         """Create a Fortran type/handle definition for this class.
         """
         result = 'type {}_{}\n'.format(self.ns_prefix, self.name)
-        result += '    integer (c_intptr_t) :: ptr\n'
+        result += '    integer (c_intptr_t) :: ptr = 0\n'
+        result += 'contains\n'
+        result += self.fortran_contains_definition()
         result += 'end type {}_{}\n'.format(self.ns_prefix, self.name)
         if self.public:
             result += 'public :: {}_{}\n'.format(self.ns_prefix, self.name)

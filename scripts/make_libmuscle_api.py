@@ -261,7 +261,7 @@ class Elements(MultiMemFun):
                         '        err_msg)\n'
                         '\n'
                         '    implicit none\n'
-                        '    type(LIBMUSCLE_$CLASSNAME$), intent(in) :: self\n'
+                        '    class(LIBMUSCLE_$CLASSNAME$), intent(in) :: self\n'
                         '    {2}, dimension({3}), intent(out) :: elements\n'
                         '    integer, optional, intent(out) :: err_code\n'
                         '    character(:), allocatable, optional, intent(out) :: err_msg\n'

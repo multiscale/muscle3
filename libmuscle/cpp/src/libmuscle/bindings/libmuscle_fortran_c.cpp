@@ -389,7 +389,7 @@ std::intptr_t LIBMUSCLE_DataConstRef_create_grid_real8_n_(
 
 void LIBMUSCLE_DataConstRef_free_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
-    delete self_p;
+    if (self != 0) delete self_p;
     return;
 }
 
@@ -1067,7 +1067,7 @@ std::intptr_t LIBMUSCLE_Data_create_grid_real8_n_(
 
 void LIBMUSCLE_Data_free_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
-    delete self_p;
+    if (self != 0) delete self_p;
     return;
 }
 
@@ -1739,7 +1739,7 @@ std::intptr_t LIBMUSCLE_PortsDescription_create_() {
 
 void LIBMUSCLE_PortsDescription_free_(std::intptr_t self) {
     PortsDescription * self_p = reinterpret_cast<PortsDescription *>(self);
-    delete self_p;
+    if (self != 0) delete self_p;
     return;
 }
 
@@ -1805,7 +1805,7 @@ std::intptr_t LIBMUSCLE_Message_create_tnds_(double timestamp, double next_times
 
 void LIBMUSCLE_Message_free_(std::intptr_t self) {
     Message * self_p = reinterpret_cast<Message *>(self);
-    delete self_p;
+    if (self != 0) delete self_p;
     return;
 }
 
@@ -1909,7 +1909,7 @@ std::intptr_t LIBMUSCLE_Instance_create_(
 
 void LIBMUSCLE_Instance_free_(std::intptr_t self) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
-    delete self_p;
+    if (self != 0) delete self_p;
     return;
 }
 
@@ -2237,7 +2237,7 @@ std::intptr_t LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(int count) {
 
 void LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_(std::intptr_t self) {
     CmdLineArgs * self_p = reinterpret_cast<CmdLineArgs *>(self);
-    delete self_p;
+    if (self != 0) delete self_p;
     return;
 }
 

@@ -25,7 +25,118 @@ module libmuscle_mpi
     integer, parameter, public :: LIBMUSCLE_real8 = selected_real_kind(15)
 
     type LIBMUSCLE_DataConstRef
-        integer (c_intptr_t) :: ptr
+        integer (c_intptr_t) :: ptr = 0
+    contains
+        final :: LIBMUSCLE_DataConstRef_free
+        procedure :: is_a_logical => LIBMUSCLE_DataConstRef_is_a_logical
+        procedure :: is_a_character => LIBMUSCLE_DataConstRef_is_a_character
+        procedure :: is_a_int => LIBMUSCLE_DataConstRef_is_a_int
+        procedure :: is_a_int1 => LIBMUSCLE_DataConstRef_is_a_int1
+        procedure :: is_a_int2 => LIBMUSCLE_DataConstRef_is_a_int2
+        procedure :: is_a_int4 => LIBMUSCLE_DataConstRef_is_a_int4
+        procedure :: is_a_int8 => LIBMUSCLE_DataConstRef_is_a_int8
+        procedure :: is_a_real4 => LIBMUSCLE_DataConstRef_is_a_real4
+        procedure :: is_a_real8 => LIBMUSCLE_DataConstRef_is_a_real8
+        procedure :: is_a_dict => LIBMUSCLE_DataConstRef_is_a_dict
+        procedure :: is_a_list => LIBMUSCLE_DataConstRef_is_a_list
+        procedure :: is_a_grid_of_logical => LIBMUSCLE_DataConstRef_is_a_grid_of_logical
+        procedure :: is_a_grid_of_real4 => LIBMUSCLE_DataConstRef_is_a_grid_of_real4
+        procedure :: is_a_grid_of_real8 => LIBMUSCLE_DataConstRef_is_a_grid_of_real8
+        procedure :: is_a_grid_of_int4 => LIBMUSCLE_DataConstRef_is_a_grid_of_int4
+        procedure :: is_a_grid_of_int8 => LIBMUSCLE_DataConstRef_is_a_grid_of_int8
+        procedure :: is_a_byte_array => LIBMUSCLE_DataConstRef_is_a_byte_array
+        procedure :: is_nil => LIBMUSCLE_DataConstRef_is_nil
+        procedure :: is_a_settings => LIBMUSCLE_DataConstRef_is_a_settings
+        procedure :: size => LIBMUSCLE_DataConstRef_size
+        procedure :: as_logical => LIBMUSCLE_DataConstRef_as_logical
+        procedure :: as_character => LIBMUSCLE_DataConstRef_as_character
+        procedure :: as_int => LIBMUSCLE_DataConstRef_as_int
+        procedure :: as_int1 => LIBMUSCLE_DataConstRef_as_int1
+        procedure :: as_int2 => LIBMUSCLE_DataConstRef_as_int2
+        procedure :: as_int4 => LIBMUSCLE_DataConstRef_as_int4
+        procedure :: as_int8 => LIBMUSCLE_DataConstRef_as_int8
+        procedure :: as_real4 => LIBMUSCLE_DataConstRef_as_real4
+        procedure :: as_real8 => LIBMUSCLE_DataConstRef_as_real8
+        procedure :: as_settings => LIBMUSCLE_DataConstRef_as_settings
+        procedure :: as_byte_array => LIBMUSCLE_DataConstRef_as_byte_array
+        procedure :: get_item_by_key => LIBMUSCLE_DataConstRef_get_item_by_key
+        procedure :: get_item_by_index => LIBMUSCLE_DataConstRef_get_item_by_index
+        generic :: get_item => get_item_by_key, &
+            get_item_by_index
+        procedure :: num_dims => LIBMUSCLE_DataConstRef_num_dims
+        procedure :: shape => LIBMUSCLE_DataConstRef_shape
+        procedure :: elements_1_logical => LIBMUSCLE_DataConstRef_elements_1_logical
+        procedure :: elements_2_logical => LIBMUSCLE_DataConstRef_elements_2_logical
+        procedure :: elements_3_logical => LIBMUSCLE_DataConstRef_elements_3_logical
+        procedure :: elements_4_logical => LIBMUSCLE_DataConstRef_elements_4_logical
+        procedure :: elements_5_logical => LIBMUSCLE_DataConstRef_elements_5_logical
+        procedure :: elements_6_logical => LIBMUSCLE_DataConstRef_elements_6_logical
+        procedure :: elements_7_logical => LIBMUSCLE_DataConstRef_elements_7_logical
+        procedure :: elements_1_int4 => LIBMUSCLE_DataConstRef_elements_1_int4
+        procedure :: elements_2_int4 => LIBMUSCLE_DataConstRef_elements_2_int4
+        procedure :: elements_3_int4 => LIBMUSCLE_DataConstRef_elements_3_int4
+        procedure :: elements_4_int4 => LIBMUSCLE_DataConstRef_elements_4_int4
+        procedure :: elements_5_int4 => LIBMUSCLE_DataConstRef_elements_5_int4
+        procedure :: elements_6_int4 => LIBMUSCLE_DataConstRef_elements_6_int4
+        procedure :: elements_7_int4 => LIBMUSCLE_DataConstRef_elements_7_int4
+        procedure :: elements_1_int8 => LIBMUSCLE_DataConstRef_elements_1_int8
+        procedure :: elements_2_int8 => LIBMUSCLE_DataConstRef_elements_2_int8
+        procedure :: elements_3_int8 => LIBMUSCLE_DataConstRef_elements_3_int8
+        procedure :: elements_4_int8 => LIBMUSCLE_DataConstRef_elements_4_int8
+        procedure :: elements_5_int8 => LIBMUSCLE_DataConstRef_elements_5_int8
+        procedure :: elements_6_int8 => LIBMUSCLE_DataConstRef_elements_6_int8
+        procedure :: elements_7_int8 => LIBMUSCLE_DataConstRef_elements_7_int8
+        procedure :: elements_1_real4 => LIBMUSCLE_DataConstRef_elements_1_real4
+        procedure :: elements_2_real4 => LIBMUSCLE_DataConstRef_elements_2_real4
+        procedure :: elements_3_real4 => LIBMUSCLE_DataConstRef_elements_3_real4
+        procedure :: elements_4_real4 => LIBMUSCLE_DataConstRef_elements_4_real4
+        procedure :: elements_5_real4 => LIBMUSCLE_DataConstRef_elements_5_real4
+        procedure :: elements_6_real4 => LIBMUSCLE_DataConstRef_elements_6_real4
+        procedure :: elements_7_real4 => LIBMUSCLE_DataConstRef_elements_7_real4
+        procedure :: elements_1_real8 => LIBMUSCLE_DataConstRef_elements_1_real8
+        procedure :: elements_2_real8 => LIBMUSCLE_DataConstRef_elements_2_real8
+        procedure :: elements_3_real8 => LIBMUSCLE_DataConstRef_elements_3_real8
+        procedure :: elements_4_real8 => LIBMUSCLE_DataConstRef_elements_4_real8
+        procedure :: elements_5_real8 => LIBMUSCLE_DataConstRef_elements_5_real8
+        procedure :: elements_6_real8 => LIBMUSCLE_DataConstRef_elements_6_real8
+        procedure :: elements_7_real8 => LIBMUSCLE_DataConstRef_elements_7_real8
+        generic :: elements => elements_1_logical, &
+            elements_1_real4, &
+            elements_1_real8, &
+            elements_1_int4, &
+            elements_1_int8, &
+            elements_2_logical, &
+            elements_2_real4, &
+            elements_2_real8, &
+            elements_2_int4, &
+            elements_2_int8, &
+            elements_3_logical, &
+            elements_3_real4, &
+            elements_3_real8, &
+            elements_3_int4, &
+            elements_3_int8, &
+            elements_4_logical, &
+            elements_4_real4, &
+            elements_4_real8, &
+            elements_4_int4, &
+            elements_4_int8, &
+            elements_5_logical, &
+            elements_5_real4, &
+            elements_5_real8, &
+            elements_5_int4, &
+            elements_5_int8, &
+            elements_6_logical, &
+            elements_6_real4, &
+            elements_6_real8, &
+            elements_6_int4, &
+            elements_6_int8, &
+            elements_7_logical, &
+            elements_7_real4, &
+            elements_7_real8, &
+            elements_7_int4, &
+            elements_7_int8
+        procedure :: has_indexes => LIBMUSCLE_DataConstRef_has_indexes
+        procedure :: index => LIBMUSCLE_DataConstRef_index
     end type LIBMUSCLE_DataConstRef
     public :: LIBMUSCLE_DataConstRef
 
@@ -188,7 +299,175 @@ module libmuscle_mpi
     public :: LIBMUSCLE_DataConstRef_has_indexes
     public :: LIBMUSCLE_DataConstRef_index
     type LIBMUSCLE_Data
-        integer (c_intptr_t) :: ptr
+        integer (c_intptr_t) :: ptr = 0
+    contains
+        final :: LIBMUSCLE_Data_free
+        procedure :: is_a_logical => LIBMUSCLE_Data_is_a_logical
+        procedure :: is_a_character => LIBMUSCLE_Data_is_a_character
+        procedure :: is_a_int => LIBMUSCLE_Data_is_a_int
+        procedure :: is_a_int1 => LIBMUSCLE_Data_is_a_int1
+        procedure :: is_a_int2 => LIBMUSCLE_Data_is_a_int2
+        procedure :: is_a_int4 => LIBMUSCLE_Data_is_a_int4
+        procedure :: is_a_int8 => LIBMUSCLE_Data_is_a_int8
+        procedure :: is_a_real4 => LIBMUSCLE_Data_is_a_real4
+        procedure :: is_a_real8 => LIBMUSCLE_Data_is_a_real8
+        procedure :: is_a_dict => LIBMUSCLE_Data_is_a_dict
+        procedure :: is_a_list => LIBMUSCLE_Data_is_a_list
+        procedure :: is_a_grid_of_logical => LIBMUSCLE_Data_is_a_grid_of_logical
+        procedure :: is_a_grid_of_real4 => LIBMUSCLE_Data_is_a_grid_of_real4
+        procedure :: is_a_grid_of_real8 => LIBMUSCLE_Data_is_a_grid_of_real8
+        procedure :: is_a_grid_of_int4 => LIBMUSCLE_Data_is_a_grid_of_int4
+        procedure :: is_a_grid_of_int8 => LIBMUSCLE_Data_is_a_grid_of_int8
+        procedure :: is_a_byte_array => LIBMUSCLE_Data_is_a_byte_array
+        procedure :: is_nil => LIBMUSCLE_Data_is_nil
+        procedure :: is_a_settings => LIBMUSCLE_Data_is_a_settings
+        procedure :: size => LIBMUSCLE_Data_size
+        procedure :: as_logical => LIBMUSCLE_Data_as_logical
+        procedure :: as_character => LIBMUSCLE_Data_as_character
+        procedure :: as_int => LIBMUSCLE_Data_as_int
+        procedure :: as_int1 => LIBMUSCLE_Data_as_int1
+        procedure :: as_int2 => LIBMUSCLE_Data_as_int2
+        procedure :: as_int4 => LIBMUSCLE_Data_as_int4
+        procedure :: as_int8 => LIBMUSCLE_Data_as_int8
+        procedure :: as_real4 => LIBMUSCLE_Data_as_real4
+        procedure :: as_real8 => LIBMUSCLE_Data_as_real8
+        procedure :: as_settings => LIBMUSCLE_Data_as_settings
+        procedure :: as_byte_array => LIBMUSCLE_Data_as_byte_array
+        procedure :: get_item_by_key => LIBMUSCLE_Data_get_item_by_key
+        procedure :: get_item_by_index => LIBMUSCLE_Data_get_item_by_index
+        generic :: get_item => get_item_by_key, &
+            get_item_by_index
+        procedure :: num_dims => LIBMUSCLE_Data_num_dims
+        procedure :: shape => LIBMUSCLE_Data_shape
+        procedure :: elements_1_logical => LIBMUSCLE_Data_elements_1_logical
+        procedure :: elements_2_logical => LIBMUSCLE_Data_elements_2_logical
+        procedure :: elements_3_logical => LIBMUSCLE_Data_elements_3_logical
+        procedure :: elements_4_logical => LIBMUSCLE_Data_elements_4_logical
+        procedure :: elements_5_logical => LIBMUSCLE_Data_elements_5_logical
+        procedure :: elements_6_logical => LIBMUSCLE_Data_elements_6_logical
+        procedure :: elements_7_logical => LIBMUSCLE_Data_elements_7_logical
+        procedure :: elements_1_int4 => LIBMUSCLE_Data_elements_1_int4
+        procedure :: elements_2_int4 => LIBMUSCLE_Data_elements_2_int4
+        procedure :: elements_3_int4 => LIBMUSCLE_Data_elements_3_int4
+        procedure :: elements_4_int4 => LIBMUSCLE_Data_elements_4_int4
+        procedure :: elements_5_int4 => LIBMUSCLE_Data_elements_5_int4
+        procedure :: elements_6_int4 => LIBMUSCLE_Data_elements_6_int4
+        procedure :: elements_7_int4 => LIBMUSCLE_Data_elements_7_int4
+        procedure :: elements_1_int8 => LIBMUSCLE_Data_elements_1_int8
+        procedure :: elements_2_int8 => LIBMUSCLE_Data_elements_2_int8
+        procedure :: elements_3_int8 => LIBMUSCLE_Data_elements_3_int8
+        procedure :: elements_4_int8 => LIBMUSCLE_Data_elements_4_int8
+        procedure :: elements_5_int8 => LIBMUSCLE_Data_elements_5_int8
+        procedure :: elements_6_int8 => LIBMUSCLE_Data_elements_6_int8
+        procedure :: elements_7_int8 => LIBMUSCLE_Data_elements_7_int8
+        procedure :: elements_1_real4 => LIBMUSCLE_Data_elements_1_real4
+        procedure :: elements_2_real4 => LIBMUSCLE_Data_elements_2_real4
+        procedure :: elements_3_real4 => LIBMUSCLE_Data_elements_3_real4
+        procedure :: elements_4_real4 => LIBMUSCLE_Data_elements_4_real4
+        procedure :: elements_5_real4 => LIBMUSCLE_Data_elements_5_real4
+        procedure :: elements_6_real4 => LIBMUSCLE_Data_elements_6_real4
+        procedure :: elements_7_real4 => LIBMUSCLE_Data_elements_7_real4
+        procedure :: elements_1_real8 => LIBMUSCLE_Data_elements_1_real8
+        procedure :: elements_2_real8 => LIBMUSCLE_Data_elements_2_real8
+        procedure :: elements_3_real8 => LIBMUSCLE_Data_elements_3_real8
+        procedure :: elements_4_real8 => LIBMUSCLE_Data_elements_4_real8
+        procedure :: elements_5_real8 => LIBMUSCLE_Data_elements_5_real8
+        procedure :: elements_6_real8 => LIBMUSCLE_Data_elements_6_real8
+        procedure :: elements_7_real8 => LIBMUSCLE_Data_elements_7_real8
+        generic :: elements => elements_1_logical, &
+            elements_1_real4, &
+            elements_1_real8, &
+            elements_1_int4, &
+            elements_1_int8, &
+            elements_2_logical, &
+            elements_2_real4, &
+            elements_2_real8, &
+            elements_2_int4, &
+            elements_2_int8, &
+            elements_3_logical, &
+            elements_3_real4, &
+            elements_3_real8, &
+            elements_3_int4, &
+            elements_3_int8, &
+            elements_4_logical, &
+            elements_4_real4, &
+            elements_4_real8, &
+            elements_4_int4, &
+            elements_4_int8, &
+            elements_5_logical, &
+            elements_5_real4, &
+            elements_5_real8, &
+            elements_5_int4, &
+            elements_5_int8, &
+            elements_6_logical, &
+            elements_6_real4, &
+            elements_6_real8, &
+            elements_6_int4, &
+            elements_6_int8, &
+            elements_7_logical, &
+            elements_7_real4, &
+            elements_7_real8, &
+            elements_7_int4, &
+            elements_7_int8
+        procedure :: has_indexes => LIBMUSCLE_Data_has_indexes
+        procedure :: index => LIBMUSCLE_Data_index
+        procedure :: set_logical => LIBMUSCLE_Data_set_logical
+        procedure :: set_character => LIBMUSCLE_Data_set_character
+        procedure :: set_int1 => LIBMUSCLE_Data_set_int1
+        procedure :: set_int2 => LIBMUSCLE_Data_set_int2
+        procedure :: set_int4 => LIBMUSCLE_Data_set_int4
+        procedure :: set_int8 => LIBMUSCLE_Data_set_int8
+        procedure :: set_real4 => LIBMUSCLE_Data_set_real4
+        procedure :: set_real8 => LIBMUSCLE_Data_set_real8
+        procedure :: set_data => LIBMUSCLE_Data_set_data
+        generic :: set => set_logical, &
+            set_character, &
+            set_int1, &
+            set_int2, &
+            set_int4, &
+            set_int8, &
+            set_real4, &
+            set_real8, &
+            set_data
+        procedure :: set_nil => LIBMUSCLE_Data_set_nil
+        procedure :: set_item_key_logical => LIBMUSCLE_Data_set_item_key_logical
+        procedure :: set_item_key_character => LIBMUSCLE_Data_set_item_key_character
+        procedure :: set_item_key_int1 => LIBMUSCLE_Data_set_item_key_int1
+        procedure :: set_item_key_int2 => LIBMUSCLE_Data_set_item_key_int2
+        procedure :: set_item_key_int4 => LIBMUSCLE_Data_set_item_key_int4
+        procedure :: set_item_key_int8 => LIBMUSCLE_Data_set_item_key_int8
+        procedure :: set_item_key_real4 => LIBMUSCLE_Data_set_item_key_real4
+        procedure :: set_item_key_real8 => LIBMUSCLE_Data_set_item_key_real8
+        procedure :: set_item_key_data => LIBMUSCLE_Data_set_item_key_data
+        procedure :: set_item_index_logical => LIBMUSCLE_Data_set_item_index_logical
+        procedure :: set_item_index_character => LIBMUSCLE_Data_set_item_index_character
+        procedure :: set_item_index_int1 => LIBMUSCLE_Data_set_item_index_int1
+        procedure :: set_item_index_int2 => LIBMUSCLE_Data_set_item_index_int2
+        procedure :: set_item_index_int4 => LIBMUSCLE_Data_set_item_index_int4
+        procedure :: set_item_index_int8 => LIBMUSCLE_Data_set_item_index_int8
+        procedure :: set_item_index_real4 => LIBMUSCLE_Data_set_item_index_real4
+        procedure :: set_item_index_real8 => LIBMUSCLE_Data_set_item_index_real8
+        procedure :: set_item_index_data => LIBMUSCLE_Data_set_item_index_data
+        generic :: set_item => set_item_key_logical, &
+            set_item_key_character, &
+            set_item_key_int1, &
+            set_item_key_int2, &
+            set_item_key_int4, &
+            set_item_key_int8, &
+            set_item_key_real4, &
+            set_item_key_real8, &
+            set_item_key_data, &
+            set_item_index_logical, &
+            set_item_index_character, &
+            set_item_index_int1, &
+            set_item_index_int2, &
+            set_item_index_int4, &
+            set_item_index_int8, &
+            set_item_index_real4, &
+            set_item_index_real8, &
+            set_item_index_data
+        procedure :: key => LIBMUSCLE_Data_key
+        procedure :: value => LIBMUSCLE_Data_value
     end type LIBMUSCLE_Data
     public :: LIBMUSCLE_Data
 
@@ -389,7 +668,12 @@ module libmuscle_mpi
     public :: LIBMUSCLE_Data_key
     public :: LIBMUSCLE_Data_value
     type LIBMUSCLE_PortsDescription
-        integer (c_intptr_t) :: ptr
+        integer (c_intptr_t) :: ptr = 0
+    contains
+        final :: LIBMUSCLE_PortsDescription_free
+        procedure :: add => LIBMUSCLE_PortsDescription_add
+        procedure :: num_ports => LIBMUSCLE_PortsDescription_num_ports
+        procedure :: get => LIBMUSCLE_PortsDescription_get
     end type LIBMUSCLE_PortsDescription
     public :: LIBMUSCLE_PortsDescription
 
@@ -399,7 +683,24 @@ module libmuscle_mpi
     public :: LIBMUSCLE_PortsDescription_num_ports
     public :: LIBMUSCLE_PortsDescription_get
     type LIBMUSCLE_Message
-        integer (c_intptr_t) :: ptr
+        integer (c_intptr_t) :: ptr = 0
+    contains
+        final :: LIBMUSCLE_Message_free
+        procedure :: timestamp => LIBMUSCLE_Message_timestamp
+        procedure :: set_timestamp => LIBMUSCLE_Message_set_timestamp
+        procedure :: has_next_timestamp => LIBMUSCLE_Message_has_next_timestamp
+        procedure :: next_timestamp => LIBMUSCLE_Message_next_timestamp
+        procedure :: set_next_timestamp => LIBMUSCLE_Message_set_next_timestamp
+        procedure :: unset_next_timestamp => LIBMUSCLE_Message_unset_next_timestamp
+        procedure :: get_data => LIBMUSCLE_Message_get_data
+        procedure :: set_data_d => LIBMUSCLE_Message_set_data_d
+        procedure :: set_data_dcr => LIBMUSCLE_Message_set_data_dcr
+        generic :: set_data => set_data_d, &
+            set_data_dcr
+        procedure :: has_settings => LIBMUSCLE_Message_has_settings
+        procedure :: get_settings => LIBMUSCLE_Message_get_settings
+        procedure :: set_settings => LIBMUSCLE_Message_set_settings
+        procedure :: unset_settings => LIBMUSCLE_Message_unset_settings
     end type LIBMUSCLE_Message
     public :: LIBMUSCLE_Message
 
@@ -425,7 +726,56 @@ module libmuscle_mpi
     public :: LIBMUSCLE_Message_set_settings
     public :: LIBMUSCLE_Message_unset_settings
     type LIBMUSCLE_Instance
-        integer (c_intptr_t) :: ptr
+        integer (c_intptr_t) :: ptr = 0
+    contains
+        final :: LIBMUSCLE_Instance_free
+        procedure :: reuse_instance => LIBMUSCLE_Instance_reuse_instance
+        procedure :: error_shutdown => LIBMUSCLE_Instance_error_shutdown
+        procedure :: is_setting_a_character => LIBMUSCLE_Instance_is_setting_a_character
+        procedure :: is_setting_a_int8 => LIBMUSCLE_Instance_is_setting_a_int8
+        procedure :: is_setting_a_real8 => LIBMUSCLE_Instance_is_setting_a_real8
+        procedure :: is_setting_a_logical => LIBMUSCLE_Instance_is_setting_a_logical
+        procedure :: is_setting_a_real8array => LIBMUSCLE_Instance_is_setting_a_real8array
+        procedure :: is_setting_a_real8array2 => LIBMUSCLE_Instance_is_setting_a_real8array2
+        procedure :: get_setting_as_character => LIBMUSCLE_Instance_get_setting_as_character
+        procedure :: get_setting_as_int8 => LIBMUSCLE_Instance_get_setting_as_int8
+        procedure :: get_setting_as_real8 => LIBMUSCLE_Instance_get_setting_as_real8
+        procedure :: get_setting_as_logical => LIBMUSCLE_Instance_get_setting_as_logical
+        procedure :: get_setting_as_real8array => LIBMUSCLE_Instance_get_setting_as_real8array
+        procedure :: get_setting_as_real8array2 => LIBMUSCLE_Instance_get_setting_as_real8array2
+        procedure :: list_ports => LIBMUSCLE_Instance_list_ports
+        procedure :: is_connected => LIBMUSCLE_Instance_is_connected
+        procedure :: is_vector_port => LIBMUSCLE_Instance_is_vector_port
+        procedure :: is_resizable => LIBMUSCLE_Instance_is_resizable
+        procedure :: get_port_length => LIBMUSCLE_Instance_get_port_length
+        procedure :: set_port_length => LIBMUSCLE_Instance_set_port_length
+        procedure :: send_pm => LIBMUSCLE_Instance_send_pm
+        procedure :: send_pms => LIBMUSCLE_Instance_send_pms
+        generic :: send => send_pm, &
+            send_pms
+        procedure :: receive_p => LIBMUSCLE_Instance_receive_p
+        procedure :: receive_pd => LIBMUSCLE_Instance_receive_pd
+        generic :: receive => receive_p, &
+            receive_pd
+        procedure :: receive_ps => LIBMUSCLE_Instance_receive_ps
+        procedure :: receive_psd => LIBMUSCLE_Instance_receive_psd
+        generic :: receive_on_slot => receive_ps, &
+            receive_psd
+        procedure :: receive_with_settings_p => LIBMUSCLE_Instance_receive_with_settings_p
+        procedure :: receive_with_settings_pd => LIBMUSCLE_Instance_receive_with_settings_pd
+        generic :: receive_with_settings => receive_with_settings_p, &
+            receive_with_settings_pd
+        procedure :: receive_with_settings_ps => LIBMUSCLE_Instance_receive_with_settings_ps
+        procedure :: receive_with_settings_psd => LIBMUSCLE_Instance_receive_with_settings_psd
+        generic :: receive_with_settings_on_slot => receive_with_settings_ps, &
+            receive_with_settings_psd
+        procedure :: resuming => LIBMUSCLE_Instance_resuming
+        procedure :: should_init => LIBMUSCLE_Instance_should_init
+        procedure :: load_snapshot => LIBMUSCLE_Instance_load_snapshot
+        procedure :: should_save_snapshot => LIBMUSCLE_Instance_should_save_snapshot
+        procedure :: save_snapshot => LIBMUSCLE_Instance_save_snapshot
+        procedure :: should_save_final_snapshot => LIBMUSCLE_Instance_should_save_final_snapshot
+        procedure :: save_final_snapshot => LIBMUSCLE_Instance_save_final_snapshot
     end type LIBMUSCLE_Instance
     public :: LIBMUSCLE_Instance
 
@@ -500,7 +850,10 @@ module libmuscle_mpi
     integer, parameter :: LIBMUSCLE_IMPL_BINDINGS_real8 = selected_real_kind(15)
 
     type LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs
-        integer (c_intptr_t) :: ptr
+        integer (c_intptr_t) :: ptr = 0
+    contains
+        final :: LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free
+        procedure :: set_arg => LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg
     end type LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs
 
 
@@ -4075,7 +4428,7 @@ contains
     function LIBMUSCLE_DataConstRef_create_settings( &
             value)
         implicit none
-        type(YMMSL_Settings), intent(in) :: value
+        class(YMMSL_Settings), intent(in) :: value
         type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_settings
 
         integer (c_intptr_t) :: ret_val
@@ -4089,7 +4442,7 @@ contains
     function LIBMUSCLE_DataConstRef_create_copy( &
             value)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: value
+        class(LIBMUSCLE_DataConstRef), intent(in) :: value
         type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_DataConstRef_create_copy
 
         integer (c_intptr_t) :: ret_val
@@ -5745,19 +6098,18 @@ contains
         LIBMUSCLE_DataConstRef_create_grid_7_real8_n%ptr = ret_val
     end function LIBMUSCLE_DataConstRef_create_grid_7_real8_n
 
-    subroutine LIBMUSCLE_DataConstRef_free( &
-            self)
+    subroutine LIBMUSCLE_DataConstRef_free(self)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        type(LIBMUSCLE_DataConstRef), intent(inout) :: self
 
-        call LIBMUSCLE_DataConstRef_free_( &
-            self%ptr)
+        call LIBMUSCLE_DataConstRef_free_(self%ptr)
+        self%ptr = 0
     end subroutine LIBMUSCLE_DataConstRef_free
 
     function LIBMUSCLE_DataConstRef_is_a_logical( &
             self)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_logical
 
         logical (c_bool) :: ret_val
@@ -5771,7 +6123,7 @@ contains
     function LIBMUSCLE_DataConstRef_is_a_character( &
             self)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_character
 
         logical (c_bool) :: ret_val
@@ -5785,7 +6137,7 @@ contains
     function LIBMUSCLE_DataConstRef_is_a_int( &
             self)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_int
 
         logical (c_bool) :: ret_val
@@ -5799,7 +6151,7 @@ contains
     function LIBMUSCLE_DataConstRef_is_a_int1( &
             self)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_int1
 
         logical (c_bool) :: ret_val
@@ -5813,7 +6165,7 @@ contains
     function LIBMUSCLE_DataConstRef_is_a_int2( &
             self)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_int2
 
         logical (c_bool) :: ret_val
@@ -5827,7 +6179,7 @@ contains
     function LIBMUSCLE_DataConstRef_is_a_int4( &
             self)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_int4
 
         logical (c_bool) :: ret_val
@@ -5841,7 +6193,7 @@ contains
     function LIBMUSCLE_DataConstRef_is_a_int8( &
             self)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_int8
 
         logical (c_bool) :: ret_val
@@ -5855,7 +6207,7 @@ contains
     function LIBMUSCLE_DataConstRef_is_a_real4( &
             self)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_real4
 
         logical (c_bool) :: ret_val
@@ -5869,7 +6221,7 @@ contains
     function LIBMUSCLE_DataConstRef_is_a_real8( &
             self)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_real8
 
         logical (c_bool) :: ret_val
@@ -5883,7 +6235,7 @@ contains
     function LIBMUSCLE_DataConstRef_is_a_dict( &
             self)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_dict
 
         logical (c_bool) :: ret_val
@@ -5897,7 +6249,7 @@ contains
     function LIBMUSCLE_DataConstRef_is_a_list( &
             self)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_list
 
         logical (c_bool) :: ret_val
@@ -5911,7 +6263,7 @@ contains
     function LIBMUSCLE_DataConstRef_is_a_grid_of_logical( &
             self)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_grid_of_logical
 
         logical (c_bool) :: ret_val
@@ -5925,7 +6277,7 @@ contains
     function LIBMUSCLE_DataConstRef_is_a_grid_of_real4( &
             self)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_grid_of_real4
 
         logical (c_bool) :: ret_val
@@ -5939,7 +6291,7 @@ contains
     function LIBMUSCLE_DataConstRef_is_a_grid_of_real8( &
             self)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_grid_of_real8
 
         logical (c_bool) :: ret_val
@@ -5953,7 +6305,7 @@ contains
     function LIBMUSCLE_DataConstRef_is_a_grid_of_int4( &
             self)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_grid_of_int4
 
         logical (c_bool) :: ret_val
@@ -5967,7 +6319,7 @@ contains
     function LIBMUSCLE_DataConstRef_is_a_grid_of_int8( &
             self)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_grid_of_int8
 
         logical (c_bool) :: ret_val
@@ -5981,7 +6333,7 @@ contains
     function LIBMUSCLE_DataConstRef_is_a_byte_array( &
             self)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_byte_array
 
         logical (c_bool) :: ret_val
@@ -5995,7 +6347,7 @@ contains
     function LIBMUSCLE_DataConstRef_is_nil( &
             self)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_nil
 
         logical (c_bool) :: ret_val
@@ -6009,7 +6361,7 @@ contains
     function LIBMUSCLE_DataConstRef_is_a_settings( &
             self)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical :: LIBMUSCLE_DataConstRef_is_a_settings
 
         logical (c_bool) :: ret_val
@@ -6023,7 +6375,7 @@ contains
     function LIBMUSCLE_DataConstRef_size( &
             self)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer (LIBMUSCLE_size) :: LIBMUSCLE_DataConstRef_size
 
         integer (c_size_t) :: ret_val
@@ -6038,7 +6390,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_DataConstRef_as_logical
@@ -6092,7 +6444,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         character(:), allocatable :: LIBMUSCLE_DataConstRef_as_character
@@ -6156,7 +6508,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         integer :: LIBMUSCLE_DataConstRef_as_int
@@ -6209,7 +6561,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         integer (LIBMUSCLE_int1) :: LIBMUSCLE_DataConstRef_as_int1
@@ -6262,7 +6614,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         integer (selected_int_kind(4)) :: LIBMUSCLE_DataConstRef_as_int2
@@ -6315,7 +6667,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         integer (LIBMUSCLE_int4) :: LIBMUSCLE_DataConstRef_as_int4
@@ -6368,7 +6720,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         integer (selected_int_kind(18)) :: LIBMUSCLE_DataConstRef_as_int8
@@ -6421,7 +6773,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         real (LIBMUSCLE_real4) :: LIBMUSCLE_DataConstRef_as_real4
@@ -6474,7 +6826,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         real (LIBMUSCLE_real8) :: LIBMUSCLE_DataConstRef_as_real8
@@ -6527,7 +6879,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         type(YMMSL_Settings) :: LIBMUSCLE_DataConstRef_as_settings
@@ -6582,7 +6934,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         character(len=1), dimension(:), intent(out) :: data
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -6642,7 +6994,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         character (len=*), intent(in) :: key
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -6699,7 +7051,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -6755,7 +7107,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         integer (LIBMUSCLE_size) :: LIBMUSCLE_DataConstRef_num_dims
@@ -6809,7 +7161,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer (LIBMUSCLE_size), dimension(:), intent(out) :: shp
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -6870,7 +7222,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical, dimension(:), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -6939,7 +7291,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical, dimension(:, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -7008,7 +7360,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical, dimension(:, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -7077,7 +7429,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical, dimension(:, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -7146,7 +7498,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical, dimension(:, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -7215,7 +7567,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical, dimension(:, :, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -7284,7 +7636,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         logical, dimension(:, :, :, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -7353,7 +7705,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer (LIBMUSCLE_int4), dimension(:), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -7422,7 +7774,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer (LIBMUSCLE_int4), dimension(:, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -7491,7 +7843,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer (LIBMUSCLE_int4), dimension(:, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -7560,7 +7912,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer (LIBMUSCLE_int4), dimension(:, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -7629,7 +7981,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer (LIBMUSCLE_int4), dimension(:, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -7698,7 +8050,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer (LIBMUSCLE_int4), dimension(:, :, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -7767,7 +8119,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer (LIBMUSCLE_int4), dimension(:, :, :, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -7836,7 +8188,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer (selected_int_kind(18)), dimension(:), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -7905,7 +8257,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer (selected_int_kind(18)), dimension(:, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -7974,7 +8326,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer (selected_int_kind(18)), dimension(:, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -8043,7 +8395,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer (selected_int_kind(18)), dimension(:, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -8112,7 +8464,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer (selected_int_kind(18)), dimension(:, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -8181,7 +8533,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer (selected_int_kind(18)), dimension(:, :, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -8250,7 +8602,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer (selected_int_kind(18)), dimension(:, :, :, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -8319,7 +8671,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         real (LIBMUSCLE_real4), dimension(:), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -8388,7 +8740,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         real (LIBMUSCLE_real4), dimension(:, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -8457,7 +8809,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         real (LIBMUSCLE_real4), dimension(:, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -8526,7 +8878,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         real (LIBMUSCLE_real4), dimension(:, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -8595,7 +8947,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         real (LIBMUSCLE_real4), dimension(:, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -8664,7 +9016,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         real (LIBMUSCLE_real4), dimension(:, :, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -8733,7 +9085,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         real (LIBMUSCLE_real4), dimension(:, :, :, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -8802,7 +9154,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         real (LIBMUSCLE_real8), dimension(:), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -8871,7 +9223,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         real (LIBMUSCLE_real8), dimension(:, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -8940,7 +9292,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         real (LIBMUSCLE_real8), dimension(:, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -9009,7 +9361,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         real (LIBMUSCLE_real8), dimension(:, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -9078,7 +9430,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         real (LIBMUSCLE_real8), dimension(:, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -9147,7 +9499,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         real (LIBMUSCLE_real8), dimension(:, :, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -9216,7 +9568,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         real (LIBMUSCLE_real8), dimension(:, :, :, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -9283,7 +9635,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_DataConstRef_has_indexes
@@ -9338,7 +9690,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_DataConstRef), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -9527,7 +9879,7 @@ contains
     function LIBMUSCLE_Data_create_settings( &
             value)
         implicit none
-        type(YMMSL_Settings), intent(in) :: value
+        class(YMMSL_Settings), intent(in) :: value
         type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_settings
 
         integer (c_intptr_t) :: ret_val
@@ -9541,7 +9893,7 @@ contains
     function LIBMUSCLE_Data_create_copy( &
             value)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: value
+        class(LIBMUSCLE_Data), intent(in) :: value
         type(LIBMUSCLE_Data) :: LIBMUSCLE_Data_create_copy
 
         integer (c_intptr_t) :: ret_val
@@ -11197,19 +11549,18 @@ contains
         LIBMUSCLE_Data_create_grid_7_real8_n%ptr = ret_val
     end function LIBMUSCLE_Data_create_grid_7_real8_n
 
-    subroutine LIBMUSCLE_Data_free( &
-            self)
+    subroutine LIBMUSCLE_Data_free(self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        type(LIBMUSCLE_Data), intent(inout) :: self
 
-        call LIBMUSCLE_Data_free_( &
-            self%ptr)
+        call LIBMUSCLE_Data_free_(self%ptr)
+        self%ptr = 0
     end subroutine LIBMUSCLE_Data_free
 
     function LIBMUSCLE_Data_is_a_logical( &
             self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_logical
 
         logical (c_bool) :: ret_val
@@ -11223,7 +11574,7 @@ contains
     function LIBMUSCLE_Data_is_a_character( &
             self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_character
 
         logical (c_bool) :: ret_val
@@ -11237,7 +11588,7 @@ contains
     function LIBMUSCLE_Data_is_a_int( &
             self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_int
 
         logical (c_bool) :: ret_val
@@ -11251,7 +11602,7 @@ contains
     function LIBMUSCLE_Data_is_a_int1( &
             self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_int1
 
         logical (c_bool) :: ret_val
@@ -11265,7 +11616,7 @@ contains
     function LIBMUSCLE_Data_is_a_int2( &
             self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_int2
 
         logical (c_bool) :: ret_val
@@ -11279,7 +11630,7 @@ contains
     function LIBMUSCLE_Data_is_a_int4( &
             self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_int4
 
         logical (c_bool) :: ret_val
@@ -11293,7 +11644,7 @@ contains
     function LIBMUSCLE_Data_is_a_int8( &
             self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_int8
 
         logical (c_bool) :: ret_val
@@ -11307,7 +11658,7 @@ contains
     function LIBMUSCLE_Data_is_a_real4( &
             self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_real4
 
         logical (c_bool) :: ret_val
@@ -11321,7 +11672,7 @@ contains
     function LIBMUSCLE_Data_is_a_real8( &
             self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_real8
 
         logical (c_bool) :: ret_val
@@ -11335,7 +11686,7 @@ contains
     function LIBMUSCLE_Data_is_a_dict( &
             self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_dict
 
         logical (c_bool) :: ret_val
@@ -11349,7 +11700,7 @@ contains
     function LIBMUSCLE_Data_is_a_list( &
             self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_list
 
         logical (c_bool) :: ret_val
@@ -11363,7 +11714,7 @@ contains
     function LIBMUSCLE_Data_is_a_grid_of_logical( &
             self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_grid_of_logical
 
         logical (c_bool) :: ret_val
@@ -11377,7 +11728,7 @@ contains
     function LIBMUSCLE_Data_is_a_grid_of_real4( &
             self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_grid_of_real4
 
         logical (c_bool) :: ret_val
@@ -11391,7 +11742,7 @@ contains
     function LIBMUSCLE_Data_is_a_grid_of_real8( &
             self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_grid_of_real8
 
         logical (c_bool) :: ret_val
@@ -11405,7 +11756,7 @@ contains
     function LIBMUSCLE_Data_is_a_grid_of_int4( &
             self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_grid_of_int4
 
         logical (c_bool) :: ret_val
@@ -11419,7 +11770,7 @@ contains
     function LIBMUSCLE_Data_is_a_grid_of_int8( &
             self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_grid_of_int8
 
         logical (c_bool) :: ret_val
@@ -11433,7 +11784,7 @@ contains
     function LIBMUSCLE_Data_is_a_byte_array( &
             self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_byte_array
 
         logical (c_bool) :: ret_val
@@ -11447,7 +11798,7 @@ contains
     function LIBMUSCLE_Data_is_nil( &
             self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_nil
 
         logical (c_bool) :: ret_val
@@ -11461,7 +11812,7 @@ contains
     function LIBMUSCLE_Data_is_a_settings( &
             self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical :: LIBMUSCLE_Data_is_a_settings
 
         logical (c_bool) :: ret_val
@@ -11475,7 +11826,7 @@ contains
     function LIBMUSCLE_Data_size( &
             self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size) :: LIBMUSCLE_Data_size
 
         integer (c_size_t) :: ret_val
@@ -11490,7 +11841,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_Data_as_logical
@@ -11544,7 +11895,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         character(:), allocatable :: LIBMUSCLE_Data_as_character
@@ -11608,7 +11959,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         integer :: LIBMUSCLE_Data_as_int
@@ -11661,7 +12012,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         integer (LIBMUSCLE_int1) :: LIBMUSCLE_Data_as_int1
@@ -11714,7 +12065,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         integer (selected_int_kind(4)) :: LIBMUSCLE_Data_as_int2
@@ -11767,7 +12118,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         integer (LIBMUSCLE_int4) :: LIBMUSCLE_Data_as_int4
@@ -11820,7 +12171,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         integer (selected_int_kind(18)) :: LIBMUSCLE_Data_as_int8
@@ -11873,7 +12224,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         real (LIBMUSCLE_real4) :: LIBMUSCLE_Data_as_real4
@@ -11926,7 +12277,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         real (LIBMUSCLE_real8) :: LIBMUSCLE_Data_as_real8
@@ -11979,7 +12330,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         type(YMMSL_Settings) :: LIBMUSCLE_Data_as_settings
@@ -12034,7 +12385,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         character(len=1), dimension(:), intent(out) :: data
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -12094,7 +12445,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: key
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -12151,7 +12502,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -12207,7 +12558,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         integer (LIBMUSCLE_size) :: LIBMUSCLE_Data_num_dims
@@ -12261,7 +12612,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), dimension(:), intent(out) :: shp
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -12322,7 +12673,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical, dimension(:), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -12391,7 +12742,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical, dimension(:, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -12460,7 +12811,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical, dimension(:, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -12529,7 +12880,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical, dimension(:, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -12598,7 +12949,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical, dimension(:, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -12667,7 +13018,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical, dimension(:, :, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -12736,7 +13087,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical, dimension(:, :, :, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -12805,7 +13156,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_int4), dimension(:), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -12874,7 +13225,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_int4), dimension(:, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -12943,7 +13294,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_int4), dimension(:, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -13012,7 +13363,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_int4), dimension(:, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -13081,7 +13432,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_int4), dimension(:, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -13150,7 +13501,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_int4), dimension(:, :, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -13219,7 +13570,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_int4), dimension(:, :, :, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -13288,7 +13639,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (selected_int_kind(18)), dimension(:), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -13357,7 +13708,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (selected_int_kind(18)), dimension(:, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -13426,7 +13777,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (selected_int_kind(18)), dimension(:, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -13495,7 +13846,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (selected_int_kind(18)), dimension(:, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -13564,7 +13915,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (selected_int_kind(18)), dimension(:, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -13633,7 +13984,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (selected_int_kind(18)), dimension(:, :, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -13702,7 +14053,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (selected_int_kind(18)), dimension(:, :, :, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -13771,7 +14122,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         real (LIBMUSCLE_real4), dimension(:), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -13840,7 +14191,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         real (LIBMUSCLE_real4), dimension(:, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -13909,7 +14260,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         real (LIBMUSCLE_real4), dimension(:, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -13978,7 +14329,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         real (LIBMUSCLE_real4), dimension(:, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -14047,7 +14398,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         real (LIBMUSCLE_real4), dimension(:, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -14116,7 +14467,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         real (LIBMUSCLE_real4), dimension(:, :, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -14185,7 +14536,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         real (LIBMUSCLE_real4), dimension(:, :, :, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -14254,7 +14605,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         real (LIBMUSCLE_real8), dimension(:), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -14323,7 +14674,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         real (LIBMUSCLE_real8), dimension(:, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -14392,7 +14743,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         real (LIBMUSCLE_real8), dimension(:, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -14461,7 +14812,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         real (LIBMUSCLE_real8), dimension(:, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -14530,7 +14881,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         real (LIBMUSCLE_real8), dimension(:, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -14599,7 +14950,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         real (LIBMUSCLE_real8), dimension(:, :, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -14668,7 +15019,7 @@ contains
             err_msg)
 
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         real (LIBMUSCLE_real8), dimension(:, :, :, :, :, :, :), intent(out) :: elements
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -14735,7 +15086,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         logical :: LIBMUSCLE_Data_has_indexes
@@ -14790,7 +15141,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -14923,7 +15274,7 @@ contains
             self, &
             value)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         logical, intent(in) :: value
 
         call LIBMUSCLE_Data_set_logical_( &
@@ -14935,7 +15286,7 @@ contains
             self, &
             value)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: value
 
         call LIBMUSCLE_Data_set_character_( &
@@ -14947,7 +15298,7 @@ contains
             self, &
             value)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_int1), intent(in) :: value
 
         call LIBMUSCLE_Data_set_int1_( &
@@ -14959,7 +15310,7 @@ contains
             self, &
             value)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (selected_int_kind(4)), intent(in) :: value
 
         call LIBMUSCLE_Data_set_int2_( &
@@ -14971,7 +15322,7 @@ contains
             self, &
             value)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_int4), intent(in) :: value
 
         call LIBMUSCLE_Data_set_int4_( &
@@ -14983,7 +15334,7 @@ contains
             self, &
             value)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (selected_int_kind(18)), intent(in) :: value
 
         call LIBMUSCLE_Data_set_int8_( &
@@ -14995,7 +15346,7 @@ contains
             self, &
             value)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         real (LIBMUSCLE_real4), intent(in) :: value
 
         call LIBMUSCLE_Data_set_real4_( &
@@ -15007,7 +15358,7 @@ contains
             self, &
             value)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         real (LIBMUSCLE_real8), intent(in) :: value
 
         call LIBMUSCLE_Data_set_real8_( &
@@ -15019,8 +15370,8 @@ contains
             self, &
             value)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
-        type(LIBMUSCLE_Data), intent(in) :: value
+        class(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: value
 
         call LIBMUSCLE_Data_set_data_( &
             self%ptr, &
@@ -15030,7 +15381,7 @@ contains
     subroutine LIBMUSCLE_Data_set_nil( &
             self)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
 
         call LIBMUSCLE_Data_set_nil_( &
             self%ptr)
@@ -15043,7 +15394,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: key
         logical, intent(in) :: value
         integer, optional, intent(out) :: err_code
@@ -15099,7 +15450,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: key
         character (len=*), intent(in) :: value
         integer, optional, intent(out) :: err_code
@@ -15155,7 +15506,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: key
         integer (LIBMUSCLE_int1), intent(in) :: value
         integer, optional, intent(out) :: err_code
@@ -15211,7 +15562,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: key
         integer (selected_int_kind(4)), intent(in) :: value
         integer, optional, intent(out) :: err_code
@@ -15267,7 +15618,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: key
         integer, intent(in) :: value
         integer, optional, intent(out) :: err_code
@@ -15323,7 +15674,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: key
         integer (selected_int_kind(18)), intent(in) :: value
         integer, optional, intent(out) :: err_code
@@ -15379,7 +15730,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: key
         real (LIBMUSCLE_real4), intent(in) :: value
         integer, optional, intent(out) :: err_code
@@ -15435,7 +15786,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: key
         real (LIBMUSCLE_real8), intent(in) :: value
         integer, optional, intent(out) :: err_code
@@ -15491,9 +15842,9 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         character (len=*), intent(in) :: key
-        type(LIBMUSCLE_Data), intent(in) :: value
+        class(LIBMUSCLE_Data), intent(in) :: value
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
 
@@ -15547,7 +15898,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
         logical, intent(in) :: value
         integer, optional, intent(out) :: err_code
@@ -15603,7 +15954,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
         character (len=*), intent(in) :: value
         integer, optional, intent(out) :: err_code
@@ -15659,7 +16010,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
         integer (LIBMUSCLE_int1), intent(in) :: value
         integer, optional, intent(out) :: err_code
@@ -15715,7 +16066,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
         integer (selected_int_kind(4)), intent(in) :: value
         integer, optional, intent(out) :: err_code
@@ -15771,7 +16122,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
         integer, intent(in) :: value
         integer, optional, intent(out) :: err_code
@@ -15827,7 +16178,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
         integer (selected_int_kind(18)), intent(in) :: value
         integer, optional, intent(out) :: err_code
@@ -15883,7 +16234,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
         real (LIBMUSCLE_real4), intent(in) :: value
         integer, optional, intent(out) :: err_code
@@ -15939,7 +16290,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
         real (LIBMUSCLE_real8), intent(in) :: value
         integer, optional, intent(out) :: err_code
@@ -15995,9 +16346,9 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
-        type(LIBMUSCLE_Data), intent(in) :: value
+        class(LIBMUSCLE_Data), intent(in) :: value
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
 
@@ -16050,7 +16401,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -16117,7 +16468,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Data), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: self
         integer (LIBMUSCLE_size), intent(in) :: i
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -16181,13 +16532,12 @@ contains
         LIBMUSCLE_PortsDescription_create%ptr = ret_val
     end function LIBMUSCLE_PortsDescription_create
 
-    subroutine LIBMUSCLE_PortsDescription_free( &
-            self)
+    subroutine LIBMUSCLE_PortsDescription_free(self)
         implicit none
-        type(LIBMUSCLE_PortsDescription), intent(in) :: self
+        type(LIBMUSCLE_PortsDescription), intent(inout) :: self
 
-        call LIBMUSCLE_PortsDescription_free_( &
-            self%ptr)
+        call LIBMUSCLE_PortsDescription_free_(self%ptr)
+        self%ptr = 0
     end subroutine LIBMUSCLE_PortsDescription_free
 
     subroutine LIBMUSCLE_PortsDescription_add( &
@@ -16195,7 +16545,7 @@ contains
             op, &
             port)
         implicit none
-        type(LIBMUSCLE_PortsDescription), intent(in) :: self
+        class(LIBMUSCLE_PortsDescription), intent(in) :: self
         integer(YMMSL_Operator), intent(in) :: op
         character (len=*), intent(in) :: port
 
@@ -16209,7 +16559,7 @@ contains
             self, &
             op)
         implicit none
-        type(LIBMUSCLE_PortsDescription), intent(in) :: self
+        class(LIBMUSCLE_PortsDescription), intent(in) :: self
         integer(YMMSL_Operator), intent(in) :: op
         integer (LIBMUSCLE_size) :: LIBMUSCLE_PortsDescription_num_ports
 
@@ -16228,7 +16578,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_PortsDescription), intent(in) :: self
+        class(LIBMUSCLE_PortsDescription), intent(in) :: self
         integer(YMMSL_Operator), intent(in) :: op
         integer (LIBMUSCLE_size), intent(in) :: i
         integer, optional, intent(out) :: err_code
@@ -16310,7 +16660,7 @@ contains
             data)
         implicit none
         real (LIBMUSCLE_real8), intent(in) :: timestamp
-        type(LIBMUSCLE_Data), intent(in) :: data
+        class(LIBMUSCLE_Data), intent(in) :: data
         type(LIBMUSCLE_Message) :: LIBMUSCLE_Message_create_td
 
         integer (c_intptr_t) :: ret_val
@@ -16329,7 +16679,7 @@ contains
         implicit none
         real (LIBMUSCLE_real8), intent(in) :: timestamp
         real (LIBMUSCLE_real8), intent(in) :: next_timestamp
-        type(LIBMUSCLE_Data), intent(in) :: data
+        class(LIBMUSCLE_Data), intent(in) :: data
         type(LIBMUSCLE_Message) :: LIBMUSCLE_Message_create_tnd
 
         integer (c_intptr_t) :: ret_val
@@ -16348,8 +16698,8 @@ contains
             settings)
         implicit none
         real (LIBMUSCLE_real8), intent(in) :: timestamp
-        type(LIBMUSCLE_Data), intent(in) :: data
-        type(YMMSL_Settings), intent(in) :: settings
+        class(LIBMUSCLE_Data), intent(in) :: data
+        class(YMMSL_Settings), intent(in) :: settings
         type(LIBMUSCLE_Message) :: LIBMUSCLE_Message_create_tds
 
         integer (c_intptr_t) :: ret_val
@@ -16370,8 +16720,8 @@ contains
         implicit none
         real (LIBMUSCLE_real8), intent(in) :: timestamp
         real (LIBMUSCLE_real8), intent(in) :: next_timestamp
-        type(LIBMUSCLE_Data), intent(in) :: data
-        type(YMMSL_Settings), intent(in) :: settings
+        class(LIBMUSCLE_Data), intent(in) :: data
+        class(YMMSL_Settings), intent(in) :: settings
         type(LIBMUSCLE_Message) :: LIBMUSCLE_Message_create_tnds
 
         integer (c_intptr_t) :: ret_val
@@ -16385,19 +16735,18 @@ contains
         LIBMUSCLE_Message_create_tnds%ptr = ret_val
     end function LIBMUSCLE_Message_create_tnds
 
-    subroutine LIBMUSCLE_Message_free( &
-            self)
+    subroutine LIBMUSCLE_Message_free(self)
         implicit none
-        type(LIBMUSCLE_Message), intent(in) :: self
+        type(LIBMUSCLE_Message), intent(inout) :: self
 
-        call LIBMUSCLE_Message_free_( &
-            self%ptr)
+        call LIBMUSCLE_Message_free_(self%ptr)
+        self%ptr = 0
     end subroutine LIBMUSCLE_Message_free
 
     function LIBMUSCLE_Message_timestamp( &
             self)
         implicit none
-        type(LIBMUSCLE_Message), intent(in) :: self
+        class(LIBMUSCLE_Message), intent(in) :: self
         real (LIBMUSCLE_real8) :: LIBMUSCLE_Message_timestamp
 
         real (c_double) :: ret_val
@@ -16411,7 +16760,7 @@ contains
             self, &
             timestamp)
         implicit none
-        type(LIBMUSCLE_Message), intent(in) :: self
+        class(LIBMUSCLE_Message), intent(in) :: self
         real (LIBMUSCLE_real8), intent(in) :: timestamp
 
         call LIBMUSCLE_Message_set_timestamp_( &
@@ -16422,7 +16771,7 @@ contains
     function LIBMUSCLE_Message_has_next_timestamp( &
             self)
         implicit none
-        type(LIBMUSCLE_Message), intent(in) :: self
+        class(LIBMUSCLE_Message), intent(in) :: self
         logical :: LIBMUSCLE_Message_has_next_timestamp
 
         logical (c_bool) :: ret_val
@@ -16436,7 +16785,7 @@ contains
     function LIBMUSCLE_Message_next_timestamp( &
             self)
         implicit none
-        type(LIBMUSCLE_Message), intent(in) :: self
+        class(LIBMUSCLE_Message), intent(in) :: self
         real (LIBMUSCLE_real8) :: LIBMUSCLE_Message_next_timestamp
 
         real (c_double) :: ret_val
@@ -16450,7 +16799,7 @@ contains
             self, &
             next_timestamp)
         implicit none
-        type(LIBMUSCLE_Message), intent(in) :: self
+        class(LIBMUSCLE_Message), intent(in) :: self
         real (LIBMUSCLE_real8), intent(in) :: next_timestamp
 
         call LIBMUSCLE_Message_set_next_timestamp_( &
@@ -16461,7 +16810,7 @@ contains
     subroutine LIBMUSCLE_Message_unset_next_timestamp( &
             self)
         implicit none
-        type(LIBMUSCLE_Message), intent(in) :: self
+        class(LIBMUSCLE_Message), intent(in) :: self
 
         call LIBMUSCLE_Message_unset_next_timestamp_( &
             self%ptr)
@@ -16470,7 +16819,7 @@ contains
     function LIBMUSCLE_Message_get_data( &
             self)
         implicit none
-        type(LIBMUSCLE_Message), intent(in) :: self
+        class(LIBMUSCLE_Message), intent(in) :: self
         type(LIBMUSCLE_DataConstRef) :: LIBMUSCLE_Message_get_data
 
         integer (c_intptr_t) :: ret_val
@@ -16485,8 +16834,8 @@ contains
             self, &
             data)
         implicit none
-        type(LIBMUSCLE_Message), intent(in) :: self
-        type(LIBMUSCLE_Data), intent(in) :: data
+        class(LIBMUSCLE_Message), intent(in) :: self
+        class(LIBMUSCLE_Data), intent(in) :: data
 
         call LIBMUSCLE_Message_set_data_d_( &
             self%ptr, &
@@ -16497,8 +16846,8 @@ contains
             self, &
             data)
         implicit none
-        type(LIBMUSCLE_Message), intent(in) :: self
-        type(LIBMUSCLE_DataConstRef), intent(in) :: data
+        class(LIBMUSCLE_Message), intent(in) :: self
+        class(LIBMUSCLE_DataConstRef), intent(in) :: data
 
         call LIBMUSCLE_Message_set_data_dcr_( &
             self%ptr, &
@@ -16508,7 +16857,7 @@ contains
     function LIBMUSCLE_Message_has_settings( &
             self)
         implicit none
-        type(LIBMUSCLE_Message), intent(in) :: self
+        class(LIBMUSCLE_Message), intent(in) :: self
         logical :: LIBMUSCLE_Message_has_settings
 
         logical (c_bool) :: ret_val
@@ -16522,7 +16871,7 @@ contains
     function LIBMUSCLE_Message_get_settings( &
             self)
         implicit none
-        type(LIBMUSCLE_Message), intent(in) :: self
+        class(LIBMUSCLE_Message), intent(in) :: self
         type(YMMSL_Settings) :: LIBMUSCLE_Message_get_settings
 
         integer (c_intptr_t) :: ret_val
@@ -16537,8 +16886,8 @@ contains
             self, &
             settings)
         implicit none
-        type(LIBMUSCLE_Message), intent(in) :: self
-        type(YMMSL_Settings), intent(in) :: settings
+        class(LIBMUSCLE_Message), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: settings
 
         call LIBMUSCLE_Message_set_settings_( &
             self%ptr, &
@@ -16548,7 +16897,7 @@ contains
     subroutine LIBMUSCLE_Message_unset_settings( &
             self)
         implicit none
-        type(LIBMUSCLE_Message), intent(in) :: self
+        class(LIBMUSCLE_Message), intent(in) :: self
 
         call LIBMUSCLE_Message_unset_settings_( &
             self%ptr)
@@ -16590,19 +16939,18 @@ contains
         call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_(cla)
     end function LIBMUSCLE_Instance_create
 
-    subroutine LIBMUSCLE_Instance_free( &
-            self)
+    subroutine LIBMUSCLE_Instance_free(self)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        type(LIBMUSCLE_Instance), intent(inout) :: self
 
-        call LIBMUSCLE_Instance_free_( &
-            self%ptr)
+        call LIBMUSCLE_Instance_free_(self%ptr)
+        self%ptr = 0
     end subroutine LIBMUSCLE_Instance_free
 
     function LIBMUSCLE_Instance_reuse_instance( &
             self)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         logical :: LIBMUSCLE_Instance_reuse_instance
 
         logical (c_bool) :: ret_val
@@ -16617,7 +16965,7 @@ contains
             self, &
             message)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: message
 
         call LIBMUSCLE_Instance_error_shutdown_( &
@@ -16631,7 +16979,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -16688,7 +17036,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -16745,7 +17093,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -16802,7 +17150,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -16859,7 +17207,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -16916,7 +17264,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -16973,7 +17321,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -17040,7 +17388,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -17096,7 +17444,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -17152,7 +17500,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -17210,7 +17558,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
         real (LIBMUSCLE_real8), dimension(:), intent(out) :: value
         integer, optional, intent(out) :: err_code
@@ -17273,7 +17621,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: name
         real (LIBMUSCLE_real8), dimension(:,:), intent(out) :: value
         integer, optional, intent(out) :: err_code
@@ -17332,7 +17680,7 @@ contains
     function LIBMUSCLE_Instance_list_ports( &
             self)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         type(LIBMUSCLE_PortsDescription) :: LIBMUSCLE_Instance_list_ports
 
         integer (c_intptr_t) :: ret_val
@@ -17347,7 +17695,7 @@ contains
             self, &
             port)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port
         logical :: LIBMUSCLE_Instance_is_connected
 
@@ -17364,7 +17712,7 @@ contains
             self, &
             port)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port
         logical :: LIBMUSCLE_Instance_is_vector_port
 
@@ -17381,7 +17729,7 @@ contains
             self, &
             port)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port
         logical :: LIBMUSCLE_Instance_is_resizable
 
@@ -17398,7 +17746,7 @@ contains
             self, &
             port)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port
         integer :: LIBMUSCLE_Instance_get_port_length
 
@@ -17415,7 +17763,7 @@ contains
             port, &
             length)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port
         integer, intent(in) :: length
 
@@ -17430,9 +17778,9 @@ contains
             port_name, &
             message)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port_name
-        type(LIBMUSCLE_Message), intent(in) :: message
+        class(LIBMUSCLE_Message), intent(in) :: message
 
         call LIBMUSCLE_Instance_send_pm_( &
             self%ptr, &
@@ -17446,9 +17794,9 @@ contains
             message, &
             slot)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port_name
-        type(LIBMUSCLE_Message), intent(in) :: message
+        class(LIBMUSCLE_Message), intent(in) :: message
         integer, intent(in) :: slot
 
         call LIBMUSCLE_Instance_send_pms_( &
@@ -17464,7 +17812,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port_name
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -17522,9 +17870,9 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port_name
-        type(LIBMUSCLE_Message), intent(in) :: default_msg
+        class(LIBMUSCLE_Message), intent(in) :: default_msg
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         type(LIBMUSCLE_Message) :: LIBMUSCLE_Instance_receive_pd
@@ -17582,7 +17930,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port_name
         integer, intent(in) :: slot
         integer, optional, intent(out) :: err_code
@@ -17643,10 +17991,10 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port_name
         integer, intent(in) :: slot
-        type(LIBMUSCLE_Message), intent(in) :: default_message
+        class(LIBMUSCLE_Message), intent(in) :: default_message
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         type(LIBMUSCLE_Message) :: LIBMUSCLE_Instance_receive_psd
@@ -17704,7 +18052,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port_name
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -17762,9 +18110,9 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port_name
-        type(LIBMUSCLE_Message), intent(in) :: default_msg
+        class(LIBMUSCLE_Message), intent(in) :: default_msg
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         type(LIBMUSCLE_Message) :: LIBMUSCLE_Instance_receive_with_settings_pd
@@ -17822,7 +18170,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port_name
         integer, intent(in) :: slot
         integer, optional, intent(out) :: err_code
@@ -17883,10 +18231,10 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         character (len=*), intent(in) :: port_name
         integer, intent(in) :: slot
-        type(LIBMUSCLE_Message), intent(in) :: default_msg
+        class(LIBMUSCLE_Message), intent(in) :: default_msg
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
         type(LIBMUSCLE_Message) :: LIBMUSCLE_Instance_receive_with_settings_psd
@@ -17941,7 +18289,7 @@ contains
     function LIBMUSCLE_Instance_resuming( &
             self)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         logical :: LIBMUSCLE_Instance_resuming
 
         logical (c_bool) :: ret_val
@@ -17955,7 +18303,7 @@ contains
     function LIBMUSCLE_Instance_should_init( &
             self)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         logical :: LIBMUSCLE_Instance_should_init
 
         logical (c_bool) :: ret_val
@@ -17969,7 +18317,7 @@ contains
     function LIBMUSCLE_Instance_load_snapshot( &
             self)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         type(LIBMUSCLE_Message) :: LIBMUSCLE_Instance_load_snapshot
 
         integer (c_intptr_t) :: ret_val
@@ -17984,7 +18332,7 @@ contains
             self, &
             timestamp)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         real (LIBMUSCLE_real8), intent(in) :: timestamp
         logical :: LIBMUSCLE_Instance_should_save_snapshot
 
@@ -18001,8 +18349,8 @@ contains
             self, &
             message)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
-        type(LIBMUSCLE_Message), intent(in) :: message
+        class(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Message), intent(in) :: message
 
         call LIBMUSCLE_Instance_save_snapshot_( &
             self%ptr, &
@@ -18012,7 +18360,7 @@ contains
     function LIBMUSCLE_Instance_should_save_final_snapshot( &
             self)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Instance), intent(in) :: self
         logical :: LIBMUSCLE_Instance_should_save_final_snapshot
 
         logical (c_bool) :: ret_val
@@ -18027,8 +18375,8 @@ contains
             self, &
             message)
         implicit none
-        type(LIBMUSCLE_Instance), intent(in) :: self
-        type(LIBMUSCLE_Message), intent(in) :: message
+        class(LIBMUSCLE_Instance), intent(in) :: self
+        class(LIBMUSCLE_Message), intent(in) :: message
 
         call LIBMUSCLE_Instance_save_final_snapshot_( &
             self%ptr, &
@@ -18063,13 +18411,12 @@ contains
         LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create%ptr = ret_val
     end function LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create
 
-    subroutine LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free( &
-            self)
+    subroutine LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free(self)
         implicit none
-        type(LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs), intent(in) :: self
+        type(LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs), intent(inout) :: self
 
-        call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_( &
-            self%ptr)
+        call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_(self%ptr)
+        self%ptr = 0
     end subroutine LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free
 
     subroutine LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg( &
@@ -18077,7 +18424,7 @@ contains
             i, &
             arg)
         implicit none
-        type(LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs), intent(in) :: self
+        class(LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs), intent(in) :: self
         integer, intent(in) :: i
         character (len=*), intent(in) :: arg
 

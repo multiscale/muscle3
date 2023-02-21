@@ -1271,23 +1271,11 @@ class MemFun(Member):
 
         # call C++ function and return result
         if self.may_throw:
-            result += '    try {\n'
-            result += '        *err_code = 0;\n'
-            result += textwrap.indent(self._fc_cpp_call(), 4*' ')
-            result += textwrap.indent(self._fc_return(), 4*' ')
-            result += '    }\n'
-            for exception, code in error_codes.items():
-                if code != 0:
-                    catch = ''
-                    catch += 'catch (std::{} const & e) {{\n'.format(exception)
-                    catch += '    *err_code = {};\n'.format(code)
-                    catch += '    static std::string msg;\n'
-                    catch += '    msg = e.what();\n'
-                    catch += '    *err_msg = const_cast<char*>(msg.data());\n'
-                    catch += '    *err_msg_len = msg.size();\n'
-                    catch += '}\n'
-                    result += textwrap.indent(catch, 4*' ')
-            result += self._fc_return_default()
+            code = f"return execute_with_error_handling<{return_type}>([&]{{\n"
+            code += self._fc_cpp_call()
+            code += self._fc_return()
+            code += "}, err_code, err_msg, err_msg_len);\n"
+            result += textwrap.indent(code, 4*' ')
         else:
             result += self._fc_cpp_call()
             result += self._fc_return()
@@ -2526,6 +2514,7 @@ class API:
         result = banner('//')
         result += self._fc_includes()
         result += self._fc_using_statements()
+        result += self._fc_error_handler()
         result += self._fc_function_definitions()
         return result
 
@@ -2592,6 +2581,58 @@ class API:
             for cls in namespace.classes:
                 result += 'using {}::{};\n'.format(namespace.name, cls.name)
         result += '\n\n'
+        return result
+
+    def _fc_error_handler(self) -> str:
+        """Generate a generic error handler function.
+        """
+        catch = ""
+        for exception, code in error_codes.items():
+            if code != 0:
+                catch += textwrap.dedent(f"""\
+                    }} catch (std::{exception} const & e) {{
+                        *err_code = {code};
+                        last_error_message = e.what();
+                        *err_msg = const_cast<char*>(last_error_message.data());
+                        *err_msg_len = last_error_message.size();
+                    """)
+        catch = textwrap.indent(catch, 4*' ')
+        result = textwrap.dedent("""\
+            namespace {
+
+            static std::string last_error_message;
+
+            template <typename T, typename F>
+            inline typename std::enable_if<!std::is_same<T, void>::value, T>::type
+            execute_with_error_handling(
+                    F&& fun, int * err_code,
+                    char ** err_msg, std::size_t * err_msg_len)
+            {
+                try {
+                    * err_code = 0;
+                    return fun();
+            """) + catch + textwrap.dedent("""\
+                }
+                return {};
+            }
+
+            // overload for void-return to prevent compiler errors
+            template <typename T, typename F>
+            inline typename std::enable_if<std::is_same<T, void>::value>::type
+            execute_with_error_handling(
+                    F&& fun, int * err_code,
+                    char ** err_msg, std::size_t * err_msg_len)
+            {
+                try {
+                    * err_code = 0;
+                    fun();
+            """) + catch + textwrap.dedent("""\
+                }
+            }
+
+            } // namespace
+
+            """)
         return result
 
     def _fc_function_definitions(self) -> str:

@@ -12,6 +12,88 @@ using ymmsl::Operator;
 using ymmsl::Settings;
 
 
+namespace {
+
+static std::string last_error_message;
+
+template <typename T, typename F>
+inline typename std::enable_if<!std::is_same<T, void>::value, T>::type
+execute_with_error_handling(
+        F&& fun, int * err_code,
+        char ** err_msg, std::size_t * err_msg_len)
+{
+    try {
+        * err_code = 0;
+        return fun();
+    } catch (std::domain_error const & e) {
+        *err_code = 1;
+        last_error_message = e.what();
+        *err_msg = const_cast<char*>(last_error_message.data());
+        *err_msg_len = last_error_message.size();
+    } catch (std::out_of_range const & e) {
+        *err_code = 2;
+        last_error_message = e.what();
+        *err_msg = const_cast<char*>(last_error_message.data());
+        *err_msg_len = last_error_message.size();
+    } catch (std::logic_error const & e) {
+        *err_code = 3;
+        last_error_message = e.what();
+        *err_msg = const_cast<char*>(last_error_message.data());
+        *err_msg_len = last_error_message.size();
+    } catch (std::runtime_error const & e) {
+        *err_code = 4;
+        last_error_message = e.what();
+        *err_msg = const_cast<char*>(last_error_message.data());
+        *err_msg_len = last_error_message.size();
+    } catch (std::bad_cast const & e) {
+        *err_code = 5;
+        last_error_message = e.what();
+        *err_msg = const_cast<char*>(last_error_message.data());
+        *err_msg_len = last_error_message.size();
+    }
+    return {};
+}
+
+// overload for void-return to prevent compiler errors
+template <typename T, typename F>
+inline typename std::enable_if<std::is_same<T, void>::value>::type
+execute_with_error_handling(
+        F&& fun, int * err_code,
+        char ** err_msg, std::size_t * err_msg_len)
+{
+    try {
+        * err_code = 0;
+        fun();
+    } catch (std::domain_error const & e) {
+        *err_code = 1;
+        last_error_message = e.what();
+        *err_msg = const_cast<char*>(last_error_message.data());
+        *err_msg_len = last_error_message.size();
+    } catch (std::out_of_range const & e) {
+        *err_code = 2;
+        last_error_message = e.what();
+        *err_msg = const_cast<char*>(last_error_message.data());
+        *err_msg_len = last_error_message.size();
+    } catch (std::logic_error const & e) {
+        *err_code = 3;
+        last_error_message = e.what();
+        *err_msg = const_cast<char*>(last_error_message.data());
+        *err_msg_len = last_error_message.size();
+    } catch (std::runtime_error const & e) {
+        *err_code = 4;
+        last_error_message = e.what();
+        *err_msg = const_cast<char*>(last_error_message.data());
+        *err_msg_len = last_error_message.size();
+    } catch (std::bad_cast const & e) {
+        *err_code = 5;
+        last_error_message = e.what();
+        *err_msg = const_cast<char*>(last_error_message.data());
+        *err_msg_len = last_error_message.size();
+    }
+}
+
+} // namespace
+
 extern "C" {
 
 std::intptr_t YMMSL_Settings_create_() {
@@ -47,323 +129,64 @@ bool YMMSL_Settings_empty_(std::intptr_t self) {
 bool YMMSL_Settings_is_a_character_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
-    try {
-        *err_code = 0;
+    return execute_with_error_handling<bool>([&]{
         bool result = self_p->at(key_s).is_a<std::string>();
         return result;
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 1;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 2;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 3;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 4;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::bad_cast const & e) {
-        *err_code = 5;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    return false;
+    }, err_code, err_msg, err_msg_len);
 }
 
 bool YMMSL_Settings_is_a_int4_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
-    try {
-        *err_code = 0;
+    return execute_with_error_handling<bool>([&]{
         bool result = self_p->at(key_s).is_a<int32_t>();
         return result;
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 1;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 2;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 3;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 4;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::bad_cast const & e) {
-        *err_code = 5;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    return false;
+    }, err_code, err_msg, err_msg_len);
 }
 
 bool YMMSL_Settings_is_a_int8_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
-    try {
-        *err_code = 0;
+    return execute_with_error_handling<bool>([&]{
         bool result = self_p->at(key_s).is_a<int64_t>();
         return result;
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 1;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 2;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 3;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 4;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::bad_cast const & e) {
-        *err_code = 5;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    return false;
+    }, err_code, err_msg, err_msg_len);
 }
 
 bool YMMSL_Settings_is_a_real8_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
-    try {
-        *err_code = 0;
+    return execute_with_error_handling<bool>([&]{
         bool result = self_p->at(key_s).is_a<double>();
         return result;
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 1;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 2;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 3;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 4;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::bad_cast const & e) {
-        *err_code = 5;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    return false;
+    }, err_code, err_msg, err_msg_len);
 }
 
 bool YMMSL_Settings_is_a_logical_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
-    try {
-        *err_code = 0;
+    return execute_with_error_handling<bool>([&]{
         bool result = self_p->at(key_s).is_a<bool>();
         return result;
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 1;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 2;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 3;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 4;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::bad_cast const & e) {
-        *err_code = 5;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    return false;
+    }, err_code, err_msg, err_msg_len);
 }
 
 bool YMMSL_Settings_is_a_real8array_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
-    try {
-        *err_code = 0;
+    return execute_with_error_handling<bool>([&]{
         bool result = self_p->at(key_s).is_a<std::vector<double>>();
         return result;
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 1;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 2;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 3;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 4;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::bad_cast const & e) {
-        *err_code = 5;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    return false;
+    }, err_code, err_msg, err_msg_len);
 }
 
 bool YMMSL_Settings_is_a_real8array2_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
-    try {
-        *err_code = 0;
+    return execute_with_error_handling<bool>([&]{
         bool result = self_p->at(key_s).is_a<std::vector<std::vector<double>>>();
         return result;
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 1;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 2;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 3;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 4;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::bad_cast const & e) {
-        *err_code = 5;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    return false;
+    }, err_code, err_msg, err_msg_len);
 }
 
 void YMMSL_Settings_set_character_(std::intptr_t self, char * key, std::size_t key_size, char * value, std::size_t value_size) {
@@ -425,288 +248,67 @@ void YMMSL_Settings_set_real8array2_(std::intptr_t self, char * key, std::size_t
 void YMMSL_Settings_get_as_character_(std::intptr_t self, char * key, std::size_t key_size, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
-    try {
-        *err_code = 0;
+    return execute_with_error_handling<void>([&]{
         static std::string result;
         result = self_p->at(key_s).as<std::string>();
         *ret_val = const_cast<char*>(result.c_str());
         *ret_val_size = result.size();
         return;
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 1;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 2;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 3;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 4;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::bad_cast const & e) {
-        *err_code = 5;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
+    }, err_code, err_msg, err_msg_len);
 }
 
 int32_t YMMSL_Settings_get_as_int4_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
-    try {
-        *err_code = 0;
+    return execute_with_error_handling<int32_t>([&]{
         int32_t result = self_p->at(key_s).as<int32_t>();
         return result;
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 1;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 2;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 3;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 4;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::bad_cast const & e) {
-        *err_code = 5;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    return 0;
+    }, err_code, err_msg, err_msg_len);
 }
 
 int64_t YMMSL_Settings_get_as_int8_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
-    try {
-        *err_code = 0;
+    return execute_with_error_handling<int64_t>([&]{
         int64_t result = self_p->at(key_s).as<int64_t>();
         return result;
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 1;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 2;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 3;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 4;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::bad_cast const & e) {
-        *err_code = 5;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    return 0;
+    }, err_code, err_msg, err_msg_len);
 }
 
 double YMMSL_Settings_get_as_real8_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
-    try {
-        *err_code = 0;
+    return execute_with_error_handling<double>([&]{
         double result = self_p->at(key_s).as<double>();
         return result;
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 1;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 2;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 3;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 4;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::bad_cast const & e) {
-        *err_code = 5;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    return 0.0;
+    }, err_code, err_msg, err_msg_len);
 }
 
 bool YMMSL_Settings_get_as_logical_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
-    try {
-        *err_code = 0;
+    return execute_with_error_handling<bool>([&]{
         bool result = self_p->at(key_s).as<bool>();
         return result;
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 1;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 2;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 3;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 4;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::bad_cast const & e) {
-        *err_code = 5;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    return false;
+    }, err_code, err_msg, err_msg_len);
 }
 
 void YMMSL_Settings_get_as_real8array_(std::intptr_t self, char * key, std::size_t key_size, double ** value, std::size_t * value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
-    try {
-        *err_code = 0;
+    return execute_with_error_handling<void>([&]{
         static std::vector<double> result;
         result = self_p->at(key_s).as<std::vector<double>>();
         *value = result.data();
         *value_size = result.size();
         return;
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 1;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 2;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 3;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 4;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::bad_cast const & e) {
-        *err_code = 5;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
+    }, err_code, err_msg, err_msg_len);
 }
 
 void YMMSL_Settings_get_as_real8array2_(std::intptr_t self, char * key, std::size_t key_size, double ** value, std::size_t * value_shape, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
-    try {
-        *err_code = 0;
+    return execute_with_error_handling<void>([&]{
         std::vector<std::vector<double>> result = self_p->at(key_s).as<std::vector<std::vector<double>>>();
         std::size_t max_len = 0u;
         for (auto const & v : result)
@@ -722,42 +324,7 @@ void YMMSL_Settings_get_as_real8array2_(std::intptr_t self, char * key, std::siz
         value_shape[0] = result.size();
         value_shape[1] = max_len;
         return;
-    }
-    catch (std::domain_error const & e) {
-        *err_code = 1;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::out_of_range const & e) {
-        *err_code = 2;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::logic_error const & e) {
-        *err_code = 3;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::runtime_error const & e) {
-        *err_code = 4;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
-    catch (std::bad_cast const & e) {
-        *err_code = 5;
-        static std::string msg;
-        msg = e.what();
-        *err_msg = const_cast<char*>(msg.data());
-        *err_msg_len = msg.size();
-    }
+    }, err_code, err_msg, err_msg_len);
 }
 
 bool YMMSL_Settings_contains_(std::intptr_t self, char * key, std::size_t key_size) {

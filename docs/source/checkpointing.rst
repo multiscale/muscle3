@@ -13,14 +13,6 @@ comes with built-in checkpointing support. This page describes in detail how to
 use the MUSCLE3 checkpointing API, how to specify checkpoints in the workflow
 configuration and how to resume a workflow.
 
-.. warning::
-
-    Checkpointing in MUSCLE3 version 0.6.0 is still in development: the API may
-    change in a future MUSCLE3 release.
-
-    Checkpointing is only available in the Python API. C++ and Fortran support
-    is planned for version 0.7.0.
-
 In the :ref:`user tutorial`, you can read about the checkpointing concepts and
 how to use the API when running and resuming MUSCLE3 simulations. This is
 followed by a :ref:`developer tutorial`, which explains how to add checkpointing
@@ -359,7 +351,7 @@ repository. Then execute the following command:
 .. code-block:: bash
 
     $ mkdir run_rd_example
-    $ muscle_manager --start-all --run-dir run_rd_example rd_implementations.ymmsl rd_checkpoints.ymmsl rd_settings.ymmsl
+    $ muscle_manager --start-all --run-dir run_rd_example rd_implementations.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl
 
 .. note::
 
@@ -372,11 +364,11 @@ repository. Then execute the following command:
         $ make test_examples
 
 The above command runs the ``muscle_manager`` and starts all components (the
-reaction model and the diffusion model). The ``rd_checkpoints.ymmsl`` file
+reaction model and the diffusion model). The ``rd_checkpoints_python.ymmsl`` file
 contains the checkpoint definitions used in this example:
 
-.. literalinclude:: examples/rd_checkpoints.ymmsl
-    :caption: ``docs/source/examples/rd_checkpoints.ymmsl, lines 31-33``
+.. literalinclude:: examples/rd_checkpoints_python.ymmsl
+    :caption: ``docs/source/examples/rd_checkpoints_python.ymmsl, lines 31-33``
     :lines: 31-33
     :language: yaml
 
@@ -428,7 +420,7 @@ point to the snapshot you want to resume from.
     :caption: Resume from an earlier snapshot. Replace ``<date>`` and ``<time>`` to point to an actual snapshot file.
 
     $ mkdir run_rd_resume
-    $ muscle_manager --start-all --run-dir run_rd_resume rd_implementations.ymmsl rd_checkpoints.ymmsl rd_settings.ymmsl run_rd_example/snapshots/snapshot_<date>_<time>.ymmsl
+    $ muscle_manager --start-all --run-dir run_rd_resume rd_implementations.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl run_rd_example/snapshots/snapshot_<date>_<time>.ymmsl
 
 When the command completes you can see the output in the new working directory
 ``run_rd_resume``.
@@ -654,7 +646,7 @@ Step 1: Set ``USES_CHECKPOINT_API`` on instance creation
 ````````````````````````````````````````````````````````
 
 As first step, you need to indicate that you intend to use the checkpoint API.
-You do this through the :attr:`~InstanceFlags.USES_CHECKPOINT_API` flag when
+You do this through the :py:attr:`~InstanceFlags.USES_CHECKPOINT_API` flag when
 creating the instance:
 
 .. tabs::
@@ -670,19 +662,53 @@ creating the instance:
             ports = ...
             instance = Instance(ports, USES_CHECKPOINT_API)
 
-    ..
-        group-tab:: C++
+        .. seealso::
+
+            API documentation for
+            :py:attr:`~libmuscle.InstanceFlags.USES_CHECKPOINT_API`.
+
+    ..  group-tab:: C++
 
         .. code-block:: C++
 
-            TODO
+            #include <libmuscle/libmuscle.hpp>
+            #include <ymmsl/ymmsl.hpp>
 
-    ..
-        group-tab:: Fortran
+            using libmuscle::PortsDescription;
+            using libmuscle::Instance;
+            using libmuscle::InstanceFlags;
+
+            ...
+
+            int main(int argc, char * argv[]) {
+                PortsDescription ports = ...;
+                Instance instance(argc, argv, ports, InstanceFlags::USES_CHECKPOINT_API);
+
+                ...
+            }
+
+        .. seealso::
+
+            API documentation for
+            :cpp:enumerator:`~libmuscle::impl::InstanceFlags::USES_CHECKPOINT_API`.
+
+    .. group-tab:: Fortran
 
         .. code-block:: Fortran
 
-            TODO
+            use ymmsl
+            use libmuscle
+
+            type(LIBMUSCLE_PortsDescription) :: ports
+            type(LIBMUSCLE_Instance) :: instance
+
+            ports = ...
+            instance = LIBMUSCLE_Instance_create( &
+                ports, LIBMUSCLE_InstanceFlags(USES_CHECKPOINT_API=.true.))
+
+        .. seealso::
+
+            API documentation for :f:func:`LIBMUSCLE_InstanceFlags`.
 
 
 If you do not set this flag, you'll get a runtime error when trying to use any
@@ -761,9 +787,16 @@ See :ref:`Example: implemented checkpoint hooks` for example implementations in
 the reaction-diffusion models and the component template.
 
 .. seealso::
-    Python API documentation:
-    :py:meth:`~libmuscle.Instance.should_save_snapshot`,
-    :py:meth:`~libmuscle.Instance.save_snapshot`.
+
+    - Python API documentation:
+      :py:meth:`~libmuscle.Instance.should_save_snapshot`,
+      :py:meth:`~libmuscle.Instance.save_snapshot`.
+    - C++ API documentation:
+      :cpp:func:`~libmuscle::impl::Instance::should_save_snapshot`,
+      :cpp:func:`~libmuscle::impl::Instance::save_snapshot`.
+    - Fortran API documentation:
+      :f:func:`LIBMUSCLE_Instance_should_save_snapshot`,
+      :f:func:`LIBMUSCLE_Instance_save_snapshot`.
 
 
 Final snapshots
@@ -788,9 +821,16 @@ See :ref:`Example: implemented checkpoint hooks` for example implementations in
 the reaction-diffusion models and the component template.
 
 .. seealso::
-    Python API documentation:
-    :py:meth:`~libmuscle.Instance.should_save_final_snapshot`,
-    :py:meth:`~libmuscle.Instance.save_final_snapshot`.
+
+    - Python API documentation:
+      :py:meth:`~libmuscle.Instance.should_save_final_snapshot`,
+      :py:meth:`~libmuscle.Instance.save_final_snapshot`.
+    - C++ API documentation:
+      :cpp:func:`~libmuscle::impl::Instance::should_save_final_snapshot`,
+      :cpp:func:`~libmuscle::impl::Instance::save_final_snapshot`.
+    - Fortran API documentation:
+      :f:func:`LIBMUSCLE_Instance_should_save_final_snapshot`,
+      :f:func:`LIBMUSCLE_Instance_save_final_snapshot`.
 
 
 Example: implemented checkpoint hooks
@@ -826,23 +866,19 @@ full contents of the files in the git repository.
                     :language: python
                     :diff: examples/python/reaction.py
 
-            ..
-                group-tab:: C++
+            .. group-tab:: C++
 
-                .. literalinclude:: examples/cpp/reaction.cpp
-                    :caption: ``docs/source/examples/cpp/reaction.cpp``
+                .. literalinclude:: tutorial_code/checkpointing_reaction_partial.cpp
+                    :caption: ``docs/source/tutorial_code/checkpointing_reaction_partial.cpp``
                     :language: c++
+                    :diff: examples/cpp/reaction.cpp
 
-                TODO
+            .. group-tab:: Fortran
 
-            ..
-                group-tab:: Fortran
-
-                .. literalinclude:: examples/fortran/reaction.f90
-                    :caption: ``docs/source/examples/fortran/reaction.f90``
+                .. literalinclude:: tutorial_code/checkpointing_reaction_partial.f90
+                    :caption: ``docs/source/tutorial_code/checkpointing_reaction_partial.f90``
                     :language: fortran
-
-                TODO
+                    :diff: examples/fortran/reaction.f90
 
     .. group-tab:: Diffusion model
 
@@ -867,23 +903,19 @@ full contents of the files in the git repository.
                     :language: python
                     :diff: examples/python/diffusion.py
 
-            ..
-                group-tab:: C++
+            .. group-tab:: C++
 
-                .. literalinclude:: examples/cpp/diffusion.cpp
-                    :caption: ``docs/source/examples/cpp/diffusion.cpp``
+                .. literalinclude:: tutorial_code/checkpointing_diffusion_partial.cpp
+                    :caption: ``docs/source/tutorial_code/checkpointing_diffusion_partial.cpp``
                     :language: c++
+                    :diff: examples/cpp/diffusion.cpp
 
-                TODO
+            .. group-tab:: Fortran
 
-            ..
-                group-tab:: Fortran
-
-                .. literalinclude:: examples/fortran/diffusion.f90
-                    :caption: ``docs/source/examples/fortran/diffusion.f90``
+                .. literalinclude:: tutorial_code/checkpointing_diffusion_partial.f90
+                    :caption: ``docs/source/tutorial_code/checkpointing_diffusion_partial.f90``
                     :language: fortran
-
-                TODO
+                    :diff: examples/fortran/diffusion.f90
 
     .. group-tab:: Generic template
 
@@ -896,23 +928,19 @@ full contents of the files in the git repository.
                     :language: python
                     :diff: templates/instance.py
 
-            ..
-                group-tab:: C++
+            .. group-tab:: C++
 
-                .. literalinclude:: templates/instance.cpp
-                    :caption: ``docs/source/templates/instance.cpp``
+                .. literalinclude:: tutorial_code/checkpointing_instance_partial.cpp
+                    :caption: ``docs/source/tutorial_code/checkpointing_instance_partial.cpp``
                     :language: c++
+                    :diff: templates/instance.cpp
 
-                TODO
+            .. group-tab:: Fortran
 
-            ..
-                group-tab:: Fortran
-
-                .. literalinclude:: templates/instance.f90
-                    :caption: ``docs/source/templates/instance.f90``
+                .. literalinclude:: tutorial_code/checkpointing_instance_partial.f90
+                    :caption: ``docs/source/tutorial_code/checkpointing_instance_partial.f90``
                     :language: fortran
-
-                TODO
+                    :diff: templates/instance.f90
 
 
 Step 3: Implement resume
@@ -954,10 +982,19 @@ See :ref:`Example: implemented checkpoint hooks and resume` for example
 implementations in the reaction-diffusion models and the component template.
 
 .. seealso::
-    Python API documentation: :py:meth:`~libmuscle.Instance.resuming`,
-    :py:meth:`~libmuscle.Instance.load_snapshot`,
-    :py:meth:`~libmuscle.Instance.should_init`.
 
+    - Python API documentation:
+      :py:meth:`~libmuscle.Instance.resuming`,
+      :py:meth:`~libmuscle.Instance.load_snapshot`,
+      :py:meth:`~libmuscle.Instance.should_init`.
+    - C++ API documentation:
+      :cpp:func:`~libmuscle::impl::Instance::resuming`,
+      :cpp:func:`~libmuscle::impl::Instance::load_snapshot`,
+      :cpp:func:`~libmuscle::impl::Instance::should_init`.
+    - Fortran API documentation:
+      :f:func:`LIBMUSCLE_Instance_resuming`,
+      :f:func:`LIBMUSCLE_Instance_load_snapshot`,
+      :f:func:`LIBMUSCLE_Instance_should_init`.
 
 Reload settings when resuming
 '''''''''''''''''''''''''''''
@@ -1000,23 +1037,19 @@ full contents of the files in the git repository.
                     :language: python
                     :diff: examples/python/reaction.py
 
-            ..
-                group-tab:: C++
+            .. group-tab:: C++
 
-                .. literalinclude:: examples/cpp/reaction.cpp
-                    :caption: ``docs/source/examples/cpp/reaction.cpp``
+                .. literalinclude:: examples/cpp/checkpointing_reaction.cpp
+                    :caption: ``docs/source/examples/cpp/checkpointing_reaction.cpp``
                     :language: c++
+                    :diff: examples/cpp/reaction.cpp
 
-                TODO
+            .. group-tab:: Fortran
 
-            ..
-                group-tab:: Fortran
-
-                .. literalinclude:: examples/fortran/reaction.f90
-                    :caption: ``docs/source/examples/fortran/reaction.f90``
+                .. literalinclude:: examples/fortran/checkpointing_reaction.f90
+                    :caption: ``docs/source/examples/fortran/checkpointing_reaction.f90``
                     :language: fortran
-
-                TODO
+                    :diff: examples/fortran/reaction.f90
 
     .. group-tab:: Diffusion model
 
@@ -1035,23 +1068,19 @@ full contents of the files in the git repository.
                     :language: python
                     :diff: examples/python/diffusion.py
 
-            ..
-                group-tab:: C++
+            .. group-tab:: C++
 
-                .. literalinclude:: examples/cpp/diffusion.cpp
-                    :caption: ``docs/source/examples/cpp/diffusion.cpp``
+                .. literalinclude:: examples/cpp/checkpointing_diffusion.cpp
+                    :caption: ``docs/source/examples/cpp/checkpointing_diffusion.cpp``
                     :language: c++
+                    :diff: examples/cpp/diffusion.cpp
 
-                TODO
+            .. group-tab:: Fortran
 
-            ..
-                group-tab:: Fortran
-
-                .. literalinclude:: examples/fortran/diffusion.f90
-                    :caption: ``docs/source/examples/fortran/diffusion.f90``
+                .. literalinclude:: examples/fortran/checkpointing_diffusion.f90
+                    :caption: ``docs/source/examples/fortran/checkpointing_diffusion.f90``
                     :language: fortran
-
-                TODO
+                    :diff: examples/fortran/diffusion.f90
 
     .. group-tab:: Generic template
 
@@ -1064,23 +1093,19 @@ full contents of the files in the git repository.
                     :language: python
                     :diff: templates/instance.py
 
-            ..
-                group-tab:: C++
+            .. group-tab:: C++
 
-                .. literalinclude:: templates/instance.cpp
-                    :caption: ``docs/source/templates/instance.cpp``
+                .. literalinclude:: templates/checkpointing_instance.cpp
+                    :caption: ``docs/source/templates/checkpointing_instance.cpp``
                     :language: c++
+                    :diff: templates/instance.cpp
 
-                TODO
+            .. group-tab:: Fortran
 
-            ..
-                group-tab:: Fortran
-
-                .. literalinclude:: templates/instance.f90
-                    :caption: ``docs/source/templates/instance.f90``
+                .. literalinclude:: templates/checkpointing_instance.f90
+                    :caption: ``docs/source/templates/checkpointing_instance.f90``
                     :language: fortran
-
-                TODO
+                    :diff: templates/instance.f90
 
 
 Components that do not keep state between reuse
@@ -1096,7 +1121,7 @@ on an ``F_INIT`` port and sending the converted data on an ``O_F`` port.
 
 If you indicate to libmuscle that your component does not keep state between
 reuse, libmuscle automatically provides checkpointing for your component. You do
-this by providing the :attr:`~InstanceFlags.KEEPS_NO_STATE_FOR_NEXT_USE` flag
+this by providing the ``~InstanceFlags.KEEPS_NO_STATE_FOR_NEXT_USE`` flag
 when creating the instance. See the below example for a variant of the example
 reaction model.
 
@@ -1109,26 +1134,25 @@ reaction model.
             :language: python
             :diff: examples/python/reaction.py
 
-    ..
-        group-tab:: C++
+    .. group-tab:: C++
 
-        .. literalinclude:: examples/cpp/reaction.cpp
-            :caption: ``docs/source/examples/cpp/reaction.cpp``
+        .. literalinclude:: examples/cpp/reaction_no_state_for_next_use.cpp
+            :caption: ``docs/source/examples/cpp/reaction_no_state_for_next_use.cpp``
             :language: c++
+            :diff: examples/cpp/reaction.cpp
 
-        TODO
+    .. group-tab:: Fortran
 
-    ..
-        group-tab:: Fortran
-
-        .. literalinclude:: examples/fortran/reaction.f90
-            :caption: ``docs/source/examples/fortran/reaction.f90``
+        .. literalinclude:: examples/fortran/reaction_no_state_for_next_use.f90
+            :caption: ``docs/source/examples/fortran/reaction_no_state_for_next_use.f90``
             :language: fortran
-
-        TODO
+            :diff: examples/fortran/reaction.f90
 
 .. seealso::
-    Python API documentation: :py:class:`libmuscle.Instance`.
+
+    - Python API documentation: :py:class:`~libmuscle.InstanceFlags`.
+    - C++ API documentation :cpp:enum:`~libmuscle::impl::InstanceFlags`.
+    - Fortran API documentation :f:type:`LIBMUSCLE_InstanceFlags`.
 
 
 Builtin validation
@@ -1141,5 +1165,42 @@ issues with the checkpointing implementation. When MUSCLE3 detects a problem, an
 error is raised to indicate what went wrong and point you in the right direction
 for fixing the problem.
 
-..
-    TODO: create an overview of the validation rules
+
+Checkpointing in MPI-enabled components
+```````````````````````````````````````
+
+Checkpionting in MPI-enabled components works in the same way as for non-MPI components.
+The main difference is that some API methods must be called by all processes, while
+others can only be called from the root process.
+
+- ``resuming()`` must be called simultaneously in all processes.
+- ``load_snapshot()`` may only be called on the root process. It is up to the model code
+  to scatter or broadcast the snapshot state to the non-root processes, if necessary.
+- ``should_init()`` must be called simultaneously in all processes.
+- ``should_save_snapshot()`` and ``should_save_final_snapshot()`` must be called
+  simultaneously in all processes.
+- ``save_snapshot()`` and ``save_final_snapshot()`` may only be called on the root
+  process. It is therefore up to the model code to gather the necessary state from the
+  non-root processes before saving the snapshot.
+
+.. seealso::
+
+    - C++ API documentation:
+
+      - :cpp:func:`~libmuscle::impl::Instance::resuming`
+      - :cpp:func:`~libmuscle::impl::Instance::load_snapshot`
+      - :cpp:func:`~libmuscle::impl::Instance::should_init`
+      - :cpp:func:`~libmuscle::impl::Instance::should_save_final_snapshot`
+      - :cpp:func:`~libmuscle::impl::Instance::save_final_snapshot`
+      - :cpp:func:`~libmuscle::impl::Instance::should_save_snapshot`
+      - :cpp:func:`~libmuscle::impl::Instance::save_snapshot`
+
+    - Fortran API documentation:
+
+      - :f:func:`LIBMUSCLE_Instance_resuming`
+      - :f:func:`LIBMUSCLE_Instance_load_snapshot`
+      - :f:func:`LIBMUSCLE_Instance_should_init`
+      - :f:func:`LIBMUSCLE_Instance_should_save_final_snapshot`
+      - :f:func:`LIBMUSCLE_Instance_save_final_snapshot`
+      - :f:func:`LIBMUSCLE_Instance_should_save_snapshot`
+      - :f:func:`LIBMUSCLE_Instance_save_snapshot`

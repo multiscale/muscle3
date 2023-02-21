@@ -33,6 +33,13 @@
             libmuscle::impl::Instance::receive_with_settings*;
             libmuscle::impl::Instance::receive*;
             libmuscle::impl::Instance::send*;
+            libmuscle::impl::Instance::resuming*;
+            libmuscle::impl::Instance::load_snapshot*;
+            libmuscle::impl::Instance::should_init*;
+            libmuscle::impl::Instance::should_save_snapshot*;
+            libmuscle::impl::Instance::save_snapshot*;
+            libmuscle::impl::Instance::should_save_final_snapshot*;
+            libmuscle::impl::Instance::save_final_snapshot*;
 
             libmuscle::impl::Message::*;
 

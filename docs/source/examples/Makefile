@@ -110,12 +110,18 @@ clean:
 test_python: base
 	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_implementations.ymmsl rd_python.ymmsl rd_settings.ymmsl
 	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl
+	# test restarting, sleep 1 second to prevent reusing the same run directory
+	. python/build/venv/bin/activate && sleep 1 && DONTPLOT=1 muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl \
+		$$(ls $$(ls -d run_checkpointing_reaction_diffusion_python* | tail -n1)/snapshots/*.ymmsl | head -n1)
 	make -C python test
 
 .PHONY: test_cpp
 test_cpp: base cpp
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_cpp.ymmsl rd_settings.ymmsl
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints_cpp.ymmsl rd_settings.ymmsl
+	# test restarting, sleep 1 second to prevent reusing the same run directory
+	. python/build/venv/bin/activate && sleep 1 && muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints_cpp.ymmsl rd_settings.ymmsl \
+		$$(ls $$(ls -d run_checkpointing_reaction_diffusion_cpp* | tail -n1)/snapshots/*.ymmsl | head -n1)
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_python_cpp.ymmsl rd_settings.ymmsl
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rdmc_cpp.ymmsl rdmc_settings.ymmsl
 
@@ -127,6 +133,9 @@ test_cpp_mpi: base cpp_mpi
 test_fortran: base fortran
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_fortran.ymmsl rd_settings.ymmsl
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints_fortran.ymmsl rd_settings.ymmsl
+	# test restarting, sleep 1 second to prevent reusing the same run directory
+	. python/build/venv/bin/activate && sleep 1 && muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints_fortran.ymmsl rd_settings.ymmsl \
+		$$(ls $$(ls -d run_checkpointing_reaction_diffusion_fortran* | tail -n1)/snapshots/*.ymmsl | head -n1)
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_python_fortran.ymmsl rd_settings.ymmsl
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rdmc_fortran.ymmsl rdmc_settings.ymmsl
 

@@ -22,7 +22,7 @@ int main(int argc, char * argv[]) {
     Instance instance(argc, argv, {
             {Operator::F_INIT, {"F_INIT_Port"}},
             {Operator::O_I, {"O_I_Port"}},
-            {Operator::S, {"O_S_Port"}},
+            {Operator::S, {"S_Port"}},
             {Operator::O_F, {"O_F_Port"}}},
             InstanceFlags::USES_CHECKPOINT_API);
 

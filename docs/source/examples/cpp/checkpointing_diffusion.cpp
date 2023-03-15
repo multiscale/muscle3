@@ -27,6 +27,18 @@ std::vector<double> laplacian(std::vector<double> const & Z, double dx) {
 }
 
 
+/** Utility function packing data in a message for snapshotting
+ */
+Message create_state_message(
+        double t_cur, std::vector<std::vector<double>> const & Us)
+{
+    Data data = Data::nils(Us.size());
+    for (std::size_t i = 0; i < data.size(); ++i)
+        data[i] = Data::grid(Us[i].data(), {Us[i].size()});
+    return Message(t_cur, data);
+}
+
+
 /** A simple diffusion model on a 1d grid.
  *
  * The state of this model is a 1D grid of concentrations. It sends out the
@@ -55,12 +67,13 @@ void diffusion(int argc, char * argv[]) {
         if (instance.resuming()) {
             auto msg = instance.load_snapshot();
             for (int i = 0; i < msg.data().size(); ++i) {
-                if (msg.data()[i].shape().size() != 1u || msg.data()[i].size() != U.size()) {
+                auto const & data_i = msg.data()[i];
+                if (data_i.shape().size() != 1u || data_i.size() != U.size()) {
                     auto err_msg = "Received state of incorrect shape or size!";
                     instance.error_shutdown(err_msg);
                     throw std::runtime_error(err_msg);
                 }
-                std::copy_n(msg.data()[i].elements<double>(), msg.data()[i].size(), U.begin());
+                std::copy_n(data_i.elements<double>(), data_i.size(), U.begin());
                 Us.push_back(U);
             }
             t_cur = msg.timestamp();
@@ -110,11 +123,7 @@ void diffusion(int argc, char * argv[]) {
             t_cur += dt;
 
             if (instance.should_save_snapshot(t_cur)) {
-                Data data = Data::nils(Us.size());
-                for (uint i = 0; i < data.size(); ++i)
-                    data[i] = Data::grid(Us[i].data(), {Us[i].size()});
-                Message msg(t_cur, data);
-                instance.save_snapshot(msg);
+                instance.save_snapshot(create_state_message(t_cur, Us));
             }
         }
 
@@ -125,11 +134,7 @@ void diffusion(int argc, char * argv[]) {
 
 
         if (instance.should_save_final_snapshot()) {
-            Data data = Data::nils(Us.size());
-            for (uint i = 0; i < data.size(); ++i)
-                data[i] = Data::grid(Us[i].data(), {Us[i].size()});
-            Message msg(t_cur, data);
-            instance.save_final_snapshot(msg);
+            instance.save_snapshot(create_state_message(t_cur, Us));
         }
     }
 }

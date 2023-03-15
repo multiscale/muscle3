@@ -17,7 +17,7 @@ program diffusion
     integer (LIBMUSCLE_size), dimension(2) :: shp
 
     type(LIBMUSCLE_Message) :: smsg
-    type(LIBMUSCLE_Data) :: sdata
+    type(LIBMUSCLE_Data) :: sdata, sitem
 
     real (selected_real_kind(15)) :: t_cur, t_next, t_max, dt, x_max, dx, d
     integer (LIBMUSCLE_size) :: U_size, n_steps, iteration
@@ -49,14 +49,16 @@ program diffusion
             call LIBMUSCLE_DataConstRef_shape(item, shp)
             U_size = shp(1)
             n_steps = shp(2)
+            allocate (Us(shp(1), shp(2)))
             call LIBMUSCLE_DataConstRef_elements(item, Us)
             call LIBMUSCLE_DataConstRef_free(item)
 
-            item = LIBMUSCLE_DataConstRef_get_item(rdata, 1_LIBMUSCLE_size)
+            item = LIBMUSCLE_DataConstRef_get_item(rdata, 2_LIBMUSCLE_size)
             iteration = LIBMUSCLE_DataConstRef_as_int(item)
             call LIBMUSCLE_DataConstRef_free(item)
 
             U = Us(:, iteration)
+            allocate(dU(U_size))
             t_cur = LIBMUSCLE_Message_timestamp(rmsg)
 
             call LIBMUSCLE_DataConstRef_free(rdata)
@@ -111,11 +113,15 @@ program diffusion
             t_cur = t_cur + dt
 
             if (LIBMUSCLE_Instance_should_save_snapshot(instance, t_cur)) then
-                sdata = LIBMUSCLE_Data_create_grid(Us)
+                sdata = LIBMUSCLE_Data_create_nils(2_LIBMUSCLE_size)
+                sitem = LIBMUSCLE_Data_create_grid(Us)
+                call LIBMUSCLE_Data_set_item(sdata, 1_LIBMUSCLE_size, sitem)
+                call LIBMUSCLE_Data_set_item(sdata, 2_LIBMUSCLE_size, iteration)
                 smsg = LIBMUSCLE_Message_create(t_cur, sdata)
                 call LIBMUSCLE_Instance_save_snapshot(instance, smsg)
                 call LIBMUSCLE_Message_free(smsg)
                 call LIBMUSCLE_Data_free(sdata)
+                call LIBMUSCLE_Data_free(sitem)
             end if
         end do
 
@@ -127,11 +133,15 @@ program diffusion
         call LIBMUSCLE_Data_free(sdata)
 
         if (LIBMUSCLE_Instance_should_save_final_snapshot(instance)) then
-            sdata = LIBMUSCLE_Data_create_grid(Us)
+            sdata = LIBMUSCLE_Data_create_nils(2_LIBMUSCLE_size)
+            sitem = LIBMUSCLE_Data_create_grid(Us)
+            call LIBMUSCLE_Data_set_item(sdata, 1_LIBMUSCLE_size, sitem)
+            call LIBMUSCLE_Data_set_item(sdata, 2_LIBMUSCLE_size, iteration)
             smsg = LIBMUSCLE_Message_create(t_cur, sdata)
-            call LIBMUSCLE_Instance_save_final_snapshot(instance, smsg)
+            call LIBMUSCLE_Instance_save_snapshot(instance, smsg)
             call LIBMUSCLE_Message_free(smsg)
             call LIBMUSCLE_Data_free(sdata)
+            call LIBMUSCLE_Data_free(sitem)
         end if
 
         deallocate (U, dU, Us)

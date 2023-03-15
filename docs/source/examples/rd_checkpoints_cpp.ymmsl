@@ -26,8 +26,8 @@ resources:
   micro:
     threads: 1
 
-# Note: below three lines are explicitly mentioned in checkpointing.rst. Do not
-# forget to update that literalinclude when the line numbers change!
+# Developer note: below three lines are explicitly mentioned in checkpointing.rst.
+# Don't forget to update the documentation when changing this file.
 checkpoints:
   simulation_time:
   - every: 2.0e-05

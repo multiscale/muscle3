@@ -27,6 +27,18 @@ std::vector<double> laplacian(std::vector<double> const & Z, double dx) {
 }
 
 
+/** Utility function packing data in a message for snapshotting
+ */
+Message create_state_message(
+        double t_cur, std::vector<std::vector<double>> const & Us)
+{
+    Data data = Data::nils(Us.size());
+    for (std::size_t i = 0; i < data.size(); ++i)
+        data[i] = Data::grid(Us[i].data(), {Us[i].size()});
+    return Message(t_cur, data);
+}
+
+
 /** A simple diffusion model on a 1d grid.
  *
  * The state of this model is a 1D grid of concentrations. It sends out the
@@ -90,11 +102,7 @@ void diffusion(int argc, char * argv[]) {
             t_cur += dt;
 
             if (instance.should_save_snapshot(t_cur)) {
-                Data data = Data::nils(Us.size());
-                for (uint i = 0; i < data.size(); ++i)
-                    data[i] = Data::grid(Us[i].data(), {Us[i].size()});
-                Message msg(t_cur, data);
-                instance.save_snapshot(msg);
+                instance.save_snapshot(create_state_message(t_cur, Us));
             }
         }
 
@@ -105,11 +113,7 @@ void diffusion(int argc, char * argv[]) {
 
 
         if (instance.should_save_final_snapshot()) {
-            Data data = Data::nils(Us.size());
-            for (uint i = 0; i < data.size(); ++i)
-                data[i] = Data::grid(Us[i].data(), {Us[i].size()});
-            Message msg(t_cur, data);
-            instance.save_final_snapshot(msg);
+            instance.save_snapshot(create_state_message(t_cur, Us));
         }
     }
 }

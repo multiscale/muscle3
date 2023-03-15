@@ -76,9 +76,10 @@ void mpi_micro(int argc, char * argv[]) {
 
             if (instance.should_save_snapshot(t_cur)) {
                 // [Optional] collectively gather state
-                if (rank == 0)
+                if (rank == 0) {
                     // Only root can save
                     instance.save_snapshot(Message(t_cur, Data::list(i, t_stop)));
+                }
             }
         }
 
@@ -87,9 +88,10 @@ void mpi_micro(int argc, char * argv[]) {
 
         if (instance.should_save_final_snapshot()) {
             // [Optional] collectively gather state
-            if (rank == 0)
+            if (rank == 0) {
                 // Only root can save
                 instance.save_final_snapshot(Message(t_cur, Data::list(i, t_stop)));
+            }
         }
     }
 }

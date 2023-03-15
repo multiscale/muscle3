@@ -9,8 +9,11 @@
 
 // Note: using POSIX for filesystem calls
 // Could be upgraded to std::filesystem when targeting C++17 or later
-#include <unistd.h>
+#include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
+#include <string.h>
+#include <unistd.h>
 
 #define MAX_FILE_EXISTS_CHECK 10000
 
@@ -43,6 +46,19 @@ SnapshotManager::SnapshotManager(
 
 namespace {
 
+std::string string_error(int err_num) {
+    char err_buf[1024];
+#ifdef _GNU_SOURCE
+    // g++ defines this by default, which uses the gnu extension for strerror_r
+    return strerror_r(err_num, err_buf, 1024);
+#else  // _GNU_SOURCE
+    // POSIX complient strerror_r
+    if (strerror_r(err_num, err_buf, 1024) == 0)
+        return err_buf;
+    return std::to_string(err_num);
+#endif  // _GNU_SOURCE
+}
+
 // Adapted from https://stackoverflow.com/a/2203853
 std::string get_working_path()
 {
@@ -51,10 +67,8 @@ std::string get_working_path()
     if ( getcwd(temp, PATH_MAX) != 0)
         return std::string ( temp );
 
-    int error = errno;
-    std::ostringstream str;
-    str << "Error retrieving current working directory: " << error;
-    throw std::runtime_error(str.str());
+    throw std::runtime_error(
+            "Error retrieving current working directory: " + string_error(errno));
 }
 
 }
@@ -64,7 +78,7 @@ Optional<double> SnapshotManager::prepare_resume(
         Optional<std::string> const & snapshot_directory) {
     Optional<double> result;
 
-    if (snapshot_directory.is_set() && !snapshot_directory.get().empty()) {
+    if (snapshot_directory.is_set()) {
         snapshot_directory_ = snapshot_directory.get();
     } else {
         // store snapshots in current working directory
@@ -108,13 +122,13 @@ Message SnapshotManager::load_snapshot() {
 }
 
 double SnapshotManager::save_snapshot(
-        Optional<Message> message, bool final,
+        Optional<Message> message, bool is_final,
         std::vector<std::string> const & triggers, double wallclock_time,
         Optional<double> f_init_max_timestamp,
         ::ymmsl::Settings settings_overlay) {
     auto port_message_counts = communicator_.get_message_counts();
 
-    if (final) {
+    if (is_final) {
         // Decrease F_INIT port counts by one: F_INIT messages are already
         // pre-received, but not yet processed by the user code. Therefore,
         // the snapshot state should treat these as not-received.
@@ -135,7 +149,7 @@ double SnapshotManager::save_snapshot(
     }
 
     Snapshot snapshot(
-            triggers, wallclock_time, port_message_counts, final, message,
+            triggers, wallclock_time, port_message_counts, is_final, message,
             settings_overlay);
 
     auto path = store_snapshot_(snapshot);
@@ -143,7 +157,7 @@ double SnapshotManager::save_snapshot(
     manager_.submit_snapshot_metadata(metadata);
 
     double timestamp = message.is_set() ? message.get().timestamp() : -INFINITY;
-    if (final && f_init_max_timestamp.is_set()) {
+    if (is_final && f_init_max_timestamp.is_set()) {
         // For final snapshots f_init_max_snapshot is the reference time (see
         // should_save_final_snapshot).
         timestamp = f_init_max_timestamp.get();
@@ -212,7 +226,7 @@ std::string SnapshotManager::store_snapshot_(Snapshot const & snapshot) {
         if (fd < 0) {
             if (errno == EEXIST)
                 continue;  // file already exists: retry next available
-            throw std::runtime_error(strerror(errno));
+            throw std::runtime_error(string_error(errno));
         }
         ::close(fd);
 

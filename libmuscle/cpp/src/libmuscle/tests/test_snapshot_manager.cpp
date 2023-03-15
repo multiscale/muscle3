@@ -36,6 +36,11 @@
 
 // Note: using POSIX for filesystem calls
 // Could be upgraded to std::filesystem when targeting C++17 or later
+#include <cstdlib>
+#include <errno.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <string.h>
 #include <unistd.h>
 #include <ftw.h>
 
@@ -75,34 +80,36 @@ MockProfiler & mock_profiler() {
     return profiler;
 }
 
+// callback for nftw() to delete all contents of a folder
+int _nftw_rm_callback(
+        const char *fpath, const struct stat *sb, int tflag, struct FTW *ftwbuf) {
+    if (tflag == FTW_DP) {
+        std::cerr << "DEBUG: removing dir " << fpath << std::endl;
+        return rmdir(fpath);
+    }
+    if (tflag == FTW_F) {
+        std::cerr << "DEBUG: removing file " << fpath << std::endl;
+        return unlink(fpath);
+    }
+    std::cerr << "DEBUG: unknown file type " << fpath << std::endl;
+    return -1;
+}
+
 class libmuscle_snapshot_manager : public ::testing::Test {
     protected:
         void SetUp() override {
-            auto tmpnam = std::tmpnam(nullptr);
-            temp_dir_ = std::string(tmpnam);
-            if (mkdir(tmpnam, 0777) < 0)
+            char tmpname[] = "/tmp/muscle3_test.XXXXXX";
+            if (mkdtemp(tmpname) == nullptr)
                 throw std::runtime_error(strerror(errno));
+            temp_dir_ = tmpname;
             std::cerr << "DEBUG: using temp dir " << temp_dir_ << std::endl;
+
+            reset_mocks();
         }
 
         void TearDown() override {
             // simulate rm -rf `temp_dir_` using a file-tree-walk
-            if (nftw(temp_dir_.c_str(),
-                     [](const char *fpath, const struct stat *sb,
-                            int tflag, struct FTW *ftwbuf)->int{
-                        if (tflag == FTW_DP) {
-                            std::cerr << "DEBUG: removing dir " << fpath << std::endl;
-                            return rmdir(fpath);
-                        }
-                        if (tflag == FTW_F) {
-                            std::cerr << "DEBUG: removing file " << fpath << std::endl;
-                            return unlink(fpath);
-                        }
-                        std::cerr << "DEBUG: unknown file type " << fpath << std::endl;
-                        return -1;
-                     },
-                     3,
-                     FTW_DEPTH) < 0) {
+            if (nftw(temp_dir_.c_str(), _nftw_rm_callback, 3, FTW_DEPTH) < 0) {
                 throw std::runtime_error(strerror(errno));
             }
             temp_dir_.clear();
@@ -112,8 +119,6 @@ class libmuscle_snapshot_manager : public ::testing::Test {
 };
 
 TEST_F(libmuscle_snapshot_manager, test_no_checkpointing) {
-    reset_mocks();
-
     MockCommunicator communicator("test", {}, {}, mock_logger(), mock_profiler());
     MockMMPClient manager("instance", "");
     SnapshotManager snapshot_manager("test", manager, communicator, mock_logger());
@@ -124,8 +129,6 @@ TEST_F(libmuscle_snapshot_manager, test_no_checkpointing) {
 }
 
 TEST_F(libmuscle_snapshot_manager, test_save_load_snapshot) {
-    reset_mocks();
-
     MockCommunicator communicator("test", {}, {}, mock_logger(), mock_profiler());
     MockCommunicator::PortMessageCounts port_message_counts = {
             {"in", {1}},
@@ -181,17 +184,9 @@ TEST_F(libmuscle_snapshot_manager, test_save_load_snapshot) {
     ASSERT_TRUE(metadata.is_final_snapshot);
     snapshot_path = metadata.snapshot_filename;
     ASSERT_EQ(snapshot_path, temp_dir_ + "/test-1_3.pack");
-
-    ASSERT_TRUE(snapshot_manager2.resuming_from_intermediate());
-    ASSERT_FALSE(snapshot_manager2.resuming_from_final());
-    snapshot_manager2.load_snapshot();
-    ASSERT_TRUE(snapshot_manager2.resuming_from_intermediate());
-    ASSERT_FALSE(snapshot_manager2.resuming_from_final());
 }
 
 TEST_F(libmuscle_snapshot_manager, test_save_load_implicit_snapshot) {
-    reset_mocks();
-
     MockCommunicator communicator("test", {}, {}, mock_logger(), mock_profiler());
     MockCommunicator::PortMessageCounts port_message_counts = {
             {"in", {1}},

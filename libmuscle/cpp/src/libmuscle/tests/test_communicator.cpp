@@ -675,9 +675,7 @@ TEST(libmuscle_communicator, vector_port_message_counts) {
     expected_counts[13] = 1;
     ASSERT_EQ(msg_counts["out"], expected_counts);
 
-    int i = 0;
-    for (int& count : expected_counts)
-        count = i++;
+    std::iota(expected_counts.begin(), expected_counts.end(), 0);
     // expected_counts = {0, 1, ..., 19}
     comm->restore_message_counts({
             {"out", expected_counts},

@@ -150,7 +150,7 @@ class APIGuard {
         bool uses_checkpointing_;
         bool is_root_;
 
-        void generic_error_messages_(std::string verify_phase);
+        void generic_error_messages_(std::string const & verify_phase);
 };
 
 } }

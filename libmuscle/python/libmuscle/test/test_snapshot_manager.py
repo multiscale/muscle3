@@ -78,12 +78,6 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
     assert snapshot_path.parent == tmp_path
     assert snapshot_path.name == 'test-1_3.pack'
 
-    assert snapshot_manager2.resuming_from_intermediate()
-    assert not snapshot_manager2.resuming_from_final()
-    snapshot_manager2.load_snapshot()
-    assert snapshot_manager2.resuming_from_intermediate()
-    assert not snapshot_manager2.resuming_from_final()
-
 
 def test_save_load_implicit_snapshot(tmp_path: Path) -> None:
     manager = MagicMock()

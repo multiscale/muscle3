@@ -21,7 +21,7 @@ Optional<double> AtCheckpointTrigger::previous_checkpoint(double cur_time) {
     if (cur_time < at_.front())
         return {};  // no future checkpoint left
     auto iter = std::upper_bound(at_.begin(), at_.end(), cur_time);
-    return *(iter - 1);
+    return *std::prev(iter);
 }
 
 namespace {
@@ -89,9 +89,9 @@ CombinedCheckpointTriggers::CombinedCheckpointTriggers(
         : triggers_() {
     std::vector<double> at;
     for (std::size_t i=0; i<encoded_checkpoint_rules.size(); ++i) {
-        auto rule = encoded_checkpoint_rules[i];
+        auto const & rule = encoded_checkpoint_rules[i];
         if (rule.size() == 1 && rule.key(0) == "at") {
-            auto at_list = rule["at"];
+            auto const & at_list = rule["at"];
             for (std::size_t j=0; j<at_list.size(); ++j) {
                 auto value = at_list[j];
                 if (value.is_a<double>())
@@ -142,37 +142,37 @@ bool CombinedCheckpointTriggers::has_rules() const {
 TriggerManager::TriggerManager()
         : has_checkpoints_(false)
         , last_triggers_()
-        , cpts_considered_until_(-INFINITY)
+        , cpts_considered_until_(-std::numeric_limits<double>::infinity())
         , simulation_epoch_()
         , checkpoint_at_end_(false)
-        , wall_()
+        , wall_(Data::list())
         , prevwall_(0)
         , nextwall_(0)
-        , sim_()
+        , sim_(Data::list())
         , prevsim_()
         , nextsim_()
 {}
 
 void TriggerManager::set_checkpoint_info(
         double elapsed, DataConstRef const & encoded_checkpoints) {
-    auto elapsed_as_duration = \
+    auto elapsed_as_duration =
         std::chrono::duration_cast<std::chrono::steady_clock::duration>(
             std::chrono::duration<double>(elapsed));
     simulation_epoch_ = std::chrono::steady_clock::now() - elapsed_as_duration;
 
     checkpoint_at_end_ = encoded_checkpoints["at_end"].as<bool>();
 
-    wall_ = std::make_unique<CombinedCheckpointTriggers>(
+    wall_ = CombinedCheckpointTriggers(
             encoded_checkpoints["wallclock_time"]);
     prevwall_ = 0.0;
-    nextwall_ = wall_->next_checkpoint(0.0);
+    nextwall_ = wall_.next_checkpoint(0.0);
 
-    sim_ = std::make_unique<CombinedCheckpointTriggers>(
+    sim_ = CombinedCheckpointTriggers(
             encoded_checkpoints["simulation_time"]);
     prevsim_ = {};
     nextsim_ = {};
 
-    has_checkpoints_ = checkpoint_at_end_ || wall_->has_rules() || sim_->has_rules();
+    has_checkpoints_ = checkpoint_at_end_ || wall_.has_rules() || sim_.has_rules();
 }
 
 double TriggerManager::elapsed_walltime() {
@@ -223,10 +223,10 @@ bool TriggerManager::should_save_final_snapshot(
 
 void TriggerManager::update_checkpoints(double timestamp) {
     prevwall_ = elapsed_walltime();
-    nextwall_ = wall_->next_checkpoint(prevwall_);
+    nextwall_ = wall_.next_checkpoint(prevwall_);
 
     prevsim_ = timestamp;
-    nextsim_ = sim_->next_checkpoint(timestamp);
+    nextsim_ = sim_.next_checkpoint(timestamp);
 }
 
 std::vector<std::string> TriggerManager::get_triggers() {
@@ -240,13 +240,13 @@ bool TriggerManager::should_save_(double simulation_time) {
         // we cannot make assumptions about the start time of a simulation,
         // a t=-1000 could make sense if t represents years since CE
         // and we should not disallow checkpointing for negative t
-        auto previous = sim_->previous_checkpoint(simulation_time);
+        auto previous = sim_.previous_checkpoint(simulation_time);
         if (previous.is_set()) {
             // there is a checkpoint rule before the current moment, assume
             // we should have taken a snapshot back then
             nextsim_ = previous;
         } else {
-            nextsim_ = sim_->next_checkpoint(simulation_time);
+            nextsim_ = sim_.next_checkpoint(simulation_time);
         }
     }
 

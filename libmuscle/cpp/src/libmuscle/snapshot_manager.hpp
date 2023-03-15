@@ -80,7 +80,7 @@ class SnapshotManager {
          * @return double Simulation time at which the snapshot was made.
          */
         double save_snapshot(
-                Optional<Message> message, bool final,
+                Optional<Message> message, bool is_final,
                 std::vector<std::string> const & triggers, double wallclock_time,
                 Optional<double> f_init_max_timestamp,
                 ::ymmsl::Settings settings_overlay);

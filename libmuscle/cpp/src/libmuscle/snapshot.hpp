@@ -21,12 +21,12 @@ class Snapshot {
         };
 
         Snapshot(
-                std::vector<std::string> triggers,
+                std::vector<std::string> const & triggers,
                 double wallclock_time,
-                std::unordered_map<std::string, std::vector<int>> port_message_counts,
+                std::unordered_map<std::string, std::vector<int>> const & port_message_counts,
                 bool is_final_snapshot,
-                Optional<Message> message,
-                ::ymmsl::Settings settings_overlay);
+                Optional<Message> const & message,
+                ::ymmsl::Settings const & settings_overlay);
 
         /** Create a snapshot object from binary data.
          *

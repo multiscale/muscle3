@@ -473,7 +473,7 @@ void Instance::Impl::setup_checkpointing_() {
         std::string msg(
                 "The workflow has requested checkpoints, but this instance"
                 " does not support checkpointing. Please consult the"
-                " MUSCLE3 checkpointing documentation how to add"
+                " MUSCLE3 checkpointing documentation on how to add"
                 " checkpointing support.");
         logger_->critical(msg);
         shutdown_();

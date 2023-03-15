@@ -43,7 +43,7 @@ class AtCheckpointTrigger : public CheckpointTrigger {
          *
          * @param at List of checkpoint moments
          */
-        AtCheckpointTrigger(std::vector<double> & at);
+        explicit AtCheckpointTrigger(std::vector<double> & at);
 
         Optional<double> next_checkpoint(double cur_time) override;
         Optional<double> previous_checkpoint(double cur_time) override;
@@ -72,7 +72,7 @@ class RangeCheckpointTrigger : public CheckpointTrigger {
          * @param encoded_range_rules YMMSL CheckpointRangeRule encoded in a
          *      DataConstRef.
          */
-        RangeCheckpointTrigger(DataConstRef const & encoded_range_rule);
+        explicit RangeCheckpointTrigger(DataConstRef const & encoded_range_rule);
 
         Optional<double> next_checkpoint(double cur_time) override;
         Optional<double> previous_checkpoint(double cur_time) override;
@@ -156,10 +156,10 @@ class TriggerManager {
         double cpts_considered_until_;
         std::chrono::time_point<std::chrono::steady_clock> simulation_epoch_;
         bool checkpoint_at_end_;
-        std::unique_ptr<CombinedCheckpointTriggers> wall_;
+        CombinedCheckpointTriggers wall_;
         double prevwall_;
         Optional<double> nextwall_;
-        std::unique_ptr<CombinedCheckpointTriggers> sim_;
+        CombinedCheckpointTriggers sim_;
         Optional<double> prevsim_;
         Optional<double> nextsim_;
 

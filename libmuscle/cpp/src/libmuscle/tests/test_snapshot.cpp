@@ -76,15 +76,15 @@ TEST(libmuscle_snapshot, test_snapshot_metadata) {
 
 TEST(libmuscle_snapshot, test_message_with_settings) {
     ::ymmsl::Settings settings;
-    settings["settings"] = true;
+    settings["b"] = true;
     Message message(1.0, 2.0, "test_data", settings);
     Snapshot snapshot ({}, 0, {}, false, message, {});
-    ASSERT_TRUE(snapshot.message.get().settings().at("settings").as<bool>());
+    ASSERT_TRUE(snapshot.message.get().settings().at("b").as<bool>());
 
     auto binary_snapshot = snapshot.to_bytes();
     Snapshot snapshot2 = Snapshot::from_bytes(binary_snapshot);
 
-    ASSERT_TRUE(snapshot2.message.get().settings().at("settings").as<bool>());
+    ASSERT_TRUE(snapshot2.message.get().settings().at("b").as<bool>());
 }
 
 TEST(libmuscle_snapshot, test_implicit_snapshot) {

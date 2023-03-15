@@ -11,12 +11,12 @@
 namespace libmuscle { namespace impl {
 
 Snapshot::Snapshot(
-            std::vector<std::string> triggers,
+            std::vector<std::string> const & triggers,
             double wallclock_time,
-            std::unordered_map<std::string, std::vector<int>> port_message_counts,
+            std::unordered_map<std::string, std::vector<int>> const & port_message_counts,
             bool is_final_snapshot,
-            Optional<Message> message,
-            ::ymmsl::Settings settings_overlay
+            Optional<Message> const & message,
+            ::ymmsl::Settings const & settings_overlay
             )
         : triggers(triggers)
         , wallclock_time(wallclock_time)
@@ -147,7 +147,7 @@ SnapshotMetadata::SnapshotMetadata(
 
 SnapshotMetadata SnapshotMetadata::from_snapshot(
         Snapshot const & snapshot, std::string const & snapshot_filename) {
-    double timestamp = NAN;
+    double timestamp = std::numeric_limits<double>::quiet_NaN();
     Optional<double> next_timestamp;
     if (snapshot.message.is_set()) {
         timestamp = snapshot.message.get().timestamp();

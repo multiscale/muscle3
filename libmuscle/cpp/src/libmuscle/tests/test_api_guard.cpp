@@ -105,7 +105,7 @@ TEST(libmuscle_api_guard, test_full_checkpointing) {
     guard.reuse_instance_done(false);
 }
 
-TEST(libmsucle_api_guard, test_non_root) {
+TEST(libmuscle_api_guard, test_non_root) {
     auto guard = APIGuard(true, false);
     guard.verify_reuse_instance();
     guard.reuse_instance_done(true);

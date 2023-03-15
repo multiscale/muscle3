@@ -137,7 +137,7 @@ void APIGuard::save_final_snapshot_done() {
     phase_ = APIPhase::BEFORE_REUSE_INSTANCE;
 }
 
-void APIGuard::generic_error_messages_(std::string verify_phase) {
+void APIGuard::generic_error_messages_(std::string const & verify_phase) {
     std::ostringstream oss;
     switch (phase_) {
         case APIPhase::BEFORE_FIRST_REUSE_INSTANCE:

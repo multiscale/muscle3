@@ -557,8 +557,8 @@ class Instance:
         provided timestamp and passed wallclock time.
 
         When this method returns True, the submodel must also save a snapshot
-        through :meth:`save_snapshot`. A RuntimeError will be generated when not
-        doing so.
+        through :meth:`save_snapshot`. A RuntimeError will be generated if this
+        is not done.
 
         See also :meth:`should_save_final_snapshot` for the variant that must be
         called at the end of the reuse loop.
@@ -602,18 +602,20 @@ class Instance:
     def should_save_final_snapshot(self) -> bool:
         """Check if a snapshot should be saved at the end of the reuse loop.
 
-        This method checks if a snapshot should be saved now.
+        This method checks if a snapshot should be saved at the end of the reuse
+        loop. All your communication on O_F ports must be finished before calling
+        this method, otherwise your simulation may deadlock.
 
         When this method returns True, the submodel must also save a snapshot
         through :meth:`save_final_snapshot`. A :class:`RuntimeError` will be
-        generated when not doing so.
+        generated if this is not done.
 
         See also :meth:`should_save_snapshot` for the variant that may be called
         inside of a time-integration loop of the submodel.
 
         .. note::
             This method will block until it can determine whether a final
-            snapshot should be taken. This means it must also determine if this
+            snapshot should be taken, because it must determine if this
             instance is reused.
 
         Returns:

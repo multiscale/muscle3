@@ -2121,12 +2121,12 @@ LIBMUSCLE_Instance
     Check if this instance is resuming from a snapshot.
 
     Must be used by submodels that implement the checkpointing API. You'll
-    get a RuntimeError when not calling this method in an iteration of the
+    get a RuntimeError if you don't call this method in an iteration of the
     reuse loop.
 
     This method returns True for the first iteration of the reuse loop after
     resuming from a previously taken snapshot. When resuming from a
-    snapshot, the submodel must load its state from the snapshot as returned
+    snapshot, the submodel must load its state from the snapshot returned by
     :f:func:`LIBMUSCLE_Instance_load_snapshot`.
 
     MPI-based components must call this function in all processes
@@ -2172,11 +2172,11 @@ LIBMUSCLE_Instance
     Check if a snapshot should be saved after the S Operator of the submodel.
 
     This method checks if a snapshot should be saved right now, based on the
-    provided timestamp and passed wallclock time.
+    provided timestamp and elapsed wallclock time.
 
-    When this method returns true, the submodel must also save a snapshot
-    through Instance::save_snapshot. A std::runtime_error will be generated when
-    not doing so.
+    If this method returns true, then the submodel must also save a snapshot
+    through Instance::save_snapshot. A runtime error will be generated if
+    this is not done.
 
     See also :f:func:`LIBMUSCLE_Instance_should_save_final_snapshot` for the
     variant that must be called at the end of the reuse loop.
@@ -2214,11 +2214,13 @@ LIBMUSCLE_Instance
 
     Check if a snapshot should be saved at the end of the reuse loop.
 
-    This method checks if a snapshot should be saved now.
+    This method checks if a snapshot should be saved at the end of the reuse
+    loop. All your communication on O_F ports must be finished before calling
+    this method, otherwise your simulation may deadlock.
 
     When this method returns true, the submodel must also save a snapshot
     through :f:func:`LIBMUSCLE_Instance_save_final_snapshot`. An error will be
-    generated when not doing so.
+    generated if this is not done.
 
     See also :f:func:`LIBMUSCLE_Instance_should_save_snapshot` for the variant
     that may be called inside of a time-integration loop of the submodel.
@@ -2229,7 +2231,7 @@ LIBMUSCLE_Instance
     .. note::
 
         This method will block until it can determine whether a final
-        snapshot should be taken. This means it must also determine if this
+        snapshot should be taken, because it must determine if this
         instance is reused.
 
     :r should_save_final_snapshot: ``.true.`` iff a final snapshot should be taken

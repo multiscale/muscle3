@@ -31,13 +31,7 @@ Optional<double> parse_optional_double(
     auto value = map[key];
     if (value.is_nil())
         return {};
-    if (value.is_a<int64_t>())
-        return value.as<int64_t>();
-    if (value.is_a<double>())
-        return value.as<double>();
-    // python code should only send doubles or integers, so not checking for floats
-    throw std::runtime_error(
-            "Invalid type of item " + key + ", was expecting integer or double.");
+    return value.as<double>();
 }
 
 }

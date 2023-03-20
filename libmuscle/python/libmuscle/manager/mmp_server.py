@@ -6,7 +6,7 @@ from typing import Any, Dict, cast, List, Optional
 import msgpack
 from ymmsl import (
         Conduit, Identifier, Operator, Port, Reference, PartialConfiguration,
-        Checkpoints)
+        Checkpoints, CheckpointRule, CheckpointAtRule, CheckpointRangeRule)
 
 import libmuscle
 from libmuscle.logging import LogLevel
@@ -44,12 +44,26 @@ def encode_conduit(conduit: Conduit) -> List[str]:
     return [str(conduit.sender), str(conduit.receiver)]
 
 
+def encode_checkpoint_rule(rule: CheckpointRule) -> Dict[str, Any]:
+    """Convert a CheckpointRule to a MsgPack-compatible value."""
+    if isinstance(rule, CheckpointAtRule):
+        return {'at': list(map(float, rule.at))}
+    if isinstance(rule, CheckpointRangeRule):
+        return {
+            'start': None if rule.start is None else float(rule.start),
+            'stop': None if rule.stop is None else float(rule.stop),
+            'every': float(rule.every)}
+    raise TypeError(f"Unknown checkpoint rule type: {type(rule)}.")
+
+
 def encode_checkpoints(checkpoints: Checkpoints) -> Dict[str, Any]:
     """Convert a Checkpoins to a MsgPack-compatible value."""
     return {
         "at_end": checkpoints.at_end,
-        "wallclock_time": [vars(rule) for rule in checkpoints.wallclock_time],
-        "simulation_time": [vars(rule) for rule in checkpoints.simulation_time]
+        "wallclock_time":
+            list(map(encode_checkpoint_rule, checkpoints.wallclock_time)),
+        "simulation_time":
+            list(map(encode_checkpoint_rule, checkpoints.simulation_time)),
     }
 
 

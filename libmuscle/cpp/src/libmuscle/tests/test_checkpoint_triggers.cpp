@@ -46,7 +46,7 @@ TEST(libmuscle_checkpoint_triggers, test_at_checkpoint_trigger) {
 }
 
 TEST(libmuscle_checkpoint_triggers, test_range_checkpoint_trigger) {
-    auto range = Data::dict("start", 0, "stop", 20, "every", 1.2);
+    auto range = Data::dict("start", 0.0, "stop", 20.0, "every", 1.2);
     RangeCheckpointTrigger trigger(range);
 
     ASSERT_DOUBLE_EQ(trigger.next_checkpoint(-1).get(), 0);
@@ -66,7 +66,7 @@ TEST(libmuscle_checkpoint_triggers, test_range_checkpoint_trigger) {
 }
 
 TEST(libmuscle_checkpoint_triggers, test_range_checkpoint_trigger_default_stop) {
-    auto range = Data::dict("start", 1, "stop", Data(), "every", 1.2);
+    auto range = Data::dict("start", 1.0, "stop", Data(), "every", 1.2);
     RangeCheckpointTrigger trigger(range);
 
     ASSERT_DOUBLE_EQ(trigger.next_checkpoint(-1.).get(), 1);
@@ -80,7 +80,7 @@ TEST(libmuscle_checkpoint_triggers, test_range_checkpoint_trigger_default_stop) 
 }
 
 TEST(libmuscle_checkpoint_triggers, test_range_checkpoint_trigger_default_start) {
-    auto range = Data::dict("start", Data(), "stop", 10, "every", 1.2);
+    auto range = Data::dict("start", Data(), "stop", 10.0, "every", 1.2);
     RangeCheckpointTrigger trigger(range);
 
     ASSERT_FALSE(trigger.next_checkpoint(10).is_set());
@@ -95,8 +95,8 @@ TEST(libmuscle_checkpoint_triggers, test_range_checkpoint_trigger_default_start)
 
 TEST(libmuscle_checkpoint_triggers, test_combined_checkpoint_trigger_every_at) {
     auto rules = Data::list(
-        Data::dict("start", Data(), "stop", Data(), "every", 10),
-        Data::dict("at", Data::list(3, 7, 13, 17)));
+        Data::dict("start", Data(), "stop", Data(), "every", 10.0),
+        Data::dict("at", Data::list(3.0, 7.0, 13.0, 17.0)));
     CombinedCheckpointTriggers trigger(rules);
 
     ASSERT_DOUBLE_EQ(trigger.next_checkpoint(-11.).get(), -10);
@@ -117,9 +117,9 @@ TEST(libmuscle_checkpoint_triggers, test_combined_checkpoint_trigger_every_at) {
 
 TEST(libmuscle_checkpoint_triggers, test_combined_checkpoint_trigger_at_ranges) {
     auto rules = Data::list(
-        Data::dict("at", Data::list(3, 7, 13, 17)),
-        Data::dict("start", 0, "stop", 20, "every", 5),
-        Data::dict("start", 20, "stop", 100, "every", 20));
+        Data::dict("at", Data::list(3.0, 7.0, 13.0, 17.0)),
+        Data::dict("start", 0.0, "stop", 20.0, "every", 5.0),
+        Data::dict("start", 20.0, "stop", 100.0, "every", 20.0));
     CombinedCheckpointTriggers trigger(rules);
 
     ASSERT_DOUBLE_EQ(trigger.next_checkpoint(-11.).get(), 0);
@@ -173,7 +173,7 @@ TEST(libmuscle_checkpoint_triggers, test_trigger_manager) {
     auto encoded_checkpoints = Data::dict(
         "at_end", true,
         "wallclock_time", Data::list(Data::dict("at", Data::list(1e-12))),
-        "simulation_time", Data::list(Data::dict("at", Data::list(1, 3, 5))));
+        "simulation_time", Data::list(Data::dict("at", Data::list(1.0, 3.0, 5.0))));
     trigger_manager.set_checkpoint_info(ref_elapsed, encoded_checkpoints);
 
     ASSERT_TRUE(trigger_manager.should_save_snapshot(0.1));

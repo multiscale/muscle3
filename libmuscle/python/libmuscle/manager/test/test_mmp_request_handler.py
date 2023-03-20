@@ -153,7 +153,11 @@ def test_get_checkpoint_info(mmp_configuration, mmp_request_handler):
     wallclock_time = checkpoints['wallclock_time']
     assert len(wallclock_time) == 2
     assert wallclock_time[0] == {'start': None, 'stop': None, 'every': 10}
+    assert all(isinstance(obj, (type(None), float))
+               for obj in wallclock_time[0].values())
     assert wallclock_time[1] == {'at': [1, 2, 3.0]}
+    assert all(isinstance(obj, (type(None), float))
+               for obj in wallclock_time[1]['at'])
 
     assert resume is not None
     assert Path(resume) == resume_path

@@ -20,6 +20,10 @@ skip_if_python_only = pytest.mark.skipif(
         'MUSCLE_TEST_PYTHON_ONLY' in os.environ,
         reason='Python-only tests requested')
 
+skip_if_no_mpi_cpp = pytest.mark.skipif(
+        'MUSCLE_ENABLE_CPP_MPI' not in os.environ,
+        reason='MPI support was not detected')
+
 
 @pytest.fixture
 def yatiml_log_warning():
@@ -50,10 +54,12 @@ def make_server_process(ymmsl_doc, tmpdir):
     process.start()
     control_pipe[1].close()
     # wait for start
-    yield control_pipe[0].recv()
-    control_pipe[0].send(True)
-    control_pipe[0].close()
-    process.join()
+    try:
+        yield control_pipe[0].recv()
+    finally:
+        control_pipe[0].send(True)
+        control_pipe[0].close()
+        process.join()
 
 
 def _python_wrapper(instance_name, muscle_manager, callable):
@@ -62,27 +68,37 @@ def _python_wrapper(instance_name, muscle_manager, callable):
     callable()
 
 
-def run_manager_with_actors(
-        ymmsl_text, tmpdir,
-        cpp_actors={}, fortran_actors={}, python_actors={}):
+def run_manager_with_actors(ymmsl_text, tmpdir, actors):
     """Start muscle_manager along with C++ and python actors.
 
-    C++ actors are a dict of instance->executable_path. Executable paths are
-    assumed to be relative to ../libmuscle/cpp/build/. LD_LIBRARY_PATH is
-    automatically updated to include the msgpack library path.
+    Args:
+        actors: a dictionary of lists containing details for each actor:
+            ``{"instance_name": ("language", "details", ...)}``.
 
-    Fortran actors are a dict of instance->executable_path. Executable paths are
-    assumed to be relative to ../libmuscle/fortran/build/. LD_LIBRARY_PATH is
-    automatically updated to include the msgpack library path.
+            Language can be ``"python"``, ``"cpp"``, ``"mpi_cpp"`` or ``"fortran"``.
+            Details differ per language.
 
-    Python actors are a dict of instance->callable, where the callable
-    implements the python actor.
+            For python actors, details is a single callable which is executed
+            in a ``multiprocessing.Process``.
+
+            For cpp actors, details is an executable path with optional arguments.
+            The executable paths are assumed to be relative to
+            ``../libmuscle/cpp/build/libmuscle/tests``.
+
+            For mpi cpp actors, details is an executable path (see cpp), then number of
+            processes and optionally arguments passed to the executable.
+
+            For fortran actors, details is an executable path. Executable paths are
+            assumed to be relative to ``../libmuscle/fortran/build/libmuscle/tests``.
+
+            For both cpp and Fortran actors, LD_LIBRARY_PATH is automatically updated
+            to include the msgpack library path.
     """
     env = os.environ.copy()
     ymmsl_doc = ymmsl.load(ymmsl_text)
     libmuscle_dir = Path(__file__).parents[1] / 'libmuscle'
-    cpp_build_dir = libmuscle_dir / 'cpp' / 'build'
-    fortran_build_dir = libmuscle_dir / 'fortran' / 'build'
+    cpp_build_dir = libmuscle_dir / 'cpp' / 'build' / 'libmuscle' / 'tests'
+    fortran_build_dir = libmuscle_dir / 'fortran' / 'build' / 'libmuscle' / 'tests'
 
     with ExitStack() as stack:
         # start muscle_manager and extract manager location
@@ -96,28 +112,38 @@ def run_manager_with_actors(
             env['LD_LIBRARY_PATH'] = ':'.join(map(str, lib_paths))
 
         native_processes = []
-        # start native actors
-        for actors, build_dir in ((cpp_actors, cpp_build_dir),
-                                  (fortran_actors, fortran_build_dir)):
-            for instance_name, executable_path in actors.items():
-                executable = build_dir / executable_path
-                f_out = stack.enter_context(
-                        (tmpdir / f'{instance_name}_stdout.txt').open('w'))
-                f_err = stack.enter_context(
-                        (tmpdir / f'{instance_name}_stderr.txt').open('w'))
-                native_processes.append(subprocess.Popen(
-                        [str(executable), f'--muscle-instance={instance_name}'],
-                        env=env, stdout=f_out, stderr=f_err))
-
-        # start python actors
         python_processes = []
-        for instance_name, callable in python_actors.items():
-            proc = mp.Process(
-                    target=_python_wrapper,
-                    args=(instance_name, env['MUSCLE_MANAGER'], callable),
-                    name=instance_name)
-            proc.start()
-            python_processes.append(proc)
+        # start actors
+        for instance_name, (language, actor, *args) in actors.items():
+            if language == "python":
+                # start python actor
+                proc = mp.Process(
+                        target=_python_wrapper,
+                        args=(instance_name, env['MUSCLE_MANAGER'], actor),
+                        name=instance_name)
+                proc.start()
+                python_processes.append(proc)
+                continue
+            elif language == "cpp":
+                executable = cpp_build_dir / actor
+            elif language == "mpicpp":
+                assert len(args) > 0, "must provide at least number of mpi instances"
+                executable = 'mpirun'
+                out_file = tmpdir / f'mpi_{instance_name}.log'
+                args = ('-np', args[0], mpirun_outfile_arg(), str(out_file),
+                        str(cpp_build_dir / actor), *args[1:])
+            elif language == "fortran":
+                executable = fortran_build_dir / actor
+            else:
+                raise ValueError(f"Unknown language: {language}")
+            # start native code actor
+            f_out = stack.enter_context(
+                    (tmpdir / f'{instance_name}_stdout.txt').open('w'))
+            f_err = stack.enter_context(
+                    (tmpdir / f'{instance_name}_stderr.txt').open('w'))
+            native_processes.append(subprocess.Popen(
+                    [str(executable), *args, f'--muscle-instance={instance_name}'],
+                    env=env, stdout=f_out, stderr=f_err))
 
         # check results
         for proc in native_processes:
@@ -212,7 +238,6 @@ def log_file_in_tmpdir(tmpdir):
     os.chdir(old_workdir)
 
 
-@pytest.fixture
 def mpi_is_intel():
     if 'MUSCLE_ENABLE_CPP_MPI' not in os.environ:
         return None
@@ -222,17 +247,16 @@ def mpi_is_intel():
     return 'Intel' in result.stdout.decode('utf-8')
 
 
-@pytest.fixture
-def mpirun_outfile_arg(mpi_is_intel):
-    if mpi_is_intel:
+def mpirun_outfile_arg():
+    if mpi_is_intel():
         return '-outfile-pattern'
     else:
         return '--output-filename'
 
 
 @pytest.fixture
-def mpi_exec_model(mpi_is_intel):
-    if mpi_is_intel:
+def mpi_exec_model():
+    if mpi_is_intel():
         return 'intelmpi'
     else:
         return 'openmpi'

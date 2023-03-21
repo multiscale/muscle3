@@ -27,6 +27,12 @@ void MockMMPClient::submit_profile_events(std::vector<ProfileEvent> const & even
     last_submitted_profile_events = event;
 }
 
+void MockMMPClient::submit_snapshot_metadata(
+        SnapshotMetadata const & snapshot_metadata)
+{
+    last_submitted_snapshot_metadata = snapshot_metadata;
+}
+
 void MockMMPClient::register_instance(
         std::vector<std::string> const & locations,
         std::vector<::ymmsl::Port> const & ports)
@@ -40,6 +46,25 @@ ymmsl::Settings MockMMPClient::get_settings() {
     settings["test_int"] = 10;
     settings["test_string"] = "testing";
     return settings;
+}
+
+auto MockMMPClient::get_checkpoint_info() ->
+            std::tuple<
+                double,
+                DataConstRef,
+                Optional<std::string>,
+                Optional<std::string>
+            >
+{
+    return {
+            0.1,
+            // no checkpoints defined:
+            Data::dict(
+                    "at_end", false,
+                    "wallclock_time", Data::list(),
+                    "simulation_time", Data::list()),
+            {},
+            {}};
 }
 
 auto MockMMPClient::request_peers() ->
@@ -89,6 +114,8 @@ LogMessage MockMMPClient::last_submitted_log_message(
         "", Timestamp(-1.0), LogLevel::DEBUG, "");
 
 std::vector<ProfileEvent> MockMMPClient::last_submitted_profile_events;
+
+Optional<SnapshotMetadata> MockMMPClient::last_submitted_snapshot_metadata;
 
 } }
 

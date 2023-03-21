@@ -8,7 +8,7 @@ from libmuscle.checkpoint_triggers import (
 
 
 def test_at_checkpoint_trigger():
-    trigger = AtCheckpointTrigger([CheckpointAtRule([1, 3, 4, 4.5, 9])])
+    trigger = AtCheckpointTrigger([CheckpointAtRule([1.0, 3.0, 4.0, 4.5, 9.0])])
 
     assert trigger.next_checkpoint(0) == 1
     assert trigger.previous_checkpoint(0) is None
@@ -37,7 +37,7 @@ def test_at_checkpoint_trigger():
 
 
 def test_range_checkpoint_trigger():
-    range = CheckpointRangeRule(start=0, stop=20, every=1.2)
+    range = CheckpointRangeRule(start=0.0, stop=20.0, every=1.2)
     trigger = RangeCheckpointTrigger(range)
 
     assert trigger.next_checkpoint(-1) == 0
@@ -57,7 +57,7 @@ def test_range_checkpoint_trigger():
 
 
 def test_range_checkpoint_trigger_default_stop():
-    range = CheckpointRangeRule(start=1, every=1.2)
+    range = CheckpointRangeRule(start=1.0, every=1.2)
     trigger = RangeCheckpointTrigger(range)
 
     assert trigger.next_checkpoint(-1.) == 1
@@ -71,7 +71,7 @@ def test_range_checkpoint_trigger_default_stop():
 
 
 def test_range_checkpoint_trigger_default_start():
-    range = CheckpointRangeRule(every=1.2, stop=10)
+    range = CheckpointRangeRule(every=1.2, stop=10.0)
     trigger = RangeCheckpointTrigger(range)
 
     assert trigger.next_checkpoint(10) is None
@@ -85,7 +85,7 @@ def test_range_checkpoint_trigger_default_start():
 
 
 def test_combined_checkpoint_trigger_every_at():
-    rules = [CheckpointRangeRule(every=10), CheckpointAtRule([3, 7, 13, 17])]
+    rules = [CheckpointRangeRule(every=10.0), CheckpointAtRule([3.0, 7.0, 13.0, 17.0])]
     trigger = CombinedCheckpointTriggers(rules)
 
     assert trigger.next_checkpoint(-11.) == pytest.approx(-10)
@@ -105,9 +105,9 @@ def test_combined_checkpoint_trigger_every_at():
 
 
 def test_combined_checkpoint_trigger_at_ranges():
-    rules = [CheckpointAtRule([3, 7, 13, 17]),
-             CheckpointRangeRule(start=0, every=5, stop=20),
-             CheckpointRangeRule(start=20, every=20, stop=100)]
+    rules = [CheckpointAtRule([3.0, 7.0, 13.0, 17.0]),
+             CheckpointRangeRule(start=0.0, every=5.0, stop=20.0),
+             CheckpointRangeRule(start=20.0, every=20.0, stop=100.0)]
     trigger = CombinedCheckpointTriggers(rules)
 
     assert trigger.next_checkpoint(-11.) == pytest.approx(0)
@@ -142,7 +142,7 @@ def test_trigger_manager_reference_time():
     trigger_manager.set_checkpoint_info(ref_elapsed, Checkpoints(at_end=True))
     elapsed_walltime = trigger_manager.elapsed_walltime()
     duration = time.monotonic() - monotonic_start
-    assert ref_elapsed < elapsed_walltime <= (ref_elapsed + duration)
+    assert ref_elapsed < elapsed_walltime < (ref_elapsed + duration)
 
 
 def test_trigger_manager():
@@ -151,7 +151,7 @@ def test_trigger_manager():
     trigger_manager.set_checkpoint_info(ref_elapsed, Checkpoints(
             at_end=True,
             wallclock_time=[CheckpointAtRule([1e-12])],
-            simulation_time=[CheckpointAtRule([1, 3, 5])]))
+            simulation_time=[CheckpointAtRule([1.0, 3.0, 5.0])]))
 
     assert trigger_manager.should_save_snapshot(0.1)
     triggers = trigger_manager.get_triggers()

@@ -1,0 +1,33 @@
+ymmsl_version: v0.1
+
+model:
+  name: checkpointing_reaction_diffusion_cpp
+
+  components:
+    macro:
+      implementation: checkpointing_diffusion_cpp
+      ports:
+        o_i: state_out
+        s: state_in
+
+    micro:
+      implementation: checkpointing_reaction_cpp
+      ports:
+        f_init: initial_state
+        o_f: final_state
+
+  conduits:
+    macro.state_out: micro.initial_state
+    micro.final_state: macro.state_in
+
+resources:
+  macro:
+    threads: 1
+  micro:
+    threads: 1
+
+# Developer note: below three lines are explicitly mentioned in checkpointing.rst.
+# Don't forget to update the documentation when changing this file.
+checkpoints:
+  simulation_time:
+  - every: 2.0e-05

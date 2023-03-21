@@ -5,7 +5,8 @@ from libmuscle import (
         Instance, Message, KEEPS_NO_STATE_FOR_NEXT_USE, USES_CHECKPOINT_API)
 from libmuscle.manager.run_dir import RunDir
 
-from .conftest import run_manager_with_actors, ls_snapshots
+from .conftest import (
+        run_manager_with_actors, ls_snapshots, skip_if_python_only, skip_if_no_mpi_cpp)
 
 
 _LOG_LEVEL = 'INFO'  # set to DEBUG for additional debug info
@@ -197,11 +198,23 @@ model:
     return base_config
 
 
-def test_snapshot_macro_micro(tmp_path, base_config):
-    actors = {'macro': macro, 'micro': micro}
+@pytest.mark.parametrize('actors', [
+    {'macro': ('python', macro), 'micro': ('python', micro)},
+    pytest.param(
+        {'macro': ('cpp', 'snapshot_components_test', 'macro'),
+         'micro': ('cpp', 'snapshot_components_test', 'micro')},
+        marks=skip_if_python_only),
+    pytest.param(
+        {'macro': ('fortran', 'fortran_snapshot_macro_test'),
+         'micro': ('fortran', 'fortran_snapshot_micro_test')},
+        marks=skip_if_python_only),
+    pytest.param(
+        {'macro': ('python', macro), 'micro': ('cpp', 'mpi_snapshot_micro_test', '2')},
+        marks=[skip_if_python_only, skip_if_no_mpi_cpp])
+])
+def test_snapshot_macro_micro(tmp_path, base_config, actors):
     run_dir1 = RunDir(tmp_path / 'run1')
-    run_manager_with_actors(
-            dump(base_config), run_dir1.path, python_actors=actors)
+    run_manager_with_actors(dump(base_config), run_dir1.path, actors)
 
     macro_snapshots = ls_snapshots(run_dir1, 'macro')
     assert len(macro_snapshots) == 6  # 0, 0.4, 0.8, 1.2, 1.6, final
@@ -221,8 +234,7 @@ def test_snapshot_macro_micro(tmp_path, base_config):
     # resume from the snapshots taken at t>=1.2
     run_dir2 = RunDir(tmp_path / 'run2')
     base_config.update(snapshot_docs[4])  # add resume info
-    run_manager_with_actors(
-            dump(base_config), run_dir2.path, python_actors=actors)
+    run_manager_with_actors(dump(base_config), run_dir2.path, actors)
 
     assert len(ls_snapshots(run_dir2, 'macro')) == 3  # resume, 1.6, final
     assert len(ls_snapshots(run_dir2, 'micro')) == 3  # resume, 1.6, final
@@ -233,15 +245,22 @@ def test_snapshot_macro_micro(tmp_path, base_config):
     base_config.resume = {}                     # clear resume information
     base_config.update(snapshot_docs[0])        # add resume info
     base_config.settings['macro.t_max'] = 0.6   # run shorter
-    run_manager_with_actors(
-            dump(base_config), run_dir3.path, python_actors=actors)
+    run_manager_with_actors(dump(base_config), run_dir3.path, actors)
 
 
-def test_snapshot_macro_stateless_micro(tmp_path, base_config):
-    actors = {'macro': macro, 'micro': stateless_micro}
+@pytest.mark.parametrize('micro_actor', [
+    ('python', stateless_micro),
+    pytest.param(
+        ('cpp', 'snapshot_components_test', 'stateless_micro'),
+        marks=skip_if_python_only),
+    pytest.param(
+        ('fortran', 'fortran_snapshot_stateless_micro_test'),
+        marks=skip_if_python_only),
+])
+def test_snapshot_macro_stateless_micro(tmp_path, base_config, micro_actor):
+    actors = {'macro': ('python', macro), 'micro': micro_actor}
     run_dir1 = RunDir(tmp_path / 'run1')
-    run_manager_with_actors(
-            dump(base_config), run_dir1.path, python_actors=actors)
+    run_manager_with_actors(dump(base_config), run_dir1.path, actors)
 
     assert len(ls_snapshots(run_dir1, 'macro')) == 6  # 0, 0.4, 0.8, 1.2, 1.6, final
     assert len(ls_snapshots(run_dir1, 'micro')) == 6  # 0, 0.4, 0.8, 1.2, 1.6, final
@@ -252,21 +271,30 @@ def test_snapshot_macro_stateless_micro(tmp_path, base_config):
     # resume from the snapshot taken at t>=1.2
     run_dir2 = RunDir(tmp_path / 'run2')
     base_config.update(snapshot_docs[3])  # add resume info
-    run_manager_with_actors(
-            dump(base_config), run_dir2.path, python_actors=actors)
+    run_manager_with_actors(dump(base_config), run_dir2.path, actors)
 
     assert len(ls_snapshots(run_dir2, 'macro')) == 3  # resume, 1.6, final
     assert len(ls_snapshots(run_dir2, 'micro')) == 4  # resume, 1.2, 1.6, final
     assert len(ls_snapshots(run_dir2)) == 3
 
 
-def test_snapshot_macro_vector_micro(tmp_path, base_config):
+@pytest.mark.parametrize('macro_actor', [
+    ('python', macro_vector),
+    pytest.param(
+        ('cpp', 'snapshot_components_test', 'macro_vector'),
+        marks=skip_if_python_only),
+    pytest.param(
+        ('fortran', 'fortran_snapshot_macro_vector_test'),
+        marks=skip_if_python_only),
+])
+def test_snapshot_macro_vector_micro(tmp_path, base_config, macro_actor):
     base_config.model.components[1].multiplicity = [2]
-    actors = {'macro': macro_vector, 'micro[0]': micro, 'micro[1]': micro}
+    actors = {'macro': macro_actor,
+              'micro[0]': ('python', micro),
+              'micro[1]': ('python', micro)}
 
     run_dir1 = RunDir(tmp_path / 'run1')
-    run_manager_with_actors(
-            dump(base_config), run_dir1.path, python_actors=actors)
+    run_manager_with_actors(dump(base_config), run_dir1.path, actors)
 
     assert len(ls_snapshots(run_dir1, 'macro')) == 6  # 0, 0.4, 0.8, 1.2, 1.6, final
     assert len(ls_snapshots(run_dir1, 'micro[0]')) == 6  # 0, 0.4, 0.8, 1.2, 1.6, final
@@ -276,8 +304,7 @@ def test_snapshot_macro_vector_micro(tmp_path, base_config):
 
     run_dir2 = RunDir(tmp_path / 'run2')
     base_config.update(load(snapshots_ymmsl[-3]))  # add resume info
-    run_manager_with_actors(
-            dump(base_config), run_dir2.path, python_actors=actors)
+    run_manager_with_actors(dump(base_config), run_dir2.path, actors)
 
     assert len(ls_snapshots(run_dir2, 'macro')) == 3  # resume, 1.6, final
     assert len(ls_snapshots(run_dir2, 'micro[0]')) == 3  # resume, 1.6, final
@@ -286,12 +313,13 @@ def test_snapshot_macro_vector_micro(tmp_path, base_config):
 
 
 def test_snapshot_macro_transformer_micro(tmp_path, config_with_transformer):
-    actors = {'macro': macro, 'micro': micro, 'transformer1': data_transformer,
-              'transformer2': data_transformer}
+    actors = {'macro': ('python', macro),
+              'micro': ('python', micro),
+              'transformer1': ('python', data_transformer),
+              'transformer2': ('python', data_transformer)}
 
     run_dir1 = RunDir(tmp_path / 'run1')
-    run_manager_with_actors(
-            dump(config_with_transformer), run_dir1.path, python_actors=actors)
+    run_manager_with_actors(dump(config_with_transformer), run_dir1.path, actors)
 
     snapshots_ymmsl = ls_snapshots(run_dir1)
     assert len(snapshots_ymmsl) == 8
@@ -299,8 +327,7 @@ def test_snapshot_macro_transformer_micro(tmp_path, config_with_transformer):
     # pick one to resume from
     run_dir2 = RunDir(tmp_path / 'run2')
     config_with_transformer.update(load(snapshots_ymmsl[4]))  # add resume info
-    run_manager_with_actors(
-            dump(config_with_transformer), run_dir2.path, python_actors=actors)
+    run_manager_with_actors(dump(config_with_transformer), run_dir2.path, actors)
 
     snapshots_ymmsl = ls_snapshots(run_dir2)
     assert len(snapshots_ymmsl) == 6

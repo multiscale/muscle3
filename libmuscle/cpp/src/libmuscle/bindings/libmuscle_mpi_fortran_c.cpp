@@ -4705,6 +4705,50 @@ std::intptr_t LIBMUSCLE_Instance_receive_with_settings_psd_(std::intptr_t self, 
     return 0;
 }
 
+bool LIBMUSCLE_Instance_resuming_(std::intptr_t self) {
+    Instance * self_p = reinterpret_cast<Instance *>(self);
+    bool result = self_p->resuming();
+    return result;
+}
+
+bool LIBMUSCLE_Instance_should_init_(std::intptr_t self) {
+    Instance * self_p = reinterpret_cast<Instance *>(self);
+    bool result = self_p->should_init();
+    return result;
+}
+
+std::intptr_t LIBMUSCLE_Instance_load_snapshot_(std::intptr_t self) {
+    Instance * self_p = reinterpret_cast<Instance *>(self);
+    Message * result = new Message(self_p->load_snapshot());
+    return reinterpret_cast<std::intptr_t>(result);
+}
+
+bool LIBMUSCLE_Instance_should_save_snapshot_(std::intptr_t self, double timestamp) {
+    Instance * self_p = reinterpret_cast<Instance *>(self);
+    bool result = self_p->should_save_snapshot(timestamp);
+    return result;
+}
+
+void LIBMUSCLE_Instance_save_snapshot_(std::intptr_t self, std::intptr_t message) {
+    Instance * self_p = reinterpret_cast<Instance *>(self);
+    Message * message_p = reinterpret_cast<Message *>(message);
+    self_p->save_snapshot(*message_p);
+    return;
+}
+
+bool LIBMUSCLE_Instance_should_save_final_snapshot_(std::intptr_t self) {
+    Instance * self_p = reinterpret_cast<Instance *>(self);
+    bool result = self_p->should_save_final_snapshot();
+    return result;
+}
+
+void LIBMUSCLE_Instance_save_final_snapshot_(std::intptr_t self, std::intptr_t message) {
+    Instance * self_p = reinterpret_cast<Instance *>(self);
+    Message * message_p = reinterpret_cast<Message *>(message);
+    self_p->save_final_snapshot(*message_p);
+    return;
+}
+
 std::intptr_t LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(int count) {
     CmdLineArgs * result = new CmdLineArgs(count);
     return reinterpret_cast<std::intptr_t>(result);

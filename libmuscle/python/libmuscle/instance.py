@@ -180,32 +180,9 @@ class Instance:
 
         self._register()
         self._connect()
-
-        # Note: get_checkpoint_info needs to have the ports initialized
+        # Note: self._setup_checkpointing() needs to have the ports initialized
         # so it comes after self._connect()
-        checkpoint_info = self.__manager.get_checkpoint_info(self._instance_id)
-
-        elapsed_time, checkpoints = checkpoint_info[0:2]
-        self._trigger_manager.set_checkpoint_info(elapsed_time, checkpoints)
-
-        if checkpoints and not (self._flags & _CHECKPOINT_SUPPORT_MASK):
-            raise RuntimeError(
-                    'The workflow has requested checkpoints, but this instance'
-                    ' does not support checkpointing. Please consult the'
-                    ' MUSCLE3 checkpointing documentation how to add'
-                    ' checkpointing support.')
-
-        resume_snapshot, snapshot_dir = checkpoint_info[2:4]
-        saved_at = self._snapshot_manager.prepare_resume(
-                resume_snapshot, snapshot_dir)
-        # Resume settings overlay
-        overlay = self._snapshot_manager._resume_overlay
-        if overlay is not None:
-            self._settings_manager.overlay = overlay
-
-        if saved_at is not None:
-            self._trigger_manager.update_checkpoints(saved_at)
-
+        self._setup_checkpointing()
         self._set_local_log_level()
         self._set_remote_log_level()
 
@@ -533,8 +510,7 @@ class Instance:
         by :meth:`load_snapshot`.
 
         Returns:
-            True iff the submodel must resume from a snapshot instead of the
-            usual F_INIT step during this iteration of the reuse loop.
+            True iff the submodel must resume from a snapshot.
         """
         self._api_guard.verify_resuming()
         self._api_guard.resuming_done(self._do_resume)
@@ -563,7 +539,7 @@ class Instance:
 
         Returns:
             Message object containing the state as saved in a previous run
-            through :meth:`save_snapshot` or :meth:`save_final_snapshot`
+            through :meth:`save_snapshot` or :meth:`save_final_snapshot`.
 
         Raises:
             RuntimeError: if not resuming from a snapshot.
@@ -581,14 +557,14 @@ class Instance:
         provided timestamp and passed wallclock time.
 
         When this method returns True, the submodel must also save a snapshot
-        through :meth:`save_snapshot`. A RuntimeError will be generated when not
-        doing so.
+        through :meth:`save_snapshot`. A RuntimeError will be generated if this
+        is not done.
 
         See also :meth:`should_save_final_snapshot` for the variant that must be
         called at the end of the reuse loop.
 
         Args:
-            timestamp: current timestamp of the submodel
+            timestamp: current timestamp of the submodel.
 
         Returns:
             True iff a snapshot should be taken by the submodel according to the
@@ -608,12 +584,6 @@ class Instance:
         use the same timestamp in the provided Message object as used to query
         `should_save_snapshot`.
 
-        Although it is allowed to save a snapshot even when
-        :meth:`should_save_snapshot` returns False, you should avoid this: this
-        situation is not likely to lead to a consistent snapshot over all
-        submodels of the run (and therefore it is not useful to restart from).
-        It could also lead to a lot of snapshot files clogging your file system.
-
         See also :meth:`save_final_snapshot` for the variant that must be called
         at the end of the reuse loop.
 
@@ -632,18 +602,20 @@ class Instance:
     def should_save_final_snapshot(self) -> bool:
         """Check if a snapshot should be saved at the end of the reuse loop.
 
-        This method checks if a snapshot should be saved now.
+        This method checks if a snapshot should be saved at the end of the reuse
+        loop. All your communication on O_F ports must be finished before calling
+        this method, otherwise your simulation may deadlock.
 
         When this method returns True, the submodel must also save a snapshot
         through :meth:`save_final_snapshot`. A :class:`RuntimeError` will be
-        generated when not doing so.
+        generated if this is not done.
 
         See also :meth:`should_save_snapshot` for the variant that may be called
         inside of a time-integration loop of the submodel.
 
         .. note::
             This method will block until it can determine whether a final
-            snapshot should be taken. This means it must also determine if this
+            snapshot should be taken, because it must determine if this
             instance is reused.
 
         Returns:
@@ -665,12 +637,6 @@ class Instance:
         Before saving a snapshot, you should check using
         :meth:`should_save_final_snapshot` if a snapshot should be saved
         according to the checkpoint rules specified in the ymmsl configuration.
-
-        Although it is allowed to save a snapshot even when
-        :meth:`should_save_final_snapshot` returns False, you should avoid this:
-        this situation is not likely to lead to a consistent snapshot over all
-        submodels of the run (and therefore it is not useful to restart from).
-        It could also lead to a lot of snapshot files clogging your file system.
 
         See also :meth:`save_snapshot` for the variant that may be called after
         each S Operator of the submodel.
@@ -726,6 +692,34 @@ class Instance:
         # this is the last thing we'll profile, so flush messages
         self._profiler.shutdown()
         _logger.info('Deregistered from the manager')
+
+    def _setup_checkpointing(self) -> None:
+        """Setup checkpointing.
+        """
+        checkpoint_info = self.__manager.get_checkpoint_info()
+
+        elapsed_time, checkpoints = checkpoint_info[0:2]
+        self._trigger_manager.set_checkpoint_info(elapsed_time, checkpoints)
+
+        if checkpoints and not (self._flags & _CHECKPOINT_SUPPORT_MASK):
+            err_msg = (
+                    'The workflow has requested checkpoints, but this instance'
+                    ' does not support checkpointing. Please consult the'
+                    ' MUSCLE3 checkpointing documentation how to add'
+                    ' checkpointing support.')
+            self.__shutdown(err_msg)
+            raise RuntimeError(err_msg)
+
+        resume_snapshot, snapshot_dir = checkpoint_info[2:4]
+        saved_at = self._snapshot_manager.prepare_resume(
+                resume_snapshot, snapshot_dir)
+        # Resume settings overlay
+        overlay = self._snapshot_manager.resume_overlay
+        if overlay is not None:
+            self._settings_manager.overlay = overlay
+
+        if saved_at is not None:
+            self._trigger_manager.update_checkpoints(saved_at)
 
     @staticmethod
     def __extract_manager_location() -> str:

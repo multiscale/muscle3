@@ -2116,6 +2116,149 @@ LIBMUSCLE_Instance
     :r message: The received message.
     :rtype message: LIBMUSCLE_Message
 
+.. f:function:: LIBMUSCLE_Instance_resuming()
+
+    Check if this instance is resuming from a snapshot.
+
+    Must be used by submodels that implement the checkpointing API. You'll
+    get a RuntimeError if you don't call this method in an iteration of the
+    reuse loop.
+
+    This method returns True for the first iteration of the reuse loop after
+    resuming from a previously taken snapshot. When resuming from a
+    snapshot, the submodel must load its state from the snapshot returned by
+    :f:func:`LIBMUSCLE_Instance_load_snapshot`.
+
+    MPI-based components must call this function in all processes
+    simultaneously.
+
+    :r resuming: ``.true.`` iff the submodel must resume from a snapshot.
+    :rtype resuming: logical
+
+.. f:function:: LIBMUSCLE_Instance_should_init()
+
+    Check if this instance should initialize.
+
+    Must be used by submodels that implement the checkpointing API.
+
+    When resuming from a previous snapshot, instances need not always
+    execute the F_INIT phase of the submodel execution loop. Use this method
+    before attempting to receive data on F_INIT ports.
+
+    MPI-based components must call this function in all processes
+    simultaneously.
+
+    :r should_init: ``.true.`` iff the submomdel must execute the F_INIT step.
+    :rtype should_init: logical
+
+.. f:function:: LIBMUSCLE_Instance_load_snapshot()
+
+    Load a snapshot.
+
+    Must only be called when Instance::resuming returns True.
+
+    MPI-based components may only call this from the root process. An error
+    is raised when attempting to call this method in any other process. It
+    is therefore up to the model code to scatter or broadcast the snapshot
+    state to the non-root processes, if necessary.
+
+    :r message: Message containing the state as saved in a previous run through
+            :f:func:`LIBMUSCLE_Instance_save_snapshot` or
+            :f:func:`LIBMUSCLE_Instance_save_final_snapshot`.
+    :rtype message: LIBMUSCLE_Message
+
+.. f:function:: LIBMUSCLE_Instance_should_save_snapshot(timestamp)
+
+    Check if a snapshot should be saved after the S Operator of the submodel.
+
+    This method checks if a snapshot should be saved right now, based on the
+    provided timestamp and elapsed wallclock time.
+
+    If this method returns true, then the submodel must also save a snapshot
+    through Instance::save_snapshot. A runtime error will be generated if
+    this is not done.
+
+    See also :f:func:`LIBMUSCLE_Instance_should_save_final_snapshot` for the
+    variant that must be called at the end of the reuse loop.
+
+    MPI-based components must call this function in all processes
+    simultaneously.
+
+    :p LIBMUSCLE_real8 timestamp: The current timestamp of the submodel.
+    :r should_save_snapshot: ``.true.`` iff a snapshot should be taken by the
+            submodel according to the checkpoint rules provided in the ymmsl
+            configuration.
+    :rtype should_save_snapshot: logical
+
+.. f:function:: LIBMUSCLE_Instance_save_snapshot(message)
+
+    Save a snapshot after the S Operator of the submodel.
+
+    Before saving a snapshot, you should check using
+    :f:func:`LIBMUSCLE_Instance_should_save_snapshot` if a snapshot should
+    be saved according to the checkpoint rules specified in the ymmsl
+    configuration. You should use the same timestamp in the provided Message
+    object as used to query :f:func:`LIBMUSCLE_Instance_should_save_snapshot`.
+
+    MPI-based components may only call this from the root process. An error
+    is raised when attempting to call this method in any other process. It
+    is therefore up to the model code to gather the necessary state from
+    the non-root processes before saving the snapshot.
+
+    :p LIBMUSCLE_Message message: Message object that is saved as snapshot. The message
+            timestamp attribute should be the same as passed to
+            :f:func:`LIBMUSCLE_Instance_should_save_snapshot`. The data attribute can
+            be used to store the internal state of the submodel.
+
+.. f:function:: LIBMUSCLE_Instance_should_save_final_snapshot()
+
+    Check if a snapshot should be saved at the end of the reuse loop.
+
+    This method checks if a snapshot should be saved at the end of the reuse
+    loop. All your communication on O_F ports must be finished before calling
+    this method, otherwise your simulation may deadlock.
+
+    When this method returns true, the submodel must also save a snapshot
+    through :f:func:`LIBMUSCLE_Instance_save_final_snapshot`. An error will be
+    generated if this is not done.
+
+    See also :f:func:`LIBMUSCLE_Instance_should_save_snapshot` for the variant
+    that may be called inside of a time-integration loop of the submodel.
+
+    MPI-based components must call this function in all processes
+    simultaneously.
+
+    .. note::
+
+        This method will block until it can determine whether a final
+        snapshot should be taken, because it must determine if this
+        instance is reused.
+
+    :r should_save_final_snapshot: ``.true.`` iff a final snapshot should be taken
+            by the submodel according to the checkpoint rules provided in the ymmsl
+            configuration.
+    :rtype should_save_final_snapshot: logical
+
+.. f:function:: LIBMUSCLE_Instance_save_final_snapshot(message)
+
+    Save a snapshot at the end of the reuse loop.
+
+    Before saving a snapshot, you should check using
+    :f:func:`LIBMUSCLE_Instance_should_save_final_snapshot` if a snapshot should
+    be saved according to the checkpoint rules specified in the ymmsl
+    configuration.
+
+    See also :f:func:`LIBMUSCLE_Instance_save_snapshot` for the variant that may
+    be called after each S Operator of the submodel.
+
+    MPI-based components may only call this from the root process. An error
+    is raised when attempting to call this method in any other process. It
+    is therefore up to the model code to gather the necessary state from
+    the non-root processes before saving the snapshot.
+
+    :p LIBMUSCLE_Message message: Message object that is saved as snapshot. The data
+            attribute can be used to store the internal state of the submodel.
+
 LIBMUSCLE_InstanceFlags
 ```````````````````````
 

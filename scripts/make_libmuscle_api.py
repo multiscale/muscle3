@@ -1008,7 +1008,14 @@ instance_members = [
                'self_p->receive_with_settings({})'.format(
                kwargs['cpp_args']))),
     OverloadSet('receive_with_settings_on_slot',
-                ['receive_with_settings_ps', 'receive_with_settings_psd'])
+                ['receive_with_settings_ps', 'receive_with_settings_psd']),
+    MemFun(Bool(), 'resuming'),
+    MemFun(Bool(), 'should_init'),
+    MemFun(Obj('Message'), 'load_snapshot'),
+    MemFun(Bool(), 'should_save_snapshot', [Double('timestamp')]),
+    MemFun(Void(), 'save_snapshot', [Obj('Message', 'message')]),
+    MemFun(Bool(), 'should_save_final_snapshot'),
+    MemFun(Void(), 'save_final_snapshot', [Obj('Message', 'message')]),
     ]
 
 

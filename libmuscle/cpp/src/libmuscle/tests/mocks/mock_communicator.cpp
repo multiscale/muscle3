@@ -99,6 +99,16 @@ void MockCommunicator::shutdown() {
 }
 
 
+MockCommunicator::PortMessageCounts MockCommunicator::get_message_counts() {
+    return get_message_counts_return_value;
+}
+
+void MockCommunicator::restore_message_counts(
+        PortMessageCounts const & port_message_counts){
+    last_restored_message_counts = port_message_counts;
+}
+
+
 void MockCommunicator::reset() {
     num_constructed = 0;
     settings_in_connected_return_value = false;
@@ -109,6 +119,8 @@ void MockCommunicator::reset() {
     last_sent_port = "";
     last_sent_message = Message(0.0);
     last_sent_slot = {};
+    get_message_counts_return_value.clear();
+    last_restored_message_counts = {};
 }
 
 int MockCommunicator::num_constructed = 0;
@@ -129,6 +141,10 @@ std::string MockCommunicator::last_sent_port;
 Message MockCommunicator::last_sent_message(0.0);
 
 Optional<int> MockCommunicator::last_sent_slot;
+
+MockCommunicator::PortMessageCounts MockCommunicator::get_message_counts_return_value;
+
+MockCommunicator::PortMessageCounts MockCommunicator::last_restored_message_counts;
 
 } }
 

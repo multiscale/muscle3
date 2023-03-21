@@ -626,3 +626,133 @@ TEST(libmuscle_communicator, receive_message_with_slot_and_settings) {
     ASSERT_EQ(msg.settings().at("test2"), 3.1);
 }
 
+TEST(libmuscle_communicator, port_message_counts) {
+    reset_mocks();
+    auto comm = connected_communicator();
+
+    Message message(0.0, "test", Settings());
+    comm->send_message("out", message);
+
+    auto msg_counts = comm->get_message_counts();
+    ASSERT_EQ(msg_counts.size(), 3);
+    ASSERT_EQ(msg_counts["out"], std::vector<int>({1}));
+    ASSERT_EQ(msg_counts["in"], std::vector<int>({0}));
+    ASSERT_EQ(msg_counts["muscle_settings_in"], std::vector<int>({0}));
+
+    comm->restore_message_counts({
+            {"out", {3}},
+            {"in", {2}},
+            {"muscle_settings_in", {4}}});
+    comm->send_message("out", message);
+    msg_counts = comm->get_message_counts();
+    ASSERT_EQ(msg_counts.size(), 3);
+    ASSERT_EQ(msg_counts["out"], std::vector<int>({4}));
+    ASSERT_EQ(msg_counts["in"], std::vector<int>({2}));
+    ASSERT_EQ(msg_counts["muscle_settings_in"], std::vector<int>({4}));
+
+    ASSERT_THROW(
+            comm->restore_message_counts({{"x?invalid_port", {3}}}),
+            std::runtime_error);
+}
+
+TEST(libmuscle_communicator, vector_port_message_counts) {
+    reset_mocks();
+    auto comm = connected_communicator2();
+
+    auto msg_counts = comm->get_message_counts();
+    ASSERT_EQ(msg_counts.size(), 3);
+    std::vector<int> expected_counts(20);  // 20 zeros
+    ASSERT_EQ(msg_counts["out"], expected_counts);
+    ASSERT_EQ(msg_counts["in"], expected_counts);
+    ASSERT_EQ(msg_counts["muscle_settings_in"], std::vector<int>({0}));
+
+    Message message(0.0, "test", Settings());
+    comm->send_message("out", message, 13);
+    msg_counts = comm->get_message_counts();
+    ASSERT_EQ(msg_counts.size(), 3);
+    ASSERT_EQ(msg_counts["in"], expected_counts);
+    ASSERT_EQ(msg_counts["muscle_settings_in"], std::vector<int>({0}));
+    expected_counts[13] = 1;
+    ASSERT_EQ(msg_counts["out"], expected_counts);
+
+    std::iota(expected_counts.begin(), expected_counts.end(), 0);
+    // expected_counts = {0, 1, ..., 19}
+    comm->restore_message_counts({
+            {"out", expected_counts},
+            {"in", expected_counts},
+            {"muscle_settings_in", {4}}});
+    comm->send_message("out", message, 13);
+    msg_counts = comm->get_message_counts();
+    ASSERT_EQ(msg_counts.size(), 3);
+    ASSERT_EQ(msg_counts["in"], expected_counts);
+    ASSERT_EQ(msg_counts["muscle_settings_in"], std::vector<int>({4}));
+    expected_counts[13] = 14;
+    ASSERT_EQ(msg_counts["out"], expected_counts);
+}
+
+TEST(libmuscle_communicator, port_count_validation) {
+    reset_mocks();
+    MockMPPClient::next_receive_message.sender = "other.out[13]";
+    MockMPPClient::next_receive_message.receiver = "kernel[13].in";
+
+    auto comm = connected_communicator();
+    Message msg = comm->receive_message("in");
+
+    ASSERT_EQ(comm->get_message_counts()["in"], std::vector<int>({1}));
+
+    // the message received has message_number = 0 again
+    ASSERT_THROW(comm->receive_message("in"), std::runtime_error);
+}
+
+TEST(libmuscle_communicator, port_discard_error_on_resume) {
+    reset_mocks();
+    MockMPPClient::next_receive_message.sender = "other.out[13]";
+    MockMPPClient::next_receive_message.receiver = "kernel[13].in";
+    MockMPPClient::next_receive_message.message_number = 1;
+
+    auto comm = connected_communicator();
+
+    comm->restore_message_counts({
+            {"out", {0}},
+            {"in", {2}},
+            {"muscle_settings_in", {0}}});
+    auto & ports = TestCommunicator::ports_(*comm);
+    for (auto const & port : ports) {
+        ASSERT_TRUE(port.second.is_resuming());
+    }
+
+    // In the next block, the first message with message_number=1 is discarded.
+    // The RuntimeError is raised when 'receiving' the second message with
+    // message_number=1
+    ASSERT_THROW(comm->receive_message("in"), std::runtime_error);
+    // TODO: test that a debug message was logged?
+}
+
+TEST(libmuscle_communicator, port_discard_success_on_resume) {
+    reset_mocks();
+    MockMPPClient::next_receive_message.sender = "other.out[13]";
+    MockMPPClient::next_receive_message.receiver = "kernel[13].in";
+    MockMPPClient::next_receive_message.message_number = 1;
+    MockMPPClient::next_receive_message.timestamp = 1.0;
+    MockMPPClient::side_effect = [](){
+        // ensure message_number increases after every receive()
+        MockMPPClient::next_receive_message.message_number ++;
+        MockMPPClient::next_receive_message.timestamp += 1.0;
+    };
+
+    auto comm = connected_communicator();
+
+    comm->restore_message_counts({
+            {"out", {0}},
+            {"in", {2}},
+            {"muscle_settings_in", {0}}});
+    auto & ports = TestCommunicator::ports_(*comm);
+    for (auto const & port : ports) {
+        ASSERT_TRUE(port.second.is_resuming());
+    }
+
+    auto msg = comm->receive_message("in");
+    // TODO: test that a debug message was logged?
+    ASSERT_EQ(msg.timestamp(), 2.0);
+    ASSERT_EQ(comm->get_message_counts()["in"], std::vector<int>({3}));
+}

@@ -21,8 +21,7 @@ _NO_MESSAGE_PROVIDED = (
 class SnapshotManager:
     """Manages information on snapshots for the Instance
 
-    Implements the public checkpointing API with handoffs to
-    :class:`TriggerManager` for checkpoint triggers.
+    Implements the saving and loading of snapshots in the checkpointing API.
     """
 
     def __init__(self,
@@ -44,7 +43,7 @@ class SnapshotManager:
         self._manager = manager
 
         self._resume_from_snapshot: Optional[Snapshot] = None
-        self._resume_overlay = Settings()
+        self.resume_overlay = Settings()
         self._next_snapshot_num = 1
 
     def prepare_resume(
@@ -74,14 +73,14 @@ class SnapshotManager:
                 # snapshot.message is None for implicit snapshots
                 self._resume_from_snapshot = snapshot
                 result = snapshot.message.timestamp
-            self._resume_overlay = snapshot.settings_overlay
+            self.resume_overlay = snapshot.settings_overlay
 
             self._communicator.restore_message_counts(
                 snapshot.port_message_counts)
             # Store a copy of the snapshot in the current run directory
             path = self.__store_snapshot(snapshot)
             metadata = SnapshotMetadata.from_snapshot(snapshot, str(path))
-            self._manager.submit_snapshot_metadata(self._instance_id, metadata)
+            self._manager.submit_snapshot_metadata(metadata)
 
         return result
 
@@ -125,9 +124,10 @@ class SnapshotManager:
             triggers: Description of checkpoints that triggered this.
             wallclock_time: Wallclock time when saving.
             f_init_max_timestamp: Timestamp for final snapshots.
+            settings_overlay: Current settings overlay.
 
         Returns:
-            Simulation time at which the snapshot was made
+            Simulation time at which the snapshot was made.
         """
         port_message_counts = self._communicator.get_message_counts()
         if final:
@@ -148,7 +148,7 @@ class SnapshotManager:
 
         path = self.__store_snapshot(snapshot)
         metadata = SnapshotMetadata.from_snapshot(snapshot, str(path))
-        self._manager.submit_snapshot_metadata(self._instance_id, metadata)
+        self._manager.submit_snapshot_metadata(metadata)
 
         timestamp = msg.timestamp if msg is not None else float('-inf')
         if final and f_init_max_timestamp is not None:
@@ -159,10 +159,10 @@ class SnapshotManager:
 
     @staticmethod
     def load_snapshot_from_file(snapshot_location: Path) -> Snapshot:
-        """Load a previously stored snapshot from the filesystem
+        """Load a previously stored snapshot from the filesystem.
 
         Args:
-            snapshot_location: path where the snapshot is stored
+            snapshot_location: path where the snapshot is stored.
         """
         _logger.debug(f'Loading snapshot from {snapshot_location}')
         if not snapshot_location.is_file():
@@ -184,13 +184,13 @@ class SnapshotManager:
                                ' edited?')
 
     def __store_snapshot(self, snapshot: Snapshot) -> Path:
-        """Store a snapshot on the filesystem
+        """Store a snapshot on the filesystem.
 
         Args:
-            snapshot: snapshot to store
+            snapshot: Snapshot to store.
 
         Returns:
-            Path where the snapshot is stored
+            Path where the snapshot is stored.
         """
         _logger.debug(f'Saving snapshot to {self._snapshot_directory}')
         for _ in range(_MAX_FILE_EXISTS_CHECK):

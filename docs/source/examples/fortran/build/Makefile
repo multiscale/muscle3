@@ -17,7 +17,7 @@ else
 endif
 
 
-binaries := reaction diffusion mc_driver load_balancer
+binaries := reaction diffusion mc_driver load_balancer checkpointing_reaction checkpointing_diffusion
 mpi_binaries := reaction_mpi
 
 

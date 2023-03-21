@@ -78,9 +78,6 @@ class RangeCheckpointTrigger(CheckpointTrigger):
     Start may be omitted, in which case the range is equivalent to an "at" rule
     ``[..., -n*step, ..., -step, 0, step, 2*step, ...]`` for as long as
     ``i*step <= stop``.
-
-    Note: the "every" rule is a special case of a range with start and stop
-    omitted, and is handled by this class as well
     """
 
     def __init__(self, range: CheckpointRangeRule) -> None:
@@ -118,7 +115,7 @@ class RangeCheckpointTrigger(CheckpointTrigger):
 
 
 class CombinedCheckpointTriggers(CheckpointTrigger):
-    """Checkpoint trigger based on a combination of "every", "at" and "ranges"
+    """Checkpoint trigger based on a combination of "at" and "ranges"
     """
 
     def __init__(self, checkpoint_rules: List[CheckpointRule]) -> None:

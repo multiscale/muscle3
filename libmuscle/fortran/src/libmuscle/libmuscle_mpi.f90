@@ -466,6 +466,13 @@ module libmuscle_mpi
     public :: LIBMUSCLE_Instance_receive_with_settings_ps
     public :: LIBMUSCLE_Instance_receive_with_settings_psd
     public :: LIBMUSCLE_Instance_receive_with_settings_on_slot
+    public :: LIBMUSCLE_Instance_resuming
+    public :: LIBMUSCLE_Instance_should_init
+    public :: LIBMUSCLE_Instance_load_snapshot
+    public :: LIBMUSCLE_Instance_should_save_snapshot
+    public :: LIBMUSCLE_Instance_save_snapshot
+    public :: LIBMUSCLE_Instance_should_save_final_snapshot
+    public :: LIBMUSCLE_Instance_save_final_snapshot
     public :: LIBMUSCLE_InstanceFlags
     type LIBMUSCLE_InstanceFlags
         logical :: DONT_APPLY_OVERLAY = .false.
@@ -3488,6 +3495,64 @@ module libmuscle_mpi
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Instance_receive_with_settings_psd_
+
+        logical (c_bool) function LIBMUSCLE_Instance_resuming_(self) &
+                bind(C, name="LIBMUSCLE_Instance_resuming_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_Instance_resuming_
+
+        logical (c_bool) function LIBMUSCLE_Instance_should_init_(self) &
+                bind(C, name="LIBMUSCLE_Instance_should_init_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_Instance_should_init_
+
+        integer (c_intptr_t) function LIBMUSCLE_Instance_load_snapshot_(self) &
+                bind(C, name="LIBMUSCLE_Instance_load_snapshot_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_Instance_load_snapshot_
+
+        logical (c_bool) function LIBMUSCLE_Instance_should_save_snapshot_( &
+                self, &
+                timestamp) &
+                bind(C, name="LIBMUSCLE_Instance_should_save_snapshot_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            real (c_double), value, intent(in) :: timestamp
+        end function LIBMUSCLE_Instance_should_save_snapshot_
+
+        subroutine LIBMUSCLE_Instance_save_snapshot_( &
+                self, &
+                message) &
+                bind(C, name="LIBMUSCLE_Instance_save_snapshot_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_intptr_t), value, intent(in) :: message
+        end subroutine LIBMUSCLE_Instance_save_snapshot_
+
+        logical (c_bool) function LIBMUSCLE_Instance_should_save_final_snapshot_(self) &
+                bind(C, name="LIBMUSCLE_Instance_should_save_final_snapshot_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+        end function LIBMUSCLE_Instance_should_save_final_snapshot_
+
+        subroutine LIBMUSCLE_Instance_save_final_snapshot_( &
+                self, &
+                message) &
+                bind(C, name="LIBMUSCLE_Instance_save_final_snapshot_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            integer (c_intptr_t), value, intent(in) :: message
+        end subroutine LIBMUSCLE_Instance_save_final_snapshot_
 
     end interface
 
@@ -17872,6 +17937,103 @@ contains
 
         LIBMUSCLE_Instance_receive_with_settings_psd%ptr = ret_val
     end function LIBMUSCLE_Instance_receive_with_settings_psd
+
+    function LIBMUSCLE_Instance_resuming( &
+            self)
+        implicit none
+        type(LIBMUSCLE_Instance), intent(in) :: self
+        logical :: LIBMUSCLE_Instance_resuming
+
+        logical (c_bool) :: ret_val
+
+        ret_val = LIBMUSCLE_Instance_resuming_( &
+            self%ptr)
+
+        LIBMUSCLE_Instance_resuming = ret_val
+    end function LIBMUSCLE_Instance_resuming
+
+    function LIBMUSCLE_Instance_should_init( &
+            self)
+        implicit none
+        type(LIBMUSCLE_Instance), intent(in) :: self
+        logical :: LIBMUSCLE_Instance_should_init
+
+        logical (c_bool) :: ret_val
+
+        ret_val = LIBMUSCLE_Instance_should_init_( &
+            self%ptr)
+
+        LIBMUSCLE_Instance_should_init = ret_val
+    end function LIBMUSCLE_Instance_should_init
+
+    function LIBMUSCLE_Instance_load_snapshot( &
+            self)
+        implicit none
+        type(LIBMUSCLE_Instance), intent(in) :: self
+        type(LIBMUSCLE_Message) :: LIBMUSCLE_Instance_load_snapshot
+
+        integer (c_intptr_t) :: ret_val
+
+        ret_val = LIBMUSCLE_Instance_load_snapshot_( &
+            self%ptr)
+
+        LIBMUSCLE_Instance_load_snapshot%ptr = ret_val
+    end function LIBMUSCLE_Instance_load_snapshot
+
+    function LIBMUSCLE_Instance_should_save_snapshot( &
+            self, &
+            timestamp)
+        implicit none
+        type(LIBMUSCLE_Instance), intent(in) :: self
+        real (LIBMUSCLE_real8), intent(in) :: timestamp
+        logical :: LIBMUSCLE_Instance_should_save_snapshot
+
+        logical (c_bool) :: ret_val
+
+        ret_val = LIBMUSCLE_Instance_should_save_snapshot_( &
+            self%ptr, &
+            timestamp)
+
+        LIBMUSCLE_Instance_should_save_snapshot = ret_val
+    end function LIBMUSCLE_Instance_should_save_snapshot
+
+    subroutine LIBMUSCLE_Instance_save_snapshot( &
+            self, &
+            message)
+        implicit none
+        type(LIBMUSCLE_Instance), intent(in) :: self
+        type(LIBMUSCLE_Message), intent(in) :: message
+
+        call LIBMUSCLE_Instance_save_snapshot_( &
+            self%ptr, &
+            message%ptr)
+    end subroutine LIBMUSCLE_Instance_save_snapshot
+
+    function LIBMUSCLE_Instance_should_save_final_snapshot( &
+            self)
+        implicit none
+        type(LIBMUSCLE_Instance), intent(in) :: self
+        logical :: LIBMUSCLE_Instance_should_save_final_snapshot
+
+        logical (c_bool) :: ret_val
+
+        ret_val = LIBMUSCLE_Instance_should_save_final_snapshot_( &
+            self%ptr)
+
+        LIBMUSCLE_Instance_should_save_final_snapshot = ret_val
+    end function LIBMUSCLE_Instance_should_save_final_snapshot
+
+    subroutine LIBMUSCLE_Instance_save_final_snapshot( &
+            self, &
+            message)
+        implicit none
+        type(LIBMUSCLE_Instance), intent(in) :: self
+        type(LIBMUSCLE_Message), intent(in) :: message
+
+        call LIBMUSCLE_Instance_save_final_snapshot_( &
+            self%ptr, &
+            message%ptr)
+    end subroutine LIBMUSCLE_Instance_save_final_snapshot
 
     integer function LIBMUSCLE_InstanceFlags_to_int_(flags)
         implicit none

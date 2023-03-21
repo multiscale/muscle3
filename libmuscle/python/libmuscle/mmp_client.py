@@ -149,17 +149,15 @@ class MMPClient():
         self._call_manager(request)
 
     def submit_snapshot_metadata(
-                self, name: Reference, snapshot_metadata: SnapshotMetadata
-                ) -> None:
+            self, snapshot_metadata: SnapshotMetadata) -> None:
         """Send snapshot metadata to the manager.
 
         Args:
-            name: Name of the instance in the simulation.
             snapshot_metadata: Snapshot metadata to supply to the manager.
         """
         request = [
                 RequestType.SUBMIT_SNAPSHOT.value,
-                str(name),
+                str(self._instance_id),
                 dataclasses.asdict(snapshot_metadata)]
         self._call_manager(request)
 
@@ -173,7 +171,7 @@ class MMPClient():
         response = self._call_manager(request)
         return Settings(response[1])
 
-    def get_checkpoint_info(self, name: Reference) -> _CheckpointInfoType:
+    def get_checkpoint_info(self) -> _CheckpointInfoType:
         """Get the checkpoint info from the manager.
 
         Returns:
@@ -182,7 +180,7 @@ class MMPClient():
             resume: path to the resume snapshot
             snapshot_directory: path to store snapshots
         """
-        request = [RequestType.GET_CHECKPOINT_INFO.value, str(name)]
+        request = [RequestType.GET_CHECKPOINT_INFO.value, str(self._instance_id)]
         response = self._call_manager(request)
         return decode_checkpoint_info(*response[1:])
 

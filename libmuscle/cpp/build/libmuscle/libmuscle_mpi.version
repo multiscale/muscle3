@@ -33,6 +33,13 @@
             libmuscle::impl::Instance::receive_with_settings*;
             libmuscle::impl::Instance::receive*;
             libmuscle::impl::Instance::send*;
+            libmuscle::impl::Instance::resuming*;
+            libmuscle::impl::Instance::load_snapshot*;
+            libmuscle::impl::Instance::should_init*;
+            libmuscle::impl::Instance::should_save_snapshot*;
+            libmuscle::impl::Instance::save_snapshot*;
+            libmuscle::impl::Instance::should_save_final_snapshot*;
+            libmuscle::impl::Instance::save_final_snapshot*;
 
             libmuscle::impl::Message::*;
 
@@ -354,6 +361,13 @@
         LIBMUSCLE_Instance_receive_with_settings_pd_;
         LIBMUSCLE_Instance_receive_with_settings_ps_;
         LIBMUSCLE_Instance_receive_with_settings_psd_;
+        LIBMUSCLE_Instance_resuming_;
+        LIBMUSCLE_Instance_should_init_;
+        LIBMUSCLE_Instance_load_snapshot_;
+        LIBMUSCLE_Instance_should_save_snapshot_;
+        LIBMUSCLE_Instance_save_snapshot_;
+        LIBMUSCLE_Instance_should_save_final_snapshot_;
+        LIBMUSCLE_Instance_save_final_snapshot_;
         LIBMUSCLE_InstanceFlags_to_int_;
         LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_;
         LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_;

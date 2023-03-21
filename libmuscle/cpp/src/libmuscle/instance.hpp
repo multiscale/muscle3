@@ -629,6 +629,141 @@ class Instance {
                 std::string const & port_name, int slot,
                 Message const & default_msg);
 
+        /** Check if this instance is resuming from a snapshot.
+         *
+         * Must be used by submodels that implement the checkpointing API. You'll
+         * get a RuntimeError if you don't call this method in an iteration of the
+         * reuse loop.
+         *
+         * This method returns True for the first iteration of the reuse loop after
+         * resuming from a previously taken snapshot. When resuming from a
+         * snapshot, the submodel must load its state from the snapshot returned by
+         * Instance::load_snapshot.
+         *
+         * MPI-based components must call this function in all processes
+         * simultaneously.
+         *
+         * @return true iff the submodel must resume from a snapshot.
+         */
+        bool resuming();
+
+        /** Check if this instance should initialize.
+         *
+         * Must be used by submodels that implement the checkpointing API.
+         *
+         * When resuming from a previous snapshot, instances need not always
+         * execute the F_INIT phase of the submodel execution loop. Use this method
+         * before attempting to receive data on F_INIT ports.
+         *
+         * MPI-based components must call this function in all processes
+         * simultaneously.
+         *
+         * @return true if the submodel must execute the F_INIT step.
+         * @return false otherwise.
+         */
+        bool should_init();
+
+        /** Load a snapshot.
+         *
+         * Must only be called when Instance::resuming returns True.
+         *
+         * MPI-based components may only call this from the root process. An error
+         * is raised when attempting to call this method in any other process. It
+         * is therefore up to the model code to scatter or broadcast the snapshot
+         * state to the non-root processes, if necessary.
+         *
+         * @return Message containing the state as saved in a previous run
+         *      through Instance::save_snapshot or Instance::save_final_snapshot.
+         */
+        Message load_snapshot();
+
+        /** Check if a snapshot should be saved after the S Operator of the submodel.
+         *
+         * This method checks if a snapshot should be saved right now, based on the
+         * provided timestamp and elapsed wallclock time.
+         *
+         * If this method returns true, then the submodel must also save a snapshot
+         * through Instance::save_snapshot. A std::runtime_error will be generated if
+         * this is not done.
+         *
+         * See also Instance::should_save_final_snapshot for the variant that must be
+         * called at the end of the reuse loop.
+         *
+         * MPI-based components must call this function in all processes
+         * simultaneously.
+         *
+         * @param timestamp current timestamp of the submodel.
+         * @return true iff a snapshot should be taken by the submodel according to the
+         *      checkpoint rules provided in the ymmsl configuration.
+         */
+        bool should_save_snapshot(double timestamp);
+
+        /** Save a snapshot after the S Operator of the submodel.
+         *
+         * Before saving a snapshot, you should check using
+         * Instance::should_save_snapshot if a snapshot should be saved according to
+         * the checkpoint rules specified in the ymmsl configuration. You should
+         * use the same timestamp in the provided Message object as used to query
+         * Instance::should_save_snapshot.
+         *
+         * MPI-based components may only call this from the root process. An error
+         * is raised when attempting to call this method in any other process. It
+         * is therefore up to the model code to gather the necessary state from
+         * the non-root processes before saving the snapshot.
+         *
+         * @param message Message object that is saved as snapshot. The message
+         *      timestamp attribute should be the same as passed to
+         *      Instance::should_save_snapshot. The data attribute can be used to
+         *      store the internal state of the submodel.
+         */
+        void save_snapshot(Message message);
+
+        /** Check if a snapshot should be saved at the end of the reuse loop.
+         *
+         * This method checks if a snapshot should be saved at the end of the reuse
+         * loop. All your communication on O_F ports must be finished before calling
+         * this method, otherwise your simulation may deadlock.
+         *
+         * When this method returns true, the submodel must also save a snapshot
+         * through Instance::save_final_snapshot. A std::runtime_error will be
+         * generated if this is not done.
+         *
+         * See also Instance::should_save_snapshot for the variant that may be called
+         * inside of a time-integration loop of the submodel.
+         *
+         * MPI-based components must call this function in all processes
+         * simultaneously.
+         *
+         * \note
+         * This method will block until it can determine whether a final
+         * snapshot should be taken, because it must determine if this
+         * instance is reused.
+         *
+         * @return true iff a final snapshot should be taken by the submodel according
+         *      to the checkpoint rules provided in the ymmsl configuration.
+         */
+        bool should_save_final_snapshot();
+
+        /** Save a snapshot at the end of the reuse loop.
+         *
+         * Before saving a snapshot, you should check using
+         * Instance::should_save_final_snapshot if a snapshot should be saved
+         * according to the checkpoint rules specified in the ymmsl configuration.
+         *
+         * See also Instance::save_snapshot for the variant that may be called after
+         * each S Operator of the submodel.
+         *
+         * MPI-based components may only call this from the root process. An error
+         * is raised when attempting to call this method in any other process. It
+         * is therefore up to the model code to gather the necessary state from
+         * the non-root processes before saving the snapshot.
+         *
+         * @param message Message object that is saved as snapshot. The data
+         *      attribute can be used to store the internal state of the
+         *      submodel.
+         */
+        void save_final_snapshot(Message message);
+
     private:
         class Impl;
         std::unique_ptr<Impl> pimpl_;

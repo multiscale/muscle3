@@ -1,4 +1,5 @@
 import logging
+from textwrap import indent
 from threading import Thread
 from typing import Union
 from multiprocessing import Queue
@@ -9,6 +10,7 @@ from ymmsl import Configuration
 from libmuscle.manager.instantiator import (
         CancelAllRequest, CrashedResult, InstantiatorRequest,
         InstantiationRequest, ProcessStatus, ShutdownRequest)
+from libmuscle.manager.logger import last_lines
 from libmuscle.manager.qcgpj_instantiator import Process, QCGPJInstantiator
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.planner.planner import Planner, Resources
@@ -144,9 +146,19 @@ class InstanceManager:
                     _logger.error(
                             f'Instance {result.instance} quit with error'
                             f' {result.exit_code}')
+
+                    stderr_file = (
+                            self._run_dir.instance_dir(result.instance) /
+                            'stderr.txt')
                     _logger.error(
-                            'Output may be found in'
-                            f' {self._run_dir.instance_dir(result.instance)}')
+                            'The last error output of this instance was:')
+                    _logger.error(
+                            '\n' + indent(last_lines(stderr_file, 20), '    '))
+                    _logger.error(
+                            'More output may be found in'
+                            f' {self._run_dir.instance_dir(result.instance)}\n'
+                            )
+
                     if all_seemingly_okay:
                         self._requests_out.put(CancelAllRequest())
                         all_seemingly_okay = False

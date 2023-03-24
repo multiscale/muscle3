@@ -25,21 +25,21 @@ program diffusion
     real (selected_real_kind(15)), dimension(:, :), allocatable :: Us
 
 
-    ports = LIBMUSCLE_PortsDescription_create()
-    call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_O_I, 'state_out')
-    call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_S, 'state_in')
-    call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_O_F, 'final_state_out')
-    instance = LIBMUSCLE_Instance_create(ports, &
+    ports = LIBMUSCLE_PortsDescription()
+    call ports%add(YMMSL_Operator_O_I, 'state_out')
+    call ports%add(YMMSL_Operator_S, 'state_in')
+    call ports%add(YMMSL_Operator_O_F, 'final_state_out')
+    instance = LIBMUSCLE_Instance(ports, &
             LIBMUSCLE_InstanceFlags(USES_CHECKPOINT_API=.true.))
     call LIBMUSCLE_PortsDescription_free(ports)
 
-    do while (LIBMUSCLE_Instance_reuse_instance(instance))
+    do while (instance%reuse_instance())
        ! F_INIT
-        t_max = LIBMUSCLE_Instance_get_setting_as_real8(instance, 't_max')
-        dt = LIBMUSCLE_Instance_get_setting_as_real8(instance, 'dt')
-        x_max = LIBMUSCLE_Instance_get_setting_as_real8(instance, 'x_max')
-        dx = LIBMUSCLE_Instance_get_setting_as_real8(instance, 'dx')
-        d = LIBMUSCLE_Instance_get_setting_as_real8(instance, 'd')
+        t_max = instance%get_setting_as_real8('t_max')
+        dt = instance%get_setting_as_real8('dt')
+        x_max = instance%get_setting_as_real8('x_max')
+        dx = instance%get_setting_as_real8('dx')
+        d = instance%get_setting_as_real8('d')
 
         U_size = nint(x_max / dx)
         allocate (U(U_size), dU(U_size))
@@ -59,18 +59,18 @@ program diffusion
             print *, 't_cur: ', t_cur, 't_max: ', t_max
             ! O_I
             sdata = LIBMUSCLE_Data_create_grid(U, 'x')
-            smsg = LIBMUSCLE_Message_create(t_cur, sdata)
+            smsg = LIBMUSCLE_Message(t_cur, sdata)
             call LIBMUSCLE_Data_free(sdata)
             t_next = t_cur + dt
             if (t_next + dt <= t_max) then
-                call LIBMUSCLE_Message_set_next_timestamp(smsg, t_next)
+                call smsg%set_next_timestamp(t_next)
             end if
-            call LIBMUSCLE_Instance_send(instance, 'state_out', smsg)
+            call instance%send('state_out', smsg)
 
             ! S
-            rmsg = LIBMUSCLE_Instance_receive(instance, 'state_in', smsg)
-            rdata = LIBMUSCLE_Message_get_data(rmsg)
-            call LIBMUSCLE_DataConstRef_elements(rdata, U)
+            rmsg = instance%receive('state_in', smsg)
+            rdata = rmsg%get_data()
+            call rdata%elements(U)
             call LIBMUSCLE_DataConstRef_free(rdata)
             call LIBMUSCLE_Message_free(rmsg)
             call LIBMUSCLE_Message_free(smsg)
@@ -85,13 +85,13 @@ program diffusion
 
             t_cur = t_cur + dt
 
-            if (LIBMUSCLE_Instance_should_save_snapshot(instance, t_cur)) then
+            if (instance%should_save_snapshot(t_cur)) then
                 sdata = LIBMUSCLE_Data_create_nils(2_LIBMUSCLE_size)
                 sitem = LIBMUSCLE_Data_create_grid(Us)
-                call LIBMUSCLE_Data_set_item(sdata, 1_LIBMUSCLE_size, sitem)
-                call LIBMUSCLE_Data_set_item(sdata, 2_LIBMUSCLE_size, iteration)
-                smsg = LIBMUSCLE_Message_create(t_cur, sdata)
-                call LIBMUSCLE_Instance_save_snapshot(instance, smsg)
+                call sdata%set_item(1_LIBMUSCLE_size, sitem)
+                call sdata%set_item(2_LIBMUSCLE_size, iteration)
+                smsg = LIBMUSCLE_Message(t_cur, sdata)
+                call instance%save_snapshot(smsg)
                 call LIBMUSCLE_Message_free(smsg)
                 call LIBMUSCLE_Data_free(sdata)
                 call LIBMUSCLE_Data_free(sitem)
@@ -100,18 +100,18 @@ program diffusion
 
         ! O_F
         sdata = LIBMUSCLE_Data_create_grid(U, 'x')
-        smsg = LIBMUSCLE_Message_create(t_cur, sdata)
-        call LIBMUSCLE_Instance_send(instance, 'final_state_out', smsg)
+        smsg = LIBMUSCLE_Message(t_cur, sdata)
+        call instance%send('final_state_out', smsg)
         call LIBMUSCLE_Message_free(smsg)
         call LIBMUSCLE_Data_free(sdata)
 
-        if (LIBMUSCLE_Instance_should_save_final_snapshot(instance)) then
+        if (instance%should_save_final_snapshot()) then
             sdata = LIBMUSCLE_Data_create_nils(2_LIBMUSCLE_size)
             sitem = LIBMUSCLE_Data_create_grid(Us)
-            call LIBMUSCLE_Data_set_item(sdata, 1_LIBMUSCLE_size, sitem)
-            call LIBMUSCLE_Data_set_item(sdata, 2_LIBMUSCLE_size, iteration)
-            smsg = LIBMUSCLE_Message_create(t_cur, sdata)
-            call LIBMUSCLE_Instance_save_snapshot(instance, smsg)
+            call sdata%set_item(1_LIBMUSCLE_size, sitem)
+            call sdata%set_item(2_LIBMUSCLE_size, iteration)
+            smsg = LIBMUSCLE_Message(t_cur, sdata)
+            call instance%save_snapshot(smsg)
             call LIBMUSCLE_Message_free(smsg)
             call LIBMUSCLE_Data_free(sdata)
             call LIBMUSCLE_Data_free(sitem)

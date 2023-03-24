@@ -17,27 +17,27 @@ program reaction
     real (selected_real_kind(15)), dimension(:), allocatable :: U
 
 
-    ports = LIBMUSCLE_PortsDescription_create()
-    call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_F_INIT, 'initial_state')
-    call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_O_F, 'final_state')
-    instance = LIBMUSCLE_Instance_create(ports, &
+    ports = LIBMUSCLE_PortsDescription()
+    call ports%add(YMMSL_Operator_F_INIT, 'initial_state')
+    call ports%add(YMMSL_Operator_O_F, 'final_state')
+    instance = LIBMUSCLE_Instance(ports, &
             LIBMUSCLE_InstanceFlags(KEEPS_NO_STATE_FOR_NEXT_USE=.true.))
     call LIBMUSCLE_PortsDescription_free(ports)
 
-    do while (LIBMUSCLE_Instance_reuse_instance(instance))
+    do while (instance%reuse_instance())
         ! F_INIT
-        t_max = LIBMUSCLE_Instance_get_setting_as_real8(instance, 't_max')
-        dt = LIBMUSCLE_Instance_get_setting_as_real8(instance, 'dt')
-        k = LIBMUSCLE_Instance_get_setting_as_real8(instance, 'k')
+        t_max = instance%get_setting_as_real8('t_max')
+        dt = instance%get_setting_as_real8('dt')
+        k = instance%get_setting_as_real8('k')
 
-        rmsg = LIBMUSCLE_Instance_receive(instance, 'initial_state')
-        rdata = LIBMUSCLE_Message_get_data(rmsg)
-        allocate (U(LIBMUSCLE_DataConstRef_size(rdata)))
-        call LIBMUSCLE_DataConstRef_elements(rdata, U)
+        rmsg = instance%receive('initial_state')
+        rdata = rmsg%get_data()
+        allocate (U(rdata%size()))
+        call rdata%elements(U)
         call LIBMUSCLE_DataConstRef_free(rdata)
 
-        t_cur = LIBMUSCLE_Message_timestamp(rmsg)
-        t_max = LIBMUSCLE_Message_timestamp(rmsg) + t_max
+        t_cur = rmsg%timestamp()
+        t_max = rmsg%timestamp() + t_max
         call LIBMUSCLE_Message_free(rmsg)
 
         do while (t_cur + dt < t_max)
@@ -50,8 +50,8 @@ program reaction
 
         ! O_F
         sdata = LIBMUSCLE_Data_create_grid(U, 'x')
-        smsg = LIBMUSCLE_Message_create(t_cur, sdata)
-        call LIBMUSCLE_Instance_send(instance, 'final_state', smsg)
+        smsg = LIBMUSCLE_Message(t_cur, sdata)
+        call instance%send('final_state', smsg)
         call LIBMUSCLE_Message_free(smsg)
         call LIBMUSCLE_Data_free(sdata)
         deallocate (U)

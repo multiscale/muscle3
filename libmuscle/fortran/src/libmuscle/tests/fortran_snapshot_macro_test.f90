@@ -16,66 +16,66 @@ program snapshot_macro
     integer :: i
     real (LIBMUSCLE_real8) :: dt, t_max, t_cur, t_next
 
-    ports = LIBMUSCLE_PortsDescription_create()
-    call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_O_I, 'o_i')
-    call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_S, 's')
-    instance = LIBMUSCLE_Instance_create( &
+    ports = LIBMUSCLE_PortsDescription()
+    call ports%add(YMMSL_Operator_O_I, 'o_i')
+    call ports%add(YMMSL_Operator_S, 's')
+    instance = LIBMUSCLE_Instance( &
         ports, LIBMUSCLE_InstanceFlags(USES_CHECKPOINT_API=.true.))
     call LIBMUSCLE_PortsDescription_free(ports)
 
-    do while (LIBMUSCLE_Instance_reuse_instance(instance))
-        dt = LIBMUSCLE_Instance_get_setting_as_real8(instance, 'dt')
-        t_max = LIBMUSCLE_Instance_get_setting_as_real8(instance, 't_max')
+    do while (instance%reuse_instance())
+        dt = instance%get_setting_as_real8('dt')
+        t_max = instance%get_setting_as_real8('t_max')
 
-        if (LIBMUSCLE_Instance_resuming(instance)) then
-            msg = LIBMUSCLE_Instance_load_snapshot(instance)
+        if (instance%resuming()) then
+            msg = instance%load_snapshot()
             ! load state from message
-            t_cur = LIBMUSCLE_Message_timestamp(msg)
-            rdata = LIBMUSCLE_Message_get_data(msg)
-            i = LIBMUSCLE_DataConstRef_as_int(rdata)
+            t_cur = msg%timestamp()
+            rdata = msg%get_data()
+            i = rdata%as_int()
 
             call LIBMUSCLE_DataConstRef_free(rdata)
             call LIBMUSCLE_Message_free(msg)
         end if
 
-        if (LIBMUSCLE_Instance_should_init(instance)) then
-            t_cur = LIBMUSCLE_Instance_get_setting_as_real8(instance, 't0')
+        if (instance%should_init()) then
+            t_cur = instance%get_setting_as_real8('t0')
             i = 0
         end if
 
         do while (t_cur + dt <= t_max)
-            sdata = LIBMUSCLE_Data_create(i)
-            msg = LIBMUSCLE_Message_create(t_cur, sdata)
+            sdata = LIBMUSCLE_Data(i)
+            msg = LIBMUSCLE_Message(t_cur, sdata)
             t_next = t_cur + dt
             if (t_next + dt <= t_max) then
-                call LIBMUSCLE_Message_set_next_timestamp(msg, t_next)
+                call msg%set_next_timestamp(t_next)
             end if
-            call LIBMUSCLE_Instance_send(instance, 'o_i', msg)
+            call instance%send('o_i', msg)
             call LIBMUSCLE_Message_free(msg)
             call LIBMUSCLE_Data_free(sdata)
 
-            msg = LIBMUSCLE_Instance_receive(instance, 's')
-            rdata = LIBMUSCLE_Message_get_data(msg)
-            call assert_eq_integer(LIBMUSCLE_DataConstRef_as_int(rdata), i)
+            msg = instance%receive('s')
+            rdata = msg%get_data()
+            call assert_eq_integer(rdata%as_int(), i)
             call LIBMUSCLE_DataConstRef_free(rdata)
             call LIBMUSCLE_Message_free(msg)
 
             i = i + 1
             t_cur = t_cur + dt
 
-            if (LIBMUSCLE_Instance_should_save_snapshot(instance, t_cur)) then
-                sdata = LIBMUSCLE_Data_create(i)
-                msg = LIBMUSCLE_Message_create(t_cur, sdata)
-                call LIBMUSCLE_Instance_save_snapshot(instance, msg)
+            if (instance%should_save_snapshot(t_cur)) then
+                sdata = LIBMUSCLE_Data(i)
+                msg = LIBMUSCLE_Message(t_cur, sdata)
+                call instance%save_snapshot(msg)
                 call LIBMUSCLE_Message_free(msg)
                 call LIBMUSCLE_Data_free(sdata)
             end if
         end do
 
-        if (LIBMUSCLE_Instance_should_save_final_snapshot(instance)) then
-            sdata = LIBMUSCLE_Data_create(i)
-            msg = LIBMUSCLE_Message_create(t_cur, sdata)
-            call LIBMUSCLE_Instance_save_final_snapshot(instance, msg)
+        if (instance%should_save_final_snapshot()) then
+            sdata = LIBMUSCLE_Data(i)
+            msg = LIBMUSCLE_Message(t_cur, sdata)
+            call instance%save_final_snapshot(msg)
             call LIBMUSCLE_Message_free(msg)
             call LIBMUSCLE_Data_free(sdata)
         end if

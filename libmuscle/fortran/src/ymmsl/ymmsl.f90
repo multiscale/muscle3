@@ -31,7 +31,44 @@ module ymmsl
     integer, parameter, public :: YMMSL_Operator = selected_int_kind(9)
 
     type YMMSL_Settings
-        integer (c_intptr_t) :: ptr
+        integer (c_intptr_t) :: ptr = 0
+    contains
+        final :: YMMSL_Settings_free
+        procedure :: equals => YMMSL_Settings_equals
+        procedure :: size => YMMSL_Settings_size
+        procedure :: empty => YMMSL_Settings_empty
+        procedure :: is_a_character => YMMSL_Settings_is_a_character
+        procedure :: is_a_int4 => YMMSL_Settings_is_a_int4
+        procedure :: is_a_int8 => YMMSL_Settings_is_a_int8
+        procedure :: is_a_real8 => YMMSL_Settings_is_a_real8
+        procedure :: is_a_logical => YMMSL_Settings_is_a_logical
+        procedure :: is_a_real8array => YMMSL_Settings_is_a_real8array
+        procedure :: is_a_real8array2 => YMMSL_Settings_is_a_real8array2
+        procedure :: set_character => YMMSL_Settings_set_character
+        procedure :: set_int4 => YMMSL_Settings_set_int4
+        procedure :: set_int8 => YMMSL_Settings_set_int8
+        procedure :: set_real8 => YMMSL_Settings_set_real8
+        procedure :: set_logical => YMMSL_Settings_set_logical
+        procedure :: set_real8array => YMMSL_Settings_set_real8array
+        procedure :: set_real8array2 => YMMSL_Settings_set_real8array2
+        generic :: set => set_character, &
+            set_int4, &
+            set_int8, &
+            set_real8, &
+            set_logical, &
+            set_real8array, &
+            set_real8array2
+        procedure :: get_as_character => YMMSL_Settings_get_as_character
+        procedure :: get_as_int4 => YMMSL_Settings_get_as_int4
+        procedure :: get_as_int8 => YMMSL_Settings_get_as_int8
+        procedure :: get_as_real8 => YMMSL_Settings_get_as_real8
+        procedure :: get_as_logical => YMMSL_Settings_get_as_logical
+        procedure :: get_as_real8array => YMMSL_Settings_get_as_real8array
+        procedure :: get_as_real8array2 => YMMSL_Settings_get_as_real8array2
+        procedure :: contains => YMMSL_Settings_contains
+        procedure :: erase => YMMSL_Settings_erase
+        procedure :: clear => YMMSL_Settings_clear
+        procedure :: key => YMMSL_Settings_key
     end type YMMSL_Settings
     public :: YMMSL_Settings
 
@@ -527,6 +564,10 @@ module ymmsl
 
     end interface
 
+    interface YMMSL_Settings
+        module procedure YMMSL_Settings_create
+    end interface
+
     interface YMMSL_Settings_set
         module procedure &
             YMMSL_Settings_set_character, &
@@ -554,21 +595,20 @@ contains
         YMMSL_Settings_create%ptr = ret_val
     end function YMMSL_Settings_create
 
-    subroutine YMMSL_Settings_free( &
-            self)
+    subroutine YMMSL_Settings_free(self)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        type(YMMSL_Settings), intent(inout) :: self
 
-        call YMMSL_Settings_free_( &
-            self%ptr)
+        call YMMSL_Settings_free_(self%ptr)
+        self%ptr = 0
     end subroutine YMMSL_Settings_free
 
     function YMMSL_Settings_equals( &
             self, &
             other)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
-        type(YMMSL_Settings), intent(in) :: other
+        class(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: other
         logical :: YMMSL_Settings_equals
 
         logical (c_bool) :: ret_val
@@ -583,7 +623,7 @@ contains
     function YMMSL_Settings_size( &
             self)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         integer (YMMSL_size) :: YMMSL_Settings_size
 
         integer (c_size_t) :: ret_val
@@ -596,7 +636,7 @@ contains
     function YMMSL_Settings_empty( &
             self)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         logical :: YMMSL_Settings_empty
 
         logical (c_bool) :: ret_val
@@ -613,7 +653,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -670,7 +710,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -727,7 +767,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -784,7 +824,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -841,7 +881,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -898,7 +938,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -955,7 +995,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -1011,7 +1051,7 @@ contains
             key, &
             value)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         character (len=*), intent(in) :: value
 
@@ -1026,7 +1066,7 @@ contains
             key, &
             value)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         integer (YMMSL_int4), intent(in) :: value
 
@@ -1041,7 +1081,7 @@ contains
             key, &
             value)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         integer (selected_int_kind(18)), intent(in) :: value
 
@@ -1056,7 +1096,7 @@ contains
             key, &
             value)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         real (YMMSL_real8), intent(in) :: value
 
@@ -1071,7 +1111,7 @@ contains
             key, &
             value)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         logical, intent(in) :: value
 
@@ -1086,7 +1126,7 @@ contains
             key, &
             value)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         real (YMMSL_real8), dimension(:), intent(in) :: value
 
@@ -1101,7 +1141,7 @@ contains
             key, &
             value)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         real (YMMSL_real8), dimension(:,:), intent(in) :: value
 
@@ -1117,7 +1157,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -1184,7 +1224,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -1240,7 +1280,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -1296,7 +1336,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -1352,7 +1392,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
@@ -1410,7 +1450,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         real (YMMSL_real8), dimension(:), intent(out) :: value
         integer, optional, intent(out) :: err_code
@@ -1473,7 +1513,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         real (YMMSL_real8), dimension(:,:), intent(out) :: value
         integer, optional, intent(out) :: err_code
@@ -1533,7 +1573,7 @@ contains
             self, &
             key)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         logical :: YMMSL_Settings_contains
 
@@ -1550,7 +1590,7 @@ contains
             self, &
             key)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         character (len=*), intent(in) :: key
         integer (YMMSL_size) :: YMMSL_Settings_erase
 
@@ -1565,7 +1605,7 @@ contains
     subroutine YMMSL_Settings_clear( &
             self)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
 
         call YMMSL_Settings_clear_( &
             self%ptr)
@@ -1577,7 +1617,7 @@ contains
             err_code, &
             err_msg)
         implicit none
-        type(YMMSL_Settings), intent(in) :: self
+        class(YMMSL_Settings), intent(in) :: self
         integer (YMMSL_size), intent(in) :: i
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg

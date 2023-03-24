@@ -789,7 +789,7 @@ class Obj(Par):
         return self.class_name
 
     def f_type(self) -> List[Tuple[str, str]]:
-        return self._regular_type('type({}_{})'.format(
+        return self._regular_type('class({}_{})'.format(
             self.ns_prefix, self.class_name))
 
     def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
@@ -1336,6 +1336,10 @@ class Member(abc.ABC):
         ...
 
     @abc.abstractmethod
+    def fortran_contains_definition(self) -> str:
+        ...
+
+    @abc.abstractmethod
     def fortran_exports(self) -> List[str]:
         ...
 
@@ -1662,6 +1666,12 @@ class MemFun(Member):
             return ['{}_{}_{}_;'.format(
                     self.ns_prefix, self.class_name, self.name)]
 
+    def fortran_contains_definition(self) -> str:
+        if self.f_override == '':
+            return ''
+        full_name = f'{self.ns_prefix}_{self.class_name}_{self.name}'
+        return f'    procedure :: {self.name} => {full_name}\n'
+
     @staticmethod
     def _default_fc_chain_call(**kwargs: str) -> str:
         return '{fc_func_name}( &\n{fc_args})'.format(**kwargs)
@@ -1802,6 +1812,19 @@ class Constructor(MemFun):
     def reset_class_name(self, class_name: str) -> None:
         self.class_name = class_name
         self.ret_type = Obj(class_name)
+
+    def fortran_overload(self) -> str:
+        if self.name != "create":
+            return ''
+        return indent(dedent(f"""\
+            interface {self.ns_prefix}_{self.class_name}
+                module procedure {self.ns_prefix}_{self.class_name}_{self.name}
+            end interface
+
+            """), 4*' ')
+
+    def fortran_contains_definition(self) -> str:
+        return ''
 
     def _fc_cpp_call(self) -> str:
         # Create object instead of calling something
@@ -2009,6 +2032,22 @@ class Destructor(MemFun):
         # Destroy object instead of calling something
         return '    delete self_p;\n'
 
+    def fortran_function(self) -> str:
+        return indent(dedent(f"""\
+            subroutine {self.ns_prefix}_{self.class_name}_{self.name}(self)
+                implicit none
+                type({self.ns_prefix}_{self.class_name}), intent(inout) :: self
+
+                call {self.ns_prefix}_{self.class_name}_{self.name}_(self%ptr)
+                self%ptr = 0
+            end subroutine {self.ns_prefix}_{self.class_name}_{self.name}
+
+            """), 4*' ')
+
+    def fortran_contains_definition(self) -> str:
+        full_name = f'{self.ns_prefix}_{self.class_name}_{self.name}'
+        return f'    final :: {full_name}\n'
+
 
 class MultiMemFun(Member):
     """A base class for classes that generate many functions.
@@ -2077,6 +2116,9 @@ class MultiMemFun(Member):
         """Generates a list of linker exports for the Fortran symbols.
         """
         return [e for i in self.instances for e in i.fortran_exports()]
+
+    def fortran_contains_definition(self) -> str:
+        return ''.join(i.fortran_contains_definition() for i in self.instances)
 
 
 class MemFunTmplInstance(MemFun):
@@ -2237,18 +2279,20 @@ class OverloadSet(Member):
     idea. This class specifies a set of member functions to aggregate
     under a single name.
     """
-    def __init__(self, name: str, names: List[str]) -> None:
+    def __init__(self, name: str, names: List[str], is_constructor: bool) -> None:
         """Create an OverloadSet.
 
         Args:
             name: Name of the overloaded function to generate.
             names: List of function names to aggregate.
+            is_constructor: Whether this overload set is for a constructor.
         """
         super().__init__(name)
         self.names = names
+        self.is_constructor = is_constructor
 
     def __copy__(self) -> 'OverloadSet':
-        result = OverloadSet(self.name, self.names)
+        result = OverloadSet(self.name, self.names, self.is_constructor)
         result.ns_prefix = self.ns_prefix
         result.class_name = self.class_name
         result.public = self.public
@@ -2265,14 +2309,22 @@ class OverloadSet(Member):
 
     def fortran_overload(self) -> str:
         prefix = '{}_{}'.format(self.ns_prefix, self.class_name)
-        result = '    interface {}_{}\n'.format(prefix, self.name)
-        result += '        module procedure &\n'
+        interfaces = [f'{prefix}_{self.name}']
+        # do not generate a fortran constructor for named constructors like create_grid
+        if self.is_constructor and self.name == 'create':
+            interfaces.append(f"{prefix}")
 
-        names = ['{}{}_{}'.format(12*' ', prefix, name)
-                 for name in self.names]
-        result += '{}\n'.format(', &\n'.join(names))
+        result = ''
+        for interface in interfaces:
+            result += '    interface {}\n'.format(interface)
+            result += '        module procedure &\n'
 
-        result += '    end interface\n\n'
+            names = ['{}{}_{}'.format(12*' ', prefix, name)
+                     for name in self.names]
+            result += '{}\n'.format(', &\n'.join(names))
+
+            result += '    end interface\n\n'
+
         return result
 
     def fortran_public_declaration(self) -> str:
@@ -2287,6 +2339,12 @@ class OverloadSet(Member):
         """Generates a list of linker exports for the Fortran symbols.
         """
         return []
+
+    def fortran_contains_definition(self) -> str:
+        if self.is_constructor:
+            return ''
+        mem_fun_names = ', &\n        '.join(self.names)
+        return f'    generic :: {self.name} => {mem_fun_names}\n'
 
 
 class Class:
@@ -2367,7 +2425,7 @@ class Class:
         """
         result = ''
         for member in self.members:
-            if isinstance(member, OverloadSet):
+            if isinstance(member, (OverloadSet, Constructor)):
                 result += member.fortran_overload()
         return result
 
@@ -2375,7 +2433,10 @@ class Class:
         """Create a Fortran type/handle definition for this class.
         """
         result = 'type {}_{}\n'.format(self.ns_prefix, self.name)
-        result += '    integer (c_intptr_t) :: ptr\n'
+        result += '    integer (c_intptr_t) :: ptr = 0\n'
+        ctn = ''.join(member.fortran_contains_definition() for member in self.members)
+        if ctn:
+            result += 'contains\n' + ctn
         result += 'end type {}_{}\n'.format(self.ns_prefix, self.name)
         if self.public:
             result += 'public :: {}_{}\n'.format(self.ns_prefix, self.name)

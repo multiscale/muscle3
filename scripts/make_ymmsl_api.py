@@ -42,7 +42,7 @@ settings_desc = Class('Settings', None, [
     IndexAssignmentOperator('set_real8array2', [String('key'), Vec2Dbl('value')]),
     OverloadSet('set', [
         'set_character', 'set_int4', 'set_int8', 'set_real8', 'set_logical',
-        'set_real8array', 'set_real8array2']),
+        'set_real8array', 'set_real8array2'], False),
     MemFunTmpl(
         [String(), Int32t(), Int64t(), Double(), Bool(), VecDbl('value'),
          Vec2Dbl('value')],

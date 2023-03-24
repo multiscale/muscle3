@@ -266,7 +266,7 @@ class Elements(MultiMemFun):
                             err_msg)
 
                         implicit none
-                        type(LIBMUSCLE_$CLASSNAME$), intent(in) :: self
+                        class(LIBMUSCLE_$CLASSNAME$), intent(in) :: self
                         {2}, dimension({3}), intent(out) :: elements
                         integer, optional, intent(out) :: err_code
                         character(:), allocatable, optional, intent(out) :: err_msg
@@ -372,10 +372,10 @@ dataconstref_desc = Class('DataConstRef', None, [
     OverloadSet('create', [
         'create_nil', 'create_logical', 'create_character', 'create_int1',
         'create_int2', 'create_int4', 'create_int8', 'create_real4',
-        'create_real8', 'create_settings', 'create_copy']),
+        'create_real8', 'create_settings', 'create_copy'], True),
     GridConstructor(False),
     GridConstructor(True),
-    OverloadSet('create_grid', create_grid_overloads),
+    OverloadSet('create_grid', create_grid_overloads, True),
     Destructor(),
     MemFunTmpl(
         [Bool(), String(), Int(), Char(), Int16t(), Int32t(), Int64t(),
@@ -485,7 +485,7 @@ dataconstref_desc = Class('DataConstRef', None, [
             }
 
             """)),
-    OverloadSet('get_item', ['get_item_by_key', 'get_item_by_index']),
+    OverloadSet('get_item', ['get_item_by_key', 'get_item_by_index'], False),
     MemFun(
         Sizet(), 'num_dims', [], True,
         fc_override=dedent("""\
@@ -526,7 +526,7 @@ dataconstref_desc = Class('DataConstRef', None, [
         'elements_6_int4', 'elements_6_int8',
         'elements_7_logical', 'elements_7_real4', 'elements_7_real8',
         'elements_7_int4', 'elements_7_int8',
-        ]),
+        ], False),
     MemFun(Bool(), 'has_indexes', [], True),
     MemFun(String(), 'index', [Sizet('i')], True,
            cpp_chain_call=lambda **kwargs: 'self_p->indexes().at(i - 1)'),
@@ -551,7 +551,7 @@ data_desc = Class('Data', dataconstref_desc, [
 
             """)),
     OverloadSet('create_byte_array', [
-        'create_byte_array_empty', 'create_byte_array_from_buf']),
+        'create_byte_array_empty', 'create_byte_array_from_buf'], True),
 
     MemFun(
         Bytes('data'), 'as_byte_array', [], True,
@@ -588,7 +588,7 @@ data_desc = Class('Data', dataconstref_desc, [
     AssignmentOperator('set_data', Obj('Data', 'value')),
     OverloadSet('set', [
         'set_logical', 'set_character', 'set_int1', 'set_int2', 'set_int4',
-        'set_int8', 'set_real4', 'set_real8', 'set_data']),
+        'set_int8', 'set_real4', 'set_real8', 'set_data'], False),
     MemFun(
         Void(), 'set_nil', [], False,
         fc_override=dedent("""\
@@ -664,7 +664,7 @@ data_desc = Class('Data', dataconstref_desc, [
             }
 
             """)),
-    OverloadSet('get_item', ['get_item_by_key', 'get_item_by_index']),
+    OverloadSet('get_item', ['get_item_by_key', 'get_item_by_index'], False),
     IndexAssignmentOperator('set_item_key_logical',     [String('key'), Bool('value')],         True),  # noqa: E501
     IndexAssignmentOperator('set_item_key_character',   [String('key'), String('value')],       True),  # noqa: E501
     IndexAssignmentOperator('set_item_key_int1',        [String('key'), Char('value')],         True),  # noqa: E501
@@ -690,7 +690,7 @@ data_desc = Class('Data', dataconstref_desc, [
         'set_item_index_logical', 'set_item_index_character', 'set_item_index_int1',
         'set_item_index_int2', 'set_item_index_int4', 'set_item_index_int8',
         'set_item_index_real4', 'set_item_index_real8', 'set_item_index_data'
-        ]),
+        ], False),
     MemFun(
         String(), 'key', [Sizet('i')], True,
         fc_override=dedent("""\
@@ -775,7 +775,7 @@ message_desc = Class('Message', None, [
             Obj('Settings', 'settings')],
         'create_tnds'),
     OverloadSet('create', [
-        'create_t', 'create_td', 'create_tnd', 'create_tds', 'create_tnds']),
+        'create_t', 'create_td', 'create_tnd', 'create_tds', 'create_tnds'], True),
     Destructor(),
     MemFun(Double(), 'timestamp'),
     MemFun(Void(), 'set_timestamp', [Double('timestamp')]),
@@ -794,7 +794,7 @@ message_desc = Class('Message', None, [
         Void(), 'set_data_dcr', [Obj('DataConstRef', 'data')],
         cpp_chain_call=lambda **kwargs: 'self_p->set_data({})'.format(
             kwargs['cpp_args'])),
-    OverloadSet('set_data', ['set_data_d', 'set_data_dcr']),
+    OverloadSet('set_data', ['set_data_d', 'set_data_dcr'], False),
     MemFun(Bool(), 'has_settings'),
     MemFun(
         Obj('Settings'), 'get_settings',
@@ -980,7 +980,7 @@ instance_members = [
            [String('port_name'), Obj('Message', 'message'), Int('slot')],
            cpp_chain_call=lambda **kwargs: 'self_p->send({})'.format(
                kwargs['cpp_args'])),
-    OverloadSet('send', ['send_pm', 'send_pms']),
+    OverloadSet('send', ['send_pm', 'send_pms'], False),
 
     MemFun(Obj('Message'), 'receive_p', [String('port_name')], True,
            cpp_chain_call=lambda **kwargs: 'self_p->receive({})'.format(
@@ -989,7 +989,7 @@ instance_members = [
            [String('port_name'), Obj('Message', 'default_msg')], True,
            cpp_chain_call=lambda **kwargs: 'self_p->receive({})'.format(
                kwargs['cpp_args'])),
-    OverloadSet('receive', ['receive_p', 'receive_pd']),
+    OverloadSet('receive', ['receive_p', 'receive_pd'], False),
 
     MemFun(Obj('Message'), 'receive_ps', [String('port_name'), Int('slot')],
            True,
@@ -1000,7 +1000,7 @@ instance_members = [
            True,
            cpp_chain_call=lambda **kwargs: 'self_p->receive({})'.format(
                kwargs['cpp_args'])),
-    OverloadSet('receive_on_slot', ['receive_ps', 'receive_psd']),
+    OverloadSet('receive_on_slot', ['receive_ps', 'receive_psd'], False),
 
     MemFun(Obj('Message'), 'receive_with_settings_p',
            [String('port_name')], True,
@@ -1011,7 +1011,7 @@ instance_members = [
            cpp_chain_call=lambda **kwargs: ('self_p->receive_with_settings({})'.format(
                kwargs['cpp_args']))),
     OverloadSet('receive_with_settings',
-                ['receive_with_settings_p', 'receive_with_settings_pd']),
+                ['receive_with_settings_p', 'receive_with_settings_pd'], False),
 
     MemFun(Obj('Message'), 'receive_with_settings_ps',
            [String('port_name'), Int('slot')], True,
@@ -1023,7 +1023,7 @@ instance_members = [
            cpp_chain_call=lambda **kwargs: ('self_p->receive_with_settings({})'.format(
                kwargs['cpp_args']))),
     OverloadSet('receive_with_settings_on_slot',
-                ['receive_with_settings_ps', 'receive_with_settings_psd']),
+                ['receive_with_settings_ps', 'receive_with_settings_psd'], False),
     MemFun(Bool(), 'resuming'),
     MemFun(Bool(), 'should_init'),
     MemFun(Obj('Message'), 'load_snapshot'),

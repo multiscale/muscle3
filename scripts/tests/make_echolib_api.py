@@ -42,7 +42,7 @@ echo_desc = Class('Echo', None, [
                 '        call get_command_argument(i, value=cur_arg)\n'
                 '        cur_arg(arg_len+1:arg_len+1) = c_null_char\n'
                 '        call ECHO_impl_CmdLineArgs_set_arg_('
-                        'cla, i, cur_arg, int(len(cur_arg), c_size_t))\n'
+                        'cla, i, cur_arg, int(len(cur_arg), c_size_t))\n'  # noqa: E131
                 '        deallocate(cur_arg)\n'
                 '    end do\n'
                 '    ECHO_Echo_create%ptr = ECHO_Echo_create_(cla)\n'
@@ -66,7 +66,7 @@ echo_desc = Class('Echo', None, [
         MemFunTmpl(
                 [Int(), Double(), String()],
                 T(), 'echo_template', [T('value')], True),
-        OverloadSet('echo', ['echo_int', 'echo_bool', 'echo_double']),
+        OverloadSet('echo', ['echo_int', 'echo_bool', 'echo_double'], False),
         ])
 
 

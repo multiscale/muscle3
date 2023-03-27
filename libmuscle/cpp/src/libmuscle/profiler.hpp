@@ -6,11 +6,12 @@
 
 
 #include <libmuscle/mmp_client.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/profiling.hpp>
 #include <libmuscle/timestamp.hpp>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /** Collects profiling events and sends them to the manager.
  */

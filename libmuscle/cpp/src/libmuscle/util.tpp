@@ -3,7 +3,7 @@
 #include <utility>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 template <typename T>
 Optional<T>::Optional()

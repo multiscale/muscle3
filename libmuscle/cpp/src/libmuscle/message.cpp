@@ -4,7 +4,7 @@
 using ymmsl::Settings;
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 Message::Message(
         double timestamp)

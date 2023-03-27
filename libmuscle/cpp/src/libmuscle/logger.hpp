@@ -5,6 +5,7 @@
 #else
 
 #include <libmuscle/mmp_client.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/logging.hpp>
 
 #include <fstream>
@@ -12,7 +13,7 @@
 #include <string>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /** A component that lets you log things to an MMPClient.
  */

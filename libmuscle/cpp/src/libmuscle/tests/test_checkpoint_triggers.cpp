@@ -4,11 +4,11 @@
 
 #include <libmuscle/mcp/data_pack.hpp>
 
-using libmuscle::impl::TriggerManager;
-using libmuscle::impl::AtCheckpointTrigger;
-using libmuscle::impl::RangeCheckpointTrigger;
-using libmuscle::impl::CombinedCheckpointTriggers;
-using libmuscle::impl::Data;
+using libmuscle::_MUSCLE_IMPL_NS::TriggerManager;
+using libmuscle::_MUSCLE_IMPL_NS::AtCheckpointTrigger;
+using libmuscle::_MUSCLE_IMPL_NS::RangeCheckpointTrigger;
+using libmuscle::_MUSCLE_IMPL_NS::CombinedCheckpointTriggers;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
 
 int main(int argc, char *argv[]) {
     ::testing::InitGoogleTest(&argc, argv);

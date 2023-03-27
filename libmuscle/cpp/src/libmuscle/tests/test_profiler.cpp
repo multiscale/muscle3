@@ -18,11 +18,11 @@
 #include <gtest/gtest.h>
 
 
-using libmuscle::impl::Profiler;
-using libmuscle::impl::ProfileEvent;
-using libmuscle::impl::ProfileEventType;
-using libmuscle::impl::ProfileTimestamp;
-using libmuscle::impl::MockMMPClient;
+using libmuscle::_MUSCLE_IMPL_NS::Profiler;
+using libmuscle::_MUSCLE_IMPL_NS::ProfileEvent;
+using libmuscle::_MUSCLE_IMPL_NS::ProfileEventType;
+using libmuscle::_MUSCLE_IMPL_NS::ProfileTimestamp;
+using libmuscle::_MUSCLE_IMPL_NS::MockMMPClient;
 using ymmsl::Port;
 
 
@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
 }
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 // Helper for accessing internal state
 
@@ -86,7 +86,7 @@ bool operator==(ProfileEvent const & lhs, ProfileEvent const & rhs) {
 
 } }
 
-using libmuscle::impl::TestProfiler;
+using libmuscle::_MUSCLE_IMPL_NS::TestProfiler;
 
 
 /* Mocks have internal state, which needs to be reset before each test. This

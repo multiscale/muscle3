@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from copy import copy
+from copy import copy, deepcopy
 from textwrap import indent, dedent
 from typing import List, cast
 
@@ -48,7 +48,7 @@ class GridConstructor(MultiMemFun):
             # This is not set yet here, but f_type() needs it.
             # The dict is only used by Obj, which we don't have.
             typ.name = 'data_array'
-            typ.set_ns_prefix({}, 'LIBMUSCLE')
+            typ.set_ns_prefix({}, 'LIBMUSCLE', 'LIBMUSCLE')
 
             instance_params: List[Par] = [Array(1, copy(typ), 'data_array')]
             if not with_names:
@@ -67,7 +67,7 @@ class GridConstructor(MultiMemFun):
                     instance_params.append(String(arg_name))
                 instance_name = 'grid_{}_n'.format(typ.tname())
                 fc_override = dedent("""\
-                    std::intptr_t LIBMUSCLE_$CLASSNAME$_create_grid_{0}_n_(
+                    std::intptr_t $C_PREFIX$_$CLASSNAME$_create_grid_{0}_n_(
                             {1} * data_array,
                             std::size_t * data_array_shape,
                             std::size_t data_array_ndims,
@@ -142,26 +142,26 @@ class GridConstructor(MultiMemFun):
                     dim_list = ', '.join([':'] * ndims)
 
                     f_override = dedent("""\
-                        function LIBMUSCLE_$CLASSNAME$_create_grid_{0}_{1}_n( &
+                        function $F_PREFIX$_$CLASSNAME$_create_grid_{0}_{1}_n( &
                                 data_array, &
                                 {2})
 
                             implicit none
                             {6}, dimension({8}), intent(in) :: data_array
                             {3}
-                            type(LIBMUSCLE_$CLASSNAME$) :: LIBMUSCLE_$CLASSNAME$_create_grid_{0}_{1}_n
+                            type($F_PREFIX$_$CLASSNAME$) :: $F_PREFIX$_$CLASSNAME$_create_grid_{0}_{1}_n
 
                             integer (c_intptr_t) :: ret_val
 
-                            ret_val = LIBMUSCLE_$CLASSNAME$_create_grid_{1}_n_( &
+                            ret_val = $C_PREFIX$_$CLASSNAME$_create_grid_{1}_n_( &
                                     {7}, &
                                     int(shape(data_array), c_size_t), &
                                     {0}_LIBMUSCLE_size, &
                         {4}{5} &
                                 )
 
-                            LIBMUSCLE_$CLASSNAME$_create_grid_{0}_{1}_n%ptr = ret_val
-                        end function LIBMUSCLE_$CLASSNAME$_create_grid_{0}_{1}_n
+                            $F_PREFIX$_$CLASSNAME$_create_grid_{0}_{1}_n%ptr = ret_val
+                        end function $F_PREFIX$_$CLASSNAME$_create_grid_{0}_{1}_n
 
                         """).format(  # noqa: E501
                                 ndims, typ.tname(), name_args, name_types.strip(),
@@ -184,7 +184,8 @@ class GridConstructor(MultiMemFun):
 
     def __copy__(self) -> 'GridConstructor':
         result = GridConstructor(self.with_names)
-        result.ns_prefix = self.ns_prefix
+        result.c_prefix = self.c_prefix
+        result.f_prefix = self.f_prefix
         result.public = self.public
         if self.class_name is None:
             result.class_name = None
@@ -212,10 +213,10 @@ class Elements(MultiMemFun):
             # This is not set yet here, but f_type() needs it.
             # The dict is only used by Obj, which we don't have.
             typ.name = 'elements'
-            typ.set_ns_prefix({}, 'LIBMUSCLE')
+            typ.set_ns_prefix({}, 'LIBMUSCLE', 'LIBMUSCLE')
             func_name = 'elements_{}'.format(typ.tname())
             fc_override = dedent("""\
-                    void LIBMUSCLE_$CLASSNAME$_elements_{0}_(
+                    void $C_PREFIX$_$CLASSNAME$_elements_{0}_(
                             std::intptr_t self,
                             std::size_t ndims,
                             {1} ** elements,
@@ -259,14 +260,14 @@ class Elements(MultiMemFun):
                 dims_list = ', '.join([':']*ndims)
                 rev_dims = ', '.join(map(str, reversed(range(1, ndims+1))))
                 f_override = dedent("""\
-                    subroutine LIBMUSCLE_$CLASSNAME$_elements_{0}_{1}( &
+                    subroutine $F_PREFIX$_$CLASSNAME$_elements_{0}_{1}( &
                             self, &
                             elements, &
                             err_code, &
                             err_msg)
 
                         implicit none
-                        class(LIBMUSCLE_$CLASSNAME$), intent(in) :: self
+                        class($F_PREFIX$_$CLASSNAME$), intent(in) :: self
                         {2}, dimension({3}), intent(out) :: elements
                         integer, optional, intent(out) :: err_code
                         character(:), allocatable, optional, intent(out) :: err_msg
@@ -283,7 +284,7 @@ class Elements(MultiMemFun):
                         character(:), allocatable :: err_msg_p
                         integer (c_size_t) :: err_msg_i
 
-                        call LIBMUSCLE_$CLASSNAME$_elements_{1}_( &
+                        call $C_PREFIX$_$CLASSNAME$_elements_{1}_( &
                             self%ptr, &
                             {0}_LIBMUSCLE_size, &
                             ret_val, &
@@ -326,7 +327,7 @@ class Elements(MultiMemFun):
                             call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
                             elements = reshape(f_ret_ptr_linear, ret_val_shape, (/ {4}:: /), (/{5}/))
                         end if
-                    end subroutine LIBMUSCLE_$CLASSNAME$_elements_{0}_{1}
+                    end subroutine $F_PREFIX$_$CLASSNAME$_elements_{0}_{1}
 
                     """).format(  # noqa: E501
                         ndims, typ.tname(), typ.f_ret_type()[1][0][0],
@@ -340,7 +341,8 @@ class Elements(MultiMemFun):
 
     def __copy__(self) -> 'Elements':
         result = Elements()
-        result.ns_prefix = self.ns_prefix
+        result.c_prefix = self.c_prefix
+        result.f_prefix = self.f_prefix
         result.public = self.public
         if self.class_name is None:
             result.class_name = None
@@ -400,7 +402,7 @@ dataconstref_desc = Class('DataConstRef', None, [
     MemFun(
         Bytes('data'), 'as_byte_array', [], True,
         fc_override=dedent("""\
-            void LIBMUSCLE_DataConstRef_as_byte_array_(
+            void $C_PREFIX$_DataConstRef_as_byte_array_(
                     std::intptr_t self,
                     char ** data, std::size_t * data_size,
                     int * err_code, char ** err_msg, std::size_t * err_msg_len
@@ -423,7 +425,7 @@ dataconstref_desc = Class('DataConstRef', None, [
     MemFun(
         Obj('DataConstRef', 'value'), 'get_item_by_key', [String('key')], True,
         fc_override=dedent("""\
-            std::intptr_t LIBMUSCLE_$CLASSNAME$_get_item_by_key_(
+            std::intptr_t $C_PREFIX$_$CLASSNAME$_get_item_by_key_(
                     std::intptr_t self,
                     char * key, std::size_t key_size,
                     int * err_code, char ** err_msg, std::size_t * err_msg_len
@@ -456,7 +458,7 @@ dataconstref_desc = Class('DataConstRef', None, [
     MemFun(
         Obj('DataConstRef', 'value'), 'get_item_by_index', [Sizet('i')], True,
         fc_override=dedent("""\
-            std::intptr_t LIBMUSCLE_$CLASSNAME$_get_item_by_index_(
+            std::intptr_t $C_PREFIX$_$CLASSNAME$_get_item_by_index_(
                     std::intptr_t self,
                     std::size_t i,
                     int * err_code, char ** err_msg, std::size_t * err_msg_len
@@ -489,7 +491,7 @@ dataconstref_desc = Class('DataConstRef', None, [
     MemFun(
         Sizet(), 'num_dims', [], True,
         fc_override=dedent("""\
-            std::size_t LIBMUSCLE_$CLASSNAME$_num_dims_(
+            std::size_t $C_PREFIX$_$CLASSNAME$_num_dims_(
                     std::intptr_t self,
                     int * err_code, char ** err_msg, std::size_t * err_msg_len
             ) {
@@ -542,7 +544,7 @@ data_desc = Class('Data', dataconstref_desc, [
     NamedConstructor(
         [Bytes('buf')], 'byte_array_from_buf', cpp_func_name='byte_array',
         fc_override=dedent("""\
-            std::intptr_t LIBMUSCLE_Data_create_byte_array_from_buf_(
+            std::intptr_t $C_PREFIX$_Data_create_byte_array_from_buf_(
                    char * buf, std::size_t buf_size
             ) {
                Data * result = new Data(Data::byte_array(buf, buf_size));
@@ -556,7 +558,7 @@ data_desc = Class('Data', dataconstref_desc, [
     MemFun(
         Bytes('data'), 'as_byte_array', [], True,
         fc_override=dedent("""\
-            void LIBMUSCLE_Data_as_byte_array_(
+            void $C_PREFIX$_Data_as_byte_array_(
                     std::intptr_t self,
                     char ** data, std::size_t * data_size,
                     int * err_code, char ** err_msg, std::size_t * err_msg_len
@@ -592,7 +594,7 @@ data_desc = Class('Data', dataconstref_desc, [
     MemFun(
         Void(), 'set_nil', [], False,
         fc_override=dedent("""\
-            void LIBMUSCLE_Data_set_nil_(std::intptr_t self) {
+            void $C_PREFIX$_Data_set_nil_(std::intptr_t self) {
                 Data * self_p = reinterpret_cast<Data *>(self);
                 *self_p = Data();
             }
@@ -602,7 +604,7 @@ data_desc = Class('Data', dataconstref_desc, [
     MemFun(
         Obj('Data', 'value'), 'get_item_by_key', [String('key')], True,
         fc_override=dedent("""\
-            std::intptr_t LIBMUSCLE_Data_get_item_by_key_(
+            std::intptr_t $C_PREFIX$_Data_get_item_by_key_(
                     std::intptr_t self,
                     char * key, std::size_t key_size,
                     int * err_code, char ** err_msg, std::size_t * err_msg_len
@@ -635,7 +637,7 @@ data_desc = Class('Data', dataconstref_desc, [
     MemFun(
         Obj('Data', 'value'), 'get_item_by_index', [Sizet('i')], True,
         fc_override=dedent("""\
-            std::intptr_t LIBMUSCLE_Data_get_item_by_index_(
+            std::intptr_t $C_PREFIX$_Data_get_item_by_index_(
                     std::intptr_t self,
                     std::size_t i,
                     int * err_code, char ** err_msg, std::size_t * err_msg_len
@@ -694,7 +696,7 @@ data_desc = Class('Data', dataconstref_desc, [
     MemFun(
         String(), 'key', [Sizet('i')], True,
         fc_override=dedent("""\
-            void LIBMUSCLE_Data_key_(
+            void $C_PREFIX$_Data_key_(
                     std::intptr_t self, std::size_t i,
                     char ** ret_val, std::size_t * ret_val_size,
                     int * err_code,
@@ -729,7 +731,7 @@ data_desc = Class('Data', dataconstref_desc, [
     MemFun(
         Obj('Data'), 'value', [Sizet('i')], True,
         fc_override=dedent("""\
-            std::intptr_t LIBMUSCLE_Data_value_(
+            std::intptr_t $C_PREFIX$_Data_value_(
                     std::intptr_t self, std::size_t i,
                     int * err_code,
                     char ** err_msg, std::size_t * err_msg_len
@@ -813,7 +815,7 @@ portsdescription_desc = Class('PortsDescription', None, [
     MemFun(
         Sizet(), 'num_ports', [EnumVal('Operator', 'op')],
         fc_override=dedent("""\
-            std::size_t LIBMUSCLE_PortsDescription_num_ports_(std::intptr_t self, int op) {
+            std::size_t $C_PREFIX$_PortsDescription_num_ports_(std::intptr_t self, int op) {
                 PortsDescription * self_p = reinterpret_cast<PortsDescription *>(self);
                 Operator op_e = static_cast<Operator>(op);
                 std::size_t result = 0u;
@@ -833,7 +835,7 @@ instance_constructor = Constructor(
     [Obj('CmdLineArgs', 'cla'), Obj('PortsDescription', 'ports'),
         Int('flags')],
     fc_override=dedent("""\
-        std::intptr_t LIBMUSCLE_Instance_create_(
+        std::intptr_t $C_PREFIX$_Instance_create_(
                 std::intptr_t cla,
                 std::intptr_t ports,
                 int flags
@@ -862,7 +864,7 @@ instance_constructor = Constructor(
             character (kind=c_char, len=:), allocatable :: cur_arg
 
             num_args = command_argument_count()
-            cla = LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(num_args + 1)
+            cla = $C_PREFIX$_IMPL_BINDINGS_CmdLineArgs_create_(num_args + 1)
             do i = 0, num_args
                 call get_command_argument(i, length=arg_len)
                 allocate (character(arg_len+1) :: cur_arg)
@@ -876,9 +878,9 @@ instance_constructor = Constructor(
             if (present(ports)) ports_ptr = ports%ptr
             iflags = 0
             if (present(flags)) iflags = flags%to_int()
-            LIBMUSCLE_Instance_create%ptr = LIBMUSCLE_Instance_create_( &
+            LIBMUSCLE_Instance_create%ptr = $C_PREFIX$_Instance_create_( &
                 cla, ports_ptr, iflags)
-            call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_(cla)
+            call $C_PREFIX$_IMPL_BINDINGS_CmdLineArgs_free_(cla)
         end function LIBMUSCLE_Instance_create
 
         """))
@@ -888,7 +890,7 @@ instance_mpi_constructor = Constructor(
         Obj('CmdLineArgs', 'cla'), Obj('PortsDescription', 'ports'),
         Int('flags'), Int('communicator'), Int('root')],
     fc_override=dedent("""\
-        std::intptr_t LIBMUSCLE_Instance_create_(
+        std::intptr_t $C_PREFIX$_Instance_create_(
                 std::intptr_t cla,
                 std::intptr_t ports,
                 int flags,
@@ -924,13 +926,13 @@ instance_mpi_constructor = Constructor(
             character (kind=c_char, len=:), allocatable :: cur_arg
 
             num_args = command_argument_count()
-            cla = LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(num_args + 1)
+            cla = $C_PREFIX$_IMPL_BINDINGS_CmdLineArgs_create_(num_args + 1)
             do i = 0, num_args
                 call get_command_argument(i, length=arg_len)
                 allocate (character(arg_len+1) :: cur_arg)
                 call get_command_argument(i, value=cur_arg)
                 cur_arg(arg_len+1:arg_len+1) = c_null_char
-                call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg_( &
+                call $C_PREFIX$_IMPL_BINDINGS_CmdLineArgs_set_arg_( &
                        cla, i, cur_arg, int(len(cur_arg), c_size_t))
                 deallocate(cur_arg)
             end do
@@ -943,11 +945,11 @@ instance_mpi_constructor = Constructor(
             aroot = 0
             if (present(root)) aroot = root
             LIBMUSCLE_Instance_create%ptr = &
-                LIBMUSCLE_Instance_create_(cla, ports_ptr, iflags, acommunicator, aroot)
-            call LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_(cla)
+                $C_PREFIX$_Instance_create_(cla, ports_ptr, iflags, acommunicator, aroot)
+            call $C_PREFIX$_IMPL_BINDINGS_CmdLineArgs_free_(cla)
         end function LIBMUSCLE_Instance_create
 
-        """)
+        """)  # noqa: E501
     )
 
 
@@ -1073,12 +1075,12 @@ libmuscle_api_description = API(
         [
             'ymmsl'],
         [
-            Namespace('libmuscle', True, 'LIBMUSCLE', [
+            Namespace('libmuscle', True, 'LIBMUSCLE', 'LIBMUSCLE', [
                 dataconstref_desc, data_desc, portsdescription_desc,
                 message_desc, instance_desc, instanceflags_desc]),
-            Namespace('libmuscle::impl::bindings', False,
+            Namespace('libmuscle::impl::bindings', False, 'LIBMUSCLE_IMPL_BINDINGS',
                       'LIBMUSCLE_IMPL_BINDINGS', [cmdlineargs_desc]),
-            Namespace('ymmsl', None, 'YMMSL',
+            Namespace('ymmsl', None, 'YMMSL', 'YMMSL',
                       ymmsl_forward_members)
         ])
 
@@ -1094,12 +1096,14 @@ libmuscle_mpi_api_description = API(
         [
             'mpi', 'ymmsl'],
         [
-            Namespace('libmuscle', True, 'LIBMUSCLE', [
-                dataconstref_desc, data_desc, portsdescription_desc,
-                message_desc, instance_mpi_desc, instanceflags_desc]),
-            Namespace('libmuscle::impl::bindings', False,
-                      'LIBMUSCLE_IMPL_BINDINGS', [cmdlineargs_desc]),
-            Namespace('ymmsl', None, 'YMMSL',
+            Namespace('libmuscle', True, 'LIBMUSCLE_MPI', 'LIBMUSCLE', [
+                deepcopy(dataconstref_desc), deepcopy(data_desc),
+                deepcopy(portsdescription_desc), deepcopy(message_desc),
+                deepcopy(instance_mpi_desc), deepcopy(instanceflags_desc)]),
+            Namespace('libmuscle::mpi_impl::bindings', False,
+                      'LIBMUSCLE_MPI_IMPL_BINDINGS', 'LIBMUSCLE_IMPL_BINDINGS',
+                      [deepcopy(cmdlineargs_desc)]),
+            Namespace('ymmsl', None, 'YMMSL', 'YMMSL',
                       ymmsl_forward_members)
         ])
 
@@ -1147,4 +1151,4 @@ if __name__ == '__main__':
                     if 'FORTRAN ABI' in line:
                         out_file.write(exports_txt)
                     else:
-                        out_file.write(line)
+                        out_file.write(line.replace("::impl::", "::mpi_impl::"))

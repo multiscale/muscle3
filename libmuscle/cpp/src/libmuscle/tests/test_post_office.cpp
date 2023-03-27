@@ -16,13 +16,13 @@
 #include <ymmsl/ymmsl.hpp>
 
 
-using libmuscle::impl::Data;
-using libmuscle::impl::DataConstRef;
-using libmuscle::impl::Optional;
-using libmuscle::impl::Outbox;
-using libmuscle::impl::PostOffice;
-using libmuscle::impl::RequestType;
-using libmuscle::impl::MPPMessage;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
+using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
+using libmuscle::_MUSCLE_IMPL_NS::Optional;
+using libmuscle::_MUSCLE_IMPL_NS::Outbox;
+using libmuscle::_MUSCLE_IMPL_NS::PostOffice;
+using libmuscle::_MUSCLE_IMPL_NS::RequestType;
+using libmuscle::_MUSCLE_IMPL_NS::MPPMessage;
 using ymmsl::Reference;
 
 

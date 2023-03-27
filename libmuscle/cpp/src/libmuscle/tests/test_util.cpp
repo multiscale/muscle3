@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 
 
-using libmuscle::impl::Optional;
+using libmuscle::_MUSCLE_IMPL_NS::Optional;
 
 
 // Note: do not run in parallel, OptMock has static members that are reused

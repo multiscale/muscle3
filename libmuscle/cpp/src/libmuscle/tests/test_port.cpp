@@ -6,7 +6,7 @@
 #include <ymmsl/ymmsl.hpp>
 
 
-using libmuscle::impl::Port;
+using libmuscle::_MUSCLE_IMPL_NS::Port;
 using ymmsl::Identifier;
 using ymmsl::Operator;
 

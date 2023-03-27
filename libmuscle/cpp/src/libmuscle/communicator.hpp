@@ -9,6 +9,7 @@
 #include <libmuscle/mcp/transport_server.hpp>
 #include <libmuscle/message.hpp>
 #include <libmuscle/mpp_client.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/peer_manager.hpp>
 #include <libmuscle/port.hpp>
 #include <libmuscle/ports_description.hpp>
@@ -23,7 +24,7 @@
 #include <vector>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /** Communication engine for MUSCLE3.
  *

@@ -2,6 +2,7 @@
 
 #include <libmuscle/mpp_message.hpp>
 #include <libmuscle/mcp/transport_client.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/profiling.hpp>
 
 #include <ymmsl/ymmsl.hpp>
@@ -12,7 +13,7 @@
 #include <vector>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 
 using ProfileData = std::tuple<

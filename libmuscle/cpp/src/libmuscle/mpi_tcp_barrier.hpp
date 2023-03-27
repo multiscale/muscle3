@@ -8,10 +8,11 @@
 
 #include <libmuscle/mpp_client.hpp>
 #include <libmuscle/mcp/tcp_transport_server.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/post_office.hpp>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 
 /** A barrier for MPI processes that uses TCP to communicate.

@@ -24,7 +24,7 @@ namespace {
 }
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /* Note that this is not inlined, as translation units are compiled
  * separately and we don't use LTO. That should keep the compiler from

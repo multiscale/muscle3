@@ -84,7 +84,7 @@ int connect(std::string const & address) {
 }
 
 
-namespace libmuscle { namespace impl { namespace mcp {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace mcp {
 
 bool TcpTransportClient::can_connect_to(std::string const & location) {
     return location.compare(0u, 4u, "tcp:") == 0;

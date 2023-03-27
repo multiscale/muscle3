@@ -11,8 +11,8 @@
 #include <utility>
 
 
-using libmuscle::impl::Data;
-using libmuscle::impl::MPPMessage;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
+using libmuscle::_MUSCLE_IMPL_NS::MPPMessage;
 using ymmsl::Reference;
 
 

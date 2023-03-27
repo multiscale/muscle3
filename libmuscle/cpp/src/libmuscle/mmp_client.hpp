@@ -14,13 +14,14 @@
 #include <libmuscle/data.hpp>
 #include <libmuscle/logging.hpp>
 #include <libmuscle/mcp/tcp_transport_client.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/profiling.hpp>
 #include <libmuscle/snapshot.hpp>
 #include <libmuscle/util.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /** The client for the MUSCLE Manager Protocol.
  *

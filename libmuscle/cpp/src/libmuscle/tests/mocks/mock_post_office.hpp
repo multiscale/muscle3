@@ -5,10 +5,11 @@
 #include <libmuscle/data.hpp>
 #include <libmuscle/mpp_message.hpp>
 #include <libmuscle/mcp/transport_server.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/outbox.hpp>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 
 class MockPostOffice : public mcp::RequestHandler {

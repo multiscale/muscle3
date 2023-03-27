@@ -14,13 +14,13 @@
 #include "ymmsl/identity.hpp"
 #include "ymmsl/settings.hpp"
 
-using libmuscle::impl::mcp::ExtTypeId;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::ExtTypeId;
 using ymmsl::SettingValue;
 using ymmsl::Reference;
 using ymmsl::Settings;
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 // helper functions
 
@@ -966,5 +966,5 @@ DataConstRef DataConstRef::grid_data_<bool>(
     }
 }
 
-} }  // namespace libmuscle::impl
+} }  // namespace libmuscle::_MUSCLE_IMPL_NS
 

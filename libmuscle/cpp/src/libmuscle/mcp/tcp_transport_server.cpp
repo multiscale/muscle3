@@ -19,11 +19,11 @@
 
 using namespace std::string_literals;
 
-using libmuscle::impl::DataConstRef;
-using libmuscle::impl::mcp::recv_all;
-using libmuscle::impl::mcp::send_frame;
-using libmuscle::impl::mcp::recv_int64;
-using libmuscle::impl::mcp::RequestHandler;
+using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::recv_all;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::send_frame;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::recv_int64;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::RequestHandler;
 
 
 namespace {
@@ -281,7 +281,7 @@ class TcpTransportServerWorker {
 }
 
 
-namespace libmuscle { namespace impl { namespace mcp {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace mcp {
 
 TcpTransportServer::TcpTransportServer(RequestHandler & handler)
     : TransportServer(handler)

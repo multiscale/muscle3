@@ -8,7 +8,7 @@
 using wallclock = std::chrono::high_resolution_clock;
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 Timestamp::Timestamp() {
     auto since_epoch = wallclock::now().time_since_epoch();

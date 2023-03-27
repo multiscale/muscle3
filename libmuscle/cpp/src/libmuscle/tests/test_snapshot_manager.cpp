@@ -44,16 +44,16 @@
 #include <unistd.h>
 #include <ftw.h>
 
-using libmuscle::impl::Data;
-using libmuscle::impl::Message;
-using libmuscle::impl::MockCommunicator;
-using libmuscle::impl::MockLogger;
-using libmuscle::impl::MockMMPClient;
-using libmuscle::impl::MockProfiler;
-using libmuscle::impl::Optional;
-using libmuscle::impl::Snapshot;
-using libmuscle::impl::SnapshotMetadata;
-using libmuscle::impl::SnapshotManager;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
+using libmuscle::_MUSCLE_IMPL_NS::Message;
+using libmuscle::_MUSCLE_IMPL_NS::MockCommunicator;
+using libmuscle::_MUSCLE_IMPL_NS::MockLogger;
+using libmuscle::_MUSCLE_IMPL_NS::MockMMPClient;
+using libmuscle::_MUSCLE_IMPL_NS::MockProfiler;
+using libmuscle::_MUSCLE_IMPL_NS::Optional;
+using libmuscle::_MUSCLE_IMPL_NS::Snapshot;
+using libmuscle::_MUSCLE_IMPL_NS::SnapshotMetadata;
+using libmuscle::_MUSCLE_IMPL_NS::SnapshotManager;
 using ymmsl::Reference;
 
 int main(int argc, char *argv[]) {

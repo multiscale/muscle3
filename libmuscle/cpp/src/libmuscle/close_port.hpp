@@ -1,9 +1,10 @@
 #pragma once
 
 #include <libmuscle/data.hpp>
+#include <libmuscle/namespace.hpp>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /** Represents a ClosePort message.
  *

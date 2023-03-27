@@ -1,5 +1,7 @@
 #pragma once
 
+#include <libmuscle/namespace.hpp>
+
 #include <cstddef>
 #include <memory>
 #include <stdexcept>
@@ -12,7 +14,7 @@
 #include <ymmsl/ymmsl.hpp>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 enum class StorageOrder {
     first_adjacent,
@@ -492,7 +494,7 @@ class DataConstRef {
 
         // see comment at Data::init_dict_'s implementation
         friend class Data;
-        friend bool ::libmuscle::impl::is_close_port(DataConstRef const &);
+        friend bool ::libmuscle::_MUSCLE_IMPL_NS::is_close_port(DataConstRef const &);
 
         bool is_a_grid_() const;
 
@@ -765,12 +767,12 @@ class Data : public DataConstRef {
 
         friend struct msgpack::adaptor::pack<Data>;
         friend struct msgpack::adaptor::object_with_zone<Data>;
-        friend Data libmuscle::impl::mcp::unpack_data(
+        friend Data libmuscle::_MUSCLE_IMPL_NS::mcp::unpack_data(
                 std::shared_ptr<msgpack::zone> const & zone,
                 char const * begin, std::size_t length);
 };
 
-} }   // namespace libmuscle::impl
+} }   // namespace libmuscle::_MUSCLE_IMPL_NS
 
 #include <libmuscle/data.tpp>
 

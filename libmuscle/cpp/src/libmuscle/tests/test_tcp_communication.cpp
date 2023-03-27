@@ -14,12 +14,12 @@
 #include <utility>
 
 
-using libmuscle::impl::Data;
-using libmuscle::impl::DataConstRef;
-using libmuscle::impl::MPPMessage;
-using libmuscle::impl::MPPClient;
-using libmuscle::impl::mcp::TcpTransportServer;
-using libmuscle::impl::PostOffice;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
+using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
+using libmuscle::_MUSCLE_IMPL_NS::MPPMessage;
+using libmuscle::_MUSCLE_IMPL_NS::MPPClient;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::TcpTransportServer;
+using libmuscle::_MUSCLE_IMPL_NS::PostOffice;
 
 using ymmsl::Reference;
 

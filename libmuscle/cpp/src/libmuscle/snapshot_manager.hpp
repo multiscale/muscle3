@@ -6,12 +6,13 @@
 #include <libmuscle/communicator.hpp>
 #include <libmuscle/logger.hpp>
 #include <libmuscle/mmp_client.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/snapshot.hpp>
 #include <libmuscle/util.hpp>
 
 #include <ymmsl/ymmsl.hpp>
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /** Manages information on snapshots for the Instance
  *

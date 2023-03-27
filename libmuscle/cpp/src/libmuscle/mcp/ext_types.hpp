@@ -2,8 +2,10 @@
 
 #include <cstdint>
 
+#include <libmuscle/namespace.hpp>
 
-namespace libmuscle { namespace impl { namespace mcp {
+
+namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace mcp {
 
 enum class ExtTypeId : int8_t {
     close_port = 0,

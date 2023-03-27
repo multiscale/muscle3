@@ -1,6 +1,6 @@
 #include <mocks/mock_post_office.hpp>
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 int MockPostOffice::handle_request(
         char const * res_buf, std::size_t res_len,

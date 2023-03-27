@@ -1,7 +1,7 @@
 #include <libmuscle/bindings/cmdlineargs.hpp>
 
 
-namespace libmuscle { namespace impl { namespace bindings {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace bindings {
 
 CmdLineArgs::CmdLineArgs(int count)
         : ptrs_(count, nullptr)

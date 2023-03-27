@@ -15,72 +15,72 @@ using libmuscle::PortsDescription;
 using libmuscle::Message;
 using libmuscle::Instance;
 using libmuscle::InstanceFlags;
-using libmuscle::impl::bindings::CmdLineArgs;
+using libmuscle::mpi_impl::bindings::CmdLineArgs;
 using ymmsl::Operator;
 using ymmsl::Settings;
 
 
 extern "C" {
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_nil_() {
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_nil_() {
     DataConstRef * result = new DataConstRef();
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_logical_(bool value) {
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_logical_(bool value) {
     DataConstRef * result = new DataConstRef(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_character_(char * value, std::size_t value_size) {
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_character_(char * value, std::size_t value_size) {
     std::string value_s(value, value_size);
     DataConstRef * result = new DataConstRef(value_s);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_int1_(char value) {
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_int1_(char value) {
     DataConstRef * result = new DataConstRef(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_int2_(short int value) {
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_int2_(short int value) {
     DataConstRef * result = new DataConstRef(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_int4_(int32_t value) {
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_int4_(int32_t value) {
     DataConstRef * result = new DataConstRef(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_int8_(int64_t value) {
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_int8_(int64_t value) {
     DataConstRef * result = new DataConstRef(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_real4_(float value) {
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_real4_(float value) {
     DataConstRef * result = new DataConstRef(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_real8_(double value) {
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_real8_(double value) {
     DataConstRef * result = new DataConstRef(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_settings_(std::intptr_t value) {
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_settings_(std::intptr_t value) {
     Settings * value_p = reinterpret_cast<Settings *>(value);
     DataConstRef * result = new DataConstRef(*value_p);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_copy_(std::intptr_t value) {
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_copy_(std::intptr_t value) {
     DataConstRef * value_p = reinterpret_cast<DataConstRef *>(value);
     DataConstRef * result = new DataConstRef(*value_p);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
     auto data_array_p = const_cast<bool const * const>(data_array);
@@ -88,7 +88,7 @@ std::intptr_t LIBMUSCLE_DataConstRef_create_grid_logical_a_(bool * data_array, s
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
     auto data_array_p = const_cast<int32_t const * const>(data_array);
@@ -96,7 +96,7 @@ std::intptr_t LIBMUSCLE_DataConstRef_create_grid_int4_a_(int32_t * data_array, s
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
     auto data_array_p = const_cast<int64_t const * const>(data_array);
@@ -104,7 +104,7 @@ std::intptr_t LIBMUSCLE_DataConstRef_create_grid_int8_a_(int64_t * data_array, s
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
     auto data_array_p = const_cast<float const * const>(data_array);
@@ -112,7 +112,7 @@ std::intptr_t LIBMUSCLE_DataConstRef_create_grid_real4_a_(float * data_array, st
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
     auto data_array_p = const_cast<double const * const>(data_array);
@@ -120,7 +120,7 @@ std::intptr_t LIBMUSCLE_DataConstRef_create_grid_real8_a_(double * data_array, s
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_logical_n_(
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_logical_n_(
         bool * data_array,
         std::size_t * data_array_shape,
         std::size_t data_array_ndims,
@@ -157,7 +157,7 @@ std::intptr_t LIBMUSCLE_DataConstRef_create_grid_logical_n_(
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_int4_n_(
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_int4_n_(
         int32_t * data_array,
         std::size_t * data_array_shape,
         std::size_t data_array_ndims,
@@ -194,7 +194,7 @@ std::intptr_t LIBMUSCLE_DataConstRef_create_grid_int4_n_(
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_int8_n_(
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_int8_n_(
         int64_t * data_array,
         std::size_t * data_array_shape,
         std::size_t data_array_ndims,
@@ -231,7 +231,7 @@ std::intptr_t LIBMUSCLE_DataConstRef_create_grid_int8_n_(
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_real4_n_(
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_real4_n_(
         float * data_array,
         std::size_t * data_array_shape,
         std::size_t data_array_ndims,
@@ -268,7 +268,7 @@ std::intptr_t LIBMUSCLE_DataConstRef_create_grid_real4_n_(
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_create_grid_real8_n_(
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_real8_n_(
         double * data_array,
         std::size_t * data_array_shape,
         std::size_t data_array_ndims,
@@ -305,133 +305,133 @@ std::intptr_t LIBMUSCLE_DataConstRef_create_grid_real8_n_(
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-void LIBMUSCLE_DataConstRef_free_(std::intptr_t self) {
+void LIBMUSCLE_MPI_DataConstRef_free_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     delete self_p;
     return;
 }
 
-bool LIBMUSCLE_DataConstRef_is_a_logical_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_DataConstRef_is_a_logical_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a<bool>();
     return result;
 }
 
-bool LIBMUSCLE_DataConstRef_is_a_character_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_DataConstRef_is_a_character_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a<std::string>();
     return result;
 }
 
-bool LIBMUSCLE_DataConstRef_is_a_int_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_DataConstRef_is_a_int_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a<int>();
     return result;
 }
 
-bool LIBMUSCLE_DataConstRef_is_a_int1_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_DataConstRef_is_a_int1_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a<char>();
     return result;
 }
 
-bool LIBMUSCLE_DataConstRef_is_a_int2_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_DataConstRef_is_a_int2_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a<int16_t>();
     return result;
 }
 
-bool LIBMUSCLE_DataConstRef_is_a_int4_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_DataConstRef_is_a_int4_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a<int32_t>();
     return result;
 }
 
-bool LIBMUSCLE_DataConstRef_is_a_int8_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_DataConstRef_is_a_int8_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a<int64_t>();
     return result;
 }
 
-bool LIBMUSCLE_DataConstRef_is_a_real4_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_DataConstRef_is_a_real4_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a<float>();
     return result;
 }
 
-bool LIBMUSCLE_DataConstRef_is_a_real8_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_DataConstRef_is_a_real8_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a<double>();
     return result;
 }
 
-bool LIBMUSCLE_DataConstRef_is_a_dict_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_DataConstRef_is_a_dict_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a_dict();
     return result;
 }
 
-bool LIBMUSCLE_DataConstRef_is_a_list_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_DataConstRef_is_a_list_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a_list();
     return result;
 }
 
-bool LIBMUSCLE_DataConstRef_is_a_grid_of_logical_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_DataConstRef_is_a_grid_of_logical_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a_grid_of<bool>();
     return result;
 }
 
-bool LIBMUSCLE_DataConstRef_is_a_grid_of_real4_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_DataConstRef_is_a_grid_of_real4_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a_grid_of<float>();
     return result;
 }
 
-bool LIBMUSCLE_DataConstRef_is_a_grid_of_real8_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_DataConstRef_is_a_grid_of_real8_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a_grid_of<double>();
     return result;
 }
 
-bool LIBMUSCLE_DataConstRef_is_a_grid_of_int4_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_DataConstRef_is_a_grid_of_int4_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a_grid_of<int32_t>();
     return result;
 }
 
-bool LIBMUSCLE_DataConstRef_is_a_grid_of_int8_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_DataConstRef_is_a_grid_of_int8_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a_grid_of<int64_t>();
     return result;
 }
 
-bool LIBMUSCLE_DataConstRef_is_a_byte_array_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_DataConstRef_is_a_byte_array_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a_byte_array();
     return result;
 }
 
-bool LIBMUSCLE_DataConstRef_is_nil_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_DataConstRef_is_nil_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_nil();
     return result;
 }
 
-bool LIBMUSCLE_DataConstRef_is_a_settings_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_DataConstRef_is_a_settings_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a<Settings>();
     return result;
 }
 
-std::size_t LIBMUSCLE_DataConstRef_size_(std::intptr_t self) {
+std::size_t LIBMUSCLE_MPI_DataConstRef_size_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     std::size_t result = self_p->size();
     return result;
 }
 
-bool LIBMUSCLE_DataConstRef_as_logical_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_MPI_DataConstRef_as_logical_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     try {
         *err_code = 0;
@@ -476,7 +476,7 @@ bool LIBMUSCLE_DataConstRef_as_logical_(std::intptr_t self, int * err_code, char
     return false;
 }
 
-void LIBMUSCLE_DataConstRef_as_character_(std::intptr_t self, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_DataConstRef_as_character_(std::intptr_t self, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     try {
         *err_code = 0;
@@ -523,7 +523,7 @@ void LIBMUSCLE_DataConstRef_as_character_(std::intptr_t self, char ** ret_val, s
     }
 }
 
-int LIBMUSCLE_DataConstRef_as_int_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+int LIBMUSCLE_MPI_DataConstRef_as_int_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     try {
         *err_code = 0;
@@ -568,7 +568,7 @@ int LIBMUSCLE_DataConstRef_as_int_(std::intptr_t self, int * err_code, char ** e
     return 0;
 }
 
-char LIBMUSCLE_DataConstRef_as_int1_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+char LIBMUSCLE_MPI_DataConstRef_as_int1_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     try {
         *err_code = 0;
@@ -613,7 +613,7 @@ char LIBMUSCLE_DataConstRef_as_int1_(std::intptr_t self, int * err_code, char **
     return 0;
 }
 
-short int LIBMUSCLE_DataConstRef_as_int2_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+short int LIBMUSCLE_MPI_DataConstRef_as_int2_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     try {
         *err_code = 0;
@@ -658,7 +658,7 @@ short int LIBMUSCLE_DataConstRef_as_int2_(std::intptr_t self, int * err_code, ch
     return 0;
 }
 
-int32_t LIBMUSCLE_DataConstRef_as_int4_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+int32_t LIBMUSCLE_MPI_DataConstRef_as_int4_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     try {
         *err_code = 0;
@@ -703,7 +703,7 @@ int32_t LIBMUSCLE_DataConstRef_as_int4_(std::intptr_t self, int * err_code, char
     return 0;
 }
 
-int64_t LIBMUSCLE_DataConstRef_as_int8_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+int64_t LIBMUSCLE_MPI_DataConstRef_as_int8_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     try {
         *err_code = 0;
@@ -748,7 +748,7 @@ int64_t LIBMUSCLE_DataConstRef_as_int8_(std::intptr_t self, int * err_code, char
     return 0;
 }
 
-float LIBMUSCLE_DataConstRef_as_real4_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+float LIBMUSCLE_MPI_DataConstRef_as_real4_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     try {
         *err_code = 0;
@@ -793,7 +793,7 @@ float LIBMUSCLE_DataConstRef_as_real4_(std::intptr_t self, int * err_code, char 
     return 0.0;
 }
 
-double LIBMUSCLE_DataConstRef_as_real8_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+double LIBMUSCLE_MPI_DataConstRef_as_real8_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     try {
         *err_code = 0;
@@ -838,7 +838,7 @@ double LIBMUSCLE_DataConstRef_as_real8_(std::intptr_t self, int * err_code, char
     return 0.0;
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_as_settings_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_as_settings_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     try {
         *err_code = 0;
@@ -883,7 +883,7 @@ std::intptr_t LIBMUSCLE_DataConstRef_as_settings_(std::intptr_t self, int * err_
     return 0;
 }
 
-void LIBMUSCLE_DataConstRef_as_byte_array_(
+void LIBMUSCLE_MPI_DataConstRef_as_byte_array_(
         std::intptr_t self,
         char ** data, std::size_t * data_size,
         int * err_code, char ** err_msg, std::size_t * err_msg_len
@@ -902,7 +902,7 @@ void LIBMUSCLE_DataConstRef_as_byte_array_(
         *err_msg_len = msg.size();
     }
 }
-std::intptr_t LIBMUSCLE_DataConstRef_get_item_by_key_(
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_get_item_by_key_(
         std::intptr_t self,
         char * key, std::size_t key_size,
         int * err_code, char ** err_msg, std::size_t * err_msg_len
@@ -931,7 +931,7 @@ std::intptr_t LIBMUSCLE_DataConstRef_get_item_by_key_(
     return 0;
 }
 
-std::intptr_t LIBMUSCLE_DataConstRef_get_item_by_index_(
+std::intptr_t LIBMUSCLE_MPI_DataConstRef_get_item_by_index_(
         std::intptr_t self,
         std::size_t i,
         int * err_code, char ** err_msg, std::size_t * err_msg_len
@@ -959,7 +959,7 @@ std::intptr_t LIBMUSCLE_DataConstRef_get_item_by_index_(
     return 0;
 }
 
-std::size_t LIBMUSCLE_DataConstRef_num_dims_(
+std::size_t LIBMUSCLE_MPI_DataConstRef_num_dims_(
         std::intptr_t self,
         int * err_code, char ** err_msg, std::size_t * err_msg_len
 ) {
@@ -978,7 +978,7 @@ std::size_t LIBMUSCLE_DataConstRef_num_dims_(
     return 0;
 }
 
-void LIBMUSCLE_DataConstRef_shape_(std::intptr_t self, std::size_t ** shp, std::size_t * shp_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_DataConstRef_shape_(std::intptr_t self, std::size_t ** shp, std::size_t * shp_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     try {
         *err_code = 0;
@@ -1025,7 +1025,7 @@ void LIBMUSCLE_DataConstRef_shape_(std::intptr_t self, std::size_t ** shp, std::
     }
 }
 
-void LIBMUSCLE_DataConstRef_elements_logical_(
+void LIBMUSCLE_MPI_DataConstRef_elements_logical_(
         std::intptr_t self,
         std::size_t ndims,
         bool ** elements,
@@ -1056,7 +1056,7 @@ void LIBMUSCLE_DataConstRef_elements_logical_(
     }
 }
 
-void LIBMUSCLE_DataConstRef_elements_int4_(
+void LIBMUSCLE_MPI_DataConstRef_elements_int4_(
         std::intptr_t self,
         std::size_t ndims,
         int32_t ** elements,
@@ -1087,7 +1087,7 @@ void LIBMUSCLE_DataConstRef_elements_int4_(
     }
 }
 
-void LIBMUSCLE_DataConstRef_elements_int8_(
+void LIBMUSCLE_MPI_DataConstRef_elements_int8_(
         std::intptr_t self,
         std::size_t ndims,
         int64_t ** elements,
@@ -1118,7 +1118,7 @@ void LIBMUSCLE_DataConstRef_elements_int8_(
     }
 }
 
-void LIBMUSCLE_DataConstRef_elements_real4_(
+void LIBMUSCLE_MPI_DataConstRef_elements_real4_(
         std::intptr_t self,
         std::size_t ndims,
         float ** elements,
@@ -1149,7 +1149,7 @@ void LIBMUSCLE_DataConstRef_elements_real4_(
     }
 }
 
-void LIBMUSCLE_DataConstRef_elements_real8_(
+void LIBMUSCLE_MPI_DataConstRef_elements_real8_(
         std::intptr_t self,
         std::size_t ndims,
         double ** elements,
@@ -1180,7 +1180,7 @@ void LIBMUSCLE_DataConstRef_elements_real8_(
     }
 }
 
-bool LIBMUSCLE_DataConstRef_has_indexes_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_MPI_DataConstRef_has_indexes_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     try {
         *err_code = 0;
@@ -1225,7 +1225,7 @@ bool LIBMUSCLE_DataConstRef_has_indexes_(std::intptr_t self, int * err_code, cha
     return false;
 }
 
-void LIBMUSCLE_DataConstRef_index_(std::intptr_t self, std::size_t i, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_DataConstRef_index_(std::intptr_t self, std::size_t i, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     try {
         *err_code = 0;
@@ -1272,65 +1272,65 @@ void LIBMUSCLE_DataConstRef_index_(std::intptr_t self, std::size_t i, char ** re
     }
 }
 
-std::intptr_t LIBMUSCLE_Data_create_nil_() {
+std::intptr_t LIBMUSCLE_MPI_Data_create_nil_() {
     Data * result = new Data();
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_logical_(bool value) {
+std::intptr_t LIBMUSCLE_MPI_Data_create_logical_(bool value) {
     Data * result = new Data(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_character_(char * value, std::size_t value_size) {
+std::intptr_t LIBMUSCLE_MPI_Data_create_character_(char * value, std::size_t value_size) {
     std::string value_s(value, value_size);
     Data * result = new Data(value_s);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_int1_(char value) {
+std::intptr_t LIBMUSCLE_MPI_Data_create_int1_(char value) {
     Data * result = new Data(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_int2_(short int value) {
+std::intptr_t LIBMUSCLE_MPI_Data_create_int2_(short int value) {
     Data * result = new Data(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_int4_(int32_t value) {
+std::intptr_t LIBMUSCLE_MPI_Data_create_int4_(int32_t value) {
     Data * result = new Data(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_int8_(int64_t value) {
+std::intptr_t LIBMUSCLE_MPI_Data_create_int8_(int64_t value) {
     Data * result = new Data(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_real4_(float value) {
+std::intptr_t LIBMUSCLE_MPI_Data_create_real4_(float value) {
     Data * result = new Data(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_real8_(double value) {
+std::intptr_t LIBMUSCLE_MPI_Data_create_real8_(double value) {
     Data * result = new Data(value);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_settings_(std::intptr_t value) {
+std::intptr_t LIBMUSCLE_MPI_Data_create_settings_(std::intptr_t value) {
     Settings * value_p = reinterpret_cast<Settings *>(value);
     Data * result = new Data(*value_p);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_copy_(std::intptr_t value) {
+std::intptr_t LIBMUSCLE_MPI_Data_create_copy_(std::intptr_t value) {
     Data * value_p = reinterpret_cast<Data *>(value);
     Data * result = new Data(*value_p);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_grid_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+std::intptr_t LIBMUSCLE_MPI_Data_create_grid_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
     auto data_array_p = const_cast<bool const * const>(data_array);
@@ -1338,7 +1338,7 @@ std::intptr_t LIBMUSCLE_Data_create_grid_logical_a_(bool * data_array, std::size
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_grid_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+std::intptr_t LIBMUSCLE_MPI_Data_create_grid_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
     auto data_array_p = const_cast<int32_t const * const>(data_array);
@@ -1346,7 +1346,7 @@ std::intptr_t LIBMUSCLE_Data_create_grid_int4_a_(int32_t * data_array, std::size
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_grid_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+std::intptr_t LIBMUSCLE_MPI_Data_create_grid_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
     auto data_array_p = const_cast<int64_t const * const>(data_array);
@@ -1354,7 +1354,7 @@ std::intptr_t LIBMUSCLE_Data_create_grid_int8_a_(int64_t * data_array, std::size
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_grid_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+std::intptr_t LIBMUSCLE_MPI_Data_create_grid_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
     auto data_array_p = const_cast<float const * const>(data_array);
@@ -1362,7 +1362,7 @@ std::intptr_t LIBMUSCLE_Data_create_grid_real4_a_(float * data_array, std::size_
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_grid_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
+std::intptr_t LIBMUSCLE_MPI_Data_create_grid_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
     auto data_array_p = const_cast<double const * const>(data_array);
@@ -1370,7 +1370,7 @@ std::intptr_t LIBMUSCLE_Data_create_grid_real8_a_(double * data_array, std::size
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_grid_logical_n_(
+std::intptr_t LIBMUSCLE_MPI_Data_create_grid_logical_n_(
         bool * data_array,
         std::size_t * data_array_shape,
         std::size_t data_array_ndims,
@@ -1407,7 +1407,7 @@ std::intptr_t LIBMUSCLE_Data_create_grid_logical_n_(
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_grid_int4_n_(
+std::intptr_t LIBMUSCLE_MPI_Data_create_grid_int4_n_(
         int32_t * data_array,
         std::size_t * data_array_shape,
         std::size_t data_array_ndims,
@@ -1444,7 +1444,7 @@ std::intptr_t LIBMUSCLE_Data_create_grid_int4_n_(
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_grid_int8_n_(
+std::intptr_t LIBMUSCLE_MPI_Data_create_grid_int8_n_(
         int64_t * data_array,
         std::size_t * data_array_shape,
         std::size_t data_array_ndims,
@@ -1481,7 +1481,7 @@ std::intptr_t LIBMUSCLE_Data_create_grid_int8_n_(
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_grid_real4_n_(
+std::intptr_t LIBMUSCLE_MPI_Data_create_grid_real4_n_(
         float * data_array,
         std::size_t * data_array_shape,
         std::size_t data_array_ndims,
@@ -1518,7 +1518,7 @@ std::intptr_t LIBMUSCLE_Data_create_grid_real4_n_(
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_grid_real8_n_(
+std::intptr_t LIBMUSCLE_MPI_Data_create_grid_real8_n_(
         double * data_array,
         std::size_t * data_array_shape,
         std::size_t data_array_ndims,
@@ -1555,133 +1555,133 @@ std::intptr_t LIBMUSCLE_Data_create_grid_real8_n_(
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-void LIBMUSCLE_Data_free_(std::intptr_t self) {
+void LIBMUSCLE_MPI_Data_free_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     delete self_p;
     return;
 }
 
-bool LIBMUSCLE_Data_is_a_logical_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Data_is_a_logical_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<bool>();
     return result;
 }
 
-bool LIBMUSCLE_Data_is_a_character_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Data_is_a_character_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<std::string>();
     return result;
 }
 
-bool LIBMUSCLE_Data_is_a_int_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Data_is_a_int_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<int>();
     return result;
 }
 
-bool LIBMUSCLE_Data_is_a_int1_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Data_is_a_int1_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<char>();
     return result;
 }
 
-bool LIBMUSCLE_Data_is_a_int2_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Data_is_a_int2_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<int16_t>();
     return result;
 }
 
-bool LIBMUSCLE_Data_is_a_int4_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Data_is_a_int4_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<int32_t>();
     return result;
 }
 
-bool LIBMUSCLE_Data_is_a_int8_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Data_is_a_int8_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<int64_t>();
     return result;
 }
 
-bool LIBMUSCLE_Data_is_a_real4_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Data_is_a_real4_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<float>();
     return result;
 }
 
-bool LIBMUSCLE_Data_is_a_real8_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Data_is_a_real8_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<double>();
     return result;
 }
 
-bool LIBMUSCLE_Data_is_a_dict_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Data_is_a_dict_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a_dict();
     return result;
 }
 
-bool LIBMUSCLE_Data_is_a_list_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Data_is_a_list_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a_list();
     return result;
 }
 
-bool LIBMUSCLE_Data_is_a_grid_of_logical_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Data_is_a_grid_of_logical_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a_grid_of<bool>();
     return result;
 }
 
-bool LIBMUSCLE_Data_is_a_grid_of_real4_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Data_is_a_grid_of_real4_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a_grid_of<float>();
     return result;
 }
 
-bool LIBMUSCLE_Data_is_a_grid_of_real8_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Data_is_a_grid_of_real8_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a_grid_of<double>();
     return result;
 }
 
-bool LIBMUSCLE_Data_is_a_grid_of_int4_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Data_is_a_grid_of_int4_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a_grid_of<int32_t>();
     return result;
 }
 
-bool LIBMUSCLE_Data_is_a_grid_of_int8_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Data_is_a_grid_of_int8_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a_grid_of<int64_t>();
     return result;
 }
 
-bool LIBMUSCLE_Data_is_a_byte_array_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Data_is_a_byte_array_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a_byte_array();
     return result;
 }
 
-bool LIBMUSCLE_Data_is_nil_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Data_is_nil_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_nil();
     return result;
 }
 
-bool LIBMUSCLE_Data_is_a_settings_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Data_is_a_settings_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     bool result = self_p->is_a<Settings>();
     return result;
 }
 
-std::size_t LIBMUSCLE_Data_size_(std::intptr_t self) {
+std::size_t LIBMUSCLE_MPI_Data_size_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::size_t result = self_p->size();
     return result;
 }
 
-bool LIBMUSCLE_Data_as_logical_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_MPI_Data_as_logical_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -1726,7 +1726,7 @@ bool LIBMUSCLE_Data_as_logical_(std::intptr_t self, int * err_code, char ** err_
     return false;
 }
 
-void LIBMUSCLE_Data_as_character_(std::intptr_t self, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Data_as_character_(std::intptr_t self, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -1773,7 +1773,7 @@ void LIBMUSCLE_Data_as_character_(std::intptr_t self, char ** ret_val, std::size
     }
 }
 
-int LIBMUSCLE_Data_as_int_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+int LIBMUSCLE_MPI_Data_as_int_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -1818,7 +1818,7 @@ int LIBMUSCLE_Data_as_int_(std::intptr_t self, int * err_code, char ** err_msg, 
     return 0;
 }
 
-char LIBMUSCLE_Data_as_int1_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+char LIBMUSCLE_MPI_Data_as_int1_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -1863,7 +1863,7 @@ char LIBMUSCLE_Data_as_int1_(std::intptr_t self, int * err_code, char ** err_msg
     return 0;
 }
 
-short int LIBMUSCLE_Data_as_int2_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+short int LIBMUSCLE_MPI_Data_as_int2_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -1908,7 +1908,7 @@ short int LIBMUSCLE_Data_as_int2_(std::intptr_t self, int * err_code, char ** er
     return 0;
 }
 
-int32_t LIBMUSCLE_Data_as_int4_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+int32_t LIBMUSCLE_MPI_Data_as_int4_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -1953,7 +1953,7 @@ int32_t LIBMUSCLE_Data_as_int4_(std::intptr_t self, int * err_code, char ** err_
     return 0;
 }
 
-int64_t LIBMUSCLE_Data_as_int8_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+int64_t LIBMUSCLE_MPI_Data_as_int8_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -1998,7 +1998,7 @@ int64_t LIBMUSCLE_Data_as_int8_(std::intptr_t self, int * err_code, char ** err_
     return 0;
 }
 
-float LIBMUSCLE_Data_as_real4_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+float LIBMUSCLE_MPI_Data_as_real4_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -2043,7 +2043,7 @@ float LIBMUSCLE_Data_as_real4_(std::intptr_t self, int * err_code, char ** err_m
     return 0.0;
 }
 
-double LIBMUSCLE_Data_as_real8_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+double LIBMUSCLE_MPI_Data_as_real8_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -2088,7 +2088,7 @@ double LIBMUSCLE_Data_as_real8_(std::intptr_t self, int * err_code, char ** err_
     return 0.0;
 }
 
-std::intptr_t LIBMUSCLE_Data_as_settings_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+std::intptr_t LIBMUSCLE_MPI_Data_as_settings_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -2133,7 +2133,7 @@ std::intptr_t LIBMUSCLE_Data_as_settings_(std::intptr_t self, int * err_code, ch
     return 0;
 }
 
-void LIBMUSCLE_Data_as_byte_array_(
+void LIBMUSCLE_MPI_Data_as_byte_array_(
         std::intptr_t self,
         char ** data, std::size_t * data_size,
         int * err_code, char ** err_msg, std::size_t * err_msg_len
@@ -2152,7 +2152,7 @@ void LIBMUSCLE_Data_as_byte_array_(
         *err_msg_len = msg.size();
     }
 }
-std::intptr_t LIBMUSCLE_Data_get_item_by_key_(
+std::intptr_t LIBMUSCLE_MPI_Data_get_item_by_key_(
         std::intptr_t self,
         char * key, std::size_t key_size,
         int * err_code, char ** err_msg, std::size_t * err_msg_len
@@ -2181,7 +2181,7 @@ std::intptr_t LIBMUSCLE_Data_get_item_by_key_(
     return 0;
 }
 
-std::intptr_t LIBMUSCLE_Data_get_item_by_index_(
+std::intptr_t LIBMUSCLE_MPI_Data_get_item_by_index_(
         std::intptr_t self,
         std::size_t i,
         int * err_code, char ** err_msg, std::size_t * err_msg_len
@@ -2209,7 +2209,7 @@ std::intptr_t LIBMUSCLE_Data_get_item_by_index_(
     return 0;
 }
 
-std::size_t LIBMUSCLE_Data_num_dims_(
+std::size_t LIBMUSCLE_MPI_Data_num_dims_(
         std::intptr_t self,
         int * err_code, char ** err_msg, std::size_t * err_msg_len
 ) {
@@ -2228,7 +2228,7 @@ std::size_t LIBMUSCLE_Data_num_dims_(
     return 0;
 }
 
-void LIBMUSCLE_Data_shape_(std::intptr_t self, std::size_t ** shp, std::size_t * shp_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Data_shape_(std::intptr_t self, std::size_t ** shp, std::size_t * shp_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -2275,7 +2275,7 @@ void LIBMUSCLE_Data_shape_(std::intptr_t self, std::size_t ** shp, std::size_t *
     }
 }
 
-void LIBMUSCLE_Data_elements_logical_(
+void LIBMUSCLE_MPI_Data_elements_logical_(
         std::intptr_t self,
         std::size_t ndims,
         bool ** elements,
@@ -2306,7 +2306,7 @@ void LIBMUSCLE_Data_elements_logical_(
     }
 }
 
-void LIBMUSCLE_Data_elements_int4_(
+void LIBMUSCLE_MPI_Data_elements_int4_(
         std::intptr_t self,
         std::size_t ndims,
         int32_t ** elements,
@@ -2337,7 +2337,7 @@ void LIBMUSCLE_Data_elements_int4_(
     }
 }
 
-void LIBMUSCLE_Data_elements_int8_(
+void LIBMUSCLE_MPI_Data_elements_int8_(
         std::intptr_t self,
         std::size_t ndims,
         int64_t ** elements,
@@ -2368,7 +2368,7 @@ void LIBMUSCLE_Data_elements_int8_(
     }
 }
 
-void LIBMUSCLE_Data_elements_real4_(
+void LIBMUSCLE_MPI_Data_elements_real4_(
         std::intptr_t self,
         std::size_t ndims,
         float ** elements,
@@ -2399,7 +2399,7 @@ void LIBMUSCLE_Data_elements_real4_(
     }
 }
 
-void LIBMUSCLE_Data_elements_real8_(
+void LIBMUSCLE_MPI_Data_elements_real8_(
         std::intptr_t self,
         std::size_t ndims,
         double ** elements,
@@ -2430,7 +2430,7 @@ void LIBMUSCLE_Data_elements_real8_(
     }
 }
 
-bool LIBMUSCLE_Data_has_indexes_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_MPI_Data_has_indexes_(std::intptr_t self, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -2475,7 +2475,7 @@ bool LIBMUSCLE_Data_has_indexes_(std::intptr_t self, int * err_code, char ** err
     return false;
 }
 
-void LIBMUSCLE_Data_index_(std::intptr_t self, std::size_t i, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Data_index_(std::intptr_t self, std::size_t i, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -2522,95 +2522,95 @@ void LIBMUSCLE_Data_index_(std::intptr_t self, std::size_t i, char ** ret_val, s
     }
 }
 
-std::intptr_t LIBMUSCLE_Data_create_dict_() {
+std::intptr_t LIBMUSCLE_MPI_Data_create_dict_() {
     Data * result = new Data(Data::dict());
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_list_() {
+std::intptr_t LIBMUSCLE_MPI_Data_create_list_() {
     Data * result = new Data(Data::list());
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_nils_(std::size_t size) {
+std::intptr_t LIBMUSCLE_MPI_Data_create_nils_(std::size_t size) {
     Data * result = new Data(Data::nils(size));
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_byte_array_empty_(std::size_t size) {
+std::intptr_t LIBMUSCLE_MPI_Data_create_byte_array_empty_(std::size_t size) {
     Data * result = new Data(Data::byte_array(size));
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Data_create_byte_array_from_buf_(
+std::intptr_t LIBMUSCLE_MPI_Data_create_byte_array_from_buf_(
        char * buf, std::size_t buf_size
 ) {
    Data * result = new Data(Data::byte_array(buf, buf_size));
    return reinterpret_cast<std::intptr_t>(result);
 }
 
-void LIBMUSCLE_Data_set_logical_(std::intptr_t self, bool value) {
+void LIBMUSCLE_MPI_Data_set_logical_(std::intptr_t self, bool value) {
     Data * self_p = reinterpret_cast<Data *>(self);
     *self_p = value;
     return;
 }
 
-void LIBMUSCLE_Data_set_character_(std::intptr_t self, char * value, std::size_t value_size) {
+void LIBMUSCLE_MPI_Data_set_character_(std::intptr_t self, char * value, std::size_t value_size) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string value_s(value, value_size);
     *self_p = value_s;
     return;
 }
 
-void LIBMUSCLE_Data_set_int1_(std::intptr_t self, char value) {
+void LIBMUSCLE_MPI_Data_set_int1_(std::intptr_t self, char value) {
     Data * self_p = reinterpret_cast<Data *>(self);
     *self_p = value;
     return;
 }
 
-void LIBMUSCLE_Data_set_int2_(std::intptr_t self, short int value) {
+void LIBMUSCLE_MPI_Data_set_int2_(std::intptr_t self, short int value) {
     Data * self_p = reinterpret_cast<Data *>(self);
     *self_p = value;
     return;
 }
 
-void LIBMUSCLE_Data_set_int4_(std::intptr_t self, int32_t value) {
+void LIBMUSCLE_MPI_Data_set_int4_(std::intptr_t self, int32_t value) {
     Data * self_p = reinterpret_cast<Data *>(self);
     *self_p = value;
     return;
 }
 
-void LIBMUSCLE_Data_set_int8_(std::intptr_t self, int64_t value) {
+void LIBMUSCLE_MPI_Data_set_int8_(std::intptr_t self, int64_t value) {
     Data * self_p = reinterpret_cast<Data *>(self);
     *self_p = value;
     return;
 }
 
-void LIBMUSCLE_Data_set_real4_(std::intptr_t self, float value) {
+void LIBMUSCLE_MPI_Data_set_real4_(std::intptr_t self, float value) {
     Data * self_p = reinterpret_cast<Data *>(self);
     *self_p = value;
     return;
 }
 
-void LIBMUSCLE_Data_set_real8_(std::intptr_t self, double value) {
+void LIBMUSCLE_MPI_Data_set_real8_(std::intptr_t self, double value) {
     Data * self_p = reinterpret_cast<Data *>(self);
     *self_p = value;
     return;
 }
 
-void LIBMUSCLE_Data_set_data_(std::intptr_t self, std::intptr_t value) {
+void LIBMUSCLE_MPI_Data_set_data_(std::intptr_t self, std::intptr_t value) {
     Data * self_p = reinterpret_cast<Data *>(self);
     Data * value_p = reinterpret_cast<Data *>(value);
     *self_p = *value_p;
     return;
 }
 
-void LIBMUSCLE_Data_set_nil_(std::intptr_t self) {
+void LIBMUSCLE_MPI_Data_set_nil_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     *self_p = Data();
 }
 
-void LIBMUSCLE_Data_set_item_key_logical_(std::intptr_t self, char * key, std::size_t key_size, bool value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Data_set_item_key_logical_(std::intptr_t self, char * key, std::size_t key_size, bool value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string key_s(key, key_size);
     try {
@@ -2655,7 +2655,7 @@ void LIBMUSCLE_Data_set_item_key_logical_(std::intptr_t self, char * key, std::s
     }
 }
 
-void LIBMUSCLE_Data_set_item_key_character_(std::intptr_t self, char * key, std::size_t key_size, char * value, std::size_t value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Data_set_item_key_character_(std::intptr_t self, char * key, std::size_t key_size, char * value, std::size_t value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string key_s(key, key_size);
     std::string value_s(value, value_size);
@@ -2701,7 +2701,7 @@ void LIBMUSCLE_Data_set_item_key_character_(std::intptr_t self, char * key, std:
     }
 }
 
-void LIBMUSCLE_Data_set_item_key_int1_(std::intptr_t self, char * key, std::size_t key_size, char value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Data_set_item_key_int1_(std::intptr_t self, char * key, std::size_t key_size, char value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string key_s(key, key_size);
     try {
@@ -2746,7 +2746,7 @@ void LIBMUSCLE_Data_set_item_key_int1_(std::intptr_t self, char * key, std::size
     }
 }
 
-void LIBMUSCLE_Data_set_item_key_int2_(std::intptr_t self, char * key, std::size_t key_size, short int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Data_set_item_key_int2_(std::intptr_t self, char * key, std::size_t key_size, short int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string key_s(key, key_size);
     try {
@@ -2791,7 +2791,7 @@ void LIBMUSCLE_Data_set_item_key_int2_(std::intptr_t self, char * key, std::size
     }
 }
 
-void LIBMUSCLE_Data_set_item_key_int4_(std::intptr_t self, char * key, std::size_t key_size, int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Data_set_item_key_int4_(std::intptr_t self, char * key, std::size_t key_size, int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string key_s(key, key_size);
     try {
@@ -2836,7 +2836,7 @@ void LIBMUSCLE_Data_set_item_key_int4_(std::intptr_t self, char * key, std::size
     }
 }
 
-void LIBMUSCLE_Data_set_item_key_int8_(std::intptr_t self, char * key, std::size_t key_size, int64_t value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Data_set_item_key_int8_(std::intptr_t self, char * key, std::size_t key_size, int64_t value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string key_s(key, key_size);
     try {
@@ -2881,7 +2881,7 @@ void LIBMUSCLE_Data_set_item_key_int8_(std::intptr_t self, char * key, std::size
     }
 }
 
-void LIBMUSCLE_Data_set_item_key_real4_(std::intptr_t self, char * key, std::size_t key_size, float value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Data_set_item_key_real4_(std::intptr_t self, char * key, std::size_t key_size, float value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string key_s(key, key_size);
     try {
@@ -2926,7 +2926,7 @@ void LIBMUSCLE_Data_set_item_key_real4_(std::intptr_t self, char * key, std::siz
     }
 }
 
-void LIBMUSCLE_Data_set_item_key_real8_(std::intptr_t self, char * key, std::size_t key_size, double value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Data_set_item_key_real8_(std::intptr_t self, char * key, std::size_t key_size, double value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string key_s(key, key_size);
     try {
@@ -2971,7 +2971,7 @@ void LIBMUSCLE_Data_set_item_key_real8_(std::intptr_t self, char * key, std::siz
     }
 }
 
-void LIBMUSCLE_Data_set_item_key_data_(std::intptr_t self, char * key, std::size_t key_size, std::intptr_t value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Data_set_item_key_data_(std::intptr_t self, char * key, std::size_t key_size, std::intptr_t value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string key_s(key, key_size);
     Data * value_p = reinterpret_cast<Data *>(value);
@@ -3017,7 +3017,7 @@ void LIBMUSCLE_Data_set_item_key_data_(std::intptr_t self, char * key, std::size
     }
 }
 
-void LIBMUSCLE_Data_set_item_index_logical_(std::intptr_t self, std::size_t i, bool value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Data_set_item_index_logical_(std::intptr_t self, std::size_t i, bool value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -3061,7 +3061,7 @@ void LIBMUSCLE_Data_set_item_index_logical_(std::intptr_t self, std::size_t i, b
     }
 }
 
-void LIBMUSCLE_Data_set_item_index_character_(std::intptr_t self, std::size_t i, char * value, std::size_t value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Data_set_item_index_character_(std::intptr_t self, std::size_t i, char * value, std::size_t value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     std::string value_s(value, value_size);
     try {
@@ -3106,7 +3106,7 @@ void LIBMUSCLE_Data_set_item_index_character_(std::intptr_t self, std::size_t i,
     }
 }
 
-void LIBMUSCLE_Data_set_item_index_int1_(std::intptr_t self, std::size_t i, char value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Data_set_item_index_int1_(std::intptr_t self, std::size_t i, char value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -3150,7 +3150,7 @@ void LIBMUSCLE_Data_set_item_index_int1_(std::intptr_t self, std::size_t i, char
     }
 }
 
-void LIBMUSCLE_Data_set_item_index_int2_(std::intptr_t self, std::size_t i, short int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Data_set_item_index_int2_(std::intptr_t self, std::size_t i, short int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -3194,7 +3194,7 @@ void LIBMUSCLE_Data_set_item_index_int2_(std::intptr_t self, std::size_t i, shor
     }
 }
 
-void LIBMUSCLE_Data_set_item_index_int4_(std::intptr_t self, std::size_t i, int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Data_set_item_index_int4_(std::intptr_t self, std::size_t i, int value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -3238,7 +3238,7 @@ void LIBMUSCLE_Data_set_item_index_int4_(std::intptr_t self, std::size_t i, int 
     }
 }
 
-void LIBMUSCLE_Data_set_item_index_int8_(std::intptr_t self, std::size_t i, int64_t value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Data_set_item_index_int8_(std::intptr_t self, std::size_t i, int64_t value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -3282,7 +3282,7 @@ void LIBMUSCLE_Data_set_item_index_int8_(std::intptr_t self, std::size_t i, int6
     }
 }
 
-void LIBMUSCLE_Data_set_item_index_real4_(std::intptr_t self, std::size_t i, float value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Data_set_item_index_real4_(std::intptr_t self, std::size_t i, float value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -3326,7 +3326,7 @@ void LIBMUSCLE_Data_set_item_index_real4_(std::intptr_t self, std::size_t i, flo
     }
 }
 
-void LIBMUSCLE_Data_set_item_index_real8_(std::intptr_t self, std::size_t i, double value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Data_set_item_index_real8_(std::intptr_t self, std::size_t i, double value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     try {
         *err_code = 0;
@@ -3370,7 +3370,7 @@ void LIBMUSCLE_Data_set_item_index_real8_(std::intptr_t self, std::size_t i, dou
     }
 }
 
-void LIBMUSCLE_Data_set_item_index_data_(std::intptr_t self, std::size_t i, std::intptr_t value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Data_set_item_index_data_(std::intptr_t self, std::size_t i, std::intptr_t value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Data * self_p = reinterpret_cast<Data *>(self);
     Data * value_p = reinterpret_cast<Data *>(value);
     try {
@@ -3415,7 +3415,7 @@ void LIBMUSCLE_Data_set_item_index_data_(std::intptr_t self, std::size_t i, std:
     }
 }
 
-void LIBMUSCLE_Data_key_(
+void LIBMUSCLE_MPI_Data_key_(
         std::intptr_t self, std::size_t i,
         char ** ret_val, std::size_t * ret_val_size,
         int * err_code,
@@ -3446,7 +3446,7 @@ void LIBMUSCLE_Data_key_(
     }
 }
 
-std::intptr_t LIBMUSCLE_Data_value_(
+std::intptr_t LIBMUSCLE_MPI_Data_value_(
         std::intptr_t self, std::size_t i,
         int * err_code,
         char ** err_msg, std::size_t * err_msg_len
@@ -3474,18 +3474,18 @@ std::intptr_t LIBMUSCLE_Data_value_(
     return 0;
 }
 
-std::intptr_t LIBMUSCLE_PortsDescription_create_() {
+std::intptr_t LIBMUSCLE_MPI_PortsDescription_create_() {
     PortsDescription * result = new PortsDescription();
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-void LIBMUSCLE_PortsDescription_free_(std::intptr_t self) {
+void LIBMUSCLE_MPI_PortsDescription_free_(std::intptr_t self) {
     PortsDescription * self_p = reinterpret_cast<PortsDescription *>(self);
     delete self_p;
     return;
 }
 
-void LIBMUSCLE_PortsDescription_add_(std::intptr_t self, int op, char * port, std::size_t port_size) {
+void LIBMUSCLE_MPI_PortsDescription_add_(std::intptr_t self, int op, char * port, std::size_t port_size) {
     PortsDescription * self_p = reinterpret_cast<PortsDescription *>(self);
     Operator op_e = static_cast<Operator>(op);
     std::string port_s(port, port_size);
@@ -3493,7 +3493,7 @@ void LIBMUSCLE_PortsDescription_add_(std::intptr_t self, int op, char * port, st
     return;
 }
 
-std::size_t LIBMUSCLE_PortsDescription_num_ports_(std::intptr_t self, int op) {
+std::size_t LIBMUSCLE_MPI_PortsDescription_num_ports_(std::intptr_t self, int op) {
     PortsDescription * self_p = reinterpret_cast<PortsDescription *>(self);
     Operator op_e = static_cast<Operator>(op);
     std::size_t result = 0u;
@@ -3502,7 +3502,7 @@ std::size_t LIBMUSCLE_PortsDescription_num_ports_(std::intptr_t self, int op) {
     return result;
 }
 
-void LIBMUSCLE_PortsDescription_get_(std::intptr_t self, int op, std::size_t i, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_PortsDescription_get_(std::intptr_t self, int op, std::size_t i, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     PortsDescription * self_p = reinterpret_cast<PortsDescription *>(self);
     Operator op_e = static_cast<Operator>(op);
     try {
@@ -3550,125 +3550,125 @@ void LIBMUSCLE_PortsDescription_get_(std::intptr_t self, int op, std::size_t i, 
     }
 }
 
-std::intptr_t LIBMUSCLE_Message_create_t_(double timestamp) {
+std::intptr_t LIBMUSCLE_MPI_Message_create_t_(double timestamp) {
     Message * result = new Message(timestamp);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Message_create_td_(double timestamp, std::intptr_t data) {
+std::intptr_t LIBMUSCLE_MPI_Message_create_td_(double timestamp, std::intptr_t data) {
     Data * data_p = reinterpret_cast<Data *>(data);
     Message * result = new Message(timestamp, *data_p);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Message_create_tnd_(double timestamp, double next_timestamp, std::intptr_t data) {
+std::intptr_t LIBMUSCLE_MPI_Message_create_tnd_(double timestamp, double next_timestamp, std::intptr_t data) {
     Data * data_p = reinterpret_cast<Data *>(data);
     Message * result = new Message(timestamp, next_timestamp, *data_p);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Message_create_tds_(double timestamp, std::intptr_t data, std::intptr_t settings) {
+std::intptr_t LIBMUSCLE_MPI_Message_create_tds_(double timestamp, std::intptr_t data, std::intptr_t settings) {
     Data * data_p = reinterpret_cast<Data *>(data);
     Settings * settings_p = reinterpret_cast<Settings *>(settings);
     Message * result = new Message(timestamp, *data_p, *settings_p);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-std::intptr_t LIBMUSCLE_Message_create_tnds_(double timestamp, double next_timestamp, std::intptr_t data, std::intptr_t settings) {
+std::intptr_t LIBMUSCLE_MPI_Message_create_tnds_(double timestamp, double next_timestamp, std::intptr_t data, std::intptr_t settings) {
     Data * data_p = reinterpret_cast<Data *>(data);
     Settings * settings_p = reinterpret_cast<Settings *>(settings);
     Message * result = new Message(timestamp, next_timestamp, *data_p, *settings_p);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-void LIBMUSCLE_Message_free_(std::intptr_t self) {
+void LIBMUSCLE_MPI_Message_free_(std::intptr_t self) {
     Message * self_p = reinterpret_cast<Message *>(self);
     delete self_p;
     return;
 }
 
-double LIBMUSCLE_Message_timestamp_(std::intptr_t self) {
+double LIBMUSCLE_MPI_Message_timestamp_(std::intptr_t self) {
     Message * self_p = reinterpret_cast<Message *>(self);
     double result = self_p->timestamp();
     return result;
 }
 
-void LIBMUSCLE_Message_set_timestamp_(std::intptr_t self, double timestamp) {
+void LIBMUSCLE_MPI_Message_set_timestamp_(std::intptr_t self, double timestamp) {
     Message * self_p = reinterpret_cast<Message *>(self);
     self_p->set_timestamp(timestamp);
     return;
 }
 
-bool LIBMUSCLE_Message_has_next_timestamp_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Message_has_next_timestamp_(std::intptr_t self) {
     Message * self_p = reinterpret_cast<Message *>(self);
     bool result = self_p->has_next_timestamp();
     return result;
 }
 
-double LIBMUSCLE_Message_next_timestamp_(std::intptr_t self) {
+double LIBMUSCLE_MPI_Message_next_timestamp_(std::intptr_t self) {
     Message * self_p = reinterpret_cast<Message *>(self);
     double result = self_p->next_timestamp();
     return result;
 }
 
-void LIBMUSCLE_Message_set_next_timestamp_(std::intptr_t self, double next_timestamp) {
+void LIBMUSCLE_MPI_Message_set_next_timestamp_(std::intptr_t self, double next_timestamp) {
     Message * self_p = reinterpret_cast<Message *>(self);
     self_p->set_next_timestamp(next_timestamp);
     return;
 }
 
-void LIBMUSCLE_Message_unset_next_timestamp_(std::intptr_t self) {
+void LIBMUSCLE_MPI_Message_unset_next_timestamp_(std::intptr_t self) {
     Message * self_p = reinterpret_cast<Message *>(self);
     self_p->unset_next_timestamp();
     return;
 }
 
-std::intptr_t LIBMUSCLE_Message_get_data_(std::intptr_t self) {
+std::intptr_t LIBMUSCLE_MPI_Message_get_data_(std::intptr_t self) {
     Message * self_p = reinterpret_cast<Message *>(self);
     DataConstRef * result = new DataConstRef(self_p->data());
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-void LIBMUSCLE_Message_set_data_d_(std::intptr_t self, std::intptr_t data) {
+void LIBMUSCLE_MPI_Message_set_data_d_(std::intptr_t self, std::intptr_t data) {
     Message * self_p = reinterpret_cast<Message *>(self);
     Data * data_p = reinterpret_cast<Data *>(data);
     self_p->set_data(*data_p);
     return;
 }
 
-void LIBMUSCLE_Message_set_data_dcr_(std::intptr_t self, std::intptr_t data) {
+void LIBMUSCLE_MPI_Message_set_data_dcr_(std::intptr_t self, std::intptr_t data) {
     Message * self_p = reinterpret_cast<Message *>(self);
     DataConstRef * data_p = reinterpret_cast<DataConstRef *>(data);
     self_p->set_data(*data_p);
     return;
 }
 
-bool LIBMUSCLE_Message_has_settings_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Message_has_settings_(std::intptr_t self) {
     Message * self_p = reinterpret_cast<Message *>(self);
     bool result = self_p->has_settings();
     return result;
 }
 
-std::intptr_t LIBMUSCLE_Message_get_settings_(std::intptr_t self) {
+std::intptr_t LIBMUSCLE_MPI_Message_get_settings_(std::intptr_t self) {
     Message * self_p = reinterpret_cast<Message *>(self);
     Settings * result = new Settings(self_p->settings());
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-void LIBMUSCLE_Message_set_settings_(std::intptr_t self, std::intptr_t settings) {
+void LIBMUSCLE_MPI_Message_set_settings_(std::intptr_t self, std::intptr_t settings) {
     Message * self_p = reinterpret_cast<Message *>(self);
     Settings * settings_p = reinterpret_cast<Settings *>(settings);
     self_p->set_settings(*settings_p);
     return;
 }
 
-void LIBMUSCLE_Message_unset_settings_(std::intptr_t self) {
+void LIBMUSCLE_MPI_Message_unset_settings_(std::intptr_t self) {
     Message * self_p = reinterpret_cast<Message *>(self);
     self_p->unset_settings();
     return;
 }
 
-std::intptr_t LIBMUSCLE_Instance_create_(
+std::intptr_t LIBMUSCLE_MPI_Instance_create_(
         std::intptr_t cla,
         std::intptr_t ports,
         int flags,
@@ -3689,26 +3689,26 @@ std::intptr_t LIBMUSCLE_Instance_create_(
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-void LIBMUSCLE_Instance_free_(std::intptr_t self) {
+void LIBMUSCLE_MPI_Instance_free_(std::intptr_t self) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     delete self_p;
     return;
 }
 
-bool LIBMUSCLE_Instance_reuse_instance_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Instance_reuse_instance_(std::intptr_t self) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     bool result = self_p->reuse_instance();
     return result;
 }
 
-void LIBMUSCLE_Instance_error_shutdown_(std::intptr_t self, char * message, std::size_t message_size) {
+void LIBMUSCLE_MPI_Instance_error_shutdown_(std::intptr_t self, char * message, std::size_t message_size) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string message_s(message, message_size);
     self_p->error_shutdown(message_s);
     return;
 }
 
-bool LIBMUSCLE_Instance_is_setting_a_character_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_MPI_Instance_is_setting_a_character_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -3754,7 +3754,7 @@ bool LIBMUSCLE_Instance_is_setting_a_character_(std::intptr_t self, char * name,
     return false;
 }
 
-bool LIBMUSCLE_Instance_is_setting_a_int8_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_MPI_Instance_is_setting_a_int8_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -3800,7 +3800,7 @@ bool LIBMUSCLE_Instance_is_setting_a_int8_(std::intptr_t self, char * name, std:
     return false;
 }
 
-bool LIBMUSCLE_Instance_is_setting_a_real8_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_MPI_Instance_is_setting_a_real8_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -3846,7 +3846,7 @@ bool LIBMUSCLE_Instance_is_setting_a_real8_(std::intptr_t self, char * name, std
     return false;
 }
 
-bool LIBMUSCLE_Instance_is_setting_a_logical_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_MPI_Instance_is_setting_a_logical_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -3892,7 +3892,7 @@ bool LIBMUSCLE_Instance_is_setting_a_logical_(std::intptr_t self, char * name, s
     return false;
 }
 
-bool LIBMUSCLE_Instance_is_setting_a_real8array_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_MPI_Instance_is_setting_a_real8array_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -3938,7 +3938,7 @@ bool LIBMUSCLE_Instance_is_setting_a_real8array_(std::intptr_t self, char * name
     return false;
 }
 
-bool LIBMUSCLE_Instance_is_setting_a_real8array2_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_MPI_Instance_is_setting_a_real8array2_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -3984,7 +3984,7 @@ bool LIBMUSCLE_Instance_is_setting_a_real8array2_(std::intptr_t self, char * nam
     return false;
 }
 
-void LIBMUSCLE_Instance_get_setting_as_character_(std::intptr_t self, char * name, std::size_t name_size, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Instance_get_setting_as_character_(std::intptr_t self, char * name, std::size_t name_size, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -4032,7 +4032,7 @@ void LIBMUSCLE_Instance_get_setting_as_character_(std::intptr_t self, char * nam
     }
 }
 
-int64_t LIBMUSCLE_Instance_get_setting_as_int8_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+int64_t LIBMUSCLE_MPI_Instance_get_setting_as_int8_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -4078,7 +4078,7 @@ int64_t LIBMUSCLE_Instance_get_setting_as_int8_(std::intptr_t self, char * name,
     return 0;
 }
 
-double LIBMUSCLE_Instance_get_setting_as_real8_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+double LIBMUSCLE_MPI_Instance_get_setting_as_real8_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -4124,7 +4124,7 @@ double LIBMUSCLE_Instance_get_setting_as_real8_(std::intptr_t self, char * name,
     return 0.0;
 }
 
-bool LIBMUSCLE_Instance_get_setting_as_logical_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_MPI_Instance_get_setting_as_logical_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -4170,7 +4170,7 @@ bool LIBMUSCLE_Instance_get_setting_as_logical_(std::intptr_t self, char * name,
     return false;
 }
 
-void LIBMUSCLE_Instance_get_setting_as_real8array_(std::intptr_t self, char * name, std::size_t name_size, double ** value, std::size_t * value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Instance_get_setting_as_real8array_(std::intptr_t self, char * name, std::size_t name_size, double ** value, std::size_t * value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -4218,7 +4218,7 @@ void LIBMUSCLE_Instance_get_setting_as_real8array_(std::intptr_t self, char * na
     }
 }
 
-void LIBMUSCLE_Instance_get_setting_as_real8array2_(std::intptr_t self, char * name, std::size_t name_size, double ** value, std::size_t * value_shape, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Instance_get_setting_as_real8array2_(std::intptr_t self, char * name, std::size_t name_size, double ** value, std::size_t * value_shape, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -4276,48 +4276,48 @@ void LIBMUSCLE_Instance_get_setting_as_real8array2_(std::intptr_t self, char * n
     }
 }
 
-std::intptr_t LIBMUSCLE_Instance_list_ports_(std::intptr_t self) {
+std::intptr_t LIBMUSCLE_MPI_Instance_list_ports_(std::intptr_t self) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     PortsDescription * result = new PortsDescription(self_p->list_ports());
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-bool LIBMUSCLE_Instance_is_connected_(std::intptr_t self, char * port, std::size_t port_size) {
+bool LIBMUSCLE_MPI_Instance_is_connected_(std::intptr_t self, char * port, std::size_t port_size) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string port_s(port, port_size);
     bool result = self_p->is_connected(port_s);
     return result;
 }
 
-bool LIBMUSCLE_Instance_is_vector_port_(std::intptr_t self, char * port, std::size_t port_size) {
+bool LIBMUSCLE_MPI_Instance_is_vector_port_(std::intptr_t self, char * port, std::size_t port_size) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string port_s(port, port_size);
     bool result = self_p->is_vector_port(port_s);
     return result;
 }
 
-bool LIBMUSCLE_Instance_is_resizable_(std::intptr_t self, char * port, std::size_t port_size) {
+bool LIBMUSCLE_MPI_Instance_is_resizable_(std::intptr_t self, char * port, std::size_t port_size) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string port_s(port, port_size);
     bool result = self_p->is_resizable(port_s);
     return result;
 }
 
-int LIBMUSCLE_Instance_get_port_length_(std::intptr_t self, char * port, std::size_t port_size) {
+int LIBMUSCLE_MPI_Instance_get_port_length_(std::intptr_t self, char * port, std::size_t port_size) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string port_s(port, port_size);
     int result = self_p->get_port_length(port_s);
     return result;
 }
 
-void LIBMUSCLE_Instance_set_port_length_(std::intptr_t self, char * port, std::size_t port_size, int length) {
+void LIBMUSCLE_MPI_Instance_set_port_length_(std::intptr_t self, char * port, std::size_t port_size, int length) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string port_s(port, port_size);
     self_p->set_port_length(port_s, length);
     return;
 }
 
-void LIBMUSCLE_Instance_send_pm_(std::intptr_t self, char * port_name, std::size_t port_name_size, std::intptr_t message) {
+void LIBMUSCLE_MPI_Instance_send_pm_(std::intptr_t self, char * port_name, std::size_t port_name_size, std::intptr_t message) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string port_name_s(port_name, port_name_size);
     Message * message_p = reinterpret_cast<Message *>(message);
@@ -4325,7 +4325,7 @@ void LIBMUSCLE_Instance_send_pm_(std::intptr_t self, char * port_name, std::size
     return;
 }
 
-void LIBMUSCLE_Instance_send_pms_(std::intptr_t self, char * port_name, std::size_t port_name_size, std::intptr_t message, int slot) {
+void LIBMUSCLE_MPI_Instance_send_pms_(std::intptr_t self, char * port_name, std::size_t port_name_size, std::intptr_t message, int slot) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string port_name_s(port_name, port_name_size);
     Message * message_p = reinterpret_cast<Message *>(message);
@@ -4333,7 +4333,7 @@ void LIBMUSCLE_Instance_send_pms_(std::intptr_t self, char * port_name, std::siz
     return;
 }
 
-std::intptr_t LIBMUSCLE_Instance_receive_p_(std::intptr_t self, char * port_name, std::size_t port_name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+std::intptr_t LIBMUSCLE_MPI_Instance_receive_p_(std::intptr_t self, char * port_name, std::size_t port_name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string port_name_s(port_name, port_name_size);
     try {
@@ -4379,7 +4379,7 @@ std::intptr_t LIBMUSCLE_Instance_receive_p_(std::intptr_t self, char * port_name
     return 0;
 }
 
-std::intptr_t LIBMUSCLE_Instance_receive_pd_(std::intptr_t self, char * port_name, std::size_t port_name_size, std::intptr_t default_msg, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+std::intptr_t LIBMUSCLE_MPI_Instance_receive_pd_(std::intptr_t self, char * port_name, std::size_t port_name_size, std::intptr_t default_msg, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string port_name_s(port_name, port_name_size);
     Message * default_msg_p = reinterpret_cast<Message *>(default_msg);
@@ -4426,7 +4426,7 @@ std::intptr_t LIBMUSCLE_Instance_receive_pd_(std::intptr_t self, char * port_nam
     return 0;
 }
 
-std::intptr_t LIBMUSCLE_Instance_receive_ps_(std::intptr_t self, char * port_name, std::size_t port_name_size, int slot, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+std::intptr_t LIBMUSCLE_MPI_Instance_receive_ps_(std::intptr_t self, char * port_name, std::size_t port_name_size, int slot, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string port_name_s(port_name, port_name_size);
     try {
@@ -4472,7 +4472,7 @@ std::intptr_t LIBMUSCLE_Instance_receive_ps_(std::intptr_t self, char * port_nam
     return 0;
 }
 
-std::intptr_t LIBMUSCLE_Instance_receive_psd_(std::intptr_t self, char * port_name, std::size_t port_name_size, int slot, std::intptr_t default_message, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+std::intptr_t LIBMUSCLE_MPI_Instance_receive_psd_(std::intptr_t self, char * port_name, std::size_t port_name_size, int slot, std::intptr_t default_message, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string port_name_s(port_name, port_name_size);
     Message * default_message_p = reinterpret_cast<Message *>(default_message);
@@ -4519,7 +4519,7 @@ std::intptr_t LIBMUSCLE_Instance_receive_psd_(std::intptr_t self, char * port_na
     return 0;
 }
 
-std::intptr_t LIBMUSCLE_Instance_receive_with_settings_p_(std::intptr_t self, char * port_name, std::size_t port_name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+std::intptr_t LIBMUSCLE_MPI_Instance_receive_with_settings_p_(std::intptr_t self, char * port_name, std::size_t port_name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string port_name_s(port_name, port_name_size);
     try {
@@ -4565,7 +4565,7 @@ std::intptr_t LIBMUSCLE_Instance_receive_with_settings_p_(std::intptr_t self, ch
     return 0;
 }
 
-std::intptr_t LIBMUSCLE_Instance_receive_with_settings_pd_(std::intptr_t self, char * port_name, std::size_t port_name_size, std::intptr_t default_msg, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+std::intptr_t LIBMUSCLE_MPI_Instance_receive_with_settings_pd_(std::intptr_t self, char * port_name, std::size_t port_name_size, std::intptr_t default_msg, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string port_name_s(port_name, port_name_size);
     Message * default_msg_p = reinterpret_cast<Message *>(default_msg);
@@ -4612,7 +4612,7 @@ std::intptr_t LIBMUSCLE_Instance_receive_with_settings_pd_(std::intptr_t self, c
     return 0;
 }
 
-std::intptr_t LIBMUSCLE_Instance_receive_with_settings_ps_(std::intptr_t self, char * port_name, std::size_t port_name_size, int slot, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+std::intptr_t LIBMUSCLE_MPI_Instance_receive_with_settings_ps_(std::intptr_t self, char * port_name, std::size_t port_name_size, int slot, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string port_name_s(port_name, port_name_size);
     try {
@@ -4658,7 +4658,7 @@ std::intptr_t LIBMUSCLE_Instance_receive_with_settings_ps_(std::intptr_t self, c
     return 0;
 }
 
-std::intptr_t LIBMUSCLE_Instance_receive_with_settings_psd_(std::intptr_t self, char * port_name, std::size_t port_name_size, int slot, std::intptr_t default_msg, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+std::intptr_t LIBMUSCLE_MPI_Instance_receive_with_settings_psd_(std::intptr_t self, char * port_name, std::size_t port_name_size, int slot, std::intptr_t default_msg, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string port_name_s(port_name, port_name_size);
     Message * default_msg_p = reinterpret_cast<Message *>(default_msg);
@@ -4705,62 +4705,62 @@ std::intptr_t LIBMUSCLE_Instance_receive_with_settings_psd_(std::intptr_t self, 
     return 0;
 }
 
-bool LIBMUSCLE_Instance_resuming_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Instance_resuming_(std::intptr_t self) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     bool result = self_p->resuming();
     return result;
 }
 
-bool LIBMUSCLE_Instance_should_init_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Instance_should_init_(std::intptr_t self) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     bool result = self_p->should_init();
     return result;
 }
 
-std::intptr_t LIBMUSCLE_Instance_load_snapshot_(std::intptr_t self) {
+std::intptr_t LIBMUSCLE_MPI_Instance_load_snapshot_(std::intptr_t self) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     Message * result = new Message(self_p->load_snapshot());
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-bool LIBMUSCLE_Instance_should_save_snapshot_(std::intptr_t self, double timestamp) {
+bool LIBMUSCLE_MPI_Instance_should_save_snapshot_(std::intptr_t self, double timestamp) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     bool result = self_p->should_save_snapshot(timestamp);
     return result;
 }
 
-void LIBMUSCLE_Instance_save_snapshot_(std::intptr_t self, std::intptr_t message) {
+void LIBMUSCLE_MPI_Instance_save_snapshot_(std::intptr_t self, std::intptr_t message) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     Message * message_p = reinterpret_cast<Message *>(message);
     self_p->save_snapshot(*message_p);
     return;
 }
 
-bool LIBMUSCLE_Instance_should_save_final_snapshot_(std::intptr_t self) {
+bool LIBMUSCLE_MPI_Instance_should_save_final_snapshot_(std::intptr_t self) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     bool result = self_p->should_save_final_snapshot();
     return result;
 }
 
-void LIBMUSCLE_Instance_save_final_snapshot_(std::intptr_t self, std::intptr_t message) {
+void LIBMUSCLE_MPI_Instance_save_final_snapshot_(std::intptr_t self, std::intptr_t message) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     Message * message_p = reinterpret_cast<Message *>(message);
     self_p->save_final_snapshot(*message_p);
     return;
 }
 
-std::intptr_t LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_create_(int count) {
+std::intptr_t LIBMUSCLE_MPI_IMPL_BINDINGS_CmdLineArgs_create_(int count) {
     CmdLineArgs * result = new CmdLineArgs(count);
     return reinterpret_cast<std::intptr_t>(result);
 }
 
-void LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free_(std::intptr_t self) {
+void LIBMUSCLE_MPI_IMPL_BINDINGS_CmdLineArgs_free_(std::intptr_t self) {
     CmdLineArgs * self_p = reinterpret_cast<CmdLineArgs *>(self);
     delete self_p;
     return;
 }
 
-void LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg_(std::intptr_t self, int i, char * arg, std::size_t arg_size) {
+void LIBMUSCLE_MPI_IMPL_BINDINGS_CmdLineArgs_set_arg_(std::intptr_t self, int i, char * arg, std::size_t arg_size) {
     CmdLineArgs * self_p = reinterpret_cast<CmdLineArgs *>(self);
     std::string arg_s(arg, arg_size);
     self_p->set_arg(i, arg_s);

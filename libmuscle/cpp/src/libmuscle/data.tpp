@@ -11,7 +11,7 @@
 #include <msgpack.hpp>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 template <>
 ymmsl::SettingValue DataConstRef::as<ymmsl::SettingValue>() const;
@@ -108,5 +108,5 @@ void Data::init_list_(uint32_t offset, Arg const & value,
     mp_obj_->via.array.ptr[offset] = msgpack::object(value, *mp_zones_->front());
 }
 
-} }   // namespace libmuscle::impl
+} }   // namespace libmuscle::_MUSCLE_IMPL_NS
 

@@ -3,12 +3,13 @@
 #include <cstddef>
 #include <cstdint>
 
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/timestamp.hpp>
 #include <libmuscle/util.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /** Profiling event types for MUSCLE3.
  *

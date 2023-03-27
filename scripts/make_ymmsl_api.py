@@ -90,7 +90,7 @@ ymmsl_api_description = API(
         [],
         [
             Namespace(
-                'ymmsl', True, 'YMMSL',
+                'ymmsl', True, 'YMMSL', 'YMMSL',
                 [operator_desc, settings_desc]),
         ])
 

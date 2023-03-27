@@ -13,7 +13,7 @@
 #include <gtest/gtest.h>
 
 
-using libmuscle::impl::Data;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
 
 
 int main(int argc, char *argv[]) {

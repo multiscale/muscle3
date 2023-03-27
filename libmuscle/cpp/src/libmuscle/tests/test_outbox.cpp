@@ -10,10 +10,10 @@
 #include <ymmsl/ymmsl.hpp>
 
 
-using libmuscle::impl::DataConstRef;
-using libmuscle::impl::Optional;
-using libmuscle::impl::Outbox;
-using libmuscle::impl::MPPMessage;
+using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
+using libmuscle::_MUSCLE_IMPL_NS::Optional;
+using libmuscle::_MUSCLE_IMPL_NS::Outbox;
+using libmuscle::_MUSCLE_IMPL_NS::MPPMessage;
 using ymmsl::Reference;
 
 

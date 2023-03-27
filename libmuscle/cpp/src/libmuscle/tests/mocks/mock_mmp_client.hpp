@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <libmuscle/logging.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/profiling.hpp>
 #include <libmuscle/snapshot.hpp>
 #include <libmuscle/timestamp.hpp>
@@ -14,7 +15,7 @@
 #include <ymmsl/ymmsl.hpp>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 class MockMMPClient {
     public:

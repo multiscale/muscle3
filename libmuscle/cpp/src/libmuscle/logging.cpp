@@ -3,7 +3,7 @@
 #include "logging.hpp"
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 std::ostream & operator<<(std::ostream & os, LogLevel level) {
     switch (level) {

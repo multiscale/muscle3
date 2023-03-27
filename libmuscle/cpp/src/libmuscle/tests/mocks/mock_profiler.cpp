@@ -3,7 +3,7 @@
 #include <libmuscle/mpp_client.hpp>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
     MockProfiler::MockProfiler() {};
 

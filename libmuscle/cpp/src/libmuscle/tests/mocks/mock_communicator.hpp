@@ -3,6 +3,7 @@
 #include <libmuscle/data.hpp>
 #include <libmuscle/logger.hpp>
 #include <libmuscle/message.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/peer_manager.hpp>
 #include <libmuscle/port.hpp>
 #include <libmuscle/profiler.hpp>
@@ -16,7 +17,7 @@
 #include <vector>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 using PortsDescription = std::unordered_map<ymmsl::Operator, std::vector<std::string>>;
 

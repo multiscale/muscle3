@@ -45,7 +45,7 @@ public_headers := libmuscle/data.hpp libmuscle/data.tpp libmuscle/instance.hpp
 public_headers += libmuscle/libmuscle.hpp libmuscle/mcp/data_pack.hpp
 public_headers += libmuscle/mcp/data_pack.tpp libmuscle/message.hpp
 public_headers += libmuscle/ports_description.hpp libmuscle/util.hpp libmuscle/util.tpp
-public_headers += libmuscle/version.h
+public_headers += libmuscle/version.h libmuscle/namespace.hpp
 installed_headers := $(public_headers:%=$(PREFIX)/include/%)
 
 pkg_config_files := libmuscle.pc

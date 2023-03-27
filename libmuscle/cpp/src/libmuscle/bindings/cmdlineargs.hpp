@@ -3,8 +3,10 @@
 #include <string>
 #include <vector>
 
+#include <libmuscle/namespace.hpp>
 
-namespace libmuscle { namespace impl { namespace bindings {
+
+namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace bindings {
 
 // Simple helper class for passing command line args from Fortran to C++.
 class CmdLineArgs {

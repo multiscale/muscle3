@@ -5,13 +5,14 @@
 #else
 
 #include <libmuscle/mcp/transport_server.hpp>
+#include <libmuscle/namespace.hpp>
 
 #include <condition_variable>
 #include <thread>
 #include <netdb.h>
 
 
-namespace libmuscle { namespace impl { namespace mcp {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace mcp {
 
 /** A server that accepts TCP connections.
  */

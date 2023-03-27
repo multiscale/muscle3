@@ -1,11 +1,12 @@
 #pragma once
 
 #include <libmuscle/data.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/util.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /** A MUSCLE Peer Protocol message.
  *
@@ -30,8 +31,8 @@ struct MPPMessage {
      */
     MPPMessage(
             ::ymmsl::Reference const & sender, ::ymmsl::Reference const & receiver,
-            ::libmuscle::impl::Optional<int> port_length,
-            double timestamp, ::libmuscle::impl::Optional<double> next_timestamp,
+            Optional<int> port_length,
+            double timestamp, Optional<double> next_timestamp,
             DataConstRef const & settings_overlay, int message_number,
             double saved_until, DataConstRef const & data);
 
@@ -49,9 +50,9 @@ struct MPPMessage {
 
     ::ymmsl::Reference sender;
     ::ymmsl::Reference receiver;
-    ::libmuscle::impl::Optional<int> port_length;
+    Optional<int> port_length;
     double timestamp;
-    ::libmuscle::impl::Optional<double> next_timestamp;
+    Optional<double> next_timestamp;
     DataConstRef settings_overlay;
     int message_number;
     double saved_until;

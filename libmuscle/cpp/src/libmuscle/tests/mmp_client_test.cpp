@@ -3,16 +3,17 @@
  */
 #include <libmuscle/logging.hpp>
 #include <libmuscle/mmp_client.hpp>
+#include <libmuscle/namespace.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 #include <cassert>
 #include <tuple>
 
 
-using libmuscle::impl::LogLevel;
-using libmuscle::impl::LogMessage;
-using libmuscle::impl::MMPClient;
-using libmuscle::impl::Timestamp;
+using libmuscle::_MUSCLE_IMPL_NS::LogLevel;
+using libmuscle::_MUSCLE_IMPL_NS::LogMessage;
+using libmuscle::_MUSCLE_IMPL_NS::MMPClient;
+using libmuscle::_MUSCLE_IMPL_NS::Timestamp;
 using ymmsl::Operator;
 using ymmsl::Port;
 using ymmsl::Reference;

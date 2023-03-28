@@ -108,7 +108,8 @@ class Manager:
 
     def stop(self) -> None:
         """Shuts down the manager."""
-        # self._server.stop()
+        if self._instance_manager:
+            self._instance_manager.shutdown()
         self._server.stop()
         self._snapshot_registry.shutdown()
         self._snapshot_registry.join()

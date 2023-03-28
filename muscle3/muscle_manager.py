@@ -71,7 +71,11 @@ def manage_simulation(
     run_dir_obj = RunDir(run_dir_path)
     if start_all:
         manager = Manager(configuration, run_dir_obj, log_level)
-        manager.start_instances()
+        try:
+            manager.start_instances()
+        except:  # noqa: E722 - we really want to capture all errors here
+            manager.stop()
+            raise
     else:
         if run_dir is None:
             manager = Manager(configuration, None, log_level)

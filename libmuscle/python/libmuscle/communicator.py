@@ -5,6 +5,7 @@ from ymmsl import Conduit, Identifier, Operator, Reference, Settings
 from libmuscle.endpoint import Endpoint
 from libmuscle.mpp_message import ClosePort, MPPMessage
 from libmuscle.mpp_client import MPPClient
+from libmuscle.mcp.tcp_util import SocketClosed
 from libmuscle.mcp.transport_server import TransportServer
 from libmuscle.mcp.type_registry import transport_server_types
 from libmuscle.peer_manager import PeerManager
@@ -314,7 +315,13 @@ class Communicator:
         snd_endpoint = self._peer_manager.get_peer_endpoints(
                 recv_endpoint.port, slot_list)[0]
         client = self.__get_client(snd_endpoint.instance())
-        mpp_message_bytes, profile = client.receive(recv_endpoint.ref())
+        try:
+            mpp_message_bytes, profile = client.receive(recv_endpoint.ref())
+        except (ConnectionError, SocketClosed) as exc:
+            raise RuntimeError(
+                "Error while receiving a message: connection with peer"
+                f" '{snd_endpoint.kernel}' was lost. Did the peer crash?"
+            ) from exc
 
         recv_decode_event = ProfileEvent(
                 ProfileEventType.RECEIVE_DECODE, ProfileTimestamp(), None,

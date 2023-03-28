@@ -96,6 +96,7 @@ class Manager:
                     'For MUSCLE3 to be able to start instances, the'
                     ' configuration must contain a model, implementations,'
                     ' and resources. Please make sure they are all there.')
+        self._configuration.as_configuration().check_consistent()
         try:
             self._instance_manager.start_all()
         except:     # noqa

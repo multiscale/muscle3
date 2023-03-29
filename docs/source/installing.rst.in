@@ -426,7 +426,7 @@ If you have just installed MUSCLE3, then the above bits are currently on your
 screen, so you can just copy-paste them from there.
 
 Intel® C++ compiler
-``````````````````
+```````````````````
 
 You can compile MUSCLE3 with the Intel® compiler as described above, and then
 use it for your model as well. It is also possible to compile MUSCLE3 with the

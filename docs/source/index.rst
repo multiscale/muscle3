@@ -34,15 +34,26 @@ Cham.  `<https://doi.org/10.1007/978-3-030-50433-5_33>`_
    tutorial
    distributed_execution
    coupling
+   containers
    cplusplus
    fortran
    mpi
    uncertainty_quantification
    checkpointing
+   tips
+
+.. toctree::
+   :maxdepth: 4
+   :caption: API documentation
+
    python_api
    cpp_api
    fortran_api
    command_line_tools
+
+.. toctree::
+   :maxdepth: 2
+   :caption: MUSCLE3 development
 
    for_developers
 

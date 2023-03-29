@@ -90,12 +90,16 @@ class Manager:
     def start_instances(self) -> None:
         """Starts all required component instances."""
         if self._run_dir is None:
-            raise RuntimeError('No run dir specified')
+            message = 'No run dir specified'
+            _logger.error(message)
+            raise RuntimeError(message)
         if not self._instance_manager:
-            raise RuntimeError(
+            message = (
                     'For MUSCLE3 to be able to start instances, the'
                     ' configuration must contain a model, implementations,'
                     ' and resources. Please make sure they are all there.')
+            _logger.error(message)
+            raise RuntimeError(message)
         try:
             self._configuration.as_configuration().check_consistent()
             self._instance_manager.start_all()

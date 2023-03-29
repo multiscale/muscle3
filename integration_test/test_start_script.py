@@ -70,7 +70,11 @@ def test_start_script(tmpdir):
 
     # launch MUSCLE Manager with simulation
     manager = Manager(config, run_dir)
-    manager.start_instances()
+    try:
+        manager.start_instances()
+    except:  # noqa
+        manager.stop()
+        raise
     success = manager.wait()
 
     # check that all went well

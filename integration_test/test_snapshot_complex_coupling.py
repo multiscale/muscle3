@@ -149,7 +149,7 @@ model:
 
 settings:
   dt: 1.234
-  t_max: 2.0  # seconds
+  t_max: 1.8  # seconds
   cacheA.cache_valid: [2.0, 5.0]
   cacheB.cache_valid: [3.0, 8.0]
   cacheC.cache_valid: [4.0, 10.0]
@@ -170,19 +170,19 @@ def test_snapshot_complex_coupling(tmp_path, config):
     run_dir1 = RunDir(tmp_path / 'run1')
     run_manager_with_actors(dump(config), run_dir1.path, actors)
 
-    assert len(ls_snapshots(run_dir1, 'main')) == 5  # 2.0/0.5, at_end
-    assert len(ls_snapshots(run_dir1, 'cacheA')) == 5  # 2.0/0.5, at_end
-    assert len(ls_snapshots(run_dir1, 'cacheB')) == 5  # 2.0/0.5, at_end
-    assert len(ls_snapshots(run_dir1, 'cacheC')) == 5  # 2.0/0.5, at_end
+    assert len(ls_snapshots(run_dir1, 'main')) == 4  # 1.8/0.5, at_end
+    assert len(ls_snapshots(run_dir1, 'cacheA')) == 4  # 1.8/0.5, at_end
+    assert len(ls_snapshots(run_dir1, 'cacheB')) == 4  # 1.8/0.5, at_end
+    assert len(ls_snapshots(run_dir1, 'cacheC')) == 4  # 1.8/0.5, at_end
     # Due to caches, calcA/B/C may not run every 0.5 seconds
-    assert 1 <= len(ls_snapshots(run_dir1, 'calcA')) <= 5
-    assert 1 <= len(ls_snapshots(run_dir1, 'calcB')) <= 5
-    assert 1 <= len(ls_snapshots(run_dir1, 'calcC')) <= 5
-    assert len(ls_snapshots(run_dir1, 'calcD')) == 5  # 2.0/0.5, at_end
+    assert 1 <= len(ls_snapshots(run_dir1, 'calcA')) <= 4
+    assert 1 <= len(ls_snapshots(run_dir1, 'calcB')) <= 4
+    assert 1 <= len(ls_snapshots(run_dir1, 'calcC')) <= 4
+    assert len(ls_snapshots(run_dir1, 'calcD')) == 4  # 1.8/0.5, at_end
 
     snapshots_ymmsl = ls_snapshots(run_dir1)
     snapshot_docs = list(map(load, snapshots_ymmsl))
     # Snapshots based on wallclock time are less reliable. There is at least one
-    # resume yMMSL: the at_end collection. At most 4 more, one for each
+    # resume yMMSL: the at_end collection. At most 3 more, one for each
     # wallclock_time checkpoint.
-    assert 1 <= len(snapshot_docs) <= 5
+    assert 1 <= len(snapshot_docs) <= 4

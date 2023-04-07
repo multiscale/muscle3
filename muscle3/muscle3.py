@@ -1,11 +1,14 @@
 import sys
 from collections import OrderedDict
 from pathlib import Path
-from typing import Sequence
+from typing import Sequence, Union
 
 import click
 import ymmsl
 from ymmsl import PartialConfiguration
+
+import pydot
+import subprocess
 
 
 from libmuscle.planner.planner import Planner, Resources, InsufficientResourcesAvailable
@@ -195,10 +198,43 @@ def snapshot(snapshot_files: Sequence[Path], data: bool, verbose: bool) -> None:
     ),
 )
 @click.option(
-    "-v", "--verbose", is_flag=True, help="Include more information in the graph."
+    "-o",
+    "--out",
+    nargs=1,
+    required=False,
+    type=click.Path(
+        exists=False,
+        file_okay=True,
+        dir_okay=False,
+        readable=False,
+        allow_dash=True,
+        resolve_path=True,
+    ),
+    help="Output file (default ./output.format)",
 )
-# TODO: Add output format argument (png, wxpython, sixel?)
-def graph(ymmsl_files: Sequence[str], verbose: bool) -> None:
+@click.option(
+    "-f",
+    "--fmt",
+    type=click.Choice(pydot.Dot().formats, case_sensitive=False),
+    required=False,
+    help="Set output format (default svg).",
+)
+@click.option(
+    "-w",
+    "--viewer",
+    nargs=1,
+    required=False,
+    type=str,
+    help="Open with specified viewer (try xdg-open)",
+)
+@click.option("-v", "--verbose", is_flag=True, help="Include more information.")
+def graph(
+    ymmsl_files: Sequence[str],
+    out: Union[Path, None],
+    fmt: str,
+    viewer: str,
+    verbose: bool,
+) -> None:
     """Plot a graphical representation of the passed yMMSL files.
 
     To help develop or understand about a coupled simulation it may
@@ -211,7 +247,7 @@ def graph(ymmsl_files: Sequence[str], verbose: bool) -> None:
     Result:
 
       A graph is displayed or saved to disk, containing all the defined
-      components and the connections between them.
+    components and the connections between them.
 
     Examples:
 
@@ -222,7 +258,16 @@ def graph(ymmsl_files: Sequence[str], verbose: bool) -> None:
 
     graph = plot_model_graph(partial_config, simplify_edge_labels=not verbose)
 
-    graph.write_png("output.png")
+    if fmt is None:
+        fmt = "svg"
+    if out is None:
+        out = "output." + fmt
+
+    # should we handle '-' separately here?
+    graph.write(out, format=fmt)
+
+    if viewer is not None:
+        subprocess.run([viewer, out])
 
 
 def _load_ymmsl_files(ymmsl_files: Sequence[str]) -> PartialConfiguration:

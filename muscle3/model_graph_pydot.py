@@ -16,20 +16,15 @@ OPERATOR_SHAPES = {
 }
 
 
-def endpoint_to_key(endpoint: Reference):
-    """Replace an endpoint name like component.port with
-    a graphviz node:port display.
-
-    See https://graphviz.readthedocs.io/en/stable/manual.html#node-ports-compass
-
-    Not sure how to handle vector ports yet.
-    """
-    return str(endpoint).split(".")[0]  # .replace(".", ":")
-
-
 def port_shape(port: Reference, component: Union[Component, None]):
-    """Given a port reference, find the component referred to
+    """Given a port reference, find the component referred to,
+    look up the port type matching this name
     and look up the shape corresponding to the port type."""
+
+    # I think it is quite easy to misinterpret the direction of a MMSL diagram
+    # given that the 'weight' of the edge is towards the filled shape.
+    # I would consider making the sending_port smaller, but cannot find the setting
+    # in graphviz
     return OPERATOR_SHAPES[component.ports.operator(port)] if component else "normal"
 
 
@@ -38,6 +33,46 @@ def find_component(name: Reference, components: List[Component]):
     return next(
         (component for component in components if component.name == str(name)), None
     )
+
+
+def set_style(graph):
+    """set default properties to make for a more readable DOT file"""
+    graph.add_node(
+        pydot.Node(
+            "node",
+            shape="box",
+            style="rounded",
+            fixedsize="false",
+            width=2,
+            height=1,
+            labelloc="c",
+        )
+    )
+
+    # set default edge properties
+    graph.add_node(
+        pydot.Node(
+            "edge",
+            dir="both",
+            labelfontsize=8,
+            fontsize=8,
+            len=2,
+        )
+    )
+
+
+def trim_sending_port(identifier: str):
+    """Strip _out suffix from identifier"""
+    return identifier[:-4] if identifier.endswith("_out") else identifier
+
+
+def trim_receiving_port(identifier: str):
+    """Strip _in, _init suffix from identifier"""
+    if identifier.endswith("_in"):
+        return identifier[:-3]
+    if identifier.endswith("_init"):
+        return identifier[:-5]
+    return identifier
 
 
 def plot_model_graph(config: PartialConfiguration, simplify_edge_labels: bool) -> None:
@@ -54,19 +89,7 @@ def plot_model_graph(config: PartialConfiguration, simplify_edge_labels: bool) -
     )
     # be very careful with ortho splines, I have seen it put edges
     # upside down and eating labels
-
-    # set default properties to make for a more readable DOT file
-    graph.add_node(
-        pydot.Node(
-            "node",
-            shape="box",
-            style="rounded",
-            fixedsize="false",
-            width=2,
-            height=1,
-            labelloc="c",
-        )
-    )
+    set_style(graph)
 
     for component in config.model.components:
         graph.add_node(
@@ -75,72 +98,39 @@ def plot_model_graph(config: PartialConfiguration, simplify_edge_labels: bool) -
             )
         )
 
-    # set default edge properties
-    graph.add_node(
-        pydot.Node(
-            "edge",
-            dir="both",
-            labelfontsize=8,
-            fontsize=8,
-            len=2,
-        )
-    )
-
     for conduit in config.model.conduits:
-        # The ':' acts as a port, on a node, so we ensure that edges
-        # coming from the same name get mapped to the same port
+        # can we do this more elegantly?
         sender = find_component(conduit.sending_component(), config.model.components)
         receiver = find_component(
             conduit.receiving_component(), config.model.components
         )
 
-        # Could save space in generated dot graph by setting default values
-        # (see https://graphviz.org/docs/edges/ edge [name0=val0])
         edge = pydot.Edge(
-            endpoint_to_key(conduit.sender),
-            endpoint_to_key(conduit.receiver),
+            str(conduit.sending_component()),
+            str(conduit.receiving_component()),
             arrowtail=port_shape(
                 conduit.sending_port(),
                 sender,
             ),
             tailport=str(conduit.sending_port()),
-            headport=str(conduit.receiving_port()),
             arrowhead=port_shape(
                 conduit.receiving_port(),
                 receiver,
             ),
+            headport=str(conduit.receiving_port()),
         )
 
         # if port names match exactly (optionally when removing an _in or _out suffix)
         # we show the name on the conduit instead of on the port
-        sending_port = str(conduit.sending_port())
-        receiving_port = str(conduit.receiving_port())
-
-        # special casing for ports having names matching almost exactly
-        if simplify_edge_labels:
-            sending_port = (
-                sending_port[:-4] if sending_port.endswith("_out") else sending_port
-            )
-            receiving_port = (
-                receiving_port[:-3]
-                if receiving_port.endswith("_in")
-                else receiving_port
-            )
-            receiving_port = (
-                receiving_port[:-5]
-                if receiving_port.endswith("_init")
-                else receiving_port
-            )
-
-        if simplify_edge_labels and sending_port == receiving_port:
-            edge.set_label(sending_port)
+        if simplify_edge_labels and trim_sending_port(
+            str(conduit.sending_port())
+        ) == trim_receiving_port(str(conduit.receiving_port())):
+            edge.set_label(trim_sending_port(str(conduit.sending_port())))
         else:
             edge.set_taillabel(str(conduit.sending_port()))
             edge.set_headlabel(str(conduit.receiving_port()))
 
         # we could consider setting a minlen based on the text length and font size
-
         graph.add_edge(edge)
 
-    print(graph)
     return graph

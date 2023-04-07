@@ -24,7 +24,7 @@ def endpoint_to_key(endpoint: Reference):
 
     Not sure how to handle vector ports yet.
     """
-    return str(endpoint).replace(".", ":")
+    return str(endpoint).split(".")[0]  # .replace(".", ":")
 
 
 def port_shape(port: Reference, component: Union[Component, None]):
@@ -40,31 +40,51 @@ def find_component(name: Reference, components: List[Component]):
     )
 
 
-def plot_model_graph(config: PartialConfiguration) -> None:
+def plot_model_graph(config: PartialConfiguration, simplify_edge_labels: bool) -> None:
     """Convert a PartialConfiguration into DOT format."""
     graph = pydot.Dot(
         config.model.name,
         graph_type="digraph",
-        layout="sfdp",
+        layout="dot",
         pad=1,
-        splines="ortho",
+        # splines="ortho",
         nodesep=0.6,
         ranksep=0.75,
         fontname="Sans-Serif",
+    )
+    # be very careful with ortho splines, I have seen it put edges
+    # upside down and eating labels
+
+    # set default properties to make for a more readable DOT file
+    graph.add_node(
+        pydot.Node(
+            "node",
+            shape="box",
+            style="rounded",
+            fixedsize="false",
+            width=2,
+            height=1,
+            labelloc="c",
+        )
     )
 
     for component in config.model.components:
         graph.add_node(
             pydot.Node(
                 str(component.name),
-                shape="box",
-                style="rounded",
-                fixedsize="false",
-                width=2,
-                height=1,
-                labelloc="c",
             )
         )
+
+    # set default edge properties
+    graph.add_node(
+        pydot.Node(
+            "edge",
+            dir="both",
+            labelfontsize=8,
+            fontsize=8,
+            len=2,
+        )
+    )
 
     for conduit in config.model.conduits:
         # The ':' acts as a port, on a node, so we ensure that edges
@@ -83,14 +103,12 @@ def plot_model_graph(config: PartialConfiguration) -> None:
                 conduit.sending_port(),
                 sender,
             ),
+            tailport=str(conduit.sending_port()),
+            headport=str(conduit.receiving_port()),
             arrowhead=port_shape(
                 conduit.receiving_port(),
                 receiver,
             ),
-            dir="both",
-            labelfontsize=8,
-            fontsize=8,
-            len=2,
         )
 
         # if port names match exactly (optionally when removing an _in or _out suffix)
@@ -99,14 +117,22 @@ def plot_model_graph(config: PartialConfiguration) -> None:
         receiving_port = str(conduit.receiving_port())
 
         # special casing for ports having names matching almost exactly
-        sending_port = (
-            sending_port[:-4] if sending_port.endswith("_out") else sending_port
-        )
-        receiving_port = (
-            receiving_port[:-3] if receiving_port.endswith("_in") else receiving_port
-        )
+        if simplify_edge_labels:
+            sending_port = (
+                sending_port[:-4] if sending_port.endswith("_out") else sending_port
+            )
+            receiving_port = (
+                receiving_port[:-3]
+                if receiving_port.endswith("_in")
+                else receiving_port
+            )
+            receiving_port = (
+                receiving_port[:-5]
+                if receiving_port.endswith("_init")
+                else receiving_port
+            )
 
-        if sending_port == receiving_port:
+        if simplify_edge_labels and sending_port == receiving_port:
             edge.set_label(sending_port)
         else:
             edge.set_taillabel(str(conduit.sending_port()))

@@ -12,6 +12,8 @@ from libmuscle.planner.planner import (
         Planner, Resources, InsufficientResourcesAvailable)
 from libmuscle.snapshot_manager import SnapshotManager
 
+from .model_graph_pydot import plot_model_graph
+
 
 _RESOURCES_INCOMPLETE_MODEL = """
 A model, implementations and resources must be given to be able to calculate
@@ -152,6 +154,40 @@ def snapshot(
             else:
                 click.secho("No data available", italic=True)
         click.echo()
+
+@muscle3.command(short_help='Print a graphical representation of this workflow')
+@click.argument(
+        'ymmsl_files', nargs=-1, required=True, type=click.Path(
+            exists=True, file_okay=True, dir_okay=False, readable=True,
+            allow_dash=True, resolve_path=True))
+# TODO: Add output format argument (png, wxpython, sixel?)
+def graph(ymmsl_files: Sequence[str]) -> None:
+    """Plot a graphical representation of the passed yMMSL files.
+
+    To help develop or understand about a coupled simulation it may
+    be useful to view a graphical representation.
+
+    If multiple yMMSL files are given, then they will be combined left
+    to right, i.e. if there are conflicting declarations, the one from
+    the file last given is used.
+
+    Result:
+
+      A graph is displayed or saved to disk, containing all the defined
+      components and the connections between them.
+
+    Examples:
+
+      muscle3 graph simulation.ymmsl
+
+    """
+    partial_config = _load_ymmsl_files(ymmsl_files)
+
+    graph = plot_model_graph(partial_config)
+
+    graph.write_png('output.png')
+
+
 
 
 def _load_ymmsl_files(ymmsl_files: Sequence[str]) -> PartialConfiguration:

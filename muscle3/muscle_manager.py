@@ -60,6 +60,20 @@ def manage_simulation(
     for path in ymmsl_files:
         configuration.update(load_configuration(path))
 
+    try:
+        if start_all:  # Do a full consistency check
+            configuration.as_configuration().check_consistent()
+        else:  # Only require that a Model exists and is consistent
+            if configuration.model is None:
+                raise ValueError('Model section is missing from the configuration.')
+            if not isinstance(configuration.model, ymmsl.Model):
+                raise ValueError('Model section from the configuration is incomplete.')
+            configuration.model.check_consistent()
+    except Exception as exc:
+        print('Failed to start the simulation, found a configuration error:\n' +
+              textwrap.indent(str(exc), 4*' '), file=sys.stderr)
+        sys.exit(1)
+
     if run_dir is None:
         if configuration.model is not None:
             model_name = configuration.model.name

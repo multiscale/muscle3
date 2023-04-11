@@ -101,7 +101,6 @@ class Manager:
             _logger.error(message)
             raise RuntimeError(message)
         try:
-            self._configuration.as_configuration().check_consistent()
             self._instance_manager.start_all()
         except:     # noqa
             _logger.error('An error occurred while starting the components:')

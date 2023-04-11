@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/port.hpp>
 #include <ymmsl/ymmsl.hpp>
 

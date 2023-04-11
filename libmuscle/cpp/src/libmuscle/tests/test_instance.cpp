@@ -32,6 +32,7 @@
 #include <gtest/gtest.h>
 
 #include <libmuscle/instance.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/settings_manager.hpp>
 #include <mocks/mock_communicator.hpp>
 

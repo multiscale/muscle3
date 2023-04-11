@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/snapshot.hpp>
 
 using libmuscle::_MUSCLE_IMPL_NS::Data;

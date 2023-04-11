@@ -38,6 +38,7 @@
 #include <stdexcept>
 #include <gtest/gtest.h>
 #include <libmuscle/communicator.hpp>
+#include <libmuscle/namespace.hpp>
 #include <mocks/mock_mpp_client.hpp>
 #include <mocks/mcp/mock_tcp_transport_server.hpp>
 #include <mocks/mock_logger.hpp>

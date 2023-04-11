@@ -1,5 +1,6 @@
 #include "libmuscle/peer_manager.hpp"
 
+#include <libmuscle/namespace.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 #include <memory>

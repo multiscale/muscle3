@@ -11,6 +11,7 @@
 
 
 // Test code dependencies
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/profiler.hpp>
 #include <libmuscle/profiling.hpp>
 

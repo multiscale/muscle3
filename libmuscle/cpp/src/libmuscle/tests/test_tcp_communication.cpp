@@ -6,6 +6,7 @@
 #include <libmuscle/mpp_client.hpp>
 
 #include <libmuscle/data.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/post_office.hpp>
 #include <libmuscle/util.hpp>
 #include <ymmsl/ymmsl.hpp>

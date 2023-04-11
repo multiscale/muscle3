@@ -2,6 +2,8 @@
 
 #include <libmuscle/api_guard.hpp>
 
+#include <libmuscle/namespace.hpp>
+
 #include <vector>
 #include <set>
 

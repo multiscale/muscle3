@@ -32,6 +32,7 @@
 #include <typeinfo>
 
 #include <gtest/gtest.h>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/snapshot_manager.hpp>
 
 // Note: using POSIX for filesystem calls

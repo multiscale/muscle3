@@ -13,6 +13,7 @@
 // Test code dependencies
 #include <libmuscle/logger.hpp>
 #include <libmuscle/logging.hpp>
+#include <libmuscle/namespace.hpp>
 
 #include <gtest/gtest.h>
 

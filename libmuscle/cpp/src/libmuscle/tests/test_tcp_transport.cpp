@@ -4,6 +4,7 @@
 #include <libmuscle/mcp/transport_server.hpp>
 #include <libmuscle/mcp/tcp_transport_client.hpp>
 #include <libmuscle/mcp/tcp_transport_server.hpp>
+#include <libmuscle/namespace.hpp>
 
 #include <msgpack.hpp>
 

@@ -13,6 +13,7 @@
 #include <libmuscle/mcp/data_pack.hpp>
 #include <libmuscle/mcp/protocol.hpp>
 #include <libmuscle/mpp_message.hpp>
+#include <libmuscle/namespace.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 

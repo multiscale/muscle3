@@ -1,4 +1,5 @@
 #include <libmuscle/util.hpp>
+#include <libmuscle/namespace.hpp>
 
 #include <utility>
 

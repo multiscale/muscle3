@@ -7,6 +7,7 @@
 #include <libmuscle/util.hpp>
 #include <libmuscle/data.hpp>
 #include <libmuscle/mpp_message.hpp>
+#include <libmuscle/namespace.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 

@@ -2,6 +2,7 @@
 
 #include <libmuscle/checkpoint_triggers.hpp>
 
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/mcp/data_pack.hpp>
 
 using libmuscle::_MUSCLE_IMPL_NS::TriggerManager;

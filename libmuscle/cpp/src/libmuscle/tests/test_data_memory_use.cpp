@@ -1,5 +1,6 @@
 #include "libmuscle/data.hpp"
 #include "libmuscle/mcp/data_pack.hpp"
+#include <libmuscle/namespace.hpp>
 
 #include <cstddef>
 #include <cstdio>

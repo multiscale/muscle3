@@ -5,6 +5,7 @@
 #include <libmuscle/mcp/data_pack.hpp>
 #include <libmuscle/mpp_message.hpp>
 #include <libmuscle/mpp_client.hpp>
+#include <libmuscle/namespace.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 #include <cassert>

@@ -89,7 +89,7 @@ If you don't have a graphical interface available, you could use a screen manage
 
 Once the component is started, you can connect to the ``screen`` session by
 opening a terminal on the machine where the component is running (for example
-through SHH) and run the command:
+through SSH) and run the command:
 
 .. code-block:: bash
 

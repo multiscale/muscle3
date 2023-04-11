@@ -122,8 +122,8 @@ intersphinx_mapping = {
 
 # -- Patch version into installation instructions --
 def patch_installation_version():
-    with open('installing.rst', 'w') as out_file:
-        with open('installing.rst.in', 'r') as in_file:
+    for fname in ['installing.rst', 'containers.rst']:
+        with open(fname, 'w') as out_file, open(fname+'.in', 'r') as in_file:
             in_text = in_file.read()
             out_text = in_text.replace('%%VERSION%%', release.strip())
             out_file.write(out_text)

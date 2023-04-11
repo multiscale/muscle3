@@ -1,3 +1,5 @@
+.. The containers.rst file is generated! Edit containers.rst.in instead
+
 ==================================
 Running containerized applications
 ==================================
@@ -73,8 +75,8 @@ reaction and the diffusion model. First, create a container definition file
     From: python:3.10
 
     %post
-        # download latest muscle3 release from git
-        git clone https://github.com/multiscale/muscle3.git --branch master /opt/muscle3
+        # download latest muscle3 release from github
+        curl -L https://github.com/multiscale/muscle3/archive/refs/tags/%%VERSION%%.tar.gz | tar -zxC /opt && mv /opt/muscle3* /opt/muscle3
         pip install /opt/muscle3
 
 Then build the container:
@@ -178,7 +180,7 @@ See the :ref:`installing` page if you don't have muscle3 available yet. Test tha
 
 .. rubric:: Create containers for the components
 
-For this example we will create a single Singularity container, which contains both the
+For this example we will create a single Docker container, which contains both the
 reaction and the diffusion model. First, create a container definition file
 ``Dockerfile`` with the following contents:
 
@@ -186,8 +188,8 @@ reaction and the diffusion model. First, create a container definition file
 
     FROM python:3.10
 
-    # download latest muscle3 release from git
-    RUN git clone https://github.com/multiscale/muscle3.git --branch master /opt/muscle3
+    # download latest muscle3 release from github
+    RUN curl -L https://github.com/multiscale/muscle3/archive/refs/tags/%%VERSION%%.tar.gz | tar -zxC /opt && mv /opt/muscle3* /opt/muscle3
     RUN pip install /opt/muscle3
 
 

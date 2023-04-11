@@ -3,7 +3,7 @@
 import abc
 from copy import copy
 from textwrap import indent, dedent
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 
 error_codes = {
@@ -2347,7 +2347,67 @@ class OverloadSet(Member):
         return f'    generic :: {self.name} => {mem_fun_names}\n'
 
 
-class Class:
+class NamespaceMember(abc.ABC):
+    def __init__(self, name: str):
+        self.ns_prefix: Optional[str] = None
+        self.public: Optional[bool] = None
+        self.name = name
+
+    def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
+        """Sets the namespace prefix correctly for all members.
+
+        Args:
+            ns_for_name: A map from type names to namespace names.
+        """
+        self.ns_prefix = ns_for_name[self.name]
+
+    def set_public(self, public: Optional[bool]) -> None:
+        """Sets whether this class should be public.
+
+        Public objects are usable by the Fortran program; this sets
+        accessibility of the type and of all member functions.
+
+        Args:
+            public: True iff this is public.
+        """
+        self.public = public
+
+    @abc.abstractmethod
+    def fortran_type_definition(self) -> str:
+        ...
+
+    def fortran_public_declarations(self) -> str:
+        """Creates Fortran declarations making functions public.
+        """
+        return ''
+
+    def fortran_interface(self) -> str:
+        """Create a Fortran interface definition for the C ABI.
+        """
+        return ''
+
+    def fortran_overloads(self) -> str:
+        """Create Fortran overload declarations for any OverloadSets.
+        """
+        return ''
+
+    def fortran_functions(self) -> str:
+        """Create Fortran function definitions for this class.
+        """
+        return ''
+
+    def fortran_c_wrapper(self) -> str:
+        """Create C functions for the members.
+        """
+        return ''
+
+    def fortran_exports(self) -> List[str]:
+        """Generates a list of linker exports for the Fortran symbols.
+        """
+        return []
+
+
+class Class(NamespaceMember):
     def __init__(
             self,
             name: str, parent: Optional['Class'],
@@ -2359,9 +2419,7 @@ class Class:
             name: Name of the class.
             members: List of member functions.
         """
-        self.ns_prefix = None       # type: Optional[str]
-        self.public = None          # type: Optional[bool]
-        self.name = name
+        super().__init__(name)
 
         if parent is None:
             self.members = members
@@ -2382,25 +2440,12 @@ class Class:
                     self.members.append(member)
 
     def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
-        """Sets the namespace prefix correctly for all members.
-
-        Args:
-            ns_for_name: A map from type names to namespace names.
-        """
-        self.ns_prefix = ns_for_name[self.name]
+        super().set_ns_prefix(ns_for_name)
         for member in self.members:
             member.set_ns_prefix(ns_for_name)
 
     def set_public(self, public: Optional[bool]) -> None:
-        """Sets whether this class should be public.
-
-        Public objects are usable by the Fortran program; this sets
-        accessibility of the type and of all member functions.
-
-        Args:
-            public: True iff this is public.
-        """
-        self.public = public
+        super().set_public(public)
         for member in self.members:
             member.set_public(public)
 
@@ -2468,7 +2513,7 @@ class Class:
         return result
 
 
-class Enum:
+class Enum(NamespaceMember):
     def __init__(self, name: str, values: List[Tuple[str, int]]) -> None:
         """Create an enumeration description.
 
@@ -2476,28 +2521,8 @@ class Enum:
             name: Name of the enum.
             values: List of name, value pairs.
         """
-        self.ns_prefix = None       # type: Optional[str]
-        self.public = None          # type: Optional[bool]
-        self.name = name
+        super().__init__(name)
         self.values = values
-
-    def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
-        """Sets the namespace prefix correctly for all members.
-
-        Args:
-            ns_for_name: A map from type names to namespace names.
-        """
-        self.ns_prefix = ns_for_name[self.name]
-
-    def set_public(self, public: Optional[bool]) -> None:
-        """Sets whether this enum should be public.
-
-        Public objects are usable by the Fortran program.
-
-        Args:
-            public: True iff this is public.
-        """
-        self.public = public
 
     def fortran_type_definition(self) -> str:
         """Create a Fortran type definition for this enum.
@@ -2514,7 +2539,7 @@ class Enum:
         return indent(result, 4*' ')
 
 
-class Flags:
+class Flags(NamespaceMember):
     def __init__(self, name: str, values: List[str]):
         """Create a Flags description.
 
@@ -2525,28 +2550,8 @@ class Flags:
             name: name of the flags
             values: list of option names
         """
-        self.ns_prefix = None       # type: Optional[str]
-        self.public = None          # type: Optional[bool]
-        self.name = name
+        super().__init__(name)
         self.values = values
-
-    def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
-        """Sets the namespace prefix correctly for all members.
-
-        Args:
-            ns_for_name: A map from type names to namespace names.
-        """
-        self.ns_prefix = ns_for_name[self.name]
-
-    def set_public(self, public: Optional[bool]) -> None:
-        """Sets whether this enum should be public.
-
-        Public objects are usable by the Fortran program.
-
-        Args:
-            public: True iff this is public.
-        """
-        self.public = public
 
     def fortran_type_definition(self) -> str:
         """Create a Fortran type definition for this enum.
@@ -2570,26 +2575,6 @@ class Flags:
         fun_name = f'{self.ns_prefix}_{self.name}_to_int_;'
         return [fun_name]
 
-    def fortran_c_wrapper(self) -> str:
-        """Create C functions for the members.
-        """
-        return ''
-
-    def fortran_interface(self) -> str:
-        """Create a Fortran interface definition for the C ABI.
-        """
-        return ''
-
-    def fortran_public_declarations(self) -> str:
-        """Creates Fortran declarations making functions public.
-        """
-        return ''
-
-    def fortran_overloads(self) -> str:
-        """Create Fortran overload declarations for any OverloadSets.
-        """
-        return ''
-
     def fortran_functions(self) -> str:
         """Create Fortran function definitions for this class.
         """
@@ -2610,7 +2595,7 @@ class Flags:
 
 class Namespace:
     def __init__(self, name: str, public: Optional[bool], prefix: str,
-                 enums: List[Enum], classes: List[Class], flags: List[Flags] = []
+                 members: Sequence[NamespaceMember]
                  ) -> None:
         """Create a namespace description.
 
@@ -2626,16 +2611,10 @@ class Namespace:
         self.name = name
         self.public = public
         self.prefix = prefix
-        self.enums = enums
-        self.classes = classes
-        self.flags = flags
+        self.members = members
 
-        for enum in self.enums:
-            enum.set_public(public)
-        for cls in self.classes:
-            cls.set_public(public)
-        for flag in self.flags:
-            flag.set_public(public)
+        for member in self.members:
+            member.set_public(public)
 
     def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
         """Sets the namespace prefix correctly for all members.
@@ -2643,12 +2622,8 @@ class Namespace:
         Args:
             ns_for_name: A map from type names to namespace names.
         """
-        for cls in self.classes:
-            cls.set_ns_prefix(ns_for_name)
-        for enum in self.enums:
-            enum.set_ns_prefix(ns_for_name)
-        for flag in self.flags:
-            flag.set_ns_prefix(ns_for_name)
+        for member in self.members:
+            member.set_ns_prefix(ns_for_name)
 
     def fortran_typedefs(self) -> str:
         """Generates Fortran type definitions for public types.
@@ -2669,18 +2644,10 @@ class Namespace:
                     public, self.prefix, kind_name, kind_def)
         result += '\n'
 
-        for enum in self.enums:
-            result += enum.fortran_type_definition()
-
-        for cls in self.classes:
-            result += cls.fortran_type_definition()
+        for member in self.members:
+            result += member.fortran_type_definition()
             if self.public:
-                result += cls.fortran_public_declarations()
-
-        for flag in self.flags:
-            result += flag.fortran_type_definition()
-            if self.public:
-                result += flag.fortran_public_declarations()
+                result += member.fortran_public_declarations()
 
         return result
 
@@ -2694,13 +2661,11 @@ class Namespace:
             return ''
 
         result = '    interface\n\n'
-        result += "".join(cls.fortran_interface() for cls in self.classes)
-        result += "".join(flag.fortran_interface() for flag in self.flags)
-
+        result += "".join(member.fortran_interface() for member in self.members)
         result += '    end interface\n\n'
 
-        for cls in self.classes:
-            result += cls.fortran_overloads()
+        for member in self.members:
+            result += member.fortran_overloads()
         return result
 
     def fortran_functions(self) -> str:
@@ -2710,8 +2675,7 @@ class Namespace:
         if self.public is None:
             return result
 
-        result += "".join(cls.fortran_functions() for cls in self.classes)
-        result += "".join(flag.fortran_functions() for flag in self.flags)
+        result += "".join(member.fortran_functions() for member in self.members)
         return result
 
     def fortran_exports(self) -> List[str]:
@@ -2721,10 +2685,8 @@ class Namespace:
             return list()
 
         result = list()     # type: List[str]
-        for cls in self.classes:
-            result += cls.fortran_exports()
-        for flag in self.flags:
-            result += flag.fortran_exports()
+        for member in self.members:
+            result += member.fortran_exports()
         return result
 
 
@@ -2750,12 +2712,8 @@ class API:
         # set ns_prefix throughout the description
         ns_for_name: Dict[str, str] = dict()
         for namespace in self.namespaces:
-            for enum in namespace.enums:
-                ns_for_name[enum.name] = namespace.prefix
-            for cls in namespace.classes:
-                ns_for_name[cls.name] = namespace.prefix
-            for flag in namespace.flags:
-                ns_for_name[flag.name] = namespace.prefix
+            for member in namespace.members:
+                ns_for_name[member.name] = namespace.prefix
 
         for namespace in namespaces:
             namespace.set_ns_prefix(ns_for_name)
@@ -2829,14 +2787,8 @@ class API:
         """
         result = ''
         for namespace in self.namespaces:
-            for enum in namespace.enums:
-                result += 'using {}::{};\n'.format(namespace.name, enum.name)
-
-            for cls in namespace.classes:
-                result += 'using {}::{};\n'.format(namespace.name, cls.name)
-
-            for flag in namespace.flags:
-                result += 'using {}::{};\n'.format(namespace.name, flag.name)
+            for member in namespace.members:
+                result += 'using {}::{};\n'.format(namespace.name, member.name)
         result += '\n\n'
         return result
 
@@ -2845,8 +2797,8 @@ class API:
         """
         result = 'extern "C" {\n\n'
         for namespace in self.namespaces:
-            for cls in namespace.classes:
-                result += cls.fortran_c_wrapper()
+            for member in namespace.members:
+                result += member.fortran_c_wrapper()
 
         result += '}\n\n'
         return result

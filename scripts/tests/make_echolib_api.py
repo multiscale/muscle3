@@ -82,8 +82,8 @@ test_api_description = API(
             'vector'],
         [],
         [
-            Namespace('echolib', True, 'ECHO', [color_desc], [echo_desc]),
-            Namespace('echolib::impl', False, 'ECHO_impl', [],
+            Namespace('echolib', True, 'ECHO', [color_desc, echo_desc]),
+            Namespace('echolib::impl', False, 'ECHO_impl',
                       [cmdlineargs_desc])
             ])
 

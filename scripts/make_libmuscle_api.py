@@ -1059,10 +1059,7 @@ cmdlineargs_desc = Class('CmdLineArgs', None, [
         ])
 
 
-ymmsl_forward_enums = [Enum('Operator', [])]
-
-
-ymmsl_forward_classes = [Class('Settings', None, [])]
+ymmsl_forward_members = [Enum('Operator', []), Class('Settings', None, [])]
 
 
 libmuscle_api_description = API(
@@ -1076,13 +1073,13 @@ libmuscle_api_description = API(
         [
             'ymmsl'],
         [
-            Namespace('libmuscle', True, 'LIBMUSCLE', [], [
+            Namespace('libmuscle', True, 'LIBMUSCLE', [
                 dataconstref_desc, data_desc, portsdescription_desc,
-                message_desc, instance_desc], [instanceflags_desc]),
+                message_desc, instance_desc, instanceflags_desc]),
             Namespace('libmuscle::impl::bindings', False,
-                      'LIBMUSCLE_IMPL_BINDINGS', [], [cmdlineargs_desc]),
+                      'LIBMUSCLE_IMPL_BINDINGS', [cmdlineargs_desc]),
             Namespace('ymmsl', None, 'YMMSL',
-                      ymmsl_forward_enums, ymmsl_forward_classes)
+                      ymmsl_forward_members)
         ])
 
 
@@ -1097,13 +1094,13 @@ libmuscle_mpi_api_description = API(
         [
             'mpi', 'ymmsl'],
         [
-            Namespace('libmuscle', True, 'LIBMUSCLE', [], [
+            Namespace('libmuscle', True, 'LIBMUSCLE', [
                 dataconstref_desc, data_desc, portsdescription_desc,
-                message_desc, instance_mpi_desc], [instanceflags_desc]),
+                message_desc, instance_mpi_desc, instanceflags_desc]),
             Namespace('libmuscle::impl::bindings', False,
-                      'LIBMUSCLE_IMPL_BINDINGS', [], [cmdlineargs_desc]),
+                      'LIBMUSCLE_IMPL_BINDINGS', [cmdlineargs_desc]),
             Namespace('ymmsl', None, 'YMMSL',
-                      ymmsl_forward_enums, ymmsl_forward_classes)
+                      ymmsl_forward_members)
         ])
 
 

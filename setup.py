@@ -65,6 +65,9 @@ setup(
             'sphinx_rtd_theme',
             'sphinx-fortran',
             'tox'
-        ]
+        ],
+        'ui': [
+            'pydot'
+        ],
     },
 )

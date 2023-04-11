@@ -6,17 +6,12 @@ from ymmsl.component import Operator, Component
 
 import pydot
 
-# https://www.graphviz.org/docs/attr-types/arrowType/
-OPERATOR_SHAPES = {
-    Operator.NONE: "normal",
-    Operator.F_INIT: "odiamond",
-    Operator.O_I: "dot",
-    Operator.S: "odot",
-    Operator.O_F: "diamond",
-}
 
+def port_operator(port: Reference, component: Union[Component, None]):
+    """Look up the operator corresponding to a specific port"""
+    return component.ports.operator(port) if component else "normal"
 
-def port_shape(port: Reference, component: Union[Component, None]):
+def port_shape(operator: str):
     """Given a port reference, find the component referred to,
     look up the port type matching this name
     and look up the shape corresponding to the port type."""
@@ -25,7 +20,15 @@ def port_shape(port: Reference, component: Union[Component, None]):
     # given that the 'weight' of the edge is towards the filled shape.
     # I would consider making the sending_port smaller, but cannot find the setting
     # in graphviz
-    return OPERATOR_SHAPES[component.ports.operator(port)] if component else "normal"
+    # https://www.graphviz.org/docs/attr-types/arrowType/
+    OPERATOR_SHAPES = {
+        Operator.NONE: "normal",
+        Operator.F_INIT: "odiamond",
+        Operator.O_I: "dot",
+        Operator.S: "odot",
+        Operator.O_F: "diamond",
+    }
+    return OPERATOR_SHAPES[operator]
 
 
 def find_component(name: Reference, components: List[Component]):
@@ -40,10 +43,11 @@ def set_style(graph):
     graph.add_node(
         pydot.Node(
             "node",
-            shape="box",
+            shape="plain",
             style="rounded",
             fixedsize="false",
             width=2,
+            penwidth=2,
             height=1,
             labelloc="c",
         )
@@ -54,8 +58,9 @@ def set_style(graph):
         pydot.Node(
             "edge",
             dir="both",
-            labelfontsize=8,
-            fontsize=8,
+            labelfontsize=10,
+            fontsize=10,
+            penwidth=2,
             len=2,
         )
     )
@@ -74,6 +79,61 @@ def trim_receiving_port(identifier: str):
         return identifier[:-5]
     return identifier
 
+def headport(identifier: Reference, component: Union[Component, None]):
+    """Given a reference, return the portPos.
+    https://www.graphviz.org/docs/attr-types/portPos/
+    """
+    return str(identifier)
+
+def tailport(identifier: Reference, component: Union[Component, None]):
+    """Given a reference, return the portPos.
+    https://www.graphviz.org/docs/attr-types/portPos/
+    """
+    return str(identifier)
+
+def port_shortname(identifier: Reference):
+    """Strip suffixes and summarize names to only a few characters"""
+    identifier = trim_sending_port(trim_receiving_port(str(identifier)))
+    return "".join([s[0] for s in identifier.split('_')]).upper()
+
+def component_html_label(component: Component):
+    """Construct a HTML-like label (https://graphviz.org/doc/info/shapes.html#html)"""
+
+    # To layout the (single) table allowed, while getting evenly divided input and
+    # output ports, we can use colspan
+
+    n_inputs = len(component.ports.f_init) + len(component.ports.s)
+    if n_inputs == 0:
+        n_inputs = 1
+    n_outputs = len(component.ports.o_f) + len(component.ports.o_i)
+    if n_outputs == 0:
+        n_outputs = 1
+
+    label = "<<TABLE CELLSPACING='0'>\n"
+
+    # First draw a row with the input ports if there are any
+    input_ports = ""
+    for port in component.ports.f_init:
+        input_ports += f"    <TD PORT='{port}' COLSPAN='{n_outputs}'>{port_shortname(port)}</TD>\n"
+    for port in component.ports.s:
+        input_ports += f"    <TD PORT='{port}' COLSPAN='{n_outputs}'>{port_shortname(port)}</TD>\n"
+    
+    if input_ports != "":
+        label += f"  <TR>\n{input_ports}  </TR>\n"
+
+    label += f"  <TR>\n    <TD COLSPAN='{n_outputs*n_inputs}'><B>{component.name}</B></TD>\n  </TR>\n"
+
+    # Finally draw the output ports
+    output_ports = ""
+    for port in component.ports.o_f:
+        output_ports += f"    <TD PORT='{port}' COLSPAN='{n_inputs}'>{port_shortname(port)}</TD>\n"
+    for port in component.ports.o_i:
+        output_ports += f"    <TD PORT='{port}' COLSPAN='{n_inputs}'>{port_shortname(port)}</TD>\n"
+
+    if output_ports != "":
+        label += f"  <TR>\n{output_ports}  </TR>\n"
+
+    return label.replace("'", '"') + '</TABLE>>'
 
 def plot_model_graph(config: PartialConfiguration, simplify_edge_labels: bool) -> None:
     """Convert a PartialConfiguration into DOT format."""
@@ -95,6 +155,7 @@ def plot_model_graph(config: PartialConfiguration, simplify_edge_labels: bool) -
         graph.add_node(
             pydot.Node(
                 str(component.name),
+                label=component_html_label(component)
             )
         )
 
@@ -109,15 +170,18 @@ def plot_model_graph(config: PartialConfiguration, simplify_edge_labels: bool) -
             str(conduit.sending_component()),
             str(conduit.receiving_component()),
             arrowtail=port_shape(
+                port_operator(
                 conduit.sending_port(),
-                sender,
+                sender,)
             ),
-            tailport=str(conduit.sending_port()),
+            tailport=tailport(conduit.sending_port(), sender),
             arrowhead=port_shape(
+                port_operator(
                 conduit.receiving_port(),
                 receiver,
+                )
             ),
-            headport=str(conduit.receiving_port()),
+            headport=headport(conduit.receiving_port(), receiver),
         )
 
         # if port names match exactly (optionally when removing an _in or _out suffix)

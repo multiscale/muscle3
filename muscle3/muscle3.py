@@ -263,10 +263,14 @@ def graph(
     if out is None:
         out = "output." + fmt
 
-    # should we handle '-' separately here?
-    graph.write(out, format=fmt)
+    if out == '-' and fmt == 'dot':
+        print(graph)
+    elif out == '-':
+        print(graph.create(format=fmt))
+    else:
+        graph.write(out, format=fmt)
 
-    if viewer is not None:
+    if viewer is not None and out != '-':
         subprocess.run([viewer, out])
 
 

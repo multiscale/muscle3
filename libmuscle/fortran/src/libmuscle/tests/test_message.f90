@@ -20,12 +20,12 @@ contains
         m1 = LIBMUSCLE_Message(0.0d0, 1.0d0, d1)
         call LIBMUSCLE_Message_free(m1)
 
-        s1 = YMMSL_Settings_create()
+        s1 = YMMSL_Settings()
         m1 = LIBMUSCLE_Message(0.0d0, d1, s1)
         call LIBMUSCLE_Message_free(m1)
         call YMMSL_Settings_free(s1)
 
-        s1 = YMMSL_Settings_create()
+        s1 = YMMSL_Settings()
         m1 = LIBMUSCLE_Message(0.0d0, 10.0d0, d1, s1)
         call LIBMUSCLE_Message_free(m1)
         call YMMSL_Settings_free(s1)
@@ -115,24 +115,24 @@ contains
         call LIBMUSCLE_Data_free(d1)
 
         d1 = LIBMUSCLE_Data()
-        s1 = YMMSL_Settings_create()
-        call YMMSL_Settings_set(s1, 'key', 'value')
+        s1 = YMMSL_Settings()
+        call s1%set('key', 'value')
         m1 = LIBMUSCLE_Message(0.0d0, d1, s1)
         call YMMSL_Settings_free(s1)
         call LIBMUSCLE_Data_free(d1)
 
         call assert_true(m1%has_settings())
         s2 = m1%get_settings()
-        call assert_eq_character(YMMSL_Settings_get_as_character(s2, 'key'), 'value')
+        call assert_eq_character(s2%get_as_character('key'), 'value')
         call YMMSL_Settings_free(s2)
 
-        s1 = YMMSL_Settings_create()
-        call YMMSL_Settings_set(s1, 'key2', 'value2')
+        s1 = YMMSL_Settings()
+        call s1%set('key2', 'value2')
         call m1%set_settings(s1)
         call YMMSL_Settings_free(s1)
 
         s2 = m1%get_settings()
-        call assert_eq_character(YMMSL_Settings_get_as_character(s2, 'key2'), 'value2')
+        call assert_eq_character(s2%get_as_character('key2'), 'value2')
         call YMMSL_Settings_free(s2)
 
         call m1%unset_settings()

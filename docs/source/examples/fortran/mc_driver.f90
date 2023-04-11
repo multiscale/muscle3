@@ -78,9 +78,9 @@ program mc_driver
 
         ! O_I
         do sample = 1, n_samples
-            uq_parameters = YMMSL_Settings_create()
-            call YMMSL_Settings_set(uq_parameters, 'd', ds(sample))
-            call YMMSL_Settings_set(uq_parameters, 'k', ks(sample))
+            uq_parameters = YMMSL_Settings()
+            call uq_parameters%set('d', ds(sample))
+            call uq_parameters%set('k', ks(sample))
             sdata = LIBMUSCLE_Data(uq_parameters)
             smsg = LIBMUSCLE_Message(0.0d0, sdata)
             call instance%send('parameters_out', smsg, sample - 1)

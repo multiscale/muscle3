@@ -22,7 +22,8 @@ def convert(fortran_files: List[pathlib.Path]) -> None:
                 "LIBMUSCLE_PortsDescription",
                 "LIBMUSCLE_Message",
                 "LIBMUSCLE_Data",
-                "LIBMUSCLE_DataConstRef"]:
+                "LIBMUSCLE_DataConstRef",
+                "YMMSL_Settings"]:
             # Replace TYPE_create(...) with TYPE()
             indata = re.sub(rf"{typ}_create\(", f"{typ}(", indata)
 

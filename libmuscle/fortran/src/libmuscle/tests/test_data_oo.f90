@@ -139,8 +139,8 @@ contains
         type(LIBMUSCLE_Data) :: d1, d2
 
         print *, '[  RUN     ] data_oo.settings'
-        s1 = YMMSL_Settings_create()
-        call YMMSL_Settings_set(s1, 'key', 'value')
+        s1 = YMMSL_Settings()
+        call s1%set('key', 'value')
         d1 = LIBMUSCLE_Data(s1)
         d2 = LIBMUSCLE_Data(1000)
 
@@ -149,7 +149,7 @@ contains
 
         s2 = d1%as_settings(err_code)
         call assert_eq_integer(err_code, LIBMUSCLE_success)
-        call assert_eq_character(YMMSL_Settings_get_as_character(s2, 'key'), 'value')
+        call assert_eq_character(s2%get_as_character('key'), 'value')
 
         s3 = d2%as_settings(err_code)
         call assert_eq_integer(err_code, LIBMUSCLE_runtime_error)

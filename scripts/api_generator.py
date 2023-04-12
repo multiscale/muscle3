@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
+import abc
 from copy import copy
-import textwrap
-from typing import Dict, List, Optional, Tuple, Union
+from textwrap import indent, dedent
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 
 error_codes = {
@@ -37,7 +38,50 @@ def banner(comment_mark: str) -> str:
     return result
 
 
-class Par:
+class Par(abc.ABC):
+    """Represent a parameter. Subclasses implement concrete types.
+
+    This is used when generating:
+
+    - The C wrapper function
+    - The Fortran wrapper binding to the ISO C wrapper
+    - The Fortran interface routine (public API) (Note, this is a function or
+      subroutine, depending on return type)
+
+    Parameters can be used as:
+
+    - Return type of a method
+    - Argument to a method
+
+    The following member functions of this class are used to generate code when this
+    parameter is used as return type:
+
+    - fc_cpp_type: C-wrapper, the C++ type returned from the wrapped C++ API method
+    - fc_ret_type: C-wrapper, the return type(s) of the C wrapper method
+    - fc_get_result: C-wrapper, code for assigning the returned C++ value in C
+    - fc_return: C-wrapper, code for returning the result
+    - fc_return_default: C-wrapper, dummy result to return when an error occurred
+    - fi_ret_type: Fortran wrapper, the output argument type(s) of the Fortran call to C
+    - f_aux_variables: Fortran API, auxiliary variables needed by any of the below codes
+    - f_call_c: Fortran API, the code for calling the C wrapper method
+    - f_ret_type: Fortran API, the output argument type(s) of the public API procedure
+    - f_return_result: Fortran API, how to convert from the output of the C wrapper to
+        the public API output
+    - f_return_dummy_result: Fortran API, dummy result to return when an error occurred
+
+    The following member functions of this class are used to generate code when this
+    parameter is used as a function argument:
+
+    - fc_type: C-wrapper, the C-type(s) supplied as argument to the C wrapper function
+    - fc_convert_input: C-wrapper, convert the arguments provided to the C wrapper
+        function to the C++ type needed to call the C++ API
+    - fc_cpp_arg: C-wrapper, return the argument name that is supplied to the C++
+        API method
+    - fi_type: Fortran wrapper, the input argument type(s) of the Fortran call to C
+    - f_type: Fortran API, the input argument type(s) of the Fortran API
+    - f_chain_arg: Fortran API, arguments to supply to the Fortran C call.
+    """
+
     def __init__(self, name: str = 'ret_val') -> None:
         """Create a parameter description.
 
@@ -45,6 +89,7 @@ class Par:
             name: Name of the parameter.
         """
         self.name = name
+        self.class_name = ""
 
     def set_ns_prefix(self, ns_for_name: Dict[str, str], ns: str) -> None:
         """Sets the namespace prefix correctly for all members.
@@ -56,6 +101,71 @@ class Par:
         """
         self.ns_prefix = ns
 
+    @abc.abstractmethod
+    def tname(self) -> str:
+        """Return the type name of this parameter class.
+
+        Used when generating a name for instantiated templates."""
+
+    @abc.abstractmethod
+    def fc_cpp_type(self) -> str:
+        ...
+
+    @abc.abstractmethod
+    def fc_cpp_arg(self) -> str:
+        ...
+
+    @abc.abstractmethod
+    def fc_type(self) -> List[Tuple[str, str]]:
+        """Format: [(C type, name_postfix), ...]
+        """
+        ...
+
+    @abc.abstractmethod
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
+        """Format: [(C type, name_postfix), ...]
+        """
+        ...
+
+    @abc.abstractmethod
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
+        """Format: [(F type, name_postfix), ...]
+        """
+        ...
+
+    @abc.abstractmethod
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
+        """Format: (is_function, [(F type, name_postfix), ...])
+
+        When is_function is True, the wrapper generates a Fortran function, otherwise a
+        subroutine.
+        """
+
+    @abc.abstractmethod
+    def fi_type(self) -> List[Tuple[str, str]]:
+        ...
+
+    @abc.abstractmethod
+    def f_type(self) -> List[Tuple[str, str]]:
+        ...
+
+    @abc.abstractmethod
+    def fc_get_result(self, cpp_chain_call: str) -> str:
+        ...
+
+    @abc.abstractmethod
+    def fc_return(self) -> str:
+        ...
+
+    def f_call_c(self, result_name: str, call: str) -> str:
+        return '    {} = {}\n'.format(result_name, call)
+
+    def f_return_result(self, return_name: str, result_name: str) -> str:
+        return '    {} = {}\n'.format(return_name, result_name)
+
+    def fc_return_default(self) -> str:
+        return 'return {};'
+
     def fc_convert_input(self) -> str:
         return ''
 
@@ -64,12 +174,6 @@ class Par:
 
     def f_chain_arg(self) -> str:
         return self.name
-
-    def f_call_c(self, result_name: str, call: str) -> str:
-        return '    {} = {}\n'.format(result_name, call)
-
-    def f_return_result(self, return_name: str, result_name: str) -> str:
-        return '    {} = {}\n'.format(return_name, result_name)
 
     def f_return_dummy_result(self, return_name: str) -> str:
         return ''
@@ -97,7 +201,7 @@ class Par:
         if isinstance(short_type, str):
             return [(short_type, '')]
         elif isinstance(short_type, list):
-            result = list() # type: List[Tuple[str, str]]
+            result = list()  # type: List[Tuple[str, str]]
             for st in short_type:
                 if isinstance(st, str):
                     result.append((st, ''))
@@ -114,14 +218,26 @@ class Void(Par):
     def fc_cpp_type(self) -> str:
         return 'void'
 
-    def fc_ret_type(self) -> str:
+    def fc_type(self) -> List[Tuple[str, str]]:
+        raise NotImplementedError("Cannot use void as argument")
+
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('void')
 
-    def fi_ret_type(self) -> str:
-        return ''
+    def fi_type(self) -> List[Tuple[str, str]]:
+        raise NotImplementedError("Cannot use void as argument")
 
-    def f_ret_type(self) -> str:
-        return False, ''
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
+        return []
+
+    def f_type(self) -> List[Tuple[str, str]]:
+        raise NotImplementedError("Cannot use void as argument")
+
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
+        return False, []
+
+    def fc_cpp_arg(self) -> str:
+        raise NotImplementedError("Cannot use void as argument")
 
     def fc_get_result(self, cpp_chain_call: str) -> str:
         return cpp_chain_call
@@ -142,16 +258,17 @@ class Void(Par):
 class String(Par):
     """Represents a string-typed parameter.
     """
+
     def tname(self) -> str:
         return 'character'
 
     def fc_cpp_type(self) -> str:
         return 'std::string'
 
-    def f_type(self) -> str:
+    def f_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('character (len=*)')
 
-    def f_ret_type(self) -> str:
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
         return True, self._regular_type('character(:), allocatable')
 
     def f_aux_variables(self) -> List[Tuple[str, str]]:
@@ -174,20 +291,20 @@ class String(Par):
     def f_return_dummy_result(self, return_name: str) -> str:
         return '            allocate (character(0) :: {0})\n'.format(return_name)
 
-    def fi_type(self) -> str:
+    def fi_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(
                 ['character',
                  ('integer (c_size_t), value', '_size')])
 
-    def fi_ret_type(self) -> str:
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(
                 ['type (c_ptr)',
                  ('integer (c_size_t)', '_size')])
 
-    def fc_type(self) -> str:
+    def fc_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(['char *', ('std::size_t', '_size')])
 
-    def fc_ret_type(self) -> str:
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(['char **', ('std::size_t *', '_size')])
 
     def fc_convert_input(self) -> str:
@@ -219,11 +336,11 @@ class VecDbl(Par):
     def fc_cpp_type(self) -> str:
         return 'std::vector<double>'
 
-    def f_type(self) -> str:
+    def f_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(
                 'real ({}_real8), dimension(:)'.format(self.ns_prefix))
 
-    def f_ret_type(self) -> str:
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
         return False, self._regular_type(
                 [('real ({}_real8), dimension(:)'.format(self.ns_prefix),
                   self.name)])
@@ -243,20 +360,20 @@ class VecDbl(Par):
         return ('    call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))\n'
                 '    {} = f_ret_ptr\n').format(return_name)
 
-    def fi_type(self) -> str:
+    def fi_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(
                 ['real (c_double), dimension(*)',
                  ('integer (c_size_t), value', '_size')])
 
-    def fi_ret_type(self) -> str:
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(
                 ['type (c_ptr)',
                  ('integer (c_size_t)', '_size')])
 
-    def fc_type(self) -> str:
+    def fc_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(['double *', ('std::size_t', '_size')])
 
-    def fc_ret_type(self) -> str:
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(['double **', ('std::size_t *', '_size')])
 
     def fc_convert_input(self) -> str:
@@ -288,11 +405,11 @@ class Vec2Dbl(Par):
     def fc_cpp_type(self) -> str:
         return 'std::vector<std::vector<double>>'
 
-    def f_type(self) -> str:
+    def f_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(
                 'real ({}_real8), dimension(:,:)'.format(self.ns_prefix))
 
-    def f_ret_type(self) -> str:
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
         return False, self._regular_type(
                 [('real ({}_real8), dimension(:,:)'.format(self.ns_prefix),
                   self.name)])
@@ -311,20 +428,20 @@ class Vec2Dbl(Par):
         return ('    call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)\n'
                 '    {} = f_ret_ptr\n').format(return_name)
 
-    def fi_type(self) -> str:
+    def fi_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(
                 ['real (c_double), dimension(*)',
                  ('integer (c_size_t), dimension(2)', '_shape')])
 
-    def fi_ret_type(self) -> str:
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(
                 ['type (c_ptr)',
                  ('integer (c_size_t), dimension(2)', '_shape')])
 
-    def fc_type(self) -> str:
+    def fc_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(['double *', ('std::size_t *', '_shape')])
 
-    def fc_ret_type(self) -> str:
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(['double **', ('std::size_t *', '_shape')])
 
     def fc_convert_input(self) -> str:
@@ -336,7 +453,7 @@ class Vec2Dbl(Par):
                 '        {0}_v[i][j] = {0}[j * {0}_shape[0] + i];\n'
                 )
 
-        return textwrap.indent(result.format(self.name), '    ')
+        return indent(result.format(self.name), '    ')
 
     def fc_cpp_arg(self) -> str:
         return self.name + '_v'
@@ -363,7 +480,7 @@ class Vec2Dbl(Par):
                 'return;\n'
                 )
 
-        return textwrap.indent(result.format(self.name), '    ')
+        return indent(result.format(self.name), '    ')
 
     def fc_return_default(self) -> str:
         return ''  # memfun has void signature
@@ -378,11 +495,11 @@ class VecSizet(Par):
     def fc_cpp_type(self) -> str:
         return 'std::vector<std::size_t>'
 
-    def f_type(self) -> str:
+    def f_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(
                 'integer ({}_size), dimension(:)'.format(self.ns_prefix))
 
-    def f_ret_type(self) -> str:
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
         return False, self._regular_type(
                 [('integer ({}_size), dimension(:)'.format(self.ns_prefix),
                   self.name)])
@@ -402,20 +519,20 @@ class VecSizet(Par):
         return ('    call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))\n'
                 '    {}(1:ret_val_size) = f_ret_ptr\n').format(return_name)
 
-    def fi_type(self) -> str:
+    def fi_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(
                 ['integer (c_size_t), dimension(*)',
                  ('integer (c_size_t), value', '_size')])
 
-    def fi_ret_type(self) -> str:
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(
                 ['type (c_ptr)',
                  ('integer (c_size_t)', '_size')])
 
-    def fc_type(self) -> str:
+    def fc_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(['std::size_t *', ('std::size_t', '_size')])
 
-    def fc_ret_type(self) -> str:
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(['std::size_t **', ('std::size_t *', '_size')])
 
     def fc_convert_input(self) -> str:
@@ -471,17 +588,17 @@ class Array(Par):
         self.elem_type.set_ns_prefix(ns_for_name, ns)
 
     def tname(self) -> str:
-        return '{}array{}'.format(self.elem_type.tname(), ndims)
+        return '{}array{}'.format(self.elem_type.tname(), self.ndims)
 
     def fc_cpp_type(self) -> str:
         return '{} const *'.format(self.elem_type.fc_cpp_type())
 
-    def f_type(self) -> str:
+    def f_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(
                 '{}, dimension({})'.format(
                     self.elem_type.f_type()[0][0], self._f_dims()))
 
-    def f_ret_type(self) -> str:
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
         return False, self._regular_type(
                 [('{}, dimension({})'.format(self.elem_type.f_type()[0][0],
                                              self._f_dims()),
@@ -503,19 +620,19 @@ class Array(Par):
     def f_return_result(self, return_name: str, result_name: str) -> str:
         c_order = '(/{}/)'.format(', '.join(
             map(str, reversed(range(1, self.ndims+1)))))
-        return (
-                '    if (ret_val_format .eq. 0) then\n'
-                '        call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)\n'
-                '        {0} = f_ret_ptr\n'
-                '    else\n'
-                '        call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))\n'
-                '        {0} = reshape(f_ret_ptr_linear, ret_val_shape, (/ {2}:: /), {1})\n'
-                '    end if\n'
-                ).format(
+        return indent(dedent("""\
+            if (ret_val_format .eq. 0) then
+                call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+                {0} = f_ret_ptr
+            else
+                call c_f_pointer(ret_val, f_ret_ptr_linear, (/product(ret_val_shape)/))
+                {0} = reshape(f_ret_ptr_linear, ret_val_shape, (/ {2}:: /), {1})
+            end if
+            """), 4*' ').format(
                         return_name, c_order,
                         self.elem_type.fi_ret_type()[0][0])
 
-    def fi_type(self) -> str:
+    def fi_type(self) -> List[Tuple[str, str]]:
         base_type = self.elem_type.fi_type()[0][0].split(',')[0]
         return self._regular_type(
                 ['{}, dimension(*)'.format(base_type),
@@ -523,21 +640,21 @@ class Array(Par):
                      '_shape'),
                  ('integer (c_size_t), value', '_ndims')])
 
-    def fi_ret_type(self) -> str:
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(
                 ['type (c_ptr)',
                  ('integer (c_size_t), dimension({})'.format(self.ndims),
                      '_shape'),
                  ('integer (c_int)', '_format')])
 
-    def fc_type(self) -> str:
+    def fc_type(self) -> List[Tuple[str, str]]:
         elem_fc_type = self.elem_type.fc_type()[0][0]
         return self._regular_type(
                 ['{} *'.format(elem_fc_type),
                     ('std::size_t *', '_shape'),
                     ('std::size_t', '_ndims')])
 
-    def fc_ret_type(self) -> str:
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
         # TODO: add ndims
         return self._regular_type(
             ['{} **'.format(self.elem_type.fc_cpp_type()),
@@ -552,7 +669,7 @@ class Array(Par):
                 ).format(
                         self.name, self.elem_type.fc_cpp_type())
 
-        return textwrap.indent(result, '    ')
+        return indent(result, '    ')
 
     def fc_cpp_arg(self) -> str:
         return '{0}_p, {0}_shape_v'.format(self.name)
@@ -562,18 +679,20 @@ class Array(Par):
                 self.fc_cpp_type(), cpp_chain_call)
 
     def fc_return(self) -> str:
-        result = (
-                'if (self_p->shape().size() != {2}u)\n'
-                '    throw std::runtime_error("Grid does not have the expected {2} dimensions");\n'
-                '*{0} = const_cast<{1} *>(result);\n'
-                'for (std::size_t i = 0u; i < {2}u; ++i)\n'
-                '    {0}_shape[i] = self_p->shape()[i];\n'
-                '\n'
-                '*{0}_format = (self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);\n'
-                'return;\n'
-                )
+        result = dedent("""\
+            if (self_p->shape().size() != {2}u)
+                throw std::runtime_error(
+                        "Grid does not have the expected {2} dimensions");
+            *{0} = const_cast<{1} *>(result);
+            for (std::size_t i = 0u; i < {2}u; ++i)
+                {0}_shape[i] = self_p->shape()[i];
 
-        return textwrap.indent(
+            *{0}_format = (
+                    self_p->storage_order() == libmuscle::StorageOrder::last_adjacent);
+            return;
+            """)
+
+        return indent(
                 result.format(self.name, self.elem_type.fc_cpp_type(),
                               self.ndims),
                 '    ')
@@ -594,11 +713,11 @@ class Bytes(Par):
     def fc_cpp_type(self) -> str:
         return 'std::vector<char>'
 
-    def f_type(self) -> str:
+    def f_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(
                 'character(len=1), dimension(:)')
 
-    def f_ret_type(self) -> str:
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
         return False, self._regular_type(
                 [('character(len=1), dimension(:)', self.name)])
 
@@ -616,20 +735,20 @@ class Bytes(Par):
         return ('    call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))\n'
                 '    {} = f_ret_ptr\n').format(return_name)
 
-    def fi_type(self) -> str:
+    def fi_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(
                 ['character(len=1), dimension(*)',
                  ('integer (c_size_t), value', '_size')])
 
-    def fi_ret_type(self) -> str:
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(
                 ['type (c_ptr)',
                  ('integer (c_size_t)', '_size')])
 
-    def fc_type(self) -> str:
+    def fc_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(['char *', ('std::size_t', '_size')])
 
-    def fc_ret_type(self) -> str:
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type(['char **', ('std::size_t *', '_size')])
 
     def fc_convert_input(self) -> str:
@@ -659,7 +778,6 @@ class Obj(Par):
         super().__init__(name)
 
         self.class_name = class_name
-        self.ns_prefix = None
 
     def set_ns_prefix(self, ns_for_name: Dict[str, str], ns: str) -> None:
         self.ns_prefix = ns_for_name[self.class_name]
@@ -670,24 +788,24 @@ class Obj(Par):
     def fc_cpp_type(self) -> str:
         return self.class_name
 
-    def f_type(self) -> str:
-        return self._regular_type('type({}_{})'.format(
+    def f_type(self) -> List[Tuple[str, str]]:
+        return self._regular_type('class({}_{})'.format(
             self.ns_prefix, self.class_name))
 
-    def f_ret_type(self) -> str:
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
         return True, self._regular_type('type({}_{})'.format(
             self.ns_prefix, self.class_name))
 
-    def fi_type(self) -> str:
+    def fi_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer (c_intptr_t), value')
 
-    def fi_ret_type(self) -> str:
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer (c_intptr_t)')
 
-    def fc_type(self) -> str:
+    def fc_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('std::intptr_t')
 
-    def fc_ret_type(self) -> str:
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('std::intptr_t')
 
     def fc_convert_input(self) -> str:
@@ -726,22 +844,22 @@ class Bool(Par):
     def fc_cpp_type(self) -> str:
         return 'bool'
 
-    def f_type(self) -> str:
+    def f_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('logical')
 
-    def f_ret_type(self) -> str:
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
         return True, self._regular_type('logical')
 
-    def fi_type(self) -> str:
+    def fi_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('logical (c_bool), value')
 
-    def fi_ret_type(self) -> str:
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('logical (c_bool)')
 
-    def fc_type(self) -> str:
+    def fc_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('bool')
 
-    def fc_ret_type(self) -> str:
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('bool')
 
     def fc_cpp_arg(self) -> str:
@@ -773,35 +891,34 @@ class EnumVal(Par):
         super().__init__(name)
 
         self.class_name = class_name
-        self.ns_prefix = None
 
     def set_ns_prefix(self, ns_for_name: Dict[str, str], ns: str) -> None:
         self.ns_prefix = ns_for_name[self.class_name]
 
     def tname(self) -> str:
-        return self.class_name.tolower()
+        return self.class_name.lower()
 
     def fc_cpp_type(self) -> str:
         return self.class_name
 
-    def f_type(self) -> str:
+    def f_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer({}_{})'.format(
             self.ns_prefix, self.class_name))
 
-    def f_ret_type(self) -> str:
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
         return True, self._regular_type('integer({}_{})'.format(
             self.ns_prefix, self.class_name))
 
-    def fi_type(self) -> str:
+    def fi_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer (c_int), value')
 
-    def fi_ret_type(self) -> str:
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer (c_int)')
 
-    def fc_type(self) -> str:
+    def fc_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('int')
 
-    def fc_ret_type(self) -> str:
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('int')
 
     def fc_convert_input(self) -> str:
@@ -830,22 +947,22 @@ class Int(Par):
     def fc_cpp_type(self) -> str:
         return 'int'
 
-    def f_type(self) -> str:
+    def f_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer')
 
-    def f_ret_type(self) -> str:
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
         return True, self._regular_type('integer')
 
-    def fi_type(self) -> str:
+    def fi_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer (c_int), value')
 
-    def fi_ret_type(self) -> str:
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer (c_int)')
 
-    def fc_type(self) -> str:
+    def fc_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('int')
 
-    def fc_ret_type(self) -> str:
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('int')
 
     def fc_cpp_arg(self) -> str:
@@ -870,23 +987,23 @@ class Char(Par):
     def fc_cpp_type(self) -> str:
         return 'char'
 
-    def f_type(self) -> str:
+    def f_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer ({}_int1)'.format(self.ns_prefix))
 
-    def f_ret_type(self) -> str:
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
         return True, self._regular_type('integer ({}_int1)'.format(
                 self.ns_prefix))
 
-    def fi_type(self) -> str:
+    def fi_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer (c_int8_t), value')
 
-    def fi_ret_type(self) -> str:
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer (c_int8_t)')
 
-    def fc_type(self) -> str:
+    def fc_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('char')
 
-    def fc_ret_type(self) -> str:
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('char')
 
     def fc_cpp_arg(self) -> str:
@@ -911,22 +1028,22 @@ class Int16t(Par):
     def fc_cpp_type(self) -> str:
         return 'int16_t'
 
-    def f_type(self) -> str:
+    def f_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer (selected_int_kind(4))')
 
-    def f_ret_type(self) -> str:
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
         return True, self._regular_type('integer (selected_int_kind(4))')
 
-    def fi_type(self) -> str:
+    def fi_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer (c_short), value')
 
-    def fi_ret_type(self) -> str:
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer (c_short)')
 
-    def fc_type(self) -> str:
+    def fc_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('short int')
 
-    def fc_ret_type(self) -> str:
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('short int')
 
     def fc_cpp_arg(self) -> str:
@@ -951,23 +1068,23 @@ class Int32t(Par):
     def fc_cpp_type(self) -> str:
         return 'int32_t'
 
-    def f_type(self) -> str:
+    def f_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer ({}_int4)'.format(self.ns_prefix))
 
-    def f_ret_type(self) -> str:
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
         return True, self._regular_type('integer ({}_int4)'.format(
                 self.ns_prefix))
 
-    def fi_type(self) -> str:
+    def fi_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer (c_int32_t), value')
 
-    def fi_ret_type(self) -> str:
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer (c_int32_t)')
 
-    def fc_type(self) -> str:
+    def fc_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('int32_t')
 
-    def fc_ret_type(self) -> str:
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('int32_t')
 
     def fc_cpp_arg(self) -> str:
@@ -992,22 +1109,22 @@ class Int64t(Par):
     def fc_cpp_type(self) -> str:
         return 'int64_t'
 
-    def f_type(self) -> str:
+    def f_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer (selected_int_kind(18))')
 
-    def f_ret_type(self) -> str:
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
         return True, self._regular_type('integer (selected_int_kind(18))')
 
-    def fi_type(self) -> str:
+    def fi_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer (c_int64_t), value')
 
-    def fi_ret_type(self) -> str:
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer (c_int64_t)')
 
-    def fc_type(self) -> str:
+    def fc_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('int64_t')
 
-    def fc_ret_type(self) -> str:
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('int64_t')
 
     def fc_cpp_arg(self) -> str:
@@ -1032,23 +1149,23 @@ class Sizet(Par):
     def fc_cpp_type(self) -> str:
         return 'std::size_t'
 
-    def f_type(self) -> str:
+    def f_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer ({}_size)'.format(self.ns_prefix))
 
-    def f_ret_type(self) -> str:
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
         return True, self._regular_type('integer ({}_size)'.format(
                 self.ns_prefix))
 
-    def fi_type(self) -> str:
+    def fi_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer (c_size_t), value')
 
-    def fi_ret_type(self) -> str:
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('integer (c_size_t)')
 
-    def fc_type(self) -> str:
+    def fc_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('std::size_t')
 
-    def fc_ret_type(self) -> str:
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('std::size_t')
 
     def fc_cpp_arg(self) -> str:
@@ -1073,23 +1190,23 @@ class Float(Par):
     def fc_cpp_type(self) -> str:
         return 'float'
 
-    def f_type(self) -> str:
+    def f_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('real ({}_real4)'.format(self.ns_prefix))
 
-    def f_ret_type(self) -> str:
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
         return True, self._regular_type('real ({}_real4)'.format(
                 self.ns_prefix))
 
-    def fi_type(self) -> str:
+    def fi_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('real (c_float), value')
 
-    def fi_ret_type(self) -> str:
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('real (c_float)')
 
-    def fc_type(self) -> str:
+    def fc_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('float')
 
-    def fc_ret_type(self) -> str:
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('float')
 
     def fc_cpp_arg(self) -> str:
@@ -1114,23 +1231,23 @@ class Double(Par):
     def fc_cpp_type(self) -> str:
         return 'double'
 
-    def f_type(self) -> str:
+    def f_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('real ({}_real8)'.format(self.ns_prefix))
 
-    def f_ret_type(self) -> str:
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
         return True, self._regular_type('real ({}_real8)'.format(
                 self.ns_prefix))
 
-    def fi_type(self) -> str:
+    def fi_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('real (c_double), value')
 
-    def fi_ret_type(self) -> str:
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('real (c_double)')
 
-    def fc_type(self) -> str:
+    def fc_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('double')
 
-    def fc_ret_type(self) -> str:
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
         return self._regular_type('double')
 
     def fc_cpp_arg(self) -> str:
@@ -1149,11 +1266,82 @@ class Double(Par):
 class T(Par):
     """Represents a template dummy type.
     """
-    pass
+    def tname(self) -> str:
+        raise NotImplementedError("T is a dummy type")
+
+    def fc_type(self) -> List[Tuple[str, str]]:
+        raise NotImplementedError("T is a dummy type")
+
+    def fc_cpp_type(self) -> str:
+        raise NotImplementedError("T is a dummy type")
+
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
+        raise NotImplementedError("T is a dummy type")
+
+    def fi_type(self) -> List[Tuple[str, str]]:
+        raise NotImplementedError("T is a dummy type")
+
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
+        raise NotImplementedError("T is a dummy type")
+
+    def f_type(self) -> List[Tuple[str, str]]:
+        raise NotImplementedError("T is a dummy type")
+
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
+        raise NotImplementedError("T is a dummy type")
+
+    def fc_cpp_arg(self) -> str:
+        raise NotImplementedError("T is a dummy type")
+
+    def fc_get_result(self, cpp_chain_call: str) -> str:
+        raise NotImplementedError("T is a dummy type")
+
+    def fc_return(self) -> str:
+        raise NotImplementedError("T is a dummy type")
 
 
-class Member:
-    pass
+class Member(abc.ABC):
+    def __init__(self, name: str) -> None:
+        self.name = name
+        self.ns_prefix = ""
+        self.public: Optional[bool] = None
+        self.class_name = ""
+
+    def set_class_name(self, class_name: str) -> None:
+        self.class_name = class_name
+
+    def reset_class_name(self, class_name: str) -> None:
+        self.class_name = class_name
+
+    def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
+        self.ns_prefix = ns_for_name[self.class_name]
+
+    def set_public(self, public: Optional[bool]) -> None:
+        self.public = public
+
+    @abc.abstractmethod
+    def fortran_c_wrapper(self) -> str:
+        ...
+
+    @abc.abstractmethod
+    def fortran_interface(self) -> str:
+        ...
+
+    @abc.abstractmethod
+    def fortran_function(self) -> str:
+        ...
+
+    @abc.abstractmethod
+    def fortran_public_declaration(self) -> str:
+        ...
+
+    @abc.abstractmethod
+    def fortran_contains_definition(self) -> str:
+        ...
+
+    @abc.abstractmethod
+    def fortran_exports(self) -> List[str]:
+        ...
 
 
 class MemFun(Member):
@@ -1162,7 +1350,12 @@ class MemFun(Member):
                  name: str,
                  params: Optional[List[Par]] = None,
                  may_throw: bool = False,
-                 **args
+                 *,
+                 cpp_func_name: Optional[str] = None,
+                 cpp_chain_call: Optional[Callable[..., str]] = None,
+                 fc_override: Optional[str] = None,
+                 fc_chain_call: Optional[Callable[..., str]] = None,
+                 f_override: Optional[str] = None
                  ) -> None:
         """Create a member function description.
 
@@ -1191,20 +1384,15 @@ class MemFun(Member):
             fc_chain_call: Function that produces the C ABI call.
             f_override: Custom Fortran function.
         """
-        self.ns_prefix = None       # type: Optional[str]
-        self.public = None          # type: Optional[bool]
-        self.class_name = None      # type: Optional[str]
+        super().__init__(name)
         self.ret_type = ret_type
-        self.name = name
-        self.params = params if params else list()  # type: List[Par]
+        self.params: List[Par] = params if params else list()
         self.may_throw = may_throw
-        self.cpp_chain_call = args.get(
-                'cpp_chain_call', self._default_cpp_chain_call)
-        self.fc_override = args.get('fc_override')
-        self.fc_chain_call = args.get(
-                'fc_chain_call', self._default_fc_chain_call)
-        self.f_override = args.get('f_override')
-        self.cpp_func_name = args.get('cpp_func_name', name)
+        self.cpp_chain_call = cpp_chain_call or self._default_cpp_chain_call
+        self.fc_override = fc_override
+        self.fc_chain_call = fc_chain_call or self._default_fc_chain_call
+        self.f_override = f_override
+        self.cpp_func_name = cpp_func_name or name
 
     def __copy__(self) -> 'MemFun':
         result = MemFun(
@@ -1240,9 +1428,6 @@ class MemFun(Member):
         for param in self.params:
             param.set_ns_prefix(ns_for_name, self.ns_prefix)
 
-    def set_public(self, public: bool) -> None:
-        self.public = public
-
     def fortran_c_wrapper(self) -> str:
         """Create a C wrapper for calling by Fortran.
         """
@@ -1273,8 +1458,8 @@ class MemFun(Member):
         if self.may_throw:
             result += '    try {\n'
             result += '        *err_code = 0;\n'
-            result += textwrap.indent(self._fc_cpp_call(), 4*' ')
-            result += textwrap.indent(self._fc_return(), 4*' ')
+            result += indent(self._fc_cpp_call(), 4*' ')
+            result += indent(self._fc_return(), 4*' ')
             result += '    }\n'
             for exception, code in error_codes.items():
                 if code != 0:
@@ -1286,7 +1471,7 @@ class MemFun(Member):
                     catch += '    *err_msg = const_cast<char*>(msg.data());\n'
                     catch += '    *err_msg_len = msg.size();\n'
                     catch += '}\n'
-                    result += textwrap.indent(catch, 4*' ')
+                    result += indent(catch, 4*' ')
             result += self._fc_return_default()
         else:
             result += self._fc_cpp_call()
@@ -1314,7 +1499,7 @@ class MemFun(Member):
 
         arg_list = [par_name for _, par_name in in_parameters + out_parameters]
         if len(arg_list) > 1:
-            arg_vlist = ' &\n' + textwrap.indent(', &\n'.join(arg_list), 8*' ')
+            arg_vlist = ' &\n' + indent(', &\n'.join(arg_list), 8*' ')
         else:
             arg_vlist = ', '.join(arg_list)
 
@@ -1339,13 +1524,13 @@ class MemFun(Member):
             result += 'end function {}\n\n'.format(func_name)
         else:
             result += 'end subroutine {}\n\n'.format(func_name)
-        return textwrap.indent(result, 8*' ')
+        return indent(result, 8*' ')
 
     def fortran_function(self) -> str:
         """Create the Fortran function definition for this member.
         """
         if self.f_override is not None:
-            return textwrap.indent(
+            return indent(
                     self.f_override.replace('$CLASSNAME$', self.class_name),
                     4*' ')
 
@@ -1363,7 +1548,7 @@ class MemFun(Member):
 
         all_parameters = in_parameters + out_parameters
         arg_list = ', &\n'.join([par_name for _, par_name in all_parameters])
-        arg_ilist = textwrap.indent(arg_list, 8*' ')
+        arg_ilist = indent(arg_list, 8*' ')
         if return_type != '':
             result += 'function {}( &\n{})\n'.format(func_name, arg_ilist)
         else:
@@ -1421,32 +1606,36 @@ class MemFun(Member):
             # Note: I tried to factor this out into a function, but Fortran
             # makes that near-impossible. Since we're generating anyway, it's
             # not really duplication, so leave it as is.
-            result += '    if (err_code_v .ne. 0) then\n'
-            result += '        if (present(err_code)) then\n'
-            result += '            err_code = err_code_v\n'
-            result += '            if (present(err_msg)) then\n'
-            result += '                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))\n'
-            result += '                allocate (character(err_msg_len_v) :: err_msg)\n'
-            result += '                do err_msg_i = 1, err_msg_len_v\n'
-            result += '                    err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)\n'
-            result += '                end do\n'
-            result += '            end if\n'
-            result += '{}\n'.format(self.ret_type.f_return_dummy_result(result_name))
-            result += '            return\n'
-            result += '        else\n'
-            result += '            call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))\n'
-            result += '            allocate (character(err_msg_len_v) :: err_msg_p)\n'
-            result += '            do err_msg_i = 1, err_msg_len_v\n'
-            result += '                err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)\n'
-            result += '            end do\n'
-            result += '            print *, err_msg_p\n'
-            result += '            stop\n'
-            result += '        end if\n'
-            result += '    else\n'
-            result += '        if (present(err_code)) then\n'
-            result += '            err_code = 0\n'
-            result += '        end if\n'
-            result += '    end if\n\n'
+            result += indent(dedent(f"""\
+                if (err_code_v .ne. 0) then
+                    if (present(err_code)) then
+                        err_code = err_code_v
+                        if (present(err_msg)) then
+                            call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                            allocate (character(err_msg_len_v) :: err_msg)
+                            do err_msg_i = 1, err_msg_len_v
+                                err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                            end do
+                        end if
+                        {dedent(
+                            self.ret_type.f_return_dummy_result(result_name))}
+                        return
+                    else
+                        call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                        allocate (character(err_msg_len_v) :: err_msg_p)
+                        do err_msg_i = 1, err_msg_len_v
+                            err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                        end do
+                        print *, err_msg_p
+                        stop
+                    end if
+                else
+                    if (present(err_code)) then
+                        err_code = 0
+                    end if
+                end if
+
+                """), 4*' ')
 
         # convert and return result
         result += self.ret_type.f_return_result(result_name, 'ret_val')
@@ -1456,7 +1645,7 @@ class MemFun(Member):
             result += 'end function {}\n\n'.format(func_name)
         else:
             result += 'end subroutine {}\n\n'.format(func_name)
-        return textwrap.indent(result, 4*' ')
+        return indent(result, 4*' ')
 
     def fortran_public_declaration(self) -> str:
         """Create a Fortran statement declaring us public.
@@ -1477,12 +1666,18 @@ class MemFun(Member):
             return ['{}_{}_{}_;'.format(
                     self.ns_prefix, self.class_name, self.name)]
 
+    def fortran_contains_definition(self) -> str:
+        if self.f_override == '':
+            return ''
+        full_name = f'{self.ns_prefix}_{self.class_name}_{self.name}'
+        return f'    procedure :: {self.name} => {full_name}\n'
+
     @staticmethod
-    def _default_fc_chain_call(**kwargs):
+    def _default_fc_chain_call(**kwargs: str) -> str:
         return '{fc_func_name}( &\n{fc_args})'.format(**kwargs)
 
     @staticmethod
-    def _default_cpp_chain_call(**kwargs):
+    def _default_cpp_chain_call(**kwargs: str) -> str:
         return 'self_p->{cpp_func_name}({cpp_args})'.format(**kwargs)
 
     def _fc_cpp_call(self) -> str:
@@ -1591,7 +1786,7 @@ class Constructor(MemFun):
     """
     def __init__(
             self, params: Optional[List[Par]] = None, name: str = 'create',
-            **args) -> None:
+            **args: Any) -> None:
         if params is None:
             params = list()
         super().__init__(Obj('<deferred>'), name, params, **args)
@@ -1618,6 +1813,19 @@ class Constructor(MemFun):
         self.class_name = class_name
         self.ret_type = Obj(class_name)
 
+    def fortran_overload(self) -> str:
+        if self.name != "create":
+            return ''
+        return indent(dedent(f"""\
+            interface {self.ns_prefix}_{self.class_name}
+                module procedure {self.ns_prefix}_{self.class_name}_{self.name}
+            end interface
+
+            """), 4*' ')
+
+    def fortran_contains_definition(self) -> str:
+        return ''
+
     def _fc_cpp_call(self) -> str:
         # Create object instead of calling something
         cpp_args = [par.fc_cpp_arg() for par in self.params]
@@ -1634,7 +1842,7 @@ class EqualsOperator(MemFun):
     This generates code suitable for an equality comparison operator, rather
     than the default code.
     """
-    def __init__(self, param: Par, name: str = 'equals', **args) -> None:
+    def __init__(self, param: Par, name: str = 'equals', **args: Any) -> None:
         super().__init__(Bool(), name, [param], False, **args)
 
     def __copy__(self) -> 'EqualsOperator':
@@ -1666,8 +1874,8 @@ class AssignmentOperator(MemFun):
     """
     def __init__(self,
                  name: str,
-                 param: Par = None,
-                 **args
+                 param: Par,
+                 **args: Any
                  ) -> None:
         super().__init__(Void(), name, [param], False, **args)
 
@@ -1696,13 +1904,13 @@ class IndexAssignmentOperator(MemFun):
     This generates code suitable for assigning to a subobject accessed
     via the square brackets operator, i.e. self[key] = value.
     """
-    def __init__(self, name: str, params: List[Par], may_throw: bool=False
+    def __init__(self, name: str, params: List[Par], may_throw: bool = False
                  ) -> None:
         super().__init__(Void(), name, params, may_throw)
 
     def __copy__(self) -> 'IndexAssignmentOperator':
-        result = IndexAssignmentOperator(self.name, copy(self.params[0]),
-                self.may_throw)
+        result = IndexAssignmentOperator(
+                self.name, copy(self.params), self.may_throw)
         result.ns_prefix = self.ns_prefix
         result.public = self.public
         result.class_name = self.class_name
@@ -1730,7 +1938,7 @@ class ShiftedIndexAssignmentOperator(IndexAssignmentOperator):
     """
     def __copy__(self) -> 'ShiftedIndexAssignmentOperator':
         result = ShiftedIndexAssignmentOperator(
-                self.name, copy(self.params[0]), self.may_throw)
+                self.name, copy(self.params), self.may_throw)
         result.ns_prefix = self.ns_prefix
         result.public = self.public
         result.class_name = self.class_name
@@ -1757,8 +1965,7 @@ class NamedConstructor(Constructor):
     For name, pass the name of the static function, the Fortran name
     will then be create_<name>.
     """
-    def __init__(self, params: List[Par], name: str, **args
-            ) -> None:
+    def __init__(self, params: List[Par], name: str, **args: Any) -> None:
         if 'cpp_func_name' not in args:
             args['cpp_func_name'] = name
         super().__init__(params, 'create_' + name, **args)
@@ -1781,7 +1988,7 @@ class NamedConstructor(Constructor):
         return result
 
     @staticmethod
-    def _default_cpp_chain_call(**kwargs):
+    def _default_cpp_chain_call(**kwargs: Any) -> str:
         return '{0}::{1}({2})'.format(
                 kwargs['class_name'], kwargs['cpp_func_name'],
                 kwargs['cpp_args'])
@@ -1803,7 +2010,7 @@ class NamedConstructor(Constructor):
 
 
 class Destructor(MemFun):
-    def __init__(self, **args) -> None:
+    def __init__(self, **args: Any) -> None:
         super().__init__(Void(), 'free', **args)
 
     def __copy__(self) -> 'MemFun':
@@ -1825,6 +2032,22 @@ class Destructor(MemFun):
         # Destroy object instead of calling something
         return '    delete self_p;\n'
 
+    def fortran_function(self) -> str:
+        return indent(dedent(f"""\
+            subroutine {self.ns_prefix}_{self.class_name}_{self.name}(self)
+                implicit none
+                type({self.ns_prefix}_{self.class_name}), intent(inout) :: self
+
+                call {self.ns_prefix}_{self.class_name}_{self.name}_(self%ptr)
+                self%ptr = 0
+            end subroutine {self.ns_prefix}_{self.class_name}_{self.name}
+
+            """), 4*' ')
+
+    def fortran_contains_definition(self) -> str:
+        full_name = f'{self.ns_prefix}_{self.class_name}_{self.name}'
+        return f'    final :: {full_name}\n'
+
 
 class MultiMemFun(Member):
     """A base class for classes that generate many functions.
@@ -1839,9 +2062,10 @@ class MultiMemFun(Member):
     """
     def __init__(self) -> None:
         """Create a MultiMemFun."""
-        self.instances = list()     # type: List[Member]
+        super().__init__("")
+        self.instances: List[Member] = list()
 
-    def __copy__(self) -> 'MemFunTmpl':
+    def __copy__(self) -> 'MultiMemFun':
         result = MultiMemFun()
         result.instances = [copy(instance) for instance in self.instances]
         return result
@@ -1854,7 +2078,7 @@ class MultiMemFun(Member):
         for instance in self.instances:
             instance.reset_class_name(class_name)
 
-    def set_public(self, public: bool) -> None:
+    def set_public(self, public: Optional[bool]) -> None:
         for instance in self.instances:
             instance.set_public(public)
 
@@ -1893,6 +2117,9 @@ class MultiMemFun(Member):
         """
         return [e for i in self.instances for e in i.fortran_exports()]
 
+    def fortran_contains_definition(self) -> str:
+        return ''.join(i.fortran_contains_definition() for i in self.instances)
+
 
 class MemFunTmplInstance(MemFun):
     def __init__(self,
@@ -1901,7 +2128,7 @@ class MemFunTmplInstance(MemFun):
                  targ: Par,
                  params: Optional[List[Par]] = None,
                  may_throw: bool = False,
-                 **args
+                 **args: Any
                  ) -> None:
         """Create a member function template instance.
 
@@ -1949,7 +2176,7 @@ class MemFunTmplInstance(MemFun):
         return result
 
     @staticmethod
-    def _default_cpp_chain_call(**kwargs):
+    def _default_cpp_chain_call(**kwargs: Any) -> str:
         return 'self_p->{cpp_func_name}<{tpl_type}>({cpp_args})'.format(
                 **kwargs)
 
@@ -1972,7 +2199,7 @@ class MemFunTmpl(MultiMemFun):
                  name: str,
                  params: Optional[List[Par]] = None,
                  may_throw: bool = False,
-                 **args
+                 **args: Any
                  ) -> None:
         """Create a member function template description.
 
@@ -1998,9 +2225,6 @@ class MemFunTmpl(MultiMemFun):
             cpp_chain_call: Function that produces the C++ chain call.
         """
         super().__init__()
-        self.ns_prefix = None       # type: Optional[str]
-        self.public = None          # type: Optional[bool]
-        self.class_name = None      # type: Optional[str]
         self.types = types
         self.ret_type = ret_type
         self.name = name
@@ -2014,7 +2238,7 @@ class MemFunTmpl(MultiMemFun):
                 instance_ret_type = typ
             if isinstance(instance_ret_type, Array):
                 if isinstance(instance_ret_type.elem_type, T):
-                    instance_ret_type = copy(self.ret_type)
+                    instance_ret_type = copy(instance_ret_type)
                     instance_ret_type.elem_type = typ
 
             instance_params = list()    # type: List[Par]
@@ -2055,37 +2279,24 @@ class OverloadSet(Member):
     idea. This class specifies a set of member functions to aggregate
     under a single name.
     """
-    def __init__(self, name: str, names: List[str]) -> None:
+    def __init__(self, name: str, names: List[str], is_constructor: bool) -> None:
         """Create an OverloadSet.
 
         Args:
             name: Name of the overloaded function to generate.
             names: List of function names to aggregate.
+            is_constructor: Whether this overload set is for a constructor.
         """
-        self.ns_prefix = None
-        self.class_name = None
-        self.public = None
-        self.name = name
+        super().__init__(name)
         self.names = names
+        self.is_constructor = is_constructor
 
     def __copy__(self) -> 'OverloadSet':
-        result = OverloadSet(self.name, self.names)
+        result = OverloadSet(self.name, self.names, self.is_constructor)
         result.ns_prefix = self.ns_prefix
         result.class_name = self.class_name
         result.public = self.public
         return result
-
-    def set_class_name(self, class_name: str) -> None:
-        self.class_name = class_name
-
-    def reset_class_name(self, class_name: str) -> None:
-        self.class_name = class_name
-
-    def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
-        self.ns_prefix = ns_for_name[self.class_name]
-
-    def set_public(self, public: bool) -> None:
-        self.public = public
 
     def fortran_c_wrapper(self) -> str:
         return ''
@@ -2098,14 +2309,22 @@ class OverloadSet(Member):
 
     def fortran_overload(self) -> str:
         prefix = '{}_{}'.format(self.ns_prefix, self.class_name)
-        result = '    interface {}_{}\n'.format(prefix, self.name)
-        result += '        module procedure &\n'
+        interfaces = [f'{prefix}_{self.name}']
+        # do not generate a fortran constructor for named constructors like create_grid
+        if self.is_constructor and self.name == 'create':
+            interfaces.append(f"{prefix}")
 
-        names = ['{}{}_{}'.format(12*' ', prefix, name)
-                 for name in self.names]
-        result += '{}\n'.format(', &\n'.join(names))
+        result = ''
+        for interface in interfaces:
+            result += '    interface {}\n'.format(interface)
+            result += '        module procedure &\n'
 
-        result += '    end interface\n\n'
+            names = ['{}{}_{}'.format(12*' ', prefix, name)
+                     for name in self.names]
+            result += '{}\n'.format(', &\n'.join(names))
+
+            result += '    end interface\n\n'
+
         return result
 
     def fortran_public_declaration(self) -> str:
@@ -2121,8 +2340,74 @@ class OverloadSet(Member):
         """
         return []
 
+    def fortran_contains_definition(self) -> str:
+        if self.is_constructor:
+            return ''
+        mem_fun_names = ', &\n        '.join(self.names)
+        return f'    generic :: {self.name} => {mem_fun_names}\n'
 
-class Class:
+
+class NamespaceMember(abc.ABC):
+    def __init__(self, name: str):
+        self.ns_prefix: Optional[str] = None
+        self.public: Optional[bool] = None
+        self.name = name
+
+    def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
+        """Sets the namespace prefix correctly for all members.
+
+        Args:
+            ns_for_name: A map from type names to namespace names.
+        """
+        self.ns_prefix = ns_for_name[self.name]
+
+    def set_public(self, public: Optional[bool]) -> None:
+        """Sets whether this class should be public.
+
+        Public objects are usable by the Fortran program; this sets
+        accessibility of the type and of all member functions.
+
+        Args:
+            public: True iff this is public.
+        """
+        self.public = public
+
+    @abc.abstractmethod
+    def fortran_type_definition(self) -> str:
+        ...
+
+    def fortran_public_declarations(self) -> str:
+        """Creates Fortran declarations making functions public.
+        """
+        return ''
+
+    def fortran_interface(self) -> str:
+        """Create a Fortran interface definition for the C ABI.
+        """
+        return ''
+
+    def fortran_overloads(self) -> str:
+        """Create Fortran overload declarations for any OverloadSets.
+        """
+        return ''
+
+    def fortran_functions(self) -> str:
+        """Create Fortran function definitions for this class.
+        """
+        return ''
+
+    def fortran_c_wrapper(self) -> str:
+        """Create C functions for the members.
+        """
+        return ''
+
+    def fortran_exports(self) -> List[str]:
+        """Generates a list of linker exports for the Fortran symbols.
+        """
+        return []
+
+
+class Class(NamespaceMember):
     def __init__(
             self,
             name: str, parent: Optional['Class'],
@@ -2134,9 +2419,7 @@ class Class:
             name: Name of the class.
             members: List of member functions.
         """
-        self.ns_prefix = None       # type: Optional[str]
-        self.public = None          # type: Optional[bool]
-        self.name = name
+        super().__init__(name)
 
         if parent is None:
             self.members = members
@@ -2157,25 +2440,12 @@ class Class:
                     self.members.append(member)
 
     def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
-        """Sets the namespace prefix correctly for all members.
-
-        Args:
-            ns_for_name: A map from type names to namespace names.
-        """
-        self.ns_prefix = ns_for_name[self.name]
+        super().set_ns_prefix(ns_for_name)
         for member in self.members:
             member.set_ns_prefix(ns_for_name)
 
-    def set_public(self, public: bool) -> None:
-        """Sets whether this class should be public.
-
-        Public objects are usable by the Fortran program; this sets
-        accessibility of the type and of all member functions.
-
-        Args:
-            public: True iff this is public.
-        """
-        self.public = public
+    def set_public(self, public: Optional[bool]) -> None:
+        super().set_public(public)
         for member in self.members:
             member.set_public(public)
 
@@ -2200,7 +2470,7 @@ class Class:
         """
         result = ''
         for member in self.members:
-            if isinstance(member, OverloadSet):
+            if isinstance(member, (OverloadSet, Constructor)):
                 result += member.fortran_overload()
         return result
 
@@ -2208,12 +2478,15 @@ class Class:
         """Create a Fortran type/handle definition for this class.
         """
         result = 'type {}_{}\n'.format(self.ns_prefix, self.name)
-        result += '    integer (c_intptr_t) :: ptr\n'
+        result += '    integer (c_intptr_t) :: ptr = 0\n'
+        ctn = ''.join(member.fortran_contains_definition() for member in self.members)
+        if ctn:
+            result += 'contains\n' + ctn
         result += 'end type {}_{}\n'.format(self.ns_prefix, self.name)
         if self.public:
             result += 'public :: {}_{}\n'.format(self.ns_prefix, self.name)
         result += '\n'
-        return textwrap.indent(result, 4*' ')
+        return indent(result, 4*' ')
 
     def fortran_public_declarations(self) -> str:
         """Creates Fortran declarations making functions public.
@@ -2240,7 +2513,7 @@ class Class:
         return result
 
 
-class Enum:
+class Enum(NamespaceMember):
     def __init__(self, name: str, values: List[Tuple[str, int]]) -> None:
         """Create an enumeration description.
 
@@ -2248,28 +2521,8 @@ class Enum:
             name: Name of the enum.
             values: List of name, value pairs.
         """
-        self.ns_prefix = None       # type: Optional[str]
-        self.public = None          # type: Optional[bool]
-        self.name = name
+        super().__init__(name)
         self.values = values
-
-    def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
-        """Sets the namespace prefix correctly for all members.
-
-        Args:
-            ns_for_name: A map from type names to namespace names.
-        """
-        self.ns_prefix = ns_for_name[self.name]
-
-    def set_public(self, public: bool) -> None:
-        """Sets whether this enum should be public.
-
-        Public objects are usable by the Fortran program.
-
-        Args:
-            public: True iff this is public.
-        """
-        self.public = public
 
     def fortran_type_definition(self) -> str:
         """Create a Fortran type definition for this enum.
@@ -2282,11 +2535,11 @@ class Enum:
             result += 'integer, parameter{} :: {}_{}_{} = {}\n'.format(
                     public, self.ns_prefix, self.name, val_name, val_value)
         result += ('integer, parameter{0} :: {1}_{2} = selected_int_kind(9)\n\n'
-                ).format(public, self.ns_prefix, self.name)
-        return textwrap.indent(result, 4*' ')
+                   ).format(public, self.ns_prefix, self.name)
+        return indent(result, 4*' ')
 
 
-class Flags:
+class Flags(NamespaceMember):
     def __init__(self, name: str, values: List[str]):
         """Create a Flags description.
 
@@ -2297,28 +2550,8 @@ class Flags:
             name: name of the flags
             values: list of option names
         """
-        self.ns_prefix = None       # type: Optional[str]
-        self.public = None          # type: Optional[bool]
-        self.name = name
+        super().__init__(name)
         self.values = values
-
-    def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
-        """Sets the namespace prefix correctly for all members.
-
-        Args:
-            ns_for_name: A map from type names to namespace names.
-        """
-        self.ns_prefix = ns_for_name[self.name]
-
-    def set_public(self, public: bool) -> None:
-        """Sets whether this enum should be public.
-
-        Public objects are usable by the Fortran program.
-
-        Args:
-            public: True iff this is public.
-        """
-        self.public = public
 
     def fortran_type_definition(self) -> str:
         """Create a Fortran type definition for this enum.
@@ -2334,33 +2567,13 @@ class Flags:
         result += 'contains\n'
         result += f'    procedure :: to_int => {self.ns_prefix}_{self.name}_to_int_\n'
         result += 'end type\n'
-        return textwrap.indent(result, 4*' ')
+        return indent(result, 4*' ')
 
     def fortran_exports(self) -> List[str]:
         """Generates a list of linker exports for the Fortran symbols.
         """
         fun_name = f'{self.ns_prefix}_{self.name}_to_int_;'
         return [fun_name]
-
-    def fortran_c_wrapper(self) -> str:
-        """Create C functions for the members.
-        """
-        return ''
-
-    def fortran_interface(self) -> str:
-        """Create a Fortran interface definition for the C ABI.
-        """
-        return ''
-
-    def fortran_public_declarations(self) -> str:
-        """Creates Fortran declarations making functions public.
-        """
-        return ''
-
-    def fortran_overloads(self) -> str:
-        """Create Fortran overload declarations for any OverloadSets.
-        """
-        return ''
 
     def fortran_functions(self) -> str:
         """Create Fortran function definitions for this class.
@@ -2377,12 +2590,13 @@ class Flags:
             result += f"    if (flags%{value}) ret_val = ret_val + {1 << i}\n"
         result += f'    {fun_name} = ret_val\n'
         result += f'end function {fun_name}\n'
-        return textwrap.indent(result, 4*' ')
+        return indent(result, 4*' ')
 
 
 class Namespace:
     def __init__(self, name: str, public: Optional[bool], prefix: str,
-                 enums: List[Enum], classes: List[Class]) -> None:
+                 members: Sequence[NamespaceMember]
+                 ) -> None:
         """Create a namespace description.
 
         Args:
@@ -2397,13 +2611,10 @@ class Namespace:
         self.name = name
         self.public = public
         self.prefix = prefix
-        self.enums = enums
-        self.classes = classes
+        self.members = members
 
-        for enum in self.enums:
-            enum.set_public(public)
-        for cls in self.classes:
-            cls.set_public(public)
+        for member in self.members:
+            member.set_public(public)
 
     def set_ns_prefix(self, ns_for_name: Dict[str, str]) -> None:
         """Sets the namespace prefix correctly for all members.
@@ -2411,10 +2622,8 @@ class Namespace:
         Args:
             ns_for_name: A map from type names to namespace names.
         """
-        for cls in self.classes:
-            cls.set_ns_prefix(ns_for_name)
-        for enum in self.enums:
-            enum.set_ns_prefix(ns_for_name)
+        for member in self.members:
+            member.set_ns_prefix(ns_for_name)
 
     def fortran_typedefs(self) -> str:
         """Generates Fortran type definitions for public types.
@@ -2435,13 +2644,11 @@ class Namespace:
                     public, self.prefix, kind_name, kind_def)
         result += '\n'
 
-        for enum in self.enums:
-            result += enum.fortran_type_definition()
-
-        for cls in self.classes:
-            result += cls.fortran_type_definition()
+        for member in self.members:
+            result += member.fortran_type_definition()
             if self.public:
-                result += cls.fortran_public_declarations()
+                result += member.fortran_public_declarations()
+
         return result
 
     def fortran_interface(self) -> str:
@@ -2454,13 +2661,11 @@ class Namespace:
             return ''
 
         result = '    interface\n\n'
-        for cls in self.classes:
-            result += cls.fortran_interface()
-
+        result += "".join(member.fortran_interface() for member in self.members)
         result += '    end interface\n\n'
 
-        for cls in self.classes:
-            result += cls.fortran_overloads()
+        for member in self.members:
+            result += member.fortran_overloads()
         return result
 
     def fortran_functions(self) -> str:
@@ -2470,8 +2675,7 @@ class Namespace:
         if self.public is None:
             return result
 
-        for cls in self.classes:
-            result += cls.fortran_functions()
+        result += "".join(member.fortran_functions() for member in self.members)
         return result
 
     def fortran_exports(self) -> List[str]:
@@ -2481,8 +2685,8 @@ class Namespace:
             return list()
 
         result = list()     # type: List[str]
-        for cls in self.classes:
-            result += cls.fortran_exports()
+        for member in self.members:
+            result += member.fortran_exports()
         return result
 
 
@@ -2506,16 +2710,13 @@ class API:
         self.namespaces = namespaces
 
         # set ns_prefix throughout the description
-        ns_for_name = dict()  # type: Dict[str, str]
+        ns_for_name: Dict[str, str] = dict()
         for namespace in self.namespaces:
-            for enum in namespace.enums:
-                ns_for_name[enum.name] = namespace.prefix
-            for cls in namespace.classes:
-                ns_for_name[cls.name] = namespace.prefix
+            for member in namespace.members:
+                ns_for_name[member.name] = namespace.prefix
 
         for namespace in namespaces:
             namespace.set_ns_prefix(ns_for_name)
-
 
     def fortran_c_wrapper(self) -> str:
         """Generate a Fortran C-wrapper for this API.
@@ -2586,11 +2787,8 @@ class API:
         """
         result = ''
         for namespace in self.namespaces:
-            for enum in namespace.enums:
-                result += 'using {}::{};\n'.format(namespace.name, enum.name)
-
-            for cls in namespace.classes:
-                result += 'using {}::{};\n'.format(namespace.name, cls.name)
+            for member in namespace.members:
+                result += 'using {}::{};\n'.format(namespace.name, member.name)
         result += '\n\n'
         return result
 
@@ -2599,8 +2797,8 @@ class API:
         """
         result = 'extern "C" {\n\n'
         for namespace in self.namespaces:
-            for cls in namespace.classes:
-                result += cls.fortran_c_wrapper()
+            for member in namespace.members:
+                result += member.fortran_c_wrapper()
 
         result += '}\n\n'
         return result

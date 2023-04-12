@@ -137,19 +137,19 @@ std::intptr_t LIBMUSCLE_DataConstRef_create_grid_logical_n_(
     auto data_array_p = const_cast<bool const * const>(data_array);
 
     std::vector<std::string> names_v;
-    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    names_v.emplace_back(index_name_1, index_name_1_size);
     if (data_array_ndims >= 2u)
-        names_v.push_back(std::string(index_name_2, index_name_2_size));
+        names_v.emplace_back(index_name_2, index_name_2_size);
     if (data_array_ndims >= 3u)
-        names_v.push_back(std::string(index_name_3, index_name_3_size));
+        names_v.emplace_back(index_name_3, index_name_3_size);
     if (data_array_ndims >= 4u)
-        names_v.push_back(std::string(index_name_4, index_name_4_size));
+        names_v.emplace_back(index_name_4, index_name_4_size);
     if (data_array_ndims >= 5u)
-        names_v.push_back(std::string(index_name_5, index_name_5_size));
+        names_v.emplace_back(index_name_5, index_name_5_size);
     if (data_array_ndims >= 6u)
-        names_v.push_back(std::string(index_name_6, index_name_6_size));
+        names_v.emplace_back(index_name_6, index_name_6_size);
     if (data_array_ndims >= 7u)
-        names_v.push_back(std::string(index_name_7, index_name_7_size));
+        names_v.emplace_back(index_name_7, index_name_7_size);
 
     Data * result = new Data(Data::grid(
             data_array_p, data_array_shape_v,
@@ -174,19 +174,19 @@ std::intptr_t LIBMUSCLE_DataConstRef_create_grid_int4_n_(
     auto data_array_p = const_cast<int32_t const * const>(data_array);
 
     std::vector<std::string> names_v;
-    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    names_v.emplace_back(index_name_1, index_name_1_size);
     if (data_array_ndims >= 2u)
-        names_v.push_back(std::string(index_name_2, index_name_2_size));
+        names_v.emplace_back(index_name_2, index_name_2_size);
     if (data_array_ndims >= 3u)
-        names_v.push_back(std::string(index_name_3, index_name_3_size));
+        names_v.emplace_back(index_name_3, index_name_3_size);
     if (data_array_ndims >= 4u)
-        names_v.push_back(std::string(index_name_4, index_name_4_size));
+        names_v.emplace_back(index_name_4, index_name_4_size);
     if (data_array_ndims >= 5u)
-        names_v.push_back(std::string(index_name_5, index_name_5_size));
+        names_v.emplace_back(index_name_5, index_name_5_size);
     if (data_array_ndims >= 6u)
-        names_v.push_back(std::string(index_name_6, index_name_6_size));
+        names_v.emplace_back(index_name_6, index_name_6_size);
     if (data_array_ndims >= 7u)
-        names_v.push_back(std::string(index_name_7, index_name_7_size));
+        names_v.emplace_back(index_name_7, index_name_7_size);
 
     Data * result = new Data(Data::grid(
             data_array_p, data_array_shape_v,
@@ -211,19 +211,19 @@ std::intptr_t LIBMUSCLE_DataConstRef_create_grid_int8_n_(
     auto data_array_p = const_cast<int64_t const * const>(data_array);
 
     std::vector<std::string> names_v;
-    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    names_v.emplace_back(index_name_1, index_name_1_size);
     if (data_array_ndims >= 2u)
-        names_v.push_back(std::string(index_name_2, index_name_2_size));
+        names_v.emplace_back(index_name_2, index_name_2_size);
     if (data_array_ndims >= 3u)
-        names_v.push_back(std::string(index_name_3, index_name_3_size));
+        names_v.emplace_back(index_name_3, index_name_3_size);
     if (data_array_ndims >= 4u)
-        names_v.push_back(std::string(index_name_4, index_name_4_size));
+        names_v.emplace_back(index_name_4, index_name_4_size);
     if (data_array_ndims >= 5u)
-        names_v.push_back(std::string(index_name_5, index_name_5_size));
+        names_v.emplace_back(index_name_5, index_name_5_size);
     if (data_array_ndims >= 6u)
-        names_v.push_back(std::string(index_name_6, index_name_6_size));
+        names_v.emplace_back(index_name_6, index_name_6_size);
     if (data_array_ndims >= 7u)
-        names_v.push_back(std::string(index_name_7, index_name_7_size));
+        names_v.emplace_back(index_name_7, index_name_7_size);
 
     Data * result = new Data(Data::grid(
             data_array_p, data_array_shape_v,
@@ -248,19 +248,19 @@ std::intptr_t LIBMUSCLE_DataConstRef_create_grid_real4_n_(
     auto data_array_p = const_cast<float const * const>(data_array);
 
     std::vector<std::string> names_v;
-    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    names_v.emplace_back(index_name_1, index_name_1_size);
     if (data_array_ndims >= 2u)
-        names_v.push_back(std::string(index_name_2, index_name_2_size));
+        names_v.emplace_back(index_name_2, index_name_2_size);
     if (data_array_ndims >= 3u)
-        names_v.push_back(std::string(index_name_3, index_name_3_size));
+        names_v.emplace_back(index_name_3, index_name_3_size);
     if (data_array_ndims >= 4u)
-        names_v.push_back(std::string(index_name_4, index_name_4_size));
+        names_v.emplace_back(index_name_4, index_name_4_size);
     if (data_array_ndims >= 5u)
-        names_v.push_back(std::string(index_name_5, index_name_5_size));
+        names_v.emplace_back(index_name_5, index_name_5_size);
     if (data_array_ndims >= 6u)
-        names_v.push_back(std::string(index_name_6, index_name_6_size));
+        names_v.emplace_back(index_name_6, index_name_6_size);
     if (data_array_ndims >= 7u)
-        names_v.push_back(std::string(index_name_7, index_name_7_size));
+        names_v.emplace_back(index_name_7, index_name_7_size);
 
     Data * result = new Data(Data::grid(
             data_array_p, data_array_shape_v,
@@ -285,19 +285,19 @@ std::intptr_t LIBMUSCLE_DataConstRef_create_grid_real8_n_(
     auto data_array_p = const_cast<double const * const>(data_array);
 
     std::vector<std::string> names_v;
-    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    names_v.emplace_back(index_name_1, index_name_1_size);
     if (data_array_ndims >= 2u)
-        names_v.push_back(std::string(index_name_2, index_name_2_size));
+        names_v.emplace_back(index_name_2, index_name_2_size);
     if (data_array_ndims >= 3u)
-        names_v.push_back(std::string(index_name_3, index_name_3_size));
+        names_v.emplace_back(index_name_3, index_name_3_size);
     if (data_array_ndims >= 4u)
-        names_v.push_back(std::string(index_name_4, index_name_4_size));
+        names_v.emplace_back(index_name_4, index_name_4_size);
     if (data_array_ndims >= 5u)
-        names_v.push_back(std::string(index_name_5, index_name_5_size));
+        names_v.emplace_back(index_name_5, index_name_5_size);
     if (data_array_ndims >= 6u)
-        names_v.push_back(std::string(index_name_6, index_name_6_size));
+        names_v.emplace_back(index_name_6, index_name_6_size);
     if (data_array_ndims >= 7u)
-        names_v.push_back(std::string(index_name_7, index_name_7_size));
+        names_v.emplace_back(index_name_7, index_name_7_size);
 
     Data * result = new Data(Data::grid(
             data_array_p, data_array_shape_v,
@@ -1387,19 +1387,19 @@ std::intptr_t LIBMUSCLE_Data_create_grid_logical_n_(
     auto data_array_p = const_cast<bool const * const>(data_array);
 
     std::vector<std::string> names_v;
-    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    names_v.emplace_back(index_name_1, index_name_1_size);
     if (data_array_ndims >= 2u)
-        names_v.push_back(std::string(index_name_2, index_name_2_size));
+        names_v.emplace_back(index_name_2, index_name_2_size);
     if (data_array_ndims >= 3u)
-        names_v.push_back(std::string(index_name_3, index_name_3_size));
+        names_v.emplace_back(index_name_3, index_name_3_size);
     if (data_array_ndims >= 4u)
-        names_v.push_back(std::string(index_name_4, index_name_4_size));
+        names_v.emplace_back(index_name_4, index_name_4_size);
     if (data_array_ndims >= 5u)
-        names_v.push_back(std::string(index_name_5, index_name_5_size));
+        names_v.emplace_back(index_name_5, index_name_5_size);
     if (data_array_ndims >= 6u)
-        names_v.push_back(std::string(index_name_6, index_name_6_size));
+        names_v.emplace_back(index_name_6, index_name_6_size);
     if (data_array_ndims >= 7u)
-        names_v.push_back(std::string(index_name_7, index_name_7_size));
+        names_v.emplace_back(index_name_7, index_name_7_size);
 
     Data * result = new Data(Data::grid(
             data_array_p, data_array_shape_v,
@@ -1424,19 +1424,19 @@ std::intptr_t LIBMUSCLE_Data_create_grid_int4_n_(
     auto data_array_p = const_cast<int32_t const * const>(data_array);
 
     std::vector<std::string> names_v;
-    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    names_v.emplace_back(index_name_1, index_name_1_size);
     if (data_array_ndims >= 2u)
-        names_v.push_back(std::string(index_name_2, index_name_2_size));
+        names_v.emplace_back(index_name_2, index_name_2_size);
     if (data_array_ndims >= 3u)
-        names_v.push_back(std::string(index_name_3, index_name_3_size));
+        names_v.emplace_back(index_name_3, index_name_3_size);
     if (data_array_ndims >= 4u)
-        names_v.push_back(std::string(index_name_4, index_name_4_size));
+        names_v.emplace_back(index_name_4, index_name_4_size);
     if (data_array_ndims >= 5u)
-        names_v.push_back(std::string(index_name_5, index_name_5_size));
+        names_v.emplace_back(index_name_5, index_name_5_size);
     if (data_array_ndims >= 6u)
-        names_v.push_back(std::string(index_name_6, index_name_6_size));
+        names_v.emplace_back(index_name_6, index_name_6_size);
     if (data_array_ndims >= 7u)
-        names_v.push_back(std::string(index_name_7, index_name_7_size));
+        names_v.emplace_back(index_name_7, index_name_7_size);
 
     Data * result = new Data(Data::grid(
             data_array_p, data_array_shape_v,
@@ -1461,19 +1461,19 @@ std::intptr_t LIBMUSCLE_Data_create_grid_int8_n_(
     auto data_array_p = const_cast<int64_t const * const>(data_array);
 
     std::vector<std::string> names_v;
-    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    names_v.emplace_back(index_name_1, index_name_1_size);
     if (data_array_ndims >= 2u)
-        names_v.push_back(std::string(index_name_2, index_name_2_size));
+        names_v.emplace_back(index_name_2, index_name_2_size);
     if (data_array_ndims >= 3u)
-        names_v.push_back(std::string(index_name_3, index_name_3_size));
+        names_v.emplace_back(index_name_3, index_name_3_size);
     if (data_array_ndims >= 4u)
-        names_v.push_back(std::string(index_name_4, index_name_4_size));
+        names_v.emplace_back(index_name_4, index_name_4_size);
     if (data_array_ndims >= 5u)
-        names_v.push_back(std::string(index_name_5, index_name_5_size));
+        names_v.emplace_back(index_name_5, index_name_5_size);
     if (data_array_ndims >= 6u)
-        names_v.push_back(std::string(index_name_6, index_name_6_size));
+        names_v.emplace_back(index_name_6, index_name_6_size);
     if (data_array_ndims >= 7u)
-        names_v.push_back(std::string(index_name_7, index_name_7_size));
+        names_v.emplace_back(index_name_7, index_name_7_size);
 
     Data * result = new Data(Data::grid(
             data_array_p, data_array_shape_v,
@@ -1498,19 +1498,19 @@ std::intptr_t LIBMUSCLE_Data_create_grid_real4_n_(
     auto data_array_p = const_cast<float const * const>(data_array);
 
     std::vector<std::string> names_v;
-    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    names_v.emplace_back(index_name_1, index_name_1_size);
     if (data_array_ndims >= 2u)
-        names_v.push_back(std::string(index_name_2, index_name_2_size));
+        names_v.emplace_back(index_name_2, index_name_2_size);
     if (data_array_ndims >= 3u)
-        names_v.push_back(std::string(index_name_3, index_name_3_size));
+        names_v.emplace_back(index_name_3, index_name_3_size);
     if (data_array_ndims >= 4u)
-        names_v.push_back(std::string(index_name_4, index_name_4_size));
+        names_v.emplace_back(index_name_4, index_name_4_size);
     if (data_array_ndims >= 5u)
-        names_v.push_back(std::string(index_name_5, index_name_5_size));
+        names_v.emplace_back(index_name_5, index_name_5_size);
     if (data_array_ndims >= 6u)
-        names_v.push_back(std::string(index_name_6, index_name_6_size));
+        names_v.emplace_back(index_name_6, index_name_6_size);
     if (data_array_ndims >= 7u)
-        names_v.push_back(std::string(index_name_7, index_name_7_size));
+        names_v.emplace_back(index_name_7, index_name_7_size);
 
     Data * result = new Data(Data::grid(
             data_array_p, data_array_shape_v,
@@ -1535,19 +1535,19 @@ std::intptr_t LIBMUSCLE_Data_create_grid_real8_n_(
     auto data_array_p = const_cast<double const * const>(data_array);
 
     std::vector<std::string> names_v;
-    names_v.push_back(std::string(index_name_1, index_name_1_size));
+    names_v.emplace_back(index_name_1, index_name_1_size);
     if (data_array_ndims >= 2u)
-        names_v.push_back(std::string(index_name_2, index_name_2_size));
+        names_v.emplace_back(index_name_2, index_name_2_size);
     if (data_array_ndims >= 3u)
-        names_v.push_back(std::string(index_name_3, index_name_3_size));
+        names_v.emplace_back(index_name_3, index_name_3_size);
     if (data_array_ndims >= 4u)
-        names_v.push_back(std::string(index_name_4, index_name_4_size));
+        names_v.emplace_back(index_name_4, index_name_4_size);
     if (data_array_ndims >= 5u)
-        names_v.push_back(std::string(index_name_5, index_name_5_size));
+        names_v.emplace_back(index_name_5, index_name_5_size);
     if (data_array_ndims >= 6u)
-        names_v.push_back(std::string(index_name_6, index_name_6_size));
+        names_v.emplace_back(index_name_6, index_name_6_size);
     if (data_array_ndims >= 7u)
-        names_v.push_back(std::string(index_name_7, index_name_7_size));
+        names_v.emplace_back(index_name_7, index_name_7_size);
 
     Data * result = new Data(Data::grid(
             data_array_p, data_array_shape_v,

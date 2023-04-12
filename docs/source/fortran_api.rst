@@ -258,8 +258,8 @@ LIBMUSCLE_Data
         ! Now d1 contains a byte array of size 1024
 
         ! Extract the data again, into a new buffer
-        allocate(buf(LIBMUSCLE_Data_size(d1)))
-        call LIBMUSCLE_Data_as_byte_array(d1, buf)
+        allocate(buf(d1%size()))
+        call d1%as_byte_array(buf)
         ! Now, ichar(buf(i)) equals mod(i, 256)
 
         ! Clean up the buffer and the Data object
@@ -501,12 +501,12 @@ LIBMUSCLE_Data
         character(len=:), allocatable :: str, err_msg
 
         ! Create data object containing a logical value
-        mydata = LIBMUSCLE_Data_create(.true.)
+        mydata = LIBMUSCLE_Data(.true.)
         ! Retrieve the value
-        val = LIBMUSCLE_Data_as_logical(mydata)
+        val = mydata%as_logical()
         ! val equals .true. here
         ! Attempt to (incorrectly) retrieve a character value
-        str = LIBMUSCLE_Data_as_character(mydata, err_code, err_msg)
+        str = mydata%as_character(err_code, err_msg)
         if (err_code .ne. LIBMUSCLE_success) then
             print *, err_msg
             ! Need to free the memory if an error message was returned
@@ -554,9 +554,9 @@ LIBMUSCLE_Data
         character(len=:), allocatable :: str
 
         ! Create a data object containing a character value
-        mydata = LIBMUSCLE_Data_create('Example')
+        mydata = LIBMUSCLE_Data('Example')
         ! Retrieve the value
-        str = LIBMUSCLE_Data_as_character(mydata)
+        str = mydata%as_character()
         ! Free the retrieved copy of the character
         deallocate(str)
         ! Free the data object
@@ -598,9 +598,9 @@ LIBMUSCLE_Data
         integer :: number
 
         ! Create a data object containing an integer value
-        mydata = LIBMUSCLE_Data_create(42424242)
+        mydata = LIBMUSCLE_Data(42424242)
         ! Retrieve the value
-        number = LIBMUSCLE_Data_as_int(mydata)
+        number = mydata%as_int()
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
@@ -641,9 +641,9 @@ LIBMUSCLE_Data
         integer(kind=LIBMUSCLE_int1) :: number
 
         ! Create a data object containing an integer value
-        mydata = LIBMUSCLE_Data_create(42_LIBMUSCLE_int1)
+        mydata = LIBMUSCLE_Data(42_LIBMUSCLE_int1)
         ! Retrieve the value
-        number = LIBMUSCLE_Data_as_int1(mydata)
+        number = mydata%as_int1()
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
@@ -684,9 +684,9 @@ LIBMUSCLE_Data
         integer(kind=LIBMUSCLE_int2) :: number
 
         ! Create a data object containing an integer value
-        mydata = LIBMUSCLE_Data_create(4242_LIBMUSCLE_int2)
+        mydata = LIBMUSCLE_Data(4242_LIBMUSCLE_int2)
         ! Retrieve the value
-        number = LIBMUSCLE_Data_as_int2(mydata)
+        number = mydata%as_int2()
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
@@ -726,9 +726,9 @@ LIBMUSCLE_Data
         integer(LIBMUSCLE_int4) :: number
 
         ! Create a data object containing an integer value
-        mydata = LIBMUSCLE_Data_create(42424242_LIBMUSCLE_int4)
+        mydata = LIBMUSCLE_Data(42424242_LIBMUSCLE_int4)
         ! Retrieve the value
-        number = LIBMUSCLE_Data_as_int4(mydata)
+        number = mydata%as_int4()
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
@@ -769,9 +769,9 @@ LIBMUSCLE_Data
         integer(kind=LIBMUSCLE_int8) :: number
 
         ! Create a data object containing an integer value
-        mydata = LIBMUSCLE_Data_create(123456789123456789_LIBMUSCLE_int8)
+        mydata = LIBMUSCLE_Data(123456789123456789_LIBMUSCLE_int8)
         ! Retrieve the value
-        number = LIBMUSCLE_Data_as_int8(mydata)
+        number = mydata%as_int8()
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
@@ -812,9 +812,9 @@ LIBMUSCLE_Data
         real(kind=LIBMUSCLE_real4) :: number
 
         ! Create a data object containing a real value
-        mydata = LIBMUSCLE_Data_create(42.0)
+        mydata = LIBMUSCLE_Data(42.0)
         ! Retrieve the value
-        number = LIBMUSCLE_Data_as_real4(mydata)
+        number = mydata%as_real4()
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
@@ -856,9 +856,9 @@ LIBMUSCLE_Data
         real(kind=LIBMUSCLE_real8) :: number
 
         ! Create a data object containing a real value
-        mydata = LIBMUSCLE_Data_create(42.0d0)
+        mydata = LIBMUSCLE_Data(42.0d0)
         ! Retrieve the value
-        number = LIBMUSCLE_Data_as_real8(mydata)
+        number = mydata%as_real8()
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
@@ -899,11 +899,11 @@ LIBMUSCLE_Data
         type(YMMSL_Settings) :: settings1, settings2
 
         ! Create a Settings object
-        settings1 = YMMSL_Settings_create()
+        settings1 = YMMSL_Settings()
         ! Create a data object containing the Settings value
-        mydata = LIBMUSCLE_Data_create(settings1)
+        mydata = LIBMUSCLE_Data(settings1)
         ! Retrieve the value
-        settings2 = LIBMUSCLE_Data_as_settings(mydata)
+        settings2 = mydata%as_settings()
         ! Free the data object and the settings objects
         call YMMSL_Settings_free(settings1)
         call YMMSL_Settings_free(settings2)
@@ -976,8 +976,8 @@ LIBMUSCLE_Data
         type(LIBMUSCLE_Data) :: d1, d2
 
         d1 = LIBMUSCLE_Data_create_nils(10_LIBMUSCLE_size)
-        d2 = LIBMUSCLE_Data_get_item(d1, 5_LIBMUSCLE_size)
-        ! LIBMUSCLE_Data_is_nil(d2) returns .true. here
+        d2 = d1%get_item(5_LIBMUSCLE_size)
+        ! d2%is_nil() returns .true. here
         call LIBMUSCLE_Data_free(d2)
         call LIBMUSCLE_Data_free(d1)
 
@@ -1020,9 +1020,9 @@ LIBMUSCLE_Data
         character(len=:), allocatable :: s1
 
         d1 = LIBMUSCLE_Data_create_dict()
-        call LIBMUSCLE_Data_set_item(d1, 'key1', 'value1')
-        d3 = LIBMUSCLE_Data_get_item(d1, 'key1')
-        s1 = LIBMUSCLE_Data_as_character(d3)
+        call d1%set_item('key1', 'value1')
+        d3 = d1%get_item('key1')
+        s1 = d3%as_character()
         print *, s1     ! prints 'value1'
         deallocate(s1)
         call LIBMUSCLE_Data_free(d3)
@@ -1115,13 +1115,13 @@ LIBMUSCLE_Data
         integer intval
 
         d1 = LIBMUSCLE_Data_create_dict()
-        call LIBMUSCLE_Data_set_item(d1, 'key1', 'value1')
-        call LIBMUSCLE_Data_set_item(d1, 'key2', 'value2')
+        call d1%set_item('key1', 'value1')
+        call d1%set_item('key2', 'value2')
 
-        do i = 1, LIBMUSCLE_Data_size(d1)
-            key = LIBMUSCLE_Data_key(d1, i)
-            val = LIBMUSCLE_Data_value(d1, i)
-            cval = LIBMUSCLE_Data_as_character(val)
+        do i = 1, d1%size()
+            key = d1%key(i)
+            val = d1%value(i)
+            cval = val%as_character()
             print '(a8, a8)', key, cval
             deallocate(key)
             deallocate(cval)
@@ -2270,9 +2270,9 @@ LIBMUSCLE_InstanceFlags
 
     .. code-block:: fortran
 
-        ports = LIBMUSCLE_PortsDescription_create()
+        ports = LIBMUSCLE_PortsDescription()
         ! Specify ports...
-        instance = LIBMUSCLE_Instance_create(ports, &
+        instance = LIBMUSCLE_Instance(ports, &
             LIBMUSCLE_InstanceFlags(DONT_APPLY_OVERLAY=.true., USES_CHECKPOINT_API=.true.))
         call LIBMUSCLE_PortsDescription_free(ports)
 

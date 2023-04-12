@@ -216,10 +216,10 @@ Creating an Instance
 
 .. code-block:: fortran
 
-    ports = LIBMUSCLE_PortsDescription_create()
-    call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_F_INIT, 'initial_state')
-    call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_O_F, 'final_state')
-    instance = LIBMUSCLE_Instance_create(ports)
+    ports = LIBMUSCLE_PortsDescription()
+    call ports%add(YMMSL_Operator_F_INIT, 'initial_state')
+    call ports%add(YMMSL_Operator_O_F, 'final_state')
+    instance = LIBMUSCLE_Instance(ports)
     call LIBMUSCLE_PortsDescription_free(ports)
 
 
@@ -228,11 +228,18 @@ In order to talk to the rest of the MUSCLE simulation, we need a
 ports we'll use when we make that. So here, we first create a
 :f:type:`LIBMUSCLE_PortsDescription`, and add some ports to the ``F_INIT`` and
 ``O_F`` operators. We can then create the Instance object, passing the ports.
-Finally, we need to free the PortsDescription object. Since Fortran does not
-have automatic memory management, you will have to be careful to always free any
+Finally, we need to free the PortsDescription object.
+You will have to be careful to always free any
 object you create, or that is returned by a MUSCLE function, after you're done
 using it. So we free the PortsDescription here, but we don't free the Instance,
 since we need it in the following part of the code.
+
+.. note::
+
+    Although the Fortran 2003 standard defines finalizers, these are not fully
+    implemented by all compilers (notably gfortran has an incomplete implementation, see
+    `this bug tracker <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=37336>`_). Call the
+    ``free()`` functions to ensure your program does not leak memory.
 
 
 Reuse loop and settings
@@ -240,11 +247,11 @@ Reuse loop and settings
 
 .. code-block:: fortran
 
-    do while (LIBMUSCLE_Instance_reuse_instance(instance))
+    do while (instance%reuse_instance())
         ! F_INIT
-        t_max = LIBMUSCLE_Instance_get_setting_as_real8(instance, 't_max')
-        dt = LIBMUSCLE_Instance_get_setting_as_real8(instance, 'dt')
-        k = LIBMUSCLE_Instance_get_setting_as_real8(instance, 'k')
+        t_max = instance%get_setting_as_real8('t_max')
+        dt = instance%get_setting_as_real8('dt')
+        k = instance%get_setting_as_real8('k')
 
 
 As in Python, we have a reuse loop, and except for the syntax differences
@@ -254,7 +261,7 @@ type we're expecting by calling a different function. If the actual type is
 different, an error will be printed and the program will be halted. It is
 possible to detect and handle errors instead, see below for that.
 
-Getting settings is done via the ``LIBMUSCLE_Instance_get_setting_as_<type>()``
+Getting settings is done via the ``instance%get_setting_as_<type>()``
 functions. Supported types are ``character``, ``logical``, ``int8`` (a 64-bit
 integer), ``real8`` (a 64-bit double precision real number), ``real8array`` (a
 1D array of double precision reals) and ``real8array2`` (a 2D array of double
@@ -270,10 +277,10 @@ message on our ``F_INIT`` port with the initial state:
 
 .. code-block:: fortran
 
-        rmsg = LIBMUSCLE_Instance_receive(instance, 'initial_state')
-        rdata = LIBMUSCLE_Message_get_data(rmsg)
-        allocate (U(LIBMUSCLE_DataConstRef_size(rdata)))
-        call LIBMUSCLE_DataConstRef_elements(rdata, U)
+        rmsg = instance%receive('initial_state')
+        rdata = rmsg%get_data()
+        allocate (U(rdata%size()))
+        call rdata%elements(U)
         call LIBMUSCLE_DataConstRef_free(rdata)
 
 
@@ -322,8 +329,8 @@ functions will help you do so however.
 
 .. code-block:: fortran
 
-        t_cur = LIBMUSCLE_Message_timestamp(rmsg)
-        t_max = LIBMUSCLE_Message_timestamp(rmsg) + t_max
+        t_cur = rmsg%timestamp()
+        t_max = rmsg%timestamp() + t_max
         call LIBMUSCLE_Message_free(rmsg)
 
         do while (t_cur + dt < t_max)
@@ -350,8 +357,8 @@ Sending messages and Data
 
         ! O_F
         sdata = LIBMUSCLE_Data_create_grid(U, 'x')
-        smsg = LIBMUSCLE_Message_create(t_cur, sdata)
-        call LIBMUSCLE_Instance_send(instance, 'final_state', smsg)
+        smsg = LIBMUSCLE_Message(t_cur, sdata)
+        call instance%send('final_state', smsg)
         call LIBMUSCLE_Message_free(smsg)
         call LIBMUSCLE_Data_free(sdata)
         deallocate (U)
@@ -389,36 +396,36 @@ your model!):
     character(len=1), dimension(1024) :: bytes
 
     ! create a Data containing a nil value (None in Python)
-    d1 = LIBMUSCLE_Data_create()
+    d1 = LIBMUSCLE_Data()
 
     ! character strings, logicals
-    d2 = LIBMUSCLE_Data_create('String data')
-    d3 = LIBMUSCLE_Data_create(.true.)
+    d2 = LIBMUSCLE_Data('String data')
+    d3 = LIBMUSCLE_Data(.true.)
 
     ! various kinds of numbers
-    d4 = LIBMUSCLE_Data_create(0)                   ! integer
-    d5 = LIBMUSCLE_Data_create(100_LIBMUSCLE_int8)  ! 64-bit integer
-    d6 = LIBMUSCLE_Data_create(3.141592_LIBMUSCLE_real4)    ! 32-bit real
-    d7 = LIBMUSCLE_Data_create(1.4142_LIBMUSCLE_real8)      ! 64-bit real
+    d4 = LIBMUSCLE_Data(0)                   ! integer
+    d5 = LIBMUSCLE_Data(100_LIBMUSCLE_int8)  ! 64-bit integer
+    d6 = LIBMUSCLE_Data(3.141592_LIBMUSCLE_real4)    ! 32-bit real
+    d7 = LIBMUSCLE_Data(1.4142_LIBMUSCLE_real8)      ! 64-bit real
 
     ! constant list
     d8 = LIBMUSCLE_Data_create_list()                   ! empty list
     d9 = LIBMUSCLE_Data_create_nils(4_LIBMUSCLE_size)   ! list of length 4
-    call LIBMUSCLE_Data_set_item(d9, 1, 'String data')
-    call LIBMUSCLE_Data_set_item(d9, 2, .true.)
-    call LIBMUSCLE_Data_set_item(d9, 3, 0)
-    call LIBMUSCLE_Data_set_item(d9, 4, 1.4142d0)
+    call d9%set_item(1, 'String data')
+    call d9%set_item(2, .true.)
+    call d9%set_item(3, 0)
+    call d9%set_item(4, 1.4142d0)
 
     ! dictionary
     d10 = LIBMUSCLE_Data_create_dict()
-    call LIBMUSCLE_Data_set_item(d10, 'x', x)
-    call LIBMUSCLE_Data_set_item(d10, 'y', y)
-    call LIBMUSCLE_Data_set_item(d10, 'note', 'Keys must be strings')
-    call LIBMUSCLE_Data_set_item(d10, 'nest all you want', d9)
+    call d10%set_item('x', x)
+    call d10%set_item('y', y)
+    call d10%set_item('note', 'Keys must be strings')
+    call d10%set_item('nest all you want', d9)
 
     ! grid
     ar = reshape(spread((/1_LIBMUSCLE_int8/), 1, 6), (/2, 3/))
-    d12 = LIBMUSCLE_Data_create_grid(ar)
+    d11 = LIBMUSCLE_Data_create_grid(ar)
 
     ! byte array
     d12 = LIBMUSCLE_Data_create_byte_array(bytes)
@@ -430,7 +437,7 @@ types:
 .. code-block:: fortran
 
     ! check whether a DataConstRef contains a nil value
-    if (LIBMUSCLE_DataConstRef_is_nil(d1)) then
+    if (d1%is_nil()) then
         ...
     end if
 
@@ -438,8 +445,8 @@ types:
     character(len=:), allocatable :: c
     logical :: l
 
-    c = LIBMUSCLE_DataConstRef_as_character(d2)
-    l = LIBMUSCLE_DataConstRef_as_logical(d3)
+    c = d2%as_character()
+    l = d3%as_logical()
 
     ! various kinds of numbers
     integer :: i
@@ -447,31 +454,31 @@ types:
     real (LIBMUSCLE_real4) :: r4
     real (LIBMUSCLE_real8) :: r8
 
-    i = LIBMUSCLE_as_int(d4)
+    i = d4%as_int()
     ! Fortran has no unsigned numbers, so this is signed
-    u8 = LIBMUSCLE_as_int8(d5)
-    i8 = LIBMUSCLE_as_int8(d6)
-    r4 = LIBMUSCLE_as_real4(d7)
-    r8 = LIBMUSCLE_as_real8(d8)
+    u8 = d5%as_int8()
+    i8 = d6%as_int8()
+    r4 = d7%as_real4()
+    r8 = d8%as_real8()
     type(LIBMUSCLE_DataConstRef) :: d9j
 
     ! accessing a heterogeneous list
     integer (LIBMUSCLE_size) :: j
 
-    if (.not. LIBMUSCLE_is_a_list(d9)) then
+    if (.not. d9%is_a_list()) then
         print *, 'Expected a list'
     end if
 
-    do j = 1, LIBMUSCLE_DataConstRef_size(d9)
-        d9j = LIBMUSCLE_DataConstRef_get_item(d9, j)
-        if (LIBMUSCLE_DataConstRef_is_a_character(d9j))
-            s = LIBMUSCLE_DataConstRef_as_string(d9j)
-        else if (LIBMUSCLE_DataConstRef_is_a_logical(d9j))
-            l = LIBMUSCLE_DataConstRef_as_logical(d9j)
-        else if (LIBMUSCLE_DataConstRef_is_a_int(d9j)
-            i = LIBMUSCLE_DataConstRef_as_int(d9j)
-        else if (LIBMUSCLE_DataConstRef_is_a_real8(d9j))
-            r8 = LIBMUSCLE_DataConstRef_as_real8(d9j)
+    do j = 1, d9%size()
+        d9j = d9%get_item(j)
+        if (d9j%is_a_character())
+            s = d9j%as_character()
+        else if (d9j%is_a_logical())
+            l = d9j%as_logical()
+        else if (d9j%is_a_int()
+            i = d9j%as_int()
+        else if (d9j%is_a_real8())
+            r8 = d9j%as_real8()
         end if
 
         call LIBMUSCLE_DataConstRef_free(d9j)
@@ -481,12 +488,12 @@ types:
     type(LIBMUSCLE_DataConstRef) :: d10note
     character(len=:), allocatable :: c
 
-    if (.not. LIBMUSCLE_is_a_dict(d10)) then
+    if (.not. d10%is_a_dict()) then
         print *, 'Expected a dict'
     end if
 
-    d10note = LIBMUSCLE_DataConstRef_get_item(d10, 'note')
-    c = LIBMUSCLE_DataConstRef_as_character(d10note)
+    d10note = d10%get_item('note')
+    c = d10%as_character()
     call LIBMUSCLE_DataConstRef_free(d10note)
 
     ! iterating through a dictionary
@@ -494,9 +501,9 @@ types:
     character(len=:), allocatable :: k
     type(LIBMUSCLE_DataConstRef) :: v
 
-    do j = 1, LIBMUSCLE_DataConstRef_size(d10)
-        k = LIBMUSCLE_DataConstRef_key(j)
-        v = LIBMUSCLE_DataConstRef_value(j)
+    do j = 1, d10%size()
+        k = d10%key(j)
+        v = d10%value(j)
         ! process here, not shown
         call LIBMUSCLE_DataConstRef_free(v)
     end do
@@ -508,12 +515,12 @@ types:
     integer :: i
     character(len=:), allocatable :: c
 
-    if (LIBMUSCLE_DataConstRef_is_grid_of_real8(d11)) then
-        call LIBMUSCLE_DataConstRef_shape(d11, shp)
-        call LIBMUSCLE_DataConstRef_num_dims(d11, num_dims)
+    if (d11%is_grid_of_real8()) then
+        call d11%shape(shp)
+        call d11%num_dims(num_dims)
         if (num_dims == 2_LIBMUSCLE_size) then
-            call LIBMUSCLE_DataConstRef_elements(d11, ar)
-            c = LIBMUSCLE_DataConstRef_index(d11, 1_LIBMUSCLE_size)
+            call d11%elements(ar)
+            c = d11%index(1_LIBMUSCLE_size)
             do i = 1, shp(1)
                 print *, c, i, ar(i,:)
             end do
@@ -522,9 +529,9 @@ types:
 
     ! byte array
     character(len=1), dimension(:), allocatable :: buf
-    if (LIBMUSCLE_DataConstRef_is_a_byte_array(d12)) then
-        allocate(buf(LIBMUSCLE_Data_size(d12)))
-        call LIBMUSCLE_Data_as_byte_array(d12, buf)
+    if (d12%is_a_byte_array()) then
+        allocate(buf(d12%size()))
+        call d12%as_byte_array(buf)
     end if
 
 
@@ -578,14 +585,14 @@ arguments to the function call that you expect may fail, like this:
 
     ! If there is a key 'key' and its value is a logical, set variable
     ! value to that, otherwise set it to .true..
-    item = LIBMUSCLE_DataConstRef_get_item(rdata, 'key', err_code, err_msg)
+    item = rdata%get_item('key', err_code, err_msg)
     if (err_code /= LIBMUSCLE_success) then
         print *, err_msg
         ! Need to deallocate the message
         deallocate(err_msg)
         value = .true.
     else
-        value = LIBMUSCLE_DataConstRef_as_logical(item, err_code)
+        value = item%as_logical(err_code)
         if (err_code /= LIBMUSCLE_success) then
             value = .true.
         end if

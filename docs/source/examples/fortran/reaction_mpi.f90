@@ -24,34 +24,34 @@ program reaction_mpi
     call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierr)
     call MPI_Comm_size(MPI_COMM_WORLD, num_ranks, ierr)
 
-    ports = LIBMUSCLE_PortsDescription_create()
-    call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_F_INIT, 'initial_state')
-    call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_O_F, 'final_state')
-    instance = LIBMUSCLE_Instance_create(ports, communicator=MPI_COMM_WORLD, root=root_rank)
+    ports = LIBMUSCLE_PortsDescription()
+    call ports%add(YMMSL_Operator_F_INIT, 'initial_state')
+    call ports%add(YMMSL_Operator_O_F, 'final_state')
+    instance = LIBMUSCLE_Instance(ports, communicator=MPI_COMM_WORLD, root=root_rank)
     call LIBMUSCLE_PortsDescription_free(ports)
 
-    do while (LIBMUSCLE_Instance_reuse_instance(instance))
+    do while (instance%reuse_instance())
         ! F_INIT
-        t_max = LIBMUSCLE_Instance_get_setting_as_real8(instance, 't_max')
-        dt = LIBMUSCLE_Instance_get_setting_as_real8(instance, 'dt')
-        k = LIBMUSCLE_Instance_get_setting_as_real8(instance, 'k')
+        t_max = instance%get_setting_as_real8('t_max')
+        dt = instance%get_setting_as_real8('dt')
+        k = instance%get_setting_as_real8('k')
 
-        rmsg = LIBMUSCLE_Instance_receive(instance, 'initial_state')
+        rmsg = instance%receive('initial_state')
 
         if (rank == root_rank) then
-            rdata = LIBMUSCLE_Message_get_data(rmsg)
-            U_all_size = LIBMUSCLE_DataConstRef_size(rdata)
+            rdata = rmsg%get_data()
+            U_all_size = rdata%size()
             allocate (U_all(U_all_size))
-            call LIBMUSCLE_DataConstRef_elements(rdata, U_all)
+            call rdata%elements(U_all)
             call LIBMUSCLE_DataConstRef_free(rdata)
 
-            t_cur = LIBMUSCLE_Message_timestamp(rmsg)
-            t_end = LIBMUSCLE_Message_timestamp(rmsg) + t_max
+            t_cur = rmsg%timestamp()
+            t_end = rmsg%timestamp() + t_max
             call LIBMUSCLE_Message_free(rmsg)
 
             U_size = U_all_size / num_ranks
             if (U_size * num_ranks /= U_all_size) then
-                call LIBMUSCLE_Instance_error_shutdown(instance, 'State does not divide evenly')
+                call instance%error_shutdown('State does not divide evenly')
                 print *, 'State does not divide evenly'
                 stop
             end if
@@ -81,8 +81,8 @@ program reaction_mpi
 
         if (rank == root_rank) then
             sdata = LIBMUSCLE_Data_create_grid(U_all, 'x')
-            smsg = LIBMUSCLE_Message_create(t_cur, sdata)
-            call LIBMUSCLE_Instance_send(instance, 'final_state', smsg)
+            smsg = LIBMUSCLE_Message(t_cur, sdata)
+            call instance%send('final_state', smsg)
 
             call LIBMUSCLE_Message_free(smsg)
             call LIBMUSCLE_Data_free(sdata)

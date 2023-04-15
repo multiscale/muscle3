@@ -196,7 +196,8 @@ Message Communicator::receive_message(
     Endpoint snd_endpoint = peer_manager_->get_peer_endpoints(
             recv_endpoint.port, slot_list).at(0);
     MPPClient & client = get_client_(snd_endpoint.instance());
-    auto msg_and_profile = client.receive(recv_endpoint.ref());
+    auto msg_and_profile = try_receive_(
+            client, recv_endpoint.ref(), snd_endpoint.kernel);
     auto & msg = std::get<0>(msg_and_profile);
 
     ProfileEvent recv_decode_event(
@@ -501,6 +502,18 @@ std::tuple<std::string, bool> Communicator::split_port_desc_(
     }
 
     return std::make_tuple(port_name, is_vector);
+}
+
+std::tuple<DataConstRef, mcp::ProfileData> Communicator::try_receive_(
+        MPPClient & client, Reference const & receiver, Reference const & peer) {
+    try {
+        return client.receive(receiver);
+    } catch(std::runtime_error const & err) {
+        throw std::runtime_error(
+            "Error while receiving a message: connection with peer '" +
+            static_cast<std::string>(peer) +
+            "' was lost. Did the peer crash?\n\tOriginal error: " + err.what());
+    }
 }
 
 } }

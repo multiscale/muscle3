@@ -199,6 +199,10 @@ class Communicator {
         std::tuple<std::string, bool> split_port_desc_(
                 std::string const & port_desc) const;
 
+        std::tuple<DataConstRef, mcp::ProfileData> try_receive_(
+                MPPClient & client, ymmsl::Reference const & receiver,
+                ymmsl::Reference const & peer);
+
         ymmsl::Reference kernel_;
         std::vector<int> index_;
         Optional<PortsDescription> declared_ports_;

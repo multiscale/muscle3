@@ -3,7 +3,7 @@
 #include <msgpack.hpp>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 namespace mcp {
 
@@ -16,5 +16,5 @@ Data unpack_data(std::shared_ptr<msgpack::zone> const & zone, char const * begin
 
 }   // namespace mcp
 
-} }   // namespace libmuscle::impl
+} }   // namespace libmuscle::_MUSCLE_IMPL_NS
 

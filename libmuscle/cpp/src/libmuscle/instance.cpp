@@ -29,9 +29,9 @@ using ymmsl::Operator;
 using ymmsl::Reference;
 using ymmsl::Settings;
 
-using libmuscle::impl::LogLevel;
-using libmuscle::impl::ProfileEvent;
-using libmuscle::impl::ProfileEventType;
+using libmuscle::_MUSCLE_IMPL_NS::LogLevel;
+using libmuscle::_MUSCLE_IMPL_NS::ProfileEvent;
+using libmuscle::_MUSCLE_IMPL_NS::ProfileEventType;
 
 
 namespace {
@@ -64,7 +64,7 @@ LogLevel string_to_level(std::string const & log_level_str) {
 }
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 class Instance::Impl {
     public:

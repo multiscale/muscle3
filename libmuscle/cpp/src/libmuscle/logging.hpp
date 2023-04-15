@@ -1,12 +1,13 @@
 #pragma once
 
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/timestamp.hpp>
 
 #include <ostream>
 #include <string>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /** Log levels for MUSCLE3.
  *

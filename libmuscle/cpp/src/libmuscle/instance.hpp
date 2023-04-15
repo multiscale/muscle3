@@ -1,6 +1,7 @@
 #pragma once
 
 #include <libmuscle/message.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/ports_description.hpp>
 
 #ifdef MUSCLE_ENABLE_MPI
@@ -12,7 +13,7 @@
 #include <memory>
 #include <string>
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /** Enumeration of properties that an instance may have.
  *

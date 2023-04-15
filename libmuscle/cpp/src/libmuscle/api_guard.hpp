@@ -1,9 +1,11 @@
 #pragma once
 
+#include <libmuscle/namespace.hpp>
+
 #include <stdexcept>
 #include <string>
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /** Different phases that the user code traverses.
  *

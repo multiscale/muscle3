@@ -3,7 +3,7 @@
 #include <libmuscle/profiling.hpp>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 Profiler::Profiler(MMPClient & manager)
     : manager_(manager)

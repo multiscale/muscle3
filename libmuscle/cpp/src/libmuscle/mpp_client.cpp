@@ -9,14 +9,14 @@
 #include <stdexcept>
 
 
-using libmuscle::impl::Data;
-using libmuscle::impl::DataConstRef;
-using libmuscle::impl::mcp::ProfileData;
-using libmuscle::impl::mcp::TcpTransportClient;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
+using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::ProfileData;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::TcpTransportClient;
 using ymmsl::Reference;
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 MPPClient::MPPClient(std::vector<std::string> const & locations) {
     try_connect_<TcpTransportClient>(locations);

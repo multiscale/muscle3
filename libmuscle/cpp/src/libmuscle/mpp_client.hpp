@@ -4,8 +4,9 @@
 #include LIBMUSCLE_MOCK_MPP_CLIENT
 #else
 
-#include "libmuscle/data.hpp"
-#include "libmuscle/mcp/transport_client.hpp"
+#include <libmuscle/data.hpp>
+#include <libmuscle/mcp/transport_client.hpp>
+#include <libmuscle/namespace.hpp>
 
 #include <ymmsl/ymmsl.hpp>
 
@@ -15,7 +16,7 @@
 #include <vector>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /** A client that connects to an MPP server.
  *

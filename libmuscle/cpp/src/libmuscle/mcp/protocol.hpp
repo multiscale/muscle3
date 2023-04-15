@@ -1,6 +1,8 @@
 #pragma once
 
-namespace libmuscle { namespace impl {
+#include <libmuscle/namespace.hpp>
+
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /** Request type for MMP requests
  *

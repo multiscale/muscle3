@@ -1,6 +1,7 @@
 #pragma once
 
 #include <libmuscle/data.hpp>
+#include <libmuscle/namespace.hpp>
 
 #include <ymmsl/ymmsl.hpp>
 
@@ -9,7 +10,7 @@
 #include <mutex>
 #include <vector>
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 
 /** Stores messages to be sent to a particular receiver.

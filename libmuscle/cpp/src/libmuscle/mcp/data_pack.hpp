@@ -1,13 +1,14 @@
 #pragma once
 
-#include "libmuscle/data.hpp"
+#include <libmuscle/data.hpp>
+#include <libmuscle/namespace.hpp>
 
 #include <memory>
 
 #include <msgpack.hpp>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 namespace mcp {
 
@@ -28,7 +29,7 @@ Data unpack_data(
 
 }   // namespace mcp
 
-} }   // namespace libmuscle::impl
+} }   // namespace libmuscle::_MUSCLE_IMPL_NS
 
 #include "libmuscle/mcp/data_pack.tpp"
 

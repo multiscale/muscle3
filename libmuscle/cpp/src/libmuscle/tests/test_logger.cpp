@@ -13,13 +13,14 @@
 // Test code dependencies
 #include <libmuscle/logger.hpp>
 #include <libmuscle/logging.hpp>
+#include <libmuscle/namespace.hpp>
 
 #include <gtest/gtest.h>
 
 
-using libmuscle::impl::Logger;
-using libmuscle::impl::LogLevel;
-using libmuscle::impl::MockMMPClient;
+using libmuscle::_MUSCLE_IMPL_NS::Logger;
+using libmuscle::_MUSCLE_IMPL_NS::LogLevel;
+using libmuscle::_MUSCLE_IMPL_NS::MockMMPClient;
 using ymmsl::Reference;
 
 

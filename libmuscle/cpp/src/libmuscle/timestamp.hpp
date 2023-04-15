@@ -2,8 +2,10 @@
 
 #include <ostream>
 
+#include <libmuscle/namespace.hpp>
 
-namespace libmuscle { namespace impl {
+
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /** A timestamp, as the number of seconds since the UNIX epoch.
  */

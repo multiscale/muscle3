@@ -1,7 +1,7 @@
 #include <libmuscle/mcp/transport_client.hpp>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 namespace mcp {
 
@@ -13,5 +13,5 @@ TransportClient::~TransportClient() {}
 
 }   // namespace mcp
 
-} }   // namespace libmuscle::impl
+} }   // namespace libmuscle::_MUSCLE_IMPL_NS
 

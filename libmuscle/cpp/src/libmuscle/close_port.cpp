@@ -3,10 +3,10 @@
 #include <libmuscle/mcp/ext_types.hpp>
 
 
-using libmuscle::impl::mcp::ExtTypeId;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::ExtTypeId;
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 ClosePort::ClosePort()
     :  Data()

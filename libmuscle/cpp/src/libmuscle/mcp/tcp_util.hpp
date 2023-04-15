@@ -2,8 +2,10 @@
 
 #include <sys/types.h>
 
+#include <libmuscle/namespace.hpp>
 
-namespace libmuscle { namespace impl { namespace mcp {
+
+namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace mcp {
 
 /* Send a message on a socket.
  *

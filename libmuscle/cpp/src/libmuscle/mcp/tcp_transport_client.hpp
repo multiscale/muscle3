@@ -4,12 +4,13 @@
 #include LIBMUSCLE_MOCK_MCP_TCP_TRANSPORT_CLIENT
 #else
 
-#include "libmuscle/mcp/transport_client.hpp"
-#include "libmuscle/data.hpp"
+#include <libmuscle/mcp/transport_client.hpp>
+#include <libmuscle/data.hpp>
+#include <libmuscle/namespace.hpp>
 
 #include <tuple>
 
-namespace libmuscle { namespace impl { namespace mcp {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace mcp {
 
 /** A client that connects to a TCPTransport server.
  */

@@ -19,7 +19,7 @@
 
 using namespace std::string_literals;
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 SnapshotManager::SnapshotManager(
             ymmsl::Reference const & instance_id,

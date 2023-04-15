@@ -38,6 +38,7 @@
 #include <stdexcept>
 #include <gtest/gtest.h>
 #include <libmuscle/communicator.hpp>
+#include <libmuscle/namespace.hpp>
 #include <mocks/mock_mpp_client.hpp>
 #include <mocks/mcp/mock_tcp_transport_server.hpp>
 #include <mocks/mock_logger.hpp>
@@ -45,20 +46,20 @@
 #include <mocks/mock_profiler.hpp>
 
 
-using libmuscle::impl::Communicator;
-using libmuscle::impl::Data;
-using libmuscle::impl::Endpoint;
-using libmuscle::impl::Optional;
-using libmuscle::impl::PeerDims;
-using libmuscle::impl::PeerLocations;
-using libmuscle::impl::PortsDescription;
-using libmuscle::impl::Message;
-using libmuscle::impl::MockLogger;
-using libmuscle::impl::MockPeerManager;
-using libmuscle::impl::MockPostOffice;
-using libmuscle::impl::MockProfiler;
-using libmuscle::impl::MockMPPClient;
-using libmuscle::impl::mcp::MockTcpTransportServer;
+using libmuscle::_MUSCLE_IMPL_NS::Communicator;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
+using libmuscle::_MUSCLE_IMPL_NS::Endpoint;
+using libmuscle::_MUSCLE_IMPL_NS::Optional;
+using libmuscle::_MUSCLE_IMPL_NS::PeerDims;
+using libmuscle::_MUSCLE_IMPL_NS::PeerLocations;
+using libmuscle::_MUSCLE_IMPL_NS::PortsDescription;
+using libmuscle::_MUSCLE_IMPL_NS::Message;
+using libmuscle::_MUSCLE_IMPL_NS::MockLogger;
+using libmuscle::_MUSCLE_IMPL_NS::MockPeerManager;
+using libmuscle::_MUSCLE_IMPL_NS::MockPostOffice;
+using libmuscle::_MUSCLE_IMPL_NS::MockProfiler;
+using libmuscle::_MUSCLE_IMPL_NS::MockMPPClient;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::MockTcpTransportServer;
 
 using ymmsl::Conduit;
 using ymmsl::Reference;
@@ -71,10 +72,10 @@ int main(int argc, char *argv[]) {
 
 
 // Helpers for accessing internal state
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 struct TestCommunicator {
-    static std::unordered_map<std::string, libmuscle::impl::Port> const & ports_(
+    static std::unordered_map<std::string, libmuscle::_MUSCLE_IMPL_NS::Port> const & ports_(
             Communicator const & comm)
     {
         return comm.ports_;
@@ -83,7 +84,7 @@ struct TestCommunicator {
 
 } }
 
-using libmuscle::impl::TestCommunicator;
+using libmuscle::_MUSCLE_IMPL_NS::TestCommunicator;
 
 
 /* Mocks have internal state, which needs to be reset before each test. This
@@ -525,7 +526,7 @@ TEST(libmuscle_communicator, close_port) {
             MockPostOffice::last_message->timestamp,
             std::numeric_limits<double>::infinity());
     ASSERT_FALSE(MockPostOffice::last_message->next_timestamp.is_set());
-    ASSERT_TRUE(libmuscle::impl::is_close_port(MockPostOffice::last_message->data));
+    ASSERT_TRUE(libmuscle::_MUSCLE_IMPL_NS::is_close_port(MockPostOffice::last_message->data));
 }
 
 TEST(libmuscle_communicator, receive_message) {

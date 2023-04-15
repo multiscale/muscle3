@@ -2,7 +2,7 @@
 #include <ostream>
 #include <sstream>
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 template <typename... Args>
 void Logger::log(LogLevel level, Args... args) {

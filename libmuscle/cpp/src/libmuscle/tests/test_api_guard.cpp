@@ -2,11 +2,13 @@
 
 #include <libmuscle/api_guard.hpp>
 
+#include <libmuscle/namespace.hpp>
+
 #include <vector>
 #include <set>
 
-using libmuscle::impl::APIGuard;
-using libmuscle::impl::APIPhase;
+using libmuscle::_MUSCLE_IMPL_NS::APIGuard;
+using libmuscle::_MUSCLE_IMPL_NS::APIPhase;
 
 int main(int argc, char *argv[]) {
     ::testing::InitGoogleTest(&argc, argv);

@@ -11,12 +11,12 @@
 #include <limits>
 
 
-using libmuscle::impl::ClosePort;
-using libmuscle::impl::Data;
-using libmuscle::impl::DataConstRef;
-using libmuscle::impl::mcp::ExtTypeId;
-using libmuscle::impl::MPPClient;
-using libmuscle::impl::mcp::TcpTransportServer;
+using libmuscle::_MUSCLE_IMPL_NS::ClosePort;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
+using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::ExtTypeId;
+using libmuscle::_MUSCLE_IMPL_NS::MPPClient;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::TcpTransportServer;
 
 using ymmsl::Conduit;
 using ymmsl::Identifier;
@@ -25,7 +25,7 @@ using ymmsl::Reference;
 using ymmsl::Settings;
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 Communicator::Communicator(
         ymmsl::Reference const & kernel,

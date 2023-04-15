@@ -8,7 +8,7 @@
 #include <libmuscle/mpp_message.hpp>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 Snapshot::Snapshot(
             std::vector<std::string> const & triggers,

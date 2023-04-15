@@ -1,5 +1,6 @@
 #include "libmuscle/data.hpp"
 #include "libmuscle/mcp/data_pack.hpp"
+#include <libmuscle/namespace.hpp>
 
 #include <ymmsl/ymmsl.hpp>
 
@@ -10,10 +11,10 @@
 #include <msgpack.hpp>
 
 
-using libmuscle::impl::Data;
-using libmuscle::impl::DataConstRef;
-using libmuscle::impl::mcp::unpack_data;
-using libmuscle::impl::StorageOrder;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
+using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::unpack_data;
+using libmuscle::_MUSCLE_IMPL_NS::StorageOrder;
 using ymmsl::SettingValue;
 using ymmsl::Settings;
 

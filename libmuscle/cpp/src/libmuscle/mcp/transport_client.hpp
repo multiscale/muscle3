@@ -1,7 +1,7 @@
 #pragma once
 
 #include <libmuscle/data.hpp>
-
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/profiling.hpp>
 
 #include <string>
@@ -9,7 +9,7 @@
 #include <vector>
 
 
-namespace libmuscle { namespace impl { namespace mcp {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace mcp {
 
 
 /** Timeline of a receive.

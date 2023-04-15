@@ -10,7 +10,7 @@
 #include <vector>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 MockMPPClient::MockMPPClient(std::vector<std::string> const & locations) {
     ++num_constructed;

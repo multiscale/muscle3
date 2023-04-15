@@ -5,7 +5,7 @@
 #include <sys/stat.h>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 std::string extract_log_file_location(
         int argc, char const * const argv[], std::string const & filename

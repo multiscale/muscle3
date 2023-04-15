@@ -4,6 +4,7 @@
 #include <libmuscle/mcp/transport_server.hpp>
 #include <libmuscle/mcp/tcp_transport_client.hpp>
 #include <libmuscle/mcp/tcp_transport_server.hpp>
+#include <libmuscle/namespace.hpp>
 
 #include <msgpack.hpp>
 
@@ -14,11 +15,11 @@
 #include <vector>
 
 
-using libmuscle::impl::Data;
-using libmuscle::impl::DataConstRef;
-using libmuscle::impl::mcp::RequestHandler;
-using libmuscle::impl::mcp::TcpTransportClient;
-using libmuscle::impl::mcp::TcpTransportServer;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
+using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::RequestHandler;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::TcpTransportClient;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::TcpTransportServer;
 
 
 int main(int argc, char *argv[]) {

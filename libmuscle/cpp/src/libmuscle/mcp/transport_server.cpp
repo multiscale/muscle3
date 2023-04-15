@@ -1,7 +1,7 @@
 #include <libmuscle/mcp/transport_server.hpp>
 
 
-namespace libmuscle { namespace impl {namespace mcp {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {namespace mcp {
 
 
 RequestHandler::~RequestHandler() {}

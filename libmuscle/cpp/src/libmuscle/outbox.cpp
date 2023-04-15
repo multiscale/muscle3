@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 Outbox::Outbox()
     : notification_fd_(-1)

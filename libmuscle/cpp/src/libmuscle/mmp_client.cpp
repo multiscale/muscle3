@@ -20,12 +20,12 @@
 #include "ymmsl/ymmsl.hpp"
 
 
-using libmuscle::impl::Data;
-using libmuscle::impl::DataConstRef;
-using libmuscle::impl::mcp::unpack_data;
-using libmuscle::impl::Optional;
-using libmuscle::impl::ProfileEvent;
-using libmuscle::impl::SnapshotMetadata;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
+using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::unpack_data;
+using libmuscle::_MUSCLE_IMPL_NS::Optional;
+using libmuscle::_MUSCLE_IMPL_NS::ProfileEvent;
+using libmuscle::_MUSCLE_IMPL_NS::SnapshotMetadata;
 using std::chrono::steady_clock;
 using ymmsl::Conduit;
 using ymmsl::Reference;
@@ -129,7 +129,7 @@ namespace {
     }
 }
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 MMPClient::MMPClient(
         Reference const & instance_id, std::string const & location)

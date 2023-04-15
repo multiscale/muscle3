@@ -5,9 +5,9 @@
 
 #include <cassert>
 
-using libmuscle::impl::Data;
-using libmuscle::impl::DataConstRef;
-using libmuscle::impl::Port;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
+using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
+using libmuscle::_MUSCLE_IMPL_NS::Port;
 
 using ymmsl::Conduit;
 using ymmsl::Identifier;
@@ -16,7 +16,7 @@ using ymmsl::Reference;
 using ymmsl::Settings;
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 MockCommunicator::MockCommunicator(
         ymmsl::Reference const & kernel,

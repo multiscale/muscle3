@@ -1,5 +1,6 @@
 #include "libmuscle/data.hpp"
 #include "libmuscle/mcp/data_pack.hpp"
+#include <libmuscle/namespace.hpp>
 
 #include <cstddef>
 #include <cstdio>
@@ -13,7 +14,7 @@
 #include <gtest/gtest.h>
 
 
-using libmuscle::impl::Data;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
 
 
 int main(int argc, char *argv[]) {

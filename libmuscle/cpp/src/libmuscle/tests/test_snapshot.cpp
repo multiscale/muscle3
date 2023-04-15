@@ -1,12 +1,13 @@
 #include <gtest/gtest.h>
 
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/snapshot.hpp>
 
-using libmuscle::impl::Data;
-using libmuscle::impl::Message;
-using libmuscle::impl::Optional;
-using libmuscle::impl::Snapshot;
-using libmuscle::impl::SnapshotMetadata;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
+using libmuscle::_MUSCLE_IMPL_NS::Message;
+using libmuscle::_MUSCLE_IMPL_NS::Optional;
+using libmuscle::_MUSCLE_IMPL_NS::Snapshot;
+using libmuscle::_MUSCLE_IMPL_NS::SnapshotMetadata;
 
 int main(int argc, char *argv[]) {
     ::testing::InitGoogleTest(&argc, argv);

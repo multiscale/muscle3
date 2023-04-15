@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 APIGuard::APIGuard(bool uses_checkpointing, bool is_root)
         : phase_(APIPhase::BEFORE_FIRST_REUSE_INSTANCE),

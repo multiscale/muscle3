@@ -4,8 +4,10 @@
 #include <ostream>
 #include <string>
 
+#include <libmuscle/namespace.hpp>
 
-namespace libmuscle { namespace impl {
+
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 
 /* Gets the log file location from the command line.

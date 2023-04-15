@@ -5,6 +5,7 @@
 #include <libmuscle/mcp/data_pack.hpp>
 #include <libmuscle/mpp_message.hpp>
 #include <libmuscle/mcp/tcp_transport_server.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/post_office.hpp>
 #include <ymmsl/ymmsl.hpp>
 
@@ -16,11 +17,11 @@
 #include <msgpack.hpp>
 
 
-using libmuscle::impl::PostOffice;
-using libmuscle::impl::Data;
-using libmuscle::impl::DataConstRef;
-using libmuscle::impl::MPPMessage;
-using libmuscle::impl::mcp::TcpTransportServer;
+using libmuscle::_MUSCLE_IMPL_NS::PostOffice;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
+using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
+using libmuscle::_MUSCLE_IMPL_NS::MPPMessage;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::TcpTransportServer;
 using ymmsl::Reference;
 using ymmsl::Settings;
 

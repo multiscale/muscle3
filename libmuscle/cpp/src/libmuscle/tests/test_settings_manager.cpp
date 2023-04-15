@@ -4,11 +4,12 @@
 
 #include <gtest/gtest.h>
 
+#include <libmuscle/namespace.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 
 using namespace std::string_literals;
-using libmuscle::impl::SettingsManager;
+using libmuscle::_MUSCLE_IMPL_NS::SettingsManager;
 using ymmsl::Reference;
 using ymmsl::Settings;
 

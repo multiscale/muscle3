@@ -6,7 +6,7 @@ using ymmsl::Identifier;
 using ymmsl::Reference;
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 MockPeerManager::MockPeerManager(
         Reference const & kernel,

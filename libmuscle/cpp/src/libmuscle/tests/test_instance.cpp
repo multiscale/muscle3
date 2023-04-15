@@ -32,16 +32,17 @@
 #include <gtest/gtest.h>
 
 #include <libmuscle/instance.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/settings_manager.hpp>
 #include <mocks/mock_communicator.hpp>
 
-using libmuscle::impl::ClosePort;
-using libmuscle::impl::Instance;
-using libmuscle::impl::InstanceFlags;
-using libmuscle::impl::Message;
-using libmuscle::impl::MockCommunicator;
-using libmuscle::impl::MockMMPClient;
-using libmuscle::impl::PortsDescription;
+using libmuscle::_MUSCLE_IMPL_NS::ClosePort;
+using libmuscle::_MUSCLE_IMPL_NS::Instance;
+using libmuscle::_MUSCLE_IMPL_NS::InstanceFlags;
+using libmuscle::_MUSCLE_IMPL_NS::Message;
+using libmuscle::_MUSCLE_IMPL_NS::MockCommunicator;
+using libmuscle::_MUSCLE_IMPL_NS::MockMMPClient;
+using libmuscle::_MUSCLE_IMPL_NS::PortsDescription;
 
 using ymmsl::Reference;
 
@@ -53,7 +54,7 @@ int main(int argc, char *argv[]) {
 
 
 // Helpers for accessing internal state
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 struct TestInstance {
     static Reference & instance_name_(Instance & instance) {
@@ -67,7 +68,7 @@ struct TestInstance {
 
 } }
 
-using libmuscle::impl::TestInstance;
+using libmuscle::_MUSCLE_IMPL_NS::TestInstance;
 
 /* Mocks have internal state, which needs to be reset before each test. This
  * means that the tests are not reentrant, and cannot be run in parallel.

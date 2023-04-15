@@ -6,11 +6,12 @@
 
 #include <libmuscle/data.hpp>
 #include <libmuscle/message.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/util.hpp>
 
 #include <ymmsl/ymmsl.hpp>
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /** Snapshot data structure.
  */

@@ -1,9 +1,13 @@
 from datetime import datetime
 from pathlib import Path
 import sys
+import textwrap
+import traceback
 from typing import Optional, Sequence
 
 import click
+from ruamel.yaml.scanner import ScannerError
+from yatiml import RecognitionError
 import ymmsl
 from ymmsl import Identifier, PartialConfiguration
 
@@ -54,8 +58,21 @@ def manage_simulation(
     """
     configuration = PartialConfiguration()
     for path in ymmsl_files:
-        with open(path, 'r') as f:
-            configuration.update(ymmsl.load(f))
+        configuration.update(load_configuration(path))
+
+    try:
+        if start_all:  # Do a full consistency check
+            configuration.as_configuration().check_consistent()
+        else:  # Only require that a Model exists and is consistent
+            if configuration.model is None:
+                raise ValueError('Model section is missing from the configuration.')
+            if not isinstance(configuration.model, ymmsl.Model):
+                raise ValueError('Model section from the configuration is incomplete.')
+            configuration.model.check_consistent()
+    except Exception as exc:
+        print('Failed to start the simulation, found a configuration error:\n' +
+              textwrap.indent(str(exc), 4*' '), file=sys.stderr)
+        sys.exit(1)
 
     if run_dir is None:
         if configuration.model is not None:
@@ -71,7 +88,17 @@ def manage_simulation(
     run_dir_obj = RunDir(run_dir_path)
     if start_all:
         manager = Manager(configuration, run_dir_obj, log_level)
-        manager.start_instances()
+        try:
+            manager.start_instances()
+        except Exception as exc:
+            manager.stop()
+            print('Failed to start the simulation:', file=sys.stderr)
+            print(textwrap.indent(str(exc), 4*' '), file=sys.stderr)
+            print(file=sys.stderr)
+            print('Check the manager log for more details:', file=sys.stderr)
+            print('   ', run_dir_path / 'muscle3_manager.log', file=sys.stderr)
+            sys.exit(1)
+
     else:
         if run_dir is None:
             manager = Manager(configuration, None, log_level)
@@ -85,9 +112,46 @@ def manage_simulation(
         print('An error occurred during execution, and the simulation was')
         print('shut down. The manager log should tell you what happened.')
         print('You can find it at')
-        print(run_dir_path / 'muscle3_manager.log')
+        print('   ', run_dir_path / 'muscle3_manager.log')
+    else:
+        print('Simulation completed successfully.')
 
     sys.exit(0 if success else 1)
+
+
+def load_configuration(path: str) -> PartialConfiguration:
+    """Load and parse a configuration file.
+
+    Annotates error messages for easier debugging by users.
+    """
+    with open(path, 'r') as f:
+        try:
+            return ymmsl.load(f)
+        except ScannerError as exc:  # capture ruamel.yaml errors
+            # ruamel.yaml error messages are not very user friendly, but there is not
+            # too much we can do about it
+            print(f"Syntax error while loading configuration file '{path}':",
+                  file=sys.stderr)
+            print(textwrap.indent(str(exc), 4*' '), file=sys.stderr)
+            sys.exit(1)
+        except RecognitionError as exc:
+            # capture yatiml errors:
+            # - ymmsl syntax errors, like mapping instead of lists, misspelled keys, ...
+            # - value errors thrown by constructors (e.g. specifying duplicate port
+            #   names)
+            print(f"Recognition error while loading configuration file '{path}':",
+                  file=sys.stderr)
+            print(textwrap.indent(str(exc), 4*' '), file=sys.stderr)
+            sys.exit(1)
+        except Exception:
+            # Any other error is not anticipated
+            print(f"Error while loading configuration file '{path}':",
+                  file=sys.stderr)
+            traceback.print_exc()
+            print(file=sys.stderr)
+            print('This error could indicate a bug in libmuscle,'
+                  ' please make an issue on GitHub.', file=sys.stderr)
+            sys.exit(1)
 
 
 if __name__ == '__main__':

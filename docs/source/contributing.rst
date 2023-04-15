@@ -99,7 +99,7 @@ Then, activate the environment, and install the development tools
 into it::
 
   source ~/Envs/muscle3/bin/activate
-  pip install -e .[dev]
+  pip install --use-pep517 -e .[dev]
 
 and run the test suite, just to make sure that you have everything in working
 order::

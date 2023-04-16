@@ -8,7 +8,8 @@ import logging
 import multiprocessing as mp
 import multiprocessing.connection as mpc
 import sys
-from typing import Callable, Dict, List, Tuple, cast
+from time import sleep
+from typing import Callable, Dict, List, Set, Tuple, cast
 
 from ymmsl import Configuration, Identifier, Model, Reference
 
@@ -238,25 +239,41 @@ def run_instances(
         instances: A dictionary of instances to run
         manager_location: Network location of the manager
     """
+    # start processes
     instance_processes = list()
     for instance_id_str, implementation in instances.items():
         instance_id = Reference(instance_id_str)
         process = mp.Process(
                 target=implementation_process,
                 args=(instance_id_str, manager_location, implementation),
-                name='Instance-{}'.format(instance_id))
+                name=str(instance_id))
         process.start()
         instance_processes.append(process)
 
-    failed_processes = list()
-    for instance_process in instance_processes:
-        instance_process.join()
-        if instance_process.exitcode != 0:
-            failed_processes.append(instance_process)
+    # wait for them to finish or one to fail
+    failed_processes: List[mp.Process] = list()
+    done_processes: Set[mp.Process] = set()
+    while len(done_processes) < len(instance_processes) and not failed_processes:
+        sleep(0.5)
+        for instance_process in instance_processes:
+            if instance_process not in done_processes:
+                if not instance_process.is_alive():
+                    done_processes.add(instance_process)
+                    if instance_process.exitcode != 0:
+                        failed_processes.append(instance_process)
+
+    # if one failed, shut down the rest
+    if failed_processes:
+        for process in instance_processes:
+            if process not in done_processes:
+                process.terminate()
+            process.join(1.0)
+            if process.is_alive():
+                process.kill()
 
     if len(failed_processes) > 0:
         failed_names = map(lambda x: x.name, failed_processes)
-        raise RuntimeError('Instances {} failed to shut down cleanly, please'
+        raise RuntimeError('Instance(s) {} failed to shut down cleanly, please'
                            ' check the logs to see what went wrong.'.format(
                                ', '.join(failed_names)))
 

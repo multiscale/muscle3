@@ -7,13 +7,16 @@ support for it in this module.
 import logging
 import multiprocessing as mp
 import multiprocessing.connection as mpc
+from pathlib import Path
 import sys
 from time import sleep
+import traceback
 from typing import Callable, Dict, List, Set, Tuple, cast
 
 from ymmsl import Configuration, Identifier, Model, Reference
 
 from libmuscle.util import generate_indices
+from libmuscle.manager.logger import last_lines
 from libmuscle.manager.manager import Manager
 
 
@@ -146,10 +149,11 @@ def implementation_process(
         try:
             implementation()
         except Exception:
-            _logger.exception(
+            traceback.print_exc()
+            _logger.error(
                     f'Component {instance} crashed, please check the log file'
                     ' for error messages')
-            raise
+            exit(1)
 
 
 def _parse_prefix(prefix: str) -> Tuple[str, List[int]]:
@@ -271,11 +275,18 @@ def run_instances(
             if process.is_alive():
                 process.kill()
 
-    if len(failed_processes) > 0:
-        failed_names = map(lambda x: x.name, failed_processes)
-        raise RuntimeError('Instance(s) {} failed to shut down cleanly, please'
-                           ' check the logs to see what went wrong.'.format(
-                               ', '.join(failed_names)))
+        failed_names = [proc.name for proc in failed_processes]
+        log_files = [Path(f'muscle3.{name}.log') for name in failed_names]
+        outputs = [last_lines(log_file, 20) for log_file in log_files]
+        msg = (
+                'Instance(s) {} failed to shut down cleanly. Here is the final'
+                ' bit of the output:').format(', '.join(failed_names))
+        for name, output in zip(failed_names, outputs):
+            msg += '\n ---------- ' + name + ' ----------\n'
+            msg += output + '\n'
+            msg += f'See muscle3.{name}.log for the complete output\n'
+
+        raise RuntimeError(msg)
 
 
 def run_simulation(

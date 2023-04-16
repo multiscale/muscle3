@@ -7,6 +7,7 @@ import queue
 
 from ymmsl import Configuration
 
+from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.instantiator import (
         CancelAllRequest, CrashedResult, InstantiatorRequest,
         InstantiationRequest, ProcessStatus, ShutdownRequest)
@@ -57,15 +58,18 @@ _ResultType = Union[Process, CrashedResult]
 class InstanceManager:
     """Instantiates and manages running instances"""
     def __init__(
-            self, configuration: Configuration, run_dir: RunDir) -> None:
+            self, configuration: Configuration, run_dir: RunDir,
+            instance_registry: InstanceRegistry) -> None:
         """Create a ProcessManager.
 
         Args:
             configuration: The global configuration
             run_dir: Directory to run in
+            instance_registry: The InstanceRegistry to use
         """
         self._configuration = configuration
         self._run_dir = run_dir
+        self._instance_registry = instance_registry
 
         self._resources_in: Queue[Resources] = Queue()
         self._requests_out: Queue[InstantiatorRequest] = Queue()
@@ -128,6 +132,13 @@ class InstanceManager:
     def wait(self) -> bool:
         """Waits for all instances to be done."""
         all_seemingly_okay = True
+
+        def cancel_all() -> None:
+            nonlocal all_seemingly_okay
+            if all_seemingly_okay:
+                self._requests_out.put(CancelAllRequest())
+                all_seemingly_okay = False
+
         while self._num_running > 0:
             result = self._results_in.get()
 
@@ -158,10 +169,15 @@ class InstanceManager:
                             'More output may be found in'
                             f' {self._run_dir.instance_dir(result.instance)}\n'
                             )
+                    cancel_all()
 
-                    if all_seemingly_okay:
-                        self._requests_out.put(CancelAllRequest())
-                        all_seemingly_okay = False
+            elif not self._instance_registry.did_register(result.instance):
+                _logger.error(
+                        f'Instance {result.instance} quit with no error'
+                        ' (exit code 0), but it never registered with the'
+                        ' manager. Maybe it never created an Instance'
+                        ' object?')
+                cancel_all()
             else:
                 if result.status == ProcessStatus.CANCELED:
                     _logger.info(

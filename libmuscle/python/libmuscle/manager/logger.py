@@ -146,7 +146,7 @@ def last_lines(file: Path, count: int) -> str:
         return ''
 
     file_size = file.stat().st_size
-    start_point = max(file_size - 5000, 0)
+    start_point = max(file_size - 10000, 0)
 
     lines: List[str] = []
     with file.open('r') as f:

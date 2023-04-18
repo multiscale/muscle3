@@ -1,6 +1,5 @@
 from threading import Condition
-from typing import Dict  # noqa
-from typing import List
+from typing import Dict, List, Set
 
 from ymmsl import Port, Reference
 
@@ -20,6 +19,7 @@ class InstanceRegistry:
         self._deregistered_one = Condition()    # doubles as lock
         self._locations: Dict[Reference, List[str]] = {}
         self._ports: Dict[Reference, List[Port]] = {}
+        self._seen: Set[Reference] = set()
         self._startup = True
 
     def add(self, name: Reference, locations: List[str], ports: List[Port]
@@ -42,6 +42,7 @@ class InstanceRegistry:
 
             self._locations[name] = locations
             self._ports[name] = ports
+            self._seen.add(name)
             self._startup = False
 
     def get_locations(self, name: Reference) -> List[str]:
@@ -81,6 +82,18 @@ class InstanceRegistry:
             del self._locations[name]
             del self._ports[name]
             self._deregistered_one.notify()
+
+    def did_register(self, name: Reference) -> bool:
+        """Check whether the instance has registered at some point.
+
+        This returns True iff the instance registered at some point
+        before the function was called. If it was subsequently
+        deregistered, this will still return True.
+
+        Args:
+            name: Name of the instance to check.
+        """
+        return name in self._seen
 
     def wait(self) -> None:
         """Waits until all instances are deregistered.

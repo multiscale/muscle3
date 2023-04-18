@@ -81,6 +81,7 @@ class Instance::Impl {
 
         bool reuse_instance();
         void error_shutdown(std::string const & message);
+        std::vector<std::string> list_settings() const;
         ::ymmsl::SettingValue get_setting(std::string const & name) const;
         template <typename ValueType>
         ValueType get_setting_as(std::string const & name) const;
@@ -302,6 +303,11 @@ void Instance::Impl::error_shutdown(std::string const & message) {
     }
 #endif
 }
+
+std::vector<std::string> Instance::Impl::list_settings() const {
+    return settings_manager_.list_settings(instance_name_);
+}
+
 
 ::ymmsl::SettingValue Instance::Impl::get_setting(std::string const & name) const {
     return settings_manager_.get_setting(instance_name_, name);
@@ -1208,6 +1214,10 @@ bool Instance::reuse_instance() {
 
 void Instance::error_shutdown(std::string const & message) {
     impl_()->error_shutdown(message);
+}
+
+std::vector<std::string> Instance::list_settings() const {
+    return impl_()->list_settings();
 }
 
 ::ymmsl::SettingValue Instance::get_setting(std::string const & name) const {

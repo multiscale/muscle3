@@ -191,6 +191,14 @@ class ReferencePart {
          */
         bool operator==(ReferencePart const & rhs) const;
 
+        /** Compares for inequality.
+         *
+         * @param rhs The ReferencePart to compare with.
+         *
+         * @return True if type or value mismatch.
+         */
+        bool operator!=(ReferencePart const & rhs) const;
+
     private:
         Identifier identifier_;
         int index_;

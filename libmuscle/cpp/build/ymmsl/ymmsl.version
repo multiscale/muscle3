@@ -34,6 +34,7 @@
             "ymmsl::impl::ReferencePart::identifier() const";
             "ymmsl::impl::ReferencePart::index() const";
             "ymmsl::impl::ReferencePart::operator==(ymmsl::impl::ReferencePart const&) const";
+            "ymmsl::impl::ReferencePart::operator!=(ymmsl::impl::ReferencePart const&) const";
 
             "ymmsl::impl::Reference::Reference(char const*)";
             "ymmsl::impl::Reference::Reference(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)";

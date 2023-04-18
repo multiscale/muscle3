@@ -11,6 +11,7 @@
             libmuscle::mpi_impl::Instance::is_resizable*;
             libmuscle::mpi_impl::Instance::is_vector_port*;
             libmuscle::mpi_impl::Instance::list_ports*;
+            libmuscle::mpi_impl::Instance::list_settings*;
             libmuscle::mpi_impl::Instance::get_setting*;
             "bool libmuscle::mpi_impl::Instance::get_setting_as<bool>(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) const";
             "bool libmuscle::mpi_impl::Instance::get_setting_as<bool>(std::string const&) const";

@@ -12,6 +12,8 @@
 
 #include <memory>
 #include <string>
+#include <vector>
+
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
@@ -244,6 +246,14 @@ class Instance {
          */
         void error_shutdown(std::string const & message);
 
+        /** List settings by name.
+         *
+         * This function returns a list of names of the available settings.
+         *
+         * @return A list of setting names.
+         */
+        std::vector<std::string> list_settings() const;
+
         /** Returns the value of a model setting.
          *
          * MPI-based components may call this function at any time
@@ -251,6 +261,8 @@ class Instance {
          * not.
          *
          * @param name The name of the setting, without any instance prefix.
+         *
+         * @return The value of the setting as a generic SettingValue.
          *
          * @throw std::out_of_range if no setting with the given name exists.
          */
@@ -266,6 +278,8 @@ class Instance {
          *      match exactly or an exception will be thrown, this will not
          *      convert e.g. an integer into a string.
          * @param name The name of the setting, without any instance prefix.
+         *
+         * @return The value of the setting as a ValueType
          *
          * @throw std::out_of_range if no setting with the given name exists.
          * @throw std::bad_cast if the value is not of the specified type.

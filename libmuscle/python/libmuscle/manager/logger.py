@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 from libmuscle.logging import LogLevel, Timestamp
 from libmuscle.util import extract_log_file_location
@@ -125,3 +125,36 @@ class Logger:
                 extra={
                     'instance': instance_id,
                     'iasctime': timestamp.to_asctime()})
+
+
+def last_lines(file: Path, count: int) -> str:
+    """Utility function that returns the last lines of a text file.
+
+    This opens the file and returns the final `count` lines. It reads
+    at most 10000 bytes, to avoid memory problems if the file contains
+    e.g. a large amount of binary data.
+
+    Args:
+        file: The file to read
+        count: Number of lines to read
+
+    Return:
+        A string of at most 10000 bytes, containing at most `count`
+        newlines.
+    """
+    if not file.exists():
+        return ''
+
+    file_size = file.stat().st_size
+    start_point = max(file_size - 10000, 0)
+
+    lines: List[str] = []
+    with file.open('r') as f:
+        f.seek(start_point)
+        f.readline()    # skip partial line
+        line = f.readline()
+        while line:
+            lines.append(line)
+            line = f.readline()
+
+    return '\n' + ''.join(lines[-count:])

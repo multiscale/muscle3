@@ -11,6 +11,7 @@ from yatiml import RecognitionError
 import ymmsl
 from ymmsl import Identifier, PartialConfiguration
 
+from libmuscle.manager.logger import last_lines
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
 
@@ -109,10 +110,20 @@ def manage_simulation(
     success = manager.wait()
 
     if not success:
+        log_file = run_dir_path / 'muscle3_manager.log'
+
+        print()
         print('An error occurred during execution, and the simulation was')
         print('shut down. The manager log should tell you what happened.')
-        print('You can find it at')
-        print('   ', run_dir_path / 'muscle3_manager.log')
+        print('Here are the final lines of the manager log:')
+        print()
+        print('-' * 80)
+        print(last_lines(log_file, 30), '    ')
+        print('-' * 80)
+        print()
+        print('You can find the full log at')
+        print(str(log_file))
+        print()
     else:
         print('Simulation completed successfully.')
 

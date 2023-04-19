@@ -631,7 +631,7 @@ class VecString(Par):
                 '    max_len = std::max(max_len, v.size());\n'
                 '\n'
                 'static std::string ret;\n'
-                # Note: "empty" spots in the array should be a space to work well with Fortran
+                # Note: "empty" spots in the array are a space, to work with Fortran
                 'ret.resize(result.size() * max_len, \' \');\n'
                 'for (std::size_t i = 0; i < result.size(); ++i)\n'
                 '    for (std::size_t j = 0; j < result[i].size(); ++j)\n'

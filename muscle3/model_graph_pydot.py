@@ -6,10 +6,18 @@ from ymmsl.component import Operator, Component
 
 import pydot
 
+COLORS = {
+    Operator.F_INIT: "#2998ba",
+    Operator.O_I: "#eddea1",
+    Operator.S: "#f1c40f",
+    Operator.O_F: "#e67e22",
+}
+
 
 def port_operator(port: Reference, component: Union[Component, None]):
     """Look up the operator corresponding to a specific port"""
     return component.ports.operator(port) if component else "normal"
+
 
 def port_shape(operator: str):
     """Given a port reference, find the component referred to,
@@ -23,10 +31,10 @@ def port_shape(operator: str):
     # https://www.graphviz.org/docs/attr-types/arrowType/
     OPERATOR_SHAPES = {
         Operator.NONE: "normal",
-        Operator.F_INIT: "odiamond",
-        Operator.O_I: "dot",
-        Operator.S: "odot",
-        Operator.O_F: "diamond",
+        Operator.F_INIT: "normal",
+        Operator.O_I: "none",
+        Operator.S: "normal",
+        Operator.O_F: "none",
     }
     return OPERATOR_SHAPES[operator]
 
@@ -79,11 +87,13 @@ def trim_receiving_port(identifier: str):
         return identifier[:-5]
     return identifier
 
+
 def headport(identifier: Reference, component: Union[Component, None]):
     """Given a reference, return the portPos.
     https://www.graphviz.org/docs/attr-types/portPos/
     """
     return str(identifier)
+
 
 def tailport(identifier: Reference, component: Union[Component, None]):
     """Given a reference, return the portPos.
@@ -91,49 +101,78 @@ def tailport(identifier: Reference, component: Union[Component, None]):
     """
     return str(identifier)
 
+
 def port_shortname(identifier: Reference):
     """Strip suffixes and summarize names to only a few characters"""
     identifier = trim_sending_port(trim_receiving_port(str(identifier)))
-    return "".join([s[0] for s in identifier.split('_')]).upper()
+    return "".join([s[0] for s in identifier.split("_")]).upper()
+
+
+def legend_html_label():
+    return f"""<<TABLE CELLSPACING="0" CELLBORDER="0" >
+  <TR>
+    <TD BGCOLOR='{COLORS[Operator.F_INIT]}'>F_INIT</TD>
+    <TD BGCOLOR='{COLORS[Operator.S]}'>S</TD>
+  </TR>
+  <TR>
+    <TD COLSPAN="2"><B>legend</B></TD>
+  </TR>
+  <TR>
+    <TD BGCOLOR='{COLORS[Operator.O_F]}'>O_F</TD>
+    <TD BGCOLOR='{COLORS[Operator.O_I]}'>O_I</TD>
+  </TR>
+</TABLE>>"""
+    pass
+
 
 def component_html_label(component: Component):
     """Construct a HTML-like label (https://graphviz.org/doc/info/shapes.html#html)"""
+    # TODO: make a helper function or clean this up
 
     # To layout the (single) table allowed, while getting evenly divided input and
     # output ports, we can use colspan
 
-    n_inputs = len(component.ports.f_init) + len(component.ports.s)
-    if n_inputs == 0:
-        n_inputs = 1
-    n_outputs = len(component.ports.o_f) + len(component.ports.o_i)
-    if n_outputs == 0:
-        n_outputs = 1
+    # remap variables here to enable experimenting with layout
+    # very ugly, should refactor
+    top_left = component.ports.f_init
+    top_left_color = COLORS[Operator.F_INIT]
+    top_right = component.ports.s
+    top_right_color = COLORS[Operator.S]
+    bottom_left = component.ports.o_f
+    bottom_left_color = COLORS[Operator.O_F]
+    bottom_right = component.ports.o_i
+    bottom_right_color = COLORS[Operator.O_I]
+    c_top = len(bottom_left) + len(bottom_right)
+    c_bottom = len(top_left) + len(top_right)
 
-    label = "<<TABLE CELLSPACING='0'>\n"
+    label = "<<TABLE CELLSPACING='0' CELLBORDER='0' >\n"
 
-    # First draw a row with the input ports if there are any
-    input_ports = ""
-    for port in component.ports.f_init:
-        input_ports += f"    <TD PORT='{port}' COLSPAN='{n_outputs}'>{port_shortname(port)}</TD>\n"
-    for port in component.ports.s:
-        input_ports += f"    <TD PORT='{port}' COLSPAN='{n_outputs}'>{port_shortname(port)}</TD>\n"
-    
-    if input_ports != "":
-        label += f"  <TR>\n{input_ports}  </TR>\n"
+    top_ports = ""
+    for port in top_left:
+        top_ports += f"    <TD PORT='{port}' COLSPAN='{c_top}' BGCOLOR='{top_left_color}'>{port_shortname(port)}</TD>\n"
+    # spacer port
+    # top_ports += f"    <TD COLSPAN='{c_top}'></TD>\n"
+    for port in top_right:
+        top_ports += f"    <TD PORT='{port}' COLSPAN='{c_top}' BGCOLOR='{top_right_color}'>{port_shortname(port)}</TD>\n"
 
-    label += f"  <TR>\n    <TD COLSPAN='{n_outputs*n_inputs}'><B>{component.name}</B></TD>\n  </TR>\n"
+    if top_ports != "":
+        label += f"  <TR>\n{top_ports}  </TR>\n"
 
-    # Finally draw the output ports
-    output_ports = ""
-    for port in component.ports.o_f:
-        output_ports += f"    <TD PORT='{port}' COLSPAN='{n_inputs}'>{port_shortname(port)}</TD>\n"
-    for port in component.ports.o_i:
-        output_ports += f"    <TD PORT='{port}' COLSPAN='{n_inputs}'>{port_shortname(port)}</TD>\n"
+    label += f"  <TR>\n    <TD COLSPAN='{c_top*c_bottom}'><B>{component.name}</B></TD>\n  </TR>\n"
 
-    if output_ports != "":
-        label += f"  <TR>\n{output_ports}  </TR>\n"
+    bottom_ports = ""
+    for port in bottom_left:
+        bottom_ports += f"    <TD PORT='{port}' COLSPAN='{c_bottom}' BGCOLOR='{bottom_left_color}'>{port_shortname(port)}</TD>\n"
+    # spacer port
+    # bottom_ports += f"    <TD COLSPAN='{c_bottom}'></TD>\n"
+    for port in bottom_right:
+        bottom_ports += f"    <TD PORT='{port}' COLSPAN='{c_bottom}' BGCOLOR='{bottom_right_color}'>{port_shortname(port)}</TD>\n"
 
-    return label.replace("'", '"') + '</TABLE>>'
+    if bottom_ports != "":
+        label += f"  <TR>\n{bottom_ports}  </TR>\n"
+
+    return label.replace("'", '"') + "</TABLE>>"
+
 
 def plot_model_graph(config: PartialConfiguration, simplify_edge_labels: bool) -> None:
     """Convert a PartialConfiguration into DOT format."""
@@ -151,12 +190,12 @@ def plot_model_graph(config: PartialConfiguration, simplify_edge_labels: bool) -
     # upside down and eating labels
     set_style(graph)
 
+    # Start with a legend node
+    graph.add_node(pydot.Node("legend", label=legend_html_label()))
+
     for component in config.model.components:
         graph.add_node(
-            pydot.Node(
-                str(component.name),
-                label=component_html_label(component)
-            )
+            pydot.Node(str(component.name), label=component_html_label(component))
         )
 
     for conduit in config.model.conduits:
@@ -171,14 +210,15 @@ def plot_model_graph(config: PartialConfiguration, simplify_edge_labels: bool) -
             str(conduit.receiving_component()),
             arrowtail=port_shape(
                 port_operator(
-                conduit.sending_port(),
-                sender,)
+                    conduit.sending_port(),
+                    sender,
+                )
             ),
             tailport=tailport(conduit.sending_port(), sender),
             arrowhead=port_shape(
                 port_operator(
-                conduit.receiving_port(),
-                receiver,
+                    conduit.receiving_port(),
+                    receiver,
                 )
             ),
             headport=headport(conduit.receiving_port(), receiver),

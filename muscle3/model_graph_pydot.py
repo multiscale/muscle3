@@ -112,16 +112,10 @@ def legend_html_label():
     return f"""<<TABLE CELLSPACING="0" CELLBORDER="0" >
   <TR>
     <TD BGCOLOR='{COLORS[Operator.F_INIT]}'>F_INIT</TD>
-    <TD></TD>
-    <TD BGCOLOR='{COLORS[Operator.O_F]}'>O_F</TD>
-  </TR>
-  <TR>
-    <TD COLSPAN="3"><B>legend</B></TD>
-  </TR>
-  <TR>
     <TD BGCOLOR='{COLORS[Operator.O_I]}'>O_I</TD>
-    <TD></TD>
+    <TD><B>legend</B></TD>
     <TD BGCOLOR='{COLORS[Operator.S]}'>S</TD>
+    <TD BGCOLOR='{COLORS[Operator.O_F]}'>O_F</TD>
   </TR>
 </TABLE>>"""
     pass
@@ -129,57 +123,30 @@ def legend_html_label():
 
 def component_html_label(component: Component):
     """Construct a HTML-like label (https://graphviz.org/doc/info/shapes.html#html)"""
-    # TODO: make a helper function or clean this up
 
-    # To layout the (single) table allowed, while getting evenly divided input and
-    # output ports, we can use colspan
+    label = "<<TABLE CELLSPACING='0' CELLBORDER='0' >\n  <TR>\n"
 
-    # remap variables here to enable experimenting with layout
-    # very ugly, should refactor
-    top_left = component.ports.f_init
-    top_left_color = COLORS[Operator.F_INIT]
-    top_right = component.ports.o_f
-    top_right_color = COLORS[Operator.O_F]
-    bottom_left = component.ports.o_i
-    bottom_left_color = COLORS[Operator.O_I]
-    bottom_right = component.ports.s
-    bottom_right_color = COLORS[Operator.S]
-    c_top = max(len(bottom_left), 1) + max(len(bottom_right), 1) + 1
-    c_bottom = max(len(top_left), 1) + max(len(top_right), 1) + 1
+    for port in component.ports.f_init:
+        label += f"    <TD PORT='{port}' BGCOLOR='{COLORS[Operator.F_INIT]}'>{port_shortname(port)}</TD>\n"
+    if len(component.ports.f_init) == 0:
+        label += f"    <TD BGCOLOR='{COLORS[Operator.F_INIT]}'></TD>\n"
+    for port in component.ports.o_i:
+        label += f"    <TD PORT='{port}' BGCOLOR='{COLORS[Operator.O_I]}'>{port_shortname(port)}</TD>\n"
+    if len(component.ports.o_i) == 0:
+        label += f"    <TD BGCOLOR='{COLORS[Operator.O_I]}'></TD>\n"
 
-    label = "<<TABLE CELLSPACING='0' CELLBORDER='0' >\n"
+    label += f"    <TD><B>{component.name}</B></TD>\n"
 
-    top_ports = ""
-    for port in top_left:
-        top_ports += f"    <TD PORT='{port}' COLSPAN='{c_top}' BGCOLOR='{top_left_color}'>{port_shortname(port)}</TD>\n"
-    if len(top_left) == 0:
-        top_ports += f"    <TD COLSPAN='{c_top}'></TD>\n"
-    top_ports += f"    <TD COLSPAN='{c_top}'></TD>\n"
-    if len(top_right) == 0:
-        top_ports += f"    <TD COLSPAN='{c_top}'></TD>\n"
-    for port in top_right:
-        top_ports += f"    <TD PORT='{port}' COLSPAN='{c_top}' BGCOLOR='{top_right_color}'>{port_shortname(port)}</TD>\n"
+    for port in component.ports.s:
+        label += f"    <TD PORT='{port}' BGCOLOR='{COLORS[Operator.S]}'>{port_shortname(port)}</TD>\n"
+    if len(component.ports.s) == 0:
+        label += f"    <TD BGCOLOR='{COLORS[Operator.S]}'></TD>\n"
+    for port in component.ports.o_f:
+        label += f"    <TD PORT='{port}' BGCOLOR='{COLORS[Operator.O_F]}'>{port_shortname(port)}</TD>\n"
+    if len(component.ports.o_f) == 0:
+        label += f"    <TD BGCOLOR='{COLORS[Operator.O_F]}'></TD>\n"
 
-    if top_ports != "":
-        label += f"  <TR>\n{top_ports}  </TR>\n"
-
-    label += f"  <TR>\n    <TD COLSPAN='{c_top*c_bottom}'><B>{component.name}</B></TD>\n  </TR>\n"
-
-    bottom_ports = ""
-    for port in bottom_left:
-        bottom_ports += f"    <TD PORT='{port}' COLSPAN='{c_bottom}' BGCOLOR='{bottom_left_color}'>{port_shortname(port)}</TD>\n"
-    if len(bottom_left) == 0:
-        bottom_ports += f"    <TD COLSPAN='{c_bottom}'></TD>\n"
-    bottom_ports += f"    <TD COLSPAN='{c_bottom}'></TD>\n"
-    if len(bottom_right) == 0:
-        bottom_ports += f"    <TD COLSPAN='{c_bottom}'></TD>\n"
-    for port in bottom_right:
-        bottom_ports += f"    <TD PORT='{port}' COLSPAN='{c_bottom}' BGCOLOR='{bottom_right_color}'>{port_shortname(port)}</TD>\n"
-
-    if bottom_ports != "":
-        label += f"  <TR>\n{bottom_ports}  </TR>\n"
-
-    return label.replace("'", '"') + "</TABLE>>"
+    return label.replace("'", '"') + "</TR></TABLE>>"
 
 
 def plot_model_graph(config: PartialConfiguration, simplify_edge_labels: bool) -> None:

@@ -19,24 +19,29 @@ def port_operator(port: Reference, component: Union[Component, None]):
     return component.ports.operator(port) if component else "normal"
 
 
-def port_shape(operator: str):
+def port_shape(operator: str, simple: bool=True):
     """Given a port reference, find the component referred to,
     look up the port type matching this name
     and look up the shape corresponding to the port type."""
 
-    # I think it is quite easy to misinterpret the direction of a MMSL diagram
-    # given that the 'weight' of the edge is towards the filled shape.
-    # I would consider making the sending_port smaller, but cannot find the setting
-    # in graphviz
-    # https://www.graphviz.org/docs/attr-types/arrowType/
-    OPERATOR_SHAPES = {
-        Operator.NONE: "normal",
-        Operator.F_INIT: "normal",
-        Operator.O_I: "none",
-        Operator.S: "normal",
-        Operator.O_F: "none",
-    }
-    return OPERATOR_SHAPES[operator]
+    if simple:
+        if operator == Operator.F_INIT or operator == Operator.S:
+            return "normal"
+        return "none"
+    else:
+        # I think it is quite easy to misinterpret the direction of a MMSL diagram
+        # given that the 'weight' of the edge is towards the filled shape.
+        # I would consider making the sending_port smaller, but cannot find the setting
+        # in graphviz
+        # https://www.graphviz.org/docs/attr-types/arrowType/
+        OPERATOR_SHAPES = {
+            Operator.NONE: "none",
+            Operator.F_INIT: "odiamond",
+            Operator.O_I: "dot",
+            Operator.S: "odot",
+            Operator.O_F: "diamond",
+        }
+        return OPERATOR_SHAPES[operator]
 
 
 def find_component(name: Reference, components: List[Component]):
@@ -46,12 +51,12 @@ def find_component(name: Reference, components: List[Component]):
     )
 
 
-def set_style(graph):
+def set_style(graph, draw_ports: bool=False):
     """set default properties to make for a more readable DOT file"""
     graph.add_node(
         pydot.Node(
             "node",
-            shape="plain",
+            shape="plain" if draw_ports else 'box',
             style="rounded",
             fixedsize="false",
             width=2,
@@ -149,7 +154,7 @@ def component_html_label(component: Component):
     return label.replace("'", '"') + "</TR></TABLE>>"
 
 
-def plot_model_graph(config: PartialConfiguration, simplify_edge_labels: bool) -> None:
+def plot_model_graph(config: PartialConfiguration, simplify_edge_labels: bool=True, draw_ports: bool=False, simple_edges: bool=True, show_legend: bool=True) -> None:
     """Convert a PartialConfiguration into DOT format."""
     graph = pydot.Dot(
         config.model.name,
@@ -163,14 +168,20 @@ def plot_model_graph(config: PartialConfiguration, simplify_edge_labels: bool) -
     )
     # be very careful with ortho splines, I have seen it put edges
     # upside down and eating labels
-    set_style(graph)
+    set_style(graph, draw_ports=draw_ports)
+
+    if draw_ports:
+        label_method = component_html_label
+    else:
+        label_method = lambda x: x.name
 
     # Start with a legend node
-    graph.add_node(pydot.Node("legend", label=legend_html_label()))
+    if draw_ports and show_legend:
+        graph.add_node(pydot.Node("legend", label=legend_html_label()))
 
     for component in config.model.components:
         graph.add_node(
-            pydot.Node(str(component.name), label=component_html_label(component))
+            pydot.Node(str(component.name), label=label_method(component))
         )
 
     for conduit in config.model.conduits:
@@ -180,6 +191,15 @@ def plot_model_graph(config: PartialConfiguration, simplify_edge_labels: bool) -
             conduit.receiving_component(), config.model.components
         )
 
+        port_config = {
+            'samehead': f"{conduit.receiving_component()}.{conduit.receiving_port()}",
+            'sametail': f"{conduit.sending_component()}.{conduit.sending_port()}",
+        }
+        if draw_ports:
+            port_config['tailport'] = tailport(conduit.sending_port(), sender)
+            port_config['headport'] = headport(conduit.receiving_port(), receiver)
+
+
         edge = pydot.Edge(
             str(conduit.sending_component()),
             str(conduit.receiving_component()),
@@ -187,16 +207,17 @@ def plot_model_graph(config: PartialConfiguration, simplify_edge_labels: bool) -
                 port_operator(
                     conduit.sending_port(),
                     sender,
-                )
+                ),
+                simple_edges
             ),
-            tailport=tailport(conduit.sending_port(), sender),
             arrowhead=port_shape(
                 port_operator(
                     conduit.receiving_port(),
                     receiver,
-                )
+                ),
+                simple_edges
             ),
-            headport=headport(conduit.receiving_port(), receiver),
+            **port_config
         )
 
         # if port names match exactly (optionally when removing an _in or _out suffix)

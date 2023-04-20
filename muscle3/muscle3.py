@@ -227,13 +227,21 @@ def snapshot(snapshot_files: Sequence[Path], data: bool, verbose: bool) -> None:
     type=str,
     help="Open with specified viewer (try xdg-open)",
 )
-@click.option("-v", "--verbose", is_flag=True, help="Include more information.")
+@click.option("-v", "--verbose", is_flag=True, help="Show more info (prints the generated dot syntax)")
+@click.option("-p", "--ports", is_flag=True, help="Explicitly draw component ports.")
+@click.option("-l", "--legend", is_flag=True, help="Show a legend (only with --ports).")
+@click.option("-s", "--simple-edges", is_flag=True, help="Only indicate conduit direction, not port types.")
+@click.option("--portlabels", is_flag=True, help="Never simplify matching port labels along an edge.")
 def graph(
     ymmsl_files: Sequence[str],
     out: Union[Path, None],
     fmt: str,
     viewer: str,
     verbose: bool,
+    ports: bool,
+    legend: bool,
+    simple_edges: bool,
+    portlabels: bool
 ) -> None:
     """Plot a graphical representation of the passed yMMSL files.
 
@@ -256,7 +264,7 @@ def graph(
     """
     partial_config = _load_ymmsl_files(ymmsl_files)
 
-    graph = plot_model_graph(partial_config, simplify_edge_labels=not verbose)
+    graph = plot_model_graph(partial_config, simplify_edge_labels=not portlabels, draw_ports=ports, simple_edges=simple_edges, show_legend=legend)
 
     if fmt is None:
         fmt = "svg"
@@ -268,6 +276,9 @@ def graph(
     elif out == '-':
         print(graph.create(format=fmt))
     else:
+        if verbose:
+            print(graph)
+
         graph.write(out, format=fmt)
 
     if viewer is not None and out != '-':

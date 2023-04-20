@@ -184,20 +184,26 @@ def plot_model_graph(config: PartialConfiguration, simplify_edge_labels: bool=Tr
             pydot.Node(str(component.name), label=label_method(component))
         )
 
+    # assume that conduits are ordered by port
+    last_port = None
     for conduit in config.model.conduits:
+        # emit an edge[sametail=] config for this port name if it is changed from the previous one
+        if str(conduit.sending_port()) != last_port:
+            graph.add_node(pydot.Node('edge', sametail=str(conduit.sending_port())))
+            last_port = str(conduit.sending_port())
+
         # can we do this more elegantly?
         sender = find_component(conduit.sending_component(), config.model.components)
         receiver = find_component(
             conduit.receiving_component(), config.model.components
         )
 
+        # Due to yMMSL conventions we cannot have edges with the same head (since
+        # an input port can only have one conduit connected to it)
         port_config = {
-            'samehead': f"{conduit.receiving_component()}.{conduit.receiving_port()}",
-            'sametail': f"{conduit.sending_component()}.{conduit.sending_port()}",
+            'tailport': tailport(conduit.sending_port(), sender),
+            'headport': headport(conduit.receiving_port(), receiver)
         }
-        if draw_ports:
-            port_config['tailport'] = tailport(conduit.sending_port(), sender)
-            port_config['headport'] = headport(conduit.receiving_port(), receiver)
 
 
         edge = pydot.Edge(

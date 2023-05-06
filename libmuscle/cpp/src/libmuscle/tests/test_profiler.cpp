@@ -37,10 +37,11 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 // Helper for accessing internal state
 
-struct TestProfiler {
-    static std::vector<ProfileEvent> & events_(Profiler & profiler) {
-        return profiler.events_;
-    }
+class TestProfiler {
+    public:
+        static std::vector<ProfileEvent> & events_(Profiler & profiler) {
+            return profiler.events_;
+        }
 };
 
 

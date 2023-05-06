@@ -9,6 +9,7 @@
 #include <libmuscle/profiling.hpp>
 
 #include <limits>
+#include <sstream>
 
 
 using libmuscle::_MUSCLE_IMPL_NS::ClosePort;

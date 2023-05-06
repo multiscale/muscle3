@@ -1,6 +1,8 @@
 #include <libmuscle/mcp/tcp_util.hpp>
 
 #include <algorithm>
+#include <cassert>
+#include <limits>
 #include <stdexcept>
 #include <vector>
 
@@ -47,6 +49,10 @@ int64_t recv_int64(int fd) {
 
 ssize_t send_frame(int fd, char const * data, ssize_t length) {
     static_assert(sizeof(ssize_t) == 8, "MUSCLE3 needs a 64-bit machine/OS to compile");
+
+    assert(length >= 0);
+    assert(length + 8 < std::numeric_limits<ssize_t>::max());
+
     char * len_data = reinterpret_cast<char*>(&length);
 
     std::vector<char> buf(length + 8);

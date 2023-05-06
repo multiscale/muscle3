@@ -6,7 +6,8 @@ from libmuscle import (
 from libmuscle.manager.run_dir import RunDir
 
 from .conftest import (
-        run_manager_with_actors, ls_snapshots, skip_if_python_only, skip_if_no_mpi_cpp)
+        run_manager_with_actors, ls_snapshots, skip_if_python_only, skip_if_no_fortran,
+        skip_if_no_mpi_cpp)
 
 
 _LOG_LEVEL = 'INFO'  # set to DEBUG for additional debug info
@@ -207,7 +208,7 @@ model:
     pytest.param(
         {'macro': ('fortran', 'fortran_snapshot_macro_test'),
          'micro': ('fortran', 'fortran_snapshot_micro_test')},
-        marks=skip_if_python_only),
+        marks=[skip_if_python_only, skip_if_no_fortran]),
     pytest.param(
         {'macro': ('python', macro), 'micro': ('cpp', 'mpi_snapshot_micro_test', '2')},
         marks=[skip_if_python_only, skip_if_no_mpi_cpp])
@@ -255,7 +256,7 @@ def test_snapshot_macro_micro(tmp_path, base_config, actors):
         marks=skip_if_python_only),
     pytest.param(
         ('fortran', 'fortran_snapshot_stateless_micro_test'),
-        marks=skip_if_python_only),
+        marks=[skip_if_python_only, skip_if_no_fortran]),
 ])
 def test_snapshot_macro_stateless_micro(tmp_path, base_config, micro_actor):
     actors = {'macro': ('python', macro), 'micro': micro_actor}
@@ -285,7 +286,7 @@ def test_snapshot_macro_stateless_micro(tmp_path, base_config, micro_actor):
         marks=skip_if_python_only),
     pytest.param(
         ('fortran', 'fortran_snapshot_macro_vector_test'),
-        marks=skip_if_python_only),
+        marks=[skip_if_python_only, skip_if_no_fortran]),
 ])
 def test_snapshot_macro_vector_micro(tmp_path, base_config, macro_actor):
     base_config.model.components[1].multiplicity = [2]

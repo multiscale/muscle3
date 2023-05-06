@@ -49,7 +49,13 @@ class SettingValue {
          *
          * @param value The value to hold.
          */
-        SettingValue(int64_t value);
+        SettingValue(long int value);
+
+        /** Create a SettingValue containing an int64_t.
+         *
+         * @param value The value to hold.
+         */
+        SettingValue(long long int value);
 
         /** Create a SettingValue containing a double.
          *

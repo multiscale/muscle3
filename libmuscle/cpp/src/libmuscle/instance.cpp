@@ -17,6 +17,7 @@
 
 #include <cstdint>
 #include <cstdlib>
+#include <sstream>
 #include <stdexcept>
 #include <utility>
 

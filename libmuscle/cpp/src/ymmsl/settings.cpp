@@ -29,7 +29,12 @@ SettingValue::SettingValue(int value)
     , int_value_(value)
 {}
 
-SettingValue::SettingValue(int64_t value)
+SettingValue::SettingValue(long int value)
+    : type_(SettingValue::Type_::INT)
+    , int_value_(value)
+{}
+
+SettingValue::SettingValue(long long int value)
     : type_(SettingValue::Type_::INT)
     , int_value_(value)
 {}

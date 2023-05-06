@@ -33,14 +33,24 @@ int main(int argc, char *argv[]) {
 }
 
 
+namespace ymmsl { namespace impl {
+
+bool operator==(Port const & lhs, Port const & rhs) {
+    return lhs.name == rhs.name && lhs.oper == rhs.oper;
+}
+
+} }
+
+
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 // Helper for accessing internal state
 
-struct TestProfiler {
-    static std::vector<ProfileEvent> & events_(Profiler & profiler) {
-        return profiler.events_;
-    }
+class TestProfiler {
+    public:
+        static std::vector<ProfileEvent> & events_(Profiler & profiler) {
+            return profiler.events_;
+        }
 };
 
 
@@ -51,10 +61,6 @@ bool operator==(ProfileTimestamp const & lhs, ProfileTimestamp const & rhs) {
 
 bool operator<(ProfileTimestamp const & lhs, ProfileTimestamp const & rhs) {
     return lhs.nanoseconds < rhs.nanoseconds;
-}
-
-bool operator==(Port const & lhs, Port const & rhs) {
-    return lhs.name == rhs.name && lhs.oper == rhs.oper;
 }
 
 bool operator==(ProfileEvent const & lhs, ProfileEvent const & rhs) {

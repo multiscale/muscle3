@@ -4,9 +4,9 @@ all: msgpack
 .PHONY: install
 install: msgpack
 	mkdir -p $(PREFIX)/lib
-	cp -ra msgpack/lib/* $(PREFIX)/lib/
+	cp -a msgpack/lib/* $(PREFIX)/lib/
 	mkdir -p $(PREFIX)/include
-	cp -ra msgpack/include/* $(PREFIX)/include/
+	cp -a msgpack/include/* $(PREFIX)/include/
 
 .PHONY: clean
 clean:

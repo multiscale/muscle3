@@ -9,6 +9,7 @@ jobs:
   validate:
     name: "validate"
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
       - name: Check out a copy of the repository
         uses: actions/checkout@v2

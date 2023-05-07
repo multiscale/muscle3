@@ -1,0 +1,30 @@
+# Run Continuous Integration on macOS 12 Monterey with GCC
+# This includes Fortran support
+# This mainly checks for issues/regressions in the native build
+name: compatibility_macos_monterey_12_gcc_gfortran
+on:
+  schedule:
+    - cron: '00 2 * * 6'
+  push:
+    branches:
+      - 'release-*'
+      - fix_native_compatibility_ci
+      - issue_144_macos_support
+jobs:
+  build:
+    runs-on: macos-12
+    timeout-minutes: 30
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        brew install gcc
+        brew install openmpi
+        python3 -m pip install --upgrade pip
+        pip3 install tox tox-gh-actions
+
+    - name: Run all tests
+      run: cd ${GITHUB_WORKSPACE} && CXX=g++-12 OMPI_CXX=g++-12 FC=gfortran-12 OMPI_FC=gfortran-12 make test test_examples
+

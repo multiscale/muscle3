@@ -1,0 +1,29 @@
+# Run Continuous Integration on macOS 12 Monterey, with native Clang and
+# without Fortran.
+
+# This mainly checks for issues/regressions in the native build
+name: compatibility_macos_monterey_12_clang
+on:
+  schedule:
+    - cron: '30 1 * * 6'
+  push:
+    branches:
+      - 'release-*'
+      - fix_native_compatibility_ci
+      - issue_144_macos_support
+jobs:
+  build:
+    runs-on: macos-12
+    timeout-minutes: 30
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        python3 -m pip install --upgrade pip
+        pip3 install tox tox-gh-actions
+        brew install openmpi
+
+    - name: Run all tests on macOS Monterey 12 with Clang
+      run: cd ${GITHUB_WORKSPACE} && CXXFLAGS=-fPIE OMPI_CXX=clang++ CXX=clang++ make test test_examples

@@ -3,7 +3,7 @@
 name: native_compatibility_ubuntu20.04
 on:
   schedule:
-    - cron: '0 3 * * 0'
+    - cron: '0 4 * * 6'
   push:
     branches:
       - 'release-*'

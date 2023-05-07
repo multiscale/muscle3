@@ -21,15 +21,27 @@ mdlobjects := $(mpi_source_files:$(srcdir)%.cpp=$(objdir)%.mdlo)
 
 deps := $(source_files:$(srcdir)%.cpp=$(objdir)%.d)
 
-prod_libs := libmuscle.a libmuscle.so
-debug_libs := libmuscle_d.a libmuscle_d.so
+ifdef MUSCLE_MACOS
+    prod_libs := libmuscle.a libmuscle.dylib
+    debug_libs := libmuscle_d.a libmuscle_d.dylib
+else
+    prod_libs := libmuscle.a libmuscle.so
+    debug_libs := libmuscle_d.a libmuscle_d.so
+endif
 
 tests_deps := libmuscle_d.a version.h
 
+# if we're compiling with MPI, or we are installing and have MPI libs
 ifeq ($(if $(or $(MUSCLE_ENABLE_CPP_MPI),$(and $(findstring install,$(MAKECMDGOALS)),$(wildcard libmuscle_mpi.so))),1,0),1)
-prod_libs += libmuscle_mpi.a libmuscle_mpi.so
-debug_libs += libmuscle_mpi_d.a libmuscle_mpi_d.so
-tests_deps += libmuscle_mpi_d.a
+    ifdef MUSCLE_MACOS
+        prod_libs += libmuscle_mpi.a libmuscle_mpi.dylib
+        debug_libs += libmuscle_mpi_d.a libmuscle_mpi_d.dylib
+        tests_deps += libmuscle_mpi_d.a
+    else
+        prod_libs += libmuscle_mpi.a libmuscle_mpi.so
+        debug_libs += libmuscle_mpi_d.a libmuscle_mpi_d.so
+        tests_deps += libmuscle_mpi_d.a
+    endif
 endif
 
 all_libs := $(prod_libs)
@@ -58,9 +70,11 @@ installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
 
 CXXFLAGS += -Wall -pedantic -std=c++14 -pthread -O3
 export CXXFLAGS
+
 MPIFLAGS := -DMUSCLE_ENABLE_MPI
 export MPIFLAGS
-DEBUGFLAGS := -g -O0
+
+DEBUGFLAGS += -g -O0
 export DEBUGFLAGS
 
 
@@ -87,6 +101,8 @@ clean:
 distclean: clean
 	$(MAKE) -C tests distclean
 
+ifdef MUSCLE_LINUX
+
 .PHONY: install
 install: all $(installed_headers) $(installed_pkg_config_files)
 	@echo
@@ -98,6 +114,29 @@ install: all $(installed_headers) $(installed_pkg_config_files)
 	sed -e 's@%PREFIX%@$(PREFIX)@g' muscle3.env.in >$(PREFIX)/bin/muscle3.env
 	for pc in $(PREFIX)/lib/pkgconfig/* ; do sed -i -e 's@^prefix=.*$$@prefix=$(PREFIX)@' $$pc ; done
 
+else ifdef MUSCLE_MACOS
+
+.PHONY: install
+install: all $(installed_headers) $(installed_pkg_config_files)
+	@echo
+	echo Installing libmuscle C++ to $(PREFIX)
+	mkdir -p $(PREFIX)/lib
+	cp libmuscle*.a $(PREFIX)/lib
+	cp libmuscle*.dylib $(PREFIX)/lib
+	for lib in $(PREFIX)/lib/*.dylib ; do install_name_tool -id $$lib $$lib ; done
+	install_name_tool -change libymmsl.dylib @loader_path/libymmsl.dylib $(PREFIX)/lib/libmuscle.dylib
+	-install_name_tool -change libymmsl.dylib @loader_path/libymmsl.dylib $(PREFIX)/lib/libmuscle_d.dylib
+	-install_name_tool -change libymmsl.dylib @loader_path/libymmsl.dylib $(PREFIX)/lib/libmuscle_mpi.dylib
+	-install_name_tool -change libymmsl.dylib @loader_path/libymmsl.dylib $(PREFIX)/lib/libmuscle_mpi_d.dylib
+	install_name_tool -change @rpath/libmsgpackc.2.dylib @loader_path/libmsgpackc.2.dylib $(PREFIX)/lib/libmuscle.dylib
+	-install_name_tool -change @rpath/libmsgpackc.2.dylib @loader_path/libmsgpackc.2.dylib $(PREFIX)/lib/libmuscle_d.dylib
+	-install_name_tool -change @rpath/libmsgpackc.2.dylib @loader_path/libmsgpackc.2.dylib $(PREFIX)/lib/libmuscle_mpi.dylib
+	-install_name_tool -change @rpath/libmsgpackc.2.dylib @loader_path/libmsgpackc.2.dylib $(PREFIX)/lib/libmuscle_mpi_d.dylib
+	@mkdir -p $(PREFIX)/bin
+	sed -e 's@%PREFIX%@$(PREFIX)@g' muscle3.env.in >$(PREFIX)/bin/muscle3.env
+	for pc in $(PREFIX)/lib/pkgconfig/* ; do sed -i -e 's@^prefix=.*$$@prefix=$(PREFIX)@' $$pc ; done
+
+endif
 
 
 cleantargets := clean distclean
@@ -170,11 +209,17 @@ libmuscle.a: $(objects)
 libmuscle.so: $(lobjects)
 	$(CXX) -shared -Wl,--version-script=libmuscle.version -o $@ $^ $(LDFLAGS)
 
+libmuscle.dylib: $(lobjects)
+	$(CXX) -shared -o $@ $^ $(LDFLAGS)
+
 libmuscle_d.a: $(dobjects)
 	ar rcs $@ $^
 
 libmuscle_d.so: $(dlobjects)
 	$(CXX) -shared -Wl,--version-script=libmuscle.version -o $@ $^ $(LDFLAGS)
+
+libmuscle_d.dylib: $(dlobjects)
+	$(CXX) -shared -o $@ $^ $(LDFLAGS)
 
 libmuscle_mpi.a: $(mobjects)
 	ar rcs $@ $^
@@ -182,11 +227,17 @@ libmuscle_mpi.a: $(mobjects)
 libmuscle_mpi.so: $(mlobjects)
 	$(MPICXX) -shared -Wl,--version-script=libmuscle_mpi.version -o $@ $^ $(LDFLAGS)
 
+libmuscle_mpi.dylib: $(mlobjects)
+	$(MPICXX) -shared -o $@ $^ $(LDFLAGS)
+
 libmuscle_mpi_d.a: $(mdobjects)
 	ar rcs $@ $^
 
 libmuscle_mpi_d.so: $(mdlobjects)
 	$(MPICXX) -shared -Wl,--version-script=libmuscle_mpi.version -o $@ $^ $(LDFLAGS)
+
+libmuscle_mpi_d.dylib: $(mdlobjects)
+	$(MPICXX) -shared -o $@ $^ $(LDFLAGS)
 
 $(PREFIX)/include/libmuscle/version.h: $(srcdir)/version.h
 	@mkdir -p $(@D)

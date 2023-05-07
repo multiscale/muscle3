@@ -7,13 +7,24 @@ objects := $(sources:$(srcdir)/%.f90=%.o)
 lobjects := $(sources:$(srcdir)/%.f90=%.lo)
 mobjects := $(mpi_sources:$(srcdir)/%.f90=%.mo)
 mlobjects := $(mpi_sources:$(srcdir)/%.f90=%.mlo)
+
+ifdef MUSCLE_LINUX
+
 libs := libmuscle_fortran.a libmuscle_fortran.so
 mpi_libs := libmuscle_mpi_fortran.a libmuscle_mpi_fortran.so
+
+else ifdef MUSCLE_MACOS
+
+libs := libmuscle_fortran.a libmuscle_fortran.dylib
+mpi_libs := libmuscle_mpi_fortran.a libmuscle_mpi_fortran.dylib
+
+endif
+
 modules := $(sources:$(srcdir)/%.f90=%.mod)
 mpi_modules := $(mpi_sources:$(srcdir)/%.f90=%.mod)
 pkg_config_files := libmuscle_fortran.pc
 
-ifeq ($(if $(or $(MUSCLE_ENABLE_FORTRAN_MPI),$(and $(findstring install,$(MAKECMDGOALS)),$(wildcard libmuscle_mpi_fortran.so))),1,0),1)
+ifeq ($(if $(or $(MUSCLE_ENABLE_FORTRAN_MPI),$(and $(findstring install,$(MAKECMDGOALS)),$(wildcard libmuscle_mpi_fortran.a))),1,0),1)
     libs += $(mpi_libs)
     sources += $(mpi_sources)
     modules += $(mpi_modules)
@@ -59,7 +70,7 @@ test: tests
 
 .PHONY: clean
 clean:
-	rm -f *.o *.lo *.mo *.mlo *.mod *.a *.so
+	rm -f *.o *.lo *.mo *.mlo *.mod *.a *.so *.dylib
 	rm -f mod_dump/*.mod
 	rm -f libmuscle_fortran.pc libmuscle_mpi_fortran.pc
 	$(MAKE) -C tests clean
@@ -69,6 +80,8 @@ distclean: clean
 	rm -f $(objects) $(modules) $(libs)
 	$(MAKE) -C tests distclean
 
+ifdef MUSCLE_LINUX
+
 .PHONY: install
 install: $(installed_sources) $(installed_modules) $(installed_pkg_config_files)
 	@echo
@@ -76,6 +89,27 @@ install: $(installed_sources) $(installed_modules) $(installed_pkg_config_files)
 	@mkdir -p $(PREFIX)/lib
 	cp libmuscle*.a $(PREFIX)/lib
 	cp libmuscle*.so $(PREFIX)/lib
+
+else ifdef MUSCLE_MACOS
+
+.PHONY: install
+install: $(installed_sources) $(installed_modules) $(installed_pkg_config_files)
+	@echo
+	@echo Installing libmuscle Fortran to $(PREFIX)
+	@mkdir -p $(PREFIX)/lib
+	cp libmuscle*.a $(PREFIX)/lib
+	cp libmuscle*.dylib $(PREFIX)/lib
+	for lib in $(PREFIX)/lib/*.dylib ; do install_name_tool -id $$lib $$lib ; done
+	install_name_tool -change libymmsl.dylib @loader_path/libymmsl.dylib $(PREFIX)/lib/libmuscle_fortran.dylib
+	install_name_tool -change libmuscle.dylib @loader_path/libmuscle.dylib $(PREFIX)/lib/libmuscle_fortran.dylib
+	install_name_tool -change libymmsl_fortran.dylib @loader_path/libymmsl_fortran.dylib $(PREFIX)/lib/libmuscle_fortran.dylib
+	-install_name_tool -change libymmsl.dylib @loader_path/libymmsl.dylib $(PREFIX)/lib/libmuscle_mpi_fortran.dylib
+	-install_name_tool -change libmuscle_mpi.dylib @loader_path/libmuscle_mpi.dylib $(PREFIX)/lib/libmuscle_mpi_fortran.dylib
+	-install_name_tool -change libymmsl_fortran.dylib @loader_path/libymmsl_fortran.dylib $(PREFIX)/lib/libmuscle_mpi_fortran.dylib
+	for lib in $(PREFIX)/lib/*.dylib ; do echo Libraries for $$lib ; otool -L $$lib ; done
+
+endif
+
 
 %.o: $(srcdir)/%.f90
 	$(FC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS)
@@ -97,10 +131,16 @@ libmuscle_fortran.a: $(objects)
 libmuscle_fortran.so: $(lobjects)
 	$(FC) -shared -o $@ $^ $(LDFLAGS)
 
+libmuscle_fortran.dylib: $(lobjects)
+	$(FC) -shared -o $@ $^ $(LDFLAGS)
+
 libmuscle_mpi_fortran.a: $(mobjects)
 	ar rcs $@ $^
 
 libmuscle_mpi_fortran.so: $(mlobjects)
+	$(MPIFC) -shared -o $@ $^ $(LDFLAGS_MPI)
+
+libmuscle_mpi_fortran.dylib: $(mlobjects)
 	$(MPIFC) -shared -o $@ $^ $(LDFLAGS_MPI)
 
 $(PREFIX)/include/%.f90: $(srcdir)/%.f90

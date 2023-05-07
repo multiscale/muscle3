@@ -18,17 +18,24 @@ public_headers := ymmsl/component.hpp ymmsl/identity.hpp ymmsl/model.hpp
 public_headers += ymmsl/settings.hpp ymmsl/settings.tpp ymmsl/ymmsl.hpp
 installed_headers := $(public_headers:%=$(PREFIX)/include/%)
 
+libs := libymmsl.a libymmsl_d.a
+ifdef MUSCLE_LINUX
+    libs += libymmsl.so libymmsl_d.so
+else ifdef MUSCLE_MACOS
+    libs += libymmsl.dylib libymmsl_d.dylib
+endif
+
 pkg_config_files := ymmsl.pc
 installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
 
 CXXFLAGS += -Wall -pedantic -std=c++14 -O3 -I$(hdrdir)
 export CXXFLAGS
-DEBUGFLAGS := -g -O0
+DEBUGFLAGS += -g -O0
 export DEBUGFLAGS
 
 
 .PHONY: all
-all: libymmsl.a libymmsl.so libymmsl_d.a libymmsl_d.so
+all: $(libs)
 
 .PHONY: tests
 tests: libymmsl.a
@@ -40,7 +47,7 @@ test:
 
 .PHONY: clean
 clean:
-	rm -f libymmsl.a libymmsl.so libymmsl_d.a libymmsl_d.so
+	rm -f $(libs)
 	rm -f $(pkg_config_files)
 	rm -rf objs
 	$(MAKE) -C tests clean
@@ -49,16 +56,28 @@ clean:
 distclean: clean
 	$(MAKE) -C tests distclean
 
+ifdef MUSCLE_LINUX
+
 .PHONY: install
 install: all $(installed_headers) $(installed_pkg_config_files)
 	@echo
 	@echo Installing libymmsl to $(PREFIX)
 	@mkdir -p $(PREFIX)/lib
-	cp libymmsl.a $(PREFIX)/lib
-	cp libymmsl_d.a $(PREFIX)/lib
-	cp libymmsl.so $(PREFIX)/lib
-	cp libymmsl_d.so $(PREFIX)/lib
+	cp $(libs) $(PREFIX)/lib
 	for pc in $(PREFIX)/lib/pkgconfig/* ; do sed -i -e 's@^prefix=.*$$@prefix=$(PREFIX)@' $$pc ; done
+
+else ifdef MUSCLE_MACOS
+
+.PHONY: install
+install: all $(installed_headers) $(installed_pkg_config_files)
+	@echo
+	@echo Installing libymmsl to $(PREFIX)
+	@mkdir -p $(PREFIX)/lib
+	cp $(libs) $(PREFIX)/lib
+	for lib in $(PREFIX)/lib/*.dylib ; do install_name_tool -id $$lib $$lib ; done
+	for pc in $(PREFIX)/lib/pkgconfig/* ; do sed -i -e 's@^prefix=.*$$@prefix=$(PREFIX)@' $$pc ; done
+
+endif
 
 
 cleantargets := clean distclean
@@ -94,11 +113,17 @@ libymmsl.a: $(objects)
 libymmsl.so: $(lobjects)
 	$(CXX) -shared -Wl,--version-script=ymmsl.version -o $@ $^
 
+libymmsl.dylib: $(lobjects)
+	$(CXX) -shared -o $@ $^
+
 libymmsl_d.a: $(dobjects)
 	ar rcs $@ $^
 
 libymmsl_d.so: $(dlobjects)
 	$(CXX) -shared -Wl,--version-script=ymmsl.version -o $@ $^
+
+libymmsl_d.dylib: $(dlobjects)
+	$(CXX) -shared -o $@ $^
 
 $(PREFIX)/include/%.hpp: $(hdrdir)/%.hpp
 	@mkdir -p $(@D)

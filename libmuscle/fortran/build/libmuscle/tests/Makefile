@@ -35,7 +35,7 @@ distclean: clean
 cleantargets := clean distclean
 ifeq "$(filter $(MAKECMDGOALS),$(cleantargets))" ""
 
-EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-Wl,-rpath-link,$(DIR)/lib)
+EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-Wl,-rpath,$(DIR)/lib)
 
 FFLAGS += -g -I. -I.. -I../../ymmsl
 ifneq (,$(filter ifort ifx, $(FC)))

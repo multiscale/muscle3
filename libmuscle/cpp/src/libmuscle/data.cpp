@@ -670,7 +670,9 @@ template float const * DataConstRef::elements<float>() const;
 
 template int const * DataConstRef::elements<int>() const;
 
-template long const * DataConstRef::elements<long>() const;
+template long int const * DataConstRef::elements<long int>() const;
+
+template long long int const * DataConstRef::elements<long long int>() const;
 
 #endif
 

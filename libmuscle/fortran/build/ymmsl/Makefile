@@ -64,8 +64,8 @@ else ifdef MUSCLE_MACOS
 
 .PHONY: install
 install: $(installed_sources) $(installed_modules) $(installed_libs) $(installed_pkg_config_files)
-       install_name_tool -id $(PREFIX)/lib/libymmsl_fortran.dylib $(PREFIX)/lib/libymmsl_fortran.dylib
-       install_name_tool -change libymmsl.dylib @loader_path/libymmsl.dylib $(PREFIX)/lib/libymmsl_fortran.dylib
+	install_name_tool -id $(PREFIX)/lib/libymmsl_fortran.dylib $(PREFIX)/lib/libymmsl_fortran.dylib
+	install_name_tool -change libymmsl.dylib @loader_path/libymmsl.dylib $(PREFIX)/lib/libymmsl_fortran.dylib
 
 endif
 

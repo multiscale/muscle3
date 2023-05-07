@@ -37,7 +37,7 @@ msgpack: msgpack-install
 else ifdef MUSCLE_MACOS
 
 msgpack: msgpack-install
-       install_name_tool -id $(CURDIR)/msgpack/lib/libmsgpackc.dylib $(CURDIR)/msgpack/lib/libmsgpackc.dylib
+	install_name_tool -id $(CURDIR)/msgpack/lib/libmsgpackc.dylib $(CURDIR)/msgpack/lib/libmsgpackc.dylib
 
 endif
 

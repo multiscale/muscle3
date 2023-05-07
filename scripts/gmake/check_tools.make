@@ -13,7 +13,25 @@ $(info Make command goals: $(MAKECMDGOALS))
 $(info Make flags: $(MAKEFLAGS))
 $(info )
 
+# Check Operating System
+$(info Detecting operating system...)
+_os := $(shell uname -s || echo NOTFOUND)
+ifeq ($(_os), Linux)
+    MUSCLE_LINUX := $(shell lsb_release -d -s || echo Unknown)
+    $(info Found GNU/Linux $(MUSCLE_LINUX))
+    export MUSCLE_LINUX
+else ifeq ($(_os), Darwin)
+    MUSCLE_MACOS := $(shell sw_vers -productVersion || echo Unknown)
+    $(info Found macOS $(MUSCLE_MACOS))
+    export MUSCLE_MACOS
+else
+    MUSCLE_LINUX := Unknown
+    $(info Could not detect OS, proceeding as if on GNU/Linux)
+    export MUSCLE_LINUX
+endif
+
 # Check Python version
+$(info )
 $(info Looking for Python...)
 _python_version := $(shell python3 --version || echo NOTFOUND)
 ifneq ($(_python_version), NOTFOUND)
@@ -160,7 +178,11 @@ endif
 
 # Check number of cores
 ifndef NCORES
-    NCORES := $(shell nproc 2>/dev/null || echo 2)
+    ifdef MUSCLE_LINUX
+        NCORES := $(shell nproc 2>/dev/null || echo 2)
+    else ifdef MUSCLE_MACOS
+        NCORES := $(shell sysctl -n hw.logicalcpu 2>/dev/null || echo 2)
+    endif
     export NCORES
 endif
 $(info )

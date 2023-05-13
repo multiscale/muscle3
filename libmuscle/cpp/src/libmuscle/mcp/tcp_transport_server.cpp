@@ -457,8 +457,13 @@ void TcpTransportServer::server_thread_(TcpTransportServer * self) {
         if (poll_fds[1].revents & POLLIN) {
             int new_fd = accept(poll_fds[1].fd, nullptr, nullptr);
             int flags = 0;
+#ifdef __linux
             setsockopt(new_fd, SOL_TCP, TCP_NODELAY, &flags, sizeof(flags));
             setsockopt(new_fd, SOL_TCP, TCP_QUICKACK, &flags, sizeof(flags));
+#elif __APPLE__
+            setsockopt(new_fd, IPPROTO_TCP, TCP_NODELAY, &flags, sizeof(flags));
+            // macOS doesn't have quickack unfortunately
+#endif
 
             // TODO: there's a trait<size_t>::max, isn't there?
             std::size_t min_size = static_cast<std::size_t>(-1);

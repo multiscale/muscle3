@@ -15,6 +15,7 @@
 #include <libmuscle/profiler.hpp>
 #include <libmuscle/profiling.hpp>
 
+#include <time.h>
 #include <utility>
 #include <gtest/gtest.h>
 
@@ -128,6 +129,13 @@ TEST(libmuscle_profiler, test_auto_stop_time) {
 
     ProfileTimestamp t1;
     ProfileEvent e(ProfileEventType::send, t1);
+
+    // Wait a bit to ensure we get a different timestamp on platforms with
+    // low time resolution. A millisecond should definitely do it.
+    timespec sleep_time;
+    sleep_time.tv_sec = 0l;
+    sleep_time.tv_nsec = 1000000l;
+    nanosleep(&sleep_time, nullptr);
 
     profiler.record_event(std::move(e));
 

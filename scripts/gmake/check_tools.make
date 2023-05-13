@@ -13,7 +13,25 @@ $(info Make command goals: $(MAKECMDGOALS))
 $(info Make flags: $(MAKEFLAGS))
 $(info )
 
+# Check Operating System
+$(info Detecting operating system...)
+_os := $(shell uname -s || echo NOTFOUND)
+ifeq ($(_os), Linux)
+    MUSCLE_LINUX := $(shell lsb_release -d -s || echo Unknown)
+    $(info Found GNU/Linux $(MUSCLE_LINUX))
+    export MUSCLE_LINUX
+else ifeq ($(_os), Darwin)
+    MUSCLE_MACOS := $(shell sw_vers -productVersion || echo Unknown)
+    $(info Found macOS $(MUSCLE_MACOS))
+    export MUSCLE_MACOS
+else
+    MUSCLE_LINUX := Unknown
+    $(info Could not detect OS, proceeding as if on GNU/Linux)
+    export MUSCLE_LINUX
+endif
+
 # Check Python version
+$(info )
 $(info Looking for Python...)
 _python_version := $(shell python3 --version || echo NOTFOUND)
 ifneq ($(_python_version), NOTFOUND)
@@ -76,28 +94,42 @@ ifeq ($(origin FC), default)
     $(info - Not building Fortran bindings.)
     export MUSCLE_DISABLE_FORTRAN := 1
 else
-    $(info - Will compile Fortran files using $(FC).)
+    ifeq ($(FC),)
+        $(info - Fortran disabled by user, will not build Fortran libraries.)
+        export MUSCLE_DISABLE_FORTRAN := 1
+    else
+        $(info - Will compile Fortran files using $(FC).)
+    endif
 endif
 
 # Check MPI Fortran compiler
-$(info )
-$(info Looking for MPI Fortran compiler...)
-tool_var := MPIFC
-include $(TOOLDIR)/check_override.make
-
-tool_command := mpi$(FC)
-include $(TOOLDIR)/detect_tool.make
-tool_command := mpifort
-include $(TOOLDIR)/detect_tool.make
-tool_command := mpif90
-include $(TOOLDIR)/detect_tool.make
-
-ifndef MPIFC
-    $(info - No MPI Fortran compiler found!)
-    $(info - Not building Fortran MPI bindings.)
+ifdef MUSCLE_DISABLE_FORTRAN
+    $(info )
+    $(info Fortran disabled, so not looking for Fortran MPI support.)
 else
-    $(info - Will compile MPI Fortran files using $(MPIFC).)
-    export MUSCLE_ENABLE_FORTRAN_MPI := 1
+    $(info )
+    $(info Looking for MPI Fortran compiler...)
+    tool_var := MPIFC
+    include $(TOOLDIR)/check_override.make
+
+    tool_command := mpi$(FC)
+    include $(TOOLDIR)/detect_tool.make
+    tool_command := mpifort
+    include $(TOOLDIR)/detect_tool.make
+    tool_command := mpif90
+    include $(TOOLDIR)/detect_tool.make
+
+    ifndef MPIFC
+        $(info - No MPI Fortran compiler found!)
+        $(info - Not building Fortran MPI bindings.)
+    else
+        ifeq ($(MPIFC),)
+            $(info - Fortran MPI disabled by user, will not build Fortran MPI libraries.)
+        else
+            $(info - Will compile MPI Fortran files using $(MPIFC).)
+            export MUSCLE_ENABLE_FORTRAN_MPI := 1
+        endif
+    endif
 endif
 
 # Check download tool (for downloading dependencies)
@@ -160,7 +192,11 @@ endif
 
 # Check number of cores
 ifndef NCORES
-    NCORES := $(shell nproc 2>/dev/null || echo 2)
+    ifdef MUSCLE_LINUX
+        NCORES := $(shell nproc 2>/dev/null || echo 2)
+    else ifdef MUSCLE_MACOS
+        NCORES := $(shell sysctl -n hw.logicalcpu 2>/dev/null || echo 2)
+    endif
     export NCORES
 endif
 $(info )

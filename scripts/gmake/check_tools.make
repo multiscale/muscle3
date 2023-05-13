@@ -94,28 +94,42 @@ ifeq ($(origin FC), default)
     $(info - Not building Fortran bindings.)
     export MUSCLE_DISABLE_FORTRAN := 1
 else
-    $(info - Will compile Fortran files using $(FC).)
+    ifeq ($(FC),)
+        $(info - Fortran disabled by user, will not build Fortran libraries.)
+        export MUSCLE_DISABLE_FORTRAN := 1
+    else
+        $(info - Will compile Fortran files using $(FC).)
+    endif
 endif
 
 # Check MPI Fortran compiler
-$(info )
-$(info Looking for MPI Fortran compiler...)
-tool_var := MPIFC
-include $(TOOLDIR)/check_override.make
-
-tool_command := mpi$(FC)
-include $(TOOLDIR)/detect_tool.make
-tool_command := mpifort
-include $(TOOLDIR)/detect_tool.make
-tool_command := mpif90
-include $(TOOLDIR)/detect_tool.make
-
-ifndef MPIFC
-    $(info - No MPI Fortran compiler found!)
-    $(info - Not building Fortran MPI bindings.)
+ifdef MUSCLE_DISABLE_FORTRAN
+    $(info )
+    $(info Fortran disabled, so not looking for Fortran MPI support.)
 else
-    $(info - Will compile MPI Fortran files using $(MPIFC).)
-    export MUSCLE_ENABLE_FORTRAN_MPI := 1
+    $(info )
+    $(info Looking for MPI Fortran compiler...)
+    tool_var := MPIFC
+    include $(TOOLDIR)/check_override.make
+
+    tool_command := mpi$(FC)
+    include $(TOOLDIR)/detect_tool.make
+    tool_command := mpifort
+    include $(TOOLDIR)/detect_tool.make
+    tool_command := mpif90
+    include $(TOOLDIR)/detect_tool.make
+
+    ifndef MPIFC
+        $(info - No MPI Fortran compiler found!)
+        $(info - Not building Fortran MPI bindings.)
+    else
+        ifeq ($(MPIFC),)
+            $(info - Fortran MPI disabled by user, will not build Fortran MPI libraries.)
+        else
+            $(info - Will compile MPI Fortran files using $(MPIFC).)
+            export MUSCLE_ENABLE_FORTRAN_MPI := 1
+        endif
+    endif
 endif
 
 # Check download tool (for downloading dependencies)

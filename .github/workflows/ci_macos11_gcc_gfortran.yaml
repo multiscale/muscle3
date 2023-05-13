@@ -9,7 +9,6 @@ on:
     branches:
       - 'release-*'
       - fix_native_compatibility_ci
-      - issue_144_macos_support
 jobs:
   build:
     runs-on: macos-11

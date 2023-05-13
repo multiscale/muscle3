@@ -214,6 +214,14 @@ how to point the build to your installation.) This avoids having two different
 versions around and active at the same time. Otherwise, it's easier to rely on
 the automatic installation.
 
+.. collapse:: Note on macOS, Homebrew and MessagePack
+
+   You can install MessagePack using Homebrew (``brew install msgpack-cxx``),
+   but unfortunately this does not install the PkgConfig files describing the
+   installation. As a result, the MUSCLE3 build system cannot use the
+   installation; it will build its own copy instead. This should work fine.
+
+
 Downloading
 ```````````
 

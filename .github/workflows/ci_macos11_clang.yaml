@@ -26,5 +26,5 @@ jobs:
         brew install openmpi
 
     - name: Run all tests on macOS Big Sur 11 with Clang
-      run: cd ${GITHUB_WORKSPACE} && OMPI_CXX=clang++ CXX=clang++ make test test_examples
+      run: cd ${GITHUB_WORKSPACE} && make test test_examples
 

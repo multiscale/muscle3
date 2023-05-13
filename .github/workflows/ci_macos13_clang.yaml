@@ -27,5 +27,5 @@ jobs:
         pip3 install tox tox-gh-actions
 
     - name: Run all tests on macOS Ventura 13 with Clang
-      run: cd ${GITHUB_WORKSPACE} && OMPI_CXX=clang++ CXX=clang++ make test test_examples
+      run: cd ${GITHUB_WORKSPACE} && make test test_examples
 

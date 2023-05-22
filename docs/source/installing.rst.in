@@ -196,7 +196,7 @@ range of tools so that you can work with what's familiar.
 (No) dependencies
 `````````````````
 
-MUSCLE3 is mostly self-contained, but it does have twe dependencies, one of
+MUSCLE3 is mostly self-contained, but it does have two dependencies, one of
 which is required. If you have them available, then they should be detected
 automatically. If not, MUSCLE3 will **download and install them
 automatically**.
@@ -491,7 +491,7 @@ and during linking. This can be done using PkgConfig, or directly by hand.
    problems. For Fortran, the .mod files created by the compiler are in a
    compiler-specific format, and cannot be used by other compilers.
 
-   For best results, compile you model with the same compiler that you compiled
+   For best results, compile your model with the same compiler that you compiled
    MUSCLE3 with.
 
    Models compiled with different compilers work together just fine in a single

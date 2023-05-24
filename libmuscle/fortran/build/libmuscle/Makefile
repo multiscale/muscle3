@@ -112,16 +112,16 @@ endif
 
 
 %.o: $(srcdir)/%.f90
-	$(FC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS)
+	$(FC) -c $(FFLAGS) $^ -o $@
 
 %.lo: $(srcdir)/%.f90
-	$(FC) -c -fPIC $(MOD_DUMP) $(FFLAGS) $^ -o $@ $(LDFLAGS)
+	$(FC) -c -fPIC $(MOD_DUMP) $(FFLAGS) $^ -o $@
 
 %.mo: $(srcdir)/%.f90
-	$(MPIFC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS_MPI)
+	$(MPIFC) -c $(FFLAGS) $^ -o $@
 
 %.mlo: $(srcdir)/%.f90
-	$(MPIFC) -c -fPIC $(MOD_DUMP) $(FFLAGS) $^ -o $@ $(LDFLAGS_MPI)
+	$(MPIFC) -c -fPIC $(MOD_DUMP) $(FFLAGS) $^ -o $@
 
 %.mod: %.o
 

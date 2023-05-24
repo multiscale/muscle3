@@ -1,8 +1,8 @@
 FFLAGS += -g $(shell pkg-config --cflags libmuscle_fortran ymmsl_fortran)
-LDFLAGS := $(shell pkg-config --libs libmuscle_fortran ymmsl_fortran)
+LDFLAGS += $(shell pkg-config --libs libmuscle_fortran ymmsl_fortran)
 
-MPI_FFLAGS := -g $(shell pkg-config --cflags libmuscle_mpi_fortran ymmsl_fortran)
-MPI_LDFLAGS := $(shell pkg-config --libs libmuscle_mpi_fortran ymmsl_fortran)
+MPI_FFLAGS += -g $(shell pkg-config --cflags libmuscle_mpi_fortran ymmsl_fortran)
+MPI_LDFLAGS += $(shell pkg-config --libs libmuscle_mpi_fortran ymmsl_fortran)
 
 ifneq (,$(filter ifort ifx, $(FC)))
 	FFLAGS += -e03

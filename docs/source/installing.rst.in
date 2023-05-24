@@ -91,7 +91,10 @@ range of tools so that you can work with what's familiar.
    .. group-tab:: Linux
 
       MUSCLE3 supports three different compilers on Linux: GCC, Clang, and
-      Intel. You'll need at least one of those to build libmuscle.
+      Intel. You'll need at least one of those to build libmuscle. The Flang
+      Fortran compiler and derivatives like AOCC Fortran are known not to work,
+      and the Cray Fortran compiler is also problematic. Other compilers may or
+      may not work, please let us know if you try one.
 
       .. tabs::
 
@@ -132,9 +135,11 @@ range of tools so that you can work with what's familiar.
       make the compiler, gmake and cmake available, as well as MPI if needed.
       The exact command will vary from machine to machine, so consult the
       documentation for your cluster and/or ask the helpdesk, or try ``module
-      avail`` for a list of what's there. ``cmake`` is only needed to build the
-      MessagePack dependency, so if that's already available then you don't need
-      ``cmake``.
+      avail`` for a list of what's there. On **Cray** machines,
+      ``module load PrgEnv-gnu cray-mpich cray-python`` should get you set up.
+
+      ``cmake`` is only needed to build the MessagePack dependency, so if
+      that's already available then you don't need ``cmake``.
 
    .. group-tab:: macOS
 
@@ -260,6 +265,17 @@ build system of how we want it to do the build.
             .. code-block:: bash
 
               ~/muscle3_source/muscle3-%%VERSION%%$ make
+
+
+            On **Cray** machines with Cray MPI, you need to use
+
+            .. code-block:: bash
+
+              ~/muscle3_source/muscle3-%%VERSION%%$ FFLAGS="-fallow-argument-mismatch" MPI_FFLAGS="-fallow-argument-mismatch" make
+
+
+            because GFortran and Cray MPI do not agree on what is and what isn't
+            valid Fortran code.
 
          .. group-tab:: Clang
 

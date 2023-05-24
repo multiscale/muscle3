@@ -76,6 +76,8 @@ else
     export MUSCLE_ENABLE_CPP_MPI := 1
 endif
 
+include $(TOOLDIR)/detect_cpp_type.make
+
 # Check Fortran compiler
 $(info )
 $(info Looking for Fortran compiler...)
@@ -131,6 +133,8 @@ else
         endif
     endif
 endif
+
+include $(TOOLDIR)/detect_fortran_type.make
 
 # Check download tool (for downloading dependencies)
 $(info )

@@ -26,12 +26,15 @@ installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
 LDFLAGS := -L../../../cpp/build/ymmsl -lymmsl
 
 FFLAGS := -O3
-ifneq (,$(filter ifort ifx, $(FC)))
-	FFLAGS += -e03
-	MOD_DUMP := -module mod_dump
-else
-	FFLAGS += -std=f2003
-	MOD_DUMP := -Jmod_dump
+ifdef MUSCLE_FC_INTEL
+    FFLAGS += -e03
+    MOD_DUMP := -module mod_dump
+else ifdef MUSCLE_FC_GNU
+    FFLAGS += -std=f2003
+    MOD_DUMP := -Jmod_dump
+else ifdef MUSCLE_FC_CRAY
+    FFLAGS += -em -ef
+    MOD_DUMP := -Jmod_dump
 endif
 
 

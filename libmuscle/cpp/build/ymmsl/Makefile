@@ -111,7 +111,7 @@ libymmsl.a: $(objects)
 	ar rcs $@ $^
 
 libymmsl.so: $(lobjects)
-	$(CXX) -shared -Wl,--version-script=ymmsl.version -o $@ $^
+	$(CXX) -shared -o $@ $^
 
 libymmsl.dylib: $(lobjects)
 	$(CXX) -shared -o $@ $^
@@ -120,7 +120,7 @@ libymmsl_d.a: $(dobjects)
 	ar rcs $@ $^
 
 libymmsl_d.so: $(dlobjects)
-	$(CXX) -shared -Wl,--version-script=ymmsl.version -o $@ $^
+	$(CXX) -shared -o $@ $^
 
 libymmsl_d.dylib: $(dlobjects)
 	$(CXX) -shared -o $@ $^

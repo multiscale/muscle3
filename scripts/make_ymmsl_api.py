@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from textwrap import indent, dedent
+from textwrap import dedent
 
 from api_generator import (
         API, Bool, Class, Constructor,
@@ -99,23 +99,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='MUSCLE API Generator')
     parser.add_argument('--fortran-c-wrappers', action='store_true')
     parser.add_argument('--fortran-module', action='store_true')
-    parser.add_argument('--fortran-exports', nargs=2)
 
     args = parser.parse_args()
     if args.fortran_c_wrappers:
         print(ymmsl_api_description.fortran_c_wrapper())
     elif args.fortran_module:
         print(ymmsl_api_description.fortran_module())
-    elif args.fortran_exports:
-        exports = ymmsl_api_description.fortran_exports()
-        exports_txt = indent('\n'.join(exports), 8*' ') + '\n'
-
-        in_name = args.fortran_exports[0]
-        out_name = args.fortran_exports[1]
-        with open(in_name, 'r') as in_file:
-            with open(out_name, 'w') as out_file:
-                for line in in_file:
-                    if 'FORTRAN ABI' in line:
-                        out_file.write(exports_txt)
-                    else:
-                        out_file.write(line)

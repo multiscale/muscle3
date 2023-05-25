@@ -46,8 +46,6 @@ $(info Looking for C++ compiler...)
 tool_var := CXX
 include $(TOOLDIR)/check_override.make
 
-tool_command := CC
-include $(TOOLDIR)/detect_tool_implicit.make
 tool_command := g++
 include $(TOOLDIR)/detect_tool_implicit.make
 tool_command := clang++
@@ -65,8 +63,6 @@ $(info Looking for MPI C++ compiler...)
 tool_var := MPICXX
 include $(TOOLDIR)/check_override.make
 
-tool_command := CC
-include $(TOOLDIR)/detect_tool.make
 tool_command := mpi$(CXX)
 include $(TOOLDIR)/detect_tool.make
 tool_command := mpic++

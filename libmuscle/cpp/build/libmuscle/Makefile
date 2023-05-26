@@ -207,7 +207,7 @@ libmuscle.a: $(objects)
 	ar rcs $@ $^
 
 libmuscle.so: $(lobjects)
-	$(CXX) -shared -Wl,--version-script=libmuscle.version -o $@ $^ $(LDFLAGS)
+	$(CXX) -shared -o $@ $^ $(LDFLAGS)
 
 libmuscle.dylib: $(lobjects)
 	$(CXX) -shared -o $@ $^ $(LDFLAGS)
@@ -216,7 +216,7 @@ libmuscle_d.a: $(dobjects)
 	ar rcs $@ $^
 
 libmuscle_d.so: $(dlobjects)
-	$(CXX) -shared -Wl,--version-script=libmuscle.version -o $@ $^ $(LDFLAGS)
+	$(CXX) -shared -o $@ $^ $(LDFLAGS)
 
 libmuscle_d.dylib: $(dlobjects)
 	$(CXX) -shared -o $@ $^ $(LDFLAGS)
@@ -225,7 +225,7 @@ libmuscle_mpi.a: $(mobjects)
 	ar rcs $@ $^
 
 libmuscle_mpi.so: $(mlobjects)
-	$(MPICXX) -shared -Wl,--version-script=libmuscle_mpi.version -o $@ $^ $(LDFLAGS)
+	$(MPICXX) -shared -o $@ $^ $(LDFLAGS)
 
 libmuscle_mpi.dylib: $(mlobjects)
 	$(MPICXX) -shared -o $@ $^ $(LDFLAGS)
@@ -234,7 +234,7 @@ libmuscle_mpi_d.a: $(mdobjects)
 	ar rcs $@ $^
 
 libmuscle_mpi_d.so: $(mdlobjects)
-	$(MPICXX) -shared -Wl,--version-script=libmuscle_mpi.version -o $@ $^ $(LDFLAGS)
+	$(MPICXX) -shared -o $@ $^ $(LDFLAGS)
 
 libmuscle_mpi_d.dylib: $(mdlobjects)
 	$(MPICXX) -shared -o $@ $^ $(LDFLAGS)

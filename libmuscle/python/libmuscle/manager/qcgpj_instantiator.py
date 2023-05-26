@@ -268,7 +268,7 @@ class QCGPJInstantiator(mp.Process):
                     qcg_NodeAllocation(qcg_Node(node_name), qcg_cores, {}))
 
         sjob = qcg_SchedulingJob(self._state_tracker, qcg_job)
-        qcg_iteration = qcg_SchedulingIteration(sjob, None, None, None, [])
+        qcg_iteration = qcg_SchedulingIteration(sjob, None, None, resources, [])
         return qcg_allocation, qcg_iteration
 
     def _create_env(

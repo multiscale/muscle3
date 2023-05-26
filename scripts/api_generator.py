@@ -1344,10 +1344,6 @@ class Member(abc.ABC):
     def fortran_contains_definition(self) -> str:
         ...
 
-    @abc.abstractmethod
-    def fortran_exports(self) -> List[str]:
-        ...
-
 
 class MemFun(Member):
     def __init__(self,
@@ -1667,15 +1663,6 @@ class MemFun(Member):
         func_name = '{}_{}_{}'.format(
                 self.f_prefix, self.class_name, self.name)
         return '    public :: {}\n'.format(func_name)
-
-    def fortran_exports(self) -> List[str]:
-        """Generates a list of linker exports for the Fortran symbols.
-        """
-        if self.fc_override == '':
-            return []
-        else:
-            return ['{}_{}_{}_;'.format(
-                    self.c_prefix, self.class_name, self.name)]
 
     def fortran_contains_definition(self) -> str:
         if self.f_override == '':
@@ -2130,11 +2117,6 @@ class MultiMemFun(Member):
         return ''.join(
                 [i.fortran_public_declaration() for i in self.instances])
 
-    def fortran_exports(self) -> List[str]:
-        """Generates a list of linker exports for the Fortran symbols.
-        """
-        return [e for i in self.instances for e in i.fortran_exports()]
-
     def fortran_contains_definition(self) -> str:
         return ''.join(i.fortran_contains_definition() for i in self.instances)
 
@@ -2356,11 +2338,6 @@ class OverloadSet(Member):
                     self.f_prefix, self.class_name, self.name)
         return ''
 
-    def fortran_exports(self) -> List[str]:
-        """Generates a list of linker exports for the Fortran symbols.
-        """
-        return []
-
     def fortran_contains_definition(self) -> str:
         if self.is_constructor:
             return ''
@@ -2422,11 +2399,6 @@ class NamespaceMember(abc.ABC):
         """Create C functions for the members.
         """
         return ''
-
-    def fortran_exports(self) -> List[str]:
-        """Generates a list of linker exports for the Fortran symbols.
-        """
-        return []
 
 
 class Class(NamespaceMember):
@@ -2526,14 +2498,6 @@ class Class(NamespaceMember):
             result += member.fortran_function()
         return result
 
-    def fortran_exports(self) -> List[str]:
-        """Generates a list of linker exports for the Fortran symbols.
-        """
-        result = list()     # type: List[str]
-        for member in self.members:
-            result += member.fortran_exports()
-        return result
-
 
 class Enum(NamespaceMember):
     def __init__(self, name: str, values: List[Tuple[str, int]]) -> None:
@@ -2590,12 +2554,6 @@ class Flags(NamespaceMember):
         result += f'    procedure :: to_int => {self.f_prefix}_{self.name}_to_int_\n'
         result += 'end type\n'
         return indent(result, 4*' ')
-
-    def fortran_exports(self) -> List[str]:
-        """Generates a list of linker exports for the Fortran symbols.
-        """
-        fun_name = f'{self.f_prefix}_{self.name}_to_int_;'
-        return [fun_name]
 
     def fortran_functions(self) -> str:
         """Create Fortran function definitions for this class.
@@ -2702,17 +2660,6 @@ class Namespace:
         result += "".join(member.fortran_functions() for member in self.members)
         return result
 
-    def fortran_exports(self) -> List[str]:
-        """Generates a list of linker exports for the Fortran symbols.
-        """
-        if self.public is None:
-            return list()
-
-        result = list()     # type: List[str]
-        for member in self.members:
-            result += member.fortran_exports()
-        return result
-
 
 class API:
     def __init__(
@@ -2781,18 +2728,6 @@ class API:
             result += ns.fortran_functions()
             result += '\n'
         result += 'end module {}\n'.format(self.name)
-        return result
-
-    def fortran_exports(self) -> List[str]:
-        """Generates a list of linker exports for the Fortran symbols.
-
-        These should be inserted into the version script sent to the
-        linker when creating the shared object file, so that the
-        Fortran-C ABI is exported correctly.
-        """
-        result = list()     # type: List[str]
-        for ns in self.namespaces:
-            result += ns.fortran_exports()
         return result
 
     def _fc_includes(self) -> str:

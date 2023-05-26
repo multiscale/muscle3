@@ -10,6 +10,14 @@ include detect_tool_implicit.make
 tool_command := clang++
 include detect_tool_implicit.make
 
+tool_var := MPICXX
+tool_command := mpi$(CXX)
+include detect_tool.make
+tool_command := mpic++
+include detect_tool.make
+
+include detect_cpp_type.make
+
 tool_var := FC
 tool_command := gfortran
 include detect_tool_implicit.make
@@ -18,12 +26,6 @@ include detect_tool_implicit.make
 tool_command := f77
 include detect_tool_implicit.make
 
-tool_var := MPICXX
-tool_command := mpi$(CXX)
-include detect_tool.make
-tool_command := mpic++
-include detect_tool.make
-
 tool_var := MPIFC
 tool_command := mpi$(FC)
 include detect_tool.make
@@ -31,6 +33,8 @@ tool_command := mpifort
 include detect_tool.make
 tool_command := mpif90
 include detect_tool.make
+
+include detect_fortran_type.make
 
 endif
 

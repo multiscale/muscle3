@@ -52,7 +52,7 @@ tool_command := clang++
 include $(TOOLDIR)/detect_tool_implicit.make
 
 ifeq ($(origin CXX), default)
-    $(error - No C++ compiler found! Please install either gcc or clang.)
+    $(error - No C++ compiler found! Please install one and/or set CXX to the correct command.)
 else
     $(info - Will compile C++ files using $(CXX).)
 endif
@@ -76,12 +76,16 @@ else
     export MUSCLE_ENABLE_CPP_MPI := 1
 endif
 
+include $(TOOLDIR)/detect_cpp_type.make
+
 # Check Fortran compiler
 $(info )
 $(info Looking for Fortran compiler...)
 tool_var := FC
 include $(TOOLDIR)/check_override.make
 
+tool_command := ftn
+include $(TOOLDIR)/detect_tool_implicit.make
 tool_command := gfortran
 include $(TOOLDIR)/detect_tool_implicit.make
 tool_command := f95
@@ -90,7 +94,7 @@ tool_command := f77
 include $(TOOLDIR)/detect_tool_implicit.make
 
 ifeq ($(origin FC), default)
-    $(info - No Fortran compiler found! Please install gfortran.)
+    $(info - No Fortran compiler found! Please install one and/or set FC to the correct command.)
     $(info - Not building Fortran bindings.)
     export MUSCLE_DISABLE_FORTRAN := 1
 else
@@ -112,6 +116,8 @@ else
     tool_var := MPIFC
     include $(TOOLDIR)/check_override.make
 
+    tool_command := ftn
+    include $(TOOLDIR)/detect_tool.make
     tool_command := mpi$(FC)
     include $(TOOLDIR)/detect_tool.make
     tool_command := mpifort
@@ -131,6 +137,8 @@ else
         endif
     endif
 endif
+
+include $(TOOLDIR)/detect_fortran_type.make
 
 # Check download tool (for downloading dependencies)
 $(info )

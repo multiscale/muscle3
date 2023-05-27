@@ -27,7 +27,6 @@ module libmuscle_mpi
     type LIBMUSCLE_DataConstRef
         integer (c_intptr_t) :: ptr = 0
     contains
-        final :: LIBMUSCLE_DataConstRef_free
         procedure :: is_a_logical => LIBMUSCLE_DataConstRef_is_a_logical
         procedure :: is_a_character => LIBMUSCLE_DataConstRef_is_a_character
         procedure :: is_a_int => LIBMUSCLE_DataConstRef_is_a_int
@@ -301,7 +300,6 @@ module libmuscle_mpi
     type LIBMUSCLE_Data
         integer (c_intptr_t) :: ptr = 0
     contains
-        final :: LIBMUSCLE_Data_free
         procedure :: is_a_logical => LIBMUSCLE_Data_is_a_logical
         procedure :: is_a_character => LIBMUSCLE_Data_is_a_character
         procedure :: is_a_int => LIBMUSCLE_Data_is_a_int
@@ -670,7 +668,6 @@ module libmuscle_mpi
     type LIBMUSCLE_PortsDescription
         integer (c_intptr_t) :: ptr = 0
     contains
-        final :: LIBMUSCLE_PortsDescription_free
         procedure :: add => LIBMUSCLE_PortsDescription_add
         procedure :: num_ports => LIBMUSCLE_PortsDescription_num_ports
         procedure :: get => LIBMUSCLE_PortsDescription_get
@@ -685,7 +682,6 @@ module libmuscle_mpi
     type LIBMUSCLE_Message
         integer (c_intptr_t) :: ptr = 0
     contains
-        final :: LIBMUSCLE_Message_free
         procedure :: timestamp => LIBMUSCLE_Message_timestamp
         procedure :: set_timestamp => LIBMUSCLE_Message_set_timestamp
         procedure :: has_next_timestamp => LIBMUSCLE_Message_has_next_timestamp
@@ -728,7 +724,6 @@ module libmuscle_mpi
     type LIBMUSCLE_Instance
         integer (c_intptr_t) :: ptr = 0
     contains
-        final :: LIBMUSCLE_Instance_free
         procedure :: reuse_instance => LIBMUSCLE_Instance_reuse_instance
         procedure :: error_shutdown => LIBMUSCLE_Instance_error_shutdown
         procedure :: is_setting_a_character => LIBMUSCLE_Instance_is_setting_a_character
@@ -852,7 +847,6 @@ module libmuscle_mpi
     type LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs
         integer (c_intptr_t) :: ptr = 0
     contains
-        final :: LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_free
         procedure :: set_arg => LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs_set_arg
     end type LIBMUSCLE_IMPL_BINDINGS_CmdLineArgs
 

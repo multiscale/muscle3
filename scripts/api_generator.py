@@ -2050,8 +2050,12 @@ class Destructor(MemFun):
             """), 4*' ')
 
     def fortran_contains_definition(self) -> str:
-        full_name = f'{self.f_prefix}_{self.class_name}_{self.name}'
-        return f'    final :: {full_name}\n'
+        # Disabled until compilers stop giving errors and/or producing crashing
+        # code whenever they see a finalizer.
+
+        # full_name = f'{self.f_prefix}_{self.class_name}_{self.name}'
+        # return f'    final :: {full_name}\n'
+        return ''
 
 
 class MultiMemFun(Member):

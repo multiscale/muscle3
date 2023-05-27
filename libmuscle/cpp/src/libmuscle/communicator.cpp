@@ -122,7 +122,7 @@ void Communicator::send_message(
 
     ProfileEvent profile_event(
             ProfileEventType::send, ProfileTimestamp(), {}, port, {}, slot,
-            {}, message.timestamp());
+            port.get_num_messages(), {}, message.timestamp());
 
     auto recv_endpoints = peer_manager_->get_peer_endpoints(
             snd_endpoint.port, slot_list);
@@ -190,7 +190,8 @@ Message Communicator::receive_message(
     Port & port = (ports_.count(port_name)) ? (ports_.at(port_name)) : muscle_settings_in_.get();
 
     ProfileEvent receive_event(
-            ProfileEventType::receive, ProfileTimestamp(), {}, port, {}, slot);
+            ProfileEventType::receive, ProfileTimestamp(), {}, port, {}, slot,
+            port.get_num_messages());
 
     // peer_manager already checks that there is at most one snd_endpoint
     // connected to the port we receive on
@@ -203,7 +204,7 @@ Message Communicator::receive_message(
 
     ProfileEvent recv_decode_event(
             ProfileEventType::receive_decode, ProfileTimestamp(), {}, port, {}, slot,
-            msg.size());
+            port.get_num_messages(), msg.size());
 
     auto mpp_message = MPPMessage::from_bytes(msg);
     Settings overlay_settings(mpp_message.settings_overlay.as<Settings>());
@@ -232,12 +233,12 @@ Message Communicator::receive_message(
     ProfileEvent recv_wait_event(
             ProfileEventType::receive_wait, start_recv,
             end_wait, port, mpp_message.port_length, slot,
-            msg.size(), message.timestamp());
+            port.get_num_messages(), msg.size(), message.timestamp());
 
     ProfileEvent recv_xfer_event(
             ProfileEventType::receive_transfer, end_wait,
             end_transfer, port, mpp_message.port_length, slot,
-            msg.size(), message.timestamp());
+            port.get_num_messages(), msg.size(), message.timestamp());
 
     recv_decode_event.message_timestamp = message.timestamp();
     receive_event.message_timestamp = message.timestamp();

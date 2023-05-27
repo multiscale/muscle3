@@ -48,12 +48,14 @@ def check_profile_output(tmp_path):
         res = cur.fetchall()
         assert len(res) == 2
         assert res[0][4:8] == (port, operator, None, None)
-        assert res[0][8] > 0
-        assert res[0][9] == 0.0
+        assert res[0][8] == 0
+        assert res[0][9] > 0
+        assert res[0][10] == 0.0
 
         assert res[1][4:8] == (port, operator, None, None)
-        assert res[1][8] > 0
-        assert res[1][9] == 10.0
+        assert res[1][8] == 1
+        assert res[1][9] > 0
+        assert res[1][10] == 10.0
 
     check('macro', 'SEND', 'out', 'O_I')
     check('micro', 'RECEIVE_TRANSFER', 'in', 'F_INIT')

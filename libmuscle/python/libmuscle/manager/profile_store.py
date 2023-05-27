@@ -60,7 +60,7 @@ class ProfileStore(ProfileDatabase):
 
         Record = Tuple[
                 int, int, float, float, Optional[str], Optional[int],
-                Optional[int], Optional[int], Optional[int],
+                Optional[int], Optional[int], Optional[int], Optional[int],
                 Optional[float]]
 
         def to_tuple(e: ProfileEvent) -> Record:
@@ -74,13 +74,15 @@ class ProfileStore(ProfileDatabase):
             return (
                     instance_oid, e.event_type.value, e.start_time.nanoseconds,
                     e.stop_time.nanoseconds, port_name, port_operator,
-                    e.port_length, e.slot, e.message_size, e.message_timestamp)
+                    e.port_length, e.slot, e.message_number, e.message_size,
+                    e.message_timestamp)
 
         cur.executemany(
                 "INSERT INTO events"
                 " (instance, event_type, start_time, stop_time, port_name,"
-                "  port_operator, port_length, slot, message_size,"
-                "  message_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "  port_operator, port_length, slot, message_number,"
+                "  message_size, message_timestamp)"
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 map(to_tuple, events))
         cur.execute("COMMIT")
         cur.close()
@@ -133,17 +135,19 @@ class ProfileStore(ProfileDatabase):
                 "    port_operator INTEGER REFERENCES port_operators(oid),"
                 "    port_length INTEGER,"
                 "    slot INTEGER,"
+                "    message_number INTEGER,"
                 "    message_size INTEGER,"
                 "    message_timestamp DOUBLE)")
 
         cur.execute(
                 "CREATE VIEW all_events ("
                 "    instance, type, start_time, stop_time, port, operator,"
-                "    port_length, slot, message_size, message_timestamp)"
+                "    port_length, slot, message_number, message_size,"
+                "    message_timestamp)"
                 " AS SELECT"
                 "    i.name, et.name, e.start_time, e.stop_time, e.port_name,"
-                "    o.name, e.port_length, e.slot, e.message_size,"
-                "    e.message_timestamp"
+                "    o.name, e.port_length, e.slot, e.message_number,"
+                "    e.message_size, e.message_timestamp"
                 " FROM"
                 "    events e"
                 "    JOIN instances i ON e.instance = i.oid"

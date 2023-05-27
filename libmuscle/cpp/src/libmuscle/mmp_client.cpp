@@ -99,7 +99,8 @@ namespace {
                 event.start_time.get().nanoseconds,
                 event.stop_time.get().nanoseconds,
                 encoded_port, encode_optional(event.port_length),
-                encode_optional(event.slot), encode_optional(event.message_size),
+                encode_optional(event.slot), encode_optional(event.message_number),
+                encode_optional(event.message_size),
                 encode_optional(event.message_timestamp));
     }
 

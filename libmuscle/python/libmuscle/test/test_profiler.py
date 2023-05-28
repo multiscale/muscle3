@@ -16,6 +16,21 @@ def test_recording_events(mocked_profiler) -> None:
     assert e in profiler._events
 
 
+def test_disabling(mocked_profiler) -> None:
+    profiler, _ = mocked_profiler
+    profiler.set_level('none')
+
+    t1 = ProfileTimestamp()
+    t2 = ProfileTimestamp()
+    e = ProfileEvent(ProfileEventType.REGISTER, t1, t2)
+
+    profiler.record_event(e)
+
+    assert e.start_time == t1
+    assert e.stop_time == t2
+    assert len(profiler._events) == 0
+
+
 def test_auto_stop_time(mocked_profiler) -> None:
     profiler, _ = mocked_profiler
 

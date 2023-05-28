@@ -183,8 +183,10 @@ class Instance:
         # Note: self._setup_checkpointing() needs to have the ports initialized
         # so it comes after self._connect()
         self._setup_checkpointing()
+        # profiling and logging need settings, so come after register_()
         self._set_local_log_level()
         self._set_remote_log_level()
+        self._setup_profiling()
 
     def reuse_instance(self) -> bool:
         """Decide whether to run this instance again.
@@ -763,6 +765,23 @@ class Instance:
             self._mmp_handler = MuscleManagerHandler(id_str, logging.WARNING,
                                                      self.__manager)
             logging.getLogger().addHandler(self._mmp_handler)
+
+    def _setup_profiling(self) -> None:
+        """Configures profiler with settings from settings.
+        """
+        try:
+            profile_level_str = self.get_setting('muscle_profile_level', 'str')
+        except KeyError:
+            profile_level_str = 'all'
+
+        if profile_level_str not in ('none', 'all'):
+            _logger.warning(
+                    'Invalid value for muscle_profile_level:'
+                    f' {profile_level_str}. Please specify "none" or "all".'
+                    ' Using default value "all".')
+            profile_level_str = 'all'
+
+        self._profiler.set_level(profile_level_str)
 
     def _decide_reuse_instance(self) -> bool:
         """Decide whether and how to reuse the instance.

@@ -10,6 +10,8 @@
 #include <libmuscle/profiling.hpp>
 #include <libmuscle/timestamp.hpp>
 
+#include <string>
+
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
@@ -29,6 +31,13 @@ class Profiler {
          */
         void shutdown();
 
+        /** Set the detail level at which data is collected.
+         *
+         * @param level Either "none" or "all" to disable or enable sending
+         *      events to the manager.
+         */
+        void set_level(std::string const & level);
+
         /** Record a profiling event.
          *
          * This will record the event, and may flush this and previously
@@ -46,6 +55,7 @@ class Profiler {
         friend class TestProfiler;
 
         MMPClient & manager_;
+        bool enabled_;
         std::vector<ProfileEvent> events_;
 
         void flush_();

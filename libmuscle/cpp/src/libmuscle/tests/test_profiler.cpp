@@ -122,6 +122,23 @@ TEST(libmuscle_profiler, test_recording_events) {
 }
 
 
+TEST(libmuscle_profiler, test_disabling) {
+    reset_mocks();
+    MockMMPClient mock_mmp_client(Reference("test_instance[10]"), "");
+    Profiler profiler(mock_mmp_client);
+    profiler.set_level("none");
+
+    ProfileTimestamp t1, t2;
+    ProfileEvent e(ProfileEventType::register_, t1, t2);
+
+    profiler.record_event(ProfileEvent(e));
+
+    ASSERT_EQ(e.start_time, t1);
+    ASSERT_EQ(e.stop_time, t2);
+    ASSERT_EQ(TestProfiler::events_(profiler).size(), 0u);
+}
+
+
 TEST(libmuscle_profiler, test_auto_stop_time) {
     reset_mocks();
     MockMMPClient mock_mmp_client(Reference("test_instance[10]"), "");

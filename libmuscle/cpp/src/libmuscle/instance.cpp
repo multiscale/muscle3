@@ -136,13 +136,16 @@ class Instance::Impl {
         void connect_();
         void deregister_();
         void setup_checkpointing_();
+        void setup_profiling_();
 
         ::ymmsl::Reference make_full_name_(int argc, char const * const argv[]) const;
         std::string extract_manager_location_(int argc, char const * const argv[]) const;
         ::ymmsl::Reference name_() const;
         std::vector<int> index_() const;
+
         std::vector<::ymmsl::Port> list_declared_ports_() const;
         void check_port_(std::string const & port_name);
+
         bool receive_settings_();
         bool have_f_init_connections_();
         bool pre_receive_();
@@ -153,12 +156,16 @@ class Instance::Impl {
         void save_snapshot_(
                 Optional<Message> message, bool final,
                 Optional<double> f_init_max_timestamp);
+
         void set_local_log_level_();
         void set_remote_log_level_();
+
         void apply_overlay_(Message const & message);
+
         void check_compatibility_(
                 std::string const & port_name,
                 Optional<::ymmsl::Settings> const & overlay);
+
         void close_outgoing_ports_();
         void drain_incoming_port_(std::string const & port_name);
         void drain_incoming_vector_port_(std::string const & port_name);
@@ -227,6 +234,7 @@ Instance::Impl::Impl(
         setup_checkpointing_();
         set_local_log_level_();
         set_remote_log_level_();
+        setup_profiling_();
 #ifdef MUSCLE_ENABLE_MPI
         auto sbase_data = Data(settings_manager_.base);
         msgpack::sbuffer sbuf;
@@ -489,6 +497,31 @@ void Instance::Impl::setup_checkpointing_() {
 
     if (saved_at.is_set())
         trigger_manager_->update_checkpoints(saved_at.get());
+}
+
+void Instance::Impl::setup_profiling_() {
+    std::string profile_level_str("all");
+    try {
+        profile_level_str = settings_manager_.get_setting(
+               instance_name_, "muscle_profile_level").as<std::string>();
+    }
+    catch (std::runtime_error const & e) {
+        logger_->error(e.what() + std::string(" in muscle_profile_level"));
+    }
+    catch (std::out_of_range const &) {
+        // muscle_profile_level not set, do nothing and keep the default
+    }
+
+    if (profile_level_str != "none" && profile_level_str != "all") {
+        std::string msg = "Invalid value for muscle_profile_level:";
+        msg += profile_level_str;
+        msg += ". Please specify \"none\" or \"all\". Using default value";
+        msg += " \"all\"";
+        logger_->warning(msg);
+
+        profile_level_str = "all";
+    }
+    profiler_->set_level(profile_level_str);
 }
 
 Message Instance::Impl::receive_message(

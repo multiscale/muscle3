@@ -15,10 +15,20 @@ class Profiler:
         """
         # TODO: use a background thread for flushing
         self._manager = manager
+        self._enabled = True
         self._events: List[ProfileEvent] = []
 
     def shutdown(self) -> None:
         self.__flush()
+
+    def set_level(self, level: str) -> None:
+        """Set the detail level at which data is collected.
+
+        Args:
+            level: Either 'none' or 'all' to disable or enable sending
+                    events to the manager.
+        """
+        self._enabled = level == 'all'
 
     def record_event(self, event: ProfileEvent) -> None:
         """Record a profiling event.
@@ -34,7 +44,8 @@ class Profiler:
         """
         if event.stop_time is None:
             event.stop_time = ProfileTimestamp()
-        self._events.append(event)
+        if self._enabled:
+            self._events.append(event)
         if len(self._events) >= 100:
             self.__flush()
 

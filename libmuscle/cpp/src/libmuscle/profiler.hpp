@@ -10,7 +10,10 @@
 #include <libmuscle/profiling.hpp>
 #include <libmuscle/timestamp.hpp>
 
+#include <condition_variable>
+#include <mutex>
 #include <string>
+#include <thread>
 
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
@@ -24,6 +27,13 @@ class Profiler {
          * @param manager The client used to submit data to the manager.
          */
         Profiler(MMPClient & manager);
+
+        Profiler(Profiler const &) = delete;
+
+        /// Destruct the Profiler.
+        ~Profiler();
+
+        Profiler & operator=(Profiler const &) = delete;
 
         /** Shut down the profiler.
          *
@@ -54,11 +64,31 @@ class Profiler {
     private:
         friend class TestProfiler;
 
+        // mutex_ protects all member variables and flush_()
+        std::mutex mutex_;
+
         MMPClient & manager_;
         bool enabled_;
         std::vector<ProfileEvent> events_;
+        std::chrono::steady_clock::time_point next_send_;
 
+        std::thread thread_;
+        std::condition_variable done_cv_;
+        bool done_;
+
+        /* Background thread that ensures regular communication.
+         *
+         * This runs in the background, and periodically sends events to
+         * the manager to ensure the manager is kept up to date even if no
+         * new events are generated for a while.
+         */
+        static void communicate_(Profiler * self);
+
+        // Helper, call only with mutex_ held!
         void flush_();
+
+        // Stops the background thread and waits until it's gone
+        void stop_thread_();
 };
 
 } }

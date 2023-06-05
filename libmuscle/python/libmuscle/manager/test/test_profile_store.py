@@ -4,6 +4,7 @@ from libmuscle.manager.profile_store import ProfileStore
 from ymmsl import Operator, Port, Reference
 
 import sqlite3
+from unittest.mock import patch
 
 
 def test_create_profile_store(tmp_path):
@@ -43,6 +44,7 @@ def test_create_profile_store(tmp_path):
     conn.close()
 
 
+@patch('libmuscle.manager.profile_store._SYNCHED', True)
 def test_add_events(tmp_path):
     db = ProfileStore(tmp_path)
 

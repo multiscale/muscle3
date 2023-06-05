@@ -1,5 +1,7 @@
 import logging
 from pathlib import Path
+from queue import Queue
+from threading import Thread
 from typing import Iterable, Optional, Tuple
 
 from libmuscle.profiling import ProfileEvent, ProfileEventType
@@ -8,6 +10,11 @@ from ymmsl import Operator, Reference
 
 
 _logger = logging.getLogger(__name__)
+
+
+# When True causes add_events to return after the data is written.
+# Used for testing only.
+_SYNCHED = False
 
 
 class ProfileStore(ProfileDatabase):
@@ -36,6 +43,22 @@ class ProfileStore(ProfileDatabase):
         super().__init__(db_file)
         self._init_database()
 
+        # 500 batches is about 250MB
+        Item = Optional[Tuple[Reference, Iterable[ProfileEvent]]]
+        self._queue: Queue[Item] = Queue(500)
+        self._confirmation_queue: Queue[None] = Queue()
+        self._thread = Thread(target=self._storage_thread, daemon=True)
+        self._thread.start()
+
+    def close(self) -> None:
+        """Shut down the profile store.
+
+        This closes the database connection cleanly.
+        """
+        self._queue.put(None)
+        self._thread.join()
+        super().close()
+
     def add_events(
             self, instance_id: Reference, events: Iterable[ProfileEvent]
             ) -> None:
@@ -44,20 +67,18 @@ class ProfileStore(ProfileDatabase):
         Args:
             events: The events to add.
         """
-        cur = self._get_cursor()
-        cur.execute("BEGIN IMMEDIATE TRANSACTION")
-        cur.execute(
-                "SELECT oid FROM instances WHERE name = ?",
-                (str(instance_id),))
-        oids = cur.fetchall()
-        if oids:
-            instance_oid = oids[0][0]
-        else:
-            cur.execute(
-                    "INSERT INTO instances (name) VALUES (?)",
-                    (str(instance_id),))
-            instance_oid = cur.lastrowid
+        self._queue.put((instance_id, events))
+        if _SYNCHED:
+            self._confirmation_queue.get()
 
+    def _storage_thread(self) -> None:
+        """Background thread that stores the data.
+
+        We're getting issues with the database being locked occasionally
+        on slow file systems when we try to access it from multiple
+        threads. So we use a single background thread now to do the
+        writing.
+        """
         Record = Tuple[
                 int, int, float, float, Optional[str], Optional[int],
                 Optional[int], Optional[int], Optional[int], Optional[int],
@@ -77,14 +98,37 @@ class ProfileStore(ProfileDatabase):
                     e.port_length, e.slot, e.message_number, e.message_size,
                     e.message_timestamp)
 
-        cur.executemany(
-                "INSERT INTO events"
-                " (instance, event_type, start_time, stop_time, port_name,"
-                "  port_operator, port_length, slot, message_number,"
-                "  message_size, message_timestamp)"
-                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                map(to_tuple, events))
-        cur.execute("COMMIT")
+        cur = self._get_cursor()
+        batch = self._queue.get()
+        while batch is not None:
+            instance_id, events = batch
+
+            cur = self._get_cursor()
+            cur.execute("BEGIN IMMEDIATE TRANSACTION")
+            cur.execute(
+                    "SELECT oid FROM instances WHERE name = ?",
+                    (str(instance_id),))
+            oids = cur.fetchall()
+            if oids:
+                instance_oid = oids[0][0]
+            else:
+                cur.execute(
+                        "INSERT INTO instances (name) VALUES (?)",
+                        (str(instance_id),))
+                instance_oid = cur.lastrowid
+
+            cur.executemany(
+                    "INSERT INTO events"
+                    " (instance, event_type, start_time, stop_time, port_name,"
+                    "  port_operator, port_length, slot, message_number,"
+                    "  message_size, message_timestamp)"
+                    " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    map(to_tuple, events))
+            cur.execute("COMMIT")
+            if _SYNCHED:
+                self._confirmation_queue.put(None)
+            batch = self._queue.get()
+
         cur.close()
 
     def _init_database(self) -> None:

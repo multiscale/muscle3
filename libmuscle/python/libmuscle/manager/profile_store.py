@@ -1,9 +1,11 @@
 import logging
 from pathlib import Path
 from queue import Queue
+from sqlite3 import Cursor
 from threading import Thread
-from typing import Iterable, Optional, Tuple
+from typing import cast, Dict, Iterable, Optional, Tuple
 
+from libmuscle.planner.planner import Resources
 from libmuscle.profiling import ProfileEvent, ProfileEventType
 from libmuscle.manager.profile_database import ProfileDatabase
 from ymmsl import Operator, Reference
@@ -59,6 +61,31 @@ class ProfileStore(ProfileDatabase):
         self._thread.join()
         super().close()
 
+    def store_resources(self, resources: Dict[Reference, Resources]) -> None:
+        """Store resource assignments into the database.
+
+        Args:
+            resources: The resources to store.
+        """
+        cur = self._get_cursor()
+        cur.execute("BEGIN IMMEDIATE TRANSACTION")
+
+        for instance_id, res in resources.items():
+            instance_oid = self._get_instance_oid(cur, instance_id)
+
+            tuples = [
+                    (instance_oid, node, core)
+                    for node, cores in res.cores.items()
+                    for core in cores]
+
+            cur.executemany(
+                    "INSERT INTO assigned_cores (instance, node, core)"
+                    " VALUES (?, ?, ?)",
+                    tuples)
+
+        cur.execute("COMMIT")
+        cur.close()
+
     def add_events(
             self, instance_id: Reference, events: Iterable[ProfileEvent]
             ) -> None:
@@ -105,17 +132,8 @@ class ProfileStore(ProfileDatabase):
 
             cur = self._get_cursor()
             cur.execute("BEGIN IMMEDIATE TRANSACTION")
-            cur.execute(
-                    "SELECT oid FROM instances WHERE name = ?",
-                    (str(instance_id),))
-            oids = cur.fetchall()
-            if oids:
-                instance_oid = oids[0][0]
-            else:
-                cur.execute(
-                        "INSERT INTO instances (name) VALUES (?)",
-                        (str(instance_id),))
-                instance_oid = cur.lastrowid
+
+            instance_oid = self._get_instance_oid(cur, instance_id)
 
             cur.executemany(
                     "INSERT INTO events"
@@ -131,6 +149,30 @@ class ProfileStore(ProfileDatabase):
 
         cur.close()
 
+    def _get_instance_oid(self, cur: Cursor, instance_id: Reference) -> int:
+        """Get the oid for a given instance.
+
+        Inserts instance into the database and returns the new oid if
+        needed. Does not start its own transaction.
+
+        Args:
+            instance Instance id to look up
+
+        Return:
+            The oid used for it in the database
+        """
+        cur.execute(
+                "SELECT oid FROM instances WHERE name = ?",
+                (str(instance_id),))
+        oids = cur.fetchall()
+        if oids:
+            return cast(int, oids[0][0])
+
+        cur.execute(
+                "INSERT INTO instances (name) VALUES (?)",
+                (str(instance_id),))
+        return cast(int, cur.lastrowid)
+
     def _init_database(self) -> None:
         """Initialises the database.
 
@@ -145,6 +187,17 @@ class ProfileStore(ProfileDatabase):
         cur.execute(
                 "INSERT INTO muscle3_format(major_version, minor_version)"
                 "    VALUES (1, 0)")
+
+        cur.execute(
+                "CREATE TABLE instances ("
+                "    oid INTEGER PRIMARY KEY,"
+                "    name TEXT UNIQUE)")
+
+        cur.execute(
+                "CREATE TABLE assigned_cores ("
+                "    instance INTEGER NOT NULL REFERENCES instances(oid),"
+                "    node TEXT NOT NULL,"
+                "    core INTEGER NOT NULL)")
 
         cur.execute(
                 "CREATE TABLE event_types ("
@@ -163,11 +216,6 @@ class ProfileStore(ProfileDatabase):
         cur.executemany(
                 "INSERT INTO port_operators (oid, name) VALUES (?, ?)",
                 port_operators)
-
-        cur.execute(
-                "CREATE TABLE instances ("
-                "    oid INTEGER PRIMARY KEY,"
-                "    name TEXT UNIQUE)")
 
         cur.execute(
                 "CREATE TABLE events ("

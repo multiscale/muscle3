@@ -102,6 +102,8 @@ class Manager:
             raise RuntimeError(message)
         try:
             self._instance_manager.start_all()
+            self._profile_store.store_resources(
+                    self._instance_manager.get_resources())
         except:     # noqa
             _logger.error('An error occurred while starting the components:')
             for line in traceback.format_exception(*sys.exc_info()):

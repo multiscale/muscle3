@@ -4,7 +4,7 @@ import sys
 import traceback
 from typing import Optional
 
-from ymmsl import PartialConfiguration, save as save_ymmsl
+from ymmsl import Model, PartialConfiguration, save as save_ymmsl
 
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger
@@ -58,6 +58,12 @@ class Manager:
             save_ymmsl(
                     self._configuration,
                     self._run_dir.path / 'configuration.ymmsl')
+
+        if isinstance(self._configuration.model, Model):
+            self._profile_store.store_instances([
+                instance_name
+                for c in self._configuration.model.components
+                for instance_name in c.instances()])
 
         self._instance_manager: Optional[InstanceManager] = None
         try:

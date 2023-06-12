@@ -86,6 +86,8 @@ def test_add_events(tmp_path):
 
         cur.execute("COMMIT")
 
+    db.store_instances([Reference('instance[0]'), Reference('instance[1]')])
+
     db.add_events(Reference('instance[0]'), events)
     check_send_event('instance[0]')
 

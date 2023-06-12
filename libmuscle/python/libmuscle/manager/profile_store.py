@@ -3,7 +3,7 @@ from pathlib import Path
 from queue import Queue
 from sqlite3 import Cursor
 from threading import Thread
-from typing import cast, Dict, Iterable, Optional, Tuple
+from typing import cast, Dict, Iterable, List, Optional, Tuple
 
 from libmuscle.planner.planner import Resources
 from libmuscle.profiling import ProfileEvent, ProfileEventType
@@ -60,6 +60,22 @@ class ProfileStore(ProfileDatabase):
         self._queue.put(None)
         self._thread.join()
         super().close()
+
+    def store_instances(
+            self, instances: List[Reference]) -> None:
+        """Store names of instances in the simulation.
+
+        Args:
+            instances: List of instance names to store
+        """
+        cur = self._get_cursor()
+        cur.execute("BEGIN IMMEDIATE TRANSACTION")
+
+        cur.executemany(
+                "INSERT INTO instances (name) VALUES (?)",
+                [(str(name),) for name in instances])
+        cur.execute("COMMIT")
+        cur.close()
 
     def store_resources(self, resources: Dict[Reference, Resources]) -> None:
         """Store resource assignments into the database.
@@ -165,13 +181,7 @@ class ProfileStore(ProfileDatabase):
                 "SELECT oid FROM instances WHERE name = ?",
                 (str(instance_id),))
         oids = cur.fetchall()
-        if oids:
-            return cast(int, oids[0][0])
-
-        cur.execute(
-                "INSERT INTO instances (name) VALUES (?)",
-                (str(instance_id),))
-        return cast(int, cur.lastrowid)
+        return cast(int, oids[0][0])
 
     def _init_database(self) -> None:
         """Initialises the database.

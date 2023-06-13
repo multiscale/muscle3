@@ -687,6 +687,11 @@ class Instance:
     def _deregister(self) -> None:
         """Deregister this instance from the manager.
         """
+        # Make sure we record this even if profiling is disabled, so
+        # that we always have register, connect and deregister at
+        # least.
+        self._profiler.set_level('all')
+
         deregister_event = ProfileEvent(
                 ProfileEventType.DEREGISTER, ProfileTimestamp())
         # We need to finish the event right away, because we need to

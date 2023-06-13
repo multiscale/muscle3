@@ -459,9 +459,14 @@ void Instance::Impl::connect_() {
 /* Deregister this instance from the manager.
  */
 void Instance::Impl::deregister_() {
+    // Make sure we record this even if profiling is disabled, so that we
+    // always have register, connect and deregister at least.
+    profiler_->set_level("all");
+
     ProfileEvent deregister_event(ProfileEventType::deregister, ProfileTimestamp());
     manager_->deregister_instance();
     profiler_->record_event(std::move(deregister_event));
+
     // This is the last thing we'll profile, so flush messages
     profiler_->shutdown();
     logger_->info("Deregistered from the manager");

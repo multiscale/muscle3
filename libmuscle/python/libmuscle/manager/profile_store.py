@@ -52,7 +52,7 @@ class ProfileStore(ProfileDatabase):
         self._thread = Thread(target=self._storage_thread, daemon=True)
         self._thread.start()
 
-    def close(self) -> None:
+    def shutdown(self) -> None:
         """Shut down the profile store.
 
         This closes the database connection cleanly.
@@ -164,6 +164,7 @@ class ProfileStore(ProfileDatabase):
             batch = self._queue.get()
 
         cur.close()
+        super().close()
 
     def _get_instance_oid(self, cur: Cursor, instance_id: Reference) -> int:
         """Get the oid for a given instance.

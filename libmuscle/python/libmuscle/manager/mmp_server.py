@@ -133,8 +133,7 @@ class MMPRequestHandler(RequestHandler):
         On shutdown of the server, this will be called by each server
         thread before it shuts down.
         """
-        # no longer used, but kept in case we need it again
-        pass
+        self._profile_store.close()
 
     def _register_instance(
             self, instance_id: str, locations: List[str],

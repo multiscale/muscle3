@@ -124,7 +124,7 @@ class Manager:
         self._server.stop()
         self._snapshot_registry.shutdown()
         self._snapshot_registry.join()
-        self._profile_store.close()
+        self._profile_store.shutdown()
         self._logger.close()
 
     def wait(self) -> bool:

@@ -136,6 +136,22 @@ TEST(libmuscle_mcp_data, string_value) {
     test<std::string>(std::string("Testing"));
 }
 
+TEST(libmuscle_mcp_dataconstref, dict) {
+    DataConstRef d1(DataConstRef::dict());
+    ASSERT_TRUE(d1.is_a_dict());
+    ASSERT_EQ(d1.size(), 0);
+
+    DataConstRef d2(DataConstRef::dict("a", 1, "b", d1));
+    ASSERT_TRUE(d2.is_a_dict());
+    ASSERT_EQ(d2.size(), 2);
+
+    ASSERT_TRUE(d2["b"].is_a_dict());
+    // d2["b"]["a"] = "test";      // should not compile
+
+    DataConstRef d3(DataConstRef::dict("a", 1, "b", Data::list(1, 2)));
+    ASSERT_TRUE(d3["b"].is_a_list());
+    ASSERT_EQ(d3["b"][1].as<int>(), 2);
+}
 
 TEST(libmuscle_mcp_data, dict) {
     Data d(Data::dict(
@@ -250,6 +266,26 @@ TEST(libmuscle_mcp_data, dict_dataconstref) {
     dict = Data::dict("test", Data());
 }
 
+
+TEST(libmuscle_mcp_dataconstref, list) {
+    DataConstRef l1(DataConstRef::list());
+    ASSERT_TRUE(l1.is_a_list());
+    ASSERT_EQ(l1.size(), 0);
+
+    DataConstRef l2(DataConstRef::nils(3));
+    ASSERT_TRUE(l2.is_a_list());
+    ASSERT_EQ(l2.size(), 3);
+
+    DataConstRef l3(DataConstRef::list(1, l1, l2));
+    ASSERT_TRUE(l3.is_a_list());
+    ASSERT_EQ(l3.size(), 3);
+
+    DataConstRef l4(DataConstRef::list(1, Data::list(1, 2)));
+    ASSERT_TRUE(l4.is_a_list());
+    ASSERT_EQ(l4.size(), 2);
+    ASSERT_EQ(l4[0].as<int>(), 1);
+    ASSERT_EQ(l4[1][0].as<int>(), 1);
+}
 
 TEST(libmuscle_mcp_data, list) {
     Data d(Data::list("test_string", 12, 1.0));
@@ -642,6 +678,71 @@ TEST(libmuscle_mcp_data, byte_array_alloc) {
     ASSERT_EQ(data.size(), test_data.size());
     for (std::size_t i = 0u; i < data.size(); ++i)
         ASSERT_EQ(data.as_byte_array()[i], test_data[i]);
+}
+
+
+// shouldn't compile; passes
+TEST(libmuscle_mcp_data, dataconstref_constness) {
+    DataConstRef dcr1 = Data::list(1);
+    Data d1 = Data::list(dcr1);
+    ASSERT_EQ(d1[0][0].as<int>(), 1);
+    d1[0][0] = 2;
+    ASSERT_EQ(d1[0][0].as<int>(), 2);
+    ASSERT_EQ(dcr1[0].as<int>(), 2);
+}
+
+
+// shouldn't compile; passes
+TEST(libmuscle_mcp_data, dataconstref_data_list) {
+    DataConstRef dcr1(1);
+    DataConstRef dcr2(2);
+
+    DataConstRef dcr3 = Data::list(dcr1, dcr2);
+    ASSERT_EQ(dcr3[0].as<int>(), 1);
+    ASSERT_EQ(dcr3[1].as<int>(), 2);
+}
+
+
+// should pass; doesn't compile
+TEST(libmuscle_mcp_data, dataconstref_dataconstref_list) {
+    DataConstRef dcr1(1);
+    DataConstRef dcr2(2);
+
+    DataConstRef dcr3 = DataConstRef::list(dcr1, dcr2);
+    ASSERT_EQ(dcr3[0].as<int>(), 1);
+    ASSERT_EQ(dcr3[1].as<int>(), 2);
+}
+
+
+// shouldn't compile; passes
+TEST(libmuscle_mcp_data, dataconstref_constness_dict) {
+    DataConstRef dcr1 = Data::dict("a", 1);
+    Data d1 = Data::dict("a", dcr1);
+    ASSERT_EQ(d1["a"]["a"].as<int>(), 1);
+    d1["a"]["a"] = 2;
+    ASSERT_EQ(d1["a"]["a"].as<int>(), 2);
+    ASSERT_EQ(dcr1["a"].as<int>(), 2);
+}
+
+
+// shouldn't compile; passes
+TEST(libmuscle_mcp_data, dataconstref_data_dict) {
+    DataConstRef dcr1(1);
+    DataConstRef dcr2(2);
+
+    DataConstRef dcr3 = Data::list(dcr1, dcr2);
+    ASSERT_EQ(dcr3[0].as<int>(), 1);
+    ASSERT_EQ(dcr3[1].as<int>(), 2);
+}
+
+// should pass; doesn't compile
+TEST(libmuscle_mcp_data, dataconstref_dataconstref_dict) {
+    DataConstRef dcr1(1);
+    DataConstRef dcr2(2);
+
+    DataConstRef dcr3 = DataConstRef::list(dcr1, dcr2);
+    ASSERT_EQ(dcr3[0].as<int>(), 1);
+    ASSERT_EQ(dcr3[1].as<int>(), 2);
 }
 
 

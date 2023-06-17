@@ -169,6 +169,57 @@ class DataConstRef {
                 std::vector<std::string> const & indexes = {},
                 StorageOrder storage_order = StorageOrder::last_adjacent);
 
+        /** Create a DataConstRef containing an empty dictionary.
+         *
+         * @returns A DataConstRef containing an empty dictionary.
+         */
+        static DataConstRef dict();
+
+        /** Create a DataConstRef of a dictionary with the given keys and values.
+         *
+         * An even number of arguments must be given. The even arguments must be
+         * strings, and are the keys, while the odd arguments are the values.
+         * These are DataConstRef objects, so you can pass those, or a value of
+         * any type representable by DataConstRef.
+         *
+         * Example:
+         *
+         * \code{.cpp}
+         * auto mydict = Data::dict(
+         *     "id", "element1",
+         *     "stress", 12.3,
+         *     "strain", 1.23);
+         * \endcode
+         *
+         * @returns A DataConstRef containing a dictionary with the given keys
+         *          and values.
+         */
+        template <typename... Args>
+        static DataConstRef dict(Args const &... args);
+
+        /** Create a DataConstRef containing an empty list.
+         *
+         * @returns A DataConstRef containing an empty list.
+         */
+        static DataConstRef list();
+
+        /** Create a DataConstRef containing a list of the given size.
+         *
+         * The items in the list will be initialised to the nil value.
+         *
+         * @param size The size of the new list.
+         * @return A DataConstRef containing a list of nil values of length size.
+         */
+        static DataConstRef nils(std::size_t size);
+
+        /** Create a DataConstRef containing a list of the given items.
+         *
+         * Each argument must be either a DataConstRef object, or an object of a
+         * type representable by a DataConstRef object.
+         */
+        template <typename... Args>
+        static DataConstRef list(Args const &... args);
+
         /** Create a DataConstRef object from a SettingValue's value.
          *
          * Note that this will decode to whichever type is stored in the
@@ -502,6 +553,49 @@ class DataConstRef {
 
         template <typename Element>
         DataConstRef grid_data_(Element const * const data, std::size_t num_elems) const;
+
+    private:
+        // this requires packing, so needs to be non-template
+        void set_dict_item_(
+                uint32_t offset,
+                std::string const & key, DataConstRef const & value);
+
+        void init_dict_(uint32_t size);
+
+        template <typename... Args>
+        void init_dict_(
+                uint32_t offset,
+                std::string const & key, DataConstRef const & value,
+                Args const &...args);
+
+        template <typename... Args>
+        void init_dict_(
+                uint32_t offset,
+                std::string const & key, Data const & value,
+                Args const &...args);
+
+        template <typename Arg, typename... Args>
+        void init_dict_(
+                uint32_t offset,
+                std::string const & key, Arg const & value,
+                Args const &...args);
+
+        void init_list_(uint32_t size);
+
+        template <typename... Args>
+        void init_list_(
+                uint32_t offset, DataConstRef const & value,
+                Args const &...args);
+
+        template <typename... Args>
+        void init_list_(
+                uint32_t offset, Data const & value,
+                Args const &...args);
+
+        template <typename Arg, typename... Args>
+        void init_list_(
+                uint32_t offset, Arg const & value,
+                Args const &...args);
 };
 
 
@@ -579,7 +673,6 @@ class Data : public DataConstRef {
          * @returns A Data containing an empty dictionary.
          */
         static Data dict();
-        template <typename... Args>
 
         /** Create a Data containing a dictionary with the given keys and values.
          *
@@ -600,6 +693,7 @@ class Data : public DataConstRef {
          * @returns A Data containing a dictionary with the given keys and
          *          values.
          */
+        template <typename... Args>
         static Data dict(Args const &... args);
 
         /** Create a Data containing an empty list.

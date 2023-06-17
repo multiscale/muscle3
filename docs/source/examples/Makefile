@@ -69,7 +69,7 @@ endif
 
 
 .PHONY: base
-base: python rd_implementations.ymmsl
+base: python rd_implementations.ymmsl benchmark_implementations.ymmsl
 
 
 
@@ -95,7 +95,7 @@ fortran: base
 fortran_mpi: base
 	$(MAKE) -C fortran mpi
 
-rd_implementations.ymmsl: rd_implementations.ymmsl.in
+%.ymmsl: %.ymmsl.in
 	sed -e "s^MUSCLE3_EXAMPLES^$(shell pwd)^g" $^ | sed -e "s^MUSCLE3_HOME^${MUSCLE3_HOME}^g" >$@
 
 
@@ -105,6 +105,7 @@ clean:
 	$(MAKE) -C fortran clean
 	$(MAKE) -C python clean
 	rm -f rd_implementations.ymmsl
+	rm -f benchmark_implementations.ymmsl
 	rm -rf run_*/
 
 
@@ -146,3 +147,9 @@ test_fortran: base fortran
 .PHONY: test_fortran_mpi
 test_fortran_mpi: base fortran_mpi
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_fortran_mpi.ymmsl rd_settings.ymmsl
+
+.PHONY: benchmark
+benchmark: base cpp
+	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all benchmark_implementations.ymmsl benchmark_python.ymmsl benchmark_settings.ymmsl
+	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all benchmark_implementations.ymmsl benchmark_cpp.ymmsl benchmark_settings.ymmsl
+

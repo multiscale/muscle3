@@ -1,0 +1,12 @@
+ymmsl_version: v0.1
+
+settings:
+    base_size: 512
+    scale_base: 8
+    num_scales: 8
+    num_repeats: 30
+
+    driver.pre_send_delay: 0.0
+    driver.pre_recv_delay: 0.0
+    mirror.pre_send_delay: 0.0
+    mirror.pre_recv_delay: 0.0

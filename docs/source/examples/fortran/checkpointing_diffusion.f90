@@ -82,7 +82,7 @@ program diffusion
             t_cur = 0.0
         end if
 
-        do while (t_cur + dt < t_max)
+        do while (t_cur + dt < t_max .and. iteration < n_steps - 1)
             print *, 't_cur: ', t_cur, 't_max: ', t_max
             ! O_I
             sdata = LIBMUSCLE_Data_create_grid(U, 'x')

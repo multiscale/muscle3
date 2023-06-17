@@ -11,7 +11,7 @@ from api_generator import (
         Int16t, Int32t, Int64t, Member, MemFun, MemFunTmpl, MultiMemFun,
         NamedConstructor, Namespace, Obj, OverloadSet, Par,
         ShiftedIndexAssignmentOperator, Sizet, String, T, VecDbl, Vec2Dbl,
-        VecSizet, Void)
+        VecSizet, VecString, Void)
 
 
 class GridConstructor(MultiMemFun):
@@ -963,10 +963,10 @@ instance_members = [
         cpp_chain_call=lambda **kwargs: 'self_p->get_setting({}).is_a<{}>()'.format(
                 kwargs['cpp_args'], kwargs['tpl_type'])
         ),
-
     MemFunTmpl(
         [String(), Int64t(), Double(), Bool(), VecDbl('value'), Vec2Dbl('value')],
         T(), 'get_setting_as', [String('name')], True),
+    MemFun(VecString('value'), 'list_settings'),
     MemFun(Obj('PortsDescription'), 'list_ports'),
     MemFun(Bool(), 'is_connected', [String('port')]),
     MemFun(Bool(), 'is_vector_port', [String('port')]),

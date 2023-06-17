@@ -4272,6 +4272,25 @@ void LIBMUSCLE_Instance_get_setting_as_real8array2_(std::intptr_t self, char * n
     }
 }
 
+void LIBMUSCLE_Instance_list_settings_(std::intptr_t self, char ** value, std::size_t * value_shape) {
+    Instance * self_p = reinterpret_cast<Instance *>(self);
+    std::vector<std::string> result = self_p->list_settings();
+    std::size_t max_len = 0u;
+    for (auto const & v : result)
+        max_len = std::max(max_len, v.size());
+
+    static std::string ret;
+    ret.resize(result.size() * max_len, ' ');
+    for (std::size_t i = 0; i < result.size(); ++i)
+        for (std::size_t j = 0; j < result[i].size(); ++j)
+            ret[j * result.size() + i] = result[i][j];
+
+    *value = const_cast<char*>(ret.c_str());
+    value_shape[0] = result.size();
+    value_shape[1] = max_len;
+    return;
+}
+
 std::intptr_t LIBMUSCLE_Instance_list_ports_(std::intptr_t self) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     PortsDescription * result = new PortsDescription(self_p->list_ports());

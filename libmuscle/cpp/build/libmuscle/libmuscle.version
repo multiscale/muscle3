@@ -346,6 +346,7 @@
         LIBMUSCLE_Instance_get_setting_as_logical_;
         LIBMUSCLE_Instance_get_setting_as_real8array_;
         LIBMUSCLE_Instance_get_setting_as_real8array2_;
+        LIBMUSCLE_Instance_list_settings_;
         LIBMUSCLE_Instance_list_ports_;
         LIBMUSCLE_Instance_is_connected_;
         LIBMUSCLE_Instance_is_vector_port_;

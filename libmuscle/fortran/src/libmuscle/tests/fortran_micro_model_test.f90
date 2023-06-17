@@ -13,10 +13,13 @@ program micro_model
     type(LIBMUSCLE_DataConstRef) :: rdata, rdata2, rgrid
     type(LIBMUSCLE_Message) :: message
     type(LIBMUSCLE_Data) :: sdata, sgrid
-    integer :: i, err_code
+    integer :: i, err_code, settings_i
     integer (LIBMUSCLE_size), dimension(2) :: rshape
     real (LIBMUSCLE_real8), dimension(:, :), allocatable :: test_grid
     integer (LIBMUSCLE_int8), dimension(2, 3) :: test_grid_data
+    character(:), dimension(:), allocatable :: settings
+    character(:), allocatable :: setting
+    logical, dimension(7) :: setting_seen
 
     character(len=14) :: reply
     logical :: is_int
@@ -30,6 +33,31 @@ program micro_model
     i = 0
     do while (instance%reuse_instance())
         ! F_INIT
+        settings = instance%list_settings()
+        call assert_eq_integer(size(settings, 1), 7) ! test1-6, test_with_a_longer_name
+        do settings_i = 1, size(settings, 1)
+            setting = settings(settings_i)
+            if (trim(setting) .eq. 'test1') then
+                setting_seen(1) = .true.
+            elseif (trim(setting) .eq. 'test2') then
+                setting_seen(2) = .true.
+            elseif (trim(setting) .eq. 'test3') then
+                setting_seen(3) = .true.
+            elseif (trim(setting) .eq. 'test4') then
+                setting_seen(4) = .true.
+            elseif (trim(setting) .eq. 'test5') then
+                setting_seen(5) = .true.
+            elseif (trim(setting) .eq. 'test6') then
+                setting_seen(6) = .true.
+            elseif (trim(setting) .eq. 'test_with_a_longer_name') then
+                setting_seen(7) = .true.
+            else
+                print *, 'Unexpected setting name: ', trim(setting)
+                stop 1
+            endif
+        end do
+        call assert_true(all(setting_seen))
+
         call assert_true(instance%is_setting_a_int8('test1'))
         call assert_false(instance%is_setting_a_logical('test1'))
         is_int = instance%is_setting_a_int8('does_not_exist', err_code)

@@ -11,6 +11,8 @@ from ymmsl import PartialConfiguration
 from libmuscle.planner.planner import (
         Planner, Resources, InsufficientResourcesAvailable)
 from libmuscle.snapshot_manager import SnapshotManager
+from muscle3.profiling import (
+        plot_instances, plot_resources, plot_timeline, show_plots)
 
 
 _RESOURCES_INCOMPLETE_MODEL = """
@@ -30,6 +32,61 @@ def muscle3() -> None:
     Use muscle3 <command> --help for help with individual commands.
     """
     pass
+
+
+@muscle3.command(short_help='Visualise profiling information')
+@click.argument(
+        'performance_file', nargs=1, type=click.Path(
+            exists=True, file_okay=True, dir_okay=False, readable=True,
+            allow_dash=True, resolve_path=True))
+@click.option('-i', '--instances', is_flag=True, help='Show per-instance statistics')
+@click.option('-r', '--resources', is_flag=True, help='Show per-resource statistics')
+@click.option('-t', '--timeline', is_flag=True, help='Show a timeline of events')
+def profile(
+        performance_file: str, instances: bool, resources: bool, timeline: bool
+        ) -> None:
+    """Visualise profiling information.
+
+    Takes data from a performance.sqlite file written by the manager,
+    and produces one or more plots on the screen.
+
+    Profiling functionality is still somewhat experimental, so this
+    command may be changed and extended in the coming releases. Please
+    let us know if there are any changes or additional features you
+    would like to have by making an issue on GitHub, or through your
+    usual support channel.
+
+    Result:
+        With -i, shows a chart depicting for each instance how much time
+        it spend running, waiting and communicating.
+
+        With -r, shows a chart depicting for each resource (CPU core)
+        which instances ran on it for how long.
+
+        With -t, shows a timeline of the different instances, depicting
+        when they were sending, waiting, receiving and running.
+    """
+    if instances:
+        plot_instances(Path(performance_file))
+
+    if resources:
+        plot_resources(Path(performance_file))
+
+    if timeline:
+        plot_timeline(Path(performance_file))
+        click.echo(
+                'Hint: To inspect the timeline in more detail, use the'
+                ' pan and zoom buttons at the bottom of the window.')
+
+    if instances or resources or timeline:
+        show_plots()
+    else:
+        click.echo(
+                'Please specify -i, -r or -t to choose which data'
+                ' you would like to see.')
+        sys.exit(1)
+
+    sys.exit(0)
 
 
 @muscle3.command(short_help='Calculate resources needed for a simulation')

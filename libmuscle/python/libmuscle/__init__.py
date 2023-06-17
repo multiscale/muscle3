@@ -1,6 +1,7 @@
 from libmuscle.communicator import Message
 from libmuscle.grid import Grid
 from libmuscle.instance import Instance, InstanceFlags
+from libmuscle.manager.profile_database import ProfileDatabase
 from libmuscle.version import __version__
 from libmuscle import runner
 
@@ -9,7 +10,8 @@ from libmuscle import runner
 # that it's not present.
 
 __all__ = [
-        '__version__', 'Grid', 'Instance', 'InstanceFlags', 'Message', 'runner']
+        '__version__', 'Grid', 'Instance', 'InstanceFlags', 'Message',
+        'ProfileDatabase', 'runner']
 
 
 # export InstanceFlag members to the module namespace

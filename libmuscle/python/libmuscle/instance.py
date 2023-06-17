@@ -272,6 +272,16 @@ class Instance:
         """
         self.__shutdown(message)
 
+    def list_settings(self) -> List[str]:
+        """List settings by name.
+
+        This function returns a list of names of the available settings.
+
+        Return:
+            A list of setting names.
+        """
+        return self._settings_manager.list_settings(self._instance_id)
+
     @overload
     def get_setting(self, name: str, typ: Literal['str']) -> str:
         ...

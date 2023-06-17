@@ -14,6 +14,58 @@ def test_create(settings_manager):
     assert len(settings_manager.overlay) == 0
 
 
+def test_list_settings_globals(settings_manager):
+    ref = Reference
+    settings_manager.base[ref('test1')] = 13
+    settings_manager.base[ref('test2')] = 14
+    assert settings_manager.list_settings(ref('macro')) == ['test1', 'test2']
+
+
+def test_list_settings_specifics(settings_manager):
+    ref = Reference
+    settings_manager.base[ref('macro.test1')] = 'test1'
+    settings_manager.base[ref('micro.test2')] = 'test2'
+    assert settings_manager.list_settings(ref('macro')) == ['test1']
+
+    settings_manager.base[ref('micro.test1')] = 'test1'
+    assert settings_manager.list_settings(ref('macro')) == ['test1']
+
+
+def test_list_settings_override(settings_manager):
+    ref = Reference
+    settings_manager.base[ref('test1')] = 'test1'
+    settings_manager.base[ref('macro.test1')] = 42
+    assert settings_manager.list_settings(ref('macro')) == ['test1']
+
+    settings_manager.base[ref('micro.test1')] = 43
+    assert settings_manager.list_settings(ref('macro')) == ['test1']
+
+    settings_manager.base[ref('test2')] = 'test2'
+    assert settings_manager.list_settings(ref('macro')) == ['test1', 'test2']
+
+
+def test_list_settings_overlay(settings_manager):
+    ref = Reference
+    settings_manager.base[ref('test1')] = 'test1'
+    settings_manager.overlay[ref('test1')] = 'test1'
+    assert settings_manager.list_settings(ref('macro')) == ['test1']
+
+    settings_manager.overlay[ref('test2')] = 'test2'
+    assert settings_manager.list_settings(ref('macro')) == ['test1', 'test2']
+
+
+def test_list_settings_overlay_override(settings_manager):
+    ref = Reference
+    settings_manager.base[ref('test1')] = 'test1'
+    settings_manager.base[ref('micro.test2')] = 1
+    settings_manager.overlay[ref('macro.test1')] = 13
+    settings_manager.overlay[ref('micro.test2')] = 2
+
+    assert settings_manager.list_settings(ref('macro')) == ['test1']
+    assert settings_manager.list_settings(ref('micro')) == ['test1', 'test2']
+    assert settings_manager.list_settings(ref('meso')) == ['test1']
+
+
 def test_get_setting(settings_manager):
     ref = Reference
     settings_manager.base[ref('test')] = 13

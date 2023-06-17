@@ -560,6 +560,95 @@ class VecSizet(Par):
         return ''  # memfun has void signature
 
 
+class VecString(Par):
+    """Represents a vector of string parameter.
+    """
+    def tname(self) -> str:
+        return 'characterarray'
+
+    def fc_cpp_type(self) -> str:
+        return 'std::vector<std::string>'
+
+    def f_type(self) -> List[Tuple[str, str]]:
+        return self._regular_type('character, dimension(:,:)')
+
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
+        return True, self._regular_type(
+                [('character(:), dimension(:), allocatable', self.name)])
+
+    def f_aux_variables(self) -> List[Tuple[str, str]]:
+        return [('character, pointer, dimension(:,:)', 'f_ret_ptr'),
+                ('integer', 'i_loop, j_loop'),
+                ('character(:), allocatable', 'tmp_s')]
+
+    def f_chain_arg(self) -> str:
+        return '{}, int(shape({}), c_size_t)'.format(self.name, self.name)
+
+    def f_call_c(self, result_name: str, call: str) -> str:
+        return '    call {}\n\n'.format(call)
+
+    def f_return_result(self, return_name: str, result_name: str) -> str:
+        return ('    call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)\n'
+                '    allocate (character(ret_val_shape(2)) :: {0}(ret_val_shape(1)))\n'
+                '    allocate (character(ret_val_shape(2)) :: tmp_s)\n'
+                '    do i_loop = 1, ret_val_shape(1)\n'
+                '        do j_loop = 1, ret_val_shape(2)\n'
+                '            tmp_s(j_loop:j_loop) = f_ret_ptr(i_loop, j_loop)\n'
+                '        end do\n'
+                '        {0}(i_loop) = tmp_s\n'
+                '    end do\n').format(return_name)
+
+    def fi_type(self) -> List[Tuple[str, str]]:
+        return self._regular_type(
+                ['character, dimension(*)',
+                 ('integer (c_size_t), dimension(2)', '_shape')])
+
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
+        return self._regular_type(
+                ['type (c_ptr)',
+                 ('integer (c_size_t), dimension(2)', '_shape')])
+
+    def fc_type(self) -> List[Tuple[str, str]]:
+        return self._regular_type(['char *', ('std::size_t *', '_shape')])
+
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
+        return self._regular_type(['char **', ('std::size_t *', '_shape')])
+
+    def fc_convert_input(self) -> str:
+        raise NotImplementedError()
+
+    def fc_cpp_arg(self) -> str:
+        return self.name + '_s'
+
+    def fc_get_result(self, cpp_chain_call: str) -> str:
+        return 'std::vector<std::string> result = {}'.format(
+                cpp_chain_call)
+
+    def fc_return(self) -> str:
+        result = (
+                'std::size_t max_len = 0u;\n'
+                'for (auto const & v : result)\n'
+                '    max_len = std::max(max_len, v.size());\n'
+                '\n'
+                'static std::string ret;\n'
+                # Note: "empty" spots in the array are a space, to work with Fortran
+                'ret.resize(result.size() * max_len, \' \');\n'
+                'for (std::size_t i = 0; i < result.size(); ++i)\n'
+                '    for (std::size_t j = 0; j < result[i].size(); ++j)\n'
+                '        ret[j * result.size() + i] = result[i][j];\n'
+                '\n'
+                '*{0} = const_cast<char*>(ret.c_str());\n'
+                '{0}_shape[0] = result.size();\n'
+                '{0}_shape[1] = max_len;\n'
+                'return;\n'
+                )
+
+        return indent(result.format(self.name), '    ')
+
+    def fc_return_default(self) -> str:
+        return ''  # memfun has void signature
+
+
 class Array(Par):
     def __init__(
             self, ndims: int, elem_type: Par, name: Optional[str] = None

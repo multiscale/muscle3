@@ -214,6 +214,7 @@ def mmp_server_config_simple(yatiml_log_warning):
             '  test6:\n'
             '    - [1.0, 2.0]\n'
             '    - [3.0, 1.0]\n'
+            '  test_with_a_longer_name: 1\n'
             )
 
 

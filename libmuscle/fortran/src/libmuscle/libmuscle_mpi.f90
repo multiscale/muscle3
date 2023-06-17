@@ -738,6 +738,7 @@ module libmuscle_mpi
         procedure :: get_setting_as_logical => LIBMUSCLE_Instance_get_setting_as_logical
         procedure :: get_setting_as_real8array => LIBMUSCLE_Instance_get_setting_as_real8array
         procedure :: get_setting_as_real8array2 => LIBMUSCLE_Instance_get_setting_as_real8array2
+        procedure :: list_settings => LIBMUSCLE_Instance_list_settings
         procedure :: list_ports => LIBMUSCLE_Instance_list_ports
         procedure :: is_connected => LIBMUSCLE_Instance_is_connected
         procedure :: is_vector_port => LIBMUSCLE_Instance_is_vector_port
@@ -790,6 +791,7 @@ module libmuscle_mpi
     public :: LIBMUSCLE_Instance_get_setting_as_logical
     public :: LIBMUSCLE_Instance_get_setting_as_real8array
     public :: LIBMUSCLE_Instance_get_setting_as_real8array2
+    public :: LIBMUSCLE_Instance_list_settings
     public :: LIBMUSCLE_Instance_list_ports
     public :: LIBMUSCLE_Instance_is_connected
     public :: LIBMUSCLE_Instance_is_vector_port
@@ -3583,6 +3585,18 @@ module libmuscle_mpi
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
         end subroutine LIBMUSCLE_MPI_Instance_get_setting_as_real8array2_
+
+        subroutine LIBMUSCLE_MPI_Instance_list_settings_( &
+                self, &
+                ret_val, &
+                ret_val_shape) &
+                bind(C, name="LIBMUSCLE_MPI_Instance_list_settings_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_size_t), dimension(2), intent(out) :: ret_val_shape
+        end subroutine LIBMUSCLE_MPI_Instance_list_settings_
 
         integer (c_intptr_t) function LIBMUSCLE_MPI_Instance_list_ports_(self) &
                 bind(C, name="LIBMUSCLE_MPI_Instance_list_ports_")
@@ -17721,6 +17735,34 @@ contains
         call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
         value = f_ret_ptr
     end subroutine LIBMUSCLE_Instance_get_setting_as_real8array2
+
+    function LIBMUSCLE_Instance_list_settings( &
+            self)
+        implicit none
+        class(LIBMUSCLE_Instance), intent(in) :: self
+        character(:), dimension(:), allocatable :: LIBMUSCLE_Instance_list_settings
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t), dimension(2) :: ret_val_shape
+        character, pointer, dimension(:,:) :: f_ret_ptr
+        integer :: i_loop, j_loop
+        character(:), allocatable :: tmp_s
+
+        call LIBMUSCLE_MPI_Instance_list_settings_( &
+            self%ptr, &
+            ret_val, &
+            ret_val_shape)
+
+        call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
+        allocate (character(ret_val_shape(2)) :: LIBMUSCLE_Instance_list_settings(ret_val_shape(1)))
+        allocate (character(ret_val_shape(2)) :: tmp_s)
+        do i_loop = 1, ret_val_shape(1)
+            do j_loop = 1, ret_val_shape(2)
+                tmp_s(j_loop:j_loop) = f_ret_ptr(i_loop, j_loop)
+            end do
+            LIBMUSCLE_Instance_list_settings(i_loop) = tmp_s
+        end do
+    end function LIBMUSCLE_Instance_list_settings
 
     function LIBMUSCLE_Instance_list_ports( &
             self)

@@ -129,6 +129,9 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors):
                 python_processes.append(proc)
                 continue
             elif language == "cpp":
+                # executable = 'gdb'
+                # args = ('--batch', '-ex', 'run', '-ex', 'bt', '--args',
+                #         cpp_build_dir / actor)
                 executable = cpp_build_dir / actor
             elif language == "mpicpp":
                 assert len(args) > 0, "must provide at least number of mpi instances"

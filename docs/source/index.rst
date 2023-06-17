@@ -33,11 +33,15 @@ Cham.  `<https://doi.org/10.1007/978-3-030-50433-5_33>`_
    installing
    tutorial
    distributed_execution
+   profiling
+
    coupling
-   containers
+
    cplusplus
    fortran
    mpi
+
+   containers
    uncertainty_quantification
    checkpointing
    tips

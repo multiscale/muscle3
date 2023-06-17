@@ -15,6 +15,7 @@
 #include <libmuscle/profiler.hpp>
 #include <libmuscle/profiling.hpp>
 
+#include <time.h>
 #include <utility>
 #include <gtest/gtest.h>
 
@@ -33,14 +34,24 @@ int main(int argc, char *argv[]) {
 }
 
 
+namespace ymmsl { namespace impl {
+
+bool operator==(Port const & lhs, Port const & rhs) {
+    return lhs.name == rhs.name && lhs.oper == rhs.oper;
+}
+
+} }
+
+
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 // Helper for accessing internal state
 
-struct TestProfiler {
-    static std::vector<ProfileEvent> & events_(Profiler & profiler) {
-        return profiler.events_;
-    }
+class TestProfiler {
+    public:
+        static std::vector<ProfileEvent> & events_(Profiler & profiler) {
+            return profiler.events_;
+        }
 };
 
 
@@ -51,10 +62,6 @@ bool operator==(ProfileTimestamp const & lhs, ProfileTimestamp const & rhs) {
 
 bool operator<(ProfileTimestamp const & lhs, ProfileTimestamp const & rhs) {
     return lhs.nanoseconds < rhs.nanoseconds;
-}
-
-bool operator==(Port const & lhs, Port const & rhs) {
-    return lhs.name == rhs.name && lhs.oper == rhs.oper;
 }
 
 bool operator==(ProfileEvent const & lhs, ProfileEvent const & rhs) {
@@ -122,6 +129,13 @@ TEST(libmuscle_profiler, test_auto_stop_time) {
 
     ProfileTimestamp t1;
     ProfileEvent e(ProfileEventType::send, t1);
+
+    // Wait a bit to ensure we get a different timestamp on platforms with
+    // low time resolution. A millisecond should definitely do it.
+    timespec sleep_time;
+    sleep_time.tv_sec = 0l;
+    sleep_time.tv_nsec = 1000000l;
+    nanosleep(&sleep_time, nullptr);
 
     profiler.record_event(std::move(e));
 

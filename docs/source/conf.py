@@ -53,6 +53,7 @@ extensions = [
         'sphinx.ext.viewcode',
         'sphinxfortran.fortran_domain',
         'sphinx_tabs.tabs',
+        'sphinx_toolbox.collapse',
         'sphinx_click']
 
 # Add any paths that contain templates here, relative to this directory.

@@ -43,9 +43,10 @@ distclean: clean
 cleantargets := clean distclean
 ifeq "$(filter $(MAKECMDGOALS),$(cleantargets))" ""
 
-EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-Wl,-rpath-link,$(DIR)/lib)
+EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-Wl,-rpath,$(DIR)/lib)
 
 CXXFLAGS += -I$(libmuscle_testdir) -isystem $(googletest_ROOT)/include -pthread
+CXXFLAGS += $(DEBUGFLAGS)
 
 LDFLAGS += $(CURDIR)/../libmuscle_d.a $(CURDIR)/../../ymmsl/libymmsl_d.a
 LDFLAGS += $(googletest_LIB) -pthread
@@ -59,46 +60,46 @@ LDFLAGS2 += $(EXTRA_LINK_DIRS)
 endif
 
 %.d: %.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -E -MM -MT $(@:.d=.o) $< -o $@
+	$(CXX) $(CXXFLAGS) -E -MM -MT $(@:.d=.o) $< -o $@
 
 mpi%.d: mpi%.cpp
-	$(MPICXX) $(CPPFLAGS) $(CXXFLAGS) -E -MM -MT $(@:.d=.o) $< -o $@
+	$(MPICXX) $(CXXFLAGS) -E -MM -MT $(@:.d=.o) $< -o $@
 
 %.o: %.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 test_%: test_%.o $(CURDIR)/../libmuscle_d.a $(CURDIR)/../../ymmsl/libymmsl_d.a
-	$(CXX) $(DEBUGFLAGS) $< -o $@ $(LDFLAGS2)
+	$(CXX) $(CXXFLAGS) $< -o $@ $(LDFLAGS2)
 
 %_test: %_test.o $(CURDIR)/../libmuscle_d.a $(CURDIR)/../../ymmsl/libymmsl_d.a
-	$(CXX) $(DEBUGFLAGS) $< -o $@ $(LDFLAGS2)
+	$(CXX) $(CXXFLAGS) $< -o $@ $(LDFLAGS2)
 
 test_communicator.o: test_communicator.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@ -pthread
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -pthread
 
 test_communicator: test_communicator.o $(CURDIR)/../../ymmsl/libymmsl_d.a
-	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_LIB) -pthread
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(googletest_LIB) -pthread
 
 test_instance.o: test_instance.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@ -pthread
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -pthread
 
 test_instance: test_instance.o $(CURDIR)/../../ymmsl/libymmsl_d.a
-	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_LIB) -pthread $(LDFLAGS2)
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(googletest_LIB) -pthread $(LDFLAGS2)
 
 test_logging.o: test_logging.cpp
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@ -pthread
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -pthread
 
 test_logging: test_logging.o $(CURDIR)/../../ymmsl/libymmsl_d.a
-	$(CXX) $(DEBUGFLAGS) $^ -o $@ $(googletest_LIB) -pthread
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(googletest_LIB) -pthread
 
 mpi_micro_model_test: mpi_micro_model_test.cpp $(CURDIR)/../../ymmsl/libymmsl_d.a $(CURDIR)/../../libmuscle/libmuscle_mpi_d.a
-	$(MPICXX) $(CXXFLAGS) $(DEBUGFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS2)
+	$(MPICXX) $(CXXFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS2)
 
 mpi_component_test: mpi_component_test.cpp $(CURDIR)/../../ymmsl/libymmsl_d.a $(CURDIR)/../libmuscle_mpi_d.a
-	$(MPICXX) $(CXXFLAGS) $(DEBUGFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS2)
+	$(MPICXX) $(CXXFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS2)
 
 mpi_snapshot_micro_test: mpi_snapshot_micro_test.cpp $(CURDIR)/../../ymmsl/libymmsl_d.a $(CURDIR)/../libmuscle_mpi_d.a
-	$(MPICXX) $(CXXFLAGS) $(DEBUGFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS2)
+	$(MPICXX) $(CXXFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS2)
 
 
 empty :=

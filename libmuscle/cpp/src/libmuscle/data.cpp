@@ -1,5 +1,6 @@
 #include <cstring>
 #include <functional>
+#include <limits>
 #include <memory>
 #include <numeric>
 #include <stdexcept>
@@ -28,13 +29,42 @@ template <typename Element>
 ExtTypeId grid_type_id_();
 
 template <>
-ExtTypeId grid_type_id_<std::int32_t>() {
-    return ExtTypeId::grid_int32;
+ExtTypeId grid_type_id_<int>() {
+    static_assert(
+            std::numeric_limits<int>::digits == 31 ||
+            std::numeric_limits<int>::digits == 63,
+            "int is not 32 or 64 bits");
+
+    if (std::numeric_limits<int>::digits == 31)
+        return ExtTypeId::grid_int32;
+    else if (std::numeric_limits<int>::digits == 63)
+        return ExtTypeId::grid_int64;
 }
 
 template <>
-ExtTypeId grid_type_id_<std::int64_t>() {
-    return ExtTypeId::grid_int64;
+ExtTypeId grid_type_id_<long int>() {
+    static_assert(
+            std::numeric_limits<long int>::digits == 31 ||
+            std::numeric_limits<long int>::digits == 63,
+            "long int is not 32 or 64 bits");
+
+    if (std::numeric_limits<long int>::digits == 31)
+        return ExtTypeId::grid_int32;
+    else if (std::numeric_limits<long int>::digits == 63)
+        return ExtTypeId::grid_int64;
+}
+
+template <>
+ExtTypeId grid_type_id_<long long int>() {
+    static_assert(
+            std::numeric_limits<long long int>::digits == 31 ||
+            std::numeric_limits<long long int>::digits == 63,
+            "long long int is not 32 or 64 bits");
+
+    if (std::numeric_limits<long long int>::digits == 31)
+        return ExtTypeId::grid_int32;
+    else if (std::numeric_limits<long long int>::digits == 63)
+        return ExtTypeId::grid_int64;
 }
 
 template <>
@@ -56,13 +86,42 @@ template <typename Element>
 std::string grid_type_name_();
 
 template <>
-std::string grid_type_name_<std::int32_t>() {
-    return "int32";
+std::string grid_type_name_<int>() {
+    static_assert(
+            std::numeric_limits<int>::digits == 31 ||
+            std::numeric_limits<int>::digits == 63,
+            "int is not 32 or 64 bits");
+
+    if (std::numeric_limits<int>::digits == 31)
+        return "int32";
+    else if (std::numeric_limits<int>::digits == 63)
+        return "int64";
 }
 
 template <>
-std::string grid_type_name_<std::int64_t>() {
-    return "int64";
+std::string grid_type_name_<long int>() {
+    static_assert(
+            std::numeric_limits<long int>::digits == 31 ||
+            std::numeric_limits<long int>::digits == 63,
+            "long int is not 32 or 64 bits");
+
+    if (std::numeric_limits<long int>::digits == 31)
+        return "int32";
+    else if (std::numeric_limits<long int>::digits == 63)
+        return "int64";
+}
+
+template <>
+std::string grid_type_name_<long long int>() {
+    static_assert(
+            std::numeric_limits<long long int>::digits == 31 ||
+            std::numeric_limits<long long int>::digits == 63,
+            "long long int is not 32 or 64 bits");
+
+    if (std::numeric_limits<long long int>::digits == 31)
+        return "int32";
+    else if (std::numeric_limits<long long int>::digits == 63)
+        return "int64";
 }
 
 template <>
@@ -221,14 +280,20 @@ DataConstRef DataConstRef::grid(
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-template DataConstRef DataConstRef::grid<std::int32_t>(
-        std::int32_t const * const data,
+template DataConstRef DataConstRef::grid<int>(
+        int const * const data,
         std::vector<std::size_t> const & shape,
         std::vector<std::string> const & indexes,
         StorageOrder storage_order);
 
-template DataConstRef DataConstRef::grid<std::int64_t>(
-        std::int64_t const * const data,
+template DataConstRef DataConstRef::grid<long int>(
+        long int const * const data,
+        std::vector<std::size_t> const & shape,
+        std::vector<std::string> const & indexes,
+        StorageOrder storage_order);
+
+template DataConstRef DataConstRef::grid<long long int>(
+        long long int const * const data,
         std::vector<std::size_t> const & shape,
         std::vector<std::string> const & indexes,
         StorageOrder storage_order);
@@ -416,9 +481,11 @@ bool DataConstRef::is_a_grid_of() const {
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-template bool DataConstRef::is_a_grid_of<std::int32_t>() const;
+template bool DataConstRef::is_a_grid_of<int>() const;
 
-template bool DataConstRef::is_a_grid_of<std::int64_t>() const;
+template bool DataConstRef::is_a_grid_of<long int>() const;
+
+template bool DataConstRef::is_a_grid_of<long long int>() const;
 
 template bool DataConstRef::is_a_grid_of<float>() const;
 
@@ -603,7 +670,9 @@ template float const * DataConstRef::elements<float>() const;
 
 template int const * DataConstRef::elements<int>() const;
 
-template long const * DataConstRef::elements<long>() const;
+template long int const * DataConstRef::elements<long int>() const;
+
+template long long int const * DataConstRef::elements<long long int>() const;
 
 #endif
 
@@ -774,14 +843,20 @@ Data Data::grid(
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-template Data Data::grid<std::int32_t>(
-        std::int32_t const * const data,
+template Data Data::grid<int>(
+        int const * const data,
         std::vector<std::size_t> const & shape,
         std::vector<std::string> const & indexes,
         StorageOrder storage_order);
 
-template Data Data::grid<std::int64_t>(
-        std::int64_t const * const data,
+template Data Data::grid<long int>(
+        long int const * const data,
+        std::vector<std::size_t> const & shape,
+        std::vector<std::string> const & indexes,
+        StorageOrder storage_order);
+
+template Data Data::grid<long long int>(
+        long long int const * const data,
         std::vector<std::size_t> const & shape,
         std::vector<std::string> const & indexes,
         StorageOrder storage_order);

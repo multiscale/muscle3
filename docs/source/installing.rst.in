@@ -56,63 +56,173 @@ then you can use
     ~$ pip3 install ymmsl
 
 
-C++
----
+C++ and Fortran
+---------------
 
-To work with MUSCLE3 from C++, you need to install the C++ version of
-libmuscle. Currently, that means building it from source. This is a bit more
-involved than installing the Python version, but comparable to (and maybe
-slightly easier than) installing most C++ libraries.
+To work with MUSCLE3 from C++ and/or Fortran, you need to install the native
+version of libmuscle. Currently, that means building it from source. This is a
+bit more involved than installing the Python version, but comparable to (and
+maybe slightly easier than) installing most C++ or Fortran libraries.
 
 Prerequisites
 `````````````
 
-To build libmuscle, we're going to need some tools. In particular, we need a C++
-compiler and GNU make. MUSCLE3 uses C++14, so you need at least g++ 4.9.3.
-Clang is also supported, as are the proprietary Intel® [#f1]_ compilers; see the
-instructions below for how to use them. Other compilers have not been tested.
-If you want to try, go right ahead, we'd love to have feedback on this. Building
-has been tested with gmake 3.82 and 4.1.
+Building libmuscle is currently supported on GNU/Linux and macOS. To build
+libmuscle, we'll need:
 
-If you're doing C++ development on a reasonably modern Linux, then you probably
-already have a suitable compiler installed. If not, on a Debian (or Ubuntu)
-based system, ``sudo apt-get install build-essential cmake gfortran pkg-config
-wget`` should get you set up. On a cluster, there is usually a ``module load
-g++`` or similar command available that sets you up with g++ and associated
-tools, and similar for a Fortran compiler. The exact command will vary from
-machine to machine, so consult the documentation for your cluster and/or ask the
-helpdesk. ``cmake`` is only needed to build the MessagePack dependency, so if
-that's already available then you don't need ``cmake```. On a cluster, there is
-usually a ``cmake`` module to load.
+- A C++14 compiler, like GCC, Clang, or the proprietary Intel® [#f1]_ compilers
+- GNU make 3.82 or later
+- CMake
+- PkgConfig
+- Curl or wget
+- Some common UNIX utilities like ar and cp and sed
 
-MUSCLE3 can be built with **clang** as well, if you prefer. You'll need to
-install it using something like ``sudo apt-get install clang``, and modify the
-build command a bit, see below. Note that clang does not have a production-ready
-Fortran compiler yet, but the commands below will help you build the C++ part
-with clang, and the Fortran part with gfortran.
+There are two more optional dependencies:
 
-For Intel®, you will have to install the Intel® oneAPI according to the
-instructions on the Intel® website. If you're on Ubuntu and you chose to use the
-repository, then you need at least ``intel-oneapi-compiler-dpcpp-cpp``
-and ``intel-oneapi-compiler-fortran``.
+- A Fortran compiler, like GFortran or the Intel one (only for Fortran support)
+- OpenMPI or Intel MPI (only for MPI support)
 
-If your submodels use MPI, then you'll need to compile the MPI support for
-MUSCLE3. This requires an MPI library to be available. Libmuscle has been
-tested with OpenMPI on Ubuntu, but should work with other MPI implementations
-(this being the point of the MPI standard). On Debian/Ubuntu, ``sudo apt-get
-install libopenmpi-dev`` will install the OpenMPI development files needed to
-compile libmuscle C++ with MPI support. On a cluster, there is probably a
-``module load openmpi`` or similar command to make MPI available. If you are
-using the Intel® compiler, then you'll probably want to use Intel® MPI as well,
-which you can get from the ``intel-oneapi-mpi-devel`` package. MUSCLE3 only
-uses very basic MPI functionality, so any version should do. MUSCLE3 will
-automatically detect the availability of MPI, and build the MPI version of the
-library if MPI is available.
+If you are compiling models then you probably already have most or all of the
+required tools installed, and the libmuscle build system tries to support a
+range of tools so that you can work with what's familiar.
 
-(No) Dependencies
+.. tabs::
+
+   .. group-tab:: Linux
+
+      MUSCLE3 supports three different compilers on Linux: GCC, Clang, and
+      Intel. You'll need at least one of those to build libmuscle. The Flang
+      Fortran compiler and derivatives like AOCC Fortran are known not to work,
+      and the Cray Fortran compiler is also problematic. Other compilers may or
+      may not work, please let us know if you try one.
+
+      .. tabs::
+
+         .. group-tab:: GCC
+
+            On Debian (or Ubuntu) based desktop systems, ``sudo apt-get install
+            g++`` will install the GNU C++ compiler. If you need Fortran too,
+            use ``sudo apt-get install g++ gfortran`` instead to also get
+            GFortran.
+
+         .. group-tab:: Clang
+
+            On Debian (or Ubuntu) based desktop systems, ``sudo apt-get install
+            clang`` will install Clang. Since there is no Fortran front-end for
+            clang yet, you'll have to combine it with GFortran using ``sudo
+            apt-get install clang gfortran`` if you need or want both Clang and
+            Fortran support. Note that you need a slightly modified build
+            command to make this work, see below.
+
+         .. group-tab:: Intel
+
+            For Intel®, you will have to install the Intel® oneAPI according to
+            the instructions on the Intel® website. If you're on Ubuntu and you
+            chose to use the repository, then you need at least
+            ``intel-oneapi-compiler-dpcpp-cpp``, and
+            ``intel-oneapi-compiler-fortran`` for Fortran support.
+
+            If you are using the Intel® compiler, then you'll probably want to
+            use Intel® MPI as well, which you can get from the
+            ``intel-oneapi-mpi-devel`` package.
+
+      On a Debian (or Ubuntu) based desktop system, ``sudo apt-get install
+      build-essential cmake pkg-config wget`` should install all the other
+      necessities. If you need MPI support, then you can use ``sudo apt-get
+      install libopenmpi-dev`` to install OpenMPI.
+
+      On an HPC cluster, there are usually ``module load`` commands that will
+      make the compiler, gmake and cmake available, as well as MPI if needed.
+      The exact command will vary from machine to machine, so consult the
+      documentation for your cluster and/or ask the helpdesk, or try ``module
+      avail`` for a list of what's there.
+
+      ``cmake`` is only needed to build the MessagePack dependency, so if
+      that's already available then you don't need ``cmake``.
+
+   .. group-tab:: macOS
+
+      .. tabs::
+
+         .. group-tab:: Clang
+
+            The development tools for macOS are called XCode, and you've
+            probably got them installed already. XCode includes Clang as its
+            default compiler, and the MUSCLE3 build system will automatically
+            use it.
+
+            To get the other tools, we recommend using Homebrew to install them.
+            Depending on the version of macOS and XCode you're running, you may
+            have to add CMake and PkgConfig using
+
+            .. code-block:: bash
+
+               brew install cmake
+               brew install pkg-config
+
+            Note that XCode does not include a Fortran compiler. If you need
+            Fortran on macOS, you should use GCC instead of Clang/XCode, see the
+            other tab.
+
+
+         .. group-tab:: GCC and GFortran
+
+            If you need Fortran support on macOS, then you'll have to install
+            the GNU compilers, as XCode doesn't have Fortran support. The
+            easiest way to do this is using Homebrew:
+
+            .. code-block:: bash
+
+               brew install gcc
+
+            The other tools can be installed using Homebrew as well. In
+            particular, you may have to install CMake and PkgConfig using
+
+            .. code-block:: bash
+
+               brew install cmake
+               brew install pkg-config
+
+
+            Since XCode provides a ``gcc`` command that actually calls Clang,
+            you'll need to explicitly tell MUSCLE3 to use g++ and gfortran, see
+            the instructions below.
+
+
+      .. warning::
+
+         Do not use Homebrew to install MessagePack. The Homebrew
+         installation seems to have a broken PkgConfig file, causing it to
+         be misdetected by the MUSCLE3 build system. Instead, just let
+         MUSCLE3 download and install it for you and all will be fine.
+
+   .. group-tab:: Cray HPC
+
+      .. tabs::
+
+         .. group-tab:: GCC and GFortran
+
+            On Cray machines
+
+            .. code-block:: bash
+
+               module load PrgEnv-gnu cray-mpich cray-python
+
+            should get you set up with the GNU toolchain.
+
+
+      The Cray machine this was tested on also had AOCC (the AMD compiler) and
+      Cray's CCE compiler available. AOCC's Flang-based Fortran compiler has a
+      bug that causes it to give an error when compiling, and when compiled with
+      the Cray compiler MUSCLE3's examples crash. So those compilers currently
+      don't work. If you have an Intel-based Cray machine that has the Intel
+      compiler then we'd expect it to work but haven't been able to test this.
+
+
+(No) dependencies
 `````````````````
 
-MUSCLE3 is mostly self-contained, but it does have twe dependencies, one of
+MUSCLE3 is mostly self-contained, but it does have two dependencies, one of
 which is required. If you have them available, then they should be detected
 automatically. If not, MUSCLE3 will **download and install them
 automatically**.
@@ -130,8 +240,17 @@ how to point the build to your installation.) This avoids having two different
 versions around and active at the same time. Otherwise, it's easier to rely on
 the automatic installation.
 
-Downloading MUSCLE3
-```````````````````
+.. collapse:: Note on macOS, Homebrew and MessagePack
+
+   You can install MessagePack using Homebrew (``brew install msgpack-cxx``),
+   but unfortunately this does not install the PkgConfig files describing the
+   installation. As a result, the MUSCLE3 build system cannot use the
+   installation; it will build its own copy instead. This should work fine.
+
+|
+
+Downloading
+```````````
 
 With the tools available, we can download and install MUSCLE3. First, we create
 a working directory, download MUSCLE3 into it, then unpack the downloaded
@@ -148,101 +267,200 @@ archive and enter the main directory:
 
 Of course, you can put the source anywhere you like.
 
+Building
+````````
+Building MUSCLE3 is done by running ``make`` in the source directory, but
+depending on the platform, a few extra definitions may be needed to inform the
+build system of how we want it to do the build.
 
-Building MUSCLE3
-````````````````
+.. tabs::
 
-The basic command for building MUSCLE3 is:
+   .. group-tab:: Linux
 
-.. code-block:: bash
+      .. tabs::
 
-  ~/muscle3_source/muscle3-%%VERSION%%$ make
+         .. group-tab:: GCC
 
+            Using GCC (and GFortran, if available) on Linux is the default, so
+            to start the build you can use
 
-There are a few options that can be added by setting them as environment
-variables. These are as follows:
+            .. code-block:: bash
 
-NCORES=<n>
-    Use the given number of cores to compile MUSCLE3. By default, MUSCLE3 will
-    use as many cores (threads) as you have. If you want to use fewer, you can
-    set the number here. Using more will not make it go faster, and is not
-    recommended.
+              ~/muscle3_source/muscle3-%%VERSION%%$ make
 
-CXX=<compiler command>
-    By default, MUSCLE3 will try to compile itself using ``g++`` or
-    ``clang++``. If you want to use a different compiler, then you can set CXX
-    to something else.
+         .. group-tab:: Clang
 
-MPICXX=<compiler command>
-    To compile MPI code, MUSCLE3 will try to prefix the CXX command with
-    ``mpi``, and if that's not available try ``mpic++``. To override, set MPICXX
-    to the desired command.
+            To build with clang, use
 
-FC=<compiler command>
-    Sets the compiler command for Fortran files. MUSCLE3 will try ``gfortran``,
-    ``f95`` and ``f77``. To use something else, set this variable.
+            .. code-block:: bash
 
-MPIFC=<compiler command>
-    The command for compiling Fortran MPI code. MUSCLE3 will try to prefix FC
-    with ``mpi``, then try ``mpifort`` and ``mpif90``. Setting MPIFC will
-    override this choice.
+              ~/mucle3_source/muscle3-%%VERSION%%$ CXXFLAGS=-fPIE OMPI_CXX=clang++ CXX=clang++ make
 
 
-DOWNLOAD=<download command>
-    MUSCLE3 will try to use either ``wget`` or ``curl -LO`` to download
-    dependencies. This lets you override the command to use, or select one
-    explicitly. The command should accept a URL as the first argument, and
-    download the file to the working directory, saving it under its original
-    name.
+            This will tell the build system to use clang for compiling the C++
+            code and its MPI support, but still use GFortran to compile the
+            Fortran code (if GFortran is installed). The extra ``-fPIE`` switch
+            is needed to make that combination work on some common platforms.
 
-TAR=<tar command>
-    This overrides the command used to unpack dependencies, which by default is
-    ``tar``.
+            If you don't have MPI support installed then ``OMPI_CXX`` will not
+            be used, but it won't get in the way either.
 
-msgpack_ROOT=<directory>
-    Also look in the given directory when detecting the MsgPack library.
+         .. group-tab:: Intel
 
-googletest_ROOT=<directory>
-    Also look in the given directory when detecting the GoogleTest library.
+            To build with the Intel® compiler, use
 
-As an example, to build libmuscle using 2 cores, you would do:
+            .. code-block:: bash
 
-.. code-block:: bash
+              ~/muscle3_source/muscle3-%%VERSION%%$ CXX=icpx MPICXX='mpiicpc -cxx=icpx' FC=ifx MPIFC='mpiifort -fc=ifx' make
 
-  ~/muscle3_source/muscle3-%%VERSION%%$ NCORES=2 make
+
+            This will tell the build system to use the Intel® C++ and Fortran
+            compilers to compile MUSCLE3. Note that the Classic compilers
+            (``icc`` and ``ifort``) seem to work for the library but not for the
+            test suite. As they are obsolete, this will not be fixed.
+
+   .. group-tab:: macOS
+
+      .. tabs::
+
+         .. group-tab:: Clang
+
+            Using XCode's Clang is the default on macOS, so to start the build
+            you can use
+
+            .. code-block:: bash
+
+               ~/muscle3_source/muscle3-%%VERSION%%$ make
+
+
+            Note that XCode Clang and GFortran aren't compatible on macOS, so
+            you cannot compile MUSCLE3 with that combination. If you have
+            GFortran installed but you want to use only Clang to build MUSCLE3
+            without Fortran support, then you should disable Fortran explicitly
+            to keep the build system from selecting that invalid combination:
+
+            .. code-block:: bash
+
+               ~/muscle3_source/muscle3-%%VERSION%%$ FC= make
+
+
+         .. group-tab:: GCC and GFortran
+
+            To use GCC, you'll need to tell the build system to use it
+            explicitly, since XCode aliases the ``g++`` command to its Clang
+            installation, and MUSCLE3 will pick that up if you don't tell it
+            otherwise.
+
+            Homebrew installs the GCC compilers with a name like ``g++-12`` and
+            ``gfortran-12``, which does not collide with XCode. The following
+            command will tell MUSCLE3 to build using them:
+
+            .. code-block:: bash
+
+               ~/muscle3_source/muscle3_%%VERSION%%$ CXX=g++-12 OMPI_CXX=g++-12 FC=gfortran-12 OMPI_FC=gfortran-12 make
+
+
+            If you have a different version, then you need to change the name
+            accordingly. You can find which version you have installed using
+
+            .. code-block:: bash
+
+               $ brew info gcc
+
+   .. group-tab:: Cray
+
+      .. tabs::
+
+         .. group-tab:: GCC and GFortran
+
+            On Cray machines with Cray MPI and GCC, you need to use
+
+            .. code-block:: bash
+
+              ~/muscle3_source/muscle3-%%VERSION%%$ CXX=CC MPICXX=CC FFLAGS="-fallow-argument-mismatch" MPI_FFLAGS="-fallow-argument-mismatch" make
+
+
+            .. collapse:: Why?
+
+               Cray machines have a rather non-standard convention for compiler
+               commands: ``cc`` is the C compiler, ``CC`` the C++ compiler, and
+               ``ftn`` the Fortran compiler. Especially the name of the C++
+               compiler is unfortunate, because ``CC`` is normally the
+               environment variable holding the name of the C (not C++)
+               compiler, and on Macs with XCode, the ``CC`` command actually
+               refers to the C compiler, which will happily compile C++ code as
+               well but then break when linking.
+
+               So, using ``CC`` automatically is dangerous, because you don't
+               know what you get. The MUSCLE3 build system therefore does not
+               try that name itself, and therefore if you're on a Cray you'll
+               have to set it explicitly.
+
+               The extra Fortran flags are needed because GFortran considers
+               Cray's MPI library to contain invalid code. The flags disable
+               this error, after which it all works fine.
 
 
 This will take a few minutes (including building the dependencies), depending on
 the speed of your machine.
 
-**Building with clang**
-
-To build with clang, use
-
-.. code-block:: bash
-
-  ~/mucle3_source/muscle3-%%VERSION%%$ CXXFLAGS=-fPIE OMPI_CXX=clang++ CXX=clang++ make
+.. collapse:: Customising the build
 
 
-This will tell the build system to use clang for compiling the C++ code and its
-MPI support, but still use gfortran to compile the Fortran code (if gfortran is
-installed). The extra ``-fPIE`` switch is needed to make that combination work
-on some common platforms.
+   You can control the build process in more detail by setting environment
+   variables, as follows:
 
-**Building with Intel®**
+   NCORES=<n>
+       Use the given number of cores to compile MUSCLE3. By default, MUSCLE3
+       will use as many cores (threads) as you have. If you want to use fewer,
+       you can set the number here. Using more will not make it go faster, and
+       is not recommended.
 
-To build with the Intel® compiler, use
+   CXX=<compiler command>
+       By default, MUSCLE3 will try to compile itself using ``g++`` or
+       ``clang++``. If you want to use a different compiler, then you can set
+       CXX to something else.
 
-.. code-block:: bash
+   MPICXX=<compiler command>
+       To compile MPI code, MUSCLE3 will try to prefix the CXX command with
+       ``mpi``, and if that's not available try ``mpic++``. To override, set
+       MPICXX to the desired command.
 
-  ~/muscle3_source/muscle3-%%VERSION%%$ CXX=icpx MPICXX='mpiicpc -cxx=icpx' FC=ifx MPIFC='mpiifort -fc=ifx' make
+   FC=<compiler command>
+       Sets the compiler command for Fortran files. MUSCLE3 will try
+       ``gfortran``, ``f95`` and ``f77``. To use something else, set this
+       variable.
+
+   MPIFC=<compiler command>
+       The command for compiling Fortran MPI code. MUSCLE3 will try to prefix FC
+       with ``mpi``, then try ``mpifort`` and ``mpif90``. Setting MPIFC will
+       override this choice.
+
+   DOWNLOAD=<download command>
+       MUSCLE3 will try to use either ``wget`` or ``curl -LO`` to download
+       dependencies. This lets you override the command to use, or select one
+       explicitly. The command should accept a URL as the first argument, and
+       download the file to the working directory, saving it under its original
+       name.
+
+   TAR=<tar command>
+       This overrides the command used to unpack dependencies, which by default
+       is ``tar``.
+
+   msgpack_ROOT=<directory>
+       Also look in the given directory when detecting the MsgPack library.
+
+   googletest_ROOT=<directory>
+       Also look in the given directory when detecting the GoogleTest library.
+
+   As an example, to build libmuscle using 2 cores, you would do:
+
+   .. code-block:: bash
+
+     ~/muscle3_source/muscle3-%%VERSION%%$ NCORES=2 make
 
 
-This will tell the build system to use the Intel® C++ and Fortran compilers to
-compile MUSCLE3. Note that the Classic compilers (``icc`` and ``ifort``) seem to
-work for the library but not for the test suite. As they are obsolete, this will
-not be fixed.
-
+|
 
 Getting help
 ````````````
@@ -267,9 +485,8 @@ log of the build. You can make a build log using:
 This will produce a file named ``make.log`` with the build output in it. To
 attach it to a GitHub issue, drag it into the text box from your file manager.
 
-
-Installing libmuscle C++
-````````````````````````
+Installing
+``````````
 
 Once MUSCLE3 has been compiled, we need to install it. We recommend installing
 it into a subdirectory of your home directory for now, as opposed to
@@ -282,7 +499,7 @@ goes like this:
   ~/muscle3_source/muscle3-%%VERSION%%$ PREFIX=~/muscle3 make install
 
 
-This command will install the C++ version of MUSCLE3 into the directory
+This command will install the native version of MUSCLE3 into the directory
 specified by ``PREFIX``, in this case the ``muscle3`` directory in your home
 directory.
 
@@ -290,15 +507,14 @@ From this point on, the source directory is no longer needed. If you don't want
 to play with the examples (in ``docs/source/examples/cpp``) then you can remove
 it if you want.
 
-
-Compiling and linking with libmuscle C++
-````````````````````````````````````````
+Building models with libmuscle
+------------------------------
 
 Once libmuscle is installed, you will have to add some code to your model to
 talk to libmuscle, or you can write a model component from scratch. Examples of
-how to do that are in the C++ section of this manual. In order to compile and
-link your code with libmuscle, you have to adjust the compilation and linking
-commands a bit though.
+how to do that are in the C++ and Fortran sections of this manual. In order to
+compile and link your code with libmuscle, you have to adjust the compilation
+and linking commands a bit though.
 
 When compiling and linking, the compiler needs to be able to find the libmuscle
 headers and libraries. This is done in three steps:
@@ -308,7 +524,7 @@ headers and libraries. This is done in three steps:
 3. Tell the linker which libraries to link against
 
 Making libmuscle available
-''''''''''''''''''''''''''
+``````````````````````````
 
 The MUSCLE3 installation comes with a file that you can source into your shell,
 which will set some environment variables needed to compile, link and run with
@@ -319,276 +535,301 @@ libmuscle. Activate it like this:
   $ . <PREFIX>/bin/muscle3.env
 
 
-Compiling with libmuscle - Manually
-'''''''''''''''''''''''''''''''''''
+Compiling with libmuscle
+````````````````````````
 
-Next, when compiling, the compiler needs to be able to find the libmuscle
-headers. This can be done either directly, or using PkgConfig. To directly point
-to the headers, use
+To use your models with MUSCLE3, they need to use libmuscle, and to make that
+possible we need to tell the compiler where to find it, both during compiling
+and during linking. This can be done using PkgConfig, or directly by hand.
 
-.. code-block::
+.. attention::
 
-  -I${MUSCLE3_HOME}/include
+   C++ compilers are not guaranteed to produce code that can be linked together.
+   In particular, newer versions of Clang use a different standard library than
+   GCC and Intel at least on some platforms, which may cause compatibility
+   problems. For Fortran, the .mod files created by the compiler are in a
+   compiler-specific format, and cannot be used by other compilers.
 
+   For best results, compile your model with the same compiler that you compiled
+   MUSCLE3 with.
 
-to your compiler command line. ``MUSCLE3_HOME`` is set by ``muscle3.env``, and
-points to the directory where MUSCLE3 is installed. If your submodel uses MPI,
-then you must add
+   Models compiled with different compilers work together just fine in a single
+   simulation, so if you have one model that requires GCC and another that
+   requires using the Intel compiler, the best thing to do is to make two
+   separate installations of libmuscle, one with each compiler, and then use the
+   corresponding one for each model. Do make sure you use the same version of
+   MUSCLE3 for both, or they won't understand each other.
 
-.. code-block::
 
-  -DMUSCLE_ENABLE_MPI
+.. tabs::
 
+   .. group-tab:: PkgConfig
 
-as well to make the MPI-specific parts of the libmuscle API available, and of
-course remember to use ``mpic++`` or ``mpicxx`` to compile.
+      .. tabs::
 
-Compiling with libmuscle - PkgConfig
-''''''''''''''''''''''''''''''''''''
+         .. group-tab:: C++
 
-You can also use PkgConfig with appropriate package names to obtain the right
-compile options. For non-MPI code, use
+            To get the right compile options for C++ without MPI using PkgConfig,
+            use
 
-.. code-block::
+            .. code-block::
 
-  pkg-config --cflags ymmsl libmuscle
+              pkg-config --cflags ymmsl libmuscle
 
 
-to get the flags, or use your build system's PkgConfig support. For MPI code,
-you should use
+            or use your build system's PkgConfig support with ``ymmsl`` and
+            ``libmuscle`` as dependency names.
 
-.. code-block::
 
-  pkg-config --cflags ymmsl libmuscle_mpi
+         .. group-tab:: C++ with MPI
 
+            To get the right compile options for C++ with MPI using PkgConfig,
+            use
 
-instead.
+            .. code-block::
 
-Linking with libmuscle - Manually
-'''''''''''''''''''''''''''''''''
+              pkg-config --cflags ymmsl libmuscle_mpi
 
-When linking, the linker needs to be told where to find the ``ymmsl`` and
-``libmuscle`` libraries, and that it should link with them. That's done by
-adding
 
-.. code-block::
+            or use your build system's PkgConfig support with ``ymmsl`` and
+            ``libmuscle`` as dependency names.
 
-  -L${MUSCLE3_HOME}/lib -lymmsl -lmuscle
+         .. group-tab:: Fortran
 
+            For non-MPI Fortran code, use
 
-to the command line, or for MPI implementations:
+            .. code-block::
 
-.. code-block::
+              pkg-config --cflags ymmsl_fortran libmuscle_fortran
 
-  -L${MUSCLE3_HOME}/lib -lymmsl -lmuscle_mpi
 
+            to get the right flags, or use your build system's PkgConfig
+            support with ``ymmsl_fortran`` and ``libmuscle_fortran`` as
+            dependency names.
 
-You're most likely linking dynamically, but ``libmuscle`` does install static
-libraries in case you need them. If you link statically, then you must add the
-``-pthread`` option, as ``libmuscle`` uses background threads for communication.
+         .. group-tab:: Fortran with MPI
 
-Linking with libmuscle - PkgConfig
-''''''''''''''''''''''''''''''''''
+            For Fortran code with MPI, use
 
-To link a non-MPI component with libmuscle using PkgConfig, use
+            .. code-block::
 
-.. code-block::
+              pkg-config --cflags ymmsl_fortran libmuscle_mpi_fortran
 
-  pkg-config --libs ymmsl libmuscle
 
+            to get the right flags, or use your build system's PkgConfig
+            support with ``ymmsl_fortran`` and ``libmuscle_mpi_fortran`` as
+            dependency names.
 
-to get the flogs, or use your build system's PkgConfig support with package
-names ``ymmsl`` and ``libmuscle``. For MPI code, you should use
 
-.. code-block::
+   .. group-tab:: Manually
 
-  pkg-config --libs ymmsl libmuscle_mpi
+      .. tabs::
 
+         .. group-tab:: C++
 
-instead.
+            To directly point to the headers, use
 
-Running with libmuscle
-''''''''''''''''''''''
+            .. code-block::
 
-There's one more thing: the directory that you've installed MUSCLE into is
-probably not in your system's library search path, and as a result the dynamic
-linker won't be able to find the libraries when you run your program. In order
-to fix this, ``LD_LIBRARY_PATH`` must be set, which you can do either by
-sourcing the ``muscle3.env`` file as described above, or with the following
-command:
+              -I${MUSCLE3_HOME}/include
 
-.. code-block:: bash
 
-       ~$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<PREFIX>/lib
+            to your compiler command line. ``MUSCLE3_HOME`` is set by
+            ``muscle3.env``, and points to the directory where MUSCLE3 is
+            installed.
 
+         .. group-tab:: C++ with MPI
 
-If you have just installed MUSCLE3, then the above bits are currently on your
-screen, so you can just copy-paste them from there.
+            If your submodel uses MPI, then you should use
 
-Intel® C++ compiler
-```````````````````
+            .. code-block::
 
-You can compile MUSCLE3 with the Intel® compiler as described above, and then
-use it for your model as well. It is also possible to compile MUSCLE3 with the
-GNU compiler and your model with the Intel® compiler, and link them together.
-(See below if your model is written in Fortran, you need to do it slightly
-differently there.)
+              -I${MUSCLE3_HOME}/include -DMUSCLE_ENABLE_MPI
 
 
-Fortran
--------
+            to make the headers available and activate the MPI-specific parts
+            of the libmuscle API. Make sure to compile with ``mpic++`` or
+            ``mpicxx`` as well.
 
-Once libmuscle is installed, you will have to add some code to your model to
-talk to libmuscle, or you can write a component from scratch. Examples of how
-to do that are in the Fortran section of this manual. In order to compile and
-link your code with libmuscle, you have to adjust the compilation and linking
-commands a bit though.
+         .. group-tab:: Fortran
 
-The Fortran bindings for libmuscle are a wrapper around the C++ implementation.
-They will be built automatically if you follow the instructions above for
-building and installing libmuscle C++, at least if you have a Fortran compiler
-available. The instructions for Fortran are almost the same as for C++, but we
-need a couple extra libraries.
+            For the Fortran compiler to be able to find the libmuscle modules,
+            add
 
-Compiling and linking with libmuscle
-````````````````````````````````````
+            .. code-block::
 
-When compiling and linking, the compiler needs to be able to find the libmuscle
-headers and libraries. This is done in three steps:
+              -I${MUSCLE3_HOME}/include
 
-1. Make libmuscle available in the environment
-2. Tell the compiler which headers to include
-3. Tell the linker which libraries to link against
 
-Making libmuscle available
-''''''''''''''''''''''''''
+            to your compiler command line. ``MUSCLE3_HOME`` is set by
+            ``muscle3.env``, and points to the directory where MUSCLE3 is
+            installed.
 
-The MUSCLE3 installation comes with a file that you can source into your shell,
-which will set some environment variables needed to compile, link and run with
-libmuscle. Activate it like this:
+         .. group-tab:: Fortran with MPI
 
-.. code-block:: bash
+            For Fortran with MPI, you can use the same compiler options to find
+            the modules as without MPI:
 
-  $ . <PREFIX>/bin/muscle3.env
+            .. code-block::
 
+              -I${MUSCLE3_HOME}/include
 
-Compiling with libmuscle - Manually
-'''''''''''''''''''''''''''''''''''
 
-Next, when compiling, the compiler needs to be able to find the libmuscle
-modules. This can be done either directly, or using PkgConfig. To directly point
-to the modules, use
+            Do make sure to use ``mpifort`` or similar to compile.
 
-.. code-block::
 
-  -I${MUSCLE3_HOME}/include
+Linking with libmuscle
+``````````````````````
 
+.. tabs::
 
-to your compiler command line. ``MUSCLE3_HOME`` is set by ``muscle3.env``, and
-points to the directory where MUSCLE3 is installed. In Fortran, there's a
-separate module for MPI support, so there's no need for a ``-D`` option. You do
-need to use ``mpifort`` or similar to compile.
+   .. group-tab:: PkgConfig
 
-Compiling with libmuscle - PkgConfig
-''''''''''''''''''''''''''''''''''''
+      .. tabs::
 
-You can also use PkgConfig with appropriate package names to obtain the right
-compile options. For non-MPI code, use
+         .. group-tab:: C++
 
-.. code-block::
+            To link a non-MPI component with libmuscle using PkgConfig, use
 
-  pkg-config --cflags ymmsl_fortran libmuscle_fortran
+            .. code-block::
 
+              pkg-config --libs ymmsl libmuscle
 
-to get the flags, or use your build system's PkgConfig support. For MPI code,
-you should use
 
-.. code-block::
+            to get the flags, or use your build system's PkgConfig support with
+            package names ``ymmsl`` and ``libmuscle``.
 
-  pkg-config --cflags ymmsl_fortran libmuscle_mpi_fortran
+         .. group-tab:: C++ with MPI
 
+            To link a non-MPI component with libmuscle using PkgConfig, use
 
-instead.
+            .. code-block::
 
-Linking with libmuscle - Manually
-'''''''''''''''''''''''''''''''''
+              pkg-config --libs ymmsl libmuscle_mpi
 
-When linking, the linker needs to be told where to find the ``ymmsl`` and
-``libmuscle`` libraries, and that it should link with them. That's done by
-adding
 
-.. code-block::
+            to get the flags, or use your build system's PkgConfig support with
+            package names ``ymmsl`` and ``libmuscle``.
 
-  -L${MUSCLE3_HOME}/lib -lymmsl_fortran -lmuscle_fortran -lymmsl -lmuscle
+         .. group-tab:: Fortran
 
+            To link a non-MPI component with libmuscle using PkgConfig, use
 
-to the command line, or for MPI implementations:
+            .. code-block::
 
-.. code-block::
+              pkg-config --libs ymmsl_fortran libmuscle_fortran
 
-  -L${MUSCLE3_HOME}/lib -lymmsl_fortran -lmuscle_mpi_fortran -lymmsl -lmuscle_mpi
 
+            to get the flags, or use your build system's PkgConfig support with
+            package names ``ymmsl_fortran`` and ``libmuscle_fortran``.
 
-You're most likely linking dynamically, but ``libmuscle`` does install static
-libraries in case you need them. If you link statically, then you must add the
-``-pthread`` option, as ``libmuscle`` uses background threads for communication.
+         .. group-tab:: Fortran with MPI
 
-Linking with libmuscle - PkgConfig
-''''''''''''''''''''''''''''''''''
+            To link an MPI component with libmuscle using PkgConfig, use
 
-To link a non-MPI component with libmuscle using PkgConfig, use
+            .. code-block::
 
-.. code-block::
+              pkg-config --libs ymmsl_fortran libmuscle_mpi_fortran
 
-  pkg-config --libs ymmsl_fortran libmuscle_fortran
 
+            to get the flags, or use your build system's PkgConfig support with
+            package names ``ymmsl_fortran`` and ``libmuscle_mpi_fortran``.
 
-to get the flogs, or use your build system's PkgConfig support with package
-names ``ymmsl`` and ``libmuscle``. For MPI code, you should use
+   .. group-tab:: Manually
 
-.. code-block::
+      .. tabs::
 
-  pkg-config --libs ymmsl_fortran libmuscle_mpi_fortran
+         .. group-tab:: C++
 
+            When linking, the linker needs to be told where to find the
+            ``ymmsl`` and ``libmuscle`` libraries, and that it should link with
+            them. That's done by adding
 
-instead.
+            .. code-block::
 
-Running with libmuscle
-''''''''''''''''''''''
+              -L${MUSCLE3_HOME}/lib -lymmsl -lmuscle
 
-There's one more thing: the directory that you've installed MUSCLE into is
-probably not in your system's library search path, and as a result the dynamic
-linker won't be able to find the libraries when you run your program. In order
-to fix this, ``LD_LIBRARY_PATH`` must be set, which you can do either by
-sourcing the ``muscle3.env`` file as described above, or with the following
-command:
 
-.. code-block:: bash
+            to the command line.
 
-       ~$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<PREFIX>/lib
+         .. group-tab:: C++ with MPI
 
+            When linking, the linker needs to be told where to find the
+            ``ymmsl`` and ``libmuscle_mpi`` libraries, and that it should link
+            with them. That's done by adding
 
-If you have just installed MUSCLE3, then the above bits are currently on your
-screen, so you can just copy-paste them from there.
+            .. code-block::
 
-Intel® Fortran compiler
-```````````````````````
+              -L${MUSCLE3_HOME}/lib -lymmsl -lmuscle_mpi
 
-MUSCLE3 can be compiled with the Intel® compilers as described above, after
-which you can compile your model with the Intel® Fortran compiler as well and
-link with libmuscle.
 
-Alternatively, you can compile MUSCLE3 with the GNU compilers, and then compile
-your model with the Intel® compilers and link it to the GNU-compiled MUSCLE3
-library, because the compilers are almost compatible. The one issue is that the
-``.mod`` files created by the GNU compiler (and installed when you install
-``libmuscle``) cannot be read by the Intel® compiler.
+            to the command line.
 
-To solve this, you need to use the corresponding ``.f90`` files instead. These
-are installed by in ``<PREFIX>/include``, and are called ``libmuscle.f90``,
-``ymmsl.f90``, and ``libmuscle_mpi.f90``. You compile these as you would any
-other source file in your submodel, and then link them with rest of the submodel
-and the shared library as described above.
+         .. group-tab:: Fortran
+
+            When linking, the linker needs to be told where to find the
+            required libraries, and that it should link with them. That's done
+            by adding
+
+            .. code-block::
+
+              -L${MUSCLE3_HOME}/lib -lymmsl_fortran -lmuscle_fortran -lymmsl -lmuscle
+
+
+            to the command line.
+
+         .. group-tab:: Fortran with MPI
+
+            When linking, the linker needs to be told where to find the
+            required libraries, and that it should link with them. That's done
+            by adding
+
+            .. code-block::
+
+              -L${MUSCLE3_HOME}/lib -lymmsl_fortran -lmuscle_mpi_fortran -lymmsl -lmuscle_mpi
+
+            to the command line.
+
+
+   .. note::
+
+      You're most likely linking dynamically, but ``libmuscle`` does install
+      static libraries in case you need them. If you link statically, then you
+      must add the ``-pthread`` option, as ``libmuscle`` uses background threads
+      for communication.
+
+
+Running models
+--------------
+
+.. tabs::
+
+   .. group-tab:: Linux
+
+      There's one more thing: the directory that you've installed MUSCLE into is
+      probably not in your system's library search path, and as a result the dynamic
+      linker won't be able to find the libraries when you run your program. In order
+      to fix this, ``LD_LIBRARY_PATH`` must be set, which you can do either by
+      sourcing the ``muscle3.env`` file as described above, or with the following
+      command:
+
+      .. code-block:: bash
+
+             ~$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<PREFIX>/lib
+
+
+      If you have just installed MUSCLE3, then the above bits are currently on your
+      screen, so you can just copy-paste them from there.
+
+   .. group-tab:: macOS
+
+      On macOS, the compiler will automatically add a reference to the location
+      of the libmuscle library into your executable. As a result, the OS will be
+      able to find it when the model is started, so you do not have to do
+      anything else.
+
+      If you move libmuscle after installing it, you will break this mechanism,
+      so please don't do that (or add the new location to DYLD_LIBRARY_PATH).
 
 
 .. rubric:: Footnotes

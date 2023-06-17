@@ -1,6 +1,8 @@
 #include "libmuscle/logger.hpp"
 #include "libmuscle/util.hpp"
 
+#include <sstream>
+
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 

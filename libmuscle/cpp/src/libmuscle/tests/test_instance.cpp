@@ -56,14 +56,15 @@ int main(int argc, char *argv[]) {
 // Helpers for accessing internal state
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
-struct TestInstance {
-    static Reference & instance_name_(Instance & instance) {
-        return instance.impl_()->instance_name_;
-    }
+class TestInstance {
+    public:
+        static Reference & instance_name_(Instance & instance) {
+            return instance.impl_()->instance_name_;
+        }
 
-    static SettingsManager & settings_manager_(Instance & instance) {
-        return instance.impl_()->settings_manager_;
-    }
+        static SettingsManager & settings_manager_(Instance & instance) {
+            return instance.impl_()->settings_manager_;
+        }
 };
 
 } }

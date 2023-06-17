@@ -33,7 +33,6 @@ module ymmsl
     type YMMSL_Settings
         integer (c_intptr_t) :: ptr = 0
     contains
-        final :: YMMSL_Settings_free
         procedure :: equals => YMMSL_Settings_equals
         procedure :: size => YMMSL_Settings_size
         procedure :: empty => YMMSL_Settings_empty

@@ -137,13 +137,14 @@ class ProfileStore(ProfileDatabase):
                 "    message_timestamp DOUBLE)")
 
         cur.execute(
-                "CREATE VIEW all_events ("
-                "    instance, type, start_time, stop_time, port, operator,"
-                "    port_length, slot, message_size, message_timestamp)"
+                "CREATE VIEW all_events"
                 " AS SELECT"
-                "    i.name, et.name, e.start_time, e.stop_time, e.port_name,"
-                "    o.name, e.port_length, e.slot, e.message_size,"
-                "    e.message_timestamp"
+                "    i.name AS instance, et.name AS type,"
+                "    e.start_time AS start_time, e.stop_time AS stop_time,"
+                "    e.port_name AS port, o.name AS operator,"
+                "    e.port_length AS port_length, e.slot AS slot,"
+                "    e.message_size AS message_size,"
+                "    e.message_timestamp AS message_timestamp"
                 " FROM"
                 "    events e"
                 "    JOIN instances i ON e.instance = i.oid"

@@ -112,8 +112,14 @@ TcpTransportClient::TcpTransportClient(std::string const & location)
                 + ": " + errors);
 
     int flags = 0;
+#ifdef __linux
     setsockopt(socket_fd_, SOL_TCP, TCP_NODELAY, &flags, sizeof(flags));
     setsockopt(socket_fd_, SOL_TCP, TCP_QUICKACK, &flags, sizeof(flags));
+#elif __APPLE__
+    setsockopt(socket_fd_, IPPROTO_TCP, TCP_NODELAY, &flags, sizeof(flags));
+    // macOS doesn't have quickack unfortunately
+#endif
+
 }
 
 TcpTransportClient::~TcpTransportClient() {

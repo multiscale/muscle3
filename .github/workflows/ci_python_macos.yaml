@@ -1,10 +1,10 @@
 # Run Continuous Integration on every push
-name: python_compatibility
+name: python_compatibility_macos
 on: [push, pull_request]
 jobs:
   build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
+    runs-on: macos-latest
+    timeout-minutes: 10
     strategy:
       matrix:
         python-version: ["3.7", "3.8", "3.9", "3.10"]
@@ -22,7 +22,7 @@ jobs:
       uses: actions/cache@v1
       with:
         path: ${{ github.workspace }}/.tox
-        key: python-compatibility-${{ matrix.python-version }}-tox
+        key: python-macos-${{ matrix.python-version }}-tox
 
     - name: Install dependencies
       run: |

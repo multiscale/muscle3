@@ -2,7 +2,7 @@
 
 import argparse
 from copy import copy, deepcopy
-from textwrap import indent, dedent
+from textwrap import dedent
 from typing import List, cast
 
 from api_generator import (
@@ -1112,43 +1112,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='MUSCLE API Generator')
     parser.add_argument('--fortran-c-wrappers', action='store_true')
     parser.add_argument('--fortran-module', action='store_true')
-    parser.add_argument('--fortran-exports', nargs=2)
     parser.add_argument('--fortran-mpi-c-wrappers', action='store_true')
     parser.add_argument('--fortran-mpi-module', action='store_true')
-    parser.add_argument('--fortran-mpi-exports', nargs=2)
 
     args = parser.parse_args()
     if args.fortran_c_wrappers:
         print(libmuscle_api_description.fortran_c_wrapper())
     elif args.fortran_module:
         print(libmuscle_api_description.fortran_module())
-    elif args.fortran_exports:
-        exports = libmuscle_api_description.fortran_exports()
-        exports_txt = indent('\n'.join(exports), 8*' ') + '\n'
-
-        in_name = args.fortran_exports[0]
-        out_name = args.fortran_exports[1]
-        with open(in_name, 'r') as in_file:
-            with open(out_name, 'w') as out_file:
-                for line in in_file:
-                    if 'FORTRAN ABI' in line:
-                        out_file.write(exports_txt)
-                    else:
-                        out_file.write(line)
     elif args.fortran_mpi_c_wrappers:
         print(libmuscle_mpi_api_description.fortran_c_wrapper())
     elif args.fortran_mpi_module:
         print(libmuscle_mpi_api_description.fortran_module())
-    elif args.fortran_mpi_exports:
-        exports = libmuscle_mpi_api_description.fortran_exports()
-        exports_txt = indent('\n'.join(exports), 8*' ') + '\n'
-
-        in_name = args.fortran_mpi_exports[0]
-        out_name = args.fortran_mpi_exports[1]
-        with open(in_name, 'r') as in_file:
-            with open(out_name, 'w') as out_file:
-                for line in in_file:
-                    if 'FORTRAN ABI' in line:
-                        out_file.write(exports_txt)
-                    else:
-                        out_file.write(line.replace("::impl::", "::mpi_impl::"))

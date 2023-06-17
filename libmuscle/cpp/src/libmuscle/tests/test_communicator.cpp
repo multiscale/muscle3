@@ -74,12 +74,13 @@ int main(int argc, char *argv[]) {
 // Helpers for accessing internal state
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
-struct TestCommunicator {
-    static std::unordered_map<std::string, libmuscle::_MUSCLE_IMPL_NS::Port> const & ports_(
-            Communicator const & comm)
-    {
-        return comm.ports_;
-    }
+class TestCommunicator {
+    public:
+        static std::unordered_map<std::string, libmuscle::_MUSCLE_IMPL_NS::Port> const & ports_(
+                Communicator const & comm)
+        {
+            return comm.ports_;
+        }
 };
 
 } }

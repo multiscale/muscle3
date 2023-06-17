@@ -95,7 +95,7 @@ class ProfileStore(ProfileDatabase):
                     for core in cores]
 
             cur.executemany(
-                    "INSERT INTO assigned_cores (instance, node, core)"
+                    "INSERT INTO assigned_cores (instance_oid, node, core)"
                     " VALUES (?, ?, ?)",
                     tuples)
 
@@ -153,9 +153,9 @@ class ProfileStore(ProfileDatabase):
 
             cur.executemany(
                     "INSERT INTO events"
-                    " (instance, event_type, start_time, stop_time, port_name,"
-                    "  port_operator, port_length, slot, message_number,"
-                    "  message_size, message_timestamp)"
+                    " (instance_oid, event_type_oid, start_time, stop_time,"
+                    "  port_name, port_operator_oid, port_length, slot,"
+                    "  message_number, message_size, message_timestamp)"
                     " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     map(to_tuple, events))
             cur.execute("COMMIT")
@@ -206,7 +206,7 @@ class ProfileStore(ProfileDatabase):
 
         cur.execute(
                 "CREATE TABLE assigned_cores ("
-                "    instance INTEGER NOT NULL REFERENCES instances(oid),"
+                "    instance_oid INTEGER NOT NULL REFERENCES instances(oid),"
                 "    node TEXT NOT NULL,"
                 "    core INTEGER NOT NULL)")
 
@@ -230,17 +230,19 @@ class ProfileStore(ProfileDatabase):
 
         cur.execute(
                 "CREATE TABLE events ("
-                "    instance INTEGER NOT NULL REFERENCES instances(oid),"
-                "    event_type INTEGER NOT NULL REFERENCES event_types(oid),"
+                "    instance_oid INTEGER NOT NULL REFERENCES instances(oid),"
+                "    event_type_oid INTEGER NOT NULL REFERENCES event_types(oid),"
                 "    start_time INTEGER NOT NULL,"
                 "    stop_time INTEGER NOT NULL,"
                 "    port_name TEXT,"
-                "    port_operator INTEGER REFERENCES port_operators(oid),"
+                "    port_operator_oid INTEGER REFERENCES port_operators(oid),"
                 "    port_length INTEGER,"
                 "    slot INTEGER,"
                 "    message_number INTEGER,"
                 "    message_size INTEGER,"
                 "    message_timestamp DOUBLE)")
+
+        cur.execute("CREATE INDEX instances_oid_idx ON instances(oid)")
 
         cur.execute(
                 "CREATE VIEW all_events ("
@@ -253,9 +255,9 @@ class ProfileStore(ProfileDatabase):
                 "    e.message_size, e.message_timestamp"
                 " FROM"
                 "    events e"
-                "    JOIN instances i ON e.instance = i.oid"
-                "    LEFT JOIN event_types et ON e.event_type = et.oid"
-                "    LEFT JOIN port_operators o ON e.port_operator = o.oid")
+                "    JOIN instances i ON e.instance_oid = i.oid"
+                "    LEFT JOIN event_types et ON e.event_type_oid = et.oid"
+                "    LEFT JOIN port_operators o ON e.port_operator_oid = o.oid")
 
         cur.execute("COMMIT")
         cur.close()

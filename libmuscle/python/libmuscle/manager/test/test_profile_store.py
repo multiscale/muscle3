@@ -33,8 +33,8 @@ def test_create_profile_store(tmp_path):
     assert len(instances) == 0
 
     cur.execute(
-            "SELECT instance, event_type, start_time, stop_time, port_name,"
-            "       port_operator, port_length, slot, message_number, message_size,"
+            "SELECT instance_oid, event_type_oid, start_time, stop_time, port_name,"
+            "       port_operator_oid, port_length, slot, message_number, message_size,"
             "       message_timestamp FROM events")
     events = cur.fetchall()
     assert len(events) == 0
@@ -70,8 +70,8 @@ def test_add_events(tmp_path):
                 "SELECT *"
                 " FROM events AS e, instances AS i, event_types AS et,"
                 "      port_operators AS o"
-                " WHERE e.instance = i.oid AND e.event_type = et.oid"
-                " AND e.port_operator = o.oid AND i.name = 'instance[0]'"
+                " WHERE e.instance_oid = i.oid AND e.event_type_oid = et.oid"
+                " AND e.port_operator_oid = o.oid AND i.name = 'instance[0]'"
                 " AND et.name = (?)", (ProfileEventType.SEND.name,))
         events2 = cur.fetchall()
 
@@ -99,7 +99,7 @@ def test_add_events(tmp_path):
         cur.execute(
                 "SELECT i.name, e.start_time, e.stop_time"
                 " FROM events AS e, instances AS i, event_types AS et"
-                " WHERE e.instance = i.oid AND e.event_type = et.oid"
+                " WHERE e.instance_oid = i.oid AND e.event_type_oid = et.oid"
                 " AND et.name = ?", (typ,))
 
         events2 = cur.fetchall()

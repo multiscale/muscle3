@@ -13,6 +13,16 @@
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
+template <bool B>
+void constness_static_assert_() {
+    // Helper function to get GCC to produce a backtrace telling the user
+    // where their error is. Putting this inline somehow removes the backtrace.
+    static_assert(B,
+        "Putting a DataConstRef into a Data::dict is not allowed,"
+        " because it could allow modifying e.g. a list in the DataConstRef via"
+        " the created Data object. Please use DataConstRef::dict() instead");
+}
+
 template <>
 ymmsl::SettingValue DataConstRef::as<ymmsl::SettingValue>() const;
 
@@ -129,8 +139,7 @@ template <typename... Args>
 void Data::init_dict_(uint32_t offset, std::string const & key, DataConstRef const & value,
                 Args const & ... args)
 {
-    init_dict_(offset + 1, args...);
-    set_dict_item_(offset, key, value);
+    constness_static_assert_<false>();
 }
 
 template <typename... Args>
@@ -153,9 +162,7 @@ void Data::init_dict_(uint32_t offset, std::string const & key, Arg const & valu
 template <typename... Args>
 void Data::init_list_(uint32_t offset, DataConstRef const & value,
                       Args const &...args) {
-    init_list_(offset + 1, args...);
-    mp_obj_->via.array.ptr[offset] = msgpack::object(value, *mp_zones_->front());
-    mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
+    constness_static_assert_<false>();
 }
 
 template <typename... Args>

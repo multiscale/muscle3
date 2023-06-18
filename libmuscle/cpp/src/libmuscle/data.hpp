@@ -540,13 +540,6 @@ class DataConstRef {
 
         std::vector<double> as_vec_double_() const;
 
-        friend struct msgpack::adaptor::object_with_zone<DataConstRef>;
-        friend struct msgpack::adaptor::pack<DataConstRef>;
-
-        // see comment at Data::init_dict_'s implementation
-        friend class Data;
-        friend bool ::libmuscle::_MUSCLE_IMPL_NS::is_close_port(DataConstRef const &);
-
         bool is_a_grid_() const;
 
         DataConstRef grid_dict_() const;
@@ -596,6 +589,13 @@ class DataConstRef {
         void init_list_(
                 uint32_t offset, Arg const & value,
                 Args const &...args);
+
+        friend struct msgpack::adaptor::object_with_zone<DataConstRef>;
+        friend struct msgpack::adaptor::pack<DataConstRef>;
+
+        // see comment at Data::init_dict_'s implementation
+        friend class Data;
+        friend bool ::libmuscle::_MUSCLE_IMPL_NS::is_close_port(DataConstRef const &);
 };
 
 
@@ -814,10 +814,6 @@ class Data : public DataConstRef {
 
     private:
         // this requires packing, so needs to be non-template
-        void set_dict_item_(
-                uint32_t offset,
-                std::string const & key, DataConstRef const & value);
-
         void set_dict_item_(
                 uint32_t offset,
                 std::string const & key, Data const & value);

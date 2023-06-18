@@ -1039,14 +1039,6 @@ char * Data::as_byte_array() {
 }
 
 void Data::set_dict_item_(
-        uint32_t offset, std::string const & key, DataConstRef const & value
-) {
-    mp_obj_->via.map.ptr[offset].key = msgpack::object(key, *mp_zones_->front());
-    mp_obj_->via.map.ptr[offset].val = msgpack::object(value, *mp_zones_->front());
-    mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
-}
-
-void Data::set_dict_item_(
         uint32_t offset, std::string const & key, Data const & value
 ) {
     mp_obj_->via.map.ptr[offset].key = msgpack::object(key, *mp_zones_->front());

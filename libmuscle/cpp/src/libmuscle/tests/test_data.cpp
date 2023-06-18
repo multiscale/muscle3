@@ -262,8 +262,8 @@ TEST(libmuscle_mcp_data, dict_build) {
 
 TEST(libmuscle_mcp_data, dict_dataconstref) {
     // regression test
-    Data dict = Data::dict("test", DataConstRef());
-    dict = Data::dict("test", Data());
+    DataConstRef d1 = DataConstRef::dict("test", DataConstRef());
+    Data d2 = Data::dict("test", Data());
 }
 
 
@@ -409,8 +409,8 @@ TEST(libmuscle_mcp_data, list_list) {
 
 TEST(libmuscle_mcp_data, list_dataconstref) {
     // regression test
-    Data dict = Data::list(DataConstRef());
-    dict = Data::list(Data());
+    DataConstRef l1 = DataConstRef::list(DataConstRef());
+    Data l2 = Data::list(Data());
 }
 
 
@@ -680,30 +680,6 @@ TEST(libmuscle_mcp_data, byte_array_alloc) {
         ASSERT_EQ(data.as_byte_array()[i], test_data[i]);
 }
 
-
-// shouldn't compile; passes
-TEST(libmuscle_mcp_data, dataconstref_constness) {
-    DataConstRef dcr1 = Data::list(1);
-    Data d1 = Data::list(dcr1);
-    ASSERT_EQ(d1[0][0].as<int>(), 1);
-    d1[0][0] = 2;
-    ASSERT_EQ(d1[0][0].as<int>(), 2);
-    ASSERT_EQ(dcr1[0].as<int>(), 2);
-}
-
-
-// shouldn't compile; passes
-TEST(libmuscle_mcp_data, dataconstref_data_list) {
-    DataConstRef dcr1(1);
-    DataConstRef dcr2(2);
-
-    DataConstRef dcr3 = Data::list(dcr1, dcr2);
-    ASSERT_EQ(dcr3[0].as<int>(), 1);
-    ASSERT_EQ(dcr3[1].as<int>(), 2);
-}
-
-
-// should pass; doesn't compile
 TEST(libmuscle_mcp_data, dataconstref_dataconstref_list) {
     DataConstRef dcr1(1);
     DataConstRef dcr2(2);
@@ -713,29 +689,6 @@ TEST(libmuscle_mcp_data, dataconstref_dataconstref_list) {
     ASSERT_EQ(dcr3[1].as<int>(), 2);
 }
 
-
-// shouldn't compile; passes
-TEST(libmuscle_mcp_data, dataconstref_constness_dict) {
-    DataConstRef dcr1 = Data::dict("a", 1);
-    Data d1 = Data::dict("a", dcr1);
-    ASSERT_EQ(d1["a"]["a"].as<int>(), 1);
-    d1["a"]["a"] = 2;
-    ASSERT_EQ(d1["a"]["a"].as<int>(), 2);
-    ASSERT_EQ(dcr1["a"].as<int>(), 2);
-}
-
-
-// shouldn't compile; passes
-TEST(libmuscle_mcp_data, dataconstref_data_dict) {
-    DataConstRef dcr1(1);
-    DataConstRef dcr2(2);
-
-    DataConstRef dcr3 = Data::list(dcr1, dcr2);
-    ASSERT_EQ(dcr3[0].as<int>(), 1);
-    ASSERT_EQ(dcr3[1].as<int>(), 2);
-}
-
-// should pass; doesn't compile
 TEST(libmuscle_mcp_data, dataconstref_dataconstref_dict) {
     DataConstRef dcr1(1);
     DataConstRef dcr2(2);

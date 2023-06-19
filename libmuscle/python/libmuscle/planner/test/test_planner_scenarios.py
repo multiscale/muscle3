@@ -1,3 +1,4 @@
+from copy import deepcopy
 from libmuscle.planner.planner import ModelGraph, Planner, Resources
 
 from typing import Dict, Tuple
@@ -499,6 +500,237 @@ s9_solution = {
         Reference('e'): Resources({'node001': {0}})}
 
 
+s10_model = Model(
+        'rdmc_mismatched_resources',
+        [
+            Component('mc', 'mc', ports=Ports(
+                o_i=['pars_out'], s=['results_in'])),
+            Component('rr', 'rr', ports=Ports(
+                f_init=['front_in'], o_f=['front_out'],
+                o_i=['back_out'], s=['back_in'])),
+            Component('macro', 'macro', 8, Ports(
+                f_init=['state_in'], o_i=['bc_out'], s=['bc_in'],
+                o_f=['final_out'])),
+            Component('micro', 'micro', 8, Ports(
+                f_init=['bc_in'], o_f=['bc_out']))],
+        [
+            Conduit('mc.pars_out', 'rr.front_in'),
+            Conduit('rr.back_out', 'macro.muscle_settings_in'),
+            Conduit('macro.bc_out', 'micro.bc_in'),
+            Conduit('micro.bc_out', 'macro.bc_in'),
+            Conduit('macro.final_out', 'rr.back_in'),
+            Conduit('rr.front_out', 'mc.results_in')])
+
+
+s10_implementations = [
+        Implementation(Reference('mc'), script='mc'),
+        Implementation(Reference('rr'), script='rr'),
+        Implementation(Reference('macro'), script='macro'),
+        Implementation(Reference('micro'), script='micro'),
+        ]
+
+
+s10_requirements = [
+        ThreadedResReq(Reference('mc'), 1),
+        ThreadedResReq(Reference('rr'), 1),
+        ThreadedResReq(Reference('macro'), 4),
+        ThreadedResReq(Reference('micro'), 2)]
+
+
+s10_config = Configuration(
+        s10_model, None, s10_implementations, s10_requirements)
+
+
+s10_resources = Resources({
+        'node001': {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+        'node002': {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+        'node003': {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+        })
+
+
+s10_solution = {
+        Reference('mc'): Resources({'node001': {0}}),
+        Reference('rr'): Resources({'node001': {0}}),
+        Reference('macro[0]'): Resources({'node001': {0, 1, 2, 3}}),
+        Reference('macro[1]'): Resources({'node001': {4, 5, 6, 7}}),
+        Reference('macro[2]'): Resources({'node001': {8, 9, 10, 11}}),
+        Reference('macro[3]'): Resources({'node001': {12, 13, 14, 15}}),
+        Reference('macro[4]'): Resources({'node002': {0, 1, 2, 3}}),
+        Reference('macro[5]'): Resources({'node002': {4, 5, 6, 7}}),
+        Reference('macro[6]'): Resources({'node002': {8, 9, 10, 11}}),
+        Reference('macro[7]'): Resources({'node002': {12, 13, 14, 15}}),
+        Reference('micro[0]'): Resources({'node001': {0, 1}}),
+        Reference('micro[1]'): Resources({'node001': {4, 5}}),
+        Reference('micro[2]'): Resources({'node001': {8, 9}}),
+        Reference('micro[3]'): Resources({'node001': {12, 13}}),
+        Reference('micro[4]'): Resources({'node002': {0, 1}}),
+        Reference('micro[5]'): Resources({'node002': {4, 5}}),
+        Reference('micro[6]'): Resources({'node002': {8, 9}}),
+        Reference('micro[7]'): Resources({'node002': {12, 13}})}
+
+
+s11_model = Model(
+        'ensemble_of_dispatch_of_macro_micro',
+        [
+            Component('macro1', 'macro1', 3, ports=Ports(
+                o_i=['bc_out'], s=['bc_in'], o_f=['state_out'])),
+            Component('micro1', 'micro1', 3, ports=Ports(
+                f_init=['bc_in'], o_f=['bc_out'])),
+            Component('macro2', 'macro2', 3, ports=Ports(
+                f_init=['state_in'], o_i=['bc_out'], s=['bc_in'])),
+            Component('micro2', 'micro2', 3, ports=Ports(
+                f_init=['bc_in'], o_f=['bc_out']))],
+        [
+            Conduit('macro1.bc_out', 'micro1.bc_in'),
+            Conduit('micro1.bc_out', 'macro1.bc_in'),
+            Conduit('macro1.state_out', 'macro2.state_in'),
+            Conduit('macro2.bc_out', 'micro2.bc_in'),
+            Conduit('micro2.bc_out', 'macro2.bc_in')])
+
+s11_implementations = [
+        Implementation(Reference('macro1'), script='macro'),
+        Implementation(Reference('micro1'), script='micro'),
+        Implementation(Reference('macro2'), script='macro'),
+        Implementation(Reference('micro2'), script='micro')]
+
+
+s11_requirements = [
+        ThreadedResReq(Reference('macro1'), 4),
+        ThreadedResReq(Reference('micro1'), 4),
+        ThreadedResReq(Reference('macro2'), 4),
+        ThreadedResReq(Reference('micro2'), 4),
+        ]
+
+
+s11_config = Configuration(s11_model, None, s11_implementations, s11_requirements)
+
+
+s11_resources = Resources({
+        'node001': {0, 1, 2, 3, 4, 5, 6, 7},
+        'node002': {0, 1, 2, 3, 4, 5, 6, 7},
+        })
+
+
+s11_solution = {
+        Reference('macro1[0]'): Resources({'node001': {0, 1, 2, 3}}),
+        Reference('macro1[1]'): Resources({'node001': {4, 5, 6, 7}}),
+        Reference('macro1[2]'): Resources({'node002': {0, 1, 2, 3}}),
+        Reference('micro1[0]'): Resources({'node001': {0, 1, 2, 3}}),
+        Reference('micro1[1]'): Resources({'node001': {4, 5, 6, 7}}),
+        Reference('micro1[2]'): Resources({'node002': {0, 1, 2, 3}}),
+        Reference('macro2[0]'): Resources({'node001': {0, 1, 2, 3}}),
+        Reference('macro2[1]'): Resources({'node001': {4, 5, 6, 7}}),
+        Reference('macro2[2]'): Resources({'node002': {0, 1, 2, 3}}),
+        Reference('micro2[0]'): Resources({'node001': {0, 1, 2, 3}}),
+        Reference('micro2[1]'): Resources({'node001': {4, 5, 6, 7}}),
+        Reference('micro2[2]'): Resources({'node002': {0, 1, 2, 3}}),
+        }
+
+
+s12_model = deepcopy(s11_model)
+s12_model.components[0].multiplicity = []
+s12_model.components[1].multiplicity = [2]
+s12_model.components[2].multiplicity = []
+s12_model.components[3].multiplicity = [4]
+
+
+s12_requirements = [
+        ThreadedResReq(Reference('macro1'), 4),
+        ThreadedResReq(Reference('micro1'), 8),
+        ThreadedResReq(Reference('macro2'), 4),
+        ThreadedResReq(Reference('micro2'), 4),
+        ]
+
+
+s12_config = Configuration(s12_model, None, s11_implementations, s12_requirements)
+
+
+s12_solution = {
+        Reference('macro1'): Resources({'node001': {0, 1, 2, 3}}),
+        Reference('micro1[0]'): Resources({'node001': {0, 1, 2, 3, 4, 5, 6, 7}}),
+        Reference('micro1[1]'): Resources({'node002': {0, 1, 2, 3, 4, 5, 6, 7}}),
+        Reference('macro2'): Resources({'node001': {0, 1, 2, 3}}),
+        Reference('micro2[0]'): Resources({'node001': {0, 1, 2, 3}}),
+        Reference('micro2[1]'): Resources({'node001': {4, 5, 6, 7}}),
+        Reference('micro2[2]'): Resources({'node002': {0, 1, 2, 3}}),
+        Reference('micro2[3]'): Resources({'node002': {4, 5, 6, 7}}),
+        }
+
+
+s13_model = deepcopy(s11_model)
+s13_model.components[0].multiplicity = [5]
+s13_model.components[1].multiplicity = [5, 4]
+s13_model.components[2].multiplicity = [5]
+s13_model.components[3].multiplicity = [5, 2]
+
+
+s13_requirements = [
+        ThreadedResReq(Reference('macro1'), 4),
+        ThreadedResReq(Reference('micro1'), 2),
+        ThreadedResReq(Reference('macro2'), 4),
+        ThreadedResReq(Reference('micro2'), 4),
+        ]
+
+
+s13_config = Configuration(s13_model, None, s11_implementations, s13_requirements)
+
+
+s13_resources = Resources({
+        'node001': {0, 1, 2, 3, 4, 5, 6, 7},
+        'node002': {0, 1, 2, 3, 4, 5, 6, 7},
+        'node003': {0, 1, 2, 3, 4, 5, 6, 7},
+        'node004': {0, 1, 2, 3, 4, 5, 6, 7},
+        'node005': {0, 1, 2, 3, 4, 5, 6, 7},
+        })
+
+
+s13_solution = {
+        Reference('macro1[0]'): Resources({'node001': {0, 1, 2, 3}}),
+        Reference('macro1[1]'): Resources({'node001': {4, 5, 6, 7}}),
+        Reference('macro1[2]'): Resources({'node002': {0, 1, 2, 3}}),
+        Reference('macro1[3]'): Resources({'node002': {4, 5, 6, 7}}),
+        Reference('macro1[4]'): Resources({'node003': {0, 1, 2, 3}}),
+
+        Reference('micro1[0][0]'): Resources({'node001': {0, 1}}),
+        Reference('micro1[0][1]'): Resources({'node001': {2, 3}}),
+        Reference('micro1[0][2]'): Resources({'node003': {4, 5}}),
+        Reference('micro1[0][3]'): Resources({'node003': {6, 7}}),
+        Reference('micro1[1][0]'): Resources({'node001': {4, 5}}),
+        Reference('micro1[1][1]'): Resources({'node001': {6, 7}}),
+        Reference('micro1[1][2]'): Resources({'node004': {0, 1}}),
+        Reference('micro1[1][3]'): Resources({'node004': {2, 3}}),
+        Reference('micro1[2][0]'): Resources({'node002': {0, 1}}),
+        Reference('micro1[2][1]'): Resources({'node002': {2, 3}}),
+        Reference('micro1[2][2]'): Resources({'node004': {4, 5}}),
+        Reference('micro1[2][3]'): Resources({'node004': {6, 7}}),
+        Reference('micro1[3][0]'): Resources({'node002': {4, 5}}),
+        Reference('micro1[3][1]'): Resources({'node002': {6, 7}}),
+        Reference('micro1[3][2]'): Resources({'node005': {0, 1}}),
+        Reference('micro1[3][3]'): Resources({'node005': {2, 3}}),
+        Reference('micro1[4][0]'): Resources({'node003': {0, 1}}),
+        Reference('micro1[4][1]'): Resources({'node003': {2, 3}}),
+        Reference('micro1[4][2]'): Resources({'node005': {4, 5}}),
+        Reference('micro1[4][3]'): Resources({'node005': {6, 7}}),
+
+        Reference('macro2[0]'): Resources({'node001': {0, 1, 2, 3}}),
+        Reference('macro2[1]'): Resources({'node001': {4, 5, 6, 7}}),
+        Reference('macro2[2]'): Resources({'node002': {0, 1, 2, 3}}),
+        Reference('macro2[3]'): Resources({'node002': {4, 5, 6, 7}}),
+        Reference('macro2[4]'): Resources({'node003': {0, 1, 2, 3}}),
+
+        Reference('micro2[0][0]'): Resources({'node001': {0, 1, 2, 3}}),
+        Reference('micro2[0][1]'): Resources({'node003': {4, 5, 6, 7}}),
+        Reference('micro2[1][0]'): Resources({'node001': {4, 5, 6, 7}}),
+        Reference('micro2[1][1]'): Resources({'node004': {0, 1, 2, 3}}),
+        Reference('micro2[2][0]'): Resources({'node002': {0, 1, 2, 3}}),
+        Reference('micro2[2][1]'): Resources({'node004': {4, 5, 6, 7}}),
+        Reference('micro2[3][0]'): Resources({'node002': {4, 5, 6, 7}}),
+        Reference('micro2[3][1]'): Resources({'node005': {0, 1, 2, 3}}),
+        Reference('micro2[4][0]'): Resources({'node003': {0, 1, 2, 3}}),
+        Reference('micro2[4][1]'): Resources({'node005': {4, 5, 6, 7}}),
+        }
+
+
 scenarios = [
         (s0_config, s0_resources, s0_solution),
         (s1_config, s1_resources, s1_solution),
@@ -510,6 +742,10 @@ scenarios = [
         (s7_config, s7_resources, s7_solution),
         (s8_config, s8_resources, s8_solution),
         (s9_config, s9_resources, s9_solution),
+        (s10_config, s10_resources, s10_solution),
+        (s11_config, s11_resources, s11_solution),
+        (s12_config, s11_resources, s12_solution),
+        (s13_config, s13_resources, s13_solution),
         ]
 
 
@@ -552,14 +788,14 @@ def test_scenarios(scenario: _Scenario) -> None:
                         if c.name == cname2][0]
                     impl2 = config.implementations[comp2.name]
                     assert (
-                            comp2 in model_graph.successors(comp1) or
-                            comp2 in model_graph.predecessors(comp1) or
+                            comp2 in {c for c, _ in model_graph.successors(comp1)} or
+                            comp2 in {c for c, _ in model_graph.predecessors(comp1)} or
                             (
-                                comp2 in model_graph.macros(comp1) and
+                                comp2 in {c for c, _ in model_graph.macros(comp1)} and
                                 impl2.can_share_resources and
                                 impl1.can_share_resources) or
                             (
-                                comp2 in model_graph.micros(comp1) and
+                                comp2 in {c for c, _ in model_graph.micros(comp1)} and
                                 impl2.can_share_resources and
                                 impl1.can_share_resources))
 

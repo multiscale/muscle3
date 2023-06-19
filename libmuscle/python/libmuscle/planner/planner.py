@@ -148,12 +148,12 @@ class ModelGraph:
         self._predecessors = {c: set() for c in self._model.components}
         self._subpreds = {c: set() for c in self._model.components}
 
-        remaining_preds = {
+        num_remaining_preds = {
                 c: (
                     len(self._direct_predecessors[c]) +
                     len(self._direct_superpreds[c]))
                 for c in self._model.components}
-        remaining_subpreds = {
+        num_remaining_subpreds = {
                 c: len(self._direct_subpreds[c])
                 for c in self._model.components}
 
@@ -165,14 +165,14 @@ class ModelGraph:
         while todo or doing:
             started.clear()
             for component in todo:
-                if not remaining_preds[component]:
+                if num_remaining_preds[component] == 0:
                     for subsucc in self._direct_subsuccs[component]:
                         self._superpreds[subsucc].add(component)
                         self._predecessors[subsucc].update(
                                 self._predecessors[component])
                         self._superpreds[subsucc].update(
                                 self._superpreds[component])
-                        remaining_preds[subsucc] -= 1
+                        num_remaining_preds[subsucc] -= 1
                     started.add(component)
 
             todo -= started
@@ -180,7 +180,7 @@ class ModelGraph:
 
             finished.clear()
             for component in doing:
-                if not remaining_subpreds[component]:
+                if num_remaining_subpreds[component] == 0:
                     for succ in self._direct_successors[component]:
                         self._predecessors[succ].add(component)
                         self._predecessors[succ].update(
@@ -189,7 +189,7 @@ class ModelGraph:
                                 self._predecessors[component])
                         self._superpreds[succ].update(
                                 self._superpreds[component])
-                        remaining_preds[succ] -= 1
+                        num_remaining_preds[succ] -= 1
 
                     for supersucc in self._direct_supersuccs[component]:
                         self._subpreds[supersucc].add(component)
@@ -197,7 +197,7 @@ class ModelGraph:
                                 self._subpreds[component])
                         self._subpreds[supersucc].update(
                                 self._predecessors[component])
-                        remaining_subpreds[supersucc] -= 1
+                        num_remaining_subpreds[supersucc] -= 1
 
                     finished.add(component)
 
@@ -223,13 +223,13 @@ class ModelGraph:
         self._successors = {c: set() for c in self._model.components}
         self._subsuccs = {c: set() for c in self._model.components}
 
-        remaining_succs = {
+        num_remaining_succs = {
                 c: (
                     len(self._direct_successors[c]) +
                     len(self._direct_supersuccs[c]))
                 for c in self._model.components}
 
-        remaining_subsuccs = {
+        num_remaining_subsuccs = {
                 c: len(self._direct_subsuccs[c])
                 for c in self._model.components}
 
@@ -241,14 +241,14 @@ class ModelGraph:
         while todo or doing:
             started.clear()
             for component in todo:
-                if not remaining_succs[component]:
+                if num_remaining_succs[component] == 0:
                     for subpred in self._direct_subpreds[component]:
                         self._supersuccs[subpred].add(component)
                         self._successors[subpred].update(
                                 self._successors[component])
                         self._supersuccs[subpred].update(
                                 self._supersuccs[component])
-                        remaining_succs[subpred] -= 1
+                        num_remaining_succs[subpred] -= 1
                     started.add(component)
 
             todo -= started
@@ -256,7 +256,7 @@ class ModelGraph:
 
             finished.clear()
             for component in doing:
-                if not remaining_subsuccs[component]:
+                if num_remaining_subsuccs[component] == 0:
                     for pred in self._direct_predecessors[component]:
                         self._successors[pred].add(component)
                         self._successors[pred].update(
@@ -265,7 +265,7 @@ class ModelGraph:
                                 self._supersuccs[component])
                         self._successors[pred].update(
                                 self._subsuccs[component])
-                        remaining_succs[pred] -= 1
+                        num_remaining_succs[pred] -= 1
 
                     for superpred in self._direct_superpreds[component]:
                         self._subsuccs[superpred].add(component)
@@ -273,7 +273,7 @@ class ModelGraph:
                                 self._successors[component])
                         self._subsuccs[superpred].update(
                                 self._subsuccs[component])
-                        remaining_subsuccs[superpred] -= 1
+                        num_remaining_subsuccs[superpred] -= 1
                     finished.add(component)
 
             doing -= finished
@@ -547,7 +547,12 @@ class Planner:
     def _conflicting_names(
             self, model: ModelGraph, exclusive: Set[Component],
             component: Component) -> Set[Reference]:
-        """Returns names of components that cannot share resources."""
+        """Find conflicting components.
+
+        This returns the names of components that cannot share resources
+        with the given component, so that they can be avoided when
+        assigning resources.
+        """
         conflicting_comps = set(model.components())
         conflicting_comps -= model.predecessors(component)
         conflicting_comps -= model.successors(component)

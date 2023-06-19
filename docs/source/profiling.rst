@@ -108,7 +108,7 @@ up the single-thread model also helps, because even if the cores that the
 parallel model runs on aren't used, they're still allocated and you're still
 paying for them.
 
-If all your models spend most of their time waiting, then your models do
+If all your models spend most of their time communicating, then your models do
 relatively little work in between sending and receiving messages. In that case,
 either MUSCLE3 needs to be optimised, or perhaps your coupling is simply too
 tight to do over a network connection and you should consider integrating the

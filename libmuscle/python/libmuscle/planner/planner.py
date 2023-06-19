@@ -1,16 +1,18 @@
 from copy import copy, deepcopy
 import logging
-from typing import Dict, Iterable, List, Mapping, Optional, Set
+from typing import Dict, Iterable, List, Mapping, Optional, Set, Tuple
 
 from ymmsl import (
         Component, Configuration, Model, MPICoresResReq, MPINodesResReq,
         Operator, Reference, ResourceRequirements, ThreadedResReq)
 
+from libmuscle.util import instance_indices
+
 
 _logger = logging.getLogger(__name__)
 
 
-_PredSuccType = Dict[Component, Set[Component]]
+_PredSuccType = Dict[Component, Set[Tuple[Component, int]]]
 
 
 class ModelGraph:
@@ -67,7 +69,7 @@ class ModelGraph:
                 return component
         raise KeyError('Component {} not found'.format(name))
 
-    def successors(self, component: Component) -> Set[Component]:
+    def successors(self, component: Component) -> Set[Tuple[Component, int]]:
         """Return the successors of the given component.
 
         Args:
@@ -83,7 +85,7 @@ class ModelGraph:
         """
         return self._successors[component]
 
-    def predecessors(self, component: Component) -> Set[Component]:
+    def predecessors(self, component: Component) -> Set[Tuple[Component, int]]:
         """Return the predecessors of the given component.
 
         Args:
@@ -99,7 +101,7 @@ class ModelGraph:
         """
         return self._predecessors[component]
 
-    def macros(self, component: Component) -> Set[Component]:
+    def macros(self, component: Component) -> Set[Tuple[Component, int]]:
         """Return the macros of the given component.
 
         These are components that are both before the component's
@@ -114,7 +116,7 @@ class ModelGraph:
         """
         return self._superpreds[component] & self._supersuccs[component]
 
-    def micros(self, component: Component) -> Set[Component]:
+    def micros(self, component: Component) -> Set[Tuple[Component, int]]:
         """Return the micros of the given component.
 
         These are components that are in between the component's
@@ -128,6 +130,23 @@ class ModelGraph:
             and sub-predecessor of component.
         """
         return self._subsuccs[component] & self._subpreds[component]
+
+    def _propagate(
+            self, from_set: Set[Tuple[Component, int]],
+            to_set: Set[Tuple[Component, int]], shared_dims: int
+            ) -> None:
+        """Propagates from_set into to_set.
+
+        Note: Modifies to_set.
+
+        Args:
+            from_set: Set to propagate components from
+            to_set: Set to propagate them into
+            shared_dims: Maximum shared dimensions to carry
+        """
+        to_set.update({
+            (cmp, min(sd, shared_dims))
+            for cmp, sd in from_set})
 
     def _calc_predecessors(self) -> None:
         """Calculates predecessors of each component in the model.
@@ -148,12 +167,12 @@ class ModelGraph:
         self._predecessors = {c: set() for c in self._model.components}
         self._subpreds = {c: set() for c in self._model.components}
 
-        remaining_preds = {
+        num_remaining_preds = {
                 c: (
                     len(self._direct_predecessors[c]) +
                     len(self._direct_superpreds[c]))
                 for c in self._model.components}
-        remaining_subpreds = {
+        num_remaining_subpreds = {
                 c: len(self._direct_subpreds[c])
                 for c in self._model.components}
 
@@ -165,14 +184,18 @@ class ModelGraph:
         while todo or doing:
             started.clear()
             for component in todo:
-                if not remaining_preds[component]:
-                    for subsucc in self._direct_subsuccs[component]:
-                        self._superpreds[subsucc].add(component)
-                        self._predecessors[subsucc].update(
-                                self._predecessors[component])
-                        self._superpreds[subsucc].update(
-                                self._superpreds[component])
-                        remaining_preds[subsucc] -= 1
+                if num_remaining_preds[component] == 0:
+                    for subsucc, shared_dims in self._direct_subsuccs[component]:
+                        self._superpreds[subsucc].add((component, shared_dims))
+                        self._propagate(
+                                self._predecessors[component],
+                                self._predecessors[subsucc], shared_dims)
+
+                        self._propagate(
+                                self._superpreds[component],
+                                self._superpreds[subsucc], shared_dims)
+
+                        num_remaining_preds[subsucc] -= 1
                     started.add(component)
 
             todo -= started
@@ -180,29 +203,47 @@ class ModelGraph:
 
             finished.clear()
             for component in doing:
-                if not remaining_subpreds[component]:
-                    for succ in self._direct_successors[component]:
-                        self._predecessors[succ].add(component)
-                        self._predecessors[succ].update(
-                                self._subpreds[component])
-                        self._predecessors[succ].update(
-                                self._predecessors[component])
-                        self._superpreds[succ].update(
-                                self._superpreds[component])
-                        remaining_preds[succ] -= 1
+                if num_remaining_subpreds[component] == 0:
+                    for succ, shared_dims in self._direct_successors[component]:
+                        self._predecessors[succ].add((component, shared_dims))
+                        self._propagate(
+                                self._subpreds[component],
+                                self._predecessors[succ], shared_dims)
 
-                    for supersucc in self._direct_supersuccs[component]:
-                        self._subpreds[supersucc].add(component)
-                        self._subpreds[supersucc].update(
-                                self._subpreds[component])
-                        self._subpreds[supersucc].update(
-                                self._predecessors[component])
-                        remaining_subpreds[supersucc] -= 1
+                        self._propagate(
+                                self._predecessors[component],
+                                self._predecessors[succ], shared_dims)
+
+                        self._propagate(
+                                self._superpreds[component],
+                                self._superpreds[succ], shared_dims)
+
+                        num_remaining_preds[succ] -= 1
+
+                    for supersucc, shared_dims in self._direct_supersuccs[component]:
+                        self._subpreds[supersucc].add((component, shared_dims))
+
+                        self._propagate(
+                                self._subpreds[component],
+                                self._subpreds[supersucc], shared_dims)
+
+                        self._propagate(
+                                self._predecessors[component],
+                                self._subpreds[supersucc], shared_dims)
+
+                        num_remaining_subpreds[supersucc] -= 1
 
                     finished.add(component)
 
             doing -= finished
             done |= finished
+
+            if not started and not finished:
+                raise RuntimeError(
+                        'Could not plan resource allocation for this model.'
+                        ' Do you have a cycle of O_F -> F_INIT conduits?'
+                        ' That does not work, because the models will all be'
+                        ' waiting for each other to start.')
 
     def _calc_successors(self) -> None:
         """Calculates successors of each component in the model.
@@ -223,13 +264,13 @@ class ModelGraph:
         self._successors = {c: set() for c in self._model.components}
         self._subsuccs = {c: set() for c in self._model.components}
 
-        remaining_succs = {
+        num_remaining_succs = {
                 c: (
                     len(self._direct_successors[c]) +
                     len(self._direct_supersuccs[c]))
                 for c in self._model.components}
 
-        remaining_subsuccs = {
+        num_remaining_subsuccs = {
                 c: len(self._direct_subsuccs[c])
                 for c in self._model.components}
 
@@ -241,14 +282,18 @@ class ModelGraph:
         while todo or doing:
             started.clear()
             for component in todo:
-                if not remaining_succs[component]:
-                    for subpred in self._direct_subpreds[component]:
-                        self._supersuccs[subpred].add(component)
-                        self._successors[subpred].update(
-                                self._successors[component])
-                        self._supersuccs[subpred].update(
-                                self._supersuccs[component])
-                        remaining_succs[subpred] -= 1
+                if num_remaining_succs[component] == 0:
+                    for subpred, shared_dims in self._direct_subpreds[component]:
+                        self._supersuccs[subpred].add((component, shared_dims))
+                        self._propagate(
+                                self._successors[component],
+                                self._successors[subpred], shared_dims)
+
+                        self._propagate(
+                                self._supersuccs[component],
+                                self._supersuccs[subpred], shared_dims)
+                        num_remaining_succs[subpred] -= 1
+
                     started.add(component)
 
             todo -= started
@@ -256,24 +301,32 @@ class ModelGraph:
 
             finished.clear()
             for component in doing:
-                if not remaining_subsuccs[component]:
-                    for pred in self._direct_predecessors[component]:
-                        self._successors[pred].add(component)
-                        self._successors[pred].update(
-                                self._successors[component])
-                        self._supersuccs[pred].update(
-                                self._supersuccs[component])
-                        self._successors[pred].update(
-                                self._subsuccs[component])
-                        remaining_succs[pred] -= 1
+                if num_remaining_subsuccs[component] == 0:
+                    for pred, shared_dims in self._direct_predecessors[component]:
+                        self._successors[pred].add((component, shared_dims))
+                        self._propagate(
+                                self._successors[component],
+                                self._successors[pred], shared_dims)
 
-                    for superpred in self._direct_superpreds[component]:
-                        self._subsuccs[superpred].add(component)
-                        self._subsuccs[superpred].update(
-                                self._successors[component])
-                        self._subsuccs[superpred].update(
-                                self._subsuccs[component])
-                        remaining_subsuccs[superpred] -= 1
+                        self._propagate(
+                                self._supersuccs[component],
+                                self._supersuccs[pred], shared_dims)
+
+                        self._propagate(
+                                self._subsuccs[component],
+                                self._successors[pred], shared_dims)
+                        num_remaining_succs[pred] -= 1
+
+                    for superpred, shared_dims in self._direct_superpreds[component]:
+                        self._subsuccs[superpred].add((component, shared_dims))
+                        self._propagate(
+                                self._successors[component],
+                                self._subsuccs[superpred], shared_dims)
+
+                        self._propagate(
+                                self._subsuccs[component],
+                                self._subsuccs[superpred], shared_dims)
+                        num_remaining_subsuccs[superpred] -= 1
                     finished.add(component)
 
             doing -= finished
@@ -317,15 +370,17 @@ class ModelGraph:
                 elif conduit.receiving_port() in receiver.ports.s:
                     recv_op = Operator.S
 
+            shared_dims = min(len(sender.multiplicity), len(receiver.multiplicity))
+
             if (snd_op, recv_op) == (Operator.O_I, Operator.F_INIT):
-                self._direct_superpreds[receiver].add(sender)
-                self._direct_subsuccs[sender].add(receiver)
+                self._direct_superpreds[receiver].add((sender, shared_dims))
+                self._direct_subsuccs[sender].add((receiver, shared_dims))
             elif (snd_op, recv_op) == (Operator.O_F, Operator.F_INIT):
-                self._direct_successors[sender].add(receiver)
-                self._direct_predecessors[receiver].add(sender)
+                self._direct_successors[sender].add((receiver, shared_dims))
+                self._direct_predecessors[receiver].add((sender, shared_dims))
             elif (snd_op, recv_op) == (Operator.O_F, Operator.S):
-                self._direct_subpreds[receiver].add(sender)
-                self._direct_supersuccs[sender].add(receiver)
+                self._direct_subpreds[receiver].add((sender, shared_dims))
+                self._direct_supersuccs[sender].add((receiver, shared_dims))
 
 
 class Resources:
@@ -354,6 +409,21 @@ class Resources:
         """Copy the object."""
         return Resources(deepcopy(self.cores))
 
+    def __eq__(self, other: object) -> bool:
+        """Check for equality."""
+        if not isinstance(other, Resources):
+            return NotImplemented
+
+        if len(self.cores) != len(other.cores):
+            return False
+
+        for node, cores in self.cores.items():
+            if node not in other.cores:
+                return False
+            if other.cores[node] != cores:
+                return False
+        return True
+
     def __iadd__(self, other: 'Resources') -> 'Resources':
         """Add the resources in the argument to this object."""
         for node in other.cores:
@@ -374,8 +444,28 @@ class Resources:
 
     def __str__(self) -> str:
         """Return a human-readable string representation."""
+        def collapse_ranges(cores: Set[int]) -> str:
+            if len(cores) == 0:
+                return ''
+
+            result = list()
+            scores = sorted(cores)
+            start = 0
+            i = 1
+            while i <= len(scores):
+                if (i == len(scores)) or (scores[i-1] != scores[i] - 1):
+                    if start == i - 1:
+                        # run of one
+                        result.append(str(scores[i-1]))
+                    else:
+                        # run of at least two
+                        result.append(f'{scores[start]}-{scores[i-1]}')
+                    start = i
+                i += 1
+            return ','.join(result)
+
         return 'Resources(' + '; '.join([
-            n + ': ' + ','.join(sorted(map(str, cs)))
+            n + ': ' + collapse_ranges(cs)
             for n, cs in self.cores.items()]) + ')'
 
     def __repr__(self) -> str:
@@ -465,7 +555,7 @@ class Planner:
         requirements = configuration.resources
         implementations = configuration.implementations
         exclusive = {
-                c for c in model.components()
+                i for c in model.components() for i in c.instances()
                 if (c.implementation and
                     not implementations[c.implementation].can_share_resources)}
 
@@ -482,7 +572,7 @@ class Planner:
             for instance in to_allocate:
                 component = model.component(instance.without_trailing_ints())
                 conflicting_names = self._conflicting_names(
-                        model, exclusive, component)
+                        model, exclusive, component, instance)
 
                 done = False
                 while not done:
@@ -545,17 +635,48 @@ class Planner:
         return sorted_threaded_instances + sorted_mpi_instances
 
     def _conflicting_names(
-            self, model: ModelGraph, exclusive: Set[Component],
-            component: Component) -> Set[Reference]:
-        """Returns names of components that cannot share resources."""
-        conflicting_comps = set(model.components())
-        conflicting_comps -= model.predecessors(component)
-        conflicting_comps -= model.successors(component)
+            self, model: ModelGraph, exclusive: Set[Reference],
+            component: Component, instance: Reference) -> Set[Reference]:
+        """Find conflicting components.
+
+        This returns the names of instances that cannot share resources
+        with the given component, so that they can be avoided when
+        assigning resources.
+
+        Args:
+            model: Model to search
+            exclusive: List of instances that cannot share resources
+            component: Component to find conflicts for
+            instance: Instance (of component) to find conflicts for
+        """
+        def indices_match(
+                instance1: Reference, instance2: Reference, dims: int) -> bool:
+            idx1 = instance_indices(instance1)
+            idx2 = instance_indices(instance2)
+            return idx1[:dims] == idx2[:dims]
+
+        def matching_instances(
+                others: Set[Tuple[Component, int]]) -> Set[Reference]:
+            return {
+                    i for c, d in others for i in c.instances()
+                    if indices_match(i, instance, d)}
+
+        conflicting_instances = {
+                i for c in model.components() for i in c.instances()}
+
+        if instance in exclusive:
+            return conflicting_instances
+
+        conflicting_instances -= matching_instances(model.predecessors(component))
+        conflicting_instances -= matching_instances(model.successors(component))
+
         if component not in exclusive:
-            mms = model.micros(component) | model.macros(component)
-            nonconflicting_mms = mms - exclusive
-            conflicting_comps -= nonconflicting_mms
-        return {c.name for c in conflicting_comps}
+            micros = matching_instances(model.micros(component))
+            macros = matching_instances(model.macros(component))
+            nonconflicting_mms = (micros | macros) - exclusive
+            conflicting_instances -= nonconflicting_mms
+
+        return conflicting_instances
 
     def _expand_resources(
             self, name: Reference, req: ResourceRequirements) -> None:
@@ -585,7 +706,7 @@ class Planner:
     def _allocate_instance(
             self, instance: Reference, component: Component,
             requirements: ResourceRequirements,
-            simultaneous_components: Set[Reference], virtual: bool
+            simultaneous_instances: Set[Reference], virtual: bool
             ) -> Resources:
         """Allocates resources for the given instance.
 
@@ -598,7 +719,7 @@ class Planner:
             instance: The instance to allocate for
             component: The component it is an instance of
             requirements: Its resource requirements
-            simultaneous_components: Components which may execute
+            simultaneous_instances: Instances which may execute
                     simultaneously and whose resources we therefore
                     cannot overlap with
             virtual: Whether we are on virtual resources
@@ -610,7 +731,7 @@ class Planner:
         free_resources = copy(self._all_resources)
 
         for other in self._allocations:
-            if other.without_trailing_ints() in simultaneous_components:
+            if other in simultaneous_instances:
                 free_resources -= self._allocations[other]
 
         try:

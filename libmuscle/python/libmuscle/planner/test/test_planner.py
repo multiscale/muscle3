@@ -80,15 +80,15 @@ def test_model_graph(
     assert not graph.predecessors(init)
     assert not graph.macros(init)
     assert not graph.micros(init)
-    assert graph.successors(init) == {macro, micro}
+    assert graph.successors(init) == {(macro, 0), (micro, 0)}
 
-    assert graph.predecessors(macro) == {init}
+    assert graph.predecessors(macro) == {(init, 0)}
     assert not graph.macros(macro)
-    assert graph.micros(macro) == {micro}
+    assert graph.micros(macro) == {(micro, 0)}
     assert not graph.successors(macro)
 
-    assert graph.predecessors(micro) == {init}
-    assert graph.macros(micro) == {macro}
+    assert graph.predecessors(micro) == {(init, 0)}
+    assert graph.macros(micro) == {(macro, 0)}
     assert not graph.micros(micro)
     assert not graph.successors(micro)
 
@@ -152,8 +152,8 @@ def test_planner_exclusive_macro(
     allocations = planner.allocate_all(configuration)
 
     assert allocations[Reference('init')].cores == {'node001': {1, 2, 3, 4}}
-    assert allocations[Reference('macro')].cores == {'node001': {1, 2, 3, 4}}
-    assert allocations[Reference('micro')].cores == {'node002': {1, 2, 3, 4}}
+    assert allocations[Reference('macro')].cores == {'node002': {1, 2, 3, 4}}
+    assert allocations[Reference('micro')].cores == {'node001': {1, 2, 3, 4}}
 
 
 def test_planner_exclusive_predecessor(

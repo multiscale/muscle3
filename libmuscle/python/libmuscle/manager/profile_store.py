@@ -169,9 +169,6 @@ class ProfileStore(ProfileDatabase):
     def _get_instance_oid(self, cur: Cursor, instance_id: Reference) -> int:
         """Get the oid for a given instance.
 
-        Inserts instance into the database and returns the new oid if
-        needed. Does not start its own transaction.
-
         Args:
             instance Instance id to look up
 

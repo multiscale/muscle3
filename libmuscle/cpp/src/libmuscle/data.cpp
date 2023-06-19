@@ -318,6 +318,26 @@ template DataConstRef DataConstRef::grid<bool>(
 
 #endif
 
+DataConstRef DataConstRef::dict() {
+    DataConstRef dict;
+    dict.init_dict_(0u);
+    return dict;
+}
+
+DataConstRef DataConstRef::list() {
+    DataConstRef list;
+    list.init_list_(0u);
+    return list;
+}
+
+DataConstRef DataConstRef::nils(std::size_t size) {
+    DataConstRef list;
+    list.init_list_(size);
+    for (std::size_t i = 0u; i < size; ++i)
+        list.mp_obj_->via.array.ptr[i].type = msgpack::type::NIL;
+    return list;
+}
+
 DataConstRef::DataConstRef(SettingValue const & value)
     : DataConstRef()
 {
@@ -793,6 +813,26 @@ DataConstRef DataConstRef::grid_dict_() const {
     return *obj_cache_;
 }
 
+void DataConstRef::set_dict_item_(
+        uint32_t offset, std::string const & key, DataConstRef const & value
+) {
+    mp_obj_->via.map.ptr[offset].key = msgpack::object(key, *mp_zones_->front());
+    mp_obj_->via.map.ptr[offset].val = msgpack::object(value, *mp_zones_->front());
+    mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
+}
+
+void DataConstRef::init_dict_(uint32_t size) {
+    mp_obj_->type = msgpack::type::MAP;
+    mp_obj_->via.map.size = size;
+    mp_obj_->via.map.ptr = zone_alloc_<msgpack::object_kv>(size);
+}
+
+void DataConstRef::init_list_(uint32_t size) {
+    mp_obj_->type = msgpack::type::ARRAY;
+    mp_obj_->via.array.size = size;
+    mp_obj_->via.array.ptr = zone_alloc_<msgpack::object>(size);
+}
+
 /* This is here in the .cpp and instantiated explicitly, because it requires the
  * ExtTypeId, and we don't want to have that in a public header since it's a
  * detail of an internal format.
@@ -996,14 +1036,6 @@ char * Data::as_byte_array() {
     // modify the data. We use this for our own purposes however, and need to
     // be able to write data into the buffer. So we cast the const away.
     return const_cast<char *>(mp_obj_->via.bin.ptr);
-}
-
-void Data::set_dict_item_(
-        uint32_t offset, std::string const & key, DataConstRef const & value
-) {
-    mp_obj_->via.map.ptr[offset].key = msgpack::object(key, *mp_zones_->front());
-    mp_obj_->via.map.ptr[offset].val = msgpack::object(value, *mp_zones_->front());
-    mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
 }
 
 void Data::set_dict_item_(

@@ -65,7 +65,7 @@ DataConstRef MPPMessage::encoded() const {
     if (next_timestamp.is_set())
         next_timestamp_data = next_timestamp.get();
 
-    Data msg_dict = Data::dict(
+    DataConstRef msg_dict = DataConstRef::dict(
             "sender", std::string(sender),
             "receiver", std::string(receiver),
             "port_length", port_length_data,

@@ -86,8 +86,8 @@ DataConstRef Snapshot::to_bytes() const {
         pmc[kv.first] = counts;
     }
 
-    Data dict;
-    // Note setting dict in two branches, to avoid a memcopy of the encoded MMPMessage
+    msgpack::sbuffer sbuf;
+    // Note setting dict in two branches, to avoid a memcopy of the encoded MPPMessage
     if (message.is_set()) {
         auto msg = message.get();
         MPPMessage mpp_msg(
@@ -100,27 +100,28 @@ DataConstRef Snapshot::to_bytes() const {
                 0,
                 -1.0,
                 msg.data());
-        // Initializing a Data::dict with a DataConstRef is allowed, but assignment
-        // after creation is not
-        dict = Data::dict(
+
+        DataConstRef dict = DataConstRef::dict(
             "triggers", d_triggers,
             "wallclock_time", wallclock_time,
             "port_message_counts", pmc,
             "is_final_snapshot", is_final_snapshot,
             "message", mpp_msg.encoded(),
             "settings_overlay", Data(settings_overlay));
+
+        msgpack::pack(sbuf, dict);
+
     } else {
-        dict = Data::dict(
+        DataConstRef dict = DataConstRef::dict(
             "triggers", d_triggers,
             "wallclock_time", wallclock_time,
             "port_message_counts", pmc,
             "is_final_snapshot", is_final_snapshot,
             "message", Data(),
             "settings_overlay", Data(settings_overlay));
-    }
 
-    msgpack::sbuffer sbuf;
-    msgpack::pack(sbuf, dict);
+        msgpack::pack(sbuf, dict);
+    }
 
     auto bytes = Data::byte_array(sbuf.size());
     memcpy(bytes.as_byte_array(), sbuf.data(), sbuf.size());

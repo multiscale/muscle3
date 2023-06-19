@@ -731,6 +731,44 @@ s13_solution = {
         }
 
 
+s14_model = Model(
+        'triangle',
+        [
+            Component('a', 'a', ports=Ports(f_init=['in'], o_f=['out'])),
+            Component('b', 'b', ports=Ports(f_init=['in'], o_f=['out'])),
+            Component('c', 'c', ports=Ports(f_init=['in'], o_f=['out'])),
+            ],
+        [
+            Conduit('a.out', 'b.in'),
+            Conduit('b.out', 'c.in'),
+            Conduit('c.out', 'a.in'),
+            ])
+
+
+s14_implementations = [
+        Implementation(Reference('a'), script='a'),
+        Implementation(Reference('b'), script='b'),
+        Implementation(Reference('c'), script='c'),
+        ]
+
+
+s14_requirements = [
+        ThreadedResReq(Reference('a'), 2),
+        ThreadedResReq(Reference('b'), 2),
+        ThreadedResReq(Reference('c'), 2),
+        ]
+
+
+s14_config = Configuration(
+        s14_model, None, s14_implementations, s14_requirements)
+
+
+s14_resources = Resources({'node001': {0, 1, 2, 3, 4, 5}})
+
+
+s14_solution = RuntimeError
+
+
 scenarios = [
         (s0_config, s0_resources, s0_solution),
         (s1_config, s1_resources, s1_solution),
@@ -746,6 +784,7 @@ scenarios = [
         (s11_config, s11_resources, s11_solution),
         (s12_config, s11_resources, s12_solution),
         (s13_config, s13_resources, s13_solution),
+        (s14_config, s14_resources, s14_solution),
         ]
 
 
@@ -753,6 +792,12 @@ scenarios = [
 def test_scenarios(scenario: _Scenario) -> None:
     config, res, solution = scenario
     planner = Planner(res)
+
+    if not isinstance(solution, dict):
+        with pytest.raises(solution):
+            planner.allocate_all(config)
+        return
+
     allocations = planner.allocate_all(config)
     assert allocations == solution
 

@@ -238,6 +238,13 @@ class ModelGraph:
             doing -= finished
             done |= finished
 
+            if not started and not finished:
+                raise RuntimeError(
+                        'Could not plan resource allocation for this model.'
+                        ' Do you have a cycle of O_F -> F_INIT conduits?'
+                        ' That does not work, because the models will all be'
+                        ' waiting for each other to start.')
+
     def _calc_successors(self) -> None:
         """Calculates successors of each component in the model.
 

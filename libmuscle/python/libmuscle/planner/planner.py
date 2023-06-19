@@ -444,8 +444,28 @@ class Resources:
 
     def __str__(self) -> str:
         """Return a human-readable string representation."""
+        def collapse_ranges(cores: Set[int]) -> str:
+            if len(cores) == 0:
+                return ''
+
+            result = list()
+            scores = sorted(cores)
+            start = 0
+            i = 1
+            while i <= len(scores):
+                if (i == len(scores)) or (scores[i-1] != scores[i] - 1):
+                    if start == i - 1:
+                        # run of one
+                        result.append(str(scores[i-1]))
+                    else:
+                        # run of at least two
+                        result.append(f'{scores[start]}-{scores[i-1]}')
+                    start = i
+                i += 1
+            return ','.join(result)
+
         return 'Resources(' + '; '.join([
-            n + ': ' + ','.join(sorted(map(str, cs)))
+            n + ': ' + collapse_ranges(cs)
             for n, cs in self.cores.items()]) + ')'
 
     def __repr__(self) -> str:

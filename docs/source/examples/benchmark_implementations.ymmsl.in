@@ -1,0 +1,29 @@
+ymmsl_version: v0.1
+
+implementations:
+  benchmark_driver_python:
+    virtual_env: MUSCLE3_EXAMPLES/python/build/venv
+    executable: python
+    args:
+        - MUSCLE3_EXAMPLES/python/benchmark.py
+        - driver
+
+  benchmark_mirror_python:
+    virtual_env: MUSCLE3_EXAMPLES/python/build/venv
+    executable: python
+    args:
+        - MUSCLE3_EXAMPLES/python/benchmark.py
+        - mirror
+
+  benchmark_driver_cpp:
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/cpp/build/benchmark
+    args: driver
+
+  benchmark_mirror_cpp:
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/cpp/build/benchmark
+    args: mirror
+

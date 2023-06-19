@@ -48,4 +48,12 @@ def mocked_profiler():
             self.sent_events = copy(events)
 
     mock_mmp_client = MockMMPClient()
-    yield Profiler(mock_mmp_client), mock_mmp_client
+    profiler = Profiler(mock_mmp_client)
+    yield profiler, mock_mmp_client
+    profiler.shutdown()
+
+
+@pytest.fixture
+def profiler_comm_int_10ms():
+    with patch('libmuscle.profiler._COMMUNICATION_INTERVAL', 0.01):
+        yield None

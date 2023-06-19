@@ -4,6 +4,7 @@ from libmuscle.manager.profile_store import ProfileStore
 from ymmsl import Operator, Port, Reference
 
 import sqlite3
+from unittest.mock import patch
 
 
 def test_create_profile_store(tmp_path):
@@ -32,8 +33,8 @@ def test_create_profile_store(tmp_path):
     assert len(instances) == 0
 
     cur.execute(
-            "SELECT instance, event_type, start_time, stop_time, port_name,"
-            "       port_operator, port_length, slot, message_size,"
+            "SELECT instance_oid, event_type_oid, start_time, stop_time, port_name,"
+            "       port_operator_oid, port_length, slot, message_number, message_size,"
             "       message_timestamp FROM events")
     events = cur.fetchall()
     assert len(events) == 0
@@ -43,6 +44,7 @@ def test_create_profile_store(tmp_path):
     conn.close()
 
 
+@patch('libmuscle.manager.profile_store._SYNCHED', True)
 def test_add_events(tmp_path):
     db = ProfileStore(tmp_path)
 
@@ -57,7 +59,7 @@ def test_add_events(tmp_path):
             ProfileEvent(
                 ProfileEventType.SEND, ProfileTimestamp(800),
                 ProfileTimestamp(812),
-                Port('out_port', Operator.O_I), 10, 3, 12345, 13.42),
+                Port('out_port', Operator.O_I), 10, 3, 67, 12345, 13.42),
             ProfileEvent(
                 ProfileEventType.DEREGISTER, ProfileTimestamp(1000000000000),
                 ProfileTimestamp(1100000000000))]
@@ -68,21 +70,23 @@ def test_add_events(tmp_path):
                 "SELECT *"
                 " FROM events AS e, instances AS i, event_types AS et,"
                 "      port_operators AS o"
-                " WHERE e.instance = i.oid AND e.event_type = et.oid"
-                " AND e.port_operator = o.oid AND i.name = 'instance[0]'"
+                " WHERE e.instance_oid = i.oid AND e.event_type_oid = et.oid"
+                " AND e.port_operator_oid = o.oid AND i.name = 'instance[0]'"
                 " AND et.name = (?)", (ProfileEventType.SEND.name,))
         events2 = cur.fetchall()
 
         assert len(events2) == 1
         e = events2[0]
-        assert e[1:10] == (
+        assert e[1:11] == (
                 ProfileEventType.SEND.value, 800, 812, 'out_port',
-                Operator.O_I.value, 10, 3, 12345, 13.42)
-        assert e[11] == 'instance[0]'
-        assert e[13] == 'SEND'
-        assert e[15] == 'O_I'
+                Operator.O_I.value, 10, 3, 67, 12345, 13.42)
+        assert e[12] == 'instance[0]'
+        assert e[14] == 'SEND'
+        assert e[16] == 'O_I'
 
         cur.execute("COMMIT")
+
+    db.store_instances([Reference('instance[0]'), Reference('instance[1]')])
 
     db.add_events(Reference('instance[0]'), events)
     check_send_event('instance[0]')
@@ -95,7 +99,7 @@ def test_add_events(tmp_path):
         cur.execute(
                 "SELECT i.name, e.start_time, e.stop_time"
                 " FROM events AS e, instances AS i, event_types AS et"
-                " WHERE e.instance = i.oid AND e.event_type = et.oid"
+                " WHERE e.instance_oid = i.oid AND e.event_type_oid = et.oid"
                 " AND et.name = ?", (typ,))
 
         events2 = cur.fetchall()

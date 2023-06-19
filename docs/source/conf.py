@@ -103,7 +103,7 @@ pygments_style = 'sphinx'
 todo_include_todos = True
 
 # Also document constructors.
-autoclass_content = 'both'
+autoclass_content = 'class'
 
 # Configure breathe (Doxygen plug-in)
 breathe_projects = { 'libmuscle': str(_rootpath / 'docs' / 'doxygen' / 'xml') }

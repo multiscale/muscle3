@@ -51,6 +51,7 @@ setup(
     python_requires='>=3.7, <4',
     install_requires=[
         'click>=7.1,<9',
+        'matplotlib>=3,<4',
         'msgpack>=1,<2',
         'netifaces==0.11.0',
         "numpy<1.22; python_version=='3.7'",

@@ -1,0 +1,19 @@
+ymmsl_version: v0.1
+
+model:
+    name: benchmark_python
+    components:
+        driver: benchmark_driver_python
+        mirror: benchmark_mirror_python
+
+    conduits:
+        driver.out: mirror.in
+        mirror.out: driver.in
+
+resources:
+    driver:
+        threads: 1
+
+    mirror:
+        threads: 1
+

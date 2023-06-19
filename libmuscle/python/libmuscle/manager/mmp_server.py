@@ -305,7 +305,7 @@ class MMPRequestHandler(RequestHandler):
                     ProfileEventType(e[0]), ProfileTimestamp(e[1]),
                     ProfileTimestamp(e[2]),
                     Port(e[3][0], Operator[e[3][1]]) if e[3] else None,
-                    e[4], e[5], e[6], e[7])
+                    e[4], e[5], e[6], e[7], e[8])
                 for e in events]
 
         self._profile_store.add_events(Reference(instance_id), ev)

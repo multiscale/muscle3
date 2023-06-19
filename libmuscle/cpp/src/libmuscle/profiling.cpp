@@ -53,6 +53,7 @@ ProfileEvent::ProfileEvent(
         Optional<ymmsl::Port> const & port,
         Optional<int> port_length,
         Optional<int> slot,
+        Optional<int> message_number,
         Optional<std::size_t> message_size,
         Optional<double> message_timestamp)
     : event_type(event_type)
@@ -61,6 +62,7 @@ ProfileEvent::ProfileEvent(
     , port(port)
     , port_length(port_length)
     , slot(slot)
+    , message_number(message_number)
     , message_size(message_size)
     , message_timestamp(message_timestamp)
 {}

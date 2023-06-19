@@ -29,7 +29,11 @@ class ProfileTimestamp:
     _time_ref = time_ns() - perf_counter_ns()
 
     def __init__(self, nanoseconds: Optional[int] = None) -> None:
-        """Create a timestamp representing now."""
+        """Create a timestamp representing now.
+
+        Args:
+            nanoseconds: Time to set. If None, use the current time.
+        """
         if nanoseconds is None:
             nanoseconds = perf_counter_ns() + self._time_ref
         self.nanoseconds = nanoseconds
@@ -50,6 +54,8 @@ class ProfileEvent:
         port: Port used for sending or receiving, if applicable.
         port_length: Length of that port, if a vector.
         slot: Slot that was sent or received on, if applicable.
+        message_number: Number of message on this port, if applicable.
+                Starts at 0 for the first message sent or received.
         message_size: Size of the message involved, if applicable.
         message_timestamp: Timestamp sent with the message, if
                 applicable.
@@ -63,6 +69,8 @@ class ProfileEvent:
         port: Port used for sending or receiving, if applicable.
         port_length: Length of that port, if a vector.
         slot: Slot that was sent or received on, if applicable.
+        message_number: Number of message on this port, if applicable.
+                Starts at 0 for the first message sent or received.
         message_size: Size of the message involved, if applicable.
         message_timestamp: Timestamp sent with the message, if
                 applicable.
@@ -75,6 +83,7 @@ class ProfileEvent:
             port: Optional[Port] = None,
             port_length: Optional[int] = None,
             slot: Optional[int] = None,
+            message_number: Optional[int] = None,
             message_size: Optional[int] = None,
             message_timestamp: Optional[float] = None
             ) -> None:
@@ -85,6 +94,7 @@ class ProfileEvent:
         self.port = port
         self.port_length = port_length
         self.slot = slot
+        self.message_number = message_number
         self.message_size = message_size
         self.message_timestamp = message_timestamp
 

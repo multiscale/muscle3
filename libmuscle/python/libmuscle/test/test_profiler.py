@@ -1,6 +1,8 @@
 from libmuscle.profiling import (
         ProfileEvent, ProfileEventType, ProfileTimestamp)
 
+import time
+
 
 def test_recording_events(mocked_profiler) -> None:
     profiler, _ = mocked_profiler
@@ -13,7 +15,6 @@ def test_recording_events(mocked_profiler) -> None:
 
     assert e.start_time == t1
     assert e.stop_time == t2
-    assert e in profiler._events
 
 
 def test_auto_stop_time(mocked_profiler) -> None:
@@ -29,19 +30,26 @@ def test_auto_stop_time(mocked_profiler) -> None:
     assert e.start_time.nanoseconds < e.stop_time.nanoseconds
 
 
-def test_send_to_manager(mocked_profiler) -> None:
+def test_send_to_manager(profiler_comm_int_10ms, mocked_profiler) -> None:
     profiler, mock_mmp_client = mocked_profiler
 
-    for i in range(99):
-        e1 = ProfileEvent(ProfileEventType.RECEIVE, ProfileTimestamp())
-        profiler.record_event(e1)
+    e1 = ProfileEvent(ProfileEventType.RECEIVE, ProfileTimestamp())
+    profiler.record_event(e1)
 
-    assert mock_mmp_client.sent_events is None
+    time.sleep(0.1)
+    assert mock_mmp_client.sent_events == [e1]
 
+    mock_mmp_client.sent_events = None
     e2 = ProfileEvent(ProfileEventType.RECEIVE, ProfileTimestamp())
     profiler.record_event(e2)
 
-    assert mock_mmp_client.sent_events is not None
-    assert len(mock_mmp_client.sent_events) == 100
-    assert e1 in mock_mmp_client.sent_events
-    assert e2 in mock_mmp_client.sent_events
+    time.sleep(0.1)
+    assert mock_mmp_client.sent_events == [e2]
+
+    mock_mmp_client.sent_events = None
+    profiler.set_level('none')
+    e3 = ProfileEvent(ProfileEventType.RECEIVE, ProfileTimestamp())
+    profiler.record_event(e3)
+
+    time.sleep(0.1)
+    assert mock_mmp_client.sent_events is None

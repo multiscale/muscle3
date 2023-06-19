@@ -218,7 +218,7 @@ class Communicator:
         port = self._ports[port_name]
         profile_event = ProfileEvent(
                 ProfileEventType.SEND, ProfileTimestamp(), None, port, None,
-                slot, None, message.timestamp)
+                slot, port.get_num_messages(slot), None, message.timestamp)
 
         recv_endpoints = self._peer_manager.get_peer_endpoints(
                 snd_endpoint.port, slot_list)
@@ -308,7 +308,7 @@ class Communicator:
 
         receive_event = ProfileEvent(
                 ProfileEventType.RECEIVE, ProfileTimestamp(), None, port, None,
-                slot)
+                slot, port.get_num_messages())
 
         # peer_manager already checks that there is at most one snd_endpoint
         # connected to the port we receive on
@@ -325,7 +325,8 @@ class Communicator:
 
         recv_decode_event = ProfileEvent(
                 ProfileEventType.RECEIVE_DECODE, ProfileTimestamp(), None,
-                port, None, slot, len(mpp_message_bytes))
+                port, None, slot, port.get_num_messages(),
+                len(mpp_message_bytes))
         mpp_message = MPPMessage.from_bytes(mpp_message_bytes)
         recv_decode_event.stop()
 
@@ -342,13 +343,13 @@ class Communicator:
 
         recv_wait_event = ProfileEvent(
                 ProfileEventType.RECEIVE_WAIT, profile[0], profile[1], port,
-                mpp_message.port_length, slot, len(mpp_message_bytes),
-                message.timestamp)
+                mpp_message.port_length, slot, port.get_num_messages(),
+                len(mpp_message_bytes), message.timestamp)
 
         recv_xfer_event = ProfileEvent(
                 ProfileEventType.RECEIVE_TRANSFER, profile[1], profile[2],
-                port, mpp_message.port_length, slot, len(mpp_message_bytes),
-                message.timestamp)
+                port, mpp_message.port_length, slot, port.get_num_messages(),
+                len(mpp_message_bytes), message.timestamp)
 
         recv_decode_event.message_timestamp = message.timestamp
         receive_event.message_timestamp = message.timestamp

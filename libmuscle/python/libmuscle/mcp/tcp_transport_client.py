@@ -1,3 +1,4 @@
+from errno import ENOTCONN
 import socket
 from typing import Optional, Tuple
 
@@ -78,8 +79,14 @@ class TcpTransportClient(TransportClient):
         This closes any connections this client has and/or performs
         other shutdown activities.
         """
-        self._socket.shutdown(socket.SHUT_RDWR)
-        self._socket.close()
+        try:
+            self._socket.shutdown(socket.SHUT_RDWR)
+            self._socket.close()
+        except OSError as e:
+            # This can happen if the peer has shut down already when we
+            # close our connection to it, which is fine.
+            if e.errno != ENOTCONN:
+                raise
 
     def _connect(self, address: str) -> socket.SocketType:
         loc_parts = address.rsplit(':', 1)

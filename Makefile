@@ -49,6 +49,10 @@ test_install:
 test_examples: test_install
 	. $(CURDIR)/libmuscle/build/test_install/bin/muscle3.env && $(MAKE) -C docs/source/examples test
 
+.PHONY: benchmark
+benchmark: test_install
+	. $(CURDIR)/libmuscle/build/test_install/bin/muscle3.env && $(MAKE) -C docs/source/examples benchmark
+
 
 .PHONY: install
 install: all

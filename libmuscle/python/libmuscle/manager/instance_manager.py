@@ -1,11 +1,11 @@
 import logging
 from textwrap import indent
 from threading import Thread
-from typing import Union
+from typing import Dict, Optional, Union
 from multiprocessing import Queue
 import queue
 
-from ymmsl import Configuration
+from ymmsl import Configuration, Reference
 
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.instantiator import (
@@ -84,6 +84,7 @@ class InstanceManager:
         self._log_handler = LogHandlingThread(self._log_records_in)
         self._log_handler.start()
 
+        self._allocations: Optional[Dict[Reference, Resources]] = None
         self._planner = Planner(self._resources_in.get())
         self._num_running = 0
 
@@ -100,12 +101,12 @@ class InstanceManager:
 
     def start_all(self) -> None:
         """Starts all the instances of the model."""
-        allocations = self._planner.allocate_all(self._configuration)
-        for instance, resources in allocations.items():
+        self._allocations = self._planner.allocate_all(self._configuration)
+        for instance, resources in self._allocations.items():
             _logger.info(f'Planned {instance} on {resources}')
 
         components = {c.name: c for c in self._configuration.model.components}
-        for instance, resources in allocations.items():
+        for instance, resources in self._allocations.items():
             component = components[instance.without_trailing_ints()]
             if component.implementation is None:
                 _logger.warning(
@@ -128,6 +129,22 @@ class InstanceManager:
             _logger.info(f'Instantiating {instance} on {resources}')
             self._requests_out.put(request)
             self._num_running += 1
+
+    def get_resources(self) -> Dict[Reference, Resources]:
+        """Returns the resources allocated to each instance.
+
+        Only call this after start_all() has been called, or it will raise
+        an exception because the information is not available.
+
+        Return:
+            The resources for each instance instantiated by start_all()
+        """
+        if self._allocations is None:
+            raise RuntimeError(
+                    'Tried to get resources but we are running without'
+                    ' --start-all')
+
+        return self._allocations
 
     def wait(self) -> bool:
         """Waits for all instances to be done."""

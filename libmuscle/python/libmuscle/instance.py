@@ -183,8 +183,10 @@ class Instance:
         # Note: self._setup_checkpointing() needs to have the ports initialized
         # so it comes after self._connect()
         self._setup_checkpointing()
+        # profiling and logging need settings, so come after register_()
         self._set_local_log_level()
         self._set_remote_log_level()
+        self._setup_profiling()
 
     def reuse_instance(self) -> bool:
         """Decide whether to run this instance again.
@@ -695,12 +697,25 @@ class Instance:
     def _deregister(self) -> None:
         """Deregister this instance from the manager.
         """
+        # Make sure we record this even if profiling is disabled, so
+        # that we always have register, connect and deregister at
+        # least.
+        self._profiler.set_level('all')
+
         deregister_event = ProfileEvent(
                 ProfileEventType.DEREGISTER, ProfileTimestamp())
-        self.__manager.deregister_instance()
+        # We need to finish the event right away, because we need to
+        # submit it before deregistering, which is the last interaction
+        # with the manager we'll have.
         self._profiler.record_event(deregister_event)
-        # this is the last thing we'll profile, so flush messages
+
+        # This is the last thing we'll profile, so flush messages
         self._profiler.shutdown()
+        self.__manager.deregister_instance()
+
+        # Remove handler, the manager may be gone at this point so we
+        # cannot send it any more log messages.
+        logging.getLogger().removeHandler(self._mmp_handler)
         _logger.info('Deregistered from the manager')
 
     def _setup_checkpointing(self) -> None:
@@ -773,6 +788,23 @@ class Instance:
             self._mmp_handler = MuscleManagerHandler(id_str, logging.WARNING,
                                                      self.__manager)
             logging.getLogger().addHandler(self._mmp_handler)
+
+    def _setup_profiling(self) -> None:
+        """Configures profiler with settings from settings.
+        """
+        try:
+            profile_level_str = self.get_setting('muscle_profile_level', 'str')
+        except KeyError:
+            profile_level_str = 'all'
+
+        if profile_level_str not in ('none', 'all'):
+            _logger.warning(
+                    'Invalid value for muscle_profile_level:'
+                    f' {profile_level_str}. Please specify "none" or "all".'
+                    ' Using default value "all".')
+            profile_level_str = 'all'
+
+        self._profiler.set_level(profile_level_str)
 
     def _decide_reuse_instance(self) -> bool:
         """Decide whether and how to reuse the instance.

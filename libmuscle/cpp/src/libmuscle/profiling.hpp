@@ -85,6 +85,7 @@ class ProfileEvent {
                 Optional<ymmsl::Port> const & port = Optional<ymmsl::Port>(),
                 Optional<int> port_length = Optional<int>(),
                 Optional<int> slot = Optional<int>(),
+                Optional<int> message_number = Optional<int>(),
                 Optional<std::size_t> message_size = Optional<std::size_t>(),
                 Optional<double> message_timestamp = Optional<double>());
 
@@ -111,6 +112,9 @@ class ProfileEvent {
 
         /// Slot that was sent or received on, if applicable.
         Optional<int> slot;
+
+        /// Number of the message involved, if applicable. Starts at 0.
+        Optional<int> message_number;
 
         /// Size of the message involved, if applicable.
         Optional<std::size_t> message_size;

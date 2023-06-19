@@ -4,7 +4,7 @@ import sys
 import traceback
 from typing import Optional
 
-from ymmsl import PartialConfiguration, save as save_ymmsl
+from ymmsl import Model, PartialConfiguration, save as save_ymmsl
 
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger
@@ -59,6 +59,12 @@ class Manager:
                     self._configuration,
                     self._run_dir.path / 'configuration.ymmsl')
 
+        if isinstance(self._configuration.model, Model):
+            self._profile_store.store_instances([
+                instance_name
+                for c in self._configuration.model.components
+                for instance_name in c.instances()])
+
         self._instance_manager: Optional[InstanceManager] = None
         try:
             configuration = self._configuration.as_configuration()
@@ -102,6 +108,8 @@ class Manager:
             raise RuntimeError(message)
         try:
             self._instance_manager.start_all()
+            self._profile_store.store_resources(
+                    self._instance_manager.get_resources())
         except:     # noqa
             _logger.error('An error occurred while starting the components:')
             for line in traceback.format_exception(*sys.exc_info()):
@@ -116,6 +124,7 @@ class Manager:
         self._server.stop()
         self._snapshot_registry.shutdown()
         self._snapshot_registry.join()
+        self._profile_store.shutdown()
         self._logger.close()
 
     def wait(self) -> bool:

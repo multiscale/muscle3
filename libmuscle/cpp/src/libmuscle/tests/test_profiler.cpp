@@ -1,5 +1,7 @@
 // Inject mocks
 #define LIBMUSCLE_MOCK_MMP_CLIENT <mocks/mock_mmp_client.hpp>
+#define LIBMUSCLE_PATCH_PROFILER_COMMUNICATION_INTERVAL \
+    std::chrono::steady_clock::duration communication_interval_();
 
 // into the real implementation,
 #include <libmuscle/profiler.cpp>
@@ -9,12 +11,24 @@
 // then add mock implementations as needed.
 #include <mocks/mock_mmp_client.cpp>
 
+// and patch the background thread communication interval
+#include <chrono>
+
+using std::chrono_literals::operator""ms;
+
+auto communication_interval = 10000ms;
+
+std::chrono::steady_clock::duration communication_interval_() {
+    return communication_interval;
+}
+
 
 // Test code dependencies
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/profiler.hpp>
 #include <libmuscle/profiling.hpp>
 
+#include <chrono>
 #include <time.h>
 #include <utility>
 #include <gtest/gtest.h>
@@ -49,8 +63,15 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 class TestProfiler {
     public:
-        static std::vector<ProfileEvent> & events_(Profiler & profiler) {
-            return profiler.events_;
+        static std::size_t num_queued_events(Profiler & profiler) {
+            std::lock_guard<std::mutex> lock(profiler.mutex_);
+            return profiler.events_.size();
+        }
+
+        static ProfileEvent get_queued_event(
+                Profiler & profiler, std::size_t i) {
+            std::lock_guard<std::mutex> lock(profiler.mutex_);
+            return profiler.events_.at(i);
         }
 };
 
@@ -118,7 +139,24 @@ TEST(libmuscle_profiler, test_recording_events) {
 
     ASSERT_EQ(e.start_time, t1);
     ASSERT_EQ(e.stop_time, t2);
-    ASSERT_EQ(TestProfiler::events_(profiler).at(0), e);
+    ASSERT_EQ(TestProfiler::get_queued_event(profiler, 0), e);
+}
+
+
+TEST(libmuscle_profiler, test_disabling) {
+    reset_mocks();
+    MockMMPClient mock_mmp_client(Reference("test_instance[10]"), "");
+    Profiler profiler(mock_mmp_client);
+    profiler.set_level("none");
+
+    ProfileTimestamp t1, t2;
+    ProfileEvent e(ProfileEventType::register_, t1, t2);
+
+    profiler.record_event(ProfileEvent(e));
+
+    ASSERT_EQ(e.start_time, t1);
+    ASSERT_EQ(e.stop_time, t2);
+    ASSERT_EQ(TestProfiler::num_queued_events(profiler), 0u);
 }
 
 
@@ -139,7 +177,7 @@ TEST(libmuscle_profiler, test_auto_stop_time) {
 
     profiler.record_event(std::move(e));
 
-    auto const & e2 = TestProfiler::events_(profiler).at(0);
+    auto const & e2 = TestProfiler::get_queued_event(profiler, 0);
     ASSERT_EQ(e2.start_time, t1);
     ASSERT_TRUE(e2.stop_time.is_set());
     ASSERT_LT(e2.start_time.get(), e2.stop_time.get());
@@ -154,7 +192,7 @@ TEST(libmuscle_profiler, test_send_to_mock_mmp_client) {
             ProfileEventType::receive, ProfileTimestamp(), ProfileTimestamp());
     profiler.record_event(ProfileEvent(e1));
 
-    for (int i = 1; i < 99; ++i) {
+    for (int i = 1; i < 9999; ++i) {
         ProfileEvent e(
                 ProfileEventType::send, ProfileTimestamp(), ProfileTimestamp());
         profiler.record_event(std::move(e));
@@ -166,8 +204,25 @@ TEST(libmuscle_profiler, test_send_to_mock_mmp_client) {
             ProfileEventType::receive_transfer, ProfileTimestamp(), ProfileTimestamp());
     profiler.record_event(ProfileEvent(e2));
 
-    ASSERT_EQ(mock_mmp_client.last_submitted_profile_events.size(), 100u);
+    ASSERT_EQ(mock_mmp_client.last_submitted_profile_events.size(), 10000u);
     ASSERT_EQ(mock_mmp_client.last_submitted_profile_events.at(0), e1);
-    ASSERT_EQ(mock_mmp_client.last_submitted_profile_events.at(99), e2);
+    ASSERT_EQ(mock_mmp_client.last_submitted_profile_events.at(9999), e2);
+}
+
+TEST(libmuscle_profiler, test_send_timeout) {
+    reset_mocks();
+    communication_interval = 40ms;
+
+    MockMMPClient mock_mmp_client(Reference("test_instance"), "");
+    Profiler profiler(mock_mmp_client);
+
+    ProfileEvent e1(
+            ProfileEventType::receive, ProfileTimestamp(), ProfileTimestamp());
+    profiler.record_event(ProfileEvent(e1));
+
+    std::this_thread::sleep_for(50ms);
+
+    ASSERT_EQ(mock_mmp_client.last_submitted_profile_events.size(), 1u);
+    ASSERT_EQ(mock_mmp_client.last_submitted_profile_events.at(0), e1);
 }
 

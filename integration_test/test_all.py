@@ -80,8 +80,9 @@ def check_profile_output(tmp_path):
     res = cur.fetchall()
     assert len(res) == 1
     assert res[0][4:8] == ('in', 'F_INIT', None, None)
-    assert res[0][8] > 0
-    assert res[0][9] == 0.0
+    assert res[0][8] == 0
+    assert res[0][9] > 0
+    assert res[0][10] == 0.0
 
     cur.close()
     conn.close()

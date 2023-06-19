@@ -40,6 +40,11 @@ s0_config = Configuration(
 s0_resources = Resources({'node001': {0, 1, 2, 3}})
 
 
+s0_solution = {
+        Reference('macro'): Resources({'node001': {0, 1}}),
+        Reference('micro'): Resources({'node001': {2, 3}})}
+
+
 s1_model = Model(
         'serial_micros',
         [
@@ -80,6 +85,13 @@ s1_config = Configuration(
 s1_resources = Resources({'node001': {0, 1, 2, 3}})
 
 
+s1_solution = {
+        Reference('macro'): Resources({'node001': {0, 1, 2, 3}}),
+        Reference('micro1'): Resources({'node001': {0, 1}}),
+        Reference('micro2'): Resources({'node001': {0, 1}}),
+        Reference('micro3'): Resources({'node001': {0}})}
+
+
 s2_model = Model(
         'parallel_micros',
         [
@@ -113,6 +125,12 @@ s2_config = Configuration(
 
 
 s2_resources = Resources({'node001': {0, 1, 2, 3}, 'node002': {0, 1, 2, 3}})
+
+
+s2_solution = {
+        Reference('macro'): Resources({'node001': {0}}),
+        Reference('micro1'): Resources({'node001': {0, 1, 2}}),
+        Reference('micro2'): Resources({'node002': {0, 1}})}
 
 
 s3_model = Model(
@@ -154,6 +172,13 @@ s3_config = Configuration(
 s3_resources = Resources({'node001': {0, 1, 2, 3}, 'node002': {0, 1, 2, 3}})
 
 
+s3_solution = {
+        Reference('a'): Resources({'node001': {0}}),
+        Reference('b1'): Resources({'node001': {2, 3}, 'node002': {0, 1, 2, 3}}),
+        Reference('b2'): Resources({'node001': {0, 1}}),
+        Reference('c'): Resources({'node001': {0, 1, 2, 3}})}
+
+
 s4_model = Model(
         'lockstep_macros_micro',
         [
@@ -188,6 +213,12 @@ s4_config = Configuration(
 
 
 s4_resources = Resources({'node001': {0, 1, 2, 3}, 'node002': {0, 1, 2, 3}})
+
+
+s4_solution = {
+        Reference('macro1'): Resources({'node002': {0, 1}}),
+        Reference('macro2'): Resources({'node001': {0, 1, 2}}),
+        Reference('micro'): Resources({'node001': {0, 1, 2}})}
 
 
 s5_model = Model(
@@ -233,6 +264,16 @@ s5_resources = Resources({
     'node001': {0, 1, 2, 3}, 'node002': {0, 1, 2, 3}, 'node003': {0, 1}})
 
 
+# This is inefficient, as the models can all share resources. But repeater
+# is funny, and the algorithm cannot deal with it yet. It does give a valid
+# result with no overlap, so we'll accept that for the time being.
+s5_solution = {
+        Reference('init'): Resources({'node001': {0, 1, 2, 3}}),
+        Reference('macro'): Resources({'node001': {0, 1, 2, 3}}),
+        Reference('micro'): Resources({'node002': {0, 1, 2, 3}}),
+        Reference('repeater'): Resources({'node003': {0}})}
+
+
 s6_model = Model(
         'scale_overlap',
         [
@@ -271,6 +312,17 @@ s6_resources = Resources({
         'node003': {0, 1, 2, 3}, 'node004': {0, 1, 2, 3},
         'node005': {0, 1, 2, 3}, 'node006': {0, 1, 2, 3}
         })
+
+
+s6_solution = {
+        Reference('a'): Resources({'node001': {0, 1, 2, 3}}),
+        Reference('tcf'): Resources({'node002': {0}}),
+        Reference('b'): Resources({
+            'node002': {1, 2, 3},
+            'node003': {0, 1, 2, 3},
+            'node004': {0, 1, 2, 3},
+            'node005': {0, 1, 2, 3},
+            'node006': {0}})}
 
 
 s7_model = Model(
@@ -320,6 +372,40 @@ s7_resources = Resources({
         })
 
 
+s7_solution = {
+        Reference('mc'): Resources({'node001': {0}}),
+        Reference('init[0]'): Resources({'node001': {0, 1, 2, 3}}),
+        Reference('init[1]'): Resources({'node001': {4, 5, 6, 7}}),
+        Reference('init[2]'): Resources({'node002': {0, 1, 2, 3}}),
+        Reference('init[3]'): Resources({'node002': {4, 5, 6, 7}}),
+        Reference('init[4]'): Resources({'node003': {0, 1, 2, 3}}),
+        Reference('init[5]'): Resources({'node003': {4, 5, 6, 7}}),
+        Reference('init[6]'): Resources({'node004': {0, 1, 2, 3}}),
+        Reference('init[7]'): Resources({'node004': {4, 5, 6, 7}}),
+        Reference('init[8]'): Resources({'node005': {0, 1, 2, 3}}),
+        Reference('init[9]'): Resources({'node005': {4, 5, 6, 7}}),
+        Reference('macro[0]'): Resources({'node001': {0, 1, 2, 3}}),
+        Reference('macro[1]'): Resources({'node001': {4, 5, 6, 7}}),
+        Reference('macro[2]'): Resources({'node002': {0, 1, 2, 3}}),
+        Reference('macro[3]'): Resources({'node002': {4, 5, 6, 7}}),
+        Reference('macro[4]'): Resources({'node003': {0, 1, 2, 3}}),
+        Reference('macro[5]'): Resources({'node003': {4, 5, 6, 7}}),
+        Reference('macro[6]'): Resources({'node004': {0, 1, 2, 3}}),
+        Reference('macro[7]'): Resources({'node004': {4, 5, 6, 7}}),
+        Reference('macro[8]'): Resources({'node005': {0, 1, 2, 3}}),
+        Reference('macro[9]'): Resources({'node005': {4, 5, 6, 7}}),
+        Reference('micro[0]'): Resources({'node001': {0, 1, 2, 3}}),
+        Reference('micro[1]'): Resources({'node001': {4, 5, 6, 7}}),
+        Reference('micro[2]'): Resources({'node002': {0, 1, 2, 3}}),
+        Reference('micro[3]'): Resources({'node002': {4, 5, 6, 7}}),
+        Reference('micro[4]'): Resources({'node003': {0, 1, 2, 3}}),
+        Reference('micro[5]'): Resources({'node003': {4, 5, 6, 7}}),
+        Reference('micro[6]'): Resources({'node004': {0, 1, 2, 3}}),
+        Reference('micro[7]'): Resources({'node004': {4, 5, 6, 7}}),
+        Reference('micro[8]'): Resources({'node005': {0, 1, 2, 3}}),
+        Reference('micro[9]'): Resources({'node005': {4, 5, 6, 7}})}
+
+
 s8_model = Model(
         'serial_micros_exclusive_macro',
         [
@@ -357,22 +443,28 @@ s8_config = Configuration(
 s8_resources = Resources({'node001': {0, 1, 2, 3}, 'node002': {0, 1, 2, 3}})
 
 
+s8_solution = {
+        Reference('macro'): Resources({'node001': {3}}),
+        Reference('micro1'): Resources({'node001': {0, 1, 2}}),
+        Reference('micro2'): Resources({'node001': {0, 1}})}
+
+
 s9_model = Model(
         'converging_graph',
         [
             Component('e', 'e', ports=Ports(o_f=['out'])),
             Component('b', 'b', ports=Ports(
-                f_init=['in'], o_f=['out'])),
+                f_init=['in1', 'in2'], o_f=['out'])),
             Component('c', 'c', ports=Ports(f_init=['in'])),
             Component('a', 'a', ports=Ports(o_f=['out'])),
             Component('d', 'd', ports=Ports(
                 f_init=['in'], o_f=['out'])),
             ],
         [
-            Conduit('e.out', 'b.in'),
+            Conduit('e.out', 'b.in1'),
             Conduit('b.out', 'c.in'),
             Conduit('a.out', 'd.in'),
-            Conduit('d.out', 'b.in')])
+            Conduit('d.out', 'b.in2')])
 
 
 s9_implementations = [
@@ -399,25 +491,34 @@ s9_config = Configuration(
 s9_resources = Resources({'node001': {0, 1, 2, 3}})
 
 
+s9_solution = {
+        Reference('a'): Resources({'node001': {1}}),
+        Reference('b'): Resources({'node001': {0}}),
+        Reference('c'): Resources({'node001': {0}}),
+        Reference('d'): Resources({'node001': {1}}),
+        Reference('e'): Resources({'node001': {0}})}
+
+
 scenarios = [
-        (s0_config, s0_resources),
-        (s1_config, s1_resources),
-        (s2_config, s2_resources),
-        (s3_config, s3_resources),
-        (s4_config, s4_resources),
-        (s5_config, s5_resources),
-        (s6_config, s6_resources),
-        (s7_config, s7_resources),
-        (s8_config, s8_resources),
-        (s9_config, s9_resources),
+        (s0_config, s0_resources, s0_solution),
+        (s1_config, s1_resources, s1_solution),
+        (s2_config, s2_resources, s2_solution),
+        (s3_config, s3_resources, s3_solution),
+        (s4_config, s4_resources, s4_solution),
+        (s5_config, s5_resources, s5_solution),
+        (s6_config, s6_resources, s6_solution),
+        (s7_config, s7_resources, s7_solution),
+        (s8_config, s8_resources, s8_solution),
+        (s9_config, s9_resources, s9_solution),
         ]
 
 
 @pytest.mark.parametrize('scenario', scenarios)
 def test_scenarios(scenario: _Scenario) -> None:
-    config, res = scenario
+    config, res, solution = scenario
     planner = Planner(res)
     allocations = planner.allocate_all(config)
+    assert allocations == solution
 
     model_graph = ModelGraph(config.model)
     for cname, req in config.resources.items():

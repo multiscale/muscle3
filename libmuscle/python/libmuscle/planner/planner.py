@@ -354,6 +354,21 @@ class Resources:
         """Copy the object."""
         return Resources(deepcopy(self.cores))
 
+    def __eq__(self, other: object) -> bool:
+        """Check for equality."""
+        if not isinstance(other, Resources):
+            return NotImplemented
+
+        if len(self.cores) != len(other.cores):
+            return False
+
+        for node, cores in self.cores.items():
+            if node not in other.cores:
+                return False
+            if other.cores[node] != cores:
+                return False
+        return True
+
     def __iadd__(self, other: 'Resources') -> 'Resources':
         """Add the resources in the argument to this object."""
         for node in other.cores:

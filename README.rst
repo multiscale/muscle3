@@ -9,14 +9,6 @@
     :target: https://github.com/multiscale/muscle3/actions
     :alt: Build Status
 
-.. image:: https://app.codacy.com/project/badge/Coverage/4542a84edcd947ee982a0bfabe617089
-    :target: https://www.codacy.com/gh/multiscale/muscle3/dashboard
-    :alt: Code Coverage
-
-.. image:: https://app.codacy.com/project/badge/Grade/4542a84edcd947ee982a0bfabe617089
-    :target: https://www.codacy.com/gh/multiscale/muscle3/dashboard
-    :alt: Codacy Grade
-
 .. image:: https://zenodo.org/badge/122876985.svg
    :target: https://zenodo.org/badge/latestdoi/122876985
 

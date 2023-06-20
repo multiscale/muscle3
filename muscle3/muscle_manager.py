@@ -34,6 +34,25 @@ from libmuscle.manager.run_dir import RunDir
             ' created.')
         )
 @click.option(
+        '--location-file', nargs=1, type=click.Path(
+            exists=False, file_okay=True, dir_okay=True, readable=False,
+            allow_dash=True),
+        help=(
+            'File to write the network location of the manager to if'
+            ' --start-all is not specified. If a relative path is given,'
+            ' then it will be resolved relative to the directory in which'
+            ' the manager was started.'
+            ''
+            ' The manager will write to this file a single line of text,'
+            ' which should be passed to the instances via the'
+            ' MUSCLE_MANAGER environment variable or on their command line'
+            ' using the --muscle-manager=<contents> option.'
+            ''
+            ' If --start-all is not specified and --location-file is also'
+            ' not given, then the location will be printed on standard'
+            ' output.')
+        )
+@click.option(
         '--start-all/--no-start-all', default=False, help=(
             'Start all submodel instances listed in the configuration file(s).'
             )
@@ -42,7 +61,8 @@ def manage_simulation(
         ymmsl_files: Sequence[str],
         start_all: bool,
         run_dir: Optional[str],
-        log_level: Optional[str]
+        log_level: Optional[str],
+        location_file: Optional[str]
         ) -> None:
     """Run the MUSCLE3 Manager.
 
@@ -105,7 +125,13 @@ def manage_simulation(
             manager = Manager(configuration, None, log_level)
         else:
             manager = Manager(configuration, run_dir_obj, log_level)
-        print(manager.get_server_location())
+
+        server_location = manager.get_server_location()
+        if location_file is None:
+            print(server_location, flush=True)
+        else:
+            with Path(location_file).open('w') as f:
+                f.write(server_location)
 
     success = manager.wait()
 

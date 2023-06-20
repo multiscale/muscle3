@@ -38,10 +38,14 @@ ifeq "$(filter $(MAKECMDGOALS),$(cleantargets))" ""
 EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-Wl,-rpath,$(DIR)/lib)
 
 FFLAGS += -g -I. -I.. -I../../ymmsl
-ifneq (,$(filter ifort ifx, $(FC)))
-	FFLAGS += -e03
-else
-	FFLAGS += -std=f2003
+ifdef MUSCLE_FC_INTEL
+    FFLAGS += -e03
+else ifdef MUSCLE_FC_GNU
+    FFLAGS += -std=f2003
+else ifdef MUSCLE_FC_CLANG
+    FFLAGS += -std=f2003
+else ifdef MUSCLE_FC_CRAY
+    FFLAGS += -em -ef
 endif
 
 

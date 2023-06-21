@@ -73,10 +73,10 @@ install: $(installed_sources) $(installed_modules) $(installed_libs) $(installed
 endif
 
 %.o: $(srcdir)/%.f90
-	$(FC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS)
+	$(FC) -c $(FFLAGS) $^ -o $@
 
 %.lo: $(srcdir)/%.f90
-	$(FC) -c -fPIC $(MOD_DUMP) $(FFLAGS) $< -o $@ $(LDFLAGS)
+	$(FC) -c -fPIC $(MOD_DUMP) $(FFLAGS) $< -o $@
 
 %.mod: %.o
 

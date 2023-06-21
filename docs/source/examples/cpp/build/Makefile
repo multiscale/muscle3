@@ -17,7 +17,7 @@ mpi: $(mpi_binaries)
 
 .PHONY: clean
 clean:
-	rm -f $(binaries) $(mpi_binaries)
+	rm -f *.o $(binaries) $(mpi_binaries)
 
 
 %_mpi.o: ../%_mpi.cpp

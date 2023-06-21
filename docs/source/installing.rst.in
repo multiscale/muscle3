@@ -92,9 +92,10 @@ range of tools so that you can work with what's familiar.
 
       MUSCLE3 supports three different compilers on Linux: GCC, Clang, and
       Intel. You'll need at least one of those to build libmuscle. The Flang
-      Fortran compiler and derivatives like AOCC Fortran are known not to work,
-      and the Cray Fortran compiler is also problematic. Other compilers may or
-      may not work, please let us know if you try one.
+      Fortran compiler and derivatives like AOCC Fortran are known not to work.
+      The Cray Fortran compiler has been found to work but isn't tested
+      regularly. Other compilers may or may not work, please let us know if
+      you try one.
 
       .. tabs::
 
@@ -210,13 +211,23 @@ range of tools so that you can work with what's familiar.
 
             should get you set up with the GNU toolchain.
 
+         .. group-tab:: Cray
+
+            On Cray machines
+
+            .. code-block:: bash
+
+               module load PrgEnv-cray cray-mpich cray-pithon
+
+            should get you set up with the Cray toolchain.
 
       The Cray machine this was tested on also had AOCC (the AMD compiler) and
       Cray's CCE compiler available. AOCC's Flang-based Fortran compiler has a
-      bug that causes it to give an error when compiling, and when compiled with
-      the Cray compiler MUSCLE3's examples crash. So those compilers currently
-      don't work. If you have an Intel-based Cray machine that has the Intel
-      compiler then we'd expect it to work but haven't been able to test this.
+      bug that causes it to give an error when compiling, so it does not
+      currently work. The Cray compiler, version 15.0.0, did work, and can be
+      enabled as described above. If you have an Intel-based Cray machine that
+      has the Intel compiler then we'd expect it to work, but we haven't been
+      able to test this.
 
 
 (No) dependencies
@@ -367,7 +378,7 @@ build system of how we want it to do the build.
 
                $ brew info gcc
 
-   .. group-tab:: Cray
+   .. group-tab:: Cray HPC
 
       .. tabs::
 
@@ -380,26 +391,33 @@ build system of how we want it to do the build.
               ~/muscle3_source/muscle3-%%VERSION%%$ CXX=CC MPICXX=CC FFLAGS="-fallow-argument-mismatch" MPI_FFLAGS="-fallow-argument-mismatch" make
 
 
-            .. collapse:: Why?
+         .. group-tab:: Cray
 
-               Cray machines have a rather non-standard convention for compiler
-               commands: ``cc`` is the C compiler, ``CC`` the C++ compiler, and
-               ``ftn`` the Fortran compiler. Especially the name of the C++
-               compiler is unfortunate, because ``CC`` is normally the
-               environment variable holding the name of the C (not C++)
-               compiler, and on Macs with XCode, the ``CC`` command actually
-               refers to the C compiler, which will happily compile C++ code as
-               well but then break when linking.
+            For the Cray compiler, MUSCLE3 can be compiled using
 
-               So, using ``CC`` automatically is dangerous, because you don't
-               know what you get. The MUSCLE3 build system therefore does not
-               try that name itself, and therefore if you're on a Cray you'll
-               have to set it explicitly.
+            .. code-block:: bash
 
-               The extra Fortran flags are needed because GFortran considers
-               Cray's MPI library to contain invalid code. The flags disable
-               this error, after which it all works fine.
+              ~/muscle3_source/muscle3-%%VERSION%%$ CXX=CC MPICXX=CC make
 
+      .. collapse:: Why?
+
+         Cray machines have a rather non-standard convention for compiler
+         commands: ``cc`` is the C compiler, ``CC`` the C++ compiler, and
+         ``ftn`` the Fortran compiler. Especially the name of the C++
+         compiler is unfortunate, because ``CC`` is normally the
+         environment variable holding the name of the C (not C++)
+         compiler, and on Macs with XCode, the ``CC`` command actually
+         refers to the C compiler, which will happily compile C++ code as
+         well but then break when linking.
+
+         So, using ``CC`` automatically is dangerous, because you don't
+         know what you get. The MUSCLE3 build system therefore does not
+         try that name itself, and therefore if you're on a Cray you'll
+         have to set it explicitly.
+
+         The extra Fortran flags are needed on GFortran because GFortran
+         considers Cray's MPI library to contain invalid code. The flags
+         disable this error, after which it all works fine.
 
 This will take a few minutes (including building the dependencies), depending on
 the speed of your machine.

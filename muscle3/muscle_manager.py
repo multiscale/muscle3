@@ -130,8 +130,7 @@ def manage_simulation(
         if location_file is None:
             print(server_location, flush=True)
         else:
-            with Path(location_file).open('w') as f:
-                f.write(server_location)
+            Path(location_file).write_text(server_location)
 
     success = manager.wait()
 

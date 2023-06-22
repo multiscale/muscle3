@@ -4,19 +4,20 @@ API Documentation for C++
 This page provides full documentation for the C++ API of MUSCLE3.
 
 Note that in a few places, classes are referred to as
-``libmuscle::impl::<class>``. This is a bug in the documentation rendering
-process, the class is actually available as ``libmuscle::<class>`` and
-should be used as such.
+``libmuscle::_MUSCLE_IMPL_NS::<class>`` or ``ymmsl::impl::<class>``. This
+is a bug in the documentation rendering process, the class is actually
+available as ``libmuscle::<class>`` and should be used as such.
+
 
 Namespace libmuscle
 -------------------
 
-.. doxygenclass:: libmuscle::impl::Data
-.. doxygenclass:: libmuscle::impl::DataConstRef
-.. doxygenclass:: libmuscle::impl::Instance
-.. doxygenenum:: libmuscle::impl::InstanceFlags
-.. doxygenclass:: libmuscle::impl::Message
-.. doxygentypedef:: libmuscle::impl::PortsDescription
+.. doxygenclass:: libmuscle::_MUSCLE_IMPL_NS::Data
+.. doxygenclass:: libmuscle::_MUSCLE_IMPL_NS::DataConstRef
+.. doxygenclass:: libmuscle::_MUSCLE_IMPL_NS::Instance
+.. doxygenenum:: libmuscle::_MUSCLE_IMPL_NS::InstanceFlags
+.. doxygenclass:: libmuscle::_MUSCLE_IMPL_NS::Message
+.. doxygentypedef:: libmuscle::_MUSCLE_IMPL_NS::PortsDescription
 
 
 Namespace ymmsl

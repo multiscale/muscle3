@@ -146,8 +146,9 @@ ifeq "$(filter $(MAKECMDGOALS),$(cleantargets))" ""
 $(info pcextra: $(PKG_CONFIG_EXTRA_DIRS))
 CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --cflags msgpack)
 
-LDFLAGS += -pthread -L$(CURDIR)/../ymmsl -lymmsl
-LDFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs msgpack)
+LDFLAGS2 = $(LDFLAGS)
+LDFLAGS2 += -pthread -L$(CURDIR)/../ymmsl -lymmsl
+LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs msgpack)
 
 # Automatic header dependencies
 -include $(deps)
@@ -207,37 +208,37 @@ libmuscle.a: $(objects)
 	ar rcs $@ $^
 
 libmuscle.so: $(lobjects)
-	$(CXX) -shared -o $@ $^ $(LDFLAGS)
+	$(CXX) -shared -o $@ $^ $(LDFLAGS2)
 
 libmuscle.dylib: $(lobjects)
-	$(CXX) -shared -o $@ $^ $(LDFLAGS)
+	$(CXX) -shared -o $@ $^ $(LDFLAGS2)
 
 libmuscle_d.a: $(dobjects)
 	ar rcs $@ $^
 
 libmuscle_d.so: $(dlobjects)
-	$(CXX) -shared -o $@ $^ $(LDFLAGS)
+	$(CXX) -shared -o $@ $^ $(LDFLAGS2)
 
 libmuscle_d.dylib: $(dlobjects)
-	$(CXX) -shared -o $@ $^ $(LDFLAGS)
+	$(CXX) -shared -o $@ $^ $(LDFLAGS2)
 
 libmuscle_mpi.a: $(mobjects)
 	ar rcs $@ $^
 
 libmuscle_mpi.so: $(mlobjects)
-	$(MPICXX) -shared -o $@ $^ $(LDFLAGS)
+	$(MPICXX) -shared -o $@ $^ $(LDFLAGS2)
 
 libmuscle_mpi.dylib: $(mlobjects)
-	$(MPICXX) -shared -o $@ $^ $(LDFLAGS)
+	$(MPICXX) -shared -o $@ $^ $(LDFLAGS2)
 
 libmuscle_mpi_d.a: $(mdobjects)
 	ar rcs $@ $^
 
 libmuscle_mpi_d.so: $(mdlobjects)
-	$(MPICXX) -shared -o $@ $^ $(LDFLAGS)
+	$(MPICXX) -shared -o $@ $^ $(LDFLAGS2)
 
 libmuscle_mpi_d.dylib: $(mdlobjects)
-	$(MPICXX) -shared -o $@ $^ $(LDFLAGS)
+	$(MPICXX) -shared -o $@ $^ $(LDFLAGS2)
 
 $(PREFIX)/include/libmuscle/version.h: $(srcdir)/version.h
 	@mkdir -p $(@D)

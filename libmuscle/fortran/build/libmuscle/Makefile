@@ -36,13 +36,15 @@ installed_sources := $(sources:$(srcdir)/%=$(PREFIX)/include/%)
 installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
 
 
-LDFLAGS := -L../ymmsl -lymmsl_fortran
-LDFLAGS += -L../../../cpp/build/libmuscle -lmuscle
-LDFLAGS += -L../../../cpp/build/ymmsl -lymmsl
+LDFLAGS2 := $(LDFLAGS)
+LDFLAGS2 += -L../ymmsl -lymmsl_fortran
+LDFLAGS2 += -L../../../cpp/build/libmuscle -lmuscle
+LDFLAGS2 += -L../../../cpp/build/ymmsl -lymmsl
 
-LDFLAGS_MPI := -L../ymmsl -lymmsl_fortran
-LDFLAGS_MPI += -L../../../cpp/build/libmuscle -lmuscle_mpi
-LDFLAGS_MPI += -L../../../cpp/build/ymmsl -lymmsl
+LDFLAGS2_MPI := $(LDFLAGS_MPI)
+LDFLAGS2_MPI += -L../ymmsl -lymmsl_fortran
+LDFLAGS2_MPI += -L../../../cpp/build/libmuscle -lmuscle_mpi
+LDFLAGS2_MPI += -L../../../cpp/build/ymmsl -lymmsl
 
 FFLAGS := -O3 -I../ymmsl
 ifdef MUSCLE_FC_INTEL
@@ -135,19 +137,19 @@ libmuscle_fortran.a: $(objects)
 	ar rcs $@ $^
 
 libmuscle_fortran.so: $(lobjects)
-	$(FC) -shared -o $@ $^ $(LDFLAGS)
+	$(FC) -shared -o $@ $^ $(LDFLAGS2)
 
 libmuscle_fortran.dylib: $(lobjects)
-	$(FC) -shared -o $@ $^ $(LDFLAGS)
+	$(FC) -shared -o $@ $^ $(LDFLAGS2)
 
 libmuscle_mpi_fortran.a: $(mobjects)
 	ar rcs $@ $^
 
 libmuscle_mpi_fortran.so: $(mlobjects)
-	$(MPIFC) -shared -o $@ $^ $(LDFLAGS_MPI)
+	$(MPIFC) -shared -o $@ $^ $(LDFLAGS2_MPI)
 
 libmuscle_mpi_fortran.dylib: $(mlobjects)
-	$(MPIFC) -shared -o $@ $^ $(LDFLAGS_MPI)
+	$(MPIFC) -shared -o $@ $^ $(LDFLAGS2_MPI)
 
 $(PREFIX)/include/%.f90: $(srcdir)/%.f90
 	@mkdir -p $(@D)

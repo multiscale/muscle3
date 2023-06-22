@@ -8,6 +8,28 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 0.7.0
 *****
 
+Added
+-----
+
+* Checkpointing is now supported in C++ and Fortran as well
+* Added built-in profiling feature
+* New object-oriented Fortran API (existing API also still available)
+* New Instance.list_settings() function
+* Build support for macOS with CLang and G++/GFortran
+* Build support for Cray machines and compilers
+
+Improved
+--------
+
+* Compiling with MPI and linking without or vice versa is now impossible
+* Fixed MessagePack build failure on old OSes
+* Fixed resource allocation for instance sets
+* Planner now detects F_INIT -> O_F loops and gives an error
+* Manager correctly handles instances that never register
+* Last lines of log now printer to screen on error for smoother problem solving
+* Various small fixes and improvements
+
+
 Backwards Incompatible changes
 ------------------------------
 
@@ -27,6 +49,20 @@ Backwards Incompatible changes
 
     instance = LIBMUSCLE_Instance_create(ports, LIBMUSCLE_InstanceFlags(), MPI_COMM_WORLD, root_rank)
     instance = LIBMUSCLE_Instance_create(ports, communicator=MPI_COMM_WORLD, root=root_rank)
+
+* ``DataConstRef`` items can no longer be added to a ``Data`` containing a list or dict.
+  The newly added ``DataConstRef::list`` and ``DataConstRef::dict`` should be used
+  instead.
+
+Thanks
+------
+
+* Maarten at Ignition Computing for implementing much of the above
+* Peter for debugging the MessagePack build issue
+* Peter, Jon and Gavin for ARCHER2 access and support
+* Koen for testing macOS build support
+* Everyone who reported issues and contributed feature ideas!
+
 
 0.6.0
 *****

@@ -1,8 +1,10 @@
 #include "libmuscle/logger.hpp"
 #include "libmuscle/util.hpp"
 
+#include <sstream>
 
-namespace libmuscle { namespace impl {
+
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 Logger::Logger(std::string const & instance_id, std::string const & log_file, MMPClient & manager)
     : instance_id_(instance_id)

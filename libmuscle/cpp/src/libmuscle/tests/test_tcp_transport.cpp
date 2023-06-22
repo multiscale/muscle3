@@ -4,20 +4,22 @@
 #include <libmuscle/mcp/transport_server.hpp>
 #include <libmuscle/mcp/tcp_transport_client.hpp>
 #include <libmuscle/mcp/tcp_transport_server.hpp>
+#include <libmuscle/namespace.hpp>
 
 #include <msgpack.hpp>
 
 #include <algorithm>
 #include <string>
+#include <tuple>
 #include <unistd.h>
 #include <vector>
 
 
-using libmuscle::impl::Data;
-using libmuscle::impl::DataConstRef;
-using libmuscle::impl::mcp::RequestHandler;
-using libmuscle::impl::mcp::TcpTransportClient;
-using libmuscle::impl::mcp::TcpTransportServer;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
+using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::RequestHandler;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::TcpTransportClient;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::TcpTransportServer;
 
 
 int main(int argc, char *argv[]) {
@@ -99,7 +101,8 @@ TEST(test_tcp_communication, send_receive_direct) {
     ASSERT_TRUE(TcpTransportClient::can_connect_to(location));
     TcpTransportClient client(location);
 
-    auto result = client.call("TestRequest", strlen("TestRequest"));
+    auto res = client.call("TestRequest", strlen("TestRequest"));
+    auto result = std::get<0>(res);
 
     std::string response(result.size(), ' ');
     std::copy(result.as_byte_array(), result.as_byte_array() + result.size(), response.begin());
@@ -120,7 +123,8 @@ TEST(test_tcp_communication, send_receive_delayed) {
 
     handler.send_response();
 
-    auto result = client.call("TestRequest", strlen("TestRequest"));
+    auto res = client.call("TestRequest", strlen("TestRequest"));
+    auto result = std::get<0>(res);
 
     std::string response(result.size(), ' ');
     std::copy(result.as_byte_array(), result.as_byte_array() + result.size(), response.begin());

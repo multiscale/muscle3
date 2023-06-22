@@ -25,20 +25,20 @@ program diffusion
     real (selected_real_kind(15)), dimension(:, :), allocatable :: Us
 
 
-    ports = LIBMUSCLE_PortsDescription_create()
-    call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_O_I, 'state_out')
-    call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_S, 'state_in')
-    call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_O_F, 'final_state_out')
-    instance = LIBMUSCLE_Instance_create(ports)
+    ports = LIBMUSCLE_PortsDescription()
+    call ports%add(YMMSL_Operator_O_I, 'state_out')
+    call ports%add(YMMSL_Operator_S, 'state_in')
+    call ports%add(YMMSL_Operator_O_F, 'final_state_out')
+    instance = LIBMUSCLE_Instance(ports)
     call LIBMUSCLE_PortsDescription_free(ports)
 
-    do while (LIBMUSCLE_Instance_reuse_instance(instance))
+    do while (instance%reuse_instance())
         ! F_INIT
-        t_max = LIBMUSCLE_Instance_get_setting_as_real8(instance, 't_max')
-        dt = LIBMUSCLE_Instance_get_setting_as_real8(instance, 'dt')
-        x_max = LIBMUSCLE_Instance_get_setting_as_real8(instance, 'x_max')
-        dx = LIBMUSCLE_Instance_get_setting_as_real8(instance, 'dx')
-        d = LIBMUSCLE_Instance_get_setting_as_real8(instance, 'd')
+        t_max = instance%get_setting_as_real8('t_max')
+        dt = instance%get_setting_as_real8('dt')
+        x_max = instance%get_setting_as_real8('x_max')
+        dx = instance%get_setting_as_real8('dx')
+        d = instance%get_setting_as_real8('d')
 
         U_size = nint(x_max / dx)
         allocate (U(U_size), dU(U_size))
@@ -54,22 +54,22 @@ program diffusion
         Us(:, iteration) = U
 
         t_cur = 0.0
-        do while (t_cur + dt < t_max)
+        do while (t_cur + dt < t_max .and. iteration < n_steps - 1)
             print *, 't_cur: ', t_cur, 't_max: ', t_max
             ! O_I
             sdata = LIBMUSCLE_Data_create_grid(U, 'x')
-            smsg = LIBMUSCLE_Message_create(t_cur, sdata)
+            smsg = LIBMUSCLE_Message(t_cur, sdata)
             call LIBMUSCLE_Data_free(sdata)
             t_next = t_cur + dt
             if (t_next + dt <= t_max) then
-                call LIBMUSCLE_Message_set_next_timestamp(smsg, t_next)
+                call smsg%set_next_timestamp(t_next)
             end if
-            call LIBMUSCLE_Instance_send(instance, 'state_out', smsg)
+            call instance%send('state_out', smsg)
 
             ! S
-            rmsg = LIBMUSCLE_Instance_receive(instance, 'state_in', smsg)
-            rdata = LIBMUSCLE_Message_get_data(rmsg)
-            call LIBMUSCLE_DataConstRef_elements(rdata, U)
+            rmsg = instance%receive('state_in', smsg)
+            rdata = rmsg%get_data()
+            call rdata%elements(U)
             call LIBMUSCLE_DataConstRef_free(rdata)
             call LIBMUSCLE_Message_free(rmsg)
             call LIBMUSCLE_Message_free(smsg)
@@ -87,8 +87,8 @@ program diffusion
 
         ! O_F
         sdata = LIBMUSCLE_Data_create_grid(U, 'x')
-        smsg = LIBMUSCLE_Message_create(t_cur, sdata)
-        call LIBMUSCLE_Instance_send(instance, 'final_state_out', smsg)
+        smsg = LIBMUSCLE_Message(t_cur, sdata)
+        call instance%send('final_state_out', smsg)
         call LIBMUSCLE_Message_free(smsg)
         call LIBMUSCLE_Data_free(sdata)
         deallocate (U, dU, Us)

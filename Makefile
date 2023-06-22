@@ -49,6 +49,10 @@ test_install:
 test_examples: test_install
 	. $(CURDIR)/libmuscle/build/test_install/bin/muscle3.env && $(MAKE) -C docs/source/examples test
 
+.PHONY: benchmark
+benchmark: test_install
+	. $(CURDIR)/libmuscle/build/test_install/bin/muscle3.env && $(MAKE) -C docs/source/examples benchmark
+
 
 .PHONY: install
 install: all
@@ -154,10 +158,7 @@ fortran_tests: fortran cpp_tests
 bindings:
 	scripts/make_ymmsl_api.py --fortran-c-wrappers >libmuscle/cpp/src/ymmsl/bindings/ymmsl_fortran_c.cpp
 	scripts/make_ymmsl_api.py --fortran-module >libmuscle/fortran/src/ymmsl/ymmsl.f90
-	scripts/make_ymmsl_api.py --fortran-exports libmuscle/cpp/build/ymmsl/ymmsl.version.in libmuscle/cpp/build/ymmsl/ymmsl.version
 	scripts/make_libmuscle_api.py --fortran-c-wrappers >libmuscle/cpp/src/libmuscle/bindings/libmuscle_fortran_c.cpp
 	scripts/make_libmuscle_api.py --fortran-module >libmuscle/fortran/src/libmuscle/libmuscle.f90
-	scripts/make_libmuscle_api.py --fortran-exports libmuscle/cpp/build/libmuscle/libmuscle.version.in libmuscle/cpp/build/libmuscle/libmuscle.version
 	scripts/make_libmuscle_api.py --fortran-mpi-c-wrappers >libmuscle/cpp/src/libmuscle/bindings/libmuscle_mpi_fortran_c.cpp
 	scripts/make_libmuscle_api.py --fortran-mpi-module >libmuscle/fortran/src/libmuscle/libmuscle_mpi.f90
-	scripts/make_libmuscle_api.py --fortran-mpi-exports libmuscle/cpp/build/libmuscle/libmuscle.version.in libmuscle/cpp/build/libmuscle/libmuscle_mpi.version

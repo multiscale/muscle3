@@ -12,6 +12,7 @@ build:
       # let tox set up a build environment
       - tox -e docs --notest
       # export tox installed packages as requirements for the install step
-      - .tox/docs/bin/pip freeze > docs/requirements.txt
+      - .tox/docs/bin/pip freeze | grep -v '^muscle3' > docs/requirements.txt
+      - cat docs/requirements.txt
     post_install:
       - pip install -r docs/requirements.txt

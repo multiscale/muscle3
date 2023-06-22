@@ -13,13 +13,15 @@
 // Test code dependencies
 #include <libmuscle/logger.hpp>
 #include <libmuscle/logging.hpp>
+#include <libmuscle/namespace.hpp>
 
 #include <gtest/gtest.h>
 
 
-using libmuscle::impl::Logger;
-using libmuscle::impl::LogLevel;
-using libmuscle::impl::MockMMPClient;
+using libmuscle::_MUSCLE_IMPL_NS::Logger;
+using libmuscle::_MUSCLE_IMPL_NS::LogLevel;
+using libmuscle::_MUSCLE_IMPL_NS::MockMMPClient;
+using ymmsl::Reference;
 
 
 int main(int argc, char *argv[]) {
@@ -37,7 +39,7 @@ void reset_mocks() {
 
 TEST(libmuscle_logging, test_logger) {
     reset_mocks();
-    MockMMPClient manager("");
+    MockMMPClient manager(Reference("test_instance[10]"), "");
     Logger logger("test_instance[10]", "", manager);
 
     logger.log(LogLevel::CRITICAL, "Testing: ", 10, " == ", 10.0);
@@ -51,7 +53,7 @@ TEST(libmuscle_logging, test_logger) {
 
 TEST(libmuscle_logging, test_set_level) {
     reset_mocks();
-    MockMMPClient manager("");
+    MockMMPClient manager(Reference("test_instance"), "");
     Logger logger("test_instance", "", manager);
 
     // default is WARNING

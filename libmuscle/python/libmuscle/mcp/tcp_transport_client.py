@@ -1,8 +1,10 @@
+from errno import ENOTCONN
 import socket
-from typing import Optional
+from typing import Optional, Tuple
 
-from libmuscle.mcp.transport_client import TransportClient
+from libmuscle.mcp.transport_client import ProfileData, TransportClient
 from libmuscle.mcp.tcp_util import recv_all, recv_int64, send_int64
+from libmuscle.profiling import ProfileTimestamp
 
 
 class TcpTransportClient(TransportClient):
@@ -31,7 +33,7 @@ class TcpTransportClient(TransportClient):
         """
         addresses = location[4:].split(',')
 
-        sock = None     # type: Optional[socket.SocketType]
+        sock: Optional[socket.SocketType] = None
         for address in addresses:
             try:
                 sock = self._connect(address)
@@ -49,7 +51,7 @@ class TcpTransportClient(TransportClient):
                 sock.setsockopt(socket.SOL_TCP, socket.TCP_QUICKACK, 1)
             self._socket = sock
 
-    def call(self, request: bytes) -> bytes:
+    def call(self, request: bytes) -> Tuple[bytes, ProfileData]:
         """Send a request to the server and receive the response.
 
         This is a blocking call.
@@ -60,11 +62,16 @@ class TcpTransportClient(TransportClient):
         Returns:
             The received response
         """
+        start_wait = ProfileTimestamp()
         send_int64(self._socket, len(request))
         self._socket.sendall(request)
 
         length = recv_int64(self._socket)
-        return recv_all(self._socket, length)
+        start_transfer = ProfileTimestamp()
+
+        response = recv_all(self._socket, length)
+        stop_transfer = ProfileTimestamp()
+        return response, (start_wait, start_transfer, stop_transfer)
 
     def close(self) -> None:
         """Closes this client.
@@ -72,8 +79,14 @@ class TcpTransportClient(TransportClient):
         This closes any connections this client has and/or performs
         other shutdown activities.
         """
-        self._socket.shutdown(socket.SHUT_RDWR)
-        self._socket.close()
+        try:
+            self._socket.shutdown(socket.SHUT_RDWR)
+            self._socket.close()
+        except OSError as e:
+            # This can happen if the peer has shut down already when we
+            # close our connection to it, which is fine.
+            if e.errno != ENOTCONN:
+                raise
 
     def _connect(self, address: str) -> socket.SocketType:
         loc_parts = address.rsplit(':', 1)

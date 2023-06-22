@@ -2,6 +2,7 @@
 #define LIBMUSCLE_MOCK_COMMUNICATOR <mocks/mock_communicator.hpp>
 #define LIBMUSCLE_MOCK_LOGGER <mocks/mock_logger.hpp>
 #define LIBMUSCLE_MOCK_MMP_CLIENT <mocks/mock_mmp_client.hpp>
+#define LIBMUSCLE_MOCK_PROFILER <mocks/mock_profiler.hpp>
 
 // into the real implementation,
 #include <ymmsl/ymmsl.hpp>
@@ -14,13 +15,14 @@
 #include <libmuscle/message.cpp>
 #include <libmuscle/port.cpp>
 #include <libmuscle/settings_manager.cpp>
+#include <libmuscle/snapshot_manager.cpp>
 #include <libmuscle/timestamp.cpp>
 
 // then add mock implementations as needed.
 #include <mocks/mock_communicator.cpp>
 #include <mocks/mock_logger.cpp>
 #include <mocks/mock_mmp_client.cpp>
-
+#include <mocks/mock_profiler.cpp>
 
 // Test code dependencies
 #include <memory>
@@ -30,15 +32,17 @@
 #include <gtest/gtest.h>
 
 #include <libmuscle/instance.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/settings_manager.hpp>
 #include <mocks/mock_communicator.hpp>
 
-using libmuscle::impl::ClosePort;
-using libmuscle::impl::Instance;
-using libmuscle::impl::Message;
-using libmuscle::impl::MockCommunicator;
-using libmuscle::impl::MockMMPClient;
-using libmuscle::impl::PortsDescription;
+using libmuscle::_MUSCLE_IMPL_NS::ClosePort;
+using libmuscle::_MUSCLE_IMPL_NS::Instance;
+using libmuscle::_MUSCLE_IMPL_NS::InstanceFlags;
+using libmuscle::_MUSCLE_IMPL_NS::Message;
+using libmuscle::_MUSCLE_IMPL_NS::MockCommunicator;
+using libmuscle::_MUSCLE_IMPL_NS::MockMMPClient;
+using libmuscle::_MUSCLE_IMPL_NS::PortsDescription;
 
 using ymmsl::Reference;
 
@@ -50,21 +54,22 @@ int main(int argc, char *argv[]) {
 
 
 // Helpers for accessing internal state
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
-struct TestInstance {
-    static Reference & instance_name_(Instance & instance) {
-        return instance.impl_()->instance_name_;
-    }
+class TestInstance {
+    public:
+        static Reference & instance_name_(Instance & instance) {
+            return instance.impl_()->instance_name_;
+        }
 
-    static SettingsManager & settings_manager_(Instance & instance) {
-        return instance.impl_()->settings_manager_;
-    }
+        static SettingsManager & settings_manager_(Instance & instance) {
+            return instance.impl_()->settings_manager_;
+        }
 };
 
 } }
 
-using libmuscle::impl::TestInstance;
+using libmuscle::_MUSCLE_IMPL_NS::TestInstance;
 
 /* Mocks have internal state, which needs to be reset before each test. This
  * means that the tests are not reentrant, and cannot be run in parallel.
@@ -95,9 +100,9 @@ TEST(libmuscle_instance, create_instance) {
 
     ASSERT_EQ(TestInstance::instance_name_(instance), "test_instance[13][42]");
     ASSERT_EQ(MockMMPClient::num_constructed, 1);
+    ASSERT_EQ(MockMMPClient::last_instance_id, "test_instance[13][42]");
     ASSERT_EQ(MockMMPClient::last_location, "node042:9000");
     ASSERT_EQ(MockCommunicator::num_constructed, 1);
-    ASSERT_EQ(MockMMPClient::last_registered_name, "test_instance[13][42]");
     ASSERT_EQ(MockMMPClient::last_registered_locations.at(0), "tcp:test1,test2");
     ASSERT_EQ(MockMMPClient::last_registered_locations.at(1), "tcp:test3");
     ASSERT_EQ(MockMMPClient::last_registered_ports.size(), 3);
@@ -288,7 +293,8 @@ TEST(libmuscle_instance, receive_with_settings) {
     Instance instance(argv.size(), argv.data(),
             PortsDescription({
                 {Operator::F_INIT, {"in"}}
-                }));
+                }),
+            InstanceFlags::DONT_APPLY_OVERLAY);
 
     MockCommunicator::list_ports_return_value = PortsDescription({
                 {Operator::F_INIT, {"in"}}
@@ -301,7 +307,7 @@ TEST(libmuscle_instance, receive_with_settings) {
     MockCommunicator::next_received_message["in"] =
         std::make_unique<Message>(1.0, "Testing with settings", recv_settings);
 
-    ASSERT_TRUE(instance.reuse_instance(false));
+    ASSERT_TRUE(instance.reuse_instance());
     Message msg(instance.receive_with_settings("in"));
 
     ASSERT_EQ(msg.timestamp(), 1.0);
@@ -348,7 +354,8 @@ TEST(libmuscle_instance, receive_with_settings_default) {
     Instance instance(argv.size(), argv.data(),
             PortsDescription({
                 {Operator::F_INIT, {"not_connected"}}
-                }));
+                }),
+            InstanceFlags::DONT_APPLY_OVERLAY);
 
     MockCommunicator::list_ports_return_value = PortsDescription({
                 {Operator::F_INIT, {"not_connected"}}
@@ -360,7 +367,7 @@ TEST(libmuscle_instance, receive_with_settings_default) {
     default_settings["test1"] = 12;
     Message default_msg(1.0, "Testing with settings", default_settings);
 
-    ASSERT_TRUE(instance.reuse_instance(false));
+    ASSERT_TRUE(instance.reuse_instance());
     Message msg(instance.receive_with_settings("not_connected", default_msg));
 
     ASSERT_EQ(msg.timestamp(), 1.0);

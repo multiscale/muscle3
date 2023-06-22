@@ -1,21 +1,13 @@
 .. image:: https://github.com/multiscale/muscle3/raw/develop/docs/source/muscle3_logo_readme.png
     :alt: MUSCLE3
 
-.. image:: https://readthedocs.org/projects/muscle3/badge/?version=master
-    :target: https://muscle3.readthedocs.io/en/develop/?badge=master
+.. image:: https://readthedocs.org/projects/muscle3/badge/?version=latest
+    :target: https://muscle3.readthedocs.io/en/develop/?badge=latest
     :alt: Documentation Build Status
 
 .. image:: https://github.com/multiscale/muscle3/workflows/continuous_integration/badge.svg?branch=master
     :target: https://github.com/multiscale/muscle3/actions
     :alt: Build Status
-
-.. image:: https://app.codacy.com/project/badge/Coverage/4542a84edcd947ee982a0bfabe617089
-    :target: https://www.codacy.com/gh/multiscale/muscle3/dashboard
-    :alt: Code Coverage
-
-.. image:: https://app.codacy.com/project/badge/Grade/4542a84edcd947ee982a0bfabe617089
-    :target: https://www.codacy.com/gh/multiscale/muscle3/dashboard
-    :alt: Codacy Grade
 
 .. image:: https://zenodo.org/badge/122876985.svg
    :target: https://zenodo.org/badge/latestdoi/122876985

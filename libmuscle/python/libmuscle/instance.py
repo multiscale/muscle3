@@ -20,7 +20,8 @@ from libmuscle.logging_handler import MuscleManagerHandler
 from libmuscle.mpp_message import ClosePort
 from libmuscle.mmp_client import MMPClient
 from libmuscle.profiler import Profiler
-from libmuscle.profiling import ProfileEventType
+from libmuscle.profiling import (
+        ProfileEvent, ProfileEventType, ProfileTimestamp)
 from libmuscle.snapshot_manager import SnapshotManager
 from libmuscle.util import extract_log_file_location
 
@@ -66,24 +67,25 @@ class InstanceFlags(Flag):
 
     KEEPS_NO_STATE_FOR_NEXT_USE = auto()
     """Indicate this instance does not carry state between iterations of the
-    reuse loop.
+    reuse loop. Specifying this flag is equivalent to
+    :external:py:attr:`ymmsl.KeepsStateForNextUse.NO`.
 
-    This corresponds to :external:py:attr:`ymmsl.KeepsStateForNextUse.NO`.
-
-    If neither :attr:`KEEPS_NO_STATE_FOR_NEXT_USE` and
-    :attr:`STATE_NOT_REQUIRED_FOR_NEXT_USE` are supplied, this corresponds to
-    :external:py:attr:`ymmsl.KeepsStateForNextUse.REQUIRED`.
+    By default, (if neither :attr:`KEEPS_NO_STATE_FOR_NEXT_USE` nor
+    :attr:`STATE_NOT_REQUIRED_FOR_NEXT_USE` are provided), the instance is assumed
+    to keep state between reuses, and to require that state (equivalent to
+    :external:py:attr:`ymmsl.KeepsStateForNextUse.NECESSARY`).
     """
 
     STATE_NOT_REQUIRED_FOR_NEXT_USE = auto()
     """Indicate this instance carries state between iterations of the
     reuse loop, however this state is not required for restarting.
+    Specifying this flag is equivalent to
+    :external:py:attr:`ymmsl.KeepsStateForNextUse.HELPFUL`.
 
-    This corresponds to :external:py:attr:`ymmsl.KeepsStateForNextUse.HELPFUL`.
-
-    If neither :attr:`KEEPS_NO_STATE_FOR_NEXT_USE` and
-    :attr:`STATE_NOT_REQUIRED_FOR_NEXT_USE` are supplied, this corresponds to
-    :external:py:attr:`ymmsl.KeepsStateForNextUse.REQUIRED`.
+    By default, (if neither :attr:`KEEPS_NO_STATE_FOR_NEXT_USE` nor
+    :attr:`STATE_NOT_REQUIRED_FOR_NEXT_USE` are provided), the instance is assumed
+    to keep state between reuses, and to require that state (equivalent to
+    :external:py:attr:`ymmsl.KeepsStateForNextUse.NECESSARY`).
     """
 
 
@@ -124,8 +126,11 @@ class Instance:
         self._name, self._index = self.__make_full_name()
         """Name and index of this instance."""
 
+        self._instance_id = self._name + self._index
+        """Full id of this instance."""
+
         mmp_location = self.__extract_manager_location()
-        self.__manager = MMPClient(mmp_location)
+        self.__manager = MMPClient(self._instance_id, mmp_location)
         """Client object for talking to the manager."""
 
         self.__set_up_logging()
@@ -134,7 +139,7 @@ class Instance:
                 InstanceFlags.USES_CHECKPOINT_API in self._flags)
         """Checks that the user uses the API correctly."""
 
-        self._profiler = Profiler(self._instance_name(), self.__manager)
+        self._profiler = Profiler(self.__manager)
         """Profiler for this instance."""
 
         self._communicator = Communicator(
@@ -148,16 +153,16 @@ class Instance:
         """Settings for this instance."""
 
         self._snapshot_manager = SnapshotManager(
-                self._instance_name(), self.__manager, self._communicator)
+                self._instance_id, self.__manager, self._communicator)
         """Resumes, loads and saves snapshots."""
 
         self._trigger_manager = TriggerManager()
         """Keeps track of checkpoints and triggers snapshots."""
 
-        self._first_run = None          # type: Optional[bool]
+        self._first_run: Optional[bool] = None
         """Whether this is the first iteration of the reuse loop"""
 
-        self._do_reuse = None           # type: Optional[bool]
+        self._do_reuse: Optional[bool] = None
         """Whether to enter this iteration of the reuse loop
 
         This is None during the reuse loop, and set between
@@ -170,42 +175,20 @@ class Instance:
         self._do_init = False
         """Whether to do f_init on this iteration of the reuse loop"""
 
-        self._f_init_cache = dict()     # type: _FInitCacheType
+        self._f_init_cache: _FInitCacheType = {}
         """Stores pre-received messages for f_init ports"""
 
         self._register()
         self._connect()
-
-        # Note: get_checkpoint_info needs to have the ports initialized
+        # Note: self._setup_checkpointing() needs to have the ports initialized
         # so it comes after self._connect()
-        checkpoint_info = self.__manager.get_checkpoint_info(
-                self._instance_name())
-
-        elapsed_time, checkpoints = checkpoint_info[0:2]
-        self._trigger_manager.set_checkpoint_info(elapsed_time, checkpoints)
-
-        if checkpoints and not (self._flags & _CHECKPOINT_SUPPORT_MASK):
-            raise RuntimeError(
-                    'The workflow has requested checkpoints, but this instance'
-                    ' does not support checkpointing. Please consult the'
-                    ' MUSCLE3 checkpointing documentation how to add'
-                    ' checkpointing support.')
-
-        resume_snapshot, snapshot_dir = checkpoint_info[2:4]
-        saved_at = self._snapshot_manager.prepare_resume(
-                resume_snapshot, snapshot_dir)
-        # Resume settings overlay
-        overlay = self._snapshot_manager._resume_overlay
-        if overlay is not None:
-            self._settings_manager.overlay = overlay
-
-        if saved_at is not None:
-            self._trigger_manager.update_checkpoints(saved_at)
-
+        self._setup_checkpointing()
+        # profiling and logging need settings, so come after register_()
         self._set_local_log_level()
         self._set_remote_log_level()
+        self._setup_profiling()
 
-    def reuse_instance(self, apply_overlay: Optional[bool] = None) -> bool:
+    def reuse_instance(self) -> bool:
         """Decide whether to run this instance again.
 
         In a multiscale simulation, instances get reused all the time.
@@ -246,7 +229,7 @@ class Instance:
             do_reuse = self._do_reuse
             self._do_reuse = None
         else:
-            do_reuse = self._decide_reuse_instance(apply_overlay)
+            do_reuse = self._decide_reuse_instance()
 
         # now _first_run, _do_resume and _do_init are also set correctly
 
@@ -290,6 +273,16 @@ class Instance:
             message: An error message describing the problem.
         """
         self.__shutdown(message)
+
+    def list_settings(self) -> List[str]:
+        """List settings by name.
+
+        This function returns a list of names of the available settings.
+
+        Return:
+            A list of setting names.
+        """
+        return self._settings_manager.list_settings(self._instance_id)
 
     @overload
     def get_setting(self, name: str, typ: Literal['str']) -> str:
@@ -339,7 +332,7 @@ class Instance:
                     as expected.
         """
         return self._settings_manager.get_setting(
-                self._instance_name(), Reference(name), typ)
+                self._instance_id, Reference(name), typ)
 
     def list_ports(self) -> Dict[Operator, List[str]]:
         """Returns a description of the ports that this Instance has.
@@ -529,8 +522,7 @@ class Instance:
         by :meth:`load_snapshot`.
 
         Returns:
-            True iff the submodel must resume from a snapshot instead of the
-            usual F_INIT step during this iteration of the reuse loop.
+            True iff the submodel must resume from a snapshot.
         """
         self._api_guard.verify_resuming()
         self._api_guard.resuming_done(self._do_resume)
@@ -559,7 +551,7 @@ class Instance:
 
         Returns:
             Message object containing the state as saved in a previous run
-            through :meth:`save_snapshot` or :meth:`save_final_snapshot`
+            through :meth:`save_snapshot` or :meth:`save_final_snapshot`.
 
         Raises:
             RuntimeError: if not resuming from a snapshot.
@@ -577,14 +569,14 @@ class Instance:
         provided timestamp and passed wallclock time.
 
         When this method returns True, the submodel must also save a snapshot
-        through :meth:`save_snapshot`. A RuntimeError will be generated when not
-        doing so.
+        through :meth:`save_snapshot`. A RuntimeError will be generated if this
+        is not done.
 
         See also :meth:`should_save_final_snapshot` for the variant that must be
         called at the end of the reuse loop.
 
         Args:
-            timestamp: current timestamp of the submodel
+            timestamp: current timestamp of the submodel.
 
         Returns:
             True iff a snapshot should be taken by the submodel according to the
@@ -604,12 +596,6 @@ class Instance:
         use the same timestamp in the provided Message object as used to query
         `should_save_snapshot`.
 
-        Although it is allowed to save a snapshot even when
-        :meth:`should_save_snapshot` returns False, you should avoid this: this
-        situation is not likely to lead to a consistent snapshot over all
-        submodels of the run (and therefore it is not useful to restart from).
-        It could also lead to a lot of snapshot files clogging your file system.
-
         See also :meth:`save_final_snapshot` for the variant that must be called
         at the end of the reuse loop.
 
@@ -628,30 +614,21 @@ class Instance:
     def should_save_final_snapshot(self) -> bool:
         """Check if a snapshot should be saved at the end of the reuse loop.
 
-        This method checks if a snapshot should be saved now.
+        This method checks if a snapshot should be saved at the end of the reuse
+        loop. All your communication on O_F ports must be finished before calling
+        this method, otherwise your simulation may deadlock.
 
         When this method returns True, the submodel must also save a snapshot
         through :meth:`save_final_snapshot`. A :class:`RuntimeError` will be
-        generated when not doing so.
+        generated if this is not done.
 
         See also :meth:`should_save_snapshot` for the variant that may be called
         inside of a time-integration loop of the submodel.
 
         .. note::
             This method will block until it can determine whether a final
-            snapshot should be taken. This means it must also determine if this
-            instance is reused. The optional keyword-only argument
-            `apply_overlay` has the same meaning as for :meth:`reuse_instance`.
-
-        Args:
-            apply_overlay: Whether to apply the received settings
-                overlay or to save it. If you're going to use
-                :meth:`receive_with_settings` on your F_INIT ports, set this to
-                False. If you don't know what that means, just call
-                :meth:`should_save_final_snapshot()` without specifying this and
-                everything will be fine. If it turns out that you did need to
-                specify False, MUSCLE3 will tell you about it in an error
-                message and you can add it still.
+            snapshot should be taken, because it must determine if this
+            instance is reused.
 
         Returns:
             True iff a final snapshot should be taken by the submodel according
@@ -672,12 +649,6 @@ class Instance:
         Before saving a snapshot, you should check using
         :meth:`should_save_final_snapshot` if a snapshot should be saved
         according to the checkpoint rules specified in the ymmsl configuration.
-
-        Although it is allowed to save a snapshot even when
-        :meth:`should_save_final_snapshot` returns False, you should avoid this:
-        this situation is not likely to lead to a consistent snapshot over all
-        submodels of the run (and therefore it is not useful to restart from).
-        It could also lead to a lot of snapshot files clogging your file system.
 
         See also :meth:`save_snapshot` for the variant that may be called after
         each S Operator of the submodel.
@@ -704,34 +675,76 @@ class Instance:
     def _register(self) -> None:
         """Register this instance with the manager.
         """
-        register_event = self._profiler.start(ProfileEventType.REGISTER)
+        register_event = ProfileEvent(
+                ProfileEventType.REGISTER, ProfileTimestamp())
         locations = self._communicator.get_locations()
         port_list = self.__list_declared_ports()
-        self.__manager.register_instance(
-                self._instance_name(), locations, port_list)
-        register_event.stop()
+        self.__manager.register_instance(locations, port_list)
+        self._profiler.record_event(register_event)
         _logger.info('Registered with the manager')
 
     def _connect(self) -> None:
         """Connect this instance to the given peers / conduits.
         """
-        connect_event = self._profiler.start(ProfileEventType.CONNECT)
-        conduits, peer_dims, peer_locations = self.__manager.request_peers(
-                self._instance_name())
+        connect_event = ProfileEvent(
+                ProfileEventType.CONNECT, ProfileTimestamp())
+        conduits, peer_dims, peer_locations = self.__manager.request_peers()
         self._communicator.connect(conduits, peer_dims, peer_locations)
         self._settings_manager.base = self.__manager.get_settings()
-        connect_event.stop()
+        self._profiler.record_event(connect_event)
         _logger.info('Received peer locations and base settings')
 
     def _deregister(self) -> None:
         """Deregister this instance from the manager.
         """
-        deregister_event = self._profiler.start(ProfileEventType.DEREGISTER)
-        self.__manager.deregister_instance(self._instance_name())
-        deregister_event.stop()
-        # this is the last thing we'll profile, so flush messages
+        # Make sure we record this even if profiling is disabled, so
+        # that we always have register, connect and deregister at
+        # least.
+        self._profiler.set_level('all')
+
+        deregister_event = ProfileEvent(
+                ProfileEventType.DEREGISTER, ProfileTimestamp())
+        # We need to finish the event right away, because we need to
+        # submit it before deregistering, which is the last interaction
+        # with the manager we'll have.
+        self._profiler.record_event(deregister_event)
+
+        # This is the last thing we'll profile, so flush messages
         self._profiler.shutdown()
+        self.__manager.deregister_instance()
+
+        # Remove handler, the manager may be gone at this point so we
+        # cannot send it any more log messages.
+        logging.getLogger().removeHandler(self._mmp_handler)
         _logger.info('Deregistered from the manager')
+
+    def _setup_checkpointing(self) -> None:
+        """Setup checkpointing.
+        """
+        checkpoint_info = self.__manager.get_checkpoint_info()
+
+        elapsed_time, checkpoints = checkpoint_info[0:2]
+        self._trigger_manager.set_checkpoint_info(elapsed_time, checkpoints)
+
+        if checkpoints and not (self._flags & _CHECKPOINT_SUPPORT_MASK):
+            err_msg = (
+                    'The workflow has requested checkpoints, but this instance'
+                    ' does not support checkpointing. Please consult the'
+                    ' MUSCLE3 checkpointing documentation how to add'
+                    ' checkpointing support.')
+            self.__shutdown(err_msg)
+            raise RuntimeError(err_msg)
+
+        resume_snapshot, snapshot_dir = checkpoint_info[2:4]
+        saved_at = self._snapshot_manager.prepare_resume(
+                resume_snapshot, snapshot_dir)
+        # Resume settings overlay
+        overlay = self._snapshot_manager.resume_overlay
+        if overlay is not None:
+            self._settings_manager.overlay = overlay
+
+        if saved_at is not None:
+            self._trigger_manager.update_checkpoints(saved_at)
 
     @staticmethod
     def __extract_manager_location() -> str:
@@ -760,7 +773,7 @@ class Instance:
     def __set_up_logging(self) -> None:
         """Adds logging handlers for one or more instances.
         """
-        id_str = str(self._instance_name())
+        id_str = str(self._instance_id)
 
         logfile = extract_log_file_location('muscle3.{}.log'.format(id_str))
         if logfile is not None:
@@ -776,8 +789,24 @@ class Instance:
                                                      self.__manager)
             logging.getLogger().addHandler(self._mmp_handler)
 
-    def _decide_reuse_instance(
-            self, apply_overlay: Optional[bool] = None) -> bool:
+    def _setup_profiling(self) -> None:
+        """Configures profiler with settings from settings.
+        """
+        try:
+            profile_level_str = self.get_setting('muscle_profile_level', 'str')
+        except KeyError:
+            profile_level_str = 'all'
+
+        if profile_level_str not in ('none', 'all'):
+            _logger.warning(
+                    'Invalid value for muscle_profile_level:'
+                    f' {profile_level_str}. Please specify "none" or "all".'
+                    ' Using default value "all".')
+            profile_level_str = 'all'
+
+        self._profiler.set_level(profile_level_str)
+
+    def _decide_reuse_instance(self) -> bool:
         """Decide whether and how to reuse the instance.
 
         This sets self._first_run, self._do_resume and self._do_init, and
@@ -801,7 +830,7 @@ class Instance:
         # resume from final
         if self._first_run and self._snapshot_manager.resuming_from_final():
             if f_init_connected:
-                got_f_init_messages = self._pre_receive(apply_overlay)
+                got_f_init_messages = self._pre_receive()
                 self._do_resume = True
                 self._do_init = True
                 return got_f_init_messages
@@ -819,7 +848,7 @@ class Instance:
             return self._first_run
 
         # not resuming and f_init connected, run while we get messages
-        got_f_init_messages = self._pre_receive(apply_overlay)
+        got_f_init_messages = self._pre_receive()
         self._do_init = got_f_init_messages
         return got_f_init_messages
 
@@ -910,7 +939,7 @@ class Instance:
         option and splits it into a component name and an index.
         """
         def split_reference(ref: Reference) -> Tuple[Reference, List[int]]:
-            index = list()     # type: List[int]
+            index: List[int] = []
             i = 0
             while i < len(ref) and isinstance(ref[i], Identifier):
                 i += 1
@@ -958,11 +987,6 @@ class Instance:
                     result.append(Port(Identifier(name), operator))
         return result
 
-    def _instance_name(self) -> Reference:
-        """Returns the full instance name.
-        """
-        return self._name + self._index
-
     def __check_port(self, port_name: str) -> None:
         if not self._communicator.port_exists(port_name):
             err_msg = (('Port "{}" does not exist on "{}". Please check'
@@ -982,7 +1006,7 @@ class Instance:
                  for port in ports.get(Operator.F_INIT, [])])
         return f_init_connected or self._communicator.settings_in_connected()
 
-    def _pre_receive(self, apply_overlay: Optional[bool]) -> bool:
+    def _pre_receive(self) -> bool:
         """Pre-receives on all ports.
 
         This includes muscle_settings_in and all user-defined ports.
@@ -991,7 +1015,7 @@ class Instance:
             True iff no ClosePort messages were received.
         """
         all_ports_open = self.__receive_settings()
-        self.__pre_receive_f_init(apply_overlay)
+        self.__pre_receive_f_init()
         for message in self._f_init_cache.values():
             if isinstance(message.data, ClosePort):
                 all_ports_open = False
@@ -1013,7 +1037,7 @@ class Instance:
                        ' muscle_settings_in that is not a'
                        ' Settings. It seems that your'
                        ' simulation is miswired or the sending'
-                       ' instance is broken.'.format(self._instance_name()))
+                       ' instance is broken.'.format(self._instance_id))
             self.__shutdown(err_msg)
             raise RuntimeError(err_msg)
 
@@ -1025,19 +1049,13 @@ class Instance:
         self._trigger_manager.harmonise_wall_time(saved_until)
         return True
 
-    def __pre_receive_f_init(self, apply_overlay: Optional[bool]) -> None:
+    def __pre_receive_f_init(self) -> None:
         """Receives on all ports connected to F_INIT.
 
         This receives all incoming messages on F_INIT and stores them
         in self._f_init_cache.
         """
-        if apply_overlay is not None:
-            warnings.warn(
-                    'Explicitly providing apply_overlay in reuse_instance is'
-                    ' deprecated. Use InstanceFlags.DONT_APPLY_OVERLAY when'
-                    ' creating the instance instead.', DeprecationWarning)
-        else:
-            apply_overlay = InstanceFlags.DONT_APPLY_OVERLAY not in self._flags
+        apply_overlay = InstanceFlags.DONT_APPLY_OVERLAY not in self._flags
 
         def pre_receive(port_name: str, slot: Optional[int]) -> None:
             msg, saved_until = self._communicator.receive_message(

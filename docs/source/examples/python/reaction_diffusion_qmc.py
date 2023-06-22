@@ -4,7 +4,7 @@ import os
 import numpy as np
 import sobol_seq
 
-from libmuscle import Grid, Instance, Message
+from libmuscle import Grid, Instance, Message, DONT_APPLY_OVERLAY
 from libmuscle.runner import run_simulation
 from ymmsl import (
         Component, Conduit, Configuration, Model, Operator, Ports, Settings)
@@ -130,9 +130,10 @@ def load_balancer() -> None:
             Operator.F_INIT: ['front_in[]'],
             Operator.O_I: ['back_out[]'],
             Operator.S: ['back_in[]'],
-            Operator.O_F: ['front_out[]']})
+            Operator.O_F: ['front_out[]']},
+            DONT_APPLY_OVERLAY)
 
-    while instance.reuse_instance(False):
+    while instance.reuse_instance():
         # F_INIT
         started = 0     # number started and index of next to start
         done = 0        # number done and index of next to return

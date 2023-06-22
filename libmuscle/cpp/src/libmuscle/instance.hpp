@@ -1,6 +1,7 @@
 #pragma once
 
 #include <libmuscle/message.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/ports_description.hpp>
 
 #ifdef MUSCLE_ENABLE_MPI
@@ -11,8 +12,75 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
-namespace libmuscle { namespace impl {
+
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
+
+/** Enumeration of properties that an instance may have.
+ *
+ * You may combine multiple flags using the bitwise OR operator `|`. For example:
+ *
+ * \code{cpp}
+ *      auto flags = InstanceFlags::DONT_APPLY_OVERLAY | InstanceFlags::USES_CHECKPOINT_API;
+ *      Instance instance(argc, argv, flags);
+ * \endcode
+ */
+enum class InstanceFlags : int {
+    NONE = 0,
+
+    /**
+     * Do not apply the received settings overlay during prereceive of F_INIT
+     * messages. If you're going to use Instance.receive_with_settings on
+     * your F_INIT ports, you need to set this flag when creating an
+     * Instance.
+     *
+     * If you don't know what that means, do not specify this flag and everything
+     * will be fine. If it turns out that you did need to specify the flag, MUSCLE3
+     * will tell you about it in an error message and you can add it still.
+     */
+    DONT_APPLY_OVERLAY = 1,
+
+    /** Indicate that this instance supports checkpointing.
+     *
+     * You may not use any checkpointing API calls when this flag is not supplied.
+     */
+    USES_CHECKPOINT_API = 2,
+
+    /** Indicate this instance does not carry state between iterations of the
+     * reuse loop. Specifying this flag is equivalent to
+     * `ymmsl.KeepsStateForNextUse.NO`.
+     *
+     * By default, (if neither KEEPS_NO_STATE_FOR_NEXT_USE nor
+     * STATE_NOT_REQUIRED_FOR_NEXT_USE are provided), the instance is assumed
+     * to keep state between reuses, and to require that state (equivalent to
+     * `ymmsl.KeepsStateForNextUse.NECESSARY`).
+     */
+    KEEPS_NO_STATE_FOR_NEXT_USE = 4,
+
+    /** Indicate this instance carries state between iterations of the
+     * reuse loop, however this state is not required for restarting.
+     * Specifying this flag is equivalent to `ymmsl.KeepsStateForNextUse.HELPFUL`.
+     *
+     * By default, (if neither KEEPS_NO_STATE_FOR_NEXT_USE nor
+     * STATE_NOT_REQUIRED_FOR_NEXT_USE are provided), the instance is assumed
+     * to keep state between reuses, and to require that state (equivalent to
+     * `ymmsl.KeepsStateForNextUse.NECESSARY`).
+     */
+    STATE_NOT_REQUIRED_FOR_NEXT_USE = 8,
+};
+
+inline InstanceFlags operator|(InstanceFlags a, InstanceFlags b) {
+    return static_cast<InstanceFlags>(static_cast<int>(a) | static_cast<int>(b));
+}
+
+inline InstanceFlags operator&(InstanceFlags a, InstanceFlags b) {
+    return static_cast<InstanceFlags>(static_cast<int>(a) & static_cast<int>(b));
+}
+
+inline bool operator!(InstanceFlags a) {
+    return a == InstanceFlags::NONE;
+}
 
 /** Represents a component instance in a MUSCLE3 simulation.
  *
@@ -69,6 +137,59 @@ class Instance {
 #endif
                 );
 
+        /** Create an Instance.
+         *
+         * For MPI-based components, creating an Instance is a
+         * collective operation, so it must be done in all processes
+         * simultaneously, with the same communicator and the same root.
+         *
+         * @param argc The number of command-line arguments.
+         * @param argv Command line arguments.
+         * @param flags InstanceFlags for this instance.
+         * @param communicator MPI communicator containing all processes in
+         *      this instance (MPI only).
+         * @param root The designated root process (MPI only).
+         */
+        Instance(
+                int argc, char const * const argv[],
+                InstanceFlags flags
+#ifdef MUSCLE_ENABLE_MPI
+                , MPI_Comm const & communicator = MPI_COMM_WORLD
+                , int root = 0
+#endif
+                );
+
+        /** Create an instance.
+         *
+         * A PortsDescription can be written like this:
+         *
+         * PortsDescription ports({
+         *     {Operator::F_INIT, {"port1", "port2"}},
+         *     {Operator::O_F, {"port3[]"}}
+         *     });
+         *
+         * For MPI-based components, creating an Instance is a
+         * collective operation, so it must be done in all processes
+         * simultaneously, with the same communicator and the same root.
+         *
+         * @param argc The number of command-line arguments.
+         * @param argv Command line arguments.
+         * @param ports A description of the ports that this instance has.
+         * @param flags InstanceFlags for this instance.
+         * @param communicator MPI communicator containing all processes in
+         *      this instance (MPI only).
+         * @param root The designated root process (MPI only).
+         */
+        Instance(
+                int argc, char const * const argv[],
+                PortsDescription const & ports,
+                InstanceFlags flags
+#ifdef MUSCLE_ENABLE_MPI
+                , MPI_Comm const & communicator = MPI_COMM_WORLD
+                , int root = 0
+#endif
+                );
+
         ~Instance();
         Instance(Instance const &);
         Instance(Instance &&);
@@ -100,17 +221,8 @@ class Instance {
          * MPI-based components must execute the reuse loop in each
          * process in parallel, and call this function at the top of the
          * reuse loop in each process.
-         *
-         * @param apply_overlay Whether to apply the received settings
-         *        overlay or to save it. If you're going to use
-         *        receive_with_settings() on your F_INIT ports,
-         *        set this to false. If you don't know what that means,
-         *        just call reuse_instance() without specifying this
-         *        and everything will be fine. If it turns out that you
-         *        did need to specify false, MUSCLE3 will tell you about
-         *        it in an error message and you can add it.
          */
-        bool reuse_instance(bool apply_overlay = true);
+        bool reuse_instance();
 
         /** Logs an error and shuts down the Instance.
          *
@@ -134,6 +246,14 @@ class Instance {
          */
         void error_shutdown(std::string const & message);
 
+        /** List settings by name.
+         *
+         * This function returns a list of names of the available settings.
+         *
+         * @return A list of setting names.
+         */
+        std::vector<std::string> list_settings() const;
+
         /** Returns the value of a model setting.
          *
          * MPI-based components may call this function at any time
@@ -141,6 +261,8 @@ class Instance {
          * not.
          *
          * @param name The name of the setting, without any instance prefix.
+         *
+         * @return The value of the setting as a generic SettingValue.
          *
          * @throw std::out_of_range if no setting with the given name exists.
          */
@@ -156,6 +278,8 @@ class Instance {
          *      match exactly or an exception will be thrown, this will not
          *      convert e.g. an integer into a string.
          * @param name The name of the setting, without any instance prefix.
+         *
+         * @return The value of the setting as a ValueType
          *
          * @throw std::out_of_range if no setting with the given name exists.
          * @throw std::bad_cast if the value is not of the specified type.
@@ -519,6 +643,141 @@ class Instance {
         Message receive_with_settings(
                 std::string const & port_name, int slot,
                 Message const & default_msg);
+
+        /** Check if this instance is resuming from a snapshot.
+         *
+         * Must be used by submodels that implement the checkpointing API. You'll
+         * get a RuntimeError if you don't call this method in an iteration of the
+         * reuse loop.
+         *
+         * This method returns True for the first iteration of the reuse loop after
+         * resuming from a previously taken snapshot. When resuming from a
+         * snapshot, the submodel must load its state from the snapshot returned by
+         * Instance::load_snapshot.
+         *
+         * MPI-based components must call this function in all processes
+         * simultaneously.
+         *
+         * @return true iff the submodel must resume from a snapshot.
+         */
+        bool resuming();
+
+        /** Check if this instance should initialize.
+         *
+         * Must be used by submodels that implement the checkpointing API.
+         *
+         * When resuming from a previous snapshot, instances need not always
+         * execute the F_INIT phase of the submodel execution loop. Use this method
+         * before attempting to receive data on F_INIT ports.
+         *
+         * MPI-based components must call this function in all processes
+         * simultaneously.
+         *
+         * @return true if the submodel must execute the F_INIT step.
+         * @return false otherwise.
+         */
+        bool should_init();
+
+        /** Load a snapshot.
+         *
+         * Must only be called when Instance::resuming returns True.
+         *
+         * MPI-based components may only call this from the root process. An error
+         * is raised when attempting to call this method in any other process. It
+         * is therefore up to the model code to scatter or broadcast the snapshot
+         * state to the non-root processes, if necessary.
+         *
+         * @return Message containing the state as saved in a previous run
+         *      through Instance::save_snapshot or Instance::save_final_snapshot.
+         */
+        Message load_snapshot();
+
+        /** Check if a snapshot should be saved after the S Operator of the submodel.
+         *
+         * This method checks if a snapshot should be saved right now, based on the
+         * provided timestamp and elapsed wallclock time.
+         *
+         * If this method returns true, then the submodel must also save a snapshot
+         * through Instance::save_snapshot. A std::runtime_error will be generated if
+         * this is not done.
+         *
+         * See also Instance::should_save_final_snapshot for the variant that must be
+         * called at the end of the reuse loop.
+         *
+         * MPI-based components must call this function in all processes
+         * simultaneously.
+         *
+         * @param timestamp current timestamp of the submodel.
+         * @return true iff a snapshot should be taken by the submodel according to the
+         *      checkpoint rules provided in the ymmsl configuration.
+         */
+        bool should_save_snapshot(double timestamp);
+
+        /** Save a snapshot after the S Operator of the submodel.
+         *
+         * Before saving a snapshot, you should check using
+         * Instance::should_save_snapshot if a snapshot should be saved according to
+         * the checkpoint rules specified in the ymmsl configuration. You should
+         * use the same timestamp in the provided Message object as used to query
+         * Instance::should_save_snapshot.
+         *
+         * MPI-based components may only call this from the root process. An error
+         * is raised when attempting to call this method in any other process. It
+         * is therefore up to the model code to gather the necessary state from
+         * the non-root processes before saving the snapshot.
+         *
+         * @param message Message object that is saved as snapshot. The message
+         *      timestamp attribute should be the same as passed to
+         *      Instance::should_save_snapshot. The data attribute can be used to
+         *      store the internal state of the submodel.
+         */
+        void save_snapshot(Message message);
+
+        /** Check if a snapshot should be saved at the end of the reuse loop.
+         *
+         * This method checks if a snapshot should be saved at the end of the reuse
+         * loop. All your communication on O_F ports must be finished before calling
+         * this method, otherwise your simulation may deadlock.
+         *
+         * When this method returns true, the submodel must also save a snapshot
+         * through Instance::save_final_snapshot. A std::runtime_error will be
+         * generated if this is not done.
+         *
+         * See also Instance::should_save_snapshot for the variant that may be called
+         * inside of a time-integration loop of the submodel.
+         *
+         * MPI-based components must call this function in all processes
+         * simultaneously.
+         *
+         * \note
+         * This method will block until it can determine whether a final
+         * snapshot should be taken, because it must determine if this
+         * instance is reused.
+         *
+         * @return true iff a final snapshot should be taken by the submodel according
+         *      to the checkpoint rules provided in the ymmsl configuration.
+         */
+        bool should_save_final_snapshot();
+
+        /** Save a snapshot at the end of the reuse loop.
+         *
+         * Before saving a snapshot, you should check using
+         * Instance::should_save_final_snapshot if a snapshot should be saved
+         * according to the checkpoint rules specified in the ymmsl configuration.
+         *
+         * See also Instance::save_snapshot for the variant that may be called after
+         * each S Operator of the submodel.
+         *
+         * MPI-based components may only call this from the root process. An error
+         * is raised when attempting to call this method in any other process. It
+         * is therefore up to the model code to gather the necessary state from
+         * the non-root processes before saving the snapshot.
+         *
+         * @param message Message object that is saved as snapshot. The data
+         *      attribute can be used to store the internal state of the
+         *      submodel.
+         */
+        void save_final_snapshot(Message message);
 
     private:
         class Impl;

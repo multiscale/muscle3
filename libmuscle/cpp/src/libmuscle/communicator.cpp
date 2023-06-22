@@ -6,16 +6,18 @@
 #include <libmuscle/mpp_message.hpp>
 #include <libmuscle/mcp/tcp_transport_server.hpp>
 #include <libmuscle/mpp_client.hpp>
+#include <libmuscle/profiling.hpp>
 
 #include <limits>
+#include <sstream>
 
 
-using libmuscle::impl::ClosePort;
-using libmuscle::impl::Data;
-using libmuscle::impl::DataConstRef;
-using libmuscle::impl::mcp::ExtTypeId;
-using libmuscle::impl::MPPClient;
-using libmuscle::impl::mcp::TcpTransportServer;
+using libmuscle::_MUSCLE_IMPL_NS::ClosePort;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
+using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::ExtTypeId;
+using libmuscle::_MUSCLE_IMPL_NS::MPPClient;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::TcpTransportServer;
 
 using ymmsl::Conduit;
 using ymmsl::Identifier;
@@ -24,13 +26,13 @@ using ymmsl::Reference;
 using ymmsl::Settings;
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 Communicator::Communicator(
         ymmsl::Reference const & kernel,
         std::vector<int> const & index,
         Optional<PortsDescription> const & declared_ports,
-        Logger & logger, int profiler)
+        Logger & logger, Profiler & profiler)
     : kernel_(kernel)
     , index_(index)
     , declared_ports_(declared_ports)
@@ -118,7 +120,9 @@ void Communicator::send_message(
 
     Port & port = ports_.at(port_name);
 
-    // TODO start profile event
+    ProfileEvent profile_event(
+            ProfileEventType::send, ProfileTimestamp(), {}, port, {}, slot,
+            port.get_num_messages(), {}, message.timestamp());
 
     auto recv_endpoints = peer_manager_->get_peer_endpoints(
             snd_endpoint.port, slot_list);
@@ -140,12 +144,17 @@ void Communicator::send_message(
             mpp_message.next_timestamp = message.next_timestamp();
 
         auto message_bytes = std::make_unique<DataConstRef>(mpp_message.encoded());
+        profile_event.message_size = message_bytes->size();
         post_office_.deposit(recv_endpoint.ref(), std::move(message_bytes));
     }
 
     port.increment_num_messages(slot);
 
-    // TODO: stop and complete profile event
+    profile_event.stop();
+    if (port.is_vector())
+        profile_event.port_length = port.get_length();
+    if (!is_close_port(message.data()))
+        profiler_.record_event(std::move(profile_event));
 }
 
 Message Communicator::receive_message(
@@ -180,17 +189,27 @@ Message Communicator::receive_message(
 
     Port & port = (ports_.count(port_name)) ? (ports_.at(port_name)) : muscle_settings_in_.get();
 
-    // TODO start profile event
+    ProfileEvent receive_event(
+            ProfileEventType::receive, ProfileTimestamp(), {}, port, {}, slot,
+            port.get_num_messages());
 
     // peer_manager already checks that there is at most one snd_endpoint
     // connected to the port we receive on
     Endpoint snd_endpoint = peer_manager_->get_peer_endpoints(
             recv_endpoint.port, slot_list).at(0);
     MPPClient & client = get_client_(snd_endpoint.instance());
-    auto mpp_message = MPPMessage::from_bytes(
-            client.receive(recv_endpoint.ref()));
+    auto msg_and_profile = try_receive_(
+            client, recv_endpoint.ref(), snd_endpoint.kernel);
+    auto & msg = std::get<0>(msg_and_profile);
 
+    ProfileEvent recv_decode_event(
+            ProfileEventType::receive_decode, ProfileTimestamp(), {}, port, {}, slot,
+            port.get_num_messages(), msg.size());
+
+    auto mpp_message = MPPMessage::from_bytes(msg);
     Settings overlay_settings(mpp_message.settings_overlay.as<Settings>());
+
+    recv_decode_event.stop();
 
     if (mpp_message.port_length.is_set())
         if (port.is_resizable())
@@ -209,11 +228,38 @@ Message Communicator::receive_message(
             port.set_closed();
     }
 
-    // TODO stop and finalise profile event
+    ProfileTimestamp start_recv, end_wait, end_transfer;
+    std::tie(start_recv, end_wait, end_transfer) = std::get<1>(msg_and_profile);
+    ProfileEvent recv_wait_event(
+            ProfileEventType::receive_wait, start_recv,
+            end_wait, port, mpp_message.port_length, slot,
+            port.get_num_messages(), msg.size(), message.timestamp());
+
+    ProfileEvent recv_xfer_event(
+            ProfileEventType::receive_transfer, end_wait,
+            end_transfer, port, mpp_message.port_length, slot,
+            port.get_num_messages(), msg.size(), message.timestamp());
+
+    recv_decode_event.message_timestamp = message.timestamp();
+    receive_event.message_timestamp = message.timestamp();
+
+    if (port.is_vector()) {
+        receive_event.port_length = port.get_length();
+        recv_wait_event.port_length = port.get_length();
+        recv_xfer_event.port_length = port.get_length();
+        recv_decode_event.port_length = port.get_length();
+    }
+
+    receive_event.message_size = std::get<0>(msg_and_profile).size();
+
+    if (!is_close_port(message.data())) {
+        profiler_.record_event(std::move(recv_wait_event));
+        profiler_.record_event(std::move(recv_xfer_event));
+        profiler_.record_event(std::move(recv_decode_event));
+        profiler_.record_event(std::move(receive_event));
+    }
 
     int expected_message_number = port.get_num_messages(slot);
-    // TODO: handle f_init port counts for STATELESS and WEAKLY_STATEFUL
-    // components which didn't load a snapshot
     if (expected_message_number != mpp_message.message_number) {
         if (expected_message_number - 1 == mpp_message.message_number and
                 port.is_resuming(slot)) {
@@ -273,6 +319,39 @@ void Communicator::shutdown() {
     for (auto & server : servers_)
         server->close();
 }
+
+Communicator::PortMessageCounts Communicator::get_message_counts() {
+    PortMessageCounts port_message_counts;
+    for(auto const & port_item : ports_)
+        port_message_counts[port_item.first] = port_item.second.get_message_counts();
+
+    assert(muscle_settings_in_.is_set());  // is always created by connect()
+    auto counts = muscle_settings_in_.get().get_message_counts();
+    port_message_counts["muscle_settings_in"] = counts;
+
+    return port_message_counts;
+}
+
+void Communicator::restore_message_counts(
+        Communicator::PortMessageCounts const & port_message_counts) {
+    for (auto const & item : port_message_counts) {
+        if (item.first == "muscle_settings_in") {
+            assert(muscle_settings_in_.is_set());  // is always created by connect()
+            muscle_settings_in_.get().restore_message_counts(item.second);
+        } else {
+            auto port_item = ports_.find(item.first);
+            if (port_item != ports_.end()) {
+                port_item->second.restore_message_counts(item.second);
+            } else {
+                throw std::runtime_error(
+                        "Unknown port " + item.first + " in snapshot."
+                        " Have your port definitions changed since"
+                        " the snapshot was taken?");
+            }
+        }
+    }
+}
+
 
 Reference Communicator::instance_id_() const {
     return kernel_ + index_;
@@ -410,12 +489,14 @@ std::tuple<std::string, bool> Communicator::split_port_desc_(
     std::string port_name(port_desc);
     bool is_vector = false;
 
-    if (port_desc.rfind("[]") == (port_desc.size() - 2)) {
+    auto found = port_desc.rfind("[]");
+    if (found != std::string::npos && found == (port_desc.size() - 2)) {
         is_vector = true;
         port_name = port_desc.substr(0, port_desc.size() - 2);
     }
 
-    if (port_name.rfind("[]") == (port_name.size() - 2)) {
+    found = port_name.rfind("[]");
+    if (found != std::string::npos && found == (port_name.size() - 2)) {
         std::ostringstream oss;
         oss << "Port description '" << port_desc << "' is invalid: ports can";
         oss << " have at most one dimension.";
@@ -423,6 +504,18 @@ std::tuple<std::string, bool> Communicator::split_port_desc_(
     }
 
     return std::make_tuple(port_name, is_vector);
+}
+
+std::tuple<DataConstRef, mcp::ProfileData> Communicator::try_receive_(
+        MPPClient & client, Reference const & receiver, Reference const & peer) {
+    try {
+        return client.receive(receiver);
+    } catch(std::runtime_error const & err) {
+        throw std::runtime_error(
+            "Error while receiving a message: connection with peer '" +
+            static_cast<std::string>(peer) +
+            "' was lost. Did the peer crash?\n\tOriginal error: " + err.what());
+    }
 }
 
 } }

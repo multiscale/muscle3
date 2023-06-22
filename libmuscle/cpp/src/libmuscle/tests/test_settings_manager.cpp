@@ -1,16 +1,21 @@
 #include "libmuscle/settings_manager.hpp"
 
 #include <string>
+#include <vector>
 
 #include <gtest/gtest.h>
 
+#include <libmuscle/namespace.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 
 using namespace std::string_literals;
-using libmuscle::impl::SettingsManager;
+using libmuscle::_MUSCLE_IMPL_NS::SettingsManager;
 using ymmsl::Reference;
 using ymmsl::Settings;
+
+
+using VecS = std::vector<std::string>;
 
 
 int main(int argc, char *argv[]) {
@@ -23,6 +28,63 @@ TEST(libmuscle_settings_manager, test_create_settings_manager) {
 
     ASSERT_EQ(s.base.size(), 0u);
     ASSERT_EQ(s.overlay.size(), 0u);
+}
+
+TEST(libmuscle_settings_manager, test_list_settings_globals) {
+    SettingsManager s;
+
+    s.base["test1"] = 13;
+    s.base["test2"] = 14;
+    ASSERT_EQ(s.list_settings("macro"), VecS({"test1", "test2"}));
+}
+
+TEST(libmuscle_settings_manager, test_list_settings_specifics) {
+    SettingsManager s;
+
+    s.base["macro.test1"] = "test1";
+    s.base["micro.test2"] = "test2";
+    ASSERT_EQ(s.list_settings("macro"), VecS({"test1"}));
+
+    s.base["micro.test1"] = "test1";
+    ASSERT_EQ(s.list_settings("macro"), VecS({"test1"}));
+}
+
+TEST(libmuscle_settings_manager, test_list_settings_override) {
+    SettingsManager s;
+
+    s.base["test1"] = "test1";
+    s.base["macro.test1"] = 42;
+    ASSERT_EQ(s.list_settings("macro"), VecS({"test1"}));
+
+    s.base["micro.test1"] = 43;
+    ASSERT_EQ(s.list_settings("macro"), VecS({"test1"}));
+
+    s.base["test2"] = "test2";
+    ASSERT_EQ(s.list_settings("macro"), VecS({"test1", "test2"}));
+}
+
+TEST(libmuscle_settings_manager, test_list_settings_overlay) {
+    SettingsManager s;
+
+    s.base["test1"] = "test1";
+    s.overlay["test1"] = "test1";
+    ASSERT_EQ(s.list_settings("macro"), VecS({"test1"}));
+
+    s.overlay["test2"] = "test2";
+    ASSERT_EQ(s.list_settings("macro"), VecS({"test1", "test2"}));
+}
+
+TEST(libmuscle_settings_manager, test_list_settings_overlay_override) {
+    SettingsManager s;
+
+    s.base["test1"] = "test1";
+    s.base["micro.test2"] = 1;
+    s.overlay["macro.test1"] = 13;
+    s.overlay["micro.test2"] = 2;
+
+    ASSERT_EQ(s.list_settings("macro"), VecS({"test1"}));
+    ASSERT_EQ(s.list_settings("micro"), VecS({"test1", "test2"}));
+    ASSERT_EQ(s.list_settings("meso"), VecS({"test1"}));
 }
 
 TEST(libmuscle_settings_manager, test_get_setting) {

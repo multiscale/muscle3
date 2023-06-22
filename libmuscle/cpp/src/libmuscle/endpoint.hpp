@@ -1,12 +1,14 @@
 #pragma once
 
+#include <libmuscle/namespace.hpp>
+
 #include <string>
 #include <vector>
 
 #include <ymmsl/ymmsl.hpp>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /* Place that a message is sent from and to.
  *

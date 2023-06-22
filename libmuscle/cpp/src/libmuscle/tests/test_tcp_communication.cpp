@@ -6,6 +6,7 @@
 #include <libmuscle/mpp_client.hpp>
 
 #include <libmuscle/data.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/post_office.hpp>
 #include <libmuscle/util.hpp>
 #include <ymmsl/ymmsl.hpp>
@@ -14,12 +15,12 @@
 #include <utility>
 
 
-using libmuscle::impl::Data;
-using libmuscle::impl::DataConstRef;
-using libmuscle::impl::MPPMessage;
-using libmuscle::impl::MPPClient;
-using libmuscle::impl::mcp::TcpTransportServer;
-using libmuscle::impl::PostOffice;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
+using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
+using libmuscle::_MUSCLE_IMPL_NS::MPPMessage;
+using libmuscle::_MUSCLE_IMPL_NS::MPPClient;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::TcpTransportServer;
+using libmuscle::_MUSCLE_IMPL_NS::PostOffice;
 
 using ymmsl::Reference;
 
@@ -44,7 +45,7 @@ TEST(test_tcp_communication, send_receive) {
     TcpTransportServer server(post_office);
     std::vector<std::string> locations = {server.get_location()};
     MPPClient client(locations);
-    DataConstRef bytes = client.receive(receiver);
+    DataConstRef bytes = std::get<0>(client.receive(receiver));
     MPPMessage m = MPPMessage::from_bytes(bytes);
 
     ASSERT_EQ(m.sender, "test_sender.port");

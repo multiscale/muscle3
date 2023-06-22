@@ -19,7 +19,7 @@ class PostOffice(RequestHandler):
     def __init__(self) -> None:
         """Create a PostOffice.
         """
-        self._outboxes = dict()  # type: Dict[Reference, Outbox]
+        self._outboxes: Dict[Reference, Outbox] = {}
 
         self._outbox_lock = Lock()
 

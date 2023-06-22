@@ -1,0 +1,298 @@
+.. The containers.rst file is generated! Edit containers.rst.in instead
+
+==================================
+Running containerized applications
+==================================
+
+Some parts of your simulation may be containerized, for example as a Docker or
+Singularity container. This page describes how to run a MUSCLE3 simulation when
+components are inside a container.
+
+We start with a generic approach for running (partially) containerized simulations,
+followed by examples for `Singularity <https://sylabs.io/docs/>`_ and
+`Docker <https://www.docker.com/>`_.
+
+.. contents:: Contents
+    :local:
+
+
+How to run containerized components
+===================================
+
+1.  :ref:`Install the Python components of libmuscle <Installing>` on the host system.
+    This makes :ref:`muscle_manager` available on the host machine, and allows it to
+    start components inside containers.
+2.  Create containers for the components that you want to run in your simulation. Note
+    that the MUSCLE3 library version must be identical for all containers (and for the
+    :ref:`muscle_manager` installed on the host), otherwise an error is generated when
+    starting the simulation.
+3.  Configure the :ref:`implementations section of your yMMSL file <ymmsl file>` to
+    start the components in the container. See also further down this document how this
+    works with Singularity and Docker.
+
+    .. note::
+
+        Applications inside the container must be able to connect to eachother as well
+        as to the host machine. This works by default with Singularity, and requires
+        ``host`` networking to work with Docker.
+
+        The environment variables ``MUSCLE_MANAGER`` and ``MUSCLE_INSTANCE`` must be
+        passed to the application inside the container. This works by default with
+        singularity, and requires the `-e
+        <https://docs.docker.com/engine/reference/run/#env-environment-variables>`_ flag
+        for Docker.
+
+
+Running the reaction-diffusion example in Singularity
+-----------------------------------------------------
+
+To follow the example you must have singularity installed on your machine. Please check
+the `installation instructions from the singularity documentation
+<https://docs.sylabs.io/guides/latest/user-guide/quick_start.html>`_ if you don't have
+it available yet.
+
+.. rubric:: Install the Python components of libmuscle
+
+See the :ref:`installing` page if you don't have muscle3 available yet. Test that
+:ref:`muscle_manager` is available:
+
+.. code-block:: bash
+
+    $ muscle_manager
+    Usage: muscle_manager [OPTIONS] YMMSL_FILES...
+    [...]
+
+
+.. rubric:: Create containers for the components
+
+For this example we will create a single Singularity container, which contains both the
+reaction and the diffusion model. First, create a container definition file
+``muscle3.def`` with the following contents:
+
+.. code-block:: singularity
+
+    Bootstrap: docker
+    From: python:3.10
+
+    %post
+        # download latest muscle3 release from github
+        curl -L https://github.com/multiscale/muscle3/archive/refs/tags/%%VERSION%%.tar.gz | tar -zxC /opt && mv /opt/muscle3* /opt/muscle3
+        pip install /opt/muscle3
+
+Then build the container:
+
+.. code-block:: bash
+
+    $ singularity build --fakeroot muscle3.sif muscle3.def
+
+This creates a container in the Singularity Image Format based on `this python 3.10
+container <https://hub.docker.com/_/python>`_, then it downloads and installs the latest
+muscle3 release.
+
+
+.. rubric:: Configure the implementations section
+
+.. code-block:: yaml
+
+    ymmsl_version: v0.1
+
+    model:
+      name: reaction_diffusion_python
+
+      components:
+        macro:
+          implementation: diffusion_python_singularity
+          ports:
+            o_i: state_out
+            s: state_in
+        micro:
+          implementation: reaction_python_singularity
+          ports:
+            f_init: initial_state
+            o_f: final_state
+
+      conduits:
+        macro.state_out: micro.initial_state
+        micro.final_state: macro.state_in
+
+    resources:
+      macro:
+        threads: 1
+      micro:
+        threads: 1
+
+    settings:
+      muscle_local_log_level: INFO
+      muscle_remote_log_level: WARNING
+      micro.t_max: 2.469136e-06
+      micro.dt: 2.469136e-08
+      macro.t_max: 0.0001234568
+      macro.dt: 2.469136e-06
+      x_max: 1.0
+      dx: 0.01
+      k: -40500.0
+      d: 0.0405
+
+    implementations:
+      reaction_python_singularity:
+        executable: singularity
+        args:
+        - exec
+        - ../../../../muscle3.sif
+        - python
+        - /opt/muscle3/docs/source/examples/python/reaction.py
+
+      diffusion_python_singularity:
+        executable: singularity
+        args:
+        - exec
+        - ../../../../muscle3.sif
+        - python
+        - /opt/muscle3/docs/source/examples/python/diffusion.py
+
+If you save this file as ``rd_singularity.ymmsl``, you can run the example as follows:
+
+.. code-block:: bash
+
+    $ DONTPLOT=1 muscle_manager --start-all rd_singularity.ymmsl
+
+
+Running the reaction-diffusion example in Docker
+------------------------------------------------
+
+To follow the example you must have Docker installed on your machine. Please check the
+`installation instructions from the Docker documentation
+<https://docs.docker.com/get-docker/>`_ if you don't have it available yet.
+
+
+
+.. rubric:: Install the Python components of libmuscle
+
+See the :ref:`installing` page if you don't have muscle3 available yet. Test that
+:ref:`muscle_manager` is available:
+
+.. code-block:: bash
+
+    $ muscle_manager
+    Usage: muscle_manager [OPTIONS] YMMSL_FILES...
+    [...]
+
+
+.. rubric:: Create containers for the components
+
+For this example we will create a single Docker container, which contains both the
+reaction and the diffusion model. First, create a container definition file
+``Dockerfile`` with the following contents:
+
+.. code-block:: docker
+
+    FROM python:3.10
+
+    # download latest muscle3 release from github
+    RUN curl -L https://github.com/multiscale/muscle3/archive/refs/tags/%%VERSION%%.tar.gz | tar -zxC /opt && mv /opt/muscle3* /opt/muscle3
+    RUN pip install /opt/muscle3
+
+
+Then build the container:
+
+.. code-block:: bash
+
+    $ docker build . -f Dockerfile -t muscle3
+
+This creates a docker container with the tag ``muscle3`` based on `this python 3.10
+container <https://hub.docker.com/_/python>`_, then it downloads and installs the latest
+muscle3 release.
+
+
+.. rubric:: Configure the implementations section
+
+.. code-block:: yaml
+
+    ymmsl_version: v0.1
+
+    model:
+      name: reaction_diffusion_python
+
+      components:
+        macro:
+          implementation: diffusion_python_singularity
+          ports:
+            o_i: state_out
+            s: state_in
+        micro:
+          implementation: reaction_python_singularity
+          ports:
+            f_init: initial_state
+            o_f: final_state
+
+      conduits:
+        macro.state_out: micro.initial_state
+        micro.final_state: macro.state_in
+
+    resources:
+      macro:
+        threads: 1
+      micro:
+        threads: 1
+
+    settings:
+      muscle_local_log_level: INFO
+      muscle_remote_log_level: WARNING
+      micro.t_max: 2.469136e-06
+      micro.dt: 2.469136e-08
+      macro.t_max: 0.0001234568
+      macro.dt: 2.469136e-06
+      x_max: 1.0
+      dx: 0.01
+      k: -40500.0
+      d: 0.0405
+
+    implementations:
+      reaction_python_singularity:
+        executable: docker
+        args:
+        - run
+        - --rm
+        - --network=host
+        - -e
+        - MUSCLE_MANAGER
+        - -e
+        - MUSCLE_INSTANCE
+        - muscle3
+        - python
+        - /opt/muscle3/docs/source/examples/python/reaction.py
+
+      diffusion_python_singularity:
+        executable: docker
+        args:
+        - run
+        - --rm
+        - --network=host
+        - -e
+        - MUSCLE_MANAGER
+        - -e
+        - MUSCLE_INSTANCE
+        - -e
+        - DONTPLOT
+        - muscle3
+        - python
+        - /opt/muscle3/docs/source/examples/python/diffusion.py
+
+.. note::
+
+    1. We remove the docker container after it is finished (by using the ``--rm``
+       command line parameter).
+    2. We use host networking, such that the docker container uses the same network
+       interface as the host. For this example running on a single machine it does not
+       matter: it also works with the default ``bridge`` networking mode. However when
+       your components are running on multiple machines you need to use ``host``
+       networking to enable the components to connect to the other machines.
+    3. We tell docker to pass the values of the environment variables
+       ``MUSCLE_MANAGER``, ``MUSCLE_INSTANCE`` (and ``DONTPLOT`` for the diffusion
+       component) to the application running inside the container.
+
+If you save this file as ``rd_docker.ymmsl``, you can run the example as follows:
+
+.. code-block:: bash
+
+    $ DONTPLOT=1 muscle_manager --start-all rd_docker.ymmsl

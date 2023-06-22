@@ -8,13 +8,13 @@
 #include <utility>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 MPPMessage::MPPMessage(
             ::ymmsl::Reference const & sender,
             ::ymmsl::Reference const & receiver,
-            ::libmuscle::impl::Optional<int> port_length,
-            double timestamp, ::libmuscle::impl::Optional<double> next_timestamp,
+            ::libmuscle::_MUSCLE_IMPL_NS::Optional<int> port_length,
+            double timestamp, ::libmuscle::_MUSCLE_IMPL_NS::Optional<double> next_timestamp,
             DataConstRef const & settings_overlay,
             int message_number, double saved_until,
             DataConstRef const & data
@@ -36,11 +36,11 @@ MPPMessage MPPMessage::from_bytes(DataConstRef const & data) {
     DataConstRef dict = mcp::unpack_data(zone, data.as_byte_array(), data.size());
 
     // create message
-    libmuscle::impl::Optional<int> port_length;
+    libmuscle::_MUSCLE_IMPL_NS::Optional<int> port_length;
     if (dict["port_length"].is_a<int>())
         port_length = dict["port_length"].as<int>();
 
-    libmuscle::impl::Optional<double> next_timestamp;
+    libmuscle::_MUSCLE_IMPL_NS::Optional<double> next_timestamp;
     if (dict["next_timestamp"].is_a<double>())
         next_timestamp = dict["next_timestamp"].as<double>();
 
@@ -65,7 +65,7 @@ DataConstRef MPPMessage::encoded() const {
     if (next_timestamp.is_set())
         next_timestamp_data = next_timestamp.get();
 
-    Data msg_dict = Data::dict(
+    DataConstRef msg_dict = DataConstRef::dict(
             "sender", std::string(sender),
             "receiver", std::string(receiver),
             "port_length", port_length_data,

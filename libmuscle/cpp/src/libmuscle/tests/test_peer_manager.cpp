@@ -1,5 +1,6 @@
 #include "libmuscle/peer_manager.hpp"
 
+#include <libmuscle/namespace.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 #include <memory>
@@ -7,9 +8,9 @@
 #include <gtest/gtest.h>
 
 
-using libmuscle::impl::PeerDims;
-using libmuscle::impl::PeerLocations;
-using libmuscle::impl::PeerManager;
+using libmuscle::_MUSCLE_IMPL_NS::PeerDims;
+using libmuscle::_MUSCLE_IMPL_NS::PeerLocations;
+using libmuscle::_MUSCLE_IMPL_NS::PeerManager;
 using ymmsl::Conduit;
 using ymmsl::Reference;
 

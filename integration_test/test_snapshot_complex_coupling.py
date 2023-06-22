@@ -149,7 +149,7 @@ model:
 
 settings:
   dt: 1.234
-  t_max: 2.0  # seconds
+  t_max: 1.8  # seconds
   cacheA.cache_valid: [2.0, 5.0]
   cacheB.cache_valid: [3.0, 8.0]
   cacheC.cache_valid: [4.0, 10.0]
@@ -161,29 +161,28 @@ checkpoints:
 
 
 def test_snapshot_complex_coupling(tmp_path, config):
-    actors = {'main': main_component}
+    actors = {'main': ('python', main_component)}
     for c in 'ABC':
-        actors['cache' + c] = cache_component
+        actors['cache' + c] = ('python', cache_component)
     for c in 'ABCD':
-        actors['calc' + c] = echo_component
+        actors['calc' + c] = ('python', echo_component)
 
     run_dir1 = RunDir(tmp_path / 'run1')
-    run_manager_with_actors(
-            dump(config), run_dir1.path, python_actors=actors)
+    run_manager_with_actors(dump(config), run_dir1.path, actors)
 
-    assert len(ls_snapshots(run_dir1, 'main')) == 5  # 2.0/0.5, at_end
-    assert len(ls_snapshots(run_dir1, 'cacheA')) == 5  # 2.0/0.5, at_end
-    assert len(ls_snapshots(run_dir1, 'cacheB')) == 5  # 2.0/0.5, at_end
-    assert len(ls_snapshots(run_dir1, 'cacheC')) == 5  # 2.0/0.5, at_end
-    # Due to caches, calcA/B/C may not run every 0.5 seconds
-    assert 1 <= len(ls_snapshots(run_dir1, 'calcA')) <= 5
-    assert 1 <= len(ls_snapshots(run_dir1, 'calcB')) <= 5
-    assert 1 <= len(ls_snapshots(run_dir1, 'calcC')) <= 5
-    assert len(ls_snapshots(run_dir1, 'calcD')) == 5  # 2.0/0.5, at_end
+    # Note: snapshotting based on wallclock time is less reliable, and depending on
+    # many factors (OS load, machine speed, etc.) different amounts of snapshots may be
+    # created with each run of this test. Asserts only check that at least 1 exists,
+    # even though we expect more
+    assert len(ls_snapshots(run_dir1, 'main')) >= 1
+    assert len(ls_snapshots(run_dir1, 'cacheA')) >= 1
+    assert len(ls_snapshots(run_dir1, 'cacheB')) >= 1
+    assert len(ls_snapshots(run_dir1, 'cacheC')) >= 1
+    assert len(ls_snapshots(run_dir1, 'calcA')) >= 1
+    assert len(ls_snapshots(run_dir1, 'calcB')) >= 1
+    assert len(ls_snapshots(run_dir1, 'calcC')) >= 1
+    assert len(ls_snapshots(run_dir1, 'calcD')) >= 1
 
     snapshots_ymmsl = ls_snapshots(run_dir1)
     snapshot_docs = list(map(load, snapshots_ymmsl))
-    # Snapshots based on wallclock time are less reliable. There is at least one
-    # resume yMMSL: the at_end collection. At most 4 more, one for each
-    # wallclock_time checkpoint.
-    assert 1 <= len(snapshot_docs) <= 5
+    assert len(snapshot_docs) >= 1

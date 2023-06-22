@@ -35,22 +35,26 @@ distclean: clean
 cleantargets := clean distclean
 ifeq "$(filter $(MAKECMDGOALS),$(cleantargets))" ""
 
-EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-Wl,-rpath-link,$(DIR)/lib)
+EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-Wl,-rpath,$(DIR)/lib)
 
 FFLAGS += -g -I. -I.. -I../../ymmsl
-ifneq (,$(filter ifort ifx, $(FC)))
-	FFLAGS += -e03
-else
-	FFLAGS += -std=f2003
+ifdef MUSCLE_FC_INTEL
+    FFLAGS += -e03
+else ifdef MUSCLE_FC_GNU
+    FFLAGS += -std=f2003
+else ifdef MUSCLE_FC_CLANG
+    FFLAGS += -std=f2003
+else ifdef MUSCLE_FC_CRAY
+    FFLAGS += -em -ef
 endif
 
 
 CPP_BUILD_DIR := $(CURDIR)/../../../../cpp/build
 
-LDFLAGS += -pthread $(CURDIR)/../libmuscle_fortran.a $(CURDIR)/../../ymmsl/libymmsl_fortran.a
-LDFLAGS += $(CPP_BUILD_DIR)/libmuscle/libmuscle_d.a $(CPP_BUILD_DIR)/ymmsl/libymmsl_d.a
-
 LDFLAGS2 := $(LDFLAGS)
+
+LDFLAGS2 += -pthread $(CURDIR)/../libmuscle_fortran.a $(CURDIR)/../../ymmsl/libymmsl_fortran.a
+LDFLAGS2 += $(CPP_BUILD_DIR)/libmuscle/libmuscle_d.a $(CPP_BUILD_DIR)/ymmsl/libymmsl_d.a
 LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIGPATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs msgpack)
 LDFLAGS2 += $(EXTRA_LINK_DIRS)
 LDFLAGS2 += -lstdc++

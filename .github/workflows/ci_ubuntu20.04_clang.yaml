@@ -3,7 +3,7 @@
 name: native_compatibility_ubuntu20.04_clang
 on:
   schedule:
-    - cron: '30 3 * * 0'
+    - cron: '30 3 * * 6'
   push:
     branches:
       - 'release-*'
@@ -11,6 +11,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
     - uses: actions/checkout@v2

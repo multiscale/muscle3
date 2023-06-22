@@ -128,6 +128,9 @@ bool ReferencePart::operator==(ReferencePart const & rhs) const {
     return rhs.is_index() && (index_ == rhs.index_);
 }
 
+bool ReferencePart::operator!=(ReferencePart const & rhs) const {
+    return !(*this == rhs);
+}
 
 Reference::Reference(char const * content)
     : parts_(string_to_parts_(content))

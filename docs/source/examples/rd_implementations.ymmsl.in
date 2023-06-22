@@ -68,7 +68,27 @@ implementations:
     executable: python
     args: MUSCLE3_EXAMPLES/python/checkpointing_reaction.py
 
+  checkpointing_reaction_cpp:
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/cpp/build/checkpointing_reaction
+
+  checkpointing_reaction_fortran:
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/fortran/build/checkpointing_reaction
+
   checkpointing_diffusion_python:
     virtual_env: MUSCLE3_EXAMPLES/python/build/venv
     executable: python
     args: MUSCLE3_EXAMPLES/python/checkpointing_diffusion.py
+
+  checkpointing_diffusion_cpp:
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/cpp/build/checkpointing_diffusion
+
+  checkpointing_diffusion_fortran:
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/fortran/build/checkpointing_diffusion

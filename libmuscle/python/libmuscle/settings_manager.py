@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional, Set
 
 from ymmsl import SettingValue, Reference, Settings
 
@@ -63,6 +63,47 @@ class SettingsManager:
         """
         self.base = Settings()
         self.overlay = Settings()
+
+    def list_settings(self, instance_id: Reference) -> List[str]:
+        """Returns the names of all the settings.
+
+        This returns the names of all the settings, as the model would
+        pass them to request settings. It returns
+
+        - <setting_name> as-is
+        - <instance_id>.<setting_name> as <setting_name>
+        - <other_id>.<setting_name> not at all
+        - <setting>.<setting> not at all
+
+        Note that we don't return global settings with multipart names.
+        Those are legal, but currently indistinguishable from settings
+        intended for other components. We're not actually telling
+        anyone that they're legal, so we can probably get away with
+        that. If it becomes an issue, we'll have to get a list of
+        instance ids from the manager so we can recognise them
+        correctly.
+
+        Args:
+            instance_id: Our instance id.
+
+        Return:
+            A list of setting names.
+        """
+        def extract_names(settings: Settings) -> Set[str]:
+            result: Set[str] = set()
+            for name in settings:
+                if len(name) == 1:
+                    result.add(str(name))
+                else:
+                    id_len = len(instance_id)
+                    if len(name) > id_len:
+                        if name[:id_len] == instance_id:
+                            result.add(str(name[id_len:]))
+            return result
+
+        names = extract_names(self.base)
+        names.update(extract_names(self.overlay))
+        return sorted(names)
 
     def get_setting(self, instance: Reference, setting_name: Reference,
                     typ: Optional[str] = None) -> SettingValue:

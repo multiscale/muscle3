@@ -2,7 +2,7 @@
 
 #include <ymmsl/ymmsl.hpp>
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 namespace mcp {
 

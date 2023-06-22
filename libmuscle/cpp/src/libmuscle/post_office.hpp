@@ -6,6 +6,7 @@
 
 
 #include <libmuscle/data.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/outbox.hpp>
 #include <libmuscle/mcp/transport_server.hpp>
 
@@ -17,7 +18,7 @@
 #include <mutex>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /** Helper class for managing pipes.
  *

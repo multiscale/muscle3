@@ -4,7 +4,17 @@ srcdir := $(CURDIR)/../../src/ymmsl
 sources := $(srcdir)/ymmsl.f90
 objects := $(sources:$(srcdir)/%.f90=%.o)
 lobjects := $(sources:$(srcdir)/%.f90=%.lo)
+
+ifdef MUSCLE_LINUX
+
 libs := libymmsl_fortran.a libymmsl_fortran.so
+
+else ifdef MUSCLE_MACOS
+
+libs := libymmsl_fortran.a libymmsl_fortran.dylib
+
+endif
+
 modules := $(sources:$(srcdir)/%.f90=%.mod)
 pkg_config_files := ymmsl_fortran.pc
 
@@ -16,12 +26,15 @@ installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
 LDFLAGS := -L../../../cpp/build/ymmsl -lymmsl
 
 FFLAGS := -O3
-ifneq (,$(filter ifort ifx, $(FC)))
-	FFLAGS += -e03
-	MOD_DUMP := -module mod_dump
-else
-	FFLAGS += -std=f2003
-	MOD_DUMP := -Jmod_dump
+ifdef MUSCLE_FC_INTEL
+    FFLAGS += -e03
+    MOD_DUMP := -module mod_dump
+else ifdef MUSCLE_FC_GNU
+    FFLAGS += -std=f2003
+    MOD_DUMP := -Jmod_dump
+else ifdef MUSCLE_FC_CRAY
+    FFLAGS += -em -ef
+    MOD_DUMP := -Jmod_dump
 endif
 
 
@@ -45,14 +58,25 @@ clean:
 .PHONY: distclean
 distclean: clean
 
+ifdef MUSCLE_LINUX
+
 .PHONY: install
 install: $(installed_sources) $(installed_modules) $(installed_libs) $(installed_pkg_config_files)
 
+else ifdef MUSCLE_MACOS
+
+.PHONY: install
+install: $(installed_sources) $(installed_modules) $(installed_libs) $(installed_pkg_config_files)
+	install_name_tool -id $(PREFIX)/lib/libymmsl_fortran.dylib $(PREFIX)/lib/libymmsl_fortran.dylib
+	install_name_tool -change libymmsl.dylib @loader_path/libymmsl.dylib $(PREFIX)/lib/libymmsl_fortran.dylib
+
+endif
+
 %.o: $(srcdir)/%.f90
-	$(FC) -c $(FFLAGS) $^ -o $@ $(LDFLAGS)
+	$(FC) -c $(FFLAGS) $^ -o $@
 
 %.lo: $(srcdir)/%.f90
-	$(FC) -c -fPIC $(MOD_DUMP) $(FFLAGS) $< -o $@ $(LDFLAGS)
+	$(FC) -c -fPIC $(MOD_DUMP) $(FFLAGS) $< -o $@
 
 %.mod: %.o
 
@@ -60,6 +84,9 @@ lib%_fortran.a: %.o
 	ar rcs $@ $^
 
 lib%_fortran.so: %.lo
+	$(FC) -shared -o $@ $^ $(LDFLAGS)
+
+lib%_fortran.dylib: %.lo
 	$(FC) -shared -o $@ $^ $(LDFLAGS)
 
 $(PREFIX)/include/%.f90: $(srcdir)/%.f90

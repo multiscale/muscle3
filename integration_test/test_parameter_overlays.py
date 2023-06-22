@@ -7,6 +7,9 @@ from libmuscle import Instance, Message, DONT_APPLY_OVERLAY
 from libmuscle.runner import run_simulation
 
 
+_ENSEMBLE_SIZE = 2
+
+
 def qmc():
     """qMC implementation.
     """
@@ -20,7 +23,7 @@ def qmc():
         assert instance.is_vector_port('settings_out')
         assert not instance.is_resizable('settings_out')
         length = instance.get_port_length('settings_out')
-        assert length == 10
+        assert length == _ENSEMBLE_SIZE
         for slot in range(length):
             instance.send('settings_out', Message(0.0, data=settings0), slot)
 
@@ -95,10 +98,10 @@ def test_settings_overlays(log_file_in_tmpdir):
     """
     elements = [
             Component('qmc', 'qmc'),
-            Component('macro', 'macro', [10]),
+            Component('macro', 'macro', [_ENSEMBLE_SIZE]),
             Component('relay', 'explicit_relay'),
             Component('relay2', 'explicit_relay'),
-            Component('micro', 'micro', [10])]
+            Component('micro', 'micro', [_ENSEMBLE_SIZE])]
 
     conduits = [
                 Conduit('qmc.settings_out', 'macro.muscle_settings_in'),

@@ -1,10 +1,11 @@
 #pragma once
 
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/util.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /** Represents a gateway to the outside world.
  *

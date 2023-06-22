@@ -12,14 +12,6 @@ class APIPhase(Enum):
     This does not match the yMMSL operators, as it is more
     fine-grained and concerns checkpointing, which is not represented
     in the SEL.
-
-    Note that AFTER_REUSE_INSTANCE and BEFORE_RESUMING refer to the
-    same place in the code. AFTER_REUSE_INSTANCE is used when we
-    don't know yet if the code has checkpointing support, and so we
-    don't know whether the next call is to resuming() or to
-    reuse_instance(). Once a checkpointing function has been called,
-    we know that we should expect resume() after reuse_instance() and
-    we use BEFORE_RESUMING accordingly.
     """
     BEFORE_FIRST_REUSE_INSTANCE = auto()
     """Before the first time calling reuse_instance"""
@@ -59,9 +51,9 @@ class APIGuard:
     successfully, and that we are moving on to the next phase.
     """
     def __init__(self, uses_checkpointing: bool) -> None:
-        """Create an APIPhaseTracker.
+        """Create an APIGuard.
 
-        This starts the tracker in BEFORE_FIRST_REUSE_INSTANCE.
+        This starts the tracker in the phase BEFORE_FIRST_REUSE_INSTANCE.
         """
         self._phase = APIPhase.BEFORE_FIRST_REUSE_INSTANCE
         self._uses_checkpointing = uses_checkpointing
@@ -73,7 +65,7 @@ class APIGuard:
             msg = f'Please only call {verify_phase} inside the reuse loop.'
         elif self._phase == APIPhase.BEFORE_REUSE_INSTANCE:
             msg = (
-                    'Please do not call {verify_phase} after'
+                    f'Please do not call {verify_phase} after'
                     ' should_save_final_snapshot. should_save_final_snapshot'
                     ' should be at the end of the reuse loop.')
         elif self._phase == APIPhase.BEFORE_RESUMING:
@@ -140,7 +132,6 @@ class APIGuard:
         Args:
             resuming: Whether we're resuming or not.
         """
-        self._uses_checkpointing = True
         if resuming:
             self._phase = APIPhase.BEFORE_LOAD_SNAPSHOT
         else:

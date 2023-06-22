@@ -2,6 +2,7 @@ import enum
 import logging
 import multiprocessing as mp
 from pathlib import Path
+import traceback
 from typing import Optional
 
 from ymmsl import Implementation, Reference, ResourceRequirements
@@ -47,8 +48,8 @@ class Process:
         self.instance = instance
         self.resources = resources
         self.status = ProcessStatus.STARTED
-        self.exit_code = None   # type: Optional[int]
-        self.error_msg = None   # type: Optional[str]
+        self.exit_code: Optional[int] = None
+        self.error_msg: Optional[str] = None
 
 
 class InstantiatorRequest:
@@ -126,4 +127,9 @@ class QueueingLogHandler(logging.Handler):
         Args:
             record: A log record to enqueue.
         """
+        if record.exc_info:
+            record.msg += '\n' + ''.join(
+                    traceback.format_exception(*record.exc_info))
+            record.exc_info = None
+
         self._queue.put(record)

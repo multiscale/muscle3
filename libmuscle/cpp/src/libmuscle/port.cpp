@@ -24,7 +24,7 @@ inline void extend_vector_to_size(
 }
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 Port::Port(
         std::string const & name, Operator oper,

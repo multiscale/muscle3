@@ -21,34 +21,34 @@ program load_balancer
     integer :: started, done, num_calls, num_workers
 
 
-    ports = LIBMUSCLE_PortsDescription_create()
-    call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_F_INIT, 'front_in[]')
-    call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_O_I, 'back_out[]')
-    call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_S, 'back_in[]')
-    call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_O_F, 'front_out[]')
-    instance = LIBMUSCLE_Instance_create(ports)
+    ports = LIBMUSCLE_PortsDescription()
+    call ports%add(YMMSL_Operator_F_INIT, 'front_in[]')
+    call ports%add(YMMSL_Operator_O_I, 'back_out[]')
+    call ports%add(YMMSL_Operator_S, 'back_in[]')
+    call ports%add(YMMSL_Operator_O_F, 'front_out[]')
+    instance = LIBMUSCLE_Instance(ports, LIBMUSCLE_InstanceFlags(DONT_APPLY_OVERLAY=.true.))
     call LIBMUSCLE_PortsDescription_free(ports)
 
-    do while (LIBMUSCLE_Instance_reuse_instance(instance, .false.))
+    do while (instance%reuse_instance())
         ! F_INIT
         started = 0
         done = 0
 
-        num_calls = LIBMUSCLE_Instance_get_port_length(instance, 'front_in')
-        num_workers = LIBMUSCLE_Instance_get_port_length(instance, 'back_out')
+        num_calls = instance%get_port_length('front_in')
+        num_workers = instance%get_port_length('back_out')
 
-        call LIBMUSCLE_Instance_set_port_length(instance, 'front_out', num_calls)
+        call instance%set_port_length('front_out', num_calls)
 
         do while (done < num_calls)
             do while ((started - done < num_workers) .and. (started < num_calls))
-                rmsg = LIBMUSCLE_Instance_receive_with_settings_on_slot(instance, 'front_in', started)
-                call LIBMUSCLE_Instance_send(instance, 'back_out', rmsg, mod(started, num_workers))
+                rmsg = instance%receive_with_settings_on_slot('front_in', started)
+                call instance%send('back_out', rmsg, mod(started, num_workers))
                 call LIBMUSCLE_Message_free(rmsg)
                 started = started + 1
             end do
 
-            rmsg = LIBMUSCLE_Instance_receive_with_settings_on_slot(instance, 'back_in', mod(done, num_workers))
-            call LIBMUSCLE_Instance_send(instance, 'front_out', rmsg, done)
+            rmsg = instance%receive_with_settings_on_slot('back_in', mod(done, num_workers))
+            call instance%send('front_out', rmsg, done)
             call LIBMUSCLE_Message_free(rmsg)
             done = done + 1
         end do

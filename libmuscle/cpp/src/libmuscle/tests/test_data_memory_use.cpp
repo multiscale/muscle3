@@ -1,25 +1,38 @@
 #include "libmuscle/data.hpp"
 #include "libmuscle/mcp/data_pack.hpp"
+#include <libmuscle/namespace.hpp>
 
 #include <cstddef>
 #include <cstdio>
 #include <iostream>
 #include <ostream>
 
+#ifdef __GLIBC__
+
+/* The malloc_info() function is glibc-specific, so we only do this test on
+ * platforms that have glibc. They're not all that likely to have wildly
+ * different memory use characteristics. */
+
 #include <malloc.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 
+#endif
+
+
 #include <gtest/gtest.h>
 
 
-using libmuscle::impl::Data;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
 
 
 int main(int argc, char *argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
+
+
+#ifdef __GLIBC__
 
 TEST(libmuscle_mcp_data, large_structure) {
     // produce a large with items in it
@@ -95,4 +108,6 @@ TEST(libmuscle_mcp_data, nested_structure) {
     // reset memory limit
     setrlimit(RLIMIT_DATA, &old_limits);
 }
+
+#endif
 

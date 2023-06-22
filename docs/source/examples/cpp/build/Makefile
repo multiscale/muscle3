@@ -5,7 +5,7 @@ MPI_CXXFLAGS := -std=c++14 -g $(shell pkg-config --cflags libmuscle_mpi ymmsl)
 MPI_LDFLAGS := $(shell pkg-config --libs libmuscle_mpi ymmsl)
 
 
-binaries := reaction diffusion mc_driver load_balancer
+binaries := reaction diffusion mc_driver load_balancer checkpointing_reaction checkpointing_diffusion benchmark
 mpi_binaries := reaction_mpi
 
 
@@ -17,7 +17,7 @@ mpi: $(mpi_binaries)
 
 .PHONY: clean
 clean:
-	rm -f $(binaries) $(mpi_binaries)
+	rm -f *.o $(binaries) $(mpi_binaries)
 
 
 %_mpi.o: ../%_mpi.cpp
@@ -32,3 +32,5 @@ clean:
 %: %.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
+benchmark.o: ../benchmark.cpp
+	$(CXX) -c $(CXXFLAGS) -O3 -march=native -o $@ $^

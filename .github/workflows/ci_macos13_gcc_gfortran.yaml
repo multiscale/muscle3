@@ -1,0 +1,30 @@
+# Run Continuous Integration on macOS 13 Ventura with GCC
+# This includes Fortran support
+# This mainly checks for issues/regressions in the native build
+name: compatibility_macos_ventura_13_gcc_gfortran
+on:
+  schedule:
+    - cron: '00 3 * * 6'
+  push:
+    branches:
+      - 'release-*'
+      - fix_native_compatibility_ci
+jobs:
+  build:
+    runs-on: macos-13
+    timeout-minutes: 30
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        brew install gcc
+        brew install openmpi
+        brew install pkg-config
+        python3 -m pip install --upgrade pip
+        pip3 install tox tox-gh-actions
+
+    - name: Run all tests
+      run: cd ${GITHUB_WORKSPACE} && CXX=g++-12 OMPI_CXX=g++-12 FC=gfortran-12 OMPI_FC=gfortran-12 make test test_examples
+

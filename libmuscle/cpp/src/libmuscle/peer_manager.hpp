@@ -7,13 +7,14 @@
 #include <ymmsl/ymmsl.hpp>
 
 #include <libmuscle/endpoint.hpp>
+#include <libmuscle/namespace.hpp>
 
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 using PeerDims = std::unordered_map<ymmsl::Reference, std::vector<int>>;
 using PeerLocations = std::unordered_map<

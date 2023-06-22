@@ -1,5 +1,6 @@
 #include <cstring>
 #include <functional>
+#include <limits>
 #include <memory>
 #include <numeric>
 #include <stdexcept>
@@ -14,13 +15,13 @@
 #include "ymmsl/identity.hpp"
 #include "ymmsl/settings.hpp"
 
-using libmuscle::impl::mcp::ExtTypeId;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::ExtTypeId;
 using ymmsl::SettingValue;
 using ymmsl::Reference;
 using ymmsl::Settings;
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 // helper functions
 
@@ -28,13 +29,42 @@ template <typename Element>
 ExtTypeId grid_type_id_();
 
 template <>
-ExtTypeId grid_type_id_<std::int32_t>() {
-    return ExtTypeId::grid_int32;
+ExtTypeId grid_type_id_<int>() {
+    static_assert(
+            std::numeric_limits<int>::digits == 31 ||
+            std::numeric_limits<int>::digits == 63,
+            "int is not 32 or 64 bits");
+
+    if (std::numeric_limits<int>::digits == 31)
+        return ExtTypeId::grid_int32;
+    else if (std::numeric_limits<int>::digits == 63)
+        return ExtTypeId::grid_int64;
 }
 
 template <>
-ExtTypeId grid_type_id_<std::int64_t>() {
-    return ExtTypeId::grid_int64;
+ExtTypeId grid_type_id_<long int>() {
+    static_assert(
+            std::numeric_limits<long int>::digits == 31 ||
+            std::numeric_limits<long int>::digits == 63,
+            "long int is not 32 or 64 bits");
+
+    if (std::numeric_limits<long int>::digits == 31)
+        return ExtTypeId::grid_int32;
+    else if (std::numeric_limits<long int>::digits == 63)
+        return ExtTypeId::grid_int64;
+}
+
+template <>
+ExtTypeId grid_type_id_<long long int>() {
+    static_assert(
+            std::numeric_limits<long long int>::digits == 31 ||
+            std::numeric_limits<long long int>::digits == 63,
+            "long long int is not 32 or 64 bits");
+
+    if (std::numeric_limits<long long int>::digits == 31)
+        return ExtTypeId::grid_int32;
+    else if (std::numeric_limits<long long int>::digits == 63)
+        return ExtTypeId::grid_int64;
 }
 
 template <>
@@ -56,13 +86,42 @@ template <typename Element>
 std::string grid_type_name_();
 
 template <>
-std::string grid_type_name_<std::int32_t>() {
-    return "int32";
+std::string grid_type_name_<int>() {
+    static_assert(
+            std::numeric_limits<int>::digits == 31 ||
+            std::numeric_limits<int>::digits == 63,
+            "int is not 32 or 64 bits");
+
+    if (std::numeric_limits<int>::digits == 31)
+        return "int32";
+    else if (std::numeric_limits<int>::digits == 63)
+        return "int64";
 }
 
 template <>
-std::string grid_type_name_<std::int64_t>() {
-    return "int64";
+std::string grid_type_name_<long int>() {
+    static_assert(
+            std::numeric_limits<long int>::digits == 31 ||
+            std::numeric_limits<long int>::digits == 63,
+            "long int is not 32 or 64 bits");
+
+    if (std::numeric_limits<long int>::digits == 31)
+        return "int32";
+    else if (std::numeric_limits<long int>::digits == 63)
+        return "int64";
+}
+
+template <>
+std::string grid_type_name_<long long int>() {
+    static_assert(
+            std::numeric_limits<long long int>::digits == 31 ||
+            std::numeric_limits<long long int>::digits == 63,
+            "long long int is not 32 or 64 bits");
+
+    if (std::numeric_limits<long long int>::digits == 31)
+        return "int32";
+    else if (std::numeric_limits<long long int>::digits == 63)
+        return "int64";
 }
 
 template <>
@@ -221,14 +280,20 @@ DataConstRef DataConstRef::grid(
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-template DataConstRef DataConstRef::grid<std::int32_t>(
-        std::int32_t const * const data,
+template DataConstRef DataConstRef::grid<int>(
+        int const * const data,
         std::vector<std::size_t> const & shape,
         std::vector<std::string> const & indexes,
         StorageOrder storage_order);
 
-template DataConstRef DataConstRef::grid<std::int64_t>(
-        std::int64_t const * const data,
+template DataConstRef DataConstRef::grid<long int>(
+        long int const * const data,
+        std::vector<std::size_t> const & shape,
+        std::vector<std::string> const & indexes,
+        StorageOrder storage_order);
+
+template DataConstRef DataConstRef::grid<long long int>(
+        long long int const * const data,
         std::vector<std::size_t> const & shape,
         std::vector<std::string> const & indexes,
         StorageOrder storage_order);
@@ -252,6 +317,26 @@ template DataConstRef DataConstRef::grid<bool>(
         StorageOrder storage_order);
 
 #endif
+
+DataConstRef DataConstRef::dict() {
+    DataConstRef dict;
+    dict.init_dict_(0u);
+    return dict;
+}
+
+DataConstRef DataConstRef::list() {
+    DataConstRef list;
+    list.init_list_(0u);
+    return list;
+}
+
+DataConstRef DataConstRef::nils(std::size_t size) {
+    DataConstRef list;
+    list.init_list_(size);
+    for (std::size_t i = 0u; i < size; ++i)
+        list.mp_obj_->via.array.ptr[i].type = msgpack::type::NIL;
+    return list;
+}
 
 DataConstRef::DataConstRef(SettingValue const & value)
     : DataConstRef()
@@ -416,9 +501,11 @@ bool DataConstRef::is_a_grid_of() const {
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-template bool DataConstRef::is_a_grid_of<std::int32_t>() const;
+template bool DataConstRef::is_a_grid_of<int>() const;
 
-template bool DataConstRef::is_a_grid_of<std::int64_t>() const;
+template bool DataConstRef::is_a_grid_of<long int>() const;
+
+template bool DataConstRef::is_a_grid_of<long long int>() const;
 
 template bool DataConstRef::is_a_grid_of<float>() const;
 
@@ -603,7 +690,9 @@ template float const * DataConstRef::elements<float>() const;
 
 template int const * DataConstRef::elements<int>() const;
 
-template long const * DataConstRef::elements<long>() const;
+template long int const * DataConstRef::elements<long int>() const;
+
+template long long int const * DataConstRef::elements<long long int>() const;
 
 #endif
 
@@ -724,6 +813,26 @@ DataConstRef DataConstRef::grid_dict_() const {
     return *obj_cache_;
 }
 
+void DataConstRef::set_dict_item_(
+        uint32_t offset, std::string const & key, DataConstRef const & value
+) {
+    mp_obj_->via.map.ptr[offset].key = msgpack::object(key, *mp_zones_->front());
+    mp_obj_->via.map.ptr[offset].val = msgpack::object(value, *mp_zones_->front());
+    mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
+}
+
+void DataConstRef::init_dict_(uint32_t size) {
+    mp_obj_->type = msgpack::type::MAP;
+    mp_obj_->via.map.size = size;
+    mp_obj_->via.map.ptr = zone_alloc_<msgpack::object_kv>(size);
+}
+
+void DataConstRef::init_list_(uint32_t size) {
+    mp_obj_->type = msgpack::type::ARRAY;
+    mp_obj_->via.array.size = size;
+    mp_obj_->via.array.ptr = zone_alloc_<msgpack::object>(size);
+}
+
 /* This is here in the .cpp and instantiated explicitly, because it requires the
  * ExtTypeId, and we don't want to have that in a public header since it's a
  * detail of an internal format.
@@ -774,14 +883,20 @@ Data Data::grid(
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
-template Data Data::grid<std::int32_t>(
-        std::int32_t const * const data,
+template Data Data::grid<int>(
+        int const * const data,
         std::vector<std::size_t> const & shape,
         std::vector<std::string> const & indexes,
         StorageOrder storage_order);
 
-template Data Data::grid<std::int64_t>(
-        std::int64_t const * const data,
+template Data Data::grid<long int>(
+        long int const * const data,
+        std::vector<std::size_t> const & shape,
+        std::vector<std::string> const & indexes,
+        StorageOrder storage_order);
+
+template Data Data::grid<long long int>(
+        long long int const * const data,
         std::vector<std::size_t> const & shape,
         std::vector<std::string> const & indexes,
         StorageOrder storage_order);
@@ -924,14 +1039,6 @@ char * Data::as_byte_array() {
 }
 
 void Data::set_dict_item_(
-        uint32_t offset, std::string const & key, DataConstRef const & value
-) {
-    mp_obj_->via.map.ptr[offset].key = msgpack::object(key, *mp_zones_->front());
-    mp_obj_->via.map.ptr[offset].val = msgpack::object(value, *mp_zones_->front());
-    mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
-}
-
-void Data::set_dict_item_(
         uint32_t offset, std::string const & key, Data const & value
 ) {
     mp_obj_->via.map.ptr[offset].key = msgpack::object(key, *mp_zones_->front());
@@ -966,5 +1073,5 @@ DataConstRef DataConstRef::grid_data_<bool>(
     }
 }
 
-} }  // namespace libmuscle::impl
+} }  // namespace libmuscle::_MUSCLE_IMPL_NS
 

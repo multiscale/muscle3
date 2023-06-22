@@ -34,7 +34,7 @@ class PeerManager:
         self.__index = index
 
         # peer port ids, indexed by local kernel.port id
-        self.__peers = dict()  # type: Dict[Reference, List[Reference]]
+        self.__peers: Dict[Reference, List[Reference]] = {}
 
         for conduit in conduits:
             if str(conduit.sending_component()) == str(kernel):

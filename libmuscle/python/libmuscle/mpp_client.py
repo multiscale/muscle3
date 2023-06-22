@@ -1,10 +1,10 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import msgpack
 from ymmsl import Reference
 
 from libmuscle.mcp.protocol import RequestType
-from libmuscle.mcp.transport_client import TransportClient
+from libmuscle.mcp.transport_client import ProfileData, TransportClient
 from libmuscle.mcp.type_registry import transport_client_types
 
 
@@ -24,7 +24,7 @@ class MPPClient:
         Args:
             locations: The peer's location strings
         """
-        client = None       # type: Optional[TransportClient]
+        client: Optional[TransportClient] = None
         for ClientType in transport_client_types:
             for location in locations:
                 if ClientType.can_connect_to(location):
@@ -40,14 +40,14 @@ class MPPClient:
 
         self._transport_client = client
 
-    def receive(self, receiver: Reference) -> bytes:
+    def receive(self, receiver: Reference) -> Tuple[bytes, ProfileData]:
         """Receive a message from a port this client connects to.
 
         Args:
             receiver: The receiving (local) port.
 
         Returns:
-            The received message.
+            The received message, and profiling data
         """
         request = [RequestType.GET_NEXT_MESSAGE.value, str(receiver)]
         encoded_request = msgpack.packb(request, use_bin_type=True)

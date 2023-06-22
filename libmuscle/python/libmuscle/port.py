@@ -50,7 +50,7 @@ class Port(ymmsl.Port):
 
         if is_vector:
             if our_ndims == len(peer_dims):
-                self._length = 0    # type: Optional[int]
+                self._length: Optional[int] = 0
             elif our_ndims + 1 == len(peer_dims):
                 self._length = peer_dims[-1]
             elif our_ndims > len(peer_dims):

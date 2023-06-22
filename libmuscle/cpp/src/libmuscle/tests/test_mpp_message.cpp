@@ -5,14 +5,15 @@
 
 #include <libmuscle/data.hpp>
 #include <libmuscle/mcp/data_pack.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/util.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 #include <utility>
 
 
-using libmuscle::impl::Data;
-using libmuscle::impl::MPPMessage;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
+using libmuscle::_MUSCLE_IMPL_NS::MPPMessage;
 using ymmsl::Reference;
 
 

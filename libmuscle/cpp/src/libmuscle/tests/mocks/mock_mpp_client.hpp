@@ -1,14 +1,24 @@
 #pragma once
 
 #include <libmuscle/mpp_message.hpp>
+#include <libmuscle/mcp/transport_client.hpp>
+#include <libmuscle/namespace.hpp>
+#include <libmuscle/profiling.hpp>
 
 #include <ymmsl/ymmsl.hpp>
 
+#include <functional>
 #include <string>
+#include <tuple>
 #include <vector>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
+
+
+using ProfileData = std::tuple<
+        ProfileTimestamp, ProfileTimestamp, ProfileTimestamp>;
+
 
 class MockMPPClient {
     public:
@@ -19,7 +29,8 @@ class MockMPPClient {
         MockMPPClient & operator=(MockMPPClient && rhs) = delete;
         ~MockMPPClient();
 
-        DataConstRef receive(::ymmsl::Reference const & receiver);
+        std::tuple<DataConstRef, ProfileData> receive(
+                ::ymmsl::Reference const & receiver);
 
         void close();
 
@@ -29,6 +40,8 @@ class MockMPPClient {
         static int num_constructed;
         static MPPMessage next_receive_message;
         static ::ymmsl::Reference last_receiver;
+        // Called after a mocked receive
+        static std::function<void()> side_effect;
 
     private:
         static ::ymmsl::Settings make_overlay_();

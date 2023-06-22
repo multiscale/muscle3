@@ -4,12 +4,13 @@ import sys
 import traceback
 from typing import Optional
 
-from ymmsl import PartialConfiguration, save as save_ymmsl
+from ymmsl import Model, PartialConfiguration, save as save_ymmsl
 
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger
 from libmuscle.manager.mmp_server import MMPServer
 from libmuscle.manager.instance_manager import InstanceManager
+from libmuscle.manager.profile_store import ProfileStore
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.manager.snapshot_registry import SnapshotRegistry
 from libmuscle.manager.topology_store import TopologyStore
@@ -41,6 +42,7 @@ class Manager:
         self._run_dir = run_dir
         log_dir = self._run_dir.path if self._run_dir else Path.cwd()
         self._logger = Logger(log_dir, log_level)
+        self._profile_store = ProfileStore(log_dir)
         self._topology_store = TopologyStore(configuration)
         self._instance_registry = InstanceRegistry()
         if run_dir is not None:
@@ -57,12 +59,18 @@ class Manager:
                     self._configuration,
                     self._run_dir.path / 'configuration.ymmsl')
 
-        self._instance_manager = None    # type: Optional[InstanceManager]
+        if isinstance(self._configuration.model, Model):
+            self._profile_store.store_instances([
+                instance_name
+                for c in self._configuration.model.components
+                for instance_name in c.instances()])
+
+        self._instance_manager: Optional[InstanceManager] = None
         try:
             configuration = self._configuration.as_configuration()
             if self._run_dir is not None:
                 self._instance_manager = InstanceManager(
-                        configuration, self._run_dir)
+                        configuration, self._run_dir, self._instance_registry)
         except ValueError:
             pass
 
@@ -73,7 +81,7 @@ class Manager:
         self._snapshot_registry.start()
 
         self._server = MMPServer(
-                self._logger, self._configuration,
+                self._logger, self._profile_store, self._configuration,
                 self._instance_registry, self._topology_store,
                 self._snapshot_registry, run_dir)
 
@@ -88,14 +96,20 @@ class Manager:
     def start_instances(self) -> None:
         """Starts all required component instances."""
         if self._run_dir is None:
-            raise RuntimeError('No run dir specified')
+            message = 'No run dir specified'
+            _logger.error(message)
+            raise RuntimeError(message)
         if not self._instance_manager:
-            raise RuntimeError(
+            message = (
                     'For MUSCLE3 to be able to start instances, the'
                     ' configuration must contain a model, implementations,'
                     ' and resources. Please make sure they are all there.')
+            _logger.error(message)
+            raise RuntimeError(message)
         try:
             self._instance_manager.start_all()
+            self._profile_store.store_resources(
+                    self._instance_manager.get_resources())
         except:     # noqa
             _logger.error('An error occurred while starting the components:')
             for line in traceback.format_exception(*sys.exc_info()):
@@ -105,10 +119,12 @@ class Manager:
 
     def stop(self) -> None:
         """Shuts down the manager."""
-        # self._server.stop()
+        if self._instance_manager:
+            self._instance_manager.shutdown()
         self._server.stop()
         self._snapshot_registry.shutdown()
         self._snapshot_registry.join()
+        self._profile_store.shutdown()
         self._logger.close()
 
     def wait(self) -> bool:

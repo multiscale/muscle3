@@ -9,10 +9,12 @@
 #include <libmuscle/mcp/transport_server.hpp>
 #include <libmuscle/message.hpp>
 #include <libmuscle/mpp_client.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/peer_manager.hpp>
 #include <libmuscle/port.hpp>
 #include <libmuscle/ports_description.hpp>
 #include <libmuscle/post_office.hpp>
+#include <libmuscle/profiler.hpp>
 #include <libmuscle/util.hpp>
 
 #include <ymmsl/ymmsl.hpp>
@@ -22,7 +24,7 @@
 #include <vector>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /** Communication engine for MUSCLE3.
  *
@@ -32,6 +34,8 @@ namespace libmuscle { namespace impl {
  */
 class Communicator {
     public:
+        using PortMessageCounts = std::unordered_map<std::string, std::vector<int>>;
+
         /** Create a Communicator.
          *
          * The instance reference must start with one or more Identifiers,
@@ -44,12 +48,11 @@ class Communicator {
          * @param logger The logger for this instance.
          * @param profiler The profiler to use for recording sends and receives.
          */
-        // TODO: use actual Profiler
         Communicator(
                 ymmsl::Reference const & kernel,
                 std::vector<int> const & index,
                 Optional<PortsDescription> const & declared_ports,
-                Logger & logger, int profiler);
+                Logger & logger, Profiler & profiler);
 
 
         /** Returns a list of locations that we can be reached at.
@@ -170,6 +173,14 @@ class Communicator {
          */
         void shutdown();
 
+        /** Get message counts for all ports on the communicator.
+         */
+        PortMessageCounts get_message_counts();
+
+        /** Restore message counts on all ports.
+         */
+        void restore_message_counts(PortMessageCounts const & port_message_counts);
+
     private:
         using Ports_ = std::unordered_map<std::string, Port>;
 
@@ -188,12 +199,16 @@ class Communicator {
         std::tuple<std::string, bool> split_port_desc_(
                 std::string const & port_desc) const;
 
+        std::tuple<DataConstRef, mcp::ProfileData> try_receive_(
+                MPPClient & client, ymmsl::Reference const & receiver,
+                ymmsl::Reference const & peer);
+
         ymmsl::Reference kernel_;
         std::vector<int> index_;
         Optional<PortsDescription> declared_ports_;
         PostOffice post_office_;
         Logger & logger_;
-        int profiler_;
+        Profiler & profiler_;
         std::vector<std::unique_ptr<mcp::TransportServer>> servers_;
         std::unordered_map<ymmsl::Reference, std::unique_ptr<MPPClient>> clients_;
         Ports_ ports_;

@@ -3,7 +3,7 @@
 #include <utility>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 template <typename T>
 Optional<T>::Optional()
@@ -21,10 +21,11 @@ Optional<T>::Optional(std::initializer_list<T> l)
 }
 
 template <typename T>
-Optional<T>::Optional(T const & t)
+template <typename U>
+Optional<T>::Optional(U const & u)
     : is_set_(true)
 {
-    new (&t_) T(t);
+    new (&t_) T(u);
 }
 
 template <typename T>

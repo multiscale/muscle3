@@ -1,8 +1,7 @@
 import pytest
 from ymmsl import Operator, load, dump
 
-from libmuscle import (
-        Instance, Message, KEEPS_NO_STATE_FOR_NEXT_USE, USES_CHECKPOINT_API)
+from libmuscle import Instance, Message, USES_CHECKPOINT_API
 from libmuscle.manager.run_dir import RunDir
 
 from .conftest import run_manager_with_actors, ls_snapshots
@@ -44,28 +43,6 @@ def component():
             instance.save_final_snapshot(Message(t_cur, data=[i, t_stop]))
 
 
-def stateless_component():
-    instance = Instance({
-            Operator.F_INIT: ['f_i'],
-            Operator.O_F: ['o_f']},
-            KEEPS_NO_STATE_FOR_NEXT_USE)
-
-    while instance.reuse_instance():
-        dt = instance.get_setting('dt', 'float')
-        t_max = instance.get_setting('t_max', 'float')
-
-        msg = instance.receive('f_i', default=Message(0, data=0))
-        t_cur = msg.timestamp
-        i = msg.data
-        t_stop = t_cur + t_max
-
-        while t_cur < t_stop:
-            # faux time-integration for testing snapshots
-            t_cur += dt
-
-        instance.send('o_f', Message(t_cur, data=i))
-
-
 @pytest.fixture
 def dispatch_config():
     return load(f"""ymmsl_version: v0.1
@@ -96,10 +73,9 @@ checkpoints:
 
 
 def test_snapshot_dispatch(tmp_path, dispatch_config):
-    actors = {f'comp{i + 1}': component for i in range(5)}
+    actors = {f'comp{i + 1}': ('python', component) for i in range(5)}
     run_dir1 = RunDir(tmp_path / 'run1')
-    run_manager_with_actors(
-            dump(dispatch_config), run_dir1.path, python_actors=actors)
+    run_manager_with_actors(dump(dispatch_config), run_dir1.path, actors)
 
     assert len(ls_snapshots(run_dir1, 'comp1')) == 2  # t=0, at_end
     assert len(ls_snapshots(run_dir1, 'comp2')) == 5  # t=0, 2.5, 2.3, 2.8, at_end
@@ -119,8 +95,7 @@ def test_snapshot_dispatch(tmp_path, dispatch_config):
         'comp1': ls_snapshots(run_dir1, 'comp1')[1],
         'comp2': ls_snapshots(run_dir1, 'comp2')[1]}
 
-    run_manager_with_actors(
-            dump(dispatch_config), run_dir2.path, python_actors=actors)
+    run_manager_with_actors(dump(dispatch_config), run_dir2.path, actors)
 
     assert len(ls_snapshots(run_dir2, 'comp1')) == 1  # resume
     assert len(ls_snapshots(run_dir2, 'comp2')) == 4  # resume, t=2.5, 2.8, at_end

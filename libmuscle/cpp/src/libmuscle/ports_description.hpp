@@ -1,3 +1,7 @@
+#pragma once
+
+#include <libmuscle/namespace.hpp>
+
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -5,7 +9,7 @@
 #include <ymmsl/ymmsl.hpp>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /** A description of which ports a component has.
  *

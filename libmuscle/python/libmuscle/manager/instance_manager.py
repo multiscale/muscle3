@@ -1,14 +1,17 @@
 import logging
+from textwrap import indent
 from threading import Thread
-from typing import Union
+from typing import Dict, Optional, Union
 from multiprocessing import Queue
 import queue
 
-from ymmsl import Configuration
+from ymmsl import Configuration, Reference
 
+from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.instantiator import (
         CancelAllRequest, CrashedResult, InstantiatorRequest,
         InstantiationRequest, ProcessStatus, ShutdownRequest)
+from libmuscle.manager.logger import last_lines
 from libmuscle.manager.qcgpj_instantiator import Process, QCGPJInstantiator
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.planner.planner import Planner, Resources
@@ -55,20 +58,23 @@ _ResultType = Union[Process, CrashedResult]
 class InstanceManager:
     """Instantiates and manages running instances"""
     def __init__(
-            self, configuration: Configuration, run_dir: RunDir) -> None:
+            self, configuration: Configuration, run_dir: RunDir,
+            instance_registry: InstanceRegistry) -> None:
         """Create a ProcessManager.
 
         Args:
             configuration: The global configuration
             run_dir: Directory to run in
+            instance_registry: The InstanceRegistry to use
         """
         self._configuration = configuration
         self._run_dir = run_dir
+        self._instance_registry = instance_registry
 
-        self._resources_in = Queue()    # type: Queue[Resources]
-        self._requests_out = Queue()    # type: Queue[InstantiatorRequest]
-        self._results_in = Queue()      # type: Queue[_ResultType]
-        self._log_records_in = Queue()  # type: Queue[logging.LogRecord]
+        self._resources_in: Queue[Resources] = Queue()
+        self._requests_out: Queue[InstantiatorRequest] = Queue()
+        self._results_in: Queue[_ResultType] = Queue()
+        self._log_records_in: Queue[logging.LogRecord] = Queue()
 
         self._instantiator = QCGPJInstantiator(
                 self._resources_in, self._requests_out, self._results_in,
@@ -78,6 +84,7 @@ class InstanceManager:
         self._log_handler = LogHandlingThread(self._log_records_in)
         self._log_handler.start()
 
+        self._allocations: Optional[Dict[Reference, Resources]] = None
         self._planner = Planner(self._resources_in.get())
         self._num_running = 0
 
@@ -94,12 +101,12 @@ class InstanceManager:
 
     def start_all(self) -> None:
         """Starts all the instances of the model."""
-        allocations = self._planner.allocate_all(self._configuration)
-        for instance, resources in allocations.items():
+        self._allocations = self._planner.allocate_all(self._configuration)
+        for instance, resources in self._allocations.items():
             _logger.info(f'Planned {instance} on {resources}')
 
         components = {c.name: c for c in self._configuration.model.components}
-        for instance, resources in allocations.items():
+        for instance, resources in self._allocations.items():
             component = components[instance.without_trailing_ints()]
             if component.implementation is None:
                 _logger.warning(
@@ -123,9 +130,32 @@ class InstanceManager:
             self._requests_out.put(request)
             self._num_running += 1
 
+    def get_resources(self) -> Dict[Reference, Resources]:
+        """Returns the resources allocated to each instance.
+
+        Only call this after start_all() has been called, or it will raise
+        an exception because the information is not available.
+
+        Return:
+            The resources for each instance instantiated by start_all()
+        """
+        if self._allocations is None:
+            raise RuntimeError(
+                    'Tried to get resources but we are running without'
+                    ' --start-all')
+
+        return self._allocations
+
     def wait(self) -> bool:
         """Waits for all instances to be done."""
         all_seemingly_okay = True
+
+        def cancel_all() -> None:
+            nonlocal all_seemingly_okay
+            if all_seemingly_okay:
+                self._requests_out.put(CancelAllRequest())
+                all_seemingly_okay = False
+
         while self._num_running > 0:
             result = self._results_in.get()
 
@@ -144,12 +174,27 @@ class InstanceManager:
                     _logger.error(
                             f'Instance {result.instance} quit with error'
                             f' {result.exit_code}')
+
+                    stderr_file = (
+                            self._run_dir.instance_dir(result.instance) /
+                            'stderr.txt')
                     _logger.error(
-                            'Output may be found in'
-                            f' {self._run_dir.instance_dir(result.instance)}')
-                    if all_seemingly_okay:
-                        self._requests_out.put(CancelAllRequest())
-                        all_seemingly_okay = False
+                            'The last error output of this instance was:')
+                    _logger.error(
+                            '\n' + indent(last_lines(stderr_file, 20), '    '))
+                    _logger.error(
+                            'More output may be found in'
+                            f' {self._run_dir.instance_dir(result.instance)}\n'
+                            )
+                    cancel_all()
+
+            elif not self._instance_registry.did_register(result.instance):
+                _logger.error(
+                        f'Instance {result.instance} quit with no error'
+                        ' (exit code 0), but it never registered with the'
+                        ' manager. Maybe it never created an Instance'
+                        ' object?')
+                cancel_all()
             else:
                 if result.status == ProcessStatus.CANCELED:
                     _logger.info(

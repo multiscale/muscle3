@@ -1,6 +1,8 @@
 #pragma once
 
-namespace libmuscle { namespace impl {
+#include <libmuscle/namespace.hpp>
+
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /** Request type for MMP requests
  *
@@ -15,6 +17,8 @@ enum class RequestType {
     get_settings = 4,
     submit_log_message = 5,
     submit_profile_events = 6,
+    submit_snapshot = 7,
+    get_checkpoint_info = 8,
 
     // MUSCLE Peer Protocol
     get_next_message = 21

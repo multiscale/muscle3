@@ -5,18 +5,20 @@
 #include <libmuscle/mcp/data_pack.hpp>
 #include <libmuscle/mpp_message.hpp>
 #include <libmuscle/mpp_client.hpp>
+#include <libmuscle/namespace.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 #include <cassert>
 #include <memory>
+#include <tuple>
 
 #include <msgpack.hpp>
 
 
-using libmuscle::impl::DataConstRef;
-using libmuscle::impl::MPPMessage;
-using libmuscle::impl::MPPClient;
-using libmuscle::impl::mcp::unpack_data;
+using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
+using libmuscle::_MUSCLE_IMPL_NS::MPPMessage;
+using libmuscle::_MUSCLE_IMPL_NS::MPPClient;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::unpack_data;
 using ymmsl::Reference;
 using ymmsl::Settings;
 
@@ -32,7 +34,7 @@ int main(int argc, char *argv[]) {
 
     // receive a message
     Reference receiver("test_receiver.test_port2");
-    DataConstRef bytes = client.receive(receiver);
+    DataConstRef bytes = std::get<0>(client.receive(receiver));
     MPPMessage message = MPPMessage::from_bytes(bytes);
 
     // check message

@@ -10,6 +10,14 @@ include detect_tool_implicit.make
 tool_command := clang++
 include detect_tool_implicit.make
 
+tool_var := MPICXX
+tool_command := mpi$(CXX)
+include detect_tool.make
+tool_command := mpic++
+include detect_tool.make
+
+include detect_cpp_type.make
+
 tool_var := FC
 tool_command := gfortran
 include detect_tool_implicit.make
@@ -18,12 +26,6 @@ include detect_tool_implicit.make
 tool_command := f77
 include detect_tool_implicit.make
 
-tool_var := MPICXX
-tool_command := mpi$(CXX)
-include detect_tool.make
-tool_command := mpic++
-include detect_tool.make
-
 tool_var := MPIFC
 tool_command := mpi$(FC)
 include detect_tool.make
@@ -31,6 +33,8 @@ tool_command := mpifort
 include detect_tool.make
 tool_command := mpif90
 include detect_tool.make
+
+include detect_fortran_type.make
 
 endif
 
@@ -65,7 +69,7 @@ endif
 
 
 .PHONY: base
-base: python rd_implementations.ymmsl
+base: python rd_implementations.ymmsl benchmark_implementations.ymmsl
 
 
 
@@ -91,7 +95,7 @@ fortran: base
 fortran_mpi: base
 	$(MAKE) -C fortran mpi
 
-rd_implementations.ymmsl: rd_implementations.ymmsl.in
+%.ymmsl: %.ymmsl.in
 	sed -e "s^MUSCLE3_EXAMPLES^$(shell pwd)^g" $^ | sed -e "s^MUSCLE3_HOME^${MUSCLE3_HOME}^g" >$@
 
 
@@ -101,6 +105,7 @@ clean:
 	$(MAKE) -C fortran clean
 	$(MAKE) -C python clean
 	rm -f rd_implementations.ymmsl
+	rm -f benchmark_implementations.ymmsl
 	rm -rf run_*/
 
 
@@ -109,12 +114,19 @@ clean:
 .PHONY: test_python
 test_python: base
 	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_implementations.ymmsl rd_python.ymmsl rd_settings.ymmsl
-	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl
+	# test restarting, sleep 1 second to prevent reusing the same run directory
+	. python/build/venv/bin/activate && sleep 1 && DONTPLOT=1 muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl \
+		$$(ls $$(ls -d run_checkpointing_reaction_diffusion_python* | tail -n1)/snapshots/*.ymmsl | head -n1)
 	make -C python test
 
 .PHONY: test_cpp
 test_cpp: base cpp
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_cpp.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints_cpp.ymmsl rd_settings.ymmsl
+	# test restarting, sleep 1 second to prevent reusing the same run directory
+	. python/build/venv/bin/activate && sleep 1 && muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints_cpp.ymmsl rd_settings.ymmsl \
+		$$(ls $$(ls -d run_checkpointing_reaction_diffusion_cpp* | tail -n1)/snapshots/*.ymmsl | head -n1)
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_python_cpp.ymmsl rd_settings.ymmsl
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rdmc_cpp.ymmsl rdmc_settings.ymmsl
 
@@ -125,9 +137,19 @@ test_cpp_mpi: base cpp_mpi
 .PHONY: test_fortran
 test_fortran: base fortran
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_fortran.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints_fortran.ymmsl rd_settings.ymmsl
+	# test restarting, sleep 1 second to prevent reusing the same run directory
+	. python/build/venv/bin/activate && sleep 1 && muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints_fortran.ymmsl rd_settings.ymmsl \
+		$$(ls $$(ls -d run_checkpointing_reaction_diffusion_fortran* | tail -n1)/snapshots/*.ymmsl | head -n1)
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_python_fortran.ymmsl rd_settings.ymmsl
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rdmc_fortran.ymmsl rdmc_settings.ymmsl
 
 .PHONY: test_fortran_mpi
 test_fortran_mpi: base fortran_mpi
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_fortran_mpi.ymmsl rd_settings.ymmsl
+
+.PHONY: benchmark
+benchmark: base cpp
+	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all benchmark_implementations.ymmsl benchmark_python.ymmsl benchmark_settings.ymmsl
+	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all benchmark_implementations.ymmsl benchmark_cpp.ymmsl benchmark_settings.ymmsl
+

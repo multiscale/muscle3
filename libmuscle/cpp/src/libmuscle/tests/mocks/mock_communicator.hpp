@@ -3,8 +3,10 @@
 #include <libmuscle/data.hpp>
 #include <libmuscle/logger.hpp>
 #include <libmuscle/message.hpp>
+#include <libmuscle/namespace.hpp>
 #include <libmuscle/peer_manager.hpp>
 #include <libmuscle/port.hpp>
+#include <libmuscle/profiler.hpp>
 #include <libmuscle/util.hpp>
 
 #include <ymmsl/ymmsl.hpp>
@@ -15,18 +17,20 @@
 #include <vector>
 
 
-namespace libmuscle { namespace impl {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 using PortsDescription = std::unordered_map<ymmsl::Operator, std::vector<std::string>>;
 
 
 class MockCommunicator {
     public:
+        using PortMessageCounts = std::unordered_map<std::string, std::vector<int>>;
+
         MockCommunicator(
                 ymmsl::Reference const & kernel,
                 std::vector<int> const & index,
                 Optional<PortsDescription> const & declared_ports,
-                Logger & logger, int profiler);
+                Logger & logger, Profiler & profiler);
 
         std::vector<std::string> get_locations() const;
 
@@ -60,6 +64,10 @@ class MockCommunicator {
 
         void shutdown();
 
+        PortMessageCounts get_message_counts();
+
+        void restore_message_counts(PortMessageCounts const & port_message_counts);
+
         static void reset();
         static int num_constructed;
         static bool settings_in_connected_return_value;
@@ -71,6 +79,8 @@ class MockCommunicator {
         static std::string last_sent_port;
         static Message last_sent_message;
         static Optional<int> last_sent_slot;
+        static PortMessageCounts get_message_counts_return_value;
+        static PortMessageCounts last_restored_message_counts;
 
     private:
         friend class TestCommunicator;

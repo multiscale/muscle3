@@ -32,29 +32,29 @@ program mc_driver
     real (selected_real_kind(15)), dimension(:, :), allocatable :: Us
 
 
-    ports = LIBMUSCLE_PortsDescription_create()
-    call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_O_I, 'parameters_out[]')
-    call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_S, 'states_in[]')
-    call LIBMUSCLE_PortsDescription_add(ports, YMMSL_Operator_O_F, 'mean_out')
-    instance = LIBMUSCLE_Instance_create(ports)
+    ports = LIBMUSCLE_PortsDescription()
+    call ports%add(YMMSL_Operator_O_I, 'parameters_out[]')
+    call ports%add(YMMSL_Operator_S, 'states_in[]')
+    call ports%add(YMMSL_Operator_O_F, 'mean_out')
+    instance = LIBMUSCLE_Instance(ports)
     call LIBMUSCLE_PortsDescription_free(ports)
 
-    do while (LIBMUSCLE_Instance_reuse_instance(instance))
+    do while (instance%reuse_instance())
         ! F_INIT
         ! get and check parameter distributions
-        n_samples = LIBMUSCLE_Instance_get_setting_as_int8(instance, 'n_samples')
-        d_min = LIBMUSCLE_Instance_get_setting_as_real8(instance, 'd_min')
-        d_max = LIBMUSCLE_Instance_get_setting_as_real8(instance, 'd_max')
-        k_min = LIBMUSCLE_Instance_get_setting_as_real8(instance, 'k_min')
-        k_max = LIBMUSCLE_Instance_get_setting_as_real8(instance, 'k_max')
+        n_samples = instance%get_setting_as_int8('n_samples')
+        d_min = instance%get_setting_as_real8('d_min')
+        d_max = instance%get_setting_as_real8('d_max')
+        k_min = instance%get_setting_as_real8('k_min')
+        k_max = instance%get_setting_as_real8('k_max')
 
         if (d_max < d_min) then
-            call LIBMUSCLE_Instance_error_shutdown(instance, 'Invalid settings: d_max < d_min')
+            call instance%error_shutdown('Invalid settings: d_max < d_min')
             stop
         end if
 
         if (k_max < k_min) then
-            call LIBMUSCLE_Instance_error_shutdown(instance, 'Invalid settings: k_max < k_min')
+            call instance%error_shutdown('Invalid settings: k_max < k_min')
             stop
         end if
 
@@ -66,24 +66,24 @@ program mc_driver
         ks = k_min + ks * (k_max - k_min)
 
         ! configure output port
-        if (.not. LIBMUSCLE_Instance_is_resizable(instance, 'parameters_out')) then
-            call LIBMUSCLE_Instance_error_shutdown(instance, &
+        if (.not. instance%is_resizable('parameters_out')) then
+            call instance%error_shutdown(&
                 'This component needs a resizable parameters_out port, but it&
                 & is connected to something that cannot be resized. Maybe try&
                 & adding a load balancer.')
             stop
         end if
 
-        call LIBMUSCLE_Instance_set_port_length(instance, 'parameters_out', n_samples)
+        call instance%set_port_length('parameters_out', n_samples)
 
         ! O_I
         do sample = 1, n_samples
-            uq_parameters = YMMSL_Settings_create()
-            call YMMSL_Settings_set(uq_parameters, 'd', ds(sample))
-            call YMMSL_Settings_set(uq_parameters, 'k', ks(sample))
-            sdata = LIBMUSCLE_Data_create(uq_parameters)
-            smsg = LIBMUSCLE_Message_create(0.0d0, sdata)
-            call LIBMUSCLE_Instance_send(instance, 'parameters_out', smsg, sample - 1)
+            uq_parameters = YMMSL_Settings()
+            call uq_parameters%set('d', ds(sample))
+            call uq_parameters%set('k', ks(sample))
+            sdata = LIBMUSCLE_Data(uq_parameters)
+            smsg = LIBMUSCLE_Message(0.0d0, sdata)
+            call instance%send('parameters_out', smsg, sample - 1)
             call LIBMUSCLE_Message_free(smsg)
             call LIBMUSCLE_Data_free(sdata)
             call YMMSL_Settings_free(uq_parameters)
@@ -95,15 +95,15 @@ program mc_driver
         t_max = 0.0d0
         do sample = 1, n_samples
             print *, 'Receiving states_in'
-            rmsg = LIBMUSCLE_Instance_receive_with_settings_on_slot(instance, 'states_in', sample - 1)
-            rdata = LIBMUSCLE_Message_get_data(rmsg)
-            U_size = LIBMUSCLE_DataConstRef_size(rdata)
+            rmsg = instance%receive_with_settings_on_slot('states_in', sample - 1)
+            rdata = rmsg%get_data()
+            U_size = rdata%size()
             if (.not. allocated(Us)) then
                 allocate (Us(n_samples, U_size))
             end if
 
-            call LIBMUSCLE_DataConstRef_elements(rdata, Us(sample, :))
-            t_max = max(t_max, LIBMUSCLE_Message_timestamp(rmsg))
+            call rdata%elements(Us(sample, :))
+            t_max = max(t_max, rmsg%timestamp())
 
             call LIBMUSCLE_DataConstRef_free(rdata)
             call LIBMUSCLE_Message_free(rmsg)
@@ -111,8 +111,8 @@ program mc_driver
 
         ! calculate mean
         means = LIBMUSCLE_Data_create_grid(sum(Us, 1) / n_samples, 'x')
-        smsg = LIBMUSCLE_Message_create(t_max, means)
-        call LIBMUSCLE_Instance_send(instance, 'mean_out', smsg)
+        smsg = LIBMUSCLE_Message(t_max, means)
+        call instance%send('mean_out', smsg)
 
         call LIBMUSCLE_Message_free(smsg)
         call LIBMUSCLE_Data_free(means)

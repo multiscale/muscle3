@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import ymmsl
 
 from libmuscle import Instance
@@ -38,6 +36,6 @@ model:
     - receiver1.in
     - receiver2.in""",
         tmp_path,
-        {'multicast': Path('libmuscle') / 'tests' / 'component_test'},
-        {},
-        {'receiver1': receiver, 'receiver2': receiver})
+        {'multicast': ('cpp', 'component_test'),
+         'receiver1': ('python', receiver),
+         'receiver2': ('python', receiver)})

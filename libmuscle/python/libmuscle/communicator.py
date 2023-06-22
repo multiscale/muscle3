@@ -5,13 +5,15 @@ from ymmsl import Conduit, Identifier, Operator, Reference, Settings
 from libmuscle.endpoint import Endpoint
 from libmuscle.mpp_message import ClosePort, MPPMessage
 from libmuscle.mpp_client import MPPClient
+from libmuscle.mcp.tcp_util import SocketClosed
 from libmuscle.mcp.transport_server import TransportServer
 from libmuscle.mcp.type_registry import transport_server_types
 from libmuscle.peer_manager import PeerManager
 from libmuscle.post_office import PostOffice
 from libmuscle.port import Port
 from libmuscle.profiler import Profiler
-from libmuscle.profiling import ProfileEventType
+from libmuscle.profiling import (
+        ProfileEvent, ProfileEventType, ProfileTimestamp)
 
 
 _logger = logging.getLogger(__name__)
@@ -90,16 +92,16 @@ class Communicator:
         self._post_office = PostOffice()
         self._profiler = profiler
 
-        self._servers = list()  # type: List[TransportServer]
+        self._servers: List[TransportServer] = []
 
         # indexed by remote instance id
-        self._clients = dict()  # type: Dict[Reference, MPPClient]
+        self._clients: Dict[Reference, MPPClient] = {}
 
         for server_type in transport_server_types:
             server = server_type(self._post_office)
             self._servers.append(server)
 
-        self._ports = dict()   # type: Dict[str, Port]
+        self._ports: Dict[str, Port] = {}
 
     def get_locations(self) -> List[str]:
         """Returns a list of locations that we can be reached at.
@@ -156,7 +158,7 @@ class Communicator:
             port names. Operators with no associated ports are not
             included.
         """
-        result = dict()     # type: Dict[Operator, List[str]]
+        result: Dict[Operator, List[str]] = {}
         for port_name, port in self._ports.items():
             if port.operator not in result:
                 result[port.operator] = list()
@@ -197,7 +199,7 @@ class Communicator:
         """
         if slot is None:
             _logger.debug('Sending message on {}'.format(port_name))
-            slot_list = []  # type: List[int]
+            slot_list: List[int] = []
         else:
             _logger.debug('Sending message on {}[{}]'.format(port_name, slot))
             slot_list = [slot]
@@ -214,8 +216,9 @@ class Communicator:
             return
 
         port = self._ports[port_name]
-        profile_event = self._profiler.start(ProfileEventType.SEND, port,
-                                             None, slot, None)
+        profile_event = ProfileEvent(
+                ProfileEventType.SEND, ProfileTimestamp(), None, port, None,
+                slot, port.get_num_messages(slot), None, message.timestamp)
 
         recv_endpoints = self._peer_manager.get_peer_endpoints(
                 snd_endpoint.port, slot_list)
@@ -225,14 +228,14 @@ class Communicator:
             port_length = port.get_length()
 
         for recv_endpoint in recv_endpoints:
-            mcp_message = MPPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
+            mpp_message = MPPMessage(snd_endpoint.ref(), recv_endpoint.ref(),
                                      port_length,
                                      message.timestamp, message.next_timestamp,
                                      cast(Settings, message.settings),
                                      port.get_num_messages(slot),
                                      checkpoints_considered_until,
                                      message.data)
-            encoded_message = mcp_message.encoded()
+            encoded_message = mpp_message.encoded()
             self._post_office.deposit(recv_endpoint.ref(), encoded_message)
 
         port.increment_num_messages(slot)
@@ -241,6 +244,8 @@ class Communicator:
         if port.is_vector():
             profile_event.port_length = port.get_length()
         profile_event.message_size = len(encoded_message)
+        if not isinstance(message.data, ClosePort):
+            self._profiler.record_event(profile_event)
 
     def receive_message(self, port_name: str, slot: Optional[int] = None,
                         default: Optional[Message] = None
@@ -273,7 +278,7 @@ class Communicator:
         """
         if slot is None:
             port_and_slot = port_name
-            slot_list = []      # type: List[int]
+            slot_list: List[int] = []
         else:
             port_and_slot = f"{port_name}[{slot}]"
             slot_list = [slot]
@@ -301,16 +306,29 @@ class Communicator:
             # built-in automatic ports.
             port = self._muscle_settings_in
 
-        profile_event = self._profiler.start(ProfileEventType.RECEIVE, port,
-                                             None, slot, None)
+        receive_event = ProfileEvent(
+                ProfileEventType.RECEIVE, ProfileTimestamp(), None, port, None,
+                slot, port.get_num_messages())
 
         # peer_manager already checks that there is at most one snd_endpoint
         # connected to the port we receive on
         snd_endpoint = self._peer_manager.get_peer_endpoints(
                 recv_endpoint.port, slot_list)[0]
         client = self.__get_client(snd_endpoint.instance())
-        mpp_message_bytes = client.receive(recv_endpoint.ref())
+        try:
+            mpp_message_bytes, profile = client.receive(recv_endpoint.ref())
+        except (ConnectionError, SocketClosed) as exc:
+            raise RuntimeError(
+                "Error while receiving a message: connection with peer"
+                f" '{snd_endpoint.kernel}' was lost. Did the peer crash?"
+            ) from exc
+
+        recv_decode_event = ProfileEvent(
+                ProfileEventType.RECEIVE_DECODE, ProfileTimestamp(), None,
+                port, None, slot, port.get_num_messages(),
+                len(mpp_message_bytes))
         mpp_message = MPPMessage.from_bytes(mpp_message_bytes)
+        recv_decode_event.stop()
 
         if mpp_message.port_length is not None:
             if port.is_resizable():
@@ -323,10 +341,32 @@ class Communicator:
                 mpp_message.timestamp, mpp_message.next_timestamp,
                 mpp_message.data, mpp_message.settings_overlay)
 
-        profile_event.stop()
+        recv_wait_event = ProfileEvent(
+                ProfileEventType.RECEIVE_WAIT, profile[0], profile[1], port,
+                mpp_message.port_length, slot, port.get_num_messages(),
+                len(mpp_message_bytes), message.timestamp)
+
+        recv_xfer_event = ProfileEvent(
+                ProfileEventType.RECEIVE_TRANSFER, profile[1], profile[2],
+                port, mpp_message.port_length, slot, port.get_num_messages(),
+                len(mpp_message_bytes), message.timestamp)
+
+        recv_decode_event.message_timestamp = message.timestamp
+        receive_event.message_timestamp = message.timestamp
+
         if port.is_vector():
-            profile_event.port_length = port.get_length()
-        profile_event.message_size = len(mpp_message_bytes)
+            receive_event.port_length = port.get_length()
+            recv_wait_event.port_length = port.get_length()
+            recv_xfer_event.port_length = port.get_length()
+            recv_decode_event.port_length = port.get_length()
+
+        receive_event.message_size = len(mpp_message_bytes)
+
+        if not isinstance(mpp_message.data, ClosePort):
+            self._profiler.record_event(recv_wait_event)
+            self._profiler.record_event(recv_xfer_event)
+            self._profiler.record_event(recv_decode_event)
+            self._profiler.record_event(receive_event)
 
         expected_message_number = port.get_num_messages(slot)
         if expected_message_number != mpp_message.message_number:
@@ -380,7 +420,7 @@ class Communicator:
 
     def restore_message_counts(self, port_message_counts: Dict[str, List[int]]
                                ) -> None:
-        """Restore message counts on all ports
+        """Restore message counts on all ports.
         """
         for port_name, num_messages in port_message_counts.items():
             if port_name == "muscle_settings_in":
@@ -393,7 +433,7 @@ class Communicator:
                                    ' the snapshot was taken?')
 
     def get_message_counts(self) -> Dict[str, List[int]]:
-        """Get message counts for all ports on the communicator
+        """Get message counts for all ports on the communicator.
         """
         port_message_counts = {port_name: port.get_message_counts()
                                for port_name, port in self._ports.items()}

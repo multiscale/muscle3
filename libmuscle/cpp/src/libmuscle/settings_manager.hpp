@@ -1,15 +1,45 @@
 #pragma once
 
+#include <libmuscle/namespace.hpp>
+
 #include <ymmsl/ymmsl.hpp>
 
+#include <string>
+#include <unordered_set>
+#include <vector>
 
-namespace libmuscle { namespace impl {
+
+namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 /** Manages the current settings for a component instance.
  */
 class SettingsManager {
     public:
         ymmsl::Settings base, overlay;
+
+        /** Return the names of all the settings.
+         *
+         * This returns the names of all the settings, as the model would
+         * pass them to request settings. It returns
+         *
+         * - <setting_name> as-is
+         * - <instance_id>.<setting_name> as <setting_name>
+         * - <other_id>.<setting_name> not at all
+         * - <setting>.<setting> not at all
+         *
+         * Note that we don't return global settings with multipart names.
+         * Those are legal, but currently indistinguishable from settings
+         * intended for other components. We're not actually telling
+         * anyone that they're legal, so we can probably get away with
+         * that. If it becomes an issue, we'll have to get a list of
+         * instance ids from the manager so we can recognise them
+         * correctly.
+         *
+         * @param instance Our instance id.
+         * @return A list of setting names.
+         */
+        std::vector<std::string> list_settings(
+                ymmsl::Reference const & instance) const;
 
         /** Get a setting's value.
          *

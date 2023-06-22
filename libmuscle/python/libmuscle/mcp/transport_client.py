@@ -1,3 +1,11 @@
+from typing import Tuple
+
+from libmuscle.profiling import ProfileTimestamp
+
+
+ProfileData = Tuple[ProfileTimestamp, ProfileTimestamp, ProfileTimestamp]
+
+
 class TransportClient:
     """A client that connects to an MCP server.
 
@@ -17,16 +25,20 @@ class TransportClient:
         """
         raise NotImplementedError()     # pragma: no cover
 
-    def call(self, request: bytes) -> bytes:
+    def call(self, request: bytes) -> Tuple[bytes, ProfileData]:
         """Send a request to the server and receive the response.
 
-        This is a blocking call.
+        This is a blocking call. Besides the result, this function
+        returns a tuple with three timestamps (floats in seconds since
+        the epoch). These were taken when the function was first called,
+        when data became available and the transfer started, and when
+        the transfer stopped.
 
         Args:
             request: The request to send
 
         Returns:
-            The received response
+            The received response, and the timestamps
         """
         raise NotImplementedError()     # pragma: no cover
 

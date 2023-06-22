@@ -258,8 +258,8 @@ LIBMUSCLE_Data
         ! Now d1 contains a byte array of size 1024
 
         ! Extract the data again, into a new buffer
-        allocate(buf(LIBMUSCLE_Data_size(d1)))
-        call LIBMUSCLE_Data_as_byte_array(d1, buf)
+        allocate(buf(d1%size()))
+        call d1%as_byte_array(buf)
         ! Now, ichar(buf(i)) equals mod(i, 256)
 
         ! Clean up the buffer and the Data object
@@ -501,12 +501,12 @@ LIBMUSCLE_Data
         character(len=:), allocatable :: str, err_msg
 
         ! Create data object containing a logical value
-        mydata = LIBMUSCLE_Data_create(.true.)
+        mydata = LIBMUSCLE_Data(.true.)
         ! Retrieve the value
-        val = LIBMUSCLE_Data_as_logical(mydata)
+        val = mydata%as_logical()
         ! val equals .true. here
         ! Attempt to (incorrectly) retrieve a character value
-        str = LIBMUSCLE_Data_as_character(mydata, err_code, err_msg)
+        str = mydata%as_character(err_code, err_msg)
         if (err_code .ne. LIBMUSCLE_success) then
             print *, err_msg
             ! Need to free the memory if an error message was returned
@@ -554,9 +554,9 @@ LIBMUSCLE_Data
         character(len=:), allocatable :: str
 
         ! Create a data object containing a character value
-        mydata = LIBMUSCLE_Data_create('Example')
+        mydata = LIBMUSCLE_Data('Example')
         ! Retrieve the value
-        str = LIBMUSCLE_Data_as_character(mydata)
+        str = mydata%as_character()
         ! Free the retrieved copy of the character
         deallocate(str)
         ! Free the data object
@@ -598,9 +598,9 @@ LIBMUSCLE_Data
         integer :: number
 
         ! Create a data object containing an integer value
-        mydata = LIBMUSCLE_Data_create(42424242)
+        mydata = LIBMUSCLE_Data(42424242)
         ! Retrieve the value
-        number = LIBMUSCLE_Data_as_int(mydata)
+        number = mydata%as_int()
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
@@ -641,9 +641,9 @@ LIBMUSCLE_Data
         integer(kind=LIBMUSCLE_int1) :: number
 
         ! Create a data object containing an integer value
-        mydata = LIBMUSCLE_Data_create(42_LIBMUSCLE_int1)
+        mydata = LIBMUSCLE_Data(42_LIBMUSCLE_int1)
         ! Retrieve the value
-        number = LIBMUSCLE_Data_as_int1(mydata)
+        number = mydata%as_int1()
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
@@ -684,9 +684,9 @@ LIBMUSCLE_Data
         integer(kind=LIBMUSCLE_int2) :: number
 
         ! Create a data object containing an integer value
-        mydata = LIBMUSCLE_Data_create(4242_LIBMUSCLE_int2)
+        mydata = LIBMUSCLE_Data(4242_LIBMUSCLE_int2)
         ! Retrieve the value
-        number = LIBMUSCLE_Data_as_int2(mydata)
+        number = mydata%as_int2()
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
@@ -726,9 +726,9 @@ LIBMUSCLE_Data
         integer(LIBMUSCLE_int4) :: number
 
         ! Create a data object containing an integer value
-        mydata = LIBMUSCLE_Data_create(42424242_LIBMUSCLE_int4)
+        mydata = LIBMUSCLE_Data(42424242_LIBMUSCLE_int4)
         ! Retrieve the value
-        number = LIBMUSCLE_Data_as_int4(mydata)
+        number = mydata%as_int4()
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
@@ -769,9 +769,9 @@ LIBMUSCLE_Data
         integer(kind=LIBMUSCLE_int8) :: number
 
         ! Create a data object containing an integer value
-        mydata = LIBMUSCLE_Data_create(123456789123456789_LIBMUSCLE_int8)
+        mydata = LIBMUSCLE_Data(123456789123456789_LIBMUSCLE_int8)
         ! Retrieve the value
-        number = LIBMUSCLE_Data_as_int8(mydata)
+        number = mydata%as_int8()
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
@@ -812,9 +812,9 @@ LIBMUSCLE_Data
         real(kind=LIBMUSCLE_real4) :: number
 
         ! Create a data object containing a real value
-        mydata = LIBMUSCLE_Data_create(42.0)
+        mydata = LIBMUSCLE_Data(42.0)
         ! Retrieve the value
-        number = LIBMUSCLE_Data_as_real4(mydata)
+        number = mydata%as_real4()
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
@@ -856,9 +856,9 @@ LIBMUSCLE_Data
         real(kind=LIBMUSCLE_real8) :: number
 
         ! Create a data object containing a real value
-        mydata = LIBMUSCLE_Data_create(42.0d0)
+        mydata = LIBMUSCLE_Data(42.0d0)
         ! Retrieve the value
-        number = LIBMUSCLE_Data_as_real8(mydata)
+        number = mydata%as_real8()
         ! Free the data object
         call LIBMUSCLE_Data_free(mydata)
 
@@ -899,11 +899,11 @@ LIBMUSCLE_Data
         type(YMMSL_Settings) :: settings1, settings2
 
         ! Create a Settings object
-        settings1 = YMMSL_Settings_create()
+        settings1 = YMMSL_Settings()
         ! Create a data object containing the Settings value
-        mydata = LIBMUSCLE_Data_create(settings1)
+        mydata = LIBMUSCLE_Data(settings1)
         ! Retrieve the value
-        settings2 = LIBMUSCLE_Data_as_settings(mydata)
+        settings2 = mydata%as_settings()
         ! Free the data object and the settings objects
         call YMMSL_Settings_free(settings1)
         call YMMSL_Settings_free(settings2)
@@ -976,8 +976,8 @@ LIBMUSCLE_Data
         type(LIBMUSCLE_Data) :: d1, d2
 
         d1 = LIBMUSCLE_Data_create_nils(10_LIBMUSCLE_size)
-        d2 = LIBMUSCLE_Data_get_item(d1, 5_LIBMUSCLE_size)
-        ! LIBMUSCLE_Data_is_nil(d2) returns .true. here
+        d2 = d1%get_item(5_LIBMUSCLE_size)
+        ! d2%is_nil() returns .true. here
         call LIBMUSCLE_Data_free(d2)
         call LIBMUSCLE_Data_free(d1)
 
@@ -1020,9 +1020,9 @@ LIBMUSCLE_Data
         character(len=:), allocatable :: s1
 
         d1 = LIBMUSCLE_Data_create_dict()
-        call LIBMUSCLE_Data_set_item(d1, 'key1', 'value1')
-        d3 = LIBMUSCLE_Data_get_item(d1, 'key1')
-        s1 = LIBMUSCLE_Data_as_character(d3)
+        call d1%set_item('key1', 'value1')
+        d3 = d1%get_item('key1')
+        s1 = d3%as_character()
         print *, s1     ! prints 'value1'
         deallocate(s1)
         call LIBMUSCLE_Data_free(d3)
@@ -1115,13 +1115,13 @@ LIBMUSCLE_Data
         integer intval
 
         d1 = LIBMUSCLE_Data_create_dict()
-        call LIBMUSCLE_Data_set_item(d1, 'key1', 'value1')
-        call LIBMUSCLE_Data_set_item(d1, 'key2', 'value2')
+        call d1%set_item('key1', 'value1')
+        call d1%set_item('key2', 'value2')
 
-        do i = 1, LIBMUSCLE_Data_size(d1)
-            key = LIBMUSCLE_Data_key(d1, i)
-            val = LIBMUSCLE_Data_value(d1, i)
-            cval = LIBMUSCLE_Data_as_character(val)
+        do i = 1, d1%size()
+            key = d1%key(i)
+            val = d1%value(i)
+            cval = val%as_character()
             print '(a8, a8)', key, cval
             deallocate(key)
             deallocate(cval)
@@ -1488,45 +1488,16 @@ LIBMUSCLE_PortsDescription
     :rtype port_name: character
 
 LIBMUSCLE_Instance
-``````````````````````````
+``````````````````
 .. f:type:: LIBMUSCLE_Instance
 
     The Instance class represents a component instance in a
     MUSCLE3 simulation. This class provides a low-level
     send/receive API for the instance to use.
 
-.. f:function:: LIBMUSCLE_Instance_create()
+.. f:function:: LIBMUSCLE_Instance_create(ports, flags, communicator, root)
 
-    Create a new Instance object with ports from the configuration.
-
-    For MPI-based components, this will have libmuscle_mpi use a duplicate of
-    ``MPI_COMM_WORLD`` to communicate, and the designated root process will be
-    that with rank 0.
-
-    This object must be freed when you're done with it using
-    :f:func:`LIBMUSCLE_Instance_free`.
-
-    :r instance: The newly created instance object.
-    :rtype instance: LIBMUSCLE_Instance
-
-.. f:function:: LIBMUSCLE_Instance_create(ports)
-
-    Create a new Instance object with the given ports.
-
-    For MPI-based components, this will have libmuscle_mpi use a duplicate
-    of ``MPI_COMM_WORLD`` to communicate, and the designated root process will
-    be that with rank 0.
-
-    This object must be freed when you're done with it using
-    :f:func:`LIBMUSCLE_Instance_free`.
-
-    :p LIBMUSCLE_PortsDescription ports: The ports of the new instance.
-    :r instance: The newly created instance object.
-    :rtype instance: LIBMUSCLE_Instance
-
-.. f:function:: LIBMUSCLE_Instance_create(communicator, root)
-
-    Create a new Instance object for MPI with ports from the configuration.
+    Create a new Instance object for MPI with the given ports and flags.
 
     For MPI-based components, an MPI communicator and a root rank may be
     passed. The communicator must contain all processes in this instance, and
@@ -1538,30 +1509,11 @@ LIBMUSCLE_Instance
     This object must be freed when you're done with it using
     :f:func:`LIBMUSCLE_Instance_free`.
 
-    :p integer communicator: MPI communicator to use (optional, default
+    :p LIBMUSCLE_PortsDescription ports [optional]: The ports of the new instance.
+    :p LIBMUSCLE_InstanceFlags flags [optional]: The flags to use for the new instance.
+    :p integer communicator [optional]: MPI communicator to use (optional, default
             MPI_COMM_WORLD).
-    :p integer root: Rank of the root process (optional, default 0).
-    :r instance: The newly created instance object.
-    :rtype instance: LIBMUSCLE_Instance
-
-.. f:function:: LIBMUSCLE_Instance_create(ports, communicator, root)
-
-    Create a new Instance object for MPI with the given ports.
-
-    For MPI-based components, an MPI communicator and a root rank may be
-    passed. The communicator must contain all processes in this instance, and
-    ``root`` must be the rank of one of them. MUSCLE will create a duplicate of
-    this communicator for its own use. Creating a :f:type:`LIBMUSCLE_Instance`
-    for an MPI component is a collective operation, so it must be done in
-    all processes simultaneously, with the same communicator and the same root.
-
-    This object must be freed when you're done with it using
-    :f:func:`LIBMUSCLE_Instance_free`.
-
-    :p LIBMUSCLE_PortsDescription ports: The ports of the new instance.
-    :p integer communicator: MPI communicator to use (optional, default
-            MPI_COMM_WORLD).
-    :p integer root: Rank of the root process (optional, default 0).
+    :p integer root [optional]: Rank of the root process (optional, default 0).
     :r instance: The newly created instance object.
     :rtype instance: LIBMUSCLE_Instance
 
@@ -1584,27 +1536,6 @@ LIBMUSCLE_Instance
     process.
 
     :p LIBMUSCLE_Instance self: The object to check for reuse.
-    :r reuse: Whether to enter the reuse loop another time.
-    :rtype reuse: logical
-
-.. f:function:: LIBMUSCLE_Instance_reuse_instance(self, apply_overlay)
-
-    Checks whether to reuse this instance.
-
-    This method must be called at the beginning of the reuse loop, i.e. before
-    the F_INIT operator, and its return value should decide whether to enter
-    that loop again.
-
-    This version of this function lets you choose whether to apply the received
-    settings overlay or to return it with the message. If you're going to use
-    :f:func:`LIBMUSCLE_Instance_receive_with_settings` on your F_INIT ports, set
-    this to ``.false.``. If you don't know what that means, just call
-    ``LIBMUSCLE_Instance_reuse_instance()`` with no arguments and all will be
-    fine. If it turns out that you did need to specify ``.false.`` here, MUSCLE
-    3 will tell you in an error message, and you can add it.
-
-    :p LIBMUSCLE_Instance self: The object to check for reuse.
-    :p logical apply_overlay: Whether to apply the received settings overlay.
     :r reuse: Whether to enter the reuse loop another time.
     :rtype reuse: logical
 
@@ -2184,6 +2115,202 @@ LIBMUSCLE_Instance
     :p character err_msg: An error message output (allocatable, optional).
     :r message: The received message.
     :rtype message: LIBMUSCLE_Message
+
+.. f:function:: LIBMUSCLE_Instance_resuming()
+
+    Check if this instance is resuming from a snapshot.
+
+    Must be used by submodels that implement the checkpointing API. You'll
+    get a RuntimeError if you don't call this method in an iteration of the
+    reuse loop.
+
+    This method returns True for the first iteration of the reuse loop after
+    resuming from a previously taken snapshot. When resuming from a
+    snapshot, the submodel must load its state from the snapshot returned by
+    :f:func:`LIBMUSCLE_Instance_load_snapshot`.
+
+    MPI-based components must call this function in all processes
+    simultaneously.
+
+    :r resuming: ``.true.`` iff the submodel must resume from a snapshot.
+    :rtype resuming: logical
+
+.. f:function:: LIBMUSCLE_Instance_should_init()
+
+    Check if this instance should initialize.
+
+    Must be used by submodels that implement the checkpointing API.
+
+    When resuming from a previous snapshot, instances need not always
+    execute the F_INIT phase of the submodel execution loop. Use this method
+    before attempting to receive data on F_INIT ports.
+
+    MPI-based components must call this function in all processes
+    simultaneously.
+
+    :r should_init: ``.true.`` iff the submomdel must execute the F_INIT step.
+    :rtype should_init: logical
+
+.. f:function:: LIBMUSCLE_Instance_load_snapshot()
+
+    Load a snapshot.
+
+    Must only be called when Instance::resuming returns True.
+
+    MPI-based components may only call this from the root process. An error
+    is raised when attempting to call this method in any other process. It
+    is therefore up to the model code to scatter or broadcast the snapshot
+    state to the non-root processes, if necessary.
+
+    :r message: Message containing the state as saved in a previous run through
+            :f:func:`LIBMUSCLE_Instance_save_snapshot` or
+            :f:func:`LIBMUSCLE_Instance_save_final_snapshot`.
+    :rtype message: LIBMUSCLE_Message
+
+.. f:function:: LIBMUSCLE_Instance_should_save_snapshot(timestamp)
+
+    Check if a snapshot should be saved after the S Operator of the submodel.
+
+    This method checks if a snapshot should be saved right now, based on the
+    provided timestamp and elapsed wallclock time.
+
+    If this method returns true, then the submodel must also save a snapshot
+    through Instance::save_snapshot. A runtime error will be generated if
+    this is not done.
+
+    See also :f:func:`LIBMUSCLE_Instance_should_save_final_snapshot` for the
+    variant that must be called at the end of the reuse loop.
+
+    MPI-based components must call this function in all processes
+    simultaneously.
+
+    :p LIBMUSCLE_real8 timestamp: The current timestamp of the submodel.
+    :r should_save_snapshot: ``.true.`` iff a snapshot should be taken by the
+            submodel according to the checkpoint rules provided in the ymmsl
+            configuration.
+    :rtype should_save_snapshot: logical
+
+.. f:function:: LIBMUSCLE_Instance_save_snapshot(message)
+
+    Save a snapshot after the S Operator of the submodel.
+
+    Before saving a snapshot, you should check using
+    :f:func:`LIBMUSCLE_Instance_should_save_snapshot` if a snapshot should
+    be saved according to the checkpoint rules specified in the ymmsl
+    configuration. You should use the same timestamp in the provided Message
+    object as used to query :f:func:`LIBMUSCLE_Instance_should_save_snapshot`.
+
+    MPI-based components may only call this from the root process. An error
+    is raised when attempting to call this method in any other process. It
+    is therefore up to the model code to gather the necessary state from
+    the non-root processes before saving the snapshot.
+
+    :p LIBMUSCLE_Message message: Message object that is saved as snapshot. The message
+            timestamp attribute should be the same as passed to
+            :f:func:`LIBMUSCLE_Instance_should_save_snapshot`. The data attribute can
+            be used to store the internal state of the submodel.
+
+.. f:function:: LIBMUSCLE_Instance_should_save_final_snapshot()
+
+    Check if a snapshot should be saved at the end of the reuse loop.
+
+    This method checks if a snapshot should be saved at the end of the reuse
+    loop. All your communication on O_F ports must be finished before calling
+    this method, otherwise your simulation may deadlock.
+
+    When this method returns true, the submodel must also save a snapshot
+    through :f:func:`LIBMUSCLE_Instance_save_final_snapshot`. An error will be
+    generated if this is not done.
+
+    See also :f:func:`LIBMUSCLE_Instance_should_save_snapshot` for the variant
+    that may be called inside of a time-integration loop of the submodel.
+
+    MPI-based components must call this function in all processes
+    simultaneously.
+
+    .. note::
+
+        This method will block until it can determine whether a final
+        snapshot should be taken, because it must determine if this
+        instance is reused.
+
+    :r should_save_final_snapshot: ``.true.`` iff a final snapshot should be taken
+            by the submodel according to the checkpoint rules provided in the ymmsl
+            configuration.
+    :rtype should_save_final_snapshot: logical
+
+.. f:function:: LIBMUSCLE_Instance_save_final_snapshot(message)
+
+    Save a snapshot at the end of the reuse loop.
+
+    Before saving a snapshot, you should check using
+    :f:func:`LIBMUSCLE_Instance_should_save_final_snapshot` if a snapshot should
+    be saved according to the checkpoint rules specified in the ymmsl
+    configuration.
+
+    See also :f:func:`LIBMUSCLE_Instance_save_snapshot` for the variant that may
+    be called after each S Operator of the submodel.
+
+    MPI-based components may only call this from the root process. An error
+    is raised when attempting to call this method in any other process. It
+    is therefore up to the model code to gather the necessary state from
+    the non-root processes before saving the snapshot.
+
+    :p LIBMUSCLE_Message message: Message object that is saved as snapshot. The data
+            attribute can be used to store the internal state of the submodel.
+
+LIBMUSCLE_InstanceFlags
+```````````````````````
+
+.. f:type:: LIBMUSCLE_InstanceFlags
+
+    The InstanceFlags type represents the flags that can be supplied
+    when creating a new :f:type:`Instance`. Multiple flags may be set simultaneously,
+    for example:
+
+    .. code-block:: fortran
+
+        ports = LIBMUSCLE_PortsDescription()
+        ! Specify ports...
+        instance = LIBMUSCLE_Instance(ports, &
+            LIBMUSCLE_InstanceFlags(DONT_APPLY_OVERLAY=.true., USES_CHECKPOINT_API=.true.))
+        call LIBMUSCLE_PortsDescription_free(ports)
+
+
+    :f logical DONT_APPLY_OVERLAY: Set to ``.true.`` to not apply the received settings
+            overlay during prereceive of F_INIT messages.
+
+            If you're going to use Instance.receive_with_settings on your F_INIT ports,
+            you need to set this flag when creating an Instance.
+
+            If you don't know what that means, do not specify this flag and everything
+            will be fine. If it turns out that you did need to specify the flag, MUSCLE3
+            will tell you about it in an error message and you can add it still.
+
+    :f logical USES_CHECKPOINT_API: Set to ``.true.`` to indicate that this instance
+            supports checkpointing.
+
+            You may not use any checkpointing API calls when this flag is not supplied.
+
+    :f logical KEEPS_NO_STATE_FOR_NEXT_USE: Indicate this instance does not carry state
+            between iterations of the reuse loop. Specifying this flag is equivalent to
+            :external:py:attr:`ymmsl.KeepsStateForNextUse.NO`.
+
+            By default, (if neither ``KEEPS_NO_STATE_FOR_NEXT_USE`` nor
+            ``STATE_NOT_REQUIRED_FOR_NEXT_USE`` are provided), the instance is assumed
+            to keep state between reuses, and to require that state (equivalent to
+            :external:py:attr:`ymmsl.KeepsStateForNextUse.NECESSARY`).
+
+    :f logical STATE_NOT_REQUIRED_FOR_NEXT_USE: Indicate this instance carries state
+            between iterations of the reuse loop, however this state is not required
+            for restarting. Specifying this flag is equivalent to
+            :external:py:attr:`ymmsl.KeepsStateForNextUse.HELPFUL`.
+
+            By default, (if neither ``KEEPS_NO_STATE_FOR_NEXT_USE`` nor
+            ``STATE_NOT_REQUIRED_FOR_NEXT_USE`` are provided), the instance is assumed
+            to keep state between reuses, and to require that state (equivalent to
+            :external:py:attr:`ymmsl.KeepsStateForNextUse.NECESSARY`).
+
 
 Namespace YMMSL
 ---------------

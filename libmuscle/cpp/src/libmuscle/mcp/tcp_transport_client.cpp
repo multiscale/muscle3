@@ -1,7 +1,7 @@
 #include "libmuscle/mcp/tcp_transport_client.hpp"
 
-#include "libmuscle/data.hpp"
-#include "libmuscle/mcp/tcp_util.hpp"
+#include <libmuscle/data.hpp>
+#include <libmuscle/mcp/tcp_util.hpp>
 
 #include <algorithm>
 #include <cstring>
@@ -84,7 +84,7 @@ int connect(std::string const & address) {
 }
 
 
-namespace libmuscle { namespace impl { namespace mcp {
+namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace mcp {
 
 bool TcpTransportClient::can_connect_to(std::string const & location) {
     return location.compare(0u, 4u, "tcp:") == 0;
@@ -112,8 +112,14 @@ TcpTransportClient::TcpTransportClient(std::string const & location)
                 + ": " + errors);
 
     int flags = 0;
+#ifdef __linux
     setsockopt(socket_fd_, SOL_TCP, TCP_NODELAY, &flags, sizeof(flags));
     setsockopt(socket_fd_, SOL_TCP, TCP_QUICKACK, &flags, sizeof(flags));
+#elif __APPLE__
+    setsockopt(socket_fd_, IPPROTO_TCP, TCP_NODELAY, &flags, sizeof(flags));
+    // macOS doesn't have quickack unfortunately
+#endif
+
 }
 
 TcpTransportClient::~TcpTransportClient() {
@@ -121,15 +127,19 @@ TcpTransportClient::~TcpTransportClient() {
         close();
 }
 
-DataConstRef TcpTransportClient::call(
+std::tuple<DataConstRef, ProfileData> TcpTransportClient::call(
         char const * req_buf, std::size_t req_len
 ) const {
+    ProfileTimestamp start_wait;
     send_frame(socket_fd_, req_buf, req_len);
 
     int64_t length = recv_int64(socket_fd_);
+    ProfileTimestamp start_transfer;
     auto result = Data::byte_array(length);
     recv_all(socket_fd_, result.as_byte_array(), result.size());
-    return result;
+    ProfileTimestamp stop_transfer;
+    return std::make_tuple(
+            result, std::make_tuple(start_wait, start_transfer, stop_transfer));
 }
 
 void TcpTransportClient::close() {

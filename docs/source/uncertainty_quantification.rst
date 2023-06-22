@@ -252,7 +252,14 @@ limited number of macro model instances. It has a front side, which connects to
 
 .. code-block:: python
 
-  while instance.reuse_instance(False):
+  instance = Instance({
+          Operator.F_INIT: ['front_in[]'],
+          Operator.O_I: ['back_out[]'],
+          Operator.S: ['back_in[]'],
+          Operator.O_F: ['front_out[]']},
+          DONT_APPLY_OVERLAY)
+
+  while instance.reuse_instance():
       # F_INIT
       started = 0     # number started and index of next to start
       done = 0        # number done and index of next to return
@@ -287,10 +294,12 @@ receiving a result, they'll be queued up and processed in order.)
 We use :meth:`libmuscle.Instance.receive_with_settings` everywhere, in order to
 correctly pass on any settings overlays. Since we are using
 :meth:`libmuscle.Instance.receive_with_settings` on an F_INIT port, we passed
-``False`` to :meth:`libmuscle.Instance.reuse_instance`. It is a technical
-requirement of MUSCLE3 to do this, and MUSCLE will give an error message if
-you call :meth:`libmuscle.Instance.receive_with_settings` without having passed
-``False`` to :meth:`libmuscle.Instance.reuse_instance`. (There's just no other
+:attr:`libmuscle.InstanceFlags.DONT_APPLY_OVERLAY` as flag when creating the
+:class:`libmuscle.Instance`. It is a technical requirement of MUSCLE3 to do
+this, and MUSCLE will give an error message if you call
+:meth:`libmuscle.Instance.receive_with_settings` without having set the
+:attr:`libmuscle.InstanceFlags.DONT_APPLY_OVERLAY` flag when creating the
+:class:`libmuscle.Instance.reuse_instance`. (There's just no other
 way to implement this, or rather, all other options can lead to potentially
 difficult-to-debug situations, while this can be checked and a clear error
 message shown if it goes wrong. So we chose this as the preferable option.)

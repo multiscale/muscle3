@@ -7,12 +7,16 @@ support for it in this module.
 import logging
 import multiprocessing as mp
 import multiprocessing.connection as mpc
+from pathlib import Path
 import sys
-from typing import Callable, Dict, List, Tuple, cast
+from time import sleep
+import traceback
+from typing import Callable, Dict, List, Set, Tuple, cast
 
 from ymmsl import Configuration, Identifier, Model, Reference
 
 from libmuscle.util import generate_indices
+from libmuscle.manager.logger import last_lines
 from libmuscle.manager.manager import Manager
 
 
@@ -96,7 +100,7 @@ def implementation_process(
         implementation: Callable) -> None:
     prefix_tag = '--muscle-prefix='
     name_prefix = str()
-    index_prefix = list()   # type: List[int]
+    index_prefix: List[int] = []
 
     instance = Reference(instance_id)
 
@@ -145,10 +149,11 @@ def implementation_process(
         try:
             implementation()
         except Exception:
-            _logger.exception(
+            traceback.print_exc()
+            _logger.error(
                     f'Component {instance} crashed, please check the log file'
                     ' for error messages')
-            raise
+            exit(1)
 
 
 def _parse_prefix(prefix: str) -> Tuple[str, List[int]]:
@@ -182,7 +187,7 @@ def _parse_prefix(prefix: str) -> Tuple[str, List[int]]:
         return int(number), i
 
     name = str()
-    index = list()  # type: List[int]
+    index: List[int] = []
     i = 0
 
     if i == len(prefix):
@@ -212,7 +217,7 @@ def _parse_prefix(prefix: str) -> Tuple[str, List[int]]:
 
 
 def _split_reference(ref: Reference) -> Tuple[Reference, List[int]]:
-    index = list()     # type: List[int]
+    index: List[int] = []
     i = 0
     while i < len(ref) and isinstance(ref[i], Identifier):
         i += 1
@@ -238,27 +243,50 @@ def run_instances(
         instances: A dictionary of instances to run
         manager_location: Network location of the manager
     """
+    # start processes
     instance_processes = list()
     for instance_id_str, implementation in instances.items():
         instance_id = Reference(instance_id_str)
         process = mp.Process(
                 target=implementation_process,
                 args=(instance_id_str, manager_location, implementation),
-                name='Instance-{}'.format(instance_id))
+                name=str(instance_id))
         process.start()
         instance_processes.append(process)
 
-    failed_processes = list()
-    for instance_process in instance_processes:
-        instance_process.join()
-        if instance_process.exitcode != 0:
-            failed_processes.append(instance_process)
+    # wait for them to finish or one to fail
+    failed_processes: List[mp.Process] = list()
+    done_processes: Set[mp.Process] = set()
+    while len(done_processes) < len(instance_processes) and not failed_processes:
+        sleep(0.5)
+        for instance_process in instance_processes:
+            if instance_process not in done_processes:
+                if not instance_process.is_alive():
+                    done_processes.add(instance_process)
+                    if instance_process.exitcode != 0:
+                        failed_processes.append(instance_process)
 
-    if len(failed_processes) > 0:
-        failed_names = map(lambda x: x.name, failed_processes)
-        raise RuntimeError('Instances {} failed to shut down cleanly, please'
-                           ' check the logs to see what went wrong.'.format(
-                               ', '.join(failed_names)))
+    # if one failed, shut down the rest
+    if failed_processes:
+        for process in instance_processes:
+            if process not in done_processes:
+                process.terminate()
+            process.join(1.0)
+            if process.is_alive():
+                process.kill()
+
+        failed_names = [proc.name for proc in failed_processes]
+        log_files = [Path(f'muscle3.{name}.log') for name in failed_names]
+        outputs = [last_lines(log_file, 20) for log_file in log_files]
+        msg = (
+                'Instance(s) {} failed to shut down cleanly. Here is the final'
+                ' bit of the output:').format(', '.join(failed_names))
+        for name, output in zip(failed_names, outputs):
+            msg += '\n ---------- ' + name + ' ----------\n'
+            msg += output + '\n'
+            msg += f'See muscle3.{name}.log for the complete output\n'
+
+        raise RuntimeError(msg)
 
 
 def run_simulation(

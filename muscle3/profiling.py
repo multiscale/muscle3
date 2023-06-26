@@ -114,14 +114,14 @@ def plot_timeline(performance_file: Path) -> None:
         min_time = cur.fetchall()[0][0]
 
         cur.execute(
-                "SELECT instance, (start_time - ?)"
+                "SELECT instance_oid, (start_time - ?)"
                 " FROM events AS e"
                 " JOIN event_types AS et ON (e.event_type_oid = et.oid)"
                 " WHERE et.name = 'REGISTER'", (min_time,))
         begin_times = dict(cur.fetchall())
 
         cur.execute(
-                "SELECT instance, (stop_time - ?)"
+                "SELECT instance_oid, (stop_time - ?)"
                 " FROM events AS e"
                 " JOIN event_types AS et ON (e.event_type_oid = et.oid)"
                 " WHERE et.name = 'DEREGISTER'", (min_time,))
@@ -141,7 +141,7 @@ def plot_timeline(performance_file: Path) -> None:
         for event_type in _EVENT_TYPES:
             cur.execute(
                     "SELECT"
-                    "  instance, (start_time - ?) * 1e-9,"
+                    "  instance_oid, (start_time - ?) * 1e-9,"
                     "  (stop_time - start_time) * 1e-9"
                     " FROM events AS e"
                     " JOIN event_types AS et ON (e.event_type_oid = et.oid)"

@@ -325,6 +325,8 @@ void MMPClient::deregister_instance() {
 }
 
 DataConstRef MMPClient::call_manager_(DataConstRef const & request) {
+    std::lock_guard<std::mutex> lock(mutex_);
+
     msgpack::sbuffer sbuf;
     msgpack::pack(sbuf, request);
 

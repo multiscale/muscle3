@@ -33,8 +33,12 @@ def plot_instances(performance_file: Path) -> None:
     ax.bar(instances, wait, width, label='Wait', bottom=bottom)
     ax.set_title('Simulation component time breakdown')
     ax.set_xlabel('Instance')
+    ax.tick_params(axis='x', labelrotation = 45)
+    for label in ax.xaxis.get_ticklabels():
+        label.set_horizontalalignment('right')
     ax.set_ylabel('Total time (s)')
     ax.legend(loc='upper right')
+    plt.subplots_adjust(bottom=0.30)
 
 
 def plot_resources(performance_file: Path) -> None:
@@ -81,8 +85,12 @@ def plot_resources(performance_file: Path) -> None:
 
     ax.set_title('Per-core time breakdown')
     ax.set_xlabel('Core')
+    ax.tick_params(axis='x', labelrotation = 45)
+    for label in ax.xaxis.get_ticklabels():
+        label.set_horizontalalignment('right')
     ax.set_ylabel('Total time (s)')
     ax.legend(loc='upper right')
+    plt.subplots_adjust(bottom=0.30)
 
 
 _EVENT_TYPES = (

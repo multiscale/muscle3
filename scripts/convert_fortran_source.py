@@ -5,7 +5,7 @@ from typing import List
 import click
 
 
-@click.command(no_args_is_help=True)
+@click.command(no_args_is_help=True)    # type: ignore
 @click.argument("fortran_files", nargs=-1, required=True, type=click.Path(
             exists=True, file_okay=True, dir_okay=False, readable=True,
             allow_dash=True, resolve_path=True, path_type=pathlib.Path))
@@ -42,4 +42,4 @@ def convert(fortran_files: List[pathlib.Path]) -> None:
 
 
 if __name__ == "__main__":
-    convert()
+    convert()       # type: ignore

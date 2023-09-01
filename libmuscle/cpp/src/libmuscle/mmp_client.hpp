@@ -6,6 +6,7 @@
 
 
 #include <memory>
+#include <mutex>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -28,7 +29,9 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
  * This class connects to the Manager and communicates with it on behalf of the
  * rest of libmuscle.
  *
- * It manages the connection, and encodes and decodes MsgPack.
+ * It manages the connection, and encodes and decodes MsgPack. Communication is
+ * protected by an internal mutex, so this class can be called simultaneously
+ * from different threads.
  */
 class MMPClient {
     public:
@@ -123,6 +126,7 @@ class MMPClient {
     private:
         ymmsl::Reference instance_id_;
         mcp::TcpTransportClient transport_client_;
+        mutable std::mutex mutex_;
 
         /* Helper function that encodes/decodes and calls the manager.
          */

@@ -106,6 +106,13 @@ _EVENT_PALETTE = {
 _MAX_EVENTS = 1000
 
 
+_CUTOFF_TEXT = (
+        'Warning: data was omitted from the plot in the\n crosshatched'
+        ' areas to improve performance.\n Please zoom or pan using the'
+        ' tools at the bottom\n of the window to see the missing events.'
+        )
+
+
 _BAR_WIDTH = 0.8
 
 
@@ -185,12 +192,17 @@ class TimelinePlot:
             if cutoff:
                 first_cutoff = min(first_cutoff, cutoff)
 
-        # Plot cut-off area
+        # Initial cut-off area
         if first_cutoff != float('inf'):
             self._bars['_CUTOFF'] = ax.barh(
                     self._instances, self._global_xmax - first_cutoff, _BAR_WIDTH,
                     label='Not shown', left=first_cutoff,
                     color='#FFFFFF', hatch='x')
+            self._cutoff_warning = ax.text(
+                    0.02, 0.02, _CUTOFF_TEXT, transform=ax.transAxes, fontsize=12,
+                    verticalalignment='bottom', horizontalalignment='left', wrap=True,
+                    bbox={
+                        'facecolor': '#ffcccc', 'alpha': 0.75})
 
         ax.set_autoscale_on(True)
         ax.callbacks.connect('xlim_changed', self.update_data)
@@ -276,9 +288,11 @@ class TimelinePlot:
                     bar.set_x(cutoff)
                     bar.set_width(self._global_xmax - cutoff)
                     bar.set_visible(True)
+                self._cutoff_warning.set_visible(True)
             else:
                 for bar in bars:
                     bar.set_visible(False)
+                self._cutoff_warning.set_visible(False)
 
 
 tplot = None    # type: Optional[TimelinePlot]

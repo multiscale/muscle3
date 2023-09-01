@@ -413,7 +413,11 @@ class Communicator:
         for client in self._clients.values():
             client.close()
 
+        wait_event = ProfileEvent(ProfileEventType.DISCONNECT_WAIT, ProfileTimestamp())
+
         self._post_office.wait_for_receivers()
+
+        self._profiler.record_event(wait_event)
 
         for server in self._servers:
             server.close()

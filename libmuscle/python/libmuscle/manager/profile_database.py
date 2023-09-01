@@ -1,13 +1,9 @@
 from collections import defaultdict
-import logging
 from pathlib import Path
 import sqlite3
 import threading
 from types import TracebackType
 from typing import Any, cast, Dict, List, Optional, Tuple, Type, Union
-
-
-_logger = logging.getLogger(__name__)
 
 
 class ProfileDatabase:
@@ -107,8 +103,15 @@ class ProfileDatabase:
         cur.execute(
                 "SELECT instance, start_time"
                 " FROM all_events"
-                " WHERE type = 'DEREGISTER'")
+                " WHERE type = 'DISCONNECT_WAIT'")
         stop_run = dict(cur.fetchall())
+
+        if not stop_run:
+            cur.execute(
+                    "SELECT instance, start_time"
+                    " FROM all_events"
+                    " WHERE type = 'DEREGISTER'")
+            stop_run = dict(cur.fetchall())
 
         cur.execute(
                 "SELECT instance, SUM(stop_time - start_time)"
@@ -164,8 +167,6 @@ class ProfileDatabase:
                 i: r + c
                 for i, r, c in zip(instances, run_times, comm_times)}
 
-        _logger.info(active_times)
-
         cur = self._get_cursor()
         cur.execute("BEGIN TRANSACTION")
         cur.execute(
@@ -175,8 +176,6 @@ class ProfileDatabase:
         instances_by_core = defaultdict(list)
         for name, node, core in cur.fetchall():
             instances_by_core[':'.join([node, str(core)])].append(name)
-
-        _logger.info(instances_by_core)
 
         cur.execute("COMMIT")
         cur.close()

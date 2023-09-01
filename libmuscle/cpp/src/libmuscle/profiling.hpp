@@ -20,12 +20,13 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 enum class ProfileEventType {
     register_ = 0,
     connect = 4,
-    deregister = 1,
     send = 2,
     receive = 3,
     receive_wait = 5,
     receive_transfer = 6,
-    receive_decode = 7
+    receive_decode = 7,
+    disconnect_wait = 8,
+    deregister = 1
 };
 
 

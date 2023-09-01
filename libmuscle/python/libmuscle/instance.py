@@ -246,10 +246,7 @@ class Instance:
                 self._save_snapshot(None, True, self.__f_init_max_timestamp)
 
         if not do_reuse:
-            self.__close_ports()
-            self._communicator.shutdown()
-            self._deregister()
-            self.__manager.close()
+            self.__shutdown()
 
         self._api_guard.reuse_instance_done(do_reuse)
         return do_reuse
@@ -1251,14 +1248,15 @@ class Instance:
         self.__close_outgoing_ports()
         self.__close_incoming_ports()
 
-    def __shutdown(self, message: str) -> None:
+    def __shutdown(self, message: Optional[str] = None) -> None:
         """Shuts down simulation.
 
-        This logs the given error message, communicates to the peers
-        that we're shutting down, and deregisters from the manager.
+        This logs the given error message, if any, communicates to the
+        peers that we're shutting down, and deregisters from the manager.
         """
         if not self.__is_shut_down:
-            _logger.critical(message)
+            if message is not None:
+                _logger.critical(message)
             self.__close_ports()
             self._communicator.shutdown()
             self._deregister()

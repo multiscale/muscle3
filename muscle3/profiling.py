@@ -297,18 +297,19 @@ class TimelinePlot:
                 for i in range(n_cur, n_avail):
                     bars[i].set_visible(False)
 
-            # update cutoff bars
-            bars = self._bars['_CUTOFF'].patches
-            if cutoff:
-                for bar in bars:
-                    bar.set_x(cutoff)
-                    bar.set_width(self._global_xmax - cutoff)
-                    bar.set_visible(True)
-                self._cutoff_warning.set_visible(True)
-            else:
-                for bar in bars:
-                    bar.set_visible(False)
-                self._cutoff_warning.set_visible(False)
+            # update cutoff bars, if any
+            if '_CUTOFF' in self._bars:
+                bars = self._bars['_CUTOFF'].patches
+                if cutoff:
+                    for bar in bars:
+                        bar.set_x(cutoff)
+                        bar.set_width(self._global_xmax - cutoff)
+                        bar.set_visible(True)
+                    self._cutoff_warning.set_visible(True)
+                else:
+                    for bar in bars:
+                        bar.set_visible(False)
+                    self._cutoff_warning.set_visible(False)
 
 
 tplot = None    # type: Optional[TimelinePlot]

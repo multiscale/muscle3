@@ -241,6 +241,8 @@ class ProfileStore(ProfileDatabase):
 
         cur.execute("CREATE INDEX instances_oid_idx ON instances(oid)")
 
+        cur.execute("CREATE INDEX events_start_time_idx ON events(start_time)")
+
         cur.execute(
                 "CREATE VIEW all_events"
                 " AS SELECT"

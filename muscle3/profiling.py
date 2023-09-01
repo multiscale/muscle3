@@ -1,8 +1,11 @@
 import sqlite3
 from pathlib import Path
+from typing import List, Optional, Tuple
 
 import numpy as np
+from matplotlib.axes import Axes
 from matplotlib import pyplot as plt
+from matplotlib.patches import Rectangle
 
 from libmuscle import ProfileDatabase
 
@@ -67,7 +70,7 @@ def plot_resources(performance_file: Path) -> None:
 
     seen_instances = set()
     for i, core in enumerate(sorted(stats.keys())):
-        bottom = 0
+        bottom = 0.0
         for instance, time in sorted(stats[core].items(), key=lambda x: -x[1]):
             if instance not in seen_instances:
                 label: Optional[str] = instance
@@ -76,7 +79,7 @@ def plot_resources(performance_file: Path) -> None:
                 label = '_'
 
             ax.bar(
-                    i, time, 0.8,
+                    i, time, _BAR_WIDTH,
                     label=label, bottom=bottom, color=palette[instance])
             bottom += time
 
@@ -86,8 +89,8 @@ def plot_resources(performance_file: Path) -> None:
     ax.set_title('Per-core time breakdown')
     ax.set_xlabel('Core')
     ax.tick_params(axis='x', labelrotation = 45)
-    for label in ax.xaxis.get_ticklabels():
-        label.set_horizontalalignment('right')
+    for tick_label in ax.xaxis.get_ticklabels():
+        tick_label.set_horizontalalignment('right')
     ax.set_ylabel('Total time (s)')
     ax.legend(loc='upper right')
     plt.subplots_adjust(bottom=0.30)
@@ -108,75 +111,208 @@ _EVENT_PALETTE = {
         'SEND': '#0095bf'}
 
 
-_MAX_EVENTS = 2000
+_MAX_EVENTS = 1000
 
 
-def plot_timeline(performance_file: Path) -> None:
-    with sqlite3.connect(performance_file) as conn:
-        cur = conn.cursor()
+_CUTOFF_TEXT = (
+        'Warning: data was omitted from the plot in the\n crosshatched'
+        ' areas to improve performance.\n Please zoom or pan using the'
+        ' tools at the bottom\n of the window to see the missing events.'
+        )
 
-        cur.execute("SELECT oid, name FROM instances ORDER BY oid")
-        instance_ids, instance_names = zip(*cur.fetchall())
 
-        cur.execute("SELECT MIN(start_time) FROM events")
-        min_time = cur.fetchall()[0][0]
+_BAR_WIDTH = 0.8
 
-        cur.execute(
-                "SELECT instance_oid, (start_time - ?)"
-                " FROM events AS e"
-                " JOIN event_types AS et ON (e.event_type_oid = et.oid)"
-                " WHERE et.name = 'REGISTER'", (min_time,))
-        begin_times = dict(cur.fetchall())
 
-        cur.execute(
-                "SELECT instance_oid, (stop_time - ?)"
-                " FROM events AS e"
-                " JOIN event_types AS et ON (e.event_type_oid = et.oid)"
-                " WHERE et.name = 'DEREGISTER'", (min_time,))
-        end_times = dict(cur.fetchall())
+class TimelinePlot:
+    """Manages an interactive timeline
 
-        fig, ax = plt.subplots()
+    This implements on-demand loading of events as the user pans and
+    zooms.
+    """
+    def __init__(self, performance_file: Path) -> None:
+        """Create a TimelinePlot
 
-        instances = sorted(begin_times.keys())
-        ax.barh(
-                instances,
-                [(end_times[i] - begin_times[i]) * 1e-9 for i in instances],
-                0.8,
-                left=[begin_times[i] * 1e-9 for i in instances],
-                label='RUNNING', color='#444444'
-                )
+        This plots the dark gray background bars, and then plots the
+        rest on top on demand.
 
-        for event_type in _EVENT_TYPES:
-            cur.execute(
-                    "SELECT"
-                    "  instance_oid, (start_time - ?) * 1e-9,"
-                    "  (stop_time - start_time) * 1e-9"
-                    " FROM events AS e"
-                    " JOIN event_types AS et ON (e.event_type_oid = et.oid)"
-                    " WHERE et.name = ?"
-                    " ORDER BY start_time ASC"
-                    " LIMIT ?",
-                    (min_time, event_type, _MAX_EVENTS))
-            instances, start_times, durations = zip(*cur.fetchall())
+        Args:
+            performance_file: The database to plot
+        """
+        _, ax = plt.subplots()
+        self._ax = ax
 
-            if len(instances) == _MAX_EVENTS:
-                print(
-                        'Warning: event data truncated. Sorry, we cannot yet show'
-                        ' this amount of data efficiently enough.')
-            ax.barh(
-                    instances, durations, 0.8,
-                    label=event_type, left=start_times,
-                    color=_EVENT_PALETTE[event_type])
+        # Y axis
+        self._cur = sqlite3.connect(performance_file).cursor()
+        self._cur.execute("SELECT oid, name FROM instances ORDER BY oid")
+        instance_ids, instance_names = zip(*self._cur.fetchall())
 
         ax.set_yticks(instance_ids)
         ax.set_yticklabels(instance_names)
 
+        # Instances
+        self._cur.execute("SELECT MIN(start_time) FROM events")
+        self._min_db_time = self._cur.fetchall()[0][0]
+
+        self._cur.execute(
+                "SELECT instance_oid, (start_time - ?) * 1e-9"
+                " FROM events AS e"
+                " JOIN event_types AS et ON (e.event_type_oid = et.oid)"
+                " WHERE et.name = 'REGISTER'", (self._min_db_time,))
+        begin_times = dict(self._cur.fetchall())
+
+        self._cur.execute(
+                "SELECT instance_oid, (stop_time - ?) * 1e-9"
+                " FROM events AS e"
+                " JOIN event_types AS et ON (e.event_type_oid = et.oid)"
+                " WHERE et.name = 'DEREGISTER'", (self._min_db_time,))
+        end_times = dict(self._cur.fetchall())
+
+        instances = sorted(begin_times.keys())
+        self._instances = instances
+
+        # Rest of plot
         ax.set_title('Execution timeline')
         ax.set_xlabel('Wallclock time (s)')
 
+        # Background
+        ax.barh(
+                instances,
+                [end_times[i] - begin_times[i] for i in instances],
+                _BAR_WIDTH,
+                left=[begin_times[i] for i in instances],
+                label='RUNNING', color='#444444'
+                )
+
+        # Initial events plot
+        xmin = min(begin_times.values())
+        self._global_xmax = max(end_times.values())
+
+        first_cutoff = float('inf')
+        self._bars = dict()
+        for event_type in _EVENT_TYPES:
+            instances, start_times, durations, cutoff = self.get_data(
+                    event_type, xmin, self._global_xmax)
+            self._bars[event_type] = ax.barh(
+                    instances[0:_MAX_EVENTS], durations[0:_MAX_EVENTS], _BAR_WIDTH,
+                    label=event_type, left=start_times[0:_MAX_EVENTS],
+                    color=_EVENT_PALETTE[event_type])
+            if cutoff:
+                first_cutoff = min(first_cutoff, cutoff)
+
+        # Initial cut-off area
+        if first_cutoff != float('inf'):
+            self._bars['_CUTOFF'] = ax.barh(
+                    self._instances, self._global_xmax - first_cutoff, _BAR_WIDTH,
+                    label='Not shown', left=first_cutoff,
+                    color='#FFFFFF', hatch='x')
+            self._cutoff_warning = ax.text(
+                    0.02, 0.02, _CUTOFF_TEXT, transform=ax.transAxes, fontsize=12,
+                    verticalalignment='bottom', horizontalalignment='left', wrap=True,
+                    bbox={
+                        'facecolor': '#ffcccc', 'alpha': 0.75})
+
+        ax.set_autoscale_on(True)
+        ax.callbacks.connect('xlim_changed', self.update_data)
+
         ax.legend(loc='upper right')
+        ax.figure.canvas.draw_idle()
+
+    def close(self) -> None:
+        """Closes the database connection"""
+        self._cur.close()
+
+    def get_data(
+            self, event_type: str, xmin: float, xmax: float
+            ) -> Tuple[List[int], List[float], List[float], Optional[float]]:
+        """Get events from the database
+
+        Returns three lists with instance oid, start time and duration, and
+        the last timepoint returned in case we had too much data to show and
+        data got cut off, or None if all matching data was returned.
+
+        Args:
+            event_type: Type of events to get
+            xmin: Time point after which the event must have stopped
+            xmax: Time point before which the event must have started
+        """
+        self._cur.execute(
+                "SELECT"
+                "  instance_oid, (start_time - ?) * 1e-9,"
+                "  (stop_time - start_time) * 1e-9"
+                " FROM events AS e"
+                " JOIN event_types AS et ON (e.event_type_oid = et.oid)"
+                " WHERE et.name = ?"
+                " AND (start_time - ?) * 1e-9 <= ?"
+                " AND ? <= (stop_time - ?) * 1e-9"
+                " ORDER BY start_time ASC"
+                " LIMIT ?",
+                (
+                    self._min_db_time, event_type, self._min_db_time, xmax,
+                    xmin, self._min_db_time, _MAX_EVENTS))
+        results = self._cur.fetchall()
+        if not results:
+            return list(), list(), list(), None
+
+        if len(results) == _MAX_EVENTS:
+            return tuple(zip(*results)) + (results[-1][1],)    # type: ignore
+
+        return tuple(zip(*results)) + (None,)    # type: ignore
+
+    def update_data(self, ax: Axes) -> None:
+        """Update the plot after the axes have changed
+
+        This is called after the user has panned or zoomed, and refreshes the
+        plot.
+
+        Args:
+            ax: The Axes object we are drawing in
+        """
+        xmin, xmax = ax.viewLim.intervalx
+
+        for event_type in _EVENT_TYPES:
+            instances, start_times, durations, cutoff = self.get_data(
+                    event_type, xmin, xmax)
+            if instances:
+                # update existing rectangles
+                bars = self._bars[event_type].patches
+                n_cur = len(instances)
+                n_avail = len(bars)
+
+                for i in range(min(n_cur, n_avail)):
+                    bars[i].set_y(instances[i] - _BAR_WIDTH * 0.5)
+                    bars[i].set_x(start_times[i])
+                    bars[i].set_width(durations[i])
+                    bars[i].set_visible(True)
+
+                # set any superfluous ones invisible
+                for i in range(n_cur, n_avail):
+                    bars[i].set_visible(False)
+
+            # update cutoff bars
+            bars = self._bars['_CUTOFF'].patches
+            if cutoff:
+                for bar in bars:
+                    bar.set_x(cutoff)
+                    bar.set_width(self._global_xmax - cutoff)
+                    bar.set_visible(True)
+                self._cutoff_warning.set_visible(True)
+            else:
+                for bar in bars:
+                    bar.set_visible(False)
+                self._cutoff_warning.set_visible(False)
+
+
+tplot = None    # type: Optional[TimelinePlot]
+
+
+def plot_timeline(performance_file: Path) -> None:
+    global tplot
+    tplot = TimelinePlot(performance_file)
 
 
 def show_plots() -> None:
     """Actually show the plots on screen"""
     plt.show()
+    if tplot:
+        tplot.close()

@@ -18,7 +18,7 @@ def test_create_profile_store(tmp_path):
     cur.execute("SELECT major_version, minor_version FROM muscle3_format")
     major, minor = cur.fetchone()
     assert major == 1
-    assert minor == 0
+    assert minor == 1
 
     cur.execute("SELECT oid, name FROM event_types")
     etypes = cur.fetchall()

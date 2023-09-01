@@ -194,7 +194,7 @@ class ProfileStore(ProfileDatabase):
                 "    minor_version INTEGER NOT NULL)")
         cur.execute(
                 "INSERT INTO muscle3_format(major_version, minor_version)"
-                "    VALUES (1, 0)")
+                "    VALUES (1, 1)")
 
         cur.execute(
                 "CREATE TABLE instances ("

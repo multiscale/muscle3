@@ -97,13 +97,14 @@ def plot_resources(performance_file: Path) -> None:
 
 
 _EVENT_TYPES = (
-        'REGISTER', 'CONNECT', 'DEREGISTER',
+        'REGISTER', 'CONNECT', 'DISCONNECT_WAIT', 'DEREGISTER',
         'SEND', 'RECEIVE_WAIT', 'RECEIVE_TRANSFER', 'RECEIVE_DECODE')
 
 
 _EVENT_PALETTE = {
         'REGISTER': '#910f33',
         'CONNECT': '#c85172',
+        'DISCONNECT_WAIT': '#eedddd',
         'DEREGISTER': '#910f33',
         'RECEIVE_WAIT': '#cccccc',
         'RECEIVE_TRANSFER': '#ff7d00',
@@ -193,9 +194,16 @@ class TimelinePlot:
         for event_type in _EVENT_TYPES:
             instances, start_times, durations, cutoff = self.get_data(
                     event_type, xmin, self._global_xmax)
+
+            if not instances:
+                # Work around https://github.com/matplotlib/matplotlib/issues/21506
+                instances = ['']
+                start_times = [float('NaN')]
+                durations = [float('NaN')]
+
             self._bars[event_type] = ax.barh(
-                    instances[0:_MAX_EVENTS], durations[0:_MAX_EVENTS], _BAR_WIDTH,
-                    label=event_type, left=start_times[0:_MAX_EVENTS],
+                    instances, durations, _BAR_WIDTH,
+                    label=event_type, left=start_times,
                     color=_EVENT_PALETTE[event_type])
             if cutoff:
                 first_cutoff = min(first_cutoff, cutoff)
@@ -289,18 +297,19 @@ class TimelinePlot:
                 for i in range(n_cur, n_avail):
                     bars[i].set_visible(False)
 
-            # update cutoff bars
-            bars = self._bars['_CUTOFF'].patches
-            if cutoff:
-                for bar in bars:
-                    bar.set_x(cutoff)
-                    bar.set_width(self._global_xmax - cutoff)
-                    bar.set_visible(True)
-                self._cutoff_warning.set_visible(True)
-            else:
-                for bar in bars:
-                    bar.set_visible(False)
-                self._cutoff_warning.set_visible(False)
+            # update cutoff bars, if any
+            if '_CUTOFF' in self._bars:
+                bars = self._bars['_CUTOFF'].patches
+                if cutoff:
+                    for bar in bars:
+                        bar.set_x(cutoff)
+                        bar.set_width(self._global_xmax - cutoff)
+                        bar.set_visible(True)
+                    self._cutoff_warning.set_visible(True)
+                else:
+                    for bar in bars:
+                        bar.set_visible(False)
+                    self._cutoff_warning.set_visible(False)
 
 
 tplot = None    # type: Optional[TimelinePlot]

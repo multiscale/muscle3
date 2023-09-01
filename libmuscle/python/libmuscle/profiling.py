@@ -9,12 +9,13 @@ class ProfileEventType(Enum):
     """Profiling event types for MUSCLE3."""
     REGISTER = 0
     CONNECT = 4
-    DEREGISTER = 1
     SEND = 2
     RECEIVE = 3
     RECEIVE_WAIT = 5
     RECEIVE_TRANSFER = 6
     RECEIVE_DECODE = 7
+    DISCONNECT_WAIT = 8
+    DEREGISTER = 1
 
 
 class ProfileTimestamp:

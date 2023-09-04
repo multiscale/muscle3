@@ -14,6 +14,44 @@ multiscale simulation. Simulation models can be as simple as a single Python
 file, or as complex as a combination of multiple separate simulation codes
 written in C++ or Fortran, and running on an HPC machine.
 
+Contributors
+------------
+
+.. image:: contributor_logos.png
+   :alt: Logos of the University of Amsterdam Computational Science Lab, Netherlands eScience Center, and Ignition Computing
+
+University of Amsterdam Computational Science Lab
+  Original concept, Multiscale Modelling and Simulation Framework (MMSF) coupling
+  theory, original MUSCLE, MUSCLE2.
+
+Netherlands eScience Center
+  MUSCLE3 implementation, teaching materials.
+
+Ignition Computing
+  Checkpointing implementation and additional development.
+
+
+This work was supported by the Netherlands eScience Center and NWO under grant number
+27015G01.
+
+We would like to acknowledge the contribution by The ITER Organization of results of
+work carried out within the framework of ITER contract IO/22/CT/4300002587. The views
+and opinions expressed herein do not necessarily reflect those of the ITER Organization.
+
+Academic collaboration
+----------------------
+
+Please contact `prof. Alfons Hoekstra (UvA CSL) <https://www.uva.nl/profiel/h/o/a.g.hoekstra/a.g.hoekstra.html>`_
+and/or `Lourens Veen (NLeSC) <https://www.esciencecenter.nl/team/lourens-veen-msc/>`_.
+
+Commercial support
+------------------
+
+Please contact `Ignition Computing <https://www.ignitioncomputing.com>`_.
+
+Citing MUSCLE3
+--------------
+
 If you use MUSCLE3 for scientific work, please `cite
 the version of the MUSCLE3 software you used
 <https://www.research-software.nl/software/muscle3>`_ and the following paper:

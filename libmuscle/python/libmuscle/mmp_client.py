@@ -18,7 +18,6 @@ from libmuscle.logging import LogMessage
 from libmuscle.snapshot import SnapshotMetadata
 
 
-CONNECTION_TIMEOUT = 300
 PEER_TIMEOUT = 600
 PEER_INTERVAL_MIN = 5.0
 PEER_INTERVAL_MAX = 10.0

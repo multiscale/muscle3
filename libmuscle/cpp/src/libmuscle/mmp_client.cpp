@@ -33,7 +33,6 @@ using ymmsl::SettingValue;
 
 
 namespace {
-    const float connection_timeout = 300.0f;
     const std::chrono::milliseconds peer_timeout(600000);
     const int peer_interval_min = 5000;     // milliseconds
     const int peer_interval_max = 10000;    // milliseconds

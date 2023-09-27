@@ -83,7 +83,7 @@ std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_copy_(std::intptr_t value) {
 std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<bool const * const>(data_array);
+    auto data_array_p = const_cast<bool const *>(data_array);
     DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
     return reinterpret_cast<std::intptr_t>(result);
 }
@@ -91,7 +91,7 @@ std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_logical_a_(bool * data_arra
 std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    auto data_array_p = const_cast<int32_t const *>(data_array);
     DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
     return reinterpret_cast<std::intptr_t>(result);
 }
@@ -99,7 +99,7 @@ std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_int4_a_(int32_t * data_arra
 std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    auto data_array_p = const_cast<int64_t const *>(data_array);
     DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
     return reinterpret_cast<std::intptr_t>(result);
 }
@@ -107,7 +107,7 @@ std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_int8_a_(int64_t * data_arra
 std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<float const * const>(data_array);
+    auto data_array_p = const_cast<float const *>(data_array);
     DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
     return reinterpret_cast<std::intptr_t>(result);
 }
@@ -115,7 +115,7 @@ std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_real4_a_(float * data_array
 std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<double const * const>(data_array);
+    auto data_array_p = const_cast<double const *>(data_array);
     DataConstRef * result = new DataConstRef(DataConstRef::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
     return reinterpret_cast<std::intptr_t>(result);
 }
@@ -134,7 +134,7 @@ std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_logical_n_(
 ) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<bool const * const>(data_array);
+    auto data_array_p = const_cast<bool const *>(data_array);
 
     std::vector<std::string> names_v;
     names_v.emplace_back(index_name_1, index_name_1_size);
@@ -171,7 +171,7 @@ std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_int4_n_(
 ) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    auto data_array_p = const_cast<int32_t const *>(data_array);
 
     std::vector<std::string> names_v;
     names_v.emplace_back(index_name_1, index_name_1_size);
@@ -208,7 +208,7 @@ std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_int8_n_(
 ) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    auto data_array_p = const_cast<int64_t const *>(data_array);
 
     std::vector<std::string> names_v;
     names_v.emplace_back(index_name_1, index_name_1_size);
@@ -245,7 +245,7 @@ std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_real4_n_(
 ) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<float const * const>(data_array);
+    auto data_array_p = const_cast<float const *>(data_array);
 
     std::vector<std::string> names_v;
     names_v.emplace_back(index_name_1, index_name_1_size);
@@ -282,7 +282,7 @@ std::intptr_t LIBMUSCLE_MPI_DataConstRef_create_grid_real8_n_(
 ) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<double const * const>(data_array);
+    auto data_array_p = const_cast<double const *>(data_array);
 
     std::vector<std::string> names_v;
     names_v.emplace_back(index_name_1, index_name_1_size);
@@ -1333,7 +1333,7 @@ std::intptr_t LIBMUSCLE_MPI_Data_create_copy_(std::intptr_t value) {
 std::intptr_t LIBMUSCLE_MPI_Data_create_grid_logical_a_(bool * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<bool const * const>(data_array);
+    auto data_array_p = const_cast<bool const *>(data_array);
     Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
     return reinterpret_cast<std::intptr_t>(result);
 }
@@ -1341,7 +1341,7 @@ std::intptr_t LIBMUSCLE_MPI_Data_create_grid_logical_a_(bool * data_array, std::
 std::intptr_t LIBMUSCLE_MPI_Data_create_grid_int4_a_(int32_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    auto data_array_p = const_cast<int32_t const *>(data_array);
     Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
     return reinterpret_cast<std::intptr_t>(result);
 }
@@ -1349,7 +1349,7 @@ std::intptr_t LIBMUSCLE_MPI_Data_create_grid_int4_a_(int32_t * data_array, std::
 std::intptr_t LIBMUSCLE_MPI_Data_create_grid_int8_a_(int64_t * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    auto data_array_p = const_cast<int64_t const *>(data_array);
     Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
     return reinterpret_cast<std::intptr_t>(result);
 }
@@ -1357,7 +1357,7 @@ std::intptr_t LIBMUSCLE_MPI_Data_create_grid_int8_a_(int64_t * data_array, std::
 std::intptr_t LIBMUSCLE_MPI_Data_create_grid_real4_a_(float * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<float const * const>(data_array);
+    auto data_array_p = const_cast<float const *>(data_array);
     Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
     return reinterpret_cast<std::intptr_t>(result);
 }
@@ -1365,7 +1365,7 @@ std::intptr_t LIBMUSCLE_MPI_Data_create_grid_real4_a_(float * data_array, std::s
 std::intptr_t LIBMUSCLE_MPI_Data_create_grid_real8_a_(double * data_array, std::size_t * data_array_shape, std::size_t data_array_ndims) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<double const * const>(data_array);
+    auto data_array_p = const_cast<double const *>(data_array);
     Data * result = new Data(Data::grid(data_array_p, data_array_shape_v, {}, libmuscle::StorageOrder::first_adjacent));
     return reinterpret_cast<std::intptr_t>(result);
 }
@@ -1384,7 +1384,7 @@ std::intptr_t LIBMUSCLE_MPI_Data_create_grid_logical_n_(
 ) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<bool const * const>(data_array);
+    auto data_array_p = const_cast<bool const *>(data_array);
 
     std::vector<std::string> names_v;
     names_v.emplace_back(index_name_1, index_name_1_size);
@@ -1421,7 +1421,7 @@ std::intptr_t LIBMUSCLE_MPI_Data_create_grid_int4_n_(
 ) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int32_t const * const>(data_array);
+    auto data_array_p = const_cast<int32_t const *>(data_array);
 
     std::vector<std::string> names_v;
     names_v.emplace_back(index_name_1, index_name_1_size);
@@ -1458,7 +1458,7 @@ std::intptr_t LIBMUSCLE_MPI_Data_create_grid_int8_n_(
 ) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<int64_t const * const>(data_array);
+    auto data_array_p = const_cast<int64_t const *>(data_array);
 
     std::vector<std::string> names_v;
     names_v.emplace_back(index_name_1, index_name_1_size);
@@ -1495,7 +1495,7 @@ std::intptr_t LIBMUSCLE_MPI_Data_create_grid_real4_n_(
 ) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<float const * const>(data_array);
+    auto data_array_p = const_cast<float const *>(data_array);
 
     std::vector<std::string> names_v;
     names_v.emplace_back(index_name_1, index_name_1_size);
@@ -1532,7 +1532,7 @@ std::intptr_t LIBMUSCLE_MPI_Data_create_grid_real8_n_(
 ) {
     std::vector<std::size_t> data_array_shape_v(
             data_array_shape, data_array_shape + data_array_ndims);
-    auto data_array_p = const_cast<double const * const>(data_array);
+    auto data_array_p = const_cast<double const *>(data_array);
 
     std::vector<std::string> names_v;
     names_v.emplace_back(index_name_1, index_name_1_size);

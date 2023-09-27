@@ -37,7 +37,7 @@ void Logger::set_local_level(LogLevel level) {
     local_level_ = level;
 }
 
-void Logger::append_args_(std::ostringstream & s) {}
+void Logger::append_args_(std::ostringstream &) {}
 
 } }
 

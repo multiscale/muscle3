@@ -5,7 +5,7 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 namespace mcp {
 
-bool TransportClient::can_connect_to(std::string const & location) {
+bool TransportClient::can_connect_to(std::string const &) {
     return false;
 }
 

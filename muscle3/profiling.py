@@ -322,6 +322,6 @@ def plot_timeline(performance_file: Path) -> None:
 
 def show_plots() -> None:
     """Actually show the plots on screen"""
-    plt.show()
+    plt.show()      # type: ignore
     if tplot:
         tplot.close()

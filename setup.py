@@ -43,6 +43,7 @@ setup(
         'muscle3': 'muscle3',
         'libmuscle': 'libmuscle/python/libmuscle'
     },
+    include_package_data=True,
     entry_points={
         'console_scripts': [
             'muscle_manager=muscle3.muscle_manager:manage_simulation',

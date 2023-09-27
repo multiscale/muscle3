@@ -72,9 +72,9 @@ class Profiler {
         std::vector<ProfileEvent> events_;
         std::chrono::steady_clock::time_point next_send_;
 
-        std::thread thread_;
-        std::condition_variable done_cv_;
         bool done_;
+        std::condition_variable done_cv_;
+        std::thread thread_;
 
         /* Background thread that ensures regular communication.
          *

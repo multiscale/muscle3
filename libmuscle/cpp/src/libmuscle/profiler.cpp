@@ -31,8 +31,8 @@ Profiler::Profiler(MMPClient & manager)
     : manager_(manager)
     , enabled_(true)
     , events_()
-    , thread_(communicate_, this)
     , done_(false)
+    , thread_(communicate_, this)
 {}
 
 Profiler::~Profiler() {

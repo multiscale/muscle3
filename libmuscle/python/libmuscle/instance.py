@@ -1005,11 +1005,17 @@ class Instance:
         Returns:
             True iff no ClosePort messages were received.
         """
+        sw_event = ProfileEvent(ProfileEventType.SHUTDOWN_WAIT, ProfileTimestamp())
+
         all_ports_open = self.__receive_settings()
         self.__pre_receive_f_init()
         for message in self._f_init_cache.values():
             if isinstance(message.data, ClosePort):
                 all_ports_open = False
+
+        if not all_ports_open:
+            self._profiler.record_event(sw_event)
+
         return all_ports_open
 
     def __receive_settings(self) -> bool:

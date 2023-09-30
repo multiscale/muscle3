@@ -103,7 +103,7 @@ class ProfileDatabase:
         cur.execute(
                 "SELECT instance, start_time"
                 " FROM all_events"
-                " WHERE type = 'DISCONNECT_WAIT'")
+                " WHERE type = 'SHUTDOWN_WAIT'")
         stop_run = dict(cur.fetchall())
 
         if not stop_run:

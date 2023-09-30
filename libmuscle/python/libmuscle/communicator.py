@@ -414,13 +414,13 @@ class Communicator:
             client.close()
 
         wait_event = ProfileEvent(ProfileEventType.DISCONNECT_WAIT, ProfileTimestamp())
-
         self._post_office.wait_for_receivers()
-
         self._profiler.record_event(wait_event)
 
+        shutdown_event = ProfileEvent(ProfileEventType.SHUTDOWN, ProfileTimestamp())
         for server in self._servers:
             server.close()
+        self._profiler.record_event(shutdown_event)
 
     def restore_message_counts(self, port_message_counts: Dict[str, List[int]]
                                ) -> None:

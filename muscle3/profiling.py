@@ -97,14 +97,16 @@ def plot_resources(performance_file: Path) -> None:
 
 
 _EVENT_TYPES = (
-        'REGISTER', 'CONNECT', 'DISCONNECT_WAIT', 'DEREGISTER',
-        'SEND', 'RECEIVE_WAIT', 'RECEIVE_TRANSFER', 'RECEIVE_DECODE')
+        'REGISTER', 'CONNECT', 'SHUTDOWN_WAIT', 'DISCONNECT_WAIT', 'SHUTDOWN',
+        'DEREGISTER', 'SEND', 'RECEIVE_WAIT', 'RECEIVE_TRANSFER', 'RECEIVE_DECODE')
 
 
 _EVENT_PALETTE = {
         'REGISTER': '#910f33',
         'CONNECT': '#c85172',
+        'SHUTDOWN_WAIT': '#ffdddd',
         'DISCONNECT_WAIT': '#eedddd',
+        'SHUTDOWN': '#c85172',
         'DEREGISTER': '#910f33',
         'RECEIVE_WAIT': '#cccccc',
         'RECEIVE_TRANSFER': '#ff7d00',
@@ -171,6 +173,11 @@ class TimelinePlot:
 
         instances = sorted(begin_times.keys())
         self._instances = instances
+
+        if not begin_times:
+            raise RuntimeError(
+                    'This database appears to be empty. Did the simulation crash'
+                    ' before any data were generated?')
 
         # Rest of plot
         ax.set_title('Execution timeline')

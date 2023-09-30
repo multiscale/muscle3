@@ -151,6 +151,11 @@ def manage_simulation(
         print()
     else:
         print('Simulation completed successfully.')
+        try:
+            rel_run_dir = run_dir_path.relative_to(Path.cwd())
+            print(f'Output may be found in {rel_run_dir}')
+        except ValueError:
+            print(f'Output may be found in {run_dir_path}')
 
     sys.exit(0 if success else 1)
 

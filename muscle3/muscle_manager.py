@@ -143,7 +143,7 @@ def manage_simulation(
         print('Here are the final lines of the manager log:')
         print()
         print('-' * 80)
-        print(last_lines(log_file, 30), '    ')
+        print(last_lines(log_file, 50), '    ')
         print('-' * 80)
         print()
         print('You can find the full log at')

@@ -25,7 +25,9 @@ enum class ProfileEventType {
     receive_wait = 5,
     receive_transfer = 6,
     receive_decode = 7,
+    shutdown_wait = 9,
     disconnect_wait = 8,
+    shutdown = 10,
     deregister = 1
 };
 

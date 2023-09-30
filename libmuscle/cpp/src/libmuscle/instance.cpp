@@ -849,11 +849,16 @@ bool Instance::Impl::have_f_init_connections_() {
  * @return true iff no ClosePort messages were received.
  */
 bool Instance::Impl::pre_receive_() {
+    ProfileEvent sw_event(ProfileEventType::shutdown_wait, ProfileTimestamp());
+
     bool all_ports_open = receive_settings_();
     pre_receive_f_init_();
     for (auto const & ref_msg : f_init_cache_)
         if (is_close_port(ref_msg.second.data()))
                 all_ports_open = false;
+
+    if (!all_ports_open)
+        profiler_->record_event(std::move(sw_event));
     return all_ports_open;
 }
 

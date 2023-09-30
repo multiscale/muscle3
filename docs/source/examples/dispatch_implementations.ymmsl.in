@@ -1,0 +1,8 @@
+ymmsl_version: v0.1
+
+implementations:
+  buffer_cpp:
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/cpp/build/buffer
+

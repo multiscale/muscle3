@@ -1,0 +1,34 @@
+ymmsl_version: v0.1
+
+model:
+  name: dispatch_cpp
+
+  components:
+    component1:
+      implementation: buffer_cpp
+      ports:
+        o_f: out
+
+    component2:
+      implementation: buffer_cpp
+      ports:
+        f_init: in
+        o_f: out
+
+    component3:
+      implementation: buffer_cpp
+      ports:
+        f_init: in
+
+  conduits:
+    component1.out: component2.in
+    component2.out: component3.in
+
+resources:
+  component1:
+    threads: 1
+  component2:
+    threads: 1
+  component3:
+    threads: 1
+

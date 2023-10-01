@@ -194,7 +194,7 @@ class ProfileStore(ProfileDatabase):
                 "    minor_version INTEGER NOT NULL)")
         cur.execute(
                 "INSERT INTO muscle3_format(major_version, minor_version)"
-                "    VALUES (1, 0)")
+                "    VALUES (1, 1)")
 
         cur.execute(
                 "CREATE TABLE instances ("
@@ -240,6 +240,8 @@ class ProfileStore(ProfileDatabase):
                 "    message_timestamp DOUBLE)")
 
         cur.execute("CREATE INDEX instances_oid_idx ON instances(oid)")
+
+        cur.execute("CREATE INDEX events_start_time_idx ON events(start_time)")
 
         cur.execute(
                 "CREATE VIEW all_events"

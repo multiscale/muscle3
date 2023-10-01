@@ -6,7 +6,6 @@ import sys
 from typing import cast, Dict, List, Optional, Tuple, overload
 # TODO: import from typing module when dropping support for python 3.7
 from typing_extensions import Literal
-import warnings
 
 from ymmsl import (Identifier, Operator, SettingValue, Port, Reference,
                    Settings)
@@ -116,11 +115,6 @@ class Instance:
         self.__is_shut_down = False
 
         self._flags = InstanceFlags(flags)
-        if InstanceFlags.USES_CHECKPOINT_API in self._flags:
-            warnings.warn(
-                    'Checkpointing in MUSCLE3 version 0.6.0 is still in'
-                    ' development: the API may change in a future MUSCLE3'
-                    ' release.')
 
         # Note that these are accessed by Muscle3, but otherwise private.
         self._name, self._index = self.__make_full_name()
@@ -246,10 +240,7 @@ class Instance:
                 self._save_snapshot(None, True, self.__f_init_max_timestamp)
 
         if not do_reuse:
-            self.__close_ports()
-            self._communicator.shutdown()
-            self._deregister()
-            self.__manager.close()
+            self.__shutdown()
 
         self._api_guard.reuse_instance_done(do_reuse)
         return do_reuse
@@ -1014,11 +1005,17 @@ class Instance:
         Returns:
             True iff no ClosePort messages were received.
         """
+        sw_event = ProfileEvent(ProfileEventType.SHUTDOWN_WAIT, ProfileTimestamp())
+
         all_ports_open = self.__receive_settings()
         self.__pre_receive_f_init()
         for message in self._f_init_cache.values():
             if isinstance(message.data, ClosePort):
                 all_ports_open = False
+
+        if not all_ports_open:
+            self._profiler.record_event(sw_event)
+
         return all_ports_open
 
     def __receive_settings(self) -> bool:
@@ -1251,14 +1248,15 @@ class Instance:
         self.__close_outgoing_ports()
         self.__close_incoming_ports()
 
-    def __shutdown(self, message: str) -> None:
+    def __shutdown(self, message: Optional[str] = None) -> None:
         """Shuts down simulation.
 
-        This logs the given error message, communicates to the peers
-        that we're shutting down, and deregisters from the manager.
+        This logs the given error message, if any, communicates to the
+        peers that we're shutting down, and deregisters from the manager.
         """
         if not self.__is_shut_down:
-            _logger.critical(message)
+            if message is not None:
+                _logger.critical(message)
             self.__close_ports()
             self._communicator.shutdown()
             self._deregister()

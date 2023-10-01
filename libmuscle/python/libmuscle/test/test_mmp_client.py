@@ -18,11 +18,10 @@ def test_init() -> None:
 
 
 def test_connection_fail() -> None:
-    with patch('libmuscle.mmp_client.CONNECTION_TIMEOUT', 1):
-        with pytest.raises(RuntimeError):
-            # Port 255 is reserved and privileged, so there's probably
-            # nothing there.
-            MMPClient(Reference([]), 'tcp:localhost:255')
+    with pytest.raises(RuntimeError):
+        # Port 255 is reserved and privileged, so there's probably
+        # nothing there.
+        MMPClient(Reference([]), 'tcp:localhost:255')
 
 
 def test_submit_log_message(mocked_mmp_client, profile_data) -> None:

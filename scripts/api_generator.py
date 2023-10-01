@@ -755,7 +755,7 @@ class Array(Par):
         result = (
                 'std::vector<std::size_t> {0}_shape_v(\n'
                 '        {0}_shape, {0}_shape + {0}_ndims);\n'
-                'auto {0}_p = const_cast<{1} const * const>({0});\n'
+                'auto {0}_p = const_cast<{1} const *>({0});\n'
                 ).format(
                         self.name, self.elem_type.fc_cpp_type())
 

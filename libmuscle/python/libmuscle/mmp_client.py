@@ -1,6 +1,7 @@
 import dataclasses
 from pathlib import Path
 from random import uniform
+from threading import Lock
 from time import perf_counter, sleep
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
@@ -17,7 +18,6 @@ from libmuscle.logging import LogMessage
 from libmuscle.snapshot import SnapshotMetadata
 
 
-CONNECTION_TIMEOUT = 300
 PEER_TIMEOUT = 600
 PEER_INTERVAL_MIN = 5.0
 PEER_INTERVAL_MAX = 10.0
@@ -106,6 +106,9 @@ class MMPClient():
 
     It manages the connection, and converts between our native types
     and the gRPC generated types.
+
+    Communication is protected by an internal lock, so this class can
+    be called simultaneously from different threads.
     """
     def __init__(self, instance_id: Reference, location: str) -> None:
         """Create an MMPClient
@@ -115,6 +118,7 @@ class MMPClient():
         """
         self._instance_id = instance_id
         self._transport_client = TcpTransportClient(location)
+        self._mutex = Lock()
 
     def close(self) -> None:
         """Close the connection
@@ -280,6 +284,7 @@ class MMPClient():
         Returns:
             The decoded response
         """
-        encoded_request = msgpack.packb(request, use_bin_type=True)
-        response, _ = self._transport_client.call(encoded_request)
-        return msgpack.unpackb(response, raw=False)
+        with self._mutex:
+            encoded_request = msgpack.packb(request, use_bin_type=True)
+            response, _ = self._transport_client.call(encoded_request)
+            return msgpack.unpackb(response, raw=False)

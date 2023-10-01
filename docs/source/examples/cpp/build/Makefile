@@ -5,7 +5,9 @@ MPI_CXXFLAGS := -std=c++14 -g $(shell pkg-config --cflags libmuscle_mpi ymmsl)
 MPI_LDFLAGS := $(shell pkg-config --libs libmuscle_mpi ymmsl)
 
 
-binaries := reaction diffusion mc_driver load_balancer checkpointing_reaction checkpointing_diffusion benchmark
+binaries := reaction diffusion mc_driver load_balancer
+binaries += checkpointing_reaction checkpointing_diffusion
+binaries += benchmark buffer
 mpi_binaries := reaction_mpi
 
 

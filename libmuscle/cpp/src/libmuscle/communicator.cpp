@@ -314,10 +314,14 @@ void Communicator::shutdown() {
     for (auto & client : clients_)
         client.second->close();
 
+    ProfileEvent wait_event(ProfileEventType::disconnect_wait, ProfileTimestamp());
     post_office_.wait_for_receivers();
+    profiler_.record_event(std::move(wait_event));
 
+    ProfileEvent shutdown_event(ProfileEventType::shutdown, ProfileTimestamp());
     for (auto & server : servers_)
         server->close();
+    profiler_.record_event(std::move(shutdown_event));
 }
 
 Communicator::PortMessageCounts Communicator::get_message_counts() {

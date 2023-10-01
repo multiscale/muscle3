@@ -36,13 +36,15 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: 3.10'],
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11'],
 
     packages=_muscle3_packages,
     package_dir={
         'muscle3': 'muscle3',
         'libmuscle': 'libmuscle/python/libmuscle'
     },
+    include_package_data=True,
     entry_points={
         'console_scripts': [
             'muscle_manager=muscle3.muscle_manager:manage_simulation',

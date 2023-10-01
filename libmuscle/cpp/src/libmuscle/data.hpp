@@ -623,6 +623,18 @@ class Data : public DataConstRef {
         // create from scalar type
         using DataConstRef::DataConstRef;
 
+        /** Copy-construct a Data object.
+         *
+         * Explicit default avoids a compiler warning on some compilers.
+         */
+        Data(Data const &) = default;
+
+        /** Move-construct a Data object.
+         *
+         * Explicit default avoids a compiler warning on some compilers.
+         */
+        Data(Data &&) = default;
+
         /** Create a Data object containing a grid object.
          *
          * This creates a DataConstRef that represents a grid or array of a

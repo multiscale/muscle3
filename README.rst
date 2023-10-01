@@ -1,8 +1,8 @@
 .. image:: https://github.com/multiscale/muscle3/raw/develop/docs/source/muscle3_logo_readme.png
     :alt: MUSCLE3
 
-.. image:: https://readthedocs.org/projects/muscle3/badge/?version=latest
-    :target: https://muscle3.readthedocs.io/en/develop/?badge=latest
+.. image:: https://readthedocs.org/projects/muscle3/badge/?version=master
+    :target: https://muscle3.readthedocs.io/en/develop/?badge=master
     :alt: Documentation Build Status
 
 .. image:: https://github.com/multiscale/muscle3/workflows/continuous_integration/badge.svg?branch=master
@@ -18,10 +18,20 @@
 |
 
 MUSCLE3 is the third incarnation of the MUSCLE Multiscale Coupling Library and
-Environment. It is developed by the e-MUSC project of the University of
-Amsterdam and the Netherlands eScience Center.
+Environment. With MUSCLE3, you can connect multiple simulation models together into
+a multiscale simulation.
 
 Browse to `the MUSCLE3 documentation`_ to get started.
+
+
+Collaboration
+=============
+
+For academic collaboration, please contact `prof. Alfons Hoekstra (UvA CSL) <https://www.uva.nl/profiel/h/o/a.g.hoekstra/a.g.hoekstra.html>`_
+and/or `Lourens Veen (NLeSC) <https://www.esciencecenter.nl/team/lourens-veen-msc/>`_.
+
+Commercial support for MUSCLE3 is provided by
+`Ignition Computing <https://www.ignitioncomputing.com>`_.
 
 
 Legal

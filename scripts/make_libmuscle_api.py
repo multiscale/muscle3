@@ -81,7 +81,7 @@ class GridConstructor(MultiMemFun):
                     ) {{
                         std::vector<std::size_t> data_array_shape_v(
                                 data_array_shape, data_array_shape + data_array_ndims);
-                        auto data_array_p = const_cast<{1} const * const>(data_array);
+                        auto data_array_p = const_cast<{1} const *>(data_array);
 
                         std::vector<std::string> names_v;
                         names_v.emplace_back(index_name_1, index_name_1_size);

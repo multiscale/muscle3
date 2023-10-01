@@ -29,6 +29,7 @@ std::chrono::steady_clock::duration communication_interval_() {
 #include <libmuscle/profiling.hpp>
 
 #include <chrono>
+#include <cstdlib>
 #include <time.h>
 #include <utility>
 #include <gtest/gtest.h>
@@ -211,7 +212,17 @@ TEST(libmuscle_profiler, test_send_to_mock_mmp_client) {
 
 TEST(libmuscle_profiler, test_send_timeout) {
     reset_mocks();
-    communication_interval = 40ms;
+
+    std::chrono::steady_clock::duration wait_time;
+
+    if (getenv("CI")) {
+        communication_interval = 40ms;
+        wait_time = 500ms;
+    }
+    else {
+        communication_interval = 40ms;
+        wait_time = 60ms;
+    }
 
     MockMMPClient mock_mmp_client(Reference("test_instance"), "");
     Profiler profiler(mock_mmp_client);
@@ -220,7 +231,7 @@ TEST(libmuscle_profiler, test_send_timeout) {
             ProfileEventType::receive, ProfileTimestamp(), ProfileTimestamp());
     profiler.record_event(ProfileEvent(e1));
 
-    std::this_thread::sleep_for(50ms);
+    std::this_thread::sleep_for(wait_time);
 
     ASSERT_EQ(mock_mmp_client.last_submitted_profile_events.size(), 1u);
     ASSERT_EQ(mock_mmp_client.last_submitted_profile_events.at(0), e1);

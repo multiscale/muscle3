@@ -1,7 +1,8 @@
 import logging
+from pathlib import Path
 from textwrap import indent
 from threading import Thread
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 from multiprocessing import Queue
 import queue
 
@@ -156,6 +157,9 @@ class InstanceManager:
                 self._requests_out.put(CancelAllRequest())
                 all_seemingly_okay = False
 
+        # Get all results
+        results: List[Process] = list()
+
         while self._num_running > 0:
             result = self._results_in.get()
 
@@ -165,48 +169,98 @@ class InstanceManager:
                     ' a bug report.')
                 return False
 
-            if result.exit_code != 0:
-                if result.status == ProcessStatus.CANCELED:
-                    _logger.info(
-                            f'Instance {result.instance} was shut down by'
-                            f' MUSCLE3 because an error occurred elsewhere')
-                else:
-                    _logger.error(
-                            f'Instance {result.instance} quit with error'
-                            f' {result.exit_code}')
-
-                    stderr_file = (
-                            self._run_dir.instance_dir(result.instance) /
-                            'stderr.txt')
-                    _logger.error(
-                            'The last error output of this instance was:')
-                    _logger.error(
-                            '\n' + indent(last_lines(stderr_file, 20), '    '))
-                    _logger.error(
-                            'More output may be found in'
-                            f' {self._run_dir.instance_dir(result.instance)}\n'
-                            )
+            results.append(result)
+            if result.status != ProcessStatus.CANCELED:
+                registered = self._instance_registry.did_register(result.instance)
+                if result.exit_code != 0 or not registered:
                     cancel_all()
+            self._num_running -= 1
 
-            elif not self._instance_registry.did_register(result.instance):
-                _logger.error(
-                        f'Instance {result.instance} quit with no error'
-                        ' (exit code 0), but it never registered with the'
-                        ' manager. Maybe it never created an Instance'
-                        ' object?')
-                cancel_all()
-            else:
-                if result.status == ProcessStatus.CANCELED:
+        # Summarise outcome
+        crashes: List[Tuple[Process, Path]] = list()
+        indirect_crashes: List[Tuple[Process, Path]] = list()
+
+        for result in results:
+            if result.status == ProcessStatus.CANCELED:
+                if result.exit_code == 0:
                     _logger.info(
                             f'Instance {result.instance} was not started'
                             f' because of an error elsewhere')
                 else:
-                    _logger.debug(f'Instance {result.instance} finished')
-                    _logger.debug(f'States: {result.status}')
-                    _logger.debug(f'Exit code: {result.exit_code}')
-                    _logger.debug(f'Error msg: {result.error_msg}')
+                    _logger.info(
+                            f'Instance {result.instance} was shut down by'
+                            f' MUSCLE3 because an error occurred elsewhere')
+            else:
+                stderr_file = (
+                        self._run_dir.instance_dir(result.instance) /
+                        'stderr.txt')
+                if result.exit_code == 0:
+                    if self._instance_registry.did_register(result.instance):
+                        _logger.info(
+                                f'Instance {result.instance} finished with'
+                                ' exit code 0')
+                    else:
+                        _logger.error(
+                                f'Instance {result.instance} quit with no error'
+                                ' (exit code 0), but it never registered with the'
+                                ' manager. Maybe it never created an Instance'
+                                ' object?')
+                        crashes.append((result, stderr_file))
+                else:
+                    with stderr_file.open() as f:
+                        peer_crash = any(['peer crash?' in line for line in f])
 
-            self._num_running -= 1
+                    if peer_crash:
+                        _logger.warning(
+                                f'Instance {result.instance} crashed, likely because'
+                                f' an error occurred elsewhere.')
+                        indirect_crashes.append((result, stderr_file))
+                    else:
+                        _logger.error(
+                                f'Instance {result.instance} quit with exit code'
+                                f' {result.exit_code}')
+                        crashes.append((result, stderr_file))
+
+            _logger.debug(f'Status: {result.status}')
+            _logger.debug(f'Exit code: {result.exit_code}')
+            _logger.debug(f'Error msg: {result.error_msg}')
+
+        # Show errors from crashed components
+        if crashes:
+            for result, stderr_file in crashes:
+                _logger.error(
+                        f'The last error output of {result.instance} was:')
+                _logger.error(
+                        '\n' + indent(last_lines(stderr_file, 20), '    '))
+                _logger.error(
+                        'More output may be found in'
+                        f' {self._run_dir.instance_dir(result.instance)}\n'
+                        )
+        else:
+            # Possibly a component exited without error, but prematurely. If this
+            # caused ancillary crashes due to dropped connections, then the logs
+            # of those will give a hint as to what the problem may be, so print
+            # those instead.
+            _logger.error(
+                    'At this point, one or more instances crashed because they'
+                    ' lost their connection to another instance, but no other'
+                    ' crashing instance was found that could have caused this.')
+            _logger.error(
+                    'This means that either another instance quit before it was'
+                    ' supposed to, but with exit code 0, or there was an actual'
+                    ' network problem that caused the connection to drop.')
+            _logger.error(
+                    'Here is the output of the instances that lost connection:')
+            for result, stderr_file in indirect_crashes:
+                _logger.error(
+                        f'The last error output of {result.instance} was:')
+                _logger.error(
+                        '\n' + indent(last_lines(stderr_file, 20), '    '))
+                _logger.error(
+                        'More output may be found in'
+                        f' {self._run_dir.instance_dir(result.instance)}\n'
+                        )
+
         return all_seemingly_okay
 
     def shutdown(self) -> None:

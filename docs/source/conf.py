@@ -136,6 +136,13 @@ patch_installation_version()
 import subprocess
 subprocess.call('cd ../.. ; doxygen', shell=True)
 
+# -- Remove impl namespaces for exported symbols --
+for p in pathlib.Path('..', 'doxygen', 'xml').iterdir():
+    contents = p.read_text()
+    contents = contents.replace('::_MUSCLE_IMPL_NS', '')
+    contents = contents.replace('::impl', '')
+    p.write_text(contents)
+
 # -- Run apidoc plug-in manually, as readthedocs doesn't support it -------
 # See https://github.com/rtfd/readthedocs.org/issues/1139
 def run_apidoc(_):

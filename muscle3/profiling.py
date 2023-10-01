@@ -184,7 +184,7 @@ class TimelinePlot:
         ax.set_xlabel('Wallclock time (s)')
 
         # Background
-        ax.barh(
+        running_artist = ax.barh(
                 instances,
                 [end_times[i] - begin_times[i] for i in instances],
                 _BAR_WIDTH,
@@ -230,7 +230,13 @@ class TimelinePlot:
         ax.set_autoscale_on(True)
         ax.callbacks.connect('xlim_changed', self.update_data)
 
-        ax.legend(loc='upper right')
+        ordered_artists = [self._bars[event_type] for event_type in _EVENT_TYPES]
+        ordered_names = list(_EVENT_TYPES)
+
+        ordered_artists.insert(6, running_artist)
+        ordered_names.insert(6, 'RUNNING')
+
+        ax.legend(ordered_artists, ordered_names, loc='upper right')
         ax.figure.canvas.draw_idle()
 
     def close(self) -> None:

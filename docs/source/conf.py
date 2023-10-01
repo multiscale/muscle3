@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# cerise documentation build configuration file, created by
-# sphinx-quickstart on Wed Apr 19 10:25:17 2017.
-#
 # This file is execfile()d with the current directory set to its
 # containing dir.
 #

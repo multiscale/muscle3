@@ -29,7 +29,7 @@ Check metadata
 
 - Check the metadata in ``setup.py``, and update as necessary
 - Check the dependencies, and fix them to an appropriate range of versions
-- Check the copyright date and owners in ``README.rst`` and ``docs/conf.py``
+- Check the copyright date and owners in ``README.rst`` and ``docs/source/conf.py``
   and update as necessary.
 
 Update the changelog
@@ -42,7 +42,7 @@ switch to the development branch:
 .. code-block:: bash
 
   git log <your favourite options>
-  git checkout develop
+  git switch develop
 
 and then edit CHANGELOG.rst and commit.
 
@@ -58,7 +58,7 @@ To start the release process, make a release branch
 
 .. code-block:: bash
 
-  git checkout -b release-x.y.z develop
+  git switch -c release-x.y.z develop
 
 MUSCLE3 uses `Semantic Versioning`_, so name the new version accordingly.
 
@@ -114,7 +114,6 @@ Fix badges
 
 The badges in the README.rst normally point to the development branch versions
 of everything. For the master branch, they should point to the master version.
-Note that for Codacy there is only one badge, so no change is needed.
 
 .. code-block:: bash
 
@@ -135,7 +134,7 @@ important for GitHub and GitHub integrations.
 
 .. code-block:: bash
 
-  git checkout master
+  git switch master
   git merge --no-ff -X theirs release-x.y.z
   git tag -a x.y.z -m 'Release x.y.z'
   git push
@@ -156,8 +155,8 @@ people an idea of what they're looking at. Then copy-paste the description of
 the current release from the change log, and convert it from ReStructuredText
 to MarkDown.
 
-Optionally select 'This is a pre-release' if it's not a final version, then
-publish it.
+Optionally select 'This is a pre-release' if it's not a final version, ensure
+'Set as the latest release' is checked, then publish it.
 
 Build and release to PyPI
 -------------------------
@@ -202,7 +201,7 @@ that we want to have back on the develop branch. So we'll merge it back in:
 
 .. code-block:: bash
 
-  git checkout develop
+  git switch develop
   git merge --no-commit release-x.y.z
 
 

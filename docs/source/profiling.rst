@@ -443,10 +443,10 @@ good idea to specify the columns you want explicitly.
 
 Here is a brief version history:
 
-Version 1.0
+Version 1.0 (written by MUSCLE3 0.7.0)
     Initial release.
 
-Version 1.1
+Version 1.1 (written by MUSCLE3 0.7.1)
     Added new ``SHUTDOWN_WAIT``, ``DISCONNECT_WAIT`` and ``SHUTDOWN`` events.
     No changes to the tables.
 

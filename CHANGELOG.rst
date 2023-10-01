@@ -5,6 +5,34 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_.
 
+0.7.1
+*****
+
+Added
+-----
+
+* Support for Python 3.11 (working already, now official)
+* Enabled type checking support for the libmuscle Python API
+
+Improved
+--------
+
+* Easier crash debugging due to improved root cause detection
+* Fixed crash in profiling timeline plot
+* Better performance of timeline plot
+* Better visual quality of timeline plot
+* Improved profiling of shutdown process
+* Fixed crash in profiler for large simulations
+* Fixed several (harmless) compiler warnings
+* Small documentation rendering improvements
+
+
+Thanks
+------
+
+* David for reporting many of these and submitting a fix too!
+
+
 0.7.0
 *****
 

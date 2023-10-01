@@ -62,11 +62,11 @@ are described here.
 Plotting statistics from the command line
 -----------------------------------------
 
-The most simplest way of examining performance data gathered by MUSCLE3 is
-through the ``muscle3 profile`` command from the shell. If you have done a run,
-then you should have a run directory containing a ``performance.sqlite`` file.
-If you have MUSCLE3 available in your environment (only the Python installation
-is needed) then you have the ``muscle3 profile`` command available to show
+The simplest way of examining performance data gathered by MUSCLE3 is through
+the ``muscle3 profile`` command from the shell. If you have done a run, then
+you should have a run directory containing a ``performance.sqlite`` file.  If
+you have MUSCLE3 available in your environment (only the Python installation is
+needed) then you have the ``muscle3 profile`` command available to show
 per-instance and per-core statistics as well as a timeline of events.
 
 Per-instance time spent
@@ -80,10 +80,10 @@ Per-instance time spent
 
     muscle3 profile --instances /path/to/performance.sqlite
 
-With ``--instances``, the plot will show for each instance how much time it
-spent in total on computing, communicating and waiting. This plot gives an idea
-of where most of the computing is done, and which components you need to
-optimise to get an answer sooner.
+With ``--instances`` or ``-i``, the plot will show for each instance how much
+time it spent in total on computing, communicating and waiting. This plot gives
+an idea of where most of the computing is done, and which components you need
+to optimise to get an answer sooner.
 
 In many models, you will find that there's one component that takes up most of
 the compute time, and others that spend most of their time waiting and then do a
@@ -128,9 +128,10 @@ Resource usage
 If you are running on a large computer, then it may be interesting to see how
 you are using the resources allocated to you. The command ``muscle3 profile
 --resources performance.sqlite`` will produce a plot showing for each core how
-much time it spent running the various instances. This gives an idea of which
-component used the most resources, and tells you what you should optimise if
-you're trying to reduce the number of core hours spent.
+much time it spent running the various instances (``-r`` for short also works).
+This gives an idea of which component used the most resources, and tells you
+what you should optimise if you're trying to reduce the number of core hours
+spent.
 
 The total time shown per core doesn't necessarily match the total run time, as
 cores may be idle during the simulation. This can happen for example if
@@ -150,14 +151,11 @@ Event timeline
 
     muscle3 profile --timeline /path/to/performance.sqlite
 
-If you really want to get into the details, ``--timeline`` shows a timeline of
-profiling events. This visualises the raw data from the database, showing
-exactly when each instance sent and received data, when it was waiting for
-input, and when it computed. The meaning of the event types shown is as follows:
-
-RUNNING
-    The instance was running, meaning that it was actively computing or doing
-    non-MUSCLE3 communication.
+If you really want to get into the details, ``--timeline`` or ``-t`` shows a
+timeline of profiling events. This visualises the raw data from the database,
+showing exactly when each instance sent and received data, when it was waiting
+for input, and when it computed. The meaning of the event types shown is as
+follows:
 
 REGISTER
     The instance contacted the manager to share its location on the network, so
@@ -166,6 +164,22 @@ REGISTER
 CONNECT
     The instance asked the manager who to communicate with, and set up
     connections to these other instances.
+
+RUNNING
+    The instance was running, meaning that it was actively computing or doing
+    non-MUSCLE3 communication.
+
+SHUTDOWN_WAIT
+    The instance was waiting to receive the information it needed to determine
+    that it should shut down, rather than run the reuse loop again.
+
+DISCONNECT_WAIT
+    The instance was waiting for the instances it communicates with to
+    acknowledge that it would be shutting down. This may take a while if those
+    other instances are busy doing calculations or talking to someone else.
+
+SHUTDOWN
+    The instance was shutting down its MUSCLE3 communications.
 
 DEREGISTER
     The instance contacted the manager to say that it was ending it run.
@@ -204,7 +218,7 @@ Analysis with Python
 If you want to get quantitative data, or just want to make your own plots, then
 you can use MUSCLE3's Python API. It contains several useful functions for
 extracting information and statistics from a profiling database. They are
-collected in the :py:class:`libmuscle.ProfileDatabasa` class.
+collected in the :py:class:`libmuscle.ProfileDatabase` class.
 
 Per-instance statistics
 ```````````````````````
@@ -420,12 +434,21 @@ Database format version
 +----------------+-------------------+
 
 This table stores a single row containing the version of the database format
-used in this file. The current version is 1.0. This uses semantic versioning, so
-incompatible future formats will have a higher major version. Compatible
-changes, including addition of columns to existing tables, will increment the
-minor version number. Note that this means that ``SELECT * FROM ...`` may give a
-different result for different minor versions. If that's not acceptable, specify
-the columns you want explicitly.
+used in this file. This uses semantic versioning, so incompatible future formats
+will have a higher major version. Compatible changes, including addition of
+columns to existing tables, will increment the minor version number. Note that
+this means that ``SELECT * FROM ...`` may give a different result for different
+minor versions. To make your code compatible with future minor versions, it's a
+good idea to specify the columns you want explicitly.
+
+Here is a brief version history:
+
+Version 1.0 (written by MUSCLE3 0.7.0)
+    Initial release.
+
+Version 1.1 (written by MUSCLE3 0.7.1)
+    Added new ``SHUTDOWN_WAIT``, ``DISCONNECT_WAIT`` and ``SHUTDOWN`` events.
+    No changes to the tables.
 
 Formatted events
 ````````````````

@@ -289,10 +289,11 @@ class ProfileDatabase:
 
         Args:
             etype: Type of event to get the starting point from.
-                Possible values: `'REGISTER'`, `'CONNECT'`,
-                `'DEREGISTER'`, `'SEND'`, `'RECEIVE'`, `'RECEIVE_WAIT'`,
-                `'RECEIVE_TRANSFER'`, `'RECEIVE_DECODE'`. See the
-                documentation for a description of each.
+                Possible values: `'REGISTER'`, `'CONNECT'`, `'SHUTDOWN_WAIT'`,
+                `'DISCONNECT_WAIT'`, `'SHUTDOWN'`, `'DEREGISTER'`, `'SEND'`,
+                `'RECEIVE'`, `'RECEIVE_WAIT'`, `'RECEIVE_TRANSFER'`,
+                `'RECEIVE_DECODE'`. See the documentation for a description
+                of each.
             instance: Name of the instance to get the event from. You
                 can use `%` as a wildcard matching anything. For
                 example, `'macro[%'` will match all instances of the

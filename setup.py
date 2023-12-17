@@ -57,7 +57,7 @@ setup(
         'msgpack>=1,<2',
         'netifaces==0.11.0',
         "numpy<1.22; python_version=='3.7'",
-        "numpy>=1.22,<=1.25; python_version>='3.8'",
+        "numpy>=1.22; python_version>='3.8'",
         'qcg-pilotjob==0.13.1',
         'typing_extensions>=4.4.0,<5',
         'ymmsl>=0.13.0,<0.14'          # Also in CI, update there as well

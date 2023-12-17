@@ -13,7 +13,7 @@ on:
 jobs:
   build:
     runs-on: macos-11
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     steps:
     - uses: actions/checkout@v4
@@ -22,7 +22,7 @@ jobs:
       run: |
         python3 -m pip install --upgrade pip
         pip3 install tox tox-gh-actions
-        brew install openmpi
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install openmpi
 
     - name: Run all tests on macOS Big Sur 11 with Clang
       run: cd ${GITHUB_WORKSPACE} && make test test_examples

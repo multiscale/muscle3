@@ -4,6 +4,7 @@ import sqlite3
 import threading
 from types import TracebackType
 from typing import Any, cast, Dict, List, Optional, Tuple, Type, Union
+from warnings import warn
 
 
 class ProfileDatabase:
@@ -94,11 +95,21 @@ class ProfileDatabase:
         """
         cur = self._get_cursor()
         cur.execute("BEGIN TRANSACTION")
+        cur.execute("SELECT name FROM instances")
+        instances = [row[0] for row in cur.fetchall()]
+
         cur.execute(
                 "SELECT instance, stop_time"
                 " FROM all_events"
                 " WHERE type = 'CONNECT'")
         start_run = dict(cur.fetchall())
+
+        for name in instances:
+            if name not in start_run:
+                warn(
+                        f'Instance {name} seems to have never registered with the'
+                        ' manager, and will be omitted from the results. Did it crash'
+                        ' on startup?')
 
         cur.execute(
                 "SELECT instance, start_time"
@@ -106,12 +117,20 @@ class ProfileDatabase:
                 " WHERE type = 'SHUTDOWN_WAIT'")
         stop_run = dict(cur.fetchall())
 
-        if not stop_run:
-            cur.execute(
-                    "SELECT instance, start_time"
-                    " FROM all_events"
-                    " WHERE type = 'DEREGISTER'")
-            stop_run = dict(cur.fetchall())
+        for name in instances:
+            if name not in stop_run:
+                warn(
+                        f'Instance {name} did not shut down cleanly, data may be'
+                        ' inaccurate or missing')
+
+                cur.execute(
+                        "SELECT stop_time"
+                        " FROM all_events"
+                        " WHERE instance = ?"
+                        " ORDER BY stop_time DESC LIMIT 1", [name])
+                result = cur.fetchall()
+                if result:
+                    stop_run[name] = result[0][0]
 
         cur.execute(
                 "SELECT instance, SUM(stop_time - start_time)"
@@ -130,20 +149,21 @@ class ProfileDatabase:
         cur.execute("COMMIT")
         cur.close()
 
-        instances = list(start_run.keys())
-        total_times = [(stop_run[i] - start_run[i]) * 1e-9 for i in instances]
+        complete_instances = list(set(start_run) & set(stop_run))
+
+        total_times = [(stop_run[i] - start_run[i]) * 1e-9 for i in complete_instances]
         comm_times = [
                 (
                     (comm[i] if i in comm else 0) -
                     (wait[i] if i in wait else 0)
                 ) * 1e-9
-                for i in instances]
-        wait_times = [(wait[i] if i in wait else 0) * 1e-9 for i in instances]
+                for i in complete_instances]
+        wait_times = [(wait[i] if i in wait else 0) * 1e-9 for i in complete_instances]
         run_times = [
                 t - c - w
                 for t, c, w in zip(total_times, comm_times, wait_times)]
 
-        return instances, run_times, comm_times, wait_times
+        return complete_instances, run_times, comm_times, wait_times
 
     def resource_stats(self) -> Dict[str, Dict[str, float]]:
         """Calculate per-core statistics.

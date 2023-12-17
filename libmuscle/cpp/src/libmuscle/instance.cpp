@@ -857,7 +857,8 @@ bool Instance::Impl::pre_receive_() {
         if (is_close_port(ref_msg.second.data()))
                 all_ports_open = false;
 
-    if (!all_ports_open)
+    // cache is empty only if we have no incoming F_INIT ports
+    if (!all_ports_open || f_init_cache_.empty())
         profiler_->record_event(std::move(sw_event));
     return all_ports_open;
 }
@@ -959,13 +960,15 @@ bool Instance::Impl::decide_reuse_instance_() {
             // fresh start or resuming from implicit snapshot
             do_resume_ = false;
 
+            // always call pre_receive_ even if it's a no-op to ensure we get a
+            // shutdown_wait event (#274)
+            bool got_f_init_messages = pre_receive_();
             if (!f_init_connected) {
                 // simple straight single run without resuming
                 do_init_ = first_run_.get();
                 do_reuse = first_run_.get();
             } else {
                 // not resuming and f_init connected, run while we get messages
-                bool got_f_init_messages = pre_receive_();
                 do_init_ = got_f_init_messages;
                 do_reuse = got_f_init_messages;
             }

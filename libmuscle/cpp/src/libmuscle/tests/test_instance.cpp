@@ -337,6 +337,8 @@ TEST(libmuscle_instance, receive_parallel_universe) {
     port.set_closed();
     MockCommunicator::get_port_return_value.emplace("in", port);
 
+    MockCommunicator::settings_in_connected_return_value = true;
+
     Settings recv_settings;
     recv_settings["test1"] = 12;
     MockCommunicator::next_received_message["in"] =

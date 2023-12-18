@@ -78,8 +78,9 @@ def instance(sys_argv_instance, tmp_path, overlay_settings):
         msg = Message(0.0, 1.0, 'message')
         msg_with_settings = Message(0.0, 1.0, 'message', overlay_settings)
 
-        def receive_message(name, slot, default):
+        def receive_message(name, slot, default=None):
             if 'not_connected' in name:
+                assert default is not None
                 return default, 10.0
             if 'settings' in name:
                 return msg_with_settings, 10.0

@@ -807,8 +807,12 @@ void Instance::Impl::check_port_(std::string const & port_name) {
  * @return false iff the port is connected and ClosePort was received.
  */
 bool Instance::Impl::receive_settings_() {
-    Message default_message(0.0, Settings(), Settings());
-    auto msg = communicator_->receive_message("muscle_settings_in", {}, default_message);
+    if (!communicator_->settings_in_connected()) {
+        settings_manager_.overlay = Settings();
+        return true;
+    }
+
+    auto msg = communicator_->receive_message("muscle_settings_in", {});
     if (is_close_port(msg.data()))
         return false;
 
@@ -826,6 +830,7 @@ bool Instance::Impl::receive_settings_() {
     for (auto const & key_val : msg.data().as<Settings>())
         settings[key_val.first] = key_val.second;
     settings_manager_.overlay = settings;
+
     return true;
 }
 
@@ -849,17 +854,12 @@ bool Instance::Impl::have_f_init_connections_() {
  * @return true iff no ClosePort messages were received.
  */
 bool Instance::Impl::pre_receive_() {
-    ProfileEvent sw_event(ProfileEventType::shutdown_wait, ProfileTimestamp());
-
     bool all_ports_open = receive_settings_();
     pre_receive_f_init_();
     for (auto const & ref_msg : f_init_cache_)
         if (is_close_port(ref_msg.second.data()))
                 all_ports_open = false;
 
-    // cache is empty only if we have no incoming F_INIT ports
-    if (!all_ports_open || f_init_cache_.empty())
-        profiler_->record_event(std::move(sw_event));
     return all_ports_open;
 }
 
@@ -938,6 +938,9 @@ bool Instance::Impl::decide_reuse_instance_() {
 #ifdef MUSCLE_ENABLE_MPI
     if (mpi_barrier_.is_root()) {
 #endif
+        // only actually happens if we don't reuse, start recording just in case
+        ProfileEvent sw_event(ProfileEventType::shutdown_wait, ProfileTimestamp());
+
         bool f_init_connected = have_f_init_connections_();
         if (first_run_.get() && snapshot_manager_->resuming_from_intermediate()) {
             // resume from intermediate
@@ -947,10 +950,10 @@ bool Instance::Impl::decide_reuse_instance_() {
         } else if (first_run_.get() && snapshot_manager_->resuming_from_final()) {
             // resume from final
             if (f_init_connected) {
-                bool got_f_init_messages = pre_receive_();
+                bool no_closed_ports = pre_receive_();
                 do_resume_ = true;
                 do_init_ = true;
-                do_reuse = got_f_init_messages;
+                do_reuse = no_closed_ports;
             } else {
                 do_resume_ = false;
                 do_init_ = false;
@@ -960,19 +963,20 @@ bool Instance::Impl::decide_reuse_instance_() {
             // fresh start or resuming from implicit snapshot
             do_resume_ = false;
 
-            // always call pre_receive_ even if it's a no-op to ensure we get a
-            // shutdown_wait event (#274)
-            bool got_f_init_messages = pre_receive_();
             if (!f_init_connected) {
                 // simple straight single run without resuming
                 do_init_ = first_run_.get();
                 do_reuse = first_run_.get();
             } else {
                 // not resuming and f_init connected, run while we get messages
-                do_init_ = got_f_init_messages;
-                do_reuse = got_f_init_messages;
+                bool no_closed_ports = pre_receive_();
+                do_init_ = no_closed_ports;
+                do_reuse = no_closed_ports;
             }
         }
+
+        if (!do_reuse)
+            profiler_->record_event(std::move(sw_event));
 
 #ifdef MUSCLE_ENABLE_MPI
         mpi_barrier_.signal();

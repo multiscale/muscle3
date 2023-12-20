@@ -55,7 +55,7 @@ setup(
         'click>=7.1,<9',
         'matplotlib>=3,<4',
         'msgpack>=1,<2',
-        'netifaces==0.11.0',
+        'psutil>=5.0.0',
         "numpy<1.22; python_version=='3.7'",
         "numpy>=1.22; python_version>='3.8'",
         'qcg-pilotjob==0.13.1',

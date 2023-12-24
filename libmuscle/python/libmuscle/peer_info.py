@@ -5,14 +5,14 @@ from ymmsl import Conduit, Identifier, Reference
 from libmuscle.endpoint import Endpoint
 
 
-class PeerManager:
-    """Manages information about peers for a Communicator
+class PeerInfo:
+    """Interprets information about peers for a Communicator
     """
     def __init__(self, kernel: Reference, index: List[int],
                  conduits: List[Conduit],
                  peer_dims: Dict[Reference, List[int]],
                  peer_locations: Dict[Reference, List[str]]) -> None:
-        """Create a PeerManager.
+        """Create a PeerInfo.
 
         Peers here are instances, and peer_dims and peer_locations are
         indexed by a Reference to an instance. Instance sets are

@@ -8,7 +8,7 @@ from libmuscle.mpp_client import MPPClient
 from libmuscle.mcp.tcp_util import SocketClosed
 from libmuscle.mcp.transport_server import TransportServer
 from libmuscle.mcp.type_registry import transport_server_types
-from libmuscle.peer_manager import PeerManager
+from libmuscle.peer_info import PeerInfo
 from libmuscle.post_office import PostOffice
 from libmuscle.port import Port
 from libmuscle.profiler import Profiler
@@ -134,7 +134,7 @@ class Communicator:
             peer_locations: A list of locations for each peer instance
                     we share a conduit with.
         """
-        self._peer_manager = PeerManager(
+        self._peer_info = PeerInfo(
                 self._kernel, self._index, conduits, peer_dims,
                 peer_locations)
 
@@ -211,7 +211,7 @@ class Communicator:
                                     ).format(slot, port_name, slot_length))
 
         snd_endpoint = self.__get_endpoint(port_name, slot_list)
-        if not self._peer_manager.is_connected(snd_endpoint.port):
+        if not self._peer_info.is_connected(snd_endpoint.port):
             # log sending on disconnected port
             return
 
@@ -220,7 +220,7 @@ class Communicator:
                 ProfileEventType.SEND, ProfileTimestamp(), None, port, None,
                 slot, port.get_num_messages(slot), None, message.timestamp)
 
-        recv_endpoints = self._peer_manager.get_peer_endpoints(
+        recv_endpoints = self._peer_info.get_peer_endpoints(
                 snd_endpoint.port, slot_list)
 
         port_length = None
@@ -286,7 +286,7 @@ class Communicator:
 
         recv_endpoint = self.__get_endpoint(port_name, slot_list)
 
-        if not self._peer_manager.is_connected(recv_endpoint.port):
+        if not self._peer_info.is_connected(recv_endpoint.port):
             if default is None:
                 raise RuntimeError(('Tried to receive on port "{}", which is'
                                     ' disconnected, and no default value was'
@@ -310,9 +310,9 @@ class Communicator:
                 ProfileEventType.RECEIVE, ProfileTimestamp(), None, port, None,
                 slot, port.get_num_messages())
 
-        # peer_manager already checks that there is at most one snd_endpoint
+        # peer_info already checks that there is at most one snd_endpoint
         # connected to the port we receive on
-        snd_endpoint = self._peer_manager.get_peer_endpoints(
+        snd_endpoint = self._peer_info.get_peer_endpoints(
                 recv_endpoint.port, slot_list)[0]
         client = self.__get_client(snd_endpoint.instance())
         try:
@@ -463,15 +463,15 @@ class Communicator:
                                         ' are reserved for MUSCLE, please'
                                         ' rename port "{}"'.format(port_name)))
                 port_id = Identifier(port_name)
-                is_connected = self._peer_manager.is_connected(port_id)
+                is_connected = self._peer_info.is_connected(port_id)
                 if is_connected:
-                    peer_ports = self._peer_manager.get_peer_ports(port_id)
+                    peer_ports = self._peer_info.get_peer_ports(port_id)
                     peer_port = peer_ports[0]
                     peer_ce = peer_port[:-1]
-                    port_peer_dims = self._peer_manager.get_peer_dims(peer_ce)
+                    port_peer_dims = self._peer_info.get_peer_dims(peer_ce)
                     for peer_port in peer_ports[1:]:
                         peer_ce = peer_port[:-1]
-                        if port_peer_dims != self._peer_manager.get_peer_dims(
+                        if port_peer_dims != self._peer_info.get_peer_dims(
                                 peer_ce):
                             port_strs = ', '.join(map(str, peer_ports))
                             raise RuntimeError(('Multicast port "{}" is'
@@ -501,19 +501,19 @@ class Communicator:
             if conduit.sending_component() == self._kernel:
                 port_id = conduit.sending_port()
                 operator = Operator.O_F
-                port_peer_dims = self._peer_manager.get_peer_dims(
+                port_peer_dims = self._peer_info.get_peer_dims(
                         conduit.receiving_component())
             elif conduit.receiving_component() == self._kernel:
                 port_id = conduit.receiving_port()
                 operator = Operator.F_INIT
-                port_peer_dims = self._peer_manager.get_peer_dims(
+                port_peer_dims = self._peer_info.get_peer_dims(
                         conduit.sending_component())
             else:
                 continue
 
             ndims = max(0, len(port_peer_dims) - len(self._index))
             is_vector = (ndims == 1)
-            is_connected = self._peer_manager.is_connected(port_id)
+            is_connected = self._peer_info.is_connected(port_id)
             if not str(port_id).startswith('muscle_'):
                 ports[str(port_id)] = Port(
                         str(port_id), operator, is_vector, is_connected,
@@ -531,9 +531,9 @@ class Communicator:
                 port_id = conduit.receiving_port()
                 if str(port_id) == 'muscle_settings_in':
                     return Port(str(port_id), Operator.F_INIT, False,
-                                self._peer_manager.is_connected(port_id),
+                                self._peer_info.is_connected(port_id),
                                 len(self._index),
-                                self._peer_manager.get_peer_dims(
+                                self._peer_info.get_peer_dims(
                                     conduit.sending_component()))
         return Port('muscle_settings_in', Operator.F_INIT, False, False,
                     len(self._index), [])
@@ -548,7 +548,7 @@ class Communicator:
             An existing or new MCP client.
         """
         if instance not in self._clients:
-            locations = self._peer_manager.get_peer_locations(instance)
+            locations = self._peer_info.get_peer_locations(instance)
             _logger.info(f'Connecting to peer {instance} at {locations}')
             self._clients[instance] = MPPClient(locations)
 

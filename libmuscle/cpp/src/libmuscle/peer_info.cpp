@@ -1,4 +1,4 @@
-#include <libmuscle/peer_manager.hpp>
+#include <libmuscle/peer_info.hpp>
 
 #include <sstream>
 
@@ -9,7 +9,7 @@ using ymmsl::Reference;
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
-PeerManager::PeerManager(
+PeerInfo::PeerInfo(
         Reference const & kernel,
         std::vector<int> const & index,
         std::vector<Conduit> const & conduits,
@@ -46,26 +46,26 @@ PeerManager::PeerManager(
     }
 }
 
-bool PeerManager::is_connected(Identifier const & port) const {
+bool PeerInfo::is_connected(Identifier const & port) const {
     return peers_.count(kernel_ + port);
 }
 
- std::vector<ymmsl::Reference> const & PeerManager::get_peer_ports(
+ std::vector<ymmsl::Reference> const & PeerInfo::get_peer_ports(
             Identifier const & port) const {
     return peers_.at(kernel_ + port);
 }
 
-std::vector<int> PeerManager::get_peer_dims(
+std::vector<int> PeerInfo::get_peer_dims(
         Reference const & peer_kernel) const {
     return peer_dims_.at(peer_kernel);
 }
 
-std::vector<std::string> PeerManager::get_peer_locations(
+std::vector<std::string> PeerInfo::get_peer_locations(
         Reference const & peer_instance) const {
     return peer_locations_.at(peer_instance);
 }
 
-std::vector<Endpoint> PeerManager::get_peer_endpoints(
+std::vector<Endpoint> PeerInfo::get_peer_endpoints(
         Identifier const & port,
         std::vector<int> const & slot
         ) const

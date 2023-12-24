@@ -10,7 +10,7 @@
 #include <libmuscle/message.hpp>
 #include <libmuscle/mpp_client.hpp>
 #include <libmuscle/namespace.hpp>
-#include <libmuscle/peer_manager.hpp>
+#include <libmuscle/peer_info.hpp>
 #include <libmuscle/port.hpp>
 #include <libmuscle/ports_description.hpp>
 #include <libmuscle/post_office.hpp>
@@ -212,7 +212,7 @@ class Communicator {
         std::vector<std::unique_ptr<mcp::TransportServer>> servers_;
         std::unordered_map<ymmsl::Reference, std::unique_ptr<MPPClient>> clients_;
         Ports_ ports_;
-        std::unique_ptr<PeerManager> peer_manager_;
+        std::unique_ptr<PeerInfo> peer_info_;
         Optional<Port> muscle_settings_in_;
 
         friend class TestCommunicator;

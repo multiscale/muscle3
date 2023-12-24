@@ -4,7 +4,7 @@
 #include <libmuscle/logger.hpp>
 #include <libmuscle/message.hpp>
 #include <libmuscle/namespace.hpp>
-#include <libmuscle/peer_manager.hpp>
+#include <libmuscle/peer_info.hpp>
 #include <libmuscle/port.hpp>
 #include <libmuscle/profiler.hpp>
 #include <libmuscle/util.hpp>

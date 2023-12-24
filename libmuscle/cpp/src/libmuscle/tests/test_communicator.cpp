@@ -2,7 +2,7 @@
 #define LIBMUSCLE_MOCK_LOGGER <mocks/mock_logger.hpp>
 #define LIBMUSCLE_MOCK_MPP_CLIENT <mocks/mock_mpp_client.hpp>
 #define LIBMUSCLE_MOCK_MCP_TCP_TRANSPORT_SERVER <mocks/mcp/mock_tcp_transport_server.hpp>
-#define LIBMUSCLE_MOCK_PEER_MANAGER <mocks/mock_peer_manager.hpp>
+#define LIBMUSCLE_MOCK_PEER_INFO <mocks/mock_peer_info.hpp>
 #define LIBMUSCLE_MOCK_POST_OFFICE <mocks/mock_post_office.hpp>
 #define LIBMUSCLE_MOCK_PROFILER <mocks/mock_profiler.hpp>
 
@@ -26,7 +26,7 @@
 
 // then add mock implementations as needed.
 #include <mocks/mock_logger.cpp>
-#include <mocks/mock_peer_manager.cpp>
+#include <mocks/mock_peer_info.cpp>
 #include <mocks/mock_post_office.cpp>
 #include <mocks/mock_profiler.cpp>
 #include <mocks/mock_mpp_client.cpp>
@@ -42,7 +42,7 @@
 #include <mocks/mock_mpp_client.hpp>
 #include <mocks/mcp/mock_tcp_transport_server.hpp>
 #include <mocks/mock_logger.hpp>
-#include <mocks/mock_peer_manager.hpp>
+#include <mocks/mock_peer_info.hpp>
 #include <mocks/mock_profiler.hpp>
 
 
@@ -55,7 +55,7 @@ using libmuscle::_MUSCLE_IMPL_NS::PeerLocations;
 using libmuscle::_MUSCLE_IMPL_NS::PortsDescription;
 using libmuscle::_MUSCLE_IMPL_NS::Message;
 using libmuscle::_MUSCLE_IMPL_NS::MockLogger;
-using libmuscle::_MUSCLE_IMPL_NS::MockPeerManager;
+using libmuscle::_MUSCLE_IMPL_NS::MockPeerInfo;
 using libmuscle::_MUSCLE_IMPL_NS::MockPostOffice;
 using libmuscle::_MUSCLE_IMPL_NS::MockProfiler;
 using libmuscle::_MUSCLE_IMPL_NS::MockMPPClient;
@@ -93,7 +93,7 @@ using libmuscle::_MUSCLE_IMPL_NS::TestCommunicator;
  * It's all fast enough, so that's not a problem.
  */
 void reset_mocks() {
-    MockPeerManager::reset();
+    MockPeerInfo::reset();
     MockMPPClient::reset();
     MockTcpTransportServer::reset();
 }
@@ -121,10 +121,10 @@ std::unique_ptr<Communicator> connected_communicator() {
     PeerLocations peer_locations({
             {Reference("other"), {"tcp:test"}}});
 
-    MockPeerManager::get_peer_dims_table.emplace("other", std::vector<int>({1}));
-    MockPeerManager::get_peer_endpoint_table.emplace("out",
+    MockPeerInfo::get_peer_dims_table.emplace("other", std::vector<int>({1}));
+    MockPeerInfo::get_peer_endpoint_table.emplace("out",
             std::vector<Endpoint>({Endpoint("other", {}, "in", {13})}));
-    MockPeerManager::get_peer_endpoint_table.emplace("in",
+    MockPeerInfo::get_peer_endpoint_table.emplace("in",
             std::vector<Endpoint>({Endpoint("other", {}, "out", {13})}));
 
     comm->connect(conduits, peer_dims, peer_locations);
@@ -144,10 +144,10 @@ std::unique_ptr<Communicator> connected_communicator2() {
     PeerLocations peer_locations({
             {Reference("kernel"), {"tcp:test"}}});
 
-    MockPeerManager::get_peer_dims_table.emplace("kernel", std::vector<int>({20}));
-    MockPeerManager::get_peer_endpoint_table.emplace("in[13]",
+    MockPeerInfo::get_peer_dims_table.emplace("kernel", std::vector<int>({20}));
+    MockPeerInfo::get_peer_endpoint_table.emplace("in[13]",
             std::vector<Endpoint>({Endpoint("kernel", {13}, "out", {})}));
-    MockPeerManager::get_peer_endpoint_table.emplace("out[13]",
+    MockPeerInfo::get_peer_endpoint_table.emplace("out[13]",
             std::vector<Endpoint>({Endpoint("kernel", {13}, "in", {})}));
 
     comm->connect(conduits, peer_dims, peer_locations);
@@ -172,14 +172,14 @@ std::unique_ptr<Communicator> connected_communicator3() {
     PeerLocations peer_locations({
             {Reference("other"), {"tcp:test"}}});
 
-    MockPeerManager::get_peer_dims_table.emplace("other", std::vector<int>({}));
-    MockPeerManager::get_peer_endpoint_table.emplace("out[13]",
+    MockPeerInfo::get_peer_dims_table.emplace("other", std::vector<int>({}));
+    MockPeerInfo::get_peer_endpoint_table.emplace("out[13]",
             std::vector<Endpoint>({Endpoint("other", {}, "in", {13})}));
-    MockPeerManager::get_peer_endpoint_table.emplace("in[13]",
+    MockPeerInfo::get_peer_endpoint_table.emplace("in[13]",
             std::vector<Endpoint>({Endpoint("other", {}, "out", {13})}));
-    MockPeerManager::get_peer_port_table.emplace("out",
+    MockPeerInfo::get_peer_port_table.emplace("out",
             std::vector<Reference>({"other.in"}));
-    MockPeerManager::get_peer_port_table.emplace("in",
+    MockPeerInfo::get_peer_port_table.emplace("in",
             std::vector<Reference>({"other.out"}));
 
     comm->connect(conduits, peer_dims, peer_locations);
@@ -215,11 +215,11 @@ TEST(libmuscle_communicator, test_connect) {
     PeerLocations peer_locations({
             {Reference("other"), {"tcp:test"}}});
 
-    MockPeerManager::get_peer_dims_table.emplace("other", std::vector<int>({1}));
+    MockPeerInfo::get_peer_dims_table.emplace("other", std::vector<int>({1}));
     comm.connect(conduits, peer_dims, peer_locations);
 
-    ASSERT_EQ(MockPeerManager::last_constructed_kernel_id, "kernel");
-    ASSERT_EQ(MockPeerManager::last_constructed_index, std::vector<int>({13}));
+    ASSERT_EQ(MockPeerInfo::last_constructed_kernel_id, "kernel");
+    ASSERT_EQ(MockPeerInfo::last_constructed_index, std::vector<int>({13}));
 
     // check inferred ports
     auto const & ports = TestCommunicator::ports_(comm);
@@ -260,22 +260,22 @@ TEST(libmuscle_communicator, test_connect_vector_ports) {
             {Reference("other3"), {"tcp:test3"}}
             });
 
-    MockPeerManager::get_peer_port_table.emplace("in",
+    MockPeerInfo::get_peer_port_table.emplace("in",
             std::vector<Reference>({"other1.out"}));
-    MockPeerManager::get_peer_port_table.emplace("out1",
+    MockPeerInfo::get_peer_port_table.emplace("out1",
             std::vector<Reference>({"other.in"}));
-    MockPeerManager::get_peer_port_table.emplace("out2",
+    MockPeerInfo::get_peer_port_table.emplace("out2",
             std::vector<Reference>({"other3.in"}));
 
-    MockPeerManager::get_peer_dims_table.emplace("other1", std::vector<int>({20, 7}));
-    MockPeerManager::get_peer_dims_table.emplace("other", std::vector<int>({25}));
-    MockPeerManager::get_peer_dims_table.emplace("other3", std::vector<int>({20}));
+    MockPeerInfo::get_peer_dims_table.emplace("other1", std::vector<int>({20, 7}));
+    MockPeerInfo::get_peer_dims_table.emplace("other", std::vector<int>({25}));
+    MockPeerInfo::get_peer_dims_table.emplace("other3", std::vector<int>({20}));
 
     comm.connect(conduits, peer_dims, peer_locations);
 
-    ASSERT_EQ(MockPeerManager::last_constructed_conduits, conduits);
-    ASSERT_EQ(MockPeerManager::last_constructed_peer_dims, peer_dims);
-    ASSERT_EQ(MockPeerManager::last_constructed_peer_locations, peer_locations);
+    ASSERT_EQ(MockPeerInfo::last_constructed_conduits, conduits);
+    ASSERT_EQ(MockPeerInfo::last_constructed_peer_dims, peer_dims);
+    ASSERT_EQ(MockPeerInfo::last_constructed_peer_locations, peer_locations);
 
     auto const & ports = TestCommunicator::ports_(comm);
 
@@ -318,17 +318,17 @@ TEST(libmuscle_communicator, test_connect_multidimensional_ports) {
             {Reference("other"), {"tcp:test"}}
             });
 
-    MockPeerManager::get_peer_port_table.emplace("in",
+    MockPeerInfo::get_peer_port_table.emplace("in",
             std::vector<Reference>({"other.out"}));
-    MockPeerManager::get_peer_dims_table.emplace("other", std::vector<int>({20, 7, 30}));
+    MockPeerInfo::get_peer_dims_table.emplace("other", std::vector<int>({20, 7, 30}));
 
     ASSERT_THROW(
             comm.connect(conduits, peer_dims, peer_locations),
             std::invalid_argument);
 
-    ASSERT_EQ(MockPeerManager::last_constructed_conduits, conduits);
-    ASSERT_EQ(MockPeerManager::last_constructed_peer_dims, peer_dims);
-    ASSERT_EQ(MockPeerManager::last_constructed_peer_locations, peer_locations);
+    ASSERT_EQ(MockPeerInfo::last_constructed_conduits, conduits);
+    ASSERT_EQ(MockPeerInfo::last_constructed_peer_dims, peer_dims);
+    ASSERT_EQ(MockPeerInfo::last_constructed_peer_locations, peer_locations);
 }
 
 TEST(libmuscle_communicator, test_connect_inferred_ports) {
@@ -355,22 +355,22 @@ TEST(libmuscle_communicator, test_connect_inferred_ports) {
             {Reference("other2"), {"tcp:test2"}}
             });
 
-    MockPeerManager::get_peer_port_table.emplace("in",
+    MockPeerInfo::get_peer_port_table.emplace("in",
             std::vector<Reference>({"other1.out"}));
-    MockPeerManager::get_peer_port_table.emplace("out1",
+    MockPeerInfo::get_peer_port_table.emplace("out1",
             std::vector<Reference>({"other.in"}));
-    MockPeerManager::get_peer_port_table.emplace("out3",
+    MockPeerInfo::get_peer_port_table.emplace("out3",
             std::vector<Reference>({"other2.in"}));
 
-    MockPeerManager::get_peer_dims_table.emplace("other1", std::vector<int>({20, 7}));
-    MockPeerManager::get_peer_dims_table.emplace("other", std::vector<int>({25}));
-    MockPeerManager::get_peer_dims_table.emplace("other2", std::vector<int>());
+    MockPeerInfo::get_peer_dims_table.emplace("other1", std::vector<int>({20, 7}));
+    MockPeerInfo::get_peer_dims_table.emplace("other", std::vector<int>({25}));
+    MockPeerInfo::get_peer_dims_table.emplace("other2", std::vector<int>());
 
     comm.connect(conduits, peer_dims, peer_locations);
 
-    ASSERT_EQ(MockPeerManager::last_constructed_conduits, conduits);
-    ASSERT_EQ(MockPeerManager::last_constructed_peer_dims, peer_dims);
-    ASSERT_EQ(MockPeerManager::last_constructed_peer_locations, peer_locations);
+    ASSERT_EQ(MockPeerInfo::last_constructed_conduits, conduits);
+    ASSERT_EQ(MockPeerInfo::last_constructed_peer_dims, peer_dims);
+    ASSERT_EQ(MockPeerInfo::last_constructed_peer_locations, peer_locations);
 
     auto const & ports = TestCommunicator::ports_(comm);
 
@@ -410,7 +410,7 @@ TEST(libmuscle_communicator, send_on_disconnected_port) {
 
     auto comm = connected_communicator();
 
-    MockPeerManager::is_connected_return_value = false;
+    MockPeerInfo::is_connected_return_value = false;
 
     Message message(0.0, "test", Settings());
     comm->send_message("not_connected", message);
@@ -545,7 +545,7 @@ TEST(libmuscle_communicator, receive_message) {
 
 TEST(libmuscle_communicator, receive_message_default) {
     reset_mocks();
-    MockPeerManager::is_connected_return_value = false;
+    MockPeerInfo::is_connected_return_value = false;
 
     Message default_msg(3.0, 4.0, "test");
     auto comm = connected_communicator();
@@ -559,7 +559,7 @@ TEST(libmuscle_communicator, receive_message_default) {
 
 TEST(libmuscle_communicator, receive_message_no_default) {
     reset_mocks();
-    MockPeerManager::is_connected_return_value = false;
+    MockPeerInfo::is_connected_return_value = false;
 
     auto comm = connected_communicator();
     ASSERT_THROW(comm->receive_message("not_connected"), std::runtime_error);

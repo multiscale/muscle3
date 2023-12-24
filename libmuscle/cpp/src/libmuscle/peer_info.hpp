@@ -1,7 +1,7 @@
 #pragma once
 
-#ifdef LIBMUSCLE_MOCK_PEER_MANAGER
-#include LIBMUSCLE_MOCK_PEER_MANAGER
+#ifdef LIBMUSCLE_MOCK_PEER_INFO
+#include LIBMUSCLE_MOCK_PEER_INFO
 #else
 
 #include <ymmsl/ymmsl.hpp>
@@ -21,11 +21,11 @@ using PeerLocations = std::unordered_map<
         ymmsl::Reference, std::vector<std::string>>;
 
 
-/** Manages information about peers for a Communicator.
+/** Interprets information about peers for a Communicator.
  */
-class PeerManager {
+class PeerInfo {
     public:
-        /** Create a PeerManager.
+        /** Create a PeerInfo.
          *
          * Peers here are instances, and peer_dims and peer_locations are
          * indexed by a Reference to an instance. Instance sets are multi-
@@ -40,7 +40,7 @@ class PeerManager {
          * @param peer_locations A list of locations for each peer instance we
          *      share a conduit with.
          */
-        PeerManager(
+        PeerInfo(
                 ymmsl::Reference const & kernel,
                 std::vector<int> const & index,
                 std::vector<ymmsl::Conduit> const & conduits,

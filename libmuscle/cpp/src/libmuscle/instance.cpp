@@ -6,7 +6,7 @@
 #include <libmuscle/mcp/data_pack.hpp>
 #include <libmuscle/logger.hpp>
 #include <libmuscle/mmp_client.hpp>
-#include <libmuscle/peer_manager.hpp>
+#include <libmuscle/peer_info.hpp>
 #include <libmuscle/profiler.hpp>
 #include <libmuscle/profiling.hpp>
 #include <libmuscle/settings_manager.hpp>

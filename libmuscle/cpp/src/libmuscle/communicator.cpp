@@ -57,7 +57,7 @@ void Communicator::connect(
         PeerDims const & peer_dims,
         PeerLocations const & peer_locations)
 {
-    peer_manager_ = std::make_unique<PeerManager>(
+    peer_info_ = std::make_unique<PeerInfo>(
             kernel_, index_, conduits, peer_dims, peer_locations);
 
     if (declared_ports_.is_set())
@@ -114,7 +114,7 @@ void Communicator::send_message(
     }
 
     Endpoint snd_endpoint = get_endpoint_(port_name, slot_list);
-    if (!peer_manager_->is_connected(snd_endpoint.port))
+    if (!peer_info_->is_connected(snd_endpoint.port))
         // log sending on disconnected port
         return;
 
@@ -124,7 +124,7 @@ void Communicator::send_message(
             ProfileEventType::send, ProfileTimestamp(), {}, port, {}, slot,
             port.get_num_messages(), {}, message.timestamp());
 
-    auto recv_endpoints = peer_manager_->get_peer_endpoints(
+    auto recv_endpoints = peer_info_->get_peer_endpoints(
             snd_endpoint.port, slot_list);
 
     Data settings_overlay(message.settings());
@@ -172,7 +172,7 @@ Message Communicator::receive_message(
 
     Endpoint recv_endpoint(get_endpoint_(port_name, slot_list));
 
-    if (!peer_manager_->is_connected(recv_endpoint.port)) {
+    if (!peer_info_->is_connected(recv_endpoint.port)) {
         if (!default_msg.is_set()) {
             std::ostringstream oss;
             oss << "Tried to receive on port '" << port_name << "', which is";
@@ -193,9 +193,9 @@ Message Communicator::receive_message(
             ProfileEventType::receive, ProfileTimestamp(), {}, port, {}, slot,
             port.get_num_messages());
 
-    // peer_manager already checks that there is at most one snd_endpoint
+    // peer_info already checks that there is at most one snd_endpoint
     // connected to the port we receive on
-    Endpoint snd_endpoint = peer_manager_->get_peer_endpoints(
+    Endpoint snd_endpoint = peer_info_->get_peer_endpoints(
             recv_endpoint.port, slot_list).at(0);
     MPPClient & client = get_client_(snd_endpoint.instance());
     auto msg_and_profile = try_receive_(
@@ -374,17 +374,17 @@ Communicator::Ports_ Communicator::ports_from_declared_() {
                 oss << " MUSCLE, please rename port '" << port_name << "'.";
                 throw std::runtime_error(oss.str());
             }
-            bool is_connected = peer_manager_->is_connected(port_name);
+            bool is_connected = peer_info_->is_connected(port_name);
             std::vector<int> port_peer_dims;
             if (is_connected) {
-                auto peer_ports = peer_manager_->get_peer_ports(port_name);
+                auto peer_ports = peer_info_->get_peer_ports(port_name);
                 Reference peer_port = peer_ports.at(0);
                 Reference peer_ce(peer_port.cbegin(), std::prev(peer_port.cend()));
-                port_peer_dims = peer_manager_->get_peer_dims(peer_ce);
+                port_peer_dims = peer_info_->get_peer_dims(peer_ce);
                 for (std::size_t i = 1; i < peer_ports.size(); i++) {
                     peer_port = peer_ports.at(i);
                     peer_ce = Reference(peer_port.cbegin(), std::prev(peer_port.cend()));
-                    if (port_peer_dims != peer_manager_->get_peer_dims(peer_ce)) {
+                    if (port_peer_dims != peer_info_->get_peer_dims(peer_ce)) {
                         std::stringstream ss;
                         ss << "Multicast port \"" << port_name;
                         ss << "\" is connected to peers with different";
@@ -422,20 +422,20 @@ Communicator::Ports_ Communicator::ports_from_conduits_(
         if (conduit.sending_component() == kernel_) {
             port_id = conduit.sending_port();
             oper = Operator::O_F;
-            port_peer_dims = peer_manager_->get_peer_dims(
+            port_peer_dims = peer_info_->get_peer_dims(
                     conduit.receiving_component());
         }
         else if (conduit.receiving_component() == kernel_) {
             port_id = conduit.receiving_port();
             oper = Operator::F_INIT;
-            port_peer_dims = peer_manager_->get_peer_dims(
+            port_peer_dims = peer_info_->get_peer_dims(
                     conduit.sending_component());
         }
         else
             continue;
         int ndims = std::max(std::vector<int>::size_type(0u), port_peer_dims.size() - index_.size());
         bool is_vector = (ndims == 1);
-        bool is_connected = peer_manager_->is_connected(port_id);
+        bool is_connected = peer_info_->is_connected(port_id);
         if (std::string(port_id).find("muscle_") != 0u) {
             ports.emplace(port_id, Port(
                     port_id, oper, is_vector, is_connected, index_.size(),
@@ -451,8 +451,8 @@ Port Communicator::settings_in_port_(std::vector<Conduit> const & conduits) cons
             Identifier port_id = conduit.receiving_port();
             if (port_id == "muscle_settings_in")
                 return Port(port_id, Operator::F_INIT, false,
-                        peer_manager_->is_connected(port_id), index_.size(),
-                        peer_manager_->get_peer_dims(conduit.sending_component()));
+                        peer_info_->is_connected(port_id), index_.size(),
+                        peer_info_->get_peer_dims(conduit.sending_component()));
         }
     }
     return Port("muscle_settings_in", Operator::F_INIT, false, false, index_.size(), {});
@@ -460,7 +460,7 @@ Port Communicator::settings_in_port_(std::vector<Conduit> const & conduits) cons
 
 MPPClient & Communicator::get_client_(Reference const & instance) {
     if (clients_.count(instance) == 0) {
-        auto const & locations = peer_manager_->get_peer_locations(instance);
+        auto const & locations = peer_info_->get_peer_locations(instance);
         std::ostringstream oss;
         oss << "Connecting to peer " << instance << " at [";
         for (std::size_t i = 0u; i < locations.size(); ++i) {

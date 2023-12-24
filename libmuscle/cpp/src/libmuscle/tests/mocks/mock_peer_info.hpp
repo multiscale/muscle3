@@ -16,9 +16,9 @@ using PeerDims = std::unordered_map<ymmsl::Reference, std::vector<int>>;
 using PeerLocations = std::unordered_map<
         ymmsl::Reference, std::vector<std::string>>;
 
-class MockPeerManager {
+class MockPeerInfo {
     public:
-        MockPeerManager(
+        MockPeerInfo(
                 ymmsl::Reference const & kernel,
                 std::vector<int> const & index,
                 std::vector<ymmsl::Conduit> const & conduits,
@@ -57,7 +57,7 @@ class MockPeerManager {
             get_peer_endpoint_table;
 };
 
-using PeerManager = MockPeerManager;
+using PeerInfo = MockPeerInfo;
 
 } }
 

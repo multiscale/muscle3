@@ -4,7 +4,8 @@ from typing import cast, List, Optional
 
 from ymmsl import Reference, Operator, Settings
 
-from libmuscle.communicator import Communicator, Message
+from libmuscle.communicator import Message
+from libmuscle.port_manager import PortManager
 from libmuscle.mmp_client import MMPClient
 from libmuscle.snapshot import MsgPackSnapshot, Snapshot, SnapshotMetadata
 
@@ -24,22 +25,21 @@ class SnapshotManager:
     Implements the saving and loading of snapshots in the checkpointing API.
     """
 
-    def __init__(self,
-                 instance_id: Reference,
-                 manager: MMPClient,
-                 communicator: Communicator) -> None:
+    def __init__(
+            self, instance_id: Reference, manager: MMPClient,
+            port_manager: PortManager) -> None:
         """Create a new snapshot manager
 
         Args:
             instance_id: The id of this instance.
             manager: The client used to submit data to the manager.
-            communicator: The communicator belonging to this instance.
+            port_manager: The port manager belonging to this instance.
         """
         self._instance_id = instance_id
         # replace identifier[i] by identifier-i to use in snapshot file name
         # using a dash (-) because that is not allowed in Identifiers
         self._safe_id = str(instance_id).replace("[", "-").replace("]", "")
-        self._communicator = communicator
+        self._port_manager = port_manager
         self._manager = manager
 
         self._resume_from_snapshot: Optional[Snapshot] = None
@@ -75,8 +75,7 @@ class SnapshotManager:
                 result = snapshot.message.timestamp
             self.resume_overlay = snapshot.settings_overlay
 
-            self._communicator.restore_message_counts(
-                snapshot.port_message_counts)
+            self._port_manager.restore_message_counts(snapshot.port_message_counts)
             # Store a copy of the snapshot in the current run directory
             path = self.__store_snapshot(snapshot)
             metadata = SnapshotMetadata.from_snapshot(snapshot, str(path))
@@ -129,14 +128,14 @@ class SnapshotManager:
         Returns:
             Simulation time at which the snapshot was made.
         """
-        port_message_counts = self._communicator.get_message_counts()
+        port_message_counts = self._port_manager.get_message_counts()
         if final:
             # Decrease F_INIT port counts by one: F_INIT messages are already
             # pre-received, but not yet processed by the user code. Therefore,
             # the snapshot state should treat these as not-received.
-            all_ports = self._communicator.list_ports()
+            all_ports = self._port_manager.list_ports()
             ports = all_ports.get(Operator.F_INIT, [])
-            if self._communicator.settings_in_connected():
+            if self._port_manager.settings_in_connected():
                 ports.append('muscle_settings_in')
             for port_name in ports:
                 new_counts = [i - 1 for i in port_message_counts[port_name]]

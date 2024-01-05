@@ -11,6 +11,7 @@
 #include <libmuscle/profiling.hpp>
 #include <libmuscle/settings_manager.hpp>
 #include <libmuscle/snapshot_manager.hpp>
+#include <libmuscle/test_support.hpp>
 #include <libmuscle/checkpoint_triggers.hpp>
 
 #include <ymmsl/ymmsl.hpp>
@@ -109,7 +110,7 @@ class Instance::Impl {
         bool should_save_final_snapshot();
         void save_final_snapshot(Message message);
 
-    private:
+    PRIVATE:
         ::ymmsl::Reference instance_name_;
         std::unique_ptr<MMPClient> manager_;
         std::unique_ptr<Logger> logger_;
@@ -173,8 +174,6 @@ class Instance::Impl {
         void close_incoming_ports_();
         void close_ports_();
         void shutdown_();
-
-        friend class TestInstance;
 };
 
 Instance::Impl::Impl(

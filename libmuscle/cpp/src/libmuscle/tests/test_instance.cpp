@@ -53,24 +53,6 @@ int main(int argc, char *argv[]) {
 }
 
 
-// Helpers for accessing internal state
-namespace libmuscle { namespace _MUSCLE_IMPL_NS {
-
-class TestInstance {
-    public:
-        static Reference & instance_name_(Instance & instance) {
-            return instance.impl_()->instance_name_;
-        }
-
-        static SettingsManager & settings_manager_(Instance & instance) {
-            return instance.impl_()->settings_manager_;
-        }
-};
-
-} }
-
-using libmuscle::_MUSCLE_IMPL_NS::TestInstance;
-
 /* Mocks have internal state, which needs to be reset before each test. This
  * means that the tests are not reentrant, and cannot be run in parallel.
  * It's all fast enough, so that's not a problem.
@@ -98,7 +80,7 @@ TEST(libmuscle_instance, create_instance) {
                 {Operator::O_F, {"out1", "out2[]"}}
                 }));
 
-    ASSERT_EQ(TestInstance::instance_name_(instance), "test_instance[13][42]");
+    ASSERT_EQ(instance.impl_()->instance_name_, "test_instance[13][42]");
     ASSERT_EQ(MockMMPClient::num_constructed, 1);
     ASSERT_EQ(MockMMPClient::last_instance_id, "test_instance[13][42]");
     ASSERT_EQ(MockMMPClient::last_location, "node042:9000");
@@ -106,7 +88,7 @@ TEST(libmuscle_instance, create_instance) {
     ASSERT_EQ(MockMMPClient::last_registered_locations.at(0), "tcp:test1,test2");
     ASSERT_EQ(MockMMPClient::last_registered_locations.at(1), "tcp:test3");
     ASSERT_EQ(MockMMPClient::last_registered_ports.size(), 3);
-    auto & settings = TestInstance::settings_manager_(instance);
+    auto & settings = instance.impl_()->settings_manager_;
     ASSERT_EQ(settings.base["test_int"], 10);
     ASSERT_EQ(settings.base["test_string"], "testing");
     ASSERT_TRUE(settings.overlay.empty());
@@ -163,7 +145,7 @@ TEST(libmuscle_instance, get_setting) {
     settings["test4"] = 10000000000l;    // does not fit 32 bits
     settings["test5"] = 10.0;
     settings["test6"] = 1.0f / 3.0f;     // not exactly representable
-    TestInstance::settings_manager_(instance).base = settings;
+    instance.impl_()->settings_manager_.base = settings;
 
     ASSERT_TRUE(instance.get_setting("test1").is_a<std::string>());
     ASSERT_EQ(instance.get_setting("test1").as<std::string>(), "test");
@@ -402,9 +384,9 @@ TEST(libmuscle_instance, reuse_instance_receive_overlay) {
 
     instance.reuse_instance();
 
-    ASSERT_EQ(TestInstance::settings_manager_(instance).overlay.size(), 2);
-    ASSERT_EQ(TestInstance::settings_manager_(instance).overlay.at("test1"), 24);
-    ASSERT_EQ(TestInstance::settings_manager_(instance).overlay.at("test2"), "abc");
+    ASSERT_EQ(instance.impl_()->settings_manager_.overlay.size(), 2);
+    ASSERT_EQ(instance.impl_()->settings_manager_.overlay.at("test1"), 24);
+    ASSERT_EQ(instance.impl_()->settings_manager_.overlay.at("test2"), "abc");
 }
 
 TEST(libmuscle_instance, reuse_instance_closed_port) {

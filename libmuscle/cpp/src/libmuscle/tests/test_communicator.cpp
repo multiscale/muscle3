@@ -71,23 +71,6 @@ int main(int argc, char *argv[]) {
 }
 
 
-// Helpers for accessing internal state
-namespace libmuscle { namespace _MUSCLE_IMPL_NS {
-
-class TestCommunicator {
-    public:
-        static std::unordered_map<std::string, libmuscle::_MUSCLE_IMPL_NS::Port> const & ports_(
-                Communicator const & comm)
-        {
-            return comm.ports_;
-        }
-};
-
-} }
-
-using libmuscle::_MUSCLE_IMPL_NS::TestCommunicator;
-
-
 /* Mocks have internal state, which needs to be reset before each test. This
  * means that the tests are not reentrant, and cannot be run in parallel.
  * It's all fast enough, so that's not a problem.
@@ -222,7 +205,7 @@ TEST(libmuscle_communicator, test_connect) {
     ASSERT_EQ(MockPeerManager::last_constructed_index, std::vector<int>({13}));
 
     // check inferred ports
-    auto const & ports = TestCommunicator::ports_(comm);
+    auto const & ports = comm.ports_;
 
     ASSERT_EQ(ports.at("in").name, "in");
     ASSERT_EQ(ports.at("in").oper, Operator::F_INIT);
@@ -277,7 +260,7 @@ TEST(libmuscle_communicator, test_connect_vector_ports) {
     ASSERT_EQ(MockPeerManager::last_constructed_peer_dims, peer_dims);
     ASSERT_EQ(MockPeerManager::last_constructed_peer_locations, peer_locations);
 
-    auto const & ports = TestCommunicator::ports_(comm);
+    auto const & ports = comm.ports_;
 
     ASSERT_EQ(ports.at("in").name, "in");
     ASSERT_EQ(ports.at("in").oper, Operator::F_INIT);
@@ -372,7 +355,7 @@ TEST(libmuscle_communicator, test_connect_inferred_ports) {
     ASSERT_EQ(MockPeerManager::last_constructed_peer_dims, peer_dims);
     ASSERT_EQ(MockPeerManager::last_constructed_peer_locations, peer_locations);
 
-    auto const & ports = TestCommunicator::ports_(comm);
+    auto const & ports = comm.ports_;
 
     ASSERT_EQ(ports.at("in").name, "in");
     ASSERT_EQ(ports.at("in").oper, Operator::F_INIT);
@@ -718,7 +701,7 @@ TEST(libmuscle_communicator, port_discard_error_on_resume) {
             {"out", {0}},
             {"in", {2}},
             {"muscle_settings_in", {0}}});
-    auto & ports = TestCommunicator::ports_(*comm);
+    auto & ports = comm->ports_;
     for (auto const & port : ports) {
         ASSERT_TRUE(port.second.is_resuming());
     }
@@ -748,7 +731,7 @@ TEST(libmuscle_communicator, port_discard_success_on_resume) {
             {"out", {0}},
             {"in", {2}},
             {"muscle_settings_in", {0}}});
-    auto & ports = TestCommunicator::ports_(*comm);
+    auto & ports = comm->ports_;
     for (auto const & port : ports) {
         ASSERT_TRUE(port.second.is_resuming());
     }

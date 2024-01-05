@@ -3,6 +3,7 @@
 #include <libmuscle/message.hpp>
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/ports_description.hpp>
+#include <libmuscle/test_support.hpp>
 
 #ifdef MUSCLE_ENABLE_MPI
 #include <mpi.h>
@@ -779,14 +780,12 @@ class Instance {
          */
         void save_final_snapshot(Message message);
 
-    private:
+    PRIVATE:
         class Impl;
         std::unique_ptr<Impl> pimpl_;
 
         Impl const * impl_() const;
         Impl * impl_();
-
-        friend class TestInstance;
 };
 
 } }

@@ -81,9 +81,6 @@ class MockCommunicator {
         static Optional<int> last_sent_slot;
         static PortMessageCounts get_message_counts_return_value;
         static PortMessageCounts last_restored_message_counts;
-
-    private:
-        friend class TestCommunicator;
 };
 
 using Communicator = MockCommunicator;

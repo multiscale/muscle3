@@ -47,7 +47,7 @@ EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-Wl,-rpath,$(DIR)/lib)
 
 CXXFLAGS += -I$(libmuscle_testdir) -isystem $(googletest_ROOT)/include -pthread
 CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --cflags msgpack)
-CXXFLAGS += $(DEBUGFLAGS)
+CXXFLAGS += -DTESTING $(DEBUGFLAGS)
 
 LDFLAGS += $(CURDIR)/../libmuscle_d.a $(CURDIR)/../../ymmsl/libymmsl_d.a
 LDFLAGS += $(googletest_LIB) -pthread

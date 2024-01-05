@@ -60,23 +60,6 @@ bool operator==(Port const & lhs, Port const & rhs) {
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
-// Helper for accessing internal state
-
-class TestProfiler {
-    public:
-        static std::size_t num_queued_events(Profiler & profiler) {
-            std::lock_guard<std::mutex> lock(profiler.mutex_);
-            return profiler.events_.size();
-        }
-
-        static ProfileEvent get_queued_event(
-                Profiler & profiler, std::size_t i) {
-            std::lock_guard<std::mutex> lock(profiler.mutex_);
-            return profiler.events_.at(i);
-        }
-};
-
-
 // Helpers for comparison, not needed in the main code so put here.
 bool operator==(ProfileTimestamp const & lhs, ProfileTimestamp const & rhs) {
     return lhs.nanoseconds == rhs.nanoseconds;
@@ -116,7 +99,17 @@ bool operator==(ProfileEvent const & lhs, ProfileEvent const & rhs) {
 
 } }
 
-using libmuscle::_MUSCLE_IMPL_NS::TestProfiler;
+// Profiler has an internal mutex, which we need to lock when accessing
+std::size_t num_queued_events(Profiler & profiler) {
+    std::lock_guard<std::mutex> lock(profiler.mutex_);
+    return profiler.events_.size();
+}
+
+ProfileEvent get_queued_event(
+        Profiler & profiler, std::size_t i) {
+    std::lock_guard<std::mutex> lock(profiler.mutex_);
+    return profiler.events_.at(i);
+}
 
 
 /* Mocks have internal state, which needs to be reset before each test. This
@@ -140,7 +133,7 @@ TEST(libmuscle_profiler, test_recording_events) {
 
     ASSERT_EQ(e.start_time, t1);
     ASSERT_EQ(e.stop_time, t2);
-    ASSERT_EQ(TestProfiler::get_queued_event(profiler, 0), e);
+    ASSERT_EQ(get_queued_event(profiler, 0), e);
 }
 
 
@@ -157,7 +150,7 @@ TEST(libmuscle_profiler, test_disabling) {
 
     ASSERT_EQ(e.start_time, t1);
     ASSERT_EQ(e.stop_time, t2);
-    ASSERT_EQ(TestProfiler::num_queued_events(profiler), 0u);
+    ASSERT_EQ(num_queued_events(profiler), 0u);
 }
 
 
@@ -178,7 +171,7 @@ TEST(libmuscle_profiler, test_auto_stop_time) {
 
     profiler.record_event(std::move(e));
 
-    auto const & e2 = TestProfiler::get_queued_event(profiler, 0);
+    auto const & e2 = get_queued_event(profiler, 0);
     ASSERT_EQ(e2.start_time, t1);
     ASSERT_TRUE(e2.stop_time.is_set());
     ASSERT_LT(e2.start_time.get(), e2.stop_time.get());

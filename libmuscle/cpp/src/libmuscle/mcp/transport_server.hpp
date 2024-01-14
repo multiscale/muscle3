@@ -64,12 +64,6 @@ class RequestHandler {
  */
 class TransportServer {
     public:
-        /** Create a TransportServer.
-         *
-         * @param handler: A handler to handle requests
-         */
-        TransportServer(RequestHandler & handler);
-
         /** Destroy the Transport Server object
          */
         virtual ~TransportServer() = default;
@@ -86,6 +80,21 @@ class TransportServer {
          * then frees any other resources.
          */
         virtual void close() = 0;
+};
+
+
+/** Base class for TransportServers.
+ *
+ * They always have a handler, so this saves some typing. This is separate from the
+ * interface so that we can create a mock that doesn't have the reference.
+ */
+class TransportServerBase : public TransportServer {
+    public:
+        /** Create a TransportServerBase.
+         *
+         * @param handler: A handler to handle requests
+         */
+        TransportServerBase(RequestHandler & handler);
 
     protected:
         RequestHandler & handler_;

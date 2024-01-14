@@ -111,19 +111,19 @@ libymmsl.a: $(objects)
 	ar rcs $@ $^
 
 libymmsl.so: $(lobjects)
-	$(CXX) -shared -o $@ $^
+	$(CXX) -shared -o $@ $^ $(LDFLAGS)
 
 libymmsl.dylib: $(lobjects)
-	$(CXX) -shared -o $@ $^
+	$(CXX) -shared -o $@ $^ $(LDFLAGS)
 
 libymmsl_d.a: $(dobjects)
 	ar rcs $@ $^
 
 libymmsl_d.so: $(dlobjects)
-	$(CXX) -shared -o $@ $^
+	$(CXX) -shared -o $@ $^ $(LDFLAGS)
 
 libymmsl_d.dylib: $(dlobjects)
-	$(CXX) -shared -o $@ $^
+	$(CXX) -shared -o $@ $^ $(LDFLAGS)
 
 $(PREFIX)/include/%.hpp: $(hdrdir)/%.hpp
 	@mkdir -p $(@D)

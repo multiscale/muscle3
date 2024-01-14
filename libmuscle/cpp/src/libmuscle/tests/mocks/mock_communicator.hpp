@@ -1,6 +1,5 @@
 #pragma once
 
-#include <libmuscle/data.hpp>
 #include <libmuscle/logger.hpp>
 #include <libmuscle/message.hpp>
 #include <libmuscle/namespace.hpp>
@@ -17,70 +16,128 @@
 #include <vector>
 
 
+namespace mock_communicator {
+
+using ::libmuscle::_MUSCLE_IMPL_NS::Message;
+using ::libmuscle::_MUSCLE_IMPL_NS::Optional;
+
+
+using CommunicatorSendMessageBase = MockFun<
+    Void, Val<std::string const &>, Val<Message const &>,
+    Val<Optional<int>>>;
+
+struct CommunicatorSendMessageMock : CommunicatorSendMessageBase {
+    void operator()(
+            std::string const & port_name,
+            Message const & message,
+            Optional<int> slot = {}) {
+        CommunicatorSendMessageBase::operator()(port_name, message, slot);
+    }
+};
+
+
+using CommunicatorReceiveMessageBase = MockFun<
+    Val<Message>, Val<std::string const &>,
+    Val<Optional<int>>,
+    Val<Optional<Message>>>;
+
+struct CommunicatorReceiveMessageMock : CommunicatorReceiveMessageBase {
+    Message operator()(
+            std::string const & port_name,
+            Optional<int> slot = {},
+            Optional<Message> const & default_msg = {})
+    {
+        return CommunicatorReceiveMessageBase::operator()(
+                port_name, slot, default_msg);
+    }
+};
+
+
+using CommunicatorClosePortBase = MockFun<
+    Void, Val<std::string const &>, Val<Optional<int>>>;
+
+struct CommunicatorClosePortMock : CommunicatorClosePortBase {
+    void operator()(std::string const & port_name, Optional<int> slot = {}) {
+        CommunicatorClosePortBase::operator()(port_name, slot);
+    }
+};
+
+}
+
+
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 using PortsDescription = std::unordered_map<ymmsl::Operator, std::vector<std::string>>;
 
 
-class MockCommunicator {
+class MockCommunicator : public MockClass<MockCommunicator> {
     public:
         using PortMessageCounts = std::unordered_map<std::string, std::vector<int>>;
+
+        MockCommunicator(ReturnValue) {
+            NAME_MOCK_MEM_FUN(MockCommunicator, constructor);
+            NAME_MOCK_MEM_FUN(MockCommunicator, get_locations);
+            NAME_MOCK_MEM_FUN(MockCommunicator, connect);
+            NAME_MOCK_MEM_FUN(MockCommunicator, settings_in_connected);
+            NAME_MOCK_MEM_FUN(MockCommunicator, list_ports);
+            NAME_MOCK_MEM_FUN(MockCommunicator, port_exists);
+            NAME_MOCK_MEM_FUN(MockCommunicator, get_port);
+            NAME_MOCK_MEM_FUN(MockCommunicator, send_message);
+            NAME_MOCK_MEM_FUN(MockCommunicator, receive_message);
+            NAME_MOCK_MEM_FUN(MockCommunicator, close_port);
+            NAME_MOCK_MEM_FUN(MockCommunicator, shutdown);
+            NAME_MOCK_MEM_FUN(MockCommunicator, get_message_counts);
+            NAME_MOCK_MEM_FUN(MockCommunicator, restore_message_counts);
+
+            get_locations.return_value = std::vector<std::string>(
+                    {"tcp:test1,test2", "tcp:test3"});
+            list_ports.return_value = PortsDescription();
+        }
+
+        MockCommunicator() {
+            init_from_return_value();
+        }
 
         MockCommunicator(
                 ymmsl::Reference const & kernel,
                 std::vector<int> const & index,
                 Optional<PortsDescription> const & declared_ports,
-                Logger & logger, Profiler & profiler);
+                Logger & logger, Profiler & profiler)
+        {
+            init_from_return_value();
+            constructor(kernel, index, declared_ports, logger, profiler);
+        }
 
-        std::vector<std::string> get_locations() const;
+        MockFun<
+            Void, Val<ymmsl::Reference const &>, Val<std::vector<int> const &>,
+            Val<Optional<PortsDescription> const &>, Obj<Logger &>, Obj<Profiler &>>
+                constructor;
 
-        void connect(
-                std::vector<ymmsl::Conduit> const & conduits,
-                PeerDims const & peer_dims,
-                PeerLocations const & peer_locations);
+        MockFun<Val<std::vector<std::string>>> get_locations;
 
-        bool settings_in_connected() const;
+        MockFun<
+            Void, Val<std::vector<ymmsl::Conduit> const &>, Val<PeerDims const &>,
+            Val<PeerLocations const &>> connect;
 
-        PortsDescription list_ports() const;
+        MockFun<Val<bool>> settings_in_connected;
 
-        bool port_exists(std::string const & port_name) const;
+        MockFun<Val<PortsDescription>> list_ports;
 
-        Port const & get_port(std::string const & port_name) const;
+        MockFun<Val<bool>, Val<std::string const &>> port_exists;
 
-        Port & get_port(std::string const & port_name);
+        MockFun<Obj<Port &>, Val<std::string const &>> get_port;
 
-        void send_message(
-                std::string const & port_name,
-                Message const & message,
-                Optional<int> slot = {});
+        ::mock_communicator::CommunicatorSendMessageMock send_message;
 
-        Message receive_message(
-                std::string const & port_name,
-                Optional<int> slot = {},
-                Optional<Message> const & default_msg = {}
-                );
+        ::mock_communicator::CommunicatorReceiveMessageMock receive_message;
 
-        void close_port(std::string const & port_name, Optional<int> slot = {});
+        ::mock_communicator::CommunicatorClosePortMock close_port;
 
-        void shutdown();
+        MockFun<Void> shutdown;
 
-        PortMessageCounts get_message_counts();
+        MockFun<Val<PortMessageCounts>> get_message_counts;
 
-        void restore_message_counts(PortMessageCounts const & port_message_counts);
-
-        static void reset();
-        static int num_constructed;
-        static bool settings_in_connected_return_value;
-        static bool port_exists_return_value;
-        static std::unordered_map<std::string, Port> get_port_return_value;
-        static std::unordered_map<Reference, std::unique_ptr<Message>>
-            next_received_message;
-        static PortsDescription list_ports_return_value;
-        static std::string last_sent_port;
-        static Message last_sent_message;
-        static Optional<int> last_sent_slot;
-        static PortMessageCounts get_message_counts_return_value;
-        static PortMessageCounts last_restored_message_counts;
+        MockFun<Void, Val<PortMessageCounts const &>> restore_message_counts;
 };
 
 using Communicator = MockCommunicator;

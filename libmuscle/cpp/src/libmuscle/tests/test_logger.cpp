@@ -7,10 +7,10 @@
 #include <libmuscle/timestamp.cpp>
 
 // then add mock implementations as needed.
-#include <mocks/mock_mmp_client.cpp>
-
+#include <mocks/mock_mmp_client.hpp>
 
 // Test code dependencies
+#include <libmuscle/tests/fixtures.hpp>
 #include <libmuscle/logger.hpp>
 #include <libmuscle/logging.hpp>
 #include <libmuscle/namespace.hpp>
@@ -29,63 +29,60 @@ int main(int argc, char *argv[]) {
     return RUN_ALL_TESTS();
 }
 
-/* Mocks have internal state, which needs to be reset before each test. This
- * means that the tests are not reentrant, and cannot be run in parallel.
- * It's all fast enough, so that's not a problem.
- */
-void reset_mocks() {
-    MockMMPClient::reset();
-}
 
-TEST(libmuscle_logging, test_logger) {
-    reset_mocks();
-    MockMMPClient manager(Reference("test_instance[10]"), "");
-    Logger logger("test_instance[10]", "", manager);
+struct libmuscle_logging : ::testing::Test {
+    RESET_MOCKS(MockMMPClient);
+    MockMMPClient mock_mmp_client_;
+};
+
+
+TEST_F(libmuscle_logging, test_logger) {
+    Logger logger("test_instance[10]", "", mock_mmp_client_);
 
     logger.log(LogLevel::CRITICAL, "Testing: ", 10, " == ", 10.0);
 
-    auto const & msg = MockMMPClient::last_submitted_log_message;
+    auto const & msg = mock_mmp_client_.submit_log_message.call_arg<0>();
     ASSERT_EQ(msg.instance_id, "test_instance[10]");
     ASSERT_GT(msg.timestamp.seconds, 0.0);
     ASSERT_EQ(msg.level, LogLevel::CRITICAL);
     ASSERT_EQ(msg.text, "Testing: 10 == 10");
 }
 
-TEST(libmuscle_logging, test_set_level) {
-    reset_mocks();
-    MockMMPClient manager(Reference("test_instance"), "");
-    Logger logger("test_instance", "", manager);
+TEST_F(libmuscle_logging, test_set_level) {
+    Logger logger("test_instance", "", mock_mmp_client_);
+
+    auto const & submit = mock_mmp_client_.submit_log_message;
 
     // default is WARNING
     logger.log(LogLevel::WARNING, "WARNING");
-    ASSERT_EQ(MockMMPClient::last_submitted_log_message.text, "WARNING");
+    ASSERT_EQ(submit.call_arg<0>().text, "WARNING");
 
     logger.log(LogLevel::INFO, "INFO");
-    ASSERT_EQ(MockMMPClient::last_submitted_log_message.text, "WARNING");
+    ASSERT_EQ(submit.call_arg<0>().text, "WARNING");
 
     logger.log(LogLevel::WARNING, "WARNING2");
-    ASSERT_EQ(MockMMPClient::last_submitted_log_message.text, "WARNING2");
+    ASSERT_EQ(submit.call_arg<0>().text, "WARNING2");
 
     logger.log(LogLevel::DEBUG, "DEBUG");
-    ASSERT_EQ(MockMMPClient::last_submitted_log_message.text, "WARNING2");
+    ASSERT_EQ(submit.call_arg<0>().text, "WARNING2");
 
     logger.log(LogLevel::CRITICAL, "CRITICAL");
-    ASSERT_EQ(MockMMPClient::last_submitted_log_message.text, "CRITICAL");
+    ASSERT_EQ(submit.call_arg<0>().text, "CRITICAL");
 
     logger.set_remote_level(LogLevel::DEBUG);
 
     logger.log(LogLevel::DEBUG, "DEBUG");
-    ASSERT_EQ(MockMMPClient::last_submitted_log_message.text, "DEBUG");
+    ASSERT_EQ(submit.call_arg<0>().text, "DEBUG");
 
     logger.log(LogLevel::CRITICAL, "CRITICAL");
-    ASSERT_EQ(MockMMPClient::last_submitted_log_message.text, "CRITICAL");
+    ASSERT_EQ(submit.call_arg<0>().text, "CRITICAL");
 
     logger.set_remote_level(LogLevel::CRITICAL);
 
     logger.log(LogLevel::ERROR, "ERROR");
-    ASSERT_EQ(MockMMPClient::last_submitted_log_message.text, "CRITICAL");
+    ASSERT_EQ(submit.call_arg<0>().text, "CRITICAL");
 
     logger.log(LogLevel::CRITICAL, "CRITICAL2");
-    ASSERT_EQ(MockMMPClient::last_submitted_log_message.text, "CRITICAL2");
+    ASSERT_EQ(submit.call_arg<0>().text, "CRITICAL2");
 }
 

@@ -9,9 +9,10 @@
 #include <libmuscle/timestamp.cpp>
 
 // then add mock implementations as needed.
-#include <mocks/mock_mmp_client.cpp>
+#include <mocks/mock_mmp_client.hpp>
 
-// and patch the background thread communication interval
+// and provide the background thread communication interval function
+// patched in above.
 #include <chrono>
 
 using std::chrono_literals::operator""ms;
@@ -24,6 +25,7 @@ std::chrono::steady_clock::duration communication_interval_() {
 
 
 // Test code dependencies
+#include <libmuscle/tests/fixtures.hpp>
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/profiler.hpp>
 #include <libmuscle/profiling.hpp>
@@ -59,23 +61,6 @@ bool operator==(Port const & lhs, Port const & rhs) {
 
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
-
-// Helper for accessing internal state
-
-class TestProfiler {
-    public:
-        static std::size_t num_queued_events(Profiler & profiler) {
-            std::lock_guard<std::mutex> lock(profiler.mutex_);
-            return profiler.events_.size();
-        }
-
-        static ProfileEvent get_queued_event(
-                Profiler & profiler, std::size_t i) {
-            std::lock_guard<std::mutex> lock(profiler.mutex_);
-            return profiler.events_.at(i);
-        }
-};
-
 
 // Helpers for comparison, not needed in the main code so put here.
 bool operator==(ProfileTimestamp const & lhs, ProfileTimestamp const & rhs) {
@@ -116,22 +101,27 @@ bool operator==(ProfileEvent const & lhs, ProfileEvent const & rhs) {
 
 } }
 
-using libmuscle::_MUSCLE_IMPL_NS::TestProfiler;
+// Profiler has an internal mutex, which we need to lock when accessing
+std::size_t num_queued_events(Profiler & profiler) {
+    std::lock_guard<std::mutex> lock(profiler.mutex_);
+    return profiler.events_.size();
+}
 
-
-/* Mocks have internal state, which needs to be reset before each test. This
- * means that the tests are not reentrant, and cannot be run in parallel.
- * It's all fast enough, so that's not a problem.
- */
-void reset_mocks() {
-    MockMMPClient::reset();
+ProfileEvent get_queued_event(
+        Profiler & profiler, std::size_t i) {
+    std::lock_guard<std::mutex> lock(profiler.mutex_);
+    return profiler.events_.at(i);
 }
 
 
-TEST(libmuscle_profiler, test_recording_events) {
-    reset_mocks();
-    MockMMPClient mock_mmp_client(Reference("test_instance[10]"), "");
-    Profiler profiler(mock_mmp_client);
+struct libmuscle_profiler : ::testing::Test {
+    RESET_MOCKS(MockMMPClient);
+    MockMMPClient mock_mmp_client_;
+};
+
+
+TEST_F(libmuscle_profiler, test_recording_events) {
+    Profiler profiler(mock_mmp_client_);
 
     ProfileTimestamp t1, t2;
     ProfileEvent e(ProfileEventType::register_, t1, t2);
@@ -140,14 +130,12 @@ TEST(libmuscle_profiler, test_recording_events) {
 
     ASSERT_EQ(e.start_time, t1);
     ASSERT_EQ(e.stop_time, t2);
-    ASSERT_EQ(TestProfiler::get_queued_event(profiler, 0), e);
+    ASSERT_EQ(get_queued_event(profiler, 0), e);
 }
 
 
-TEST(libmuscle_profiler, test_disabling) {
-    reset_mocks();
-    MockMMPClient mock_mmp_client(Reference("test_instance[10]"), "");
-    Profiler profiler(mock_mmp_client);
+TEST_F(libmuscle_profiler, test_disabling) {
+    Profiler profiler(mock_mmp_client_);
     profiler.set_level("none");
 
     ProfileTimestamp t1, t2;
@@ -157,14 +145,12 @@ TEST(libmuscle_profiler, test_disabling) {
 
     ASSERT_EQ(e.start_time, t1);
     ASSERT_EQ(e.stop_time, t2);
-    ASSERT_EQ(TestProfiler::num_queued_events(profiler), 0u);
+    ASSERT_EQ(num_queued_events(profiler), 0u);
 }
 
 
-TEST(libmuscle_profiler, test_auto_stop_time) {
-    reset_mocks();
-    MockMMPClient mock_mmp_client(Reference("test_instance[10]"), "");
-    Profiler profiler(mock_mmp_client);
+TEST_F(libmuscle_profiler, test_auto_stop_time) {
+    Profiler profiler(mock_mmp_client_);
 
     ProfileTimestamp t1;
     ProfileEvent e(ProfileEventType::send, t1);
@@ -178,16 +164,14 @@ TEST(libmuscle_profiler, test_auto_stop_time) {
 
     profiler.record_event(std::move(e));
 
-    auto const & e2 = TestProfiler::get_queued_event(profiler, 0);
+    auto const & e2 = get_queued_event(profiler, 0);
     ASSERT_EQ(e2.start_time, t1);
     ASSERT_TRUE(e2.stop_time.is_set());
     ASSERT_LT(e2.start_time.get(), e2.stop_time.get());
 }
 
-TEST(libmuscle_profiler, test_send_to_mock_mmp_client) {
-    reset_mocks();
-    MockMMPClient mock_mmp_client(Reference("test_instance[10]"), "");
-    Profiler profiler(mock_mmp_client);
+TEST_F(libmuscle_profiler, test_send_to_mock_mmp_client) {
+    Profiler profiler(mock_mmp_client_);
 
     ProfileEvent e1(
             ProfileEventType::receive, ProfileTimestamp(), ProfileTimestamp());
@@ -199,20 +183,20 @@ TEST(libmuscle_profiler, test_send_to_mock_mmp_client) {
         profiler.record_event(std::move(e));
     }
 
-    ASSERT_EQ(mock_mmp_client.last_submitted_profile_events.size(), 0u);
+    ASSERT_FALSE(mock_mmp_client_.submit_profile_events.called());
 
     ProfileEvent e2(
             ProfileEventType::receive_transfer, ProfileTimestamp(), ProfileTimestamp());
     profiler.record_event(ProfileEvent(e2));
 
-    ASSERT_EQ(mock_mmp_client.last_submitted_profile_events.size(), 10000u);
-    ASSERT_EQ(mock_mmp_client.last_submitted_profile_events.at(0), e1);
-    ASSERT_EQ(mock_mmp_client.last_submitted_profile_events.at(9999), e2);
+    ASSERT_TRUE(mock_mmp_client_.submit_profile_events.called());
+    auto const & events = mock_mmp_client_.submit_profile_events.call_arg<0>();
+    ASSERT_EQ(events.size(), 10000u);
+    ASSERT_EQ(events.at(0), e1);
+    ASSERT_EQ(events.at(9999), e2);
 }
 
-TEST(libmuscle_profiler, test_send_timeout) {
-    reset_mocks();
-
+TEST_F(libmuscle_profiler, test_send_timeout) {
     std::chrono::steady_clock::duration wait_time;
 
     if (getenv("CI")) {
@@ -224,8 +208,7 @@ TEST(libmuscle_profiler, test_send_timeout) {
         wait_time = 60ms;
     }
 
-    MockMMPClient mock_mmp_client(Reference("test_instance"), "");
-    Profiler profiler(mock_mmp_client);
+    Profiler profiler(mock_mmp_client_);
 
     ProfileEvent e1(
             ProfileEventType::receive, ProfileTimestamp(), ProfileTimestamp());
@@ -233,7 +216,7 @@ TEST(libmuscle_profiler, test_send_timeout) {
 
     std::this_thread::sleep_for(wait_time);
 
-    ASSERT_EQ(mock_mmp_client.last_submitted_profile_events.size(), 1u);
-    ASSERT_EQ(mock_mmp_client.last_submitted_profile_events.at(0), e1);
+    ASSERT_EQ(mock_mmp_client_.submit_profile_events.call_arg<0>().size(), 1u);
+    ASSERT_EQ(mock_mmp_client_.submit_profile_events.call_arg<0>().at(0), e1);
 }
 

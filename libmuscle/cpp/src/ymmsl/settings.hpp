@@ -202,6 +202,15 @@ class Settings {
         // No, not going to type-erase this.
         using const_iterator = MapType_::const_iterator;
 
+        /** Create an empty Settings object. */
+        Settings() = default;
+
+        /** Create a Settings object with the given settings.
+         *
+         * @param settings std::unordered_map<Reference, SettingValue> with settings.
+         */
+        Settings(std::unordered_map<Reference, SettingValue> const & settings);
+
         /** Compare Settings objects for equality.
          *
          * @return True iff the Settings are equal.

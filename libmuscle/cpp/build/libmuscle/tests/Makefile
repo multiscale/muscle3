@@ -16,13 +16,14 @@ endif
 all_tests := $(unit_test_bins) $(integration_test_bins)
 deps := $(all_tests:%=%.d)
 
-# GTest sometimes install in /lib, sometimes in /lib64, depending on platform
+# GTest sometimes installs in /lib, sometimes in /lib64, depending on platform
 ifneq ("$(wildcard $(googletest_ROOT)/lib/libgtest.a)", "")
     googletest_LIB := $(googletest_ROOT)/lib/libgtest.a
 else
     googletest_LIB := $(googletest_ROOT)/lib64/libgtest.a
 endif
 
+GTEST_OPTIONS = --gtest_catch_exceptions=0
 
 
 .PHONY: test
@@ -109,9 +110,9 @@ test_dep_lib_paths := $(subst $(space),:,$(foreach DIR,$(DEP_DIRS),$(DIR)/lib))
 
 .PHONY: run_test%
 run_test%: test%
-	export LD_LIBRARY_PATH=$(test_dep_lib_paths):$(LD_LIBRARY_PATH) ; $(VALGRIND) ./$<
+	export LD_LIBRARY_PATH=$(test_dep_lib_paths):$(LD_LIBRARY_PATH) ; $(VALGRIND) ./$< $(GTEST_OPTIONS)
 
 # This uses setrlimit, which is not compatible with Valgrind, so run without
 .PHONY: run_test_data_memory_use
 run_test_data_memory_use: test_data_memory_use
-	export LD_LIBRARY_PATH=$(test_dep_lib_paths):$(LD_LIBRARY_PATH) ; ./$<
+	export LD_LIBRARY_PATH=$(test_dep_lib_paths):$(LD_LIBRARY_PATH) ; ./$< $(GTEST_OPTIONS)

@@ -4,6 +4,7 @@
 
 #include <libmuscle/endpoint.hpp>
 #include <libmuscle/namespace.hpp>
+#include <mocks/mock_support.hpp>
 
 #include <string>
 #include <unordered_map>
@@ -16,45 +17,55 @@ using PeerDims = std::unordered_map<ymmsl::Reference, std::vector<int>>;
 using PeerLocations = std::unordered_map<
         ymmsl::Reference, std::vector<std::string>>;
 
-class MockPeerInfo {
+class MockPeerInfo : public MockClass<MockPeerInfo> {
     public:
+        MockPeerInfo(ReturnValue) {
+            NAME_MOCK_MEM_FUN(MockPeerInfo, constructor);
+            NAME_MOCK_MEM_FUN(MockPeerInfo, is_connected);
+            NAME_MOCK_MEM_FUN(MockPeerInfo, get_peer_ports);
+            NAME_MOCK_MEM_FUN(MockPeerInfo, get_peer_dims);
+            NAME_MOCK_MEM_FUN(MockPeerInfo, get_peer_locations);
+            NAME_MOCK_MEM_FUN(MockPeerInfo, get_peer_endpoints);
+        }
+
         MockPeerInfo(
                 ymmsl::Reference const & kernel,
                 std::vector<int> const & index,
                 std::vector<ymmsl::Conduit> const & conduits,
                 PeerDims const & peer_dims,
-                PeerLocations const & peer_locations);
+                PeerLocations const & peer_locations)
+        {
+            init_from_return_value();
+            constructor(kernel, index, conduits, peer_dims, peer_locations);
+        }
 
-        bool is_connected(ymmsl::Identifier const & port) const;
+        MockFun<Void,
+            Val<ymmsl::Reference const &>,
+            Val<std::vector<int> const &>,
+            Val<std::vector<ymmsl::Conduit> const &>,
+            Val<PeerDims const &>,
+            Val<PeerLocations const &>
+        > constructor;
 
-        std::vector<ymmsl::Reference> get_peer_ports(ymmsl::Identifier const & port) const;
+        MockFun<Val<bool>, Val<ymmsl::Identifier const &>> is_connected;
 
-        std::vector<int> get_peer_dims(ymmsl::Reference const & peer_kernel) const;
+        MockFun<
+            Val<std::vector<ymmsl::Reference>>,
+            Val<ymmsl::Identifier const &>
+        > get_peer_ports;
 
-        std::vector<std::string> get_peer_locations(
-                ymmsl::Reference const & peer_instance) const;
+        MockFun<Val<std::vector<int>>, Val<ymmsl::Reference const &>> get_peer_dims;
 
-        std::vector<Endpoint> get_peer_endpoints(
-                ymmsl::Identifier const & port,
-                std::vector<int> const & slot) const;
+        MockFun<
+            Val<std::vector<std::string>>,
+            Val<ymmsl::Reference const &>
+        > get_peer_locations;
 
-        // Mock control variables
-        static void reset();
-
-        static int num_constructed;
-        static ymmsl::Reference last_constructed_kernel_id;
-        static std::vector<int> last_constructed_index;
-        static std::vector<ymmsl::Conduit> last_constructed_conduits;
-        static PeerDims last_constructed_peer_dims;
-        static PeerLocations last_constructed_peer_locations;
-
-        static bool is_connected_return_value;
-        static std::unordered_map<ymmsl::Identifier, std::vector<ymmsl::Reference>>
-            get_peer_port_table;
-        static std::unordered_map<ymmsl::Reference, std::vector<int>>
-            get_peer_dims_table;
-        static std::unordered_map<ymmsl::Reference, std::vector<Endpoint>>
-            get_peer_endpoint_table;
+        MockFun<
+            Val<std::vector<Endpoint>>,
+            Val<ymmsl::Identifier const &>,
+            Val<std::vector<int> const &>
+        > get_peer_endpoints;
 };
 
 using PeerInfo = MockPeerInfo;

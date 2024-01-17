@@ -8,20 +8,35 @@
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace mcp {
 
-class MockTcpTransportServer : public TransportServer {
+class MockTcpTransportServer
+    : public MockClass<MockTcpTransportServer>
+    , public TransportServer
+{
     public:
-        MockTcpTransportServer(RequestHandler & handler);
+        MockTcpTransportServer(ReturnValue) {
+            NAME_MOCK_MEM_FUN(MockTcpTransportServer, constructor);
+            NAME_MOCK_MEM_FUN(MockTcpTransportServer, get_location_mock);
+            NAME_MOCK_MEM_FUN(MockTcpTransportServer, close_mock);
+        }
 
-        ~MockTcpTransportServer();
+        MockTcpTransportServer(RequestHandler & handler) {
+            init_from_return_value();
+            constructor(handler);
+        }
 
-        virtual std::string get_location() const;
+        MockFun<Void, Obj<RequestHandler &>> constructor;
 
-        virtual void close();
+        virtual std::string get_location() const override {
+            return get_location_mock();
+        }
 
-        // Mock control variables
-        static void reset();
+        mutable MockFun<Val<std::string>> get_location_mock;
 
-        static int num_constructed;
+        virtual void close() override {
+            return close_mock();
+        }
+
+        MockFun<Void> close_mock;
 };
 
 using TcpTransportServer = MockTcpTransportServer;

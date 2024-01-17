@@ -4,7 +4,7 @@
 #define LIBMUSCLE_MOCK_MMP_CLIENT <mocks/mock_mmp_client.hpp>
 #define LIBMUSCLE_MOCK_PROFILER <mocks/mock_profiler.hpp>
 
-// into the real implementation,
+// into the real implementation to test.
 #include <ymmsl/ymmsl.hpp>
 
 #include <libmuscle/close_port.cpp>
@@ -17,12 +17,6 @@
 #include <libmuscle/settings_manager.cpp>
 #include <libmuscle/snapshot_manager.cpp>
 #include <libmuscle/timestamp.cpp>
-
-// then add mock implementations as needed.
-#include <mocks/mock_communicator.cpp>
-#include <mocks/mock_logger.cpp>
-#include <mocks/mock_mmp_client.cpp>
-#include <mocks/mock_profiler.cpp>
 
 // Test code dependencies
 #include <memory>
@@ -40,8 +34,8 @@ using libmuscle::_MUSCLE_IMPL_NS::ClosePort;
 using libmuscle::_MUSCLE_IMPL_NS::Instance;
 using libmuscle::_MUSCLE_IMPL_NS::InstanceFlags;
 using libmuscle::_MUSCLE_IMPL_NS::Message;
-using libmuscle::_MUSCLE_IMPL_NS::MockCommunicator;
-using libmuscle::_MUSCLE_IMPL_NS::MockMMPClient;
+using libmuscle::_MUSCLE_IMPL_NS::Optional;
+using libmuscle::_MUSCLE_IMPL_NS::Port;
 using libmuscle::_MUSCLE_IMPL_NS::PortsDescription;
 
 using ymmsl::Reference;
@@ -53,33 +47,6 @@ int main(int argc, char *argv[]) {
 }
 
 
-// Helpers for accessing internal state
-namespace libmuscle { namespace _MUSCLE_IMPL_NS {
-
-class TestInstance {
-    public:
-        static Reference & instance_name_(Instance & instance) {
-            return instance.impl_()->instance_name_;
-        }
-
-        static SettingsManager & settings_manager_(Instance & instance) {
-            return instance.impl_()->settings_manager_;
-        }
-};
-
-} }
-
-using libmuscle::_MUSCLE_IMPL_NS::TestInstance;
-
-/* Mocks have internal state, which needs to be reset before each test. This
- * means that the tests are not reentrant, and cannot be run in parallel.
- * It's all fast enough, so that's not a problem.
- */
-void reset_mocks() {
-    MockCommunicator::reset();
-    MockMMPClient::reset();
-}
-
 std::vector<char const *> test_argv() {
     char const * arg0 = "\0";
     char const * arg1 = "--muscle-instance=test_instance[13][42]";
@@ -88,9 +55,16 @@ std::vector<char const *> test_argv() {
 }
 
 
-TEST(libmuscle_instance, create_instance) {
-    reset_mocks();
+class libmuscle_instance : public ::testing::Test {
+    RESET_MOCKS(
+            ::libmuscle::_MUSCLE_IMPL_NS::MockCommunicator,
+            ::libmuscle::_MUSCLE_IMPL_NS::MockLogger,
+            ::libmuscle::_MUSCLE_IMPL_NS::MockMMPClient,
+            ::libmuscle::_MUSCLE_IMPL_NS::MockProfiler);
+};
 
+
+TEST_F(libmuscle_instance, create_instance) {
     auto argv = test_argv();
     Instance instance(argv.size(), argv.data(),
             PortsDescription({
@@ -98,61 +72,67 @@ TEST(libmuscle_instance, create_instance) {
                 {Operator::O_F, {"out1", "out2[]"}}
                 }));
 
-    ASSERT_EQ(TestInstance::instance_name_(instance), "test_instance[13][42]");
-    ASSERT_EQ(MockMMPClient::num_constructed, 1);
-    ASSERT_EQ(MockMMPClient::last_instance_id, "test_instance[13][42]");
-    ASSERT_EQ(MockMMPClient::last_location, "node042:9000");
-    ASSERT_EQ(MockCommunicator::num_constructed, 1);
-    ASSERT_EQ(MockMMPClient::last_registered_locations.at(0), "tcp:test1,test2");
-    ASSERT_EQ(MockMMPClient::last_registered_locations.at(1), "tcp:test3");
-    ASSERT_EQ(MockMMPClient::last_registered_ports.size(), 3);
-    auto & settings = TestInstance::settings_manager_(instance);
+    ASSERT_EQ(instance.impl_()->instance_name_, "test_instance[13][42]");
+
+    auto const & constructor = instance.impl_()->manager_->constructor;
+    ASSERT_TRUE(constructor.called_once());
+    ASSERT_EQ(constructor.call_arg<0>(), "test_instance[13][42]");
+    ASSERT_EQ(constructor.call_arg<1>(), "node042:9000");
+
+    ASSERT_TRUE(instance.impl_()->communicator_->constructor.called_once());
+
+    auto const & register_instance = instance.impl_()->manager_->register_instance;
+    ASSERT_EQ(register_instance.call_arg<0>().at(0), "tcp:test1,test2");
+    ASSERT_EQ(register_instance.call_arg<0>().at(1), "tcp:test3");
+    ASSERT_EQ(register_instance.call_arg<1>().size(), 3);
+
+    auto & settings = instance.impl_()->settings_manager_;
     ASSERT_EQ(settings.base["test_int"], 10);
     ASSERT_EQ(settings.base["test_string"], "testing");
     ASSERT_TRUE(settings.overlay.empty());
 }
 
 
-TEST(libmuscle_instance, send) {
-    reset_mocks();
+TEST_F(libmuscle_instance, send) {
     auto argv = test_argv();
     Instance instance(argv.size(), argv.data(),
             PortsDescription({
                 {Operator::O_F, {"out"}}
                 }));
 
-    MockCommunicator::list_ports_return_value = PortsDescription({
+    auto & communicator = *instance.impl_()->communicator_;
+    communicator.list_ports.return_value = PortsDescription({
                 {Operator::O_F, {"out"}}
                 });
-    MockCommunicator::get_port_return_value.emplace(
-            "out", Port("out", Operator::O_F, false, true, 0, {}));
+    communicator.port_exists.return_value = true;
+    Port out_port("out", Operator::O_F, false, true, 0, {});
+    communicator.get_port.return_value = &out_port;
 
     Message msg(3.0, 4.0, "Testing");
     instance.send("out", msg);
 
-    ASSERT_EQ(MockCommunicator::last_sent_port, "out");
-    ASSERT_FALSE(MockCommunicator::last_sent_slot.is_set());
-    ASSERT_EQ(MockCommunicator::last_sent_message.timestamp(), 3.0);
-    ASSERT_EQ(MockCommunicator::last_sent_message.next_timestamp(), 4.0);
-    ASSERT_EQ(MockCommunicator::last_sent_message.data().as<std::string>(), "Testing");
+    ASSERT_EQ(communicator.send_message.call_arg<0>(), "out");
+    ASSERT_FALSE(communicator.send_message.call_arg<2>().is_set());
+    auto const & sent_msg = communicator.send_message.call_arg<1>();
+    ASSERT_EQ(sent_msg.timestamp(), 3.0);
+    ASSERT_EQ(sent_msg.next_timestamp(), 4.0);
+    ASSERT_EQ(sent_msg.data().as<std::string>(), "Testing");
 }
 
-TEST(libmuscle_instance, send_invalid_port) {
-    reset_mocks();
+TEST_F(libmuscle_instance, send_invalid_port) {
     auto argv = test_argv();
     Instance instance(argv.size(), argv.data(),
             PortsDescription({
                 {Operator::O_F, {"out"}}
                 }));
 
-    MockCommunicator::port_exists_return_value = false;
+    instance.impl_()->communicator_->port_exists.return_value = false;
 
     Message msg(3.0, 4.0, "Testing");
     ASSERT_THROW(instance.send("out", msg), std::logic_error);
 }
 
-TEST(libmuscle_instance, get_setting) {
-    reset_mocks();
+TEST_F(libmuscle_instance, get_setting) {
     auto argv = test_argv();
     Instance instance(argv.size(), argv.data());
 
@@ -163,7 +143,7 @@ TEST(libmuscle_instance, get_setting) {
     settings["test4"] = 10000000000l;    // does not fit 32 bits
     settings["test5"] = 10.0;
     settings["test6"] = 1.0f / 3.0f;     // not exactly representable
-    TestInstance::settings_manager_(instance).base = settings;
+    instance.impl_()->settings_manager_.base = settings;
 
     ASSERT_TRUE(instance.get_setting("test1").is_a<std::string>());
     ASSERT_EQ(instance.get_setting("test1").as<std::string>(), "test");
@@ -184,21 +164,24 @@ TEST(libmuscle_instance, get_setting) {
     ASSERT_THROW(instance.get_setting_as<int64_t>("test1"), std::bad_cast);
 }
 
-TEST(libmuscle_instance, receive) {
-    reset_mocks();
+TEST_F(libmuscle_instance, receive) {
     auto argv = test_argv();
+    Port in_port("in", Operator::S, false, true, 0, {});
+
     Instance instance(argv.size(), argv.data(),
             PortsDescription({
                 {Operator::S, {"in"}}
                 }));
 
-    MockCommunicator::list_ports_return_value = PortsDescription({
-                {Operator::S, {"in"}}
-                });
-    MockCommunicator::get_port_return_value.emplace(
-            "in", Port("in", Operator::S, false, true, 0, {}));
-    MockCommunicator::next_received_message["in"] =
-        std::make_unique<Message>(1.0, 2.0, "Testing receive", Settings());
+
+    auto & communicator = *instance.impl_()->communicator_;
+    communicator.list_ports.return_value = PortsDescription({
+            {Operator::S, {"in"}}
+            });
+    communicator.port_exists.return_value = true;
+    communicator.get_port.return_value = &in_port;
+    communicator.receive_message.return_value = Message(
+            1.0, 2.0, "Testing receive", Settings());
 
     Message msg(instance.receive("in"));
 
@@ -208,26 +191,31 @@ TEST(libmuscle_instance, receive) {
     ASSERT_TRUE(msg.data().is_a<std::string>());
     ASSERT_EQ(msg.data().as<std::string>(), "Testing receive");
 
-    // make sure Instance shuts down cleanly
-    MockCommunicator::next_received_message["in"] =
-        std::make_unique<Message>(0.0, ClosePort(), Settings());
+    // Make sure Instance shuts down cleanly
+    // in_port will be gone already because it was created after instance, but it will
+    // still be returned by get_port, and then we crash. If the instance thinks that
+    // there are no ports, then it won't try to close them either.
+    communicator.list_ports.return_value = PortsDescription();
 }
 
-TEST(libmuscle_instance, receive_f_init) {
-    reset_mocks();
+TEST_F(libmuscle_instance, receive_f_init) {
     auto argv = test_argv();
+    Port in_port("in", Operator::F_INIT, false, true, 0, {});
+
     Instance instance(argv.size(), argv.data(),
             PortsDescription({
                 {Operator::F_INIT, {"in"}}
                 }));
 
-    MockCommunicator::list_ports_return_value = PortsDescription({
+    auto & communicator = *instance.impl_()->communicator_;
+    communicator.settings_in_connected.return_value = false;
+    communicator.port_exists.return_value = true;
+    communicator.list_ports.return_value = PortsDescription({
                 {Operator::F_INIT, {"in"}}
                 });
-    MockCommunicator::get_port_return_value.emplace(
-            "in", Port("in", Operator::F_INIT, false, true, 0, {}));
-    MockCommunicator::next_received_message["in"] =
-        std::make_unique<Message>(1.0, 2.0, "Testing receive", Settings());
+    communicator.get_port.return_value = &in_port;
+    communicator.receive_message.return_value = Message(
+            1.0, 2.0, "Testing receive", Settings());
 
     ASSERT_TRUE(instance.reuse_instance());
     Message msg(instance.receive("in"));
@@ -240,26 +228,31 @@ TEST(libmuscle_instance, receive_f_init) {
 
     Port port("in", Operator::F_INIT, false, true, 0, {});
     port.set_closed();
-    MockCommunicator::get_port_return_value.at("in") = port;
+    communicator.get_port.return_value = &port;
     ASSERT_THROW(instance.receive("in"), std::logic_error);
+
+    // Make sure Instance shuts down cleanly (see receive above)
+    communicator.list_ports.return_value = PortsDescription();
 }
 
-TEST(libmuscle_instance, receive_default) {
-    reset_mocks();
+TEST_F(libmuscle_instance, receive_default) {
     auto argv = test_argv();
+    Port in_port("in", Operator::S, false, false, 0, {});
+
     Instance instance(argv.size(), argv.data(),
             PortsDescription({
                 {Operator::S, {"in"}}
                 }));
 
-    MockCommunicator::list_ports_return_value = PortsDescription({
+    auto & communicator = *instance.impl_()->communicator_;
+    communicator.list_ports.return_value = PortsDescription({
                 {Operator::S, {"in"}}
                 });
-    MockCommunicator::get_port_return_value.emplace(
-            "in", Port("in", Operator::S, false, false, 0, {}));
+    communicator.port_exists.return_value = true;
+    communicator.get_port.return_value = &in_port;
 
     Message default_msg(1.0, 2.0, "Testing receive");
-
+    communicator.receive_message.return_value = default_msg;
     Message msg(instance.receive("in", default_msg));
 
     ASSERT_EQ(msg.timestamp(), 1.0);
@@ -267,45 +260,55 @@ TEST(libmuscle_instance, receive_default) {
     ASSERT_EQ(msg.next_timestamp(), 2.0);
     ASSERT_TRUE(msg.data().is_a<std::string>());
     ASSERT_EQ(msg.data().as<std::string>(), "Testing receive");
-    ASSERT_THROW(instance.receive("not_connected"), std::logic_error);
+
+    // Make sure Instance shuts down cleanly (see receive above)
+    communicator.list_ports.return_value = PortsDescription();
 }
 
-TEST(libmuscle_instance, receive_invalid_port) {
-    reset_mocks();
+TEST_F(libmuscle_instance, receive_invalid_port) {
     auto argv = test_argv();
+    Port in_port("in", Operator::S, false, false, 0, {});
+
     Instance instance(argv.size(), argv.data(),
             PortsDescription({
                 {Operator::S, {"in"}}
                 }));
 
-    MockCommunicator::list_ports_return_value = PortsDescription({
+    auto & communicator = *instance.impl_()->communicator_;
+    communicator.list_ports.return_value = PortsDescription({
                 {Operator::S, {"in"}}
                 });
-    MockCommunicator::get_port_return_value.emplace(
-            "in", Port("in", Operator::S, false, false, 0, {}));
+    communicator.port_exists.return_value = false;
+    communicator.get_port.return_value = &in_port;
 
     ASSERT_THROW(instance.receive("does_not_exist", 1), std::logic_error);
+
+    // Make sure Instance shuts down cleanly (see receive above)
+    communicator.list_ports.return_value = PortsDescription({});
 }
 
-TEST(libmuscle_instance, receive_with_settings) {
-    reset_mocks();
+TEST_F(libmuscle_instance, receive_with_settings) {
     auto argv = test_argv();
+    Port in_port("in", Operator::F_INIT, false, true, 0, {});
+
     Instance instance(argv.size(), argv.data(),
             PortsDescription({
                 {Operator::F_INIT, {"in"}}
                 }),
             InstanceFlags::DONT_APPLY_OVERLAY);
 
-    MockCommunicator::list_ports_return_value = PortsDescription({
+    auto & communicator = *instance.impl_()->communicator_;
+    communicator.settings_in_connected.return_value = false;
+    communicator.list_ports.return_value = PortsDescription({
                 {Operator::F_INIT, {"in"}}
                 });
-    MockCommunicator::get_port_return_value.emplace(
-            "in", Port("in", Operator::F_INIT, false, true, 0, {}));
+    communicator.port_exists.return_value = true;
+    communicator.get_port.return_value = &in_port;
 
     Settings recv_settings;
     recv_settings["test1"] = 12;
-    MockCommunicator::next_received_message["in"] =
-        std::make_unique<Message>(1.0, "Testing with settings", recv_settings);
+    communicator.receive_message.return_value = Message(
+            1.0, "Testing with settings", recv_settings);
 
     ASSERT_TRUE(instance.reuse_instance());
     Message msg(instance.receive_with_settings("in"));
@@ -317,53 +320,68 @@ TEST(libmuscle_instance, receive_with_settings) {
     ASSERT_TRUE(msg.has_settings());
     ASSERT_EQ(msg.settings().at("test1"), 12);
 
-    // make sure Instance shuts down cleanly
-    MockCommunicator::next_received_message["in"] =
-        std::make_unique<Message>(0.0, ClosePort(), Settings());
+    // Make sure Instance shuts down cleanly (see receive above)
+    communicator.list_ports.return_value = PortsDescription({});
 }
 
-TEST(libmuscle_instance, receive_parallel_universe) {
-    reset_mocks();
+TEST_F(libmuscle_instance, receive_parallel_universe) {
     auto argv = test_argv();
+    Port port("in", Operator::F_INIT, false, true, 0, {});
+
     Instance instance(argv.size(), argv.data(),
             PortsDescription({
                 {Operator::F_INIT, {"in"}}
                 }));
 
-    MockCommunicator::list_ports_return_value = PortsDescription({
+    auto & communicator = *instance.impl_()->communicator_;
+    communicator.list_ports.return_value = PortsDescription({
                 {Operator::F_INIT, {"in"}}
                 });
-    Port port("in", Operator::F_INIT, false, true, 0, {});
     port.set_closed();
-    MockCommunicator::get_port_return_value.emplace("in", port);
+    communicator.get_port.return_value = &port;
 
-    MockCommunicator::settings_in_connected_return_value = true;
+    communicator.settings_in_connected.return_value = true;
 
-    Settings recv_settings;
-    recv_settings["test1"] = 12;
-    MockCommunicator::next_received_message["in"] =
-        std::make_unique<Message>(1.0, "Testing", recv_settings);
-    recv_settings["test2"] = "test";
-    MockCommunicator::next_received_message["muscle_settings_in"] =
-        std::make_unique<Message>(1.0, recv_settings, Settings());
+    communicator.receive_message.side_effect = [](
+            std::string const & port_name, Optional<int> slot,
+            Optional<Message> const & default_msg) -> Message
+    {
+        Settings recv_settings;
+        if (port_name == "in") {
+            recv_settings["test1"] = 12;
+            return Message(1.0, "Testing", recv_settings);
+        }
+        if (port_name == "muscle_settings_in") {
+            recv_settings["test2"] = "test";
+            return Message(1.0, "Testing", recv_settings);
+        }
+        throw std::runtime_error("Unexpected port name in receive_parallel_universe");
+    };
 
     ASSERT_THROW(instance.reuse_instance(), std::logic_error);
+
+    // Make sure Instance shuts down cleanly (see receive above)
+    communicator.list_ports.return_value = PortsDescription({});
 }
 
-TEST(libmuscle_instance, receive_with_settings_default) {
-    reset_mocks();
+TEST_F(libmuscle_instance, receive_with_settings_default) {
     auto argv = test_argv();
+    Port in_port("in", Operator::F_INIT, false, false, 0, {});
+
     Instance instance(argv.size(), argv.data(),
             PortsDescription({
                 {Operator::F_INIT, {"not_connected"}}
                 }),
             InstanceFlags::DONT_APPLY_OVERLAY);
 
-    MockCommunicator::list_ports_return_value = PortsDescription({
-                {Operator::F_INIT, {"not_connected"}}
-                });
-    MockCommunicator::get_port_return_value.emplace(
-            "not_connected", Port("in", Operator::F_INIT, false, false, 0, {}));
+    auto & communicator = *instance.impl_()->communicator_;
+    communicator.settings_in_connected.return_value = false;
+    communicator.list_ports.return_value = PortsDescription({
+            {Operator::F_INIT, {"not_connected"}}
+            });
+
+    communicator.port_exists.return_value = true;
+    communicator.get_port.return_value = &in_port;
 
     Settings default_settings;
     default_settings["test1"] = 12;
@@ -381,8 +399,7 @@ TEST(libmuscle_instance, receive_with_settings_default) {
 }
 
 
-TEST(libmuscle_instance, reuse_instance_receive_overlay) {
-    reset_mocks();
+TEST_F(libmuscle_instance, reuse_instance_receive_overlay) {
     auto argv = test_argv();
     Instance instance(argv.size(), argv.data(),
             PortsDescription({
@@ -396,75 +413,108 @@ TEST(libmuscle_instance, reuse_instance_receive_overlay) {
     Settings test_overlay;
     test_overlay["test2"] = "abc";
 
-    MockCommunicator::settings_in_connected_return_value = true;
-    MockCommunicator::next_received_message["muscle_settings_in"] =
-        std::make_unique<Message>(0.0, test_overlay, test_base_settings);
+    auto & communicator = *instance.impl_()->communicator_;
+    communicator.settings_in_connected.return_value = true;
+    communicator.receive_message.return_value = Message(
+            0.0, test_overlay, test_base_settings);
 
     instance.reuse_instance();
 
-    ASSERT_EQ(TestInstance::settings_manager_(instance).overlay.size(), 2);
-    ASSERT_EQ(TestInstance::settings_manager_(instance).overlay.at("test1"), 24);
-    ASSERT_EQ(TestInstance::settings_manager_(instance).overlay.at("test2"), "abc");
+    ASSERT_EQ(instance.impl_()->settings_manager_.overlay.size(), 2);
+    ASSERT_EQ(instance.impl_()->settings_manager_.overlay.at("test1"), 24);
+    ASSERT_EQ(instance.impl_()->settings_manager_.overlay.at("test2"), "abc");
 }
 
-TEST(libmuscle_instance, reuse_instance_closed_port) {
-    reset_mocks();
+TEST_F(libmuscle_instance, reuse_instance_closed_port) {
     auto argv = test_argv();
+    std::unordered_map<std::string, Port> ports = {
+        {"not_connected", Port("not_connected", Operator::F_INIT, false, false, 0, {})},
+        {"in", Port("in", Operator::F_INIT, false, true, 0, {})},
+        {"out", Port("out", Operator::O_F, false, true, 0, {})}};
+
     Instance instance(argv.size(), argv.data(),
             PortsDescription({
                 {Operator::F_INIT, {"in", "not_connected"}},
                 {Operator::O_F, {"out"}}
                 }));
 
-    MockCommunicator::settings_in_connected_return_value = true;
-    MockCommunicator::next_received_message["muscle_settings_in"] =
-        std::make_unique<Message>(0.0, Settings(), Settings());
-    MockCommunicator::next_received_message["in"] =
-        std::make_unique<Message>(0.0, ClosePort(), Settings());
+    auto & communicator = *instance.impl_()->communicator_;
+    communicator.settings_in_connected.return_value = true;
+    communicator.receive_message.side_effect = [&ports](
+            std::string const & port_name, Optional<int> slot,
+            Optional<Message> const & default_msg) -> Message
+    {
+        if (port_name == "in") {
+            ports.at(port_name).set_closed();
+            return Message(0.0, ClosePort(), Settings());
+        }
+        if (port_name == "muscle_settings_in") {
+            return Message(0.0, Settings(), Settings());
+        }
+        throw std::runtime_error("Unexpected port name in reuse_instance_closed_port");
+    };
 
-    MockCommunicator::list_ports_return_value = PortsDescription({
+    communicator.list_ports.return_value = PortsDescription({
                 {Operator::F_INIT, {"in", "not_connected"}},
                 {Operator::O_F, {"out"}}
                 });
 
-    MockCommunicator::get_port_return_value.emplace(
-            "not_connected",
-            Port("not_connected", Operator::F_INIT, false, false, 0, {}));
-    MockCommunicator::get_port_return_value.emplace(
-            "in", Port("in", Operator::F_INIT, false, true, 0, {}));
-    MockCommunicator::get_port_return_value.emplace(
-            "out", Port("out", Operator::O_F, false, true, 0, {}));
+    communicator.get_port.side_effect = [&ports]
+        (std::string const & port_name) -> Port &
+    {
+        return ports.at(port_name);
+    };
 
     ASSERT_FALSE(instance.reuse_instance());
+
+    // Make sure Instance shuts down cleanly (see receive above)
+    communicator.settings_in_connected.return_value = false;
+    communicator.list_ports.return_value = PortsDescription({});
 }
 
-TEST(libmuscle_instance, reuse_instance_vector_port) {
-    reset_mocks();
+TEST_F(libmuscle_instance, reuse_instance_vector_port) {
     auto argv = test_argv();
-    Instance instance(argv.size(), argv.data(),
-            PortsDescription({
-                {Operator::F_INIT, {"in[]"}}
-                }));
+    Port in_port("in", Operator::F_INIT, true, true, 0, {10});
 
-    MockCommunicator::settings_in_connected_return_value = true;
-    MockCommunicator::next_received_message["muscle_settings_in"] =
-        std::make_unique<Message>(0.0, Settings(), Settings());
+    std::unordered_map<ymmsl::Reference, Message> messages = {
+        {"muscle_settings_in", Message(0.0, Settings(), Settings())}};
 
     for (int i = 0; i < 10; ++i) {
         Reference port_slot("in");
         port_slot += i;
         std::ostringstream oss;
         oss << "test " << i;
-        MockCommunicator::next_received_message[port_slot] =
-            std::make_unique<Message>(0.0, oss.str(), Settings());
+        messages.insert({port_slot, Message(0.0, oss.str(), Settings())});
     }
 
-    MockCommunicator::list_ports_return_value = PortsDescription({
+    Instance instance(argv.size(), argv.data(),
+            PortsDescription({
+                {Operator::F_INIT, {"in[]"}}
+                }));
+
+    auto & communicator = *instance.impl_()->communicator_;
+
+    communicator.settings_in_connected.return_value = true;
+
+    communicator.receive_message.side_effect = [&messages, &in_port](
+            std::string const & port, Optional<int> slot,
+            Optional<Message> const & default_msg)
+    {
+        Reference port_slot(port);
+        if (slot.is_set())
+            port_slot += slot.get();
+        auto const & msg = messages.at(port_slot);
+        if (is_close_port(msg.data()))
+            in_port.set_closed(slot.get());
+        return msg;
+    };
+
+    communicator.list_ports.return_value = PortsDescription({
                 {Operator::F_INIT, {"in"}}
                 });
 
-    MockCommunicator::get_port_return_value.emplace(
-            "in", Port("in", Operator::F_INIT, true, true, 0, {10}));
+    communicator.port_exists.return_value = true;
+    communicator.get_port.return_value = &in_port;
 
     ASSERT_TRUE(instance.reuse_instance());
 
@@ -474,21 +524,19 @@ TEST(libmuscle_instance, reuse_instance_vector_port) {
     ASSERT_EQ(msg.data().as<std::string>(), "test 5");
 
     // make sure Instance shuts down cleanly
+    messages.clear();
     for (int i = 0; i < 10; ++i) {
         Reference port_slot("in");
         port_slot += i;
-        MockCommunicator::next_received_message[port_slot] =
-            std::make_unique<Message>(0.0, ClosePort(), Settings());
+        messages.insert({port_slot, Message(0.0, ClosePort(), Settings())});
     }
 }
 
-TEST(libmuscle_instance, reuse_instance_no_f_init_ports) {
-    reset_mocks();
+TEST_F(libmuscle_instance, reuse_instance_no_f_init_ports) {
     auto argv = test_argv();
-    Instance instance(argv.size(), argv.data(),
-            PortsDescription({}));
+    Instance instance(argv.size(), argv.data(), PortsDescription({}));
 
-    MockCommunicator::settings_in_connected_return_value = false;
+    instance.impl_()->communicator_->settings_in_connected.return_value = false;
 
     ASSERT_TRUE(instance.reuse_instance());
     ASSERT_FALSE(instance.reuse_instance());

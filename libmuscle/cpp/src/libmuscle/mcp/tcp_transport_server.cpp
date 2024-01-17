@@ -284,7 +284,7 @@ class TcpTransportServerWorker {
 namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace mcp {
 
 TcpTransportServer::TcpTransportServer(RequestHandler & handler)
-    : TransportServer(handler)
+    : TransportServerBase(handler)
 {
     pipe(control_pipe_);
     thread_ = std::thread(server_thread_, this);

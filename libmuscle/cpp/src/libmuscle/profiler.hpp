@@ -8,6 +8,7 @@
 #include <libmuscle/mmp_client.hpp>
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/profiling.hpp>
+#include <libmuscle/test_support.hpp>
 #include <libmuscle/timestamp.hpp>
 
 #include <condition_variable>
@@ -61,9 +62,7 @@ class Profiler {
          */
         void record_event(ProfileEvent && event);
 
-    private:
-        friend class TestProfiler;
-
+    PRIVATE:
         // mutex_ protects all member variables and flush_()
         std::mutex mutex_;
 

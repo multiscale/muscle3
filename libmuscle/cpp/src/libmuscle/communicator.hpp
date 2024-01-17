@@ -15,6 +15,7 @@
 #include <libmuscle/ports_description.hpp>
 #include <libmuscle/post_office.hpp>
 #include <libmuscle/profiler.hpp>
+#include <libmuscle/test_support.hpp>
 #include <libmuscle/util.hpp>
 
 #include <ymmsl/ymmsl.hpp>
@@ -181,7 +182,7 @@ class Communicator {
          */
         void restore_message_counts(PortMessageCounts const & port_message_counts);
 
-    private:
+    PRIVATE:
         using Ports_ = std::unordered_map<std::string, Port>;
 
         ymmsl::Reference instance_id_() const;
@@ -214,8 +215,6 @@ class Communicator {
         Ports_ ports_;
         std::unique_ptr<PeerInfo> peer_info_;
         Optional<Port> muscle_settings_in_;
-
-        friend class TestCommunicator;
 };
 
 } }

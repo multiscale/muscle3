@@ -1,6 +1,5 @@
 #include "libmuscle/mcp/tcp_transport_client.hpp"
 
-#include <libmuscle/data.hpp>
 #include <libmuscle/mcp/tcp_util.hpp>
 
 #include <algorithm>
@@ -8,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <unistd.h>
+#include <vector>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -127,7 +127,7 @@ TcpTransportClient::~TcpTransportClient() {
         close();
 }
 
-std::tuple<DataConstRef, ProfileData> TcpTransportClient::call(
+std::tuple<std::vector<char>, ProfileData> TcpTransportClient::call(
         char const * req_buf, std::size_t req_len
 ) const {
     ProfileTimestamp start_wait;
@@ -135,11 +135,12 @@ std::tuple<DataConstRef, ProfileData> TcpTransportClient::call(
 
     int64_t length = recv_int64(socket_fd_);
     ProfileTimestamp start_transfer;
-    auto result = Data::byte_array(length);
-    recv_all(socket_fd_, result.as_byte_array(), result.size());
+    std::vector<char> result(length);
+    recv_all(socket_fd_, result.data(), result.size());
     ProfileTimestamp stop_transfer;
     return std::make_tuple(
-            result, std::make_tuple(start_wait, start_transfer, stop_transfer));
+            std::move(result),
+            std::make_tuple(start_wait, start_transfer, stop_transfer));
 }
 
 void TcpTransportClient::close() {

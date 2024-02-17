@@ -14,7 +14,6 @@
 
 using libmuscle::_MUSCLE_IMPL_NS::ClosePort;
 using libmuscle::_MUSCLE_IMPL_NS::Data;
-using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
 using libmuscle::_MUSCLE_IMPL_NS::mcp::ExtTypeId;
 using libmuscle::_MUSCLE_IMPL_NS::MPPClient;
 using libmuscle::_MUSCLE_IMPL_NS::mcp::TcpTransportServer;
@@ -143,8 +142,8 @@ void Communicator::send_message(
         if (message.has_next_timestamp())
             mpp_message.next_timestamp = message.next_timestamp();
 
-        auto message_bytes = std::make_unique<DataConstRef>(mpp_message.encoded());
-        profile_event.message_size = message_bytes->size();
+        auto message_bytes = mpp_message.encoded();
+        profile_event.message_size = message_bytes.size();
         post_office_.deposit(recv_endpoint.ref(), std::move(message_bytes));
     }
 
@@ -510,7 +509,7 @@ std::tuple<std::string, bool> Communicator::split_port_desc_(
     return std::make_tuple(port_name, is_vector);
 }
 
-std::tuple<DataConstRef, mcp::ProfileData> Communicator::try_receive_(
+std::tuple<std::vector<char>, mcp::ProfileData> Communicator::try_receive_(
         MPPClient & client, Reference const & receiver, Reference const & peer) {
     try {
         return client.receive(receiver);

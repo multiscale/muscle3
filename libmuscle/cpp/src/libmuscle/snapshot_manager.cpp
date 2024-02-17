@@ -187,9 +187,9 @@ Snapshot SnapshotManager::load_snapshot_from_file(
     }
 
     char version;
-    Data data = Data::byte_array(fsize - 1);
+    std::vector<char> data(fsize - 1);
     snapshot_file.read(&version, 1);
-    snapshot_file.read(data.as_byte_array(), fsize - 1);
+    snapshot_file.read(data.data(), fsize - 1);
     if (!snapshot_file.good()) {
         throw std::runtime_error(
                 "Unable to load snapshot file " + snapshot_location +
@@ -244,7 +244,7 @@ std::string SnapshotManager::store_snapshot_(Snapshot const & snapshot) {
     }
     snapshot_file << static_cast<char>(Snapshot::VersionByte::MESSAGEPACK);
     auto data = snapshot.to_bytes();
-    snapshot_file.write(data.as_byte_array(), data.size());
+    snapshot_file.write(data.data(), data.size());
     snapshot_file.close();
     if (!snapshot_file.good()) {
         throw std::runtime_error("I/O error while writing snapshot to file " + fpath);

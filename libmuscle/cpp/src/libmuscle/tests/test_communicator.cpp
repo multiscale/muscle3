@@ -90,7 +90,7 @@ struct libmuscle_communicator : ::testing::Test {
         auto & ret_val = MockMPPClient::return_value;
 
         using RecvRet = std::tuple<
-            DataConstRef, std::tuple<
+            std::vector<char>, std::tuple<
                 ProfileTimestamp, ProfileTimestamp, ProfileTimestamp>>;
 
         ret_val.receive.side_effect = [this](Reference const &) -> RecvRet {
@@ -779,7 +779,7 @@ TEST_F(libmuscle_communicator, port_discard_success_on_resume) {
     auto & ret_val = MockMPPClient::return_value;
 
     using RecvRet = std::tuple<
-        DataConstRef, std::tuple<
+        std::vector<char>, std::tuple<
             ProfileTimestamp, ProfileTimestamp, ProfileTimestamp>>;
 
     ret_val.receive.side_effect = [this](Reference const &) -> RecvRet {

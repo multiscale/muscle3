@@ -35,7 +35,7 @@ class MockMPPClient : public MockClass<MockMPPClient> {
         MockFun<Void, Val<std::vector<std::string> const &>> constructor;
 
         MockFun<
-            Val<std::tuple<DataConstRef, ProfileData>, std::tuple<Data, ProfileData>>,
+            Val<std::tuple<std::vector<char>, ProfileData>>,
             Val<::ymmsl::Reference const &>
             > receive;
 

@@ -40,7 +40,7 @@ class RequestHandler {
          */
         virtual int handle_request(
                 char const * req_buf, std::size_t req_len,
-                std::unique_ptr<DataConstRef> & res_buf) = 0;
+                std::vector<char> & res_buf) = 0;
 
         /** Get a response
          *
@@ -52,7 +52,7 @@ class RequestHandler {
          * @param fd File descriptor to return
          * @return A byte array wrapped in a DataConstRef with the response
          */
-        virtual std::unique_ptr<DataConstRef> get_response(int fd) = 0;
+        virtual std::vector<char> get_response(int fd) = 0;
 };
 
 

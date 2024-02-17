@@ -4,7 +4,6 @@
 #include LIBMUSCLE_MOCK_COMMUNICATOR
 #else
 
-#include <libmuscle/data.hpp>
 #include <libmuscle/logger.hpp>
 #include <libmuscle/mcp/transport_server.hpp>
 #include <libmuscle/message.hpp>
@@ -200,7 +199,7 @@ class Communicator {
         std::tuple<std::string, bool> split_port_desc_(
                 std::string const & port_desc) const;
 
-        std::tuple<DataConstRef, mcp::ProfileData> try_receive_(
+        std::tuple<std::vector<char>, mcp::ProfileData> try_receive_(
                 MPPClient & client, ymmsl::Reference const & receiver,
                 ymmsl::Reference const & peer);
 

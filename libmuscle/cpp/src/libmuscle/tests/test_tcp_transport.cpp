@@ -32,20 +32,20 @@ class MockHandlerDirect : public RequestHandler {
 public:
     virtual int handle_request(
             char const * req_buf, std::size_t req_len,
-            std::unique_ptr<DataConstRef> & res_buf
+            std::vector<char> & res_buf
     ) override {
         std::string request(req_buf, req_len);
         if (request != "TestRequest")
             throw std::runtime_error("Unexpected request " + request);
 
         std::string response("TestResponse");
-        auto response_data = std::make_unique<Data>(Data::byte_array(response.size()));
-        memcpy(response_data->as_byte_array(), response.data(), response_data->size());
+        std::vector<char> response_data(response.size());
+        memcpy(response_data.data(), response.c_str(), response.size());
         res_buf = std::move(response_data);
         return -1;
     };
 
-    virtual std::unique_ptr<DataConstRef> get_response(int fd) override {
+    virtual std::vector<char> get_response(int fd) override {
         // Should not be called if we return -1 above
         throw std::runtime_error("Should not be called");
     };
@@ -66,7 +66,7 @@ public:
 
     virtual int handle_request(
             char const * req_buf, std::size_t req_len,
-            std::unique_ptr<DataConstRef> & res_buf
+            std::vector<char> & res_buf
     ) override {
         std::string request(req_buf, req_len);
         if (request != "TestRequest")
@@ -75,13 +75,13 @@ public:
         return pipe_fds[0];
     };
 
-    virtual std::unique_ptr<DataConstRef> get_response(int fd) override {
+    virtual std::vector<char> get_response(int fd) override {
         if (fd != pipe_fds[0])
             throw std::runtime_error("Unexpected fd in get_response");
 
         std::string response("TestResponse");
-        auto response_data = std::make_unique<Data>(Data::byte_array(response.size()));
-        memcpy(response_data->as_byte_array(), response.data(), response_data->size());
+        std::vector<char> response_data(response.size());
+        memcpy(response_data.data(), response.c_str(), response.size());
         return response_data;
     };
 
@@ -104,9 +104,7 @@ TEST(test_tcp_communication, send_receive_direct) {
     auto res = client.call("TestRequest", strlen("TestRequest"));
     auto result = std::get<0>(res);
 
-    std::string response(result.size(), ' ');
-    std::copy(result.as_byte_array(), result.as_byte_array() + result.size(), response.begin());
-
+    std::string response(result.begin(), result.end());
     ASSERT_EQ(response, "TestResponse");
 
     client.close();
@@ -126,9 +124,7 @@ TEST(test_tcp_communication, send_receive_delayed) {
     auto res = client.call("TestRequest", strlen("TestRequest"));
     auto result = std::get<0>(res);
 
-    std::string response(result.size(), ' ');
-    std::copy(result.as_byte_array(), result.as_byte_array() + result.size(), response.begin());
-
+    std::string response(result.begin(), result.end());
     ASSERT_EQ(response, "TestResponse");
 
     client.close();

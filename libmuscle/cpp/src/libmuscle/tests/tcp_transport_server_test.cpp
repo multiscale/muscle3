@@ -41,8 +41,7 @@ int main(int argc, char *argv[]) {
             overlay_settings,
             0, 6.0,
             data_dict);
-    auto msg_data = std::make_unique<DataConstRef>(msg.encoded());
-    post_office.deposit(receiver, std::move(msg_data));
+    post_office.deposit(receiver, std::move(msg.encoded()));
 
     TcpTransportServer server(post_office);
     std::cout << server.get_location() << std::endl;

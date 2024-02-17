@@ -26,10 +26,10 @@ Snapshot::Snapshot(
         , settings_overlay(settings_overlay)
     {}
 
-Snapshot Snapshot::from_bytes(DataConstRef const & data) {
+Snapshot Snapshot::from_bytes(std::vector<char> const & data) {
     // decode
     auto zone = std::make_shared<msgpack::zone>();
-    DataConstRef dict = mcp::unpack_data(zone, data.as_byte_array(), data.size());
+    DataConstRef dict = mcp::unpack_data(zone, data.data(), data.size());
 
     // convert lists/dicts to vectors/unordered_maps
     std::vector<std::string> triggers;
@@ -71,7 +71,7 @@ Snapshot Snapshot::from_bytes(DataConstRef const & data) {
             );
 }
 
-DataConstRef Snapshot::to_bytes() const {
+std::vector<char> Snapshot::to_bytes() const {
     Data d_triggers = Data::nils(triggers.size());
     for (std::size_t i=0; i<triggers.size(); ++i) {
         d_triggers[i] = triggers[i];
@@ -106,7 +106,7 @@ DataConstRef Snapshot::to_bytes() const {
             "wallclock_time", wallclock_time,
             "port_message_counts", pmc,
             "is_final_snapshot", is_final_snapshot,
-            "message", mpp_msg.encoded(),
+            "message", mpp_msg.encoded_as_dcr(),
             "settings_overlay", Data(settings_overlay));
 
         msgpack::pack(sbuf, dict);
@@ -123,9 +123,8 @@ DataConstRef Snapshot::to_bytes() const {
         msgpack::pack(sbuf, dict);
     }
 
-    auto bytes = Data::byte_array(sbuf.size());
-    memcpy(bytes.as_byte_array(), sbuf.data(), sbuf.size());
-
+    std::vector<char> bytes(sbuf.size());
+    memcpy(bytes.data(), sbuf.data(), sbuf.size());
     return bytes;
 }
 

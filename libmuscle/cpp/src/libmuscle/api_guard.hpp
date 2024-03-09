@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef LIBMUSCLE_MOCK_API_GUARD
+#include LIBMUSCLE_MOCK_API_GUARD
+#else
+
 #include <libmuscle/namespace.hpp>
 
 #include <stdexcept>
@@ -156,3 +160,6 @@ class APIGuard {
 };
 
 } }
+
+#endif
+

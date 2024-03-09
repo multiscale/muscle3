@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef LIBMUSCLE_MOCK_SETTINGS_MANAGER
+#include LIBMUSCLE_MOCK_SETTINGS_MANAGER
+#else
+
 #include <libmuscle/namespace.hpp>
 
 #include <ymmsl/ymmsl.hpp>
@@ -70,4 +74,6 @@ class SettingsManager {
 };
 
 } }
+
+#endif
 

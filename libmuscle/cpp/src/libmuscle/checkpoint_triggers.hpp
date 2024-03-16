@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef LIBMUSCLE_MOCK_TRIGGER_MANAGER
+#include LIBMUSCLE_MOCK_TRIGGER_MANAGER
+#else
+
 #include <libmuscle/data.hpp>
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/util.hpp>
@@ -168,3 +172,6 @@ class TriggerManager {
 };
 
 } }
+
+#endif
+

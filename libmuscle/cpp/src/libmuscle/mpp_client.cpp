@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <stdexcept>
+#include <vector>
 
 
 using libmuscle::_MUSCLE_IMPL_NS::Data;
@@ -24,7 +25,7 @@ MPPClient::MPPClient(std::vector<std::string> const & locations) {
         throw std::runtime_error("Could not connect to peer");
 }
 
-std::tuple<DataConstRef, ProfileData> MPPClient::receive(
+std::tuple<std::vector<char>, ProfileData> MPPClient::receive(
         Reference const & receiver)
 {
     auto request = Data::list(

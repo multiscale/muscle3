@@ -1,12 +1,16 @@
 #pragma once
 
+#ifdef LIBMUSCLE_MOCK_SNAPSHOT_MANAGER
+#include LIBMUSCLE_MOCK_SNAPSHOT_MANAGER
+#else
+
 #include <string>
 #include <vector>
 
-#include <libmuscle/communicator.hpp>
 #include <libmuscle/logger.hpp>
 #include <libmuscle/mmp_client.hpp>
 #include <libmuscle/namespace.hpp>
+#include <libmuscle/port_manager.hpp>
 #include <libmuscle/snapshot.hpp>
 #include <libmuscle/util.hpp>
 
@@ -24,12 +28,12 @@ class SnapshotManager {
          *
          * @param instance_id The id of this instance.
          * @param manager The client used to submit data to the manager.
-         * @param commnicator The communicator belonging to this instance.
+         * @param port_manager The port manager belonging to this instance.
          */
         SnapshotManager(
                 ymmsl::Reference const & instance_id,
                 MMPClient & manager,
-                Communicator & communicator,
+                PortManager & port_manager,
                 Logger & logger);
 
         /** Apply checkpoint info received from the manager.
@@ -96,7 +100,7 @@ class SnapshotManager {
     private:
         ymmsl::Reference const & instance_id_;
         MMPClient & manager_;
-        Communicator & communicator_;
+        PortManager & port_manager_;
         Logger & logger_;
         Optional<Snapshot> resume_from_snapshot_;
         ::ymmsl::Settings resume_overlay_;
@@ -113,3 +117,6 @@ class SnapshotManager {
 };
 
 } }
+
+#endif
+

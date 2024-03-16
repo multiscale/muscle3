@@ -13,28 +13,36 @@
 
 namespace mock_post_office {
 
-using ::libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
 using ::libmuscle::_MUSCLE_IMPL_NS::MPPMessage;
 
 struct EncodedMessage {
-    using ArgType = std::unique_ptr<DataConstRef>;
+    using ArgType = std::vector<char> &&;
     using StorageType = std::shared_ptr<MPPMessage>;
 
     static StorageType arg_to_store(ArgType const & message) {
-        return std::make_shared<MPPMessage>(MPPMessage::from_bytes(*message));
+        return std::make_shared<MPPMessage>(MPPMessage::from_bytes(message));
+    }
+};
+
+struct EncodedMessageRet {
+    using ArgType = std::vector<char>;
+    using StorageType = std::shared_ptr<MPPMessage>;
+
+    static StorageType arg_to_store(ArgType const & message) {
+        return std::make_shared<MPPMessage>(MPPMessage::from_bytes(message));
     }
 
     static ArgType store_to_arg(StorageType const & stored) {
-        return std::make_unique<DataConstRef>(stored->encoded());
+        return stored->encoded();
     }
 };
 
 struct EncodedMessageOut {
-    using ArgType = std::unique_ptr<DataConstRef> &;
-    using StorageType = DataConstRef *;
+    using ArgType = std::vector<char> &;
+    using StorageType = std::vector<char> *;
 
     static StorageType arg_to_store(ArgType const & buffer) {
-        return buffer.get();
+        return &buffer;
     }
 };
 
@@ -72,14 +80,14 @@ class MockPostOffice : public MockClass<MockPostOffice>, public mcp::RequestHand
 
         virtual int handle_request(
                 char const * req_buf, std::size_t req_len,
-                std::unique_ptr<DataConstRef> & res_buf) override
+                std::vector<char> & res_buf) override
         {
             return std::move(handle_request_mock(req_buf, req_len, res_buf));
         }
 
-        MockFun<::mock_post_office::EncodedMessage, Val<int>> get_response_mock;
+        MockFun<::mock_post_office::EncodedMessageRet, Val<int>> get_response_mock;
 
-        virtual std::unique_ptr<DataConstRef> get_response(int fd) override {
+        virtual std::vector<char> get_response(int fd) override {
             return get_response_mock(fd);
         }
 

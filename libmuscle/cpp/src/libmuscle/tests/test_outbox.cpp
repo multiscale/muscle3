@@ -40,15 +40,15 @@ TEST(libmuscle_outbox, test_deposit_retrieve_message) {
             0, 1.0,
             DataConstRef("testing"));
 
-    auto message_data = std::make_unique<DataConstRef>(message.encoded());
+    auto message_data = message.encoded();
 
-    auto msg_ptr = message_data.get();
+    auto msg_ptr = message_data.data();
 
     box.deposit(std::move(message_data));
     ASSERT_FALSE(box.is_empty());
 
     auto message2 = box.retrieve();
     ASSERT_TRUE(box.is_empty());
-    ASSERT_EQ(message2.get(), msg_ptr);
+    ASSERT_EQ(message2.data(), msg_ptr);
 }
 

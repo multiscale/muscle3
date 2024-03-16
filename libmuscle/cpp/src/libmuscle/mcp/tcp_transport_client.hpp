@@ -5,7 +5,6 @@
 #else
 
 #include <libmuscle/mcp/transport_client.hpp>
-#include <libmuscle/data.hpp>
 #include <libmuscle/namespace.hpp>
 
 #include <tuple>
@@ -44,10 +43,9 @@ class TcpTransportClient : public TransportClient {
          * @param req_buf Pointer to the request to send
          * @param req_len Length of the request in bytes
          *
-         * @return A DataConstRef containing a byte array with the received
-         *         data.
+         * @return A byte array with the received data.
          */
-        virtual std::tuple<DataConstRef, ProfileData> call(
+        virtual std::tuple<std::vector<char>, ProfileData> call(
                 char const * req_buf, std::size_t req_len) const override;
 
         /** Closes this client.

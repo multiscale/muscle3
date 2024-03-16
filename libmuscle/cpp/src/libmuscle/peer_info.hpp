@@ -1,15 +1,17 @@
 #pragma once
 
-#ifdef LIBMUSCLE_MOCK_PEER_MANAGER
-#include LIBMUSCLE_MOCK_PEER_MANAGER
+#ifdef LIBMUSCLE_MOCK_PEER_INFO
+#include LIBMUSCLE_MOCK_PEER_INFO
 #else
 
 #include <ymmsl/ymmsl.hpp>
 
 #include <libmuscle/endpoint.hpp>
 #include <libmuscle/namespace.hpp>
+#include <libmuscle/test_support.hpp>
 
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <vector>
 
@@ -19,13 +21,16 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 using PeerDims = std::unordered_map<ymmsl::Reference, std::vector<int>>;
 using PeerLocations = std::unordered_map<
         ymmsl::Reference, std::vector<std::string>>;
+using IncomingPorts = std::vector<std::tuple<ymmsl::Identifier, ymmsl::Reference>>;
+using OutgoingPorts = std::vector<
+        std::tuple<ymmsl::Identifier, std::vector<ymmsl::Reference>>>;
 
 
-/** Manages information about peers for a Communicator.
+/** Interprets information about peers for a Communicator.
  */
-class PeerManager {
+class PeerInfo {
     public:
-        /** Create a PeerManager.
+        /** Create a PeerInfo.
          *
          * Peers here are instances, and peer_dims and peer_locations are
          * indexed by a Reference to an instance. Instance sets are multi-
@@ -40,12 +45,26 @@ class PeerManager {
          * @param peer_locations A list of locations for each peer instance we
          *      share a conduit with.
          */
-        PeerManager(
+        PeerInfo(
                 ymmsl::Reference const & kernel,
                 std::vector<int> const & index,
                 std::vector<ymmsl::Conduit> const & conduits,
                 PeerDims const & peer_dims,
                 PeerLocations const & peer_locations);
+
+        /** List incoming ports.
+         *
+         * @return A vector of tuples containing a port id and a reference to the
+         *      peer endpoint.
+         */
+        IncomingPorts list_incoming_ports() const;
+
+        /** List outgoing ports.
+         *
+         * @return A vector of tuples containing a port id and a vector of references
+         * to the peer endpoints.
+         */
+        OutgoingPorts list_outgoing_ports() const;
 
         /** Determine whether the given port is connected.
          *
@@ -88,9 +107,12 @@ class PeerManager {
                 ymmsl::Identifier const & port,
                 std::vector<int> const & slot) const;
 
-    private:
+    PRIVATE:
         ymmsl::Reference kernel_;
         std::vector<int> index_;
+
+        std::vector<ymmsl::Reference> incoming_ports_, outgoing_ports_;
+
         std::unordered_map<ymmsl::Reference, std::vector<ymmsl::Reference>> peers_;
         PeerDims peer_dims_;
         PeerLocations peer_locations_;

@@ -1,6 +1,5 @@
 #include <libmuscle/post_office.hpp>
 
-#include <libmuscle/data.hpp>
 #include <libmuscle/mcp/data_pack.hpp>
 #include <libmuscle/mcp/protocol.hpp>
 
@@ -8,6 +7,7 @@
 #include <memory>
 #include <thread>
 #include <unistd.h>
+#include <vector>
 
 #include <msgpack.hpp>
 
@@ -45,7 +45,7 @@ PostOffice::~PostOffice() {
 
 int PostOffice::handle_request(
         char const * req_buf, std::size_t req_len,
-        std::unique_ptr<DataConstRef> & res_buf
+        std::vector<char> & res_buf
 ) {
     auto zone = std::make_shared<msgpack::zone>();
     auto request = mcp::unpack_data(zone, req_buf, req_len);
@@ -60,8 +60,7 @@ int PostOffice::handle_request(
 
     auto lock = outbox.lock();
     if (!outbox.is_empty()) {
-        auto msg = outbox.retrieve();
-        res_buf = std::move(msg);
+        res_buf = outbox.retrieve();
         retrieved_.notify_one();
         return -1;
     }
@@ -73,7 +72,7 @@ int PostOffice::handle_request(
     }
 }
 
-std::unique_ptr<DataConstRef> PostOffice::get_response(int fd) {
+std::vector<char> PostOffice::get_response(int fd) {
     Outbox * outbox = nullptr;
     {
         std::lock_guard<std::mutex> lock(outboxes_mutex_);
@@ -83,7 +82,7 @@ std::unique_ptr<DataConstRef> PostOffice::get_response(int fd) {
     }
 
     int sending_fd;
-    std::unique_ptr<DataConstRef> result;
+    std::vector<char> result;
     {
         auto lock = outbox->lock();
         sending_fd = outbox->return_notification_fd();
@@ -96,7 +95,7 @@ std::unique_ptr<DataConstRef> PostOffice::get_response(int fd) {
 }
 
 void PostOffice::deposit(
-        Reference const & receiver, std::unique_ptr<DataConstRef> message) {
+        Reference const & receiver, std::vector<char> && message) {
     Outbox & outbox = get_outbox_(receiver);
     auto lock = outbox.lock();
     outbox.deposit(std::move(message));

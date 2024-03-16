@@ -1,6 +1,5 @@
 #pragma once
 
-#include <libmuscle/data.hpp>
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/profiling.hpp>
 
@@ -70,10 +69,10 @@ class TransportClient {
          * @param req_buf Pointer to the request to send
          * @param req_len Length of the request in bytes
          *
-         * @return DataConstRef containing a byte array with the received
-         *         data, and the timestamps.
+         * @return std::vector<char> containing a byte array with the
+         *         received data, and the timestamps.
          */
-        virtual std::tuple<DataConstRef, ProfileData> call(
+        virtual std::tuple<std::vector<char>, ProfileData> call(
                 char const * req_buf, std::size_t req_len) const = 0;
 
         /** Closes this client.

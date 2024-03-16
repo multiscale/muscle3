@@ -1,6 +1,5 @@
 #pragma once
 
-#include <libmuscle/data.hpp>
 #include <libmuscle/namespace.hpp>
 
 #include <ymmsl/ymmsl.hpp>
@@ -47,7 +46,7 @@ class Outbox {
          *
          * @param message The message to store.
          */
-        void deposit(std::unique_ptr<DataConstRef> message);
+        void deposit(std::vector<char> && message);
 
         /** Retrieve a message from the Outbox.
          *
@@ -59,7 +58,7 @@ class Outbox {
          *
          * @throws std::runtime_error If no message is available.
          */
-        std::unique_ptr<DataConstRef> retrieve();
+        std::vector<char> retrieve();
 
         /** Sets fd to notify deposition on.
          *
@@ -75,7 +74,7 @@ class Outbox {
 
     private:
         mutable std::mutex mutex_;
-        std::vector<std::unique_ptr<DataConstRef>> queue_;
+        std::vector<std::vector<char>> queue_;
         int notification_fd_;
 };
 

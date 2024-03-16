@@ -1,5 +1,6 @@
 #pragma once
 
+#include <libmuscle/mcp/transport_client.hpp>
 #include <libmuscle/mpp_message.hpp>
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/profiling.hpp>
@@ -13,10 +14,6 @@
 
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
-
-
-using ProfileData = std::tuple<
-        ProfileTimestamp, ProfileTimestamp, ProfileTimestamp>;
 
 
 class MockMPPClient : public MockClass<MockMPPClient> {
@@ -35,7 +32,7 @@ class MockMPPClient : public MockClass<MockMPPClient> {
         MockFun<Void, Val<std::vector<std::string> const &>> constructor;
 
         MockFun<
-            Val<std::tuple<DataConstRef, ProfileData>, std::tuple<Data, ProfileData>>,
+            Val<std::tuple<std::vector<char>, mcp::ProfileData>>,
             Val<::ymmsl::Reference const &>
             > receive;
 

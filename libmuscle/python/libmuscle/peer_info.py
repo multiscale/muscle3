@@ -1,18 +1,18 @@
-from typing import cast, Dict, List
+from typing import cast, Dict, List, Tuple
 
 from ymmsl import Conduit, Identifier, Reference
 
 from libmuscle.endpoint import Endpoint
 
 
-class PeerManager:
-    """Manages information about peers for a Communicator
+class PeerInfo:
+    """Interprets information about peers for a Communicator
     """
     def __init__(self, kernel: Reference, index: List[int],
                  conduits: List[Conduit],
                  peer_dims: Dict[Reference, List[int]],
                  peer_locations: Dict[Reference, List[str]]) -> None:
-        """Create a PeerManager.
+        """Create a PeerInfo.
 
         Peers here are instances, and peer_dims and peer_locations are
         indexed by a Reference to an instance. Instance sets are
@@ -33,14 +33,20 @@ class PeerManager:
         self.__kernel = kernel
         self.__index = index
 
+        self._incoming_ports: List[Reference] = []
+        self._outgoing_ports: List[Reference] = []
+
         # peer port ids, indexed by local kernel.port id
         self.__peers: Dict[Reference, List[Reference]] = {}
 
         for conduit in conduits:
             if str(conduit.sending_component()) == str(kernel):
                 # we send on the port this conduit attaches to
-                self.__peers.setdefault(
-                        conduit.sender, []).append(conduit.receiver)
+                if conduit.sender not in self._outgoing_ports:
+                    self._outgoing_ports.append(conduit.sender)
+                self.__peers.setdefault(conduit.sender, []).append(
+                        conduit.receiver)
+
             if str(conduit.receiving_component()) == str(kernel):
                 # we receive on the port this conduit attaches to
                 if conduit.receiver in self.__peers:
@@ -48,10 +54,33 @@ class PeerManager:
                                         ' multiple conduits, but at most one'
                                         ' is allowed.'
                                         ).format(conduit.receiving_port()))
+                self._incoming_ports.append(conduit.receiver)
                 self.__peers[conduit.receiver] = [conduit.sender]
 
         self.__peer_dims = peer_dims    # indexed by kernel id
         self.__peer_locations = peer_locations  # indexed by instance id
+
+    def list_incoming_ports(self) -> List[Tuple[Identifier, Reference]]:
+        """List incoming ports.
+
+        Returns:
+            A list of tuples containing a port id and a reference to the
+            peer endpoint.
+        """
+        return [
+                (cast(Identifier, port_ref[-1]), self.__peers[port_ref][0])
+                for port_ref in self._incoming_ports]
+
+    def list_outgoing_ports(self) -> List[Tuple[Identifier, List[Reference]]]:
+        """List outgoing ports.
+
+        Returns:
+            A list of tuples containing a port id and a list of references
+            to the peer endpoint(s).
+        """
+        return [
+                (cast(Identifier, port_ref[-1]), self.__peers[port_ref])
+                for port_ref in self._outgoing_ports]
 
     def is_connected(self, port: Identifier) -> bool:
         """Determine whether the given port is connected.

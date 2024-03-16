@@ -49,6 +49,7 @@ class MockLogger : public MockClass<MockLogger> {
             Void, Val<std::string const &>, Val<std::string const &>,
             Obj<MMPClient &>
         > constructor;
+
         MockFun<Void, Val<LogLevel>> set_remote_level;
         MockFun<Void, Val<LogLevel>> set_local_level;
 

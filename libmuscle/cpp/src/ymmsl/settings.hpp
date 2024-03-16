@@ -207,9 +207,9 @@ class Settings {
 
         /** Create a Settings object with the given settings.
          *
-         * @param settings std::unordered_map<Reference, SettingValue> with settings.
+         * @param init An initializer list with pairs of {Reference, SettingValue}
          */
-        Settings(std::unordered_map<Reference, SettingValue> const & settings);
+        Settings(std::initializer_list<MapType_::value_type> const & init);
 
         /** Compare Settings objects for equality.
          *

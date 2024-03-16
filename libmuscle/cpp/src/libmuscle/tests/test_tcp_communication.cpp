@@ -39,13 +39,12 @@ TEST(test_tcp_communication, send_receive) {
             0.0, 1.0,
             Data::dict("par1", 13), 1, 4.0,
             Data::dict("var1", 1, "var2", 2.0, "var3", "3"));
-    auto msg_data = std::make_unique<DataConstRef>(msg.encoded());
-    post_office.deposit(receiver, std::move(msg_data));
+    post_office.deposit(receiver, msg.encoded());
 
     TcpTransportServer server(post_office);
     std::vector<std::string> locations = {server.get_location()};
     MPPClient client(locations);
-    DataConstRef bytes = std::get<0>(client.receive(receiver));
+    auto bytes = std::get<0>(client.receive(receiver));
     MPPMessage m = MPPMessage::from_bytes(bytes);
 
     ASSERT_EQ(m.sender, "test_sender.port");

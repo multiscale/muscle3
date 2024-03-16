@@ -301,6 +301,15 @@ class MockFun {
             return called_once() && called_with(args...);
         }
 
+        /* Returns whether there was ever a call with the given arguments. */
+        template <typename... A>
+        bool any_call(A... args) const {
+            for (auto const & call_args : call_args_list)
+                if (call_args == ::mock_support::store<Args...>(args...))
+                    return true;
+            return false;
+        }
+
         /* Returns the arguments with which the mock was called most recently.
          *
          * Getting individual items out of the tuple requires some ugly syntax, so you

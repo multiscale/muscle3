@@ -18,6 +18,8 @@ from libmuscle.logging import LogLevel
 from libmuscle.logging_handler import MuscleManagerHandler
 from libmuscle.mpp_message import ClosePort
 from libmuscle.mmp_client import MMPClient
+from libmuscle.peer_info import PeerInfo
+from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import (
         ProfileEvent, ProfileEventType, ProfileTimestamp)
@@ -136,8 +138,11 @@ class Instance:
         self._profiler = Profiler(self.__manager)
         """Profiler for this instance."""
 
+        self._port_manager = PortManager(self._index, ports)
+        """PortManager for this instance."""
+
         self._communicator = Communicator(
-                self._name, self._index, ports, self._profiler)
+                self._name, self._index, self._port_manager, self._profiler)
         """Communicator for this instance."""
 
         self._declared_ports = ports
@@ -147,7 +152,7 @@ class Instance:
         """Settings for this instance."""
 
         self._snapshot_manager = SnapshotManager(
-                self._instance_id, self.__manager, self._communicator)
+                self._instance_id, self.__manager, self._port_manager)
         """Resumes, loads and saves snapshots."""
 
         self._trigger_manager = TriggerManager()
@@ -338,7 +343,7 @@ class Instance:
             containing lists of port names. Operators with no associated ports
             are not included.
         """
-        return self._communicator.list_ports()
+        return self._port_manager.list_ports()
 
     def is_connected(self, port: str) -> bool:
         """Returns whether the given port is connected.
@@ -350,7 +355,7 @@ class Instance:
             True if there is a conduit attached to this port, False
             if not.
         """
-        return self._communicator.get_port(port).is_connected()
+        return self._port_manager.get_port(port).is_connected()
 
     def is_vector_port(self, port: str) -> bool:
         """Returns whether a port is a vector or scalar port
@@ -367,7 +372,7 @@ class Instance:
         Args:
             port: The port to check this property of.
         """
-        return self._communicator.get_port(port).is_vector()
+        return self._port_manager.get_port(port).is_vector()
 
     def is_resizable(self, port: str) -> bool:
         """Returns whether the given port is resizable.
@@ -381,7 +386,7 @@ class Instance:
         Returns:
             True if the port can be resized.
         """
-        return self._communicator.get_port(port).is_resizable()
+        return self._port_manager.get_port(port).is_resizable()
 
     def get_port_length(self, port: str) -> int:
         """Returns the current length of the port.
@@ -392,7 +397,7 @@ class Instance:
         Raises:
             RuntimeError: If this is a scalar port.
         """
-        return self._communicator.get_port(port).get_length()
+        return self._port_manager.get_port(port).get_length()
 
     def set_port_length(self, port: str, length: int) -> None:
         """Resizes the port to the given length.
@@ -408,7 +413,7 @@ class Instance:
         Raises:
             RuntimeError: If the port is not resizable.
         """
-        self._communicator.get_port(port).set_length(length)
+        self._port_manager.get_port(port).set_length(length)
 
     def send(self, port_name: str, message: Message,
              slot: Optional[int] = None) -> None:
@@ -422,7 +427,7 @@ class Instance:
             message: The message to be sent.
             slot: The slot to send the message on, if any.
         """
-        self.__check_port(port_name)
+        self.__check_port(port_name, slot)
         if message.settings is None:
             message = copy(message)
             message.settings = self._settings_manager.overlay
@@ -679,9 +684,16 @@ class Instance:
         """
         connect_event = ProfileEvent(
                 ProfileEventType.CONNECT, ProfileTimestamp())
+
         conduits, peer_dims, peer_locations = self.__manager.request_peers()
-        self._communicator.connect(conduits, peer_dims, peer_locations)
+
+        peer_info = PeerInfo(
+                self._name, self._index, conduits, peer_dims, peer_locations)
+        self._port_manager.connect_ports(peer_info)
+        self._communicator.set_peer_info(peer_info)
+
         self._settings_manager.base = self.__manager.get_settings()
+
         self._profiler.record_event(connect_event)
         _logger.info('Received peer locations and base settings')
 
@@ -810,47 +822,38 @@ class Instance:
         elif self._first_run:
             self._first_run = False
 
-        do_reuse = False
-
-        # only actually happens if we don't reuse, start recording just in case
-        sw_event = ProfileEvent(ProfileEventType.SHUTDOWN_WAIT, ProfileTimestamp())
-
-        f_init_connected = self._have_f_init_connections()
+        # resume from intermediate
         if self._first_run and self._snapshot_manager.resuming_from_intermediate():
-            # resume from intermediate
             self._do_resume = True
             self._do_init = False
-            do_reuse = True
-        elif self._first_run and self._snapshot_manager.resuming_from_final():
-            # resume from final
+            return True
+
+        f_init_connected = self._have_f_init_connections()
+
+        # resume from final
+        if self._first_run and self._snapshot_manager.resuming_from_final():
             if f_init_connected:
-                no_closed_ports = self._pre_receive()
+                got_f_init_messages = self._pre_receive()
                 self._do_resume = True
                 self._do_init = True
-                do_reuse = no_closed_ports
+                return got_f_init_messages
             else:
                 self._do_resume = False     # unused
                 self._do_init = False       # unused
-                do_reuse = False
-        else:
-            # fresh start or resuming from implicit snapshot
-            self._do_resume = False
+                return False
 
-            no_closed_ports = self._pre_receive()
+        # fresh start or resuming from implicit snapshot
+        self._do_resume = False
 
-            if not f_init_connected:
-                # simple straight single run without resuming
-                self._do_init = self._first_run
-                do_reuse = self._first_run
-            else:
-                # not resuming and f_init connected, run while we get messages
-                self._do_init = no_closed_ports
-                do_reuse = no_closed_ports
+        # simple straight single run without resuming
+        if not f_init_connected:
+            self._do_init = self._first_run
+            return self._first_run
 
-        if not do_reuse:
-            self._profiler.record_event(sw_event)
-
-        return do_reuse
+        # not resuming and f_init connected, run while we get messages
+        got_f_init_messages = self._pre_receive()
+        self._do_init = got_f_init_messages
+        return got_f_init_messages
 
     def _save_snapshot(
             self, message: Optional[Message], final: bool,
@@ -879,9 +882,9 @@ class Instance:
         This implements receive and receive_with_settings, see the
         description of those.
         """
-        self.__check_port(port_name)
+        self.__check_port(port_name, slot, True)
 
-        port = self._communicator.get_port(port_name)
+        port = self._port_manager.get_port(port_name)
         if port.operator == Operator.F_INIT:
             if (port_name, slot) in self._f_init_cache:
                 msg = self._f_init_cache[(port_name, slot)]
@@ -916,19 +919,31 @@ class Instance:
                     raise RuntimeError(err_msg)
 
         else:
-            msg, saved_until = self._communicator.receive_message(
-                    port_name, slot, default)
-            if port.is_connected() and not port.is_open(slot):
-                err_msg = (('Port {} was closed while trying to'
-                            ' receive on it, did the peer crash?'
-                            ).format(port_name))
-                self.__shutdown(err_msg)
-                raise RuntimeError(err_msg)
-            if port.is_connected() and not with_settings:
-                self.__check_compatibility(port_name, msg.settings)
-            if not with_settings:
-                msg.settings = None
-            self._trigger_manager.harmonise_wall_time(saved_until)
+            if not port.is_connected():
+                if default is None:
+                    raise RuntimeError(('Tried to receive on port "{}", which is'
+                                        ' disconnected, and no default value was'
+                                        ' given. Either specify a default, or'
+                                        ' connect a sending component to this'
+                                        ' port.').format(port_name))
+                else:
+                    _logger.debug(
+                            f'No message received on {port_name} as it is not'
+                            ' connected')
+                    return default
+
+            else:
+                msg, saved_until = self._communicator.receive_message(port_name, slot)
+                if not port.is_open(slot):
+                    err_msg = (('Port {} was closed while trying to'
+                                ' receive on it, did the peer crash?'
+                                ).format(port_name))
+                    self.__shutdown(err_msg)
+                    raise RuntimeError(err_msg)
+                if not with_settings:
+                    self.__check_compatibility(port_name, msg.settings)
+                    msg.settings = None
+                self._trigger_manager.harmonise_wall_time(saved_until)
         return msg
 
     def __make_full_name(self
@@ -987,24 +1002,48 @@ class Instance:
                     result.append(Port(Identifier(name), operator))
         return result
 
-    def __check_port(self, port_name: str) -> None:
-        if not self._communicator.port_exists(port_name):
+    def __check_port(
+            self, port_name: str, slot: Optional[int] = None,
+            allow_slot_out_of_range: bool = False) -> None:
+        if not self._port_manager.port_exists(port_name):
             err_msg = (('Port "{}" does not exist on "{}". Please check'
                         ' the name and the list of ports you gave for'
                         ' this component.').format(port_name, self._name))
             self.__shutdown(err_msg)
             raise RuntimeError(err_msg)
 
+        if slot is not None:
+            port = self._port_manager.get_port(port_name)
+            if not port.is_vector():
+                err_msg = (
+                        f'Port "{port_name}" is not a vector port, but a slot was'
+                        ' given. Please check your send call and your port'
+                        ' declarations')
+                self.__shutdown(err_msg)
+                raise RuntimeError(err_msg)
+
+            if port.is_connected():
+                # This check needs to be revised for resizable instance sets
+                if not (port.is_resizable() and allow_slot_out_of_range):
+                    if port.get_length() <= slot:
+                        err_msg = (
+                                f'Tried to send or receive on slot {slot} of port'
+                                f' "{port_name}", which has length {port.get_length()}.'
+                                f' Please check your code and/or the multiplicities in'
+                                f' the model description.')
+                        self.__shutdown(err_msg)
+                        raise RuntimeError(err_msg)
+
     def _have_f_init_connections(self) -> bool:
         """Checks whether we have connected F_INIT ports.
 
         This includes muscle_settings_in, and any user-defined ports.
         """
-        ports = self._communicator.list_ports()
+        ports = self._port_manager.list_ports()
         f_init_connected = any(
                 [self.is_connected(port)
                  for port in ports.get(Operator.F_INIT, [])])
-        return f_init_connected or self._communicator.settings_in_connected()
+        return f_init_connected or self._port_manager.settings_in_connected()
 
     def _pre_receive(self) -> bool:
         """Pre-receives on all ports.
@@ -1014,11 +1053,21 @@ class Instance:
         Returns:
             True iff no ClosePort messages were received.
         """
-        all_ports_open = self.__receive_settings()
+        sw_event = ProfileEvent(ProfileEventType.SHUTDOWN_WAIT, ProfileTimestamp())
+
+        all_ports_open = True
+        if not self._port_manager.settings_in_connected():
+            self._settings_manager.overlay = Settings()
+        else:
+            all_ports_open = self.__receive_settings()
+
         self.__pre_receive_f_init()
         for message in self._f_init_cache.values():
             if isinstance(message.data, ClosePort):
                 all_ports_open = False
+
+        if not all_ports_open:
+            self._profiler.record_event(sw_event)
 
         return all_ports_open
 
@@ -1028,16 +1077,10 @@ class Instance:
         Returns:
             False iff the port is connnected and ClosePort was received.
         """
-        if not self._communicator.settings_in_connected():
-            self._settings_manager.overlay = Settings()
-            return True
-
-        message, saved_until = self._communicator.receive_message(
-                'muscle_settings_in', None)
+        message, saved_until = self._communicator.receive_message('muscle_settings_in')
 
         if isinstance(message.data, ClosePort):
             return False
-
         if not isinstance(message.data, Settings):
             err_msg = ('"{}" received a message on'
                        ' muscle_settings_in that is not a'
@@ -1047,7 +1090,7 @@ class Instance:
             self.__shutdown(err_msg)
             raise RuntimeError(err_msg)
 
-        settings = cast(Settings, message.settings)
+        settings = cast(Settings, message.settings).copy()
         for key, value in message.data.items():
             settings[key] = value
         self._settings_manager.overlay = settings
@@ -1064,8 +1107,7 @@ class Instance:
         apply_overlay = InstanceFlags.DONT_APPLY_OVERLAY not in self._flags
 
         def pre_receive(port_name: str, slot: Optional[int]) -> None:
-            msg, saved_until = self._communicator.receive_message(
-                    port_name, slot)
+            msg, saved_until = self._communicator.receive_message(port_name, slot)
             self._f_init_cache[(port_name, slot)] = msg
             if apply_overlay:
                 self.__apply_overlay(msg)
@@ -1074,10 +1116,10 @@ class Instance:
             self._trigger_manager.harmonise_wall_time(saved_until)
 
         self._f_init_cache = dict()
-        ports = self._communicator.list_ports()
+        ports = self._port_manager.list_ports()
         for port_name in ports.get(Operator.F_INIT, []):
             _logger.debug('Pre-receiving on port {}'.format(port_name))
-            port = self._communicator.get_port(port_name)
+            port = self._port_manager.get_port(port_name)
             if not port.is_connected():
                 continue
             if not port.is_vector():
@@ -1185,78 +1227,6 @@ class Instance:
             self.__shutdown(err_msg)
             raise RuntimeError(err_msg)
 
-    def __close_outgoing_ports(self) -> None:
-        """Closes outgoing ports.
-
-        This sends a close port message on all slots of all outgoing
-        ports.
-        """
-        for operator, ports in self._communicator.list_ports().items():
-            if operator.allows_sending():
-                for port_name in ports:
-                    port = self._communicator.get_port(port_name)
-                    if port.is_vector():
-                        for slot in range(port.get_length()):
-                            self._communicator.close_port(port_name, slot)
-                    else:
-                        self._communicator.close_port(port_name)
-
-    def __drain_incoming_port(self, port_name: str) -> None:
-        """Receives messages until a ClosePort is received.
-
-        Receives at least once.
-
-        Args:
-            port_name: Port to drain.
-        """
-        port = self._communicator.get_port(port_name)
-        while port.is_open():
-            # TODO: log warning if not a ClosePort
-            self._communicator.receive_message(port_name)
-
-    def __drain_incoming_vector_port(self, port_name: str) -> None:
-        """Receives messages until a ClosePort is received.
-
-        Works with (resizable) vector ports.
-
-        Args:
-            port_name: Port to drain.
-        """
-        port = self._communicator.get_port(port_name)
-        while not all([not port.is_open(slot)
-                       for slot in range(port.get_length())]):
-            for slot in range(port.get_length()):
-                if port.is_open(slot):
-                    self._communicator.receive_message(port_name, slot)
-
-    def __close_incoming_ports(self) -> None:
-        """Closes incoming ports.
-
-        This receives on all incoming ports until a ClosePort is
-        received on them, signaling that there will be no more
-        messages, and allowing the sending instance to shut down
-        cleanly.
-        """
-        for operator, port_names in self._communicator.list_ports().items():
-            if operator.allows_receiving():
-                for port_name in port_names:
-                    port = self._communicator.get_port(port_name)
-                    if not port.is_connected():
-                        continue
-                    if not port.is_vector():
-                        self.__drain_incoming_port(port_name)
-                    else:
-                        self.__drain_incoming_vector_port(port_name)
-
-    def __close_ports(self) -> None:
-        """Closes all ports.
-
-        This sends a close port message on all slots of all outgoing
-        ports, then receives one on all incoming ports.
-        """
-        self.__close_outgoing_ports()
-        self.__close_incoming_ports()
-
     def __shutdown(self, message: Optional[str] = None) -> None:
         """Shuts down simulation.
 
@@ -1266,7 +1236,6 @@ class Instance:
         if not self.__is_shut_down:
             if message is not None:
                 _logger.critical(message)
-            self.__close_ports()
             self._communicator.shutdown()
             self._deregister()
             self.__manager.close()

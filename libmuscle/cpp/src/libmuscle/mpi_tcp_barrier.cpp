@@ -72,8 +72,8 @@ void MPITcpBarrier::signal() {
         if (i != root_) {
             std::ostringstream oss;
             oss << "rank[" << i << "]";
-            auto msg = Data::byte_array(0);
-            post_office_->deposit(oss.str(), std::make_unique<DataConstRef>(msg));
+            std::vector<char> msg;
+            post_office_->deposit(oss.str(), std::move(msg));
         }
 }
 

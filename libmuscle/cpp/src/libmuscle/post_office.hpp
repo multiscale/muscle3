@@ -5,7 +5,6 @@
 #else
 
 
-#include <libmuscle/data.hpp>
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/outbox.hpp>
 #include <libmuscle/mcp/transport_server.hpp>
@@ -16,6 +15,7 @@
 #include <condition_variable>
 #include <memory>
 #include <mutex>
+#include <vector>
 
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
@@ -58,8 +58,7 @@ class PostOffice : public mcp::RequestHandler {
          *
          * Requests may be handled immediately, or they may be deferred if a
          * response is not available yet. In the first case, this will place
-         * the response as a byte array wrapped in a Data object into res_buf,
-         * and return -1.
+         * the response into res_buf, and return -1.
          *
          * In the second case, res_buf is unmodified, and a file descriptor is
          * returned. When the response is available, a single byte can and must
@@ -72,7 +71,7 @@ class PostOffice : public mcp::RequestHandler {
          */
         virtual int handle_request(
                 char const * req_buf, std::size_t req_len,
-                std::unique_ptr<DataConstRef> & res_buf) override;
+                std::vector<char> & res_buf) override;
 
         /** Get a response
          *
@@ -82,20 +81,21 @@ class PostOffice : public mcp::RequestHandler {
          * file descriptor. The response will then be written into res_buf.
          *
          * @param fd File descriptor to return
-         * @return A byte array wrapped in a DataConstRef with the response
+         * @return A byte array with the encoded response
          */
-        virtual std::unique_ptr<DataConstRef> get_response(int fd) override;
+        virtual std::vector<char> get_response(int fd) override;
 
         /** Deposit a message into an outbox.
          *
-         * The message object should hold a byte array with encoded data.
+         * The message object should hold a byte array with encoded data, which
+         * will be moved into an outbox.
          *
          * @param receiver Receiver of the message.
          * @param message The message to deposit.
          */
         void deposit(
                 ymmsl::Reference const & receiver,
-                std::unique_ptr<DataConstRef> message);
+                std::vector<char> && message);
 
         /** Waits until all outboxes are empty.
          */

@@ -333,7 +333,7 @@ DataConstRef MMPClient::call_manager_(DataConstRef const & request) {
     auto const & result = std::get<0>(res);
 
     auto zone = std::make_shared<msgpack::zone>();
-    return unpack_data(zone, result.as_byte_array(), result.size());
+    return unpack_data(zone, result.data(), result.size());
 }
 
 

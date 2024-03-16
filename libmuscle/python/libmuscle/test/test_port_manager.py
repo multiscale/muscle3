@@ -17,17 +17,7 @@ def port_manager(index) -> PortManager:
     declared_ports = {
             Operator.O_I: ['out'],
             Operator.S: ['in']}
-    port_manager = PortManager(index, declared_ports)
-
-    component_id = Ref('component')
-    conduits = [Conduit('component.out', 'other.in'),
-                Conduit('other.out', 'component.in')]
-    peer_dims = {Ref('other'): []}
-    peer_locations = {Ref('other'): ['direct:test']}
-    peer_info = PeerInfo(component_id, index, conduits, peer_dims, peer_locations)
-
-    port_manager.connect_ports(peer_info)
-    return port_manager
+    return PortManager(index, declared_ports)
 
 
 @pytest.fixture
@@ -58,18 +48,19 @@ def test_connect_ports(index, port_manager) -> None:
     conduits = [Conduit('component.out', 'other.in'),
                 Conduit('other.settings_out', 'component.muscle_settings_in'),
                 Conduit('other.out', 'component.in')]
-    peer_dims = {Ref('other'): [1]}
+    peer_dims = {Ref('other'): []}
     peer_locations = {Ref('other'): ['direct:test']}
     peer_info = PeerInfo(component_id, index, conduits, peer_dims, peer_locations)
 
     port_manager.connect_ports(peer_info)
 
-    # check inferred ports
+    # check automatic ports
     assert port_manager.settings_in_connected()
     assert port_manager._muscle_settings_in.name == Identifier('muscle_settings_in')
     assert port_manager._muscle_settings_in.operator == Operator.F_INIT
     assert port_manager._muscle_settings_in._length is None
 
+    # check declared ports
     ports = port_manager._ports
     assert ports['in'].name == Identifier('in')
     assert ports['in'].operator == Operator.S
@@ -80,8 +71,7 @@ def test_connect_ports(index, port_manager) -> None:
     assert ports['out']._length is None
 
 
-def test_connect_vector_ports() -> None:
-    index = [13]
+def test_connect_vector_ports(index) -> None:
     declared_ports = {
             Operator.F_INIT: ['in[]'],
             Operator.O_F: ['out1', 'out2[]']}
@@ -171,6 +161,8 @@ def test_connect_inferred_ports() -> None:
 
 
 def test_port_message_counts(port_manager) -> None:
+    port_manager.connect_ports(PeerInfo('component', [], [], {}, {}))
+
     msg_counts = port_manager.get_message_counts()
     assert msg_counts == {'in': [0], 'out': [0], 'muscle_settings_in': [0]}
 

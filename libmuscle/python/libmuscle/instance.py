@@ -882,7 +882,7 @@ class Instance:
         This implements receive and receive_with_settings, see the
         description of those.
         """
-        self.__check_port(port_name)
+        self.__check_port(port_name, slot, True)
 
         port = self._port_manager.get_port(port_name)
         if port.operator == Operator.F_INIT:
@@ -1002,7 +1002,9 @@ class Instance:
                     result.append(Port(Identifier(name), operator))
         return result
 
-    def __check_port(self, port_name: str, slot: Optional[int] = None) -> None:
+    def __check_port(
+            self, port_name: str, slot: Optional[int] = None,
+            allow_slot_out_of_range: bool = False) -> None:
         if not self._port_manager.port_exists(port_name):
             err_msg = (('Port "{}" does not exist on "{}". Please check'
                         ' the name and the list of ports you gave for'
@@ -1020,13 +1022,17 @@ class Instance:
                 self.__shutdown(err_msg)
                 raise RuntimeError(err_msg)
 
-            if port.get_length() <= slot:
-                err_msg = (
-                        f'Tried to send on slot {slot} of port "{port_name}", which'
-                        f' has length {port.get_length()}. Please check your code'
-                        ' and/or the multiplicities in the model description.')
-                self.__shutdown(err_msg)
-                raise RuntimeError(err_msg)
+            if port.is_connected():
+                # This check needs to be revised for resizable instance sets
+                if not (port.is_resizable() and allow_slot_out_of_range):
+                    if port.get_length() <= slot:
+                        err_msg = (
+                                f'Tried to send or receive on slot {slot} of port'
+                                f' "{port_name}", which has length {port.get_length()}.'
+                                f' Please check your code and/or the multiplicities in'
+                                f' the model description.')
+                        self.__shutdown(err_msg)
+                        raise RuntimeError(err_msg)
 
     def _have_f_init_connections(self) -> bool:
         """Checks whether we have connected F_INIT ports.
@@ -1084,7 +1090,7 @@ class Instance:
             self.__shutdown(err_msg)
             raise RuntimeError(err_msg)
 
-        settings = cast(Settings, message.settings)
+        settings = cast(Settings, message.settings).copy()
         for key, value in message.data.items():
             settings[key] = value
         self._settings_manager.overlay = settings

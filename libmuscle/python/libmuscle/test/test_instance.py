@@ -351,8 +351,10 @@ def test_set_port_length(instance, port_manager):
     assert port_manager.get_port('not_connected_v').get_length() == 7
 
 
-def test_reuse_set_overlay(instance, port_manager, communicator, settings_manager):
+def test_reuse_set_overlay(
+        instance, port_manager, mock_ports, communicator, settings_manager):
     port_manager.settings_in_connected.return_value = True
+    mock_ports['in']._is_connected = False
 
     mock_msg = MagicMock()
     mock_msg.data = Settings({'s1': 1, 's2': 2})
@@ -473,15 +475,25 @@ def test_receive_no_default(instance):
         instance.receive('not_connected_v', 14)
 
 
-def test_receive_inconsistent_settings(instance, settings_manager, communicator):
-    mock_msg = MagicMock()
-    mock_msg.settings = Settings({'s0': 0})
-    communicator.receive_message.return_value = mock_msg, 0.0
+def test_receive_inconsistent_settings(
+        instance, settings_manager, port_manager, communicator):
 
-    settings_manager.overlay = Settings({'s1': 1})
+    def receive_message(port, slot=None):
+        mock_msg = MagicMock()
+        if port == 'muscle_settings_in':
+            mock_msg.data = Settings({'s1': 1})
+            mock_msg.settings = Settings()
+        else:
+            mock_msg.data = None
+            mock_msg.settings = Settings({'s0': 0})
+        return mock_msg, 0.0
+
+    communicator.receive_message.side_effect = receive_message
+
+    port_manager.settings_in_connected.return_value = True
 
     with pytest.raises(RuntimeError):
-        instance.receive('in')
+        instance.reuse_instance()
 
 
 def test_receive_with_settings(

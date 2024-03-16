@@ -238,8 +238,8 @@ std::ostream & operator<<(std::ostream & os, ymmsl::impl::SettingValue const & v
 }
 
 
-Settings::Settings(std::unordered_map<Reference, SettingValue> const & settings)
-    : store_(settings)
+Settings::Settings(std::initializer_list<MapType_::value_type> const & init)
+    : store_(init)
 {}
 
 bool Settings::operator==(Settings const & rhs) const {

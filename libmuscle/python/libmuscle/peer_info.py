@@ -42,7 +42,7 @@ class PeerInfo:
         for conduit in conduits:
             if str(conduit.sending_component()) == str(kernel):
                 # we send on the port this conduit attaches to
-                if conduit.sending_port() not in self._outgoing_ports:
+                if conduit.sender not in self._outgoing_ports:
                     self._outgoing_ports.append(conduit.sender)
                 self.__peers.setdefault(conduit.sender, []).append(
                         conduit.receiver)

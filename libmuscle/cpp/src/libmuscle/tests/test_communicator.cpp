@@ -1,8 +1,9 @@
 // Inject mocks
 #define LIBMUSCLE_MOCK_LOGGER <mocks/mock_logger.hpp>
+#define LIBMUSCLE_MOCK_MMP_CLIENT <mocks/mock_mmp_client.hpp>
 #define LIBMUSCLE_MOCK_MPP_CLIENT <mocks/mock_mpp_client.hpp>
 #define LIBMUSCLE_MOCK_MCP_TCP_TRANSPORT_SERVER <mocks/mcp/mock_tcp_transport_server.hpp>
-#define LIBMUSCLE_MOCK_PEER_INFO <mocks/mock_peer_info.hpp>
+#define LIBMUSCLE_MOCK_PORT_MANAGER <mocks/mock_port_manager.hpp>
 #define LIBMUSCLE_MOCK_POST_OFFICE <mocks/mock_post_office.hpp>
 #define LIBMUSCLE_MOCK_PROFILER <mocks/mock_profiler.hpp>
 
@@ -20,6 +21,7 @@
 #include <libmuscle/mcp/transport_client.cpp>
 #include <libmuscle/mcp/transport_server.cpp>
 #include <libmuscle/message.cpp>
+#include <libmuscle/peer_info.cpp>
 #include <libmuscle/port.cpp>
 #include <libmuscle/profiling.cpp>
 #include <libmuscle/timestamp.cpp>
@@ -28,36 +30,14 @@
 #include <memory>
 #include <stdexcept>
 #include <gtest/gtest.h>
-#include <fixtures.hpp>
 #include <libmuscle/communicator.hpp>
 #include <libmuscle/namespace.hpp>
+#include <fixtures.hpp>
+#include <mocks/mock_mmp_client.hpp>
 #include <mocks/mock_mpp_client.hpp>
 #include <mocks/mcp/mock_tcp_transport_server.hpp>
 #include <mocks/mock_logger.hpp>
-#include <mocks/mock_peer_info.hpp>
-#include <mocks/mock_post_office.hpp>
 #include <mocks/mock_profiler.hpp>
-
-
-using libmuscle::_MUSCLE_IMPL_NS::Communicator;
-using libmuscle::_MUSCLE_IMPL_NS::Data;
-using libmuscle::_MUSCLE_IMPL_NS::Endpoint;
-using libmuscle::_MUSCLE_IMPL_NS::Optional;
-using libmuscle::_MUSCLE_IMPL_NS::PeerDims;
-using libmuscle::_MUSCLE_IMPL_NS::PeerLocations;
-using libmuscle::_MUSCLE_IMPL_NS::PortsDescription;
-using libmuscle::_MUSCLE_IMPL_NS::Message;
-using libmuscle::_MUSCLE_IMPL_NS::MockMPPClient;
-using libmuscle::_MUSCLE_IMPL_NS::MockPeerInfo;
-using libmuscle::_MUSCLE_IMPL_NS::MockPostOffice;
-using libmuscle::_MUSCLE_IMPL_NS::MockProfiler;
-using libmuscle::_MUSCLE_IMPL_NS::mcp::MockTcpTransportServer;
-using libmuscle::_MUSCLE_IMPL_NS::MPPMessage;
-using libmuscle::_MUSCLE_IMPL_NS::ProfileTimestamp;
-
-using ymmsl::Conduit;
-using ymmsl::Identifier;
-using ymmsl::Reference;
 
 
 int main(int argc, char *argv[]) {
@@ -66,745 +46,349 @@ int main(int argc, char *argv[]) {
 }
 
 
-struct libmuscle_communicator : ::testing::Test {
+using libmuscle::_MUSCLE_IMPL_NS::Communicator;
+using libmuscle::_MUSCLE_IMPL_NS::Data;
+using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
+using libmuscle::_MUSCLE_IMPL_NS::Endpoint;
+using libmuscle::_MUSCLE_IMPL_NS::is_close_port;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::MockTcpTransportServer;
+using libmuscle::_MUSCLE_IMPL_NS::Message;
+using libmuscle::_MUSCLE_IMPL_NS::MockLogger;
+using libmuscle::_MUSCLE_IMPL_NS::MockMMPClient;
+using libmuscle::_MUSCLE_IMPL_NS::MockMPPClient;
+using libmuscle::_MUSCLE_IMPL_NS::MockPortManager;
+using libmuscle::_MUSCLE_IMPL_NS::MockPostOffice;
+using libmuscle::_MUSCLE_IMPL_NS::MockProfiler;
+using libmuscle::_MUSCLE_IMPL_NS::MPPMessage;
+using libmuscle::_MUSCLE_IMPL_NS::Optional;
+using libmuscle::_MUSCLE_IMPL_NS::PeerDims;
+using libmuscle::_MUSCLE_IMPL_NS::PeerInfo;
+using libmuscle::_MUSCLE_IMPL_NS::PeerLocations;
+using libmuscle::_MUSCLE_IMPL_NS::PortsDescription;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::ProfileData;
+using libmuscle::_MUSCLE_IMPL_NS::ProfileTimestamp;
+
+using ymmsl::Conduit;
+using ymmsl::Reference;
+
+
+/* Fixture */
+struct libmuscle_communicator
+        : ConnectedPortManagerFixture
+        , ::testing::Test
+{
     RESET_MOCKS(
-            ::libmuscle::_MUSCLE_IMPL_NS::MockLogger,
-            ::libmuscle::_MUSCLE_IMPL_NS::MockMPPClient,
-            ::libmuscle::_MUSCLE_IMPL_NS::MockPeerInfo,
-            ::libmuscle::_MUSCLE_IMPL_NS::MockPostOffice,
-            ::libmuscle::_MUSCLE_IMPL_NS::MockProfiler,
-            ::libmuscle::_MUSCLE_IMPL_NS::mcp::MockTcpTransportServer);
+            MockLogger, MockMMPClient, MockMPPClient, MockPostOffice, MockProfiler,
+            MockTcpTransportServer);
 
-    ::libmuscle::_MUSCLE_IMPL_NS::MockLogger mock_logger_;
-    ::libmuscle::_MUSCLE_IMPL_NS::MockProfiler mock_profiler_;
+    MockLogger logger_;
+    MockProfiler profiler_;
+    MockPortManager port_manager_;
 
-    MPPMessage next_received_message;
+    Communicator communicator_;
 
     libmuscle_communicator()
-        : next_received_message(
-                "test.out", "test2.in", 0, 0.0, 1.0, Settings({{"test2", 3.1}}),
-                0, 9.0, Data::dict("test1", 12))
+        : communicator_("component", {}, connected_port_manager_, logger_, profiler_)
     {
-        MockPeerInfo::return_value.is_connected.return_value = true;
-
-        auto & ret_val = MockMPPClient::return_value;
-
-        using RecvRet = std::tuple<
-            std::vector<char>, std::tuple<
-                ProfileTimestamp, ProfileTimestamp, ProfileTimestamp>>;
-
-        ret_val.receive.side_effect = [this](Reference const &) -> RecvRet {
-            return std::make_tuple(
-                    next_received_message.encoded(), std::make_tuple(
-                        ProfileTimestamp(1.0), ProfileTimestamp(2.0),
-                        ProfileTimestamp(3.0)));
-        };
-    }
-
-    std::unique_ptr<Communicator> connected_communicator() {
-        std::unique_ptr<Communicator> comm(new Communicator(
-                Reference("kernel"), {13}, {}, mock_logger_, mock_profiler_));
-
-        std::vector<Conduit> conduits({
-            Conduit("kernel.out", "other.in"),
-            Conduit("other.out", "kernel.in")});
-
-        PeerDims peer_dims({{Reference("other"), {1}}});
-
-        PeerLocations peer_locations({
-                {Reference("other"), {"tcp:test"}}});
-
-        auto & peer_info = MockPeerInfo::return_value;
-        peer_info.get_peer_dims.return_value = std::vector<int>({1});
-        peer_info.get_peer_endpoints.side_effect = []
-            (Identifier const & port, std::vector<int> const & slot)
-        {
-            Reference port_slot(port);
-            port_slot += slot;
-
-            if (port_slot == "out")
-                return std::vector<Endpoint>({Endpoint("other", {}, "in", {13})});
-            if (port_slot == "in")
-                return std::vector<Endpoint>({Endpoint("other", {}, "out", {13})});
-            throw std::runtime_error(
-                    "Invalid port/slot " + std::string(port_slot) + " in get_peer_endpoints");
-        };
-
-        peer_info.get_peer_locations.return_value = std::vector<std::string>(
-                {std::string("tcp:test")});
-
-        comm->connect(conduits, peer_dims, peer_locations);
-        return comm;
-    }
-
-    std::unique_ptr<Communicator> connected_communicator2() {
-        std::unique_ptr<Communicator> comm(new Communicator(
-                Reference("other"), {}, {}, mock_logger_, mock_profiler_));
-
-        std::vector<Conduit> conduits({
-            Conduit("kernel.out", "other.in"),
-            Conduit("other.out", "kernel.in")});
-
-        PeerDims peer_dims({{Reference("kernel"), {20}}});
-
-        PeerLocations peer_locations({
-                {Reference("kernel"), {"tcp:test"}}});
-
-        auto & peer_info = MockPeerInfo::return_value;
-        peer_info.get_peer_dims.return_value = std::vector<int>({20});
-        peer_info.get_peer_endpoints.side_effect = []
-            (Identifier const & port, std::vector<int> const & slot)
-        {
-            Reference port_slot(port);
-            port_slot += slot;
-
-            if (port_slot == "in[13]")
-                return std::vector<Endpoint>({Endpoint("kernel", {13}, "out", {})});
-            if (port_slot == "out[13]")
-                return std::vector<Endpoint>({Endpoint("kernel", {13}, "in", {})});
-            throw std::runtime_error(
-                    "Invalid port/slot " + std::string(port_slot) + " in get_peer_endpoints");
-        };
-
-        peer_info.get_peer_locations.return_value = std::vector<std::string>(
-                {std::string("tcp:test")});
-
-        comm->connect(conduits, peer_dims, peer_locations);
-        return comm;
-    }
-
-    std::unique_ptr<Communicator> connected_communicator3() {
-        PortsDescription desc({
-                {Operator::O_I, {"out[]"}},
-                {Operator::S, {"in[]"}}
-                });
-
-        std::unique_ptr<Communicator> comm(new Communicator(
-                Reference("kernel"), {}, desc, mock_logger_, mock_profiler_));
-
-        std::vector<Conduit> conduits({
-            Conduit("kernel.out", "other.in"),
-            Conduit("other.out", "kernel.in")});
-
-        PeerDims peer_dims({{Reference("other"), {}}});
-
-        PeerLocations peer_locations({
-                {Reference("other"), {"tcp:test"}}});
-
-        auto & peer_info = MockPeerInfo::return_value;
-        peer_info.get_peer_dims.return_value = std::vector<int>({});
-        peer_info.get_peer_endpoints.side_effect = []
-            (Identifier const & port, std::vector<int> const & slot)
-        {
-            Reference port_slot(port);
-            port_slot += slot;
-
-            if (port_slot == "in[13]")
-                return std::vector<Endpoint>({Endpoint("other", {}, "out", {13})});
-            if (port_slot == "out[13]")
-                return std::vector<Endpoint>({Endpoint("other", {}, "in", {13})});
-            throw std::runtime_error(
-                    "Invalid port/slot " + std::string(port_slot) + " in get_peer_endpoints");
-        };
-
-        peer_info.get_peer_ports.side_effect = [](Identifier const & port) {
-            if (port == "out")
-                return std::vector<Reference>({"other.in"});
-            if (port == "in")
-                return std::vector<Reference>({"other.out"});
-            throw std::runtime_error(
-                    "Invalid port " + port + " in get_peer_ports");
-        };
-
-        peer_info.get_peer_locations.return_value = std::vector<std::string>(
-                {std::string("tcp:test")});
-
-        comm->connect(conduits, peer_dims, peer_locations);
-        return comm;
+        port_manager_.settings_in_connected.return_value = false;
+        dynamic_cast<MockTcpTransportServer&>(
+                *communicator_.servers_.back()
+                ).get_location_mock.return_value = "tcp:testing:9001";
     }
 };
 
 
-TEST_F(libmuscle_communicator, create_communicator) {
-    Communicator comm(
-            Reference("kernel"), {13}, {}, mock_logger_, mock_profiler_);
-    ASSERT_EQ(comm.servers_.size(), 1);
-    ASSERT_TRUE(comm.clients_.empty());
-}
+struct libmuscle_communicator2 : libmuscle_communicator {
+    Communicator & connected_communicator_;
+
+    libmuscle_communicator2()
+        : connected_communicator_(communicator_)
+    {
+        std::vector<Conduit> conduits({
+            Conduit("peer.out", "component.in"),
+            Conduit("peer2.out_v", "component.in_v"),
+            Conduit("peer3.out_r", "component.in_r"),
+            Conduit("component.out_v", "peer2.in"),
+            Conduit("component.out_r", "peer3.in_r"),
+            Conduit("component.out", "peer.in")});
+
+        PeerDims peer_dims({
+                {Reference("peer"), {}},
+                {Reference("peer2"), {13}},
+                {Reference("peer3"), {}}});
+
+        PeerLocations peer_locations({
+                {Reference("peer"), {"tcp:peer:9001"}},
+                {Reference("peer3"), {"tcp:peer3:9001"}},
+                });
+        for (int i = 0; i < 13; ++i) {
+            auto port_name = std::string("peer2[") + std::to_string(i) + "]";
+            peer_locations[port_name] = {"tcp:peer2:9001"};
+        }
+
+        PeerInfo peer_info("component", {}, conduits, peer_dims, peer_locations);
+        connected_communicator_.set_peer_info(peer_info);
+    }
+};
+
+
+/* Tests */
+TEST_F(libmuscle_communicator, create_communicator) {}
 
 TEST_F(libmuscle_communicator, get_locations) {
-    Communicator comm(
-            Reference("kernel"), {13}, {}, mock_logger_, mock_profiler_);
-    auto server = dynamic_cast<MockTcpTransportServer *>(comm.servers_.back().get());
-    server->get_location_mock.return_value = "tcp:test_location";
-    ASSERT_EQ(comm.get_locations().size(), 1);
-    ASSERT_EQ(comm.get_locations()[0], "tcp:test_location");
+    ASSERT_EQ(communicator_.get_locations().size(), 1);
+    ASSERT_EQ(communicator_.get_locations()[0], "tcp:testing:9001");
 }
 
-TEST_F(libmuscle_communicator, test_connect) {
-    Communicator comm(
-            Reference("kernel"), {13}, {}, mock_logger_, mock_profiler_);
+TEST_F(libmuscle_communicator2, send_message) {
+    Message msg(0.0, 1.0, "test", Settings({{"s0", 0}, {"s1", "1"}}));
 
-    std::vector<Conduit> conduits({
-        Conduit("kernel.out", "other.in"),
-        Conduit("other.out", "kernel.in")});
-    PeerDims peer_dims({{Reference("other"), {1}}});
-    PeerLocations peer_locations({
-            {Reference("other"), {"tcp:test"}}});
+    connected_communicator_.send_message("out_v", msg, 7, -1.0);
 
-    MockPeerInfo::return_value.get_peer_dims.return_value = std::vector<int>({1});
-    MockPeerInfo::return_value.is_connected.return_value = true;
-    comm.connect(conduits, peer_dims, peer_locations);
+    auto & post_office = communicator_.post_office_;
+    ASSERT_EQ(post_office.deposit.call_arg<0>(), "peer2[7].in");
 
-    ASSERT_EQ(comm.peer_info_->get_peer_dims.call_arg<0>(), "other");
-    ASSERT_EQ(comm.peer_info_->constructor.call_arg<0>(), "kernel");
-    ASSERT_EQ(comm.peer_info_->constructor.call_arg<1>(), std::vector<int>({13}));
-
-    // check inferred ports
-    auto const & ports = comm.ports_;
-
-    ASSERT_EQ(ports.at("in").name, "in");
-    ASSERT_EQ(ports.at("in").oper, Operator::F_INIT);
-    ASSERT_FALSE(ports.at("in").is_vector());
-
-    ASSERT_EQ(ports.at("out").name, "out");
-    ASSERT_EQ(ports.at("out").oper, Operator::O_F);
-    ASSERT_FALSE(ports.at("out").is_vector());
+    auto const & encoded_msg = *communicator_.post_office_.deposit.call_arg<1>();
+    ASSERT_EQ(encoded_msg.sender, "component.out_v[7]");
+    ASSERT_EQ(encoded_msg.receiver, "peer2[7].in");
+    ASSERT_EQ(encoded_msg.timestamp, 0.0);
+    ASSERT_EQ(encoded_msg.next_timestamp, 1.0);
+    ASSERT_TRUE(encoded_msg.settings_overlay.is_a<Settings>());
+    auto overlay = encoded_msg.settings_overlay.as<Settings>();
+    ASSERT_EQ(overlay["s0"].as<int64_t>(), 0);
+    ASSERT_EQ(overlay["s1"].as<std::string>(), "1");
+    ASSERT_EQ(encoded_msg.saved_until, -1.0);
+    ASSERT_EQ(encoded_msg.data.as<std::string>(), "test");
 }
 
-TEST_F(libmuscle_communicator, test_connect_vector_ports) {
-    PortsDescription desc({
-            {Operator::F_INIT, {"in[]"}},
-            {Operator::O_F, {"out1", "out2[]"}}
-            });
+TEST_F(libmuscle_communicator2, send_message_disconnected) {
+    Message msg(0.0, "not_connected", Settings());
 
-    Communicator comm(
-            Reference("kernel"), {13}, desc, mock_logger_, mock_profiler_);
+    connected_communicator_.send_message("not_connected", msg);
 
-    std::vector<Conduit> conduits({
-        Conduit("other1.out", "kernel.in"),
-        Conduit("kernel.out1", "other.in"),
-        Conduit("kernel.out2", "other3.in")
-        });
-    PeerDims peer_dims({
-            {Reference("other1"), {20, 7}},
-            {Reference("other"), {25}},
-            {Reference("other3"), {20}}
-            });
-    PeerLocations peer_locations({
-            {Reference("other"), {"tcp:test"}},
-            {Reference("other1"), {"tcp:test1"}},
-            {Reference("other3"), {"tcp:test3"}}
-            });
-
-    MockPeerInfo::return_value.get_peer_ports.side_effect = []
-        (Identifier const & port)
-    {
-        if (port == "in")
-            return std::vector<Reference>({"other1.out"});
-        if (port == "out1")
-            return std::vector<Reference>({"other.in"});
-        if (port == "out2")
-            return std::vector<Reference>({"other3.in"});
-        throw std::runtime_error("Unexpected port " + port + " in get_peer_ports");
-    };
-
-    MockPeerInfo::return_value.get_peer_dims.side_effect = []
-        (Reference const & peer_kernel)
-    {
-        if (peer_kernel == "other1")
-            return std::vector<int>({20, 7});
-        if (peer_kernel == "other")
-            return std::vector<int>({25});
-        if (peer_kernel == "other3")
-            return std::vector<int>({20});
-        throw std::runtime_error("Unexpected kernel in get_peer_dims");
-    };
-
-    comm.connect(conduits, peer_dims, peer_locations);
-
-    ASSERT_EQ(comm.peer_info_->constructor.call_arg<2>(), conduits);
-    ASSERT_EQ(comm.peer_info_->constructor.call_arg<3>(), peer_dims);
-    ASSERT_EQ(comm.peer_info_->constructor.call_arg<4>(), peer_locations);
-
-    auto const & ports = comm.ports_;
-
-    ASSERT_EQ(ports.at("in").name, "in");
-    ASSERT_EQ(ports.at("in").oper, Operator::F_INIT);
-    ASSERT_TRUE(ports.at("in").is_vector());
-    ASSERT_EQ(ports.at("in").get_length(), 7);
-    ASSERT_FALSE(ports.at("in").is_resizable());
-
-    ASSERT_EQ(ports.at("out1").name, "out1");
-    ASSERT_EQ(ports.at("out1").oper, Operator::O_F);
-    ASSERT_FALSE(ports.at("out1").is_vector());
-
-    ASSERT_EQ(ports.at("out2").name, "out2");
-    ASSERT_EQ(ports.at("out2").oper, Operator::O_F);
-    ASSERT_TRUE(ports.at("out2").is_vector());
-    ASSERT_EQ(ports.at("out2").get_length(), 0);
-    ASSERT_TRUE(ports.at("out2").is_resizable());
+    ASSERT_FALSE(communicator_.post_office_.deposit.called());
 }
 
-TEST_F(libmuscle_communicator, test_connect_multidimensional_ports) {
-    PortsDescription desc({
-            {Operator::F_INIT, {"in[][]"}}
-            });
+TEST_F(libmuscle_communicator2, receive_message) {
+    MPPMessage msg(
+            "peer.out", "component.in", {}, 2.0, 3.0,
+            Settings({{"s0", "0"}, {"s1", true}}), 0, 1.0, "Testing");
 
-    Communicator comm(
-            Reference("kernel"), {13}, desc, mock_logger_, mock_profiler_);
+    MockMPPClient::return_value.receive.return_value = std::make_tuple(
+            msg.encoded(), ProfileData());
 
-    std::vector<Conduit> conduits({
-        Conduit("other.out", "kernel.in")
-        });
+    auto recv_msg_saved_until = connected_communicator_.receive_message("in");
+    auto const & recv_msg = std::get<0>(recv_msg_saved_until);
+    double saved_until = std::get<1>(recv_msg_saved_until);
 
-    PeerDims peer_dims({
-            {Reference("other"), {20, 7, 30}}
-            });
+    auto & mpp_client = connected_communicator_.clients_.at("peer");
+    ASSERT_TRUE(mpp_client->receive.called_with("component.in"));
 
-    PeerLocations peer_locations({
-            {Reference("other"), {"tcp:test"}}
-            });
-
-    MockPeerInfo::return_value.get_peer_ports.return_value = std::vector<Reference>(
-            {"other.out"});
-    MockPeerInfo::return_value.get_peer_dims.return_value = std::vector<int>({20, 7, 30});
-
-    ASSERT_THROW(
-            comm.connect(conduits, peer_dims, peer_locations),
-            std::invalid_argument);
-
-    ASSERT_EQ(comm.peer_info_->constructor.call_arg<2>(), conduits);
-    ASSERT_EQ(comm.peer_info_->constructor.call_arg<3>(), peer_dims);
-    ASSERT_EQ(comm.peer_info_->constructor.call_arg<4>(), peer_locations);
+    ASSERT_EQ(recv_msg.timestamp(), 2.0);
+    ASSERT_EQ(recv_msg.next_timestamp(), 3.0);
+    ASSERT_EQ(recv_msg.data().as<std::string>(), "Testing");
+    ASSERT_EQ(recv_msg.settings().at("s0"), "0");
+    ASSERT_TRUE(recv_msg.settings().at("s1").as<bool>());
+    ASSERT_EQ(saved_until, 1.0);
 }
 
-TEST_F(libmuscle_communicator, test_connect_inferred_ports) {
-    Communicator comm(
-            Reference("kernel"), {13}, {}, mock_logger_, mock_profiler_);
+TEST_F(libmuscle_communicator2, receive_message_vector) {
+    MPPMessage msg(
+            "peer2.out_v", "component.in_v", 5, 4.0, 6.0,
+            Settings({{"s0", {0.0}}, {"s1", 1.0}}), 0, 3.5, "Testing2");
 
-    std::vector<Conduit> conduits({
-        Conduit("other1.out", "kernel.in"),
-        Conduit("kernel.out1", "other.in"),
-        Conduit("kernel.out3", "other2.in")
-        });
+    MockMPPClient::return_value.receive.return_value = std::make_tuple(
+            msg.encoded(), ProfileData());
 
-    PeerDims peer_dims({
-            {Reference("other1"), {20, 7}},
-            {Reference("other"), {25}},
-            {Reference("other2"), {}}
-            });
+    auto recv_msg_saved_until = connected_communicator_.receive_message("in_v", 5);
+    auto const & recv_msg = std::get<0>(recv_msg_saved_until);
+    double saved_until = std::get<1>(recv_msg_saved_until);
 
-    PeerLocations peer_locations({
-            {Reference("other"), {"tcp:test"}},
-            {Reference("other1"), {"tcp:test1"}},
-            {Reference("other2"), {"tcp:test2"}}
-            });
+    auto mpp_client = connected_communicator_.clients_.at("peer2[5]").get();
+    ASSERT_TRUE(mpp_client->receive.called_with("component.in_v[5]"));
 
-    MockPeerInfo::return_value.get_peer_ports.side_effect = []
-        (Identifier const & port)
-    {
-        if (port == "in")
-            return std::vector<Reference>({"other1.out"});
-        if (port == "out1")
-            return std::vector<Reference>({"other.in"});
-        if (port == "out3")
-            return std::vector<Reference>({"other2.in"});
-        throw std::runtime_error("Unexpected port in get_peer_ports");
-    };
-
-    MockPeerInfo::return_value.get_peer_dims.side_effect = []
-        (Reference const & peer_kernel)
-    {
-        if (peer_kernel == "other1")
-            return std::vector<int>({20, 7});
-        if (peer_kernel == "other")
-            return std::vector<int>({25});
-        if (peer_kernel == "other2")
-            return std::vector<int>();
-        throw std::runtime_error("Unexpected kernel in get_peer_dims");
-    };
-
-    comm.connect(conduits, peer_dims, peer_locations);
-
-    ASSERT_EQ(comm.peer_info_->constructor.call_arg<2>(), conduits);
-    ASSERT_EQ(comm.peer_info_->constructor.call_arg<3>(), peer_dims);
-    ASSERT_EQ(comm.peer_info_->constructor.call_arg<4>(), peer_locations);
-
-    auto const & ports = comm.ports_;
-
-    ASSERT_EQ(ports.at("in").name, "in");
-    ASSERT_EQ(ports.at("in").oper, Operator::F_INIT);
-    ASSERT_TRUE(ports.at("in").is_vector());
-    ASSERT_EQ(ports.at("in").get_length(), 7);
-    ASSERT_FALSE(ports.at("in").is_resizable());
-
-    ASSERT_EQ(ports.at("out1").name, "out1");
-    ASSERT_EQ(ports.at("out1").oper, Operator::O_F);
-    ASSERT_FALSE(ports.at("out1").is_vector());
-
-    ASSERT_EQ(ports.at("out3").name, "out3");
-    ASSERT_EQ(ports.at("out3").oper, Operator::O_F);
-    ASSERT_FALSE(ports.at("out3").is_vector());
+    ASSERT_EQ(recv_msg.timestamp(), 4.0);
+    ASSERT_EQ(recv_msg.next_timestamp(), 6.0);
+    ASSERT_EQ(recv_msg.data().as<std::string>(), "Testing2");
+    ASSERT_EQ(recv_msg.settings().at("s0"), std::vector<double>{0.0});
+    ASSERT_EQ(recv_msg.settings().at("s1"), 1.0);
+    ASSERT_EQ(saved_until, 3.5);
 }
 
-TEST_F(libmuscle_communicator, send_message) {
-    auto comm = connected_communicator();
+TEST_F(libmuscle_communicator2, receive_close_port) {
+    MPPMessage msg(
+            "peer.out", "component.in", {}, std::numeric_limits<double>::infinity(), {},
+            Settings(), 0, 0.1, ClosePort());
 
-    Message message(0.0, "test", Settings());
-    comm->send_message("out", message);
+    MockMPPClient::return_value.receive.return_value = std::make_tuple(
+            msg.encoded(), ProfileData());
 
-    ASSERT_EQ(comm->post_office_.deposit.call_arg<0>(), "other.in[13]");
-    auto const & sent_msg = comm->post_office_.deposit.call_arg<1>();
-    ASSERT_EQ(sent_msg->sender, "kernel[13].out");
-    ASSERT_EQ(sent_msg->receiver, "other.in[13]");
-    ASSERT_EQ(sent_msg->timestamp, 0.0);
-    ASSERT_FALSE(sent_msg->next_timestamp.is_set());
-    ASSERT_EQ(sent_msg->data.as<std::string>(), "test");
-    ASSERT_TRUE(sent_msg->settings_overlay.is_a<Settings>());
+    connected_communicator_.receive_message("in");
+
+    ASSERT_FALSE(mock_ports_.at("in")->is_open());
 }
 
-TEST_F(libmuscle_communicator, send_on_disconnected_port) {
-    auto comm = connected_communicator();
+TEST_F(libmuscle_communicator2, receive_close_port_vector) {
+    MPPMessage msg(
+            "peer2.out_v", "component.in_v", 5, std::numeric_limits<double>::infinity(),
+            {}, Settings(), 0, 3.5, ClosePort());
 
-    comm->peer_info_->is_connected.return_value = false;
+    MockMPPClient::return_value.receive.return_value = std::make_tuple(
+            msg.encoded(), ProfileData());
 
-    Message message(0.0, "test", Settings());
-    comm->send_message("not_connected", message);
+    connected_communicator_.receive_message("in_v", 5);
+
+    ASSERT_FALSE(mock_ports_["in_v"]->is_open(5));
 }
 
-TEST_F(libmuscle_communicator, send_on_invalid_port) {
-    auto comm = connected_communicator();
-    Message message(0.0, "test", Settings());
-    ASSERT_THROW(comm->send_message("[$Invalid_id", message), std::invalid_argument);
-}
+TEST_F(libmuscle_communicator2, port_count_validation) {
+    MPPMessage msg(
+            "peer.out", "component.in",
+            {}, 0.0, {}, Settings({{"test1", 12}}), 0, 7.6, "test");
 
-TEST_F(libmuscle_communicator, send_msgpack) {
-    auto comm = connected_communicator();
+    MockMPPClient::return_value.receive.return_value = std::make_tuple(
+            msg.encoded(), ProfileData());
 
-    Message message(0.0, Data::dict("test", 17), Settings());
-    comm->send_message("out", message);
+    connected_communicator_.receive_message("in");
 
-    ASSERT_EQ(comm->post_office_.deposit.call_arg<0>(), "other.in[13]");
-    auto const & sent_msg = comm->post_office_.deposit.call_arg<1>();
-    ASSERT_EQ(sent_msg->sender, "kernel[13].out");
-    ASSERT_EQ(sent_msg->receiver, "other.in[13]");
-    ASSERT_EQ(sent_msg->timestamp, 0.0);
-    ASSERT_FALSE(sent_msg->next_timestamp.is_set());
-    ASSERT_EQ(sent_msg->data["test"].as<int>(), 17);
-    ASSERT_TRUE(sent_msg->settings_overlay.is_a<Settings>());
-}
-
-TEST_F(libmuscle_communicator, send_message_with_slot) {
-    auto comm = connected_communicator2();
-
-    Message message(0.0, "test", Settings());
-    comm->send_message("out", message, 13);
-
-    ASSERT_EQ(comm->post_office_.deposit.call_arg<0>(), "kernel[13].in");
-    auto const & sent_msg = comm->post_office_.deposit.call_arg<1>();
-    ASSERT_EQ(sent_msg->sender, "other.out[13]");
-    ASSERT_EQ(sent_msg->receiver, "kernel[13].in");
-    ASSERT_EQ(sent_msg->timestamp, 0.0);
-    ASSERT_FALSE(sent_msg->next_timestamp.is_set());
-    ASSERT_EQ(sent_msg->data.as<std::string>(), "test");
-    ASSERT_TRUE(sent_msg->settings_overlay.is_a<Settings>());
-}
-
-TEST_F(libmuscle_communicator, send_message_resizable) {
-    auto comm = connected_communicator3();
-    Message message(0.0, "test", Settings());
-
-    ASSERT_THROW(comm->send_message("out", message, 13), std::runtime_error);
-
-    comm->get_port("out").set_length(20);
-    comm->send_message("out", message, 13);
-
-    ASSERT_EQ(comm->post_office_.deposit.call_arg<0>(), "other.in[13]");
-    auto const & sent_msg = comm->post_office_.deposit.call_arg<1>();
-    ASSERT_EQ(sent_msg->sender, "kernel.out[13]");
-    ASSERT_EQ(sent_msg->receiver, "other.in[13]");
-    ASSERT_EQ(sent_msg->port_length.get(), 20);
-    ASSERT_EQ(sent_msg->timestamp, 0.0);
-    ASSERT_FALSE(sent_msg->next_timestamp.is_set());
-    ASSERT_EQ(sent_msg->data.as<std::string>(), "test");
-    ASSERT_TRUE(sent_msg->settings_overlay.is_a<Settings>());
-}
-
-TEST_F(libmuscle_communicator, send_with_settings) {
-    auto comm = connected_communicator();
-
-    Settings settings;
-    settings["test2"] = "testing";
-    Message message(0.0, "test", settings);
-    comm->send_message("out", message);
-
-    ASSERT_EQ(comm->post_office_.deposit.call_arg<0>(), "other.in[13]");
-    auto const & sent_msg = comm->post_office_.deposit.call_arg<1>();
-    ASSERT_EQ(sent_msg->sender, "kernel[13].out");
-    ASSERT_EQ(sent_msg->receiver, "other.in[13]");
-    ASSERT_EQ(sent_msg->timestamp, 0.0);
-    ASSERT_FALSE(sent_msg->next_timestamp.is_set());
-    ASSERT_EQ(sent_msg->data.as<std::string>(), "test");
-    ASSERT_TRUE(sent_msg->settings_overlay.is_a<Settings>());
-    ASSERT_EQ(sent_msg->settings_overlay.as<Settings>()["test2"], "testing");
-}
-
-TEST_F(libmuscle_communicator, send_settings) {
-    auto comm = connected_communicator();
-
-    Settings settings;
-    settings["test1"] = "testing";
-    Message message(0.0, settings, Settings());
-    comm->send_message("out", message);
-
-    ASSERT_EQ(comm->post_office_.deposit.call_arg<0>(), "other.in[13]");
-    auto const & sent_msg = comm->post_office_.deposit.call_arg<1>();
-    ASSERT_EQ(sent_msg->sender, "kernel[13].out");
-    ASSERT_EQ(sent_msg->receiver, "other.in[13]");
-    ASSERT_EQ(sent_msg->timestamp, 0.0);
-    ASSERT_FALSE(sent_msg->next_timestamp.is_set());
-    ASSERT_TRUE(sent_msg->data.is_a<Settings>());
-    ASSERT_EQ(sent_msg->data.as<Settings>()["test1"], "testing");
-    ASSERT_TRUE(sent_msg->settings_overlay.is_a<Settings>());
-}
-
-TEST_F(libmuscle_communicator, close_port) {
-    auto comm = connected_communicator();
-
-    comm->close_port("out");
-
-    ASSERT_EQ(comm->post_office_.deposit.call_arg<0>(), "other.in[13]");
-    auto const & sent_msg = comm->post_office_.deposit.call_arg<1>();
-    ASSERT_EQ(sent_msg->sender, "kernel[13].out");
-    ASSERT_EQ(sent_msg->receiver, "other.in[13]");
-    ASSERT_EQ(sent_msg->timestamp, std::numeric_limits<double>::infinity());
-    ASSERT_FALSE(sent_msg->next_timestamp.is_set());
-    ASSERT_TRUE(::libmuscle::_MUSCLE_IMPL_NS::is_close_port(sent_msg->data));
-}
-
-TEST_F(libmuscle_communicator, receive_message) {
-    next_received_message.sender = "other.out[13]";
-    next_received_message.receiver = "kernel[13].in";
-
-    auto comm = connected_communicator();
-    Message msg = comm->receive_message("in");
-
-    ASSERT_EQ(comm->clients_.at("other")->receive.call_arg<0>(), "kernel[13].in");
-    ASSERT_TRUE(msg.data().is_a_dict());
-    ASSERT_EQ(msg.data()["test1"].as<int>(), 12);
-}
-
-TEST_F(libmuscle_communicator, receive_message_default) {
-    MockPeerInfo::return_value.is_connected.return_value = false;
-
-    Message default_msg(3.0, 4.0, "test");
-    auto comm = connected_communicator();
-    Message msg = comm->receive_message("not_connected", {}, default_msg);
-
-    ASSERT_EQ(msg.timestamp(), 3.0);
-    ASSERT_EQ(msg.next_timestamp(), 4.0);
-    ASSERT_EQ(msg.data().as<std::string>(), "test");
-    ASSERT_FALSE(msg.has_settings());
-}
-
-TEST_F(libmuscle_communicator, receive_message_no_default) {
-    MockPeerInfo::return_value.is_connected.return_value = false;
-
-    auto comm = connected_communicator();
-    ASSERT_THROW(comm->receive_message("not_connected"), std::runtime_error);
-}
-
-TEST_F(libmuscle_communicator, receive_on_invalid_port) {
-    auto comm = connected_communicator();
-    ASSERT_THROW(comm->receive_message("@$Invalid_id"), std::invalid_argument);
-}
-
-TEST_F(libmuscle_communicator, receive_message_with_slot) {
-    next_received_message.sender = "kernel[13].out";
-    next_received_message.receiver = "other.in[13]";
-
-    auto comm = connected_communicator2();
-    Message msg = comm->receive_message("in", 13);
-
-    ASSERT_EQ(comm->clients_.at("kernel[13]")->receive.call_arg<0>(), "other.in[13]");
-    ASSERT_TRUE(msg.data().is_a_dict());
-    ASSERT_EQ(msg.data()["test1"].as<int>(), 12);
-}
-
-TEST_F(libmuscle_communicator, receive_message_resizable) {
-    next_received_message.sender = "other.out[13]";
-    next_received_message.receiver = "kernel.in[13]";
-    next_received_message.port_length = 20;
-
-    auto comm = connected_communicator3();
-    Message msg = comm->receive_message("in", 13);
-
-    ASSERT_EQ(comm->clients_.at("other")->receive.call_arg<0>(), "kernel.in[13]");
-    ASSERT_TRUE(msg.data().is_a_dict());
-    ASSERT_EQ(msg.data()["test1"].as<int>(), 12);
-    ASSERT_EQ(comm->get_port("in").get_length(), 20);
-}
-
-TEST_F(libmuscle_communicator, receive_with_settings) {
-    next_received_message.sender = "other.out[13]";
-    next_received_message.receiver = "kernel[13].in";
-
-    auto comm = connected_communicator();
-    Message msg = comm->receive_message("in");
-
-    ASSERT_EQ(comm->clients_.at("other")->receive.call_arg<0>(), "kernel[13].in");
-    ASSERT_TRUE(msg.data().is_a_dict());
-    ASSERT_EQ(msg.data()["test1"].as<int>(), 12);
-    ASSERT_EQ(msg.settings().at("test2").as<double>(), 3.1);
-}
-
-TEST_F(libmuscle_communicator, receive_message_with_slot_and_settings) {
-    next_received_message.sender = "kernel[13].out";
-    next_received_message.receiver = "other.in[13]";
-
-    auto comm = connected_communicator2();
-    Message msg = comm->receive_message("in", 13);
-
-    ASSERT_EQ(comm->clients_.at("kernel[13]")->receive.call_arg<0>(), "other.in[13]");
-    ASSERT_TRUE(msg.data().is_a_dict());
-    ASSERT_EQ(msg.data()["test1"].as<int>(), 12);
-    ASSERT_EQ(msg.settings().at("test2"), 3.1);
-}
-
-TEST_F(libmuscle_communicator, port_message_counts) {
-    auto comm = connected_communicator();
-
-    Message message(0.0, "test", Settings());
-    comm->send_message("out", message);
-
-    auto msg_counts = comm->get_message_counts();
-    ASSERT_EQ(msg_counts.size(), 3);
-    ASSERT_EQ(msg_counts["out"], std::vector<int>({1}));
-    ASSERT_EQ(msg_counts["in"], std::vector<int>({0}));
-    ASSERT_EQ(msg_counts["muscle_settings_in"], std::vector<int>({0}));
-
-    comm->restore_message_counts({
-            {"out", {3}},
-            {"in", {2}},
-            {"muscle_settings_in", {4}}});
-    comm->send_message("out", message);
-    msg_counts = comm->get_message_counts();
-    ASSERT_EQ(msg_counts.size(), 3);
-    ASSERT_EQ(msg_counts["out"], std::vector<int>({4}));
-    ASSERT_EQ(msg_counts["in"], std::vector<int>({2}));
-    ASSERT_EQ(msg_counts["muscle_settings_in"], std::vector<int>({4}));
-
-    ASSERT_THROW(
-            comm->restore_message_counts({{"x?invalid_port", {3}}}),
-            std::runtime_error);
-}
-
-TEST_F(libmuscle_communicator, vector_port_message_counts) {
-    auto comm = connected_communicator2();
-
-    auto msg_counts = comm->get_message_counts();
-    ASSERT_EQ(msg_counts.size(), 3);
-    std::vector<int> expected_counts(20);  // 20 zeros
-    ASSERT_EQ(msg_counts["out"], expected_counts);
-    ASSERT_EQ(msg_counts["in"], expected_counts);
-    ASSERT_EQ(msg_counts["muscle_settings_in"], std::vector<int>({0}));
-
-    Message message(0.0, "test", Settings());
-    comm->send_message("out", message, 13);
-    msg_counts = comm->get_message_counts();
-    ASSERT_EQ(msg_counts.size(), 3);
-    ASSERT_EQ(msg_counts["in"], expected_counts);
-    ASSERT_EQ(msg_counts["muscle_settings_in"], std::vector<int>({0}));
-    expected_counts[13] = 1;
-    ASSERT_EQ(msg_counts["out"], expected_counts);
-
-    std::iota(expected_counts.begin(), expected_counts.end(), 0);
-    // expected_counts = {0, 1, ..., 19}
-    comm->restore_message_counts({
-            {"out", expected_counts},
-            {"in", expected_counts},
-            {"muscle_settings_in", {4}}});
-    comm->send_message("out", message, 13);
-    msg_counts = comm->get_message_counts();
-    ASSERT_EQ(msg_counts.size(), 3);
-    ASSERT_EQ(msg_counts["in"], expected_counts);
-    ASSERT_EQ(msg_counts["muscle_settings_in"], std::vector<int>({4}));
-    expected_counts[13] = 14;
-    ASSERT_EQ(msg_counts["out"], expected_counts);
-}
-
-TEST_F(libmuscle_communicator, port_count_validation) {
-    next_received_message.sender = "other.out[13]";
-    next_received_message.receiver = "kernel[13].in";
-
-    auto comm = connected_communicator();
-    Message msg = comm->receive_message("in");
-
-    ASSERT_EQ(comm->get_message_counts()["in"], std::vector<int>({1}));
+    ASSERT_EQ(
+            connected_port_manager_.get_port("in").get_message_counts(),
+            std::vector<int>({1}));
 
     // the message received has message_number = 0 again
-    ASSERT_THROW(comm->receive_message("in"), std::runtime_error);
+    ASSERT_THROW(connected_communicator_.receive_message("in"), std::runtime_error);
 }
 
-TEST_F(libmuscle_communicator, port_discard_error_on_resume) {
-    next_received_message.sender = "other.out[13]";
-    next_received_message.receiver = "kernel[13].in";
-    next_received_message.message_number = 1;
+TEST_F(libmuscle_communicator2, port_discard_error_on_resume) {
+    MPPMessage msg(
+            "other.out[13]", "kernel[13].in",
+            {}, 0.0, {}, Settings({{"test1", 12}}), 1, 2.3, "test");
 
-    auto comm = connected_communicator();
+    MockMPPClient::return_value.receive.return_value = std::make_tuple(
+            msg.encoded(), ProfileData());
 
-    comm->restore_message_counts({
-            {"out", {0}},
-            {"in", {2}},
-            {"muscle_settings_in", {0}}});
-    auto & ports = comm->ports_;
-    for (auto const & port : ports) {
-        ASSERT_TRUE(port.second.is_resuming());
+    connected_port_manager_.get_port("out").restore_message_counts({0});
+    connected_port_manager_.get_port("in").restore_message_counts({2});
+
+    for (auto & port : {"out", "in"}) {
+        ASSERT_EQ(
+                connected_port_manager_.get_port(port).is_resuming_,
+                std::vector<bool>({true}));
+        ASSERT_TRUE(connected_port_manager_.get_port(port).is_resuming());
     }
 
     // In the next block, the first message with message_number=1 is discarded.
     // The RuntimeError is raised when 'receiving' the second message with
     // message_number=1
-    ASSERT_THROW(comm->receive_message("in"), std::runtime_error);
-    // TODO: test that a debug message was logged?
+    ASSERT_THROW(connected_communicator_.receive_message("in"), std::runtime_error);
+    bool message_logged = false;
+    for (auto const & log_args : logger_.caplog.call_args_list) {
+        auto const & msg = std::get<1>(log_args);
+        if (msg.find("Discarding received message") != msg.npos) {
+            message_logged = true;
+            break;
+        }
+    }
+    ASSERT_TRUE(message_logged);
 }
 
-TEST_F(libmuscle_communicator, port_discard_success_on_resume) {
-    next_received_message.sender = "other.out[13]";
-    next_received_message.receiver = "kernel[13].in";
-    next_received_message.message_number = 1;
-    next_received_message.timestamp = 1.0;
-
-    auto & ret_val = MockMPPClient::return_value;
-
-    using RecvRet = std::tuple<
-        std::vector<char>, std::tuple<
-            ProfileTimestamp, ProfileTimestamp, ProfileTimestamp>>;
-
-    ret_val.receive.side_effect = [this](Reference const &) -> RecvRet {
-        // ensure message_number increases after every receive()
-        next_received_message.message_number++;
-        next_received_message.timestamp += 1.0;
-        return std::make_tuple(
-                next_received_message.encoded(), std::make_tuple(
-                    ProfileTimestamp(1.0), ProfileTimestamp(2.0),
-                    ProfileTimestamp(3.0)));
-    };
-
-    auto comm = connected_communicator();
-
-    comm->restore_message_counts({
-            {"out", {0}},
-            {"in", {2}},
-            {"muscle_settings_in", {0}}});
-    auto & ports = comm->ports_;
-    for (auto const & port : ports) {
-        ASSERT_TRUE(port.second.is_resuming());
+TEST_F(libmuscle_communicator2, port_discard_success_on_resume) {
+    // TODO: add support to the mocking framework for assigning a vector of results
+    // to side_effect? But call it return_values so it actually makes sense.
+    std::vector<MPPMessage> side_effect;
+    for (int message_number : {1, 2}) {
+        side_effect.push_back(MPPMessage(
+                "other.out[13]", "kernel[13].in",
+                {}, 0.0, {}, Settings({{"test1", 12}}), message_number, 1.0,
+                Data::dict("this is message", message_number)));
     }
 
-    auto msg = comm->receive_message("in");
-    // TODO: test that a debug message was logged?
-    ASSERT_EQ(msg.timestamp(), 2.0);
-    ASSERT_EQ(comm->get_message_counts()["in"], std::vector<int>({3}));
+    int count = 0;
+
+    MockMPPClient::return_value.receive.side_effect = [&](Reference const &) {
+        return std::make_tuple(
+                side_effect.at(count++).encoded(), ProfileData());
+    };
+
+    connected_port_manager_.get_port("out").restore_message_counts({0});
+    connected_port_manager_.get_port("in").restore_message_counts({2});
+
+    for (auto const & port : {"out", "in"}) {
+        ASSERT_EQ(
+                connected_port_manager_.get_port(port).is_resuming_,
+                std::vector<bool>({true}));
+        ASSERT_TRUE(connected_port_manager_.get_port(port).is_resuming());
+    }
+
+    auto recv_msg_saved_until = connected_communicator_.receive_message("in");
+    auto const & recv_msg = std::get<0>(recv_msg_saved_until);
+
+    bool message_logged = false;
+    for (auto const & log_args : logger_.caplog.call_args_list) {
+        auto const & log_msg = std::get<1>(log_args);
+        if (log_msg.find("Discarding received message") != log_msg.npos) {
+            message_logged = true;
+            break;
+        }
+    }
+    ASSERT_TRUE(message_logged);
+
+    // message_number=1 should have been discarded
+    ASSERT_EQ(recv_msg.data()["this is message"].as<int>(), 2);
+    ASSERT_EQ(
+            connected_communicator_.port_manager_.get_port("in").get_message_counts(),
+            std::vector<int>({3}));
 }
+
+TEST_F(libmuscle_communicator2, test_shutdown) {
+    std::unordered_map<Reference, std::unique_ptr<MPPMessage>> messages;
+
+    messages["component.in"] = std::make_unique<MPPMessage>(
+            "peer.out", "component.in", Optional<int>(),
+            std::numeric_limits<double>::infinity(), Optional<double>(), Settings(),
+            0, 0.0, ClosePort());
+
+    std::vector<std::tuple<std::string, std::string, std::string>> port_sender({
+            {"in_v", "peer2[", "].out_v"},
+            {"in_r", "peer3.out[", "]"}});
+
+    for (auto const & port_name_sender : port_sender) {
+        auto const & port_name = std::get<0>(port_name_sender);
+        auto const & snd1 = std::get<1>(port_name_sender);
+        auto const & snd2 = std::get<2>(port_name_sender);
+
+        auto & port = connected_port_manager_.get_port(port_name);
+        for (int slot = 0; slot < port.get_length(); ++slot) {
+            Reference sender(snd1 + std::to_string(slot) + snd2);
+            Reference receiver("component." + port_name + "[" + std::to_string(slot) + "]");
+            messages[receiver] = std::make_unique<MPPMessage>(
+                    sender, receiver, slot, std::numeric_limits<double>::infinity(),
+                    Optional<double>(), Settings(), 0, 3.5,
+                    ClosePort());
+        }
+    }
+
+    MockMPPClient::return_value.receive.side_effect = [&](Reference const & receiver) {
+        return std::make_tuple(messages.at(receiver)->encoded(), ProfileData());
+    };
+
+    connected_communicator_.shutdown();
+
+    std::unordered_set<Reference> expected_receivers({"peer.in"});
+    auto const & pm = connected_port_manager_;
+    for (int slot = 0; slot < pm.get_port("out_v").get_length(); ++slot)
+        expected_receivers.emplace("peer2[" + std::to_string(slot) + "].in");
+    for (int slot = 0; slot < pm.get_port("out_r").get_length(); ++slot)
+        expected_receivers.emplace("peer3.in[" + std::to_string(slot) + "]");
+
+    auto const & po = connected_communicator_.post_office_;
+    for (auto const & args: po.deposit.call_args_list) {
+        ASSERT_TRUE(expected_receivers.count(std::get<0>(args)));
+        std::shared_ptr<MPPMessage> msg = std::get<1>(args);
+        ASSERT_TRUE(is_close_port(msg->data));
+        expected_receivers.erase(std::get<0>(args));
+    }
+
+    ASSERT_TRUE(expected_receivers.empty());
+}
+

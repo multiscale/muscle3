@@ -33,7 +33,8 @@ class MockMMPClient : public MockClass<MockMMPClient> {
             NAME_MOCK_MEM_FUN(MockMMPClient, request_peers);
             NAME_MOCK_MEM_FUN(MockMMPClient, deregister_instance);
 
-            // default return value for request_peers
+            // Create some empty return objects for return values with a complex
+            // structure, to make it easier to set them in the tests or fixtures.
             std::vector<::ymmsl::Conduit> conduits;
             std::unordered_map<::ymmsl::Reference, std::vector<int>> peer_dimensions;
             std::unordered_map<::ymmsl::Reference, std::vector<std::string>> peer_locations;
@@ -42,11 +43,7 @@ class MockMMPClient : public MockClass<MockMMPClient> {
                     std::move(peer_dimensions),
                     std::move(peer_locations));
 
-            // default return value for get_settings
-            ymmsl::Settings settings;
-            settings["test_int"] = 10;
-            settings["test_string"] = "testing";
-            get_settings.return_value = settings;
+            get_settings.return_value = ymmsl::Settings();
 
             get_checkpoint_info.return_value = std::make_tuple(
                     0.1,

@@ -1,8 +1,14 @@
 #pragma once
 
 #include <cstddef>
+#include <exception>
 #include <ostream>
+#include <stdexcept>
 #include <string>
+
+#ifdef MUSCLE_ENABLE_MPI
+#include <mpi.h>
+#endif
 
 #include <libmuscle/namespace.hpp>
 
@@ -21,14 +27,80 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
  * as the name of the log file to write to. If no command line
  * argument is given, this function returns None.
 
- * Args:
- *     filename: Default file name to use.
- *
- * Returns:
- *     Path to the log file to write.
+ * @param filename Default file name to use.
+ * @return Path to the log file to write.
  */
 std::string extract_log_file_location(
         int argc, char const * const argv[], std::string const & filename);
+
+
+/* Helper for errors and MPI.
+ *
+ * When running with MPI, we sometimes do things only on the root process. If a
+ * fatal error occurs in that case, then we need to propagate at least the fact that
+ * it happened to the other processes so that we can shut down cleanly. This is a
+ * helper for that.
+ */
+class Error {
+    public:
+        /* Create an Error representing success.
+         */
+        Error();
+
+        /* Create an Error from the given exception object.
+         *
+         * The exception must be either std::logic_error or std::runtime_error.
+         *
+         * @param exc Exception to represent.
+         */
+        Error(std::exception const & exc);
+
+#ifdef MUSCLE_ENABLE_MPI
+        /* Broadcast the error to all MPI processes.
+         *
+         * There's no way to broadcast the message, as it will only get logged on the
+         * root anyway.
+         *
+         * @param comm Communicator to broadcast on.
+         * @param root Rank of the process holding the value.
+         */
+        void bcast(MPI_Comm & comm, int root = 0) const;
+#endif
+
+        /* Returns whether this object represents an error condition.
+         *
+         * @return True iff there was an error.
+         */
+        bool is_error() const;
+
+        /* Returns the error message.
+         *
+         * @return The stored error message.
+         */
+        std::string const & get_message() const;
+
+        /* Throw an exception equivalent to the one passed to the constructor.
+         *
+         * If this object represents success, then this function does nothing.
+         */
+        void throw_if_error() const;
+
+    private:
+        /* Type of exception this represents
+         *
+         * 0 = success, 1 = std::logic_error, 2 = std::runtime_error.
+         *
+         * Not using an enum here (or an exception object) because MPI doesn't
+         * understand them, so we cannot broadcast them.
+         */
+        int type_;
+
+        /* Description of the problem
+         *
+         * This is non-empty only on the root process and if type is not 0.
+         */
+        std::string message_;
+};
 
 
 /* An optional type template.

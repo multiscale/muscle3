@@ -24,11 +24,11 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 SnapshotManager::SnapshotManager(
             ymmsl::Reference const & instance_id,
             MMPClient & manager,
-            Communicator & communicator,
+            PortManager & port_manager,
             Logger & logger)
         : instance_id_(instance_id)
         , manager_(manager)
-        , communicator_(communicator)
+        , port_manager_(port_manager)
         , logger_(logger)
         , resume_from_snapshot_()
         , resume_overlay_()
@@ -95,7 +95,7 @@ Optional<double> SnapshotManager::prepare_resume(
         }
         resume_overlay_ = snapshot.settings_overlay;
 
-        communicator_.restore_message_counts(snapshot.port_message_counts);
+        port_manager_.restore_message_counts(snapshot.port_message_counts);
         // Store a copy of the snapshot in the current run directory
         auto path = store_snapshot_(snapshot);
         auto metadata = SnapshotMetadata::from_snapshot(snapshot, path);
@@ -126,13 +126,13 @@ double SnapshotManager::save_snapshot(
         std::vector<std::string> const & triggers, double wallclock_time,
         Optional<double> f_init_max_timestamp,
         ::ymmsl::Settings settings_overlay) {
-    auto port_message_counts = communicator_.get_message_counts();
+    auto port_message_counts = port_manager_.get_message_counts();
 
     if (is_final) {
         // Decrease F_INIT port counts by one: F_INIT messages are already
         // pre-received, but not yet processed by the user code. Therefore,
         // the snapshot state should treat these as not-received.
-        auto all_ports = communicator_.list_ports();
+        auto all_ports = port_manager_.list_ports();
         auto ports = all_ports.find(::ymmsl::Operator::F_INIT);
         if (ports != all_ports.end()) {
             for (auto const & port_name : ports->second) {
@@ -141,7 +141,7 @@ double SnapshotManager::save_snapshot(
                 }
             }
         }
-        if (communicator_.settings_in_connected()) {
+        if (port_manager_.settings_in_connected()) {
             for (auto & count : port_message_counts["muscle_settings_in"]) {
                 --count;
             }

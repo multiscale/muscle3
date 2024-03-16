@@ -14,6 +14,7 @@ class PortManager:
         """Create a PortManager.
 
         Args:
+            index: The index of this instance.
             declared_ports: The ports this instance has, as declared by the
                     user when creating the Instance object.
         """
@@ -40,11 +41,11 @@ class PortManager:
         with them.
 
         Args:
-            conduits: List of conduits connected to this instance.
+            peer_info: Information about our peers from the manager.
         """
         self._muscle_settings_in = self._settings_in_port(peer_info)
         if self._declared_ports:
-            self._ports = self._ports_from_declared(self._declared_ports, peer_info)
+            self._ports = self._ports_from_declared(peer_info)
         else:
             self._ports = self._ports_from_conduits(peer_info)
 
@@ -136,21 +137,20 @@ class PortManager:
         return Port(
                 str(msi), Operator.F_INIT, False, False, len(self._index), [])
 
-    def _ports_from_declared(
-            self, declared_ports: Dict[Operator, List[str]], peer_info: PeerInfo
-            ) -> Dict[str, Port]:
+    def _ports_from_declared(self, peer_info: PeerInfo) -> Dict[str, Port]:
         """Derives port definitions from supplied declaration.
 
         Args:
-            declared_ports: Ports as declared by the user.
             peer_info: Information about our peers from the manager.
 
         Returns:
             A dictionary keyed by port name containing corresponding Port
                     objects.
         """
+        assert self._declared_ports is not None
+
         ports = dict()
-        for operator, port_list in declared_ports.items():
+        for operator, port_list in self._declared_ports.items():
             for port_desc in port_list:
                 port_name, is_vector = self._split_port_desc(port_desc)
                 if port_name.startswith('muscle_'):
@@ -187,25 +187,25 @@ class PortManager:
         Args:
             peer_info: Information about our peers from the manager.
         """
-        def make_port(
-                port_id: Identifier, operator: Operator, peer_dims: List[int]) -> Port:
-            ndims = max(0, len(peer_dims) - len(self._index))
-            is_vector = (ndims == 1)
-            is_connected = peer_info.is_connected(port_id)
-            return Port(
-                    str(port_id), operator, is_vector, is_connected,
-                    len(self._index), peer_dims)
-
         ports = dict()
+
+        def make_port(
+                port_id: Identifier, operator: Operator, peer_dims: List[int]) -> None:
+            if not str(port_id).startswith('muscle_'):
+                ndims = max(0, len(peer_dims) - len(self._index))
+                is_vector = (ndims == 1)
+                is_connected = peer_info.is_connected(port_id)
+                ports[str(port_id)] = Port(
+                        str(port_id), operator, is_vector, is_connected,
+                        len(self._index), peer_dims)
+
         for port_id, sender_ref in peer_info.list_incoming_ports():
             peer_dims = peer_info.get_peer_dims(sender_ref[:-1])
-            if not str(port_id).startswith('muscle_'):
-                ports[str(port_id)] = make_port(port_id, Operator.F_INIT, peer_dims)
+            make_port(port_id, Operator.F_INIT, peer_dims)
 
         for port_id, receiver_refs in peer_info.list_outgoing_ports():
             peer_dims = peer_info.get_peer_dims(receiver_refs[0][:-1])
-            if not str(port_id).startswith('muscle_'):
-                ports[str(port_id)] = make_port(port_id, Operator.O_F, peer_dims)
+            make_port(port_id, Operator.O_F, peer_dims)
 
         return ports
 

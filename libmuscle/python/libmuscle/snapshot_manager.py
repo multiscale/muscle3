@@ -43,7 +43,7 @@ class SnapshotManager:
         self._manager = manager
 
         self._resume_from_snapshot: Optional[Snapshot] = None
-        self.resume_overlay = Settings()
+        self.resume_overlay: Optional[Settings] = None
         self._next_snapshot_num = 1
 
     def prepare_resume(

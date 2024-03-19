@@ -40,17 +40,12 @@ Communicator::Communicator(
     , port_manager_(port_manager)
     , logger_(logger)
     , profiler_(profiler)
-    , servers_()
+    , server_()
     , clients_()
-{
-    servers_.emplace_back(new TcpTransportServer(post_office_));
-}
+{}
 
 std::vector<std::string> Communicator::get_locations() const {
-    std::vector<std::string> result;
-    for (auto const & server : servers_)
-        result.emplace_back(server->get_location());
-    return result;
+    return server_.get_locations();
 }
 
 void Communicator::set_peer_info(PeerInfo const & peer_info) {
@@ -104,7 +99,7 @@ void Communicator::send_message(
 
         auto message_bytes = mpp_message.encoded();
         profile_event.message_size = message_bytes.size();
-        post_office_.deposit(recv_endpoint.ref(), std::move(message_bytes));
+        server_.deposit(recv_endpoint.ref(), std::move(message_bytes));
     }
 
     port.increment_num_messages(slot);
@@ -250,12 +245,11 @@ void Communicator::shutdown() {
         client.second->close();
 
     ProfileEvent wait_event(ProfileEventType::disconnect_wait, ProfileTimestamp());
-    post_office_.wait_for_receivers();
+    server_.wait_for_receivers();
     profiler_.record_event(std::move(wait_event));
 
     ProfileEvent shutdown_event(ProfileEventType::shutdown, ProfileTimestamp());
-    for (auto & server : servers_)
-        server->close();
+    server_.shutdown();
     profiler_.record_event(std::move(shutdown_event));
 }
 

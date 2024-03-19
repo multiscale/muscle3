@@ -2,6 +2,7 @@
 #include <msgpack.hpp>
 
 #include <libmuscle/mpp_message.hpp>
+#include <libmuscle/mpp_server.hpp>
 #include <libmuscle/mcp/tcp_transport_server.hpp>
 #include <libmuscle/mpp_client.hpp>
 
@@ -19,6 +20,7 @@ using libmuscle::_MUSCLE_IMPL_NS::Data;
 using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
 using libmuscle::_MUSCLE_IMPL_NS::MPPMessage;
 using libmuscle::_MUSCLE_IMPL_NS::MPPClient;
+using libmuscle::_MUSCLE_IMPL_NS::MPPRequestHandler;
 using libmuscle::_MUSCLE_IMPL_NS::mcp::TcpTransportServer;
 using libmuscle::_MUSCLE_IMPL_NS::PostOffice;
 
@@ -32,6 +34,7 @@ int main(int argc, char *argv[]) {
 
 TEST(test_tcp_communication, send_receive) {
     PostOffice post_office;
+    MPPRequestHandler handler(post_office);
     Reference receiver("test_receiver.port");
 
     MPPMessage msg(
@@ -41,7 +44,7 @@ TEST(test_tcp_communication, send_receive) {
             Data::dict("var1", 1, "var2", 2.0, "var3", "3"));
     post_office.deposit(receiver, msg.encoded());
 
-    TcpTransportServer server(post_office);
+    TcpTransportServer server(handler);
     std::vector<std::string> locations = {server.get_location()};
     MPPClient client(locations);
     auto bytes = std::get<0>(client.receive(receiver));

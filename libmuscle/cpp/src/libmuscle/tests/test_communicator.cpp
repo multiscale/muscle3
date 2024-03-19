@@ -2,9 +2,8 @@
 #define LIBMUSCLE_MOCK_LOGGER <mocks/mock_logger.hpp>
 #define LIBMUSCLE_MOCK_MMP_CLIENT <mocks/mock_mmp_client.hpp>
 #define LIBMUSCLE_MOCK_MPP_CLIENT <mocks/mock_mpp_client.hpp>
-#define LIBMUSCLE_MOCK_MCP_TCP_TRANSPORT_SERVER <mocks/mcp/mock_tcp_transport_server.hpp>
+#define LIBMUSCLE_MOCK_MPP_SERVER <mocks/mock_mpp_server.hpp>
 #define LIBMUSCLE_MOCK_PORT_MANAGER <mocks/mock_port_manager.hpp>
-#define LIBMUSCLE_MOCK_POST_OFFICE <mocks/mock_post_office.hpp>
 #define LIBMUSCLE_MOCK_PROFILER <mocks/mock_profiler.hpp>
 
 // into the real implementation under test.
@@ -16,10 +15,8 @@
 #include <libmuscle/endpoint.cpp>
 #include <libmuscle/mcp/data_pack.cpp>
 #include <libmuscle/mpp_message.cpp>
-#include <libmuscle/mcp/tcp_transport_client.cpp>
 #include <libmuscle/mcp/tcp_util.cpp>
 #include <libmuscle/mcp/transport_client.cpp>
-#include <libmuscle/mcp/transport_server.cpp>
 #include <libmuscle/message.cpp>
 #include <libmuscle/peer_info.cpp>
 #include <libmuscle/port.cpp>
@@ -35,7 +32,7 @@
 #include <fixtures.hpp>
 #include <mocks/mock_mmp_client.hpp>
 #include <mocks/mock_mpp_client.hpp>
-#include <mocks/mcp/mock_tcp_transport_server.hpp>
+#include <mocks/mock_mpp_server.hpp>
 #include <mocks/mock_logger.hpp>
 #include <mocks/mock_profiler.hpp>
 
@@ -51,13 +48,12 @@ using libmuscle::_MUSCLE_IMPL_NS::Data;
 using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
 using libmuscle::_MUSCLE_IMPL_NS::Endpoint;
 using libmuscle::_MUSCLE_IMPL_NS::is_close_port;
-using libmuscle::_MUSCLE_IMPL_NS::mcp::MockTcpTransportServer;
 using libmuscle::_MUSCLE_IMPL_NS::Message;
 using libmuscle::_MUSCLE_IMPL_NS::MockLogger;
 using libmuscle::_MUSCLE_IMPL_NS::MockMMPClient;
 using libmuscle::_MUSCLE_IMPL_NS::MockMPPClient;
+using libmuscle::_MUSCLE_IMPL_NS::MockMPPServer;
 using libmuscle::_MUSCLE_IMPL_NS::MockPortManager;
-using libmuscle::_MUSCLE_IMPL_NS::MockPostOffice;
 using libmuscle::_MUSCLE_IMPL_NS::MockProfiler;
 using libmuscle::_MUSCLE_IMPL_NS::MPPMessage;
 using libmuscle::_MUSCLE_IMPL_NS::Optional;
@@ -78,8 +74,7 @@ struct libmuscle_communicator
         , ::testing::Test
 {
     RESET_MOCKS(
-            MockLogger, MockMMPClient, MockMPPClient, MockPostOffice, MockProfiler,
-            MockTcpTransportServer);
+            MockLogger, MockMMPClient, MockMPPClient, MockMPPServer, MockProfiler);
 
     MockLogger logger_;
     MockProfiler profiler_;
@@ -91,9 +86,6 @@ struct libmuscle_communicator
         : communicator_("component", {}, connected_port_manager_, logger_, profiler_)
     {
         port_manager_.settings_in_connected.return_value = false;
-        dynamic_cast<MockTcpTransportServer&>(
-                *communicator_.servers_.back()
-                ).get_location_mock.return_value = "tcp:testing:9001";
     }
 };
 
@@ -135,20 +127,15 @@ struct libmuscle_communicator2 : libmuscle_communicator {
 /* Tests */
 TEST_F(libmuscle_communicator, create_communicator) {}
 
-TEST_F(libmuscle_communicator, get_locations) {
-    ASSERT_EQ(communicator_.get_locations().size(), 1);
-    ASSERT_EQ(communicator_.get_locations()[0], "tcp:testing:9001");
-}
-
 TEST_F(libmuscle_communicator2, send_message) {
     Message msg(0.0, 1.0, "test", Settings({{"s0", 0}, {"s1", "1"}}));
 
     connected_communicator_.send_message("out_v", msg, 7, -1.0);
 
-    auto & post_office = communicator_.post_office_;
-    ASSERT_EQ(post_office.deposit.call_arg<0>(), "peer2[7].in");
+    auto & server = communicator_.server_;
+    ASSERT_EQ(server.deposit.call_arg<0>(), "peer2[7].in");
 
-    auto const & encoded_msg = *communicator_.post_office_.deposit.call_arg<1>();
+    auto const & encoded_msg = *server.deposit.call_arg<1>();
     ASSERT_EQ(encoded_msg.sender, "component.out_v[7]");
     ASSERT_EQ(encoded_msg.receiver, "peer2[7].in");
     ASSERT_EQ(encoded_msg.timestamp, 0.0);
@@ -166,7 +153,7 @@ TEST_F(libmuscle_communicator2, send_message_disconnected) {
 
     connected_communicator_.send_message("not_connected", msg);
 
-    ASSERT_FALSE(communicator_.post_office_.deposit.called());
+    ASSERT_FALSE(communicator_.server_.deposit.called());
 }
 
 TEST_F(libmuscle_communicator2, receive_message) {
@@ -381,8 +368,8 @@ TEST_F(libmuscle_communicator2, test_shutdown) {
     for (int slot = 0; slot < pm.get_port("out_r").get_length(); ++slot)
         expected_receivers.emplace("peer3.in[" + std::to_string(slot) + "]");
 
-    auto const & po = connected_communicator_.post_office_;
-    for (auto const & args: po.deposit.call_args_list) {
+    auto const & srv = connected_communicator_.server_;
+    for (auto const & args: srv.deposit.call_args_list) {
         ASSERT_TRUE(expected_receivers.count(std::get<0>(args)));
         std::shared_ptr<MPPMessage> msg = std::get<1>(args);
         ASSERT_TRUE(is_close_port(msg->data));

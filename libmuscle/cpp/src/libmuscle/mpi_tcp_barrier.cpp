@@ -25,10 +25,9 @@ MPITcpBarrier::MPITcpBarrier(MPI_Comm const & communicator, int root)
     MPI_Comm_dup(communicator, &mpi_comm_);
 
     if (is_root()) {
-        post_office_ = std::make_unique<PostOffice>();
-        server_ = std::make_unique<TcpTransportServer>(*post_office_);
+        server_ = std::make_unique<MPPServer>();
 
-        std::string addr = server_->get_location();
+        std::string addr = server_->get_locations().front();
         int addr_size = addr.size();
         MPI_Bcast(&addr_size, 1, MPI_INT, root_, mpi_comm_);
         MPI_Bcast(&addr[0], addr_size, MPI_SIGNED_CHAR, root_, mpi_comm_);
@@ -45,7 +44,7 @@ MPITcpBarrier::MPITcpBarrier(MPI_Comm const & communicator, int root)
 
 void MPITcpBarrier::shutdown() {
     if (is_root())
-        server_->close();
+        server_->shutdown();
     else
         client_->close();
     MPI_Comm_free(&mpi_comm_);
@@ -73,7 +72,7 @@ void MPITcpBarrier::signal() {
             std::ostringstream oss;
             oss << "rank[" << i << "]";
             std::vector<char> msg;
-            post_office_->deposit(oss.str(), std::move(msg));
+            server_->deposit(oss.str(), std::move(msg));
         }
 }
 

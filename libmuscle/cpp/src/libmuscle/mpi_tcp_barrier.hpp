@@ -7,9 +7,8 @@
 #include <mpi.h>
 
 #include <libmuscle/mpp_client.hpp>
-#include <libmuscle/mcp/tcp_transport_server.hpp>
+#include <libmuscle/mpp_server.hpp>
 #include <libmuscle/namespace.hpp>
-#include <libmuscle/post_office.hpp>
 
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
@@ -56,8 +55,7 @@ class MPITcpBarrier {
         int root_;
         MPI_Comm mpi_comm_;
 
-        std::unique_ptr<PostOffice> post_office_;
-        std::unique_ptr<mcp::TcpTransportServer> server_;
+        std::unique_ptr<MPPServer> server_;
         std::unique_ptr<MPPClient> client_;
 };
 

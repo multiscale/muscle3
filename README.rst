@@ -5,7 +5,7 @@
     :target: https://muscle3.readthedocs.io/en/develop/?badge=develop
     :alt: Documentation Build Status
 
-.. image:: https://github.com/multiscale/muscle3/workflows/continuous_integration/badge.svg?branch=develop
+.. image:: https://github.com/multiscale/muscle3/actions/workflows/ci.yaml/badge.svg?branch=develop
     :target: https://github.com/multiscale/muscle3/actions
     :alt: Build Status
 

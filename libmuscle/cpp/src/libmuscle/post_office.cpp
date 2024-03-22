@@ -43,19 +43,9 @@ PostOffice::~PostOffice() {
         pipe.close();
 }
 
-int PostOffice::handle_request(
-        char const * req_buf, std::size_t req_len,
-        std::vector<char> & res_buf
+int PostOffice::try_retrieve(
+        ymmsl::Reference const & receiver, std::vector<char> & res_buf
 ) {
-    auto zone = std::make_shared<msgpack::zone>();
-    auto request = mcp::unpack_data(zone, req_buf, req_len);
-    if (
-            !request.is_a_list() || request.size() != 2 ||
-            (request[0].as<int>() != static_cast<int>(RequestType::get_next_message)))
-        throw std::runtime_error(
-                "Invalid request type. Did the streams get crossed?");
-
-    Reference receiver(request[1].as<std::string>());
     auto & outbox = get_outbox_(receiver);
 
     auto lock = outbox.lock();
@@ -72,7 +62,8 @@ int PostOffice::handle_request(
     }
 }
 
-std::vector<char> PostOffice::get_response(int fd) {
+
+std::vector<char> PostOffice::get_message(int fd) {
     Outbox * outbox = nullptr;
     {
         std::lock_guard<std::mutex> lock(outboxes_mutex_);

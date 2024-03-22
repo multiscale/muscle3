@@ -8,56 +8,21 @@
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/outbox.hpp>
 
+#include <libmuscle/tests/mocks/mock_encoded_message.hpp>
+#include <libmuscle/tests/mocks/mock_support.hpp>
+
 #include <memory>
-
-
-namespace mock_post_office {
-
-using ::libmuscle::_MUSCLE_IMPL_NS::MPPMessage;
-
-struct EncodedMessage {
-    using ArgType = std::vector<char> &&;
-    using StorageType = std::shared_ptr<MPPMessage>;
-
-    static StorageType arg_to_store(ArgType const & message) {
-        return std::make_shared<MPPMessage>(MPPMessage::from_bytes(message));
-    }
-};
-
-struct EncodedMessageRet {
-    using ArgType = std::vector<char>;
-    using StorageType = std::shared_ptr<MPPMessage>;
-
-    static StorageType arg_to_store(ArgType const & message) {
-        return std::make_shared<MPPMessage>(MPPMessage::from_bytes(message));
-    }
-
-    static ArgType store_to_arg(StorageType const & stored) {
-        return stored->encoded();
-    }
-};
-
-struct EncodedMessageOut {
-    using ArgType = std::vector<char> &;
-    using StorageType = std::vector<char> *;
-
-    static StorageType arg_to_store(ArgType const & buffer) {
-        return &buffer;
-    }
-};
-
-}
 
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 
-class MockPostOffice : public MockClass<MockPostOffice>, public mcp::RequestHandler {
+class MockPostOffice : public MockClass<MockPostOffice> {
     public:
         MockPostOffice(ReturnValue) {
             NAME_MOCK_MEM_FUN(MockPostOffice, constructor);
-            NAME_MOCK_MEM_FUN(MockPostOffice, handle_request_mock);
-            NAME_MOCK_MEM_FUN(MockPostOffice, get_response_mock);
+            NAME_MOCK_MEM_FUN(MockPostOffice, try_retrieve);
+            NAME_MOCK_MEM_FUN(MockPostOffice, get_message);
             NAME_MOCK_MEM_FUN(MockPostOffice, deposit);
             NAME_MOCK_MEM_FUN(MockPostOffice, wait_for_receivers);
         }
@@ -69,30 +34,14 @@ class MockPostOffice : public MockClass<MockPostOffice>, public mcp::RequestHand
 
         MockFun<Void> constructor;
 
-        /* Virtual member functions cannot be overridden by an object, so we override
-         * them with a function and then forward to the mock.
-         */
         MockFun<
-            Val<int>,
-            Val<char const *, const char *>, Val<std::size_t>,
-            ::mock_post_office::EncodedMessageOut
-        > handle_request_mock;
+            Val<int>, Val<ymmsl::Reference const &>,
+            ::mock_encoded_message::EncodedMessageOut> try_retrieve;
 
-        virtual int handle_request(
-                char const * req_buf, std::size_t req_len,
-                std::vector<char> & res_buf) override
-        {
-            return std::move(handle_request_mock(req_buf, req_len, res_buf));
-        }
-
-        MockFun<::mock_post_office::EncodedMessageRet, Val<int>> get_response_mock;
-
-        virtual std::vector<char> get_response(int fd) override {
-            return get_response_mock(fd);
-        }
+        MockFun<::mock_encoded_message::EncodedMessageRet, Val<int>> get_message;
 
         MockFun<Void,
-            Val<ymmsl::Reference const &>, ::mock_post_office::EncodedMessage
+            Val<ymmsl::Reference const &>, ::mock_encoded_message::EncodedMessage
         > deposit;
 
         MockFun<Void> wait_for_receivers;

@@ -5,11 +5,9 @@ from ymmsl import Identifier, Reference, Settings
 from libmuscle.endpoint import Endpoint
 from libmuscle.mpp_message import ClosePort, MPPMessage
 from libmuscle.mpp_client import MPPClient
+from libmuscle.mpp_server import MPPServer
 from libmuscle.mcp.tcp_util import SocketClosed
-from libmuscle.mcp.transport_server import TransportServer
-from libmuscle.mcp.type_registry import transport_server_types
 from libmuscle.peer_info import PeerInfo
-from libmuscle.post_office import PostOffice
 from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import (
@@ -89,17 +87,12 @@ class Communicator:
         self._kernel = kernel
         self._index = index
         self._port_manager = port_manager
-        self._post_office = PostOffice()
         self._profiler = profiler
 
-        self._servers: List[TransportServer] = []
+        self._server = MPPServer()
 
         # indexed by remote instance id
         self._clients: Dict[Reference, MPPClient] = {}
-
-        for server_type in transport_server_types:
-            server = server_type(self._post_office)
-            self._servers.append(server)
 
     def get_locations(self) -> List[str]:
         """Returns a list of locations that we can be reached at.
@@ -111,7 +104,7 @@ class Communicator:
         Returns:
             A list of strings describing network locations.
         """
-        return [server.get_location() for server in self._servers]
+        return self._server.get_locations()
 
     def set_peer_info(self, peer_info: PeerInfo) -> None:
         """Inform this Communicator about its peers.
@@ -173,7 +166,7 @@ class Communicator:
                                      checkpoints_considered_until,
                                      message.data)
             encoded_message = mpp_message.encoded()
-            self._post_office.deposit(recv_endpoint.ref(), encoded_message)
+            self._server.deposit(recv_endpoint.ref(), encoded_message)
 
         port.increment_num_messages(slot)
 
@@ -318,12 +311,11 @@ class Communicator:
             client.close()
 
         wait_event = ProfileEvent(ProfileEventType.DISCONNECT_WAIT, ProfileTimestamp())
-        self._post_office.wait_for_receivers()
+        self._server.wait_for_receivers()
         self._profiler.record_event(wait_event)
 
         shutdown_event = ProfileEvent(ProfileEventType.SHUTDOWN, ProfileTimestamp())
-        for server in self._servers:
-            server.close()
+        self._server.shutdown()
         self._profiler.record_event(shutdown_event)
 
     def __instance_id(self) -> Reference:

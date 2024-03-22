@@ -5,15 +5,14 @@
 #else
 
 #include <libmuscle/logger.hpp>
-#include <libmuscle/mcp/transport_server.hpp>
 #include <libmuscle/message.hpp>
 #include <libmuscle/mpp_client.hpp>
+#include <libmuscle/mpp_server.hpp>
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/peer_info.hpp>
 #include <libmuscle/port.hpp>
 #include <libmuscle/port_manager.hpp>
 #include <libmuscle/ports_description.hpp>
-#include <libmuscle/post_office.hpp>
 #include <libmuscle/profiler.hpp>
 #include <libmuscle/test_support.hpp>
 #include <libmuscle/util.hpp>
@@ -185,10 +184,9 @@ class Communicator {
         ymmsl::Reference kernel_;
         std::vector<int> index_;
         PortManager & port_manager_;
-        PostOffice post_office_;
         Logger & logger_;
         Profiler & profiler_;
-        std::vector<std::unique_ptr<mcp::TransportServer>> servers_;
+        MPPServer server_;
         std::unordered_map<ymmsl::Reference, std::unique_ptr<MPPClient>> clients_;
         Optional<PeerInfo> peer_info_;
 };

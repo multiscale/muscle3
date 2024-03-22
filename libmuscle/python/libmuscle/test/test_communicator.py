@@ -15,14 +15,14 @@ def profiler():
 
 
 @pytest.fixture(autouse=True)
-def PostOffice():
-    with patch('libmuscle.communicator.PostOffice') as PostOffice:
-        yield PostOffice
+def MPPServer():
+    with patch('libmuscle.communicator.MPPServer') as MPPServer:
+        yield MPPServer
 
 
 @pytest.fixture
-def post_office(PostOffice):
-    return PostOffice.return_value
+def mpp_server(MPPServer):
+    return MPPServer.return_value
 
 
 @pytest.fixture
@@ -31,25 +31,6 @@ def port_manager():
         port_manager = PortManager.return_value
         port_manager.settings_in_connected.return_value = False
         yield port_manager
-
-
-@pytest.fixture
-def MockTransportServer():
-    MockTransportServer = MagicMock()
-    transport_server = MockTransportServer.return_value
-    transport_server.get_location.return_value = 'tcp:testing:9001'
-    return MockTransportServer
-
-
-@pytest.fixture(autouse=True)
-def transport_server_types(MockTransportServer):
-    with patch('libmuscle.communicator.transport_server_types', [MockTransportServer]):
-        yield None
-
-
-@pytest.fixture
-def transport_server(MockTransportServer):
-    return MockTransportServer.return_value
 
 
 @pytest.fixture(autouse=True)
@@ -91,21 +72,18 @@ def connected_communicator(communicator):
     return communicator
 
 
-def test_create_communicator(communicator):
+def test_create_communicator(communicator, mpp_server):
+    assert communicator._server == mpp_server
     pass
 
 
-def test_get_locations(communicator, transport_server):
-    assert communicator.get_locations() == [transport_server.get_location.return_value]
-
-
-def test_send_message(connected_communicator, post_office):
+def test_send_message(connected_communicator, mpp_server):
     msg = Message(0.0, 1.0, 'Testing', Settings({'s0': 0, 's1': '1'}))
 
     connected_communicator.send_message('out_v', msg, 7, -1.0)
 
-    post_office.deposit.assert_called_once()
-    args = post_office.deposit.call_args[0]
+    mpp_server.deposit.assert_called_once()
+    args = mpp_server.deposit.call_args[0]
     assert args[0] == Ref('peer2[7].in')
 
     encoded_msg = MPPMessage.from_bytes(args[1])
@@ -122,12 +100,12 @@ def test_send_message(connected_communicator, post_office):
     assert encoded_msg.data == 'Testing'
 
 
-def test_send_message_disconnected(connected_communicator, post_office):
+def test_send_message_disconnected(connected_communicator, mpp_server):
     msg = MagicMock()
 
     connected_communicator.send_message('not_connected', msg)
 
-    post_office.deposit.assert_not_called()
+    mpp_server.deposit.assert_not_called()
 
 
 def test_receive_message(connected_communicator, mpp_client):
@@ -272,7 +250,7 @@ def test_port_discard_success_on_resume(
 
 
 def test_shutdown(
-        connected_communicator, mpp_client, connected_port_manager, post_office):
+        connected_communicator, mpp_client, connected_port_manager, mpp_server):
 
     msg = MPPMessage(
             Ref('peer.out'), Ref('component.in'), None, float('inf'), None,
@@ -312,7 +290,7 @@ def test_shutdown(
                 for slot in range(
                     connected_port_manager.get_port('out_r').get_length())})
 
-    for call in post_office.deposit.call_args_list:
+    for call in mpp_server.deposit.call_args_list:
         assert call[0][0] in expected_receivers
         msg = MPPMessage.from_bytes(call[0][1])
         assert isinstance(msg.data, ClosePort)

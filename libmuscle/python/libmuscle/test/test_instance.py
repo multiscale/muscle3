@@ -363,7 +363,7 @@ def test_reuse_set_overlay(
 
     instance.reuse_instance()
 
-    assert communicator.receive_message.called_with('muscle_settings_in')
+    communicator.receive_message.assert_called_with('muscle_settings_in')
     assert settings_manager.overlay['s0'] == 0
     assert settings_manager.overlay['s1'] == 1
     assert settings_manager.overlay['s2'] == 2

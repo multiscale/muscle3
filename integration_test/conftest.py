@@ -28,6 +28,10 @@ skip_if_no_mpi_cpp = pytest.mark.skipif(
         'MUSCLE_ENABLE_CPP_MPI' not in os.environ,
         reason='MPI support was not detected')
 
+skip_unless_cluster = pytest.mark.skipif(
+        'MUSCLE_TEST_CLUSTER' not in os.environ,
+        reason='Cluster tests were not explicitly enabled')
+
 
 @pytest.fixture
 def yatiml_log_warning():

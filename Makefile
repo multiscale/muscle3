@@ -21,6 +21,9 @@ endif
 .PHONY: test
 test: test_python test_scripts test_cpp test_fortran
 
+.PHONY: test_all
+test_all: test test_cluster
+
 .PHONY: test_python_only
 test_python_only:
 	MUSCLE_TEST_PYTHON_ONLY=1 tox
@@ -36,6 +39,10 @@ test_cpp: cpp
 .PHONY: test_fortran
 test_fortran: fortran_tests
 	cd libmuscle/fortran && $(MAKE) test
+
+.PHONY: test_cluster
+test_cluster:
+	tox -e cluster
 
 .PHONY: test_scripts
 test_scripts:

@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#SBATCH --time=0:1:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+
+set -e
+
+source /home/cerulean/venv/bin/activate
+
+muscle_manager --log-level=DEBUG --start-all /home/cerulean/cluster_test/multiple.ymmsl /home/cerulean/cluster_test/settings.ymmsl /home/cerulean/cluster_test/implementations.ymmsl
+

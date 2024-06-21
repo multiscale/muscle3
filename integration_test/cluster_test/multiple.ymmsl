@@ -1,0 +1,32 @@
+ymmsl_version: v0.1
+
+model:
+    name: multiple
+    components:
+        c1: component
+        c2: component
+        c3: component
+        c4: component
+        c5: component
+        c6: component
+    conduits:
+        c1.inter_out: c2.inter_in
+        c2.inter_out: c3.inter_in
+        c3.inter_out: c4.inter_in
+        c4.inter_out: c5.inter_in
+        c5.inter_out: c6.inter_in
+        c6.inter_out: c1.inter_in
+
+resources:
+    c1:
+        threads: 1
+    c2:
+        threads: 1
+    c3:
+        threads: 1
+    c4:
+        threads: 1
+    c5:
+        threads: 1
+    c6:
+        threads: 1

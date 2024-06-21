@@ -1,0 +1,34 @@
+# Run Continuous Integration on macOS 14 Sonoma with GCC
+# This includes Fortran support
+# This mainly checks for issues/regressions in the native build
+name: compatibility_macos_sonoma_14_gcc_gfortran
+on:
+  schedule:
+    - cron: '00 8 * * 6'
+  push:
+    branches:
+      - 'release-*'
+      - fix_native_compatibility_ci
+jobs:
+  build:
+    runs-on: macos-14
+    timeout-minutes: 30
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest
+
+    - name: Install dependencies
+      run: |
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install gcc
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install openmpi
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install pkg-config
+        python3 -m pip install --upgrade pip
+        pip3 install tox tox-gh-actions
+
+    - name: Run all tests
+      run: cd ${GITHUB_WORKSPACE} && CXX=g++-12 OMPI_CXX=g++-12 FC=gfortran-12 OMPI_FC=gfortran-12 make test test_examples
+

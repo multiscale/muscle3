@@ -112,30 +112,31 @@ class QCGPJInstantiator(mp.Process):
 
     def run(self) -> None:
         """Entry point for the process."""
-        # Put QCG-PJ output in run dir
-        # The configuration setting below is ignored by the agents
-        # due to a bug in QCG-PJ
-        qcgpj_dir = self._run_dir / 'qcgpj'
-        qcgpj_dir.mkdir(exist_ok=True)
-        os.chdir(qcgpj_dir)
-
-        self._reconfigure_logging()
-
-        # Executor needs to be instantiated before we go async
-        qcg_config: Dict[str, str] = {qcg_Config.AUX_DIR: str(qcgpj_dir)}
-        self._qcg_resources = qcg_get_resources(qcg_config)
-        self._state_tracker = StateTracker()
-        self._executor = qcg_Executor(
-                self._state_tracker, qcg_config, self._qcg_resources)
-
-        self._send_resources()
-
         try:
+            # Put QCG-PJ output in run dir
+            # The configuration setting below is ignored by the agents
+            # due to a bug in QCG-PJ
+            qcgpj_dir = self._run_dir / 'qcgpj'
+            qcgpj_dir.mkdir(exist_ok=True)
+            os.chdir(qcgpj_dir)
+
+            self._reconfigure_logging()
+
+            # Executor needs to be instantiated before we go async
+            qcg_config: Dict[str, str] = {qcg_Config.AUX_DIR: str(qcgpj_dir)}
+            self._qcg_resources = qcg_get_resources(qcg_config)
+            self._state_tracker = StateTracker()
+            self._executor = qcg_Executor(
+                    self._state_tracker, qcg_config, self._qcg_resources)
+
+            self._send_resources()
+
             loop = asyncio.get_event_loop()
             loop.run_until_complete(self._main())
         except:     # noqa
             for line in traceback.format_exception(*sys.exc_info()):
                 _logger.error(line)
+            self._resources_out.put(CrashedResult())
             self._results_out.put(CrashedResult())
 
     async def _main(self) -> None:

@@ -236,7 +236,7 @@ class InstanceManager:
                         'More output may be found in'
                         f' {self._run_dir.instance_dir(result.instance)}\n'
                         )
-        else:
+        elif indirect_crashes:
             # Possibly a component exited without error, but prematurely. If this
             # caused ancillary crashes due to dropped connections, then the logs
             # of those will give a hint as to what the problem may be, so print
@@ -260,6 +260,8 @@ class InstanceManager:
                         'More output may be found in'
                         f' {self._run_dir.instance_dir(result.instance)}\n'
                         )
+        else:
+            _logger.info('The simulation finished without error.')
 
         return all_seemingly_okay
 

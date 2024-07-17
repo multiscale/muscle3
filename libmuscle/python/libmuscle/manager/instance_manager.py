@@ -11,9 +11,9 @@ from ymmsl import Configuration, Reference
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.instantiator import (
         CancelAllRequest, CrashedResult, InstantiatorRequest,
-        InstantiationRequest, ProcessStatus, ShutdownRequest)
+        InstantiationRequest, Process, ProcessStatus, ShutdownRequest)
 from libmuscle.manager.logger import last_lines
-from libmuscle.manager.qcgpj_instantiator import Process, QCGPJInstantiator
+from libmuscle.manager.qcgpj_instantiator import QCGPJInstantiator
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.planner.planner import Planner, Resources
 
@@ -61,7 +61,7 @@ class InstanceManager:
     def __init__(
             self, configuration: Configuration, run_dir: RunDir,
             instance_registry: InstanceRegistry) -> None:
-        """Create a ProcessManager.
+        """Create an InstanceManager.
 
         Args:
             configuration: The global configuration

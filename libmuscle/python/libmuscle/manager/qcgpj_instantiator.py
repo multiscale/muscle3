@@ -26,8 +26,8 @@ from qcg.pilotjob.resources import (
 from ymmsl import ExecutionModel, MPICoresResReq, Reference, ThreadedResReq
 
 from libmuscle.manager.instantiator import (
-        CancelAllRequest, CrashedResult, InstantiationRequest, Process,
-        ProcessStatus, QueueingLogHandler, ShutdownRequest)
+        CancelAllRequest, CrashedResult, create_instance_env, InstantiationRequest,
+        Process, ProcessStatus, reconfigure_logging, ShutdownRequest)
 from libmuscle.planner.planner import Resources
 
 
@@ -95,7 +95,7 @@ class QCGPJInstantiator(mp.Process):
     def __init__(
             self, resources: mp.Queue, requests: mp.Queue, results: mp.Queue,
             log_records: mp.Queue, run_dir: Path) -> None:
-        """Create a QCGPJProcessManager.
+        """Create a QCGPJInstantiator.
 
         Args:
             resources: Queue for returning the available resources
@@ -103,7 +103,7 @@ class QCGPJInstantiator(mp.Process):
             results: Queue to communicate finished processes over
             log_messages: Queue to push log messages to
         """
-        super().__init__(name='QCGPJProcessManager')
+        super().__init__(name='QCGPJInstantiator')
         self._resources_out = resources
         self._requests_in = requests
         self._results_out = results
@@ -120,7 +120,7 @@ class QCGPJInstantiator(mp.Process):
             qcgpj_dir.mkdir(exist_ok=True)
             os.chdir(qcgpj_dir)
 
-            self._reconfigure_logging()
+            reconfigure_logging(self._log_records_out)
 
             # Executor needs to be instantiated before we go async
             qcg_config: Dict[str, str] = {qcg_Config.AUX_DIR: str(qcgpj_dir)}
@@ -196,15 +196,6 @@ class QCGPJInstantiator(mp.Process):
         _logger.debug('Stopping executor')
         await self._executor.stop()
 
-    def _reconfigure_logging(self) -> None:
-        """Reconfigure logging to send to log_records_out."""
-        root_logger = logging.getLogger()
-        for h in list(root_logger.handlers):
-            root_logger.removeHandler(h)
-
-        handler = QueueingLogHandler(self._log_records_out)
-        root_logger.addHandler(handler)
-
     def _send_resources(self) -> None:
         """Converts and sends QCG available resources."""
         resources = Resources()
@@ -247,7 +238,7 @@ class QCGPJInstantiator(mp.Process):
         """Creates a QCG allocation and job for a request."""
         total_cores = sum(map(len, request.resources.cores.values()))
 
-        env = self._create_env(request.instance, request.implementation.env)
+        env = create_instance_env(request.instance, request.implementation.env)
 
         if request.implementation.script:
             execution = self._qcg_job_execution_with_script(request, env)
@@ -271,29 +262,6 @@ class QCGPJInstantiator(mp.Process):
         sjob = qcg_SchedulingJob(self._state_tracker, qcg_job)
         qcg_iteration = qcg_SchedulingIteration(sjob, None, None, resources, [])
         return qcg_allocation, qcg_iteration
-
-    def _create_env(
-            self, instance: Reference, overlay: Dict[str, str]
-            ) -> Dict[str, str]:
-        """Updates the environment with the implementation's env.
-
-        This updates env in-place. Keys from overlay that start with
-        + will have the corresponding value appended to the matching
-        (by key, without the +) value in env, otherwise the value in
-        env gets overwritten.
-        """
-        env = os.environ.copy()
-        env['MUSCLE_INSTANCE'] = str(instance)
-
-        for key, value in overlay.items():
-            if key.startswith('+'):
-                if key[1:] in env:
-                    env[key[1:]] += value
-                else:
-                    env[key[1:]] = value
-            else:
-                env[key] = value
-        return env
 
     def _qcg_job_execution_with_script(
             self, request: InstantiationRequest, env: Dict[str, str]

@@ -1,9 +1,10 @@
 import enum
 import logging
 import multiprocessing as mp
+import os
 from pathlib import Path
 import traceback
-from typing import Optional
+from typing import Dict, Optional
 
 from ymmsl import Implementation, Reference, ResourceRequirements
 
@@ -133,3 +134,43 @@ class QueueingLogHandler(logging.Handler):
             record.exc_info = None
 
         self._queue.put(record)
+
+
+def reconfigure_logging(queue: mp.Queue) -> None:
+    """Reconfigure logging to send to queue.
+
+    This reconfigures the logging subsystem to intercept all log
+    messages and send them to the given queue, rather than to the
+    previously configured handler.
+    """
+    root_logger = logging.getLogger()
+    for h in list(root_logger.handlers):
+        root_logger.removeHandler(h)
+
+    handler = QueueingLogHandler(queue)
+    root_logger.addHandler(handler)
+
+
+def create_instance_env(
+        instance: Reference, overlay: Dict[str, str]) -> Dict[str, str]:
+    """Creates an environment for an instance.
+
+    This takes the current (manager) environment variables and makes
+    a copy, then adds or extends it according to the overlay given.
+
+    Keys from overlay that start with will have the corresponding
+    value appended to the matching (by key, without the +) value in
+    env, otherwise the value in env gets overwritten.
+    """
+    env = os.environ.copy()
+    env['MUSCLE_INSTANCE'] = str(instance)
+
+    for key, value in overlay.items():
+        if key.startswith('+'):
+            if key[1:] in env:
+                env[key[1:]] += value
+            else:
+                env[key[1:]] = value
+        else:
+            env[key] = value
+    return env

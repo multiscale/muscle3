@@ -1,9 +1,10 @@
 import sqlite3
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import cast, List, Optional, Tuple
 
 import numpy as np
 from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from matplotlib import pyplot as plt
 from matplotlib.patches import Rectangle
 
@@ -237,7 +238,7 @@ class TimelinePlot:
         ordered_names.insert(6, 'RUNNING')
 
         ax.legend(ordered_artists, ordered_names, loc='upper right')
-        ax.figure.canvas.draw_idle()
+        cast(Figure, ax.figure).canvas.draw_idle()
 
     def close(self) -> None:
         """Closes the database connection"""

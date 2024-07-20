@@ -33,11 +33,12 @@ setup(
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: POSIX :: Linux',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
-        'Programming Language :: Python :: 3.11'],
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        ],
 
     packages=_muscle3_packages,
     package_dir={
@@ -50,14 +51,13 @@ setup(
             'muscle_manager=muscle3.muscle_manager:manage_simulation',
             'muscle3=muscle3.muscle3:muscle3']
     },
-    python_requires='>=3.7, <4',
+    python_requires='>=3.8, <4',
     install_requires=[
         'click>=7.1,<9',
         'matplotlib>=3,<4',
         'msgpack>=1,<2',
         'psutil>=5.0.0',
-        "numpy<1.22; python_version=='3.7'",
-        "numpy>=1.22; python_version>='3.8'",
+        "numpy>=1.22",
         'qcg-pilotjob==0.13.1',
         'typing_extensions>=4.4.0,<5',
         'ymmsl>=0.13.0,<0.14'          # Also in CI, update there as well

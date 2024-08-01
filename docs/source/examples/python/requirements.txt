@@ -1,6 +1,5 @@
 matplotlib>=3,<4
-numpy<1.22; python_version=='3.7'
-numpy>=1.22; python_version>='3.8'
+numpy>=1.22
 sobol_seq==0.2.0
 yatiml>=0.10.0,<0.11
 ymmsl>=0.13,<0.14

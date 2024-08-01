@@ -64,9 +64,6 @@ setup(
     ],
     extras_require={
         'dev': [
-            'sphinx<3.2',
-            'sphinx_rtd_theme',
-            'sphinx-fortran',
             'tox'
         ]
     },

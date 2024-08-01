@@ -1,11 +1,11 @@
 .. image:: https://github.com/multiscale/muscle3/raw/develop/docs/source/muscle3_logo_readme.png
     :alt: MUSCLE3
 
-.. image:: https://readthedocs.org/projects/muscle3/badge/?version=master
-    :target: https://muscle3.readthedocs.io/en/develop/?badge=master
+.. image:: https://readthedocs.org/projects/muscle3/badge/?version=develop
+    :target: https://muscle3.readthedocs.io/en/develop/?badge=develop
     :alt: Documentation Build Status
 
-.. image:: https://github.com/multiscale/muscle3/actions/workflows/ci.yaml/badge.svg?branch=master
+.. image:: https://github.com/multiscale/muscle3/actions/workflows/ci.yaml/badge.svg?branch=develop
     :target: https://github.com/multiscale/muscle3/actions
     :alt: Build Status
 

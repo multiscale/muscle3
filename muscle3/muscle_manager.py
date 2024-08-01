@@ -6,7 +6,7 @@ import traceback
 from typing import Optional, Sequence
 
 import click
-from ruamel.yaml.scanner import ScannerError
+from yaml.scanner import ScannerError
 from yatiml import RecognitionError
 import ymmsl
 from ymmsl import Identifier, PartialConfiguration
@@ -168,8 +168,8 @@ def load_configuration(path: str) -> PartialConfiguration:
     with open(path, 'r') as f:
         try:
             return ymmsl.load(f)
-        except ScannerError as exc:  # capture ruamel.yaml errors
-            # ruamel.yaml error messages are not very user friendly, but there is not
+        except ScannerError as exc:  # capture yaml errors
+            # PyYAML error messages are not very user friendly, but there is not
             # too much we can do about it
             print(f"Syntax error while loading configuration file '{path}':",
                   file=sys.stderr)

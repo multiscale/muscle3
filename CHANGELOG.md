@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.7.2
+
+### Added
+
+- Support for Python 3.12
+- Support for NumPy 2 (already working, constraint removed)
+
+### Improved
+
+- Fixed `SHUTDOWN_WAIT` profiling event for Python components
+- Report successful completion on successful completion (instead of an error)
+- Fixed crash on SLURM clusters with hyperthreading
+- Use psutil instead of netifaces, which is no longer maintained
+- Internal improvements and refactoring to support upcoming fixes and features
+
+### Removed
+
+- Support for Python 3.7
+- Warnings about ruamel.yaml, via ymmsl/YAtiML update
+
+
 ## 0.7.1
 
 ### Added
@@ -212,7 +233,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Fixes to examples
 - Small documentation improvements
 - Improved compatibility with other packages using gRPC
-
 
 ### Thanks
 

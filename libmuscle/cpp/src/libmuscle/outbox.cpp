@@ -20,7 +20,7 @@ bool Outbox::is_empty() const {
     return queue_.empty();
 }
 
-void Outbox::deposit(std::unique_ptr<DataConstRef> message) {
+void Outbox::deposit(std::vector<char> && message) {
     queue_.insert(queue_.begin(), std::move(message));
     if (queue_.size() == 1u && notification_fd_ != -1) {
         char dummy = '\0';
@@ -28,7 +28,7 @@ void Outbox::deposit(std::unique_ptr<DataConstRef> message) {
     }
 }
 
-std::unique_ptr<DataConstRef> Outbox::retrieve() {
+std::vector<char> Outbox::retrieve() {
     if (queue_.empty())
         throw std::runtime_error("Trying to retrieve from an empty outbox");
 

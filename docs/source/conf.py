@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# cerise documentation build configuration file, created by
-# sphinx-quickstart on Wed Apr 19 10:25:17 2017.
-#
 # This file is execfile()d with the current directory set to its
 # containing dir.
 #
@@ -70,7 +67,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'muscle3'
-copyright = '2018-2022 University of Amsterdam and Netherlands eScience Center, 2023 Netherlands eScience Center, and 2022-2023 The ITER Organization'
+copyright = '2018-2022 University of Amsterdam and Netherlands eScience Center, and 2022-2023 The ITER Organization, and 2023-2024 Netherlands eScience Center'
 author = 'Lourens Veen'
 
 # The version info for the project you're documenting, acts as replacement for

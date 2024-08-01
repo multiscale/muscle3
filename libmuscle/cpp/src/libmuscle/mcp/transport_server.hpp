@@ -40,7 +40,7 @@ class RequestHandler {
          */
         virtual int handle_request(
                 char const * req_buf, std::size_t req_len,
-                std::unique_ptr<DataConstRef> & res_buf) = 0;
+                std::vector<char> & res_buf) = 0;
 
         /** Get a response
          *
@@ -52,7 +52,7 @@ class RequestHandler {
          * @param fd File descriptor to return
          * @return A byte array wrapped in a DataConstRef with the response
          */
-        virtual std::unique_ptr<DataConstRef> get_response(int fd) = 0;
+        virtual std::vector<char> get_response(int fd) = 0;
 };
 
 
@@ -64,12 +64,6 @@ class RequestHandler {
  */
 class TransportServer {
     public:
-        /** Create a TransportServer.
-         *
-         * @param handler: A handler to handle requests
-         */
-        TransportServer(RequestHandler & handler);
-
         /** Destroy the Transport Server object
          */
         virtual ~TransportServer() = default;
@@ -86,6 +80,21 @@ class TransportServer {
          * then frees any other resources.
          */
         virtual void close() = 0;
+};
+
+
+/** Base class for TransportServers.
+ *
+ * They always have a handler, so this saves some typing. This is separate from the
+ * interface so that we can create a mock that doesn't have the reference.
+ */
+class TransportServerBase : public TransportServer {
+    public:
+        /** Create a TransportServerBase.
+         *
+         * @param handler: A handler to handle requests
+         */
+        TransportServerBase(RequestHandler & handler);
 
     protected:
         RequestHandler & handler_;

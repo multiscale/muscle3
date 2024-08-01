@@ -17,26 +17,28 @@ distclean: clean
 	rm -rf $$(find . -type d -name 'msgpack-*')
 	rm -rf msgpack
 
+MSGPACK_LIB=$(CURDIR)/msgpack/lib/libmsgpackc.a
+MSGPACK_SRC=$(CURDIR)/msgpack-$(msgpack_VERSION)/ChangeLog
+
 msgpack-$(msgpack_VERSION).tar.gz:
 	$(DOWNLOAD) https://github.com/msgpack/msgpack-c/releases/download/cpp-$(msgpack_VERSION)/msgpack-$(msgpack_VERSION).tar.gz
 
-msgpack-$(msgpack_VERSION): msgpack-$(msgpack_VERSION).tar.gz
-	$(TAR) xf msgpack-$(msgpack_VERSION).tar.gz
+$(MSGPACK_SRC): msgpack-$(msgpack_VERSION).tar.gz
+	$(TAR) xf msgpack-$(msgpack_VERSION).tar.gz -m
 
-.PHONY: msgpack-install
-msgpack-install: msgpack-$(msgpack_VERSION)
-	cd msgpack-$(msgpack_VERSION) && mkdir -p build && cd build && \
+$(MSGPACK_LIB): $(MSGPACK_SRC)
+	cd msgpack-$(msgpack_VERSION) && rm -rf build && mkdir -p build && cd build && \
 		export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) && \
 		cmake -DCMAKE_INSTALL_PREFIX=$(CURDIR)/msgpack -DMSGPACK_CXX11=ON -DMSGPACK_BUILD_EXAMPLES=OFF -DMSGPACK_BUILD_TESTS=OFF .. && \
 		$(MAKE) -j $(NCORES) && make install
 
 ifdef MUSCLE_LINUX
 
-msgpack: msgpack-install
+msgpack: $(MSGPACK_LIB)
 
 else ifdef MUSCLE_MACOS
 
-msgpack: msgpack-install
+msgpack: $(MSGPACK_LIB)
 	install_name_tool -id $(CURDIR)/msgpack/lib/libmsgpackc.dylib $(CURDIR)/msgpack/lib/libmsgpackc.dylib
 
 endif

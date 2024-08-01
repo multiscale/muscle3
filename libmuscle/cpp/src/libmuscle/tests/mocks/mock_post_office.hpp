@@ -8,32 +8,45 @@
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/outbox.hpp>
 
+#include <libmuscle/tests/mocks/mock_encoded_message.hpp>
+#include <libmuscle/tests/mocks/mock_support.hpp>
+
+#include <memory>
+
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 
-class MockPostOffice : public mcp::RequestHandler {
+class MockPostOffice : public MockClass<MockPostOffice> {
     public:
-        MockPostOffice() = default;
+        MockPostOffice(ReturnValue) {
+            NAME_MOCK_MEM_FUN(MockPostOffice, constructor);
+            NAME_MOCK_MEM_FUN(MockPostOffice, try_retrieve);
+            NAME_MOCK_MEM_FUN(MockPostOffice, get_message);
+            NAME_MOCK_MEM_FUN(MockPostOffice, deposit);
+            NAME_MOCK_MEM_FUN(MockPostOffice, wait_for_receivers);
+        }
 
-        virtual int handle_request(
-                char const * req_buf, std::size_t req_len,
-                std::unique_ptr<DataConstRef> & res_buf) override;
+        MockPostOffice() {
+            init_from_return_value();
+            constructor();
+        }
 
-        virtual std::unique_ptr<DataConstRef> get_response(int fd) override;
+        MockFun<Void> constructor;
 
-        void deposit(
-                ymmsl::Reference const & receiver,
-                std::unique_ptr<DataConstRef> message);
+        MockFun<
+            Val<int>, Val<ymmsl::Reference const &>,
+            ::mock_encoded_message::EncodedMessageOut> try_retrieve;
 
-        void wait_for_receivers() const;
+        MockFun<::mock_encoded_message::EncodedMessageRet, Val<int>> get_message;
 
-        // Mock control variables
-        static void reset();
+        MockFun<Void,
+            Val<ymmsl::Reference const &>, ::mock_encoded_message::EncodedMessage
+        > deposit;
 
-        static ymmsl::Reference last_receiver;
-        static std::unique_ptr<MPPMessage> last_message;
+        MockFun<Void> wait_for_receivers;
 };
+
 
 using PostOffice = MockPostOffice;
 

@@ -145,7 +145,7 @@ class TcpTransportServerWorker {
                             req_buf_.resize(length);
                             recv_all(polled_fd.fd, req_buf_.data(), length);
 
-                            std::unique_ptr<DataConstRef> res_buf;
+                            std::vector<char> res_buf;
                             int res_fd = handler_.handle_request(req_buf_.data(), length, res_buf);
                             if (res_fd < 0) {
                                 // got a response immediately, send it
@@ -167,7 +167,7 @@ class TcpTransportServerWorker {
                         char dummy;
                         read(polled_fd.fd, &dummy, 1);
 
-                        std::unique_ptr<DataConstRef> res_buf;
+                        std::vector<char> res_buf;
                         res_buf = handler_.get_response(polled_fd.fd);
 
                         int fd;
@@ -190,8 +190,8 @@ class TcpTransportServerWorker {
          *
          * @param fd The fd to send the data on
          */
-        void send_response_(int fd, std::unique_ptr<DataConstRef> res_buf) {
-            send_frame(fd, res_buf->as_byte_array(), res_buf->size());
+        void send_response_(int fd, std::vector<char> && res_buf) {
+            send_frame(fd, res_buf.data(), res_buf.size());
         }
 
         /* Detects ports that have closed and removes those connections.
@@ -284,7 +284,7 @@ class TcpTransportServerWorker {
 namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace mcp {
 
 TcpTransportServer::TcpTransportServer(RequestHandler & handler)
-    : TransportServer(handler)
+    : TransportServerBase(handler)
 {
     pipe(control_pipe_);
     thread_ = std::thread(server_thread_, this);

@@ -1,13 +1,15 @@
 // Inject mocks
-#define LIBMUSCLE_MOCK_COMMUNICATOR <mocks/mock_communicator.hpp>
 #define LIBMUSCLE_MOCK_LOGGER <mocks/mock_logger.hpp>
 #define LIBMUSCLE_MOCK_MMP_CLIENT <mocks/mock_mmp_client.hpp>
+#define LIBMUSCLE_MOCK_PORT_MANAGER <mocks/mock_port_manager.hpp>
 #define LIBMUSCLE_MOCK_PROFILER <mocks/mock_profiler.hpp>
+#define LIBMUSCLE_MOCK_TRIGGER_MANAGER <mocks/mock_trigger_manager.hpp>
 
-// into the real implementation,
+// into the real implementation to test.
 #include <ymmsl/ymmsl.hpp>
 
 #include <libmuscle/close_port.cpp>
+#include <libmuscle/communicator.cpp>
 #include <libmuscle/data.cpp>
 #include <libmuscle/instance.cpp>
 #include <libmuscle/logging.cpp>
@@ -17,12 +19,6 @@
 #include <libmuscle/settings_manager.cpp>
 #include <libmuscle/snapshot_manager.cpp>
 #include <libmuscle/timestamp.cpp>
-
-// then add mock implementations as needed.
-#include <mocks/mock_communicator.cpp>
-#include <mocks/mock_logger.cpp>
-#include <mocks/mock_mmp_client.cpp>
-#include <mocks/mock_profiler.cpp>
 
 // Test code dependencies
 #include <cstdio>
@@ -34,27 +30,23 @@
 #include <gtest/gtest.h>
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/snapshot_manager.hpp>
+#include <libmuscle/tests/fixtures.hpp>
+#include <mocks/mock_logger.hpp>
+#include <mocks/mock_mmp_client.hpp>
+#include <mocks/mock_port_manager.hpp>
+#include <mocks/mock_profiler.hpp>
+#include <mocks/mock_trigger_manager.hpp>
 
-// Note: using POSIX for filesystem calls
-// Could be upgraded to std::filesystem when targeting C++17 or later
-#include <cstdlib>
-#include <errno.h>
-#include <fcntl.h>
-#include <limits.h>
-#include <string.h>
-#include <unistd.h>
-#include <ftw.h>
 
 using libmuscle::_MUSCLE_IMPL_NS::Data;
 using libmuscle::_MUSCLE_IMPL_NS::Message;
-using libmuscle::_MUSCLE_IMPL_NS::MockCommunicator;
-using libmuscle::_MUSCLE_IMPL_NS::MockLogger;
-using libmuscle::_MUSCLE_IMPL_NS::MockMMPClient;
-using libmuscle::_MUSCLE_IMPL_NS::MockProfiler;
+using PortMessageCounts = libmuscle::_MUSCLE_IMPL_NS::MockPortManager::PortMessageCounts;
 using libmuscle::_MUSCLE_IMPL_NS::Optional;
+using libmuscle::_MUSCLE_IMPL_NS::PortsDescription;
 using libmuscle::_MUSCLE_IMPL_NS::Snapshot;
 using libmuscle::_MUSCLE_IMPL_NS::SnapshotMetadata;
 using libmuscle::_MUSCLE_IMPL_NS::SnapshotManager;
+using libmuscle::_MUSCLE_IMPL_NS::TriggerManager;
 using ymmsl::Reference;
 
 int main(int argc, char *argv[]) {
@@ -62,67 +54,25 @@ int main(int argc, char *argv[]) {
     return RUN_ALL_TESTS();
 }
 
-/* Mocks have internal state, which needs to be reset before each test. This
- * means that the tests are not reentrant, and cannot be run in parallel.
- * It's all fast enough, so that's not a problem.
- */
-void reset_mocks() {
-    MockCommunicator::reset();
-    MockMMPClient::reset();
-}
+struct libmuscle_snapshot_manager : ::testing::Test, TempDirFixture {
+    RESET_MOCKS(
+            ::libmuscle::_MUSCLE_IMPL_NS::MockMMPClient,
+            ::libmuscle::_MUSCLE_IMPL_NS::MockLogger,
+            ::libmuscle::_MUSCLE_IMPL_NS::MockPortManager,
+            ::libmuscle::_MUSCLE_IMPL_NS::MockProfiler,
+            ::libmuscle::_MUSCLE_IMPL_NS::MockTriggerManager);
 
-MockLogger & mock_logger() {
-    static MockLogger logger;
-    return logger;
-}
-
-MockProfiler & mock_profiler() {
-    static MockProfiler profiler;
-    return profiler;
-}
-
-// callback for nftw() to delete all contents of a folder
-int _nftw_rm_callback(
-        const char *fpath, const struct stat *sb, int tflag, struct FTW *ftwbuf) {
-    if (tflag == FTW_DP) {
-        std::cerr << "DEBUG: removing dir " << fpath << std::endl;
-        return rmdir(fpath);
-    }
-    if (tflag == FTW_F) {
-        std::cerr << "DEBUG: removing file " << fpath << std::endl;
-        return unlink(fpath);
-    }
-    std::cerr << "DEBUG: unknown file type " << fpath << std::endl;
-    return -1;
-}
-
-class libmuscle_snapshot_manager : public ::testing::Test {
-    protected:
-        void SetUp() override {
-            char tmpname[] = "/tmp/muscle3_test.XXXXXX";
-            if (mkdtemp(tmpname) == nullptr)
-                throw std::runtime_error(strerror(errno));
-            temp_dir_ = tmpname;
-            std::cerr << "DEBUG: using temp dir " << temp_dir_ << std::endl;
-
-            reset_mocks();
-        }
-
-        void TearDown() override {
-            // simulate rm -rf `temp_dir_` using a file-tree-walk
-            if (nftw(temp_dir_.c_str(), _nftw_rm_callback, 3, FTW_DEPTH) < 0) {
-                throw std::runtime_error(strerror(errno));
-            }
-            temp_dir_.clear();
-        }
-
-        std::string temp_dir_;
+    // std::string temp_dir_; from TempDirFixture
+    ::libmuscle::_MUSCLE_IMPL_NS::MockLogger mock_logger_;
+    ::libmuscle::_MUSCLE_IMPL_NS::MockProfiler mock_profiler_;
+    ::libmuscle::_MUSCLE_IMPL_NS::MockPortManager mock_port_manager_;
+    ::libmuscle::_MUSCLE_IMPL_NS::MockMMPClient mock_mmp_client_;
 };
 
+
 TEST_F(libmuscle_snapshot_manager, test_no_checkpointing) {
-    MockCommunicator communicator("test", {}, {}, mock_logger(), mock_profiler());
-    MockMMPClient manager("instance", "");
-    SnapshotManager snapshot_manager("test", manager, communicator, mock_logger());
+    SnapshotManager snapshot_manager(
+            "test", mock_mmp_client_, mock_port_manager_, mock_logger_);
 
     snapshot_manager.prepare_resume({}, temp_dir_);
     ASSERT_FALSE(snapshot_manager.resuming_from_intermediate());
@@ -130,16 +80,19 @@ TEST_F(libmuscle_snapshot_manager, test_no_checkpointing) {
 }
 
 TEST_F(libmuscle_snapshot_manager, test_save_load_snapshot) {
-    MockCommunicator communicator("test", {}, {}, mock_logger(), mock_profiler());
-    MockCommunicator::PortMessageCounts port_message_counts = {
+    mock_port_manager_.list_ports.return_value = PortsDescription(
+            {{Operator::S, {"in"}}, {Operator::O_I, {"out"}}});
+    PortMessageCounts port_message_counts = {
             {"in", {1}},
             {"out", {2}},
             {"muscle_settings_in", {0}}};
-    MockCommunicator::get_message_counts_return_value = port_message_counts;
-    MockMMPClient manager("instance", "");
+    mock_port_manager_.get_message_counts.return_value = port_message_counts;
+    mock_port_manager_.settings_in_connected.return_value = false;
+
     Reference instance_id("test[1]");
 
-    SnapshotManager snapshot_manager(instance_id, manager, communicator, mock_logger());
+    SnapshotManager snapshot_manager(
+            instance_id, mock_mmp_client_, mock_port_manager_, mock_logger_);
 
     snapshot_manager.prepare_resume({}, temp_dir_);
     ASSERT_FALSE(snapshot_manager.resuming_from_intermediate());
@@ -148,8 +101,9 @@ TEST_F(libmuscle_snapshot_manager, test_save_load_snapshot) {
     snapshot_manager.save_snapshot(
             Message(0.2, "test data"), false, {"test"}, 13.0, {}, {});
 
-    ASSERT_TRUE(MockMMPClient::last_submitted_snapshot_metadata.is_set());
-    auto & metadata = MockMMPClient::last_submitted_snapshot_metadata.get();
+    ASSERT_TRUE(mock_port_manager_.get_message_counts.called_with());
+    ASSERT_TRUE(mock_mmp_client_.submit_snapshot_metadata.called());
+    auto const & metadata = mock_mmp_client_.submit_snapshot_metadata.call_arg<0>();
     ASSERT_EQ(metadata.triggers, std::vector<std::string>({"test"}));
     ASSERT_EQ(metadata.wallclock_time, 13.0);
     ASSERT_EQ(metadata.timestamp, 0.2);
@@ -160,9 +114,12 @@ TEST_F(libmuscle_snapshot_manager, test_save_load_snapshot) {
     ASSERT_EQ(snapshot_path, temp_dir_ + "/test-1_1.pack");
 
     SnapshotManager snapshot_manager2(
-            instance_id, manager, communicator, mock_logger());
+            instance_id, mock_mmp_client_, mock_port_manager_, mock_logger_);
     snapshot_manager2.prepare_resume(snapshot_path, temp_dir_);
-    ASSERT_EQ(MockCommunicator::last_restored_message_counts, port_message_counts);
+    ASSERT_TRUE(mock_port_manager_.restore_message_counts.called_once());
+    ASSERT_EQ(
+            mock_port_manager_.restore_message_counts.call_arg<0>(),
+            port_message_counts);
 
     ASSERT_TRUE(snapshot_manager2.resuming_from_intermediate());
     ASSERT_FALSE(snapshot_manager2.resuming_from_final());
@@ -175,29 +132,31 @@ TEST_F(libmuscle_snapshot_manager, test_save_load_snapshot) {
     snapshot_manager2.save_snapshot(
             Message(0.6, "test data2"), true, {"test"}, 42.2, 1.2, {});
 
-    ASSERT_TRUE(MockMMPClient::last_submitted_snapshot_metadata.is_set());
-    metadata = MockMMPClient::last_submitted_snapshot_metadata.get();
-    ASSERT_EQ(metadata.triggers, std::vector<std::string>({"test"}));
-    ASSERT_EQ(metadata.wallclock_time, 42.2);
-    ASSERT_EQ(metadata.timestamp, 0.6);
-    ASSERT_FALSE(metadata.next_timestamp.is_set());
-    ASSERT_EQ(metadata.port_message_counts, port_message_counts);
-    ASSERT_TRUE(metadata.is_final_snapshot);
-    snapshot_path = metadata.snapshot_filename;
+    ASSERT_TRUE(mock_mmp_client_.submit_snapshot_metadata.called());
+    auto const & metadata2 = mock_mmp_client_.submit_snapshot_metadata.call_arg<0>();
+    ASSERT_EQ(metadata2.triggers, std::vector<std::string>({"test"}));
+    ASSERT_EQ(metadata2.wallclock_time, 42.2);
+    ASSERT_EQ(metadata2.timestamp, 0.6);
+    ASSERT_FALSE(metadata2.next_timestamp.is_set());
+    ASSERT_EQ(metadata2.port_message_counts, port_message_counts);
+    ASSERT_TRUE(metadata2.is_final_snapshot);
+    snapshot_path = metadata2.snapshot_filename;
     ASSERT_EQ(snapshot_path, temp_dir_ + "/test-1_3.pack");
 }
 
 TEST_F(libmuscle_snapshot_manager, test_save_load_implicit_snapshot) {
-    MockCommunicator communicator("test", {}, {}, mock_logger(), mock_profiler());
-    MockCommunicator::PortMessageCounts port_message_counts = {
+    mock_port_manager_.list_ports.return_value = PortsDescription(
+            {{Operator::S, {"in"}}, {Operator::O_I, {"out"}}});
+    PortMessageCounts port_message_counts = {
             {"in", {1}},
             {"out", {2}},
             {"muscle_settings_in", {0}}};
-    MockCommunicator::get_message_counts_return_value = port_message_counts;
-    MockMMPClient manager("instance", "");
+    mock_port_manager_.get_message_counts.return_value = port_message_counts;
+    mock_port_manager_.settings_in_connected.return_value = false;
     Reference instance_id("test[1]");
 
-    SnapshotManager snapshot_manager(instance_id, manager, communicator, mock_logger());
+    SnapshotManager snapshot_manager(
+            instance_id, mock_mmp_client_, mock_port_manager_, mock_logger_);
 
     snapshot_manager.prepare_resume({}, temp_dir_);
     ASSERT_FALSE(snapshot_manager.resuming_from_intermediate());
@@ -206,21 +165,25 @@ TEST_F(libmuscle_snapshot_manager, test_save_load_implicit_snapshot) {
     // save implicit snapshot, i.e. Message=not set
     snapshot_manager.save_snapshot({}, true, {"implicit"}, 1.0, 1.5, {});
 
-    ASSERT_TRUE(MockMMPClient::last_submitted_snapshot_metadata.is_set());
-    auto & metadata = MockMMPClient::last_submitted_snapshot_metadata.get();
+    ASSERT_TRUE(mock_mmp_client_.submit_snapshot_metadata.called());
+    auto const & metadata = mock_mmp_client_.submit_snapshot_metadata.call_arg<0>();
     std::string snapshot_path = metadata.snapshot_filename;
-    MockMMPClient::reset();
+    mock_mmp_client_.submit_snapshot_metadata.call_args_list.clear();
 
     SnapshotManager snapshot_manager2(
-            instance_id, manager, communicator, mock_logger());
+            instance_id, mock_mmp_client_, mock_port_manager_, mock_logger_);
 
     snapshot_manager2.prepare_resume(snapshot_path, temp_dir_);
-    ASSERT_EQ(MockCommunicator::last_restored_message_counts, port_message_counts);
-    ASSERT_TRUE(MockMMPClient::last_submitted_snapshot_metadata.is_set());
-    MockMMPClient::reset();
+    ASSERT_TRUE(mock_port_manager_.restore_message_counts.called_once());
+    ASSERT_EQ(
+            mock_port_manager_.restore_message_counts.call_arg<0>(),
+            port_message_counts);
+    ASSERT_TRUE(mock_mmp_client_.submit_snapshot_metadata.called_once());
+    mock_mmp_client_.submit_snapshot_metadata.call_args_list.clear();
 
     ASSERT_FALSE(snapshot_manager2.resuming_from_intermediate());
     ASSERT_FALSE(snapshot_manager2.resuming_from_final());
     snapshot_manager2.save_snapshot({}, true, {"implicit"}, 12.3, 2.5, {});
-    ASSERT_TRUE(MockMMPClient::last_submitted_snapshot_metadata.is_set());
+    ASSERT_TRUE(mock_mmp_client_.submit_snapshot_metadata.called_once());
 }
+

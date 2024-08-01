@@ -5,17 +5,15 @@
 #else
 
 
-#include <libmuscle/data.hpp>
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/outbox.hpp>
-#include <libmuscle/mcp/transport_server.hpp>
 
-#include <msgpack.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 #include <condition_variable>
 #include <memory>
 #include <mutex>
+#include <vector>
 
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
@@ -44,7 +42,7 @@ struct Pipe {
  *
  * A PostOffice holds outboxes with messages for receivers.
  */
-class PostOffice : public mcp::RequestHandler {
+class PostOffice {
     public:
         /** Create a PostOffice.
          */
@@ -52,50 +50,47 @@ class PostOffice : public mcp::RequestHandler {
 
         /** Destruct a PostOffice.
          */
-        virtual ~PostOffice();
+        ~PostOffice();
 
-        /** Handle a request
+        /** Try to retrieve a message
          *
-         * Requests may be handled immediately, or they may be deferred if a
-         * response is not available yet. In the first case, this will place
-         * the response as a byte array wrapped in a Data object into res_buf,
-         * and return -1.
+         * If a message for the given receiver is available, then it will be
+         * put into res_buf and -1 is returned. If no message is available,
+         * res_buf is left unmodified and a file descriptor is returned. When
+         * the response is available, a single byte can and must be read from
+         * this file descriptor, and get_response must be called to pick up
+         * the response.
          *
-         * In the second case, res_buf is unmodified, and a file descriptor is
-         * returned. When the response is available, a single byte can and must
-         * be read from this file descriptor, and get_response must be called to
-         * pick up the response.
-         *
-         * @param req_buf Pointer to request bytes
-         * @param req_len Number of bytes in request
+         * @param receiver Receiver to get a message for
          * @param res_buf Out parameter to put the response into, if available
          */
-        virtual int handle_request(
-                char const * req_buf, std::size_t req_len,
-                std::unique_ptr<DataConstRef> & res_buf) override;
+        int try_retrieve(
+                ymmsl::Reference const & receiver, std::vector<char> & res_buf);
 
-        /** Get a response
+        /** Get a previously requested message
          *
          * This function must be called only when a previous call to
-         * handle_request returned a file descriptor. When this file descriptor
+         * try_retrieve returned a file descriptor. When this file descriptor
          * becomes ready, read a byte from it and call this function, passing the
-         * file descriptor. The response will then be written into res_buf.
+         * file descriptor. The message will then be returned and the file
+         * descriptor invalidated.
          *
          * @param fd File descriptor to return
-         * @return A byte array wrapped in a DataConstRef with the response
+         * @return A byte array with the encoded response
          */
-        virtual std::unique_ptr<DataConstRef> get_response(int fd) override;
+        std::vector<char> get_message(int fd);
 
         /** Deposit a message into an outbox.
          *
-         * The message object should hold a byte array with encoded data.
+         * The message object should hold a byte array with encoded data, which
+         * will be moved into an outbox.
          *
          * @param receiver Receiver of the message.
          * @param message The message to deposit.
          */
         void deposit(
                 ymmsl::Reference const & receiver,
-                std::unique_ptr<DataConstRef> message);
+                std::vector<char> && message);
 
         /** Waits until all outboxes are empty.
          */

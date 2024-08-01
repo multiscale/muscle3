@@ -6,6 +6,7 @@
 
 #include <cstring>
 #include <utility>
+#include <vector>
 
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
@@ -31,10 +32,39 @@ MPPMessage::MPPMessage(
     {}
 
 MPPMessage MPPMessage::from_bytes(DataConstRef const & data) {
-    // decode
     auto zone = std::make_shared<msgpack::zone>();
     DataConstRef dict = mcp::unpack_data(zone, data.as_byte_array(), data.size());
+    return from_dict_(dict);
+}
 
+MPPMessage MPPMessage::from_bytes(std::vector<char> const & data) {
+    // decode
+    auto zone = std::make_shared<msgpack::zone>();
+    DataConstRef dict = mcp::unpack_data(zone, data.data(), data.size());
+    return from_dict_(dict);
+}
+
+std::vector<char> MPPMessage::encoded() const {
+    DataConstRef msg_dict = as_dict_();
+    msgpack::sbuffer sbuf;
+    msgpack::pack(sbuf, msg_dict);
+
+    std::vector<char> bytes(sbuf.size());
+    memcpy(bytes.data(), sbuf.data(), sbuf.size());
+    return bytes;
+}
+
+DataConstRef MPPMessage::encoded_as_dcr() const {
+    DataConstRef msg_dict = as_dict_();
+    msgpack::sbuffer sbuf;
+    msgpack::pack(sbuf, msg_dict);
+
+    auto bytes = Data::byte_array(sbuf.size());
+    memcpy(bytes.as_byte_array(), sbuf.data(), sbuf.size());
+    return bytes;
+}
+
+MPPMessage MPPMessage::from_dict_(DataConstRef const & dict) {
     // create message
     libmuscle::_MUSCLE_IMPL_NS::Optional<int> port_length;
     if (dict["port_length"].is_a<int>())
@@ -56,7 +86,7 @@ MPPMessage MPPMessage::from_bytes(DataConstRef const & data) {
             dict["data"]);
 }
 
-DataConstRef MPPMessage::encoded() const {
+DataConstRef MPPMessage::as_dict_() const {
     Data port_length_data;
     if (port_length.is_set())
         port_length_data = port_length.get();
@@ -65,7 +95,7 @@ DataConstRef MPPMessage::encoded() const {
     if (next_timestamp.is_set())
         next_timestamp_data = next_timestamp.get();
 
-    DataConstRef msg_dict = DataConstRef::dict(
+    return DataConstRef::dict(
             "sender", std::string(sender),
             "receiver", std::string(receiver),
             "port_length", port_length_data,
@@ -76,14 +106,6 @@ DataConstRef MPPMessage::encoded() const {
             "saved_until", saved_until,
             "data", data
             );
-
-    msgpack::sbuffer sbuf;
-    msgpack::pack(sbuf, msg_dict);
-
-    auto bytes = Data::byte_array(sbuf.size());
-    memcpy(bytes.as_byte_array(), sbuf.data(), sbuf.size());
-
-    return bytes;
 }
 
 } }

@@ -2,6 +2,7 @@
 #include <msgpack.hpp>
 
 #include <libmuscle/mpp_message.hpp>
+#include <libmuscle/mpp_server.hpp>
 #include <libmuscle/mcp/tcp_transport_server.hpp>
 #include <libmuscle/mpp_client.hpp>
 
@@ -19,6 +20,7 @@ using libmuscle::_MUSCLE_IMPL_NS::Data;
 using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
 using libmuscle::_MUSCLE_IMPL_NS::MPPMessage;
 using libmuscle::_MUSCLE_IMPL_NS::MPPClient;
+using libmuscle::_MUSCLE_IMPL_NS::MPPRequestHandler;
 using libmuscle::_MUSCLE_IMPL_NS::mcp::TcpTransportServer;
 using libmuscle::_MUSCLE_IMPL_NS::PostOffice;
 
@@ -32,6 +34,7 @@ int main(int argc, char *argv[]) {
 
 TEST(test_tcp_communication, send_receive) {
     PostOffice post_office;
+    MPPRequestHandler handler(post_office);
     Reference receiver("test_receiver.port");
 
     MPPMessage msg(
@@ -39,13 +42,12 @@ TEST(test_tcp_communication, send_receive) {
             0.0, 1.0,
             Data::dict("par1", 13), 1, 4.0,
             Data::dict("var1", 1, "var2", 2.0, "var3", "3"));
-    auto msg_data = std::make_unique<DataConstRef>(msg.encoded());
-    post_office.deposit(receiver, std::move(msg_data));
+    post_office.deposit(receiver, msg.encoded());
 
-    TcpTransportServer server(post_office);
+    TcpTransportServer server(handler);
     std::vector<std::string> locations = {server.get_location()};
     MPPClient client(locations);
-    DataConstRef bytes = std::get<0>(client.receive(receiver));
+    auto bytes = std::get<0>(client.receive(receiver));
     MPPMessage m = MPPMessage::from_bytes(bytes);
 
     ASSERT_EQ(m.sender, "test_sender.port");

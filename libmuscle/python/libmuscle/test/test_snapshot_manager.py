@@ -10,9 +10,9 @@ from libmuscle.snapshot_manager import SnapshotManager
 
 def test_no_checkpointing(tmp_path: Path) -> None:
     manager = MagicMock()
-    communicator = MagicMock()
-    communicator.get_message_counts.return_value = {}
-    snapshot_manager = SnapshotManager(Reference('test'), manager, communicator)
+    port_manager = MagicMock()
+    port_manager.get_message_counts.return_value = {}
+    snapshot_manager = SnapshotManager(Reference('test'), manager, port_manager)
 
     snapshot_manager.prepare_resume(None, tmp_path)
     assert not snapshot_manager.resuming_from_intermediate()
@@ -21,12 +21,12 @@ def test_no_checkpointing(tmp_path: Path) -> None:
 
 def test_save_load_snapshot(tmp_path: Path) -> None:
     manager = MagicMock()
-    communicator = MagicMock()
+    port_manager = MagicMock()
     port_message_counts = {'in': [1], 'out': [2], 'muscle_settings_in': [0]}
-    communicator.get_message_counts.return_value = port_message_counts
+    port_manager.get_message_counts.return_value = port_message_counts
 
     instance_id = Reference('test[1]')
-    snapshot_manager = SnapshotManager(instance_id, manager, communicator)
+    snapshot_manager = SnapshotManager(instance_id, manager, port_manager)
 
     snapshot_manager.prepare_resume(None, tmp_path)
     assert not snapshot_manager.resuming_from_intermediate()
@@ -36,7 +36,7 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
             Message(0.2, None, 'test data'), False, ['test'], 13.0, None,
             Settings())
 
-    communicator.get_message_counts.assert_called_with()
+    port_manager.get_message_counts.assert_called_with()
     manager.submit_snapshot_metadata.assert_called()
     metadata, = manager.submit_snapshot_metadata.call_args[0]
     assert isinstance(metadata, SnapshotMetadata)
@@ -50,10 +50,10 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
     assert snapshot_path.parent == tmp_path
     assert snapshot_path.name == 'test-1_1.pack'
 
-    snapshot_manager2 = SnapshotManager(instance_id, manager, communicator)
+    snapshot_manager2 = SnapshotManager(instance_id, manager, port_manager)
 
     snapshot_manager2.prepare_resume(snapshot_path, tmp_path)
-    communicator.restore_message_counts.assert_called_with(port_message_counts)
+    port_manager.restore_message_counts.assert_called_with(port_message_counts)
 
     assert snapshot_manager2.resuming_from_intermediate()
     assert not snapshot_manager2.resuming_from_final()
@@ -81,12 +81,12 @@ def test_save_load_snapshot(tmp_path: Path) -> None:
 
 def test_save_load_implicit_snapshot(tmp_path: Path) -> None:
     manager = MagicMock()
-    communicator = MagicMock()
+    port_manager = MagicMock()
     port_message_counts = {'in': [1], 'out': [2], 'muscle_settings_in': [0]}
-    communicator.get_message_counts.return_value = port_message_counts
+    port_manager.get_message_counts.return_value = port_message_counts
 
     instance_id = Reference('test[1]')
-    snapshot_manager = SnapshotManager(instance_id, manager, communicator)
+    snapshot_manager = SnapshotManager(instance_id, manager, port_manager)
 
     snapshot_manager.prepare_resume(None, tmp_path)
 
@@ -102,10 +102,10 @@ def test_save_load_implicit_snapshot(tmp_path: Path) -> None:
     snapshot_path = Path(metadata.snapshot_filename)
     manager.submit_snapshot_metadata.reset_mock()
 
-    snapshot_manager2 = SnapshotManager(instance_id, manager, communicator)
+    snapshot_manager2 = SnapshotManager(instance_id, manager, port_manager)
 
     snapshot_manager2.prepare_resume(snapshot_path, tmp_path)
-    communicator.restore_message_counts.assert_called_with(port_message_counts)
+    port_manager.restore_message_counts.assert_called_with(port_message_counts)
     manager.submit_snapshot_metadata.assert_called_once()
     manager.submit_snapshot_metadata.reset_mock()
 

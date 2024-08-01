@@ -1,5 +1,6 @@
-#include <libmuscle/peer_manager.hpp>
+#include <libmuscle/peer_info.hpp>
 
+#include <algorithm>
 #include <sstream>
 
 using ymmsl::Conduit;
@@ -9,7 +10,7 @@ using ymmsl::Reference;
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
-PeerManager::PeerManager(
+PeerInfo::PeerInfo(
         Reference const & kernel,
         std::vector<int> const & index,
         std::vector<Conduit> const & conduits,
@@ -18,6 +19,8 @@ PeerManager::PeerManager(
         )
     : kernel_(kernel)
     , index_(index)
+    , incoming_ports_()
+    , outgoing_ports_()
     , peers_()                          // peer port ids, indexed by local kernel.port
     , peer_dims_(peer_dims)             // indexed by peer kernel id
     , peer_locations_(peer_locations)   // indexed by peer instance id
@@ -25,12 +28,18 @@ PeerManager::PeerManager(
     for (auto const & conduit : conduits) {
         if (conduit.sending_component() == kernel_) {
             // we send on the port this conduit attaches to
+            auto it = std::find(
+                    outgoing_ports_.cbegin(), outgoing_ports_.cend(), conduit.sender);
+            if (it == outgoing_ports_.end())
+                outgoing_ports_.push_back(conduit.sender);
+
             auto search = peers_.find(conduit.sender);
             if (search == peers_.end())
                 search = peers_.emplace(
                         conduit.sender, std::vector<Reference>()).first;
             search->second.push_back(conduit.receiver);
         }
+
         if (conduit.receiving_component() == kernel_) {
             // we receive on the port this conduit attaches to
             if (peers_.count(conduit.receiver)) {
@@ -40,32 +49,51 @@ PeerManager::PeerManager(
                 ss << " is allowed.";
                 throw std::runtime_error(ss.str());
             }
+            incoming_ports_.push_back(conduit.receiver);
             std::vector<Reference> vec = {conduit.sender};
             peers_.emplace(conduit.receiver, vec);
         }
     }
 }
 
-bool PeerManager::is_connected(Identifier const & port) const {
+IncomingPorts PeerInfo::list_incoming_ports() const {
+    IncomingPorts result;
+    for (auto const & port_ref: incoming_ports_) {
+        Identifier port_id = port_ref[port_ref.length() - 1].identifier();
+        result.emplace_back(port_id, peers_.at(port_ref)[0]);
+    }
+    return result;
+}
+
+OutgoingPorts PeerInfo::list_outgoing_ports() const {
+    OutgoingPorts result;
+    for (auto const & port_ref: outgoing_ports_) {
+        Identifier port_id = port_ref[port_ref.length() - 1].identifier();
+        result.emplace_back(port_id, peers_.at(port_ref));
+    }
+    return result;
+}
+
+bool PeerInfo::is_connected(Identifier const & port) const {
     return peers_.count(kernel_ + port);
 }
 
- std::vector<ymmsl::Reference> const & PeerManager::get_peer_ports(
+ std::vector<ymmsl::Reference> const & PeerInfo::get_peer_ports(
             Identifier const & port) const {
     return peers_.at(kernel_ + port);
 }
 
-std::vector<int> PeerManager::get_peer_dims(
+std::vector<int> PeerInfo::get_peer_dims(
         Reference const & peer_kernel) const {
     return peer_dims_.at(peer_kernel);
 }
 
-std::vector<std::string> PeerManager::get_peer_locations(
+std::vector<std::string> PeerInfo::get_peer_locations(
         Reference const & peer_instance) const {
     return peer_locations_.at(peer_instance);
 }
 
-std::vector<Endpoint> PeerManager::get_peer_endpoints(
+std::vector<Endpoint> PeerInfo::get_peer_endpoints(
         Identifier const & port,
         std::vector<int> const & slot
         ) const

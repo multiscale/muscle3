@@ -1,13 +1,13 @@
 #pragma once
 
-#include <libmuscle/mpp_message.hpp>
 #include <libmuscle/mcp/transport_client.hpp>
+#include <libmuscle/mpp_message.hpp>
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/profiling.hpp>
+#include <mocks/mock_support.hpp>
 
 #include <ymmsl/ymmsl.hpp>
 
-#include <functional>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -16,35 +16,27 @@
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 
-using ProfileData = std::tuple<
-        ProfileTimestamp, ProfileTimestamp, ProfileTimestamp>;
-
-
-class MockMPPClient {
+class MockMPPClient : public MockClass<MockMPPClient> {
     public:
-        MockMPPClient(std::vector<std::string> const & locations);
-        MockMPPClient(MockMPPClient const & rhs) = delete;
-        MockMPPClient & operator=(MockMPPClient const & rhs) = delete;
-        MockMPPClient(MockMPPClient && rhs) = delete;
-        MockMPPClient & operator=(MockMPPClient && rhs) = delete;
-        ~MockMPPClient();
+        MockMPPClient(ReturnValue) {
+            NAME_MOCK_MEM_FUN(MockMPPClient, constructor);
+            NAME_MOCK_MEM_FUN(MockMPPClient, receive);
+            NAME_MOCK_MEM_FUN(MockMPPClient, close);
+        }
 
-        std::tuple<DataConstRef, ProfileData> receive(
-                ::ymmsl::Reference const & receiver);
+        MockMPPClient(std::vector<std::string> const & locations) {
+            init_from_return_value();
+            constructor(locations);
+        }
 
-        void close();
+        MockFun<Void, Val<std::vector<std::string> const &>> constructor;
 
-        // Mock control variables
-        static void reset();
+        MockFun<
+            Val<std::tuple<std::vector<char>, mcp::ProfileData>>,
+            Val<::ymmsl::Reference const &>
+            > receive;
 
-        static int num_constructed;
-        static MPPMessage next_receive_message;
-        static ::ymmsl::Reference last_receiver;
-        // Called after a mocked receive
-        static std::function<void()> side_effect;
-
-    private:
-        static ::ymmsl::Settings make_overlay_();
+        MockFun<Void> close;
 };
 
 using MPPClient = MockMPPClient;

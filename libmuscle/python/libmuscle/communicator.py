@@ -1,16 +1,14 @@
 import logging
 from typing import Any, Dict, List, Optional, Tuple, cast
-from ymmsl import Conduit, Identifier, Operator, Reference, Settings
+from ymmsl import Identifier, Reference, Settings
 
 from libmuscle.endpoint import Endpoint
 from libmuscle.mpp_message import ClosePort, MPPMessage
 from libmuscle.mpp_client import MPPClient
+from libmuscle.mpp_server import MPPServer
 from libmuscle.mcp.tcp_util import SocketClosed
-from libmuscle.mcp.transport_server import TransportServer
-from libmuscle.mcp.type_registry import transport_server_types
-from libmuscle.peer_manager import PeerManager
-from libmuscle.post_office import PostOffice
-from libmuscle.port import Port
+from libmuscle.peer_info import PeerInfo
+from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import (
         ProfileEvent, ProfileEventType, ProfileTimestamp)
@@ -70,9 +68,9 @@ class Communicator:
     leaves the actual data transmission to various protocol-specific
     servers and clients.
     """
-    def __init__(self, kernel: Reference, index: List[int],
-                 declared_ports: Optional[Dict[Operator, List[str]]],
-                 profiler: Profiler) -> None:
+    def __init__(
+            self, kernel: Reference, index: List[int],
+            port_manager: PortManager, profiler: Profiler) -> None:
         """Create a Communicator.
 
         The instance reference must start with one or more Identifiers,
@@ -82,26 +80,19 @@ class Communicator:
         Args:
             kernel: The kernel this is the Communicator for.
             index: The index for this instance.
-            declared_ports: The declared ports for this instance
+            port_manager: The PortManager to use.
             profiler: The profiler to use for recording sends and
                     receives.
         """
         self._kernel = kernel
         self._index = index
-        self._declared_ports = declared_ports
-        self._post_office = PostOffice()
+        self._port_manager = port_manager
         self._profiler = profiler
 
-        self._servers: List[TransportServer] = []
+        self._server = MPPServer()
 
         # indexed by remote instance id
         self._clients: Dict[Reference, MPPClient] = {}
-
-        for server_type in transport_server_types:
-            server = server_type(self._post_office)
-            self._servers.append(server)
-
-        self._ports: Dict[str, Port] = {}
 
     def get_locations(self) -> List[str]:
         """Returns a list of locations that we can be reached at.
@@ -113,73 +104,18 @@ class Communicator:
         Returns:
             A list of strings describing network locations.
         """
-        return [server.get_location() for server in self._servers]
+        return self._server.get_locations()
 
-    def connect(self, conduits: List[Conduit],
-                peer_dims: Dict[Reference, List[int]],
-                peer_locations: Dict[Reference, List[str]]) -> None:
-        """Connect this Communicator to its peers.
+    def set_peer_info(self, peer_info: PeerInfo) -> None:
+        """Inform this Communicator about its peers.
 
-        This is the second stage in the simulation wiring process.
-
-        Peers here are instances, and peer_dims and peer_locations are
-        indexed by a Reference to an instance. Instance sets are
-        multi-dimensional arrays with sizes given by peer_dims.
+        This tells the Communicator about its peers, so that it can route
+        messages accordingly.
 
         Args:
-            conduits: A list of conduits attached to this component,
-                    as received from the manager.
-            peer_dims: For each peer we share a conduit with, the
-                    dimensions of the instance set.
-            peer_locations: A list of locations for each peer instance
-                    we share a conduit with.
+            peer_info: Information about the peers.
         """
-        self._peer_manager = PeerManager(
-                self._kernel, self._index, conduits, peer_dims,
-                peer_locations)
-
-        if self._declared_ports is not None:
-            self._ports = self.__ports_from_declared()
-        else:
-            self._ports = self.__ports_from_conduits(conduits)
-
-        self._muscle_settings_in = self.__settings_in_port(conduits)
-
-    def settings_in_connected(self) -> bool:
-        """Returns True iff muscle_settings_in is connected.
-        """
-        return self._muscle_settings_in.is_connected()
-
-    def list_ports(self) -> Dict[Operator, List[str]]:
-        """Returns a description of the ports this Communicator has.
-
-        Returns:
-            A dictionary, indexed by Operator, containing lists of
-            port names. Operators with no associated ports are not
-            included.
-        """
-        result: Dict[Operator, List[str]] = {}
-        for port_name, port in self._ports.items():
-            if port.operator not in result:
-                result[port.operator] = list()
-            result[port.operator].append(port_name)
-        return result
-
-    def port_exists(self, port_name: str) -> bool:
-        """Returns whether a port with the given name exists.
-
-        Args:
-            port_name: Port name to check.
-        """
-        return port_name in self._ports
-
-    def get_port(self, port_name: str) -> Port:
-        """Returns a Port object describing a port with the given name.
-
-        Args:
-            port: The port to retrieve.
-        """
-        return self._ports[port_name]
+        self._peer_info = peer_info
 
     def send_message(
             self, port_name: str, message: Message,
@@ -203,24 +139,18 @@ class Communicator:
         else:
             _logger.debug('Sending message on {}[{}]'.format(port_name, slot))
             slot_list = [slot]
-            slot_length = self._ports[port_name].get_length()
-            if slot_length <= slot:
-                raise RuntimeError(('Slot out of bounds. You are sending on'
-                                    ' slot {} of port "{}", which is of length'
-                                    ' {}, so that slot does not exist'
-                                    ).format(slot, port_name, slot_length))
 
         snd_endpoint = self.__get_endpoint(port_name, slot_list)
-        if not self._peer_manager.is_connected(snd_endpoint.port):
+        if not self._port_manager.get_port(str(snd_endpoint.port)).is_connected():
             # log sending on disconnected port
             return
 
-        port = self._ports[port_name]
+        port = self._port_manager.get_port(port_name)
         profile_event = ProfileEvent(
                 ProfileEventType.SEND, ProfileTimestamp(), None, port, None,
                 slot, port.get_num_messages(slot), None, message.timestamp)
 
-        recv_endpoints = self._peer_manager.get_peer_endpoints(
+        recv_endpoints = self._peer_info.get_peer_endpoints(
                 snd_endpoint.port, slot_list)
 
         port_length = None
@@ -236,7 +166,7 @@ class Communicator:
                                      checkpoints_considered_until,
                                      message.data)
             encoded_message = mpp_message.encoded()
-            self._post_office.deposit(recv_endpoint.ref(), encoded_message)
+            self._server.deposit(recv_endpoint.ref(), encoded_message)
 
         port.increment_num_messages(slot)
 
@@ -247,9 +177,8 @@ class Communicator:
         if not isinstance(message.data, ClosePort):
             self._profiler.record_event(profile_event)
 
-    def receive_message(self, port_name: str, slot: Optional[int] = None,
-                        default: Optional[Message] = None
-                        ) -> Tuple[Message, float]:
+    def receive_message(
+            self, port_name: str, slot: Optional[int] = None) -> Tuple[Message, float]:
         """Receive a message and attached settings overlay.
 
         Receiving is a blocking operation. This function will contact
@@ -264,7 +193,6 @@ class Communicator:
             port_name: The endpoint on which a message is to be
                     received.
             slot: The slot to receive the message on, if any.
-            default: A message to return if this port is not connected.
 
         Returns:
             The received message, with message.settings holding
@@ -273,9 +201,14 @@ class Communicator:
             metadata field from the received message.
 
         Raises:
-            RuntimeError: If no default was given and the port is not
-                connected.
+            RuntimeError: If the network connection had an error, or the
+                    message number was incorrect.
         """
+        if port_name == 'muscle_settings_in':
+            port = self._port_manager._muscle_settings_in
+        else:
+            port = self._port_manager.get_port(port_name)
+
         if slot is None:
             port_and_slot = port_name
             slot_list: List[int] = []
@@ -286,33 +219,13 @@ class Communicator:
 
         recv_endpoint = self.__get_endpoint(port_name, slot_list)
 
-        if not self._peer_manager.is_connected(recv_endpoint.port):
-            if default is None:
-                raise RuntimeError(('Tried to receive on port "{}", which is'
-                                    ' disconnected, and no default value was'
-                                    ' given. Either specify a default, or'
-                                    ' connect a sending component to this'
-                                    ' port.').format(port_name))
-            _logger.debug(
-                    'No message received on {} as it is not connected'.format(
-                        port_name))
-            return default, float('-inf')
-
-        if port_name in self._ports:
-            port = self._ports[port_name]
-        else:
-            # it's muscle_settings_in here, because we check for unknown
-            # user ports in Instance already, and we don't have any other
-            # built-in automatic ports.
-            port = self._muscle_settings_in
-
         receive_event = ProfileEvent(
                 ProfileEventType.RECEIVE, ProfileTimestamp(), None, port, None,
                 slot, port.get_num_messages())
 
-        # peer_manager already checks that there is at most one snd_endpoint
+        # peer_info already checks that there is at most one snd_endpoint
         # connected to the port we receive on
-        snd_endpoint = self._peer_manager.get_peer_endpoints(
+        snd_endpoint = self._peer_info.get_peer_endpoints(
                 recv_endpoint.port, slot_list)[0]
         client = self.__get_client(snd_endpoint.instance())
         try:
@@ -375,7 +288,7 @@ class Communicator:
                 _logger.debug(f'Discarding received message on {port_and_slot}'
                               ': resuming from weakly consistent snapshot')
                 port.set_resumed(slot)
-                return self.receive_message(port_name, slot, default)
+                return self.receive_message(port_name, slot)
             raise RuntimeError(f'Received message on {port_and_slot} with'
                                ' unexpected message number'
                                f' {mpp_message.message_number}. Was expecting'
@@ -389,154 +302,26 @@ class Communicator:
 
         return message, mpp_message.saved_until
 
-    def close_port(self, port_name: str, slot: Optional[int] = None
-                   ) -> None:
-        """Closes the given port.
-
-        This signals to any connected instance that no more messages
-        will be sent on this port, which it can use to decide whether
-        to shut down or continue running.
-
-        Args:
-            port_name: The name of the port to close.
-        """
-        message = Message(float('inf'), None, ClosePort(), Settings())
-        if slot is None:
-            _logger.debug('Closing port {}'.format(port_name))
-        else:
-            _logger.debug('Closing port {}[{}]'.format(port_name, slot))
-        self.send_message(port_name, message, slot)
-
     def shutdown(self) -> None:
         """Shuts down the Communicator, closing connections.
         """
+        self._close_ports()
+
         for client in self._clients.values():
             client.close()
 
         wait_event = ProfileEvent(ProfileEventType.DISCONNECT_WAIT, ProfileTimestamp())
-        self._post_office.wait_for_receivers()
+        self._server.wait_for_receivers()
         self._profiler.record_event(wait_event)
 
         shutdown_event = ProfileEvent(ProfileEventType.SHUTDOWN, ProfileTimestamp())
-        for server in self._servers:
-            server.close()
+        self._server.shutdown()
         self._profiler.record_event(shutdown_event)
-
-    def restore_message_counts(self, port_message_counts: Dict[str, List[int]]
-                               ) -> None:
-        """Restore message counts on all ports.
-        """
-        for port_name, num_messages in port_message_counts.items():
-            if port_name == "muscle_settings_in":
-                self._muscle_settings_in.restore_message_counts(num_messages)
-            elif port_name in self._ports:
-                self._ports[port_name].restore_message_counts(num_messages)
-            else:
-                raise RuntimeError(f'Unknown port {port_name} in snapshot.'
-                                   ' Have your port definitions changed since'
-                                   ' the snapshot was taken?')
-
-    def get_message_counts(self) -> Dict[str, List[int]]:
-        """Get message counts for all ports on the communicator.
-        """
-        port_message_counts = {port_name: port.get_message_counts()
-                               for port_name, port in self._ports.items()}
-        port_message_counts["muscle_settings_in"] = \
-            self._muscle_settings_in.get_message_counts()
-        return port_message_counts
 
     def __instance_id(self) -> Reference:
         """Returns our complete instance id.
         """
         return self._kernel + self._index
-
-    def __ports_from_declared(self) -> Dict[str, Port]:
-        """Derives port definitions from supplied declaration.
-        """
-        ports = dict()
-        declared_ports = cast(Dict[Operator, List[str]], self._declared_ports)
-        for operator, port_list in declared_ports.items():
-            for port_desc in port_list:
-                port_name, is_vector = self.__split_port_desc(port_desc)
-                if port_name.startswith('muscle_'):
-                    raise RuntimeError(('Port names starting with "muscle_"'
-                                        ' are reserved for MUSCLE, please'
-                                        ' rename port "{}"'.format(port_name)))
-                port_id = Identifier(port_name)
-                is_connected = self._peer_manager.is_connected(port_id)
-                if is_connected:
-                    peer_ports = self._peer_manager.get_peer_ports(port_id)
-                    peer_port = peer_ports[0]
-                    peer_ce = peer_port[:-1]
-                    port_peer_dims = self._peer_manager.get_peer_dims(peer_ce)
-                    for peer_port in peer_ports[1:]:
-                        peer_ce = peer_port[:-1]
-                        if port_peer_dims != self._peer_manager.get_peer_dims(
-                                peer_ce):
-                            port_strs = ', '.join(map(str, peer_ports))
-                            raise RuntimeError(('Multicast port "{}" is'
-                                                ' connected to peers with'
-                                                ' different dimensions. All'
-                                                ' peer components that this'
-                                                ' port is connected to must'
-                                                ' have the same multiplicity.'
-                                                ' Connected to ports: {}.'
-                                                ).format(port_name, port_strs))
-                else:
-                    port_peer_dims = []
-                ports[port_name] = Port(
-                        port_name, operator, is_vector, is_connected,
-                        len(self._index), port_peer_dims)
-        return ports
-
-    def __ports_from_conduits(self, conduits: List[Conduit]
-                              ) -> Dict[str, Port]:
-        """Derives port definitions from conduits.
-
-        Args:
-            conduits: The list of conduits.
-        """
-        ports = dict()
-        for conduit in conduits:
-            if conduit.sending_component() == self._kernel:
-                port_id = conduit.sending_port()
-                operator = Operator.O_F
-                port_peer_dims = self._peer_manager.get_peer_dims(
-                        conduit.receiving_component())
-            elif conduit.receiving_component() == self._kernel:
-                port_id = conduit.receiving_port()
-                operator = Operator.F_INIT
-                port_peer_dims = self._peer_manager.get_peer_dims(
-                        conduit.sending_component())
-            else:
-                continue
-
-            ndims = max(0, len(port_peer_dims) - len(self._index))
-            is_vector = (ndims == 1)
-            is_connected = self._peer_manager.is_connected(port_id)
-            if not str(port_id).startswith('muscle_'):
-                ports[str(port_id)] = Port(
-                        str(port_id), operator, is_vector, is_connected,
-                        len(self._index), port_peer_dims)
-        return ports
-
-    def __settings_in_port(self, conduits: List[Conduit]) -> Port:
-        """Creates a Port representing muscle_settings_in.
-
-        Args:
-            conduits: The list of conduits.
-        """
-        for conduit in conduits:
-            if conduit.receiving_component() == self._kernel:
-                port_id = conduit.receiving_port()
-                if str(port_id) == 'muscle_settings_in':
-                    return Port(str(port_id), Operator.F_INIT, False,
-                                self._peer_manager.is_connected(port_id),
-                                len(self._index),
-                                self._peer_manager.get_peer_dims(
-                                    conduit.sending_component()))
-        return Port('muscle_settings_in', Operator.F_INIT, False, False,
-                    len(self._index), [])
 
     def __get_client(self, instance: Reference) -> MPPClient:
         """Get or create a client to connect to the given instance.
@@ -548,7 +333,7 @@ class Communicator:
             An existing or new MCP client.
         """
         if instance not in self._clients:
-            locations = self._peer_manager.get_peer_locations(instance)
+            locations = self._peer_info.get_peer_locations(instance)
             _logger.info(f'Connecting to peer {instance} at {locations}')
             self._clients[instance] = MPPClient(locations)
 
@@ -569,24 +354,91 @@ class Communicator:
 
         return Endpoint(self._kernel, self._index, port, slot)
 
-    def __split_port_desc(self, port_desc: str) -> Tuple[str, bool]:
-        """Split a port description into its name and dimensionality.
+    def _close_port(self, port_name: str, slot: Optional[int] = None) -> None:
+        """Closes the given port.
 
-        Expects a port description of the form port_name or
-        port_name[], and returns the port name and whether it is a
-        vector port.
+        This signals to any connected instance that no more messages
+        will be sent on this port, which it can use to decide whether
+        to shut down or continue running.
 
         Args:
-            port_desc: A port description string, as above.
+            port_name: The name of the port to close.
         """
-        is_vector = False
-        if port_desc.endswith('[]'):
-            is_vector = True
-            port_desc = port_desc[:-2]
+        message = Message(float('inf'), None, ClosePort(), Settings())
+        if slot is None:
+            _logger.debug('Closing port {}'.format(port_name))
+        else:
+            _logger.debug('Closing port {}[{}]'.format(port_name, slot))
+        self.send_message(port_name, message, slot)
 
-        if port_desc.endswith('[]'):
-            raise ValueError(('Port description "{}" is invalid: ports can'
-                              ' have at most one dimension.').format(
-                                  port_desc))
+    def _close_outgoing_ports(self) -> None:
+        """Closes outgoing ports.
 
-        return port_desc, is_vector
+        This sends a close port message on all slots of all outgoing
+        ports.
+        """
+        for operator, ports in self._port_manager.list_ports().items():
+            if operator.allows_sending():
+                for port_name in ports:
+                    port = self._port_manager.get_port(port_name)
+                    if port.is_vector():
+                        for slot in range(port.get_length()):
+                            self._close_port(port_name, slot)
+                    else:
+                        self._close_port(port_name)
+
+    def _drain_incoming_port(self, port_name: str) -> None:
+        """Receives messages until a ClosePort is received.
+
+        Receives at least once.
+
+        Args:
+            port_name: Port to drain.
+        """
+        port = self._port_manager.get_port(port_name)
+        while port.is_open():
+            # TODO: log warning if not a ClosePort
+            self.receive_message(port_name)
+
+    def _drain_incoming_vector_port(self, port_name: str) -> None:
+        """Receives messages until a ClosePort is received.
+
+        Works with (resizable) vector ports.
+
+        Args:
+            port_name: Port to drain.
+        """
+        port = self._port_manager.get_port(port_name)
+        while not all([not port.is_open(slot)
+                       for slot in range(port.get_length())]):
+            for slot in range(port.get_length()):
+                if port.is_open(slot):
+                    self.receive_message(port_name, slot)
+
+    def _close_incoming_ports(self) -> None:
+        """Closes incoming ports.
+
+        This receives on all incoming ports until a ClosePort is
+        received on them, signaling that there will be no more
+        messages, and allowing the sending instance to shut down
+        cleanly.
+        """
+        for operator, port_names in self._port_manager.list_ports().items():
+            if operator.allows_receiving():
+                for port_name in port_names:
+                    port = self._port_manager.get_port(port_name)
+                    if not port.is_connected():
+                        continue
+                    if not port.is_vector():
+                        self._drain_incoming_port(port_name)
+                    else:
+                        self._drain_incoming_vector_port(port_name)
+
+    def _close_ports(self) -> None:
+        """Closes all ports.
+
+        This sends a close port message on all slots of all outgoing
+        ports, then receives one on all incoming ports.
+        """
+        self._close_outgoing_ports()
+        self._close_incoming_ports()

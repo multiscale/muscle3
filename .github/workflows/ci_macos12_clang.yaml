@@ -18,11 +18,15 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest
+
     - name: Install dependencies
       run: |
         python3 -m pip install --upgrade pip
         pip3 install tox tox-gh-actions
-        brew install openmpi
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install openmpi
 
     - name: Run all tests on macOS Monterey 12 with Clang
       run: cd ${GITHUB_WORKSPACE} && make test test_examples

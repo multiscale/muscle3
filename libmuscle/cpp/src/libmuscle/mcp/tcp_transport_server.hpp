@@ -16,7 +16,7 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace mcp {
 
 /** A server that accepts TCP connections.
  */
-class TcpTransportServer : public TransportServer {
+class TcpTransportServer : public TransportServerBase {
     public:
         /** Create a TcpTransportServer.
          *

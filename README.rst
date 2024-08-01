@@ -5,7 +5,7 @@
     :target: https://muscle3.readthedocs.io/en/develop/?badge=master
     :alt: Documentation Build Status
 
-.. image:: https://github.com/multiscale/muscle3/workflows/continuous_integration/badge.svg?branch=master
+.. image:: https://github.com/multiscale/muscle3/actions/workflows/ci.yaml/badge.svg?branch=master
     :target: https://github.com/multiscale/muscle3/actions
     :alt: Build Status
 
@@ -38,8 +38,8 @@ Legal
 =====
 
 MUSCLE3 is Copyright 2018-2022 University of Amsterdam and Netherlands eScience
-Center, Copyright 2023 Netherlands eScience Center, and Copyright 2022-2023 The
-ITER Organisation. It is licensed under the Apache License 2.0.
+Center, Copyright 2022-2023 The ITER Organisation, and Copyright 2023-2024 Netherlands
+eScience Center. It is licensed under the Apache License 2.0.
 
 
 Contributing

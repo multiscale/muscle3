@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 
-#include <libmuscle/data.hpp>
 #include <libmuscle/message.hpp>
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/util.hpp>
@@ -34,14 +33,14 @@ class Snapshot {
          * @param data binary data representing the snapshot. Note that this must
          *      exclude the versioning byte.
          */
-        static Snapshot from_bytes(DataConstRef const & data);
+        static Snapshot from_bytes(std::vector<char> const & data);
 
         /** Convert the snapshot object to binary data.
          *
-         * @return DataConstRef Binary data representing the snapshot. Note that this
-         *      excludes the versioning byte.
+         * @return Binary data representing the snapshot. Note that this excludes
+         *      the versioning byte.
          */
-        DataConstRef to_bytes() const;
+        std::vector<char> to_bytes() const;
 
         std::vector<std::string> triggers;
         double wallclock_time;

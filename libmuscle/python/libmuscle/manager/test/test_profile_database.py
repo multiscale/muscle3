@@ -48,7 +48,8 @@ def db_file(tmp_path) -> Path:
                 ProfileEvent(
                     ProfileEventType.SEND, t(2600), t(2900),
                     Port('out', Operator.O_I), None, None, 1000000, 0.0),
-                ProfileEvent(ProfileEventType.DEREGISTER, t(10000), t(11000))]
+                ProfileEvent(ProfileEventType.SHUTDOWN_WAIT, t(10000), t(11000)),
+                ProfileEvent(ProfileEventType.DEREGISTER, t(11000), t(11100))]
 
         store.add_events(Reference('instance1'), e1)
 
@@ -73,7 +74,8 @@ def db_file(tmp_path) -> Path:
                 ProfileEvent(
                     ProfileEventType.RECEIVE_WAIT, t(2600), t(2870),
                     Port('in', Operator.O_I), None, None, 1000000, 0.0),
-                ProfileEvent(ProfileEventType.DEREGISTER, t(10000), t(11000))]
+                ProfileEvent(ProfileEventType.SHUTDOWN_WAIT, t(10000), t(11000)),
+                ProfileEvent(ProfileEventType.DEREGISTER, t(11000), t(11100))]
 
         store.add_events(Reference('instance2'), e2)
 
@@ -126,12 +128,12 @@ def test_resource_stats(db_file):
 def test_time_taken(db_file):
     with ProfileDatabase(db_file) as db:
         assert 1000.0 == db.time_taken(etype='REGISTER', instance='instance1')
-        assert 1000.0 == db.time_taken(etype='DEREGISTER')
-        assert 11000.0 == db.time_taken(
+        assert 100.0 == db.time_taken(etype='DEREGISTER')
+        assert 11100.0 == db.time_taken(
                 etype='REGISTER', instance='instance1', etype2='DEREGISTER')
-        assert 9000.0 == db.time_taken(
+        assert 10000.0 == db.time_taken(
                 etype='REGISTER', instance='instance1', time='stop',
                 etype2='DEREGISTER', time2='start')
         assert 200.0 == db.time_taken(etype='SEND')
-        assert 2000.0 == db.time_taken(etype='DEREGISTER', aggregate='sum')
+        assert 200.0 == db.time_taken(etype='DEREGISTER', aggregate='sum')
         assert 600.0 == db.time_taken(etype='SEND', aggregate='sum')

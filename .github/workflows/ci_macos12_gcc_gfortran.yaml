@@ -17,10 +17,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest
+
     - name: Install dependencies
       run: |
-        brew install gcc
-        brew install openmpi
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install gcc
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install openmpi
         python3 -m pip install --upgrade pip
         pip3 install tox tox-gh-actions
 

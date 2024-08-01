@@ -202,6 +202,15 @@ class Settings {
         // No, not going to type-erase this.
         using const_iterator = MapType_::const_iterator;
 
+        /** Create an empty Settings object. */
+        Settings() = default;
+
+        /** Create a Settings object with the given settings.
+         *
+         * @param init An initializer list with pairs of {Reference, SettingValue}
+         */
+        Settings(std::initializer_list<MapType_::value_type> const & init);
+
         /** Compare Settings objects for equality.
          *
          * @return True iff the Settings are equal.

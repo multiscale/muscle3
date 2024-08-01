@@ -1,29 +1,34 @@
-# Run Continuous Integration on macOS 11 Big Sur, with native Clang and
+# Run Continuous Integration on macOS 14 Sonoma, with native Clang and
 # without Fortran.
 
 # This mainly checks for issues/regressions in the native build
-name: compatibility_macos_bigsur_11_clang
+name: compatibility_macos_sonoma_14_clang
 on:
   schedule:
-    - cron: '30 0 * * 6'
+    - cron: '30 8 * * 6'
   push:
     branches:
       - 'release-*'
       - fix_native_compatibility_ci
 jobs:
   build:
-    runs-on: macos-11
+    runs-on: macos-14
     timeout-minutes: 30
 
     steps:
     - uses: actions/checkout@v4
 
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest
+
     - name: Install dependencies
       run: |
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install openmpi
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install pkg-config
         python3 -m pip install --upgrade pip
         pip3 install tox tox-gh-actions
-        brew install openmpi
 
-    - name: Run all tests on macOS Big Sur 11 with Clang
+    - name: Run all tests on macOS Sonoma 14 with Clang
       run: cd ${GITHUB_WORKSPACE} && make test test_examples
 

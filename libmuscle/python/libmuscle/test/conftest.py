@@ -2,12 +2,13 @@ from copy import copy
 import pytest
 from unittest.mock import patch
 
-from ymmsl import Reference, Settings
+from ymmsl import Operator, Reference, Settings
 
 from libmuscle.api_guard import APIGuard
 from libmuscle.communicator import Message
 from libmuscle.mcp.transport_client import ProfileData
 from libmuscle.mmp_client import MMPClient
+from libmuscle.port import Port
 from libmuscle.profiler import Profiler
 from libmuscle.timestamp import Timestamp
 
@@ -57,3 +58,44 @@ def mocked_profiler():
 def profiler_comm_int_10ms():
     with patch('libmuscle.profiler._COMMUNICATION_INTERVAL', 0.01):
         yield None
+
+
+@pytest.fixture
+def declared_ports():
+    return {
+            Operator.F_INIT: ['in', 'not_connected'],
+            Operator.O_I: ['out_v', 'out_r'],
+            Operator.S: ['in_v', 'in_r', 'not_connected_v'],
+            Operator.O_F: ['out']}
+
+
+@pytest.fixture
+def mock_ports():
+    in_port = Port('in', Operator.F_INIT, False, True, 0, [])
+    nc_port = Port('not_connected', Operator.F_INIT, False, False, 0, [])
+    outv_port = Port('out_v', Operator.O_I, True, True, 0, [13])
+    outr_port = Port('out_r', Operator.O_I, True, True, 0, [])
+    inv_port = Port('in_v', Operator.S, True, True, 0, [13])
+    inr_port = Port('in_r', Operator.S, True, True, 0, [])
+    ncv_port = Port('not_connected_v', Operator.S, True, False, 0, [])
+    out_port = Port('out', Operator.O_F, False, True, 0, [])
+
+    return {
+            'in': in_port, 'not_connected': nc_port, 'out_v': outv_port,
+            'out_r': outr_port, 'in_v': inv_port, 'in_r': inr_port,
+            'not_connected_v': ncv_port, 'out': out_port}
+
+
+@pytest.fixture
+def connected_port_manager(port_manager, declared_ports, mock_ports):
+
+    def get_port(name):
+        return mock_ports[name]
+
+    def port_exists(name):
+        return name in mock_ports
+
+    port_manager.get_port = get_port
+    port_manager.list_ports.return_value = declared_ports
+    port_manager.port_exists = port_exists
+    return port_manager

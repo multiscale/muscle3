@@ -1,6 +1,7 @@
 #pragma once
 
 #include <libmuscle/namespace.hpp>
+#include <libmuscle/test_support.hpp>
 #include <libmuscle/util.hpp>
 #include <ymmsl/ymmsl.hpp>
 
@@ -146,7 +147,7 @@ class Port : public ::ymmsl::Port {
          */
         void set_resumed(Optional<int> slot = {});
 
-    private:
+    PRIVATE:
         bool is_connected_;
         int length_;
         bool is_resizable_;

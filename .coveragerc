@@ -1,7 +1,6 @@
 [run]
 
 source =
-    muscle_manager
     libmuscle/python/libmuscle
     integration_test
 

@@ -2,6 +2,7 @@
 
 #include <libmuscle/data.hpp>
 #include <libmuscle/namespace.hpp>
+#include <libmuscle/test_support.hpp>
 #include <libmuscle/util.hpp>
 
 #include <ymmsl/ymmsl.hpp>
@@ -145,7 +146,7 @@ class Message {
          */
         void unset_settings();
 
-    private:
+    PRIVATE:
         double timestamp_;
         Optional<double> next_timestamp_;
         DataConstRef data_;

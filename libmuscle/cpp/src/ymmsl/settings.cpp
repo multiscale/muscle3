@@ -238,6 +238,10 @@ std::ostream & operator<<(std::ostream & os, ymmsl::impl::SettingValue const & v
 }
 
 
+Settings::Settings(std::initializer_list<MapType_::value_type> const & init)
+    : store_(init)
+{}
+
 bool Settings::operator==(Settings const & rhs) const {
     return store_ == rhs.store_;
 }

@@ -1,7 +1,6 @@
 /* This is a part of the integration test suite, and is run from a Python
  * test in /integration_test. It is not a unit test.
  */
-#include <libmuscle/data.hpp>
 #include <libmuscle/mcp/data_pack.hpp>
 #include <libmuscle/mpp_message.hpp>
 #include <libmuscle/mpp_client.hpp>
@@ -15,7 +14,6 @@
 #include <msgpack.hpp>
 
 
-using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
 using libmuscle::_MUSCLE_IMPL_NS::MPPMessage;
 using libmuscle::_MUSCLE_IMPL_NS::MPPClient;
 using libmuscle::_MUSCLE_IMPL_NS::mcp::unpack_data;
@@ -34,7 +32,7 @@ int main(int argc, char *argv[]) {
 
     // receive a message
     Reference receiver("test_receiver.test_port2");
-    DataConstRef bytes = std::get<0>(client.receive(receiver));
+    auto bytes = std::get<0>(client.receive(receiver));
     MPPMessage message = MPPMessage::from_bytes(bytes);
 
     // check message

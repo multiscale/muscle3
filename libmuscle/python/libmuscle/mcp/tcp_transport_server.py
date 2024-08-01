@@ -4,7 +4,7 @@ import threading
 from typing import cast, List, Optional, Tuple
 from typing_extensions import Type
 
-import netifaces
+import psutil
 
 from libmuscle.mcp.transport_server import RequestHandler, TransportServer
 from libmuscle.mcp.tcp_util import (recv_all, recv_int64, send_int64,
@@ -108,15 +108,24 @@ class TcpTransportServer(TransportServer):
         self._server.server_close()
 
     def _get_if_addresses(self) -> List[str]:
+        """Returns a list of local addresses.
+
+        This returns a list of strings containing all IPv4 and IPv6 network
+        addresses bound to the available network interfaces. The server
+        will listen on all interfaces, but not all of them may be reachable
+        from the client. So we get all of them here, and the client can
+        then try them all and find one that works.
+        """
         all_addresses: List[str] = []
-        ifs = netifaces.interfaces()
-        for interface in ifs:
-            addrs = netifaces.ifaddresses(interface)
-            for props in addrs.get(netifaces.AF_INET, []):
-                if not props['addr'].startswith('127.'):
-                    all_addresses.append(props['addr'])
-            for props in addrs.get(netifaces.AF_INET6, []):
-                # filter out link-local addresses with a scope id
-                if '%' not in props['addr'] and props['addr'] != '::1':
-                    all_addresses.append('[' + props['addr'] + ']')
+        ifs = psutil.net_if_addrs()
+        for _, addresses in ifs.items():
+            for addr in addresses:
+                if addr.family == socket.AF_INET:
+                    if not addr.address.startswith('127.'):
+                        all_addresses.append(addr.address)
+                if addr.family == socket.AF_INET6:
+                    # filter out link-local addresses with a scope id
+                    if '%' not in addr.address and addr.address != '::1':
+                        all_addresses.append('[' + addr.address + ']')
+
         return all_addresses

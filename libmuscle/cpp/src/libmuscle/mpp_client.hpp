@@ -4,7 +4,6 @@
 #include LIBMUSCLE_MOCK_MPP_CLIENT
 #else
 
-#include <libmuscle/data.hpp>
 #include <libmuscle/mcp/transport_client.hpp>
 #include <libmuscle/namespace.hpp>
 
@@ -53,14 +52,13 @@ class MPPClient {
 
         /** Receive a message from a port this client connects to.
          *
-         * This returns a DataConstRef holding a byte array with the received
-         * data, and profiling data.
+         * This returns a byte array with the received data, and profiling data.
          *
          * @param The receiving (local) port.
          *
          * @return The received message.
          */
-        std::tuple<DataConstRef, mcp::ProfileData> receive(
+        std::tuple<std::vector<char>, mcp::ProfileData> receive(
                 ::ymmsl::Reference const & receiver);
 
         /** Closes this client.

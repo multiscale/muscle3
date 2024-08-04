@@ -20,9 +20,9 @@ ensures we get working online documentation. So this needs to be checked:
 - Check the other languages too
 
 If the Python API docs are missing, then it's likely to be a dependency problem.
-Sphinx needs dependencies installed, and that's now done via tox so that the
-dependencies come from ``setup.py`` and local builds should match what RTD does,
-but it's still not the same process, so it's best to check.
+Sphinx needs dependencies installed, and that's now done via tox locally as well as
+on ReadTheDocs, so that local builds should match what RTD does, but it's still not
+exactly the same process, so it's best to check.
 
 Check metadata
 --------------
@@ -35,7 +35,7 @@ Check metadata
 Update the changelog
 --------------------
 
-Each release should have an entry in the CHANGELOG.rst describing the new
+Each release should have an entry in the CHANGELOG.md describing the new
 features and fixed problems. Use the git log to get a list of the changes, and
 switch to the development branch:
 
@@ -44,11 +44,11 @@ switch to the development branch:
   git log <your favourite options>
   git switch develop
 
-and then edit CHANGELOG.rst and commit.
+and then edit CHANGELOG.md and commit.
 
 .. code-block:: bash
 
-  git add CHANGELOG.rst
+  git add CHANGELOG.md
   git commit -m 'Add version x.y.z to the change log'
 
 Make a release branch
@@ -152,8 +152,7 @@ as the title.
 The main text ends up as the description on Zenodo, so start with the first
 three paragraphs from the Introduction section of the documentation to give
 people an idea of what they're looking at. Then copy-paste the description of
-the current release from the change log, and convert it from ReStructuredText
-to MarkDown.
+the current release from the change log.
 
 Optionally select 'This is a pre-release' if it's not a final version, ensure
 'Set as the latest release' is checked, then publish it.
@@ -207,7 +206,7 @@ that we want to have back on the develop branch. So we'll merge it back in:
 
 We use --no-commit to give ourselves a chance to edit the changes before
 committing them. Make sure that README.rst is taken from the develop side,
-CHANGELOG.rst comes from the release branch, and VERSION is given a new number,
+CHANGELOG.md comes from the release branch, and VERSION is given a new number,
 probably x.y.{z+1}-dev unless you have big plans. When done, commit the merge
 and continue developing.
 

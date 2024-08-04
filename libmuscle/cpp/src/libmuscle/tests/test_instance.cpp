@@ -200,7 +200,7 @@ struct libmuscle_instance_base : ::testing::Test, ConnectedPortManagerFixture {
                 std::vector<std::string>());
 
         MockSettingsManager::return_value.get_setting.side_effect = [](
-                Reference const &, Reference const &) -> SettingValue {
+                Reference const &, Reference const &) -> const SettingValue & {
             throw std::out_of_range("No settings set in mock, unset or replace side_effect");
         };
     }

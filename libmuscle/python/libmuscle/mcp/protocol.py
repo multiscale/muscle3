@@ -22,6 +22,9 @@ class RequestType(Enum):
     SUBMIT_PROFILE_EVENTS = 6
     SUBMIT_SNAPSHOT = 7
     GET_CHECKPOINT_INFO = 8
+    # Connection deadlock detection
+    WAITING_FOR_RECEIVE = 9
+    WAITING_FOR_RECEIVE_DONE = 10
 
     # MUSCLE Peer Protocol
     GET_NEXT_MESSAGE = 21

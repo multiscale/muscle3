@@ -3,10 +3,12 @@ from typing import Any, Dict, List, Optional, Tuple, cast
 from ymmsl import Identifier, Reference, Settings
 
 from libmuscle.endpoint import Endpoint
+from libmuscle.mmp_client import MMPClient
 from libmuscle.mpp_message import ClosePort, MPPMessage
 from libmuscle.mpp_client import MPPClient
 from libmuscle.mpp_server import MPPServer
 from libmuscle.mcp.tcp_util import SocketClosed
+from libmuscle.mcp.transport_client import TimeoutHandler
 from libmuscle.peer_info import PeerInfo
 from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
@@ -60,6 +62,31 @@ class Message:
         self.settings = settings
 
 
+class RecvTimeoutHandler(TimeoutHandler):
+    def __init__(
+            self, manager: MMPClient,
+            peer_instance: str, port_name: str, slot: Optional[int],
+            timeout: float
+            ) -> None:
+        self._manager = manager
+        self._peer_instance = peer_instance
+        self._port_name = port_name
+        self._slot = slot
+        self._timeout = timeout
+
+    @property
+    def timeout(self) -> float:
+        return self._timeout
+
+    def on_timeout(self) -> None:
+        self._manager.waiting_for_receive(
+                self._peer_instance, self._port_name, self._slot)
+
+    def on_receive(self) -> None:
+        self._manager.waiting_for_receive_done(
+            self._peer_instance, self._port_name, self._slot)
+
+
 class Communicator:
     """Communication engine for MUSCLE3.
 
@@ -88,6 +115,8 @@ class Communicator:
         self._index = index
         self._port_manager = port_manager
         self._profiler = profiler
+        # TODO: make this a proper argument of __init__()
+        self._manager = profiler._manager
 
         self._server = MPPServer()
 
@@ -178,7 +207,8 @@ class Communicator:
             self._profiler.record_event(profile_event)
 
     def receive_message(
-            self, port_name: str, slot: Optional[int] = None) -> Tuple[Message, float]:
+            self, port_name: str, slot: Optional[int], timeout: float
+            ) -> Tuple[Message, float]:
         """Receive a message and attached settings overlay.
 
         Receiving is a blocking operation. This function will contact
@@ -228,8 +258,14 @@ class Communicator:
         snd_endpoint = self._peer_info.get_peer_endpoints(
                 recv_endpoint.port, slot_list)[0]
         client = self.__get_client(snd_endpoint.instance())
+        timeout_handler = None
+        if timeout >= 0:
+            timeout_handler = RecvTimeoutHandler(
+                    self._manager, str(snd_endpoint.instance()),
+                    port_name, slot, timeout)
         try:
-            mpp_message_bytes, profile = client.receive(recv_endpoint.ref())
+            mpp_message_bytes, profile = client.receive(
+                    recv_endpoint.ref(), timeout_handler)
         except (ConnectionError, SocketClosed) as exc:
             raise RuntimeError(
                 "Error while receiving a message: connection with peer"
@@ -288,7 +324,7 @@ class Communicator:
                 _logger.debug(f'Discarding received message on {port_and_slot}'
                               ': resuming from weakly consistent snapshot')
                 port.set_resumed(slot)
-                return self.receive_message(port_name, slot)
+                return self.receive_message(port_name, slot, timeout)
             raise RuntimeError(f'Received message on {port_and_slot} with'
                                ' unexpected message number'
                                f' {mpp_message.message_number}. Was expecting'
@@ -398,7 +434,7 @@ class Communicator:
         port = self._port_manager.get_port(port_name)
         while port.is_open():
             # TODO: log warning if not a ClosePort
-            self.receive_message(port_name)
+            self.receive_message(port_name, None, 10.0)  # FIXME: timeout
 
     def _drain_incoming_vector_port(self, port_name: str) -> None:
         """Receives messages until a ClosePort is received.
@@ -413,7 +449,7 @@ class Communicator:
                        for slot in range(port.get_length())]):
             for slot in range(port.get_length()):
                 if port.is_open(slot):
-                    self.receive_message(port_name, slot)
+                    self.receive_message(port_name, slot, 10.0)  # FIXME: timeout
 
     def _close_incoming_ports(self) -> None:
         """Closes incoming ports.

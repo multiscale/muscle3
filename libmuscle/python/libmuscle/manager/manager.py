@@ -14,6 +14,7 @@ from libmuscle.manager.profile_store import ProfileStore
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.manager.snapshot_registry import SnapshotRegistry
 from libmuscle.manager.topology_store import TopologyStore
+from libmuscle.manager.deadlock_detector import DeadlockDetector
 
 
 _logger = logging.getLogger(__name__)
@@ -79,11 +80,14 @@ class Manager:
         self._snapshot_registry = SnapshotRegistry(
                 configuration, snapshot_dir, self._topology_store)
         self._snapshot_registry.start()
+        # FIXME configure timeout:
+        self._deadlock_detector = DeadlockDetector(self.stop, 5.0)
+        self._deadlock_detector.start()
 
         self._server = MMPServer(
                 self._logger, self._profile_store, self._configuration,
                 self._instance_registry, self._topology_store,
-                self._snapshot_registry, run_dir)
+                self._snapshot_registry, self._deadlock_detector, run_dir)
 
         if self._instance_manager:
             self._instance_manager.set_manager_location(
@@ -121,6 +125,9 @@ class Manager:
         """Shuts down the manager."""
         if self._instance_manager:
             self._instance_manager.shutdown()
+        self._deadlock_detector.shutdown()
+        # Note: don't join() deadlock detector, as this method may be called from the
+        # DeadlockDetector thread. join() would (ironically) deadlock the shutdown :)
         self._server.stop()
         self._snapshot_registry.shutdown()
         self._snapshot_registry.join()

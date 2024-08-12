@@ -355,6 +355,7 @@ def test_reuse_set_overlay(
         instance, port_manager, mock_ports, communicator, settings_manager):
     port_manager.settings_in_connected.return_value = True
     mock_ports['in']._is_connected = False
+    instance._receive_timeout = -1
 
     mock_msg = MagicMock()
     mock_msg.data = Settings({'s1': 1, 's2': 2})
@@ -363,7 +364,7 @@ def test_reuse_set_overlay(
 
     instance.reuse_instance()
 
-    communicator.receive_message.assert_called_with('muscle_settings_in')
+    communicator.receive_message.assert_called_with('muscle_settings_in', None, -1)
     assert settings_manager.overlay['s0'] == 0
     assert settings_manager.overlay['s1'] == 1
     assert settings_manager.overlay['s2'] == 2
@@ -478,7 +479,7 @@ def test_receive_no_default(instance):
 def test_receive_inconsistent_settings(
         instance, settings_manager, port_manager, communicator):
 
-    def receive_message(port, slot=None):
+    def receive_message(port, slot, timeout):
         mock_msg = MagicMock()
         if port == 'muscle_settings_in':
             mock_msg.data = Settings({'s1': 1})

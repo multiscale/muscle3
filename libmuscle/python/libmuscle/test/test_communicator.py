@@ -115,7 +115,8 @@ def test_receive_message(connected_communicator, mpp_client):
 
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
-    recv_msg, saved_until = connected_communicator.receive_message('in', None, -1)
+    connected_communicator.set_receive_timeout(-1)
+    recv_msg, saved_until = connected_communicator.receive_message('in')
 
     mpp_client.receive.assert_called_with(Ref('component.in'), None)
 
@@ -135,7 +136,8 @@ def test_receive_message_vector(connected_communicator, mpp_client):
 
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
-    recv_msg, saved_until = connected_communicator.receive_message('in_v', 5, -1)
+    connected_communicator.set_receive_timeout(-1)
+    recv_msg, saved_until = connected_communicator.receive_message('in_v', 5)
 
     mpp_client.receive.assert_called_with(Ref('component.in_v[5]'), None)
 
@@ -155,7 +157,7 @@ def test_receive_close_port(connected_communicator, mpp_client, port_manager):
 
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
-    recv_msg, saved_until = connected_communicator.receive_message('in', None, -1)
+    recv_msg, saved_until = connected_communicator.receive_message('in')
 
     assert port_manager.get_port('in').is_open() is False
 
@@ -167,7 +169,7 @@ def test_receive_close_port_vector(connected_communicator, mpp_client, port_mana
 
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
-    recv_msg, saved_until = connected_communicator.receive_message('in_v', 5, -1)
+    recv_msg, saved_until = connected_communicator.receive_message('in_v', 5)
 
     assert port_manager.get_port('in_v').is_open(5) is False
 
@@ -182,12 +184,12 @@ def test_port_count_validation(
 
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
-    connected_communicator.receive_message('in', None, -1)
+    connected_communicator.receive_message('in')
     assert connected_port_manager.get_port('in').get_message_counts() == [1]
 
     with pytest.raises(RuntimeError):
         # the message received has message_number = 0 again
-        connected_communicator.receive_message('in', None, -1)
+        connected_communicator.receive_message('in')
 
 
 def test_port_discard_error_on_resume(
@@ -212,7 +214,7 @@ def test_port_discard_error_on_resume(
     # message_number=1
     with caplog.at_level(logging.DEBUG, 'libmuscle.communicator'):
         with pytest.raises(RuntimeError):
-            connected_communicator.receive_message('in', None, -1)
+            connected_communicator.receive_message('in')
 
         assert any([
             'Discarding received message' in rec.message
@@ -238,7 +240,7 @@ def test_port_discard_success_on_resume(
         assert connected_port_manager.get_port(port).is_resuming(None)
 
     with caplog.at_level(logging.DEBUG, 'libmuscle.communicator'):
-        msg, _ = connected_communicator.receive_message('in', None, -1)
+        msg, _ = connected_communicator.receive_message('in')
         assert any([
             'Discarding received message' in rec.message
             for rec in caplog.records])

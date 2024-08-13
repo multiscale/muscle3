@@ -117,6 +117,8 @@ class Communicator:
         self._profiler = profiler
         # TODO: make this a proper argument of __init__()
         self._manager = profiler._manager
+        # Notify manager, by default, after 10 seconds waiting in receive_message()
+        self._receive_timeout = 10.0
 
         self._server = MPPServer()
 
@@ -145,6 +147,16 @@ class Communicator:
             peer_info: Information about the peers.
         """
         self._peer_info = peer_info
+
+    def set_receive_timeout(self, receive_timeout: float) -> None:
+        """Update the timeout after which the manager is notified that we are waiting
+        for a message.
+
+        Args:
+            receive_timeout: Timeout (seconds). A negative number disables the deadlock
+                notification mechanism.
+        """
+        self._receive_timeout = receive_timeout
 
     def send_message(
             self, port_name: str, message: Message,
@@ -207,8 +219,7 @@ class Communicator:
             self._profiler.record_event(profile_event)
 
     def receive_message(
-            self, port_name: str, slot: Optional[int], timeout: float
-            ) -> Tuple[Message, float]:
+            self, port_name: str, slot: Optional[int] = None) -> Tuple[Message, float]:
         """Receive a message and attached settings overlay.
 
         Receiving is a blocking operation. This function will contact
@@ -259,10 +270,10 @@ class Communicator:
                 recv_endpoint.port, slot_list)[0]
         client = self.__get_client(snd_endpoint.instance())
         timeout_handler = None
-        if timeout >= 0:
+        if self._receive_timeout >= 0:
             timeout_handler = RecvTimeoutHandler(
                     self._manager, str(snd_endpoint.instance()),
-                    port_name, slot, timeout)
+                    port_name, slot, self._receive_timeout)
         try:
             mpp_message_bytes, profile = client.receive(
                     recv_endpoint.ref(), timeout_handler)
@@ -324,7 +335,7 @@ class Communicator:
                 _logger.debug(f'Discarding received message on {port_and_slot}'
                               ': resuming from weakly consistent snapshot')
                 port.set_resumed(slot)
-                return self.receive_message(port_name, slot, timeout)
+                return self.receive_message(port_name, slot)
             raise RuntimeError(f'Received message on {port_and_slot} with'
                                ' unexpected message number'
                                f' {mpp_message.message_number}. Was expecting'
@@ -434,7 +445,7 @@ class Communicator:
         port = self._port_manager.get_port(port_name)
         while port.is_open():
             # TODO: log warning if not a ClosePort
-            self.receive_message(port_name, None, 10.0)  # FIXME: timeout
+            self.receive_message(port_name)
 
     def _drain_incoming_vector_port(self, port_name: str) -> None:
         """Receives messages until a ClosePort is received.
@@ -449,7 +460,7 @@ class Communicator:
                        for slot in range(port.get_length())]):
             for slot in range(port.get_length()):
                 if port.is_open(slot):
-                    self.receive_message(port_name, slot, 10.0)  # FIXME: timeout
+                    self.receive_message(port_name, slot)
 
     def _close_incoming_ports(self) -> None:
         """Closes incoming ports.

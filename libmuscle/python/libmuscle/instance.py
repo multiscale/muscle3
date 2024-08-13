@@ -145,10 +145,6 @@ class Instance:
                 self._name, self._index, self._port_manager, self._profiler)
         """Communicator for this instance."""
 
-        self._receive_timeout = 10.0
-        """Timeout in seconds on message receives after which the manager is notified
-        that we are waiting for a message. Used to detect communication deadlocks."""
-
         self._declared_ports = ports
         """Declared ports for this instance."""
 
@@ -818,11 +814,13 @@ class Instance:
         """Configures receive timeout with settings from settings.
         """
         try:
-            self._receive_timeout = self.get_setting(
-                    'muscle_deadlock_receive_timeout', 'float')
+            timeout = self.get_setting('muscle_deadlock_receive_timeout', 'float')
+            self._communicator.set_receive_timeout(timeout)
         except KeyError:
             pass  # do nothing and keep the default
-        _logger.debug("Timeout on receiving messages set to %f", self._receive_timeout)
+        _logger.debug(
+                "Timeout on receiving messages set to %f",
+                self._communicator._receive_timeout)
 
     def _decide_reuse_instance(self) -> bool:
         """Decide whether and how to reuse the instance.
@@ -948,8 +946,7 @@ class Instance:
                     return default
 
             else:
-                msg, saved_until = self._communicator.receive_message(
-                        port_name, slot, self._receive_timeout)
+                msg, saved_until = self._communicator.receive_message(port_name, slot)
                 if not port.is_open(slot):
                     err_msg = (('Port {} was closed while trying to'
                                 ' receive on it, did the peer crash?'
@@ -1093,8 +1090,7 @@ class Instance:
         Returns:
             False iff the port is connnected and ClosePort was received.
         """
-        message, saved_until = self._communicator.receive_message(
-                'muscle_settings_in', None, self._receive_timeout)
+        message, saved_until = self._communicator.receive_message('muscle_settings_in')
 
         if isinstance(message.data, ClosePort):
             return False
@@ -1124,8 +1120,7 @@ class Instance:
         apply_overlay = InstanceFlags.DONT_APPLY_OVERLAY not in self._flags
 
         def pre_receive(port_name: str, slot: Optional[int]) -> None:
-            msg, saved_until = self._communicator.receive_message(
-                    port_name, slot, self._receive_timeout)
+            msg, saved_until = self._communicator.receive_message(port_name, slot)
             self._f_init_cache[(port_name, slot)] = msg
             if apply_overlay:
                 self.__apply_overlay(msg)

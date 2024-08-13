@@ -1,5 +1,5 @@
 import logging
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
@@ -46,7 +46,7 @@ def mpp_client(MPPClient):
 
 @pytest.fixture
 def communicator(connected_port_manager, profiler):
-    return Communicator(Ref('component'), [], connected_port_manager, profiler)
+    return Communicator(Ref('component'), [], connected_port_manager, profiler, Mock())
 
 
 @pytest.fixture

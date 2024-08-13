@@ -190,6 +190,9 @@ class InstanceManager:
                     _logger.info(
                             f'Instance {result.instance} was shut down by'
                             f' MUSCLE3 because an error occurred elsewhere')
+                # Ensure we don't see this as a succesful run when shutdown() is called
+                # by another thread:
+                all_seemingly_okay = False
             else:
                 stderr_file = (
                         self._run_dir.instance_dir(result.instance) /
@@ -260,6 +263,9 @@ class InstanceManager:
                         'More output may be found in'
                         f' {self._run_dir.instance_dir(result.instance)}\n'
                         )
+        elif not all_seemingly_okay:
+            # shutdown() was called by another thread (e.g. the DeadlockDetector):
+            _logger.error('The simulation was aborted.')
         else:
             _logger.info('The simulation finished without error.')
 

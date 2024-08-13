@@ -63,11 +63,28 @@ class Message:
 
 
 class RecvTimeoutHandler(TimeoutHandler):
+    """Timeout handler when receiving messages from peers.
+
+    This handler sends a message to the Muscle Manager when the receive times out (and
+    another message when the message does arrive).
+
+    This is used by the manager to detect if the simulation is in a deadlock, where a
+    cycle of instances is waiting on each other.
+    """
+
     def __init__(
             self, manager: MMPClient,
             peer_instance: str, port_name: str, slot: Optional[int],
             timeout: float
             ) -> None:
+        """Initialize a new timeout handler.
+
+        Args:
+            manager: Connection to the muscle manager.
+            peer_instance: the peer instance we try to receive from.
+            port_name: the name of the port we try to receive on.
+            slot: the slot we try to receive on.
+        """
         self._manager = manager
         self._peer_instance = peer_instance
         self._port_name = port_name
@@ -84,7 +101,7 @@ class RecvTimeoutHandler(TimeoutHandler):
 
     def on_receive(self) -> None:
         self._manager.waiting_for_receive_done(
-            self._peer_instance, self._port_name, self._slot)
+                self._peer_instance, self._port_name, self._slot)
 
 
 class Communicator:
@@ -97,7 +114,8 @@ class Communicator:
     """
     def __init__(
             self, kernel: Reference, index: List[int],
-            port_manager: PortManager, profiler: Profiler) -> None:
+            port_manager: PortManager, profiler: Profiler,
+            manager: MMPClient) -> None:
         """Create a Communicator.
 
         The instance reference must start with one or more Identifiers,
@@ -115,8 +133,7 @@ class Communicator:
         self._index = index
         self._port_manager = port_manager
         self._profiler = profiler
-        # TODO: make this a proper argument of __init__()
-        self._manager = profiler._manager
+        self._manager = manager
         # Notify manager, by default, after 10 seconds waiting in receive_message()
         self._receive_timeout = 10.0
 

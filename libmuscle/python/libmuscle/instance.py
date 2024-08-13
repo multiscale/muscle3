@@ -142,7 +142,8 @@ class Instance:
         """PortManager for this instance."""
 
         self._communicator = Communicator(
-                self._name, self._index, self._port_manager, self._profiler)
+                self._name, self._index, self._port_manager, self._profiler,
+                self.__manager)
         """Communicator for this instance."""
 
         self._declared_ports = ports

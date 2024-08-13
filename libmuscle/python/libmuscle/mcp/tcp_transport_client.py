@@ -53,7 +53,7 @@ class TcpTransportClient(TransportClient):
             self._socket = sock
 
         if hasattr(select, "poll"):
-            self._poll_obj = select.poll()
+            self._poll_obj: Optional[select.poll] = select.poll()
             self._poll_obj.register(self._socket, select.POLLIN)
         else:
             self._poll_obj = None  # On platforms that don't support select.poll
@@ -84,6 +84,7 @@ class TcpTransportClient(TransportClient):
 
         length = recv_int64(self._socket)
         if did_timeout:
+            assert timeout_handler is not None  # mypy
             timeout_handler.on_receive()
         start_transfer = ProfileTimestamp()
 

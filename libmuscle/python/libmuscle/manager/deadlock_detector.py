@@ -21,7 +21,7 @@ class DeadlockDetector(Thread):
 
         self._queue: Queue[Optional[_QueueItem]] = Queue()
         self._waiting_instances: Dict[str, str] = {}
-        self._waiting_instance_ports: Dict[str, Tuple[str, int]] = {}
+        self._waiting_instance_ports: Dict[str, Tuple[str, Optional[int]]] = {}
 
         self._detected_deadlocks: List[str] = []
 

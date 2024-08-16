@@ -6,6 +6,7 @@ import pytest
 from libmuscle.communicator import Communicator, Message
 from libmuscle.mpp_message import ClosePort, MPPMessage
 from libmuscle.peer_info import PeerInfo
+from libmuscle.receive_timeout_handler import ReceiveTimeoutHandlerFactory
 from ymmsl import Conduit, Reference as Ref, Settings
 
 
@@ -46,7 +47,9 @@ def mpp_client(MPPClient):
 
 @pytest.fixture
 def communicator(connected_port_manager, profiler):
-    return Communicator(Ref('component'), [], connected_port_manager, profiler, Mock())
+    communicator = Communicator(Ref('component'), [], connected_port_manager, profiler)
+    communicator.set_receive_timeout_factory(ReceiveTimeoutHandlerFactory(Mock(), -1))
+    return communicator
 
 
 @pytest.fixture
@@ -115,7 +118,6 @@ def test_receive_message(connected_communicator, mpp_client):
 
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
-    connected_communicator.set_receive_timeout(-1)
     recv_msg, saved_until = connected_communicator.receive_message('in')
 
     mpp_client.receive.assert_called_with(Ref('component.in'), None)
@@ -136,7 +138,6 @@ def test_receive_message_vector(connected_communicator, mpp_client):
 
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
-    connected_communicator.set_receive_timeout(-1)
     recv_msg, saved_until = connected_communicator.receive_message('in_v', 5)
 
     mpp_client.receive.assert_called_with(Ref('component.in_v[5]'), None)

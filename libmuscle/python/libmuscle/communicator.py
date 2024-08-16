@@ -3,17 +3,16 @@ from typing import Any, Dict, List, Optional, Tuple, cast
 from ymmsl import Identifier, Reference, Settings
 
 from libmuscle.endpoint import Endpoint
-from libmuscle.mmp_client import MMPClient
 from libmuscle.mpp_message import ClosePort, MPPMessage
 from libmuscle.mpp_client import MPPClient
 from libmuscle.mpp_server import MPPServer
 from libmuscle.mcp.tcp_util import SocketClosed
-from libmuscle.mcp.transport_client import TimeoutHandler
 from libmuscle.peer_info import PeerInfo
 from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import (
         ProfileEvent, ProfileEventType, ProfileTimestamp)
+from libmuscle.receive_timeout_handler import ReceiveTimeoutHandlerFactory
 
 
 _logger = logging.getLogger(__name__)
@@ -62,48 +61,6 @@ class Message:
         self.settings = settings
 
 
-class RecvTimeoutHandler(TimeoutHandler):
-    """Timeout handler when receiving messages from peers.
-
-    This handler sends a message to the Muscle Manager when the receive times out (and
-    another message when the message does arrive).
-
-    This is used by the manager to detect if the simulation is in a deadlock, where a
-    cycle of instances is waiting on each other.
-    """
-
-    def __init__(
-            self, manager: MMPClient,
-            peer_instance: str, port_name: str, slot: Optional[int],
-            timeout: float
-            ) -> None:
-        """Initialize a new timeout handler.
-
-        Args:
-            manager: Connection to the muscle manager.
-            peer_instance: the peer instance we try to receive from.
-            port_name: the name of the port we try to receive on.
-            slot: the slot we try to receive on.
-        """
-        self._manager = manager
-        self._peer_instance = peer_instance
-        self._port_name = port_name
-        self._slot = slot
-        self._timeout = timeout
-
-    @property
-    def timeout(self) -> float:
-        return self._timeout
-
-    def on_timeout(self) -> None:
-        self._manager.waiting_for_receive(
-                self._peer_instance, self._port_name, self._slot)
-
-    def on_receive(self) -> None:
-        self._manager.waiting_for_receive_done(
-                self._peer_instance, self._port_name, self._slot)
-
-
 class Communicator:
     """Communication engine for MUSCLE3.
 
@@ -114,8 +71,7 @@ class Communicator:
     """
     def __init__(
             self, kernel: Reference, index: List[int],
-            port_manager: PortManager, profiler: Profiler,
-            manager: MMPClient) -> None:
+            port_manager: PortManager, profiler: Profiler) -> None:
         """Create a Communicator.
 
         The instance reference must start with one or more Identifiers,
@@ -133,10 +89,10 @@ class Communicator:
         self._index = index
         self._port_manager = port_manager
         self._profiler = profiler
-        self._manager = manager
-        # Notify manager, by default, after 10 seconds waiting in receive_message()
-        self._receive_timeout = 10.0
 
+        # Note: Instance will set this attribute with a call to
+        # set_receive_timeout_factory() before it is used
+        self._receive_timeout_handler_factory: ReceiveTimeoutHandlerFactory
         self._server = MPPServer()
 
         # indexed by remote instance id
@@ -165,15 +121,12 @@ class Communicator:
         """
         self._peer_info = peer_info
 
-    def set_receive_timeout(self, receive_timeout: float) -> None:
-        """Update the timeout after which the manager is notified that we are waiting
-        for a message.
-
-        Args:
-            receive_timeout: Timeout (seconds). A negative number disables the deadlock
-                notification mechanism.
+    def set_receive_timeout_factory(
+            self, factory: ReceiveTimeoutHandlerFactory) -> None:
+        """Set the factory function for the receive timeout handler (used for deadlock
+        detection).
         """
-        self._receive_timeout = receive_timeout
+        self._receive_timeout_handler_factory = factory
 
     def send_message(
             self, port_name: str, message: Message,
@@ -286,11 +239,9 @@ class Communicator:
         snd_endpoint = self._peer_info.get_peer_endpoints(
                 recv_endpoint.port, slot_list)[0]
         client = self.__get_client(snd_endpoint.instance())
-        timeout_handler = None
-        if self._receive_timeout >= 0:
-            timeout_handler = RecvTimeoutHandler(
-                    self._manager, str(snd_endpoint.instance()),
-                    port_name, slot, self._receive_timeout)
+        # Set timeout handler for message receives (deadlock detection)
+        timeout_handler = self._receive_timeout_handler_factory(
+                str(snd_endpoint), port_name, slot)
         try:
             mpp_message_bytes, profile = client.receive(
                     recv_endpoint.ref(), timeout_handler)

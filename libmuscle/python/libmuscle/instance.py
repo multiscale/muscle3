@@ -23,7 +23,6 @@ from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import (
         ProfileEvent, ProfileEventType, ProfileTimestamp)
-from libmuscle.receive_timeout_handler import ReceiveTimeoutHandlerFactory
 from libmuscle.snapshot_manager import SnapshotManager
 from libmuscle.util import extract_log_file_location
 
@@ -143,7 +142,8 @@ class Instance:
         """PortManager for this instance."""
 
         self._communicator = Communicator(
-                self._name, self._index, self._port_manager, self._profiler)
+                self._name, self._index, self._port_manager, self._profiler,
+                self.__manager)
         """Communicator for this instance."""
 
         self._declared_ports = ports
@@ -183,7 +183,7 @@ class Instance:
         # Note: self._setup_checkpointing() needs to have the ports initialized
         # so it comes after self._connect()
         self._setup_checkpointing()
-        # profiling, logging and receive timeout need settings: come after register_()
+        # profiling and logging need settings, so come after register_()
         self._set_local_log_level()
         self._set_remote_log_level()
         self._setup_profiling()
@@ -816,13 +816,12 @@ class Instance:
         """
         try:
             timeout = self.get_setting('muscle_deadlock_receive_timeout', 'float')
+            self._communicator.set_receive_timeout(timeout)
         except KeyError:
-            timeout = 10.0  # Use 10 seconds as default timeout
+            pass  # do nothing and keep the default
         _logger.debug(
                 "Timeout on receiving messages set to %f",
-                timeout)
-        factory = ReceiveTimeoutHandlerFactory(self.__manager, timeout)
-        self._communicator.set_receive_timeout_factory(factory)
+                self._communicator._receive_timeout)
 
     def _decide_reuse_instance(self) -> bool:
         """Decide whether and how to reuse the instance.

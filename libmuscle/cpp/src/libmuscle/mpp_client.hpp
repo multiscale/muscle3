@@ -59,7 +59,8 @@ class MPPClient {
          * @return The received message.
          */
         std::tuple<std::vector<char>, mcp::ProfileData> receive(
-                ::ymmsl::Reference const & receiver);
+                ::ymmsl::Reference const & receiver,
+                mcp::TimeoutHandler *timeout_handler=nullptr);
 
         /** Closes this client.
          *

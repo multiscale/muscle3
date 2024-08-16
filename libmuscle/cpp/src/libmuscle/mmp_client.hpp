@@ -123,6 +123,16 @@ class MMPClient {
 
         void deregister_instance();
 
+        /** Notify the manager that we're waiting to receive a message. */
+        void waiting_for_receive(
+                std::string const & peer_instance_id, std::string const & port_name,
+                Optional<int> slot);
+
+        /** Notify the manager that we're done waiting to receive a message. */
+        void waiting_for_receive_done(
+                std::string const & peer_instance_id, std::string const & port_name,
+                Optional<int> slot);
+
     private:
         ymmsl::Reference instance_id_;
         mcp::TcpTransportClient transport_client_;

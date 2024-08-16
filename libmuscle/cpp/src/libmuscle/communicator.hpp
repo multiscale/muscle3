@@ -6,6 +6,7 @@
 
 #include <libmuscle/logger.hpp>
 #include <libmuscle/message.hpp>
+#include <libmuscle/mmp_client.hpp>
 #include <libmuscle/mpp_client.hpp>
 #include <libmuscle/mpp_server.hpp>
 #include <libmuscle/namespace.hpp>
@@ -14,6 +15,7 @@
 #include <libmuscle/port_manager.hpp>
 #include <libmuscle/ports_description.hpp>
 #include <libmuscle/profiler.hpp>
+#include <libmuscle/receive_timeout_handler.hpp>
 #include <libmuscle/test_support.hpp>
 #include <libmuscle/util.hpp>
 
@@ -53,7 +55,8 @@ class Communicator {
                 ymmsl::Reference const & kernel,
                 std::vector<int> const & index,
                 PortManager & port_manager,
-                Logger & logger, Profiler & profiler);
+                Logger & logger, Profiler & profiler,
+                MMPClient & manager);
 
         /** Returns a list of locations that we can be reached at.
          *
@@ -127,6 +130,19 @@ class Communicator {
          */
         void shutdown();
 
+        /** Update the timeout after which the manager is notified that we are
+         * waiting for a message.
+         * 
+         * @param receive_timeout Timeout (seconds). A negative number disables
+         *      the deadlock notification mechanism.
+         */
+        void set_receive_timeout(double receive_timeout) { receive_timeout_ = receive_timeout; }
+
+        /** Get the timeout after which the manager is notified that we are
+         * waiting for a message.
+         */
+        double get_receive_timeout() const { return receive_timeout_; }
+
     PRIVATE:
         using Ports_ = std::unordered_map<std::string, Port>;
 
@@ -140,7 +156,7 @@ class Communicator {
 
         std::tuple<std::vector<char>, mcp::ProfileData> try_receive_(
                 MPPClient & client, ymmsl::Reference const & receiver,
-                ymmsl::Reference const & peer);
+                ymmsl::Reference const & peer, ReceiveTimeoutHandler *handler);
 
         void close_port_(std::string const & port_name, Optional<int> slot = {});
 
@@ -186,9 +202,11 @@ class Communicator {
         PortManager & port_manager_;
         Logger & logger_;
         Profiler & profiler_;
+        MMPClient & manager_;
         MPPServer server_;
         std::unordered_map<ymmsl::Reference, std::unique_ptr<MPPClient>> clients_;
         Optional<PeerInfo> peer_info_;
+        double receive_timeout_;
 };
 
 } }

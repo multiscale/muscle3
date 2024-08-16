@@ -32,6 +32,8 @@ class MockMMPClient : public MockClass<MockMMPClient> {
             NAME_MOCK_MEM_FUN(MockMMPClient, register_instance);
             NAME_MOCK_MEM_FUN(MockMMPClient, request_peers);
             NAME_MOCK_MEM_FUN(MockMMPClient, deregister_instance);
+            NAME_MOCK_MEM_FUN(MockMMPClient, waiting_for_receive);
+            NAME_MOCK_MEM_FUN(MockMMPClient, waiting_for_receive_done);
 
             // Create some empty return objects for return values with a complex
             // structure, to make it easier to set them in the tests or fixtures.
@@ -95,6 +97,14 @@ class MockMMPClient : public MockClass<MockMMPClient> {
             >>> request_peers;
 
         MockFun<Void> deregister_instance;
+
+        MockFun<Void,
+            Val<std::string const &>, Val<std::string const &>, Val<Optional<int>>
+            > waiting_for_receive;
+
+        MockFun<Void,
+            Val<std::string const &>, Val<std::string const &>, Val<Optional<int>>
+            > waiting_for_receive_done;
 };
 
 using MMPClient = MockMMPClient;

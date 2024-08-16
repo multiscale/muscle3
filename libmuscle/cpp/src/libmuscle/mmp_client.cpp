@@ -323,6 +323,30 @@ void MMPClient::deregister_instance() {
     }
 }
 
+void MMPClient::waiting_for_receive(
+        std::string const & peer_instance_id, std::string const & port_name,
+        Optional<int> slot)
+{
+    auto request = Data::list(
+            static_cast<int>(RequestType::waiting_for_receive),
+            static_cast<std::string>(instance_id_),
+            peer_instance_id, port_name, encode_optional(slot));
+
+    auto response = call_manager_(request);
+}
+
+void MMPClient::waiting_for_receive_done(
+        std::string const & peer_instance_id, std::string const & port_name,
+        Optional<int> slot)
+{
+    auto request = Data::list(
+            static_cast<int>(RequestType::waiting_for_receive_done),
+            static_cast<std::string>(instance_id_),
+            peer_instance_id, port_name, encode_optional(slot));
+
+    auto response = call_manager_(request);
+}
+
 DataConstRef MMPClient::call_manager_(DataConstRef const & request) {
     std::lock_guard<std::mutex> lock(mutex_);
 

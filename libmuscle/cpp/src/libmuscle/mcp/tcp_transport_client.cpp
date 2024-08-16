@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <chrono>
 #include <memory>
 #include <string>
 #include <unistd.h>
@@ -13,6 +14,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/tcp.h>
+#include <poll.h>
 
 
 namespace {
@@ -128,12 +130,51 @@ TcpTransportClient::~TcpTransportClient() {
 }
 
 std::tuple<std::vector<char>, ProfileData> TcpTransportClient::call(
-        char const * req_buf, std::size_t req_len
+        char const * req_buf, std::size_t req_len,
+        TimeoutHandler* timeout_handler
 ) const {
     ProfileTimestamp start_wait;
     send_frame(socket_fd_, req_buf, req_len);
 
-    int64_t length = recv_int64(socket_fd_);
+    int64_t length;
+    if (timeout_handler == nullptr) {
+        length = recv_int64(socket_fd_);
+    } else {
+        using std::chrono::duration;
+        using std::chrono::steady_clock;
+        using std::chrono::milliseconds;
+        using std::chrono::duration_cast;
+
+        const auto timeout_duration = duration<double>(timeout_handler->get_timeout());
+        const auto deadline = steady_clock::now() + timeout_duration;
+        int poll_result;
+        pollfd socket_poll_fd;
+        socket_poll_fd.fd = socket_fd_;
+        socket_poll_fd.events = POLLIN;
+        do {
+            int timeout_ms = duration_cast<milliseconds>(deadline - steady_clock::now()).count();
+            poll_result = poll(&socket_poll_fd, 1, timeout_ms);
+
+            if (poll_result >= 0)
+                break;
+
+            if (errno != EINTR)
+                throw std::runtime_error("Unexpected error during poll(): "+std::to_string(errno));
+            
+            // poll() was interrupted by a signal: retry with re-calculated timeout
+        } while (1);
+
+        if (poll_result == 0) {
+            // time limit expired
+            timeout_handler->on_timeout();
+            length = recv_int64(socket_fd_);
+            timeout_handler->on_receive();
+        } else {
+            // socket is ready for a receive, this call shouldn't block:
+            length = recv_int64(socket_fd_);
+        }
+    }
+
     ProfileTimestamp start_transfer;
     std::vector<char> result(length);
     recv_all(socket_fd_, result.data(), result.size());

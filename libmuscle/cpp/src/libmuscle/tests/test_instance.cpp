@@ -179,6 +179,7 @@ struct libmuscle_instance_base : ::testing::Test, ConnectedPortManagerFixture {
         auto & mock_comm = MockCommunicator::return_value;
         mock_comm.get_locations.return_value = std::vector<std::string>(
                 {"tcp:test1,test2", "tcp:test3"});
+        mock_comm.get_receive_timeout.return_value = 10.0;
 
         auto & mock_port_manager = MockPortManager::return_value;
         mock_port_manager.settings_in_connected.return_value = false;

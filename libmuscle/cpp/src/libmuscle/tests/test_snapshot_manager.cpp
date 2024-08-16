@@ -16,6 +16,7 @@
 #include <libmuscle/mcp/data_pack.cpp>
 #include <libmuscle/message.cpp>
 #include <libmuscle/port.cpp>
+#include <libmuscle/receive_timeout_handler.cpp>
 #include <libmuscle/settings_manager.cpp>
 #include <libmuscle/snapshot_manager.cpp>
 #include <libmuscle/timestamp.cpp>

@@ -34,14 +34,17 @@ Communicator::Communicator(
         ymmsl::Reference const & kernel,
         std::vector<int> const & index,
         PortManager & port_manager,
-        Logger & logger, Profiler & profiler)
+        Logger & logger, Profiler & profiler,
+        MMPClient & manager)
     : kernel_(kernel)
     , index_(index)
     , port_manager_(port_manager)
     , logger_(logger)
     , profiler_(profiler)
+    , manager_(manager)
     , server_()
     , clients_()
+    , receive_timeout_(10.0)  // Notify manager, by default, after 10 seconds waiting in receive_message()
 {}
 
 std::vector<std::string> Communicator::get_locations() const {
@@ -138,8 +141,12 @@ std::tuple<Message, double> Communicator::receive_message(
     Endpoint snd_endpoint = peer_info_.get().get_peer_endpoints(
             recv_endpoint.port, slot_list).at(0);
     MPPClient & client = get_client_(snd_endpoint.instance());
+    std::string peer_instance = static_cast<std::string>(snd_endpoint.instance());
+    ReceiveTimeoutHandler handler(
+            manager_, peer_instance, port_name, slot, receive_timeout_);
+    ReceiveTimeoutHandler *timeout_handler = receive_timeout_ < 0 ? nullptr : &handler;
     auto msg_and_profile = try_receive_(
-            client, recv_endpoint.ref(), snd_endpoint.kernel);
+            client, recv_endpoint.ref(), snd_endpoint.kernel, timeout_handler);
     auto & msg = std::get<0>(msg_and_profile);
 
     ProfileEvent recv_decode_event(
@@ -289,9 +296,10 @@ Endpoint Communicator::get_endpoint_(
 }
 
 std::tuple<std::vector<char>, mcp::ProfileData> Communicator::try_receive_(
-        MPPClient & client, Reference const & receiver, Reference const & peer) {
+        MPPClient & client, Reference const & receiver, Reference const & peer,
+        ReceiveTimeoutHandler *timeout_handler) {
     try {
-        return client.receive(receiver);
+        return client.receive(receiver, timeout_handler);
     } catch(std::runtime_error const & err) {
         throw std::runtime_error(
             "Error while receiving a message: connection with peer '" +

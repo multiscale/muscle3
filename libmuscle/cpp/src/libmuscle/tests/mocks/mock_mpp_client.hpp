@@ -31,10 +31,19 @@ class MockMPPClient : public MockClass<MockMPPClient> {
 
         MockFun<Void, Val<std::vector<std::string> const &>> constructor;
 
-        MockFun<
+        // Use option 1 of the "Functions with default arguments" section
+        // (from mock_support.hpp:192)
+        using BaseMockFun = MockFun<
             Val<std::tuple<std::vector<char>, mcp::ProfileData>>,
-            Val<::ymmsl::Reference const &>
-            > receive;
+            Val<::ymmsl::Reference const &>, Obj<mcp::TimeoutHandler *>>;
+        struct MockOverloadedFun : BaseMockFun {
+            std::tuple<std::vector<char>, mcp::ProfileData> operator()(
+                    ::ymmsl::Reference const & receiver,
+                    mcp::TimeoutHandler *timeout_handler=nullptr) {
+                return BaseMockFun::operator()(receiver, timeout_handler);
+            }
+        } receive;
+        
 
         MockFun<Void> close;
 };

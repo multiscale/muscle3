@@ -1,4 +1,3 @@
-import logging
 import time
 from typing import Iterator
 from unittest.mock import Mock
@@ -6,6 +5,11 @@ from unittest.mock import Mock
 import pytest
 
 from libmuscle.manager.deadlock_detector import DeadlockDetector
+
+
+# Decorator for tests that expect an exception in the DeadlockDetector thread
+ignore_unhandled_thread_exception = pytest.mark.filterwarnings(
+    "ignore::pytest.PytestUnhandledThreadExceptionWarning")
 
 
 @pytest.fixture
@@ -33,47 +37,43 @@ def test_no_deadlock(shutdown_callback: Mock, detector: DeadlockDetector) -> Non
     shutdown_callback.assert_not_called()
 
 
-def test_double_waiting_log_error(
-        caplog: pytest.LogCaptureFixture, detector: DeadlockDetector) -> None:
+@ignore_unhandled_thread_exception
+def test_double_waiting_log_error(detector: DeadlockDetector) -> None:
     detector.put_waiting("macro", "micro", "s", 0)
     detector.put_waiting("macro", "micro", "s", 1)
-    detector.shutdown()
-    detector.join()
-    assert len(caplog.record_tuples) == 1
-    assert caplog.record_tuples[0][:2] == (
-            "libmuscle.manager.deadlock_detector", logging.ERROR)
+    # This should trigger an AssertionError in the thread and shut it down.
+    # We cannot test for the exception, so check that the thread is not running anymore:
+    detector.join(0.1)
+    assert not detector.is_alive()
 
 
-def test_not_waiting_log_error(
-        caplog: pytest.LogCaptureFixture, detector: DeadlockDetector) -> None:
+@ignore_unhandled_thread_exception
+def test_not_waiting_log_error(detector: DeadlockDetector) -> None:
     detector.put_waiting_done("macro", "micro", "s", 0)
-    detector.shutdown()
-    detector.join()
-    assert len(caplog.record_tuples) == 1
-    assert caplog.record_tuples[0][:2] == (
-            "libmuscle.manager.deadlock_detector", logging.ERROR)
+    # This should trigger an AssertionError in the thread and shut it down.
+    # We cannot test for the exception, so check that the thread is not running anymore:
+    detector.join(0.1)
+    assert not detector.is_alive()
 
 
-def test_waiting_for_different_instance_log_error(
-        caplog: pytest.LogCaptureFixture, detector: DeadlockDetector) -> None:
+@ignore_unhandled_thread_exception
+def test_waiting_for_different_instance_log_error(detector: DeadlockDetector) -> None:
     detector.put_waiting("macro", "micro", "s", 0)
     detector.put_waiting_done("macro", "meso", "s", 0)
-    detector.shutdown()
-    detector.join()
-    assert len(caplog.record_tuples) == 1
-    assert caplog.record_tuples[0][:2] == (
-            "libmuscle.manager.deadlock_detector", logging.ERROR)
+    # This should trigger an AssertionError in the thread and shut it down.
+    # We cannot test for the exception, so check that the thread is not running anymore:
+    detector.join(0.1)
+    assert not detector.is_alive()
 
 
-def test_waiting_for_different_port_log_error(
-        caplog: pytest.LogCaptureFixture, detector: DeadlockDetector) -> None:
+@ignore_unhandled_thread_exception
+def test_waiting_for_different_port_log_error(detector: DeadlockDetector) -> None:
     detector.put_waiting("macro", "micro", "s", 0)
     detector.put_waiting_done("macro", "micro", "f_init", 0)
-    detector.shutdown()
-    detector.join()
-    assert len(caplog.record_tuples) == 1
-    assert caplog.record_tuples[0][:2] == (
-            "libmuscle.manager.deadlock_detector", logging.ERROR)
+    # This should trigger an AssertionError in the thread and shut it down.
+    # We cannot test for the exception, so check that the thread is not running anymore:
+    detector.join(0.1)
+    assert not detector.is_alive()
 
 
 def test_deadlock(shutdown_callback: Mock, detector: DeadlockDetector) -> None:

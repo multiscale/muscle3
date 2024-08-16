@@ -80,7 +80,10 @@ class Manager:
         self._snapshot_registry = SnapshotRegistry(
                 configuration, snapshot_dir, self._topology_store)
         self._snapshot_registry.start()
-        # FIXME configure timeout:
+
+        # Hard-code grace period to 5 seconds. We may want to do something smarter in
+        # the future (e.g. set a timeout dependent on the number of instances), but this
+        # should suffice for now:
         self._deadlock_detector = DeadlockDetector(self.stop, 5.0)
         self._deadlock_detector.start()
 
@@ -127,7 +130,8 @@ class Manager:
             self._instance_manager.shutdown()
         self._deadlock_detector.shutdown()
         # Note: don't join() deadlock detector, as this method may be called from the
-        # DeadlockDetector thread. join() would (ironically) deadlock the shutdown :)
+        # DeadlockDetector thread and calling join() on your own thread raises a
+        # RuntimeError.
         self._server.stop()
         self._snapshot_registry.shutdown()
         self._snapshot_registry.join()

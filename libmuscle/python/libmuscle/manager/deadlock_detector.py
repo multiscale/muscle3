@@ -60,19 +60,29 @@ class DeadlockDetector(Thread):
         """Logic that is executed in the thread."""
         while True:
             # Set a timeout when a deadlock was detected
-            timeout = None
+            seconds_until_abort = None
             if self._shutdown_time is not None:
-                timeout = max(0, self._shutdown_time - time.monotonic())
+                seconds_until_abort = max(0, self._shutdown_time - time.monotonic())
 
             # Grab a new item from the queue, this raises Empty when timeout expires:
             try:
-                item = self._queue.get(timeout=timeout)
+                item = self._queue.get(timeout=seconds_until_abort)
                 if item is None:  # On shutdown, None is pushed to the queue
                     return  # exit thread
                 self._process_queue_item(item)
 
             except Empty:
-                # timeout expired and queue is empty, call shutdown callback
+                # Timeout was set and has expired without any new messages:
+                # - We only set a timeout when there is a deadlock
+                # - An item is pushed to the queue when any instance sends a
+                #   WAITING_FOR_RECEIVE_DONE message (which may cancel a potential
+                #   deadlock)
+                # Therefore:
+                # - We have not received a message cancelling a deadlock cycle
+                #   (otherwise this would have triggered a _process_queue_item, clearing
+                #   self._shutdown_time and we had not set another timeout). And so a
+                #   deadlock is still present. Assert it to be absolutely certain:
+                assert self._detected_deadlocks
                 formatted_deadlocks = "\n\n".join(
                         self._format_deadlock(instances)
                         for instances in self._detected_deadlocks)
@@ -127,11 +137,8 @@ class DeadlockDetector(Thread):
         is_waiting, instance_id, peer_instance_id, port_name, slot = item
         if is_waiting:
             # Sanity checks, triggering this is a bug in the instance or the manager
-            if instance_id in self._waiting_instances:
-                _logger.error(
-                    "Instance %s was already waiting on a receive call. "
-                    "Did we miss a WAITING DONE event?",
-                    instance_id)
+            assert instance_id not in self._waiting_instances
+
             # Register that the instance is waiting
             self._waiting_instances[instance_id] = peer_instance_id
             self._waiting_instance_ports[instance_id] = (port_name, slot)
@@ -139,32 +146,23 @@ class DeadlockDetector(Thread):
 
         else:
             # Sanity checks, triggering these is a bug in the instance or the manager
-            if instance_id not in self._waiting_instances:
-                _logger.error(
-                    "Instance %s is not waiting on a receive call.", instance_id)
-            elif self._waiting_instances[instance_id] != peer_instance_id:
-                _logger.error(
-                    "Instance %s was waiting for %s, not for %s.",
-                    instance_id,
-                    self._waiting_instances[instance_id],
-                    peer_instance_id)
-            elif self._waiting_instance_ports[instance_id] != (port_name, slot):
-                _logger.error(
-                    "Instance %s was waiting on port[slot] %s[%s], not on %s[%s]",
-                    instance_id,
-                    *self._waiting_instance_ports[instance_id],
-                    port_name, slot)
-            else:
-                del self._waiting_instances[instance_id]
-                del self._waiting_instance_ports[instance_id]
+            assert instance_id in self._waiting_instances
+            assert self._waiting_instances[instance_id] == peer_instance_id
+            assert self._waiting_instance_ports[instance_id] == (port_name, slot)
 
-                # Check if we were part of a deadlock
-                for i, instance_list in enumerate(self._detected_deadlocks):
-                    if instance_id in instance_list:
-                        del self._detected_deadlocks[i]
-                        break
-                if not self._detected_deadlocks:
-                    # There are no deadlocks anymore: cancel shutdown
+            # We're not waiting anymore
+            del self._waiting_instances[instance_id]
+            del self._waiting_instance_ports[instance_id]
+
+            # Check if we were part of a deadlock
+            for i, instance_list in enumerate(self._detected_deadlocks):
+                if instance_id in instance_list:
+                    del self._detected_deadlocks[i]
+                    break
+            if not self._detected_deadlocks:
+                # There are no deadlocks anymore: cancel shutdown
+                if self._shutdown_time is not None:
+                    _logger.info("Deadlock has resolved, abort is cancelled.")
                     self._shutdown_time = None
 
     def _check_for_deadlock(self, instance_id: str) -> None:
@@ -207,7 +205,7 @@ class DeadlockDetector(Thread):
             deadlock_instances: list of instances waiting on eachother
         """
         num_instances = str(len(deadlock_instances))
-        lines = [f"The following {num_instances} instances are dead-locked:"]
+        lines = [f"The following {num_instances} instances are deadlocked:"]
         for i, instance in enumerate(deadlock_instances):
             num = str(i+1).rjust(len(num_instances))
             peer_instance = self._waiting_instances[instance]

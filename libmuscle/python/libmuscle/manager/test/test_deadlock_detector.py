@@ -79,7 +79,7 @@ def test_waiting_for_different_port_log_error(
 def test_deadlock(shutdown_callback: Mock, detector: DeadlockDetector) -> None:
     detector.put_waiting("macro", "micro", "s", None)
     detector.put_waiting("micro", "macro", "f_init", None)
-    time.sleep(0.05)
+    detector.join(1)  # wait max 1 second then check that the deadlock was detected
     assert not detector.is_alive()
     shutdown_callback.assert_called_once()
 
@@ -101,6 +101,6 @@ def test_double_deadlock(shutdown_callback: Mock, detector: DeadlockDetector) ->
     detector.put_waiting("cycle2", "peer2", "s", None)
     detector.put_waiting("peer2", "cycle2", "f_init", None)
     detector.put_waiting_done("macro", "micro", "s", None)
-    time.sleep(0.05)
+    detector.join(1)  # wait max 1 second then check that the deadlock was detected
     assert not detector.is_alive()
     shutdown_callback.assert_called()

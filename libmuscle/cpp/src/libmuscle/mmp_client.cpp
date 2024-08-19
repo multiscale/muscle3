@@ -349,7 +349,7 @@ void MMPClient::waiting_for_receive_done(
 
 bool MMPClient::is_deadlocked() {
     auto request = Data::list(
-            static_cast<int>(RequestType::waiting_for_receive_done),
+            static_cast<int>(RequestType::is_deadlocked),
             static_cast<std::string>(instance_id_));
     
     auto response = call_manager_(request);

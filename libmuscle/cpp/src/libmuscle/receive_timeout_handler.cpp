@@ -27,6 +27,7 @@ void ReceiveTimeoutHandler::on_timeout()
     else
         if (manager_.is_deadlocked())
             throw Deadlock();
+    num_timeout_ ++;
 }
 
 void ReceiveTimeoutHandler::on_receive()

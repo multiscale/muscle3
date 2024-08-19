@@ -72,10 +72,12 @@ def _python_wrapper(instance_name, muscle_manager, callable):
     callable()
 
 
-def run_manager_with_actors(ymmsl_text, tmpdir, actors):
+def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
     """Start muscle_manager along with C++ and python actors.
 
     Args:
+        ymmsl_text: YMMSL configuration for the simulation
+        tmpdir: Temporary folder to use as runpath a
         actors: a dictionary of lists containing details for each actor:
             ``{"instance_name": ("language", "details", ...)}``.
 
@@ -155,10 +157,17 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors):
         # check results
         for proc in native_processes:
             proc.wait()
-            assert proc.returncode == 0
+            if expect_success:
+                assert proc.returncode == 0
         for proc in python_processes:
             proc.join()
-            assert proc.exitcode == 0
+            if expect_success:
+                assert proc.exitcode == 0
+        if not expect_success:
+            # Check that at least one process has failed
+            assert (
+                    any(proc.returncode != 0 for proc in native_processes) or
+                    any(proc.exitcode != 0 for proc in python_processes))
 
 
 @pytest.fixture

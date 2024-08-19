@@ -57,7 +57,7 @@ def snapshot_registry(mmp_configuration, topology_store) -> SnapshotRegistry:
 
 @pytest.fixture
 def deadlock_detector() -> DeadlockDetector:
-    return DeadlockDetector(lambda: None, 1.0)
+    return DeadlockDetector()
 
 
 @pytest.fixture

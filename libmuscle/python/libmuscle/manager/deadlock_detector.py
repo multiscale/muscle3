@@ -1,15 +1,12 @@
 import logging
-from threading import Thread, Lock
-import time
-from typing import Callable, Dict, List, Optional, Tuple
-from queue import Empty, Queue
+from threading import Lock
+from typing import Dict, List, Optional, Tuple
 
 
 _logger = logging.getLogger(__name__)
-_QueueItem = Tuple[bool, str, str, str, Optional[int]]
 
 
-class DeadlockDetector(Thread):
+class DeadlockDetector:
     """The DeadlockDetector attempts to detect when multiple instances are stuck waiting
     for each other.
 
@@ -17,95 +14,25 @@ class DeadlockDetector(Thread):
     WAITING_FOR_RECEIVE_DONE MMP messages, which are submitted by the MMPServer.
 
     When a deadlock is detected, the cycle of instances that is waiting on each other is
-    logged with FATAL severity. If this deadlock does not get resolved in
-    ``wait_before_shutdown`` seconds, the simulation is shut down.
+    logged with FATAL severity.
     """
 
-    def __init__(
-            self, shutdown_callback: Callable[[], None], wait_before_shutdown: float
-            ) -> None:
-        """Construct a new DeadlockDetector thread.
-
-        Args:
-            shutdown_callback: function to execute when a deadlock is detected. This
-                callback (which is executed in this thread!) is responsible for stopping
-                the simulation when a deadlock is detected.
-            wait_before_shutdown: Number of seconds to wait before executing
-                :param:`shutdown_callback` after a deadlock is detected. If the deadlock
-                is resolved (although this is unlikely), the simulation will not shut
-                down.
-        """
-        super().__init__(name="DeadlockDetector")
-
-        self._shutdown_callback = shutdown_callback
-        self._wait_before_shutdown = wait_before_shutdown
-
-        self._queue: Queue[Optional[_QueueItem]] = Queue()
-        """Queue of incoming messages. Incoming messages can come in any communication
-        thread and will be consumed and processed in this worker thread.
-        """
+    def __init__(self) -> None:
+        """Construct a new DeadlockDetector."""
+        self._mutex = Lock()
+        """Mutex that should be locked before accessing instance variables."""
         self._waiting_instances: Dict[str, str] = {}
         """Maps instance IDs to the peer instance IDs they are waiting for."""
         self._waiting_instance_ports: Dict[str, Tuple[str, Optional[int]]] = {}
         """Maps instance IDs to the port/slot they are waiting on.."""
-
-        # detected deadlocks may be accessed from any thread by is_deadlocked, so it
-        # needs a mutex:
-        self._detected_deadlocks_mutex = Lock()
         self._detected_deadlocks: List[List[str]] = []
-        """List of deadlocked instance cycles. Set by _handle_potential_deadlock.
-        """
-        self._shutdown_time: Optional[float] = None
-        """Future time when we confirm the potential deadlock and abort the simulation.
-        """
+        """List of deadlocked instance cycles. Set by _handle_potential_deadlock."""
 
-    def run(self) -> None:
-        """Logic that is executed in the thread."""
-        while True:
-            # Set a timeout when a deadlock was detected
-            seconds_until_abort = None
-            if self._shutdown_time is not None:
-                seconds_until_abort = max(0, self._shutdown_time - time.monotonic())
-
-            # Grab a new item from the queue, this raises Empty when timeout expires:
-            try:
-                item = self._queue.get(timeout=seconds_until_abort)
-                if item is None:  # On shutdown, None is pushed to the queue
-                    return  # exit thread
-                with self._detected_deadlocks_mutex:
-                    self._process_queue_item(item)
-
-            except Empty:
-                # Timeout was set and has expired without any new messages:
-                # - We only set a timeout when there is a deadlock
-                # - An item is pushed to the queue when any instance sends a
-                #   WAITING_FOR_RECEIVE_DONE message (which may cancel a potential
-                #   deadlock)
-                # Therefore:
-                # - We have not received a message cancelling a deadlock cycle
-                #   (otherwise this would have triggered a _process_queue_item, clearing
-                #   self._shutdown_time and we had not set another timeout). And so a
-                #   deadlock is still present. Assert it to be absolutely certain:
-                with self._detected_deadlocks_mutex:
-                    assert self._detected_deadlocks
-                    formatted_deadlocks = "\n\n".join(
-                            self._format_deadlock(instances)
-                            for instances in self._detected_deadlocks)
-                    _logger.fatal(
-                            "Aborting simulation: deadlock detected.\n%s",
-                            formatted_deadlocks)
-                    self._shutdown_callback()
-                    return
-
-    def shutdown(self) -> None:
-        """Stop the deadlock detector thread."""
-        self._queue.put(None)
-
-    def put_waiting(
+    def waiting_for_receive(
             self, instance_id: str, peer_instance_id: str,
             port_name: str, slot: Optional[int]
             ) -> None:
-        """Queue a WAITING_FOR_RECEIVE message from an instance for processing.
+        """Process a WAITING_FOR_RECEIVE message from an instance.
 
         This method can be called from any thread.
 
@@ -115,43 +42,7 @@ class DeadlockDetector(Thread):
             port_name: Name of the input port.
             slot: Optional slot number of the input port.
         """
-        self._queue.put((True, instance_id, peer_instance_id, port_name, slot))
-
-    def put_waiting_done(
-            self, instance_id: str, peer_instance_id: str,
-            port_name: str, slot: Optional[int]
-            ) -> None:
-        """Queue a WAITING_FOR_RECEIVE_DONE message from an instance for processing.
-
-        This method can be called from any thread.
-
-        Args:
-            instance_id: ID of instance that is waiting to receive a message.
-            peer_instance_id: ID of the peer that the instance is waiting on.
-            port_name: Name of the input port.
-            slot: Optional slot number of the input port.
-        """
-        self._queue.put((False, instance_id, peer_instance_id, port_name, slot))
-
-    def is_deadlocked(self, instance_id: str) -> bool:
-        """Check if the provided instance is part of a detected deadlock.
-
-        This method can be called from any thread.
-        """
-        with self._detected_deadlocks_mutex:
-            for deadlock_instances in self._detected_deadlocks:
-                if instance_id in deadlock_instances:
-                    return True
-        return False
-
-    def _process_queue_item(self, item: _QueueItem) -> None:
-        """Actually process a WAITING_FOR_RECEIVE[_DONE] request.
-
-        This method should be called inside the worker thread.
-        """
-        _logger.debug("Processing queue item: %s", item)
-        is_waiting, instance_id, peer_instance_id, port_name, slot = item
-        if is_waiting:
+        with self._mutex:
             # Sanity checks, triggering this is a bug in the instance or the manager
             assert instance_id not in self._waiting_instances
 
@@ -160,7 +51,21 @@ class DeadlockDetector(Thread):
             self._waiting_instance_ports[instance_id] = (port_name, slot)
             self._check_for_deadlock(instance_id)
 
-        else:
+    def waiting_for_receive_done(
+            self, instance_id: str, peer_instance_id: str,
+            port_name: str, slot: Optional[int]
+            ) -> None:
+        """Process a WAITING_FOR_RECEIVE_DONE message from an instance.
+
+        This method can be called from any thread.
+
+        Args:
+            instance_id: ID of instance that is waiting to receive a message.
+            peer_instance_id: ID of the peer that the instance is waiting on.
+            port_name: Name of the input port.
+            slot: Optional slot number of the input port.
+        """
+        with self._mutex:
             # Sanity checks, triggering these is a bug in the instance or the manager
             assert instance_id in self._waiting_instances
             assert self._waiting_instances[instance_id] == peer_instance_id
@@ -175,14 +80,22 @@ class DeadlockDetector(Thread):
                 if instance_id in instance_list:
                     del self._detected_deadlocks[i]
                     break
-            if not self._detected_deadlocks:
-                # There are no deadlocks anymore: cancel shutdown
-                if self._shutdown_time is not None:
-                    _logger.info("Deadlock has resolved, abort is cancelled.")
-                    self._shutdown_time = None
+
+    def is_deadlocked(self, instance_id: str) -> bool:
+        """Check if the provided instance is part of a detected deadlock.
+
+        This method can be called from any thread.
+        """
+        with self._mutex:
+            for deadlock_instances in self._detected_deadlocks:
+                if instance_id in deadlock_instances:
+                    return True
+        return False
 
     def _check_for_deadlock(self, instance_id: str) -> None:
         """Check if there is a cycle of waiting instances that involves this instance.
+
+        Make sure to lock self._mutex before calling this.
         """
         deadlock_instances = [instance_id]
         cur_instance = instance_id
@@ -197,22 +110,16 @@ class DeadlockDetector(Thread):
     def _handle_potential_deadlock(self, deadlock_instances: List[str]) -> None:
         """Handle a potential deadlock.
 
+        Make sure to lock self._mutex before calling this.
+
         Args:
             deadlock_instances: list of instances waiting on eachother
         """
-        shutdown_delay = self._wait_before_shutdown
-        if self._shutdown_time is not None:
-            # Get time until shutdown
-            shutdown_delay = self._shutdown_time - time.monotonic()
         _logger.fatal(
-                "Potential deadlock detected, aborting run in %d seconds.\n%s",
-                shutdown_delay,
+                "Potential deadlock detected:\n%s",
                 self._format_deadlock(deadlock_instances),
                 )
-
         self._detected_deadlocks.append(deadlock_instances)
-        if self._shutdown_time is None:
-            self._shutdown_time = time.monotonic() + self._wait_before_shutdown
 
     def _format_deadlock(self, deadlock_instances: List[str]) -> str:
         """Create and return formatted deadlock debug info.

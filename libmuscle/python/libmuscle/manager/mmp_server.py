@@ -376,7 +376,7 @@ class MMPRequestHandler(RequestHandler):
             port_name: Port name that the instance is waiting on
             slot: Slot that the instance is waiting on
         """
-        self._deadlock_detector.put_waiting(
+        self._deadlock_detector.waiting_for_receive(
                 instance_id, peer_instance_id, port_name, slot)
         return [ResponseType.SUCCESS.value]
 
@@ -390,7 +390,7 @@ class MMPRequestHandler(RequestHandler):
             port_name: Port name that the instance is waiting on
             slot: Slot that the instance is waiting on
         """
-        self._deadlock_detector.put_waiting_done(
+        self._deadlock_detector.waiting_for_receive_done(
                 instance_id, peer_instance_id, port_name, slot)
         return [ResponseType.SUCCESS.value]
 

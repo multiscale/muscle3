@@ -46,6 +46,7 @@ class Manager:
         self._profile_store = ProfileStore(log_dir)
         self._topology_store = TopologyStore(configuration)
         self._instance_registry = InstanceRegistry()
+        self._deadlock_detector = DeadlockDetector()
         if run_dir is not None:
             snapshot_dir = run_dir.snapshot_dir()
         else:
@@ -80,12 +81,6 @@ class Manager:
         self._snapshot_registry = SnapshotRegistry(
                 configuration, snapshot_dir, self._topology_store)
         self._snapshot_registry.start()
-
-        # Hard-code grace period to 5 seconds. We may want to do something smarter in
-        # the future (e.g. set a timeout dependent on the number of instances), but this
-        # should suffice for now:
-        self._deadlock_detector = DeadlockDetector(self.stop, 5.0)
-        self._deadlock_detector.start()
 
         self._server = MMPServer(
                 self._logger, self._profile_store, self._configuration,
@@ -128,10 +123,6 @@ class Manager:
         """Shuts down the manager."""
         if self._instance_manager:
             self._instance_manager.shutdown()
-        self._deadlock_detector.shutdown()
-        # Note: don't join() deadlock detector, as this method may be called from the
-        # DeadlockDetector thread and calling join() on your own thread raises a
-        # RuntimeError.
         self._server.stop()
         self._snapshot_registry.shutdown()
         self._snapshot_registry.join()

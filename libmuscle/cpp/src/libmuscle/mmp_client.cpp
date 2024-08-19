@@ -347,6 +347,15 @@ void MMPClient::waiting_for_receive_done(
     auto response = call_manager_(request);
 }
 
+bool MMPClient::is_deadlocked() {
+    auto request = Data::list(
+            static_cast<int>(RequestType::waiting_for_receive_done),
+            static_cast<std::string>(instance_id_));
+    
+    auto response = call_manager_(request);
+    return response[1].as<bool>();
+}
+
 DataConstRef MMPClient::call_manager_(DataConstRef const & request) {
     std::lock_guard<std::mutex> lock(mutex_);
 

@@ -13,7 +13,7 @@ from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import (
         ProfileEvent, ProfileEventType, ProfileTimestamp)
-from libmuscle.receive_timeout_handler import ReceiveTimeoutHandler
+from libmuscle.receive_timeout_handler import Deadlock, ReceiveTimeoutHandler
 
 
 _logger = logging.getLogger(__name__)
@@ -257,6 +257,13 @@ class Communicator:
                 "Error while receiving a message: connection with peer"
                 f" '{snd_endpoint.kernel}' was lost. Did the peer crash?"
             ) from exc
+        except Deadlock:
+            # Profiler messages may be used for debugging the deadlock
+            self._profiler.shutdown()
+            raise RuntimeError(
+                "Deadlock detected when when receiving a message on "
+                f"port '{port_and_slot}'. See manager logs for more detail."
+            ) from None
 
         recv_decode_event = ProfileEvent(
                 ProfileEventType.RECEIVE_DECODE, ProfileTimestamp(), None,

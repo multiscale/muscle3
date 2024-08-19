@@ -83,6 +83,30 @@ int connect(std::string const & address) {
             + port);
 }
 
+/** Poll until timeout (in seconds) is reached. Retry when interrupted with EINTR. */
+inline int poll_retry_eintr(pollfd *fds, nfds_t nfds, double timeout) {
+    using std::chrono::duration;
+    using std::chrono::steady_clock;
+    using std::chrono::milliseconds;
+    using std::chrono::duration_cast;
+
+    const auto timeout_duration = duration<double>(timeout);
+    const auto deadline = steady_clock::now() + timeout_duration;
+    while (1) {
+        int timeout_ms = duration_cast<milliseconds>(deadline - steady_clock::now()).count();
+        int poll_result = poll(fds, nfds, timeout_ms);
+
+        if (poll_result >= 0)
+            return poll_result;
+
+        if (errno != EINTR)
+            throw std::runtime_error(
+                    "Unexpected error during poll(): " +
+                    std::string(std::strerror(errno)));
+        // poll() was interrupted by a signal: retry with re-calculated timeout
+    }
+}
+
 }
 
 
@@ -140,38 +164,19 @@ std::tuple<std::vector<char>, ProfileData> TcpTransportClient::call(
     if (timeout_handler == nullptr) {
         length = recv_int64(socket_fd_);
     } else {
-        using std::chrono::duration;
-        using std::chrono::steady_clock;
-        using std::chrono::milliseconds;
-        using std::chrono::duration_cast;
-
-        const auto timeout_duration = duration<double>(timeout_handler->get_timeout());
-        const auto deadline = steady_clock::now() + timeout_duration;
-        int poll_result;
+        bool did_timeout = false;
         pollfd socket_poll_fd;
         socket_poll_fd.fd = socket_fd_;
         socket_poll_fd.events = POLLIN;
-        do {
-            int timeout_ms = duration_cast<milliseconds>(deadline - steady_clock::now()).count();
-            poll_result = poll(&socket_poll_fd, 1, timeout_ms);
-
-            if (poll_result >= 0)
-                break;
-
-            if (errno != EINTR)
-                throw std::runtime_error("Unexpected error during poll(): "+std::to_string(errno));
-            
-            // poll() was interrupted by a signal: retry with re-calculated timeout
-        } while (1);
-
-        if (poll_result == 0) {
-            // time limit expired
+        while (poll_retry_eintr(&socket_poll_fd, 1, timeout_handler->get_timeout()) == 0) {
             timeout_handler->on_timeout();
-            length = recv_int64(socket_fd_);
+            did_timeout = true;
+        }
+        // socket is ready for a receive, this call shouldn't block:
+        length = recv_int64(socket_fd_);
+
+        if (did_timeout) {
             timeout_handler->on_receive();
-        } else {
-            // socket is ready for a receive, this call shouldn't block:
-            length = recv_int64(socket_fd_);
         }
     }
 

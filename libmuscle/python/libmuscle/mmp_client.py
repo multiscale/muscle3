@@ -295,6 +295,13 @@ class MMPClient():
                 peer_instance_id, port_name, slot]
         self._call_manager(request)
 
+    def is_deadlocked(self) -> bool:
+        """Ask the manager if we're part of a deadlock."""
+        request = [
+                RequestType.IS_DEADLOCKED.value, str(self._instance_id)]
+        response = self._call_manager(request)
+        return bool(response[1])
+
     def _call_manager(self, request: Any) -> Any:
         """Call the manager and do en/decoding.
 

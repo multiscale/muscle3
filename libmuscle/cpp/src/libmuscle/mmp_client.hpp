@@ -133,6 +133,9 @@ class MMPClient {
                 std::string const & peer_instance_id, std::string const & port_name,
                 Optional<int> slot);
 
+        /** Ask the manager if we're part of a deadlock. */
+        bool is_deadlocked();
+
     private:
         ymmsl::Reference instance_id_;
         mcp::TcpTransportClient transport_client_;

@@ -78,7 +78,7 @@ class TcpTransportClient(TransportClient):
 
         did_timeout = False
         if timeout_handler is not None:
-            if not self._poll(timeout_handler.timeout):
+            while not self._poll(timeout_handler.timeout):
                 did_timeout = True
                 timeout_handler.on_timeout()
 

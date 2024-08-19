@@ -156,7 +156,8 @@ class Communicator {
 
         std::tuple<std::vector<char>, mcp::ProfileData> try_receive_(
                 MPPClient & client, ymmsl::Reference const & receiver,
-                ymmsl::Reference const & peer, ReceiveTimeoutHandler *handler);
+                ymmsl::Reference const & peer, std::string const & port_and_slot,
+                ReceiveTimeoutHandler *handler);
 
         void close_port_(std::string const & port_name, Optional<int> slot = {});
 

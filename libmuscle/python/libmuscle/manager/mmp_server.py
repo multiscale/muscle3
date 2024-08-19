@@ -131,6 +131,8 @@ class MMPRequestHandler(RequestHandler):
             response = self._waiting_for_receive(*req_args)
         elif req_type == RequestType.WAITING_FOR_RECEIVE_DONE.value:
             response = self._waiting_for_receive_done(*req_args)
+        elif req_type == RequestType.IS_DEADLOCKED.value:
+            response = self._is_deadlocked(*req_args)
 
         return cast(bytes, msgpack.packb(response, use_bin_type=True))
 
@@ -391,6 +393,12 @@ class MMPRequestHandler(RequestHandler):
         self._deadlock_detector.put_waiting_done(
                 instance_id, peer_instance_id, port_name, slot)
         return [ResponseType.SUCCESS.value]
+
+    def _is_deadlocked(self, instance_id: str) -> Any:
+        """Check if the provided instance is part of a detected deadlock.
+        """
+        result = self._deadlock_detector.is_deadlocked(instance_id)
+        return [ResponseType.SUCCESS.value, result]
 
 
 class MMPServer:

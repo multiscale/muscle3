@@ -4,6 +4,10 @@ from libmuscle.mcp.transport_client import TimeoutHandler
 from libmuscle.mmp_client import MMPClient
 
 
+class Deadlock(Exception):
+    """Exception that is raised when the simulation has deadlocked."""
+
+
 class ReceiveTimeoutHandler(TimeoutHandler):
     """Timeout handler when receiving messages from peers.
 
@@ -33,14 +37,25 @@ class ReceiveTimeoutHandler(TimeoutHandler):
         self._port_name = port_name
         self._slot = slot
         self._timeout = timeout
+        # Counter to keep track of the number of timeouts
+        self._num_timeouts = 0
 
     @property
     def timeout(self) -> float:
-        return self._timeout
+        # Increase timeout by a factor 1.5 with every timeout we hit:
+        factor = 1.5 ** self._num_timeouts
+        return self._timeout * factor
 
     def on_timeout(self) -> None:
-        self._manager.waiting_for_receive(
-                self._peer_instance, self._port_name, self._slot)
+        if self._num_timeouts == 0:
+            # Notify the manager that we're waiting for a receive
+            self._manager.waiting_for_receive(
+                    self._peer_instance, self._port_name, self._slot)
+        else:
+            # Ask the manager if we're part of a detected deadlock
+            if self._manager.is_deadlocked():
+                raise Deadlock()
+        self._num_timeouts += 1
 
     def on_receive(self) -> None:
         self._manager.waiting_for_receive_done(

@@ -5,6 +5,14 @@
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
+/** Error thrown when a deadlock is detected. */
+class Deadlock : public std::runtime_error {
+    public:
+        Deadlock() : std::runtime_error("Deadlock detected") {};
+        virtual ~Deadlock() = default;
+};
+
+
 /** Timeout handler when receiving messages from peers.
  * 
  * This handler sends a message to the Muscle Manager when the receive times out (and
@@ -34,7 +42,7 @@ class ReceiveTimeoutHandler : public mcp::TimeoutHandler {
         std::string const & port_name_;
         Optional<int> slot_;
         double timeout_;
-
+        int num_timeout_;
 };
 
 } }

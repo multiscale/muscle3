@@ -25,6 +25,7 @@ class RequestType(Enum):
     # Connection deadlock detection
     WAITING_FOR_RECEIVE = 9
     WAITING_FOR_RECEIVE_DONE = 10
+    IS_DEADLOCKED = 11
 
     # MUSCLE Peer Protocol
     GET_NEXT_MESSAGE = 21

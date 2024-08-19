@@ -1,5 +1,5 @@
 import logging
-from threading import Thread
+from threading import Thread, Lock
 import time
 from typing import Callable, Dict, List, Optional, Tuple
 from queue import Empty, Queue
@@ -13,11 +13,11 @@ class DeadlockDetector(Thread):
     """The DeadlockDetector attempts to detect when multiple instances are stuck waiting
     for each other.
 
-    This class is responsible for handling WAITING_FOR_RECEIVE and
+    This class is responsible for handling WAITING_FOR_RECEIVE, IS_DEADLOCKED and
     WAITING_FOR_RECEIVE_DONE MMP messages, which are submitted by the MMPServer.
 
     When a deadlock is detected, the cycle of instances that is waiting on each other is
-    logged with FATAL severity. If this deadlock does not get resoled in
+    logged with FATAL severity. If this deadlock does not get resolved in
     ``wait_before_shutdown`` seconds, the simulation is shut down.
     """
 
@@ -49,6 +49,9 @@ class DeadlockDetector(Thread):
         self._waiting_instance_ports: Dict[str, Tuple[str, Optional[int]]] = {}
         """Maps instance IDs to the port/slot they are waiting on.."""
 
+        # detected deadlocks may be accessed from any thread by is_deadlocked, so it
+        # needs a mutex:
+        self._detected_deadlocks_mutex = Lock()
         self._detected_deadlocks: List[List[str]] = []
         """List of deadlocked instance cycles. Set by _handle_potential_deadlock.
         """
@@ -69,7 +72,8 @@ class DeadlockDetector(Thread):
                 item = self._queue.get(timeout=seconds_until_abort)
                 if item is None:  # On shutdown, None is pushed to the queue
                     return  # exit thread
-                self._process_queue_item(item)
+                with self._detected_deadlocks_mutex:
+                    self._process_queue_item(item)
 
             except Empty:
                 # Timeout was set and has expired without any new messages:
@@ -82,15 +86,16 @@ class DeadlockDetector(Thread):
                 #   (otherwise this would have triggered a _process_queue_item, clearing
                 #   self._shutdown_time and we had not set another timeout). And so a
                 #   deadlock is still present. Assert it to be absolutely certain:
-                assert self._detected_deadlocks
-                formatted_deadlocks = "\n\n".join(
-                        self._format_deadlock(instances)
-                        for instances in self._detected_deadlocks)
-                _logger.fatal(
-                        "Aborting simulation: deadlock detected.\n%s",
-                        formatted_deadlocks)
-                self._shutdown_callback()
-                return
+                with self._detected_deadlocks_mutex:
+                    assert self._detected_deadlocks
+                    formatted_deadlocks = "\n\n".join(
+                            self._format_deadlock(instances)
+                            for instances in self._detected_deadlocks)
+                    _logger.fatal(
+                            "Aborting simulation: deadlock detected.\n%s",
+                            formatted_deadlocks)
+                    self._shutdown_callback()
+                    return
 
     def shutdown(self) -> None:
         """Stop the deadlock detector thread."""
@@ -127,6 +132,17 @@ class DeadlockDetector(Thread):
             slot: Optional slot number of the input port.
         """
         self._queue.put((False, instance_id, peer_instance_id, port_name, slot))
+
+    def is_deadlocked(self, instance_id: str) -> bool:
+        """Check if the provided instance is part of a detected deadlock.
+
+        This method can be called from any thread.
+        """
+        with self._detected_deadlocks_mutex:
+            for deadlock_instances in self._detected_deadlocks:
+                if instance_id in deadlock_instances:
+                    return True
+        return False
 
     def _process_queue_item(self, item: _QueueItem) -> None:
         """Actually process a WAITING_FOR_RECEIVE[_DONE] request.

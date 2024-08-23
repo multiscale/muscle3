@@ -123,3 +123,32 @@ def test_only_f_i(mock_peer_info):
         validator.check_receive("f_i", None)
     with pytest.raises(TestMMSFValidatorException):
         validator.check_receive("f_i", None)
+
+
+def test_micro(mock_peer_info):
+    port_manager = PortManager([], {Operator.F_INIT: ["f_i"], Operator.O_F: ["o_f"]})
+    port_manager.connect_ports(mock_peer_info)
+    validator = MMSFValidator(port_manager)
+
+    for _ in range(5):
+        validator.reuse_instance()
+        validator.check_receive("f_i", None)
+        validator.check_receive("o_f", None)
+    validator.reuse_instance()
+    validator.check_receive("f_i", None)
+    with pytest.raises(TestMMSFValidatorException):
+        validator.reuse_instance()
+    with pytest.raises(TestMMSFValidatorException):
+        validator.check_receive("f_i", None)
+
+
+def test_not_all_ports_used(mock_peer_info):
+    port_manager = PortManager([], {
+            Operator.F_INIT: ["f_i1", "f_i2"], Operator.O_F: ["o_f"]})
+    port_manager.connect_ports(mock_peer_info)
+    validator = MMSFValidator(port_manager)
+
+    validator.reuse_instance()
+    validator.check_receive("f_i1", None)
+    with pytest.raises(TestMMSFValidatorException):
+        validator.check_send("o_f", None)

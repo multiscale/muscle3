@@ -18,6 +18,7 @@ from libmuscle.logging import LogLevel
 from libmuscle.logging_handler import MuscleManagerHandler
 from libmuscle.mpp_message import ClosePort
 from libmuscle.mmp_client import MMPClient
+from libmuscle.mmsf_validator import MMSFValidator
 from libmuscle.peer_info import PeerInfo
 from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
@@ -87,6 +88,14 @@ class InstanceFlags(Flag):
     :attr:`STATE_NOT_REQUIRED_FOR_NEXT_USE` are provided), the instance is assumed
     to keep state between reuses, and to require that state (equivalent to
     :external:py:attr:`ymmsl.KeepsStateForNextUse.NECESSARY`).
+    """
+
+    SKIP_MMSF_SEQUENCE_CHECKS = auto()
+    """Disable the checks whether the MMSF is strictly followed when sending/receiving
+    messages.
+
+    See :class:`~libmuscle.mmsf_validator.MMSFValidator` for a detailed description of
+    the checks.
     """
 
 
@@ -186,6 +195,10 @@ class Instance:
         self._set_local_log_level()
         self._set_remote_log_level()
         self._setup_profiling()
+        # MMSFValidator needs a connected port manager, and does some logging
+        self._mmsf_validator = (
+                None if InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS in self._flags
+                else MMSFValidator(self._port_manager))
 
     def reuse_instance(self) -> bool:
         """Decide whether to run this instance again.
@@ -222,6 +235,8 @@ class Instance:
                 :meth:`save_final_snapshot`, or the checkpointing tutorial.
         """
         self._api_guard.verify_reuse_instance()
+        if self._mmsf_validator:
+            self._mmsf_validator.reuse_instance()
 
         if self._do_reuse is not None:
             # thank you, should_save_final_snapshot, for running this already
@@ -229,6 +244,9 @@ class Instance:
             self._do_reuse = None
         else:
             do_reuse = self._decide_reuse_instance()
+
+        if self._do_resume and not self._do_init and self._mmsf_validator:
+            self._mmsf_validator.skip_f_init()
 
         # now _first_run, _do_resume and _do_init are also set correctly
 
@@ -428,6 +446,8 @@ class Instance:
             slot: The slot to send the message on, if any.
         """
         self.__check_port(port_name, slot)
+        if self._mmsf_validator:
+            self._mmsf_validator.check_send(port_name, slot)
         if message.settings is None:
             message = copy(message)
             message.settings = self._settings_manager.overlay
@@ -883,6 +903,8 @@ class Instance:
         description of those.
         """
         self.__check_port(port_name, slot, True)
+        if self._mmsf_validator:
+            self._mmsf_validator.check_receive(port_name, slot)
 
         port = self._port_manager.get_port(port_name)
         if port.operator == Operator.F_INIT:

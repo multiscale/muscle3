@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Optional, Tuple, Dict
 
-from libmuscle import Instance, Message, USES_CHECKPOINT_API
+from libmuscle import Instance, InstanceFlags, Message
 from libmuscle.runner import run_simulation
 from ymmsl import (
         Component, Conduit, Configuration, Model, Operator, Ports, Settings)
@@ -241,7 +241,8 @@ def temporal_coupler() -> None:
     """
     instance = Instance({
         Operator.O_I: ['a_out', 'b_out'],
-        Operator.S: ['a_in', 'b_in']})
+        Operator.S: ['a_in', 'b_in']},
+        InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS)
 
     while instance.reuse_instance():
         # Receive initial messages and initialise state
@@ -275,7 +276,8 @@ def checkpointing_temporal_coupler() -> None:
     """
     instance = Instance({
         Operator.O_I: ['a_out', 'b_out'],
-        Operator.S: ['a_in', 'b_in']}, USES_CHECKPOINT_API)
+        Operator.S: ['a_in', 'b_in']},
+        InstanceFlags.USES_CHECKPOINT_API | InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS)
 
     while instance.reuse_instance():
         if instance.resuming():

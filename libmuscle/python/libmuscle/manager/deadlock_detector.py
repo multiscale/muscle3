@@ -89,6 +89,9 @@ class DeadlockDetector:
         with self._mutex:
             for deadlock_instances in self._detected_deadlocks:
                 if instance_id in deadlock_instances:
+                    _logger.fatal(
+                            "Deadlock detected, simulation is aborting!\n%s",
+                            self._format_deadlock(deadlock_instances))
                     return True
         return False
 
@@ -115,10 +118,6 @@ class DeadlockDetector:
         Args:
             deadlock_instances: list of instances waiting on eachother
         """
-        _logger.fatal(
-                "Potential deadlock detected:\n%s",
-                self._format_deadlock(deadlock_instances),
-                )
         self._detected_deadlocks.append(deadlock_instances)
 
     def _format_deadlock(self, deadlock_instances: List[str]) -> str:

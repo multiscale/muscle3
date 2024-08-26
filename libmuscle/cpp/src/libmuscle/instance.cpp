@@ -563,6 +563,12 @@ void Instance::Impl::setup_receive_timeout_() {
     try {
         timeout = settings_manager_.get_setting(
                instance_name_, "muscle_deadlock_receive_timeout").as<double>();
+        if (timeout >= 0 && timeout < 0.1) {
+            logger_->info(
+                    "Provided muscle_deadlock_receive_timeout (", timeout,
+                    ") was less than the minimum of 0.1 seconds, setting it to 0.1.");
+            timeout = 0.1;
+        }
         communicator_->set_receive_timeout(timeout);
     }
     catch (std::runtime_error const & e) {

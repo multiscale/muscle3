@@ -816,6 +816,11 @@ class Instance:
         """
         try:
             timeout = self.get_setting('muscle_deadlock_receive_timeout', 'float')
+            if 0 <= timeout < 0.1:
+                _logger.info(
+                        "Provided muscle_deadlock_receive_timeout (%f) was less than "
+                        "the minimum of 0.1 seconds, setting it to 0.1.", timeout)
+                timeout = 0.1
             self._communicator.set_receive_timeout(timeout)
         except KeyError:
             pass  # do nothing and keep the default

@@ -288,7 +288,7 @@ std::tuple<std::vector<char>, mcp::ProfileData> Communicator::try_receive_(
         return client.receive(receiver, timeout_handler);
     } catch(Deadlock const & err) {
         throw std::runtime_error(
-            "Deadlock detected when when receiving a message on '" +
+            "Deadlock detected when receiving a message on '" +
             port_and_slot +
             "'. See manager logs for more detail.");
     } catch(std::runtime_error const & err) {

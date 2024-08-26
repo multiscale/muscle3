@@ -17,7 +17,7 @@ ReceiveTimeoutHandler::ReceiveTimeoutHandler(
 double ReceiveTimeoutHandler::get_timeout()
 {
     // Increase timeout by a factor 1.5 with every timeout we hit:
-    return timeout_ * std::pow(1.5, (double)num_timeout_);
+    return timeout_ * std::pow(1.5, num_timeout_);
 }
 
 void ReceiveTimeoutHandler::on_timeout()

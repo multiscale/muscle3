@@ -92,7 +92,7 @@ inline int poll_retry_eintr(pollfd *fds, nfds_t nfds, double timeout) {
 
     const auto timeout_duration = duration<double>(timeout);
     const auto deadline = steady_clock::now() + timeout_duration;
-    while (1) {
+    while (true) {
         int timeout_ms = duration_cast<milliseconds>(deadline - steady_clock::now()).count();
         int poll_result = poll(fds, nfds, timeout_ms);
 

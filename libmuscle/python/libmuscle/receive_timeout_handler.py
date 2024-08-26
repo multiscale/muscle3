@@ -1,5 +1,7 @@
 from typing import Optional
 
+from ymmsl import Reference
+
 from libmuscle.mcp.transport_client import TimeoutHandler
 from libmuscle.mmp_client import MMPClient
 
@@ -20,7 +22,7 @@ class ReceiveTimeoutHandler(TimeoutHandler):
 
     def __init__(
             self, manager: MMPClient,
-            peer_instance: str, port_name: str, slot: Optional[int],
+            peer_instance: Reference, port_name: str, slot: Optional[int],
             timeout: float
             ) -> None:
         """Initialize a new timeout handler.

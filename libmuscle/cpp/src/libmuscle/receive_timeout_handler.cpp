@@ -5,7 +5,7 @@
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 ReceiveTimeoutHandler::ReceiveTimeoutHandler(
-        MMPClient& manager, std::string const& peer_instance,
+        MMPClient& manager, ::ymmsl::Reference const peer_instance,
         std::string const& port_name, Optional<int> slot, double timeout)
     : manager_(manager)
     , peer_instance_(peer_instance)

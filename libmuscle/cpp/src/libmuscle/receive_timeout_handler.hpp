@@ -2,6 +2,7 @@
 
 #include <libmuscle/mcp/transport_client.hpp>
 #include <libmuscle/mmp_client.hpp>
+#include <ymmsl/ymmsl.hpp>
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
@@ -25,7 +26,7 @@ class ReceiveTimeoutHandler : public mcp::TimeoutHandler {
     public:
         ReceiveTimeoutHandler(
                 MMPClient & manager,
-                std::string const & peer_instance,
+                ::ymmsl::Reference const peer_instance,
                 std::string const & port_name,
                 Optional<int> slot,
                 double timeout);
@@ -38,7 +39,7 @@ class ReceiveTimeoutHandler : public mcp::TimeoutHandler {
 
     private:
         MMPClient & manager_;
-        std::string const & peer_instance_;
+        ::ymmsl::Reference const peer_instance_;
         std::string const & port_name_;
         Optional<int> slot_;
         double timeout_;

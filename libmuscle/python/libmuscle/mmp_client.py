@@ -276,23 +276,23 @@ class MMPClient():
                     response[1]))
 
     def waiting_for_receive(
-            self, peer_instance_id: str, port_name: str, slot: Optional[int]
+            self, peer_instance_id: Reference, port_name: str, slot: Optional[int]
             ) -> None:
         """Notify the manager that we're waiting to receive a message."""
         request = [
                 RequestType.WAITING_FOR_RECEIVE.value,
                 str(self._instance_id),
-                peer_instance_id, port_name, slot]
+                str(peer_instance_id), port_name, slot]
         self._call_manager(request)
 
     def waiting_for_receive_done(
-            self, peer_instance_id: str, port_name: str, slot: Optional[int]
+            self, peer_instance_id: Reference, port_name: str, slot: Optional[int]
             ) -> None:
         """Notify the manager that we're done waiting to receive a message."""
         request = [
                 RequestType.WAITING_FOR_RECEIVE_DONE.value,
                 str(self._instance_id),
-                peer_instance_id, port_name, slot]
+                str(peer_instance_id), port_name, slot]
         self._call_manager(request)
 
     def is_deadlocked(self) -> bool:

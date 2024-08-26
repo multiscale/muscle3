@@ -100,11 +100,11 @@ class MockMMPClient : public MockClass<MockMMPClient> {
         MockFun<Void> deregister_instance;
 
         MockFun<Void,
-            Val<std::string const &>, Val<std::string const &>, Val<Optional<int>>
+            Val<::ymmsl::Reference const &>, Val<std::string const &>, Val<Optional<int>>
             > waiting_for_receive;
 
         MockFun<Void,
-            Val<std::string const &>, Val<std::string const &>, Val<Optional<int>>
+            Val<::ymmsl::Reference const &>, Val<std::string const &>, Val<Optional<int>>
             > waiting_for_receive_done;
 
         MockFun<Val<bool>> is_deadlocked;

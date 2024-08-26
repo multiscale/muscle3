@@ -324,25 +324,25 @@ void MMPClient::deregister_instance() {
 }
 
 void MMPClient::waiting_for_receive(
-        std::string const & peer_instance_id, std::string const & port_name,
+        ::ymmsl::Reference const & peer_instance_id, std::string const & port_name,
         Optional<int> slot)
 {
     auto request = Data::list(
             static_cast<int>(RequestType::waiting_for_receive),
             static_cast<std::string>(instance_id_),
-            peer_instance_id, port_name, encode_optional(slot));
+            static_cast<std::string>(peer_instance_id), port_name, encode_optional(slot));
 
     auto response = call_manager_(request);
 }
 
 void MMPClient::waiting_for_receive_done(
-        std::string const & peer_instance_id, std::string const & port_name,
+        ::ymmsl::Reference const & peer_instance_id, std::string const & port_name,
         Optional<int> slot)
 {
     auto request = Data::list(
             static_cast<int>(RequestType::waiting_for_receive_done),
             static_cast<std::string>(instance_id_),
-            peer_instance_id, port_name, encode_optional(slot));
+            static_cast<std::string>(peer_instance_id), port_name, encode_optional(slot));
 
     auto response = call_manager_(request);
 }

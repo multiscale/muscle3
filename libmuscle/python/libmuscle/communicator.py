@@ -247,7 +247,7 @@ class Communicator:
         timeout_handler = None
         if self._receive_timeout >= 0:
             timeout_handler = ReceiveTimeoutHandler(
-                    self._manager, str(snd_endpoint.instance()),
+                    self._manager, snd_endpoint.instance(),
                     port_name, slot, self._receive_timeout)
         try:
             mpp_message_bytes, profile = client.receive(

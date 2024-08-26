@@ -141,9 +141,8 @@ std::tuple<Message, double> Communicator::receive_message(
     Endpoint snd_endpoint = peer_info_.get().get_peer_endpoints(
             recv_endpoint.port, slot_list).at(0);
     MPPClient & client = get_client_(snd_endpoint.instance());
-    std::string peer_instance = static_cast<std::string>(snd_endpoint.instance());
     ReceiveTimeoutHandler handler(
-            manager_, peer_instance, port_name, slot, receive_timeout_);
+            manager_, snd_endpoint.instance(), port_name, slot, receive_timeout_);
     ReceiveTimeoutHandler *timeout_handler = receive_timeout_ < 0 ? nullptr : &handler;
     auto msg_and_profile = try_receive_(
             client, recv_endpoint.ref(), snd_endpoint.kernel, port_and_slot, timeout_handler);

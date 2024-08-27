@@ -436,9 +436,19 @@ def test_send_after_resize(instance, message):
     instance.send('out_r', message, 13)
 
 
+def test_send_on_receiving_port(instance, message):
+    with pytest.raises(RuntimeError):
+        instance.send("in_v", message, 3)
+
+
 def test_receive_on_invalid_port(instance):
     with pytest.raises(RuntimeError):
         instance.receive('does_not_exist')
+
+
+def test_receive_on_sending_port(instance):
+    with pytest.raises(RuntimeError):
+        instance.receive("out_v", 3)
 
 
 def test_receive_f_init(instance, port_manager, communicator):

@@ -445,7 +445,7 @@ class Instance:
             message: The message to be sent.
             slot: The slot to send the message on, if any.
         """
-        self.__check_port(port_name, slot)
+        self.__check_port(port_name, slot, True)
         if self._mmsf_validator:
             self._mmsf_validator.check_send(port_name, slot)
         if message.settings is None:
@@ -902,7 +902,7 @@ class Instance:
         This implements receive and receive_with_settings, see the
         description of those.
         """
-        self.__check_port(port_name, slot, True)
+        self.__check_port(port_name, slot, False, True)
         if self._mmsf_validator:
             self._mmsf_validator.check_receive(port_name, slot)
 
@@ -1025,7 +1025,7 @@ class Instance:
         return result
 
     def __check_port(
-            self, port_name: str, slot: Optional[int] = None,
+            self, port_name: str, slot: Optional[int], is_send: bool,
             allow_slot_out_of_range: bool = False) -> None:
         if not self._port_manager.port_exists(port_name):
             err_msg = (('Port "{}" does not exist on "{}". Please check'
@@ -1034,8 +1034,19 @@ class Instance:
             self.__shutdown(err_msg)
             raise RuntimeError(err_msg)
 
+        port = self._port_manager.get_port(port_name)
+        if is_send:
+            if not port.operator.allows_sending():
+                err_msg = (f'Port "{port_name}" does not allow sending messages.')
+                self.__shutdown(err_msg)
+                raise RuntimeError(err_msg)
+        else:
+            if not port.operator.allows_receiving():
+                err_msg = (f'Port "{port_name}" does not allow receiving messages.')
+                self.__shutdown(err_msg)
+                raise RuntimeError(err_msg)
+
         if slot is not None:
-            port = self._port_manager.get_port(port_name)
             if not port.is_vector():
                 err_msg = (
                         f'Port "{port_name}" is not a vector port, but a slot was'

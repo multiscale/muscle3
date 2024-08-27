@@ -52,36 +52,37 @@ class MMSFValidator:
 
         # Allowed operator transitions, the following are unconditionally allowed:
         self._allowed_transitions = {
-                (Operator.NONE, Operator.NONE),
-                (Operator.NONE, Operator.F_INIT),
-                (Operator.F_INIT, Operator.O_I),
-                (Operator.F_INIT, Operator.O_F),
-                (Operator.O_I, Operator.S),
-                (Operator.S, Operator.O_I),
-                (Operator.S, Operator.O_F),
-                (Operator.O_F, Operator.NONE),
-                }
+                Operator.NONE: [Operator.NONE, Operator.F_INIT],
+                Operator.F_INIT: [Operator.O_I, Operator.O_F],
+                Operator.O_I: [Operator.S],
+                Operator.S: [Operator.O_I, Operator.O_F],
+                Operator.O_F: [Operator.NONE]}
         # If there are operators without connected ports, we can skip over those
         for operator in [Operator.F_INIT, Operator.O_I, Operator.S, Operator.O_F]:
             if not self._connected_ports.get(operator, []):
                 # Find all transitions A -> operator -> B and allow transition A -> B:
-                skip_from = []
-                skip_to = []
-                for from_op, to_op in self._allowed_transitions:
+                for from_op, allowed in self._allowed_transitions.items():
                     if from_op is operator:
-                        skip_to.append(to_op)
-                    if to_op is operator:
-                        skip_from.append(from_op)
-                for from_op in skip_from:
-                    for to_op in skip_to:
-                        self._allowed_transitions.add((from_op, to_op))
+                        continue
+                    if operator not in allowed:
+                        continue
+                    for to_op in self._allowed_transitions[operator]:
+                        if to_op not in allowed:
+                            allowed.append(to_op)
+        # Sort allowed transitions for more logical log messages
+        for allowed in self._allowed_transitions.values():
+            allowed.sort(key=lambda op: op.value)
 
         # Disable this validator when the instance uses vector ports to keep this class
         # simpler. Support for vector ports may be added in the future.
         self._enabled = not any(
                 port.is_vector() for ports in port_objects.values() for port in ports)
-        _logger.debug(
-                "MMSF Validator is %s", "enabled" if self._enabled else "disabled")
+        if self._enabled:
+            _logger.debug("MMSF Validator is enabled")
+        else:
+            _logger.debug(
+                    "MMSF Validator is disabled: this instance uses vector ports, "
+                    "which are not supported by the MMSF Validator.")
 
         # State tracking
         self._current_ports_used: List[str] = []
@@ -143,7 +144,7 @@ class MMSFValidator:
                 if port not in self._current_ports_used]
         if unused_ports:
             # We didn't complete the current phase
-            if self._current_operator in (Operator.F_INIT, Operator.S):
+            if self._current_operator.allows_receiving():
                 expected = "a receive"
             else:
                 expected = "a send"
@@ -151,22 +152,17 @@ class MMSFValidator:
                     f" on any of these {self._current_operator.name} ports: "
                     + ", ".join(unused_ports))
 
-        elif (self._current_operator, operator) not in self._allowed_transitions:
-            # Transition to the operator is not allowed, now figure out what we were
-            # actually expecting.
-            # First find the allowed transitions from self._current_operator, that are
-            # also 'valid' (i.e. have connected ports):
-            allowed = [
-                    to_op for from_op, to_op in self._allowed_transitions
-                    if from_op is self._current_operator and
-                    (to_op in self._connected_ports or to_op is Operator.NONE)]
+        elif operator not in self._allowed_transitions[self._current_operator]:
+            # Transition to the operator is not allowed.
             # Build the message we want to display to users:
             expected_lst = []
-            for to_op in sorted(allowed, key=lambda op: op.value):
+            for to_op in self._allowed_transitions[self._current_operator]:
                 ports = ', '.join(map(repr, self._connected_ports.get(to_op, [])))
                 if to_op is Operator.NONE:
                     expected_lst.append("a call to reuse_instance()")
-                elif to_op in (Operator.F_INIT, Operator.S):
+                elif not ports:
+                    continue
+                elif to_op.allows_receiving():
                     expected_lst.append(f"a receive on an {to_op.name} port ({ports})")
                 else:
                     expected_lst.append(f"a send on an {to_op.name} port ({ports})")

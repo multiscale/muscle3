@@ -120,8 +120,10 @@ class MMSFValidator:
             self._check_transition(operator, port_name)
 
         if port_name in self._current_ports_used:
-            # We're using the same port for a second time, this is fine when we're
-            # allowed to do this operator immediately again:
+            # We're using the same port for a second time, this is fine if:
+            # 1. We're allowed to do this operator immediately again, and
+            # 2. All ports of the current operator have been used
+            # Both are checked by _check_transition:
             self._check_transition(operator, port_name)
 
         self._current_ports_used.append(port_name)

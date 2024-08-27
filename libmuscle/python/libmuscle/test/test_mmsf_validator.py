@@ -155,7 +155,7 @@ def test_micro(mock_peer_info, caplog):
     for _ in range(5):
         validator.reuse_instance()
         validator.check_receive("f_i", None)
-        validator.check_receive("o_f", None)
+        validator.check_send("o_f", None)
     validator.reuse_instance()
     validator.check_receive("f_i", None)
 

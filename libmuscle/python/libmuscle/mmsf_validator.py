@@ -50,6 +50,14 @@ class MMSFValidator:
                 for operator, ports in port_names.items()
                 for port in ports}
 
+        if self._connected_ports.get(Operator.NONE, []):
+            _logger.warning(
+                    "This instance is using ports with Operator.NONE. This does not "
+                    "adhere to the Multiscale Modelling and Simulation Framework "
+                    "and may lead to deadlocks. You can disable this warning by "
+                    "setting the flag InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS "
+                    "when creating the libmuscle.Instance.")
+
         # Allowed operator transitions, the following are unconditionally allowed:
         self._allowed_transitions = {
                 Operator.NONE: [Operator.NONE, Operator.F_INIT],
@@ -58,6 +66,8 @@ class MMSFValidator:
                 Operator.S: [Operator.O_I, Operator.O_F],
                 Operator.O_F: [Operator.NONE]}
         # If there are operators without connected ports, we can skip over those
+        # This logic is transitive, i.e. when there are no connected ports for both
+        # F_INIT and O_I, we will also add NONE -> S to self._allowed_transition:
         for operator in [Operator.F_INIT, Operator.O_I, Operator.S, Operator.O_F]:
             if not self._connected_ports.get(operator, []):
                 # Find all transitions A -> operator -> B and allow transition A -> B:

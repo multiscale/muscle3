@@ -50,7 +50,7 @@ class MMSFValidator {
 
     private:
         /** Actual implementation of check_send/check_receive. */
-        void check_send_receive(std::string const & port_name, Optional<int> slot);
+        void check_send_receive_(std::string const & port_name, Optional<int> slot);
         /** Check that a transition to the provided operator is allowed.
          * 
          * Log a warning when the transition does not adhere to the MMSF.
@@ -59,7 +59,7 @@ class MMSFValidator {
          * @param port_name The name of the port that was sent/receveived on. This is only
          *      used for constructing the warning message.
          */
-        void check_transition(::ymmsl::Operator op, std::string const & port_name);
+        void check_transition_(::ymmsl::Operator op, std::string const & port_name);
 
         PortManager const & port_manager_;
         Logger & logger_;

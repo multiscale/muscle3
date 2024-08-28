@@ -45,6 +45,14 @@ MMSFValidator::MMSFValidator(PortManager const& port_manager, Logger & logger)
         connected_ports_[op] = connected_ports;
     }
 
+    if (!connected_ports_[Operator::NONE].empty())
+        logger_.warning(
+                "This instance is using ports with Operator.NONE. This does not "
+                "adhere to the Multiscale Modelling and Simulation Framework "
+                "and may lead to deadlocks. You can disable this warning by "
+                "setting the flag InstanceFlags::SKIP_MMSF_SEQUENCE_CHECKS "
+                "when creating the libmuscle::Instance.");
+
     // Allowed operator transitions, the following are unconditionally allowed
     allowed_transitions_[Operator::NONE] = {Operator::NONE, Operator::F_INIT};
     allowed_transitions_[Operator::F_INIT] = {Operator::O_I, Operator::O_F};
@@ -52,6 +60,8 @@ MMSFValidator::MMSFValidator(PortManager const& port_manager, Logger & logger)
     allowed_transitions_[Operator::S] = {Operator::O_I, Operator::O_F};
     allowed_transitions_[Operator::O_F] = {Operator::NONE};
     // If there are operators without connected ports, we can skip over those
+    // This logic is transitive, i.e. when there are no connected ports for both
+    // F_INIT and O_I, we will also add NONE -> S to self._allowed_transition:
     for (auto const op : {Operator::F_INIT, Operator::O_I, Operator::S, Operator::O_F}) {
         if (connected_ports_[op].empty()) {
             // Find all transitions A -> op -> B and allow transition A -> B:
@@ -61,8 +71,7 @@ MMSFValidator::MMSFValidator(PortManager const& port_manager, Logger & logger)
                 if (!contains(allowed, op))
                     continue;  // op is not in the allowed list
                 for (auto const & to_op : allowed_transitions_[op]) {
-                    // add to_op to allowed, if it is not already in the list:
-                    if (std::find(allowed.begin(), allowed.end(), to_op) == allowed.end())
+                    if (!contains(allowed, to_op))
                         allowed.push_back(to_op);
                 }
             }
@@ -85,18 +94,18 @@ MMSFValidator::MMSFValidator(PortManager const& port_manager, Logger & logger)
 void MMSFValidator::check_send(
         std::string const& port_name, Optional<int> slot)
 {
-    check_send_receive(port_name, slot);
+    check_send_receive_(port_name, slot);
 }
 
 void MMSFValidator::check_receive(
         std::string const& port_name, Optional<int> slot)
 {
-    check_send_receive(port_name, slot);
+    check_send_receive_(port_name, slot);
 }
 
 void MMSFValidator::reuse_instance() {
     if (enabled_) {
-        check_transition(Operator::NONE, "");
+        check_transition_(Operator::NONE, "");
     }
 }
 
@@ -106,7 +115,7 @@ void MMSFValidator::skip_f_init() {
     current_ports_used_ = connected_ports_[Operator::F_INIT];
 }
 
-void MMSFValidator::check_send_receive(
+void MMSFValidator::check_send_receive_(
         std::string const& port_name, Optional<int> slot)
 {
     if (!enabled_) return;
@@ -114,24 +123,21 @@ void MMSFValidator::check_send_receive(
     auto op = port_operators_[port_name];
     if (current_operator_ != op) {
         // Operator changed, check that all ports were used in the previous operator
-        check_transition(op, port_name);
+        check_transition_(op, port_name);
     }
 
-    if (std::find(
-            current_ports_used_.begin(),
-            current_ports_used_.end(),
-            port_name) != current_ports_used_.end()) {
+    if (contains(current_ports_used_, port_name)) {
         // We're using the same port for a second time, this is fine if:
         // 1. We're allowed to do this operator immediately again, and
         // 2. All ports of the current operator have been used
         // Both are checked by check_transition_:
-        check_transition(op, port_name);
+        check_transition_(op, port_name);
     }
 
     current_ports_used_.push_back(port_name);
 }
 
-void MMSFValidator::check_transition(
+void MMSFValidator::check_transition_(
         ::ymmsl::Operator op, std::string const& port_name)
 {
     std::ostringstream expected_oss;
@@ -196,8 +202,8 @@ void MMSFValidator::check_transition(
                 ".\n"
                 "Not adhering to the Multiscale Modelling and Simulation Framework "
                 "may lead to deadlocks. You can disable this warning by "
-                "setting the flag InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS "
-                "when creating the libmuscle.Instance.");
+                "setting the flag InstanceFlags::SKIP_MMSF_SEQUENCE_CHECKS "
+                "when creating the libmuscle::Instance.");
     }
 
     current_operator_ = op;

@@ -1,9 +1,5 @@
 #!/bin/bash
 
-#SBATCH --time=0:1:00
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1
-
 set -e
 
 source /home/cerulean/shared/venv/bin/activate

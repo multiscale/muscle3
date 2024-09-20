@@ -3,7 +3,7 @@ ymmsl_version: v0.1
 model:
     name: single
     components:
-        c1: component
+        c1: component_python
 
 resources:
     c1:

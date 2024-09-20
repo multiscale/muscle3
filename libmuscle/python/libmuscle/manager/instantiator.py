@@ -72,7 +72,12 @@ class InstantiationRequest(InstantiatorRequest):
     Attributes:
         instance: The name of the instance
         implementation: The implementation to start for it
-        resources: The resources to start it on
+        res_req: The resource requirements for this instance
+        resources: The specific resources to start it on
+        instance_dir: The main directory for this instance
+        work_dir: The directory in which to start it
+        stdout_path: Path of file to redirect stdout to
+        stderr_path: Path of file to redirect stderr to
     """
     def __init__(
             self, instance: Reference, implementation: Implementation,
@@ -85,7 +90,7 @@ class InstantiationRequest(InstantiatorRequest):
             instance: The name of the instance
             implementation: The implementation to start for it
             res_req: The resource requirements for this instance
-            resources: The resources to instantiate on
+            resources: The specific resources to instantiate on
             instance_dir: The main directory for this instance
             work_dir: The directory in which to start it
             stdout_path: Path of file to redirect stdout to
@@ -158,7 +163,7 @@ def create_instance_env(
     This takes the current (manager) environment variables and makes
     a copy, then adds or extends it according to the overlay given.
 
-    Keys from overlay that start with will have the corresponding
+    Keys from overlay that start with + will have the corresponding
     value appended to the matching (by key, without the +) value in
     env, otherwise the value in env gets overwritten.
     """

@@ -2,7 +2,7 @@ ymmsl_version: v0.1
 
 implementations:
   component:
-    virtual_env: /home/cerulean/venv
+    virtual_env: /home/cerulean/shared/venv
     executable: python
     args:
-        - /home/cerulean/cluster_test/component.py
+        - /home/cerulean/shared/cluster_test/component.py

@@ -6,7 +6,9 @@
 
 set -e
 
-source /home/cerulean/venv/bin/activate
+source /home/cerulean/shared/venv/bin/activate
 
-muscle_manager --log-level=DEBUG --start-all /home/cerulean/cluster_test/single.ymmsl /home/cerulean/cluster_test/settings.ymmsl /home/cerulean/cluster_test/implementations.ymmsl
+CT=/home/cerulean/shared/cluster_test
+
+muscle_manager --log-level=DEBUG --start-all $CT/single.ymmsl $CT/settings.ymmsl $CT/implementations.ymmsl
 

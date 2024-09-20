@@ -3,8 +3,17 @@ ymmsl_version: v0.1
 model:
     name: dispatch
     components:
-        c1: component
-        c2: component
+        c1:
+            ports:
+                f_init: init_in
+                o_f: final_out
+            implementation: component_python
+        c2:
+            ports:
+                f_init: init_in
+                o_f: final_out
+            implementation: component_python
+
     conduits:
         c1.final_out: c2.init_in
 

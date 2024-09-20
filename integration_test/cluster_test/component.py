@@ -1,4 +1,5 @@
 import logging
+import socket
 
 from libmuscle import Instance, Message
 from ymmsl import Operator
@@ -10,6 +11,8 @@ def component() -> None:
     This sends and receives on all operators, allowing different coupling patterns
     with a single program.
     """
+    print(socket.gethostname())
+
     instance = Instance({
             Operator.F_INIT: ['init_in'],
             Operator.O_I: ['inter_out'],

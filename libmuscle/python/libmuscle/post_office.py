@@ -2,15 +2,12 @@ from threading import Lock
 import time
 from typing import Dict
 
-import msgpack
 from ymmsl import Reference
 
-from libmuscle.mcp.protocol import RequestType
-from libmuscle.mcp.transport_server import RequestHandler
 from libmuscle.outbox import Outbox
 
 
-class PostOffice(RequestHandler):
+class PostOffice:
     """A PostOffice is an object that holds messages to be retrieved.
 
     A PostOffice holds outboxes with messages for receivers. It also
@@ -22,26 +19,6 @@ class PostOffice(RequestHandler):
         self._outboxes: Dict[Reference, Outbox] = {}
 
         self._outbox_lock = Lock()
-
-    def handle_request(self, request: bytes) -> bytes:
-        """Handle a request.
-
-        This receives an MCP request and handles it by blocking until
-        the requested message is available, then returning it.
-
-        Args:
-            request: A received request
-
-        Returns:
-            An encoded response
-        """
-        req = msgpack.unpackb(request, raw=False)
-        if len(req) != 2 or req[0] != RequestType.GET_NEXT_MESSAGE.value:
-            raise RuntimeError(
-                    'Invalid request type. Did the streams get crossed?')
-        recv_port = Reference(req[1])
-        self._ensure_outbox_exists(recv_port)
-        return self._outboxes[recv_port].retrieve()
 
     def get_message(self, receiver: Reference) -> bytes:
         """Get a message from a receiver's outbox.

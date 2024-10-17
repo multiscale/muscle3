@@ -8,6 +8,8 @@ from libmuscle.profiling import (
 
 from ymmsl import Operator, Port, Reference
 
+from libmuscle.test.conftest import frozenset_of as s
+
 import pytest
 
 from pathlib import Path
@@ -22,12 +24,12 @@ def db_file(tmp_path) -> Path:
         store.store_instances([Reference('instance1'), Reference('instance2')])
 
         resources1 = Resources({
-            'node001': {0, 1},
-            'node002': {0, 1}})
+            'node001': {s(0), s(1)},
+            'node002': {s(0), s(1)}})
 
         resources2 = Resources({
-            'node001': {0},
-            'node002': {0, 1, 2}})
+            'node001': {s(0)},
+            'node002': {s(0), s(1), s(2)}})
 
         store.store_resources({
             Reference('instance1'): resources1,

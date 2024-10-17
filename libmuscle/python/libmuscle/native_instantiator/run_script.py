@@ -7,6 +7,32 @@ from ymmsl import (
         ResourceRequirements, ThreadedResReq)
 
 
+def direct_prep_resources(resources: Resources) -> Tuple[str, Dict[str, str]]:
+    """Create resources for a non-MPI program with taskset.
+
+    Taskset expects a set of cores on the command line, which we put into a
+    MUSCLE_CORES environment variable here.
+
+    Args:
+        resources: The resources to describe
+
+    Return:
+        No rank file, and a set of environment variables.
+    """
+    env: Dict[str, str] = dict()
+    only_node_hwthreads_list = [
+            hwthread
+            for core in next(iter(resources.cores.values()))
+            for hwthread in core]
+
+    env['MUSCLE_BIND_LIST'] = ','.join(map(str, only_node_hwthreads_list))
+
+    mask_int = sum((1 << c for c in only_node_hwthreads_list))
+    env['MUSCLE_BIND_MASK'] = format(mask_int, 'X')
+
+    return '', env
+
+
 def openmpi_prep_resources(resources: Resources) -> Tuple[str, Dict[str, str]]:
     """Create resource description for OpenMPI mpirun
 
@@ -18,10 +44,12 @@ def openmpi_prep_resources(resources: Resources) -> Tuple[str, Dict[str, str]]:
     """
     ranklines: List[str] = list()
     all_cores = (
-            (node, core) for node, cores in resources.cores.items() for core in cores)
+            (node, ','.join(sorted(map(str, hwthreads))))
+            for node, cores in resources.cores.items()
+            for hwthreads in cores)
 
-    for i, (node, core) in enumerate(all_cores):
-        ranklines.append(f'rank {i}={node} slot={core}')
+    for i, (node, hwthreads) in enumerate(all_cores):
+        ranklines.append(f'rank {i}={node} slot={hwthreads}')
 
     rankfile = '\n'.join(ranklines) + '\n'
 
@@ -83,7 +111,7 @@ def prep_resources(
         The contents of the rank/machine/hostfile, and a set of environment variables.
     """
     if model == ExecutionModel.DIRECT:
-        return '', dict()
+        return direct_prep_resources(resources)
     elif model == ExecutionModel.OPENMPI:
         return openmpi_prep_resources(resources)
     elif model == ExecutionModel.INTELMPI:
@@ -131,11 +159,11 @@ def local_command(implementation: Implementation) -> str:
     elif implementation.execution_model == ExecutionModel.OPENMPI:
         # Native name is orterun for older and prterun for newer OpenMPI.
         # So we go with mpirun, which works for either.
-        fstr = 'mpirun -np {{ntasks}} --oversubscribe {command} {args}'
+        fstr = 'mpirun -np $MUSCLE_MPI_PROCESSES --oversubscribe {command} {args}'
     elif implementation.execution_model == ExecutionModel.INTELMPI:
-        fstr = 'mpirun -n {{ntasks}} {command} {args}'
+        fstr = 'mpirun -n $MUSCLE_MPI_PROCESSES {command} {args}'
     elif implementation.execution_model == ExecutionModel.SRUNMPI:
-        fstr = 'srun -n {{ntasks}} -m arbitrary {command} {args}'
+        fstr = 'srun -n $MUSCLE_MPI_PROCESSES -m arbitrary {command} {args}'
     # elif implementation.execution_model == ExecutionModel.MPICH
     #    fstr = 'mpiexec -n {{ntasks}} {command} {args}'
 
@@ -163,26 +191,31 @@ def cluster_command(implementation: Implementation) -> str:
         implementation: The implementation to start.
 
     Return:
-        A format string with embedded {ntasks} and {rankfile}.
+        A string with the command to use to start the implementation.
     """
+    # TODO: enable debug options iff the manager log level is set to DEBUG
+    # TODO: don't use taskset if it's not available
     if implementation.execution_model == ExecutionModel.DIRECT:
-        fstr = '{command} {args}'
+        fstr = 'taskset $MUSCLE_BIND_MASK {command} {args}'
     elif implementation.execution_model == ExecutionModel.OPENMPI:
         # Native name is orterun for older and prterun for newer OpenMPI.
         # So we go with mpirun, which works for either.
         fstr = (
-                'mpirun -v -np {{ntasks}}'
+                'mpirun -v -np $MUSCLE_MPI_PROCESSES'
                 ' -d --debug-daemons'
-                ' --rankfile {{rankfile}} --oversubscribe'
-                # ' --map-by rankfile:file={{rankfile}}:oversubscribe'
-                ' --display-map --display-allocation {command} {args}')
-                # ' --bind-to core --display-map --display-allocation {command} {args}')
+                ' --rankfile $MUSCLE_RANKFILE --use-hwthread-cpus --oversubscribe'
+                # ' --map-by rankfile:file=$MUSCLE_RANKFILE:oversubscribe'
+                # ' --display-map --display-allocation {command} {args}'
+                ' --bind-to core --display-map --display-allocation {command} {args}'
+                )
     elif implementation.execution_model == ExecutionModel.INTELMPI:
-        fstr = 'mpirun -n {{ntasks}} -machinefile {{rankfile}} {command} {args}'
+        fstr = (
+                'mpirun -n $MUSCLE_MPI_PROCESSES -machinefile $MUSCLE_RANKFILE'
+                ' {command} {args}')
     elif implementation.execution_model == ExecutionModel.SRUNMPI:
-        fstr = 'srun -n {{ntasks}} -m arbitrary {command} {args}'
+        fstr = 'srun -n $MUSCLE_MPI_PROCESSES -m arbitrary {command} {args}'
     # elif implementation.execution_model == ExecutionModel.MPICH
-    #    fstr = 'mpiexec -n {{ntasks}} -f {{rankfile}} {command} {args}'
+    #    fstr = 'mpiexec -n $MUSCLE_MPI_PROCESSES -f $MUSCLE_RANKFILE {command} {args}'
 
     if implementation.args is None:
         args = ''
@@ -200,7 +233,7 @@ def cluster_command(implementation: Implementation) -> str:
 def make_script(
         implementation: Implementation, res_req: ResourceRequirements,
         local: bool, rankfile: Optional[Path] = None) -> str:
-    """Make a launch script for a given implementation.
+    """Make a run script for a given implementation.
 
     Args:
         implementation: The implementation to launch
@@ -232,12 +265,9 @@ def make_script(
         lines.append('')
 
     if local:
-        cmd = local_command(implementation)
+        lines.append(local_command(implementation))
     else:
-        cmd = cluster_command(implementation)
-
-    ntasks = num_mpi_tasks(res_req)
-    lines.append(cmd.format(ntasks=ntasks, rankfile=rankfile))
+        lines.append(cluster_command(implementation))
 
     lines.append('')
 

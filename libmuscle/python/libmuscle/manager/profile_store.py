@@ -90,9 +90,9 @@ class ProfileStore(ProfileDatabase):
             instance_oid = self._get_instance_oid(cur, instance_id)
 
             tuples = [
-                    (instance_oid, node, core)
+                    (instance_oid, node, hwthread)
                     for node, cores in res.cores.items()
-                    for core in cores]
+                    for core in cores for hwthread in core]
 
             cur.executemany(
                     "INSERT INTO assigned_cores (instance_oid, node, core)"

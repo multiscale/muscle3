@@ -9,13 +9,15 @@ from ymmsl import (
         Component, Conduit, Configuration, Implementation, Model,
         MPICoresResReq, Ports, Reference, ResourceRequirements, ThreadedResReq)
 
+from libmuscle.test.conftest import frozenset_of as s
+
 
 @pytest.fixture
 def all_resources() -> Resources:
     return Resources({
-        'node001': {1, 2, 3, 4},
-        'node002': {1, 2, 3, 4},
-        'node003': {1, 2, 3, 4}})
+        'node001': {s(1), s(2), s(3), s(4)},
+        'node002': {s(1), s(2), s(3), s(4)},
+        'node003': {s(1), s(2), s(3), s(4)}})
 
 
 @pytest.fixture
@@ -96,42 +98,48 @@ def test_model_graph(
 def test_resources(all_resources: Resources) -> None:
     res1 = all_resources
     assert res1.cores == {
-            'node001': {1, 2, 3, 4},
-            'node002': {1, 2, 3, 4},
-            'node003': {1, 2, 3, 4}}
+            'node001': {s(1), s(2), s(3), s(4)},
+            'node002': {s(1), s(2), s(3), s(4)},
+            'node003': {s(1), s(2), s(3), s(4)}}
     assert set(res1.nodes()) == {'node001', 'node002', 'node003'}
 
     res2 = Resources({
-        'node004': {1, 2, 3, 4, 5, 6}, 'node005': {1, 2, 3, 4, 5, 6}})
+        'node004': {s(1), s(2), s(3), s(4), s(5), s(6)},
+        'node005': {s(1), s(2), s(3), s(4), s(5), s(6)}})
     res1 += res2
 
     assert res1.cores == {
-            'node001': {1, 2, 3, 4}, 'node002': {1, 2, 3, 4},
-            'node003': {1, 2, 3, 4}, 'node004': {1, 2, 3, 4, 5, 6},
-            'node005': {1, 2, 3, 4, 5, 6}}
+            'node001': {s(1), s(2), s(3), s(4)},
+            'node002': {s(1), s(2), s(3), s(4)},
+            'node003': {s(1), s(2), s(3), s(4)},
+            'node004': {s(1), s(2), s(3), s(4), s(5), s(6)},
+            'node005': {s(1), s(2), s(3), s(4), s(5), s(6)}}
 
-    res3 = Resources({'node003': {1, 2, 3, 4}, 'node005': {4, 5, 6}})
+    res3 = Resources({
+        'node003': {s(1), s(2), s(3), s(4)}, 'node005': {s(4), s(5), s(6)}})
     res1 -= res3
 
     assert res1.cores == {
-            'node001': {1, 2, 3, 4}, 'node002': {1, 2, 3, 4},
-            'node004': {1, 2, 3, 4, 5, 6}, 'node005': {1, 2, 3}}
+            'node001': {s(1), s(2), s(3), s(4)},
+            'node002': {s(1), s(2), s(3), s(4)},
+            'node004': {s(1), s(2), s(3), s(4), s(5), s(6)},
+            'node005': {s(1), s(2), s(3)}}
     assert res1.nodes() == {
             'node001', 'node002', 'node004', 'node005'}
 
     res4 = copy(res3)
-    res4.cores['node003'] = {8}
+    res4.cores['node003'] = {s(8)}
 
-    assert res3.cores['node003'] == {1, 2, 3, 4}
-    assert res4.cores['node003'] == {8}
+    assert res3.cores['node003'] == {s(1), s(2), s(3), s(4)}
+    assert res4.cores['node003'] == {s(8)}
 
     all_resources = Resources.union([res1, res2, res3, res4])
 
-    assert all_resources.cores['node001'] == {1, 2, 3, 4}
-    assert all_resources.cores['node002'] == {1, 2, 3, 4}
-    assert all_resources.cores['node003'] == {1, 2, 3, 4, 8}
-    assert all_resources.cores['node004'] == {1, 2, 3, 4, 5, 6}
-    assert all_resources.cores['node005'] == {1, 2, 3, 4, 5, 6}
+    assert all_resources.cores['node001'] == {s(1), s(2), s(3), s(4)}
+    assert all_resources.cores['node002'] == {s(1), s(2), s(3), s(4)}
+    assert all_resources.cores['node003'] == {s(1), s(2), s(3), s(4), s(8)}
+    assert all_resources.cores['node004'] == {s(1), s(2), s(3), s(4), s(5), s(6)}
+    assert all_resources.cores['node005'] == {s(1), s(2), s(3), s(4), s(5), s(6)}
 
 
 def test_planner(
@@ -139,9 +147,12 @@ def test_planner(
     planner = Planner(all_resources)
     allocations = planner.allocate_all(configuration)
 
-    assert allocations[Reference('init')].cores == {'node001': {1, 2, 3, 4}}
-    assert allocations[Reference('macro')].cores == {'node001': {1, 2, 3, 4}}
-    assert allocations[Reference('micro')].cores == {'node001': {1, 2, 3, 4}}
+    assert allocations[Reference('init')].cores == {
+            'node001': {s(1), s(2), s(3), s(4)}}
+    assert allocations[Reference('macro')].cores == {
+            'node001': {s(1), s(2), s(3), s(4)}}
+    assert allocations[Reference('micro')].cores == {
+            'node001': {s(1), s(2), s(3), s(4)}}
 
 
 def test_planner_exclusive_macro(
@@ -151,9 +162,12 @@ def test_planner_exclusive_macro(
             False)
     allocations = planner.allocate_all(configuration)
 
-    assert allocations[Reference('init')].cores == {'node001': {1, 2, 3, 4}}
-    assert allocations[Reference('macro')].cores == {'node002': {1, 2, 3, 4}}
-    assert allocations[Reference('micro')].cores == {'node001': {1, 2, 3, 4}}
+    assert allocations[Reference('init')].cores == {
+            'node001': {s(1), s(2), s(3), s(4)}}
+    assert allocations[Reference('macro')].cores == {
+            'node002': {s(1), s(2), s(3), s(4)}}
+    assert allocations[Reference('micro')].cores == {
+            'node001': {s(1), s(2), s(3), s(4)}}
 
 
 def test_planner_exclusive_predecessor(
@@ -163,9 +177,12 @@ def test_planner_exclusive_predecessor(
             False)
     allocations = planner.allocate_all(configuration)
 
-    assert allocations[Reference('init')].cores == {'node001': {1, 2, 3, 4}}
-    assert allocations[Reference('macro')].cores == {'node001': {1, 2, 3, 4}}
-    assert allocations[Reference('micro')].cores == {'node001': {1, 2, 3, 4}}
+    assert allocations[Reference('init')].cores == {
+            'node001': {s(1), s(2), s(3), s(4)}}
+    assert allocations[Reference('macro')].cores == {
+            'node001': {s(1), s(2), s(3), s(4)}}
+    assert allocations[Reference('micro')].cores == {
+            'node001': {s(1), s(2), s(3), s(4)}}
 
 
 def test_oversubscribe(
@@ -177,33 +194,38 @@ def test_oversubscribe(
     planner = Planner(all_resources)
     allocations = planner.allocate_all(configuration)
 
-    assert allocations[Reference('init[0]')].cores == {'node001': {1, 2, 3, 4}}
-    assert allocations[Reference('init[1]')].cores == {'node002': {1, 2, 3, 4}}
-    assert allocations[Reference('init[2]')].cores == {'node003': {1, 2, 3, 4}}
-    assert allocations[Reference('init[3]')].cores == {'node001': {1, 2, 3, 4}}
-    assert allocations[Reference('init[4]')].cores == {'node002': {1, 2, 3, 4}}
+    assert allocations[Reference('init[0]')].cores == {
+            'node001': {s(1), s(2), s(3), s(4)}}
+    assert allocations[Reference('init[1]')].cores == {
+            'node002': {s(1), s(2), s(3), s(4)}}
+    assert allocations[Reference('init[2]')].cores == {
+            'node003': {s(1), s(2), s(3), s(4)}}
+    assert allocations[Reference('init[3]')].cores == {
+            'node001': {s(1), s(2), s(3), s(4)}}
+    assert allocations[Reference('init[4]')].cores == {
+            'node002': {s(1), s(2), s(3), s(4)}}
 
     assert allocations[Reference('macro[0]')].cores == {
-            'node001': {1, 2, 3, 4}}
+            'node001': {s(1), s(2), s(3), s(4)}}
     assert allocations[Reference('macro[1]')].cores == {
-            'node002': {1, 2, 3, 4}}
+            'node002': {s(1), s(2), s(3), s(4)}}
     assert allocations[Reference('macro[2]')].cores == {
-            'node003': {1, 2, 3, 4}}
+            'node003': {s(1), s(2), s(3), s(4)}}
     assert allocations[Reference('macro[3]')].cores == {
-            'node001': {1, 2, 3, 4}}
+            'node001': {s(1), s(2), s(3), s(4)}}
     assert allocations[Reference('macro[4]')].cores == {
-            'node002': {1, 2, 3, 4}}
+            'node002': {s(1), s(2), s(3), s(4)}}
 
     assert allocations[Reference('micro[0]')].cores == {
-            'node001': {1, 2, 3, 4}}
+            'node001': {s(1), s(2), s(3), s(4)}}
     assert allocations[Reference('micro[1]')].cores == {
-            'node002': {1, 2, 3, 4}}
+            'node002': {s(1), s(2), s(3), s(4)}}
     assert allocations[Reference('micro[2]')].cores == {
-            'node003': {1, 2, 3, 4}}
+            'node003': {s(1), s(2), s(3), s(4)}}
     assert allocations[Reference('micro[3]')].cores == {
-            'node001': {1, 2, 3, 4}}
+            'node001': {s(1), s(2), s(3), s(4)}}
     assert allocations[Reference('micro[4]')].cores == {
-            'node002': {1, 2, 3, 4}}
+            'node002': {s(1), s(2), s(3), s(4)}}
 
 
 def test_oversubscribe_single_instance_threaded() -> None:
@@ -213,12 +235,13 @@ def test_oversubscribe_single_instance_threaded() -> None:
             Reference('x'): ThreadedResReq(Reference('x'), 24)}
     config = Configuration(model, None, impl, reqs)
 
-    res = Resources({'node001': {1, 2, 3, 4}})
+    res = Resources({'node001': {s(1), s(2), s(3), s(4)}})
 
     planner = Planner(res)
     allocations = planner.allocate_all(config)
 
-    assert allocations[Reference('x')].cores == {'node001': {1, 2, 3, 4}}
+    assert allocations[Reference('x')].cores == {
+            'node001': {s(1), s(2), s(3), s(4)}}
 
 
 def test_oversubscribe_single_instance_mpi() -> None:
@@ -228,12 +251,13 @@ def test_oversubscribe_single_instance_mpi() -> None:
             Reference('x'): MPICoresResReq(Reference('x'), 24)}
     config = Configuration(model, None, impl, reqs)
 
-    res = Resources({'node001': {1, 2, 3, 4}})
+    res = Resources({'node001': {s(1), s(2), s(3), s(4)}})
 
     planner = Planner(res)
     allocations = planner.allocate_all(config)
 
-    assert allocations[Reference('x')].cores == {'node001': {1, 2, 3, 4}}
+    assert allocations[Reference('x')].cores == {
+            'node001': {s(1), s(2), s(3), s(4)}}
 
 
 def test_virtual_allocation() -> None:
@@ -243,7 +267,7 @@ def test_virtual_allocation() -> None:
             Reference('x'): MPICoresResReq(Reference('x'), 13)}
     config = Configuration(model, None, impl, reqs)
 
-    res = Resources({'node000001': {1, 2, 3, 4}})
+    res = Resources({'node000001': {s(1), s(2), s(3), s(4)}})
 
     planner = Planner(res)
     allocations = planner.allocate_all(config, virtual=True)
@@ -260,7 +284,7 @@ def test_impossible_virtual_allocation() -> None:
             Reference('x'): ThreadedResReq(Reference('x'), 13)}
     config = Configuration(model, None, impl, reqs)
 
-    res = Resources({'node000001': {1, 2, 3, 4}})
+    res = Resources({'node000001': {s(1), s(2), s(3), s(4)}})
 
     planner = Planner(res)
     with pytest.raises(InsufficientResourcesAvailable):

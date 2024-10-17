@@ -1,6 +1,6 @@
 from copy import copy, deepcopy
 import logging
-from typing import Dict, Iterable, List, Mapping, Optional, Set, Tuple
+from typing import Dict, Iterable, FrozenSet, List, Mapping, Optional, Set, Tuple
 
 from ymmsl import (
         Component, Configuration, Model, MPICoresResReq, MPINodesResReq,
@@ -391,17 +391,17 @@ class Resources:
     resources we're talking about.
 
     Attributes:
-        cores: A dictionary mapping designated nodes to designated
-                cores on them.
+        cores: A dictionary mapping designated nodes to designated cores on them. Cores
+                are represented by sets of hwthreads they have.
     """
-    def __init__(self, cores: Optional[Dict[str, Set[int]]] = None) -> None:
+    def __init__(self, cores: Optional[Dict[str, Set[FrozenSet[int]]]] = None) -> None:
         """Create a Resources object with the given cores.
 
         Args:
             cores: Cores to be designated by this object.
         """
         if cores is None:
-            self.cores: Dict[str, Set[int]] = {}
+            self.cores: Dict[str, Set[FrozenSet[int]]] = {}
         else:
             self.cores = cores
 
@@ -444,22 +444,22 @@ class Resources:
 
     def __str__(self) -> str:
         """Return a human-readable string representation."""
-        def collapse_ranges(cores: Set[int]) -> str:
+        def collapse_ranges(cores: Set[FrozenSet[int]]) -> str:
             if len(cores) == 0:
                 return ''
 
             result = list()
-            scores = sorted(cores)
+            hwthreads = sorted((hwthread for core in cores for hwthread in core))
             start = 0
             i = 1
-            while i <= len(scores):
-                if (i == len(scores)) or (scores[i-1] != scores[i] - 1):
+            while i <= len(hwthreads):
+                if (i == len(hwthreads)) or (hwthreads[i-1] != hwthreads[i] - 1):
                     if start == i - 1:
                         # run of one
-                        result.append(str(scores[i-1]))
+                        result.append(str(hwthreads[i-1]))
                     else:
                         # run of at least two
-                        result.append(f'{scores[start]}-{scores[i-1]}')
+                        result.append(f'{hwthreads[start]}-{hwthreads[i-1]}')
                     start = i
                 i += 1
             return ','.join(result)
@@ -477,7 +477,7 @@ class Resources:
         return self.cores.keys()
 
     def total_cores(self) -> int:
-        """Returns the total number of cores designated."""
+        """Returns the total number of cores (not hwthreads) designated."""
         return sum([len(cs) for cs in self.cores.values()])
 
     def isdisjoint(self, other: 'Resources') -> bool:
@@ -701,7 +701,8 @@ class Planner:
                         f' {req.threads_per_mpi_process} threads per process,'
                         f' which is impossible with {num_cores} cores per'
                         ' node.')
-        self._all_resources.cores[new_node] = set(range(num_cores))
+        self._all_resources.cores[new_node] = {
+                frozenset([i]) for i in range(num_cores)}
 
     def _allocate_instance(
             self, instance: Reference, component: Component,

@@ -99,3 +99,12 @@ def connected_port_manager(port_manager, declared_ports, mock_ports):
     port_manager.list_ports.return_value = declared_ports
     port_manager.port_exists = port_exists
     return port_manager
+
+
+def frozenset_of(*args):
+    """Create a frozenset containing the arguments.
+
+    This is a helper to shorten notation used in some of the planning and
+    launching-related tests.
+    """
+    return frozenset(args)

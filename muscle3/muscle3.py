@@ -138,7 +138,9 @@ def resources(
         click.echo(_RESOURCES_INCOMPLETE_MODEL, err=True)
         sys.exit(1)
 
-    resources = Resources({'node000001': set(range(cores_per_node))})
+    resources = Resources({
+        'node000001': {frozenset([r]) for r in range(cores_per_node)}})
+
     planner = Planner(resources)
     try:
         allocations = planner.allocate_all(config, True)

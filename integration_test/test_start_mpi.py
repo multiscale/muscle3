@@ -66,7 +66,7 @@ def test_start_mpi(tmpdir, mpi_exec_model):
     run_dir = RunDir(tmppath / 'run')
 
     # launch MUSCLE Manager with simulation
-    manager = Manager(config, run_dir)
+    manager = Manager(config, run_dir, 'DEBUG')
     try:
         manager.start_instances()
     except:  # noqa

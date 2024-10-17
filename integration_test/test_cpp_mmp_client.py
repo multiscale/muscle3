@@ -38,7 +38,7 @@ def do_mmp_client_test(tmpdir, caplog):
 
     # create server
     ymmsl_doc = ymmsl.load(ymmsl_text)
-    manager = Manager(ymmsl_doc, RunDir(Path(tmpdir)))
+    manager = Manager(ymmsl_doc, RunDir(Path(tmpdir)), 'DEBUG')
 
     # mock the deregistration
     removed_instance = None

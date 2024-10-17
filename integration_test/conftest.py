@@ -42,7 +42,7 @@ def ls_snapshots(run_dir, instance=None):
 
 def start_mmp_server(control_pipe, ymmsl_doc, run_dir):
     control_pipe[0].close()
-    manager = Manager(ymmsl_doc, run_dir)
+    manager = Manager(ymmsl_doc, run_dir, 'DEBUG')
     control_pipe[1].send(manager.get_server_location())
     control_pipe[1].recv()
     control_pipe[1].close()

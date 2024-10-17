@@ -94,7 +94,17 @@ class InstanceManager:
         self._log_handler.start()
 
         self._allocations: Optional[Dict[Reference, Resources]] = None
-        self._planner = Planner(self._resources_in.get())
+
+        resources = self._resources_in.get()
+        _logger.debug(f'Got resources {resources}')
+        if isinstance(resources, CrashedResult):
+            msg = (
+                'Instantiator crashed. This should not happen, please file a bug'
+                ' report.')
+            _logger.error(msg)
+            raise RuntimeError(msg)
+
+        self._planner = Planner(resources)
         self._num_running = 0
 
     def set_manager_location(self, location: str) -> None:

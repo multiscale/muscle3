@@ -20,6 +20,15 @@ class PostOffice:
 
         self._outbox_lock = Lock()
 
+    def have_message(self, receiver: Reference) -> bool:
+        """Return whether there's a message for the given receiver.
+
+        Args:
+            receiver: The receiver of the message.
+        """
+        self._ensure_outbox_exists(receiver)
+        return not self._outboxes[receiver].is_empty()
+
     def get_message(self, receiver: Reference) -> bytes:
         """Get a message from a receiver's outbox.
 

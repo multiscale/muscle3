@@ -278,3 +278,14 @@ def get_cores_per_node() -> List[int]:
             ' SLURM_CPUS_ON_NODE is missing or neither SLURM_JOB_NUM_NODES nor'
             ' SLURM_NNODES is set. Please create an issue on GitHub with the output'
             ' of "sbatch --version" on this cluster.')
+
+
+def agent_launch_command(agent_cmd: List[str]) -> List[str]:
+    """Return a command for launching one agent on each node.
+
+    Args:
+        agent_cmd: A command that will start the agent.
+    """
+    # TODO: On the latest Slurm, there's a special command for this that we should use
+    # if we have that.
+    return ['srun', '--ntasks-per-node', '1'] + agent_cmd

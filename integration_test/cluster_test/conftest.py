@@ -142,7 +142,6 @@ def setup_connection(fake_cluster_headnode):
     # Because it's been made inside of the container, it has a different owner
     # than what we're running with on the host, and the host user cannot remove
     # the files.
-
     run_cmd(term, 60, f'rm -rf {REMOTE_SHARED}/*')
 
 
@@ -198,3 +197,36 @@ def muscle3_native_openmpi(remote_source, setup_connection):
         f'PREFIX={prefix} make install"'))
 
     return prefix
+
+
+@pytest.fixture(scope='session')
+def hwthread_to_core():
+    """Translates hwthreads to core ids.
+
+    In our tests, we use sched_getaffinity to check which cores we're bound to. This
+    returns numbers identifying hwthreads, but our planner binds swthreads and processes
+    to entire cores. So we get a comma-separated list of hwthread ids and want to
+    compare that to a list of core ids.
+
+    This reads /proc/cpuinfo to get the mapping between hwthreads and cores, and returns
+    a function that takes a comma-separated list of hwthread ids and returns a list of
+    corresponding core ids.
+    """
+    with open('/proc/cpuinfo', 'r') as f:
+        cpuinfo = f.readlines()
+
+    def get_values(cpuinfo, field):
+        return [
+                int(line.split(':')[1].strip())
+                for line in cpuinfo if line.startswith(field)]
+
+    hwthread_ids = get_values(cpuinfo, 'processor')
+    core_ids = get_values(cpuinfo, 'core id')
+
+    table = dict(zip(hwthread_ids, core_ids))
+
+    def convert(aff_ids):
+        cores = {table[i] for i in map(int, aff_ids.split(','))}
+        return sorted(cores)
+
+    return convert

@@ -1,8 +1,15 @@
 import logging
+import os
 import socket
 
 from libmuscle import Instance, Message
 from ymmsl import Operator
+
+
+def log_location() -> None:
+    """Log where we are running so that the test can check for it."""
+    print(socket.gethostname())
+    print(','.join(map(str, sorted(os.sched_getaffinity(0)))))
 
 
 def component() -> None:
@@ -11,8 +18,6 @@ def component() -> None:
     This sends and receives on all operators, allowing different coupling patterns
     with a single program.
     """
-    print(socket.gethostname())
-
     instance = Instance({
             Operator.F_INIT: ['init_in'],
             Operator.O_I: ['inter_out'],
@@ -39,4 +44,6 @@ def component() -> None:
 if __name__ == '__main__':
     logging.basicConfig()
     logging.getLogger().setLevel(logging.INFO)
+
+    log_location()
     component()

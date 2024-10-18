@@ -13,7 +13,7 @@ from libmuscle.manager.instantiator import (
         CancelAllRequest, CrashedResult, InstantiatorRequest,
         InstantiationRequest, Process, ProcessStatus, ShutdownRequest)
 from libmuscle.manager.logger import last_lines
-from libmuscle.manager.qcgpj_instantiator import QCGPJInstantiator
+# from libmuscle.manager.qcgpj_instantiator import QCGPJInstantiator
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.native_instantiator.native_instantiator import NativeInstantiator
 from libmuscle.planner.planner import Planner, Resources

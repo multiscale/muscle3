@@ -125,7 +125,7 @@ docsclean:
 	rm -rf docs/doxygen/xml/*
 
 .PHONY: clean
-clean:
+clean: docsclean
 	cd libmuscle/cpp && $(MAKE) clean
 	cd libmuscle/fortran && $(MAKE) clean
 	cd scripts && $(MAKE) clean
@@ -135,11 +135,13 @@ clean:
 	rm -rf libmuscle/python/libmuscle/version.py
 
 .PHONY: distclean
-distclean:
+distclean: docsclean
 	cd libmuscle/cpp && $(MAKE) distclean
 	cd libmuscle/fortran && $(MAKE) distclean
 	cd scripts && $(MAKE) distclean
 	cd docs/source/examples && $(MAKE) clean
+	rm -rf __pycache__
+	- find docs scripts integration_test muscle3 libmuscle/python -name __pycache__ -type d -depth -exec rm -rf \{\} \;
 	rm -rf ./build
 	rm -rf $(CURDIR)/libmuscle/build/test_install/*
 	rm -rf libmuscle/python/libmuscle/version.py

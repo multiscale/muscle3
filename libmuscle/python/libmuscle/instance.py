@@ -1140,7 +1140,6 @@ class Instance:
 
         Note that this also sets the global log level to this level
         if it is currently higher, otherwise we still get no output.
-
         """
         try:
             log_level_str = self.get_setting('muscle_remote_log_level', 'str')
@@ -1175,26 +1174,26 @@ class Instance:
         It also attaches a FileHandler which outputs to a local file named
         after the instance. This name can be overridden by the
         --muscle-log-file command line option.
-
         """
         try:
             log_level_str = self.get_setting('muscle_local_log_level', 'str')
-
-            log_level = LogLevel[log_level_str.upper()]
-            if log_level is None:
-                _logger.warning(
-                    ('muscle_remote_log_level is set to {}, which is not a'
-                     ' valid log level. Please use one of DEBUG, INFO,'
-                     ' WARNING, ERROR, CRITICAL, or DISABLED').format(
-                         log_level_str))
-                return
-
-            py_level = log_level.as_python_level()
-            logging.getLogger('libmuscle').setLevel(py_level)
-            logging.getLogger('ymmsl').setLevel(py_level)
         except KeyError:
             # muscle_remote_log_level not set, do nothing and keep the default
-            pass
+            return
+
+        try:
+            log_level = LogLevel[log_level_str.upper()]
+        except KeyError:
+            _logger.warning(
+                ('muscle_local_log_level is set to {}, which is not a'
+                 ' valid log level. Please use one of DEBUG, INFO,'
+                 ' WARNING, ERROR, CRITICAL, or DISABLED').format(
+                     log_level_str))
+            return
+
+        py_level = log_level.as_python_level()
+        logging.getLogger('libmuscle').setLevel(py_level)
+        logging.getLogger('ymmsl').setLevel(py_level)
 
     def __apply_overlay(self, message: Message) -> None:
         """Sets local overlay if we don't already have one.

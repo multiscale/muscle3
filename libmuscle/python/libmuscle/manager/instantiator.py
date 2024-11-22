@@ -113,7 +113,8 @@ class CancelAllRequest(InstantiatorRequest):
 
 class CrashedResult:
     """Signals that the instantiator process crashed."""
-    pass
+    def __init__(self, exception: Optional[Exception] = None) -> None:
+        self.exception = exception
 
 
 class QueueingLogHandler(logging.Handler):

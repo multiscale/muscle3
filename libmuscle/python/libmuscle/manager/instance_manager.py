@@ -8,6 +8,7 @@ import queue
 
 from ymmsl import Configuration, Reference
 
+from libmuscle.errors import ConfigurationError
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.instantiator import (
         CancelAllRequest, CrashedResult, InstantiatorRequest,
@@ -160,8 +161,7 @@ class InstanceManager:
         """
         if self._allocations is None:
             raise RuntimeError(
-                    'Tried to get resources but we are running without'
-                    ' --start-all')
+                    'Tried to get resources but we are running without --start-all')
 
         return self._allocations
 
@@ -182,9 +182,12 @@ class InstanceManager:
             result = self._results_in.get()
 
             if isinstance(result, CrashedResult):
-                _logger.error(
-                    'Instantiator crashed. This should not happen, please file'
-                    ' a bug report.')
+                if isinstance(result.exception, ConfigurationError):
+                    _logger.error(str(result.exception))
+                else:
+                    _logger.error(
+                        'Instantiator crashed. This should not happen, please file'
+                        ' a bug report.')
                 return False
 
             results.append(result)

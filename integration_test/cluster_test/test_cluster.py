@@ -60,14 +60,13 @@ def remote_out_dir(remote_home):
     return remote_home / 'test_results'
 
 
-def _make_job(name, mode, remote_test_files, remote_out_dir):
-    job_dir = remote_out_dir / f'test_{name}_{mode}'
+def _make_base_job(name, remote_out_dir, dir_name):
+    job_dir = remote_out_dir / dir_name
     job_dir.mkdir(0o755, True, True)
 
     job = cerulean.JobDescription()
     job.name = name
     job.working_directory = job_dir
-    job.command = str(remote_test_files / f'{name}.sh')
     job.stdout_file = job_dir / 'stdout.txt'
     job.stderr_file = job_dir / 'stderr.txt'
     job.queue_name = 'debug'
@@ -79,6 +78,18 @@ def _make_job(name, mode, remote_test_files, remote_out_dir):
     return job
 
 
+def _make_job(name, mode, remote_test_files, remote_out_dir):
+    job = _make_base_job(name, remote_out_dir, f'test_{name}_{mode}')
+    job.command = str(remote_test_files / f'{name}.sh')
+    return job
+
+
+def _make_mpi_job(name, mode, execution_model, remote_test_files, remote_out_dir):
+    job = _make_base_job(name, remote_out_dir, f'test_{name}_{mode}_{execution_model}')
+    job.command = str(remote_test_files / f'{name}_{execution_model}.sh')
+    return job
+
+
 def _sched(fake_cluster, mode):
     if mode == 'local':
         return fake_cluster[2]
@@ -86,8 +97,10 @@ def _sched(fake_cluster, mode):
         return fake_cluster[3]
 
 
-def run_cmd_dir(remote_out_dir, testname, mode):
+def _run_cmd_dir(remote_out_dir, testname, mode, execution_model=None):
     results_name = f'test_{testname}_{mode}'
+    if execution_model is not None:
+        results_name += f'_{execution_model}'
 
     for p in (remote_out_dir / results_name).iterdir():
         if p.name.startswith('run_'):
@@ -95,14 +108,14 @@ def run_cmd_dir(remote_out_dir, testname, mode):
 
 
 def _get_stdout(remote_out_dir, testname, mode, instance):
-    run_dir = run_cmd_dir(remote_out_dir, testname, mode)
+    run_dir = _run_cmd_dir(remote_out_dir, testname, mode)
     stdout_file = run_dir / 'instances' / instance / 'stdout.txt'
     assert stdout_file.exists()     # test output redirection
     return stdout_file.read_text()
 
 
-def _get_outfile(remote_out_dir, testname, mode, instance, rank):
-    run_dir = run_cmd_dir(remote_out_dir, testname, mode)
+def _get_outfile(remote_out_dir, testname, mode, execution_model, instance, rank):
+    run_dir = _run_cmd_dir(remote_out_dir, testname, mode, execution_model)
     work_dir = run_dir / 'instances' / instance / 'workdir'
     out_file = work_dir / f'out_{rank}.txt'
     assert out_file.exists()        # test working directory
@@ -196,12 +209,18 @@ def test_multiple(
 
 @skip_unless_cluster
 @pytest.mark.parametrize('mode', ['local', 'slurm'])
-def test_double_mpi(
-        fake_cluster, remote_test_files, remote_out_dir, mode, hwthread_to_core):
+@pytest.mark.parametrize('execution_model', ['openmpi', 'srunmpi'])
+def test_double(
+        fake_cluster, remote_test_files, remote_out_dir, hwthread_to_core,
+        mode, execution_model):
+
+    if mode == 'local' and execution_model == 'srunmpi':
+        pytest.skip('srun does not work without slurm')
 
     sched = _sched(fake_cluster, mode)
 
-    job = _make_job('double_mpi', mode, remote_test_files, remote_out_dir)
+    job = _make_mpi_job(
+            'double', mode, execution_model, remote_test_files, remote_out_dir)
     if mode == 'slurm':
         job.num_nodes = 2
         job.extra_scheduler_options += ' --nodelist=node-[3-4]'
@@ -212,7 +231,8 @@ def test_double_mpi(
 
     for i in range(1, 3):
         for rank in range(2):
-            out = _get_outfile(remote_out_dir, 'double_mpi', mode, f'c{i}', rank)
+            out = _get_outfile(
+                    remote_out_dir, 'double', mode, execution_model, f'c{i}', rank)
             if mode == 'local':
                 assert out.split('\n')[0] == 'headnode'
             else:

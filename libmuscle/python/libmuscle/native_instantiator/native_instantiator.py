@@ -196,6 +196,7 @@ from time import sleep
 import traceback
 from typing import Dict, List, Optional
 
+from libmuscle.errors import ConfigurationError
 from libmuscle.manager.instantiator import (
         CancelAllRequest, CrashedResult, create_instance_env, InstantiationRequest,
         Process, ProcessStatus, reconfigure_logging, ShutdownRequest)
@@ -245,11 +246,16 @@ class NativeInstantiator(mp.Process):
             self._send_resources()
             self._main()
 
+        except ConfigurationError as e:
+            self._results_out.put(CrashedResult(e))
+
         except:     # noqa
             for line in traceback.format_exception(*sys.exc_info()):
                 _logger.error(line)
-            self._resources_out.put(CrashedResult())
-            self._results_out.put(CrashedResult())
+
+            result = CrashResult(sys.exc_info()[1])
+            self._resources_out.put(result)
+            self._results_out.put(result)
 
     def _main(self) -> None:
         """Main function for the background process.
@@ -352,13 +358,16 @@ class NativeInstantiator(mp.Process):
         env = create_instance_env(request.instance, request.implementation.env)
         self._add_resources(env, request.res_req)
 
-        rankfile: Optional[Path] = None
+        rankfile = request.instance_dir / 'rankfile'
+
         if global_resources.on_cluster():
             rankfile_contents, resource_env = prep_resources(
-                  request.implementation.execution_model, request.resources)
+                  request.implementation.execution_model, request.resources,
+                  rankfile)
 
             if rankfile_contents:
-                rankfile = self._write_rankfile(request, rankfile_contents)
+                with rankfile.open('w') as f:
+                    f.write(rankfile_contents)
                 env['MUSCLE_RANKFILE'] = str(rankfile)
 
             env.update(resource_env)
@@ -380,18 +389,6 @@ class NativeInstantiator(mp.Process):
             _logger.warning(f'Instance {name} failed to start: {e}')
             self._processes[name].status = ProcessStatus.ERROR
             self._processes[name].error_msg = f'Instance failed to start: {e}'
-
-    def _write_rankfile(self, request: InstantiationRequest, rankfile: str) -> Path:
-        """Create and write out the rankfile and return its location.
-
-        Also known as a machinefile or hostfile depending on the MPI implementation.
-        """
-        rankfile_file = request.instance_dir / 'rankfile'
-
-        with rankfile_file.open('w') as f:
-            f.write(rankfile)
-
-        return rankfile_file
 
     def _write_run_script(
             self, request: InstantiationRequest, rankfile: Optional[Path]) -> Path:

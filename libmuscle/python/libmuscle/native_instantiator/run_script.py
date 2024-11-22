@@ -1,6 +1,7 @@
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, FrozenSet, List, Optional, Tuple
 
+from libmuscle.errors import ConfigurationError
 from libmuscle.planner.planner import Resources
 from ymmsl import (
         ExecutionModel, Implementation, MPICoresResReq, MPINodesResReq,
@@ -83,29 +84,45 @@ def mpich_prep_resources(resources: Resources) -> Tuple[str, Dict[str, str]]:
     raise NotImplementedError()
 
 
-def srun_prep_resources(resources: Resources) -> Tuple[str, Dict[str, str]]:
+def srun_prep_resources(
+        resources: Resources, rankfile_location: Path) -> Tuple[str, Dict[str, str]]:
     """Create resource description for srun
 
     Args:
         resources: The resources to describe
+        rankfile_location: Location where the rankfile will be written
 
     Return:
         The contents of the hostfile, and a set of environment variables
     """
-    # SLURM_HOSTFILE to point to the rankfile
-    # CPU_BIND=verbose,mask_cpu=0x01,0x02,0x04,0x01 to specify cores 0,1,2,0 for ranks
-    # 0-3
-    raise NotImplementedError()
+    hostfile = '\n'.join((
+        node for node, cores in resources.cores.items() for _ in cores))
+
+    env = {'SLURM_HOSTFILE': str(rankfile_location)}
+
+    bind_list = [
+            core for _, cores in resources.cores.items() for core in cores]
+
+    def core_mask(core: FrozenSet[int]) -> str:
+        mask = sum((1 << hwthread) for hwthread in core)
+        return format(mask, '#x')
+
+    bind_str = ','.join(map(core_mask, bind_list))
+
+    env['SLURM_CPU_BIND'] = f'verbose,mask_cpu:{bind_str}'
+
+    return hostfile, env
 
 
 def prep_resources(
-        model: ExecutionModel, resources: Resources
+        model: ExecutionModel, resources: Resources, rankfile_location: Path
         ) -> Tuple[str, Dict[str, str]]:
     """Create resource description for the given execution model.
 
     Args:
         model: The execution model to generate a description for
         resources: The resources to describe
+        rankfile_location: Path to where the rankfile will be written
 
     Return:
         The contents of the rank/machine/hostfile, and a set of environment variables.
@@ -117,7 +134,7 @@ def prep_resources(
     elif model == ExecutionModel.INTELMPI:
         return impi_prep_resources(resources)
     elif model == ExecutionModel.SRUNMPI:
-        return srun_prep_resources(resources)
+        return srun_prep_resources(resources, rankfile_location)
     # elif model == ExecutionModel.MPICH:
     #     return mpich_prep_resources(resources)
     raise RuntimeError(
@@ -163,7 +180,13 @@ def local_command(implementation: Implementation) -> str:
     elif implementation.execution_model == ExecutionModel.INTELMPI:
         fstr = 'mpirun -n $MUSCLE_MPI_PROCESSES {command} {args}'
     elif implementation.execution_model == ExecutionModel.SRUNMPI:
-        fstr = 'srun -n $MUSCLE_MPI_PROCESSES -m arbitrary {command} {args}'
+        raise ConfigurationError(
+                f'Could not start {implementation.name} because the SRUNMPI execution'
+                ' method only works in a SLURM allocation, and we are running locally.'
+                ' Please switch this implementation to a different execution method'
+                ' in the configuration file. You will probably want OPENMPI or'
+                ' INTELMPI depending on which MPI implementation this code was'
+                ' compiled with.')
     # elif implementation.execution_model == ExecutionModel.MPICH
     #    fstr = 'mpiexec -n {{ntasks}} {command} {args}'
 
@@ -213,7 +236,10 @@ def cluster_command(implementation: Implementation) -> str:
                 'mpirun -n $MUSCLE_MPI_PROCESSES -machinefile $MUSCLE_RANKFILE'
                 ' {command} {args}')
     elif implementation.execution_model == ExecutionModel.SRUNMPI:
-        fstr = 'srun -n $MUSCLE_MPI_PROCESSES -m arbitrary {command} {args}'
+        # TODO: set SLURM_CPU_BIND_VERBOSE for verbose output
+        fstr = (
+                'srun -n $MUSCLE_MPI_PROCESSES -m arbitrary --overlap'
+                ' --cpu-bind=$SLURM_CPU_BIND {command} {args}')
     # elif implementation.execution_model == ExecutionModel.MPICH
     #    fstr = 'mpiexec -n $MUSCLE_MPI_PROCESSES -f $MUSCLE_RANKFILE {command} {args}'
 

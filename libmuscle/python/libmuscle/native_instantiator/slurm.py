@@ -280,7 +280,7 @@ def get_cores_per_node() -> List[int]:
             ' of "sbatch --version" on this cluster.')
 
 
-def agent_launch_command(agent_cmd: List[str]) -> List[str]:
+def agent_launch_command(agent_cmd: List[str], nnodes: int) -> List[str]:
     """Return a command for launching one agent on each node.
 
     Args:
@@ -288,4 +288,6 @@ def agent_launch_command(agent_cmd: List[str]) -> List[str]:
     """
     # TODO: On the latest Slurm, there's a special command for this that we should use
     # if we have that.
-    return ['srun', '--ntasks-per-node', '1'] + agent_cmd
+    return [
+            'srun', f'--ntasks={nnodes}', '--ntasks-per-node=1', '--cpu-bind=none'
+            ] + agent_cmd

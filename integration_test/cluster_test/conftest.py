@@ -14,6 +14,10 @@ logger_ = logging.getLogger(__name__)
 REMOTE_SHARED = '/home/cerulean/shared'
 
 
+# Shut down the containers after running the tests. Set to False to debug.
+CLEAN_UP_CONTAINERS = True
+
+
 skip_unless_cluster = pytest.mark.skipif(
         'MUSCLE_TEST_CLUSTER' not in os.environ,
         reason='Cluster tests were not explicitly enabled')
@@ -75,10 +79,10 @@ def shared_dir():
 @pytest.fixture(scope='session')
 def cleanup_docker(local_term):
     for i in range(5):
-        node_name = f'muscle3-node-{i}'
+        node_name = f'node-{i}'
         run_cmd(local_term, 60, f'docker rm -f {node_name}')
 
-    run_cmd(local_term, 60, 'docker rm -f muscle3-headnode')
+    run_cmd(local_term, 60, 'docker rm -f headnode')
     run_cmd(local_term, 60, 'docker network rm -f muscle3-net')
 
 
@@ -87,7 +91,9 @@ def fake_cluster_network(local_term, cleanup_docker):
     name = 'muscle3-net'
     run_cmd(local_term, 60, f'docker network create {name}')
     yield name
-    run_cmd(local_term, 60, 'docker network rm -f muscle3-net')
+
+    if CLEAN_UP_CONTAINERS:
+        run_cmd(local_term, 60, 'docker network rm -f muscle3-net')
 
 
 @pytest.fixture(scope='session')
@@ -97,12 +103,13 @@ def fake_cluster_nodes(
     node_names = list()
 
     for i in range(5):
-        node_name = f'muscle3-node-{i}'
+        node_name = f'node-{i}'
         ssh_port = 10030 + i
 
         run_cmd(local_term, 60, (
             f'docker run -d --name={node_name} --hostname={node_name}'
             f' --network={fake_cluster_network} -p {ssh_port}:22'
+            f' --cap-add=CAP_SYS_NICE'
             f' --mount type=bind,source={shared_dir},target={REMOTE_SHARED}'
             f' {fake_cluster_image}'))
 
@@ -110,7 +117,8 @@ def fake_cluster_nodes(
 
     yield None
 
-    run_cmd(local_term, 60, f'docker rm -f {" ".join(node_names)}')
+    if CLEAN_UP_CONTAINERS:
+        run_cmd(local_term, 60, f'docker rm -f {" ".join(node_names)}')
 
 
 @pytest.fixture(scope='session')
@@ -119,7 +127,7 @@ def fake_cluster_headnode(
         shared_dir):
 
     run_cmd(local_term, 60, (
-        'docker run -d --name=muscle3-headnode --hostname=muscle3-headnode'
+        'docker run -d --name=headnode --hostname=headnode'
         f' --network={fake_cluster_network} -p 10022:22'
         f' --mount type=bind,source={shared_dir},target={REMOTE_SHARED}'
         f' {fake_cluster_image}'))
@@ -127,7 +135,8 @@ def fake_cluster_headnode(
     ssh_term('Virtual cluster container start timed out')
     yield None
 
-    run_cmd(local_term, 60, 'docker rm -f muscle3-headnode')
+    if CLEAN_UP_CONTAINERS:
+        run_cmd(local_term, 60, 'docker rm -f headnode')
 
 
 @pytest.fixture(scope='session')
@@ -142,7 +151,8 @@ def setup_connection(fake_cluster_headnode):
     # Because it's been made inside of the container, it has a different owner
     # than what we're running with on the host, and the host user cannot remove
     # the files.
-    run_cmd(term, 60, f'rm -rf {REMOTE_SHARED}/*')
+    if CLEAN_UP_CONTAINERS:
+        run_cmd(term, 60, f'rm -rf {REMOTE_SHARED}/*')
 
 
 @pytest.fixture(scope='session')

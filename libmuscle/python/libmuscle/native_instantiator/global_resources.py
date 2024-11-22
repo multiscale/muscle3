@@ -60,7 +60,7 @@ class GlobalResources:
             agent_cmd: A command that will start the agent.
         """
         if self.scheduler == Scheduler.SLURM:
-            return slurm.agent_launch_command(agent_cmd)
+            return slurm.agent_launch_command(agent_cmd, len(self.nodes))
         return agent_cmd
 
 

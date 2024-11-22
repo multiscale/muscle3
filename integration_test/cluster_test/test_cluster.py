@@ -74,6 +74,7 @@ def _make_job(name, mode, remote_test_files, remote_out_dir):
     job.time_reserved = 60
     job.system_out_file = job_dir / 'sysout.txt'
     job.system_err_file = job_dir / 'syserr.txt'
+    job.extra_scheduler_options = '--ntasks-per-node=4'
 
     return job
 
@@ -121,7 +122,7 @@ def test_single(
     if mode == 'slurm':
         job.num_nodes = 1
         job.mpi_processes_per_node = 1
-        job.extra_scheduler_options = '--ntasks-per-core=1 --nodelist=muscle3-node-0'
+        job.extra_scheduler_options += ' --nodelist=node-0'
 
     job_id = sched.submit(job)
     assert sched.wait(job_id, job.time_reserved + _SCHED_OVERHEAD) is not None
@@ -130,10 +131,10 @@ def test_single(
     output = _get_stdout(remote_out_dir, 'single', mode, 'c1')
 
     if mode == 'local':
-        assert output.split('\n')[0] == 'muscle3-headnode'
+        assert output.split('\n')[0] == 'headnode'
     else:
         node, hwthreads, _ = output.split('\n')
-        assert node == 'muscle3-node-0'
+        assert node == 'node-0'
         assert hwthread_to_core(hwthreads) == [0]
 
 
@@ -147,7 +148,7 @@ def test_dispatch(
     if mode == 'slurm':
         job.num_nodes = 1
         job.mpi_processes_per_node = 1
-        job.extra_scheduler_options = '--ntasks-per-core=1 --nodelist=muscle3-node-1'
+        job.extra_scheduler_options += ' --nodelist=node-1'
 
     job_id = sched.submit(job)
     assert sched.wait(job_id, job.time_reserved + _SCHED_OVERHEAD) is not None
@@ -156,15 +157,15 @@ def test_dispatch(
     c1_out = _get_stdout(remote_out_dir, 'dispatch', mode, 'c1')
     c2_out = _get_stdout(remote_out_dir, 'dispatch', mode, 'c2')
     if mode == 'local':
-        assert c1_out.split('\n')[0] == 'muscle3-headnode'
-        assert c2_out.split('\n')[0] == 'muscle3-headnode'
+        assert c1_out.split('\n')[0] == 'headnode'
+        assert c2_out.split('\n')[0] == 'headnode'
     else:
         node, hwthreads, _ = c1_out.split('\n')
-        assert node == 'muscle3-node-1'
+        assert node == 'node-1'
         assert hwthread_to_core(hwthreads) == [0]
 
         node, hwthreads, _ = c2_out.split('\n')
-        assert node == 'muscle3-node-1'
+        assert node == 'node-1'
         assert hwthread_to_core(hwthreads) == [0]
 
 
@@ -177,7 +178,7 @@ def test_multiple(
     job = _make_job('multiple', mode, remote_test_files, remote_out_dir)
     if mode == 'slurm':
         job.num_nodes = 3
-        job.extra_scheduler_options = '--nodelist=muscle3-node-[0-2]'
+        job.extra_scheduler_options += ' --nodelist=node-[0-2]'
 
     job_id = sched.submit(job)
     assert sched.wait(job_id, job.time_reserved + _SCHED_OVERHEAD) is not None
@@ -186,10 +187,10 @@ def test_multiple(
     for i in range(1, 7):
         out = _get_stdout(remote_out_dir, 'multiple', mode, f'c{i}')
         if mode == 'local':
-            assert out.split('\n')[0] == 'muscle3-headnode'
+            assert out.split('\n')[0] == 'headnode'
         else:
             node, hwthreads, _ = out.split('\n')
-            assert node == f'muscle3-node-{(i - 1) // 2}'
+            assert node == f'node-{(i - 1) // 2}'
             assert hwthread_to_core(hwthreads) == [(i - 1) % 2]
 
 
@@ -197,12 +198,13 @@ def test_multiple(
 @pytest.mark.parametrize('mode', ['local', 'slurm'])
 def test_double_mpi(
         fake_cluster, remote_test_files, remote_out_dir, mode, hwthread_to_core):
+
     sched = _sched(fake_cluster, mode)
 
     job = _make_job('double_mpi', mode, remote_test_files, remote_out_dir)
     if mode == 'slurm':
         job.num_nodes = 2
-        job.extra_scheduler_options = '--nodelist=muscle3-node-[3-4]'
+        job.extra_scheduler_options += ' --nodelist=node-[3-4]'
 
     job_id = sched.submit(job)
     assert sched.wait(job_id, job.time_reserved + _SCHED_OVERHEAD) is not None
@@ -212,8 +214,8 @@ def test_double_mpi(
         for rank in range(2):
             out = _get_outfile(remote_out_dir, 'double_mpi', mode, f'c{i}', rank)
             if mode == 'local':
-                assert out.split('\n')[0] == 'muscle3-headnode'
+                assert out.split('\n')[0] == 'headnode'
             else:
                 node, hwthreads, _ = out.split('\n')
-                assert node == f'muscle3-node-{i + 2}'
+                assert node == f'node-{i + 2}'
                 assert hwthread_to_core(hwthreads) == [rank]

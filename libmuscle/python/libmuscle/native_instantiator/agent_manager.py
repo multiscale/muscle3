@@ -57,7 +57,7 @@ class AgentManager(IAgentManager):
             sleep(0.1)
             with self._resources_lock:
                 resources_complete = len(self._nodes) == len(expected_nodes)
-            _logger.debug(f'{len(self._resources)} agents up')
+            _logger.debug(f'{len(self._nodes)} agents up of {len(expected_nodes)}')
 
             if self._agents_process.poll() is not None:
                 msg = (
@@ -163,6 +163,7 @@ class AgentManager(IAgentManager):
             node_id: Id of the node these resources are on
             resources: Dict mapping resource type to resource ids
         """
+        _logger.debug(f'Agent on {node_id} reported {resources}')
         with self._resources_lock:
             self._nodes.append(node_id)
             self._resources[node_id] = resources
@@ -202,4 +203,5 @@ class AgentManager(IAgentManager):
 
         args = global_resources.agent_launch_command(args)
 
+        _logger.debug(f'Launching agents using {args}')
         return Popen(args, cwd=agent_dir)

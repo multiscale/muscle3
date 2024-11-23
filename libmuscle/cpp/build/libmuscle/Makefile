@@ -144,11 +144,11 @@ ifeq "$(filter $(MAKECMDGOALS),$(cleantargets))" ""
 
 # Dependencies
 $(info pcextra: $(PKG_CONFIG_EXTRA_DIRS))
-CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --cflags msgpack)
+CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS):$(PKG_CONFIG_PATH) ; pkg-config --cflags msgpack)
 
 LDFLAGS2 = $(LDFLAGS)
 LDFLAGS2 += -pthread -L$(CURDIR)/../ymmsl -lymmsl
-LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs msgpack)
+LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS):$(PKG_CONFIG_PATH) ; pkg-config --libs msgpack)
 
 # Automatic header dependencies
 -include $(deps)

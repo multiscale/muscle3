@@ -11,8 +11,11 @@ import pytest
 logger_ = logging.getLogger(__name__)
 
 
+IMAGE_NAME = 'muscle3_test_cluster'
+
 REMOTE_SHARED = '/home/cerulean/shared'
 
+IDX_SLURM_VERSIONS = list(enumerate(['23-11']))
 
 # Shut down the containers after running the tests. Set to False to debug.
 CLEAN_UP_CONTAINERS = True
@@ -42,15 +45,19 @@ def local_fs():
 
 
 @pytest.fixture(scope='session')
+def repo_root(local_fs):
+    root_dir = Path(__file__).parents[2]
+    return local_fs / str(root_dir)
+
+
+@pytest.fixture(scope='session')
 def fake_cluster_image(local_term):
-    IMAGE_NAME = 'muscle3_test_cluster'
     run_cmd(local_term, 5400, (
         f'docker buildx build -t {IMAGE_NAME}'
         ' -f integration_test/fake_cluster/Dockerfile .'))
-    return IMAGE_NAME
 
 
-def ssh_term(timeout_msg):
+def ssh_term(port, timeout_msg):
     cred = cerulean.PasswordCredential('cerulean', 'kingfisher')
     ready = False
     start = time.monotonic()
@@ -59,7 +66,7 @@ def ssh_term(timeout_msg):
             raise Exception(timeout_msg)
 
         try:
-            term = cerulean.SshTerminal('localhost', 10022, cred)
+            term = cerulean.SshTerminal('localhost', port, cred)
             ready = True
         except Exception:
             time.sleep(3.0)
@@ -78,93 +85,55 @@ def shared_dir():
 
 @pytest.fixture(scope='session')
 def cleanup_docker(local_term):
-    for i in range(5):
-        node_name = f'node-{i}'
-        run_cmd(local_term, 60, f'docker rm -f {node_name}')
-
-    run_cmd(local_term, 60, 'docker rm -f headnode')
-    run_cmd(local_term, 60, 'docker network rm -f muscle3-net')
+    for _, slurm_version in IDX_SLURM_VERSIONS:
+        _clean_up_base_cluster(local_term, slurm_version)
 
 
-@pytest.fixture(scope='session')
-def fake_cluster_network(local_term, cleanup_docker):
-    name = 'muscle3-net'
+def _create_network(local_term, slurm_version):
+    name = f'muscle3-net-{slurm_version}'
     run_cmd(local_term, 60, f'docker network create {name}')
-    yield name
-
-    if CLEAN_UP_CONTAINERS:
-        run_cmd(local_term, 60, 'docker network rm -f muscle3-net')
+    return name
 
 
-@pytest.fixture(scope='session')
-def fake_cluster_nodes(
-        local_term, fake_cluster_image, fake_cluster_network, shared_dir):
-
-    node_names = list()
-
+def _start_nodes(local_term, slurm_version, net_name, shared_dir):
     for i in range(5):
         node_name = f'node-{i}'
-        ssh_port = 10030 + i
 
         run_cmd(local_term, 60, (
-            f'docker run -d --name={node_name} --hostname={node_name}'
-            f' --network={fake_cluster_network} -p {ssh_port}:22'
-            f' --cap-add=CAP_SYS_NICE'
+            f'docker run -d --name={node_name}-{slurm_version} --hostname={node_name}'
+            f' --network={net_name} --cap-add=CAP_SYS_NICE'
+            f' --env SLURM_VERSION={slurm_version}'
             f' --mount type=bind,source={shared_dir},target={REMOTE_SHARED}'
-            f' {fake_cluster_image}'))
-
-        node_names.append(node_name)
-
-    yield None
-
-    if CLEAN_UP_CONTAINERS:
-        run_cmd(local_term, 60, f'docker rm -f {" ".join(node_names)}')
+            f' {IMAGE_NAME}'))
 
 
-@pytest.fixture(scope='session')
-def fake_cluster_headnode(
-        local_term, fake_cluster_image, fake_cluster_network, fake_cluster_nodes,
-        shared_dir):
-
+def _start_headnode(local_term, slurm_version, net_name, shared_dir, headnode_port):
     run_cmd(local_term, 60, (
-        'docker run -d --name=headnode --hostname=headnode'
-        f' --network={fake_cluster_network} -p 10022:22'
+        f'docker run -d --name=headnode-{slurm_version} --hostname=headnode'
+        f' --network={net_name} -p {headnode_port}:22'
+        f' --env SLURM_VERSION={slurm_version}'
         f' --mount type=bind,source={shared_dir},target={REMOTE_SHARED}'
-        f' {fake_cluster_image}'))
+        f' {IMAGE_NAME}'))
 
-    ssh_term('Virtual cluster container start timed out')
-    yield None
-
-    if CLEAN_UP_CONTAINERS:
-        run_cmd(local_term, 60, 'docker rm -f headnode')
+    ssh_term(headnode_port, 'Virtual cluster container start timed out')
 
 
-@pytest.fixture(scope='session')
-def setup_connection(fake_cluster_headnode):
-    # Session-wide connection used for container setup actions only
-    # Tests each have their own connection, see fake_cluster() below
-    term = ssh_term('Connection to virtual cluster container timed out')
-    with cerulean.SftpFileSystem(term, True) as fs:
-        yield term, fs
+def _start_base_cluster(local_term, idx_slurm_version, shared_dir):
+    slurm_index, slurm_version = idx_slurm_version
 
-    # We abuse this to clean up the contents of the shared directory.
-    # Because it's been made inside of the container, it has a different owner
-    # than what we're running with on the host, and the host user cannot remove
-    # the files.
-    if CLEAN_UP_CONTAINERS:
-        run_cmd(term, 60, f'rm -rf {REMOTE_SHARED}/*')
+    headnode_port = 10022 + slurm_index
 
+    net_name = _create_network(local_term, slurm_version)
+    _start_nodes(local_term, slurm_version, net_name, shared_dir)
+    _start_headnode(local_term, slurm_version, net_name, shared_dir, headnode_port)
 
-@pytest.fixture(scope='session')
-def repo_root(local_fs):
-    root_dir = Path(__file__).parents[2]
-    return local_fs / str(root_dir)
+    term = ssh_term(headnode_port, 'Connection to virtual cluster container timed out')
+    fs = cerulean.SftpFileSystem(term, False)
+
+    return term, fs, headnode_port
 
 
-@pytest.fixture(scope='session')
-def remote_source(repo_root, setup_connection):
-    remote_term, remote_fs = setup_connection
-
+def _install_remote_source(repo_root, remote_term, remote_fs):
     muscle3_tgt = remote_fs / 'home' / 'cerulean' / 'muscle3'
     muscle3_tgt.mkdir()
     (muscle3_tgt / 'libmuscle').mkdir()
@@ -178,10 +147,7 @@ def remote_source(repo_root, setup_connection):
     return muscle3_tgt
 
 
-@pytest.fixture(scope='session')
-def muscle3_venv(repo_root, remote_source, setup_connection):
-    remote_term, remote_fs = setup_connection
-
+def _create_muscle3_venv(remote_term, remote_source):
     run_cmd(remote_term, 10, f'python3 -m venv {REMOTE_SHARED}/venv')
     in_venv = f'source {REMOTE_SHARED}/venv/bin/activate && '
 
@@ -192,21 +158,116 @@ def muscle3_venv(repo_root, remote_source, setup_connection):
     return in_venv
 
 
-@pytest.fixture(scope='session')
-def muscle3_native_openmpi(remote_source, setup_connection):
-    remote_term, remote_fs = setup_connection
-
+def _install_muscle3_native_openmpi(
+        remote_source, remote_term, remote_fs, slurm_version):
     prefix = remote_fs / REMOTE_SHARED / 'muscle3-openmpi'
     prefix.mkdir()
 
+    openmpi_hash = run_cmd(remote_term, 600, (
+        '/bin/bash -c "'
+        'for phash in $(/opt/spack/bin/spack find --format \\"{hash}\\" openmpi'
+        '        | tr \'\\n\' \' \') ; do'
+        '    if /opt/spack/bin/spack find --deps /\\${phash} |'
+        f'                grep -q slurm@{slurm_version} ; then'
+        '        echo \\${phash} ;'
+        '     fi ;'
+        'done'
+        '"'))
+
+    openmpi_version = run_cmd(remote_term, 600, (
+        '/bin/bash -c "'
+        f'/opt/spack/bin/spack find --format \\"{{version}}\\" /{openmpi_hash}'
+        '"')).strip()
+
+    module_name = f'openmpi/{openmpi_version}-gcc-11.4.0-{openmpi_hash[:7]}'
+
+    logger_.info(f'Slurm {slurm_version} and module {module_name}')
+
     run_cmd(remote_term, 600, (
         f'/bin/bash -l -c "'
-        f'module load openmpi && '
+        f'module load {module_name} && '
         f'cd {remote_source} && '
         f'make distclean && '
         f'PREFIX={prefix} make install"'))
 
-    return prefix
+    return prefix, module_name
+
+
+def _install_muscle3(repo_root, remote_term, remote_fs, slurm_version):
+    remote_source = _install_remote_source(repo_root, remote_term, remote_fs)
+    in_venv = _create_muscle3_venv(remote_term, remote_source)
+    return _install_muscle3_native_openmpi(
+            remote_source, remote_term, remote_fs, slurm_version)
+
+
+def _install_tests(repo_root, remote_term, remote_fs, remote_m3_openmpi):
+    remote_home = remote_fs / REMOTE_SHARED
+    remote_m3, openmpi_module = remote_m3_openmpi
+
+    cerulean.copy(
+            repo_root / 'integration_test' / 'cluster_test', remote_home,
+            copy_permissions=True)
+
+    remote_source = remote_home / 'cluster_test'
+
+    run_cmd(remote_term, 30, (
+        '/bin/bash -c "'
+        f'sed -i \\"s^modules: openmpi^modules: {openmpi_module}^\\"'
+        f' {remote_source}/implementations_openmpi.ymmsl'
+        '"'))
+
+    run_cmd(remote_term, 30, (
+        '/bin/bash -c "'
+        f'sed -i \\"s^modules: openmpi^modules: {openmpi_module}^\\"'
+        f' {remote_source}/implementations_srunmpi.ymmsl'
+        '"'))
+
+    run_cmd(remote_term, 30, (
+        f'/bin/bash -l -c "'
+        f'module load {openmpi_module} && '
+        f'. {remote_m3}/bin/muscle3.env && '
+        f'make -C {remote_source}"'))
+
+
+def _clean_up_base_cluster(local_term, slurm_version):
+    node_names = [f'node-{i}-{slurm_version}' for i in range(5)]
+    run_cmd(local_term, 60, f'docker rm -f {" ".join(node_names)}')
+
+    run_cmd(local_term, 60, f'docker rm -f headnode-{slurm_version}')
+
+    net_name = f'muscle3-net-{slurm_version}'
+    run_cmd(local_term, 60, f'docker network rm -f {net_name}')
+
+
+@pytest.fixture(scope='session', params=IDX_SLURM_VERSIONS)
+def installed_cluster(
+        request, cleanup_docker, fake_cluster_image, shared_dir,
+        repo_root, local_term):
+
+    slurm_version = request.param[1]
+    local_shared_dir = shared_dir / slurm_version
+    local_shared_dir.mkdir()
+    local_shared_dir.chmod(0o1777)
+
+    remote_term, remote_fs, headnode_port = _start_base_cluster(
+            local_term, request.param, local_shared_dir)
+    remote_m3_openmpi = _install_muscle3(
+            repo_root, remote_term, remote_fs, slurm_version)
+    _install_tests(repo_root, remote_term, remote_fs, remote_m3_openmpi)
+
+    yield headnode_port
+
+    # Because it's been made inside of the container, the shared directory has a
+    # different owner than what we're running with on the host, and the host user cannot
+    # remove the files. So we do it here from inside the container
+    if CLEAN_UP_CONTAINERS:
+        run_cmd(remote_term, 60, f'rm -rf {REMOTE_SHARED}/*')
+
+    remote_fs.close()
+    remote_term.close()
+
+    if CLEAN_UP_CONTAINERS:
+        _clean_up_base_cluster(local_term, slurm_version)
 
 
 @pytest.fixture(scope='session')

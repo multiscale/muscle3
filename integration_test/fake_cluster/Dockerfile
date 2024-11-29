@@ -1,9 +1,35 @@
-FROM ghcr.io/naturalhpc/cerulean-fake-slurm-23-11:latest
-# FROM naturalhpc/cerulean-fake-slurm-23-11:latest
+FROM ghcr.io/naturalhpc/cerulean-fake-slurm-base:latest
+# FROM naturalhpc/cerulean-fake-slurm-base:latest
 
 RUN . /opt/spack/share/spack/setup-env.sh && \
     . $(spack location -i lmod)/lmod/lmod/init/bash && \
-    spack install openmpi+legacylaunchers+pmi schedulers=slurm ^pmix@3.2.3 ^slurm/dckfty
+    spack install openmpi@3.1.6 +legacylaunchers +pmi schedulers=slurm \
+    ^$(spack find --deps slurm@20-11 | grep pmix |  tr -d ' ') \
+    ^$(spack find --format "slurm/{hash}" slurm@20-11)
+
+RUN . /opt/spack/share/spack/setup-env.sh && \
+    . $(spack location -i lmod)/lmod/lmod/init/bash && \
+    spack install openmpi@3.1.6 +legacylaunchers +pmi schedulers=slurm \
+    ^$(spack find --deps slurm@21-08 | grep pmix |  tr -d ' ') \
+    ^$(spack find --format "slurm/{hash}" slurm@21-08)
+
+RUN . /opt/spack/share/spack/setup-env.sh && \
+    . $(spack location -i lmod)/lmod/lmod/init/bash && \
+    spack install openmpi@3.1.6 +legacylaunchers +pmi schedulers=slurm \
+    ^$(spack find --deps slurm@22-05 | grep pmix |  tr -d ' ') \
+    ^$(spack find --format "slurm/{hash}" slurm@22-05)
+
+RUN . /opt/spack/share/spack/setup-env.sh && \
+    . $(spack location -i lmod)/lmod/lmod/init/bash && \
+    spack install openmpi@3.1.6 +legacylaunchers +pmi schedulers=slurm \
+    ^$(spack find --deps slurm@23-02 | grep pmix |  tr -d ' ') \
+    ^$(spack find --format "slurm/{hash}" slurm@23-02)
+
+RUN . /opt/spack/share/spack/setup-env.sh && \
+    . $(spack location -i lmod)/lmod/lmod/init/bash && \
+    spack install openmpi@4.1.6 +legacylaunchers +pmi schedulers=slurm \
+    ^$(spack find --deps slurm@23-11 | grep pmix |  tr -d ' ') \
+    ^$(spack find --format "slurm/{hash}" slurm@23-11)
 
 # RUN . /opt/spack/share/spack/setup-env.sh && \
 #     . $(spack location -i lmod)/lmod/lmod/init/bash && \

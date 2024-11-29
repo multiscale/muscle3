@@ -9,35 +9,10 @@ from integration_test.cluster_test.conftest import (
 logger_ = logging.getLogger(__name__)
 
 
-@pytest.fixture(scope='session')
-def copy_test_files(repo_root, setup_connection):
-    remote_term, remote_fs = setup_connection
-    remote_home = remote_fs / REMOTE_SHARED
-
-    cerulean.copy(
-            repo_root / 'integration_test' / 'cluster_test', remote_home,
-            copy_permissions=True)
-
-    return remote_home / 'cluster_test'
-
-
-@pytest.fixture(scope='session')
-def build_native_components(
-        muscle3_native_openmpi, setup_connection, copy_test_files):
-    remote_term, remote_fs = setup_connection
-    remote_source = copy_test_files
-
-    run_cmd(remote_term, 30, (
-        f"/bin/bash -l -c '"
-        f"module load openmpi && "
-        f". {muscle3_native_openmpi}/bin/muscle3.env && "
-        f"make -C {remote_source}'"))
-
-
 @pytest.fixture
-def fake_cluster(
-        fake_cluster_headnode, muscle3_venv, build_native_components, copy_test_files):
-    term = ssh_term('Connection to virtual cluster container timed out')
+def fake_cluster(installed_cluster):
+    headnode_port = installed_cluster
+    term = ssh_term(headnode_port, 'Connection to virtual cluster container timed out')
     with cerulean.SftpFileSystem(term, True) as fs:
         local_sched = cerulean.DirectGnuScheduler(term)
         slurm_sched = cerulean.SlurmScheduler(term)

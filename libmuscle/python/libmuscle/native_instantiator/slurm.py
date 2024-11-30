@@ -287,7 +287,12 @@ def agent_launch_command(agent_cmd: List[str], nnodes: int) -> List[str]:
         agent_cmd: A command that will start the agent.
     """
     # TODO: On the latest Slurm, there's a special command for this that we should use
-    # if we have that.
+    # if we have that, --external-launcher. Poorly documented though, so will require
+    # some experimentation.
+
+    # On SLURM <= 23-02, the number of tasks is inherited by srun from sbatch rather
+    # than calculated anew from --nodes and --ntasks-per-node, so we specify it
+    # explicitly to avoid getting an agent per logical cpu rather than per node.
     return [
-            'srun', f'--ntasks={nnodes}', '--ntasks-per-node=1', '--cpu-bind=none'
-            ] + agent_cmd
+            'srun', f'--nodes={nnodes}', f'--ntasks={nnodes}', '--ntasks-per-node=1',
+            '--overlap'] + agent_cmd

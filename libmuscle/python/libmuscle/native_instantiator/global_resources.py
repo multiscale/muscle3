@@ -1,7 +1,7 @@
 from enum import Enum
 import logging
 from socket import gethostname
-from typing import List
+from typing import List, Optional
 
 import psutil
 
@@ -64,9 +64,26 @@ class GlobalResources:
         return agent_cmd
 
 
-global_resources = GlobalResources()
+_global_resources: Optional[GlobalResources] = None
 """Global resources object.
 
 This is a singleton, and that's fine because it's created once and then read-only. Also,
 it's used in two places, and making two objects logs everything twice which is annoying.
 """
+
+
+def global_resources() -> GlobalResources:
+    """Wrapper for _global_resources.
+
+    This is here to ensure that the object gets created after we've configured logging,
+    so that the log output it generates actually ends up in the manager log.
+
+    The users are all in the main thread of the NativeInstantiator background process,
+    so there's no need for a lock right now.
+    """
+    global _global_resources
+
+    if _global_resources is None:
+        _global_resources = GlobalResources()
+
+    return _global_resources

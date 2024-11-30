@@ -173,7 +173,7 @@ class AgentManager(IAgentManager):
                 sys.executable, '-m', 'libmuscle.native_instantiator.agent',
                 server_location, str(log_level)]
 
-        args = global_resources.agent_launch_command(args)
+        args = global_resources().agent_launch_command(args)
 
         self._agents_stdout = (agent_dir / 'agent_launch.out').open('a')
         self._agents_stderr = (agent_dir / 'agent_launch.err').open('a')

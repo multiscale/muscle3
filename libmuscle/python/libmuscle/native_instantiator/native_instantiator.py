@@ -311,7 +311,7 @@ class NativeInstantiator(mp.Process):
         agent_cores = self._agent_manager.get_resources()
 
         env_ncores = dict(
-                zip(global_resources.nodes, global_resources.cores_per_node)
+                zip(global_resources().nodes, global_resources().cores_per_node)
                 )
 
         for node in env_ncores:
@@ -360,7 +360,7 @@ class NativeInstantiator(mp.Process):
 
         rankfile = request.instance_dir / 'rankfile'
 
-        if global_resources.on_cluster():
+        if global_resources().on_cluster():
             rankfile_contents, resource_env = prep_resources(
                   request.implementation.execution_model, request.resources,
                   rankfile)
@@ -399,7 +399,7 @@ class NativeInstantiator(mp.Process):
         else:
             run_script = make_script(
                     request.implementation, request.res_req,
-                    not global_resources.on_cluster(), rankfile)
+                    not global_resources().on_cluster(), rankfile)
 
         run_script_file = request.instance_dir / 'run_script.sh'
 

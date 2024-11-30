@@ -250,8 +250,8 @@ def get_nodes() -> List[str]:
     return parse_slurm_nodelist(nodelist)
 
 
-def get_cores_per_node() -> List[int]:
-    """Return the number of CPU cores per node.
+def get_logical_cpus_per_node() -> List[int]:
+    """Return the number of logical CPU cores per node.
 
     This returns a list with the number of cores of each node in the result of
     get_nodes(), which gets read from SLURM_JOB_CPUS_PER_NODE.

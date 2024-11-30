@@ -306,15 +306,16 @@ class NativeInstantiator(mp.Process):
         step outside our bounds even if the cluster doesn't constrain processes to their
         assigned processors.
         """
+        already_logged_smt = False
         resources = Resources()
 
         agent_cores = self._agent_manager.get_resources()
 
-        env_ncores = dict(
-                zip(global_resources().nodes, global_resources().cores_per_node)
+        env_ncpus = dict(
+                zip(global_resources().nodes, global_resources().logical_cpus_per_node)
                 )
 
-        for node in env_ncores:
+        for node in env_ncpus:
             if node not in agent_cores:
                 _logger.warning(
                         f'The environment suggests we should have node {node},'
@@ -323,26 +324,36 @@ class NativeInstantiator(mp.Process):
             else:
                 resources.cores[node] = set(agent_cores[node])
 
-                env_nncores = env_ncores[node]
+                env_nncpus = env_ncpus[node]
                 ag_nncores = len(agent_cores[node])
-                if ag_nncores < env_nncores:
+                ag_nnthreads = sum((len(ts) for ts in agent_cores[node]))
+
+                if ag_nncores != ag_nnthreads and ag_nnthreads == env_nncpus:
+                    if not already_logged_smt:
+                        _logger.info(
+                                'Detected SMT (hyperthreading) as available and'
+                                ' enabled. Note that MUSCLE3 will assign whole cores to'
+                                ' each thread or MPI process.')
+                        already_logged_smt = True
+
+                elif ag_nncores < env_nncpus:
                     _logger.warning(
-                            f'Node {node} should have {env_nncores} cores available,'
+                            f'Node {node} should have {env_nncpus} cores available,'
                             f' but the agent reports only {ag_nncores} available to it.'
                             f' We\'ll use the {ag_nncores} we seem to have.')
 
                     resources.cores[node] = set(agent_cores[node])
 
-                elif env_nncores < ag_nncores:
+                elif env_nncpus < ag_nncores:
                     _logger.warning(
-                            f'Node {node} should have {env_nncores} cores available,'
+                            f'Node {node} should have {env_nncpus} cores available,'
                             f' but the agent reports {ag_nncores} available to it.'
                             ' Maybe the cluster does not constrain resources? We\'ll'
-                            f' use the {env_nncores} that we should have got.')
-                    resources.cores[node] = set(agent_cores[node][:env_nncores])
+                            f' use the {env_nncpus} that we should have got.')
+                    resources.cores[node] = set(agent_cores[node][:env_nncpus])
 
         for node in agent_cores:
-            if node not in env_ncores:
+            if node not in env_ncpus:
                 _logger.warning(
                         f'An agent is running on node {node} but the environment'
                         ' does not list it as ours. It seems that the node\'s'

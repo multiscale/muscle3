@@ -50,7 +50,7 @@ class AgentManager(IAgentManager):
     def get_resources(self) -> Dict[str, List[FrozenSet[int]]]:
         """Return detected resources.
 
-        This returns a list of tuples of logical hwthread ids for each core per node.
+        This returns a list of sets of logical hwthread ids per core, per node.
 
         Called by NativeInstantiator.
         """

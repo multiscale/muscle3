@@ -173,13 +173,14 @@ def test_multiple(
     assert sched.get_exit_code(job_id) == 0
 
     for i in range(1, 7):
-        out = _get_stdout(remote_out_dir, 'multiple', mode, f'c{i}')
+        instance = f'c{i}'
+        out = _get_stdout(remote_out_dir, 'multiple', mode, instance)
         if mode == 'local':
             assert out.split('\n')[0] == 'headnode'
         else:
             node, hwthreads, _ = out.split('\n')
-            assert node == f'node-{(i - 1) // 2}'
-            assert hwthread_to_core(hwthreads) == [(i - 1) % 2]
+            assert (instance, node) == (instance, f'node-{(i - 1) // 2}')
+            assert (instance, hwthread_to_core(hwthreads)) == (instance, [(i - 1) % 2])
 
 
 @skip_unless_cluster

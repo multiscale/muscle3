@@ -45,39 +45,7 @@ class AgentManager(IAgentManager):
         self._finished_processes_lock = Lock()
 
         self._server = MAPServer(self)
-
-        _logger.info('Launching MUSCLE agents...')
-        self._agents_process = self._launch_agents(
-                agent_dir, self._server.get_location())
-
-        expected_nodes = global_resources.nodes
-
-        resources_complete = False
-        while not resources_complete:
-            sleep(0.1)
-            with self._resources_lock:
-                resources_complete = len(self._nodes) == len(expected_nodes)
-            _logger.debug(f'{len(self._nodes)} agents up of {len(expected_nodes)}')
-
-            if self._agents_process.poll() is not None:
-                msg = (
-                        'Agents unexpectedly stopped running. This is not supposed'
-                        ' to happen. Please see the agent log for more information,'
-                        ' and please file an issue on GitHub.')
-                _logger.error(msg)
-                raise RuntimeError(msg)
-
-        _logger.info(f'All agents running on {self._nodes}')
-
-        if sorted(expected_nodes) != sorted(self._nodes):
-            _logger.error(
-                    'Agent-reported node hostnames do not match what we got from the'
-                    ' resource manager.')
-            _logger.error(
-                    'According to the resource manager, we have'
-                    f' {sorted(expected_nodes)}')
-            _logger.error(
-                    f'The agents are reporting {sorted(self._nodes)}')
+        self._launch_agents(agent_dir, self._server.get_location())
 
     def get_resources(self) -> Dict[str, List[FrozenSet[int]]]:
         """Return detected resources.
@@ -149,6 +117,8 @@ class AgentManager(IAgentManager):
 
         try:
             self._agents_process.wait(10)
+            self._agents_stdout.close()
+            self._agents_stderr.close()
         except TimeoutExpired:
             _logger.warning('Agents still not down, continuing shutdown anyway.')
 
@@ -179,7 +149,7 @@ class AgentManager(IAgentManager):
         with self._finished_processes_lock:
             self._finished_processes.extend(names_exit_codes)
 
-    def _launch_agents(self, agent_dir: Path, server_location: str) -> Popen:
+    def _launch_agents(self, agent_dir: Path, server_location: str) -> None:
         """Actually launch the agents.
 
         This runs a local process, either to start a single agent locally, or on a
@@ -190,6 +160,8 @@ class AgentManager(IAgentManager):
             server_location: MAPServer network location string for the agents to
                 connect to
         """
+        _logger.info('Launching MUSCLE agents...')
+
         python = sys.executable
         if not python:
             raise RuntimeError(
@@ -203,5 +175,50 @@ class AgentManager(IAgentManager):
 
         args = global_resources.agent_launch_command(args)
 
+        self._agents_stdout = (agent_dir / 'agent_launch.out').open('a')
+        self._agents_stderr = (agent_dir / 'agent_launch.err').open('a')
+
         _logger.debug(f'Launching agents using {args}')
-        return Popen(args, cwd=agent_dir)
+        self._agents_process = Popen(
+                args, cwd=agent_dir, stdout=self._agents_stdout,
+                stderr=self._agents_stderr)
+
+        expected_nodes = global_resources().nodes
+
+        resources_complete = False
+        while not resources_complete:
+            sleep(0.1)
+            with self._resources_lock:
+                resources_complete = len(self._nodes) == len(expected_nodes)
+                too_many_agents = len(self._nodes) > len(expected_nodes)
+
+            _logger.debug(f'{len(self._nodes)} agents up of {len(expected_nodes)}')
+
+            if self._agents_process.poll() is not None:
+                msg = (
+                        'Agents unexpectedly stopped running. This is not supposed'
+                        ' to happen. Please see the agent log for more information,'
+                        ' and please file an issue on GitHub.')
+                _logger.error(msg)
+                raise RuntimeError(msg)
+
+            if too_many_agents:
+                msg = (
+                        'More agents were started than MUSCLE3 asked for. This is not'
+                        ' supposed to happen. Please file an issue on GitHub, with the'
+                        ' SLURM version (use "sbatch -v") and the sbatch command used'
+                        ' to submit the job.')
+                _logger.error(msg)
+                raise RuntimeError(msg)
+
+        _logger.info(f'All agents running on {self._nodes}')
+
+        if sorted(expected_nodes) != sorted(self._nodes):
+            _logger.error(
+                    'Agent-reported node hostnames do not match what we got from the'
+                    ' resource manager.')
+            _logger.error(
+                    'According to the resource manager, we have'
+                    f' {sorted(expected_nodes)}')
+            _logger.error(
+                    f'The agents are reporting {sorted(self._nodes)}')

@@ -550,6 +550,8 @@ class Planner:
         """
         result: Dict[Reference, Resources] = {}
 
+        _logger.debug(f'Planning on resources {self._all_resources}')
+
         # Analyse model
         model = ModelGraph(configuration.model)
         requirements = configuration.resources
@@ -570,6 +572,7 @@ class Planner:
                     unallocated_instances, requirements)
 
             for instance in to_allocate:
+                _logger.debug(f'Placing {instance}')
                 component = model.component(instance.without_trailing_ints())
                 conflicting_names = self._conflicting_names(
                         model, exclusive, component, instance)
@@ -735,6 +738,7 @@ class Planner:
             if other in simultaneous_instances:
                 free_resources -= self._allocations[other]
 
+        _logger.debug(f'Free resources: {free_resources}')
         try:
             if isinstance(requirements, ThreadedResReq):
                 allocation = self._allocate_thread_block(
@@ -788,7 +792,9 @@ class Planner:
         """
         for node in free_resources.nodes():
             if len(free_resources.cores[node]) >= threads:
-                available_cores = sorted(free_resources.cores[node])
+                available_cores = sorted(free_resources.cores[node], key=sorted)
+                _logger.debug(f'available cores: {available_cores}')
                 to_reserve = set(available_cores[:threads])
+                _logger.debug(f'assigned {to_reserve}')
                 return Resources({node: to_reserve})
         raise InsufficientResourcesAvailable()

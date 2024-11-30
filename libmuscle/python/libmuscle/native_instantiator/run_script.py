@@ -229,6 +229,13 @@ def cluster_command(implementation: Implementation) -> str:
                 ' --rankfile $MUSCLE_RANKFILE --use-hwthread-cpus --oversubscribe'
                 # ' --map-by rankfile:file=$MUSCLE_RANKFILE:oversubscribe'
                 # ' --display-map --display-allocation {command} {args}'
+
+                # This adds the given option to the srun command used by mpirun to
+                # launch its daemons. mpirun specifies --exclusive, which on SLURM <=
+                # 21-08 causes SLURM to wait for our agents to quit, as it considers
+                # them to be occupying the cores, causing a deadlock. Fortunately, it
+                # seems that adding --overlap overrides the --exclusive and it works.
+                ' -mca plm_slurm_args "--overlap"'
                 ' --bind-to core --display-map --display-allocation {command} {args}'
                 )
     elif implementation.execution_model == ExecutionModel.INTELMPI:

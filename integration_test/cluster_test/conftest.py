@@ -181,7 +181,6 @@ def _create_muscle3_venv(remote_term, remote_source):
         f'/bin/bash -c "{in_venv} python3 -m pip install pip wheel setuptools"'))
 
     run_cmd(remote_term, 60, f'/bin/bash -c "{in_venv} pip install {remote_source}"')
-    return in_venv
 
 
 def _install_muscle3_native_openmpi(
@@ -223,7 +222,7 @@ def _install_muscle3_native_openmpi(
 
 def _install_muscle3(repo_root, remote_term, remote_fs, slurm_version):
     remote_source = _install_remote_source(repo_root, remote_term, remote_fs)
-    in_venv = _create_muscle3_venv(remote_term, remote_source)
+    _create_muscle3_venv(remote_term, remote_source)
     return _install_muscle3_native_openmpi(
             remote_source, remote_term, remote_fs, slurm_version)
 

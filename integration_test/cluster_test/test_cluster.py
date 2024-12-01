@@ -3,7 +3,7 @@ import logging
 import pytest
 
 from integration_test.cluster_test.conftest import (
-        REMOTE_SHARED, run_cmd, ssh_term, skip_unless_cluster)
+        REMOTE_SHARED, ssh_term, skip_unless_cluster)
 
 
 logger_ = logging.getLogger(__name__)

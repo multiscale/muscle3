@@ -303,9 +303,9 @@ class SlurmInfo:
         Args:
             agent_cmd: A command that will start the agent.
         """
-        # TODO: On the latest Slurm, there's a special command for this that we should use
-        # if we have that, --external-launcher. Poorly documented though, so will require
-        # some experimentation.
+        # TODO: On the latest Slurm, there's a special command for this that we should
+        # use if we have that, --external-launcher. Poorly documented though, so will
+        # require some experimentation.
 
         # On SLURM <= 23-02, the number of tasks is inherited by srun from sbatch rather
         # than calculated anew from --nodes and --ntasks-per-node, so we specify it

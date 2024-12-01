@@ -159,16 +159,22 @@ def _start_base_cluster(local_term, idx_slurm_version, shared_dir):
     return term, fs, headnode_port
 
 
-def _install_remote_source(repo_root, remote_term, remote_fs):
+def _install_remote_source(local_term, repo_root, remote_fs, slurm_version):
     muscle3_tgt = remote_fs / 'home' / 'cerulean' / 'muscle3'
     muscle3_tgt.mkdir()
-    (muscle3_tgt / 'libmuscle').mkdir()
+
+    container = f'headnode-{slurm_version}'
 
     for f in (
             'muscle3', 'libmuscle', 'scripts', 'docs', 'setup.py', 'Makefile',
             'MANIFEST.in', 'LICENSE', 'NOTICE', 'VERSION', 'README.rst'):
-        cerulean.copy(
-                repo_root / f, muscle3_tgt / f, overwrite='always', copy_into=False)
+        run_cmd(local_term, 60, (
+            f'docker cp {repo_root / f} {container}:{muscle3_tgt / f}'))
+
+    # needs to run as root, so not run through remote_term
+    run_cmd(local_term, 60, (
+        f'docker exec {container} /bin/bash -c'
+        f' "chown -R cerulean:cerulean {muscle3_tgt}"'))
 
     return muscle3_tgt
 
@@ -220,8 +226,9 @@ def _install_muscle3_native_openmpi(
     return prefix, module_name
 
 
-def _install_muscle3(repo_root, remote_term, remote_fs, slurm_version):
-    remote_source = _install_remote_source(repo_root, remote_term, remote_fs)
+def _install_muscle3(local_term, repo_root, remote_term, remote_fs, slurm_version):
+    remote_source = _install_remote_source(
+            local_term, repo_root, remote_fs, slurm_version)
     _create_muscle3_venv(remote_term, remote_source)
     return _install_muscle3_native_openmpi(
             remote_source, remote_term, remote_fs, slurm_version)
@@ -279,7 +286,7 @@ def installed_cluster(
     remote_term, remote_fs, headnode_port = _start_base_cluster(
             local_term, request.param, local_shared_dir)
     remote_m3_openmpi = _install_muscle3(
-            repo_root, remote_term, remote_fs, slurm_version)
+            local_term, repo_root, remote_term, remote_fs, slurm_version)
     _install_tests(repo_root, remote_term, remote_fs, remote_m3_openmpi)
 
     yield headnode_port

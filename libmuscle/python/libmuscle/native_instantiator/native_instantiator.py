@@ -253,7 +253,7 @@ class NativeInstantiator(mp.Process):
             for line in traceback.format_exception(*sys.exc_info()):
                 _logger.error(line)
 
-            result = CrashResult(sys.exc_info()[1])
+            result = CrashedResult(sys.exc_info()[1])
             self._resources_out.put(result)
             self._results_out.put(result)
 

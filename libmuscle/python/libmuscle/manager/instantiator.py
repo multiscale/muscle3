@@ -113,7 +113,7 @@ class CancelAllRequest(InstantiatorRequest):
 
 class CrashedResult:
     """Signals that the instantiator process crashed."""
-    def __init__(self, exception: Optional[Exception] = None) -> None:
+    def __init__(self, exception: Optional[BaseException] = None) -> None:
         self.exception = exception
 
 

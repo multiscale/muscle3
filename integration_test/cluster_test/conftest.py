@@ -15,7 +15,10 @@ IMAGE_NAME = 'muscle3_test_cluster'
 
 REMOTE_SHARED = '/home/cerulean/shared'
 
-IDX_SLURM_VERSIONS = list(enumerate(['23-11']))
+IDX_SLURM_VERSIONS = list(enumerate([
+    '17-02', '17-11', '18-08', '19-05', '20-02', '20-11', '21-08', '22-05', '23-02',
+    '23-11'
+    ]))
 
 # Shut down the containers after running the tests. Set to False to debug.
 CLEAN_UP_CONTAINERS = True
@@ -55,6 +58,25 @@ def fake_cluster_image(local_term):
     run_cmd(local_term, 5400, (
         f'docker buildx build -t {IMAGE_NAME}'
         ' -f integration_test/fake_cluster/Dockerfile .'))
+
+
+@pytest.fixture(scope='session')
+def fake_cluster_image_old(local_term):
+    run_cmd(local_term, 5400, (
+        f'docker buildx build -t {IMAGE_NAME}_old'
+        ' -f integration_test/fake_cluster/old.Dockerfile .'))
+
+
+def _image_name(slurm_version):
+    if slurm_version <= '20-02':
+        return IMAGE_NAME + '_old'
+    return IMAGE_NAME
+
+
+def _gcc_version(slurm_version):
+    if slurm_version <= '20-02':
+        return '7.5.0'
+    return '11.4.0'
 
 
 def ssh_term(port, timeout_msg):
@@ -99,21 +121,25 @@ def _start_nodes(local_term, slurm_version, net_name, shared_dir):
     for i in range(5):
         node_name = f'node-{i}'
 
+        image_name = _image_name(slurm_version)
+
         run_cmd(local_term, 60, (
             f'docker run -d --name={node_name}-{slurm_version} --hostname={node_name}'
             f' --network={net_name} --cap-add=CAP_SYS_NICE'
             f' --env SLURM_VERSION={slurm_version}'
             f' --mount type=bind,source={shared_dir},target={REMOTE_SHARED}'
-            f' {IMAGE_NAME}'))
+            f' {image_name}'))
 
 
 def _start_headnode(local_term, slurm_version, net_name, shared_dir, headnode_port):
+    image_name = _image_name(slurm_version)
+
     run_cmd(local_term, 60, (
         f'docker run -d --name=headnode-{slurm_version} --hostname=headnode'
         f' --network={net_name} -p {headnode_port}:22'
         f' --env SLURM_VERSION={slurm_version}'
         f' --mount type=bind,source={shared_dir},target={REMOTE_SHARED}'
-        f' {IMAGE_NAME}'))
+        f' {image_name}'))
 
     ssh_term(headnode_port, 'Virtual cluster container start timed out')
 
@@ -179,7 +205,9 @@ def _install_muscle3_native_openmpi(
         f'/opt/spack/bin/spack find --format \\"{{version}}\\" /{openmpi_hash}'
         '"')).strip()
 
-    module_name = f'openmpi/{openmpi_version}-gcc-11.4.0-{openmpi_hash[:7]}'
+    gcc_version = _gcc_version(slurm_version)
+
+    module_name = f'openmpi/{openmpi_version}-gcc-{gcc_version}-{openmpi_hash[:7]}'
 
     logger_.info(f'Slurm {slurm_version} and module {module_name}')
 
@@ -241,7 +269,7 @@ def _clean_up_base_cluster(local_term, slurm_version):
 
 @pytest.fixture(scope='session', params=IDX_SLURM_VERSIONS)
 def installed_cluster(
-        request, cleanup_docker, fake_cluster_image, shared_dir,
+        request, cleanup_docker, fake_cluster_image, fake_cluster_image_old, shared_dir,
         repo_root, local_term):
 
     slurm_version = request.param[1]

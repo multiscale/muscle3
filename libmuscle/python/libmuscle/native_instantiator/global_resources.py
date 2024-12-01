@@ -5,7 +5,7 @@ from typing import List, Optional
 
 import psutil
 
-from libmuscle.native_instantiator import slurm
+from libmuscle.native_instantiator.slurm import slurm
 
 
 _logger = logging.getLogger(__name__)

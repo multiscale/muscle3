@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Dict, FrozenSet, List, Optional, Tuple
 
 from libmuscle.errors import ConfigurationError
+from libmuscle.native_instantiator.slurm import slurm
 from libmuscle.planner.planner import Resources
 from ymmsl import (
         ExecutionModel, Implementation, MPICoresResReq, MPINodesResReq,
@@ -221,32 +222,42 @@ def cluster_command(implementation: Implementation) -> str:
     if implementation.execution_model == ExecutionModel.DIRECT:
         fstr = 'taskset $MUSCLE_BIND_MASK {command} {args}'
     elif implementation.execution_model == ExecutionModel.OPENMPI:
-        # Native name is orterun for older and prterun for newer OpenMPI.
-        # So we go with mpirun, which works for either.
-        fstr = (
-                'mpirun -v -np $MUSCLE_MPI_PROCESSES'
-                ' -d --debug-daemons'
-                ' --rankfile $MUSCLE_RANKFILE --use-hwthread-cpus --oversubscribe'
-                # ' --map-by rankfile:file=$MUSCLE_RANKFILE:oversubscribe'
-                # ' --display-map --display-allocation {command} {args}'
+        fargs = [
+                # Native name is orterun for older and prterun for newer OpenMPI.
+                # So we go with mpirun, which works for either.
+                'mpirun -v -np $MUSCLE_MPI_PROCESSES',
+                '-d --debug-daemons',
+                '--rankfile $MUSCLE_RANKFILE --use-hwthread-cpus --oversubscribe'
+                ]
 
-                # This adds the given option to the srun command used by mpirun to
-                # launch its daemons. mpirun specifies --exclusive, which on SLURM <=
-                # 21-08 causes SLURM to wait for our agents to quit, as it considers
-                # them to be occupying the cores, causing a deadlock. Fortunately, it
-                # seems that adding --overlap overrides the --exclusive and it works.
-                ' -mca plm_slurm_args "--overlap"'
-                ' --bind-to core --display-map --display-allocation {command} {args}'
-                )
+        if slurm.quirks.overlap:
+            # This adds the given option to the srun command used by mpirun to launch
+            # its daemons. mpirun specifies --exclusive, which on SLURM <= 21-08 causes
+            # SLURM to wait for our agents to quit, as it considers them to be occupying
+            # the cores, causing a deadlock. Fortunately, it seems that adding --overlap
+            # overrides the --exclusive and it works.
+            fargs.append('-mca plm_slurm_args "--overlap"')
+
+        fargs.extend([
+            '--bind-to core --display-map --display-allocation {command} {args}'])
+
+        fstr = ' '.join(fargs)
+
     elif implementation.execution_model == ExecutionModel.INTELMPI:
         fstr = (
                 'mpirun -n $MUSCLE_MPI_PROCESSES -machinefile $MUSCLE_RANKFILE'
                 ' {command} {args}')
     elif implementation.execution_model == ExecutionModel.SRUNMPI:
         # TODO: set SLURM_CPU_BIND_VERBOSE for verbose output
-        fstr = (
-                'srun -n $MUSCLE_MPI_PROCESSES -m arbitrary --overlap'
-                ' --cpu-bind=$SLURM_CPU_BIND {command} {args}')
+        fargs = ['srun -n $MUSCLE_MPI_PROCESSES -m arbitrary']
+
+        if slurm.quirks.overlap:
+            fargs.append('--overlap')
+
+        fargs.append(f'{slurm.quirks.cpu_bind}=$SLURM_CPU_BIND {{command}} {{args}}')
+
+        fstr = ' '.join(fargs)
+
     # elif implementation.execution_model == ExecutionModel.MPICH
     #    fstr = 'mpiexec -n $MUSCLE_MPI_PROCESSES -f $MUSCLE_RANKFILE {command} {args}'
 

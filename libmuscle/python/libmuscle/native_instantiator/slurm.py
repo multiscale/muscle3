@@ -3,6 +3,7 @@ import logging
 import os
 from parsimonious import Grammar, NodeVisitor
 from parsimonious.nodes import Node
+import subprocess
 from typing import Any, cast, List, Sequence, Tuple
 
 
@@ -222,77 +223,130 @@ def parse_slurm_nodes_cores(s: str) -> List[int]:
     return cast(List[int], _nce_visitor.visit(ast))
 
 
-def in_slurm_allocation() -> bool:
-    """Check whether we're in a SLURM allocation.
-
-    Returns true iff SLURM was detected.
-    """
-    return 'SLURM_JOB_ID' in os.environ
-
-
-def get_nodes() -> List[str]:
-    """Get a list of node names from SLURM_JOB_NODELIST.
-
-    This inspects SLURM_JOB_NODELIST or SLURM_NODELIST and returns an
-    expanded list of node names.
-
-    If SLURM_JOB_NODELIST is "node[020-023]" then this returns
-    ["node020", "node021", "node022", "node023"].
-    """
-    nodelist = os.environ.get('SLURM_JOB_NODELIST')
-    if not nodelist:
-        nodelist = os.environ.get('SLURM_NODELIST')
-    if not nodelist:
-        raise RuntimeError('SLURM_(JOB_)NODELIST not set, are we running locally?')
-
-    _logger.debug(f'SLURM node list: {nodelist}')
-
-    return parse_slurm_nodelist(nodelist)
+class SlurmQuirks:
+    """Collects features of the present SLURM."""
+    overlap: bool
+    """True iff --overlap must be specified for srun."""
+    cpu_bind: str
+    """CPU binding argument, --cpu-bind or --cpu_bind."""
 
 
-def get_logical_cpus_per_node() -> List[int]:
-    """Return the number of logical CPU cores per node.
+class SlurmInfo:
+    """Detects and holds information about the present SLURM scheduler."""
+    def __init__(self) -> None:
+        if self.in_slurm_allocation():
+            self.version = self._slurm_version()
+            self.quirks = SlurmQuirks()
 
-    This returns a list with the number of cores of each node in the result of
-    get_nodes(), which gets read from SLURM_JOB_CPUS_PER_NODE.
-    """
-    sjcpn = os.environ.get('SLURM_JOB_CPUS_PER_NODE')
-    _logger.debug(f'SLURM_JOB_CPUS_PER_NODE: {sjcpn}')
+            self.quirks.overlap = self.version > (20, 2)
+            self.quirks.cpu_bind = (
+                    '--cpu-bind' if self.version > (17, 2) else '--cpu_bind')
 
-    if sjcpn:
-        return parse_slurm_nodes_cores(sjcpn)
-    else:
-        scon = os.environ.get('SLURM_CPUS_ON_NODE')
-        _logger.debug(f'SLURM_CPUS_ON_NODE: {scon}')
+    def in_slurm_allocation(self) -> bool:
+        """Check whether we're in a SLURM allocation.
 
-        snn = os.environ.get('SLURM_JOB_NUM_NODES')
-        if not snn:
-            snn = os.environ.get('SLURM_NNODES')
-        _logger.debug(f'SLURM num nodes: {snn}')
+        Returns true iff SLURM was detected.
+        """
+        return 'SLURM_JOB_ID' in os.environ
 
-        if scon and snn:
-            return [int(scon)] * int(snn)
+    def get_nodes(self) -> List[str]:
+        """Get a list of node names from SLURM_JOB_NODELIST.
 
-    raise RuntimeError(
-            'SLURM_JOB_CPUS_PER_NODE is not set in the environment, and also'
-            ' SLURM_CPUS_ON_NODE is missing or neither SLURM_JOB_NUM_NODES nor'
-            ' SLURM_NNODES is set. Please create an issue on GitHub with the output'
-            ' of "sbatch --version" on this cluster.')
+        This inspects SLURM_JOB_NODELIST or SLURM_NODELIST and returns an
+        expanded list of node names.
+
+        If SLURM_JOB_NODELIST is "node[020-023]" then this returns
+        ["node020", "node021", "node022", "node023"].
+        """
+        nodelist = os.environ.get('SLURM_JOB_NODELIST')
+        if not nodelist:
+            nodelist = os.environ.get('SLURM_NODELIST')
+        if not nodelist:
+            raise RuntimeError('SLURM_(JOB_)NODELIST not set, are we running locally?')
+
+        _logger.debug(f'SLURM node list: {nodelist}')
+
+        return parse_slurm_nodelist(nodelist)
+
+    def get_logical_cpus_per_node(self) -> List[int]:
+        """Return the number of logical CPU cores per node.
+
+        This returns a list with the number of cores of each node in the result of
+        get_nodes(), which gets read from SLURM_JOB_CPUS_PER_NODE.
+        """
+        sjcpn = os.environ.get('SLURM_JOB_CPUS_PER_NODE')
+        _logger.debug(f'SLURM_JOB_CPUS_PER_NODE: {sjcpn}')
+
+        if sjcpn:
+            return parse_slurm_nodes_cores(sjcpn)
+        else:
+            scon = os.environ.get('SLURM_CPUS_ON_NODE')
+            _logger.debug(f'SLURM_CPUS_ON_NODE: {scon}')
+
+            snn = os.environ.get('SLURM_JOB_NUM_NODES')
+            if not snn:
+                snn = os.environ.get('SLURM_NNODES')
+            _logger.debug(f'SLURM num nodes: {snn}')
+
+            if scon and snn:
+                return [int(scon)] * int(snn)
+
+        raise RuntimeError(
+                'SLURM_JOB_CPUS_PER_NODE is not set in the environment, and also'
+                ' SLURM_CPUS_ON_NODE is missing or neither SLURM_JOB_NUM_NODES nor'
+                ' SLURM_NNODES is set. Please create an issue on GitHub with the output'
+                ' of "sbatch --version" on this cluster.')
+
+    def agent_launch_command(self, agent_cmd: List[str], nnodes: int) -> List[str]:
+        """Return a command for launching one agent on each node.
+
+        Args:
+            agent_cmd: A command that will start the agent.
+        """
+        # TODO: On the latest Slurm, there's a special command for this that we should use
+        # if we have that, --external-launcher. Poorly documented though, so will require
+        # some experimentation.
+
+        # On SLURM <= 23-02, the number of tasks is inherited by srun from sbatch rather
+        # than calculated anew from --nodes and --ntasks-per-node, so we specify it
+        # explicitly to avoid getting an agent per logical cpu rather than per node.
+        srun_cmd = [
+                'srun', f'--nodes={nnodes}', f'--ntasks={nnodes}',
+                '--ntasks-per-node=1'
+                ]
+
+        if self.quirks.overlap:
+            srun_cmd.append('--overlap')
+
+        return srun_cmd + agent_cmd
+
+    def _slurm_version(self) -> Tuple[int, int]:
+        """Obtains current version of SLURM from srun -v.
+
+        This returns only the first two numbers, hopefully there won't be any changes in
+        behaviour within a release series.
+        """
+        proc = subprocess.run(
+                ['srun', '--version'], check=True, capture_output=True, text=True,
+                encoding='utf-8'
+                )
+
+        output = proc.stdout.strip().split()
+        if len(output) < 2:
+            raise RuntimeError(
+                    f'Unexpected srun version output "{output}". MUSCLE3 does not know'
+                    ' how to run on this version of SLURM. Please file an issue on'
+                    ' GitHub.')
+
+        version_str = output[1]
+        version = version_str.split('.')
+        if len(version) < 2:
+            _logger.error(f'srun produced unexpected version {version_str}')
+            raise RuntimeError(
+                    f'Unexpected srun version output "{output}". MUSCLE3 does not know'
+                    ' how to run on this version of SLURM. Please file an issue on'
+                    ' GitHub.')
+        return int(version[0]), int(version[1])
 
 
-def agent_launch_command(agent_cmd: List[str], nnodes: int) -> List[str]:
-    """Return a command for launching one agent on each node.
-
-    Args:
-        agent_cmd: A command that will start the agent.
-    """
-    # TODO: On the latest Slurm, there's a special command for this that we should use
-    # if we have that, --external-launcher. Poorly documented though, so will require
-    # some experimentation.
-
-    # On SLURM <= 23-02, the number of tasks is inherited by srun from sbatch rather
-    # than calculated anew from --nodes and --ntasks-per-node, so we specify it
-    # explicitly to avoid getting an agent per logical cpu rather than per node.
-    return [
-            'srun', f'--nodes={nnodes}', f'--ntasks={nnodes}', '--ntasks-per-node=1',
-            '--overlap'] + agent_cmd
+slurm = SlurmInfo()

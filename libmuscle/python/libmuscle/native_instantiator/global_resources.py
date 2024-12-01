@@ -47,7 +47,7 @@ class GlobalResources:
             _logger.info('Running locally without a cluster scheduler')
             self.scheduler = Scheduler.NONE
             self.nodes = [gethostname()]
-            self.logical_cpus_per_node = [psutil.cpu_count(logical=True)]
+            self.logical_cpus_per_node = [psutil.cpu_count(logical=True) or 0]
             _logger.info(
                     f'We have {self.logical_cpus_per_node[0]} logical CPUS available')
 

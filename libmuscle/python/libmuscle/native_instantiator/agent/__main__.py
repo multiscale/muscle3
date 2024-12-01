@@ -108,19 +108,21 @@ class Agent:
             nhwthreads = psutil.cpu_count(logical=True)
             ncores = psutil.cpu_count(logical=False)
 
-            if nhwthreads is None and ncores is not None:
-                _logger.warning(
-                        'Could not determine number of hwthreads, assuming no SMT')
-                nhwthreads = ncores
-            elif ncores is None and nhwthreads is not None:
+            if nhwthreads is None:
+                if ncores is not None:
+                    _logger.warning(
+                            'Could not determine number of hwthreads, assuming no SMT')
+                    nhwthreads = ncores
+                else:
+                    _logger.warning(
+                            'Could not determine CPU configuration, assuming a single'
+                            ' core')
+                    ncores = 1
+                    nhwthreads = 1
+            elif ncores is None:
                 _logger.warning(
                         'Could not determine number of cores, assuming no SMT')
                 ncores = nhwthreads
-            elif ncores is None and nhwthreads is None:
-                _logger.warning(
-                        'Could not determine CPU configuration, assuming a single core')
-                ncores = 1
-                nhwthreads = 1
 
             hwthreads_per_core = nhwthreads // ncores
 

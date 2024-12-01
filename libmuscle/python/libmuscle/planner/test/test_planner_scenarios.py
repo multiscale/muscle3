@@ -1,12 +1,17 @@
 from copy import deepcopy
 from libmuscle.planner.planner import ModelGraph, Planner, Resources
 
-from typing import Dict, Tuple
+from typing import Dict, FrozenSet, Tuple
 
 import pytest
 from ymmsl import (
         Component, Conduit, Configuration, Implementation, Model,
         MPICoresResReq, Ports, Reference, ResourceRequirements, ThreadedResReq)
+
+
+def c(hwthread_id: int) -> FrozenSet[int]:
+    """Helper that defines a core with the given hwthread id."""
+    return frozenset({hwthread_id})
 
 
 _ResReqs = Dict[Reference, ResourceRequirements]
@@ -38,12 +43,12 @@ s0_config = Configuration(
         s0_model, None, s0_implementations, s0_requirements)
 
 
-s0_resources = Resources({'node001': {0, 1, 2, 3}})
+s0_resources = Resources({'node001': {c(0), c(1), c(2), c(3)}})
 
 
 s0_solution = {
-        Reference('macro'): Resources({'node001': {0, 1}}),
-        Reference('micro'): Resources({'node001': {2, 3}})}
+        Reference('macro'): Resources({'node001': {c(0), c(1)}}),
+        Reference('micro'): Resources({'node001': {c(2), c(3)}})}
 
 
 s1_model = Model(
@@ -83,14 +88,14 @@ s1_config = Configuration(
         s1_model, None, s1_implementations, s1_requirements)
 
 
-s1_resources = Resources({'node001': {0, 1, 2, 3}})
+s1_resources = Resources({'node001': {c(0), c(1), c(2), c(3)}})
 
 
 s1_solution = {
-        Reference('macro'): Resources({'node001': {0, 1, 2, 3}}),
-        Reference('micro1'): Resources({'node001': {0, 1}}),
-        Reference('micro2'): Resources({'node001': {0, 1}}),
-        Reference('micro3'): Resources({'node001': {0}})}
+        Reference('macro'): Resources({'node001': {c(0), c(1), c(2), c(3)}}),
+        Reference('micro1'): Resources({'node001': {c(0), c(1)}}),
+        Reference('micro2'): Resources({'node001': {c(0), c(1)}}),
+        Reference('micro3'): Resources({'node001': {c(0)}})}
 
 
 s2_model = Model(
@@ -125,13 +130,14 @@ s2_config = Configuration(
         s2_model, None, s2_implementations, s2_requirements)
 
 
-s2_resources = Resources({'node001': {0, 1, 2, 3}, 'node002': {0, 1, 2, 3}})
+s2_resources = Resources(
+        {'node001': {c(0), c(1), c(2), c(3)}, 'node002': {c(0), c(1), c(2), c(3)}})
 
 
 s2_solution = {
-        Reference('macro'): Resources({'node001': {0}}),
-        Reference('micro1'): Resources({'node001': {0, 1, 2}}),
-        Reference('micro2'): Resources({'node002': {0, 1}})}
+        Reference('macro'): Resources({'node001': {c(0)}}),
+        Reference('micro1'): Resources({'node001': {c(0), c(1), c(2)}}),
+        Reference('micro2'): Resources({'node002': {c(0), c(1)}})}
 
 
 s3_model = Model(
@@ -170,14 +176,16 @@ s3_config = Configuration(
         s3_model, None, s3_implementations, s3_requirements)
 
 
-s3_resources = Resources({'node001': {0, 1, 2, 3}, 'node002': {0, 1, 2, 3}})
+s3_resources = Resources(
+        {'node001': {c(0), c(1), c(2), c(3)}, 'node002': {c(0), c(1), c(2), c(3)}})
 
 
 s3_solution = {
-        Reference('a'): Resources({'node001': {0}}),
-        Reference('b1'): Resources({'node001': {2, 3}, 'node002': {0, 1, 2, 3}}),
-        Reference('b2'): Resources({'node001': {0, 1}}),
-        Reference('c'): Resources({'node001': {0, 1, 2, 3}})}
+        Reference('a'): Resources({'node001': {c(0)}}),
+        Reference('b1'): Resources(
+            {'node001': {c(2), c(3)}, 'node002': {c(0), c(1), c(2), c(3)}}),
+        Reference('b2'): Resources({'node001': {c(0), c(1)}}),
+        Reference('c'): Resources({'node001': {c(0), c(1), c(2), c(3)}})}
 
 
 s4_model = Model(
@@ -213,13 +221,14 @@ s4_config = Configuration(
         s4_model, None, s4_implementations, s4_requirements)
 
 
-s4_resources = Resources({'node001': {0, 1, 2, 3}, 'node002': {0, 1, 2, 3}})
+s4_resources = Resources(
+        {'node001': {c(0), c(1), c(2), c(3)}, 'node002': {c(0), c(1), c(2), c(3)}})
 
 
 s4_solution = {
-        Reference('macro1'): Resources({'node002': {0, 1}}),
-        Reference('macro2'): Resources({'node001': {0, 1, 2}}),
-        Reference('micro'): Resources({'node001': {0, 1, 2}})}
+        Reference('macro1'): Resources({'node002': {c(0), c(1)}}),
+        Reference('macro2'): Resources({'node001': {c(0), c(1), c(2)}}),
+        Reference('micro'): Resources({'node001': {c(0), c(1), c(2)}})}
 
 
 s5_model = Model(
@@ -262,17 +271,18 @@ s5_config = Configuration(
 
 
 s5_resources = Resources({
-    'node001': {0, 1, 2, 3}, 'node002': {0, 1, 2, 3}, 'node003': {0, 1}})
+    'node001': {c(0), c(1), c(2), c(3)}, 'node002': {c(0), c(1), c(2), c(3)},
+    'node003': {c(0), c(1)}})
 
 
 # This is inefficient, as the models can all share resources. But repeater
 # is funny, and the algorithm cannot deal with it yet. It does give a valid
 # result with no overlap, so we'll accept that for the time being.
 s5_solution = {
-        Reference('init'): Resources({'node001': {0, 1, 2, 3}}),
-        Reference('macro'): Resources({'node001': {0, 1, 2, 3}}),
-        Reference('micro'): Resources({'node002': {0, 1, 2, 3}}),
-        Reference('repeater'): Resources({'node003': {0}})}
+        Reference('init'): Resources({'node001': {c(0), c(1), c(2), c(3)}}),
+        Reference('macro'): Resources({'node001': {c(0), c(1), c(2), c(3)}}),
+        Reference('micro'): Resources({'node002': {c(0), c(1), c(2), c(3)}}),
+        Reference('repeater'): Resources({'node003': {c(0)}})}
 
 
 s6_model = Model(
@@ -309,21 +319,21 @@ s6_config = Configuration(
 
 
 s6_resources = Resources({
-        'node001': {0, 1, 2, 3}, 'node002': {0, 1, 2, 3},
-        'node003': {0, 1, 2, 3}, 'node004': {0, 1, 2, 3},
-        'node005': {0, 1, 2, 3}, 'node006': {0, 1, 2, 3}
+        'node001': {c(0), c(1), c(2), c(3)}, 'node002': {c(0), c(1), c(2), c(3)},
+        'node003': {c(0), c(1), c(2), c(3)}, 'node004': {c(0), c(1), c(2), c(3)},
+        'node005': {c(0), c(1), c(2), c(3)}, 'node006': {c(0), c(1), c(2), c(3)}
         })
 
 
 s6_solution = {
-        Reference('a'): Resources({'node001': {0, 1, 2, 3}}),
-        Reference('tcf'): Resources({'node002': {0}}),
+        Reference('a'): Resources({'node001': {c(0), c(1), c(2), c(3)}}),
+        Reference('tcf'): Resources({'node002': {c(0)}}),
         Reference('b'): Resources({
-            'node002': {1, 2, 3},
-            'node003': {0, 1, 2, 3},
-            'node004': {0, 1, 2, 3},
-            'node005': {0, 1, 2, 3},
-            'node006': {0}})}
+            'node002': {c(1), c(2), c(3)},
+            'node003': {c(0), c(1), c(2), c(3)},
+            'node004': {c(0), c(1), c(2), c(3)},
+            'node005': {c(0), c(1), c(2), c(3)},
+            'node006': {c(0)}})}
 
 
 s7_model = Model(
@@ -365,46 +375,46 @@ s7_config = Configuration(
 
 
 s7_resources = Resources({
-        'node001': {0, 1, 2, 3, 4, 5, 6, 7},
-        'node002': {0, 1, 2, 3, 4, 5, 6, 7},
-        'node003': {0, 1, 2, 3, 4, 5, 6, 7},
-        'node004': {0, 1, 2, 3, 4, 5, 6, 7},
-        'node005': {0, 1, 2, 3, 4, 5, 6, 7},
+        'node001': {c(0), c(1), c(2), c(3), c(4), c(5), c(6), c(7)},
+        'node002': {c(0), c(1), c(2), c(3), c(4), c(5), c(6), c(7)},
+        'node003': {c(0), c(1), c(2), c(3), c(4), c(5), c(6), c(7)},
+        'node004': {c(0), c(1), c(2), c(3), c(4), c(5), c(6), c(7)},
+        'node005': {c(0), c(1), c(2), c(3), c(4), c(5), c(6), c(7)},
         })
 
 
 s7_solution = {
-        Reference('mc'): Resources({'node001': {0}}),
-        Reference('init[0]'): Resources({'node001': {0, 1, 2, 3}}),
-        Reference('init[1]'): Resources({'node001': {4, 5, 6, 7}}),
-        Reference('init[2]'): Resources({'node002': {0, 1, 2, 3}}),
-        Reference('init[3]'): Resources({'node002': {4, 5, 6, 7}}),
-        Reference('init[4]'): Resources({'node003': {0, 1, 2, 3}}),
-        Reference('init[5]'): Resources({'node003': {4, 5, 6, 7}}),
-        Reference('init[6]'): Resources({'node004': {0, 1, 2, 3}}),
-        Reference('init[7]'): Resources({'node004': {4, 5, 6, 7}}),
-        Reference('init[8]'): Resources({'node005': {0, 1, 2, 3}}),
-        Reference('init[9]'): Resources({'node005': {4, 5, 6, 7}}),
-        Reference('macro[0]'): Resources({'node001': {0, 1, 2, 3}}),
-        Reference('macro[1]'): Resources({'node001': {4, 5, 6, 7}}),
-        Reference('macro[2]'): Resources({'node002': {0, 1, 2, 3}}),
-        Reference('macro[3]'): Resources({'node002': {4, 5, 6, 7}}),
-        Reference('macro[4]'): Resources({'node003': {0, 1, 2, 3}}),
-        Reference('macro[5]'): Resources({'node003': {4, 5, 6, 7}}),
-        Reference('macro[6]'): Resources({'node004': {0, 1, 2, 3}}),
-        Reference('macro[7]'): Resources({'node004': {4, 5, 6, 7}}),
-        Reference('macro[8]'): Resources({'node005': {0, 1, 2, 3}}),
-        Reference('macro[9]'): Resources({'node005': {4, 5, 6, 7}}),
-        Reference('micro[0]'): Resources({'node001': {0, 1, 2, 3}}),
-        Reference('micro[1]'): Resources({'node001': {4, 5, 6, 7}}),
-        Reference('micro[2]'): Resources({'node002': {0, 1, 2, 3}}),
-        Reference('micro[3]'): Resources({'node002': {4, 5, 6, 7}}),
-        Reference('micro[4]'): Resources({'node003': {0, 1, 2, 3}}),
-        Reference('micro[5]'): Resources({'node003': {4, 5, 6, 7}}),
-        Reference('micro[6]'): Resources({'node004': {0, 1, 2, 3}}),
-        Reference('micro[7]'): Resources({'node004': {4, 5, 6, 7}}),
-        Reference('micro[8]'): Resources({'node005': {0, 1, 2, 3}}),
-        Reference('micro[9]'): Resources({'node005': {4, 5, 6, 7}})}
+        Reference('mc'): Resources({'node001': {c(0)}}),
+        Reference('init[0]'): Resources({'node001': {c(0), c(1), c(2), c(3)}}),
+        Reference('init[1]'): Resources({'node001': {c(4), c(5), c(6), c(7)}}),
+        Reference('init[2]'): Resources({'node002': {c(0), c(1), c(2), c(3)}}),
+        Reference('init[3]'): Resources({'node002': {c(4), c(5), c(6), c(7)}}),
+        Reference('init[4]'): Resources({'node003': {c(0), c(1), c(2), c(3)}}),
+        Reference('init[5]'): Resources({'node003': {c(4), c(5), c(6), c(7)}}),
+        Reference('init[6]'): Resources({'node004': {c(0), c(1), c(2), c(3)}}),
+        Reference('init[7]'): Resources({'node004': {c(4), c(5), c(6), c(7)}}),
+        Reference('init[8]'): Resources({'node005': {c(0), c(1), c(2), c(3)}}),
+        Reference('init[9]'): Resources({'node005': {c(4), c(5), c(6), c(7)}}),
+        Reference('macro[0]'): Resources({'node001': {c(0), c(1), c(2), c(3)}}),
+        Reference('macro[1]'): Resources({'node001': {c(4), c(5), c(6), c(7)}}),
+        Reference('macro[2]'): Resources({'node002': {c(0), c(1), c(2), c(3)}}),
+        Reference('macro[3]'): Resources({'node002': {c(4), c(5), c(6), c(7)}}),
+        Reference('macro[4]'): Resources({'node003': {c(0), c(1), c(2), c(3)}}),
+        Reference('macro[5]'): Resources({'node003': {c(4), c(5), c(6), c(7)}}),
+        Reference('macro[6]'): Resources({'node004': {c(0), c(1), c(2), c(3)}}),
+        Reference('macro[7]'): Resources({'node004': {c(4), c(5), c(6), c(7)}}),
+        Reference('macro[8]'): Resources({'node005': {c(0), c(1), c(2), c(3)}}),
+        Reference('macro[9]'): Resources({'node005': {c(4), c(5), c(6), c(7)}}),
+        Reference('micro[0]'): Resources({'node001': {c(0), c(1), c(2), c(3)}}),
+        Reference('micro[1]'): Resources({'node001': {c(4), c(5), c(6), c(7)}}),
+        Reference('micro[2]'): Resources({'node002': {c(0), c(1), c(2), c(3)}}),
+        Reference('micro[3]'): Resources({'node002': {c(4), c(5), c(6), c(7)}}),
+        Reference('micro[4]'): Resources({'node003': {c(0), c(1), c(2), c(3)}}),
+        Reference('micro[5]'): Resources({'node003': {c(4), c(5), c(6), c(7)}}),
+        Reference('micro[6]'): Resources({'node004': {c(0), c(1), c(2), c(3)}}),
+        Reference('micro[7]'): Resources({'node004': {c(4), c(5), c(6), c(7)}}),
+        Reference('micro[8]'): Resources({'node005': {c(0), c(1), c(2), c(3)}}),
+        Reference('micro[9]'): Resources({'node005': {c(4), c(5), c(6), c(7)}})}
 
 
 s8_model = Model(
@@ -441,13 +451,14 @@ s8_config = Configuration(
         s8_model, None, s8_implementations, s8_requirements)
 
 
-s8_resources = Resources({'node001': {0, 1, 2, 3}, 'node002': {0, 1, 2, 3}})
+s8_resources = Resources(
+        {'node001': {c(0), c(1), c(2), c(3)}, 'node002': {c(0), c(1), c(2), c(3)}})
 
 
 s8_solution = {
-        Reference('macro'): Resources({'node001': {3}}),
-        Reference('micro1'): Resources({'node001': {0, 1, 2}}),
-        Reference('micro2'): Resources({'node001': {0, 1}})}
+        Reference('macro'): Resources({'node001': {c(3)}}),
+        Reference('micro1'): Resources({'node001': {c(0), c(1), c(2)}}),
+        Reference('micro2'): Resources({'node001': {c(0), c(1)}})}
 
 
 s9_model = Model(
@@ -489,15 +500,15 @@ s9_config = Configuration(
         s9_model, None, s9_implementations, s9_requirements)
 
 
-s9_resources = Resources({'node001': {0, 1, 2, 3}})
+s9_resources = Resources({'node001': {c(0), c(1), c(2), c(3)}})
 
 
 s9_solution = {
-        Reference('a'): Resources({'node001': {1}}),
-        Reference('b'): Resources({'node001': {0}}),
-        Reference('c'): Resources({'node001': {0}}),
-        Reference('d'): Resources({'node001': {1}}),
-        Reference('e'): Resources({'node001': {0}})}
+        Reference('a'): Resources({'node001': {c(1)}}),
+        Reference('b'): Resources({'node001': {c(0)}}),
+        Reference('c'): Resources({'node001': {c(0)}}),
+        Reference('d'): Resources({'node001': {c(1)}}),
+        Reference('e'): Resources({'node001': {c(0)}})}
 
 
 s10_model = Model(
@@ -542,31 +553,37 @@ s10_config = Configuration(
 
 
 s10_resources = Resources({
-        'node001': {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
-        'node002': {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
-        'node003': {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+        'node001': {
+            c(0), c(1), c(2), c(3), c(4), c(5), c(6), c(7),
+            c(8),c(9), c(10), c(11), c(12), c(13), c(14), c(15)},
+        'node002': {
+            c(0), c(1), c(2), c(3), c(4), c(5), c(6), c(7),
+            c(8), c(9), c(10), c(11), c(12), c(13), c(14), c(15)},
+        'node003': {
+            c(0), c(1), c(2), c(3), c(4), c(5), c(6), c(7),
+            c(8), c(9), c(10), c(11), c(12), c(13), c(14), c(15)},
         })
 
 
 s10_solution = {
-        Reference('mc'): Resources({'node001': {0}}),
-        Reference('rr'): Resources({'node001': {0}}),
-        Reference('macro[0]'): Resources({'node001': {0, 1, 2, 3}}),
-        Reference('macro[1]'): Resources({'node001': {4, 5, 6, 7}}),
-        Reference('macro[2]'): Resources({'node001': {8, 9, 10, 11}}),
-        Reference('macro[3]'): Resources({'node001': {12, 13, 14, 15}}),
-        Reference('macro[4]'): Resources({'node002': {0, 1, 2, 3}}),
-        Reference('macro[5]'): Resources({'node002': {4, 5, 6, 7}}),
-        Reference('macro[6]'): Resources({'node002': {8, 9, 10, 11}}),
-        Reference('macro[7]'): Resources({'node002': {12, 13, 14, 15}}),
-        Reference('micro[0]'): Resources({'node001': {0, 1}}),
-        Reference('micro[1]'): Resources({'node001': {4, 5}}),
-        Reference('micro[2]'): Resources({'node001': {8, 9}}),
-        Reference('micro[3]'): Resources({'node001': {12, 13}}),
-        Reference('micro[4]'): Resources({'node002': {0, 1}}),
-        Reference('micro[5]'): Resources({'node002': {4, 5}}),
-        Reference('micro[6]'): Resources({'node002': {8, 9}}),
-        Reference('micro[7]'): Resources({'node002': {12, 13}})}
+        Reference('mc'): Resources({'node001': {c(0)}}),
+        Reference('rr'): Resources({'node001': {c(0)}}),
+        Reference('macro[0]'): Resources({'node001': {c(0), c(1), c(2), c(3)}}),
+        Reference('macro[1]'): Resources({'node001': {c(4), c(5), c(6), c(7)}}),
+        Reference('macro[2]'): Resources({'node001': {c(8), c(9), c(10), c(11)}}),
+        Reference('macro[3]'): Resources({'node001': {c(12), c(13), c(14), c(15)}}),
+        Reference('macro[4]'): Resources({'node002': {c(0), c(1), c(2), c(3)}}),
+        Reference('macro[5]'): Resources({'node002': {c(4), c(5), c(6), c(7)}}),
+        Reference('macro[6]'): Resources({'node002': {c(8), c(9), c(10), c(11)}}),
+        Reference('macro[7]'): Resources({'node002': {c(12), c(13), c(14), c(15)}}),
+        Reference('micro[0]'): Resources({'node001': {c(0), c(1)}}),
+        Reference('micro[1]'): Resources({'node001': {c(4), c(5)}}),
+        Reference('micro[2]'): Resources({'node001': {c(8), c(9)}}),
+        Reference('micro[3]'): Resources({'node001': {c(12), c(13)}}),
+        Reference('micro[4]'): Resources({'node002': {c(0), c(1)}}),
+        Reference('micro[5]'): Resources({'node002': {c(4), c(5)}}),
+        Reference('micro[6]'): Resources({'node002': {c(8), c(9)}}),
+        Reference('micro[7]'): Resources({'node002': {c(12), c(13)}})}
 
 
 s11_model = Model(
@@ -606,24 +623,24 @@ s11_config = Configuration(s11_model, None, s11_implementations, s11_requirement
 
 
 s11_resources = Resources({
-        'node001': {0, 1, 2, 3, 4, 5, 6, 7},
-        'node002': {0, 1, 2, 3, 4, 5, 6, 7},
+        'node001': {c(0), c(1), c(2), c(3), c(4), c(5), c(6), c(7)},
+        'node002': {c(0), c(1), c(2), c(3), c(4), c(5), c(6), c(7)},
         })
 
 
 s11_solution = {
-        Reference('macro1[0]'): Resources({'node001': {0, 1, 2, 3}}),
-        Reference('macro1[1]'): Resources({'node001': {4, 5, 6, 7}}),
-        Reference('macro1[2]'): Resources({'node002': {0, 1, 2, 3}}),
-        Reference('micro1[0]'): Resources({'node001': {0, 1, 2, 3}}),
-        Reference('micro1[1]'): Resources({'node001': {4, 5, 6, 7}}),
-        Reference('micro1[2]'): Resources({'node002': {0, 1, 2, 3}}),
-        Reference('macro2[0]'): Resources({'node001': {0, 1, 2, 3}}),
-        Reference('macro2[1]'): Resources({'node001': {4, 5, 6, 7}}),
-        Reference('macro2[2]'): Resources({'node002': {0, 1, 2, 3}}),
-        Reference('micro2[0]'): Resources({'node001': {0, 1, 2, 3}}),
-        Reference('micro2[1]'): Resources({'node001': {4, 5, 6, 7}}),
-        Reference('micro2[2]'): Resources({'node002': {0, 1, 2, 3}}),
+        Reference('macro1[0]'): Resources({'node001': {c(0), c(1), c(2), c(3)}}),
+        Reference('macro1[1]'): Resources({'node001': {c(4), c(5), c(6), c(7)}}),
+        Reference('macro1[2]'): Resources({'node002': {c(0), c(1), c(2), c(3)}}),
+        Reference('micro1[0]'): Resources({'node001': {c(0), c(1), c(2), c(3)}}),
+        Reference('micro1[1]'): Resources({'node001': {c(4), c(5), c(6), c(7)}}),
+        Reference('micro1[2]'): Resources({'node002': {c(0), c(1), c(2), c(3)}}),
+        Reference('macro2[0]'): Resources({'node001': {c(0), c(1), c(2), c(3)}}),
+        Reference('macro2[1]'): Resources({'node001': {c(4), c(5), c(6), c(7)}}),
+        Reference('macro2[2]'): Resources({'node002': {c(0), c(1), c(2), c(3)}}),
+        Reference('micro2[0]'): Resources({'node001': {c(0), c(1), c(2), c(3)}}),
+        Reference('micro2[1]'): Resources({'node001': {c(4), c(5), c(6), c(7)}}),
+        Reference('micro2[2]'): Resources({'node002': {c(0), c(1), c(2), c(3)}}),
         }
 
 
@@ -646,14 +663,16 @@ s12_config = Configuration(s12_model, None, s11_implementations, s12_requirement
 
 
 s12_solution = {
-        Reference('macro1'): Resources({'node001': {0, 1, 2, 3}}),
-        Reference('micro1[0]'): Resources({'node001': {0, 1, 2, 3, 4, 5, 6, 7}}),
-        Reference('micro1[1]'): Resources({'node002': {0, 1, 2, 3, 4, 5, 6, 7}}),
-        Reference('macro2'): Resources({'node001': {0, 1, 2, 3}}),
-        Reference('micro2[0]'): Resources({'node001': {0, 1, 2, 3}}),
-        Reference('micro2[1]'): Resources({'node001': {4, 5, 6, 7}}),
-        Reference('micro2[2]'): Resources({'node002': {0, 1, 2, 3}}),
-        Reference('micro2[3]'): Resources({'node002': {4, 5, 6, 7}}),
+        Reference('macro1'): Resources({'node001': {c(0), c(1), c(2), c(3)}}),
+        Reference('micro1[0]'): Resources({'node001': {
+            c(0), c(1), c(2), c(3), c(4), c(5), c(6), c(7)}}),
+        Reference('micro1[1]'): Resources({'node002': {
+            c(0), c(1), c(2), c(3), c(4), c(5), c(6), c(7)}}),
+        Reference('macro2'): Resources({'node001': {c(0), c(1), c(2), c(3)}}),
+        Reference('micro2[0]'): Resources({'node001': {c(0), c(1), c(2), c(3)}}),
+        Reference('micro2[1]'): Resources({'node001': {c(4), c(5), c(6), c(7)}}),
+        Reference('micro2[2]'): Resources({'node002': {c(0), c(1), c(2), c(3)}}),
+        Reference('micro2[3]'): Resources({'node002': {c(4), c(5), c(6), c(7)}}),
         }
 
 
@@ -676,58 +695,58 @@ s13_config = Configuration(s13_model, None, s11_implementations, s13_requirement
 
 
 s13_resources = Resources({
-        'node001': {0, 1, 2, 3, 4, 5, 6, 7},
-        'node002': {0, 1, 2, 3, 4, 5, 6, 7},
-        'node003': {0, 1, 2, 3, 4, 5, 6, 7},
-        'node004': {0, 1, 2, 3, 4, 5, 6, 7},
-        'node005': {0, 1, 2, 3, 4, 5, 6, 7},
+        'node001': {c(0), c(1), c(2), c(3), c(4), c(5), c(6), c(7)},
+        'node002': {c(0), c(1), c(2), c(3), c(4), c(5), c(6), c(7)},
+        'node003': {c(0), c(1), c(2), c(3), c(4), c(5), c(6), c(7)},
+        'node004': {c(0), c(1), c(2), c(3), c(4), c(5), c(6), c(7)},
+        'node005': {c(0), c(1), c(2), c(3), c(4), c(5), c(6), c(7)},
         })
 
 
 s13_solution = {
-        Reference('macro1[0]'): Resources({'node001': {0, 1, 2, 3}}),
-        Reference('macro1[1]'): Resources({'node001': {4, 5, 6, 7}}),
-        Reference('macro1[2]'): Resources({'node002': {0, 1, 2, 3}}),
-        Reference('macro1[3]'): Resources({'node002': {4, 5, 6, 7}}),
-        Reference('macro1[4]'): Resources({'node003': {0, 1, 2, 3}}),
+        Reference('macro1[0]'): Resources({'node001': {c(0), c(1), c(2), c(3)}}),
+        Reference('macro1[1]'): Resources({'node001': {c(4), c(5), c(6), c(7)}}),
+        Reference('macro1[2]'): Resources({'node002': {c(0), c(1), c(2), c(3)}}),
+        Reference('macro1[3]'): Resources({'node002': {c(4), c(5), c(6), c(7)}}),
+        Reference('macro1[4]'): Resources({'node003': {c(0), c(1), c(2), c(3)}}),
 
-        Reference('micro1[0][0]'): Resources({'node001': {0, 1}}),
-        Reference('micro1[0][1]'): Resources({'node001': {2, 3}}),
-        Reference('micro1[0][2]'): Resources({'node003': {4, 5}}),
-        Reference('micro1[0][3]'): Resources({'node003': {6, 7}}),
-        Reference('micro1[1][0]'): Resources({'node001': {4, 5}}),
-        Reference('micro1[1][1]'): Resources({'node001': {6, 7}}),
-        Reference('micro1[1][2]'): Resources({'node004': {0, 1}}),
-        Reference('micro1[1][3]'): Resources({'node004': {2, 3}}),
-        Reference('micro1[2][0]'): Resources({'node002': {0, 1}}),
-        Reference('micro1[2][1]'): Resources({'node002': {2, 3}}),
-        Reference('micro1[2][2]'): Resources({'node004': {4, 5}}),
-        Reference('micro1[2][3]'): Resources({'node004': {6, 7}}),
-        Reference('micro1[3][0]'): Resources({'node002': {4, 5}}),
-        Reference('micro1[3][1]'): Resources({'node002': {6, 7}}),
-        Reference('micro1[3][2]'): Resources({'node005': {0, 1}}),
-        Reference('micro1[3][3]'): Resources({'node005': {2, 3}}),
-        Reference('micro1[4][0]'): Resources({'node003': {0, 1}}),
-        Reference('micro1[4][1]'): Resources({'node003': {2, 3}}),
-        Reference('micro1[4][2]'): Resources({'node005': {4, 5}}),
-        Reference('micro1[4][3]'): Resources({'node005': {6, 7}}),
+        Reference('micro1[0][0]'): Resources({'node001': {c(0), c(1)}}),
+        Reference('micro1[0][1]'): Resources({'node001': {c(2), c(3)}}),
+        Reference('micro1[0][2]'): Resources({'node003': {c(4), c(5)}}),
+        Reference('micro1[0][3]'): Resources({'node003': {c(6), c(7)}}),
+        Reference('micro1[1][0]'): Resources({'node001': {c(4), c(5)}}),
+        Reference('micro1[1][1]'): Resources({'node001': {c(6), c(7)}}),
+        Reference('micro1[1][2]'): Resources({'node004': {c(0), c(1)}}),
+        Reference('micro1[1][3]'): Resources({'node004': {c(2), c(3)}}),
+        Reference('micro1[2][0]'): Resources({'node002': {c(0), c(1)}}),
+        Reference('micro1[2][1]'): Resources({'node002': {c(2), c(3)}}),
+        Reference('micro1[2][2]'): Resources({'node004': {c(4), c(5)}}),
+        Reference('micro1[2][3]'): Resources({'node004': {c(6), c(7)}}),
+        Reference('micro1[3][0]'): Resources({'node002': {c(4), c(5)}}),
+        Reference('micro1[3][1]'): Resources({'node002': {c(6), c(7)}}),
+        Reference('micro1[3][2]'): Resources({'node005': {c(0), c(1)}}),
+        Reference('micro1[3][3]'): Resources({'node005': {c(2), c(3)}}),
+        Reference('micro1[4][0]'): Resources({'node003': {c(0), c(1)}}),
+        Reference('micro1[4][1]'): Resources({'node003': {c(2), c(3)}}),
+        Reference('micro1[4][2]'): Resources({'node005': {c(4), c(5)}}),
+        Reference('micro1[4][3]'): Resources({'node005': {c(6), c(7)}}),
 
-        Reference('macro2[0]'): Resources({'node001': {0, 1, 2, 3}}),
-        Reference('macro2[1]'): Resources({'node001': {4, 5, 6, 7}}),
-        Reference('macro2[2]'): Resources({'node002': {0, 1, 2, 3}}),
-        Reference('macro2[3]'): Resources({'node002': {4, 5, 6, 7}}),
-        Reference('macro2[4]'): Resources({'node003': {0, 1, 2, 3}}),
+        Reference('macro2[0]'): Resources({'node001': {c(0), c(1), c(2), c(3)}}),
+        Reference('macro2[1]'): Resources({'node001': {c(4), c(5), c(6), c(7)}}),
+        Reference('macro2[2]'): Resources({'node002': {c(0), c(1), c(2), c(3)}}),
+        Reference('macro2[3]'): Resources({'node002': {c(4), c(5), c(6), c(7)}}),
+        Reference('macro2[4]'): Resources({'node003': {c(0), c(1), c(2), c(3)}}),
 
-        Reference('micro2[0][0]'): Resources({'node001': {0, 1, 2, 3}}),
-        Reference('micro2[0][1]'): Resources({'node003': {4, 5, 6, 7}}),
-        Reference('micro2[1][0]'): Resources({'node001': {4, 5, 6, 7}}),
-        Reference('micro2[1][1]'): Resources({'node004': {0, 1, 2, 3}}),
-        Reference('micro2[2][0]'): Resources({'node002': {0, 1, 2, 3}}),
-        Reference('micro2[2][1]'): Resources({'node004': {4, 5, 6, 7}}),
-        Reference('micro2[3][0]'): Resources({'node002': {4, 5, 6, 7}}),
-        Reference('micro2[3][1]'): Resources({'node005': {0, 1, 2, 3}}),
-        Reference('micro2[4][0]'): Resources({'node003': {0, 1, 2, 3}}),
-        Reference('micro2[4][1]'): Resources({'node005': {4, 5, 6, 7}}),
+        Reference('micro2[0][0]'): Resources({'node001': {c(0), c(1), c(2), c(3)}}),
+        Reference('micro2[0][1]'): Resources({'node003': {c(4), c(5), c(6), c(7)}}),
+        Reference('micro2[1][0]'): Resources({'node001': {c(4), c(5), c(6), c(7)}}),
+        Reference('micro2[1][1]'): Resources({'node004': {c(0), c(1), c(2), c(3)}}),
+        Reference('micro2[2][0]'): Resources({'node002': {c(0), c(1), c(2), c(3)}}),
+        Reference('micro2[2][1]'): Resources({'node004': {c(4), c(5), c(6), c(7)}}),
+        Reference('micro2[3][0]'): Resources({'node002': {c(4), c(5), c(6), c(7)}}),
+        Reference('micro2[3][1]'): Resources({'node005': {c(0), c(1), c(2), c(3)}}),
+        Reference('micro2[4][0]'): Resources({'node003': {c(0), c(1), c(2), c(3)}}),
+        Reference('micro2[4][1]'): Resources({'node005': {c(4), c(5), c(6), c(7)}}),
         }
 
 
@@ -763,7 +782,7 @@ s14_config = Configuration(
         s14_model, None, s14_implementations, s14_requirements)
 
 
-s14_resources = Resources({'node001': {0, 1, 2, 3, 4, 5}})
+s14_resources = Resources({'node001': {c(0), c(1), c(2), c(3), c(4), c(5)}})
 
 
 s14_solution = RuntimeError

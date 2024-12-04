@@ -215,3 +215,37 @@ def test_double(
                 node, hwthreads, _ = out.split('\n')
                 assert node == f'node-{i + 2}'
                 assert hwthread_to_core(hwthreads) == [rank]
+
+
+@skip_unless_cluster
+@pytest.mark.parametrize('mode', ['local', 'slurm'])
+@pytest.mark.parametrize('execution_model', ['openmpi', 'srunmpi'])
+def test_macro_micro(
+        fake_cluster, remote_test_files, remote_out_dir, hwthread_to_core,
+        mode, execution_model):
+
+    if mode == 'local' and execution_model == 'srunmpi':
+        pytest.skip('srun does not work without slurm')
+
+    sched = _sched(fake_cluster, mode)
+
+    job = _make_mpi_job(
+            'macro_micro', mode, execution_model, remote_test_files, remote_out_dir)
+    if mode == 'slurm':
+        job.num_nodes = 1
+        job.extra_scheduler_options += ' --nodelist=node-4'
+
+    job_id = sched.submit(job)
+    assert sched.wait(job_id, job.time_reserved + _SCHED_OVERHEAD) is not None
+    assert sched.get_exit_code(job_id) == 0
+
+    for i in range(1, 3):
+        for rank in range(2):
+            out = _get_outfile(
+                    remote_out_dir, 'macro_micro', mode, execution_model, f'c{i}', rank)
+            if mode == 'local':
+                assert out.split('\n')[0] == 'headnode'
+            else:
+                node, hwthreads, _ = out.split('\n')
+                assert node == f'node-4'
+                assert hwthread_to_core(hwthreads) == [rank]

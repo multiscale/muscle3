@@ -21,7 +21,7 @@ IDX_SLURM_VERSIONS = list(enumerate([
     ]))
 
 # Shut down the containers after running the tests. Set to False to debug.
-CLEAN_UP_CONTAINERS = True
+CLEAN_UP_CONTAINERS = False
 
 
 skip_unless_cluster = pytest.mark.skipif(

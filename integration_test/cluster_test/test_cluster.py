@@ -247,5 +247,5 @@ def test_macro_micro(
                 assert out.split('\n')[0] == 'headnode'
             else:
                 node, hwthreads, _ = out.split('\n')
-                assert node == f'node-4'
+                assert node == 'node-4'
                 assert hwthread_to_core(hwthreads) == [rank]

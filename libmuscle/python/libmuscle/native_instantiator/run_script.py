@@ -231,9 +231,16 @@ def cluster_command(implementation: Implementation, enable_debug: bool) -> str:
     Return:
         A string with the command to use to start the implementation.
     """
-    # TODO: don't use taskset if it's not available
     if implementation.execution_model == ExecutionModel.DIRECT:
-        fstr = 'taskset $MUSCLE_BIND_MASK {command} {args}'
+        fargs = [
+                'if ! taskset -V >/dev/null 2>&1 ; then',
+                '    {command} {args}',
+                'else',
+                '    taskset $MUSCLE_BIND_MASK {command} {args}',
+                'fi'
+                ]
+        fstr = '\n'.join(fargs)
+
     elif implementation.execution_model == ExecutionModel.OPENMPI:
         fargs = [
                 # Native name is orterun for older and prterun for newer OpenMPI.

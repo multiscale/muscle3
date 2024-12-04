@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Dict, FrozenSet, List, Optional, Tuple
 
@@ -159,7 +160,7 @@ def num_mpi_tasks(res_req: ResourceRequirements) -> int:
     raise RuntimeError('Invalid ResourceRequirements')
 
 
-def local_command(implementation: Implementation) -> str:
+def local_command(implementation: Implementation, enable_debug: bool) -> str:
     """Make a format string for the command to run.
 
     This interprets the execution_model and produces an appropriate shell command to
@@ -168,6 +169,7 @@ def local_command(implementation: Implementation) -> str:
 
     Args:
         implementation: The implementation to start.
+        enable_debug: Whether to produce extra debug output.
 
     Return:
         A format string with embedded {ntasks} and {rankfile}.
@@ -177,7 +179,18 @@ def local_command(implementation: Implementation) -> str:
     elif implementation.execution_model == ExecutionModel.OPENMPI:
         # Native name is orterun for older and prterun for newer OpenMPI.
         # So we go with mpirun, which works for either.
-        fstr = 'mpirun -np $MUSCLE_MPI_PROCESSES --oversubscribe {command} {args}'
+        fargs = [
+                'mpirun -np $MUSCLE_MPI_PROCESSES',
+                '--oversubscribe'
+                ]
+
+        if enable_debug:
+            fargs.append('-v --debug-daemons --display-map --display-allocation')
+
+        fargs.append('{command} {args}')
+
+        fstr = ' '.join(fargs)
+
     elif implementation.execution_model == ExecutionModel.INTELMPI:
         fstr = 'mpirun -n $MUSCLE_MPI_PROCESSES {command} {args}'
     elif implementation.execution_model == ExecutionModel.SRUNMPI:
@@ -204,7 +217,7 @@ def local_command(implementation: Implementation) -> str:
             )
 
 
-def cluster_command(implementation: Implementation) -> str:
+def cluster_command(implementation: Implementation, enable_debug: bool) -> str:
     """Make a format string for the command to run.
 
     This interprets the execution_model and produces an appropriate shell command to
@@ -213,11 +226,11 @@ def cluster_command(implementation: Implementation) -> str:
 
     Args:
         implementation: The implementation to start.
+        enable_debug: Whether to produce extra debug output.
 
     Return:
         A string with the command to use to start the implementation.
     """
-    # TODO: enable debug options iff the manager log level is set to DEBUG
     # TODO: don't use taskset if it's not available
     if implementation.execution_model == ExecutionModel.DIRECT:
         fstr = 'taskset $MUSCLE_BIND_MASK {command} {args}'
@@ -225,10 +238,13 @@ def cluster_command(implementation: Implementation) -> str:
         fargs = [
                 # Native name is orterun for older and prterun for newer OpenMPI.
                 # So we go with mpirun, which works for either.
-                'mpirun -v -np $MUSCLE_MPI_PROCESSES',
-                '-d --debug-daemons',
-                '--rankfile $MUSCLE_RANKFILE --use-hwthread-cpus --oversubscribe'
+                'mpirun -np $MUSCLE_MPI_PROCESSES',
+                '--rankfile $MUSCLE_RANKFILE --use-hwthread-cpus --bind-to core',
+                '--oversubscribe'
                 ]
+
+        if enable_debug:
+            fargs.append('-v --debug-daemons --display-map --display-allocation')
 
         if slurm.quirks.overlap:
             # This adds the given option to the srun command used by mpirun to launch
@@ -238,8 +254,7 @@ def cluster_command(implementation: Implementation) -> str:
             # overrides the --exclusive and it works.
             fargs.append('-mca plm_slurm_args "--overlap"')
 
-        fargs.extend([
-            '--bind-to core --display-map --display-allocation {command} {args}'])
+        fargs.append('{command} {args}')
 
         fstr = ' '.join(fargs)
 
@@ -248,13 +263,15 @@ def cluster_command(implementation: Implementation) -> str:
                 'mpirun -n $MUSCLE_MPI_PROCESSES -machinefile $MUSCLE_RANKFILE'
                 ' {command} {args}')
     elif implementation.execution_model == ExecutionModel.SRUNMPI:
-        # TODO: set SLURM_CPU_BIND_VERBOSE for verbose output
         fargs = ['srun -n $MUSCLE_MPI_PROCESSES -m arbitrary']
 
         if slurm.quirks.overlap:
             fargs.append('--overlap')
 
-        fargs.append(f'{slurm.quirks.cpu_bind}=$SLURM_CPU_BIND {{command}} {{args}}')
+        verbose = 'verbose,' if enable_debug else ''
+
+        fargs.append(f'{slurm.quirks.cpu_bind}={verbose}$SLURM_CPU_BIND')
+        fargs.append('{command} {args}')
 
         fstr = ' '.join(fargs)
 
@@ -288,6 +305,8 @@ def make_script(
     Return:
         A string with embedded newlines containing the shell script.
     """
+    enable_debug = logging.getLogger('libmuscle').getEffectiveLevel() <= logging.DEBUG
+
     lines: List[str] = list()
 
     lines.append('#!/bin/bash')
@@ -309,9 +328,9 @@ def make_script(
         lines.append('')
 
     if local:
-        lines.append(local_command(implementation))
+        lines.append(local_command(implementation, enable_debug))
     else:
-        lines.append(cluster_command(implementation))
+        lines.append(cluster_command(implementation, enable_debug))
 
     lines.append('')
 

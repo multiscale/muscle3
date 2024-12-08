@@ -246,12 +246,12 @@ def cluster_command(implementation: Implementation, enable_debug: bool) -> str:
                 # Native name is orterun for older and prterun for newer OpenMPI.
                 # So we go with mpirun, which works for either.
                 'mpirun -np $MUSCLE_MPI_PROCESSES',
-                '--rankfile $MUSCLE_RANKFILE --use-hwthread-cpus --bind-to core',
+                '--rankfile $MUSCLE_RANKFILE --use-hwthread-cpus --bind-to hwthread',
                 '--oversubscribe'
                 ]
 
         if enable_debug:
-            fargs.append('-v --debug-daemons --display-map --display-allocation')
+            fargs.append('-v --display-allocation --display-map --report-bindings')
 
         if slurm.quirks.overlap:
             # This adds the given option to the srun command used by mpirun to launch

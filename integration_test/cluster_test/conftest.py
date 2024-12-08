@@ -17,11 +17,11 @@ REMOTE_SHARED = '/home/cerulean/shared'
 
 IDX_SLURM_VERSIONS = list(enumerate([
     '17-02', '17-11', '18-08', '19-05', '20-02', '20-11', '21-08', '22-05', '23-02',
-    '23-11'
+    '23-11', '24-05', '24-11'
     ]))
 
 # Shut down the containers after running the tests. Set to False to debug.
-CLEAN_UP_CONTAINERS = False
+CLEAN_UP_CONTAINERS = True
 
 
 skip_unless_cluster = pytest.mark.skipif(

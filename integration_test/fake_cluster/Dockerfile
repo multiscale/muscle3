@@ -31,6 +31,18 @@ RUN . /opt/spack/share/spack/setup-env.sh && \
     ^$(spack find --deps slurm@23-11 | grep pmix |  tr -d ' ') \
     ^$(spack find --format "slurm/{hash}" slurm@23-11)
 
+RUN . /opt/spack/share/spack/setup-env.sh && \
+    . $(spack location -i lmod)/lmod/lmod/init/bash && \
+    spack install openmpi@4.1.6 +legacylaunchers +pmi schedulers=slurm \
+    ^$(spack find --deps slurm@24-05 | grep pmix |  tr -d ' ') \
+    ^$(spack find --format "slurm/{hash}" slurm@24-05)
+
+RUN . /opt/spack/share/spack/setup-env.sh && \
+    . $(spack location -i lmod)/lmod/lmod/init/bash && \
+    spack install openmpi@4.1.6 +legacylaunchers +pmi schedulers=slurm \
+    ^$(spack find --deps slurm@24-11 | grep pmix |  tr -d ' ') \
+    ^$(spack find --format "slurm/{hash}" slurm@24-11)
+
 # RUN . /opt/spack/share/spack/setup-env.sh && \
 #     . $(spack location -i lmod)/lmod/lmod/init/bash && \
 #     spack install mpich+slurm pmi=pmix ^pmix@3.2.3

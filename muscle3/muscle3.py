@@ -8,8 +8,8 @@ import ymmsl
 from ymmsl import PartialConfiguration
 
 
-from libmuscle.planner.planner import (
-        Planner, Resources, InsufficientResourcesAvailable)
+from libmuscle.planner.planner import Planner, InsufficientResourcesAvailable
+from libmuscle.planner.resources import Core, CoreSet, OnNodeResources, Resources
 from libmuscle.snapshot_manager import SnapshotManager
 from muscle3.profiling import (
         plot_instances, plot_resources, plot_timeline, show_plots)
@@ -138,8 +138,9 @@ def resources(
         click.echo(_RESOURCES_INCOMPLETE_MODEL, err=True)
         sys.exit(1)
 
-    resources = Resources({
-        'node000001': {frozenset([r]) for r in range(cores_per_node)}})
+    resources = Resources([
+        OnNodeResources(
+            'node000001', CoreSet([Core(i, {i}) for i in range(cores_per_node)]))])
 
     planner = Planner(resources)
     try:

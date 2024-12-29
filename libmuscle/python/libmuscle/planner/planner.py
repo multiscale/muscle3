@@ -1,11 +1,12 @@
-from copy import copy, deepcopy
+from copy import copy
 import logging
-from typing import Dict, Iterable, FrozenSet, List, Mapping, Optional, Set, Tuple
+from typing import Dict, Iterable, List, Mapping, Set, Tuple
 
 from ymmsl import (
         Component, Configuration, Model, MPICoresResReq, MPINodesResReq,
         Operator, Reference, ResourceRequirements, ThreadedResReq)
 
+from libmuscle.planner.resources import OnNodeResources, Resources
 from libmuscle.util import instance_indices
 
 
@@ -383,125 +384,54 @@ class ModelGraph:
                 self._direct_supersuccs[sender].add((receiver, shared_dims))
 
 
-class Resources:
-    """Designates a (sub)set of resources.
+class ResourceAssignment:
+    """Assigned resources for each process of an instance.
 
-    Whether these resources are free or allocated in general or by
-    something specific depends on the context, this just says which
-    resources we're talking about.
+    Note that we use the classes from libmuscle.planner.resources to generically refer
+    to collections of resources, either to describe the available hardware or to
+    designate a subset of it that is occupied by a particular instance, or a subset that
+    isn't currently occupied.
+
+    This class has more detailed information, because it knows for each process (MPI
+    rank) in the instance which subset of the overall resources for the instance it
+    should be on, which we need to launch it in the right place.
 
     Attributes:
-        cores: A dictionary mapping designated nodes to designated cores on them. Cores
-                are represented by sets of hwthreads they have.
+        by_rank: List of OnNodeResources objects containing assigned resources,
+        indexed by rank.
     """
-    def __init__(self, cores: Optional[Dict[str, Set[FrozenSet[int]]]] = None) -> None:
-        """Create a Resources object with the given cores.
+    def __init__(self, by_rank: List[OnNodeResources]) -> None:
+        """Create a ResourceAssignment.
 
         Args:
-            cores: Cores to be designated by this object.
+            by_rank: List of OnNodeResources objects containing assigned resources,
+            indexed by rank.
         """
-        if cores is None:
-            self.cores: Dict[str, Set[FrozenSet[int]]] = {}
-        else:
-            self.cores = cores
-
-    def __copy__(self) -> 'Resources':
-        """Copy the object."""
-        return Resources(deepcopy(self.cores))
+        self.by_rank = by_rank
 
     def __eq__(self, other: object) -> bool:
-        """Check for equality."""
-        if not isinstance(other, Resources):
+        if not isinstance(other, ResourceAssignment):
             return NotImplemented
 
-        if len(self.cores) != len(other.cores):
-            return False
-
-        for node, cores in self.cores.items():
-            if node not in other.cores:
-                return False
-            if other.cores[node] != cores:
-                return False
-        return True
-
-    def __iadd__(self, other: 'Resources') -> 'Resources':
-        """Add the resources in the argument to this object."""
-        for node in other.cores:
-            if node in self.cores:
-                self.cores[node] |= other.cores[node]
-            else:
-                self.cores[node] = set(other.cores[node])
-        return self
-
-    def __isub__(self, other: 'Resources') -> 'Resources':
-        """Remove the resources in the argument from this object."""
-        for node in other.cores:
-            if node in self.cores:
-                self.cores[node] -= other.cores[node]
-                if not self.cores[node]:
-                    del self.cores[node]
-        return self
+        return (
+                len(self.by_rank) == len(other.by_rank) and
+                all([
+                    snr == onr
+                    for snr, onr in zip(self.by_rank, other.by_rank)]))
 
     def __str__(self) -> str:
-        """Return a human-readable string representation."""
-        def collapse_ranges(cores: Set[FrozenSet[int]]) -> str:
-            if len(cores) == 0:
-                return ''
-
-            result = list()
-            hwthreads = sorted((hwthread for core in cores for hwthread in core))
-            start = 0
-            i = 1
-            while i <= len(hwthreads):
-                if (i == len(hwthreads)) or (hwthreads[i-1] != hwthreads[i] - 1):
-                    if start == i - 1:
-                        # run of one
-                        result.append(str(hwthreads[i-1]))
-                    else:
-                        # run of at least two
-                        result.append(f'{hwthreads[start]}-{hwthreads[i-1]}')
-                    start = i
-                i += 1
-            return ','.join(result)
-
-        return 'Resources(' + '; '.join([
-            n + ': ' + collapse_ranges(cs)
-            for n, cs in self.cores.items()]) + ')'
+        # str(list()) uses repr() on the elements, we want str()
+        str_rbr = ', '.join([str(nr) for nr in self.by_rank])
+        return f'[{str_rbr}]'
 
     def __repr__(self) -> str:
-        """Return a string representation."""
-        return f'Resources({self.cores})'
+        return f'ResourceAssignment({repr(self.by_rank)})'
 
-    def nodes(self) -> Iterable[str]:
-        """Returns the nodes on which we designate resources."""
-        return self.cores.keys()
-
-    def total_cores(self) -> int:
-        """Returns the total number of cores (not hwthreads) designated."""
-        return sum([len(cs) for cs in self.cores.values()])
-
-    def isdisjoint(self, other: 'Resources') -> bool:
-        """Returns whether we share resources with other."""
-        for node, cores in self.cores.items():
-            if node in other.cores:
-                if not cores.isdisjoint(other.cores[node]):
-                    return False
-        return True
-
-    @staticmethod
-    def union(resources: Iterable['Resources']) -> 'Resources':
-        """Combines the resources into one.
-
-        Args:
-            resources: A collection of resources to merge.
-
-        Return:
-            A Resources object referring to all the resources in the
-            input.
-        """
+    def as_resources(self) -> Resources:
+        """Return a Resources representing the combined assigned resources."""
         result = Resources()
-        for cur_resources in resources:
-            result += cur_resources
+        for node_res in self.by_rank:
+            result.merge_node(node_res)
         return result
 
 
@@ -511,12 +441,12 @@ class InsufficientResourcesAvailable(RuntimeError):
 
 class Planner:
     """Allocates resources and keeps track of allocations."""
-    def __init__(self, all_resources: Resources):
-        """Create a ResourceManager.
+    def __init__(self, all_resources: Resources) -> None:
+        """Create a Planner.
 
         Args:
             all_resources: An object describing the available resources
-                    to be managed by this ResourceManager.
+                    for the planner to use.
         """
         self._all_resources = all_resources
         self._allocations: Dict[Reference, Resources] = {}
@@ -525,7 +455,7 @@ class Planner:
 
     def allocate_all(
             self, configuration: Configuration, virtual: bool = False
-            ) -> Dict[Reference, Resources]:
+            ) -> Dict[Reference, ResourceAssignment]:
         """Allocates resources for the given components.
 
         Allocation can occur either on a fixed set of available
@@ -546,9 +476,9 @@ class Planner:
             virtual: Allocate on virtual resources or not, see above
 
         Returns:
-            Resources for each instance required by the model.
+            Assigned resources for each instance required by the model.
         """
-        result: Dict[Reference, Resources] = {}
+        result: Dict[Reference, ResourceAssignment] = {}
 
         _logger.debug(f'Planning on resources {self._all_resources}')
 
@@ -580,7 +510,7 @@ class Planner:
                 done = False
                 while not done:
                     try:
-                        result[instance] = self._allocate_instance(
+                        result[instance] = self._assign_instance(
                                 instance, component,
                                 requirements[component.name],
                                 conflicting_names, virtual)
@@ -686,11 +616,14 @@ class Planner:
         """Adds an extra virtual node to the available resources."""
         taken = True
         while taken:
-            new_node = 'node{:06d}'.format(self._next_virtual_node)
-            taken = new_node in self._all_resources.cores
+            new_node_name = 'node{:06d}'.format(self._next_virtual_node)
+            taken = new_node_name in self._all_resources.nodes()
             self._next_virtual_node += 1
 
-        num_cores = len(next(iter(self._all_resources.cores.values())))
+        new_node = copy(next(iter(self._all_resources)))
+        new_node.node_name = new_node_name
+
+        num_cores = len(new_node.cpu_cores)
         if isinstance(req, ThreadedResReq):
             if req.threads > num_cores:
                 raise InsufficientResourcesAvailable(
@@ -704,14 +637,14 @@ class Planner:
                         f' {req.threads_per_mpi_process} threads per process,'
                         f' which is impossible with {num_cores} cores per'
                         ' node.')
-        self._all_resources.cores[new_node] = {
-                frozenset([i]) for i in range(num_cores)}
 
-    def _allocate_instance(
+        self._all_resources.add_node(new_node)
+
+    def _assign_instance(
             self, instance: Reference, component: Component,
             requirements: ResourceRequirements,
             simultaneous_instances: Set[Reference], virtual: bool
-            ) -> Resources:
+            ) -> ResourceAssignment:
         """Allocates resources for the given instance.
 
         If we are on real resources, and the instance requires more
@@ -720,7 +653,7 @@ class Planner:
         resources, this will raise InsufficientResourcesAvailable.
 
         Args:
-            instance: The instance to allocate for
+            instance: The instance to assign resources to
             component: The component it is an instance of
             requirements: Its resource requirements
             simultaneous_instances: Instances which may execute
@@ -729,9 +662,9 @@ class Planner:
             virtual: Whether we are on virtual resources
 
         Returns:
-            A Resources object describing the resources allocated
+            The resources assigned to each process in the instance
         """
-        allocation = Resources({})
+        assignment = ResourceAssignment([])
         free_resources = copy(self._all_resources)
 
         for other in self._allocations:
@@ -741,8 +674,8 @@ class Planner:
         _logger.debug(f'Free resources: {free_resources}')
         try:
             if isinstance(requirements, ThreadedResReq):
-                allocation = self._allocate_thread_block(
-                        free_resources, requirements.threads)
+                assignment.by_rank.append(self._assign_thread_block(
+                        free_resources, requirements.threads))
 
             elif isinstance(requirements, MPICoresResReq):
                 if requirements.threads_per_mpi_process != 1:
@@ -750,10 +683,10 @@ class Planner:
                             'Multiple threads per MPI process is not supported'
                             ' yet. Please make an issue on GitHub.')
                 for proc in range(requirements.mpi_processes):
-                    allocation += self._allocate_thread_block(
-                            free_resources,
-                            requirements.threads_per_mpi_process)
-                    free_resources -= allocation
+                    block = self._assign_thread_block(
+                                free_resources, requirements.threads_per_mpi_process)
+                    assignment.by_rank.append(block)
+                    free_resources -= Resources([block])
 
             elif isinstance(requirements, MPINodesResReq):
                 raise RuntimeError(
@@ -764,37 +697,81 @@ class Planner:
             if not self._allocations and not virtual:
                 # There are no other allocations and it's still not
                 # enough. Just give it all and hope for the best.
-                _logger.warning((
-                        'Instance {} requires more resources than are'
-                        ' available in total. Oversubscribing this'
-                        ' instance.').format(instance))
-                allocation = copy(self._all_resources)
+                assignment = self._oversubscribe_instance(instance, requirements)
             else:
                 raise
 
-        self._allocations[instance] = allocation
-        return allocation
+        self._allocations[instance] = assignment.as_resources()
+        return assignment
 
-    def _allocate_thread_block(
-            self, free_resources: Resources, threads: int) -> Resources:
-        """Allocate resources for a group of threads.
+    def _assign_thread_block(
+            self, free_resources: Resources, num_threads: int) -> OnNodeResources:
+        """Assign resources for a group of threads.
 
-        This chooses a set of <threads> cores on the same node. It
-        returns the allocated resources; it doesn't update
-        self._allocations or free_resources.
+        This chooses a set of <num_threads> cores on the same node. It returns the
+        assigned resources; it doesn't update self._allocations or free_resources.
 
         Args:
-            threads: Number of cores
+            num_threads: Number of threads to allocate for
             free_resources: Available resources to allocate from
 
         Returns:
-            The allocated resources
+            The assigned resources
         """
-        for node in free_resources.nodes():
-            if len(free_resources.cores[node]) >= threads:
-                available_cores = sorted(free_resources.cores[node], key=sorted)
+        for node in free_resources:
+            if len(node.cpu_cores) >= num_threads:
+                available_cores = node.cpu_cores
                 _logger.debug(f'available cores: {available_cores}')
-                to_reserve = set(available_cores[:threads])
+                to_reserve = available_cores.get_first_cores(num_threads)
                 _logger.debug(f'assigned {to_reserve}')
-                return Resources({node: to_reserve})
+                return OnNodeResources(node.node_name, to_reserve)
         raise InsufficientResourcesAvailable()
+
+    def _oversubscribe_instance(
+            self, instance: Reference, requirements: ResourceRequirements
+            ) -> ResourceAssignment:
+        """Oversubscribe an instance.
+
+        This is called when all resources are available and we still cannot fit an
+        instance, i.e. that single instance requires more resources than we have
+        available in total. In that case, we're just going to map it onto the resources
+        we have and hope for the best, which is what this function does.
+
+        There's a lot of repetition between this and the code above. There's probably a
+        cleaner way to do this, but it'll do for now. Eventually we'll have an optimiser
+        and all this goes away anyway.
+
+        Args:
+            instance: The instance we're oversubscribing
+            requirements: The required resources
+
+        Returns:
+            An oversubscribed resource assignment
+        """
+        _logger.warning(
+                f'Instance {instance} requires more resources than are available in'
+                ' total. Oversubscribing this instance.')
+
+        res_by_rank: List[OnNodeResources] = list()
+
+        if isinstance(requirements, ThreadedResReq):
+            res_by_rank.append(copy(next(iter(self._all_resources))))
+
+        elif isinstance(requirements, MPICoresResReq):
+            if requirements.threads_per_mpi_process != 1:
+                raise RuntimeError(
+                        'Multiple threads per MPI process is not supported yet. Please'
+                        ' make an issue on GitHub.')
+
+            free_resources = copy(self._all_resources)
+            for proc in range(requirements.mpi_processes):
+                if free_resources.total_cores() < requirements.threads_per_mpi_process:
+                    free_resources = copy(self._all_resources)
+
+                block = self._assign_thread_block(
+                            free_resources, requirements.threads_per_mpi_process)
+
+                res_by_rank.append(block)
+                free_resources -= Resources([block])
+
+        return ResourceAssignment(res_by_rank)

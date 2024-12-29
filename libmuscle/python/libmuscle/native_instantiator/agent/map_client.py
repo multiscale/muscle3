@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 import msgpack
 
@@ -7,6 +7,7 @@ from libmuscle.mcp.protocol import AgentCommandType, RequestType, ResponseType
 from libmuscle.mcp.tcp_transport_client import TcpTransportClient
 from libmuscle.native_instantiator.agent.agent_commands import (
         AgentCommand, StartCommand, CancelAllCommand, ShutdownCommand)
+from libmuscle.planner.resources import OnNodeResources
 
 
 class MAPClient:
@@ -14,14 +15,14 @@ class MAPClient:
 
     This class connects to the AgentManager and communicates with it.
     """
-    def __init__(self, node_id: str, location: str) -> None:
+    def __init__(self, node_name: str, location: str) -> None:
         """Create a MAPClient
 
         Args:
-            node_id: Id of the local node
+            node_name: Name (hostname) of the local node
             location: A connection string of the form hostname:port
         """
-        self._node_id = node_id
+        self._node_name = node_name
         self._transport_client = TcpTransportClient(location)
 
     def close(self) -> None:
@@ -31,20 +32,16 @@ class MAPClient:
         """
         self._transport_client.close()
 
-    def report_resources(self, resources: Dict[str, Any]) -> None:
+    def report_resources(self, resources: OnNodeResources) -> None:
         """Report local resources
 
-        The only key in the dict is currently 'cpu', and it maps to a list of frozensets
-        of hwthread ids that we can bind to with taskset or in a rankfile.
-
         Args:
-            resources: Available resource ids by type
+            resources: Description of the resources on this node
         """
-        enc_cpu_resources = [
-                list(hwthreads) for hwthreads in resources['cpu']]
+        enc_cpu_resources = [[c.cid] + list(c.hwthreads) for c in resources.cpu_cores]
         request = [
                 RequestType.REPORT_RESOURCES.value,
-                self._node_id, {'cpu': enc_cpu_resources}]
+                resources.node_name, {'cpu': enc_cpu_resources}]
         self._call_agent_manager(request)
 
     def get_command(self) -> Optional[AgentCommand]:
@@ -53,7 +50,7 @@ class MAPClient:
         Returns:
             A command, or None if there are no commands pending.
         """
-        request = [RequestType.GET_COMMAND.value, self._node_id]
+        request = [RequestType.GET_COMMAND.value, self._node_name]
         response = self._call_agent_manager(request)
 
         if response[0] == ResponseType.PENDING.value:

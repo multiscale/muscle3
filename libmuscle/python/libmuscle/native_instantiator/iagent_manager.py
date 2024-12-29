@@ -1,4 +1,6 @@
-from typing import Any, Dict, List, Tuple
+from typing import List, Tuple
+
+from libmuscle.planner.resources import OnNodeResources
 
 
 class IAgentManager:
@@ -7,13 +9,13 @@ class IAgentManager:
     Only implemented by AgentManager, and only exists to avoid a circular dependency
     between AgentManager, MAPServer, and MAPRequestHandler. Ugh.
     """
-    def report_resources(self, node_id: str, resources: Dict[str, Any]) -> None:
+    def report_resources(self, resources: OnNodeResources) -> None:
         """Report resources found on a node.
 
         Called by MAPServer from a server thread.
 
         Args:
-            node_id: Id of the node these resources are on
+            node_name: Id of the node these resources are on
             resources: Dict mapping resource type to resource ids
         """
         raise NotImplementedError()

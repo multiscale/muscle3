@@ -1,32 +1,30 @@
 import logging
 from pathlib import Path
-from typing import Dict, FrozenSet, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
 from libmuscle.errors import ConfigurationError
 from libmuscle.native_instantiator.slurm import slurm
-from libmuscle.planner.planner import Resources
+from libmuscle.planner.planner import ResourceAssignment
 from ymmsl import (
         ExecutionModel, Implementation, MPICoresResReq, MPINodesResReq,
         ResourceRequirements, ThreadedResReq)
 
 
-def direct_prep_resources(resources: Resources) -> Tuple[str, Dict[str, str]]:
+def direct_prep_resources(resources: ResourceAssignment) -> Tuple[str, Dict[str, str]]:
     """Create resources for a non-MPI program with taskset.
 
-    Taskset expects a set of cores on the command line, which we put into a
-    MUSCLE_CORES environment variable here.
+    Taskset expects a set of hwthreads on the command line, either as a comma-separated
+    list or as a hexadecimal mask. We generate both here and set two environment
+    variables.
 
     Args:
-        resources: The resources to describe
+        resources: The resource assignment to describe
 
     Return:
         No rank file, and a set of environment variables.
     """
     env: Dict[str, str] = dict()
-    only_node_hwthreads_list = [
-            hwthread
-            for core in next(iter(resources.cores.values()))
-            for hwthread in core]
+    only_node_hwthreads_list = list(resources.by_rank[0].hwthreads())
 
     env['MUSCLE_BIND_LIST'] = ','.join(map(str, only_node_hwthreads_list))
 
@@ -36,34 +34,33 @@ def direct_prep_resources(resources: Resources) -> Tuple[str, Dict[str, str]]:
     return '', env
 
 
-def openmpi_prep_resources(resources: Resources) -> Tuple[str, Dict[str, str]]:
+def openmpi_prep_resources(resources: ResourceAssignment) -> Tuple[str, Dict[str, str]]:
     """Create resource description for OpenMPI mpirun
 
     Args:
-        resources: The resources to describe
+        resources: The resource assignment to describe
 
     Return:
         The contents of the rankfile, and a set of environment variables
     """
     ranklines: List[str] = list()
     all_cores = (
-            (node, ','.join(sorted(map(str, hwthreads))))
-            for node, cores in resources.cores.items()
-            for hwthreads in cores)
+            (node_res, ','.join(map(str, sorted(node_res.hwthreads()))))
+            for node_res in resources.by_rank)
 
-    for i, (node, hwthreads) in enumerate(all_cores):
-        ranklines.append(f'rank {i}={node} slot={hwthreads}')
+    for i, (node_res, hwthreads) in enumerate(all_cores):
+        ranklines.append(f'rank {i}={node_res.node_name} slot={hwthreads}')
 
     rankfile = '\n'.join(ranklines) + '\n'
 
     return rankfile, dict()
 
 
-def impi_prep_resources(resources: Resources) -> Tuple[str, Dict[str, str]]:
+def impi_prep_resources(resources: ResourceAssignment) -> Tuple[str, Dict[str, str]]:
     """Create resource description for Intel MPI mpirun
 
     Args:
-        resources: The resources to describe
+        resources: The resource assignment to describe
 
     Return:
         The contents of the machinefile, and a set of environment variables
@@ -73,11 +70,11 @@ def impi_prep_resources(resources: Resources) -> Tuple[str, Dict[str, str]]:
     raise NotImplementedError()
 
 
-def mpich_prep_resources(resources: Resources) -> Tuple[str, Dict[str, str]]:
+def mpich_prep_resources(resources: ResourceAssignment) -> Tuple[str, Dict[str, str]]:
     """Create resource description for MPICH mpirun
 
     Args:
-        resources: The resources to describe
+        resources: The resource assignment to describe
 
     Return:
         The contents of the machinefile, and a set of environment variables
@@ -87,7 +84,8 @@ def mpich_prep_resources(resources: Resources) -> Tuple[str, Dict[str, str]]:
 
 
 def srun_prep_resources(
-        resources: Resources, rankfile_location: Path) -> Tuple[str, Dict[str, str]]:
+        resources: ResourceAssignment, rankfile_location: Path
+        ) -> Tuple[str, Dict[str, str]]:
     """Create resource description for srun
 
     Args:
@@ -98,18 +96,17 @@ def srun_prep_resources(
         The contents of the hostfile, and a set of environment variables
     """
     hostfile = '\n'.join((
-        node for node, cores in resources.cores.items() for _ in cores))
+        node_res.node_name for node_res in resources.by_rank
+        for _ in node_res.hwthreads()))
 
     env = {'SLURM_HOSTFILE': str(rankfile_location)}
 
-    bind_list = [
-            core for _, cores in resources.cores.items() for core in cores]
-
-    def core_mask(core: FrozenSet[int]) -> str:
-        mask = sum((1 << hwthread) for hwthread in core)
+    def core_mask(hwthreads: Iterable[int]) -> str:
+        mask = sum((1 << hwthread) for hwthread in hwthreads)
         return format(mask, '#x')
 
-    bind_str = ','.join(map(core_mask, bind_list))
+    bind_str = ','.join([
+        core_mask(node_res.hwthreads()) for node_res in resources.by_rank])
 
     env['SLURM_CPU_BIND'] = f'verbose,mask_cpu:{bind_str}'
 
@@ -117,13 +114,13 @@ def srun_prep_resources(
 
 
 def prep_resources(
-        model: ExecutionModel, resources: Resources, rankfile_location: Path
+        model: ExecutionModel, resources: ResourceAssignment, rankfile_location: Path
         ) -> Tuple[str, Dict[str, str]]:
     """Create resource description for the given execution model.
 
     Args:
         model: The execution model to generate a description for
-        resources: The resources to describe
+        resources: The resource assignment to describe
         rankfile_location: Path to where the rankfile will be written
 
     Return:

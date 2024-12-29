@@ -1,191 +1,3 @@
-"""Module for examining resources and instantiating instances on them
-
-There's a huge comment here because there's a big mess here that took me forever to
-figure out, so now I'm going to document it for the future.
-
-
-Identifying hardware resources
-
-Today's computers all contain multi-core CPUs, often with symmetric multithreading
-(SMT), also known as hyperthreading. This means that we have hardware threads
-(hwthreads) and also cores, and then there's caches and memory as well but we're not
-going into NUMA here.
-
-Cores and hwthreads are identified by number, but they have multiple different numbers
-that are referred to by different names in different contexts, making everything very
-confusing. So here are some definitions to disambiguate things.  Note that this is still
-a rather simplified representation, but it's enough for what we're doing here in
-MUSCLE3.
-
-
-Hardware threads
-
-A *hardware thread (hwthread)* is, at the hardware level, an instruction decoder. It
-points to wherever in the code we are currently executing, and it can read the next
-couple of instructions and figure out how to execute them. It can't actually execute
-anything however, because it doesn't have the hardware that does that.
-
-Intel refers to hwthreads as "logical processors" and so does Linux, hwloc calls them
-"processing units" or PUs and so does OpenMPI unless it uses the term hwthread just to
-confuse things a bit more.
-
-Cores
-
-A *core* contains at least one hwthread, and at least one functional unit, which is a
-hardware component that actually does calculations and other data processing. Within a
-core, the hwthread(s) read instructions and pass them to the functional units to be
-executed. If a core has more than one hwthread, then the CPU supports SMT.
-
-Intel refers to cores as "physical processors", hwloc calls them cores and so do most
-other sources. We'll use cores here.
-
-Since a hwthread cannot do anything on its own, it's always part of a core.
-
-CPUs
-
-The term CPU is used in many ways by various bits of documentation, sometimes referring
-to a hwthread or a core, but here we'll take it to mean a collection of cores in a
-plastic box. Similar terms are *package* (referring to that plastic box with very many
-metal pins) and *socket* (the thing the package mounts into), or *processor*, which was
-originally used to refer to all of the above when CPUs still had only one core with only
-one hwthread, and has now become ambiguous.
-
-Weird things can happen here, I've seen CPUs that as far as I can tell are a single
-package, but nevertheless claim to have two sockets. I suspect that that's two physical
-chips in a single plastic box, but I don't know for sure.
-
-Here, we're concerned with hwthreads and cores and how to identify them and assign
-instances to them.
-
-
-Linux
-
-On modern operating systems, hardware access is mediated by the operating system, and
-we're mainly concerned with Linux here because that is what all the clusters are running
-(see the note on macOS below). Information about the CPU(s) can be obtained on Linux
-from the /proc/cpuinfo file, or equivalently but more modernly, from the files in
-/sys/devices/system/cpu/cpu<x>/topology/.
-
-Linux collects information about processors because it needs to run processes (programs,
-software threads) on them on behalf of the user. Processes are assigned to hwthreads, so
-that is what Linux considers a *processor*.  /proc/cpuinfo lists all these processors,
-and they each have their own directory /sys/devices/system/cpu/cpu<x>.
-
-On Linux, processors have an id, which is that number <x> in the directory, and is
-listed under "processor" in /proc/cpuinfo. Since this number identifies a hwthread and
-is assigned by Linux rather than being baked into the hardware, I'm calling it a
-"logical hwthread id", this being a logical id of a hwthread, not an id of a logical
-hwthread. It's also the id of a logical processor in Intel-speak.
-
-Hwthreads actually have a second number associated with them, which does come from the
-hardware. In /proc/cpuinfo, that's listed under "apicid"; it doesn't seem to be
-available from sysfs. Hwloc call this the "physical PU (its name for a hwthread) id",
-and OpenMPI's mpirun manpage also refers to it as a "physical processor location".
-
-There's great potential for confusion here: the "physical PU id" and "physical processor
-location" both identify a hardware-specified number (a physical id or a physical
-location) for a hwthread. This is something completely different than what Intel calls a
-"physical processor", which they use to refer to a core.
-
-MUSCLE3 uses logical hwthread ids everywhere, it does not use physical ids.
-
-Linux knows about how hwthreads are grouped into bigger things of course. Cores are
-identified in Linux using the "core id", which is listed in /proc/cpuinfo and in
-/sys/devices/system/cpu/cpu<x>/topology/core_id. So for each hwthread, identified by its
-logical id, we can look up which core it is a part of. The core id is a logical id,
-assigned by Linux, not by the hardware.  While logical hwthread ids seem to always be
-consecutive at least on the hardware I've seen so far, core ids may have gaps.
-
-MUSCLE3 does not use core ids, although it uses groups of hwthread ids that contain all
-the hwthreads for a given core.
-
-
-Resource binding
-
-Running processes need something to run on, a hwthread. The assignment of process to
-hwthread is done by the operating system's scheduler: when a process is ready to run,
-the scheduler will try to find it a free hwthread to run on.
-
-The scheduler can be constrained in which hwthreads it considers for a given process,
-which is known as binding the process. This may have performance benefits, because
-moving a process from one hwthread to another takes time. In MUSCLE3, when running on a
-cluster, each process is assigned its own specific set of hwthreads to run on, and we
-try to bind the instance to the assigned hwthreads.
-
-Taskset
-
-How this is done depends on how the instance is started. For non-MPI instances, we use a
-Linux utility named 'taskset' that starts another program with a giving binding. The
-binding is expressed as an *affinity mask*, a string of bits that say whether a given
-processor (hwthread) can be used by the process or not. Each position in the string of
-bits corresponds to the hwthread with that logical id.
-
-OpenMPI
-
-OpenMPI can bind cores in various ways, we use a rankfile and the --use-hwthread-cpus
-option to specify the logical hwthread ids we want to bind each MPI process (rank) to.
-Note that OpenMPI by default binds to cores, and can also bind to various other things
-including sockets.
-
-MPICH
-
-MPICH doesn't support binding, as far as I can see.
-
-Intel MPI
-
-Intel MPI uses logical hwthread ids-based masks, specified in an environment variable,
-to go with a machinefile that lists the nodes to put each process on.
-
-Slurm srun
-
-Slurm's srun has a CPU_BIND environment variable that likewise contains logical hwthread
-ids-based masks, and a hostfile that lists the nodes to put each process on.
-
-Here are some disambiguation tables to help with the confusion:
-
-
-```
-MUSCLE3     hwthread        logical hwthread id         physical hwthread id
-
-Linux       processor       processor                   apicid
-                                                        (/proc/cpuinfo only)
-
-cgroups                     always uses these
-
-taskset                     always uses these
-
-hwloc       PU              PU L#<x>                    PU P#<x>
-
-OpenMPI     hwthread        used in rankfile if         used in rankfile if
-                            --use-hwthread-cpus         rmaps_rank_file_physical
-                            is specified                MCA param set
-
-Intel       logical         logical processor
-            processor       number
-
-srun                        used by --bind-to
-
-psutil      logical         returned by Process.cpu_affinity()
-            core            counted by psutil.cpu_count(logical=True)
-```
-
-
-```
-MUSCLE3     core            (uses list of hwthread ids)
-
-Linux       core            core id
-
-Hwloc       core            core L#<x>
-
-OpenMPI     core            used in rankfile if
-                            --use-hwthread-cpus not
-                            specified
-
-psutil      physical        counted by psutil.cpu_count(logical=False)
-            core
-```
-
-"""
 import logging
 import multiprocessing as mp
 from os import chdir
@@ -203,7 +15,7 @@ from libmuscle.manager.instantiator import (
 from libmuscle.native_instantiator.agent_manager import AgentManager
 from libmuscle.native_instantiator.global_resources import global_resources
 from libmuscle.native_instantiator.run_script import make_script, prep_resources
-from libmuscle.planner.planner import Resources
+from libmuscle.planner.resources import OnNodeResources, Resources
 from ymmsl import MPICoresResReq, MPINodesResReq, ResourceRequirements, ThreadedResReq
 
 
@@ -309,24 +121,22 @@ class NativeInstantiator(mp.Process):
         already_logged_smt = False
         resources = Resources()
 
-        agent_cores = self._agent_manager.get_resources()
+        agent_res = self._agent_manager.get_resources()
 
         env_ncpus = dict(
                 zip(global_resources().nodes, global_resources().logical_cpus_per_node)
                 )
 
-        for node in env_ncpus:
-            if node not in agent_cores:
+        for node_name in env_ncpus:
+            if node_name not in agent_res.nodes():
                 _logger.warning(
-                        f'The environment suggests we should have node {node},'
+                        f'The environment suggests we should have node {node_name},'
                         ' but no agent reported running on it. We won''t be able'
                         ' to use this node.')
             else:
-                resources.cores[node] = set(agent_cores[node])
-
-                env_nncpus = env_ncpus[node]
-                ag_nncores = len(agent_cores[node])
-                ag_nnthreads = sum((len(ts) for ts in agent_cores[node]))
+                env_nncpus = env_ncpus[node_name]
+                ag_nncores = len(agent_res[node_name].cpu_cores)
+                ag_nnthreads = len(list(agent_res[node_name].hwthreads()))
 
                 if ag_nncores != ag_nnthreads and ag_nnthreads == env_nncpus:
                     if not already_logged_smt:
@@ -336,29 +146,41 @@ class NativeInstantiator(mp.Process):
                                 ' each thread or MPI process.')
                         already_logged_smt = True
 
+                    resources.add_node(agent_res[node_name])
+
                 elif ag_nncores < env_nncpus:
                     _logger.warning(
-                            f'Node {node} should have {env_nncpus} cores available,'
-                            f' but the agent reports only {ag_nncores} available to it.'
-                            f' We\'ll use the {ag_nncores} we seem to have.')
+                            f'Node {node_name} should have {env_nncpus} cores'
+                            f' available, but the agent reports only {ag_nncores}'
+                            f' available to it. We\'ll use the {ag_nncores} we seem to'
+                            ' have.')
 
-                    resources.cores[node] = set(agent_cores[node])
+                    resources.add_node(agent_res[node_name])
 
                 elif env_nncpus < ag_nncores:
                     _logger.warning(
-                            f'Node {node} should have {env_nncpus} cores available,'
-                            f' but the agent reports {ag_nncores} available to it.'
-                            ' Maybe the cluster does not constrain resources? We\'ll'
-                            f' use the {env_nncpus} that we should have got.')
-                    resources.cores[node] = set(agent_cores[node][:env_nncpus])
+                            f'Node {node_name} should have {env_nncpus} cores'
+                            f' available, but the agent reports {ag_nncores} available'
+                            ' to it. Maybe the cluster does not constrain resources?'
+                            f' We\'ll use the {env_nncpus} that we should have got.')
+                    resources.add_node(
+                            OnNodeResources(
+                                node_name,
+                                agent_res[node_name].cpu_cores.get_first_cores(
+                                    env_nncpus)))
 
-        for node in agent_cores:
-            if node not in env_ncpus:
+                else:
+                    # no SMT, agent matches environment
+                    resources.add_node(agent_res[node_name])
+
+        for node in agent_res:
+            if node.node_name not in env_ncpus:
                 _logger.warning(
-                        f'An agent is running on node {node} but the environment'
-                        ' does not list it as ours. It seems that the node\'s'
-                        ' hostname does not match what SLURM calls it. We will not use'
-                        ' this node, because we\'re not sure it\'s really ours.')
+                        f'An agent is running on node {node.node_name} but the'
+                        ' environment does not list it as ours. It seems that the'
+                        ' node\'s hostname does not match what SLURM calls it. We will'
+                        ' not use this node, because we\'re not sure it\'s really ours.'
+                        )
 
         self._resources_out.put(resources)
 
@@ -391,7 +213,7 @@ class NativeInstantiator(mp.Process):
         _logger.debug(f'Instantiating {name} on {request.resources}')
         try:
             self._agent_manager.start(
-                    next(iter(request.resources.cores.keys())),
+                    request.resources.by_rank[0].node_name,
                     name, request.work_dir, args, env,
                     request.stdout_path, request.stderr_path)
             self._processes[name].status = ProcessStatus.RUNNING

@@ -8,7 +8,7 @@ from typing import Dict, Optional
 
 from ymmsl import Implementation, Reference, ResourceRequirements
 
-from libmuscle.planner.planner import Resources
+from libmuscle.planner.planner import ResourceAssignment
 
 
 class ProcessStatus(enum.Enum):
@@ -40,7 +40,7 @@ class Process:
         exit_code: Exit code, if status is ERROR
         error_msg: Error message, if status is ERROR
     """
-    def __init__(self, instance: Reference, resources: Resources) -> None:
+    def __init__(self, instance: Reference, resources: ResourceAssignment) -> None:
         """Create a Process object.
 
         Args:
@@ -81,8 +81,8 @@ class InstantiationRequest(InstantiatorRequest):
     """
     def __init__(
             self, instance: Reference, implementation: Implementation,
-            res_req: ResourceRequirements, resources: Resources, instance_dir:
-            Path, work_dir: Path, stdout_path: Path, stderr_path: Path
+            res_req: ResourceRequirements, resources: ResourceAssignment,
+            instance_dir: Path, work_dir: Path, stdout_path: Path, stderr_path: Path
             ) -> None:
         """Create an InstantiationRequest.
 

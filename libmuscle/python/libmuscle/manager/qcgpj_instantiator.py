@@ -28,7 +28,7 @@ from ymmsl import ExecutionModel, MPICoresResReq, Reference, ThreadedResReq
 from libmuscle.manager.instantiator import (
         CancelAllRequest, CrashedResult, create_instance_env, InstantiationRequest,
         Process, ProcessStatus, reconfigure_logging, ShutdownRequest)
-from libmuscle.planner.planner import Resources
+from libmuscle.planner.resources import Core, CoreSet, OnNodeResources, Resources
 
 
 _logger = logging.getLogger(__name__)
@@ -198,10 +198,13 @@ class QCGPJInstantiator(mp.Process):
 
     def _send_resources(self) -> None:
         """Converts and sends QCG available resources."""
-        resources = Resources()
+        resources = Resources([])
         for node in self._qcg_resources.nodes:
-            resources.cores[node.name] = {
-                    frozenset(n.split(',')) for n in node.free_ids}
+            cs = CoreSet([
+                Core(cid, set(map(int, hwthreads_str.split(','))))
+                for cid, hwthreads_str in enumerate(node.free_ids)])
+            nr = OnNodeResources(node.name, cs)
+            resources.add_node(nr)
 
         self._resources_out.put(resources)
 
@@ -237,7 +240,8 @@ class QCGPJInstantiator(mp.Process):
             qcg_resources_type: qcg_ResourcesType
             ) -> Tuple[qcg_Allocation, qcg_SchedulingIteration]:
         """Creates a QCG allocation and job for a request."""
-        total_cores = sum(map(len, request.resources.cores.values()))
+        total_cores = sum([
+            nres.total_cores() for nres in request.resources.by_rank])
 
         env = create_instance_env(request.instance, request.implementation.env)
 
@@ -255,10 +259,13 @@ class QCGPJInstantiator(mp.Process):
                 resources=resources)
 
         qcg_allocation = qcg_Allocation()
-        for node_name, cores in request.resources.cores.items():
-            qcg_cores = [str(i) for i in cores]
+        res = request.resources.as_resources()
+        for node in res:
+            qcg_cores = [
+                    ','.join(map(str, core.hwthreads))
+                    for core in node.cpu_cores]
             qcg_allocation.add_node(
-                    qcg_NodeAllocation(qcg_Node(node_name), qcg_cores, {}))
+                    qcg_NodeAllocation(qcg_Node(node.node_name), qcg_cores, {}))
 
         sjob = qcg_SchedulingJob(self._state_tracker, qcg_job)
         qcg_iteration = qcg_SchedulingIteration(sjob, None, None, resources, [])
@@ -284,16 +291,19 @@ class QCGPJInstantiator(mp.Process):
             rank_file = request.instance_dir / 'rankfile'
             with rank_file.open('w') as f:
                 i = 0
-                for node, cores in request.resources.cores.items():
-                    for c in sorted(cores):
-                        f.write(f'rank {i}={node} slot={c}\n')
+                res = request.resources.as_resources()
+                for node in res:
+                    for cid in sorted([c.cid for c in node.cpu_cores]):
+                        f.write(f'rank {i}={node.node_name} slot={cid}\n')
                         i += 1
             env['MUSCLE_OPENMPI_RANK_FILE'] = str(rank_file)
 
             # IntelMPI support
             mpi_res_args = list()
-            for node, cores in request.resources.cores.items():
-                mpi_res_args.extend(['-host', node, '-n', str(len(cores))])
+            res = request.resources.as_resources()
+            for node in res:
+                mpi_res_args.extend([
+                    '-host', node.node_name, '-n', str(node.total_cores())])
             env['MUSCLE_INTELMPI_RESOURCES'] = ' '.join(mpi_res_args)
 
             # General environment
@@ -315,7 +325,7 @@ class QCGPJInstantiator(mp.Process):
             qcg_resources_type: qcg_ResourcesType) -> qcg_JobExecution:
         """Create a JobExecution for a normal description."""
         impl = request.implementation
-        total_cores = sum(map(len, request.resources.cores.values()))
+        total_cores = request.resources.as_resources().total_cores()
 
         if impl.execution_model == ExecutionModel.DIRECT:
             env['OMP_NUM_THREADS'] = str(total_cores)

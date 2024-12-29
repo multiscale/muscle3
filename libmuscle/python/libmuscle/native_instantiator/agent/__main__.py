@@ -1,16 +1,16 @@
-from itertools import groupby
 import logging
 import os
 import psutil
 from socket import gethostname
 import sys
 from time import sleep
-from typing import Any, Dict, Set
+from typing import Dict, Set
 
 from libmuscle.native_instantiator.process_manager import ProcessManager
 from libmuscle.native_instantiator.agent.map_client import MAPClient
 from libmuscle.native_instantiator.agent.agent_commands import (
         CancelAllCommand, ShutdownCommand, StartCommand)
+from libmuscle.planner.resources import Core, CoreSet, OnNodeResources
 
 
 _logger = logging.getLogger(__name__)
@@ -18,21 +18,21 @@ _logger = logging.getLogger(__name__)
 
 class Agent:
     """Runs on a compute node and starts processes there."""
-    def __init__(self, node_id: str, server_location: str) -> None:
+    def __init__(self, node_name: str, server_location: str) -> None:
         """Create an Agent.
 
         Args:
-            node_id: Id (hostname) of this node
+            node_name: Name (hostname) of this node
             server_location: MAP server of the manager to connect to
         """
-        _logger.info(f'Agent at {node_id} starting')
+        _logger.info(f'Agent at {node_name} starting')
 
         self._process_manager = ProcessManager()
 
-        self._node_id = node_id
+        self._node_name = node_name
 
         _logger.info(f'Connecting to manager at {server_location}')
-        self._server = MAPClient(self._node_id, server_location)
+        self._server = MAPClient(self._node_name, server_location)
         _logger.info('Connected to manager')
 
     def run(self) -> None:
@@ -68,17 +68,13 @@ class Agent:
 
             sleep(0.1)
 
-    def _inspect_resources(self) -> Dict[str, Any]:
+    def _inspect_resources(self) -> OnNodeResources:
         """Inspect the node to find resources and report on them.
-
-        The only resource type for now is 'cpu'. The returned dict will have that key
-        mapping to a list of sets of logical hwthread ids, with each set designating
-        a set of hwthreads that share a core.
 
         The terminology for identifying processors gets very convoluted, with Linux,
         Slurm, OpenMPI and IntelMPI all using different terms, or sometimes the same
-        terms for different things. See the comment in native_instantiator.py for what
-        is what and how we use it.
+        terms for different things. See the comment in planner/resources.py for what is
+        what and how we use it.
 
         Returns:
             A dict mapping resource types to resource descriptions.
@@ -95,8 +91,9 @@ class Agent:
                     core_id = int(f.read())
                 hwthreads_by_core.setdefault(core_id, set()).add(i)
 
-            cpu_resources = sorted(
-                    map(frozenset, hwthreads_by_core.values()), key=sorted)
+            cores = CoreSet((
+                    Core(core_id, hwthreads)
+                    for core_id, hwthreads in hwthreads_by_core.items()))
 
         else:
             # MacOS doesn't support thread affinity, but older Macs with Intel
@@ -138,22 +135,26 @@ class Agent:
                         ' still appreciate an issue, because it is unexpected for sure.'
                         )
 
-            hwthread_ids = list(range(nhwthreads))
-            cpu_resources = [
-                    frozenset(g)
-                    for _, g in groupby(
-                        hwthread_ids, lambda i: i // hwthreads_per_core)]
+            cores = CoreSet((
+                    Core(
+                        cid,
+                        set(range(
+                            cid * hwthreads_per_core, (cid + 1) * hwthreads_per_core))
+                        )
+                    for cid in range(ncores)
+                    ))
 
-        _logger.info(f'Found CPU resources: {cpu_resources}')
-        return {'cpu': cpu_resources}
+        resources = OnNodeResources(self._node_name, cores)
+        _logger.info(f'Found resources: {resources}')
+        return resources
 
 
-def configure_logging(node_id: str, log_level: int) -> None:
+def configure_logging(node_name: str, log_level: int) -> None:
     """Make us output logs to a custom log file."""
     fmt = '%(asctime)s %(levelname)s %(message)s'
     formatter = logging.Formatter(fmt)
 
-    handler = logging.FileHandler(f'muscle3_agent_{node_id}.log', mode='w')
+    handler = logging.FileHandler(f'muscle3_agent_{node_name}.log', mode='w')
     handler.setFormatter(formatter)
 
     # Find and remove default handler to disable automatic console output
@@ -170,11 +171,11 @@ def configure_logging(node_id: str, log_level: int) -> None:
 
 
 if __name__ == '__main__':
-    node_id = gethostname()
+    node_name = gethostname()
     server_location = sys.argv[1]
     log_level = int(sys.argv[2])
 
-    configure_logging(node_id, log_level)
+    configure_logging(node_name, log_level)
 
-    agent = Agent(node_id, server_location)
+    agent = Agent(node_name, server_location)
     agent.run()

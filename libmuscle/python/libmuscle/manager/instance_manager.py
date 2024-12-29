@@ -17,7 +17,8 @@ from libmuscle.manager.logger import last_lines
 # from libmuscle.manager.qcgpj_instantiator import QCGPJInstantiator
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.native_instantiator.native_instantiator import NativeInstantiator
-from libmuscle.planner.planner import Planner, Resources
+from libmuscle.planner.planner import Planner, ResourceAssignment
+from libmuscle.planner.resources import Resources
 
 
 _logger = logging.getLogger(__name__)
@@ -94,7 +95,7 @@ class InstanceManager:
         self._log_handler = LogHandlingThread(self._log_records_in)
         self._log_handler.start()
 
-        self._allocations: Optional[Dict[Reference, Resources]] = None
+        self._allocations: Optional[Dict[Reference, ResourceAssignment]] = None
 
         resources = self._resources_in.get()
         _logger.debug(f'Got resources {resources}')
@@ -150,7 +151,7 @@ class InstanceManager:
             self._requests_out.put(request)
             self._num_running += 1
 
-    def get_resources(self) -> Dict[Reference, Resources]:
+    def get_resources(self) -> Dict[Reference, ResourceAssignment]:
         """Returns the resources allocated to each instance.
 
         Only call this after start_all() has been called, or it will raise

@@ -4,13 +4,14 @@ from subprocess import Popen, TimeoutExpired
 import sys
 from threading import Lock
 from time import sleep
-from typing import Any, Dict, FrozenSet, List, Tuple
+from typing import Dict, List, Tuple
 
 from libmuscle.native_instantiator.agent.agent_commands import (
         CancelAllCommand, StartCommand, ShutdownCommand)
 from libmuscle.native_instantiator.iagent_manager import IAgentManager
 from libmuscle.native_instantiator.map_server import MAPServer
 from libmuscle.native_instantiator.global_resources import global_resources
+from libmuscle.planner.resources import OnNodeResources, Resources
 
 
 _logger = logging.getLogger(__name__)
@@ -38,7 +39,7 @@ class AgentManager(IAgentManager):
             agent_dir: Directory in which agents can write log files.
         """
         self._nodes: List[str] = list()
-        self._resources: Dict[str, Dict[str, Any]] = dict()
+        self._resources: Resources = Resources([])
         self._resources_lock = Lock()   # protects _nodes and _resources
 
         self._finished_processes: List[Tuple[str, int]] = list()
@@ -47,7 +48,7 @@ class AgentManager(IAgentManager):
         self._server = MAPServer(self)
         self._launch_agents(agent_dir, self._server.get_location())
 
-    def get_resources(self) -> Dict[str, List[FrozenSet[int]]]:
+    def get_resources(self) -> Resources:
         """Return detected resources.
 
         This returns a list of sets of logical hwthread ids per core, per node.
@@ -55,10 +56,10 @@ class AgentManager(IAgentManager):
         Called by NativeInstantiator.
         """
         # no need to lock, _resources is already in its final state
-        return {node_id: res['cpu'] for node_id, res in self._resources.items()}
+        return self._resources
 
     def start(
-            self, node_id: str, name: str, work_dir: Path, args: List[str],
+            self, node_name: str, name: str, work_dir: Path, args: List[str],
             env: Dict[str, str], stdout: Path, stderr: Path) -> None:
         """Start a process on a node.
 
@@ -66,7 +67,7 @@ class AgentManager(IAgentManager):
         exist.
 
         Args:
-            node_id: Id of the node to run the process on
+            node_name: Name of the node to run the process on
             name: Name under which this process will be known
             work_dir: Working directory in which to start
             args: Executable and arguments to run
@@ -75,7 +76,7 @@ class AgentManager(IAgentManager):
             stderr: File to redirect stderr to
         """
         command = StartCommand(name, work_dir, args, env, stdout, stderr)
-        self._server.deposit_command(node_id, command)
+        self._server.deposit_command(node_name, command)
 
     def cancel_all(self) -> None:
         """Cancel all processes.
@@ -84,8 +85,8 @@ class AgentManager(IAgentManager):
 
         Called by NativeInstantiator.
         """
-        for node_id in self._nodes:
-            self._server.deposit_command(node_id, CancelAllCommand())
+        for node_name in self._nodes:
+            self._server.deposit_command(node_name, CancelAllCommand())
 
     def get_finished(self) -> List[Tuple[str, int]]:
         """Returns names and exit codes of finished processes.
@@ -105,8 +106,8 @@ class AgentManager(IAgentManager):
     def shutdown(self) -> None:
         """Shut down the manager and its agents."""
         command = ShutdownCommand()
-        for node_id in self._nodes:
-            self._server.deposit_command(node_id, command)
+        for node_name in self._nodes:
+            self._server.deposit_command(node_name, command)
 
         try:
             self._agents_process.wait(60)
@@ -124,19 +125,18 @@ class AgentManager(IAgentManager):
 
         self._server.stop()
 
-    def report_resources(self, node_id: str, resources: Dict[str, Any]) -> None:
+    def report_resources(self, resources: OnNodeResources) -> None:
         """Report resources found on a node.
 
         Called by MAPServer from a server thread.
 
         Args:
-            node_id: Id of the node these resources are on
-            resources: Dict mapping resource type to resource ids
+            resources: Description of a node's resources
         """
-        _logger.debug(f'Agent on {node_id} reported {resources}')
+        _logger.debug(f'Agent reported {resources}')
         with self._resources_lock:
-            self._nodes.append(node_id)
-            self._resources[node_id] = resources
+            self._nodes.append(resources.node_name)
+            self._resources.add_node(resources)
 
     def report_result(self, names_exit_codes: List[Tuple[str, int]]) -> None:
         """Report results of finished processes.

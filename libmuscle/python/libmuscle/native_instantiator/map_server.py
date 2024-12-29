@@ -10,6 +10,7 @@ from libmuscle.mcp.transport_server import RequestHandler
 from libmuscle.native_instantiator.agent.agent_commands import (
         AgentCommand, CancelAllCommand, ShutdownCommand, StartCommand)
 from libmuscle.native_instantiator.iagent_manager import IAgentManager
+from libmuscle.planner.resources import Core, CoreSet, OnNodeResources
 from libmuscle.post_office import PostOffice
 
 from ymmsl import Reference
@@ -52,22 +53,25 @@ class MAPRequestHandler(RequestHandler):
         return cast(bytes, msgpack.packb(response, use_bin_type=True))
 
     def _report_resources(
-            self, node_id: str, resources: Dict[str, Any]) -> Any:
+            self, node_name: str, data: Dict[str, Any]) -> Any:
         """Handle a report resources request.
 
         This is used by the agent to report available resources on its node when
         it starts up.
 
         Args:
-            node_id: Hostname (id) of the node
-            resources: Resource dictionary, containing a single key 'cpu' which
-                maps to a list of lists of hwthread ids representing cores.
+            node_name: Name (hostname) of the node
+            data: Resource dictionary, containing a single key 'cpu' which maps to a
+                list of cores, where each core is a list of ints, starting with the core
+                id at index [0] followed by the hwthread ids of all hwthreads in this
+                core.
         """
-        dec_cpu_resources = [frozenset(hwthreads) for hwthreads in resources['cpu']]
-        self._agent_manager.report_resources(node_id, {'cpu': dec_cpu_resources})
+        cores = CoreSet((Core(ids[0], set(ids[1:])) for ids in data['cpu']))
+        node_resources = OnNodeResources(node_name, cores)
+        self._agent_manager.report_resources(node_resources)
         return [ResponseType.SUCCESS.value]
 
-    def _get_command(self, node_id: str) -> Any:
+    def _get_command(self, node_name: str) -> Any:
         """Handle a get command request.
 
         This is used by the agent to ask if there's anything we would like it to do.
@@ -78,9 +82,9 @@ class MAPRequestHandler(RequestHandler):
         do).
 
         Args:
-            node_id: Hostname (id) of the agent's node
+            node_name: Hostname (name) of the agent's node
         """
-        node_ref = Reference(node_id.replace('-', '_'))
+        node_ref = Reference(node_name.replace('-', '_'))
         next_request: Optional[bytes] = None
         if self._post_office.have_message(node_ref):
             next_request = self._post_office.get_message(node_ref)
@@ -145,17 +149,17 @@ class MAPServer:
         """
         self._server.close()
 
-    def deposit_command(self, node_id: str, command: AgentCommand) -> None:
+    def deposit_command(self, node_name: str, command: AgentCommand) -> None:
         """Deposit a command for the given agent.
 
         This takes the given command and queues it for the given agent to pick up next
         time it asks us for one.
 
         Args:
-            node_id: Id of the node whose agent should execute the command
+            node_name: Name of the node whose agent should execute the command
             command: The command to send
         """
-        agent = Reference(node_id.replace('-', '_'))
+        agent = Reference(node_name.replace('-', '_'))
 
         if isinstance(command, StartCommand):
             command_obj = [

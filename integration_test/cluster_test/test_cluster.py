@@ -185,7 +185,7 @@ def test_multiple(
 
 @skip_unless_cluster
 @pytest.mark.parametrize('mode', ['local', 'slurm'])
-@pytest.mark.parametrize('execution_model', ['openmpi', 'srunmpi'])
+@pytest.mark.parametrize('execution_model', ['openmpi', 'intelmpi', 'srunmpi'])
 def test_double(
         fake_cluster, remote_test_files, remote_out_dir, hwthread_to_core,
         mode, execution_model):
@@ -219,7 +219,7 @@ def test_double(
 
 @skip_unless_cluster
 @pytest.mark.parametrize('mode', ['local', 'slurm'])
-@pytest.mark.parametrize('execution_model', ['openmpi', 'srunmpi'])
+@pytest.mark.parametrize('execution_model', ['openmpi', 'intelmpi', 'srunmpi'])
 def test_macro_micro(
         fake_cluster, remote_test_files, remote_out_dir, hwthread_to_core,
         mode, execution_model):

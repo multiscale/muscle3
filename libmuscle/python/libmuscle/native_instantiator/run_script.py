@@ -59,15 +59,58 @@ def openmpi_prep_resources(resources: ResourceAssignment) -> Tuple[str, Dict[str
 def impi_prep_resources(resources: ResourceAssignment) -> Tuple[str, Dict[str, str]]:
     """Create resource description for Intel MPI mpirun
 
+    Intel MPI mpirun accepts either one core for each MPI process, or one hwthread. It
+    cannot bind a process to more than one explicitly specified core or hwthread the way
+    srun and OpenMPI can. At the moment, we bind each process to one core, and that's
+    what we do here as well, but this will become a problem for MPI+OpenMP codes. Those
+    can be pinned to sockets, NUMA domains or caches, which does make sense, so we'll
+    have to figure that out when we add support.
+
     Args:
         resources: The resource assignment to describe
 
     Return:
         The contents of the machinefile, and a set of environment variables
     """
+    env: Dict[str, str] = dict()
+    machine_nodes: List[str] = list()
+    pin_masks: List[int] = list()
+
+    for rank, res in enumerate(resources.by_rank):
+        machine_nodes.append(res.node_name)
+        pin_masks.append(sum((1 << c for c in res.hwthreads())))
+
+    # coalesce machine lines
+    proc_counts = [1] * len(machine_nodes)
+    i = 1
+    while i < len(machine_nodes):
+        if machine_nodes[i-1] == machine_nodes[i]:
+            del machine_nodes[i]
+            proc_counts[i-1] += proc_counts[i]
+            del proc_counts[i]
+        else:
+            i += 1
+
+    machinefile = '\n'.join(
+            (f'{m}:{c}' for m, c in zip(machine_nodes, proc_counts))) + '\n'
+
+    # disable pinning to SLURM-specified resources
+    # env['I_MPI_PIN_RESPECT_CPUSET'] = '0'
+    env['I_MPI_JOB_RESPECT_PROCESS_PLACEMENT'] = 'off'
+
+    # which cores to bind each rank to
+    pin_masks_str = ','.join(format(mask, '#x') for mask in pin_masks)
+    env['I_MPI_PIN_DOMAIN'] = f'[{pin_masks_str}]'
+
+    # I_MPI_PIN_DOMAIN=[55,aa]
+    # pins the first rank to 0,2,16,18 and the second to 1,3,17,19
     # I_MPI_PIN_PROCESSOR_LIST=0,1,5,6
     # pins rank 0 to core 0, rank 1 to core 1, rank 2 to core 5, rank 3 to core 6
-    raise NotImplementedError()
+    # machinefile:
+    # host1:2
+    # host2:4
+    # runs two processes on host1 and four on host2
+    return machinefile, env
 
 
 def mpich_prep_resources(resources: ResourceAssignment) -> Tuple[str, Dict[str, str]]:

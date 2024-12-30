@@ -21,7 +21,7 @@ IDX_SLURM_VERSIONS = list(enumerate([
     ]))
 
 # Shut down the containers after running the tests. Set to False to debug.
-CLEAN_UP_CONTAINERS = True
+CLEAN_UP_CONTAINERS = False
 
 
 skip_unless_cluster = pytest.mark.skipif(
@@ -223,44 +223,65 @@ def _install_muscle3_native_openmpi(
         f'make distclean && '
         f'PREFIX={prefix} make install"'))
 
-    return prefix, module_name
+    return 'openmpi', prefix, module_name
+
+
+def _install_muscle3_native_intelmpi(
+        remote_source, remote_term, remote_fs):
+    prefix = remote_fs / REMOTE_SHARED / 'muscle3-intelmpi'
+    prefix.mkdir()
+
+    module_name = 'intel-oneapi-mpi'
+
+    run_cmd(remote_term, 600, (
+        f'/bin/bash -l -c "'
+        f'module load {module_name} && '
+        f'cd {remote_source} && '
+        f'make distclean && '
+        f'PREFIX={prefix} make install"'))
+
+    return 'intelmpi', prefix, module_name
 
 
 def _install_muscle3(local_term, repo_root, remote_term, remote_fs, slurm_version):
     remote_source = _install_remote_source(
             local_term, repo_root, remote_fs, slurm_version)
     _create_muscle3_venv(remote_term, remote_source)
-    return _install_muscle3_native_openmpi(
+    openmpi_install = _install_muscle3_native_openmpi(
             remote_source, remote_term, remote_fs, slurm_version)
+    intelmpi_install = _install_muscle3_native_intelmpi(
+            remote_source, remote_term, remote_fs)
+    return openmpi_install, intelmpi_install
 
 
-def _install_tests(repo_root, remote_term, remote_fs, remote_m3_openmpi):
+def _install_tests(repo_root, remote_term, remote_fs, remote_m3_installs):
     remote_home = remote_fs / REMOTE_SHARED
-    remote_m3, openmpi_module = remote_m3_openmpi
 
-    cerulean.copy(
-            repo_root / 'integration_test' / 'cluster_test', remote_home,
-            copy_permissions=True)
+    for mpi_type, remote_m3, mpi_module in remote_m3_installs:
+        cerulean.copy(
+                repo_root / 'integration_test' / 'cluster_test', remote_home,
+                copy_permissions=True)
 
-    remote_source = remote_home / 'cluster_test'
+        remote_source = remote_home / 'cluster_test'
 
-    run_cmd(remote_term, 30, (
-        '/bin/bash -c "'
-        f'sed -i \\"s^modules: openmpi^modules: {openmpi_module}^\\"'
-        f' {remote_source}/implementations_openmpi.ymmsl'
-        '"'))
+        if mpi_type == 'openmpi':
+            run_cmd(remote_term, 30, (
+                '/bin/bash -c "'
+                f'sed -i \\"s^modules: openmpi^modules: {mpi_module}^\\"'
+                f' {remote_source}/implementations_openmpi.ymmsl'
+                '"'))
 
-    run_cmd(remote_term, 30, (
-        '/bin/bash -c "'
-        f'sed -i \\"s^modules: openmpi^modules: {openmpi_module}^\\"'
-        f' {remote_source}/implementations_srunmpi.ymmsl'
-        '"'))
+            run_cmd(remote_term, 30, (
+                '/bin/bash -c "'
+                f'sed -i \\"s^modules: openmpi^modules: {mpi_module}^\\"'
+                f' {remote_source}/implementations_srunmpi.ymmsl'
+                '"'))
 
-    run_cmd(remote_term, 30, (
-        f'/bin/bash -l -c "'
-        f'module load {openmpi_module} && '
-        f'. {remote_m3}/bin/muscle3.env && '
-        f'make -C {remote_source}"'))
+        run_cmd(remote_term, 30, (
+            f'/bin/bash -l -c "'
+            f'module load {mpi_module} && '
+            f'. {remote_m3}/bin/muscle3.env && '
+            f'make -C {remote_source} MPI_TYPE={mpi_type}"'))
 
 
 def _clean_up_base_cluster(local_term, slurm_version):
@@ -285,9 +306,9 @@ def installed_cluster(
 
     remote_term, remote_fs, headnode_port = _start_base_cluster(
             local_term, request.param, local_shared_dir)
-    remote_m3_openmpi = _install_muscle3(
+    remote_m3_installs = _install_muscle3(
             local_term, repo_root, remote_term, remote_fs, slurm_version)
-    _install_tests(repo_root, remote_term, remote_fs, remote_m3_openmpi)
+    _install_tests(repo_root, remote_term, remote_fs, remote_m3_installs)
 
     yield headnode_port
 

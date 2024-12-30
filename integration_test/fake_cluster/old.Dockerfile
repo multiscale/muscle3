@@ -31,13 +31,13 @@ RUN . /opt/spack/share/spack/setup-env.sh && \
     ^$(spack find --deps slurm@20-02 | grep pmix |  tr -d ' ') \
     ^$(spack find --format "slurm/{hash}" slurm@20-02)
 
-# RUN . /opt/spack/share/spack/setup-env.sh && \
-#     . $(spack location -i lmod)/lmod/lmod/init/bash && \
-#     spack install mpich+slurm pmi=pmix ^pmix@3.2.3
+RUN . /opt/spack/share/spack/setup-env.sh && \
+    . $(spack location -i lmod)/lmod/lmod/init/bash && \
+    spack install intel-oneapi-mpi@2021.14.0
 
 # RUN . /opt/spack/share/spack/setup-env.sh && \
 #     . $(spack location -i lmod)/lmod/lmod/init/bash && \
-#     spack install intel-oneapi-mpi ^pmix@3.2.3
+#     spack install mpich+slurm pmi=pmix ^pmix@3.2.3
 
 # Disable ssh debug output
 RUN sed -i -e 's/^LogLevel DEBUG3$//' /etc/ssh/sshd_config

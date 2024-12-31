@@ -104,7 +104,7 @@ class InstanceManager:
                 'Instantiator crashed. This should not happen, please file a bug'
                 ' report.')
             _logger.error(msg)
-            raise RuntimeError(msg)
+            raise RuntimeError(msg) from resources.exception
 
         self._planner = Planner(resources)
         self._num_running = 0

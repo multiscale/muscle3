@@ -306,9 +306,17 @@ def cluster_command(implementation: Implementation, enable_debug: bool) -> str:
         fstr = ' '.join(fargs)
 
     elif implementation.execution_model == ExecutionModel.INTELMPI:
-        fstr = (
-                'mpirun -n $MUSCLE_MPI_PROCESSES -machinefile $MUSCLE_RANKFILE'
-                ' {command} {args}')
+        fargs = [
+                'mpirun -n $MUSCLE_MPI_PROCESSES',
+                '-machinefile $MUSCLE_RANKFILE']
+
+        if enable_debug:
+            fargs.append('-genv I_MPI_DEBUG=4')
+
+        fargs.append('{command} {args}')
+
+        fstr = ' '.join(fargs)
+
     elif implementation.execution_model == ExecutionModel.SRUNMPI:
         fargs = ['srun -n $MUSCLE_MPI_PROCESSES -m arbitrary']
 

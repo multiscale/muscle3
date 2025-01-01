@@ -124,7 +124,7 @@ class InstanceManager:
         """Starts all the instances of the model."""
         self._allocations = self._planner.allocate_all(self._configuration)
         for instance, resources in self._allocations.items():
-            _logger.info(f'Planned {instance} on {resources}')
+            _logger.info(f'Planned {instance} on {resources.as_resources()}')
 
         components = {c.name: c for c in self._configuration.model.components}
         for instance, resources in self._allocations.items():
@@ -147,7 +147,7 @@ class InstanceManager:
                     instance, implementation,
                     self._configuration.resources[component.name],
                     resources, idir, workdir, stdout_path, stderr_path)
-            _logger.info(f'Instantiating {instance} on {resources}')
+            _logger.info(f'Instantiating {instance}')
             self._requests_out.put(request)
             self._num_running += 1
 

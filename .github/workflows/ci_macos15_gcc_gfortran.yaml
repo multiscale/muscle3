@@ -1,7 +1,7 @@
-# Run Continuous Integration on macOS 12 Monterey with GCC
+# Run Continuous Integration on macOS 15 Sequoia with GCC
 # This includes Fortran support
 # This mainly checks for issues/regressions in the native build
-name: compatibility_macos_monterey_12_gcc_gfortran
+name: compatibility_macos_sequoia_15_gcc_gfortran
 on:
   schedule:
     - cron: '00 2 * * 6'
@@ -11,7 +11,7 @@ on:
       - fix_native_compatibility_ci
 jobs:
   build:
-    runs-on: macos-12
+    runs-on: macos-15
     timeout-minutes: 30
 
     steps:
@@ -23,11 +23,9 @@ jobs:
 
     - name: Install dependencies
       run: |
-        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install gcc
         HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install openmpi
-        python3 -m pip install --upgrade pip
-        pip3 install tox tox-gh-actions
+        python3 -m venv ${GITHUB_WORKSPACE}/test_venv
+        . ${GITHUB_WORKSPACE}/test_venv/bin/activate && pip install tox tox-gh-actions
 
     - name: Run all tests
-      run: cd ${GITHUB_WORKSPACE} && CXX=g++-12 OMPI_CXX=g++-12 FC=gfortran-12 OMPI_FC=gfortran-12 make test test_examples
-
+      run: cd ${GITHUB_WORKSPACE} && PATH=$PATH:${GITHUB_WORKSPACE}/test_venv/bin CXX=g++-14 OMPI_CXX=g++-14 FC=gfortran-14 OMPI_FC=gfortran-14 make test test_examples

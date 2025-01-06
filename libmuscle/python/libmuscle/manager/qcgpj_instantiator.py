@@ -26,9 +26,9 @@ from qcg.pilotjob.resources import (
 from ymmsl import ExecutionModel, MPICoresResReq, Reference, ThreadedResReq
 
 from libmuscle.manager.instantiator import (
-        CancelAllRequest, CrashedResult, InstantiationRequest, Process,
-        ProcessStatus, QueueingLogHandler, ShutdownRequest)
-from libmuscle.planner.planner import Resources
+        CancelAllRequest, CrashedResult, create_instance_env, InstantiationRequest,
+        Process, ProcessStatus, reconfigure_logging, ShutdownRequest)
+from libmuscle.planner.resources import Core, CoreSet, OnNodeResources, Resources
 
 
 _logger = logging.getLogger(__name__)
@@ -95,7 +95,7 @@ class QCGPJInstantiator(mp.Process):
     def __init__(
             self, resources: mp.Queue, requests: mp.Queue, results: mp.Queue,
             log_records: mp.Queue, run_dir: Path) -> None:
-        """Create a QCGPJProcessManager.
+        """Create a QCGPJInstantiator.
 
         Args:
             resources: Queue for returning the available resources
@@ -103,7 +103,7 @@ class QCGPJInstantiator(mp.Process):
             results: Queue to communicate finished processes over
             log_messages: Queue to push log messages to
         """
-        super().__init__(name='QCGPJProcessManager')
+        super().__init__(name='QCGPJInstantiator')
         self._resources_out = resources
         self._requests_in = requests
         self._results_out = results
@@ -120,7 +120,7 @@ class QCGPJInstantiator(mp.Process):
             qcgpj_dir.mkdir(exist_ok=True)
             os.chdir(qcgpj_dir)
 
-            self._reconfigure_logging()
+            reconfigure_logging(self._log_records_out)
 
             # Executor needs to be instantiated before we go async
             qcg_config: Dict[str, str] = {qcg_Config.AUX_DIR: str(qcgpj_dir)}
@@ -196,20 +196,15 @@ class QCGPJInstantiator(mp.Process):
         _logger.debug('Stopping executor')
         await self._executor.stop()
 
-    def _reconfigure_logging(self) -> None:
-        """Reconfigure logging to send to log_records_out."""
-        root_logger = logging.getLogger()
-        for h in list(root_logger.handlers):
-            root_logger.removeHandler(h)
-
-        handler = QueueingLogHandler(self._log_records_out)
-        root_logger.addHandler(handler)
-
     def _send_resources(self) -> None:
         """Converts and sends QCG available resources."""
-        resources = Resources()
+        resources = Resources([])
         for node in self._qcg_resources.nodes:
-            resources.cores[node.name] = {int(n.split(',')[0]) for n in node.free_ids}
+            cs = CoreSet([
+                Core(cid, set(map(int, hwthreads_str.split(','))))
+                for cid, hwthreads_str in enumerate(node.free_ids)])
+            nr = OnNodeResources(node.name, cs)
+            resources.add_node(nr)
 
         self._resources_out.put(resources)
 
@@ -245,9 +240,10 @@ class QCGPJInstantiator(mp.Process):
             qcg_resources_type: qcg_ResourcesType
             ) -> Tuple[qcg_Allocation, qcg_SchedulingIteration]:
         """Creates a QCG allocation and job for a request."""
-        total_cores = sum(map(len, request.resources.cores.values()))
+        total_cores = sum([
+            nres.total_cores() for nres in request.resources.by_rank])
 
-        env = self._create_env(request.instance, request.implementation.env)
+        env = create_instance_env(request.instance, request.implementation.env)
 
         if request.implementation.script:
             execution = self._qcg_job_execution_with_script(request, env)
@@ -263,37 +259,17 @@ class QCGPJInstantiator(mp.Process):
                 resources=resources)
 
         qcg_allocation = qcg_Allocation()
-        for node_name, cores in request.resources.cores.items():
-            qcg_cores = [str(i) for i in cores]
+        res = request.resources.as_resources()
+        for node in res:
+            qcg_cores = [
+                    ','.join(map(str, core.hwthreads))
+                    for core in node.cpu_cores]
             qcg_allocation.add_node(
-                    qcg_NodeAllocation(qcg_Node(node_name), qcg_cores, {}))
+                    qcg_NodeAllocation(qcg_Node(node.node_name), qcg_cores, {}))
 
         sjob = qcg_SchedulingJob(self._state_tracker, qcg_job)
         qcg_iteration = qcg_SchedulingIteration(sjob, None, None, resources, [])
         return qcg_allocation, qcg_iteration
-
-    def _create_env(
-            self, instance: Reference, overlay: Dict[str, str]
-            ) -> Dict[str, str]:
-        """Updates the environment with the implementation's env.
-
-        This updates env in-place. Keys from overlay that start with
-        + will have the corresponding value appended to the matching
-        (by key, without the +) value in env, otherwise the value in
-        env gets overwritten.
-        """
-        env = os.environ.copy()
-        env['MUSCLE_INSTANCE'] = str(instance)
-
-        for key, value in overlay.items():
-            if key.startswith('+'):
-                if key[1:] in env:
-                    env[key[1:]] += value
-                else:
-                    env[key[1:]] = value
-            else:
-                env[key] = value
-        return env
 
     def _qcg_job_execution_with_script(
             self, request: InstantiationRequest, env: Dict[str, str]
@@ -315,16 +291,19 @@ class QCGPJInstantiator(mp.Process):
             rank_file = request.instance_dir / 'rankfile'
             with rank_file.open('w') as f:
                 i = 0
-                for node, cores in request.resources.cores.items():
-                    for c in sorted(cores):
-                        f.write(f'rank {i}={node} slot={c}\n')
+                res = request.resources.as_resources()
+                for node in res:
+                    for cid in sorted([c.cid for c in node.cpu_cores]):
+                        f.write(f'rank {i}={node.node_name} slot={cid}\n')
                         i += 1
             env['MUSCLE_OPENMPI_RANK_FILE'] = str(rank_file)
 
             # IntelMPI support
             mpi_res_args = list()
-            for node, cores in request.resources.cores.items():
-                mpi_res_args.extend(['-host', node, '-n', str(len(cores))])
+            res = request.resources.as_resources()
+            for node in res:
+                mpi_res_args.extend([
+                    '-host', node.node_name, '-n', str(node.total_cores())])
             env['MUSCLE_INTELMPI_RESOURCES'] = ' '.join(mpi_res_args)
 
             # General environment
@@ -346,7 +325,7 @@ class QCGPJInstantiator(mp.Process):
             qcg_resources_type: qcg_ResourcesType) -> qcg_JobExecution:
         """Create a JobExecution for a normal description."""
         impl = request.implementation
-        total_cores = sum(map(len, request.resources.cores.values()))
+        total_cores = request.resources.as_resources().total_cores()
 
         if impl.execution_model == ExecutionModel.DIRECT:
             env['OMP_NUM_THREADS'] = str(total_cores)

@@ -57,6 +57,7 @@ setup(
         'matplotlib>=3,<4',
         'msgpack>=1,<2',
         'psutil>=5.0.0',
+        'parsimonious',
         "numpy>=1.22",
         'qcg-pilotjob==0.13.1',
         'typing_extensions>=4.4.0,<5',

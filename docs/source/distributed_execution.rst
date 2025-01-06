@@ -256,12 +256,11 @@ High-Performance Computing
 --------------------------
 
 Coupled simulations often take a significant amount of compute resources,
-requiring the use of High-Performance Computing facilities. MUSCLE3 has support
-for running inside of an allocation on an HPC cluster running the SLURM
+requiring the use of High-Performance Computing (HPC) facilities. MUSCLE3 has
+support for running inside of an allocation on an HPC cluster running the SLURM
 scheduling system. It can determine the available resources (nodes and cores),
 suballocate them to the various instances required to run the simulation, and
-start each instance on its allocated resources. (With thanks to its friend
-`QCG-PilotJob <https://qcg-pilotjob.readthedocs.io/en/stable/>`_.)
+start each instance on its allocated resources.
 
 Determining resource requirements
 `````````````````````````````````
@@ -281,7 +280,11 @@ command:
 
 
 This will print a single number, the number of nodes to allocate, which can then
-be passed to ``sbatch -N <n>``.
+be passed to ``sbatch --nodes <n>``.
+
+For `--cores-per-node`, you should pass the number of cores (not hardware
+threads) that each node in your cluster has. This can usually be found in the
+documentation, or else ask your administrator.
 
 For example, for the Python example above, we can run:
 
@@ -350,15 +353,108 @@ implementation:
       execution_model: openmpi
 
 
+Submitting jobs
+```````````````
+
+HPC clusters typically serve large numbers of users, who all want to run
+calculations. The available compute resources are managed by a *scheduler*, to
+which users can submit work in the form of *jobs*. These jobs are then put into
+a queue, and run whenever it's their turn and sufficient resources are
+available. MUSCLE3 currently supports only the SLURM scheduler, which
+fortunately is used almost everywhere.
+
+To submit a SLURM job, you use the `sbatch` command with a *batch script* which
+describes what you want to do. A complete introduction is beyond the scope of
+this documentation, so if you're new to this please browse on over to `HPC
+Carpentry <https://carpentries-incubator.github.io/hpc-intro/>`_ for an
+introduction.
+
+For MUSCLE3 simulations this works the same as for any other job. Of course, a
+coupled simulation is a bit more complicated than the usual SLURM/MPI scenarios
+in which only a single program is run, but MUSCLE3 takes care of all the
+details, so this is actually a bit easier than usual. You do need to make
+sure that SLURM actually makes all the resources it allocates to you available
+to MUSCLE3. (This sounds silly, but by default SLURM will assume that you want
+to run one task per node, thus using only a single core on each of your nodes,
+instead of all of them.)
+
+All this gets complicated if you try to read the SLURM documentation, so here's
+the gist: you need to either 1) specify a number of nodes, and how many tasks
+you want to have on each node, or 2) specify a number of tasks. Either way will
+suit MUSCLE3 fine, but don't mix them up or SLURM will get confused and then
+confuse you too.
+
+Here's an example batch script that does option 1), nodes first:
+
+
+.. code-block:: bash
+
+  #!/bin/bash
+
+  #SBATCH -J my_muscle3_job
+  #SBATCH --time=1:00:00
+  #SBATCH --nodes=4
+  #SBATCH --ntasks-per-node=16
+
+  . /path/to/muscle3-venv/bin/activate
+  muscle_manager --start-all model.ymmsl
+
+
+In this case, we're assuming that each node has 16 cores available, and we tell
+SLURM that we'll use all of them. Whether that actually happens depends on the
+MUSCLE3 configuration, but this way at least all of them will be available to
+MUSCLE3.
+
+Note that this number `16` should match what you passed to the
+`--cores-per-node` option of `muscle3 resources` above, and `4` would be the
+number of nodes it told you it would need.
+
+To set up the same job using tasks, option 2), you could do this:
+
+.. code-block:: bash
+
+  #!/bin/bash
+
+  #SBATCH -J my_muscle3_job
+  #SBATCH --time=1:00:00
+  #SBATCH --ntasks=64
+
+  . /path/to/muscle3-venv/bin/activate
+  muscle_manager --start-all model.ymmsl
+
+
+Assuming that SLURM has been configured with 16 so-called *slots* per node, it
+will then give you 64 / 16 = 4 nodes with all cores available.
+
+If the MUSCLE3 manager complains about oversubscribing in the log file, then
+something went wrong and you did not get enough resources. MUSCLE3 will still
+try to run the simulation for you, but different model instances will likely end
+up trying to use the same cores at the same time, which will cost performance.
+
+The manager logs which resources it detected, any discrepancies between what
+SLURM claims we got and what we actually have access to, and which instances it
+assigned to which cores, which will hopefully help solve the problem. (You can
+use `--log-level DEBUG` to get more details.)
+
+
 Hyperthreading
 ``````````````
 
-If hyperthreading is enabled on the HPC cluster you are running on, then SLURM
-will allocate threads, not cores. This may give you a performance boost, it may
-make no difference, or it may decrease performance. To disable hyperthreading
-and allocate full physical cores, you can pass ``--ntasks-per-node=<x>`` to
-sbatch, with ``<x>`` being the number of physical cores per node. This will
-cause SLURM to tell MUSCLE3 (via QCG-PilotJob) to only use the first ``x``
-virtual cores on each machine, which then get a physical core to themselves
-because the second set of virtual cores isn't used.
+Hyperthreading, or symmetric multithreading (SMT) to use the generic term, is a
+hardware feature that allows multiple processes to share a core more
+efficiently. It does not really add more compute resources however, and using it
+may speed up a simulation, but can also slow it down. In practice the performance
+difference is typically somewhere between -30% and +30%, and predicting in
+advance whether it will help or hurt is impossible even for experts (as usual
+with this kind of low-level optimisation).
+
+MUSCLE3 currently assigns a full core to each thread or MPI process, regardless
+of whether the hardware supports SMT and whether it is enabled. (Note that this
+has changed: versions 0.7.2 and earlier would assign hardware threads if
+available and whole cores if not.)
+
+We could add support for hyperthreading on a per-component basis in the future
+however, if there is a need (as well as other granularities like sockets or NUMA
+domains).  Please make an issue on GitHub if you'd like to see this, so that we
+know someone is interested.
 

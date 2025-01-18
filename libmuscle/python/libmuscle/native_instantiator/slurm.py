@@ -4,7 +4,7 @@ import os
 from parsimonious import Grammar, NodeVisitor
 from parsimonious.nodes import Node
 import subprocess
-from typing import Any, cast, List, Sequence, Tuple
+from typing import Any, cast, List, Optional, Sequence, Tuple
 
 
 _logger = logging.getLogger(__name__)
@@ -349,4 +349,14 @@ class SlurmInfo:
         return int(version[0]), int(version[1])
 
 
-slurm = SlurmInfo()
+slurm_: Optional[SlurmInfo] = None
+
+
+def slurm() -> SlurmInfo:
+    """SlurmInfo singleton"""
+    global slurm_
+
+    if slurm_ is None:
+        slurm_ = SlurmInfo()
+
+    return slurm_

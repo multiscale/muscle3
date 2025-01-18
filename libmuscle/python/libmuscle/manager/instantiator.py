@@ -6,7 +6,7 @@ from pathlib import Path
 import traceback
 from typing import Dict, Optional
 
-from ymmsl import Implementation, Reference, ResourceRequirements
+from ymmsl import BaseEnv, Implementation, Reference, ResourceRequirements
 
 from libmuscle.planner.planner import ResourceAssignment
 
@@ -158,7 +158,8 @@ def reconfigure_logging(queue: mp.Queue) -> None:
 
 
 def create_instance_env(
-        instance: Reference, overlay: Dict[str, str]) -> Dict[str, str]:
+        instance: Reference, base_env: BaseEnv, overlay: Dict[str, str]
+        ) -> Dict[str, str]:
     """Creates an environment for an instance.
 
     This takes the current (manager) environment variables and makes
@@ -168,7 +169,46 @@ def create_instance_env(
     value appended to the matching (by key, without the +) value in
     env, otherwise the value in env gets overwritten.
     """
-    env = os.environ.copy()
+    if base_env == BaseEnv.LOGIN:
+        env = dict()
+        for var in ('HOME', 'LOGNAME', 'SHELL', 'TERM', 'USER'):
+            if var in os.environ:
+                env[var] = os.environ[var]
+    else:
+        env = os.environ.copy()
+        if base_env == BaseEnv.CLEAN:
+            # Remove any virtual environment
+            #
+            # The deactivate command does not get exported by the activate script, so it
+            # isn't available to us, as are most of the environment variables it uses to
+            # deactivate the venv. So this is a bit of a hack, but it's the best we can
+            # do. Note that _OLD_VIRTUAL_PYTHONHOME isn't exported by default either,
+            # but we check for it anyway; if we're on a system where PYTHONHOME is
+            # needed and the manager needs to be run with an active virtualenv and one
+            # of the implementations needs a clean shell, then the user will have to
+            # export it manually between activating the virtualenv and starting the
+            # manager and things will work.
+            vep = env.get('VIRTUAL_ENV_PROMPT')
+            if vep is not None:
+                if 'PS1' in env:
+                    if env['PS1'].startswith(vep):
+                        env['PS1'] = env['PS1'][len(vep):]
+                del env['VIRTUAL_ENV_PROMPT']
+
+            ovp = env.get('_OLD_VIRTUAL_PYTHONHOME')
+            if ovp is not None:
+                env['PYTHONHOME'] = ovp
+                del env['_OLD_VIRTUAL_PYTHONHOME']
+
+            venv = env.get('VIRTUAL_ENV')
+            if venv is not None:
+                path = env.get('PATH')
+                if path is not None:
+                    paths = [p for p in path.split(':') if p != venv + '/bin']
+                    env['PATH'] = ':'.join(paths)
+
+                del env['VIRTUAL_ENV']
+
     env['MUSCLE_INSTANCE'] = str(instance)
 
     for key, value in overlay.items():

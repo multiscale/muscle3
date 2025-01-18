@@ -249,3 +249,41 @@ def test_macro_micro(
                 node, hwthreads, _ = out.split('\n')
                 assert node == 'node-4'
                 assert hwthread_to_core(hwthreads) == [rank]
+
+
+@skip_unless_cluster
+@pytest.mark.parametrize('mode', ['local', 'slurm'])
+def test_base_env(
+        fake_cluster, remote_test_files, remote_out_dir, mode):
+    sched = _sched(fake_cluster, mode)
+
+    job = _make_job('base_env', mode, remote_test_files, remote_out_dir)
+    if mode == 'slurm':
+        job.num_nodes = 2
+        job.mpi_processes_per_node = 2
+
+    job_id = sched.submit(job)
+    assert sched.wait(job_id, job.time_reserved + _SCHED_OVERHEAD) is not None
+    assert sched.get_exit_code(job_id) == 0
+
+    login_out = _get_stdout(remote_out_dir, 'base_env', mode, 'login')
+    clean_out = _get_stdout(remote_out_dir, 'base_env', mode, 'clean')
+    manager_out = _get_stdout(remote_out_dir, 'base_env', mode, 'manager')
+
+    assert login_out.split('\n')[0] == '1'     # .profile loaded
+    assert login_out.split('\n')[1] == '0'     # .bashrc loaded
+    assert login_out.split('\n')[2] == '0'     # manager shell
+    assert login_out.split('\n')[3] == '1'     # modules loaded
+    assert login_out.split('\n')[4] == ''      # venv active
+
+    assert clean_out.split('\n')[0] == '0'     # .profile loaded
+    assert clean_out.split('\n')[1] == '0'     # .bashrc loaded
+    assert clean_out.split('\n')[2] == '1'     # manager shell
+    assert clean_out.split('\n')[3] == '0'     # modules loaded
+    assert clean_out.split('\n')[4] == ''      # venv active
+
+    assert manager_out.split('\n')[0] == '0'   # .profile loaded
+    assert manager_out.split('\n')[1] == '0'   # .bashrc loaded
+    assert manager_out.split('\n')[2] == '1'   # manager shell
+    assert manager_out.split('\n')[3] == '1'   # modules loaded
+    assert manager_out.split('\n')[4] == '/home/cerulean/shared/venv'

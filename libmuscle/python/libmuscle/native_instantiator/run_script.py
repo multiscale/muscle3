@@ -6,7 +6,7 @@ from libmuscle.errors import ConfigurationError
 from libmuscle.native_instantiator.slurm import slurm
 from libmuscle.planner.planner import ResourceAssignment
 from ymmsl import (
-        ExecutionModel, Implementation, MPICoresResReq, MPINodesResReq,
+        BaseEnv, ExecutionModel, Implementation, MPICoresResReq, MPINodesResReq,
         ResourceRequirements, ThreadedResReq)
 
 
@@ -293,7 +293,7 @@ def cluster_command(implementation: Implementation, enable_debug: bool) -> str:
         if enable_debug:
             fargs.append('-v --display-allocation --display-map --report-bindings')
 
-        if slurm.quirks.overlap:
+        if slurm().quirks.overlap:
             # This adds the given option to the srun command used by mpirun to launch
             # its daemons. mpirun specifies --exclusive, which on SLURM <= 21-08 causes
             # SLURM to wait for our agents to quit, as it considers them to be occupying
@@ -320,12 +320,12 @@ def cluster_command(implementation: Implementation, enable_debug: bool) -> str:
     elif implementation.execution_model == ExecutionModel.SRUNMPI:
         fargs = ['srun -n $MUSCLE_MPI_PROCESSES -m arbitrary']
 
-        if slurm.quirks.overlap:
+        if slurm().quirks.overlap:
             fargs.append('--overlap')
 
         verbose = 'verbose,' if enable_debug else ''
 
-        fargs.append(f'{slurm.quirks.cpu_bind}={verbose}$SLURM_CPU_BIND')
+        fargs.append(f'{slurm().quirks.cpu_bind}={verbose}$SLURM_CPU_BIND')
         fargs.append('{command} {args}')
 
         fstr = ' '.join(fargs)
@@ -348,12 +348,13 @@ def cluster_command(implementation: Implementation, enable_debug: bool) -> str:
 
 def make_script(
         implementation: Implementation, res_req: ResourceRequirements,
-        local: bool, rankfile: Optional[Path] = None) -> str:
+        work_dir: Path, local: bool, rankfile: Optional[Path] = None) -> str:
     """Make a run script for a given implementation.
 
     Args:
         implementation: The implementation to launch
         res_req: The job's resource requirements
+        work_dir: The directory to start the instance in
         local: Whether this is to run locally (True) or on a cluster (False)
         rankfile: Location of the rankfile, if any
 
@@ -364,11 +365,39 @@ def make_script(
 
     lines: List[str] = list()
 
-    lines.append('#!/bin/bash')
+    if implementation.base_env == BaseEnv.LOGIN:
+        # We try to emulate an interactive login shell here by starting a
+        # non-interactive login shell and manually loading the configuration files that
+        # an interactive one would load. This avoids a confusing warning on stderr that
+        # we get from /bin/bash -il because it can't find a controlling terminal.
+        lines.append('#!/bin/bash --norc')
+        lines.append('')
+        lines.append('if [ -f /etc/environment ] ; then')
+        lines.append('    . /etc/environment')
+        lines.append('fi')
+        lines.append('')
+        lines.append('if [ -f /etc/profile ] ; then')
+        lines.append('    . /etc/profile')
+        lines.append('fi')
+        lines.append('')
+        lines.append('if [ -f ~/.bash_profile ] ; then')
+        lines.append('    . ~/.bash_profile')
+        lines.append('elif [ -f ~/.bash_login ] ; then')
+        lines.append('    . ~/.bash_login')
+        lines.append('elif [ -f ~/.profile ] ; then')
+        lines.append('    . ~/.profile')
+        lines.append('fi')
+    else:
+        lines.append('#!/bin/bash')
+
     lines.append('')
 
     # The environment is passed when starting the script, rather than as a set of
     # export statements here.
+
+    if implementation.base_env == BaseEnv.CLEAN:
+        lines.append('module purge')
+        lines.append('')
 
     if implementation.modules:
         if isinstance(implementation.modules, str):
@@ -381,6 +410,11 @@ def make_script(
     if implementation.virtual_env:
         lines.append(f'. {implementation.virtual_env}/bin/activate')
         lines.append('')
+
+    if implementation.base_env == BaseEnv.LOGIN:
+        # config files may change the work directory from what we set, so we add this to
+        # ensure it's correct.
+        lines.append(f'cd {work_dir}')
 
     if local:
         lines.append(local_command(implementation, enable_debug))

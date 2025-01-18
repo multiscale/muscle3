@@ -14,7 +14,6 @@ from libmuscle.manager.instantiator import (
         CancelAllRequest, CrashedResult, InstantiatorRequest,
         InstantiationRequest, Process, ProcessStatus, ShutdownRequest)
 from libmuscle.manager.logger import last_lines
-# from libmuscle.manager.qcgpj_instantiator import QCGPJInstantiator
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.native_instantiator.native_instantiator import NativeInstantiator
 from libmuscle.planner.planner import Planner, ResourceAssignment
@@ -80,13 +79,6 @@ class InstanceManager:
         self._results_in: Queue[_ResultType] = Queue()
         self._log_records_in: Queue[logging.LogRecord] = Queue()
 
-        # TODO: Instantiator factory function
-        # TODO: Add argument that specifies whether to use QCG or not
-        '''
-        self._instantiator = QCGPJInstantiator(
-                self._resources_in, self._requests_out, self._results_in,
-                self._log_records_in, self._run_dir.path)
-        '''
         self._instantiator = NativeInstantiator(
                 self._resources_in, self._requests_out, self._results_in,
                 self._log_records_in, self._run_dir.path)

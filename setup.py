@@ -59,9 +59,8 @@ setup(
         'psutil>=5.0.0',
         'parsimonious',
         "numpy>=1.22",
-        'qcg-pilotjob==0.13.1',
         'typing_extensions>=4.4.0,<5',
-        'ymmsl>=0.13.0,<0.14'          # Also in CI, update there as well
+        'ymmsl>=0.13.0,<0.14'          # Also in CI
     ],
     extras_require={
         'dev': [

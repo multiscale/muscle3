@@ -178,12 +178,10 @@ parts that define the Python ones we're using here:
 
   implementations:
     reaction_python:
-      virtual_env: <muscle3_src>/docs/source/examples/python/build/venv
       executable: python
       args: <muscle3_src>/docs/source/examples/python/reaction.py
 
     diffusion_python:
-      virtual_env: <muscle3_src>/docs/source/examples/python/build/venv
       executable: python
       args: <muscle3_src>/docs/source/examples/python/diffusion.py
 
@@ -194,13 +192,19 @@ directory then you should have a version of this file with the correct paths for
 your local setup.
 
 There are two implementations shown here, which the components above refer to by
-name. They are Python scripts, and they have some dependencies which are
-installed in the virtual environment created earlier by ``make``. So in order to
-run them, that virtualenv has to be activated, and then we can run ``python
-/path/to/reaction.py`` or equivalent for the ``diffusion.py`` script, and that
-is exactly these definitions do. Of course, it's also possible to add a
-``#!/usr/bin/env python3`` line to the top of the Python script and start it
-directly as an executable.
+name. They are Python scripts, so we need to run ``python /path/to/reaction.py``
+or equivalent for the ``diffusion.py`` script, and that is exactly these
+definitions do. Of course, it's also possible to add a ``#!/usr/bin/env
+python3`` line to the top of the Python script and start it directly as an
+executable.
+
+The scripts have some dependencies, which will be installed in a virtual
+environment in which we'll run the whole simulation, so we don't need to do any
+other environment setup here, but MUSCLE3 is capable of running each
+implementation in a separate environment if needed. See `the yMMSL
+documentation on implementations
+<https://ymmsl-python.readthedocs.io/en/stable/api.html#ymmsl.Implementation>`_
+for more information.
 
 Finally, the settings in ``rd_settings.ymmsl``:
 

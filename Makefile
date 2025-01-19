@@ -123,6 +123,7 @@ docsclean:
 	rm -f docs/build/.buildinfo
 	rm -rf docs/doxygen/html/*
 	rm -rf docs/doxygen/xml/*
+	rm -rf docs/source/apidocs
 
 .PHONY: clean
 clean: docsclean

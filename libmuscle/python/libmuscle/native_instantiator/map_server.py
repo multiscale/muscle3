@@ -84,7 +84,7 @@ class MAPRequestHandler(RequestHandler):
         Args:
             node_name: Hostname (name) of the agent's node
         """
-        node_ref = Reference(node_name.replace('-', '_'))
+        node_ref = Reference('_' + node_name.replace('-', '_'))
         next_request: Optional[bytes] = None
         if self._post_office.have_message(node_ref):
             next_request = self._post_office.get_message(node_ref)
@@ -159,7 +159,7 @@ class MAPServer:
             node_name: Name of the node whose agent should execute the command
             command: The command to send
         """
-        agent = Reference(node_name.replace('-', '_'))
+        agent = Reference('_' + node_name.replace('-', '_'))
 
         if isinstance(command, StartCommand):
             command_obj = [

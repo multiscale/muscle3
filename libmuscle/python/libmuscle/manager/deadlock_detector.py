@@ -13,8 +13,8 @@ class DeadlockDetector:
     This class is responsible for handling WAITING_FOR_RECEIVE, IS_DEADLOCKED and
     WAITING_FOR_RECEIVE_DONE MMP messages, which are submitted by the MMPServer.
 
-    When a deadlock is detected, the cycle of instances that is waiting for each other is
-    logged with FATAL severity.
+    When a deadlock is detected, the cycle of instances that is waiting for each other
+    is logged with FATAL severity.
     """
 
     def __init__(self) -> None:
@@ -134,7 +134,7 @@ class DeadlockDetector:
             port, slot = self._waiting_instance_ports[instance]
             slot_txt = "" if slot is None else f"[{slot}]"
             lines.append(
-                f"{num}. Instance '{instance}' is waiting for instance '{peer_instance}'"
-                f" in a receive on port '{port}{slot_txt}'."
+                f"{num}. Instance '{instance}' is waiting for instance"
+                f" '{peer_instance}' in a receive on port '{port}{slot_txt}'."
             )
         return "\n".join(lines)

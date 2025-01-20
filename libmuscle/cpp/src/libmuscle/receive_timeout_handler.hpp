@@ -15,12 +15,12 @@ class Deadlock : public std::runtime_error {
 
 
 /** Timeout handler when receiving messages from peers.
- * 
+ *
  * This handler sends a message to the Muscle Manager when the receive times out (and
  * another message when the message does arrive).
- * 
+ *
  * This is used by the manager to detect if the simulation is in a deadlock, where a
- * cycle of instances is waiting on each other.
+ * cycle of instances is waiting for each other.
  */
 class ReceiveTimeoutHandler : public mcp::TimeoutHandler {
     public:

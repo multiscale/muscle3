@@ -9,7 +9,7 @@ Deadlock detection
 
 MUSCLE3 has a deadlock detection mechanism, which can detect when the simulation
 is deadlocked because (part of) the components of the simulation are all waiting
-for a message of each other. This could happen, for example, due to a bug in
+for a message from each other. This could happen, for example, due to a bug in
 one of the components, or because the components are not correctly wired
 together.
 
@@ -24,8 +24,8 @@ message that indicates that the simulation was deadlocked:
 
     muscle_manager 2024-08-20 13:57:58,544 CRITICAL libmuscle.manager.deadlock_detector: Potential deadlock detected:
     The following 2 instances are deadlocked:
-    1. Instance 'micro' is waiting on instance 'macro' in a receive on port 'initial_state'.
-    2. Instance 'macro' is waiting on instance 'micro' in a receive on port 'state_in'.
+    1. Instance 'micro' is waiting for instance 'macro' in a receive on port 'initial_state'.
+    2. Instance 'macro' is waiting for instance 'micro' in a receive on port 'state_in'.
 
 
 .. note::

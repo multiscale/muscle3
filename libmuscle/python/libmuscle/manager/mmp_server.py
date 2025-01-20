@@ -373,8 +373,8 @@ class MMPRequestHandler(RequestHandler):
 
         Args:
             instance_id: The instance that is waiting
-            port_name: Port name that the instance is waiting on
-            slot: Slot that the instance is waiting on
+            port_name: Port name that the instance is waiting for
+            slot: Slot that the instance is waiting for
         """
         self._deadlock_detector.waiting_for_receive(
                 instance_id, peer_instance_id, port_name, slot)
@@ -387,8 +387,8 @@ class MMPRequestHandler(RequestHandler):
 
         Args:
             instance_id: The instance that is waiting
-            port_name: Port name that the instance is waiting on
-            slot: Slot that the instance is waiting on
+            port_name: Port name that the instance is waiting for
+            slot: Slot that the instance is waiting for
         """
         self._deadlock_detector.waiting_for_receive_done(
                 instance_id, peer_instance_id, port_name, slot)

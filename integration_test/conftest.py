@@ -78,7 +78,7 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
     Args:
         ymmsl_text: YMMSL configuration for the simulation
         tmpdir: Temporary folder to use as runpath a
-        actors: a dictionary of lists containing details for each actor:
+        actors: A dictionary of lists containing details for each actor:
             ``{"instance_name": ("language", "details", ...)}``.
 
             Language can be ``"python"``, ``"cpp"``, ``"mpi_cpp"`` or ``"fortran"``.
@@ -99,6 +99,7 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
 
             For both cpp and Fortran actors, LD_LIBRARY_PATH is automatically updated
             to include the msgpack library path.
+        expect_success: Whether to assert a successful or unsuccessful run.
     """
     env = os.environ.copy()
     ymmsl_doc = ymmsl.load(ymmsl_text)

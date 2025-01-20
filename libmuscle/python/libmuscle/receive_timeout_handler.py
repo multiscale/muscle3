@@ -17,7 +17,7 @@ class ReceiveTimeoutHandler(TimeoutHandler):
     another message when the message does arrive).
 
     This is used by the manager to detect if the simulation is in a deadlock, where a
-    cycle of instances is waiting on each other.
+    cycle of instances is waiting for each other.
     """
 
     def __init__(

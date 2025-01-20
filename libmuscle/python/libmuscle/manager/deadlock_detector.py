@@ -13,7 +13,7 @@ class DeadlockDetector:
     This class is responsible for handling WAITING_FOR_RECEIVE, IS_DEADLOCKED and
     WAITING_FOR_RECEIVE_DONE MMP messages, which are submitted by the MMPServer.
 
-    When a deadlock is detected, the cycle of instances that is waiting on each other is
+    When a deadlock is detected, the cycle of instances that is waiting for each other is
     logged with FATAL severity.
     """
 
@@ -24,7 +24,7 @@ class DeadlockDetector:
         self._waiting_instances: Dict[str, str] = {}
         """Maps instance IDs to the peer instance IDs they are waiting for."""
         self._waiting_instance_ports: Dict[str, Tuple[str, Optional[int]]] = {}
-        """Maps instance IDs to the port/slot they are waiting on.."""
+        """Maps instance IDs to the port/slot they are waiting for.."""
         self._detected_deadlocks: List[List[str]] = []
         """List of deadlocked instance cycles. Set by _handle_potential_deadlock."""
 
@@ -38,7 +38,7 @@ class DeadlockDetector:
 
         Args:
             instance_id: ID of instance that is waiting to receive a message.
-            peer_instance_id: ID of the peer that the instance is waiting on.
+            peer_instance_id: ID of the peer that the instance is waiting for.
             port_name: Name of the input port.
             slot: Optional slot number of the input port.
         """
@@ -61,7 +61,7 @@ class DeadlockDetector:
 
         Args:
             instance_id: ID of instance that is waiting to receive a message.
-            peer_instance_id: ID of the peer that the instance is waiting on.
+            peer_instance_id: ID of the peer that the instance is waiting for.
             port_name: Name of the input port.
             slot: Optional slot number of the input port.
         """
@@ -116,7 +116,7 @@ class DeadlockDetector:
         Make sure to lock self._mutex before calling this.
 
         Args:
-            deadlock_instances: list of instances waiting on eachother
+            deadlock_instances: list of instances waiting for eachother
         """
         self._detected_deadlocks.append(deadlock_instances)
 
@@ -124,7 +124,7 @@ class DeadlockDetector:
         """Create and return formatted deadlock debug info.
 
         Args:
-            deadlock_instances: list of instances waiting on eachother
+            deadlock_instances: list of instances waiting for eachother
         """
         num_instances = str(len(deadlock_instances))
         lines = [f"The following {num_instances} instances are deadlocked:"]
@@ -134,7 +134,7 @@ class DeadlockDetector:
             port, slot = self._waiting_instance_ports[instance]
             slot_txt = "" if slot is None else f"[{slot}]"
             lines.append(
-                f"{num}. Instance '{instance}' is waiting on instance '{peer_instance}'"
+                f"{num}. Instance '{instance}' is waiting for instance '{peer_instance}'"
                 f" in a receive on port '{port}{slot_txt}'."
             )
         return "\n".join(lines)

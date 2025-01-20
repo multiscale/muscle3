@@ -2,6 +2,60 @@
 Tips & tricks
 =============
 
+Deadlock detection
+==================
+
+.. versionadded:: 0.8
+
+MUSCLE3 has a deadlock detection mechanism, which can detect when the simulation
+is deadlocked because (part of) the components of the simulation are all waiting
+for a message from each other. This could happen, for example, due to a bug in
+one of the components, or because the components are not correctly wired
+together.
+
+The simplest deadlock consists of two components, where the first component is
+waiting to receive a message from the second component and vice versa. Because
+both components are waiting for eachother, the simulation is stuck and will no
+longer progress. MUSCLE3 will abort the simulation run and provide an error
+message that indicates that the simulation was deadlocked:
+
+.. code-block:: output
+    :caption: Example output of a deadlocked simulation
+
+    muscle_manager 2024-08-20 13:57:58,544 CRITICAL libmuscle.manager.deadlock_detector: Potential deadlock detected:
+    The following 2 instances are deadlocked:
+    1. Instance 'micro' is waiting for instance 'macro' in a receive on port 'initial_state'.
+    2. Instance 'macro' is waiting for instance 'micro' in a receive on port 'state_in'.
+
+
+.. note::
+    MUSCLE3 can only detect deadlocks that are the result of components waiting
+    for messages to receive. "Internal" deadlocks in simulation components (for
+    example due to bugs in MPI logic) cannot be detected by MUSCLE3.
+
+
+Configuring the deadlock detection
+----------------------------------
+
+With the default settings, MUSCLE3 will detect a deadlock 10 seconds after it
+occurs. The simulation is halted after another 15 seconds have passed.
+These default settings are chosen to limit the runtime impact of the deadlock
+detection. It may be useful to detect deadlocks faster during development of the
+simulation. This can be achieved with the special setting
+``muscle_deadlock_receive_timeout``:
+
+.. code-block:: yaml
+    :caption: Example configuration setting ``muscle_deadlock_receive_timeout``
+
+    ymmsl_version: v0.1
+    settings:
+      muscle_deadlock_receive_timeout: 1.0
+
+The value provided to this setting is the initial timeout (in seconds) before
+MUSCLE3 detects a deadlock. The simulation is halted after 1.5 times that
+duration. Deadlock detection is disabled when a negative value is used.
+
+
 Running simulation components interactively
 ===========================================
 

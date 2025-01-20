@@ -62,7 +62,10 @@ def communicator():
 @pytest.fixture
 def settings_manager():
     with patch('libmuscle.instance.SettingsManager') as SettingsManager:
-        yield SettingsManager.return_value
+        settings_manager = SettingsManager.return_value
+        # Emulate no settings available
+        settings_manager.get_setting.side_effect = KeyError()
+        yield settings_manager
 
 
 @pytest.fixture(autouse=True)
@@ -306,6 +309,7 @@ def test_list_settings(instance, settings_manager):
 
 
 def test_get_setting(instance, settings_manager):
+    settings_manager.get_setting.side_effect = None  # don't raise KeyError
     instance.get_setting('test', 'int')
     settings_manager.get_setting.assert_called_with(
             Ref('component'), Ref('test'), 'int')

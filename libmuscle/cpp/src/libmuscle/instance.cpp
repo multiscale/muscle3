@@ -145,6 +145,7 @@ class Instance::Impl {
         void deregister_();
         void setup_checkpointing_();
         void setup_profiling_();
+        void setup_receive_timeout_();
 
         ::ymmsl::Reference make_full_name_(int argc, char const * const argv[]) const;
         std::string extract_manager_location_(int argc, char const * const argv[]) const;
@@ -228,7 +229,7 @@ Instance::Impl::Impl(
         port_manager_.reset(new PortManager(index_(), ports));
         communicator_.reset(
                 new Communicator(
-                    name_(), index_(), *port_manager_, *logger_, *profiler_));
+                    name_(), index_(), *port_manager_, *logger_, *profiler_, *manager_));
         snapshot_manager_.reset(new SnapshotManager(
                 instance_name_, *manager_, *port_manager_, *logger_));
         trigger_manager_.reset(new TriggerManager());
@@ -241,6 +242,7 @@ Instance::Impl::Impl(
         set_local_log_level_();
         set_remote_log_level_();
         setup_profiling_();
+        setup_receive_timeout_();
         // MMSFValidator needs a connected port manager, and does some logging
         if (! (InstanceFlags::SKIP_MMSF_SEQUENCE_CHECKS & flags_)) {
             mmsf_validator_.reset(new MMSFValidator(*port_manager_, *logger_));
@@ -566,6 +568,30 @@ void Instance::Impl::setup_profiling_() {
         profile_level_str = "all";
     }
     profiler_->set_level(profile_level_str);
+}
+
+void Instance::Impl::setup_receive_timeout_() {
+    double timeout;
+    try {
+        timeout = settings_manager_.get_setting(
+               instance_name_, "muscle_deadlock_receive_timeout").as<double>();
+        if (timeout >= 0 && timeout < 0.1) {
+            logger_->info(
+                    "Provided muscle_deadlock_receive_timeout (", timeout,
+                    ") was less than the minimum of 0.1 seconds, setting it to 0.1.");
+            timeout = 0.1;
+        }
+        communicator_->set_receive_timeout(timeout);
+    }
+    catch (std::runtime_error const & e) {
+        logger_->error(e.what() + std::string(" in muscle_deadlock_receive_timeout"));
+    }
+    catch (std::out_of_range const &) {
+        // muscle_deadlock_receive_timeout not set, do nothing and keep the default
+    }
+    logger_->debug(
+            "Timeout on receiving messages set to ",
+            communicator_->get_receive_timeout());
 }
 
 Message Instance::Impl::receive_message(

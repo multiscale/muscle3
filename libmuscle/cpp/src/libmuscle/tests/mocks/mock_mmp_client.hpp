@@ -32,6 +32,9 @@ class MockMMPClient : public MockClass<MockMMPClient> {
             NAME_MOCK_MEM_FUN(MockMMPClient, register_instance);
             NAME_MOCK_MEM_FUN(MockMMPClient, request_peers);
             NAME_MOCK_MEM_FUN(MockMMPClient, deregister_instance);
+            NAME_MOCK_MEM_FUN(MockMMPClient, waiting_for_receive);
+            NAME_MOCK_MEM_FUN(MockMMPClient, waiting_for_receive_done);
+            NAME_MOCK_MEM_FUN(MockMMPClient, is_deadlocked);
 
             // Create some empty return objects for return values with a complex
             // structure, to make it easier to set them in the tests or fixtures.
@@ -95,6 +98,16 @@ class MockMMPClient : public MockClass<MockMMPClient> {
             >>> request_peers;
 
         MockFun<Void> deregister_instance;
+
+        MockFun<Void,
+            Val<::ymmsl::Reference const &>, Val<std::string const &>, Val<Optional<int>>
+            > waiting_for_receive;
+
+        MockFun<Void,
+            Val<::ymmsl::Reference const &>, Val<std::string const &>, Val<Optional<int>>
+            > waiting_for_receive_done;
+
+        MockFun<Val<bool>> is_deadlocked;
 };
 
 using MMPClient = MockMMPClient;

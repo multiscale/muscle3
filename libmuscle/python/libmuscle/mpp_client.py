@@ -4,7 +4,7 @@ import msgpack
 from ymmsl import Reference
 
 from libmuscle.mcp.protocol import RequestType
-from libmuscle.mcp.transport_client import ProfileData, TransportClient
+from libmuscle.mcp.transport_client import ProfileData, TransportClient, TimeoutHandler
 from libmuscle.mcp.type_registry import transport_client_types
 
 
@@ -40,7 +40,8 @@ class MPPClient:
 
         self._transport_client = client
 
-    def receive(self, receiver: Reference) -> Tuple[bytes, ProfileData]:
+    def receive(self, receiver: Reference, timeout_handler: Optional[TimeoutHandler]
+                ) -> Tuple[bytes, ProfileData]:
         """Receive a message from a port this client connects to.
 
         Args:
@@ -51,7 +52,7 @@ class MPPClient:
         """
         request = [RequestType.GET_NEXT_MESSAGE.value, str(receiver)]
         encoded_request = msgpack.packb(request, use_bin_type=True)
-        return self._transport_client.call(encoded_request)
+        return self._transport_client.call(encoded_request, timeout_handler)
 
     def close(self) -> None:
         """Closes this client.

@@ -1,9 +1,31 @@
-from typing import Tuple
+from typing import Optional, Tuple
 
 from libmuscle.profiling import ProfileTimestamp
 
 
 ProfileData = Tuple[ProfileTimestamp, ProfileTimestamp, ProfileTimestamp]
+
+
+class TimeoutHandler:
+    """Object handling timeouts during :meth:`TransportClient.call`."""
+
+    @property
+    def timeout(self) -> float:
+        """Timeout (in seconds) after which :meth:`on_timeout` is called."""
+        raise NotImplementedError()     # pragma: no cover
+
+    def on_timeout(self) -> None:
+        """Callback when :attr:`timeout` seconds have passed without a response from the
+        peer.
+        """
+        raise NotImplementedError()     # pragma: no cover
+
+    def on_receive(self) -> None:
+        """Callback when receiving a response from the peer.
+
+        Note: this method is only called when the request has timed out.
+        """
+        raise NotImplementedError()     # pragma: no cover
 
 
 class TransportClient:
@@ -25,7 +47,8 @@ class TransportClient:
         """
         raise NotImplementedError()     # pragma: no cover
 
-    def call(self, request: bytes) -> Tuple[bytes, ProfileData]:
+    def call(self, request: bytes, timeout_handler: Optional[TimeoutHandler] = None
+             ) -> Tuple[bytes, ProfileData]:
         """Send a request to the server and receive the response.
 
         This is a blocking call. Besides the result, this function
@@ -36,6 +59,8 @@ class TransportClient:
 
         Args:
             request: The request to send
+            timeout_handler: Optional timeout handler. This is used for communication
+                deadlock detection.
 
         Returns:
             The received response, and the timestamps

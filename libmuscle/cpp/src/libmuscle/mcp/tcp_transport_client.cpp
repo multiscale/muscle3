@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <chrono>
 #include <memory>
 #include <string>
 #include <unistd.h>
@@ -115,6 +116,30 @@ int connect(std::string const & address, bool patient) {
             + port);
 }
 
+/** Poll until timeout (in seconds) is reached. Retry when interrupted with EINTR. */
+inline int poll_retry_eintr(pollfd *fds, nfds_t nfds, double timeout) {
+    using std::chrono::duration;
+    using std::chrono::steady_clock;
+    using std::chrono::milliseconds;
+    using std::chrono::duration_cast;
+
+    const auto timeout_duration = duration<double>(timeout);
+    const auto deadline = steady_clock::now() + timeout_duration;
+    while (true) {
+        int timeout_ms = duration_cast<milliseconds>(deadline - steady_clock::now()).count();
+        int poll_result = poll(fds, nfds, timeout_ms);
+
+        if (poll_result >= 0)
+            return poll_result;
+
+        if (errno != EINTR)
+            throw std::runtime_error(
+                    "Unexpected error during poll(): " +
+                    std::string(std::strerror(errno)));
+        // poll() was interrupted by a signal: retry with re-calculated timeout
+    }
+}
+
 }
 
 
@@ -174,12 +199,32 @@ TcpTransportClient::~TcpTransportClient() {
 }
 
 std::tuple<std::vector<char>, ProfileData> TcpTransportClient::call(
-        char const * req_buf, std::size_t req_len
+        char const * req_buf, std::size_t req_len,
+        TimeoutHandler* timeout_handler
 ) const {
     ProfileTimestamp start_wait;
     send_frame(socket_fd_, req_buf, req_len);
 
-    int64_t length = recv_int64(socket_fd_);
+    int64_t length;
+    if (timeout_handler == nullptr) {
+        length = recv_int64(socket_fd_);
+    } else {
+        bool did_timeout = false;
+        pollfd socket_poll_fd;
+        socket_poll_fd.fd = socket_fd_;
+        socket_poll_fd.events = POLLIN;
+        while (poll_retry_eintr(&socket_poll_fd, 1, timeout_handler->get_timeout()) == 0) {
+            timeout_handler->on_timeout();
+            did_timeout = true;
+        }
+        // socket is ready for a receive, this call shouldn't block:
+        length = recv_int64(socket_fd_);
+
+        if (did_timeout) {
+            timeout_handler->on_receive();
+        }
+    }
+
     ProfileTimestamp start_transfer;
     std::vector<char> result(length);
     recv_all(socket_fd_, result.data(), result.size());

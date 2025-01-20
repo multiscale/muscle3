@@ -34,14 +34,17 @@ Communicator::Communicator(
         ymmsl::Reference const & kernel,
         std::vector<int> const & index,
         PortManager & port_manager,
-        Logger & logger, Profiler & profiler)
+        Logger & logger, Profiler & profiler,
+        MMPClient & manager)
     : kernel_(kernel)
     , index_(index)
     , port_manager_(port_manager)
     , logger_(logger)
     , profiler_(profiler)
+    , manager_(manager)
     , server_()
     , clients_()
+    , receive_timeout_(10.0)  // Notify manager, by default, after 10 seconds waiting in receive_message()
 {}
 
 std::vector<std::string> Communicator::get_locations() const {
@@ -119,10 +122,10 @@ std::tuple<Message, double> Communicator::receive_message(
     Port & port = (port_name == "muscle_settings_in") ?
         port_manager_.muscle_settings_in() : port_manager_.get_port(port_name);
 
+    std::string port_and_slot = port_name;
     if (slot.is_set())
-        logger_.debug("Waiting for message on ", port_name, "[", slot.get(), "]");
-    else
-        logger_.debug("Waiting for message on ", port_name);
+        port_and_slot = port_name + "[" + std::to_string(slot.get()) + "]";
+    logger_.debug("Waiting for message on ", port_and_slot);
     std::vector<int> slot_list;
     if (slot.is_set())
         slot_list.emplace_back(slot.get());
@@ -138,8 +141,11 @@ std::tuple<Message, double> Communicator::receive_message(
     Endpoint snd_endpoint = peer_info_.get().get_peer_endpoints(
             recv_endpoint.port, slot_list).at(0);
     MPPClient & client = get_client_(snd_endpoint.instance());
+    ReceiveTimeoutHandler handler(
+            manager_, snd_endpoint.instance(), port_name, slot, receive_timeout_);
+    ReceiveTimeoutHandler *timeout_handler = receive_timeout_ < 0 ? nullptr : &handler;
     auto msg_and_profile = try_receive_(
-            client, recv_endpoint.ref(), snd_endpoint.kernel);
+            client, recv_endpoint.ref(), snd_endpoint.kernel, port_and_slot, timeout_handler);
     auto & msg = std::get<0>(msg_and_profile);
 
     ProfileEvent recv_decode_event(
@@ -203,20 +209,13 @@ std::tuple<Message, double> Communicator::receive_message(
     if (expected_message_number != mpp_message.message_number) {
         if (expected_message_number - 1 == mpp_message.message_number and
                 port.is_resuming(slot)) {
-            if (slot.is_set())
-                logger_.debug("Discarding received message on ", port_name,
-                              "[", slot.get(), "]: resuming from weakly",
-                              " consistent snapshot");
-            else
-                logger_.debug("Discarding received message on ", port_name,
-                              ": resuming from weakly consistent snapshot");
+            logger_.debug("Discarding received message on ", port_and_slot,
+                          ": resuming from weakly consistent snapshot");
             port.set_resumed(slot);
             return receive_message(port_name, slot, default_msg);
         }
         std::ostringstream oss;
-        oss << "Received message on " << port_name;
-        if (slot.is_set())
-            oss << "[" << slot.get() << "]";
+        oss << "Received message on " << port_and_slot;
         oss << " with unexpected message number " << mpp_message.message_number;
         oss << ". Was expecting " << expected_message_number;
         oss << ". Are you resuming from an inconsistent snapshot?";
@@ -224,16 +223,10 @@ std::tuple<Message, double> Communicator::receive_message(
     }
     port.increment_num_messages(slot);
 
-    if (slot.is_set())
-        logger_.debug("Received message on ", port_name, "[", slot.get(), "]");
-    else
-        logger_.debug("Received message on ", port_name);
+    logger_.debug("Received message on ", port_and_slot);
 
     if (is_close_port(message.data())) {
-        if (slot.is_set())
-            logger_.debug("Port ", port_name, "[", slot.get(), "] is now closed");
-        else
-            logger_.debug("Port ", port_name, " is now closed");
+        logger_.debug("Port ", port_and_slot, " is now closed");
     }
     return std::make_tuple(message, mpp_message.saved_until);
 }
@@ -289,9 +282,15 @@ Endpoint Communicator::get_endpoint_(
 }
 
 std::tuple<std::vector<char>, mcp::ProfileData> Communicator::try_receive_(
-        MPPClient & client, Reference const & receiver, Reference const & peer) {
+        MPPClient & client, Reference const & receiver, Reference const & peer,
+        std::string const & port_and_slot, ReceiveTimeoutHandler *timeout_handler) {
     try {
-        return client.receive(receiver);
+        return client.receive(receiver, timeout_handler);
+    } catch(Deadlock const & err) {
+        throw std::runtime_error(
+            "Deadlock detected when receiving a message on '" +
+            port_and_slot +
+            "'. See manager logs for more detail.");
     } catch(std::runtime_error const & err) {
         throw std::runtime_error(
             "Error while receiving a message: connection with peer '" +

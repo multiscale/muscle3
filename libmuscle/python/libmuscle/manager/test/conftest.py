@@ -8,6 +8,7 @@ from libmuscle.manager.run_dir import RunDir
 from libmuscle.manager.snapshot_registry import SnapshotRegistry
 from libmuscle.manager.topology_store import TopologyStore
 from libmuscle.manager.profile_store import ProfileStore
+from libmuscle.manager.deadlock_detector import DeadlockDetector
 
 
 @pytest.fixture
@@ -55,12 +56,17 @@ def snapshot_registry(mmp_configuration, topology_store) -> SnapshotRegistry:
 
 
 @pytest.fixture
+def deadlock_detector() -> DeadlockDetector:
+    return DeadlockDetector()
+
+
+@pytest.fixture
 def mmp_request_handler(
         logger, profile_store, mmp_configuration, instance_registry,
-        topology_store, snapshot_registry):
+        topology_store, snapshot_registry, deadlock_detector):
     return MMPRequestHandler(
             logger, profile_store, mmp_configuration, instance_registry,
-            topology_store, snapshot_registry, None)
+            topology_store, snapshot_registry, deadlock_detector, None)
 
 
 @pytest.fixture
@@ -77,10 +83,10 @@ def loaded_instance_registry(instance_registry):
 @pytest.fixture
 def registered_mmp_request_handler(
         logger, profile_store, mmp_configuration, loaded_instance_registry,
-        topology_store, snapshot_registry):
+        topology_store, snapshot_registry, deadlock_detector):
     return MMPRequestHandler(
             logger, profile_store, mmp_configuration, loaded_instance_registry,
-            topology_store, snapshot_registry, None)
+            topology_store, snapshot_registry, deadlock_detector, None)
 
 
 @pytest.fixture
@@ -133,8 +139,8 @@ def loaded_instance_registry2():
 @pytest.fixture
 def registered_mmp_request_handler2(
         logger, profile_store, mmp_configuration, loaded_instance_registry2,
-        topology_store2, snapshot_registry2, tmp_path):
+        topology_store2, snapshot_registry2, deadlock_detector, tmp_path):
     return MMPRequestHandler(
             logger, profile_store, mmp_configuration,
             loaded_instance_registry2, topology_store2, snapshot_registry2,
-            RunDir(tmp_path))
+            deadlock_detector, RunDir(tmp_path))

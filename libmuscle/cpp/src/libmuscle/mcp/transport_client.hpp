@@ -18,6 +18,21 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace mcp {
 using ProfileData = std::tuple<
         ProfileTimestamp, ProfileTimestamp, ProfileTimestamp>;
 
+class TimeoutHandler {
+    public:
+        virtual ~TimeoutHandler() = default;
+
+        /** Timeout (in seconds) after which on_timeout is called. */
+        virtual double get_timeout() = 0;
+        /** Callback when getTimeout seconds have passed without a response from * the peer.
+         */
+        virtual void on_timeout() = 0;
+        /** Callback when receiving a response from the peer.
+         * 
+         * Note: this method is only called when the request has timed out.
+         */
+        virtual void on_receive() = 0;
+};
 
 /** A client that connects to an MCP transport server.
  *
@@ -73,7 +88,8 @@ class TransportClient {
          *         received data, and the timestamps.
          */
         virtual std::tuple<std::vector<char>, ProfileData> call(
-                char const * req_buf, std::size_t req_len) const = 0;
+                char const * req_buf, std::size_t req_len,
+                TimeoutHandler* timeout_handler=nullptr) const = 0;
 
         /** Closes this client.
          *

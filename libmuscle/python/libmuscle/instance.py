@@ -151,7 +151,8 @@ class Instance:
         """PortManager for this instance."""
 
         self._communicator = Communicator(
-                self._name, self._index, self._port_manager, self._profiler)
+                self._name, self._index, self._port_manager, self._profiler,
+                self.__manager)
         """Communicator for this instance."""
 
         self._declared_ports = ports
@@ -195,6 +196,7 @@ class Instance:
         self._set_local_log_level()
         self._set_remote_log_level()
         self._setup_profiling()
+        self._setup_receive_timeout()
         # MMSFValidator needs a connected port manager, and does some logging
         self._mmsf_validator = (
                 None if InstanceFlags.SKIP_MMSF_SEQUENCE_CHECKS in self._flags
@@ -828,6 +830,23 @@ class Instance:
             profile_level_str = 'all'
 
         self._profiler.set_level(profile_level_str)
+
+    def _setup_receive_timeout(self) -> None:
+        """Configures receive timeout with settings from settings.
+        """
+        try:
+            timeout = self.get_setting('muscle_deadlock_receive_timeout', 'float')
+            if 0 <= timeout < 0.1:
+                _logger.info(
+                        "Provided muscle_deadlock_receive_timeout (%f) was less than "
+                        "the minimum of 0.1 seconds, setting it to 0.1.", timeout)
+                timeout = 0.1
+            self._communicator.set_receive_timeout(timeout)
+        except KeyError:
+            pass  # do nothing and keep the default
+        _logger.debug(
+                "Timeout on receiving messages set to %f",
+                self._communicator._receive_timeout)
 
     def _decide_reuse_instance(self) -> bool:
         """Decide whether and how to reuse the instance.

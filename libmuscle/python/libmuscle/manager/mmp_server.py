@@ -20,6 +20,7 @@ from libmuscle.mcp.protocol import RequestType, ResponseType
 from libmuscle.mcp.tcp_transport_server import TcpTransportServer
 from libmuscle.mcp.transport_server import RequestHandler
 from libmuscle.manager.profile_store import ProfileStore
+from libmuscle.manager.deadlock_detector import DeadlockDetector
 from libmuscle.profiling import (
         ProfileEvent, ProfileEventType, ProfileTimestamp)
 from libmuscle.snapshot import SnapshotMetadata
@@ -77,6 +78,7 @@ class MMPRequestHandler(RequestHandler):
             instance_registry: InstanceRegistry,
             topology_store: TopologyStore,
             snapshot_registry: SnapshotRegistry,
+            deadlock_detector: DeadlockDetector,
             run_dir: Optional[RunDir]
             ) -> None:
         """Create an MMPRequestHandler.
@@ -93,6 +95,7 @@ class MMPRequestHandler(RequestHandler):
         self._instance_registry = instance_registry
         self._topology_store = topology_store
         self._snapshot_registry = snapshot_registry
+        self._deadlock_detector = deadlock_detector
         self._run_dir = run_dir
         self._reference_time = time.monotonic()
 
@@ -124,6 +127,12 @@ class MMPRequestHandler(RequestHandler):
             response = self._submit_snapshot(*req_args)
         elif req_type == RequestType.GET_CHECKPOINT_INFO.value:
             response = self._get_checkpoint_info(*req_args)
+        elif req_type == RequestType.WAITING_FOR_RECEIVE.value:
+            response = self._waiting_for_receive(*req_args)
+        elif req_type == RequestType.WAITING_FOR_RECEIVE_DONE.value:
+            response = self._waiting_for_receive_done(*req_args)
+        elif req_type == RequestType.IS_DEADLOCKED.value:
+            response = self._is_deadlocked(*req_args)
 
         return cast(bytes, msgpack.packb(response, use_bin_type=True))
 
@@ -357,6 +366,40 @@ class MMPRequestHandler(RequestHandler):
                 resume,
                 snapshot_directory]
 
+    def _waiting_for_receive(
+            self, instance_id: str, peer_instance_id: str,
+            port_name: str, slot: Optional[int]) -> Any:
+        """Indicate that the instance is waiting to receive a message.
+
+        Args:
+            instance_id: The instance that is waiting
+            port_name: Port name that the instance is waiting for
+            slot: Slot that the instance is waiting for
+        """
+        self._deadlock_detector.waiting_for_receive(
+                instance_id, peer_instance_id, port_name, slot)
+        return [ResponseType.SUCCESS.value]
+
+    def _waiting_for_receive_done(
+            self, instance_id: str, peer_instance_id: str,
+            port_name: str, slot: Optional[int]) -> Any:
+        """Indicate that the instance is done waiting to receive a message.
+
+        Args:
+            instance_id: The instance that is waiting
+            port_name: Port name that the instance is waiting for
+            slot: Slot that the instance is waiting for
+        """
+        self._deadlock_detector.waiting_for_receive_done(
+                instance_id, peer_instance_id, port_name, slot)
+        return [ResponseType.SUCCESS.value]
+
+    def _is_deadlocked(self, instance_id: str) -> Any:
+        """Check if the provided instance is part of a detected deadlock.
+        """
+        result = self._deadlock_detector.is_deadlocked(instance_id)
+        return [ResponseType.SUCCESS.value, result]
+
 
 class MMPServer:
     """The MUSCLE Manager Protocol server.
@@ -373,6 +416,7 @@ class MMPServer:
             instance_registry: InstanceRegistry,
             topology_store: TopologyStore,
             snapshot_registry: SnapshotRegistry,
+            deadlock_detector: DeadlockDetector,
             run_dir: Optional[RunDir]
             ) -> None:
         """Create an MMPServer.
@@ -395,7 +439,7 @@ class MMPServer:
         """
         self._handler = MMPRequestHandler(
                 logger, profile_store, configuration, instance_registry,
-                topology_store, snapshot_registry, run_dir)
+                topology_store, snapshot_registry, deadlock_detector, run_dir)
         try:
             self._server = TcpTransportServer(self._handler, 9000)
         except OSError as e:

@@ -3,9 +3,7 @@ from enum import Flag, auto
 import logging
 import os
 import sys
-from typing import cast, Dict, List, Optional, Tuple, overload
-# TODO: import from typing module when dropping support for python 3.7
-from typing_extensions import Literal
+from typing import cast, Dict, List, Literal, Optional, Tuple, overload
 
 from ymmsl import (Identifier, Operator, SettingValue, Port, Reference,
                    Settings)

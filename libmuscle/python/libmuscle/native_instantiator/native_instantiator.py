@@ -188,7 +188,9 @@ class NativeInstantiator(mp.Process):
         """Instantiate an implementation according to the request."""
         name = str(request.instance)
 
-        env = create_instance_env(request.instance, request.implementation.env)
+        env = create_instance_env(
+                request.instance, request.implementation.base_env,
+                request.implementation.env)
         self._add_resources(env, request.res_req)
 
         rankfile = request.instance_dir / 'rankfile'
@@ -232,7 +234,7 @@ class NativeInstantiator(mp.Process):
         else:
             run_script = make_script(
                     request.implementation, request.res_req,
-                    not global_resources().on_cluster(), rankfile)
+                    request.work_dir, not global_resources().on_cluster(), rankfile)
 
         run_script_file = request.instance_dir / 'run_script.sh'
 

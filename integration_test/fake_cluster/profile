@@ -1,0 +1,4 @@
+# Replacement ~/.profile file that does not load .bashrc, for testing purposes
+
+export PROFILE_LOADED=1
+

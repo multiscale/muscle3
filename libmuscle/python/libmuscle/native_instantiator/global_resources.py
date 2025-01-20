@@ -35,11 +35,11 @@ class GlobalResources:
         Detects available resources and initialises the object, which can then be
         queried.
         """
-        if slurm.in_slurm_allocation():
+        if slurm().in_slurm_allocation():
             _logger.info('Detected a SLURM allocation')
             self.scheduler = Scheduler.SLURM
-            self.nodes = slurm.get_nodes()
-            self.logical_cpus_per_node = slurm.get_logical_cpus_per_node()
+            self.nodes = slurm().get_nodes()
+            self.logical_cpus_per_node = slurm().get_logical_cpus_per_node()
             _logger.info(
                     f'We have {len(self.nodes)} nodes and a total of'
                     f' {sum(self.logical_cpus_per_node)} logical CPUs available')
@@ -62,7 +62,7 @@ class GlobalResources:
             agent_cmd: A command that will start the agent.
         """
         if self.scheduler == Scheduler.SLURM:
-            return slurm.agent_launch_command(agent_cmd, len(self.nodes))
+            return slurm().agent_launch_command(agent_cmd, len(self.nodes))
         return agent_cmd
 
 

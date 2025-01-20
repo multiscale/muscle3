@@ -5,4 +5,22 @@ implementations:
     virtual_env: /home/cerulean/shared/venv
     executable: python
     args:
-        - /home/cerulean/shared/cluster_test/component.py
+      - /home/cerulean/shared/cluster_test/component.py
+
+  base_env_login:
+    base_env: login
+    executable: /home/cerulean/shared/venv/bin/python
+    args:
+      - /home/cerulean/shared/cluster_test/base_env.py
+
+  base_env_clean:
+    base_env: clean
+    executable: /home/cerulean/shared/venv/bin/python
+    args:
+      - /home/cerulean/shared/cluster_test/base_env.py
+
+  base_env_manager:
+    base_env: manager
+    executable: /home/cerulean/shared/venv/bin/python
+    args:
+      - /home/cerulean/shared/cluster_test/base_env.py

@@ -60,7 +60,8 @@ setup(
         'parsimonious',
         "numpy>=1.22",
         'typing_extensions>=4.4.0,<5',
-        'ymmsl>=0.13.0,<0.14'          # Also in CI
+        # 'ymmsl>=0.13.0,<0.14'          # Also in CI, and examples requirements.txt
+        'ymmsl @ git+https://github.com/multiscale/ymmsl-python.git@develop'
     ],
     extras_require={
         'dev': [

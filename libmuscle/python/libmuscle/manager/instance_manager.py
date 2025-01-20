@@ -4,7 +4,7 @@ from textwrap import indent
 from threading import Thread
 from typing import Dict, List, Optional, Tuple, Union
 from multiprocessing import Queue
-import queue
+from queue import Empty
 
 from ymmsl import Configuration, Reference
 
@@ -50,7 +50,7 @@ class LogHandlingThread(Thread):
                 record = self._queue.get(True, 0.1)
                 logger = logging.getLogger(record.name)
                 logger.handle(record)
-            except queue.Empty:
+            except Empty:
                 if self._shutting_down:
                     break
 
@@ -291,4 +291,11 @@ class InstanceManager:
         self._instantiator.join()
         self._log_handler.shutdown()
         self._log_handler.join()
+        # Close multiprocessing.Queues and ensure their feeder threads exit
+        queues: List[Queue] = [
+                self._resources_in, self._requests_out,
+                self._results_in, self._log_records_in]
+        for queue in queues:
+            queue.close()
+            queue.join_thread()
         _logger.debug('Instance manager shut down cleanly')

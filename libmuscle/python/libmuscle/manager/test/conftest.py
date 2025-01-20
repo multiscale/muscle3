@@ -36,7 +36,7 @@ def mmp_configuration():
 def profile_store(tmp_path):
     test_profile_store = ProfileStore(tmp_path)
     yield test_profile_store
-    test_profile_store.close()
+    test_profile_store.shutdown()
 
 
 @pytest.fixture

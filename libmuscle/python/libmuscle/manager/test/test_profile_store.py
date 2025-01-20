@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 def test_create_profile_store(tmp_path):
     db = ProfileStore(tmp_path)
-    db.close()
+    db.shutdown()
 
     db_path = tmp_path / 'performance.sqlite'
     conn = sqlite3.connect(db_path, isolation_level=None)
@@ -114,4 +114,4 @@ def test_add_events(tmp_path):
 
     cur.close()
     conn.close()
-    db.close()
+    db.shutdown()

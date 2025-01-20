@@ -38,6 +38,13 @@ bool allows_sending(Operator op);
  */
 bool allows_receiving(Operator op);
 
+/** Return the name of the given operator
+ * 
+ * @param op The operator
+ * @return The name: "NONE", "F_INIT", "O_I", "S" or "O_F"
+ */
+std::string operator_name(Operator op);
+
 /** A port on a component.
  *
  * Ports are used by components to send or receive messages on. They are

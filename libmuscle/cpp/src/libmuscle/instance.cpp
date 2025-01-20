@@ -5,6 +5,7 @@
 #include <libmuscle/data.hpp>
 #include <libmuscle/mcp/data_pack.hpp>
 #include <libmuscle/logger.hpp>
+#include <libmuscle/mmsf_validator.hpp>
 #include <libmuscle/mmp_client.hpp>
 #include <libmuscle/peer_info.hpp>
 #include <libmuscle/port_manager.hpp>
@@ -130,6 +131,7 @@ class Instance::Impl {
         SettingsManager settings_manager_;
         std::unique_ptr<SnapshotManager> snapshot_manager_;
         std::unique_ptr<TriggerManager> trigger_manager_;
+        std::unique_ptr<MMSFValidator> mmsf_validator_;
         Optional<bool> first_run_;
         Optional<bool> do_reuse_;
         bool do_resume_;
@@ -152,8 +154,8 @@ class Instance::Impl {
 
         std::vector<::ymmsl::Port> list_declared_ports_() const;
         void check_port_(
-                std::string const & port_name, Optional<int> slot = {},
-                bool allow_slot_out_of_range = false);
+                std::string const & port_name, Optional<int> slot,
+                bool is_send, bool allow_slot_out_of_range = false);
 
         bool receive_settings_();
         bool have_f_init_connections_();
@@ -241,6 +243,10 @@ Instance::Impl::Impl(
         set_remote_log_level_();
         setup_profiling_();
         setup_receive_timeout_();
+        // MMSFValidator needs a connected port manager, and does some logging
+        if (! (InstanceFlags::SKIP_MMSF_SEQUENCE_CHECKS & flags_)) {
+            mmsf_validator_.reset(new MMSFValidator(*port_manager_, *logger_));
+        }
 #ifdef MUSCLE_ENABLE_MPI
         auto sbase_data = Data(settings_manager_.base);
         msgpack::sbuffer sbuf;
@@ -270,6 +276,7 @@ Instance::Impl::~Impl() {
 
 bool Instance::Impl::reuse_instance() {
     api_guard_->verify_reuse_instance();
+    if (mmsf_validator_) mmsf_validator_->reuse_instance();
 
     bool do_reuse;
     if (do_reuse_.is_set()) {
@@ -279,6 +286,9 @@ bool Instance::Impl::reuse_instance() {
     } else {
         do_reuse = decide_reuse_instance_();
     }
+
+    if (do_resume_ && !do_init_ && mmsf_validator_)
+        mmsf_validator_->skip_f_init();
 
     // now first_run_, do_resume_ and do_init_ are also set correctly
 #ifdef MUSCLE_ENABLE_MPI
@@ -413,7 +423,8 @@ void Instance::Impl::send(std::string const & port_name, Message const & message
     if (mpi_barrier_.is_root()) {
 #endif
 
-        check_port_(port_name);
+        check_port_(port_name, {}, true);
+        if (mmsf_validator_) mmsf_validator_->check_send(port_name, {});
         if (!message.has_settings()) {
             Message msg(message);
             msg.set_settings(settings_manager_.overlay);
@@ -436,7 +447,8 @@ void Instance::Impl::send(
         try {
 #endif
 
-    check_port_(port_name, slot);
+    check_port_(port_name, slot, true);
+    if (mmsf_validator_) mmsf_validator_->check_send(port_name, slot);
     if (!message.has_settings()) {
         Message msg(message);
         msg.set_settings(settings_manager_.overlay);
@@ -596,7 +608,8 @@ Message Instance::Impl::receive_message(
         try {
 #endif
 
-    check_port_(port_name, slot, true);
+    check_port_(port_name, slot, false, true);
+    if (mmsf_validator_) mmsf_validator_->check_receive(port_name, slot);
 
     Reference port_ref(port_name);
     auto const & port = port_manager_->get_port(port_name);
@@ -868,7 +881,7 @@ std::vector<::ymmsl::Port> Instance::Impl::list_declared_ports_() const {
  */
 void Instance::Impl::check_port_(
         std::string const & port_name, Optional<int> slot,
-        bool allow_slot_out_of_range)
+        bool is_send, bool allow_slot_out_of_range)
 {
     if (!port_manager_->port_exists(port_name)) {
         std::ostringstream oss;
@@ -878,8 +891,22 @@ void Instance::Impl::check_port_(
         throw std::logic_error(oss.str());
     }
 
+    auto & port = port_manager_->get_port(port_name);
+    if (is_send) {
+        if (!::ymmsl::allows_sending(port.oper)) {
+            std::ostringstream oss;
+            oss << " Port "  << port_name << " does not allow sending messages.";
+            throw std::logic_error(oss.str());
+        }
+    } else {
+        if (!::ymmsl::allows_receiving(port.oper)) {
+            std::ostringstream oss;
+            oss << " Port "  << port_name << " does not allow receiving messages.";
+            throw std::logic_error(oss.str());
+        }
+    }
+
     if (slot.is_set()) {
-        auto & port = port_manager_->get_port(port_name);
         if (!port.is_vector()) {
             std::ostringstream oss;
             oss << "Port \"" << port_name << "\" is not a vector port, but a slot was";

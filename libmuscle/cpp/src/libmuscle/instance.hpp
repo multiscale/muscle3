@@ -69,6 +69,13 @@ enum class InstanceFlags : int {
      * `ymmsl.KeepsStateForNextUse.NECESSARY`).
      */
     STATE_NOT_REQUIRED_FOR_NEXT_USE = 8,
+
+    /** Disable the checks whether the MMSF is strictly followed when
+     * sending/receiving messages.
+     *
+     * See MMSFValidator for a detailed description of the checks.
+     */
+    SKIP_MMSF_SEQUENCE_CHECKS = 16,
 };
 
 inline InstanceFlags operator|(InstanceFlags a, InstanceFlags b) {

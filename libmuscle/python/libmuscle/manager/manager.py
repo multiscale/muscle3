@@ -135,13 +135,12 @@ class Manager:
         Returns:
             True if success, False if an error occurred.
         """
-        if self._instance_manager:
-            try:
+        try:
+            if self._instance_manager:
                 success = self._instance_manager.wait()
-            finally:
-                self._instance_manager.shutdown()
-        else:
-            self._instance_registry.wait()
-            success = True
-        self.stop()
+            else:
+                self._instance_registry.wait()
+                success = True
+        finally:
+            self.stop()
         return success

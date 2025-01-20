@@ -10,6 +10,7 @@ namespace ymmsl {
 
     using impl::allows_sending;
     using impl::allows_receiving;
+    using impl::operator_name;
     using impl::Conduit;
     using impl::Identifier;
     using impl::operator<<;

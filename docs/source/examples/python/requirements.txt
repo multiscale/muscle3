@@ -1,6 +1,5 @@
 matplotlib>=3,<4
 numpy>=1.22
 sobol_seq==0.2.0
-ymmsl>=0.13,<0.14
-qcg-pilotjob==0.13.1
+ymmsl @ git+https://github.com/multiscale/ymmsl-python.git@develop
 

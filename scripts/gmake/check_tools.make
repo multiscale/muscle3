@@ -67,6 +67,8 @@ tool_command := mpi$(CXX)
 include $(TOOLDIR)/detect_tool.make
 tool_command := mpic++
 include $(TOOLDIR)/detect_tool.make
+tool_command := mpicxx
+include $(TOOLDIR)/detect_tool.make
 
 ifndef MPICXX
     $(info - No MPI C++ compiler found! Maybe there's no MPI installed?)

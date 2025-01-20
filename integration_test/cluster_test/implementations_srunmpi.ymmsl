@@ -1,0 +1,9 @@
+ymmsl_version: v0.1
+
+implementations:
+  component_cpp:
+    modules: openmpi
+    env:
+        +LD_LIBRARY_PATH: /home/cerulean/shared/muscle3-openmpi/lib
+    execution_model: srunmpi
+    executable: /home/cerulean/shared/cluster_test/component_openmpi

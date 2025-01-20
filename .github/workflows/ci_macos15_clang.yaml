@@ -1,8 +1,8 @@
-# Run Continuous Integration on macOS 12 Monterey, with native Clang and
+# Run Continuous Integration on macOS 15 Sequoia, with native Clang and
 # without Fortran.
 
 # This mainly checks for issues/regressions in the native build
-name: compatibility_macos_monterey_12_clang
+name: compatibility_macos_sequoia_15_clang
 on:
   schedule:
     - cron: '30 1 * * 6'
@@ -12,7 +12,7 @@ on:
       - fix_native_compatibility_ci
 jobs:
   build:
-    runs-on: macos-12
+    runs-on: macos-15
     timeout-minutes: 30
 
     steps:
@@ -24,9 +24,9 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python3 -m pip install --upgrade pip
-        pip3 install tox tox-gh-actions
+        python3 -m venv ${GITHUB_WORKSPACE}/test_venv
+        . ${GITHUB_WORKSPACE}/test_venv/bin/activate && pip install tox tox-gh-actions
         HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install openmpi
 
-    - name: Run all tests on macOS Monterey 12 with Clang
-      run: cd ${GITHUB_WORKSPACE} && make test test_examples
+    - name: Run all tests on macOS Sequoia 15 with Clang
+      run: cd ${GITHUB_WORKSPACE} && PATH=$PATH:${GITHUB_WORKSPACE}/test_venv/bin make test test_examples

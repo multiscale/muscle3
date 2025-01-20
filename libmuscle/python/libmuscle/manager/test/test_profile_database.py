@@ -2,9 +2,11 @@ from unittest.mock import patch
 
 from libmuscle.manager.profile_database import ProfileDatabase
 from libmuscle.manager.profile_store import ProfileStore
-from libmuscle.planner.planner import Resources
+from libmuscle.planner.planner import ResourceAssignment
 from libmuscle.profiling import (
         ProfileEvent, ProfileEventType, ProfileTimestamp)
+
+from libmuscle.test.conftest import on_node_resources as onr
 
 from ymmsl import Operator, Port, Reference
 
@@ -21,13 +23,11 @@ def db_file(tmp_path) -> Path:
 
         store.store_instances([Reference('instance1'), Reference('instance2')])
 
-        resources1 = Resources({
-            'node001': {0, 1},
-            'node002': {0, 1}})
+        resources1 = ResourceAssignment([
+            onr('node001', {0, 1}), onr('node002', {0, 1})])
 
-        resources2 = Resources({
-            'node001': {0},
-            'node002': {0, 1, 2}})
+        resources2 = ResourceAssignment([
+            onr('node001', {0}), onr('node002', {0, 1, 2})])
 
         store.store_resources({
             Reference('instance1'): resources1,

@@ -2,7 +2,6 @@ ymmsl_version: v0.1
 
 implementations:
   reaction_python:
-    virtual_env: MUSCLE3_EXAMPLES/python/build/venv
     executable: python
     args: MUSCLE3_EXAMPLES/python/reaction.py
 
@@ -15,7 +14,7 @@ implementations:
     env:
       +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
     executable: MUSCLE3_EXAMPLES/cpp/build/reaction_mpi
-    execution_model: openmpi
+    execution_model: EXECUTION_MODEL
 
   reaction_fortran:
     env:
@@ -26,10 +25,9 @@ implementations:
     env:
       +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
     executable: MUSCLE3_EXAMPLES/fortran/build/reaction_mpi
-    execution_model: openmpi
+    execution_model: EXECUTION_MODEL
 
   diffusion_python:
-    virtual_env: MUSCLE3_EXAMPLES/python/build/venv
     executable: python
     args: MUSCLE3_EXAMPLES/python/diffusion.py
 
@@ -64,7 +62,6 @@ implementations:
     executable: MUSCLE3_EXAMPLES/fortran/build/load_balancer
 
   checkpointing_reaction_python:
-    virtual_env: MUSCLE3_EXAMPLES/python/build/venv
     executable: python
     args: MUSCLE3_EXAMPLES/python/checkpointing_reaction.py
 
@@ -79,7 +76,6 @@ implementations:
     executable: MUSCLE3_EXAMPLES/fortran/build/checkpointing_reaction
 
   checkpointing_diffusion_python:
-    virtual_env: MUSCLE3_EXAMPLES/python/build/venv
     executable: python
     args: MUSCLE3_EXAMPLES/python/checkpointing_diffusion.py
 

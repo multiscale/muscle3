@@ -57,9 +57,10 @@ setup(
         'matplotlib>=3,<4',
         'msgpack>=1,<2',
         'psutil>=5.0.0',
+        'parsimonious',
         "numpy>=1.22",
-        'qcg-pilotjob==0.13.1',
-        'ymmsl>=0.13.0,<0.14'          # Also in CI, update there as well
+        # 'ymmsl>=0.13.0,<0.14'          # Also in CI, and examples requirements.txt
+        'ymmsl @ git+https://github.com/multiscale/ymmsl-python.git@develop'
     ],
     extras_require={
         'dev': [

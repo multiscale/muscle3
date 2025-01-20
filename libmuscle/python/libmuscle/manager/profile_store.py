@@ -5,7 +5,7 @@ from sqlite3 import Cursor
 from threading import Thread
 from typing import cast, Dict, Iterable, List, Optional, Tuple
 
-from libmuscle.planner.planner import Resources
+from libmuscle.planner.planner import ResourceAssignment
 from libmuscle.profiling import ProfileEvent, ProfileEventType
 from libmuscle.manager.profile_database import ProfileDatabase
 from ymmsl import Operator, Reference
@@ -77,7 +77,7 @@ class ProfileStore(ProfileDatabase):
         cur.execute("COMMIT")
         cur.close()
 
-    def store_resources(self, resources: Dict[Reference, Resources]) -> None:
+    def store_resources(self, resources: Dict[Reference, ResourceAssignment]) -> None:
         """Store resource assignments into the database.
 
         Args:
@@ -90,9 +90,9 @@ class ProfileStore(ProfileDatabase):
             instance_oid = self._get_instance_oid(cur, instance_id)
 
             tuples = [
-                    (instance_oid, node, core)
-                    for node, cores in res.cores.items()
-                    for core in cores]
+                    (instance_oid, node.node_name, core.cid)
+                    for node in res.as_resources()
+                    for core in node.cpu_cores]
 
             cur.executemany(
                     "INSERT INTO assigned_cores (instance_oid, node, core)"

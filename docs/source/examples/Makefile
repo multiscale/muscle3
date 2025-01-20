@@ -38,6 +38,8 @@ include detect_fortran_type.make
 
 endif
 
+MPI_EXECUTION_MODEL ?= openmpi
+
 
 # Main targets
 .PHONY: all
@@ -96,7 +98,9 @@ fortran_mpi: base
 	$(MAKE) -C fortran mpi
 
 %.ymmsl: %.ymmsl.in
-	sed -e "s^MUSCLE3_EXAMPLES^$(shell pwd)^g" $^ | sed -e "s^MUSCLE3_HOME^${MUSCLE3_HOME}^g" >$@
+	sed -e "s^MUSCLE3_EXAMPLES^$(shell pwd)^g" $^ | sed -e "s^MUSCLE3_HOME^${MUSCLE3_HOME}^g" | sed -e "s^EXECUTION_MODEL^${MPI_EXECUTION_MODEL}^g" >$@
+	echo "Converted $^ into $@"
+	cat $@
 
 
 .PHONY: clean
@@ -134,7 +138,7 @@ test_cpp: base cpp
 
 .PHONY: test_cpp_mpi
 test_cpp_mpi: base cpp_mpi
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_cpp_mpi.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_cpp_mpi.ymmsl rd_settings.ymmsl || cat run_reaction_diffusion_cpp_mpi_*/instances/micro/run_script.sh run_reaction_diffusion_cpp_mpi_*/instances/micro/stderr.txt
 
 .PHONY: test_fortran
 test_fortran: base fortran

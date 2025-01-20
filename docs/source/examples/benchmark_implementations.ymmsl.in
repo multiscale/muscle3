@@ -2,14 +2,12 @@ ymmsl_version: v0.1
 
 implementations:
   benchmark_driver_python:
-    virtual_env: MUSCLE3_EXAMPLES/python/build/venv
     executable: python
     args:
         - MUSCLE3_EXAMPLES/python/benchmark.py
         - driver
 
   benchmark_mirror_python:
-    virtual_env: MUSCLE3_EXAMPLES/python/build/venv
     executable: python
     args:
         - MUSCLE3_EXAMPLES/python/benchmark.py

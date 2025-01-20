@@ -1,0 +1,24 @@
+ymmsl_version: v0.1
+
+model:
+    name: dispatch
+    components:
+        c1:
+            ports:
+                f_init: init_in
+                o_f: final_out
+            implementation: component_python
+        c2:
+            ports:
+                f_init: init_in
+                o_f: final_out
+            implementation: component_python
+
+    conduits:
+        c1.final_out: c2.init_in
+
+resources:
+    c1:
+        threads: 1
+    c2:
+        threads: 1

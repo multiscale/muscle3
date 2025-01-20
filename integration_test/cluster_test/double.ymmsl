@@ -1,0 +1,25 @@
+ymmsl_version: v0.1
+
+model:
+    name: double
+    components:
+        c1:
+            ports:
+                o_i: inter_out
+                s: inter_in
+            implementation: component_cpp
+        c2:
+            ports:
+                o_i: inter_out
+                s: inter_in
+            implementation: component_cpp
+
+    conduits:
+        c1.inter_out: c2.inter_in
+        c2.inter_out: c1.inter_in
+
+resources:
+    c1:
+        mpi_processes: 2
+    c2:
+        mpi_processes: 2

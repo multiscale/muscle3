@@ -1,11 +1,15 @@
 from errno import ENOTCONN
 import select
+import logging
 import socket
 from typing import Optional, Tuple
 
 from libmuscle.mcp.transport_client import ProfileData, TransportClient, TimeoutHandler
 from libmuscle.mcp.tcp_util import recv_all, recv_int64, send_int64
 from libmuscle.profiling import ProfileTimestamp
+
+
+_logger = logging.getLogger(__name__)
 
 
 class TcpTransportClient(TransportClient):
@@ -37,20 +41,35 @@ class TcpTransportClient(TransportClient):
         sock: Optional[socket.SocketType] = None
         for address in addresses:
             try:
-                sock = self._connect(address)
+                sock = self._connect(address, False)
                 break
             except RuntimeError:
                 pass
 
         if sock is None:
+            # None of our quick connection attempts worked. Either there's a network
+            # problem, or the server is very busy. Let's try again with more patience.
+            _logger.warning(
+                    f'Could not immediately connect to {location}, trying again with'
+                    ' more patience. Please report this if it happens frequently.')
+
+            for address in addresses:
+                try:
+                    sock = self._connect(address, True)
+                    break
+                except RuntimeError:
+                    pass
+
+        if sock is None:
+            _logger.error(f'Failed to connect also on the second try to {location}')
             raise RuntimeError('Could not connect to the server at location'
                                ' {}'.format(location))
-        else:
-            if hasattr(socket, "TCP_NODELAY"):
-                sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
-            if hasattr(socket, "TCP_QUICKACK"):
-                sock.setsockopt(socket.SOL_TCP, socket.TCP_QUICKACK, 1)
-            self._socket = sock
+
+        if hasattr(socket, "TCP_NODELAY"):
+            sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
+        if hasattr(socket, "TCP_QUICKACK"):
+            sock.setsockopt(socket.SOL_TCP, socket.TCP_QUICKACK, 1)
+        self._socket = sock
 
         if hasattr(select, "poll"):
             self._poll_obj: Optional[select.poll] = select.poll()
@@ -126,7 +145,7 @@ class TcpTransportClient(TransportClient):
             if e.errno != ENOTCONN:
                 raise
 
-    def _connect(self, address: str) -> socket.SocketType:
+    def _connect(self, address: str, patient: bool) -> socket.SocketType:
         loc_parts = address.rsplit(':', 1)
         host = loc_parts[0]
         if host.startswith('['):
@@ -146,6 +165,7 @@ class TcpTransportClient(TransportClient):
                 continue
 
             try:
+                sock.settimeout(20.0 if patient else 3.0)     # seconds
                 sock.connect(sockaddr)
             except Exception:
                 sock.close()

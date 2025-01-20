@@ -8,14 +8,16 @@ import queue
 
 from ymmsl import Configuration, Reference
 
+from libmuscle.errors import ConfigurationError
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.instantiator import (
         CancelAllRequest, CrashedResult, InstantiatorRequest,
-        InstantiationRequest, ProcessStatus, ShutdownRequest)
+        InstantiationRequest, Process, ProcessStatus, ShutdownRequest)
 from libmuscle.manager.logger import last_lines
-from libmuscle.manager.qcgpj_instantiator import Process, QCGPJInstantiator
 from libmuscle.manager.run_dir import RunDir
-from libmuscle.planner.planner import Planner, Resources
+from libmuscle.native_instantiator.native_instantiator import NativeInstantiator
+from libmuscle.planner.planner import Planner, ResourceAssignment
+from libmuscle.planner.resources import Resources
 
 
 _logger = logging.getLogger(__name__)
@@ -61,7 +63,7 @@ class InstanceManager:
     def __init__(
             self, configuration: Configuration, run_dir: RunDir,
             instance_registry: InstanceRegistry) -> None:
-        """Create a ProcessManager.
+        """Create an InstanceManager.
 
         Args:
             configuration: The global configuration
@@ -77,7 +79,7 @@ class InstanceManager:
         self._results_in: Queue[_ResultType] = Queue()
         self._log_records_in: Queue[logging.LogRecord] = Queue()
 
-        self._instantiator = QCGPJInstantiator(
+        self._instantiator = NativeInstantiator(
                 self._resources_in, self._requests_out, self._results_in,
                 self._log_records_in, self._run_dir.path)
         self._instantiator.start()
@@ -85,8 +87,18 @@ class InstanceManager:
         self._log_handler = LogHandlingThread(self._log_records_in)
         self._log_handler.start()
 
-        self._allocations: Optional[Dict[Reference, Resources]] = None
-        self._planner = Planner(self._resources_in.get())
+        self._allocations: Optional[Dict[Reference, ResourceAssignment]] = None
+
+        resources = self._resources_in.get()
+        _logger.debug(f'Got resources {resources}')
+        if isinstance(resources, CrashedResult):
+            msg = (
+                'Instantiator crashed. This should not happen, please file a bug'
+                ' report.')
+            _logger.error(msg)
+            raise RuntimeError(msg) from resources.exception
+
+        self._planner = Planner(resources)
         self._num_running = 0
 
     def set_manager_location(self, location: str) -> None:
@@ -104,7 +116,7 @@ class InstanceManager:
         """Starts all the instances of the model."""
         self._allocations = self._planner.allocate_all(self._configuration)
         for instance, resources in self._allocations.items():
-            _logger.info(f'Planned {instance} on {resources}')
+            _logger.info(f'Planned {instance} on {resources.as_resources()}')
 
         components = {c.name: c for c in self._configuration.model.components}
         for instance, resources in self._allocations.items():
@@ -127,11 +139,11 @@ class InstanceManager:
                     instance, implementation,
                     self._configuration.resources[component.name],
                     resources, idir, workdir, stdout_path, stderr_path)
-            _logger.info(f'Instantiating {instance} on {resources}')
+            _logger.info(f'Instantiating {instance}')
             self._requests_out.put(request)
             self._num_running += 1
 
-    def get_resources(self) -> Dict[Reference, Resources]:
+    def get_resources(self) -> Dict[Reference, ResourceAssignment]:
         """Returns the resources allocated to each instance.
 
         Only call this after start_all() has been called, or it will raise
@@ -142,8 +154,7 @@ class InstanceManager:
         """
         if self._allocations is None:
             raise RuntimeError(
-                    'Tried to get resources but we are running without'
-                    ' --start-all')
+                    'Tried to get resources but we are running without --start-all')
 
         return self._allocations
 
@@ -164,9 +175,12 @@ class InstanceManager:
             result = self._results_in.get()
 
             if isinstance(result, CrashedResult):
-                _logger.error(
-                    'Instantiator crashed. This should not happen, please file'
-                    ' a bug report.')
+                if isinstance(result.exception, ConfigurationError):
+                    _logger.error(str(result.exception))
+                else:
+                    _logger.error(
+                        'Instantiator crashed. This should not happen, please file'
+                        ' a bug report.')
                 return False
 
             results.append(result)

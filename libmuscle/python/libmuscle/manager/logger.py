@@ -87,13 +87,6 @@ class Logger:
 
         logging.getLogger('libmuscle').setLevel(log_level)
 
-        # QCG produces a fair bit of junk at INFO, which we don't want
-        # by default. So we set it to WARNING in that case, which is
-        # cleaner. To get all the mess, set the log level to DEBUG.
-        qcg_level = 'WARNING' if log_level == 'INFO' else log_level
-        logging.getLogger('qcg').setLevel(qcg_level)
-        logging.getLogger('asyncio').setLevel(qcg_level)
-
         # YAtiML should be pretty reliable, and if there is an issue
         # then we can easily load the problem file in Python by hand
         # using the yMMSL library and set the log level there.

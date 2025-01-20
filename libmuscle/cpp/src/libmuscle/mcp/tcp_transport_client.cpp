@@ -12,9 +12,13 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <netdb.h>
 #include <netinet/tcp.h>
 #include <poll.h>
+#include <string.h>
+#include <unistd.h>
 
 
 namespace {
@@ -39,7 +43,10 @@ std::vector<std::string> split_location(std::string const & location) {
 }
 
 
-int connect(std::string const & address) {
+int connect(std::string const & address, bool patient) {
+    int timeout = patient ? 3000 : 20000;       // milliseconds
+    std::string errors;
+
     std::size_t split = address.rfind(':');
     std::string host = address.substr(0, split);
     if (host.front() == '[') {
@@ -71,11 +78,37 @@ int connect(std::string const & address) {
         int socket_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
         if (socket_fd == -1) continue;
 
+        int flags = fcntl(socket_fd, F_GETFL, 0);
+        fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
+
         err_code = connect(socket_fd, p->ai_addr, p->ai_addrlen);
-        if (err_code == -1) {
+        if ((err_code == -1) && (errno != EINPROGRESS)) {
             ::close(socket_fd);
             continue;
         }
+
+        struct pollfd pollfds;
+        pollfds.fd = socket_fd;
+        pollfds.events = POLLOUT;
+        pollfds.revents = 0;
+        err_code = poll(&pollfds, 1, timeout);
+
+        if (err_code == 0) {
+            ::close(socket_fd);
+            continue;
+        }
+
+        // check if connect() actually succeeded
+        socklen_t len = sizeof(int);
+        getsockopt(socket_fd, SOL_SOCKET, SO_ERROR, &err_code, &len);
+        if (err_code != 0) {
+            ::close(socket_fd);
+            continue;
+        }
+
+        flags = fcntl(socket_fd, F_GETFL, 0);
+        fcntl(socket_fd, F_SETFL, flags & ~O_NONBLOCK);
+
         return socket_fd;
     }
 
@@ -124,13 +157,25 @@ TcpTransportClient::TcpTransportClient(std::string const & location)
 
     for (auto const & address: addresses)
         try {
-            socket_fd_ = connect(address);
+            socket_fd_ = connect(address, false);
             break;
         }
         catch (std::runtime_error const & e) {
             errors += std::string(e.what()) + "\n";
-            continue;
         }
+
+    if (socket_fd_ == -1) {
+        // None of our quick connection attempts worked. Either there's a network
+        // problem, or the server is very busy. Let's try again with more patience.
+        for (auto const & address: addresses)
+            try {
+                socket_fd_ = connect(address, true);
+                break;
+            }
+            catch (std::runtime_error const & e) {
+                errors += std::string(e.what()) + "\n";
+            }
+    }
 
     if (socket_fd_ == -1)
         throw std::runtime_error(

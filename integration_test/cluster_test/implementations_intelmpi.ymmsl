@@ -1,0 +1,9 @@
+ymmsl_version: v0.1
+
+implementations:
+  component_cpp:
+    modules: intel-oneapi-mpi
+    env:
+        +LD_LIBRARY_PATH: /home/cerulean/shared/muscle3-intelmpi/lib
+    execution_model: intelmpi
+    executable: /home/cerulean/shared/cluster_test/component_intelmpi

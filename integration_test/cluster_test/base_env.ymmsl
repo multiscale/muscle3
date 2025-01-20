@@ -1,0 +1,20 @@
+ymmsl_version: v0.1
+
+model:
+    name: base_env
+    components:
+        login:
+            implementation: base_env_login
+        clean:
+            implementation: base_env_clean
+        manager:
+            implementation: base_env_manager
+
+
+resources:
+    login:
+        threads: 1
+    clean:
+        threads: 1
+    manager:
+        threads: 1

@@ -141,7 +141,7 @@ def _start_headnode(local_term, slurm_version, net_name, shared_dir, headnode_po
         f' --mount type=bind,source={shared_dir},target={REMOTE_SHARED}'
         f' {image_name}'))
 
-    ssh_term(headnode_port, 'Virtual cluster container start timed out')
+    ssh_term(headnode_port, 'Virtual cluster container start timed out').close()
 
 
 def _start_base_cluster(local_term, idx_slurm_version, shared_dir):

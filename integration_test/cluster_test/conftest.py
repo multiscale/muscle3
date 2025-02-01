@@ -297,7 +297,7 @@ def _clean_up_base_cluster(local_term, slurm_version):
 @pytest.fixture(scope='session', params=IDX_SLURM_VERSIONS)
 def installed_cluster(
         request, cleanup_docker, fake_cluster_image, fake_cluster_image_old, shared_dir,
-        repo_root, local_term):
+        repo_root, local_term, assert_no_threads_left):
 
     slurm_version = request.param[1]
     local_shared_dir = shared_dir / slurm_version

@@ -6,7 +6,7 @@ from integration_test.cluster_test.conftest import (
         REMOTE_SHARED, ssh_term, skip_unless_cluster)
 
 
-logger_ = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 @pytest.fixture

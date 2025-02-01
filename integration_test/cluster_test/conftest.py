@@ -8,7 +8,7 @@ import cerulean
 import pytest
 
 
-logger_ = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 IMAGE_NAME = 'muscle3_test_cluster'
@@ -32,7 +32,7 @@ skip_unless_cluster = pytest.mark.skipif(
 def run_cmd(term, timeout, command):
     exit_code, out, err = term.run(timeout, command, [])
     if exit_code != 0:
-        logger_.error(err)
+        _logger.error(err)
     assert exit_code == 0
     return out
 
@@ -214,7 +214,7 @@ def _install_muscle3_native_openmpi(
 
     module_name = f'openmpi/{openmpi_version}-gcc-{gcc_version}-{openmpi_hash[:7]}'
 
-    logger_.info(f'Slurm {slurm_version} and module {module_name}')
+    _logger.info(f'Slurm {slurm_version} and module {module_name}')
 
     run_cmd(remote_term, 600, (
         f'/bin/bash -l -c "'

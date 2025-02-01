@@ -41,6 +41,7 @@ module ymmsl
         procedure :: is_a_int8 => YMMSL_Settings_is_a_int8
         procedure :: is_a_real8 => YMMSL_Settings_is_a_real8
         procedure :: is_a_logical => YMMSL_Settings_is_a_logical
+        procedure :: is_a_int8array => YMMSL_Settings_is_a_int8array
         procedure :: is_a_real8array => YMMSL_Settings_is_a_real8array
         procedure :: is_a_real8array2 => YMMSL_Settings_is_a_real8array2
         procedure :: set_character => YMMSL_Settings_set_character
@@ -48,6 +49,7 @@ module ymmsl
         procedure :: set_int8 => YMMSL_Settings_set_int8
         procedure :: set_real8 => YMMSL_Settings_set_real8
         procedure :: set_logical => YMMSL_Settings_set_logical
+        procedure :: set_int8array => YMMSL_Settings_set_int8array
         procedure :: set_real8array => YMMSL_Settings_set_real8array
         procedure :: set_real8array2 => YMMSL_Settings_set_real8array2
         generic :: set => set_character, &
@@ -55,6 +57,7 @@ module ymmsl
             set_int8, &
             set_real8, &
             set_logical, &
+            set_int8array, &
             set_real8array, &
             set_real8array2
         procedure :: get_as_character => YMMSL_Settings_get_as_character
@@ -62,6 +65,7 @@ module ymmsl
         procedure :: get_as_int8 => YMMSL_Settings_get_as_int8
         procedure :: get_as_real8 => YMMSL_Settings_get_as_real8
         procedure :: get_as_logical => YMMSL_Settings_get_as_logical
+        procedure :: get_as_int8array => YMMSL_Settings_get_as_int8array
         procedure :: get_as_real8array => YMMSL_Settings_get_as_real8array
         procedure :: get_as_real8array2 => YMMSL_Settings_get_as_real8array2
         procedure :: contains => YMMSL_Settings_contains
@@ -81,6 +85,7 @@ module ymmsl
     public :: YMMSL_Settings_is_a_int8
     public :: YMMSL_Settings_is_a_real8
     public :: YMMSL_Settings_is_a_logical
+    public :: YMMSL_Settings_is_a_int8array
     public :: YMMSL_Settings_is_a_real8array
     public :: YMMSL_Settings_is_a_real8array2
     public :: YMMSL_Settings_set_character
@@ -88,6 +93,7 @@ module ymmsl
     public :: YMMSL_Settings_set_int8
     public :: YMMSL_Settings_set_real8
     public :: YMMSL_Settings_set_logical
+    public :: YMMSL_Settings_set_int8array
     public :: YMMSL_Settings_set_real8array
     public :: YMMSL_Settings_set_real8array2
     public :: YMMSL_Settings_set
@@ -96,6 +102,7 @@ module ymmsl
     public :: YMMSL_Settings_get_as_int8
     public :: YMMSL_Settings_get_as_real8
     public :: YMMSL_Settings_get_as_logical
+    public :: YMMSL_Settings_get_as_int8array
     public :: YMMSL_Settings_get_as_real8array
     public :: YMMSL_Settings_get_as_real8array2
     public :: YMMSL_Settings_contains
@@ -232,6 +239,24 @@ module ymmsl
             integer (c_size_t), intent(out) :: err_msg_len
         end function YMMSL_Settings_is_a_logical_
 
+        logical (c_bool) function YMMSL_Settings_is_a_int8array_( &
+                self, &
+                key, &
+                key_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="YMMSL_Settings_is_a_int8array_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            character, intent(in) :: key
+            integer (c_size_t), value, intent(in) :: key_size
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end function YMMSL_Settings_is_a_int8array_
+
         logical (c_bool) function YMMSL_Settings_is_a_real8array_( &
                 self, &
                 key, &
@@ -339,6 +364,22 @@ module ymmsl
             integer (c_size_t), value, intent(in) :: key_size
             logical (c_bool), value, intent(in) :: value
         end subroutine YMMSL_Settings_set_logical_
+
+        subroutine YMMSL_Settings_set_int8array_( &
+                self, &
+                key, &
+                key_size, &
+                value, &
+                value_size) &
+                bind(C, name="YMMSL_Settings_set_int8array_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            character, intent(in) :: key
+            integer (c_size_t), value, intent(in) :: key_size
+            integer (c_int64_t), dimension(*), intent(in) :: value
+            integer (c_int64_t), value, intent(in) :: value_size
+        end subroutine YMMSL_Settings_set_int8array_
 
         subroutine YMMSL_Settings_set_real8array_( &
                 self, &
@@ -466,6 +507,28 @@ module ymmsl
             integer (c_size_t), intent(out) :: err_msg_len
         end function YMMSL_Settings_get_as_logical_
 
+        subroutine YMMSL_Settings_get_as_int8array_( &
+                self, &
+                key, &
+                key_size, &
+                ret_val, &
+                ret_val_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="YMMSL_Settings_get_as_int8array_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            character, intent(in) :: key
+            integer (c_size_t), value, intent(in) :: key_size
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_int64_t), intent(out) :: ret_val_size
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine YMMSL_Settings_get_as_int8array_
+
         subroutine YMMSL_Settings_get_as_real8array_( &
                 self, &
                 key, &
@@ -574,6 +637,7 @@ module ymmsl
             YMMSL_Settings_set_int8, &
             YMMSL_Settings_set_real8, &
             YMMSL_Settings_set_logical, &
+            YMMSL_Settings_set_int8array, &
             YMMSL_Settings_set_real8array, &
             YMMSL_Settings_set_real8array2
     end interface
@@ -931,6 +995,63 @@ contains
         YMMSL_Settings_is_a_logical = ret_val
     end function YMMSL_Settings_is_a_logical
 
+    function YMMSL_Settings_is_a_int8array( &
+            self, &
+            key, &
+            err_code, &
+            err_msg)
+        implicit none
+        class(YMMSL_Settings), intent(in) :: self
+        character (len=*), intent(in) :: key
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        logical :: YMMSL_Settings_is_a_int8array
+
+        logical (c_bool) :: ret_val
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        ret_val = YMMSL_Settings_is_a_int8array_( &
+            self%ptr, &
+            key, int(len(key), c_size_t), &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        YMMSL_Settings_is_a_int8array = ret_val
+    end function YMMSL_Settings_is_a_int8array
+
     function YMMSL_Settings_is_a_real8array( &
             self, &
             key, &
@@ -1119,6 +1240,21 @@ contains
             key, int(len(key), c_size_t), &
             logical(value, c_bool))
     end subroutine YMMSL_Settings_set_logical
+
+    subroutine YMMSL_Settings_set_int8array( &
+            self, &
+            key, &
+            value)
+        implicit none
+        class(YMMSL_Settings), intent(in) :: self
+        character (len=*), intent(in) :: key
+        integer (selected_int_kind(18)), dimension(:), intent(in) :: value
+
+        call YMMSL_Settings_set_int8array_( &
+            self%ptr, &
+            key, int(len(key), c_size_t), &
+            value, int(size(value), c_int64_t))
+    end subroutine YMMSL_Settings_set_int8array
 
     subroutine YMMSL_Settings_set_real8array( &
             self, &
@@ -1441,6 +1577,69 @@ contains
 
         YMMSL_Settings_get_as_logical = ret_val
     end function YMMSL_Settings_get_as_logical
+
+    subroutine YMMSL_Settings_get_as_int8array( &
+            self, &
+            key, &
+            value, &
+            err_code, &
+            err_msg)
+        implicit none
+        class(YMMSL_Settings), intent(in) :: self
+        character (len=*), intent(in) :: key
+        integer (selected_int_kind(18)), dimension(:), intent(out) :: value
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_int64_t) :: ret_val_size
+        integer (selected_int_kind(18)), pointer, dimension(:) :: f_ret_ptr
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call YMMSL_Settings_get_as_int8array_( &
+            self%ptr, &
+            key, int(len(key), c_size_t), &
+            ret_val, &
+            ret_val_size, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
+        value(1:ret_val_size) = f_ret_ptr
+    end subroutine YMMSL_Settings_get_as_int8array
 
     subroutine YMMSL_Settings_get_as_real8array( &
             self, &

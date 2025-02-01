@@ -129,6 +129,18 @@ contains
         end if
     end subroutine assert_eq_real8
 
+    subroutine assert_eq_int8array(x, y)
+        use libmuscle
+        implicit none
+        integer (LIBMUSCLE_int8), dimension(:) :: x
+        integer (LIBMUSCLE_int8), dimension(1:size(x)) :: y
+
+        if (.not. all(x .eq. y)) then
+            print *, 'Assertion failed'
+            stop 1
+        end if
+    end subroutine assert_eq_int8array
+
     subroutine assert_eq_real8array(x, y)
         use libmuscle
         implicit none

@@ -261,7 +261,7 @@ class Communicator:
             # Profiler messages may be used for debugging the deadlock
             self._profiler.shutdown()
             raise RuntimeError(
-                "Deadlock detected when when receiving a message on "
+                "Deadlock detected while receiving a message on "
                 f"port '{port_and_slot}'. See manager logs for more detail."
             ) from None
 

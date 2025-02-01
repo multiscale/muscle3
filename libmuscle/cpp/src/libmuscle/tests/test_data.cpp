@@ -436,7 +436,28 @@ TEST(libmuscle_mcp_data, setting_value) {
     test<ymmsl::SettingValue>(ymmsl::SettingValue(13));
 }
 
-TEST(libmuscle_mcp_data, setting_value_list) {
+TEST(libmuscle_mcp_data, setting_value_list_int) {
+    SettingValue pv(std::vector<int64_t>{10, 20, 31415});
+    Data d(pv);
+    ASSERT_TRUE(d.is_a_list());
+    ASSERT_EQ(d.size(), 3u);
+    ASSERT_EQ(d[0].as<int>(), 10);
+    ASSERT_EQ(d[1].as<int>(), 20);
+    ASSERT_EQ(d[2].as<int>(), 31415);
+
+    msgpack::sbuffer buf;
+    msgpack::pack(buf, d);
+
+    auto zone = std::make_shared<msgpack::zone>();
+    Data d2(unpack_data(zone, buf.data(), buf.size()));
+    ASSERT_TRUE(d.is_a_list());
+    ASSERT_EQ(d2.size(), 3u);
+    ASSERT_EQ(d2[0].as<int>(), 10);
+    ASSERT_EQ(d2[1].as<int>(), 20);
+    ASSERT_EQ(d2[2].as<int>(), 31415);
+}
+
+TEST(libmuscle_mcp_data, setting_value_list_double) {
     SettingValue pv(std::vector<double>{1.0, 2.2, 3.1415});
     Data d(pv);
     ASSERT_TRUE(d.is_a_list());
@@ -457,7 +478,7 @@ TEST(libmuscle_mcp_data, setting_value_list) {
     ASSERT_EQ(d2[2].as<double>(), 3.1415);
 }
 
-TEST(libmuscle_mcp_data, setting_value_list_list) {
+TEST(libmuscle_mcp_data, setting_value_list_list_double) {
     SettingValue pv(std::vector<std::vector<double>>{
             {1.0, 2.2, 3.1415}, {4.5}});
     Data d(pv);
@@ -493,7 +514,21 @@ TEST(libmuscle_mcp_data, setting_value_list_list) {
     ASSERT_EQ(d2[1][0].as<double>(), 4.5);
 }
 
-TEST(libmuscle_mcp_data, setting_value_list_pv) {
+TEST(libmuscle_mcp_data, setting_value_list_int_pv) {
+    SettingValue pv(std::vector<int64_t>{10, 20, 31415});
+    Data d(pv);
+
+    ASSERT_TRUE(d.is_a<SettingValue>());
+    SettingValue pv2 = d.as<SettingValue>();
+
+    auto vec = pv2.as<std::vector<int64_t>>();
+    ASSERT_EQ(vec.size(), 3);
+    ASSERT_EQ(vec[0], 10);
+    ASSERT_EQ(vec[1], 20);
+    ASSERT_EQ(vec[2], 31415);
+}
+
+TEST(libmuscle_mcp_data, setting_value_list_double_pv) {
     SettingValue pv(std::vector<double>{1.0, 2.2, 3.1415});
     Data d(pv);
 
@@ -507,7 +542,7 @@ TEST(libmuscle_mcp_data, setting_value_list_pv) {
     ASSERT_EQ(vec[2], 3.1415);
 }
 
-TEST(libmuscle_mcp_data, setting_value_list_list_pv) {
+TEST(libmuscle_mcp_data, setting_value_list_list_double_pv) {
     SettingValue pv(std::vector<std::vector<double>>{{1.0, 2.2, 3.1415}, {4.5}});
     Data d(pv);
 

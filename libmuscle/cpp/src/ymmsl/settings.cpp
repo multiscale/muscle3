@@ -49,28 +49,61 @@ SettingValue::SettingValue(bool value)
     , bool_value_(value)
 {}
 
+SettingValue::SettingValue(std::initializer_list<int> value)
+    : type_(SettingValue::Type_::LIST_INT)
+{
+    new (&list_int_value_) std::vector<int64_t>();
+    list_int_value_.reserve(value.size());
+    for (int i : value)
+        list_int_value_.push_back(i);
+}
+
+SettingValue::SettingValue(std::initializer_list<long> value)
+    : type_(SettingValue::Type_::LIST_INT)
+{
+    new (&list_int_value_) std::vector<int64_t>();
+    list_int_value_.reserve(value.size());
+    for (long i : value)
+        list_int_value_.push_back(i);
+}
+
+SettingValue::SettingValue(std::initializer_list<long long> value)
+    : type_(SettingValue::Type_::LIST_INT)
+{
+    new (&list_int_value_) std::vector<int64_t>();
+    list_int_value_.reserve(value.size());
+    for (long long i : value)
+        list_int_value_.push_back(i);
+}
+
 SettingValue::SettingValue(std::initializer_list<double> value)
     : type_(SettingValue::Type_::LIST_FLOAT)
 {
-    new (&list_value_) std::vector<double>(value);
+    new (&list_float_value_) std::vector<double>(value);
+}
+
+SettingValue::SettingValue(std::vector<int64_t> const & value)
+    : type_(SettingValue::Type_::LIST_INT)
+{
+    new (&list_int_value_) std::vector<int64_t>(value);
 }
 
 SettingValue::SettingValue(std::vector<double> const & value)
     : type_(SettingValue::Type_::LIST_FLOAT)
 {
-    new (&list_value_) std::vector<double>(value);
+    new (&list_float_value_) std::vector<double>(value);
 }
 
 SettingValue::SettingValue(std::initializer_list<std::vector<double>> const & value)
     : type_(SettingValue::Type_::LIST_LIST_FLOAT)
 {
-    new (&list_list_value_) std::vector<std::vector<double>>(value);
+    new (&list_list_float_value_) std::vector<std::vector<double>>(value);
 }
 
 SettingValue::SettingValue(std::vector<std::vector<double>> const & value)
     : type_(SettingValue::Type_::LIST_LIST_FLOAT)
 {
-    new (&list_list_value_) std::vector<std::vector<double>>(value);
+    new (&list_list_float_value_) std::vector<std::vector<double>>(value);
 }
 
 SettingValue::SettingValue(SettingValue const & other)
@@ -117,10 +150,14 @@ bool SettingValue::operator==(SettingValue const & rhs) const {
             return (rhs.type_ == Type_::FLOAT) && (float_value_ == rhs.float_value_);
         case Type_::BOOL:
             return (rhs.type_ == Type_::BOOL) && (bool_value_ == rhs.bool_value_);
+        case Type_::LIST_INT:
+            return (rhs.type_ == Type_::LIST_INT) && (list_int_value_ == rhs.list_int_value_);
         case Type_::LIST_FLOAT:
-            return (rhs.type_ == Type_::LIST_FLOAT) && (list_value_ == rhs.list_value_);
+            return (rhs.type_ == Type_::LIST_FLOAT) &&
+                   (list_float_value_ == rhs.list_float_value_);
         case Type_::LIST_LIST_FLOAT:
-            return (rhs.type_ == Type_::LIST_LIST_FLOAT) && (list_list_value_ == rhs.list_list_value_);
+            return (rhs.type_ == Type_::LIST_LIST_FLOAT) &&
+                   (list_list_float_value_ == rhs.list_list_float_value_);
     }
     return false;
 }
@@ -134,11 +171,14 @@ void SettingValue::deactivate_() noexcept {
         case Type_::STRING:
             string_value_.~basic_string();
             break;
+        case Type_::LIST_INT:
+            list_int_value_.~vector();
+            break;
         case Type_::LIST_FLOAT:
-            list_value_.~vector();
+            list_float_value_.~vector();
             break;
         case Type_::LIST_LIST_FLOAT:
-            list_list_value_.~vector();
+            list_list_float_value_.~vector();
             break;
         default:
             break;
@@ -162,11 +202,15 @@ void SettingValue::copy_value_from_(SettingValue const & other) {
         case Type_::BOOL:
             bool_value_ = other.bool_value_;
             break;
+        case Type_::LIST_INT:
+            new (&list_int_value_) std::vector<int64_t>(other.list_int_value_);
+            break;
         case Type_::LIST_FLOAT:
-            new (&list_value_) std::vector<double>(other.list_value_);
+            new (&list_float_value_) std::vector<double>(other.list_float_value_);
             break;
         case Type_::LIST_LIST_FLOAT:
-            new (&list_list_value_) std::vector<std::vector<double>>(other.list_list_value_);
+            new (&list_list_float_value_) std::vector<std::vector<double>>(
+                    other.list_list_float_value_);
             break;
     }
 }
@@ -187,21 +231,25 @@ void SettingValue::move_value_from_(SettingValue && other) {
         case Type_::BOOL:
             bool_value_ = other.bool_value_;
             break;
+        case Type_::LIST_INT:
+            new (&list_int_value_) std::vector<int64_t>(std::move(other.list_int_value_));
+            break;
         case Type_::LIST_FLOAT:
-            new (&list_value_) std::vector<double>(std::move(other.list_value_));
+            new (&list_float_value_) std::vector<double>(std::move(other.list_float_value_));
             break;
         case Type_::LIST_LIST_FLOAT:
-            new (&list_list_value_) std::vector<std::vector<double>>(std::move(other.list_list_value_));
+            new (&list_list_float_value_) std::vector<std::vector<double>>(std::move(other.list_list_float_value_));
             break;
     }
 }
 
 namespace {
 
-void write_vec_double(std::ostream & os, std::vector<double> const & val) {
+template <typename T>
+void write_vec(std::ostream & os, std::vector<T> const & val) {
     bool first = true;
     os << "[";
-    for (double d : val) {
+    for (T d : val) {
         if (!first)
             os << ", ";
         os << d;
@@ -221,15 +269,17 @@ std::ostream & operator<<(std::ostream & os, ymmsl::impl::SettingValue const & v
         os << val.as<double>();
     else if (val.is_a<bool>())
         os << std::boolalpha << val.as<bool>();
+    else if (val.is_a<std::vector<int64_t>>())
+        write_vec(os, val.as<std::vector<int64_t>>());
     else if (val.is_a<std::vector<double>>())
-        write_vec_double(os, val.as<std::vector<double>>());
+        write_vec(os, val.as<std::vector<double>>());
     else if (val.is_a<std::vector<std::vector<double>>>()) {
         bool first = true;
         os << "[";
         for (auto const & vec : val.as<std::vector<std::vector<double>>>()) {
             if (!first)
                 os << ", ";
-            write_vec_double(os, vec);
+            write_vec(os, vec);
             first = false;
         }
         os << "]";

@@ -538,6 +538,7 @@ class DataConstRef {
         template <typename T>
         T * zone_alloc_(uint32_t size = 1u);
 
+        std::vector<int64_t> as_vec_int_() const;
         std::vector<double> as_vec_double_() const;
 
         bool is_a_grid_() const;

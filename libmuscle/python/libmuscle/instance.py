@@ -315,6 +315,10 @@ class Instance:
         ...
 
     @overload
+    def get_setting(self, name: str, typ: Literal['[int]']) -> List[int]:
+        ...
+
+    @overload
     def get_setting(self, name: str, typ: Literal['[float]']) -> List[float]:
         ...
 

@@ -1370,6 +1370,8 @@ template std::string Instance::get_setting_as<std::string>(std::string const & n
 template int64_t Instance::get_setting_as<int64_t>(std::string const & name) const;
 template double Instance::get_setting_as<double>(std::string const & name) const;
 template bool Instance::get_setting_as<bool>(std::string const & name) const;
+template std::vector<int64_t> Instance::get_setting_as<std::vector<int64_t>>(
+        std::string const & name) const;
 template std::vector<double> Instance::get_setting_as<std::vector<double>>(
         std::string const & name) const;
 template std::vector<std::vector<double>> Instance::get_setting_as<std::vector<std::vector<double>>>(

@@ -36,6 +36,11 @@ inline bool SettingValue::is_a<bool>() const {
 }
 
 template<>
+inline bool SettingValue::is_a<std::vector<int64_t>>() const {
+    return type_ == Type_::LIST_INT;
+}
+
+template<>
 inline bool SettingValue::is_a<std::vector<double>>() const {
     return type_ == Type_::LIST_FLOAT;
 }
@@ -89,17 +94,24 @@ inline bool SettingValue::as<bool>() const {
 }
 
 template<>
+inline std::vector<int64_t> SettingValue::as<std::vector<int64_t>>() const {
+    if (!is_a<std::vector<int64_t>>())
+        throw std::bad_cast();
+    return list_int_value_;
+}
+
+template<>
 inline std::vector<double> SettingValue::as<std::vector<double>>() const {
     if (!is_a<std::vector<double>>())
         throw std::bad_cast();
-    return list_value_;
+    return list_float_value_;
 }
 
 template<>
 inline std::vector<std::vector<double>> SettingValue::as<std::vector<std::vector<double>>>() const {
     if (!is_a<std::vector<std::vector<double>>>())
         throw std::bad_cast();
-    return list_list_value_;
+    return list_list_float_value_;
 }
 
 template <typename T>

@@ -729,12 +729,14 @@ module libmuscle
         procedure :: is_setting_a_int8 => LIBMUSCLE_Instance_is_setting_a_int8
         procedure :: is_setting_a_real8 => LIBMUSCLE_Instance_is_setting_a_real8
         procedure :: is_setting_a_logical => LIBMUSCLE_Instance_is_setting_a_logical
+        procedure :: is_setting_a_int8array => LIBMUSCLE_Instance_is_setting_a_int8array
         procedure :: is_setting_a_real8array => LIBMUSCLE_Instance_is_setting_a_real8array
         procedure :: is_setting_a_real8array2 => LIBMUSCLE_Instance_is_setting_a_real8array2
         procedure :: get_setting_as_character => LIBMUSCLE_Instance_get_setting_as_character
         procedure :: get_setting_as_int8 => LIBMUSCLE_Instance_get_setting_as_int8
         procedure :: get_setting_as_real8 => LIBMUSCLE_Instance_get_setting_as_real8
         procedure :: get_setting_as_logical => LIBMUSCLE_Instance_get_setting_as_logical
+        procedure :: get_setting_as_int8array => LIBMUSCLE_Instance_get_setting_as_int8array
         procedure :: get_setting_as_real8array => LIBMUSCLE_Instance_get_setting_as_real8array
         procedure :: get_setting_as_real8array2 => LIBMUSCLE_Instance_get_setting_as_real8array2
         procedure :: list_settings => LIBMUSCLE_Instance_list_settings
@@ -782,12 +784,14 @@ module libmuscle
     public :: LIBMUSCLE_Instance_is_setting_a_int8
     public :: LIBMUSCLE_Instance_is_setting_a_real8
     public :: LIBMUSCLE_Instance_is_setting_a_logical
+    public :: LIBMUSCLE_Instance_is_setting_a_int8array
     public :: LIBMUSCLE_Instance_is_setting_a_real8array
     public :: LIBMUSCLE_Instance_is_setting_a_real8array2
     public :: LIBMUSCLE_Instance_get_setting_as_character
     public :: LIBMUSCLE_Instance_get_setting_as_int8
     public :: LIBMUSCLE_Instance_get_setting_as_real8
     public :: LIBMUSCLE_Instance_get_setting_as_logical
+    public :: LIBMUSCLE_Instance_get_setting_as_int8array
     public :: LIBMUSCLE_Instance_get_setting_as_real8array
     public :: LIBMUSCLE_Instance_get_setting_as_real8array2
     public :: LIBMUSCLE_Instance_list_settings
@@ -3425,6 +3429,24 @@ module libmuscle
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Instance_is_setting_a_logical_
 
+        logical (c_bool) function LIBMUSCLE_Instance_is_setting_a_int8array_( &
+                self, &
+                name, &
+                name_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="LIBMUSCLE_Instance_is_setting_a_int8array_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            character, intent(in) :: name
+            integer (c_size_t), value, intent(in) :: name_size
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end function LIBMUSCLE_Instance_is_setting_a_int8array_
+
         logical (c_bool) function LIBMUSCLE_Instance_is_setting_a_real8array_( &
                 self, &
                 name, &
@@ -3536,6 +3558,28 @@ module libmuscle
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_Instance_get_setting_as_logical_
+
+        subroutine LIBMUSCLE_Instance_get_setting_as_int8array_( &
+                self, &
+                name, &
+                name_size, &
+                ret_val, &
+                ret_val_size, &
+                err_code, &
+                err_msg, &
+                err_msg_len) &
+                bind(C, name="LIBMUSCLE_Instance_get_setting_as_int8array_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            character, intent(in) :: name
+            integer (c_size_t), value, intent(in) :: name_size
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_int64_t), intent(out) :: ret_val_size
+            integer (c_int), intent(out) :: err_code
+            type (c_ptr), intent(out) :: err_msg
+            integer (c_size_t), intent(out) :: err_msg_len
+        end subroutine LIBMUSCLE_Instance_get_setting_as_int8array_
 
         subroutine LIBMUSCLE_Instance_get_setting_as_real8array_( &
                 self, &
@@ -17248,6 +17292,63 @@ contains
         LIBMUSCLE_Instance_is_setting_a_logical = ret_val
     end function LIBMUSCLE_Instance_is_setting_a_logical
 
+    function LIBMUSCLE_Instance_is_setting_a_int8array( &
+            self, &
+            name, &
+            err_code, &
+            err_msg)
+        implicit none
+        class(LIBMUSCLE_Instance), intent(in) :: self
+        character (len=*), intent(in) :: name
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+        logical :: LIBMUSCLE_Instance_is_setting_a_int8array
+
+        logical (c_bool) :: ret_val
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        ret_val = LIBMUSCLE_Instance_is_setting_a_int8array_( &
+            self%ptr, &
+            name, int(len(name), c_size_t), &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        LIBMUSCLE_Instance_is_setting_a_int8array = ret_val
+    end function LIBMUSCLE_Instance_is_setting_a_int8array
+
     function LIBMUSCLE_Instance_is_setting_a_real8array( &
             self, &
             name, &
@@ -17597,6 +17698,69 @@ contains
 
         LIBMUSCLE_Instance_get_setting_as_logical = ret_val
     end function LIBMUSCLE_Instance_get_setting_as_logical
+
+    subroutine LIBMUSCLE_Instance_get_setting_as_int8array( &
+            self, &
+            name, &
+            value, &
+            err_code, &
+            err_msg)
+        implicit none
+        class(LIBMUSCLE_Instance), intent(in) :: self
+        character (len=*), intent(in) :: name
+        integer (selected_int_kind(18)), dimension(:), intent(out) :: value
+        integer, optional, intent(out) :: err_code
+        character(:), allocatable, optional, intent(out) :: err_msg
+
+        type (c_ptr) :: ret_val
+        integer (c_int64_t) :: ret_val_size
+        integer (selected_int_kind(18)), pointer, dimension(:) :: f_ret_ptr
+        integer (c_int) :: err_code_v
+        type (c_ptr) :: err_msg_v
+        integer (c_size_t) :: err_msg_len_v
+        character (c_char), dimension(:), pointer :: err_msg_f
+        character(:), allocatable :: err_msg_p
+        integer (c_size_t) :: err_msg_i
+
+        call LIBMUSCLE_Instance_get_setting_as_int8array_( &
+            self%ptr, &
+            name, int(len(name), c_size_t), &
+            ret_val, &
+            ret_val_size, &
+            err_code_v, &
+            err_msg_v, &
+            err_msg_len_v)
+
+        if (err_code_v .ne. 0) then
+            if (present(err_code)) then
+                err_code = err_code_v
+                if (present(err_msg)) then
+                    call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                    allocate (character(err_msg_len_v) :: err_msg)
+                    do err_msg_i = 1, err_msg_len_v
+                        err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                    end do
+                end if
+
+                return
+            else
+                call c_f_pointer(err_msg_v, err_msg_f, (/err_msg_len_v/))
+                allocate (character(err_msg_len_v) :: err_msg_p)
+                do err_msg_i = 1, err_msg_len_v
+                    err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
+                end do
+                print *, err_msg_p
+                stop
+            end if
+        else
+            if (present(err_code)) then
+                err_code = 0
+            end if
+        end if
+
+        call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
+        value(1:ret_val_size) = f_ret_ptr
+    end subroutine LIBMUSCLE_Instance_get_setting_as_int8array
 
     subroutine LIBMUSCLE_Instance_get_setting_as_real8array( &
             self, &

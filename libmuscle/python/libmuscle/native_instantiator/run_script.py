@@ -215,12 +215,12 @@ def local_command(implementation: Implementation, enable_debug: bool) -> str:
         A format string with embedded {ntasks} and {rankfile}.
     """
     if implementation.execution_model == ExecutionModel.DIRECT:
-        fstr = '{command} {args}'
+        fstr = 'exec {command} {args}'
     elif implementation.execution_model == ExecutionModel.OPENMPI:
         # Native name is orterun for older and prterun for newer OpenMPI.
         # So we go with mpirun, which works for either.
         fargs = [
-                'mpirun -np $MUSCLE_MPI_PROCESSES',
+                'exec mpirun -np $MUSCLE_MPI_PROCESSES',
                 '--oversubscribe'
                 ]
 
@@ -232,7 +232,7 @@ def local_command(implementation: Implementation, enable_debug: bool) -> str:
         fstr = ' '.join(fargs)
 
     elif implementation.execution_model == ExecutionModel.INTELMPI:
-        fstr = 'mpirun -n $MUSCLE_MPI_PROCESSES {command} {args}'
+        fstr = 'exec mpirun -n $MUSCLE_MPI_PROCESSES {command} {args}'
     elif implementation.execution_model == ExecutionModel.SRUNMPI:
         raise ConfigurationError(
                 f'Could not start {implementation.name} because the SRUNMPI execution'
@@ -274,9 +274,9 @@ def cluster_command(implementation: Implementation, enable_debug: bool) -> str:
     if implementation.execution_model == ExecutionModel.DIRECT:
         fargs = [
                 'if ! taskset -V >/dev/null 2>&1 ; then',
-                '    {command} {args}',
+                '    exec {command} {args}',
                 'else',
-                '    taskset $MUSCLE_BIND_MASK {command} {args}',
+                '    exec taskset $MUSCLE_BIND_MASK {command} {args}',
                 'fi'
                 ]
         fstr = '\n'.join(fargs)
@@ -285,7 +285,7 @@ def cluster_command(implementation: Implementation, enable_debug: bool) -> str:
         fargs = [
                 # Native name is orterun for older and prterun for newer OpenMPI.
                 # So we go with mpirun, which works for either.
-                'mpirun -np $MUSCLE_MPI_PROCESSES',
+                'exec mpirun -np $MUSCLE_MPI_PROCESSES',
                 '--rankfile $MUSCLE_RANKFILE --use-hwthread-cpus --bind-to hwthread',
                 '--oversubscribe'
                 ]
@@ -307,7 +307,7 @@ def cluster_command(implementation: Implementation, enable_debug: bool) -> str:
 
     elif implementation.execution_model == ExecutionModel.INTELMPI:
         fargs = [
-                'mpirun -n $MUSCLE_MPI_PROCESSES',
+                'exec mpirun -n $MUSCLE_MPI_PROCESSES',
                 '-machinefile $MUSCLE_RANKFILE']
 
         if enable_debug:
@@ -318,7 +318,7 @@ def cluster_command(implementation: Implementation, enable_debug: bool) -> str:
         fstr = ' '.join(fargs)
 
     elif implementation.execution_model == ExecutionModel.SRUNMPI:
-        fargs = ['srun -n $MUSCLE_MPI_PROCESSES -m arbitrary']
+        fargs = ['exec srun -n $MUSCLE_MPI_PROCESSES -m arbitrary']
 
         if slurm().quirks.overlap:
             fargs.append('--overlap')

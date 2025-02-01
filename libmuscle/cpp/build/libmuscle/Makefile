@@ -159,7 +159,7 @@ endif
 
 $(objdir)/%.d: %.cpp $(srcdir)/version.h
 	@mkdir -p $(@D)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -E -MM -MT $(@:.d=.o) $< -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(MPIFLAGS) -E -MM -MT $(@:.d=.o) $< -o $@
 
 $(objdir)/%.o: %.cpp $(srcdir)/version.h
 	@mkdir -p $(@D)

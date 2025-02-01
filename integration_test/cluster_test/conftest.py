@@ -220,8 +220,8 @@ def _install_muscle3_native_openmpi(
         f'/bin/bash -l -c "'
         f'module load {module_name} && '
         f'cd {remote_source} && '
-        f'make distclean && '
-        f'PREFIX={prefix} make install"'))
+        f'make distclean >distclean.log 2>&1 && '
+        f'PREFIX={prefix} make install >make.log 2>&1 || cat make.log"'))
 
     return 'openmpi', prefix, module_name
 
@@ -237,8 +237,8 @@ def _install_muscle3_native_intelmpi(
         f'/bin/bash -l -c "'
         f'module load {module_name} && '
         f'cd {remote_source} && '
-        f'make distclean && '
-        f'PREFIX={prefix} make install"'))
+        f'make distclean >distclean.log 2>&1 && '
+        f'PREFIX={prefix} make install >make.log 2>&1 || cat make.log"'))
 
     return 'intelmpi', prefix, module_name
 

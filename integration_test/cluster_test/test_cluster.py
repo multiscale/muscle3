@@ -122,7 +122,7 @@ def test_single(
         assert output.split('\n')[0] == 'headnode'
     else:
         node, hwthreads, _ = output.split('\n')
-        assert node == 'node-0'
+        assert node == 'node-0.example.org'
         assert hwthread_to_core(hwthreads) == [0]
 
 
@@ -149,11 +149,11 @@ def test_dispatch(
         assert c2_out.split('\n')[0] == 'headnode'
     else:
         node, hwthreads, _ = c1_out.split('\n')
-        assert node == 'node-1'
+        assert node == 'node-1.example.org'
         assert hwthread_to_core(hwthreads) == [0]
 
         node, hwthreads, _ = c2_out.split('\n')
-        assert node == 'node-1'
+        assert node == 'node-1.example.org'
         assert hwthread_to_core(hwthreads) == [0]
 
 
@@ -179,7 +179,7 @@ def test_multiple(
             assert out.split('\n')[0] == 'headnode'
         else:
             node, hwthreads, _ = out.split('\n')
-            assert (instance, node) == (instance, f'node-{(i - 1) // 2}')
+            assert (instance, node) == (instance, f'node-{(i - 1) // 2}.example.org')
             assert (instance, hwthread_to_core(hwthreads)) == (instance, [(i - 1) % 2])
 
 
@@ -213,7 +213,7 @@ def test_double(
                 assert out.split('\n')[0] == 'headnode'
             else:
                 node, hwthreads, _ = out.split('\n')
-                assert node == f'node-{i + 2}'
+                assert node == f'node-{i + 2}.example.org'
                 assert hwthread_to_core(hwthreads) == [rank]
 
 
@@ -247,7 +247,7 @@ def test_macro_micro(
                 assert out.split('\n')[0] == 'headnode'
             else:
                 node, hwthreads, _ = out.split('\n')
-                assert node == 'node-4'
+                assert node == 'node-4.example.org'
                 assert hwthread_to_core(hwthreads) == [rank]
 
 

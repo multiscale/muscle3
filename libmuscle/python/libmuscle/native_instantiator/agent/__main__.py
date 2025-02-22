@@ -4,7 +4,7 @@ import psutil
 from socket import gethostname
 import sys
 from time import sleep
-from typing import Dict, Set
+from typing import Dict, Set, Tuple
 
 from libmuscle.native_instantiator.process_manager import ProcessManager
 from libmuscle.native_instantiator.agent.map_client import MAPClient
@@ -80,20 +80,31 @@ class Agent:
             A dict mapping resource types to resource descriptions.
         """
         if hasattr(os, 'sched_getaffinity'):
-            hwthreads_by_core: Dict[int, Set[int]] = dict()
+            hwthreads_by_core_tuple: Dict[Tuple[int, int], Set[int]] = dict()
 
             # these are the logical hwthread ids that we can use
             hwthread_ids = list(os.sched_getaffinity(0))
 
-            for i in hwthread_ids:
-                with open(f'/sys/devices/system/cpu/cpu{i}/topology/core_id', 'r') as f:
+            for hwthread_id in hwthread_ids:
+                topdir = f'/sys/devices/system/cpu/cpu{hwthread_id}/topology'
+                with open(f'{topdir}/core_id', 'r') as f:
                     # this gets the logical core id for the hwthread
                     core_id = int(f.read())
-                hwthreads_by_core.setdefault(core_id, set()).add(i)
+                with open(f'{topdir}/physical_package_id', 'r') as f:
+                    # this gets the die/socket id for the hwthread
+                    package_id = int(f.read())
+
+                core_tuple = (package_id, core_id)
+                hwthreads_by_core_tuple.setdefault(core_tuple, set()).add(hwthread_id)
+
+            core_lgid_hwthreads = [
+                    (i, hwthreads_by_core_tuple[core_tuple])
+                    for i, core_tuple in enumerate(
+                        sorted(hwthreads_by_core_tuple.keys()))]
 
             cores = CoreSet((
-                    Core(core_id, hwthreads)
-                    for core_id, hwthreads in hwthreads_by_core.items()))
+                    Core(core_lgid, hwthreads)
+                    for core_lgid, hwthreads in core_lgid_hwthreads))
 
         else:
             # MacOS doesn't support thread affinity, but older Macs with Intel

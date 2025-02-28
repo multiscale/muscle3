@@ -45,7 +45,7 @@ RUN . /opt/spack/share/spack/setup-env.sh && \
 
 RUN . /opt/spack/share/spack/setup-env.sh && \
     . $(spack location -i lmod)/lmod/lmod/init/bash && \
-    spack install intel-oneapi-mpi@2021.14.0 target=zen2
+    spack install intel-oneapi-mpi@2021.14.0
 
 # RUN . /opt/spack/share/spack/setup-env.sh && \
 #     . $(spack location -i lmod)/lmod/lmod/init/bash && \

@@ -59,13 +59,6 @@ def openmpi_prep_resources(resources: ResourceAssignment) -> Tuple[str, Dict[str
 def impi_prep_resources(resources: ResourceAssignment) -> Tuple[str, Dict[str, str]]:
     """Create resource description for Intel MPI mpirun
 
-    Intel MPI mpirun accepts either one core for each MPI process, or one hwthread. It
-    cannot bind a process to more than one explicitly specified core or hwthread the way
-    srun and OpenMPI can. At the moment, we bind each process to one core, and that's
-    what we do here as well, but this will become a problem for MPI+OpenMP codes. Those
-    can be pinned to sockets, NUMA domains or caches, which does make sense, so we'll
-    have to figure that out when we add support.
-
     Args:
         resources: The resource assignment to describe
 

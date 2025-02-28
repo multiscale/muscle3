@@ -167,6 +167,7 @@ class TcpTransportClient(TransportClient):
             try:
                 sock.settimeout(20.0 if patient else 3.0)     # seconds
                 sock.connect(sockaddr)
+                sock.settimeout(60.0)
             except Exception:
                 sock.close()
                 continue

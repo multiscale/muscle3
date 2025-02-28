@@ -1,6 +1,5 @@
 import logging
 import multiprocessing as mp
-from os import chdir
 from pathlib import Path
 import queue
 import sys
@@ -48,11 +47,10 @@ class NativeInstantiator(mp.Process):
     def run(self) -> None:
         """Entry point for the process"""
         try:
-            m3_dir = self._run_dir / 'muscle3'
-            m3_dir.mkdir(exist_ok=True)
-            chdir(m3_dir)
+            logs_dir = self._run_dir / 'logs'
+            logs_dir.mkdir(exist_ok=True)
 
-            self._agent_manager = AgentManager(m3_dir)
+            self._agent_manager = AgentManager(logs_dir)
 
             reconfigure_logging(self._log_records_out)
             self._send_resources()

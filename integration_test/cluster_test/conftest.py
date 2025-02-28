@@ -120,11 +120,12 @@ def _create_network(local_term, slurm_version):
 def _start_nodes(local_term, slurm_version, net_name, shared_dir):
     for i in range(5):
         node_name = f'node-{i}'
+        hostname = f'{node_name}.example.org'
 
         image_name = _image_name(slurm_version)
 
         run_cmd(local_term, 60, (
-            f'docker run -d --name={node_name}-{slurm_version} --hostname={node_name}'
+            f'docker run -d --name={node_name}-{slurm_version} --hostname={hostname}'
             f' --network={net_name} --cap-add=CAP_SYS_NICE'
             f' --env SLURM_VERSION={slurm_version}'
             f' --mount type=bind,source={shared_dir},target={REMOTE_SHARED}'

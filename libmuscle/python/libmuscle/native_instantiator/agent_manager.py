@@ -38,7 +38,8 @@ class AgentManager(IAgentManager):
         Args:
             agent_dir: Directory in which agents can write log files.
         """
-        self._nodes: List[str] = list()
+        self._expected_nodes = global_resources().nodes
+        self._nodes: Dict[str, str] = dict()
         self._resources: Resources = Resources([])
         self._resources_lock = Lock()   # protects _nodes and _resources
 
@@ -75,8 +76,9 @@ class AgentManager(IAgentManager):
             stdout: File to redirect stdout to
             stderr: File to redirect stderr to
         """
+        agent_hostname = self._nodes[node_name]
         command = StartCommand(name, work_dir, args, env, stdout, stderr)
-        self._server.deposit_command(node_name, command)
+        self._server.deposit_command(agent_hostname, command)
 
     def cancel_all(self) -> None:
         """Cancel all processes.
@@ -85,8 +87,8 @@ class AgentManager(IAgentManager):
 
         Called by NativeInstantiator.
         """
-        for node_name in self._nodes:
-            self._server.deposit_command(node_name, CancelAllCommand())
+        for node_host_name in self._nodes.values():
+            self._server.deposit_command(node_host_name, CancelAllCommand())
 
     def get_finished(self) -> List[Tuple[str, int]]:
         """Returns names and exit codes of finished processes.
@@ -106,8 +108,8 @@ class AgentManager(IAgentManager):
     def shutdown(self) -> None:
         """Shut down the manager and its agents."""
         command = ShutdownCommand()
-        for node_name in self._nodes:
-            self._server.deposit_command(node_name, command)
+        for node_host_name in self._nodes.values():
+            self._server.deposit_command(node_host_name, command)
 
         try:
             self._agents_process.wait(60)
@@ -134,8 +136,21 @@ class AgentManager(IAgentManager):
             resources: Description of a node's resources
         """
         _logger.debug(f'Agent reported {resources}')
+
+        # The agent reports a hostname, which we assume contains the node name
+        agent_hostname = resources.node_name
+        for exp_node_name in self._expected_nodes:
+            if exp_node_name in resources.node_name:
+                resources.node_name = exp_node_name
+                break
+        else:
+            _logger.warning(
+                    f'Agent reported hostname {resources.node_name}, which could not'
+                    ' be matched against any expected node name from'
+                    f' {self._expected_nodes}.')
+
         with self._resources_lock:
-            self._nodes.append(resources.node_name)
+            self._nodes[resources.node_name] = agent_hostname
             self._resources.add_node(resources)
 
     def report_result(self, names_exit_codes: List[Tuple[str, int]]) -> None:
@@ -183,16 +198,16 @@ class AgentManager(IAgentManager):
                 args, cwd=agent_dir, stdout=self._agents_stdout,
                 stderr=self._agents_stderr)
 
-        expected_nodes = global_resources().nodes
+        num_expected = len(self._expected_nodes)
 
         resources_complete = False
         while not resources_complete:
             sleep(0.1)
             with self._resources_lock:
-                resources_complete = len(self._nodes) == len(expected_nodes)
-                too_many_agents = len(self._nodes) > len(expected_nodes)
+                resources_complete = len(self._nodes) == num_expected
+                too_many_agents = len(self._nodes) > num_expected
 
-            _logger.debug(f'{len(self._nodes)} agents up of {len(expected_nodes)}')
+            _logger.debug(f'{len(self._nodes)} agents up of {num_expected}')
 
             if self._agents_process.poll() is not None:
                 msg = (
@@ -206,19 +221,9 @@ class AgentManager(IAgentManager):
                 msg = (
                         'More agents were started than MUSCLE3 asked for. This is not'
                         ' supposed to happen. Please file an issue on GitHub, with the'
-                        ' SLURM version (use "sbatch -v") and the sbatch command used'
+                        ' SLURM version (use "sbatch -V") and the sbatch command used'
                         ' to submit the job.')
                 _logger.error(msg)
                 raise RuntimeError(msg)
 
         _logger.info(f'All agents running on {self._nodes}')
-
-        if sorted(expected_nodes) != sorted(self._nodes):
-            _logger.error(
-                    'Agent-reported node hostnames do not match what we got from the'
-                    ' resource manager.')
-            _logger.error(
-                    'According to the resource manager, we have'
-                    f' {sorted(expected_nodes)}')
-            _logger.error(
-                    f'The agents are reporting {sorted(self._nodes)}')

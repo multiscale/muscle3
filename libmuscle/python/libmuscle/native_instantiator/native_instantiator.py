@@ -179,7 +179,8 @@ class NativeInstantiator(mp.Process):
                         f'An agent is running on node {node.node_name} but the'
                         ' environment does not list it as ours. It seems that the'
                         ' node\'s hostname does not match what SLURM calls it. We will'
-                        ' not use this node, because we\'re not sure it\'s really ours.'
+                        ' not use this node, because we\'re not sure it\'s really ours'
+                        ' or if it is, how many resources on it we can use.'
                         )
 
         self._resources_out.put(resources)

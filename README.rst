@@ -59,4 +59,4 @@ fellow human beings with respect.
 
 .. _`the MUSCLE3 documentation`: https://muscle3.readthedocs.io
 .. _`documentation on contributing`: http://muscle3.readthedocs.io/en/latest/contributing.html
-.. _`code of conduct`: https://github.com/multiscale/muscle3/blob/develop/CODE_OF_CONDUCT.md
+.. _`code of conduct`: https://github.com/multiscale/muscle3/blob/develop/CODE_OF_CONDUCT.rst

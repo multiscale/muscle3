@@ -237,7 +237,7 @@ class TimelinePlot:
         ax.set_autoscale_on(True)
         ax.callbacks.connect('xlim_changed', self.update_data)
 
-        ordered_artists = [self._bars[event_type] for event_type in _EVENT_TYPES]
+        ordered_artists = [self._bars[event_type][0] for event_type in _EVENT_TYPES]
         ordered_names = list(_EVENT_TYPES)
 
         ordered_artists.insert(6, running_artist)

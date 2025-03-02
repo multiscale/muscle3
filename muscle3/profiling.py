@@ -119,7 +119,7 @@ _EVENT_PALETTE = {
         'SEND': '#0095bf'}
 
 
-_MAX_EVENTS = 1000
+_MAX_EVENTS = 5000
 
 
 _CUTOFF_TEXT = (

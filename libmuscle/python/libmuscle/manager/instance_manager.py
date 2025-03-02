@@ -224,8 +224,11 @@ class InstanceManager:
                                 ' object?')
                         crashes.append((result, stderr_file))
                 else:
-                    with stderr_file.open() as f:
-                        peer_crash = any(['peer crash?' in line for line in f])
+                    try:
+                        with stderr_file.open() as f:
+                            peer_crash = any(['peer crash?' in line for line in f])
+                    except FileNotFoundError:
+                        peer_crash = False
 
                     if peer_crash:
                         _logger.warning(

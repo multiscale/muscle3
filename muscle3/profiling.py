@@ -41,8 +41,10 @@ def plot_instances(performance_file: Path) -> None:
     for label in ax.xaxis.get_ticklabels():
         label.set_horizontalalignment('right')
     ax.set_ylabel('Total time (s)')
-    ax.legend(loc='upper right')
-    plt.subplots_adjust(bottom=0.30)
+    fig.legend(loc='outside right center')
+    # bottom=0.3 leaves space for x-axis labels
+    # right=0.8 leaves 20% for the legend
+    fig.subplots_adjust(bottom=0.3, right=0.8)
 
 
 def plot_resources(performance_file: Path) -> None:
@@ -93,8 +95,10 @@ def plot_resources(performance_file: Path) -> None:
     for tick_label in ax.xaxis.get_ticklabels():
         tick_label.set_horizontalalignment('right')
     ax.set_ylabel('Total time (s)')
-    ax.legend(loc='upper right')
-    plt.subplots_adjust(bottom=0.30)
+    fig.legend(loc='outside right center')
+    # bottom=0.3 leaves space for x-axis labels
+    # right=0.8 leaves 20% for the legend
+    fig.subplots_adjust(bottom=0.3, right=0.8)
 
 
 _EVENT_TYPES = (
@@ -143,7 +147,9 @@ class TimelinePlot:
         Args:
             performance_file: The database to plot
         """
-        _, ax = plt.subplots()
+        fig, ax = plt.subplots()
+        # right=0.8 leaves 20% for the legend
+        fig.subplots_adjust(right=0.67)
         self._ax = ax
 
         # Y axis
@@ -237,7 +243,9 @@ class TimelinePlot:
         ordered_artists.insert(6, running_artist)
         ordered_names.insert(6, 'RUNNING')
 
-        ax.legend(ordered_artists, ordered_names, loc='upper right')
+        fig.legend(
+                ordered_artists, ordered_names, loc='outside right center',
+                bbox_to_anchor=(1.0, 0.6))
         cast(Figure, ax.figure).canvas.draw_idle()
 
     def close(self) -> None:

@@ -1009,9 +1009,8 @@ void Instance::Impl::pre_receive_(
         port_ref += slot.get();
 
     auto msg_saved_until = communicator_->receive_message(port_name, slot);
+
     auto & msg = std::get<0>(msg_saved_until);
-    auto & saved_until = std::get<1>(msg_saved_until);
-    f_init_cache_.emplace(port_ref, msg);
     bool apply_overlay = !(flags_ & InstanceFlags::DONT_APPLY_OVERLAY);
     if (apply_overlay) {
         apply_overlay_(msg);
@@ -1019,6 +1018,9 @@ void Instance::Impl::pre_receive_(
             check_compatibility_(port_name, msg.settings());
         msg.unset_settings();
     }
+    f_init_cache_.emplace(port_ref, msg);
+
+    auto & saved_until = std::get<1>(msg_saved_until);
     trigger_manager_->harmonise_wall_time(saved_until);
 }
 

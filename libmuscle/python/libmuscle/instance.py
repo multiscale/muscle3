@@ -1162,11 +1162,11 @@ class Instance:
 
         def pre_receive(port_name: str, slot: Optional[int]) -> None:
             msg, saved_until = self._communicator.receive_message(port_name, slot)
-            self._f_init_cache[(port_name, slot)] = msg
             if apply_overlay:
                 self.__apply_overlay(msg)
                 self.__check_compatibility(port_name, msg.settings)
                 msg.settings = None
+            self._f_init_cache[(port_name, slot)] = msg
             self._trigger_manager.harmonise_wall_time(saved_until)
 
         self._f_init_cache = dict()

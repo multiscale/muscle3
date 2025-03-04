@@ -323,6 +323,39 @@ void MMPClient::deregister_instance() {
     }
 }
 
+void MMPClient::waiting_for_receive(
+        ::ymmsl::Reference const & peer_instance_id, std::string const & port_name,
+        Optional<int> slot)
+{
+    auto request = Data::list(
+            static_cast<int>(RequestType::waiting_for_receive),
+            static_cast<std::string>(instance_id_),
+            static_cast<std::string>(peer_instance_id), port_name, encode_optional(slot));
+
+    auto response = call_manager_(request);
+}
+
+void MMPClient::waiting_for_receive_done(
+        ::ymmsl::Reference const & peer_instance_id, std::string const & port_name,
+        Optional<int> slot)
+{
+    auto request = Data::list(
+            static_cast<int>(RequestType::waiting_for_receive_done),
+            static_cast<std::string>(instance_id_),
+            static_cast<std::string>(peer_instance_id), port_name, encode_optional(slot));
+
+    auto response = call_manager_(request);
+}
+
+bool MMPClient::is_deadlocked() {
+    auto request = Data::list(
+            static_cast<int>(RequestType::is_deadlocked),
+            static_cast<std::string>(instance_id_));
+    
+    auto response = call_manager_(request);
+    return response[1].as<bool>();
+}
+
 DataConstRef MMPClient::call_manager_(DataConstRef const & request) {
     std::lock_guard<std::mutex> lock(mutex_);
 

@@ -353,6 +353,14 @@ DataConstRef::DataConstRef(SettingValue const & value)
         *mp_obj_ << value.as<double>();
     else if (value.is_a<bool>())
         *mp_obj_ << value.as<bool>();
+    else if (value.is_a<std::vector<int64_t>>()) {
+        auto vec = value.as<std::vector<int64_t>>();
+        auto list = Data::nils(vec.size());
+        for (std::size_t i = 0u; i < vec.size(); ++i)
+            list[i] = vec[i];
+        std::swap(list.mp_obj_, mp_obj_);
+        std::swap(list.mp_zones_, mp_zones_);
+    }
     else if (value.is_a<std::vector<double>>()) {
         auto vec = value.as<std::vector<double>>();
         auto list = Data::nils(vec.size());
@@ -532,9 +540,12 @@ SettingValue DataConstRef::as<SettingValue>() const {
         return as<bool>();
     else if (is_a_list()) {
         if (size() == 0u)
+            // Could be a vector<int64_t> too, but we cannot tell. Hmm.
             return std::vector<double>();
         else if (self[0].is_a<double>())
             return as_vec_double_();
+        else if (self[0].is_a<int64_t>())
+            return as_vec_int_();
         else if (self[0].is_a_list()) {
             std::vector<std::vector<double>> result;
             for (std::size_t i = 0u; i < size(); ++i) {
@@ -773,6 +784,19 @@ DataConstRef::DataConstRef(char ext_type_id, DataConstRef const & data)
     zoned_mem[0] = ext_type_id;
     memcpy(zoned_mem + 1, buf.data(), buf.size());
     *mp_obj_ << msgpack::type::ext_ref(zoned_mem, buf.size() + 1);
+}
+
+std::vector<int64_t> DataConstRef::as_vec_int_() const {
+    std::vector<int64_t> result;
+    DataConstRef const & self = *this;
+    for (std::size_t i = 0u; i < size(); ++i) {
+        if (self[i].is_a<int64_t>())
+            result.push_back(self[i].as<int64_t>());
+        else
+            throw std::runtime_error("Found a list containing"
+                    " something else than an int.");
+    }
+    return result;
 }
 
 std::vector<double> DataConstRef::as_vec_double_() const {

@@ -274,6 +274,52 @@ bool YMMSL_Settings_is_a_logical_(std::intptr_t self, char * key, std::size_t ke
     return false;
 }
 
+bool YMMSL_Settings_is_a_int8array_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Settings * self_p = reinterpret_cast<Settings *>(self);
+    std::string key_s(key, key_size);
+    try {
+        *err_code = 0;
+        bool result = self_p->at(key_s).is_a<std::vector<int64_t>>();
+        return result;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    return false;
+}
+
 bool YMMSL_Settings_is_a_real8array_(std::intptr_t self, char * key, std::size_t key_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
@@ -399,6 +445,14 @@ void YMMSL_Settings_set_logical_(std::intptr_t self, char * key, std::size_t key
     Settings * self_p = reinterpret_cast<Settings *>(self);
     std::string key_s(key, key_size);
     (*self_p)[key_s] = value;
+    return;
+}
+
+void YMMSL_Settings_set_int8array_(std::intptr_t self, char * key, std::size_t key_size, std::int64_t * value, std::int64_t value_size) {
+    Settings * self_p = reinterpret_cast<Settings *>(self);
+    std::string key_s(key, key_size);
+    std::vector<std::int64_t> value_v(value, value + value_size);
+    (*self_p)[key_s] = value_v;
     return;
 }
 
@@ -652,6 +706,54 @@ bool YMMSL_Settings_get_as_logical_(std::intptr_t self, char * key, std::size_t 
         *err_msg_len = msg.size();
     }
     return false;
+}
+
+void YMMSL_Settings_get_as_int8array_(std::intptr_t self, char * key, std::size_t key_size, std::int64_t ** value, std::size_t * value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Settings * self_p = reinterpret_cast<Settings *>(self);
+    std::string key_s(key, key_size);
+    try {
+        *err_code = 0;
+        static std::vector<std::int64_t> result;
+        result = self_p->at(key_s).as<std::vector<int64_t>>();
+        *value = result.data();
+        *value_size = result.size();
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
 }
 
 void YMMSL_Settings_get_as_real8array_(std::intptr_t self, char * key, std::size_t key_size, double ** value, std::size_t * value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {

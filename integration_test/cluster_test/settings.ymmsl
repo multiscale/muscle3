@@ -1,0 +1,5 @@
+ymmsl_version: v0.1
+
+settings:
+    muscle_remote_log_level: DEBUG
+    steps: 10

@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <chrono>
 #include <memory>
 #include <string>
 #include <unistd.h>
@@ -11,8 +12,13 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <netdb.h>
 #include <netinet/tcp.h>
+#include <poll.h>
+#include <string.h>
+#include <unistd.h>
 
 
 namespace {
@@ -37,7 +43,10 @@ std::vector<std::string> split_location(std::string const & location) {
 }
 
 
-int connect(std::string const & address) {
+int connect(std::string const & address, bool patient) {
+    int timeout = patient ? 3000 : 20000;       // milliseconds
+    std::string errors;
+
     std::size_t split = address.rfind(':');
     std::string host = address.substr(0, split);
     if (host.front() == '[') {
@@ -69,16 +78,66 @@ int connect(std::string const & address) {
         int socket_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
         if (socket_fd == -1) continue;
 
+        int flags = fcntl(socket_fd, F_GETFL, 0);
+        fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
+
         err_code = connect(socket_fd, p->ai_addr, p->ai_addrlen);
-        if (err_code == -1) {
+        if ((err_code == -1) && (errno != EINPROGRESS)) {
             ::close(socket_fd);
             continue;
         }
+
+        struct pollfd pollfds;
+        pollfds.fd = socket_fd;
+        pollfds.events = POLLOUT;
+        pollfds.revents = 0;
+        err_code = poll(&pollfds, 1, timeout);
+
+        if (err_code == 0) {
+            ::close(socket_fd);
+            continue;
+        }
+
+        // check if connect() actually succeeded
+        socklen_t len = sizeof(int);
+        getsockopt(socket_fd, SOL_SOCKET, SO_ERROR, &err_code, &len);
+        if (err_code != 0) {
+            ::close(socket_fd);
+            continue;
+        }
+
+        flags = fcntl(socket_fd, F_GETFL, 0);
+        fcntl(socket_fd, F_SETFL, flags & ~O_NONBLOCK);
+
         return socket_fd;
     }
 
     throw std::runtime_error("Could not connect to " + host + " on port "
             + port);
+}
+
+/** Poll until timeout (in seconds) is reached. Retry when interrupted with EINTR. */
+inline int poll_retry_eintr(pollfd *fds, nfds_t nfds, double timeout) {
+    using std::chrono::duration;
+    using std::chrono::steady_clock;
+    using std::chrono::milliseconds;
+    using std::chrono::duration_cast;
+
+    const auto timeout_duration = duration<double>(timeout);
+    const auto deadline = steady_clock::now() + timeout_duration;
+    while (true) {
+        int timeout_ms = duration_cast<milliseconds>(deadline - steady_clock::now()).count();
+        int poll_result = poll(fds, nfds, timeout_ms);
+
+        if (poll_result >= 0)
+            return poll_result;
+
+        if (errno != EINTR)
+            throw std::runtime_error(
+                    "Unexpected error during poll(): " +
+                    std::string(std::strerror(errno)));
+        // poll() was interrupted by a signal: retry with re-calculated timeout
+    }
 }
 
 }
@@ -98,13 +157,25 @@ TcpTransportClient::TcpTransportClient(std::string const & location)
 
     for (auto const & address: addresses)
         try {
-            socket_fd_ = connect(address);
+            socket_fd_ = connect(address, false);
             break;
         }
         catch (std::runtime_error const & e) {
             errors += std::string(e.what()) + "\n";
-            continue;
         }
+
+    if (socket_fd_ == -1) {
+        // None of our quick connection attempts worked. Either there's a network
+        // problem, or the server is very busy. Let's try again with more patience.
+        for (auto const & address: addresses)
+            try {
+                socket_fd_ = connect(address, true);
+                break;
+            }
+            catch (std::runtime_error const & e) {
+                errors += std::string(e.what()) + "\n";
+            }
+    }
 
     if (socket_fd_ == -1)
         throw std::runtime_error(
@@ -128,12 +199,32 @@ TcpTransportClient::~TcpTransportClient() {
 }
 
 std::tuple<std::vector<char>, ProfileData> TcpTransportClient::call(
-        char const * req_buf, std::size_t req_len
+        char const * req_buf, std::size_t req_len,
+        TimeoutHandler* timeout_handler
 ) const {
     ProfileTimestamp start_wait;
     send_frame(socket_fd_, req_buf, req_len);
 
-    int64_t length = recv_int64(socket_fd_);
+    int64_t length;
+    if (timeout_handler == nullptr) {
+        length = recv_int64(socket_fd_);
+    } else {
+        bool did_timeout = false;
+        pollfd socket_poll_fd;
+        socket_poll_fd.fd = socket_fd_;
+        socket_poll_fd.events = POLLIN;
+        while (poll_retry_eintr(&socket_poll_fd, 1, timeout_handler->get_timeout()) == 0) {
+            timeout_handler->on_timeout();
+            did_timeout = true;
+        }
+        // socket is ready for a receive, this call shouldn't block:
+        length = recv_int64(socket_fd_);
+
+        if (did_timeout) {
+            timeout_handler->on_receive();
+        }
+    }
+
     ProfileTimestamp start_transfer;
     std::vector<char> result(length);
     recv_all(socket_fd_, result.data(), result.size());

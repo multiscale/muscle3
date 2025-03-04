@@ -261,11 +261,11 @@ type we're expecting by calling a different function. If the actual type is
 different, an error will be printed and the program will be halted. It is
 possible to detect and handle errors instead, see below for that.
 
-Getting settings is done via the ``instance%get_setting_as_<type>()``
-functions. Supported types are ``character``, ``logical``, ``int8`` (a 64-bit
-integer), ``real8`` (a 64-bit double precision real number), ``real8array`` (a
-1D array of double precision reals) and ``real8array2`` (a 2D array of double
-precision reals). See the :f:func:`API documentation
+Getting settings is done via the ``instance%get_setting_as_<type>()`` functions.
+Supported types are ``character``, ``logical``, ``int8`` (a 64-bit integer), ``real8``
+(a 64-bit double precision real number), ``int8array`` (a 1D array of 64-bit integers),
+``real8array`` (a 1D array of double precision reals) and ``real8array2`` (a 2D array of
+double precision reals). See the :f:func:`API documentation
 <LIBMUSCLE_Instance_get_setting_as_character>` for details.
 
 

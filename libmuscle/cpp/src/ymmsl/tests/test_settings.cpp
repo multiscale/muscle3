@@ -21,20 +21,23 @@ TEST(ymmsl_settings, test_create_setting_value) {
     SettingValue v2(42l);
     SettingValue v3(12.34);
     SettingValue v4(true);
-    SettingValue v5({12.34, 56.78});
-    SettingValue v6({{12.34, 0.0}, {56.78, 0.0}});
+    SettingValue v5({12, 34, 56, 78});
+    SettingValue v6({12.34, 56.78});
+    SettingValue v7({{12.34, 0.0}, {56.78, 0.0}});
 
     ASSERT_EQ(v1.as<std::string>(), "testing");
     ASSERT_EQ(v2.as<int64_t>(), 42l);
     ASSERT_EQ(v3.as<double>(), 12.34);
     ASSERT_EQ(v4.as<bool>(), true);
-    ASSERT_TRUE(v5.is_a<vector<double>>());
-    ASSERT_EQ(v5.as<vector<double>>(), vector<double>({12.34, 56.78}));
-    Vec2 v6_ref;
-    v6_ref.push_back(vector<double>{12.34, 0.0});
-    v6_ref.push_back(vector<double>{56.78, 0.0});
-    ASSERT_TRUE(v6.is_a<Vec2>());
-    ASSERT_EQ(v6.as<Vec2>(), v6_ref);
+    ASSERT_TRUE(v5.is_a<vector<int64_t>>());
+    ASSERT_EQ(v5.as<vector<int64_t>>(), vector<int64_t>({12, 34, 56, 78}));
+    ASSERT_TRUE(v6.is_a<vector<double>>());
+    ASSERT_EQ(v6.as<vector<double>>(), vector<double>({12.34, 56.78}));
+    Vec2 v7_ref;
+    v7_ref.push_back(vector<double>{12.34, 0.0});
+    v7_ref.push_back(vector<double>{56.78, 0.0});
+    ASSERT_TRUE(v7.is_a<Vec2>());
+    ASSERT_EQ(v7.as<Vec2>(), v7_ref);
 }
 
 TEST(ymmsl_settings, test_copy_setting_value) {
@@ -54,13 +57,17 @@ TEST(ymmsl_settings, test_copy_setting_value) {
     SettingValue v8(v7);
     ASSERT_EQ(v8.as<bool>(), false);
 
-    SettingValue v9(vector<double>({1.2, 8.9}));
+    SettingValue v9(vector<int64_t>({54, 32}));
     SettingValue v10(v9);
-    ASSERT_EQ(v10.as<vector<double>>(), vector<double>({1.2, 8.9}));
+    ASSERT_EQ(v10.as<vector<int64_t>>(), vector<int64_t>({54l, 32l}));
 
-    SettingValue v11(Vec2({{1.2, 8.9}, {2.3, 6.7}}));
+    SettingValue v11(vector<double>({1.2, 8.9}));
     SettingValue v12(v11);
-    ASSERT_EQ(v12.as<Vec2>(), Vec2({{1.2, 8.9}, {2.3, 6.7}}));
+    ASSERT_EQ(v12.as<vector<double>>(), vector<double>({1.2, 8.9}));
+
+    SettingValue v13(Vec2({{1.2, 8.9}, {2.3, 6.7}}));
+    SettingValue v14(v13);
+    ASSERT_EQ(v14.as<Vec2>(), Vec2({{1.2, 8.9}, {2.3, 6.7}}));
 }
 
 TEST(ymmsl_settings, test_move_setting_value) {
@@ -84,15 +91,21 @@ TEST(ymmsl_settings, test_move_setting_value) {
     ASSERT_EQ(v8.as<bool>(), true);
     ASSERT_FALSE(v7.is_a<bool>());
 
-    SettingValue v9({3.14, 2.71});
+    SettingValue v9({14l, 27l});
     SettingValue v10(std::move(v9));
-    ASSERT_EQ(v10.as<vector<double>>()[0], 3.14);
-    ASSERT_FALSE(v9.is_a<vector<double>>());
+    ASSERT_EQ(v10.as<vector<int64_t>>()[0], 14l);
+    ASSERT_EQ(v10.as<vector<int64_t>>()[1], 27l);
+    ASSERT_FALSE(v9.is_a<vector<int64_t>>());
 
-    SettingValue v11({{3.14, 2.71}});
+    SettingValue v11({3.14, 2.71});
     SettingValue v12(std::move(v11));
-    ASSERT_EQ(v12.as<Vec2>()[0][1], 2.71);
-    ASSERT_FALSE(v11.is_a<Vec2>());
+    ASSERT_EQ(v12.as<vector<double>>()[0], 3.14);
+    ASSERT_FALSE(v11.is_a<vector<double>>());
+
+    SettingValue v13({{3.14, 2.71}});
+    SettingValue v14(std::move(v13));
+    ASSERT_EQ(v14.as<Vec2>()[0][1], 2.71);
+    ASSERT_FALSE(v13.is_a<Vec2>());
 }
 
 TEST(ymmsl_settings, test_copy_assign_setting_value) {
@@ -125,18 +138,26 @@ TEST(ymmsl_settings, test_copy_assign_setting_value) {
     ASSERT_EQ(v5.as<bool>(), false);
     ASSERT_EQ(v2.as<bool>(), false);
 
-    SettingValue v6({1.2});
+    SettingValue v6({9, 1});
     v2 = v6;
-    ASSERT_TRUE(v6.is_a<vector<double>>());
+    ASSERT_TRUE(v6.is_a<vector<int64_t>>());
+    ASSERT_TRUE(v2.is_a<vector<int64_t>>());
+    ASSERT_EQ(v6.as<vector<int64_t>>().size(), 2u);
+    ASSERT_EQ(v2.as<vector<int64_t>>()[0], 9);
+    ASSERT_EQ(v2.as<vector<int64_t>>()[1], 1);
+
+    SettingValue v7({1.2});
+    v2 = v7;
+    ASSERT_TRUE(v7.is_a<vector<double>>());
     ASSERT_TRUE(v2.is_a<vector<double>>());
-    ASSERT_EQ(v6.as<vector<double>>().size(), 1u);
+    ASSERT_EQ(v7.as<vector<double>>().size(), 1u);
     ASSERT_EQ(v2.as<vector<double>>()[0], 1.2);
 
-    SettingValue v7({{1.2, 1}, {4, 3}});
-    v2 = v7;
-    ASSERT_TRUE(v7.is_a<Vec2>());
+    SettingValue v8({{1.2, 1}, {4, 3}});
+    v2 = v8;
+    ASSERT_TRUE(v8.is_a<Vec2>());
     ASSERT_TRUE(v2.is_a<Vec2>());
-    ASSERT_EQ(v7.as<Vec2>().size(), 2u);
+    ASSERT_EQ(v8.as<Vec2>().size(), 2u);
     ASSERT_EQ(v2.as<Vec2>()[0][0], 1.2);
     ASSERT_EQ(v2.as<Vec2>()[1][1], 3.0);
 }
@@ -167,38 +188,48 @@ TEST(ymmsl_settings, test_move_assign_setting_value) {
     ASSERT_TRUE(v2.is_a<bool>());
     ASSERT_EQ(v2.as<bool>(), true);
 
-    SettingValue v6(vector<double>({7.6, 5.4, 3.2}));
+    SettingValue v6(vector<int64_t>({76, 45, 32}));
     v2 = std::move(v6);
-    ASSERT_FALSE(v6.is_a<vector<double>>());
+    ASSERT_FALSE(v6.is_a<vector<int64_t>>());
+    ASSERT_TRUE(v2.is_a<vector<int64_t>>());
+    ASSERT_EQ(v2.as<vector<int64_t>>()[2], 32);
+
+    SettingValue v7(vector<double>({7.6, 5.4, 3.2}));
+    v2 = std::move(v7);
+    ASSERT_FALSE(v7.is_a<vector<double>>());
     ASSERT_TRUE(v2.is_a<vector<double>>());
     ASSERT_EQ(v2.as<vector<double>>()[2], 3.2);
 
-    SettingValue v7(Vec2({{7.6}, {5.4, 3.2}}));
-    v2 = std::move(v7);
-    ASSERT_FALSE(v7.is_a<Vec2>());
+    SettingValue v8(Vec2({{7.6}, {5.4, 3.2}}));
+    v2 = std::move(v8);
+    ASSERT_FALSE(v8.is_a<Vec2>());
     ASSERT_TRUE(v2.is_a<Vec2>());
     ASSERT_EQ(v2.as<Vec2>()[1][0], 5.4);
 }
 
 TEST(ymmsl_settings, test_compare_setting_value) {
-    SettingValue v1(13);
+    SettingValue v1(13l);
     SettingValue v2(13.0);
     SettingValue v3("13");
     SettingValue v4("13");
-    SettingValue v5({13.2, 14.3});
-    SettingValue v6(std::vector<double>({13.2, 14.3}));
-    SettingValue v7(Vec2({{7.6}, {5.4, 3.2}}));
-    SettingValue v8({{7.6}, {5.4, 3.2}});
+    SettingValue v5({2l, 432l});
+    SettingValue v6(std::vector<int64_t>({2, 432}));
+    SettingValue v7({13.2, 14.3});
+    SettingValue v8(std::vector<double>({13.2, 14.3}));
+    SettingValue v9(Vec2({{7.6}, {5.4, 3.2}}));
+    SettingValue v10({{7.6}, {5.4, 3.2}});
 
     ASSERT_NE(v1, v2);
     ASSERT_NE(v1, v3);
     ASSERT_EQ(v3, v4);
     ASSERT_EQ(v5, v6);
     ASSERT_NE(v1, v5);
-    ASSERT_NE(v2, v6);
-    ASSERT_NE(v2, v7);
-    ASSERT_NE(v6, v7);
     ASSERT_EQ(v7, v8);
+    ASSERT_NE(v1, v7);
+    ASSERT_NE(v2, v8);
+    ASSERT_NE(v2, v9);
+    ASSERT_NE(v8, v9);
+    ASSERT_EQ(v9, v10);
 }
 
 TEST(ymmsl_settings, test_create_settings) {
@@ -248,9 +279,13 @@ TEST(ymmsl_settings, test_set_get_settings_value) {
     ASSERT_TRUE(s1["test2"].is_a<double>());
     ASSERT_EQ(s1.at("test2"), 123.4);
 
-    s1["test_list"] = {123.4, 567.8};
-    ASSERT_TRUE(s1.at("test_list").is_a<std::vector<double>>());
-    ASSERT_EQ(s1.at("test_list").as<std::vector<double>>()[1], 567.8);
+    s1["test_list_int"] = {54l, 32l, 10l};
+    ASSERT_TRUE(s1.at("test_list_int").is_a<std::vector<int64_t>>());
+    ASSERT_EQ(s1.at("test_list_int").as<std::vector<int64_t>>()[1], 32);
+
+    s1["test_list_float"] = {123.4, 567.8};
+    ASSERT_TRUE(s1.at("test_list_float").is_a<std::vector<double>>());
+    ASSERT_EQ(s1.at("test_list_float").as<std::vector<double>>()[1], 567.8);
 
     ASSERT_THROW(s1.at("invalid^ref"), std::invalid_argument);
     ASSERT_THROW(s1.at("0invalid"), std::invalid_argument);

@@ -275,6 +275,33 @@ class MMPClient():
             raise RuntimeError('Error deregistering instance: {}'.format(
                     response[1]))
 
+    def waiting_for_receive(
+            self, peer_instance_id: Reference, port_name: str, slot: Optional[int]
+            ) -> None:
+        """Notify the manager that we're waiting to receive a message."""
+        request = [
+                RequestType.WAITING_FOR_RECEIVE.value,
+                str(self._instance_id),
+                str(peer_instance_id), port_name, slot]
+        self._call_manager(request)
+
+    def waiting_for_receive_done(
+            self, peer_instance_id: Reference, port_name: str, slot: Optional[int]
+            ) -> None:
+        """Notify the manager that we're done waiting to receive a message."""
+        request = [
+                RequestType.WAITING_FOR_RECEIVE_DONE.value,
+                str(self._instance_id),
+                str(peer_instance_id), port_name, slot]
+        self._call_manager(request)
+
+    def is_deadlocked(self) -> bool:
+        """Ask the manager if we're part of a deadlock."""
+        request = [
+                RequestType.IS_DEADLOCKED.value, str(self._instance_id)]
+        response = self._call_manager(request)
+        return bool(response[1])
+
     def _call_manager(self, request: Any) -> Any:
         """Call the manager and do en/decoding.
 

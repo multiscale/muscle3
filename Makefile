@@ -21,6 +21,9 @@ endif
 .PHONY: test
 test: test_python test_scripts test_cpp test_fortran
 
+.PHONY: test_all
+test_all: test test_cluster
+
 .PHONY: test_python_only
 test_python_only:
 	MUSCLE_TEST_PYTHON_ONLY=1 tox
@@ -36,6 +39,10 @@ test_cpp: cpp
 .PHONY: test_fortran
 test_fortran: fortran_tests
 	cd libmuscle/fortran && $(MAKE) test
+
+.PHONY: test_cluster
+test_cluster:
+	tox -e cluster
 
 .PHONY: test_scripts
 test_scripts:
@@ -116,9 +123,10 @@ docsclean:
 	rm -f docs/build/.buildinfo
 	rm -rf docs/doxygen/html/*
 	rm -rf docs/doxygen/xml/*
+	rm -rf docs/source/apidocs
 
 .PHONY: clean
-clean:
+clean: docsclean
 	cd libmuscle/cpp && $(MAKE) clean
 	cd libmuscle/fortran && $(MAKE) clean
 	cd scripts && $(MAKE) clean
@@ -128,11 +136,13 @@ clean:
 	rm -rf libmuscle/python/libmuscle/version.py
 
 .PHONY: distclean
-distclean:
+distclean: docsclean
 	cd libmuscle/cpp && $(MAKE) distclean
 	cd libmuscle/fortran && $(MAKE) distclean
 	cd scripts && $(MAKE) distclean
 	cd docs/source/examples && $(MAKE) clean
+	rm -rf __pycache__
+	- find docs scripts integration_test muscle3 libmuscle/python -name __pycache__ -type d -depth -exec rm -rf \{\} \;
 	rm -rf ./build
 	rm -rf $(CURDIR)/libmuscle/build/test_install/*
 	rm -rf libmuscle/python/libmuscle/version.py

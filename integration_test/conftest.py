@@ -42,7 +42,7 @@ def ls_snapshots(run_dir, instance=None):
 
 def start_mmp_server(control_pipe, ymmsl_doc, run_dir):
     control_pipe[0].close()
-    manager = Manager(ymmsl_doc, run_dir)
+    manager = Manager(ymmsl_doc, run_dir, 'DEBUG')
     control_pipe[1].send(manager.get_server_location())
     control_pipe[1].recv()
     control_pipe[1].close()
@@ -72,11 +72,13 @@ def _python_wrapper(instance_name, muscle_manager, callable):
     callable()
 
 
-def run_manager_with_actors(ymmsl_text, tmpdir, actors):
+def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
     """Start muscle_manager along with C++ and python actors.
 
     Args:
-        actors: a dictionary of lists containing details for each actor:
+        ymmsl_text: YMMSL configuration for the simulation
+        tmpdir: Temporary folder to use as runpath a
+        actors: A dictionary of lists containing details for each actor:
             ``{"instance_name": ("language", "details", ...)}``.
 
             Language can be ``"python"``, ``"cpp"``, ``"mpi_cpp"`` or ``"fortran"``.
@@ -97,6 +99,7 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors):
 
             For both cpp and Fortran actors, LD_LIBRARY_PATH is automatically updated
             to include the msgpack library path.
+        expect_success: Whether to assert a successful or unsuccessful run.
     """
     env = os.environ.copy()
     ymmsl_doc = ymmsl.load(ymmsl_text)
@@ -155,10 +158,17 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors):
         # check results
         for proc in native_processes:
             proc.wait()
-            assert proc.returncode == 0
+            if expect_success:
+                assert proc.returncode == 0
         for proc in python_processes:
             proc.join()
-            assert proc.exitcode == 0
+            if expect_success:
+                assert proc.exitcode == 0
+        if not expect_success:
+            # Check that at least one process has failed
+            assert (
+                    any(proc.returncode != 0 for proc in native_processes) or
+                    any(proc.exitcode != 0 for proc in python_processes))
 
 
 @pytest.fixture

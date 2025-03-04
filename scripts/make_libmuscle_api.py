@@ -10,7 +10,7 @@ from api_generator import (
         Destructor, Double, Enum, Flags, EnumVal, Float, IndexAssignmentOperator, Int,
         Int16t, Int32t, Int64t, Member, MemFun, MemFunTmpl, MultiMemFun,
         NamedConstructor, Namespace, Obj, OverloadSet, Par,
-        ShiftedIndexAssignmentOperator, Sizet, String, T, VecDbl, Vec2Dbl,
+        ShiftedIndexAssignmentOperator, Sizet, String, T, VecInt64t, VecDbl, Vec2Dbl,
         VecSizet, VecString, Void)
 
 
@@ -958,13 +958,15 @@ instance_members = [
     MemFun(Bool(), 'reuse_instance'),
     MemFun(Void(), 'error_shutdown', [String('message')]),
     MemFunTmpl(
-        [String(), Int64t(), Double(), Bool(), VecDbl('value'), Vec2Dbl('value')],
+        [String(), Int64t(), Double(), Bool(), VecInt64t('value'), VecDbl('value'),
+         Vec2Dbl('value')],
         Bool(), 'is_setting_a', [String('name')], True,
         cpp_chain_call=lambda **kwargs: 'self_p->get_setting({}).is_a<{}>()'.format(
                 kwargs['cpp_args'], kwargs['tpl_type'])
         ),
     MemFunTmpl(
-        [String(), Int64t(), Double(), Bool(), VecDbl('value'), Vec2Dbl('value')],
+        [String(), Int64t(), Double(), Bool(), VecInt64t('value'), VecDbl('value'),
+         Vec2Dbl('value')],
         T(), 'get_setting_as', [String('name')], True),
     MemFun(VecString('value'), 'list_settings'),
     MemFun(Obj('PortsDescription'), 'list_ports'),

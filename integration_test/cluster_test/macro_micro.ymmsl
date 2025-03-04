@@ -1,0 +1,25 @@
+ymmsl_version: v0.1
+
+model:
+    name: macro_micro
+    components:
+        c1:
+            ports:
+                o_i: inter_out
+                s: inter_in
+            implementation: component_cpp
+        c2:
+            ports:
+                f_init: init_in
+                o_f: final_out
+            implementation: component_cpp
+
+    conduits:
+        c1.inter_out: c2.init_in
+        c2.final_out: c1.inter_in
+
+resources:
+    c1:
+        mpi_processes: 2
+    c2:
+        mpi_processes: 2

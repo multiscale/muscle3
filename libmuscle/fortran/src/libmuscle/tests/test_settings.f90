@@ -57,11 +57,13 @@ contains
         implicit none
 
         type(YMMSL_Settings) :: s1
+        integer(YMMSL_int8), dimension(3) :: ia1, ia2
         real(YMMSL_real8), dimension(2) :: ra1, ra2
         real(YMMSL_real8), dimension(3, 2) :: ra3, ra4
 
         print *, '[  RUN     ] settings.set_get_as'
         s1 = YMMSL_Settings_create()
+        ia1 = (/7, 2, 9/)
         ra1 = (/1.0d0, 2.0d0/)
         ra3 = reshape((/1.0d0, 2.0d0, 3.0d0, 4.0d0, 5.0d0, 6.0d0/), (/3, 2/))
 
@@ -70,8 +72,9 @@ contains
         call YMMSL_Settings_set(s1, 'key3', 42424242424242_YMMSL_int8)
         call YMMSL_Settings_set(s1, 'key4', .false.)
         call YMMSL_Settings_set(s1, 'key5', 13.13d0)
-        call YMMSL_Settings_set(s1, 'key6', ra1)
-        call YMMSL_Settings_set(s1, 'key7', ra3)
+        call YMMSL_Settings_set(s1, 'key6', ia1)
+        call YMMSL_Settings_set(s1, 'key7', ra1)
+        call YMMSL_Settings_set(s1, 'key8', ra3)
 
         call assert_true(YMMSL_Settings_contains(s1, 'key1'))
         call assert_true(YMMSL_Settings_contains(s1, 'key2'))
@@ -80,6 +83,7 @@ contains
         call assert_true(YMMSL_Settings_contains(s1, 'key5'))
         call assert_true(YMMSL_Settings_contains(s1, 'key6'))
         call assert_true(YMMSL_Settings_contains(s1, 'key7'))
+        call assert_true(YMMSL_Settings_contains(s1, 'key8'))
         call assert_false(YMMSL_Settings_contains(s1, 'nokey'))
 
         call assert_eq_character(YMMSL_Settings_get_as_character(s1, 'key1'), 'value1')
@@ -89,9 +93,11 @@ contains
         call assert_eq_logical(YMMSL_Settings_get_as_logical(s1, 'key4'), .false.)
         call assert_eq_real8(YMMSL_Settings_get_as_real8(s1, 'key5'), 13.13d0)
         call assert_eq_real8(YMMSL_Settings_get_as_real8(s1, 'key2'), 242424242d0)
-        call YMMSL_Settings_get_as_real8array(s1, 'key6', ra2)
+        call YMMSL_Settings_get_as_int8array(s1, 'key6', ia2)
+        call assert_eq_int8array(ia2, ia1)
+        call YMMSL_Settings_get_as_real8array(s1, 'key7', ra2)
         call assert_eq_real8array(ra2, ra1)
-        call YMMSL_Settings_get_as_real8array2(s1, 'key7', ra4)
+        call YMMSL_Settings_get_as_real8array2(s1, 'key8', ra4)
         call assert_eq_real8array2(ra4, ra3)
 
         call YMMSL_Settings_free(s1)
@@ -103,6 +109,7 @@ contains
         implicit none
 
         type(YMMSL_Settings) :: s1
+        integer(YMMSL_int8), dimension(3) :: ia1
         real(YMMSL_real8), dimension(2) :: ra1
         real(YMMSL_real8), dimension(3, 2) :: ra2
         logical :: l1
@@ -110,6 +117,7 @@ contains
 
         print *, '[  RUN     ] settings.is_a'
         s1 = YMMSL_Settings_create()
+        ia1 = (/1, 7, 3/)
         ra1 = (/1.0d0, 2.0d0/)
         ra2 = reshape((/1.0d0, 2.0d0, 3.0d0, 4.0d0, 5.0d0, 6.0d0/), (/3, 2/))
 
@@ -118,8 +126,9 @@ contains
         call YMMSL_Settings_set(s1, 'key3', 42424242424242_YMMSL_int8)
         call YMMSL_Settings_set(s1, 'key4', .false.)
         call YMMSL_Settings_set(s1, 'key5', 13.13d0)
-        call YMMSL_Settings_set(s1, 'key6', ra1)
-        call YMMSL_Settings_set(s1, 'key7', ra2)
+        call YMMSL_Settings_set(s1, 'key6', ia1)
+        call YMMSL_Settings_set(s1, 'key7', ra1)
+        call YMMSL_Settings_set(s1, 'key8', ra2)
 
         call assert_true(YMMSL_Settings_is_a_character(s1, 'key1'))
         call assert_true(YMMSL_Settings_is_a_int4(s1, 'key2'))
@@ -128,12 +137,14 @@ contains
         call assert_true(YMMSL_Settings_is_a_int8(s1, 'key3'))
         call assert_true(YMMSL_Settings_is_a_logical(s1, 'key4'))
         call assert_true(YMMSL_Settings_is_a_real8(s1, 'key5'))
-        call assert_true(YMMSL_Settings_is_a_real8array(s1, 'key6'))
-        call assert_true(YMMSL_Settings_is_a_real8array2(s1, 'key7'))
+        call assert_true(YMMSL_Settings_is_a_int8array(s1, 'key6'))
+        call assert_true(YMMSL_Settings_is_a_real8array(s1, 'key7'))
+        call assert_true(YMMSL_Settings_is_a_real8array2(s1, 'key8'))
 
         call assert_false(YMMSL_Settings_is_a_int8(s1, 'key1'))
         call assert_false(YMMSL_Settings_is_a_logical(s1, 'key1'))
         call assert_false(YMMSL_Settings_is_a_real8(s1, 'key1'))
+        call assert_false(YMMSL_Settings_is_a_int8array(s1, 'key1'))
         call assert_false(YMMSL_Settings_is_a_real8array(s1, 'key1'))
         call assert_false(YMMSL_Settings_is_a_real8array2(s1, 'key1'))
 

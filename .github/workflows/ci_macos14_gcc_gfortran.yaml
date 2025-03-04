@@ -19,16 +19,17 @@ jobs:
 
     - uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: latest
+        xcode-version: 15.3
 
     - name: Install dependencies
       run: |
-        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install gcc
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install gcc@14
         HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install openmpi
         HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install pkg-config
-        python3 -m pip install --upgrade pip
-        pip3 install tox tox-gh-actions
+        python3 -m venv ~/tox_venv
+        . ~/tox_venv/bin/activate && python3 -m pip install --upgrade pip
+        . ~/tox_venv/bin/activate && pip3 install tox tox-gh-actions
 
     - name: Run all tests
-      run: cd ${GITHUB_WORKSPACE} && CXX=g++-12 OMPI_CXX=g++-12 FC=gfortran-12 OMPI_FC=gfortran-12 make test test_examples
+      run: cd ${GITHUB_WORKSPACE} && PATH=$PATH:~/tox_venv/bin CXX=g++-14 OMPI_CXX=g++-14 FC=gfortran-14 OMPI_FC=gfortran-14 make test test_examples
 

@@ -18,6 +18,7 @@
 #include <libmuscle/logging.cpp>
 #include <libmuscle/mcp/data_pack.cpp>
 #include <libmuscle/message.cpp>
+#include <libmuscle/mmsf_validator.cpp>
 #include <libmuscle/port.cpp>
 #include <libmuscle/timestamp.cpp>
 
@@ -179,6 +180,7 @@ struct libmuscle_instance_base : ::testing::Test, ConnectedPortManagerFixture {
         auto & mock_comm = MockCommunicator::return_value;
         mock_comm.get_locations.return_value = std::vector<std::string>(
                 {"tcp:test1,test2", "tcp:test3"});
+        mock_comm.get_receive_timeout.return_value = 10.0;
 
         auto & mock_port_manager = MockPortManager::return_value;
         mock_port_manager.settings_in_connected.return_value = false;
@@ -200,7 +202,7 @@ struct libmuscle_instance_base : ::testing::Test, ConnectedPortManagerFixture {
                 std::vector<std::string>());
 
         MockSettingsManager::return_value.get_setting.side_effect = [](
-                Reference const &, Reference const &) -> SettingValue {
+                Reference const &, Reference const &) -> const SettingValue & {
             throw std::out_of_range("No settings set in mock, unset or replace side_effect");
         };
     }
@@ -426,6 +428,8 @@ TEST_F(libmuscle_instance, get_setting) {
 }
 
 TEST_F(libmuscle_instance, list_ports) {
+    ASSERT_TRUE(port_manager_.list_ports.called_once_with());
+    port_manager_.list_ports.call_args_list.clear();
     instance_.list_ports();
     ASSERT_TRUE(port_manager_.list_ports.called_once_with());
 }
@@ -554,8 +558,17 @@ TEST_F(libmuscle_instance, send_after_resize) {
     instance_.send("out_r", mock_msg, 13);
 }
 
+TEST_F(libmuscle_instance, send_on_receiving_port) {
+    Message mock_msg(0.0);
+    ASSERT_THROW((instance_.send("in_v", mock_msg, 3)), std::logic_error);
+}
+
 TEST_F(libmuscle_instance, receive_on_invalid_port) {
     ASSERT_THROW(instance_.receive("does_not_exist"), std::logic_error);
+}
+
+TEST_F(libmuscle_instance, receive_on_sending_port) {
+    ASSERT_THROW(instance_.receive("out_v", 3), std::logic_error);
 }
 
 TEST_F(libmuscle_instance, receive_f_init) {

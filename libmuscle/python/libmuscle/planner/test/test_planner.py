@@ -1,7 +1,3 @@
-from libmuscle.planner.planner import (
-        InsufficientResourcesAvailable, ModelGraph, Planner, Resources)
-
-from copy import copy
 import pytest
 from typing import Dict, List
 
@@ -9,13 +5,22 @@ from ymmsl import (
         Component, Conduit, Configuration, Implementation, Model,
         MPICoresResReq, Ports, Reference, ResourceRequirements, ThreadedResReq)
 
+from libmuscle.planner.planner import (
+        InsufficientResourcesAvailable, ModelGraph, Planner, ResourceAssignment)
+from libmuscle.planner.resources import Resources
+
+from libmuscle.test.conftest import core as c, on_node_resources as onr, resources
+
+
+Ref = Reference
+
 
 @pytest.fixture
 def all_resources() -> Resources:
-    return Resources({
-        'node001': {1, 2, 3, 4},
-        'node002': {1, 2, 3, 4},
-        'node003': {1, 2, 3, 4}})
+    return resources({
+        'node001': [c(1), c(2), c(3), c(4)],
+        'node002': [c(1), c(2), c(3), c(4)],
+        'node003': [c(1), c(2), c(3), c(4)]})
 
 
 @pytest.fixture
@@ -49,17 +54,17 @@ def model(init: Component, macro: Component, micro: Component) -> Model:
 @pytest.fixture
 def implementations() -> List[Implementation]:
     return [
-            Implementation(Reference('init'), script='init'),
-            Implementation(Reference('macro'), script='macro'),
-            Implementation(Reference('micro'), script='micro')]
+            Implementation(Ref('init'), script='init'),
+            Implementation(Ref('macro'), script='macro'),
+            Implementation(Ref('micro'), script='micro')]
 
 
 @pytest.fixture
 def requirements() -> Dict[Reference, ResourceRequirements]:
     res_list = [
-            ThreadedResReq(Reference('init'), 4),
-            ThreadedResReq(Reference('macro'), 4),
-            ThreadedResReq(Reference('micro'), 4)]
+            ThreadedResReq(Ref('init'), 4),
+            ThreadedResReq(Ref('macro'), 4),
+            ThreadedResReq(Ref('micro'), 4)]
     return {r.name: r for r in res_list}
 
 
@@ -68,6 +73,13 @@ def configuration(
         model: Model, implementations: List[Implementation],
         requirements: Dict[Reference, ResourceRequirements]) -> Configuration:
     return Configuration(model, None, implementations, requirements)
+
+
+@pytest.fixture
+def assignment() -> ResourceAssignment:
+    return ResourceAssignment([
+        onr('node001', {0, 1}),
+        onr('node002', {2, 3})])
 
 
 def test_model_graph(
@@ -93,45 +105,51 @@ def test_model_graph(
     assert not graph.successors(micro)
 
 
-def test_resources(all_resources: Resources) -> None:
-    res1 = all_resources
-    assert res1.cores == {
-            'node001': {1, 2, 3, 4},
-            'node002': {1, 2, 3, 4},
-            'node003': {1, 2, 3, 4}}
-    assert set(res1.nodes()) == {'node001', 'node002', 'node003'}
+def test_resource_assignment_eq() -> None:
+    asm1 = ResourceAssignment([])
+    asm2 = ResourceAssignment([])
 
-    res2 = Resources({
-        'node004': {1, 2, 3, 4, 5, 6}, 'node005': {1, 2, 3, 4, 5, 6}})
-    res1 += res2
+    assert asm1 == asm2
 
-    assert res1.cores == {
-            'node001': {1, 2, 3, 4}, 'node002': {1, 2, 3, 4},
-            'node003': {1, 2, 3, 4}, 'node004': {1, 2, 3, 4, 5, 6},
-            'node005': {1, 2, 3, 4, 5, 6}}
+    asm1.by_rank.append(onr('node001', {0, 1}))
+    assert asm1 != asm2
 
-    res3 = Resources({'node003': {1, 2, 3, 4}, 'node005': {4, 5, 6}})
-    res1 -= res3
+    asm2.by_rank.append(onr('node001', {0, 2}))
+    assert asm1 != asm2
 
-    assert res1.cores == {
-            'node001': {1, 2, 3, 4}, 'node002': {1, 2, 3, 4},
-            'node004': {1, 2, 3, 4, 5, 6}, 'node005': {1, 2, 3}}
-    assert res1.nodes() == {
-            'node001', 'node002', 'node004', 'node005'}
+    asm2.by_rank[0] = onr('node001', {0, 1})
+    assert asm1 == asm2
 
-    res4 = copy(res3)
-    res4.cores['node003'] = {8}
 
-    assert res3.cores['node003'] == {1, 2, 3, 4}
-    assert res4.cores['node003'] == {8}
+def test_resource_assignment_str(assignment: ResourceAssignment) -> None:
+    assert str(assignment) == (
+            '[OnNodeResources(node001, c: 0-1(0-1)),'
+            ' OnNodeResources(node002, c: 2-3(2-3))]')
 
-    all_resources = Resources.union([res1, res2, res3, res4])
 
-    assert all_resources.cores['node001'] == {1, 2, 3, 4}
-    assert all_resources.cores['node002'] == {1, 2, 3, 4}
-    assert all_resources.cores['node003'] == {1, 2, 3, 4, 8}
-    assert all_resources.cores['node004'] == {1, 2, 3, 4, 5, 6}
-    assert all_resources.cores['node005'] == {1, 2, 3, 4, 5, 6}
+def test_resource_assignment_repr(assignment: ResourceAssignment) -> None:
+    assert repr(assignment) == (
+            'ResourceAssignment(['
+            'OnNodeResources("node001", CoreSet({Core(0, {0}), Core(1, {1})})),'
+            ' OnNodeResources("node002", CoreSet({Core(2, {2}), Core(3, {3})}))])')
+
+
+def test_resource_assignment_as_resources(assignment) -> None:
+    res = assignment.as_resources()
+
+    assert res._nodes == {
+            'node001': onr('node001', {0, 1}),
+            'node002': onr('node002', {2, 3})}
+
+    asm2 = ResourceAssignment([
+        onr('node001', {0, 1}), onr('node001', {2, 3}), onr('node001', {2, 3}),
+        onr('node003', {4, 5})])
+
+    res = asm2.as_resources()
+
+    assert res._nodes == {
+            'node001': onr('node001', {0, 1, 2, 3}),
+            'node003': onr('node003', {4, 5})}
 
 
 def test_planner(
@@ -139,33 +157,31 @@ def test_planner(
     planner = Planner(all_resources)
     allocations = planner.allocate_all(configuration)
 
-    assert allocations[Reference('init')].cores == {'node001': {1, 2, 3, 4}}
-    assert allocations[Reference('macro')].cores == {'node001': {1, 2, 3, 4}}
-    assert allocations[Reference('micro')].cores == {'node001': {1, 2, 3, 4}}
+    assert allocations[Ref('init')].by_rank == [onr('node001', {1, 2, 3, 4})]
+    assert allocations[Ref('macro')].by_rank == [onr('node001', {1, 2, 3, 4})]
+    assert allocations[Ref('micro')].by_rank == [onr('node001', {1, 2, 3, 4})]
 
 
 def test_planner_exclusive_macro(
         all_resources: Resources, configuration: Configuration) -> None:
     planner = Planner(all_resources)
-    configuration.implementations[Reference('macro')].can_share_resources = (
-            False)
+    configuration.implementations[Ref('macro')].can_share_resources = False
     allocations = planner.allocate_all(configuration)
 
-    assert allocations[Reference('init')].cores == {'node001': {1, 2, 3, 4}}
-    assert allocations[Reference('macro')].cores == {'node002': {1, 2, 3, 4}}
-    assert allocations[Reference('micro')].cores == {'node001': {1, 2, 3, 4}}
+    assert allocations[Ref('init')].by_rank == [onr('node001', {1, 2, 3, 4})]
+    assert allocations[Ref('macro')].by_rank == [onr('node002', {1, 2, 3, 4})]
+    assert allocations[Ref('micro')].by_rank == [onr('node001', {1, 2, 3, 4})]
 
 
 def test_planner_exclusive_predecessor(
         all_resources: Resources, configuration: Configuration) -> None:
     planner = Planner(all_resources)
-    configuration.implementations[Reference('init')].can_share_resources = (
-            False)
+    configuration.implementations[Ref('init')].can_share_resources = False
     allocations = planner.allocate_all(configuration)
 
-    assert allocations[Reference('init')].cores == {'node001': {1, 2, 3, 4}}
-    assert allocations[Reference('macro')].cores == {'node001': {1, 2, 3, 4}}
-    assert allocations[Reference('micro')].cores == {'node001': {1, 2, 3, 4}}
+    assert allocations[Ref('init')].by_rank == [onr('node001', {1, 2, 3, 4})]
+    assert allocations[Ref('macro')].by_rank == [onr('node001', {1, 2, 3, 4})]
+    assert allocations[Ref('micro')].by_rank == [onr('node001', {1, 2, 3, 4})]
 
 
 def test_oversubscribe(
@@ -177,90 +193,84 @@ def test_oversubscribe(
     planner = Planner(all_resources)
     allocations = planner.allocate_all(configuration)
 
-    assert allocations[Reference('init[0]')].cores == {'node001': {1, 2, 3, 4}}
-    assert allocations[Reference('init[1]')].cores == {'node002': {1, 2, 3, 4}}
-    assert allocations[Reference('init[2]')].cores == {'node003': {1, 2, 3, 4}}
-    assert allocations[Reference('init[3]')].cores == {'node001': {1, 2, 3, 4}}
-    assert allocations[Reference('init[4]')].cores == {'node002': {1, 2, 3, 4}}
+    assert allocations[Ref('init[0]')].by_rank == [onr('node001', {1, 2, 3, 4})]
+    assert allocations[Ref('init[1]')].by_rank == [onr('node002', {1, 2, 3, 4})]
+    assert allocations[Ref('init[2]')].by_rank == [onr('node003', {1, 2, 3, 4})]
+    assert allocations[Ref('init[3]')].by_rank == [onr('node001', {1, 2, 3, 4})]
+    assert allocations[Ref('init[4]')].by_rank == [onr('node002', {1, 2, 3, 4})]
 
-    assert allocations[Reference('macro[0]')].cores == {
-            'node001': {1, 2, 3, 4}}
-    assert allocations[Reference('macro[1]')].cores == {
-            'node002': {1, 2, 3, 4}}
-    assert allocations[Reference('macro[2]')].cores == {
-            'node003': {1, 2, 3, 4}}
-    assert allocations[Reference('macro[3]')].cores == {
-            'node001': {1, 2, 3, 4}}
-    assert allocations[Reference('macro[4]')].cores == {
-            'node002': {1, 2, 3, 4}}
+    assert allocations[Ref('macro[0]')].by_rank == [onr('node001', {1, 2, 3, 4})]
+    assert allocations[Ref('macro[1]')].by_rank == [onr('node002', {1, 2, 3, 4})]
+    assert allocations[Ref('macro[2]')].by_rank == [onr('node003', {1, 2, 3, 4})]
+    assert allocations[Ref('macro[3]')].by_rank == [onr('node001', {1, 2, 3, 4})]
+    assert allocations[Ref('macro[4]')].by_rank == [onr('node002', {1, 2, 3, 4})]
 
-    assert allocations[Reference('micro[0]')].cores == {
-            'node001': {1, 2, 3, 4}}
-    assert allocations[Reference('micro[1]')].cores == {
-            'node002': {1, 2, 3, 4}}
-    assert allocations[Reference('micro[2]')].cores == {
-            'node003': {1, 2, 3, 4}}
-    assert allocations[Reference('micro[3]')].cores == {
-            'node001': {1, 2, 3, 4}}
-    assert allocations[Reference('micro[4]')].cores == {
-            'node002': {1, 2, 3, 4}}
+    assert allocations[Ref('micro[0]')].by_rank == [onr('node001', {1, 2, 3, 4})]
+    assert allocations[Ref('micro[1]')].by_rank == [onr('node002', {1, 2, 3, 4})]
+    assert allocations[Ref('micro[2]')].by_rank == [onr('node003', {1, 2, 3, 4})]
+    assert allocations[Ref('micro[3]')].by_rank == [onr('node001', {1, 2, 3, 4})]
+    assert allocations[Ref('micro[4]')].by_rank == [onr('node002', {1, 2, 3, 4})]
 
 
 def test_oversubscribe_single_instance_threaded() -> None:
     model = Model('single_instance', [Component('x', 'x', ports=Ports())])
-    impl = [Implementation(Reference('x'), script='x')]
+    impl = [Implementation(Ref('x'), script='x')]
     reqs: Dict[Reference, ResourceRequirements] = {
-            Reference('x'): ThreadedResReq(Reference('x'), 24)}
+            Ref('x'): ThreadedResReq(Ref('x'), 24)}
     config = Configuration(model, None, impl, reqs)
 
-    res = Resources({'node001': {1, 2, 3, 4}})
+    res = resources({'node001': [c(1), c(2), c(3), c(4)]})
 
     planner = Planner(res)
     allocations = planner.allocate_all(config)
 
-    assert allocations[Reference('x')].cores == {'node001': {1, 2, 3, 4}}
+    assert allocations[Ref('x')].by_rank == [onr('node001', {1, 2, 3, 4})]
 
 
 def test_oversubscribe_single_instance_mpi() -> None:
     model = Model('single_instance', [Component('x', 'x', ports=Ports())])
-    impl = [Implementation(Reference('x'), script='x')]
+    impl = [Implementation(Ref('x'), script='x')]
     reqs: Dict[Reference, ResourceRequirements] = {
-            Reference('x'): MPICoresResReq(Reference('x'), 24)}
+            Ref('x'): MPICoresResReq(Ref('x'), 24)}
     config = Configuration(model, None, impl, reqs)
 
-    res = Resources({'node001': {1, 2, 3, 4}})
+    res = resources({'node001': [c(1), c(2), c(3), c(4)]})
 
     planner = Planner(res)
     allocations = planner.allocate_all(config)
 
-    assert allocations[Reference('x')].cores == {'node001': {1, 2, 3, 4}}
+    assert len(allocations[Ref('x')].by_rank) == 24
+    for r in range(24):
+        assert allocations[Ref('x')].by_rank[r] == onr('node001', {r % 4 + 1})
 
 
 def test_virtual_allocation() -> None:
     model = Model('ensemble', [Component('x', 'x', 9, ports=Ports())])
-    impl = [Implementation(Reference('x'), script='x')]
-    reqs: Dict[Reference, ResourceRequirements] = {
-            Reference('x'): MPICoresResReq(Reference('x'), 13)}
+    impl = [Implementation(Ref('x'), script='x')]
+    reqs: Dict[Ref, ResourceRequirements] = {
+            Ref('x'): MPICoresResReq(Ref('x'), 13)}
     config = Configuration(model, None, impl, reqs)
 
-    res = Resources({'node000001': {1, 2, 3, 4}})
+    res = resources({'node000001': [c(1), c(2), c(3), c(4)]})
 
     planner = Planner(res)
     allocations = planner.allocate_all(config, virtual=True)
 
     assert res.total_cores() == 120
-    assert allocations[Reference('x[0]')].total_cores() == 13
-    assert allocations[Reference('x[8]')].total_cores() == 13
+    for i in range(9):
+        for r in range(13):
+            assert len(allocations[Ref(f'x[{i}]')].by_rank) == 13
+            assert allocations[Ref(f'x[{i}]')].by_rank[r].total_cores() == 1
 
 
 def test_impossible_virtual_allocation() -> None:
     model = Model('ensemble', [Component('x', 'x', 9, ports=Ports())])
-    impl = [Implementation(Reference('x'), script='x')]
-    reqs: Dict[Reference, ResourceRequirements] = {
-            Reference('x'): ThreadedResReq(Reference('x'), 13)}
+    impl = [Implementation(Ref('x'), script='x')]
+    reqs: Dict[Ref, ResourceRequirements] = {
+            Ref('x'): ThreadedResReq(Ref('x'), 13)}
     config = Configuration(model, None, impl, reqs)
 
-    res = Resources({'node000001': {1, 2, 3, 4}})
+    res = resources({'node000001': [c(1), c(2), c(3), c(4)]})
 
     planner = Planner(res)
     with pytest.raises(InsufficientResourcesAvailable):

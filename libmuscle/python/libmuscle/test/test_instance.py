@@ -62,7 +62,10 @@ def communicator():
 @pytest.fixture
 def settings_manager():
     with patch('libmuscle.instance.SettingsManager') as SettingsManager:
-        yield SettingsManager.return_value
+        settings_manager = SettingsManager.return_value
+        # Emulate no settings available
+        settings_manager.get_setting.side_effect = KeyError()
+        yield settings_manager
 
 
 @pytest.fixture(autouse=True)
@@ -142,7 +145,8 @@ def instance_dont_apply_overlay(
 def test_create_instance_manager_location_default(
         instance_argv, MMPClient, declared_ports):
 
-    Instance(declared_ports)
+    instance = Instance(declared_ports)
+    instance.error_shutdown("")  # ensure all threads and resources are cleaned up
 
     MMPClient.assert_called_once_with(Ref('component'), 'tcp:localhost:9000')
 
@@ -150,7 +154,8 @@ def test_create_instance_manager_location_default(
 def test_create_instance_manager_location_argv(
         manager_location_argv, instance_argv, MMPClient, declared_ports):
 
-    Instance(declared_ports)
+    instance = Instance(declared_ports)
+    instance.error_shutdown("")  # ensure all threads and resources are cleaned up
 
     MMPClient.assert_called_once_with(Ref('component'), 'tcp:localhost:9001')
 
@@ -158,7 +163,8 @@ def test_create_instance_manager_location_argv(
 def test_create_instance_manager_location_envvar(
         manager_location_envvar, instance_envvar, MMPClient, declared_ports):
 
-    Instance(declared_ports)
+    instance = Instance(declared_ports)
+    instance.error_shutdown("")  # ensure all threads and resources are cleaned up
 
     MMPClient.assert_called_once_with(Ref('component[13]'), 'tcp:localhost:9002')
 
@@ -167,7 +173,8 @@ def test_create_instance_registration(
         manager_location_argv, instance_argv, mmp_client, communicator, port_manager,
         profiler, declared_ports):
 
-    Instance(declared_ports)
+    instance = Instance(declared_ports)
+    instance.error_shutdown("")  # ensure all threads and resources are cleaned up
 
     locations = communicator.get_locations.return_value
 
@@ -195,9 +202,10 @@ def test_create_instance_registration(
 def test_create_instance_profiling(
         manager_location_argv, instance_argv, profiler, declared_ports):
 
-    Instance(declared_ports)
+    instance = Instance(declared_ports)
 
     assert len(profiler.record_event.mock_calls) == 2
+    instance.error_shutdown("Ensure all threads and resources are cleaned up")
 
 
 def test_create_instance_connecting(
@@ -214,7 +222,7 @@ def test_create_instance_connecting(
     settings = MagicMock()
     mmp_client.get_settings.return_value = settings
 
-    Instance(declared_ports)
+    instance = Instance(declared_ports)
 
     port_manager.connect_ports.assert_called_once()
     peer_info = port_manager.connect_ports.call_args[0][0]
@@ -227,13 +235,14 @@ def test_create_instance_connecting(
     assert communicator.set_peer_info.call_args[0][0] == peer_info
 
     assert settings_manager.base == settings
+    instance.error_shutdown("Ensure all threads and resources are cleaned up")
 
 
 def test_create_instance_set_up_checkpointing(
         manager_location_argv, instance_argv, mmp_client, trigger_manager,
         no_resume_snapshot_manager, settings_manager, declared_ports):
 
-    Instance(declared_ports)
+    instance = Instance(declared_ports)
 
     elapsed_time, checkpoints, resume_path, snapshot_path = (
             mmp_client.get_checkpoint_info.return_value)
@@ -242,6 +251,7 @@ def test_create_instance_set_up_checkpointing(
     no_resume_snapshot_manager.prepare_resume.assert_called_with(
             resume_path, snapshot_path)
     assert settings_manager.overlay != no_resume_snapshot_manager.resume_overlay
+    instance.error_shutdown("Ensure all threads and resources are cleaned up")
 
 
 def test_create_instance_set_up_logging(
@@ -272,6 +282,7 @@ def test_create_instance_set_up_logging(
         root_logger.setLevel.assert_called_with(logging.ERROR)
         libmuscle_logger.setLevel.assert_called_with(logging.DEBUG)
         ymmsl_logger.setLevel.assert_called_with(logging.DEBUG)
+    instance.error_shutdown("Ensure all threads and resources are cleaned up")
 
 
 def test_shutdown_instance(
@@ -298,12 +309,15 @@ def test_list_settings(instance, settings_manager):
 
 
 def test_get_setting(instance, settings_manager):
+    settings_manager.get_setting.side_effect = None  # don't raise KeyError
     instance.get_setting('test', 'int')
     settings_manager.get_setting.assert_called_with(
             Ref('component'), Ref('test'), 'int')
 
 
 def test_list_ports(instance, port_manager):
+    port_manager.list_ports.assert_called_once_with()
+    port_manager.list_ports.reset_mock()
     instance.list_ports()
     port_manager.list_ports.assert_called_once_with()
 
@@ -434,9 +448,19 @@ def test_send_after_resize(instance, message):
     instance.send('out_r', message, 13)
 
 
+def test_send_on_receiving_port(instance, message):
+    with pytest.raises(RuntimeError):
+        instance.send("in_v", message, 3)
+
+
 def test_receive_on_invalid_port(instance):
     with pytest.raises(RuntimeError):
         instance.receive('does_not_exist')
+
+
+def test_receive_on_sending_port(instance):
+    with pytest.raises(RuntimeError):
+        instance.receive("out_v", 3)
 
 
 def test_receive_f_init(instance, port_manager, communicator):
@@ -540,4 +564,5 @@ def test_checkpoint_support(
     mmp_client.get_checkpoint_info.return_value = checkpoint_info
 
     with expectation:
-        Instance(flags=flags)
+        instance = Instance(flags=flags)
+        instance.error_shutdown("Ensure all threads and resources are cleaned up")

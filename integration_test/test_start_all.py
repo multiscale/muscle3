@@ -57,7 +57,7 @@ def test_start_all(tmpdir):
     run_dir = RunDir(tmppath / 'run')
 
     # launch MUSCLE Manager with simulation
-    manager = Manager(config, run_dir)
+    manager = Manager(config, run_dir, 'DEBUG')
     manager.start_instances()
     success = manager.wait()
 

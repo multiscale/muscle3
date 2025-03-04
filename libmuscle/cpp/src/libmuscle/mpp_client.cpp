@@ -26,7 +26,7 @@ MPPClient::MPPClient(std::vector<std::string> const & locations) {
 }
 
 std::tuple<std::vector<char>, ProfileData> MPPClient::receive(
-        Reference const & receiver)
+        Reference const & receiver, mcp::TimeoutHandler *timeout_handler)
 {
     auto request = Data::list(
             static_cast<int>(RequestType::get_next_message),
@@ -37,7 +37,7 @@ std::tuple<std::vector<char>, ProfileData> MPPClient::receive(
     // can then overwrite after encoding with the length?
     msgpack::pack(sbuf, request);
 
-    return transport_client_->call(sbuf.data(), sbuf.size());
+    return transport_client_->call(sbuf.data(), sbuf.size(), timeout_handler);
 }
 
 void MPPClient::close() {

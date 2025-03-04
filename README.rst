@@ -38,7 +38,7 @@ Legal
 =====
 
 MUSCLE3 is Copyright 2018-2022 University of Amsterdam and Netherlands eScience
-Center, Copyright 2022-2023 The ITER Organisation, and Copyright 2023-2024 Netherlands
+Center, Copyright 2022-2024 The ITER Organisation, and Copyright 2023-2025 Netherlands
 eScience Center. It is licensed under the Apache License 2.0.
 
 
@@ -59,4 +59,4 @@ fellow human beings with respect.
 
 .. _`the MUSCLE3 documentation`: https://muscle3.readthedocs.io
 .. _`documentation on contributing`: http://muscle3.readthedocs.io/en/latest/contributing.html
-.. _`code of conduct`: https://github.com/multiscale/muscle3/blob/develop/CODE_OF_CONDUCT.md
+.. _`code of conduct`: https://github.com/multiscale/muscle3/blob/develop/CODE_OF_CONDUCT.rst

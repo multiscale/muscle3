@@ -14,6 +14,7 @@ from libmuscle.manager.profile_store import ProfileStore
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.manager.snapshot_registry import SnapshotRegistry
 from libmuscle.manager.topology_store import TopologyStore
+from libmuscle.manager.deadlock_detector import DeadlockDetector
 
 
 _logger = logging.getLogger(__name__)
@@ -45,6 +46,7 @@ class Manager:
         self._profile_store = ProfileStore(log_dir)
         self._topology_store = TopologyStore(configuration)
         self._instance_registry = InstanceRegistry()
+        self._deadlock_detector = DeadlockDetector()
         if run_dir is not None:
             snapshot_dir = run_dir.snapshot_dir()
         else:
@@ -83,7 +85,7 @@ class Manager:
         self._server = MMPServer(
                 self._logger, self._profile_store, self._configuration,
                 self._instance_registry, self._topology_store,
-                self._snapshot_registry, run_dir)
+                self._snapshot_registry, self._deadlock_detector, run_dir)
 
         if self._instance_manager:
             self._instance_manager.set_manager_location(
@@ -133,13 +135,12 @@ class Manager:
         Returns:
             True if success, False if an error occurred.
         """
-        if self._instance_manager:
-            try:
+        try:
+            if self._instance_manager:
                 success = self._instance_manager.wait()
-            finally:
-                self._instance_manager.shutdown()
-        else:
-            self._instance_registry.wait()
-            success = True
-        self.stop()
+            else:
+                self._instance_registry.wait()
+                success = True
+        finally:
+            self.stop()
         return success

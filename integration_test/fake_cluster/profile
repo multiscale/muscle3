@@ -1,0 +1,7 @@
+# Replacement ~/.profile file that does not load .bashrc, for testing purposes
+
+# We do add this here because it's wired into my fingers - LV
+alias ll='ls -lart'
+
+export PROFILE_LOADED=1
+

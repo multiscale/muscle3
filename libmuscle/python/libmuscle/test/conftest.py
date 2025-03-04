@@ -1,5 +1,6 @@
 from copy import copy
 import pytest
+from typing import Dict, List, Set, Union
 from unittest.mock import patch
 
 from ymmsl import Operator, Reference, Settings
@@ -8,6 +9,7 @@ from libmuscle.api_guard import APIGuard
 from libmuscle.communicator import Message
 from libmuscle.mcp.transport_client import ProfileData
 from libmuscle.mmp_client import MMPClient
+from libmuscle.planner.resources import Core, CoreSet, OnNodeResources, Resources
 from libmuscle.port import Port
 from libmuscle.profiler import Profiler
 from libmuscle.timestamp import Timestamp
@@ -99,3 +101,22 @@ def connected_port_manager(port_manager, declared_ports, mock_ports):
     port_manager.list_ports.return_value = declared_ports
     port_manager.port_exists = port_exists
     return port_manager
+
+
+def core(hwthread_id: int) -> Core:
+    """Helper that defines a core with the given core and hwthread id."""
+    return Core(hwthread_id, {hwthread_id})
+
+
+def on_node_resources(node_name: str, cores: Union[int, Set[int]]) -> OnNodeResources:
+    """Helper that defines resources on a node from the name and a CPU core."""
+    if isinstance(cores, int):
+        cores = {cores}
+    return OnNodeResources(node_name, CoreSet([Core(core, {core}) for core in cores]))
+
+
+def resources(node_resources: Dict[str, List[Core]]) -> Resources:
+    """Helper that defines a Resources from a dict."""
+    return Resources([
+        OnNodeResources(node_name, CoreSet(cores))
+        for node_name, cores in node_resources.items()])

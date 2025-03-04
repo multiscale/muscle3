@@ -1,8 +1,7 @@
 import socket
 import socketserver as ss
 import threading
-from typing import cast, List, Optional, Tuple
-from typing_extensions import Type
+from typing import cast, List, Optional, Tuple, Type
 
 import psutil
 

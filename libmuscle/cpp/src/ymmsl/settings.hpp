@@ -69,6 +69,36 @@ class SettingValue {
          */
         SettingValue(bool value);
 
+        /** Create a SettingValue containing a std::vector<int64_t>.
+         *
+         * This covers SettingValue({1, 2, 3});
+         *
+         * @param value The value to hold.
+         */
+        SettingValue(std::initializer_list<int> value);
+
+        /** Create a SettingValue containing a std::vector<int64_t>.
+         *
+         * This covers SettingValue({1, 2, 3});
+         *
+         * @param value The value to hold.
+         */
+        SettingValue(std::initializer_list<long> value);
+
+        /** Create a SettingValue containing a std::vector<int64_t>.
+         *
+         * This covers SettingValue({1, 2, 3});
+         *
+         * @param value The value to hold.
+         */
+        SettingValue(std::initializer_list<long long> value);
+
+        /** Create a SettingValue containing a std::vector<int64_t>.
+         *
+         * @param value The value to hold.
+         */
+        SettingValue(std::vector<int64_t> const & value);
+
         /** Create a SettingValue containing a std::vector<double>.
          *
          * This covers SettingValue({1.0, 2.0, 3.0});
@@ -155,7 +185,7 @@ class SettingValue {
          * Only call if is_a<T>() returns true.
          *
          * @param T A valid type, being one of std::string, int32_t, int64_t,
-         *          double, bool, std::vector<double>, or
+         *          double, bool, std::vector<int64_t>, std::vector<double>, or
          *          std::vector<std::vector<double>>.
          *
          * @throw std::bad_cast if the type of this value does not match the
@@ -170,7 +200,7 @@ class SettingValue {
         void move_value_from_(SettingValue && other);
 
         enum class Type_ {
-            INACTIVE, STRING, INT, FLOAT, BOOL, LIST_FLOAT, LIST_LIST_FLOAT
+            INACTIVE, STRING, INT, FLOAT, BOOL, LIST_INT, LIST_FLOAT, LIST_LIST_FLOAT
         };
 
         Type_ type_;
@@ -179,8 +209,9 @@ class SettingValue {
             int64_t int_value_;
             double float_value_;
             bool bool_value_;
-            std::vector<double> list_value_;
-            std::vector<std::vector<double>> list_list_value_;
+            std::vector<int64_t> list_int_value_;
+            std::vector<double> list_float_value_;
+            std::vector<std::vector<double>> list_list_float_value_;
         };
 };
 

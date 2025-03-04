@@ -102,6 +102,8 @@ class MockCommunicator : public MockClass<MockCommunicator> {
             NAME_MOCK_MEM_FUN(MockCommunicator, send_message);
             NAME_MOCK_MEM_FUN(MockCommunicator, receive_message);
             NAME_MOCK_MEM_FUN(MockCommunicator, shutdown);
+            NAME_MOCK_MEM_FUN(MockCommunicator, set_receive_timeout);
+            NAME_MOCK_MEM_FUN(MockCommunicator, get_receive_timeout);
         }
 
         MockCommunicator() {
@@ -112,15 +114,16 @@ class MockCommunicator : public MockClass<MockCommunicator> {
                 ymmsl::Reference const & kernel,
                 std::vector<int> const & index,
                 PortManager & port_manager,
-                Logger & logger, Profiler & profiler)
+                Logger & logger, Profiler & profiler,
+                MMPClient & manager)
         {
             init_from_return_value();
-            constructor(kernel, index, port_manager, logger, profiler);
+            constructor(kernel, index, port_manager, logger, profiler, manager);
         }
 
         MockFun<
             Void, Val<ymmsl::Reference const &>, Val<std::vector<int> const &>,
-            Obj<PortManager &>, Obj<Logger &>, Obj<Profiler &>>
+            Obj<PortManager &>, Obj<Logger &>, Obj<Profiler &>, Obj<MMPClient &>>
                 constructor;
 
         MockFun<Val<std::vector<std::string>>> get_locations;
@@ -136,6 +139,10 @@ class MockCommunicator : public MockClass<MockCommunicator> {
         ::mock_communicator::CommunicatorReceiveMessageMock receive_message;
 
         MockFun<Void> shutdown;
+
+        MockFun<Void, Val<double>> set_receive_timeout;
+
+        MockFun<Val<double>> get_receive_timeout;
 };
 
 using Communicator = MockCommunicator;

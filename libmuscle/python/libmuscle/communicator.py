@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple, cast
 from ymmsl import Identifier, Reference, Settings
 
 from libmuscle.endpoint import Endpoint
+from libmuscle.mmp_client import MMPClient
 from libmuscle.mpp_message import ClosePort, MPPMessage
 from libmuscle.mpp_client import MPPClient
 from libmuscle.mpp_server import MPPServer
@@ -12,6 +13,7 @@ from libmuscle.port_manager import PortManager
 from libmuscle.profiler import Profiler
 from libmuscle.profiling import (
         ProfileEvent, ProfileEventType, ProfileTimestamp)
+from libmuscle.receive_timeout_handler import Deadlock, ReceiveTimeoutHandler
 
 
 _logger = logging.getLogger(__name__)
@@ -70,7 +72,8 @@ class Communicator:
     """
     def __init__(
             self, kernel: Reference, index: List[int],
-            port_manager: PortManager, profiler: Profiler) -> None:
+            port_manager: PortManager, profiler: Profiler,
+            manager: MMPClient) -> None:
         """Create a Communicator.
 
         The instance reference must start with one or more Identifiers,
@@ -88,6 +91,9 @@ class Communicator:
         self._index = index
         self._port_manager = port_manager
         self._profiler = profiler
+        self._manager = manager
+        # Notify manager, by default, after 10 seconds waiting in receive_message()
+        self._receive_timeout = 10.0
 
         self._server = MPPServer()
 
@@ -116,6 +122,16 @@ class Communicator:
             peer_info: Information about the peers.
         """
         self._peer_info = peer_info
+
+    def set_receive_timeout(self, receive_timeout: float) -> None:
+        """Update the timeout after which the manager is notified that we are waiting
+        for a message.
+
+        Args:
+            receive_timeout: Timeout (seconds). A negative number disables the deadlock
+                notification mechanism.
+        """
+        self._receive_timeout = receive_timeout
 
     def send_message(
             self, port_name: str, message: Message,
@@ -228,13 +244,26 @@ class Communicator:
         snd_endpoint = self._peer_info.get_peer_endpoints(
                 recv_endpoint.port, slot_list)[0]
         client = self.__get_client(snd_endpoint.instance())
+        timeout_handler = None
+        if self._receive_timeout >= 0:
+            timeout_handler = ReceiveTimeoutHandler(
+                    self._manager, snd_endpoint.instance(),
+                    port_name, slot, self._receive_timeout)
         try:
-            mpp_message_bytes, profile = client.receive(recv_endpoint.ref())
+            mpp_message_bytes, profile = client.receive(
+                    recv_endpoint.ref(), timeout_handler)
         except (ConnectionError, SocketClosed) as exc:
             raise RuntimeError(
                 "Error while receiving a message: connection with peer"
                 f" '{snd_endpoint.kernel}' was lost. Did the peer crash?"
             ) from exc
+        except Deadlock:
+            # Profiler messages may be used for debugging the deadlock
+            self._profiler.shutdown()
+            raise RuntimeError(
+                "Deadlock detected while receiving a message on "
+                f"port '{port_and_slot}'. See manager logs for more detail."
+            ) from None
 
         recv_decode_event = ProfileEvent(
                 ProfileEventType.RECEIVE_DECODE, ProfileTimestamp(), None,

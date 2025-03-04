@@ -2483,6 +2483,20 @@ YMMSL_Settings
     :r is: ``.true.`` if the value is of type ``YMMSL_real8``.
     :rtype is: logical
 
+.. f:function:: YMMSL_Settings_is_a_int8array(self, key, err_code, err_msg)
+
+    Return whether a value is a 1D array of type ``YMMSL_int8``.
+
+    If the given key does not exist, then ``err_code`` will be set to
+    ``YMMSL_out_of_bounds`` and the result will be invalid.
+
+    :p YMMSL_Settings self: The Settings object to inspect.
+    :p character key: The name of the setting to check.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r is: ``.true.`` if the value is a 1D array of type ``YMMSL_int8``.
+    :rtype is: logical
+
 .. f:function:: YMMSL_Settings_is_a_real8array(self, key, err_code, err_msg)
 
     Return whether a value is a 1D array of type ``YMMSL_real8``.
@@ -2520,8 +2534,8 @@ YMMSL_Settings
 
     ``value`` may be a character (string), a logical, a 4-byte integer (e.g.
     ``YMMSL_int4``), an 8-byte integer (e.g.  ``YMMSL_int8``), an 8-byte real
-    number (``YMMSL_real8``), or a one- or two-dimensional arrays of 8-byte real
-    numbers.
+    number (``YMMSL_real8``), a one-dimension array of 8-byte integers, or a
+    one- or two-dimensional arrays of 8-byte real numbers.
 
     :p YMMSL_Settings self: The Settings object to modify.
     :p character key: The name of the setting.
@@ -2599,6 +2613,20 @@ YMMSL_Settings
     :p character err_msg: An error message output (allocatable, optional).
     :r value: The value at the given index (YMMSL_real8)
     :rtype value: real
+
+.. f:subroutine:: YMMSL_Settings_get_as_int8array(self, key, value, err_code, err_msg)
+
+    Return the value of a setting that is a 1D array of integers.
+
+    If this setting is not currently set to a 1D array of int8-typed value,
+    then ``err_code`` will be set to ``YMMSL_bad_cast`` and ``value``
+    will be invalid.
+
+    :p character key: The name of the setting to get.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The value at the given index (dimension(:))
+    :rtype value: YMMSL_int8
 
 .. f:subroutine:: YMMSL_Settings_get_as_real8array(self, key, value, err_code, err_msg)
 

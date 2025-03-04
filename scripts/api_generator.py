@@ -332,6 +332,73 @@ class String(Par):
         return ''  # memfun has void signature
 
 
+class VecInt64t(Par):
+    """Represents a vector of int64_t parameter.
+    """
+    def tname(self) -> str:
+        return 'int8array'
+
+    def fc_cpp_type(self) -> str:
+        return 'std::vector<int64_t>'
+
+    def f_type(self) -> List[Tuple[str, str]]:
+        return self._regular_type('integer (selected_int_kind(18)), dimension(:)')
+
+    def f_ret_type(self) -> Tuple[bool, List[Tuple[str, str]]]:
+        return False, self._regular_type(
+                [('integer (selected_int_kind(18)), dimension(:)', self.name)])
+
+    def f_aux_variables(self) -> List[Tuple[str, str]]:
+        return [(
+            'integer (selected_int_kind(18)), pointer, dimension(:)',
+            'f_ret_ptr')]
+
+    def f_chain_arg(self) -> str:
+        return '{}, int(size({}), c_int64_t)'.format(self.name, self.name)
+
+    def f_call_c(self, result_name: str, call: str) -> str:
+        return '    call {}\n\n'.format(call)
+
+    def f_return_result(self, return_name: str, result_name: str) -> str:
+        return ('    call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))\n'
+                '    {}(1:ret_val_size) = f_ret_ptr\n').format(return_name)
+
+    def fi_type(self) -> List[Tuple[str, str]]:
+        return self._regular_type(
+                ['integer (c_int64_t), dimension(*)',
+                 ('integer (c_int64_t), value', '_size')])
+
+    def fi_ret_type(self) -> List[Tuple[str, str]]:
+        return self._regular_type(
+                ['type (c_ptr)',
+                 ('integer (c_int64_t)', '_size')])
+
+    def fc_type(self) -> List[Tuple[str, str]]:
+        return self._regular_type(['std::int64_t *', ('std::int64_t', '_size')])
+
+    def fc_ret_type(self) -> List[Tuple[str, str]]:
+        return self._regular_type(['std::int64_t **', ('std::size_t *', '_size')])
+
+    def fc_convert_input(self) -> str:
+        return '    std::vector<std::int64_t> {}_v({}, {} + {}_size);\n'.format(
+                self.name, self.name, self.name, self.name)
+
+    def fc_cpp_arg(self) -> str:
+        return self.name + '_v'
+
+    def fc_get_result(self, cpp_chain_call: str) -> str:
+        return ('static std::vector<std::int64_t> result;\n'
+                '    result = {}').format(cpp_chain_call)
+
+    def fc_return(self) -> str:
+        return ('    *{0} = result.data();\n'
+                '    *{0}_size = result.size();\n'
+                '    return;\n').format(self.name)
+
+    def fc_return_default(self) -> str:
+        return ''  # memfun has void signature
+
+
 class VecDbl(Par):
     """Represents a vector of double parameter.
     """
@@ -1723,7 +1790,7 @@ class MemFun(Member):
                             err_msg_p(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                         end do
                         print *, err_msg_p
-                        stop
+                        stop 1
                     end if
                 else
                     if (present(err_code)) then

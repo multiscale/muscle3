@@ -8,7 +8,7 @@ from api_generator import (
         Destructor, Double, Enum, EqualsOperator,
         IndexAssignmentOperator, Int32t, Int64t, MemFun,
         MemFunTmpl, Namespace, Obj, OverloadSet,
-        Sizet, String, T, VecDbl, Vec2Dbl, Void)
+        Sizet, String, T, VecInt64t, VecDbl, Vec2Dbl, Void)
 
 
 # These need to kept in sync with the values in the C++ implementation
@@ -29,7 +29,8 @@ settings_desc = Class('Settings', None, [
     MemFun(Sizet('size'), 'size'),
     MemFun(Bool('empty'), 'empty'),
     MemFunTmpl(
-        [String(), Int32t(), Int64t(), Double(), Bool(), VecDbl(), Vec2Dbl()],
+        [String(), Int32t(), Int64t(), Double(), Bool(), VecInt64t(), VecDbl(),
+         Vec2Dbl()],
         Bool(), 'is_a', [String('key')], True,
         cpp_chain_call=lambda **kwargs: 'self_p->at({}).is_a<{}>()'.format(
             kwargs['cpp_args'], kwargs['tpl_type'])),
@@ -38,14 +39,15 @@ settings_desc = Class('Settings', None, [
     IndexAssignmentOperator('set_int8', [String('key'), Int64t('value')]),
     IndexAssignmentOperator('set_real8', [String('key'), Double('value')]),
     IndexAssignmentOperator('set_logical', [String('key'), Bool('value')]),
+    IndexAssignmentOperator('set_int8array', [String('key'), VecInt64t('value')]),
     IndexAssignmentOperator('set_real8array', [String('key'), VecDbl('value')]),
     IndexAssignmentOperator('set_real8array2', [String('key'), Vec2Dbl('value')]),
     OverloadSet('set', [
         'set_character', 'set_int4', 'set_int8', 'set_real8', 'set_logical',
-        'set_real8array', 'set_real8array2'], False),
+        'set_int8array', 'set_real8array', 'set_real8array2'], False),
     MemFunTmpl(
-        [String(), Int32t(), Int64t(), Double(), Bool(), VecDbl('value'),
-         Vec2Dbl('value')],
+        [String(), Int32t(), Int64t(), Double(), Bool(), VecInt64t('value'),
+         VecDbl('value'), Vec2Dbl('value')],
         T(), 'get_as', [String('key')], True,
         cpp_chain_call=lambda **kwargs: 'self_p->at({}).as<{}>()'.format(
             kwargs['cpp_args'], kwargs['tpl_type'])),

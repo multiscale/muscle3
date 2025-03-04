@@ -5,6 +5,7 @@
 #include <libmuscle/data.hpp>
 #include <libmuscle/mcp/data_pack.hpp>
 #include <libmuscle/logger.hpp>
+#include <libmuscle/mmsf_validator.hpp>
 #include <libmuscle/mmp_client.hpp>
 #include <libmuscle/peer_info.hpp>
 #include <libmuscle/port_manager.hpp>
@@ -130,6 +131,7 @@ class Instance::Impl {
         SettingsManager settings_manager_;
         std::unique_ptr<SnapshotManager> snapshot_manager_;
         std::unique_ptr<TriggerManager> trigger_manager_;
+        std::unique_ptr<MMSFValidator> mmsf_validator_;
         Optional<bool> first_run_;
         Optional<bool> do_reuse_;
         bool do_resume_;
@@ -143,6 +145,7 @@ class Instance::Impl {
         void deregister_();
         void setup_checkpointing_();
         void setup_profiling_();
+        void setup_receive_timeout_();
 
         ::ymmsl::Reference make_full_name_(int argc, char const * const argv[]) const;
         std::string extract_manager_location_(int argc, char const * const argv[]) const;
@@ -151,8 +154,8 @@ class Instance::Impl {
 
         std::vector<::ymmsl::Port> list_declared_ports_() const;
         void check_port_(
-                std::string const & port_name, Optional<int> slot = {},
-                bool allow_slot_out_of_range = false);
+                std::string const & port_name, Optional<int> slot,
+                bool is_send, bool allow_slot_out_of_range = false);
 
         bool receive_settings_();
         bool have_f_init_connections_();
@@ -226,7 +229,7 @@ Instance::Impl::Impl(
         port_manager_.reset(new PortManager(index_(), ports));
         communicator_.reset(
                 new Communicator(
-                    name_(), index_(), *port_manager_, *logger_, *profiler_));
+                    name_(), index_(), *port_manager_, *logger_, *profiler_, *manager_));
         snapshot_manager_.reset(new SnapshotManager(
                 instance_name_, *manager_, *port_manager_, *logger_));
         trigger_manager_.reset(new TriggerManager());
@@ -239,6 +242,11 @@ Instance::Impl::Impl(
         set_local_log_level_();
         set_remote_log_level_();
         setup_profiling_();
+        setup_receive_timeout_();
+        // MMSFValidator needs a connected port manager, and does some logging
+        if (! (InstanceFlags::SKIP_MMSF_SEQUENCE_CHECKS & flags_)) {
+            mmsf_validator_.reset(new MMSFValidator(*port_manager_, *logger_));
+        }
 #ifdef MUSCLE_ENABLE_MPI
         auto sbase_data = Data(settings_manager_.base);
         msgpack::sbuffer sbuf;
@@ -268,6 +276,7 @@ Instance::Impl::~Impl() {
 
 bool Instance::Impl::reuse_instance() {
     api_guard_->verify_reuse_instance();
+    if (mmsf_validator_) mmsf_validator_->reuse_instance();
 
     bool do_reuse;
     if (do_reuse_.is_set()) {
@@ -277,6 +286,9 @@ bool Instance::Impl::reuse_instance() {
     } else {
         do_reuse = decide_reuse_instance_();
     }
+
+    if (do_resume_ && !do_init_ && mmsf_validator_)
+        mmsf_validator_->skip_f_init();
 
     // now first_run_, do_resume_ and do_init_ are also set correctly
 #ifdef MUSCLE_ENABLE_MPI
@@ -411,7 +423,8 @@ void Instance::Impl::send(std::string const & port_name, Message const & message
     if (mpi_barrier_.is_root()) {
 #endif
 
-        check_port_(port_name);
+        check_port_(port_name, {}, true);
+        if (mmsf_validator_) mmsf_validator_->check_send(port_name, {});
         if (!message.has_settings()) {
             Message msg(message);
             msg.set_settings(settings_manager_.overlay);
@@ -434,7 +447,8 @@ void Instance::Impl::send(
         try {
 #endif
 
-    check_port_(port_name, slot);
+    check_port_(port_name, slot, true);
+    if (mmsf_validator_) mmsf_validator_->check_send(port_name, slot);
     if (!message.has_settings()) {
         Message msg(message);
         msg.set_settings(settings_manager_.overlay);
@@ -556,6 +570,30 @@ void Instance::Impl::setup_profiling_() {
     profiler_->set_level(profile_level_str);
 }
 
+void Instance::Impl::setup_receive_timeout_() {
+    double timeout;
+    try {
+        timeout = settings_manager_.get_setting(
+               instance_name_, "muscle_deadlock_receive_timeout").as<double>();
+        if (timeout >= 0 && timeout < 0.1) {
+            logger_->info(
+                    "Provided muscle_deadlock_receive_timeout (", timeout,
+                    ") was less than the minimum of 0.1 seconds, setting it to 0.1.");
+            timeout = 0.1;
+        }
+        communicator_->set_receive_timeout(timeout);
+    }
+    catch (std::runtime_error const & e) {
+        logger_->error(e.what() + std::string(" in muscle_deadlock_receive_timeout"));
+    }
+    catch (std::out_of_range const &) {
+        // muscle_deadlock_receive_timeout not set, do nothing and keep the default
+    }
+    logger_->debug(
+            "Timeout on receiving messages set to ",
+            communicator_->get_receive_timeout());
+}
+
 Message Instance::Impl::receive_message(
                 std::string const & port_name,
                 Optional<int> slot,
@@ -570,7 +608,8 @@ Message Instance::Impl::receive_message(
         try {
 #endif
 
-    check_port_(port_name, slot, true);
+    check_port_(port_name, slot, false, true);
+    if (mmsf_validator_) mmsf_validator_->check_receive(port_name, slot);
 
     Reference port_ref(port_name);
     auto const & port = port_manager_->get_port(port_name);
@@ -842,7 +881,7 @@ std::vector<::ymmsl::Port> Instance::Impl::list_declared_ports_() const {
  */
 void Instance::Impl::check_port_(
         std::string const & port_name, Optional<int> slot,
-        bool allow_slot_out_of_range)
+        bool is_send, bool allow_slot_out_of_range)
 {
     if (!port_manager_->port_exists(port_name)) {
         std::ostringstream oss;
@@ -852,8 +891,22 @@ void Instance::Impl::check_port_(
         throw std::logic_error(oss.str());
     }
 
+    auto & port = port_manager_->get_port(port_name);
+    if (is_send) {
+        if (!::ymmsl::allows_sending(port.oper)) {
+            std::ostringstream oss;
+            oss << " Port "  << port_name << " does not allow sending messages.";
+            throw std::logic_error(oss.str());
+        }
+    } else {
+        if (!::ymmsl::allows_receiving(port.oper)) {
+            std::ostringstream oss;
+            oss << " Port "  << port_name << " does not allow receiving messages.";
+            throw std::logic_error(oss.str());
+        }
+    }
+
     if (slot.is_set()) {
-        auto & port = port_manager_->get_port(port_name);
         if (!port.is_vector()) {
             std::ostringstream oss;
             oss << "Port \"" << port_name << "\" is not a vector port, but a slot was";
@@ -956,9 +1009,8 @@ void Instance::Impl::pre_receive_(
         port_ref += slot.get();
 
     auto msg_saved_until = communicator_->receive_message(port_name, slot);
+
     auto & msg = std::get<0>(msg_saved_until);
-    auto & saved_until = std::get<1>(msg_saved_until);
-    f_init_cache_.emplace(port_ref, msg);
     bool apply_overlay = !(flags_ & InstanceFlags::DONT_APPLY_OVERLAY);
     if (apply_overlay) {
         apply_overlay_(msg);
@@ -966,6 +1018,9 @@ void Instance::Impl::pre_receive_(
             check_compatibility_(port_name, msg.settings());
         msg.unset_settings();
     }
+    f_init_cache_.emplace(port_ref, msg);
+
+    auto & saved_until = std::get<1>(msg_saved_until);
     trigger_manager_->harmonise_wall_time(saved_until);
 }
 
@@ -1317,6 +1372,8 @@ template std::string Instance::get_setting_as<std::string>(std::string const & n
 template int64_t Instance::get_setting_as<int64_t>(std::string const & name) const;
 template double Instance::get_setting_as<double>(std::string const & name) const;
 template bool Instance::get_setting_as<bool>(std::string const & name) const;
+template std::vector<int64_t> Instance::get_setting_as<std::vector<int64_t>>(
+        std::string const & name) const;
 template std::vector<double> Instance::get_setting_as<std::vector<double>>(
         std::string const & name) const;
 template std::vector<std::vector<double>> Instance::get_setting_as<std::vector<std::vector<double>>>(

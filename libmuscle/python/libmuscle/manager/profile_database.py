@@ -119,18 +119,29 @@ class ProfileDatabase:
 
         for name in instances:
             if name not in stop_run:
-                warn(
-                        f'Instance {name} did not shut down cleanly, data may be'
-                        ' inaccurate or missing')
-
+                # instances with no connected f_init ports don't have SHUTDOWN_WAIT
+                # try to use the start of DISCONNECT_WAIT instead as the stop time
                 cur.execute(
-                        "SELECT stop_time"
+                        "SELECT start_time"
                         " FROM all_events"
-                        " WHERE instance = ?"
-                        " ORDER BY stop_time DESC LIMIT 1", [name])
+                        " WHERE type = 'DISCONNECT_WAIT' and instance = ?", [name])
                 result = cur.fetchall()
                 if result:
                     stop_run[name] = result[0][0]
+                else:
+                    # as a last resort, just take the last registered event
+                    warn(
+                            f'Instance {name} did not shut down cleanly, data may be'
+                            ' inaccurate or missing')
+
+                    cur.execute(
+                            "SELECT stop_time"
+                            " FROM all_events"
+                            " WHERE instance = ?"
+                            " ORDER BY stop_time DESC LIMIT 1", [name])
+                    result = cur.fetchall()
+                    if result:
+                        stop_run[name] = result[0][0]
 
         cur.execute(
                 "SELECT instance, SUM(stop_time - start_time)"

@@ -19,6 +19,10 @@ enum class RequestType {
     submit_profile_events = 6,
     submit_snapshot = 7,
     get_checkpoint_info = 8,
+    // Connection deadlock detection
+    waiting_for_receive = 9,
+    waiting_for_receive_done = 10,
+    is_deadlocked = 11,
 
     // MUSCLE Peer Protocol
     get_next_message = 21

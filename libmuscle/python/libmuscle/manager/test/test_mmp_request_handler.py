@@ -15,10 +15,10 @@ from libmuscle.snapshot import SnapshotMetadata
 
 def test_create_servicer(
         logger, profile_store, mmp_configuration, instance_registry,
-        topology_store, snapshot_registry):
+        topology_store, snapshot_registry, deadlock_detector):
     MMPRequestHandler(
             logger, profile_store, mmp_configuration, instance_registry,
-            topology_store, snapshot_registry, None)
+            topology_store, snapshot_registry, deadlock_detector, None)
 
 
 def test_log_message(mmp_request_handler, caplog):

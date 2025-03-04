@@ -9,7 +9,7 @@ def has_setting_type(value: SettingValue, typ: str) -> bool:
     Args:
         value: A setting value.
         typ: A setting type. Valid values are 'str', 'int', 'float',
-                'bool', '[float]', and '[[float]]'.
+                'bool', '[int]', '[float]', and '[[float]]'.
 
     Returns:
         True if the type of value matches typ.
@@ -26,6 +26,12 @@ def has_setting_type(value: SettingValue, typ: str) -> bool:
 
     if typ in par_type_to_type:
         return isinstance(value, par_type_to_type[typ])
+    elif typ == '[int]':
+        if isinstance(value, list):
+            if len(value) == 0 or isinstance(value[0], int):
+                # We don't check everything here, the yMMSL loader does
+                # a full type check, so we just need to discriminate.
+                return True
     elif typ == '[float]':
         if isinstance(value, list):
             if len(value) == 0 or isinstance(value[0], float):

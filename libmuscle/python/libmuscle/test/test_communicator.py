@@ -1,5 +1,5 @@
 import logging
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
@@ -46,7 +46,7 @@ def mpp_client(MPPClient):
 
 @pytest.fixture
 def communicator(connected_port_manager, profiler):
-    return Communicator(Ref('component'), [], connected_port_manager, profiler)
+    return Communicator(Ref('component'), [], connected_port_manager, profiler, Mock())
 
 
 @pytest.fixture
@@ -115,9 +115,10 @@ def test_receive_message(connected_communicator, mpp_client):
 
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
+    connected_communicator.set_receive_timeout(-1)
     recv_msg, saved_until = connected_communicator.receive_message('in')
 
-    mpp_client.receive.assert_called_with(Ref('component.in'))
+    mpp_client.receive.assert_called_with(Ref('component.in'), None)
 
     assert recv_msg.timestamp == 2.0
     assert recv_msg.next_timestamp == 3.0
@@ -135,9 +136,10 @@ def test_receive_message_vector(connected_communicator, mpp_client):
 
     mpp_client.receive.return_value = msg.encoded(), MagicMock()
 
+    connected_communicator.set_receive_timeout(-1)
     recv_msg, saved_until = connected_communicator.receive_message('in_v', 5)
 
-    mpp_client.receive.assert_called_with(Ref('component.in_v[5]'))
+    mpp_client.receive.assert_called_with(Ref('component.in_v[5]'), None)
 
     assert recv_msg.timestamp == 4.0
     assert recv_msg.next_timestamp == 6.0
@@ -272,7 +274,7 @@ def test_shutdown(
                     sender, receiver, slot, float('inf'), None,
                     Settings(), 0, 3.5, ClosePort())
 
-    def receive(receiver):
+    def receive(receiver, timeout_handler):
         return messages[receiver].encoded(), MagicMock()
 
     mpp_client.receive = receive

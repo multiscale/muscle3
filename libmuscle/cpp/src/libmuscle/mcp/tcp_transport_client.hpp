@@ -46,7 +46,8 @@ class TcpTransportClient : public TransportClient {
          * @return A byte array with the received data.
          */
         virtual std::tuple<std::vector<char>, ProfileData> call(
-                char const * req_buf, std::size_t req_len) const override;
+                char const * req_buf, std::size_t req_len,
+                TimeoutHandler* timeout_handler=nullptr) const override;
 
         /** Closes this client.
          *

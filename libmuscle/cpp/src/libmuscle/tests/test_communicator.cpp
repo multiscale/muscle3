@@ -21,6 +21,7 @@
 #include <libmuscle/peer_info.cpp>
 #include <libmuscle/port.cpp>
 #include <libmuscle/profiling.cpp>
+#include <libmuscle/receive_timeout_handler.cpp>
 #include <libmuscle/timestamp.cpp>
 
 // Test code dependencies
@@ -62,6 +63,7 @@ using libmuscle::_MUSCLE_IMPL_NS::PeerInfo;
 using libmuscle::_MUSCLE_IMPL_NS::PeerLocations;
 using libmuscle::_MUSCLE_IMPL_NS::PortsDescription;
 using libmuscle::_MUSCLE_IMPL_NS::mcp::ProfileData;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::TimeoutHandler;
 using libmuscle::_MUSCLE_IMPL_NS::ProfileTimestamp;
 
 using ymmsl::Conduit;
@@ -79,11 +81,12 @@ struct libmuscle_communicator
     MockLogger logger_;
     MockProfiler profiler_;
     MockPortManager port_manager_;
+    MockMMPClient manager_;
 
     Communicator communicator_;
 
     libmuscle_communicator()
-        : communicator_("component", {}, connected_port_manager_, logger_, profiler_)
+        : communicator_("component", {}, connected_port_manager_, logger_, profiler_, manager_)
     {
         port_manager_.settings_in_connected.return_value = false;
     }
@@ -120,6 +123,9 @@ struct libmuscle_communicator2 : libmuscle_communicator {
 
         PeerInfo peer_info("component", {}, conduits, peer_dims, peer_locations);
         connected_communicator_.set_peer_info(peer_info);
+        // disable receive timeouts for these tests, so we can check call
+        // signatures: mpp_client->receive.called_with(..., nullptr)
+        connected_communicator_.set_receive_timeout(-1.0);
     }
 };
 
@@ -169,7 +175,7 @@ TEST_F(libmuscle_communicator2, receive_message) {
     double saved_until = std::get<1>(recv_msg_saved_until);
 
     auto & mpp_client = connected_communicator_.clients_.at("peer");
-    ASSERT_TRUE(mpp_client->receive.called_with("component.in"));
+    ASSERT_TRUE(mpp_client->receive.called_with("component.in", nullptr));
 
     ASSERT_EQ(recv_msg.timestamp(), 2.0);
     ASSERT_EQ(recv_msg.next_timestamp(), 3.0);
@@ -192,7 +198,7 @@ TEST_F(libmuscle_communicator2, receive_message_vector) {
     double saved_until = std::get<1>(recv_msg_saved_until);
 
     auto mpp_client = connected_communicator_.clients_.at("peer2[5]").get();
-    ASSERT_TRUE(mpp_client->receive.called_with("component.in_v[5]"));
+    ASSERT_TRUE(mpp_client->receive.called_with("component.in_v[5]", nullptr));
 
     ASSERT_EQ(recv_msg.timestamp(), 4.0);
     ASSERT_EQ(recv_msg.next_timestamp(), 6.0);
@@ -292,7 +298,7 @@ TEST_F(libmuscle_communicator2, port_discard_success_on_resume) {
 
     int count = 0;
 
-    MockMPPClient::return_value.receive.side_effect = [&](Reference const &) {
+    MockMPPClient::return_value.receive.side_effect = [&](Reference const &, TimeoutHandler *) {
         return std::make_tuple(
                 side_effect.at(count++).encoded(), ProfileData());
     };
@@ -355,7 +361,7 @@ TEST_F(libmuscle_communicator2, test_shutdown) {
         }
     }
 
-    MockMPPClient::return_value.receive.side_effect = [&](Reference const & receiver) {
+    MockMPPClient::return_value.receive.side_effect = [&](Reference const & receiver, TimeoutHandler*) {
         return std::make_tuple(messages.at(receiver)->encoded(), ProfileData());
     };
 

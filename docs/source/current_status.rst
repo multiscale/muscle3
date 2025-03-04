@@ -116,9 +116,7 @@ Distributed execution
 `````````````````````
 Distributed execution is now officially supported, although not yet widely
 tested. If you want to experiment on your laptop or your supercomputer, please
-have a look at the `Distributed Execution`_ section of the manual. MUSCLE3 can
-start all the submodels and other components within a cluster allocation through
-the use of `QCG PilotJob <https://github.com/vecma-project/QCG-PilotJob>`_.
+have a look at the `Distributed Execution`_ section of the manual.
 
 Dynamic instantiation
 `````````````````````

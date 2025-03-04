@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.8.0
+
+### Added
+
+- Deadlock detection
+- MMSF validator
+- Configurable shell base environments
+- New native process management
+- Support for list-of-ints in settings
+- Support for MacOS 15 and Python 3.13
+
+### Improved
+
+- Legends outside of plot in profile plots
+- Increased data limit in profile timeline plot
+- Fixed compiling with GCC 14
+- Msgpack upgraded to >=3.2 to avoid bug in 3.1
+
+### Removed
+
+- Support for macOS 12
+
+### Thanks
+
+- Maarten at Ignition Computing for deadlock detection and the MMSF validator
+- Maarten and Rick at Ignition Computing for reporting bugs
+- David and Elisa for reporting issues
+- The ITER Organization (funding for Ignition Computing)
+- EUROfusion (funding for native process management and shell base environments)
+
+
 ## 0.7.2
 
 ### Added

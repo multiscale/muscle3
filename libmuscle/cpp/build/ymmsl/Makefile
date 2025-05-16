@@ -114,7 +114,7 @@ libymmsl.so: $(lobjects)
 	$(CXX) -shared -o $@ $^ $(LDFLAGS)
 
 libymmsl.dylib: $(lobjects)
-	$(CXX) -shared -o $@ $^ $(LDFLAGS)
+	$(CXX) -shared -Wl,-headerpad_max_install_names -o $@ $^ $(LDFLAGS)
 
 libymmsl_d.a: $(dobjects)
 	ar rcs $@ $^
@@ -123,7 +123,7 @@ libymmsl_d.so: $(dlobjects)
 	$(CXX) -shared -o $@ $^ $(LDFLAGS)
 
 libymmsl_d.dylib: $(dlobjects)
-	$(CXX) -shared -o $@ $^ $(LDFLAGS)
+	$(CXX) -shared -Wl,-headerpad_max_install_names -o $@ $^ $(LDFLAGS)
 
 $(PREFIX)/include/%.hpp: $(hdrdir)/%.hpp
 	@mkdir -p $(@D)

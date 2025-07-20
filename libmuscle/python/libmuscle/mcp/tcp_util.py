@@ -1,5 +1,7 @@
 from socket import SocketType
 
+import libmuscle.mark as mark
+
 
 class SocketClosed(Exception):
     """Raised when trying to read from a socket that was closed.
@@ -21,6 +23,7 @@ def recv_all(socket: SocketType, length: int) -> bytes:
     databuf = bytearray(length)
     received_count = 0
     while received_count < length:
+        mark.before_tcp_receive(socket)
         bytes_left = length - received_count
         received_now = socket.recv_into(
             memoryview(databuf)[received_count:], bytes_left)
@@ -47,6 +50,7 @@ def send_int64(socket: SocketType, data: int) -> None:
         RuntimeError: If there was an error sending the data.
     """
     buf = data.to_bytes(8, byteorder='little')
+    mark.before_tcp_send(socket)
     socket.sendall(buf)
 
 
@@ -60,5 +64,6 @@ def recv_int64(socket: SocketType) -> int:
         SocketClosed: If the socket was closed by the peer.
         RuntimeError: If a read error occurred.
     """
+    mark.before_tcp_receive(socket)
     buf = recv_all(socket, 8)
     return int.from_bytes(buf, 'little')

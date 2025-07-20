@@ -1,7 +1,7 @@
 import logging
 
 from libmuscle.logging import LogLevel, LogMessage, Timestamp
-from libmuscle.mmp_client import MMPClient
+from libmuscle.mmp_client import ConnectionLockedError, MMPClient
 
 
 class MuscleManagerHandler(logging.Handler):
@@ -23,9 +23,30 @@ class MuscleManagerHandler(logging.Handler):
         super().__init__(level)
         self._instance_id = instance_id
         self._manager = mmp_client
+        self._num_dropped = 0
 
     def emit(self, record: logging.LogRecord) -> None:
+        """Do the actual send to the manager
+
+        If this fails, then we drop the message, but we do keep track of how many
+        messages were dropped and try to get that into the manager log, referring the
+        user to the instance log.
+        """
         message = LogMessage(self._instance_id, Timestamp(record.created),
                              LogLevel.from_python_level(record.levelno),
                              self.format(record))
-        self._manager.submit_log_message(message)
+
+        try:
+            if self._num_dropped > 0:
+                dropped_msg = LogMessage(
+                        self._instance_id, Timestamp(), LogLevel.WARNING,
+                        f'{self._num_dropped} log messages were not sent to the manager'
+                        ' log due to network connectivity problems. Please see the'
+                        ' instance log to read them.')
+                self._manager.submit_log_message(dropped_msg)
+                self._num_dropped = 0
+
+            self._manager.submit_log_message(message)
+
+        except ConnectionLockedError:
+            self._num_dropped += 1

@@ -1,3 +1,4 @@
+from errno import EBADF, ENOTCONN
 from socket import SocketType
 
 import libmuscle.mark as mark
@@ -7,6 +8,22 @@ class SocketClosed(Exception):
     """Raised when trying to read from a socket that was closed.
     """
     pass
+
+
+_CONNECTION_ERRORS = (BrokenPipeError, ConnectionError, SocketClosed, TimeoutError)
+
+
+_CONNECTION_ERRNOS = (EBADF, ENOTCONN)
+
+
+def is_disconnect(exception: Exception) -> bool:
+    """Checks whether this is a disconnect or another problem."""
+    if isinstance(exception, _CONNECTION_ERRORS):
+        return True
+    if isinstance(exception, OSError):
+        if exception.errno in _CONNECTION_ERRNOS:
+            return True
+    return False
 
 
 def recv_all(socket: SocketType, length: int) -> bytes:

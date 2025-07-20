@@ -1,7 +1,7 @@
 import dataclasses
 from pathlib import Path
 from random import uniform
-from threading import Lock
+from threading import get_ident, Lock
 from time import perf_counter, sleep
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
@@ -98,6 +98,10 @@ def decode_checkpoint_info(
     return (elapsed_time, checkpoints, resume_path, snapshot_path)
 
 
+class ConnectionLockedError(RuntimeError):
+    pass
+
+
 class MMPClient():
     """The client for the MUSCLE Manager Protocol.
 
@@ -119,6 +123,7 @@ class MMPClient():
         self._instance_id = instance_id
         self._transport_client = TcpTransportClient(location)
         self._mutex = Lock()
+        self._cur_owner = 0
 
     def close(self) -> None:
         """Close the connection
@@ -131,8 +136,37 @@ class MMPClient():
     def submit_log_message(self, message: LogMessage) -> None:
         """Send a log message to the manager.
 
+        This particular call is a bit tricky because of its potentially recursive
+        nature. It's used by a special logging handler (see logging_handler.py) to send
+        high-priority log messages to the manager for inclusion in the manager log. The
+        problem is that the connection to the manager may fail while doing so, which
+        causes more log messages to be generated (dropped connection are rare and
+        shouldn't really happen, so we want the user to know about them). Of course
+        those then get picked up by the handler, which sends them here recursively.
+
+        The Python logging system has an internal mutex, and we've got a mutex here as
+        well, and this recursion causes a thread to try to lock them alternatingly. If
+        the thread starts with making a request to the manager, then it will try to lock
+        the MMPClient mutex first, then the logging mutex, but if it starts with sending
+        a log message, then it will try to lock the logging mutex first and then the
+        MMPClient one. If two threads try to lock two mutexes in a different order then
+        you'll get a deadlock.
+
+        So, unlike the other functions in this class, submit_log_message() may end up
+        being invoked recursively, and in that case it will raise ConnectionLockedError
+        rather than deadlocking.
+
+        Note that the logic for this is in _call_manager(), and applies to the other
+        functions as well, but it cannot escape there because unlike
+        submit_log_message() those functions are never called while the thread is
+        already holding the mutex.
+
         Args:
             message: The message to send.
+
+        Raises:
+            ConnectionLockedError: if the connection to the manager was being used
+                already.
         """
         request = [
                 RequestType.SUBMIT_LOG_MESSAGE.value,
@@ -310,8 +344,22 @@ class MMPClient():
 
         Returns:
             The decoded response
+
+        Raises:
+            ConnectionLockedError: if we already own the mutex and are trying to call
+                    recursively.
         """
-        with self._mutex:
-            encoded_request = msgpack.packb(request, use_bin_type=True)
-            response, _ = self._transport_client.call(encoded_request)
-            return msgpack.unpackb(response, raw=False)
+        if self._cur_owner == get_ident():
+            # recursive call, fail rather than hang
+            raise ConnectionLockedError()
+
+        if self._mutex.acquire():
+            self._cur_owner = get_ident()
+            try:
+                encoded_request = msgpack.packb(request, use_bin_type=True)
+                response, _ = self._transport_client.call(encoded_request)
+                result = msgpack.unpackb(response, raw=False)
+                return result
+            finally:
+                self._cur_owner = 0
+                self._mutex.release()

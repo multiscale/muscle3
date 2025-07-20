@@ -18,6 +18,16 @@ def test_request(tcp_transport_server):
     location = tcp_transport_server._server.server_address
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.connect(location)
+
+        req_session = (0).to_bytes(8, byteorder='little')
+        sock.sendall(req_session)
+        sesbuf = bytearray(8)
+        sock.recv_into(sesbuf, 8)
+        session = int.from_bytes(sesbuf, 'little')
+        assert session == 1
+
+        reqno = (1).to_bytes(8, byteorder='little')
+        sock.sendall(reqno)
         length = len(request).to_bytes(8, byteorder='little')
         sock.sendall(length)
         sock.sendall(request)

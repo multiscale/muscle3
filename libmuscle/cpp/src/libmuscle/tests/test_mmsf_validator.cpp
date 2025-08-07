@@ -43,10 +43,8 @@ int main(int argc, char *argv[]) {
 struct libmuscle_mmsf_validator : ::testing::Test {
     std::unique_ptr<PortManager> port_manager_;
     std::unique_ptr<MMSFValidator> validator_;
-    std::unique_ptr<MockLogger> logger_;
 
     void create_validator(PortsDescription const & declared_ports) {
-        logger_ = std::make_unique<MockLogger>();
         port_manager_ = std::make_unique<PortManager>(std::vector<int>(), declared_ports);
 
         // Build peer info for port_manager.connect_ports
@@ -66,9 +64,9 @@ struct libmuscle_mmsf_validator : ::testing::Test {
         PeerInfo peer_info(component_id, {}, conduits, peer_dims, peer_locations);
 
         port_manager_->connect_ports(peer_info);
-        validator_ = std::make_unique<MMSFValidator>(*port_manager_, *logger_);
+        validator_ = std::make_unique<MMSFValidator>(*port_manager_);
         // Discard the debug log statement in the MMSFValidator initializer:
-        logger_->caplog.call_args_list.clear();
+        MockLogger::instance().caplog.call_args_list.clear();
     }
 };
 
@@ -91,7 +89,7 @@ TEST_F(libmuscle_simple_validator, test_simple_correct_0it) {
         validator_->check_send("o_f", {});
     }
     validator_->reuse_instance();
-    ASSERT_FALSE(logger_->caplog.called());
+    ASSERT_FALSE(MockLogger::instance().caplog.called());
 }
 
 
@@ -104,7 +102,7 @@ TEST_F(libmuscle_simple_validator, test_simple_correct_1it) {
         validator_->check_send("o_f", {});
     }
     validator_->reuse_instance();
-    ASSERT_FALSE(logger_->caplog.called());
+    ASSERT_FALSE(MockLogger::instance().caplog.called());
 }
 
 
@@ -119,16 +117,16 @@ TEST_F(libmuscle_simple_validator, test_simple_correct_2it) {
         validator_->check_send("o_f", {});
     }
     validator_->reuse_instance();
-    ASSERT_FALSE(logger_->caplog.called());
+    ASSERT_FALSE(MockLogger::instance().caplog.called());
 }
 
 
 TEST_F(libmuscle_simple_validator, test_simple_skip_f_init) {
     validator_->reuse_instance();
     validator_->check_send("o_i", {});
-    ASSERT_TRUE(logger_->caplog.called_once());
-    ASSERT_EQ(logger_->caplog.call_arg<0>(0), LogLevel::WARNING);
-    ASSERT_THAT(logger_->caplog.call_arg<1>(0), HasSubstr("Send on port 'o_i'"));
+    ASSERT_TRUE(MockLogger::instance().caplog.called_once());
+    ASSERT_EQ(MockLogger::instance().caplog.call_arg<0>(0), LogLevel::WARNING);
+    ASSERT_THAT(MockLogger::instance().caplog.call_arg<1>(0), HasSubstr("Send on port 'o_i'"));
 }
 
 
@@ -137,21 +135,21 @@ TEST_F(libmuscle_simple_validator, test_simple_skip_o_i) {
     validator_->check_receive("f_i", {});
 
     validator_->check_receive("f_i", {});
-    ASSERT_TRUE(logger_->caplog.called_once());
-    ASSERT_EQ(logger_->caplog.call_arg<0>(0), LogLevel::WARNING);
-    ASSERT_THAT(logger_->caplog.call_arg<1>(0), HasSubstr("Receive on port 'f_i'"));
+    ASSERT_TRUE(MockLogger::instance().caplog.called_once());
+    ASSERT_EQ(MockLogger::instance().caplog.call_arg<0>(0), LogLevel::WARNING);
+    ASSERT_THAT(MockLogger::instance().caplog.call_arg<1>(0), HasSubstr("Receive on port 'f_i'"));
 
-    logger_->caplog.call_args_list.clear();
+    MockLogger::instance().caplog.call_args_list.clear();
     validator_->check_receive("s", {});
-    ASSERT_TRUE(logger_->caplog.called_once());
-    ASSERT_EQ(logger_->caplog.call_arg<0>(0), LogLevel::WARNING);
-    ASSERT_THAT(logger_->caplog.call_arg<1>(0), HasSubstr("Receive on port 's'"));
+    ASSERT_TRUE(MockLogger::instance().caplog.called_once());
+    ASSERT_EQ(MockLogger::instance().caplog.call_arg<0>(0), LogLevel::WARNING);
+    ASSERT_THAT(MockLogger::instance().caplog.call_arg<1>(0), HasSubstr("Receive on port 's'"));
 
-    logger_->caplog.call_args_list.clear();
+    MockLogger::instance().caplog.call_args_list.clear();
     validator_->reuse_instance();
-    ASSERT_TRUE(logger_->caplog.called_once());
-    ASSERT_EQ(logger_->caplog.call_arg<0>(0), LogLevel::WARNING);
-    ASSERT_THAT(logger_->caplog.call_arg<1>(0), HasSubstr("reuse_instance()"));
+    ASSERT_TRUE(MockLogger::instance().caplog.called_once());
+    ASSERT_EQ(MockLogger::instance().caplog.call_arg<0>(0), LogLevel::WARNING);
+    ASSERT_THAT(MockLogger::instance().caplog.call_arg<1>(0), HasSubstr("reuse_instance()"));
 }
 
 
@@ -161,15 +159,15 @@ TEST_F(libmuscle_simple_validator, test_simple_skip_s) {
     validator_->check_send("o_i", {});
 
     validator_->check_send("o_i", {});
-    ASSERT_TRUE(logger_->caplog.called_once());
-    ASSERT_EQ(logger_->caplog.call_arg<0>(0), LogLevel::WARNING);
-    ASSERT_THAT(logger_->caplog.call_arg<1>(0), HasSubstr("Send on port 'o_i'"));
+    ASSERT_TRUE(MockLogger::instance().caplog.called_once());
+    ASSERT_EQ(MockLogger::instance().caplog.call_arg<0>(0), LogLevel::WARNING);
+    ASSERT_THAT(MockLogger::instance().caplog.call_arg<1>(0), HasSubstr("Send on port 'o_i'"));
 
-    logger_->caplog.call_args_list.clear();
+    MockLogger::instance().caplog.call_args_list.clear();
     validator_->check_send("o_f", {});
-    ASSERT_TRUE(logger_->caplog.called_once());
-    ASSERT_EQ(logger_->caplog.call_arg<0>(0), LogLevel::WARNING);
-    ASSERT_THAT(logger_->caplog.call_arg<1>(0), HasSubstr("Send on port 'o_f'"));
+    ASSERT_TRUE(MockLogger::instance().caplog.called_once());
+    ASSERT_EQ(MockLogger::instance().caplog.call_arg<0>(0), LogLevel::WARNING);
+    ASSERT_THAT(MockLogger::instance().caplog.call_arg<1>(0), HasSubstr("Send on port 'o_f'"));
 }
 
 
@@ -180,9 +178,9 @@ TEST_F(libmuscle_simple_validator, test_simple_skip_o_f) {
     validator_->check_receive("s", {});
 
     validator_->reuse_instance();
-    ASSERT_TRUE(logger_->caplog.called_once());
-    ASSERT_EQ(logger_->caplog.call_arg<0>(0), LogLevel::WARNING);
-    ASSERT_THAT(logger_->caplog.call_arg<1>(0), HasSubstr("reuse_instance()"));
+    ASSERT_TRUE(MockLogger::instance().caplog.called_once());
+    ASSERT_EQ(MockLogger::instance().caplog.call_arg<0>(0), LogLevel::WARNING);
+    ASSERT_THAT(MockLogger::instance().caplog.call_arg<1>(0), HasSubstr("reuse_instance()"));
 }
 
 TEST_F(libmuscle_simple_validator, test_simple_skip_reuse_instance) {
@@ -191,9 +189,9 @@ TEST_F(libmuscle_simple_validator, test_simple_skip_reuse_instance) {
     validator_->check_send("o_f", {});
 
     validator_->check_receive("f_i", {});
-    ASSERT_TRUE(logger_->caplog.called_once());
-    ASSERT_EQ(logger_->caplog.call_arg<0>(0), LogLevel::WARNING);
-    ASSERT_THAT(logger_->caplog.call_arg<1>(0), HasSubstr("Receive on port 'f_i'"));
+    ASSERT_TRUE(MockLogger::instance().caplog.called_once());
+    ASSERT_EQ(MockLogger::instance().caplog.call_arg<0>(0), LogLevel::WARNING);
+    ASSERT_THAT(MockLogger::instance().caplog.call_arg<1>(0), HasSubstr("Receive on port 'f_i'"));
 }
 
 
@@ -206,9 +204,9 @@ TEST_F(libmuscle_mmsf_validator, test_only_o_f) {
     }
 
     validator_->check_send("o_f", {});
-    ASSERT_TRUE(logger_->caplog.called_once());
-    ASSERT_EQ(logger_->caplog.call_arg<0>(0), LogLevel::WARNING);
-    ASSERT_THAT(logger_->caplog.call_arg<1>(0), HasSubstr("Send on port 'o_f'"));
+    ASSERT_TRUE(MockLogger::instance().caplog.called_once());
+    ASSERT_EQ(MockLogger::instance().caplog.call_arg<0>(0), LogLevel::WARNING);
+    ASSERT_THAT(MockLogger::instance().caplog.call_arg<1>(0), HasSubstr("Send on port 'o_f'"));
 }
 
 
@@ -221,9 +219,9 @@ TEST_F(libmuscle_mmsf_validator, test_only_f_i) {
     }
 
     validator_->check_receive("f_i", {});
-    ASSERT_TRUE(logger_->caplog.called_once());
-    ASSERT_EQ(logger_->caplog.call_arg<0>(0), LogLevel::WARNING);
-    ASSERT_THAT(logger_->caplog.call_arg<1>(0), HasSubstr("Receive on port 'f_i'"));
+    ASSERT_TRUE(MockLogger::instance().caplog.called_once());
+    ASSERT_EQ(MockLogger::instance().caplog.call_arg<0>(0), LogLevel::WARNING);
+    ASSERT_THAT(MockLogger::instance().caplog.call_arg<1>(0), HasSubstr("Receive on port 'f_i'"));
 }
 
 
@@ -241,15 +239,15 @@ TEST_F(libmuscle_mmsf_validator, test_micro) {
     validator_->check_receive("f_i", {});
 
     validator_->check_receive("f_i", {});
-    ASSERT_TRUE(logger_->caplog.called_once());
-    ASSERT_EQ(logger_->caplog.call_arg<0>(0), LogLevel::WARNING);
-    ASSERT_THAT(logger_->caplog.call_arg<1>(0), HasSubstr("Receive on port 'f_i'"));
+    ASSERT_TRUE(MockLogger::instance().caplog.called_once());
+    ASSERT_EQ(MockLogger::instance().caplog.call_arg<0>(0), LogLevel::WARNING);
+    ASSERT_THAT(MockLogger::instance().caplog.call_arg<1>(0), HasSubstr("Receive on port 'f_i'"));
 
-    logger_->caplog.call_args_list.clear();
+    MockLogger::instance().caplog.call_args_list.clear();
     validator_->reuse_instance();
-    ASSERT_TRUE(logger_->caplog.called_once());
-    ASSERT_EQ(logger_->caplog.call_arg<0>(0), LogLevel::WARNING);
-    ASSERT_THAT(logger_->caplog.call_arg<1>(0), HasSubstr("reuse_instance()"));
+    ASSERT_TRUE(MockLogger::instance().caplog.called_once());
+    ASSERT_EQ(MockLogger::instance().caplog.call_arg<0>(0), LogLevel::WARNING);
+    ASSERT_THAT(MockLogger::instance().caplog.call_arg<1>(0), HasSubstr("reuse_instance()"));
 }
 
 
@@ -262,7 +260,7 @@ TEST_F(libmuscle_mmsf_validator, test_not_all_ports_used) {
     validator_->check_receive("f_i1", {});
 
     validator_->check_send("o_f", {});
-    ASSERT_TRUE(logger_->caplog.called_once());
-    ASSERT_EQ(logger_->caplog.call_arg<0>(0), LogLevel::WARNING);
-    ASSERT_THAT(logger_->caplog.call_arg<1>(0), HasSubstr("Send on port 'o_f'"));
+    ASSERT_TRUE(MockLogger::instance().caplog.called_once());
+    ASSERT_EQ(MockLogger::instance().caplog.call_arg<0>(0), LogLevel::WARNING);
+    ASSERT_THAT(MockLogger::instance().caplog.call_arg<1>(0), HasSubstr("Send on port 'o_f'"));
 }

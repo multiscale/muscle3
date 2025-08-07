@@ -117,7 +117,6 @@ class Instance::Impl {
     PRIVATE:
         ::ymmsl::Reference instance_name_;
         std::unique_ptr<MMPClient> manager_;
-        std::unique_ptr<Logger> logger_;
         std::unique_ptr<APIGuard> api_guard_;
         std::unique_ptr<Profiler> profiler_;
         std::unique_ptr<PortManager> port_manager_;
@@ -223,15 +222,15 @@ Instance::Impl::Impl(
         std::string instance_id = static_cast<std::string>(instance_name_);
         std::string default_logfile = "muscle_" + instance_id + ".log";
         std::string log_file = extract_log_file_location(argc, argv, default_logfile);
-        logger_.reset(new Logger(instance_id, log_file, *manager_));
+        Logger::instance().init(instance_id, log_file, manager_.get());
         profiler_.reset(new Profiler(*manager_));
 
         port_manager_.reset(new PortManager(index_(), ports));
         communicator_.reset(
                 new Communicator(
-                    name_(), index_(), *port_manager_, *logger_, *profiler_, *manager_));
+                    name_(), index_(), *port_manager_, *profiler_, *manager_));
         snapshot_manager_.reset(new SnapshotManager(
-                instance_name_, *manager_, *port_manager_, *logger_));
+                instance_name_, *manager_, *port_manager_));
         trigger_manager_.reset(new TriggerManager());
 
         register_();
@@ -245,7 +244,7 @@ Instance::Impl::Impl(
         setup_receive_timeout_();
         // MMSFValidator needs a connected port manager, and does some logging
         if (! (InstanceFlags::SKIP_MMSF_SEQUENCE_CHECKS & flags_)) {
-            mmsf_validator_.reset(new MMSFValidator(*port_manager_, *logger_));
+            mmsf_validator_.reset(new MMSFValidator(*port_manager_));
         }
 #ifdef MUSCLE_ENABLE_MPI
         auto sbase_data = Data(settings_manager_.base);
@@ -272,6 +271,7 @@ Instance::Impl::~Impl() {
     // an exception and a crash. Since we're already going down abnormally,
     // trying to not hurt the rest of the simulation seems worth it.
     shutdown_();
+    Logger::instance().close();
 }
 
 bool Instance::Impl::reuse_instance() {
@@ -476,7 +476,7 @@ void Instance::Impl::register_() {
     auto port_list = list_declared_ports_();
     manager_->register_instance(locations, port_list);
     profiler_->record_event(std::move(register_event));
-    logger_->info("Registered with the manager");
+    log_info("Registered with the manager");
 }
 
 /* Connect this instance to the given peers / conduits.
@@ -495,7 +495,7 @@ void Instance::Impl::connect_() {
     settings_manager_.base = manager_->get_settings();
 
     profiler_->record_event(std::move(connect_event));
-    logger_->info("Received peer locations and base settings");
+    log_info("Received peer locations and base settings");
 }
 
 /* Deregister this instance from the manager.
@@ -511,7 +511,7 @@ void Instance::Impl::deregister_() {
 
     // This is the last thing we'll profile, so flush messages
     profiler_->shutdown();
-    logger_->info("Deregistered from the manager");
+    log_info("Deregistered from the manager");
 }
 
 void Instance::Impl::setup_checkpointing_() {
@@ -552,7 +552,7 @@ void Instance::Impl::setup_profiling_() {
                instance_name_, "muscle_profile_level").as<std::string>();
     }
     catch (std::runtime_error const & e) {
-        logger_->error(e.what() + std::string(" in muscle_profile_level"));
+        log_error(e.what() + std::string(" in muscle_profile_level"));
     }
     catch (std::out_of_range const &) {
         // muscle_profile_level not set, do nothing and keep the default
@@ -563,7 +563,7 @@ void Instance::Impl::setup_profiling_() {
         msg += profile_level_str;
         msg += ". Please specify \"none\" or \"all\". Using default value";
         msg += " \"all\"";
-        logger_->warning(msg);
+        log_warning(msg);
 
         profile_level_str = "all";
     }
@@ -576,7 +576,7 @@ void Instance::Impl::setup_receive_timeout_() {
         timeout = settings_manager_.get_setting(
                instance_name_, "muscle_deadlock_receive_timeout").as<double>();
         if (timeout >= 0 && timeout < 0.1) {
-            logger_->info(
+            log_info(
                     "Provided muscle_deadlock_receive_timeout (", timeout,
                     ") was less than the minimum of 0.1 seconds, setting it to 0.1.");
             timeout = 0.1;
@@ -584,12 +584,12 @@ void Instance::Impl::setup_receive_timeout_() {
         communicator_->set_receive_timeout(timeout);
     }
     catch (std::runtime_error const & e) {
-        logger_->error(e.what() + std::string(" in muscle_deadlock_receive_timeout"));
+        log_error(e.what() + std::string(" in muscle_deadlock_receive_timeout"));
     }
     catch (std::out_of_range const &) {
         // muscle_deadlock_receive_timeout not set, do nothing and keep the default
     }
-    logger_->debug(
+    log_debug(
             "Timeout on receiving messages set to ",
             communicator_->get_receive_timeout());
 }
@@ -666,7 +666,7 @@ Message Instance::Impl::receive_message(
                 std::ostringstream oss;
                 oss << "No message received on " << port_ref << " as it is not";
                 oss << " connected.";
-                logger_->debug(oss.str());
+                log_debug(oss.str());
                 result = default_msg.get();
             }
         }
@@ -946,7 +946,7 @@ bool Instance::Impl::receive_settings_() {
         oss << "'" << instance_name_ << "' received a message on";
         oss << " muscle_settings_in that is not a Settings. It seems that the";
         oss << " simulation is miswired or the sending instance is broken.";
-        logger_->critical(oss.str());
+        log_critical(oss.str());
         shutdown_();
         throw std::logic_error(oss.str());
     }
@@ -1034,7 +1034,7 @@ void Instance::Impl::pre_receive_f_init_() {
     auto ports = port_manager_->list_ports();
     if (ports.count(Operator::F_INIT) == 1) {
         for (auto const & port_name : ports.at(Operator::F_INIT)) {
-            logger_->debug("Pre-receiving on port ", port_name);
+            log_debug("Pre-receiving on port ", port_name);
             auto const & port = port_manager_->get_port(port_name);
             if (!port.is_connected())
                 continue;
@@ -1197,10 +1197,10 @@ void Instance::Impl::set_local_log_level_() {
                instance_name_, "muscle_local_log_level").as<std::string>();
 
         LogLevel level = string_to_level(log_level_str);
-        logger_->set_local_level(level);
+        Logger::instance().set_local_level(level);
     }
     catch (std::runtime_error const & e) {
-        logger_->error(e.what() + std::string(" in muscle_local_log_level"));
+        log_error(e.what() + std::string(" in muscle_local_log_level"));
     }
     catch (std::out_of_range const &) {
         // muscle_local_log_level not set, do nothing and keep the default
@@ -1217,10 +1217,10 @@ void Instance::Impl::set_remote_log_level_() {
                instance_name_, "muscle_remote_log_level").as<std::string>();
 
         LogLevel level = string_to_level(log_level_str);
-        logger_->set_remote_level(level);
+        Logger::instance().set_remote_level(level);
     }
     catch (std::runtime_error const & e) {
-        logger_->error(e.what() + std::string(" in muscle_remote_log_level"));
+        log_error(e.what() + std::string(" in muscle_remote_log_level"));
     }
     catch (std::out_of_range const &) {
         // muscle_remote_log_level not set, do nothing and keep the default
@@ -1254,7 +1254,7 @@ void Instance::Impl::check_compatibility_(
         oss << " '" << port_name << "'. My settings are '";
         oss << settings_manager_.overlay << "' and I received from a";
         oss << " universe with '" << overlay << "'.";
-        logger_->critical(oss.str());
+        log_critical(oss.str());
         shutdown_();
         throw std::logic_error(oss.str());
     }
@@ -1272,7 +1272,7 @@ void Instance::Impl::shutdown_(Optional<std::string> const & message) {
         if (mpi_barrier_.is_root()) {
 #endif
             if (message.is_set())
-                logger_->critical(message.get());
+                log_critical(message.get());
             communicator_->shutdown();
             deregister_();
             manager_->close();

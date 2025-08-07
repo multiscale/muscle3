@@ -1,4 +1,5 @@
 #include <iostream>
+#include <mutex>
 #include <ostream>
 #include <sstream>
 
@@ -6,19 +7,20 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 template <typename... Args>
 void Logger::log(LogLevel level, Args... args) {
+    std::lock_guard<std::mutex> lock(mutex_);
     if ((level >= local_level_) || (level >= remote_level_)) {
         auto ts = Timestamp();
         std::ostringstream oss;
         append_args_(oss, args...);
 
-        if (level >= local_level_) {
+        if (local_log_stream_ && level >= local_level_) {
             (*local_log_stream_) << instance_id_ << " " << ts << " " << level;
             (*local_log_stream_) << ": " << oss.str() << std::endl;
         }
 
-        if (level >= remote_level_) {
+        if (manager_ && level >= remote_level_) {
             LogMessage msg(instance_id_, Timestamp(), level, oss.str());
-            manager_.submit_log_message(msg);
+            manager_->submit_log_message(msg);
         }
     }
 }
@@ -52,6 +54,37 @@ template <typename Arg, typename... Args>
 void Logger::append_args_(std::ostringstream & s, Arg arg, Args... args) {
     s << arg;
     append_args_(s, args...);
+}
+
+
+template <typename... Args>
+void log(LogLevel level, Args... args) {
+    Logger::instance().log(level, args...);
+}
+
+template <typename... Args>
+void log_critical(Args... args) {
+    Logger::instance().log(LogLevel::CRITICAL, args...);
+}
+
+template <typename... Args>
+void log_error(Args... args) {
+    Logger::instance().log(LogLevel::ERROR, args...);
+}
+
+template <typename... Args>
+void log_warning(Args... args) {
+    Logger::instance().log(LogLevel::WARNING, args...);
+}
+
+template <typename... Args>
+void log_info(Args... args) {
+    Logger::instance().log(LogLevel::INFO, args...);
+}
+
+template <typename... Args>
+void log_debug(Args... args) {
+    Logger::instance().log(LogLevel::DEBUG, args...);
 }
 
 } }

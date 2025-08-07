@@ -66,7 +66,6 @@ struct libmuscle_snapshot_manager : ::testing::Test, TempDirFixture {
             ::libmuscle::_MUSCLE_IMPL_NS::MockTriggerManager);
 
     // std::string temp_dir_; from TempDirFixture
-    ::libmuscle::_MUSCLE_IMPL_NS::MockLogger mock_logger_;
     ::libmuscle::_MUSCLE_IMPL_NS::MockProfiler mock_profiler_;
     ::libmuscle::_MUSCLE_IMPL_NS::MockPortManager mock_port_manager_;
     ::libmuscle::_MUSCLE_IMPL_NS::MockMMPClient mock_mmp_client_;
@@ -75,7 +74,7 @@ struct libmuscle_snapshot_manager : ::testing::Test, TempDirFixture {
 
 TEST_F(libmuscle_snapshot_manager, test_no_checkpointing) {
     SnapshotManager snapshot_manager(
-            "test", mock_mmp_client_, mock_port_manager_, mock_logger_);
+            "test", mock_mmp_client_, mock_port_manager_);
 
     snapshot_manager.prepare_resume({}, temp_dir_);
     ASSERT_FALSE(snapshot_manager.resuming_from_intermediate());
@@ -95,7 +94,7 @@ TEST_F(libmuscle_snapshot_manager, test_save_load_snapshot) {
     Reference instance_id("test[1]");
 
     SnapshotManager snapshot_manager(
-            instance_id, mock_mmp_client_, mock_port_manager_, mock_logger_);
+            instance_id, mock_mmp_client_, mock_port_manager_);
 
     snapshot_manager.prepare_resume({}, temp_dir_);
     ASSERT_FALSE(snapshot_manager.resuming_from_intermediate());
@@ -117,7 +116,7 @@ TEST_F(libmuscle_snapshot_manager, test_save_load_snapshot) {
     ASSERT_EQ(snapshot_path, temp_dir_ + "/test-1_1.pack");
 
     SnapshotManager snapshot_manager2(
-            instance_id, mock_mmp_client_, mock_port_manager_, mock_logger_);
+            instance_id, mock_mmp_client_, mock_port_manager_);
     snapshot_manager2.prepare_resume(snapshot_path, temp_dir_);
     ASSERT_TRUE(mock_port_manager_.restore_message_counts.called_once());
     ASSERT_EQ(
@@ -159,7 +158,7 @@ TEST_F(libmuscle_snapshot_manager, test_save_load_implicit_snapshot) {
     Reference instance_id("test[1]");
 
     SnapshotManager snapshot_manager(
-            instance_id, mock_mmp_client_, mock_port_manager_, mock_logger_);
+            instance_id, mock_mmp_client_, mock_port_manager_);
 
     snapshot_manager.prepare_resume({}, temp_dir_);
     ASSERT_FALSE(snapshot_manager.resuming_from_intermediate());
@@ -174,7 +173,7 @@ TEST_F(libmuscle_snapshot_manager, test_save_load_implicit_snapshot) {
     mock_mmp_client_.submit_snapshot_metadata.call_args_list.clear();
 
     SnapshotManager snapshot_manager2(
-            instance_id, mock_mmp_client_, mock_port_manager_, mock_logger_);
+            instance_id, mock_mmp_client_, mock_port_manager_);
 
     snapshot_manager2.prepare_resume(snapshot_path, temp_dir_);
     ASSERT_TRUE(mock_port_manager_.restore_message_counts.called_once());

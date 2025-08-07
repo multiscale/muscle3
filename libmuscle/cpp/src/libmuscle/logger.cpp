@@ -6,18 +6,32 @@
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
-Logger::Logger(std::string const & instance_id, std::string const & log_file, MMPClient & manager)
-    : instance_id_(instance_id)
-    , manager_(manager)
-    , remote_level_(LogLevel::WARNING)
-    , local_level_(LogLevel::INFO)
+Logger & Logger::instance() {
+    static Logger instance;
+    return instance;
+}
+
+void Logger::init(
+        std::string const & instance_id, std::string const & log_file, MMPClient * manager)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
+    instance_id_ = instance_id;
+
     if (log_file.empty())
         local_log_stream_ = &std::cerr;
     else {
         local_log_file_.open(log_file, std::ios_base::app);
         local_log_stream_ = &local_log_file_;
     }
+
+    manager_ = manager;
+
+}
+
+void Logger::close() {
+    std::lock_guard<std::mutex> lock(mutex_);
+    local_log_stream_ = nullptr;
+    manager_ = nullptr;
 }
 
 Logger::~Logger() {
@@ -26,6 +40,7 @@ Logger::~Logger() {
 }
 
 void Logger::set_remote_level(LogLevel level) {
+    std::lock_guard<std::mutex> lock(mutex_);
     if (level == LogLevel::LOCAL) {
         log(LogLevel::WARNING, "LOCAL is not a valid remote log level, using DEBUG");
         level = LogLevel::DEBUG;
@@ -34,8 +49,16 @@ void Logger::set_remote_level(LogLevel level) {
 }
 
 void Logger::set_local_level(LogLevel level) {
+    std::lock_guard<std::mutex> lock(mutex_);
     local_level_ = level;
 }
+
+Logger::Logger()
+    : manager_(nullptr)
+    , remote_level_(LogLevel::WARNING)
+    , local_log_stream_(nullptr)
+    , local_level_(LogLevel::INFO)
+{}
 
 void Logger::append_args_(std::ostringstream &) {}
 

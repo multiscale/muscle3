@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include <libmuscle/logger.hpp>
 #include <libmuscle/mmp_client.hpp>
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/port_manager.hpp>
@@ -33,8 +32,7 @@ class SnapshotManager {
         SnapshotManager(
                 ymmsl::Reference const & instance_id,
                 MMPClient & manager,
-                PortManager & port_manager,
-                Logger & logger);
+                PortManager & port_manager);
 
         /** Apply checkpoint info received from the manager.
          *
@@ -101,7 +99,6 @@ class SnapshotManager {
         ymmsl::Reference const & instance_id_;
         MMPClient & manager_;
         PortManager & port_manager_;
-        Logger & logger_;
         Optional<Snapshot> resume_from_snapshot_;
         ::ymmsl::Settings resume_overlay_;
         int next_snapshot_num_;

@@ -13,6 +13,7 @@
 #include <libmuscle/data.cpp>
 #include <libmuscle/instance.cpp>
 #include <libmuscle/logging.cpp>
+#include <libmuscle/mark.cpp>
 #include <libmuscle/mcp/data_pack.cpp>
 #include <libmuscle/message.cpp>
 #include <libmuscle/mmsf_validator.cpp>

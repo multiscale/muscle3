@@ -13,6 +13,7 @@
 #include <libmuscle/communicator.cpp>
 #include <libmuscle/data.cpp>
 #include <libmuscle/endpoint.cpp>
+#include <libmuscle/mark.cpp>
 #include <libmuscle/mcp/data_pack.cpp>
 #include <libmuscle/mpp_message.cpp>
 #include <libmuscle/mcp/tcp_util.cpp>
@@ -23,6 +24,7 @@
 #include <libmuscle/profiling.cpp>
 #include <libmuscle/receive_timeout_handler.cpp>
 #include <libmuscle/timestamp.cpp>
+#include <libmuscle/util.cpp>
 
 // Test code dependencies
 #include <memory>

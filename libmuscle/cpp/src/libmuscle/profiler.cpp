@@ -8,8 +8,7 @@
 
 
 using std::chrono::steady_clock;
-using duration = std::chrono::steady_clock::duration;
-using time_point = std::chrono::steady_clock::time_point;
+using s_duration = std::chrono::steady_clock::duration;
 
 
 #ifdef LIBMUSCLE_PATCH_PROFILER_COMMUNICATION_INTERVAL
@@ -17,7 +16,7 @@ LIBMUSCLE_PATCH_PROFILER_COMMUNICATION_INTERVAL
 #else
 
 namespace {
-    constexpr duration communication_interval_() {
+    constexpr s_duration communication_interval_() {
         return std::chrono::seconds(10);
     }
 }
@@ -68,7 +67,7 @@ void Profiler::communicate_(Profiler * self) {
     auto seed = std::random_device()();
     std::default_random_engine generator(seed);
     std::uniform_real_distribution<double> rand01;
-    duration initial_delay = std::chrono::duration_cast<duration>(
+    s_duration initial_delay = std::chrono::duration_cast<s_duration>(
             communication_interval_() * rand01(generator));
 
     std::unique_lock<std::mutex> lock(self->mutex_);

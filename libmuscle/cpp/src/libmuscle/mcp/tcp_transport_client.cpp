@@ -5,8 +5,11 @@
 #include <algorithm>
 #include <cstring>
 #include <chrono>
+#include <exception>
 #include <memory>
+#include <stdexcept>
 #include <string>
+#include <thread>
 #include <unistd.h>
 #include <vector>
 
@@ -22,6 +25,19 @@
 
 
 namespace {
+
+using libmuscle::_MUSCLE_IMPL_NS::time_monotonic;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::check_conn;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::ConnectionRefused;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::do_poll_out;
+using std::chrono::duration;
+
+
+const double connect_timeout = 3.0;                 // seconds
+const double connect_timeout_patient = 60.0;        // seconds
+const double connect_timeout_patient_step = 3.0;    // seconds
+const double reconnect_timeout = 60.0;              // seconds
+
 
 /* Splits a location string of the form tcp:<address:port>,<address:port>,...
  * into a list of addresses.
@@ -44,7 +60,6 @@ std::vector<std::string> split_location(std::string const & location) {
 
 
 int connect(std::string const & address, bool patient) {
-    int timeout = patient ? 3000 : 20000;       // milliseconds
     std::string errors;
 
     std::size_t split = address.rfind(':');
@@ -58,6 +73,8 @@ int connect(std::string const & address, bool patient) {
     std::string port = address.substr(split + 1);
 
     int err_code;
+    const double timeout = patient ? connect_timeout_patient : connect_timeout;
+    const double patient_step = connect_timeout_patient_step;
 
     // collect addresses to connect to
     addrinfo hints;
@@ -78,66 +95,49 @@ int connect(std::string const & address, bool patient) {
         int socket_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
         if (socket_fd == -1) continue;
 
-        int flags = fcntl(socket_fd, F_GETFL, 0);
-        fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
+        const double start_time = time_monotonic();
+        double time_left = (start_time + timeout) - time_monotonic();
 
-        err_code = connect(socket_fd, p->ai_addr, p->ai_addrlen);
-        if ((err_code == -1) && (errno != EINPROGRESS)) {
-            ::close(socket_fd);
-            continue;
+        while (time_left > 0.0) {
+            try {
+                int flags = fcntl(socket_fd, F_GETFL, 0);
+                fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
+
+                connect(socket_fd, p->ai_addr, p->ai_addrlen);
+                do_poll_out(socket_fd, time_left);
+
+                // check if connect() actually succeeded
+                socklen_t len = sizeof(int);
+                getsockopt(socket_fd, SOL_SOCKET, SO_ERROR, &err_code, &len);
+                check_conn(err_code);
+
+                flags = fcntl(socket_fd, F_GETFL, 0);
+                fcntl(socket_fd, F_SETFL, flags & ~O_NONBLOCK);
+
+                return socket_fd;
+            }
+            catch (ConnectionRefused const & e) {
+                if (patient) {
+                    // TODO: warning Connection refused, sleeping
+                    std::this_thread::sleep_for(duration<double>(patient_step));
+                }
+                else {
+                    // TODO: info Failed to connect to << sockaddr
+                    ::close(socket_fd);
+                    break;
+                }
+            }
+            catch (std::exception const & e) {
+                // TODO: debug Failed to connect socket << e
+                ::close(socket_fd);
+                break;
+            }
+
+            time_left = (start_time + timeout) - time_monotonic();
         }
-
-        struct pollfd pollfds;
-        pollfds.fd = socket_fd;
-        pollfds.events = POLLOUT;
-        pollfds.revents = 0;
-        err_code = poll(&pollfds, 1, timeout);
-
-        if (err_code == 0) {
-            ::close(socket_fd);
-            continue;
-        }
-
-        // check if connect() actually succeeded
-        socklen_t len = sizeof(int);
-        getsockopt(socket_fd, SOL_SOCKET, SO_ERROR, &err_code, &len);
-        if (err_code != 0) {
-            ::close(socket_fd);
-            continue;
-        }
-
-        flags = fcntl(socket_fd, F_GETFL, 0);
-        fcntl(socket_fd, F_SETFL, flags & ~O_NONBLOCK);
-
-        return socket_fd;
     }
 
-    throw std::runtime_error("Could not connect to " + host + " on port "
-            + port);
-}
-
-/** Poll until timeout (in seconds) is reached. Retry when interrupted with EINTR. */
-inline int poll_retry_eintr(pollfd *fds, nfds_t nfds, double timeout) {
-    using std::chrono::duration;
-    using std::chrono::steady_clock;
-    using std::chrono::milliseconds;
-    using std::chrono::duration_cast;
-
-    const auto timeout_duration = duration<double>(timeout);
-    const auto deadline = steady_clock::now() + timeout_duration;
-    while (true) {
-        int timeout_ms = duration_cast<milliseconds>(deadline - steady_clock::now()).count();
-        int poll_result = poll(fds, nfds, timeout_ms);
-
-        if (poll_result >= 0)
-            return poll_result;
-
-        if (errno != EINTR)
-            throw std::runtime_error(
-                    "Unexpected error during poll(): " +
-                    std::string(std::strerror(errno)));
-        // poll() was interrupted by a signal: retry with re-calculated timeout
-    }
+    throw ConnectionRefused("Could not connect");
 }
 
 }
@@ -151,46 +151,11 @@ bool TcpTransportClient::can_connect_to(std::string const & location) {
 
 TcpTransportClient::TcpTransportClient(std::string const & location)
     : socket_fd_(-1)
+    , session_(0)
+    , cur_request_(0)
 {
-    std::string errors;
-    auto addresses = split_location(location);
-
-    for (auto const & address: addresses)
-        try {
-            socket_fd_ = connect(address, false);
-            break;
-        }
-        catch (std::runtime_error const & e) {
-            errors += std::string(e.what()) + "\n";
-        }
-
-    if (socket_fd_ == -1) {
-        // None of our quick connection attempts worked. Either there's a network
-        // problem, or the server is very busy. Let's try again with more patience.
-        for (auto const & address: addresses)
-            try {
-                socket_fd_ = connect(address, true);
-                break;
-            }
-            catch (std::runtime_error const & e) {
-                errors += std::string(e.what()) + "\n";
-            }
-    }
-
-    if (socket_fd_ == -1)
-        throw std::runtime_error(
-                "Could not connect to any server at locations " + location
-                + ": " + errors);
-
-    int flags = 0;
-#ifdef __linux
-    setsockopt(socket_fd_, SOL_TCP, TCP_NODELAY, &flags, sizeof(flags));
-    setsockopt(socket_fd_, SOL_TCP, TCP_QUICKACK, &flags, sizeof(flags));
-#elif __APPLE__
-    setsockopt(socket_fd_, IPPROTO_TCP, TCP_NODELAY, &flags, sizeof(flags));
-    // macOS doesn't have quickack unfortunately
-#endif
-
+    addresses_ = split_location(location);
+    reconnect_(false);
 }
 
 TcpTransportClient::~TcpTransportClient() {
@@ -201,43 +166,161 @@ TcpTransportClient::~TcpTransportClient() {
 std::tuple<std::vector<char>, ProfileData> TcpTransportClient::call(
         char const * req_buf, std::size_t req_len,
         TimeoutHandler* timeout_handler
-) const {
-    ProfileTimestamp start_wait;
-    send_frame(socket_fd_, req_buf, req_len);
+) {
+    ++cur_request_;
+    Retrier retrier(reconnect_timeout);
 
-    int64_t length;
-    if (timeout_handler == nullptr) {
-        length = recv_int64(socket_fd_);
-    } else {
-        bool did_timeout = false;
-        pollfd socket_poll_fd;
-        socket_poll_fd.fd = socket_fd_;
-        socket_poll_fd.events = POLLIN;
-        while (poll_retry_eintr(&socket_poll_fd, 1, timeout_handler->get_timeout()) == 0) {
-            timeout_handler->on_timeout();
-            did_timeout = true;
+    double start_time = time_monotonic();
+
+    bool did_timeout = false;
+    while (true) {
+        try {
+            ProfileTimestamp start_wait;
+            send_int64(socket_fd_, cur_request_);
+            send_frame(socket_fd_, req_buf, req_len);
+
+            if (timeout_handler != nullptr) {
+                pollfd socket_poll_fd;
+                socket_poll_fd.fd = socket_fd_;
+                socket_poll_fd.events = POLLIN;
+                while (poll_retry_eintr(&socket_poll_fd, 1, timeout_handler->get_timeout()) == 0) {
+                    timeout_handler->on_timeout();
+                    did_timeout = true;
+                }
+                if (did_timeout) {
+                    // We call this to give the manager a chance to tell us about a
+                    // deadlock if the poll ended because of a disconnect because the
+                    // peer crashed due to that deadlock.
+                    timeout_handler->on_timeout();
+
+                    timeout_handler->on_receive();
+                    did_timeout = false;
+                }
+            }
+
+            ProfileTimestamp start_transfer;
+            std::vector<char> result = recv_frame(socket_fd_);
+            ProfileTimestamp stop_transfer;
+            return std::make_tuple(
+                    std::move(result),
+                    std::make_tuple(start_wait, start_transfer, stop_transfer));
         }
-        // socket is ready for a receive, this call shouldn't block:
-        length = recv_int64(socket_fd_);
-
-        if (did_timeout) {
-            timeout_handler->on_receive();
+        catch (Disconnect const & e) {
+            handle_disconnect_(retrier);
         }
     }
-
-    ProfileTimestamp start_transfer;
-    std::vector<char> result(length);
-    recv_all(socket_fd_, result.data(), result.size());
-    ProfileTimestamp stop_transfer;
-    return std::make_tuple(
-            std::move(result),
-            std::make_tuple(start_wait, start_transfer, stop_transfer));
 }
 
 void TcpTransportClient::close() {
     ::close(socket_fd_);
     socket_fd_ = -1;
 }
+
+/** Handles a broken network connection.
+ *
+ * @param retrier A Retries that keeps track of timing any retries
+ */
+void TcpTransportClient::handle_disconnect_(Retrier & retrier) {
+    // TODO: warning The TCP network connection with << addresses << was lost
+    // unexpectedly.
+
+    try {
+        close();
+    }
+    catch (Disconnect const & e) {}
+
+    if (retrier.should_give_up()) {
+        // TODO: warning I am unable to reconnect to << addresses << despite repeated
+        // attempts, and I am giving up. Please check your network.
+        throw;
+    }
+
+    retrier.sleep();
+    // TODO: warning Trying to reconnect to << addresses
+    reconnect_();
+}
+
+
+/** (Re)connect to the server and resume the current session
+ *
+ * @param re True if this is a reconnect rather than an initial connect
+ */
+void TcpTransportClient::reconnect_(bool re) {
+    try {
+        make_connection_();
+        send_int64(socket_fd_, session_);
+        session_ = recv_int64(socket_fd_);
+
+        if (re) {
+            // TODO: warning Reconnected to << addresses << , continuing the simulation
+        }
+    }
+    catch (Disconnect const & e) {
+        close();
+        // TODO: warning Failed to reconnect to << addresses << , will retry later
+    }
+}
+
+
+/** Connect to the server
+ *
+ * Uses addresses_ and creates a new socket_fd_ if successful.
+ */
+void TcpTransportClient::make_connection_() {
+    std::string errors;
+    int sock_fd = -1;
+
+    for (auto const & address: addresses_)
+        try {
+            sock_fd = connect(address, false);
+            break;
+        }
+        catch (std::runtime_error const & e) {
+            errors += std::string(e.what()) + "\n";
+        }
+
+    if (sock_fd == -1) {
+        // None of our quick connection attempts worked. Either there's a network
+        // problem, or the server is very busy. Let's try again with more patience.
+        // TODO: warning Could not immediately connect to << addresses << , trying again
+        // with more patience. Please report this if it happens frequently.
+
+        for (auto const & address: addresses_)
+            try {
+                // TODO debug Trying to connect to << address << patiently
+                sock_fd = connect(address, true);
+                break;
+            }
+            catch (std::runtime_error const & e) {
+                errors += std::string(e.what()) + "\n";
+            }
+    }
+
+    if (sock_fd == -1) {
+        // TODO: error Failed to connect also on the second try to << addresses
+        std::string location("[");
+        for (auto const & address: addresses_) {
+            if (location.size() > 1u)
+                location += ", ";
+            location += address;
+        }
+        throw std::runtime_error(
+                "Could not connect to any server at locations " + location
+                + ": " + errors);
+    }
+
+    int flags = 0;
+#ifdef __linux
+    setsockopt(sock_fd, SOL_TCP, TCP_NODELAY, &flags, sizeof(flags));
+    setsockopt(sock_fd, SOL_TCP, TCP_QUICKACK, &flags, sizeof(flags));
+#elif __APPLE__
+    setsockopt(sock_fd, IPPROTO_TCP, TCP_NODELAY, &flags, sizeof(flags));
+    // macOS doesn't have quickack unfortunately
+#endif
+
+    socket_fd_ = sock_fd;
+}
+
 
 } } }
 

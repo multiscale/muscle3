@@ -4,12 +4,16 @@
 #include LIBMUSCLE_MOCK_MCP_TCP_TRANSPORT_SERVER
 #else
 
-#include <libmuscle/mcp/transport_server.hpp>
-#include <libmuscle/namespace.hpp>
+#include "libmuscle/mcp/transport_server.hpp"
+#include "libmuscle/namespace.hpp"
+#include "libmuscle/mcp/rpc_state.hpp"
 
 #include <condition_variable>
+#include <memory>
+#include <string>
 #include <thread>
-#include <netdb.h>
+#include <unordered_map>
+#include <vector>
 
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace mcp {
@@ -52,6 +56,8 @@ class TcpTransportServer : public TransportServerBase {
 
         int set_up_socket_();
 
+        std::tuple<int64_t, std::shared_ptr<RpcState>> start_session_(int socket_fd);
+
         static void server_thread_(TcpTransportServer * self);
 
         mutable std::mutex mutex_;
@@ -59,6 +65,10 @@ class TcpTransportServer : public TransportServerBase {
         int control_pipe_[2];
         std::thread thread_;
         std::string location_;
+
+        int64_t next_session_;
+        std::unordered_map<int64_t, std::size_t> worker_for_session_;
+        std::unordered_map<int64_t, std::shared_ptr<RpcState>> session_store_;
 };
 
 } } }

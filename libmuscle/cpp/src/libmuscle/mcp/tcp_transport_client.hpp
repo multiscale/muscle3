@@ -7,7 +7,11 @@
 #include <libmuscle/mcp/transport_client.hpp>
 #include <libmuscle/namespace.hpp>
 
+#include <cstdint>
+#include <string>
 #include <tuple>
+#include <vector>
+
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace mcp {
 
@@ -47,7 +51,7 @@ class TcpTransportClient : public TransportClient {
          */
         virtual std::tuple<std::vector<char>, ProfileData> call(
                 char const * req_buf, std::size_t req_len,
-                TimeoutHandler* timeout_handler=nullptr) const override;
+                TimeoutHandler* timeout_handler=nullptr) override;
 
         /** Closes this client.
          *
@@ -57,7 +61,16 @@ class TcpTransportClient : public TransportClient {
         virtual void close() override;
 
     private:
+        std::vector<std::string> addresses_;
         int socket_fd_;
+        int64_t session_;
+        int64_t cur_request_;
+
+        void send_request_(char const * req_buf, std::size_t req_len);
+        std::vector<char> receive_response_();
+        void handle_disconnect_(Retrier & retrier);
+        void reconnect_(bool re = true);
+        void make_connection_();
 };
 
 } } }

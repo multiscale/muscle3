@@ -207,6 +207,52 @@ class Optional {
 template <typename T>
 std::ostream & operator<<(std::ostream & os, Optional<T> const & t);
 
+
+/* Return time in seconds as a double.
+ *
+ * The epoch of this clock is arbitrary, but doesn't get adjusted, so it's suitable for
+ * measuring intervals. Wraps std::chrono::steady_clock.
+ */
+double time_monotonic();
+
+
+/* Helper class for retrying things with a delay and timeout.
+ *
+ * This backs off exponentially, immediately retrying on the first attempt, then
+ * waiting 2**tries * base_delay seconds between tries.
+ */
+class Retrier {
+    public:
+        /** Create a Retrier.
+         *
+         * @param timeout Timeout in seconds after which to give up
+         * @param base_delay Base delay in seconds between retries
+         */
+        Retrier(
+                double timeout = default_timeout_,
+                double base_delay = default_base_delay_);
+
+        /** Sleep until it's time for the next retry
+         */
+        void sleep();
+
+        /** Return whether to give up or retry */
+        bool should_give_up();
+
+    private:
+        static const double default_base_delay_;
+        static const double default_timeout_;
+
+        static const double factor_;
+
+        const double base_delay_;
+        const double timeout_;
+
+        const double start_;
+        int tries_;
+};
+
+
 } }
 
 #include <libmuscle/util.tpp>

@@ -64,8 +64,22 @@ libmuscle: ymmsl msgpack
 	$(MAKE) -j $(NCORES) -C libmuscle
 
 
+.PHONY: ymmsl_debug
+ymmsl_debug:
+	@echo
+	@echo 'Building ymmsl debug libraries...'
+	$(MAKE) -j $(NCORES) -C ymmsl MUSCLE_ENABLE_DEBUG=1
+
+
+.PHONY: libmuscle_debug
+libmuscle_debug: ymmsl_debug msgpack
+	@echo
+	@echo 'Building libmuscle debug libraries...'
+	$(MAKE) -j $(NCORES) -C libmuscle MUSCLE_ENABLE_DEBUG=1
+
+
 .PHONY: tests
-tests: ymmsl libmuscle msgpack googletest
+tests: ymmsl_debug libmuscle_debug msgpack googletest
 	$(MAKE) -j $(NCORES) -C ymmsl tests
 	$(MAKE) -j $(NCORES) -C libmuscle tests
 

@@ -3,6 +3,7 @@
 #include <chrono>
 #include <cmath>
 #include <fcntl.h>
+#include <stdexcept>
 #include <string>
 #include <sys/stat.h>
 #include <thread>
@@ -15,6 +16,12 @@ using std::chrono::steady_clock;
 
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
+
+int throw_on_error(int ret_val) {
+    if (ret_val == -1)
+        throw std::runtime_error("An unexpected error occurred");
+    return ret_val;
+}
 
 std::string extract_log_file_location(
         int argc, char const * const argv[], std::string const & filename

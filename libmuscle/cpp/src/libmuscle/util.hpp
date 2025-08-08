@@ -15,6 +15,18 @@
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
+/* Check for unexpected errors.
+ *
+ * This takes a return value from a function and throws if it equals -1. Used in places
+ * where an error is almost impossible but the compiler still complains if I don't check
+ * the return value.
+ *
+ * @param ret_val The return value of the function
+ * @return The value passed, if it isn't -1
+ * @throw std::runtime_error if the return value equals -1
+ */
+int throw_on_error(int ret_val);
+
 
 /* Gets the log file location from the command line.
  *

@@ -380,7 +380,7 @@ TcpTransportServer::TcpTransportServer(RequestHandler & handler)
     : TransportServerBase(handler)
     , next_session_(1)
 {
-    pipe(control_pipe_);
+    throw_on_error(pipe(control_pipe_));
     thread_ = std::thread(server_thread_, this);
 }
 
@@ -398,7 +398,7 @@ std::string TcpTransportServer::get_location() const {
 
 void TcpTransportServer::close() {
     char dummy = 0;
-    ::write(control_pipe_[1], &dummy, 1);
+    throw_on_error(::write(control_pipe_[1], &dummy, 1));
     thread_.join();
 }
 
@@ -573,13 +573,13 @@ void TcpTransportServer::server_thread_(TcpTransportServer * self) {
 
         if (poll_fds[0].revents & POLLIN) {
             char dummy;
-            read(poll_fds[0].fd, &dummy, 1);
+            throw_on_error(read(poll_fds[0].fd, &dummy, 1));
             break;
         }
 
         // TODO: get peer info and log it
         if (poll_fds[1].revents & POLLIN) {
-            int new_fd;
+            int new_fd = -1;
             try {
                 new_fd = check_conn(accept(poll_fds[1].fd, nullptr, nullptr));
                 int flags = 0;

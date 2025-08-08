@@ -24,7 +24,7 @@ void Outbox::deposit(std::vector<char> && message) {
     queue_.insert(queue_.begin(), std::move(message));
     if (queue_.size() == 1u && notification_fd_ != -1) {
         char dummy = '\0';
-        write(notification_fd_, &dummy, 1);
+        throw_on_error(write(notification_fd_, &dummy, 1));
     }
 }
 

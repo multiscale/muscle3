@@ -1,5 +1,6 @@
 #include "libmuscle/mcp/tcp_transport_client.hpp"
 
+#include <libmuscle/logger.hpp>
 #include <libmuscle/mcp/tcp_util.hpp>
 
 #include <algorithm>
@@ -26,6 +27,9 @@
 
 namespace {
 
+using libmuscle::_MUSCLE_IMPL_NS::log_debug;
+using libmuscle::_MUSCLE_IMPL_NS::log_info;
+using libmuscle::_MUSCLE_IMPL_NS::log_warning;
 using libmuscle::_MUSCLE_IMPL_NS::time_monotonic;
 using libmuscle::_MUSCLE_IMPL_NS::mcp::check_conn;
 using libmuscle::_MUSCLE_IMPL_NS::mcp::ConnectionRefused;
@@ -118,17 +122,17 @@ int connect(std::string const & address, bool patient) {
             }
             catch (ConnectionRefused const & e) {
                 if (patient) {
-                    // TODO: warning Connection refused, sleeping
+                    log_warning("Connection refused, sleeping");
                     std::this_thread::sleep_for(duration<double>(patient_step));
                 }
                 else {
-                    // TODO: info Failed to connect to << sockaddr
+                    log_info("Failed to connect to ", host);
                     ::close(socket_fd);
                     break;
                 }
             }
             catch (std::exception const & e) {
-                // TODO: debug Failed to connect socket << e
+                log_debug("Failed to connect socket ", e.what());
                 ::close(socket_fd);
                 break;
             }
@@ -150,7 +154,8 @@ bool TcpTransportClient::can_connect_to(std::string const & location) {
 }
 
 TcpTransportClient::TcpTransportClient(std::string const & location)
-    : socket_fd_(-1)
+    : location_(location)
+    , socket_fd_(-1)
     , session_(0)
     , cur_request_(0)
 {
@@ -169,8 +174,6 @@ std::tuple<std::vector<char>, ProfileData> TcpTransportClient::call(
 ) {
     ++cur_request_;
     Retrier retrier(reconnect_timeout);
-
-    double start_time = time_monotonic();
 
     bool did_timeout = false;
     while (true) {
@@ -221,8 +224,7 @@ void TcpTransportClient::close() {
  * @param retrier A Retries that keeps track of timing any retries
  */
 void TcpTransportClient::handle_disconnect_(Retrier & retrier) {
-    // TODO: warning The TCP network connection with << addresses << was lost
-    // unexpectedly.
+    log_warning("The TCP network connection with ", location_, " was lost unexpectedly.");
 
     try {
         close();
@@ -230,13 +232,14 @@ void TcpTransportClient::handle_disconnect_(Retrier & retrier) {
     catch (Disconnect const & e) {}
 
     if (retrier.should_give_up()) {
-        // TODO: warning I am unable to reconnect to << addresses << despite repeated
-        // attempts, and I am giving up. Please check your network.
+        log_warning(
+                "I am unable to reconnect to ", location_, " despite repeated",
+                " attempts, and I am giving up. Please check your network.");
         throw;
     }
 
     retrier.sleep();
-    // TODO: warning Trying to reconnect to << addresses
+    log_warning("Trying to reconnect to ", location_);
     reconnect_();
 }
 
@@ -252,12 +255,12 @@ void TcpTransportClient::reconnect_(bool re) {
         session_ = recv_int64(socket_fd_);
 
         if (re) {
-            // TODO: warning Reconnected to << addresses << , continuing the simulation
+            log_warning("Reconnected to ", location_, ", continuing the simulation");
         }
     }
     catch (Disconnect const & e) {
         close();
-        // TODO: warning Failed to reconnect to << addresses << , will retry later
+        log_warning("Failed to reconnect to ", location_,  ", will retry later");
     }
 }
 
@@ -282,12 +285,13 @@ void TcpTransportClient::make_connection_() {
     if (sock_fd == -1) {
         // None of our quick connection attempts worked. Either there's a network
         // problem, or the server is very busy. Let's try again with more patience.
-        // TODO: warning Could not immediately connect to << addresses << , trying again
-        // with more patience. Please report this if it happens frequently.
+        log_warning(
+                "Could not immediately connect to ", location_, ", trying again"
+                "with more patience. Please report this if it happens frequently.");
 
         for (auto const & address: addresses_)
             try {
-                // TODO debug Trying to connect to << address << patiently
+                log_debug("Trying to connect to ", location_, " patiently");
                 sock_fd = connect(address, true);
                 break;
             }
@@ -297,7 +301,7 @@ void TcpTransportClient::make_connection_() {
     }
 
     if (sock_fd == -1) {
-        // TODO: error Failed to connect also on the second try to << addresses
+        log_error("Failed to connect also on the second try to ", location_);
         std::string location("[");
         for (auto const & address: addresses_) {
             if (location.size() > 1u)

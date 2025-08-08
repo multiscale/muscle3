@@ -82,7 +82,7 @@ int random_mode() {
 }
 
 
-const double fault_prob_max = 0.0;
+const double fault_prob_max = 0.1;
 double start_time = 0.0;
 double repeat_period = 0.0;
 

@@ -119,13 +119,15 @@ class Logger {
          */
         Logger();
 
-        std::mutex mutex_;
+        std::recursive_mutex mutex_;
         std::string instance_id_;
         MMPClient * manager_;
         LogLevel remote_level_;
         std::ofstream local_log_file_;
         std::ostream * local_log_stream_;
         LogLevel local_level_;
+
+        int num_dropped_;
 
         template <typename Arg, typename... Args>
         void append_args_(std::ostringstream & s, Arg arg, Args... args);

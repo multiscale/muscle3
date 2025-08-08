@@ -1,6 +1,7 @@
 #include "libmuscle/mcp/tcp_transport_server.hpp"
 
 #include "libmuscle/data.hpp"
+#include "libmuscle/logger.hpp"
 #include "libmuscle/mcp/transport_server.hpp"
 #include "libmuscle/mcp/tcp_util.hpp"
 
@@ -24,6 +25,7 @@
 using namespace std::string_literals;
 
 using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
+using libmuscle::_MUSCLE_IMPL_NS::log_warning;
 using libmuscle::_MUSCLE_IMPL_NS::mcp::check_conn;
 using libmuscle::_MUSCLE_IMPL_NS::mcp::Disconnect;
 using libmuscle::_MUSCLE_IMPL_NS::mcp::recv_all;
@@ -538,7 +540,7 @@ std::tuple<int64_t, std::shared_ptr<RpcState>> TcpTransportServer::start_session
         send_int64(socket_fd, session_id);
     }
     else {
-        // TODO: warning The TCP network connection for session << req_session_id << was lost
+        log_warning("The TCP network connection for session ", req_session_id, " was lost");
         if (session_store_.count(req_session_id) == 0) {
             throw std::runtime_error(
                     "Unknown session " + std::to_string(req_session_id) +
@@ -548,7 +550,7 @@ std::tuple<int64_t, std::shared_ptr<RpcState>> TcpTransportServer::start_session
 
         rpc_state = session_store_[session_id];
         send_int64(socket_fd, session_id);
-        // TODO: warning Resuming session << session_id
+        log_warning("Resuming session ", session_id);
     }
 
     return std::make_tuple(session_id, rpc_state);

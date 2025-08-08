@@ -7,7 +7,7 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 template <typename... Args>
 void Logger::log(LogLevel level, Args... args) {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if ((level >= local_level_) || (level >= remote_level_)) {
         auto ts = Timestamp();
         std::ostringstream oss;
@@ -19,8 +19,26 @@ void Logger::log(LogLevel level, Args... args) {
         }
 
         if (manager_ && level >= remote_level_) {
-            LogMessage msg(instance_id_, Timestamp(), level, oss.str());
-            manager_->submit_log_message(msg);
+            LogMessage message(instance_id_, Timestamp(), level, oss.str());
+            try {
+                if (num_dropped_ > 0) {
+                    std::ostringstream oss2;
+                    oss2 << num_dropped_ << " log messages were not sent to the";
+                    oss2 << " manager log due to manager overload or network";
+                    oss2 << " connectivity problems. Please see the instance log to";
+                    oss2 << " read them.";
+
+                    LogMessage dropped_msg = LogMessage(
+                        instance_id_, Timestamp(), LogLevel::WARNING, oss2.str());
+
+                    manager_->submit_log_message(dropped_msg);
+                    num_dropped_ = 0;
+                }
+                manager_->submit_log_message(message);
+            }
+            catch (ConnectionLockedError const & e) {
+                ++num_dropped_;
+            }
         }
     }
 }

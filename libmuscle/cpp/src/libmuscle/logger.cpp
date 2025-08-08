@@ -14,7 +14,7 @@ Logger & Logger::instance() {
 void Logger::init(
         std::string const & instance_id, std::string const & log_file, MMPClient * manager)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     instance_id_ = instance_id;
 
     if (log_file.empty())
@@ -29,7 +29,7 @@ void Logger::init(
 }
 
 void Logger::close() {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     local_log_stream_ = nullptr;
     manager_ = nullptr;
 }
@@ -40,7 +40,7 @@ Logger::~Logger() {
 }
 
 void Logger::set_remote_level(LogLevel level) {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (level == LogLevel::LOCAL) {
         log(LogLevel::WARNING, "LOCAL is not a valid remote log level, using DEBUG");
         level = LogLevel::DEBUG;
@@ -49,7 +49,7 @@ void Logger::set_remote_level(LogLevel level) {
 }
 
 void Logger::set_local_level(LogLevel level) {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     local_level_ = level;
 }
 
@@ -58,6 +58,7 @@ Logger::Logger()
     , remote_level_(LogLevel::WARNING)
     , local_log_stream_(nullptr)
     , local_level_(LogLevel::INFO)
+    , num_dropped_(0)
 {}
 
 void Logger::append_args_(std::ostringstream &) {}

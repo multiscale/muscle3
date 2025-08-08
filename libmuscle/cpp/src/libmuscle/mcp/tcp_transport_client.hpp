@@ -61,6 +61,7 @@ class TcpTransportClient : public TransportClient {
         virtual void close() override;
 
     private:
+        std::string location_;
         std::vector<std::string> addresses_;
         int socket_fd_;
         int64_t session_;

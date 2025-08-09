@@ -473,7 +473,7 @@ class DataConstRef {
          * you can access them through indexes().
          *
          * @return True iff the grid has named indexes.
-         * @throw std::runtime_Error if the object is not a grid.
+         * @throw std::runtime_error if the object is not a grid.
          */
         bool has_indexes() const;
 

@@ -24,7 +24,7 @@ namespace {
      * return value is actually reasonable: if something goes wrong and we can't make an
      * error message (which is very unlikely anyway), then we'll use an empty one.
      *
-     * - there's no standard way of disabling a warning in the code that worksacross
+     * - there's no standard way of disabling a warning in the code that works across
      *   compilers
      * - strerror_r returns char* on GNU systems, int on POSIX-compliant systems
      * - to make a GNU system provide the POSIX-standard int version, you need to unset

@@ -78,9 +78,9 @@ class TcpTransportServerWorker {
          *
          * @param fd The file descriptor of the socket to communicate on.
          */
-        void add_connection(int fd, std::shared_ptr<SessionState> const & rpc_state) {
+        void add_connection(int fd, std::shared_ptr<SessionState> const & session_state) {
             std::lock_guard<std::mutex> lock(mutex_);
-            new_connections_.emplace_back(fd, rpc_state);
+            new_connections_.emplace_back(fd, session_state);
         }
 
         /** Shut down this worker.
@@ -209,7 +209,8 @@ class TcpTransportServerWorker {
             int64_t request_nr = receive_request_(conn.request_fd);
 
             bool should_process, should_send;
-            std::tie(should_process, should_send) = conn.rpc_state->triage_request(request_nr);
+            std::tie(should_process, should_send) = conn.session_state->triage_request(
+                    request_nr);
 
             if (should_process) {
                 std::shared_ptr<std::vector<char>> res_buf = std::make_shared<std::vector<char>>();
@@ -217,7 +218,7 @@ class TcpTransportServerWorker {
 
                 if (res_fd < 0) {
                     // got a response immediately, share it
-                    conn.rpc_state->set_response(res_buf);
+                    conn.session_state->set_response(res_buf);
                 }
                 else {
                     // response not yet available, pick it up on the next poll
@@ -259,7 +260,7 @@ class TcpTransportServerWorker {
             std::shared_ptr<std::vector<char>> res_buf = std::make_shared<std::vector<char>>();
             *res_buf = handler_.get_response(conn.response_fd);
 
-            conn.rpc_state->set_response(res_buf);
+            conn.session_state->set_response(res_buf);
 
             conn.next_action = Action_::send_response;
             conn.response_fd = -1;
@@ -269,7 +270,7 @@ class TcpTransportServerWorker {
             for (std::size_t i = 0; i < connections_.size(); ++i) {
                 auto & conn = connections_[i];
                 if (conn.next_action == Action_::send_response) {
-                    auto response_to_send = conn.rpc_state->get_response();
+                    auto response_to_send = conn.session_state->get_response();
                     if (response_to_send) {
                         conn.next_action = Action_::receive_request;
 
@@ -336,7 +337,7 @@ class TcpTransportServerWorker {
          */
         struct Connection_ {
             // State of the session
-            std::shared_ptr<SessionState> rpc_state;
+            std::shared_ptr<SessionState> session_state;
             // State of the connection
             Action_ next_action;
             // File descriptor of the socket connecting us to the client
@@ -344,8 +345,8 @@ class TcpTransportServerWorker {
             // File descriptor signalling that a response is available
             int response_fd;
 
-            Connection_(int request_fd, std::shared_ptr<SessionState> const & rpc_state)
-                : rpc_state(rpc_state)
+            Connection_(int request_fd, std::shared_ptr<SessionState> const & session_state)
+                : session_state(session_state)
                 , next_action(Action_::receive_request)
                 , request_fd(request_fd)
                 , response_fd(-1)
@@ -529,15 +530,15 @@ int TcpTransportServer::set_up_socket_() {
 std::tuple<int64_t, std::shared_ptr<SessionState>> TcpTransportServer::start_session_(
         int socket_fd)
 {
-    std::shared_ptr<SessionState> rpc_state;
+    std::shared_ptr<SessionState> session_state;
 
     int64_t req_session_id = recv_int64(socket_fd);
 
     int64_t session_id;
     if (req_session_id == 0) {
         session_id = next_session_++;
-        rpc_state = std::make_shared<SessionState>();
-        session_store_[session_id] = rpc_state;
+        session_state = std::make_shared<SessionState>();
+        session_store_[session_id] = session_state;
 
         send_int64(socket_fd, session_id);
     }
@@ -550,12 +551,12 @@ std::tuple<int64_t, std::shared_ptr<SessionState>> TcpTransportServer::start_ses
         }
         session_id = req_session_id;
 
-        rpc_state = session_store_[session_id];
+        session_state = session_store_[session_id];
         send_int64(socket_fd, session_id);
         log_warning("Resuming session ", session_id);
     }
 
-    return std::make_tuple(session_id, rpc_state);
+    return std::make_tuple(session_id, session_state);
 }
 
 void TcpTransportServer::server_thread_(TcpTransportServer * self) {
@@ -593,8 +594,8 @@ void TcpTransportServer::server_thread_(TcpTransportServer * self) {
                 // macOS doesn't have quickack unfortunately
 #endif
                 int64_t session_id;
-                std::shared_ptr<SessionState> rpc_state;
-                std::tie(session_id, rpc_state) = self->start_session_(new_fd);
+                std::shared_ptr<SessionState> session_state;
+                std::tie(session_id, session_state) = self->start_session_(new_fd);
 
                 if (self->worker_for_session_.count(session_id) == 0) {
                     std::size_t selected_worker = 0u;
@@ -610,7 +611,7 @@ void TcpTransportServer::server_thread_(TcpTransportServer * self) {
                 }
 
                 std::size_t selected_worker = self->worker_for_session_[session_id];
-                workers[selected_worker]->add_connection(new_fd, rpc_state);
+                workers[selected_worker]->add_connection(new_fd, session_state);
             }
             catch (Disconnect const & e) {
                 if (new_fd != -1) {

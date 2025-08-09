@@ -260,7 +260,7 @@ class Retrier {
         const double base_delay_;
         const double timeout_;
 
-        const double start_;
+        double start_;
         int tries_;
 };
 

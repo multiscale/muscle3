@@ -90,7 +90,7 @@ double time_monotonic() {
 Retrier::Retrier(double timeout, double base_delay)
     : base_delay_(base_delay)
     , timeout_(timeout)
-    , start_(time_monotonic())
+    , start_(0.0)
     , tries_(0)
 {}
 
@@ -104,7 +104,9 @@ void Retrier::sleep() {
 }
 
 bool Retrier::should_give_up() {
-    // TODO: initialise start_ here and never give up on the first try?
+    if (tries_ == 0)
+        start_ = time_monotonic();
+
     double elapsed = time_monotonic() - start_;
     return elapsed >= timeout_;
 }

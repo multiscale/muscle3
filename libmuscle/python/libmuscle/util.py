@@ -92,6 +92,7 @@ def extract_log_file_location(filename: str) -> Optional[Path]:
 
 _DEFAULT_BASE_DELAY = 0.5
 _DEFAULT_TIMEOUT = 30.0
+_FACTOR = 2.0 ** (1.0 / 3.0)
 
 
 class Retrier:
@@ -111,11 +112,11 @@ class Retrier:
             base_delay: Base delay in seconds between retries
         """
         self._base_delay = base_delay
-        self._factor = 2.0 ** (1.0 / 3.0)
+        self._factor = _FACTOR
         self._timeout = timeout
 
         self._tries = 0
-        self._start = time.monotonic()
+        self._start = 0.0
 
     def sleep(self) -> None:
         """Sleep until it's time for the next retry."""
@@ -129,5 +130,7 @@ class Retrier:
 
     def should_give_up(self) -> bool:
         """Return whether to give up or retry."""
+        if self._tries == 0:
+            self._start = time.monotonic()
         elapsed = time.monotonic() - self._start
         return elapsed >= self._timeout

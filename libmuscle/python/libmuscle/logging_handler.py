@@ -41,8 +41,8 @@ class MuscleManagerHandler(logging.Handler):
                 dropped_msg = LogMessage(
                         self._instance_id, Timestamp(), LogLevel.WARNING,
                         f'{self._num_dropped} log messages were not sent to the manager'
-                        ' log due to network connectivity problems. Please see the'
-                        ' instance log to read them.')
+                        ' log due to manager overload or network connectivity problems.'
+                        ' Please see the instance log to read them.')
                 self._manager.submit_log_message(dropped_msg)
                 self._num_dropped = 0
 

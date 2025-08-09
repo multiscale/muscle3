@@ -1,7 +1,7 @@
 import dataclasses
 from pathlib import Path
 from random import uniform
-from threading import get_ident, Lock
+from threading import get_ident, RLock
 from time import perf_counter, sleep
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
@@ -17,6 +17,8 @@ from libmuscle.profiling import ProfileEvent
 from libmuscle.logging import LogMessage
 from libmuscle.snapshot import SnapshotMetadata
 
+
+TIMID_WAIT = 1.0
 
 PEER_TIMEOUT = 600
 PEER_INTERVAL_MIN = 5.0
@@ -122,7 +124,7 @@ class MMPClient():
         """
         self._instance_id = instance_id
         self._transport_client = TcpTransportClient(location)
-        self._mutex = Lock()
+        self._mutex = RLock()
         self._cur_owner = 0
 
     def close(self) -> None:
@@ -152,14 +154,9 @@ class MMPClient():
         MMPClient one. If two threads try to lock two mutexes in a different order then
         you'll get a deadlock.
 
-        So, unlike the other functions in this class, submit_log_message() may end up
-        being invoked recursively, and in that case it will raise ConnectionLockedError
-        rather than deadlocking.
-
-        Note that the logic for this is in _call_manager(), and applies to the other
-        functions as well, but it cannot escape there because unlike
-        submit_log_message() those functions are never called while the thread is
-        already holding the mutex.
+        To avoid this, this function will not wait for the internal lock forever, but
+        time out after a while and raise. Note that the actual implementation is in
+        _call_manager().
 
         Args:
             message: The message to send.
@@ -172,7 +169,7 @@ class MMPClient():
                 RequestType.SUBMIT_LOG_MESSAGE.value,
                 message.instance_id, message.timestamp.seconds,
                 message.level.value, message.text]
-        self._call_manager(request)
+        self._call_manager(request, True)
 
     def submit_profile_events(self, events: Iterable[ProfileEvent]) -> None:
         """Sends profiling events to the manager.
@@ -336,30 +333,44 @@ class MMPClient():
         response = self._call_manager(request)
         return bool(response[1])
 
-    def _call_manager(self, request: Any) -> Any:
+    def _call_manager(self, request: Any, timid: bool = False) -> Any:
         """Call the manager and do en/decoding.
 
         Args:
             request: The request to encode and send
+            timid: If True, raise if we can't get the lock after a while
 
         Returns:
             The decoded response
 
         Raises:
-            ConnectionLockedError: if we already own the mutex and are trying to call
-                    recursively.
+            ConnectionLockedError: If timid was True and we failed to get the lock
         """
-        if self._cur_owner == get_ident():
-            # recursive call, fail rather than hang
-            raise ConnectionLockedError()
+        if timid:
+            if self._mutex.acquire(timeout=TIMID_WAIT):
+                # We were trying to log, disconnected, then logged the disconnect and
+                # now we're back here. Since we're still disconnected, we need to raise
+                # and drop this message.
+                if self._cur_owner == get_ident():
+                    self._mutex.release()
+                    raise ConnectionLockedError()
+            else:
+                # Timed out, someone else has held the lock for a long time, so either
+                # the manager is overloaded or there are connection problems. Raise and
+                # drop.
+                raise ConnectionLockedError()
+        else:
+            self._mutex.acquire()
 
-        if self._mutex.acquire():
-            self._cur_owner = get_ident()
-            try:
-                encoded_request = msgpack.packb(request, use_bin_type=True)
-                response, _ = self._transport_client.call(encoded_request)
-                result = msgpack.unpackb(response, raw=False)
-                return result
-            finally:
-                self._cur_owner = 0
-                self._mutex.release()
+        self._cur_owner = get_ident()
+
+        try:
+            encoded_request = msgpack.packb(request, use_bin_type=True)
+            response, _ = self._transport_client.call(encoded_request)
+            result = msgpack.unpackb(response, raw=False)
+
+            return result
+
+        finally:
+            self._cur_owner = 0
+            self._mutex.release()

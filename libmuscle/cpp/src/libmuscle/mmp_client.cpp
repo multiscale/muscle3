@@ -362,11 +362,10 @@ DataConstRef MMPClient::call_manager_(DataConstRef const & request, bool timid) 
     std::unique_lock<std::recursive_timed_mutex> lock(mutex_, std::defer_lock);
 
     if (timid) {
-        lock.try_lock_for(duration<double>(timid_wait));
-        if (lock.owns_lock()) {
+        if (lock.try_lock_for(duration<double>(timid_wait))) {
             if (cur_owner_ == std::this_thread::get_id()) {
                 // We were trying to log, disconnected, then logged the disconnect and
-                // now we're back her. Since we're still disconnected, we need to throw
+                // now we're back here. Since we're still disconnected, we need to throw
                 // and drop this message.
                 throw ConnectionLockedError("");
             }
@@ -380,19 +379,25 @@ DataConstRef MMPClient::call_manager_(DataConstRef const & request, bool timid) 
     else
         lock.lock();
 
-    cur_owner_ = std::this_thread::get_id();
+    try {
+        cur_owner_ = std::this_thread::get_id();
 
-    msgpack::sbuffer sbuf;
-    msgpack::pack(sbuf, request);
+        msgpack::sbuffer sbuf;
+        msgpack::pack(sbuf, request);
 
-    auto response_and_profile = transport_client_.call(sbuf.data(), sbuf.size());
-    auto const & response = std::get<0>(response_and_profile);
+        auto response_and_profile = transport_client_.call(sbuf.data(), sbuf.size());
+        auto const & response = std::get<0>(response_and_profile);
 
-    auto zone = std::make_shared<msgpack::zone>();
-    auto result = unpack_data(zone, response.data(), response.size());
+        auto zone = std::make_shared<msgpack::zone>();
+        auto result = unpack_data(zone, response.data(), response.size());
 
-    cur_owner_ = std::thread::id();
-    return result;
+        cur_owner_ = std::thread::id();
+        return result;
+    }
+    catch (std::exception const & e) {
+        cur_owner_ = std::thread::id();
+        throw;
+    }
 }
 
 

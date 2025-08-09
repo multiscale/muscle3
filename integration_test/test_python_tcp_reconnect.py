@@ -96,7 +96,6 @@ def test_python_tcp_reconnect(tcp_fault_injection, log_file_in_tmpdir):
     settings = Settings()
     settings['muscle_remote_log_level'] = 'warning'
     settings['muscle_local_log_level'] = 'debug'
-    settings['muscle_deadlock_receive_timeout'] = -1.0
 
     configuration = Configuration(model, settings)
 

@@ -2,10 +2,11 @@ import select
 import logging
 import socket
 import time
-from typing import List, Optional, Tuple
+from typing import Optional, Tuple
 
 from libmuscle.mcp.transport_client import ProfileData, TransportClient, TimeoutHandler
-from libmuscle.mcp.tcp_util import is_disconnect, recv_all, recv_int64, send_int64
+from libmuscle.mcp.tcp_util import (
+        is_disconnect, recv_frame, recv_int64, send_frame, send_int64)
 from libmuscle.profiling import ProfileTimestamp
 from libmuscle.util import Retrier
 
@@ -72,7 +73,11 @@ class TcpTransportClient(TransportClient):
         while True:
             try:
                 start_wait = ProfileTimestamp()
-                self._send_request(request)
+                if self._socket is None:
+                    raise ConnectionError('No connection could be established')
+
+                send_int64(self._socket, self._cur_request)
+                send_frame(self._socket, request)
 
                 did_timeout = False
                 if timeout_handler is not None:
@@ -85,13 +90,13 @@ class TcpTransportClient(TransportClient):
                     timeout_handler.on_receive()
 
                 start_transfer = ProfileTimestamp()
-                response = self._receive_response()
+                response = recv_frame(self._socket)
                 stop_transfer = ProfileTimestamp()
                 return response, (start_wait, start_transfer, stop_transfer)
 
             except Exception as e:
                 if is_disconnect(e):
-                    self._handle_disconnect(retrier, False)
+                    self._handle_disconnect(retrier)
                 else:
                     raise
 
@@ -110,20 +115,6 @@ class TcpTransportClient(TransportClient):
             # connection to it, which is fine and can be ignored. Otherwise, we reraise.
             if not is_disconnect(e):
                 raise
-
-    def _send_request(self, request: bytes) -> None:
-        """Send a request to the server.
-
-        Args:
-            request: The request to send.
-        """
-        if self._socket is None:
-            raise ConnectionError('No connection could be established')
-
-        send_int64(self._socket, self._cur_request)
-        send_int64(self._socket, len(request))
-        self._socket.sendall(request)
-        return
 
     def _poll(self, timeout: float) -> bool:
         """Poll the socket and return whether its ready for receiving.
@@ -149,28 +140,15 @@ class TcpTransportClient(TransportClient):
 
             except Exception as e:
                 if is_disconnect(e):
-                    self._handle_disconnect(retrier, True)
+                    self._handle_disconnect(retrier)
                 else:
                     raise
 
-    def _receive_response(self) -> bytes:
-        """Receive a response from the server."""
-        assert self._socket is not None
-        length = recv_int64(self._socket)
-        response = recv_all(self._socket, length)
-        return response
-
-    def _handle_disconnect(self, retrier: Retrier, expect_pending: bool) -> None:
+    def _handle_disconnect(self, retrier: Retrier) -> None:
         """Handles a broken network connection.
 
         Args:
             retrier: A Retrier that keeps track of timing any retries
-            expect_pending: True if we expect to receive a pending message after
-                    reconnecting.
-
-        Raises:
-            NoPendingResponse: If expect_pending is True but there is no pending
-                    response.
         """
         _logger.warning(
                 f'The TCP network connection with {self._addresses} was lost'
@@ -199,12 +177,9 @@ class TcpTransportClient(TransportClient):
 
         Args:
             re: True if this is a reconnect rather than an initial connect.
-
-        Returns:
-            True if there's a pending response we should get.
         """
         try:
-            self._make_connection(self._addresses)
+            self._make_connection()
             assert self._socket is not None
             send_int64(self._socket, self._session)
             self._session = recv_int64(self._socket)
@@ -223,7 +198,7 @@ class TcpTransportClient(TransportClient):
             else:
                 raise
 
-    def _make_connection(self, addresses: List[str]) -> None:
+    def _make_connection(self) -> None:
         """Connect to the server and set up polling
 
         Uses self._addresses and creates a (new) self._socket and self._poll_obj.
@@ -240,8 +215,8 @@ class TcpTransportClient(TransportClient):
             # None of our quick connection attempts worked. Either there's a network
             # problem, or the server is very busy. Let's try again with more patience.
             _logger.warning(
-                    f'Could not immediately connect to {addresses}, trying again with'
-                    ' more patience. Please report this if it happens frequently.')
+                    f'Could not immediately connect to {self._addresses}, trying again'
+                    ' with more patience. Please report this if it happens frequently.')
 
             for address in self._addresses:
                 try:
@@ -254,9 +229,9 @@ class TcpTransportClient(TransportClient):
 
         if sock is None:
             _logger.error(
-                    f'Failed to connect also on the second try to {addresses}')
+                    f'Failed to connect also on the second try to {self._addresses}')
             raise ConnectionRefusedError(
-                    f'Could not connect to the server at location {addresses}')
+                    f'Could not connect to any server at locations {self._addresses}')
 
         if hasattr(socket, "TCP_NODELAY"):
             sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)

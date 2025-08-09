@@ -84,3 +84,34 @@ def recv_int64(socket: SocketType) -> int:
     mark.before_tcp_receive(socket)
     buf = recv_all(socket, 8)
     return int.from_bytes(buf, 'little')
+
+
+def send_frame(socket: SocketType, data: bytes) -> None:
+    """Sends a frame as length + data.
+
+    Args:
+        socket: The socket to send on
+        data: The data to send
+
+    Raises:
+        RuntimeError: If there was an error sending the data.
+    """
+    send_int64(socket, len(data))
+    socket.sendall(data)
+
+
+def recv_frame(socket: SocketType) -> bytes:
+    """Receives a frame as length + data.
+
+    Args:
+        socket: The socket to receive on
+
+    Returns:
+        The received data.
+
+    Raises:
+        RuntimeError: If there was an error receiving the data.
+    """
+    length = recv_int64(socket)
+    data = recv_all(socket, length)
+    return data

@@ -8,7 +8,8 @@ import psutil
 
 from libmuscle.mcp.session_state import SessionState
 from libmuscle.mcp.transport_server import RequestHandler, TransportServer
-from libmuscle.mcp.tcp_util import (is_disconnect, recv_all, recv_int64, send_int64)
+from libmuscle.mcp.tcp_util import (
+        is_disconnect, recv_frame, recv_int64, send_frame, send_int64)
 
 
 _logger = logging.getLogger(__name__)
@@ -42,7 +43,7 @@ class TcpHandler(ss.BaseRequestHandler):
     There's a small terminology issue here: Python calls an entire connection a request,
     so self.request actually refers to the current connection we're servicing. We're
     doing Remote Procedure Call over that, and we call every RPC call we receive from
-    the client a request, and that's what _receive_request() is about.
+    the client a request also.
     """
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self._session_id = 0
@@ -56,7 +57,8 @@ class TcpHandler(ss.BaseRequestHandler):
             self._start_session()
 
             while True:
-                request_nr, request = self._receive_request()
+                request_nr = recv_int64(self.request)
+                request = recv_frame(self.request)
 
                 should_process, should_send = self._session_state.triage_request(
                         request_nr)
@@ -68,7 +70,7 @@ class TcpHandler(ss.BaseRequestHandler):
                 if should_send:
                     response_to_send = self._session_state.wait_get_response(request_nr)
                     if response_to_send is not None:
-                        self._send_response(response_to_send)
+                        send_frame(self.request, response_to_send)
 
         except Exception as e:
             if not is_disconnect(e):
@@ -108,26 +110,6 @@ class TcpHandler(ss.BaseRequestHandler):
             self._session_id = req_session_id
             send_int64(self.request, self._session_id)
             _logger.warning(f'Resuming session {self._session_id}')
-
-    def _receive_request(self) -> Tuple[int, bytes]:
-        """Receives a request
-
-        Returns:
-            The request number and the received bytes
-        """
-        request_number = recv_int64(self.request)
-        length = recv_int64(self.request)
-        reqbuf = recv_all(self.request, length)
-        return request_number, reqbuf
-
-    def _send_response(self, response: bytes) -> None:
-        """Send a response
-
-        Args:
-            response: The response to send
-        """
-        send_int64(self.request, len(response))
-        self.request.sendall(response)
 
     def finish(self) -> None:
         """Called when shutting down the thread?"""

@@ -6,7 +6,7 @@
 
 #include "libmuscle/mcp/transport_server.hpp"
 #include "libmuscle/namespace.hpp"
-#include "libmuscle/mcp/rpc_state.hpp"
+#include "libmuscle/mcp/session_state.hpp"
 
 #include <condition_variable>
 #include <memory>
@@ -56,7 +56,7 @@ class TcpTransportServer : public TransportServerBase {
 
         int set_up_socket_();
 
-        std::tuple<int64_t, std::shared_ptr<RpcState>> start_session_(int socket_fd);
+        std::tuple<int64_t, std::shared_ptr<SessionState>> start_session_(int socket_fd);
 
         static void server_thread_(TcpTransportServer * self);
 
@@ -68,7 +68,7 @@ class TcpTransportServer : public TransportServerBase {
 
         int64_t next_session_;
         std::unordered_map<int64_t, std::size_t> worker_for_session_;
-        std::unordered_map<int64_t, std::shared_ptr<RpcState>> session_store_;
+        std::unordered_map<int64_t, std::shared_ptr<SessionState>> session_store_;
 };
 
 } } }

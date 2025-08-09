@@ -1,4 +1,4 @@
-#include "libmuscle/mcp/rpc_state.hpp"
+#include "libmuscle/mcp/session_state.hpp"
 
 #include <memory>
 #include <tuple>
@@ -7,12 +7,12 @@
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace mcp {
 
-RpcState::RpcState()
+SessionState::SessionState()
     : cur_request_(0)
     , response_(std::make_shared<std::vector<char>>())
 {}
 
-std::tuple<bool, bool> RpcState::triage_request(int64_t request_nr) {
+std::tuple<bool, bool> SessionState::triage_request(int64_t request_nr) {
     const std::lock_guard<std::mutex> lock(mutex_);
     bool should_process = response_ && cur_request_ < request_nr;
     if (should_process) {
@@ -25,12 +25,12 @@ std::tuple<bool, bool> RpcState::triage_request(int64_t request_nr) {
     return std::make_tuple(should_process, should_send);
 }
 
-void RpcState::set_response(std::shared_ptr<std::vector<char>> response) {
+void SessionState::set_response(std::shared_ptr<std::vector<char>> response) {
     const std::lock_guard<std::mutex> lock(mutex_);
     response_ = response;
 }
 
-std::shared_ptr<std::vector<char>> RpcState::get_response() {
+std::shared_ptr<std::vector<char>> SessionState::get_response() {
     const std::lock_guard<std::mutex> lock(mutex_);
     return response_;
 }

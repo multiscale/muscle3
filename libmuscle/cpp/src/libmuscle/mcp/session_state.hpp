@@ -18,14 +18,14 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace mcp {
  * different connections (possibly serviced by different threads) for the same session.
  * See the Python version for a full explanation of the algorithm.
  */
-class RpcState {
+class SessionState {
     public:
-        /** Create an RpcState object.
+        /** Create an SessionState object.
          *
          * The first request will be 1, so we initialise to a state in which request 0
          * has seemingly been processed already and we're ready to do number 1 next.
          */
-        RpcState();
+        SessionState();
 
         /** Decide what to do about an incoming request.
          *

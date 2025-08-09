@@ -36,7 +36,7 @@ void inject_fault(int socket_fd);
 #include <libmuscle/mpp_client.cpp>
 #include <libmuscle/mpp_message.cpp>
 #include <libmuscle/mpp_server.cpp>
-#include <libmuscle/mcp/rpc_state.cpp>
+#include <libmuscle/mcp/session_state.cpp>
 #include <libmuscle/mcp/tcp_util.cpp>
 #include <libmuscle/mcp/transport_client.cpp>
 #include <libmuscle/mcp/transport_server.cpp>

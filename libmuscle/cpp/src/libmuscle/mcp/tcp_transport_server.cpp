@@ -31,7 +31,7 @@ using libmuscle::_MUSCLE_IMPL_NS::mcp::Disconnect;
 using libmuscle::_MUSCLE_IMPL_NS::mcp::recv_all;
 using libmuscle::_MUSCLE_IMPL_NS::mcp::recv_int64;
 using libmuscle::_MUSCLE_IMPL_NS::mcp::RequestHandler;
-using libmuscle::_MUSCLE_IMPL_NS::mcp::RpcState;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::SessionState;
 using libmuscle::_MUSCLE_IMPL_NS::mcp::send_frame;
 
 
@@ -78,7 +78,7 @@ class TcpTransportServerWorker {
          *
          * @param fd The file descriptor of the socket to communicate on.
          */
-        void add_connection(int fd, std::shared_ptr<RpcState> const & rpc_state) {
+        void add_connection(int fd, std::shared_ptr<SessionState> const & rpc_state) {
             std::lock_guard<std::mutex> lock(mutex_);
             new_connections_.emplace_back(fd, rpc_state);
         }
@@ -336,7 +336,7 @@ class TcpTransportServerWorker {
          */
         struct Connection_ {
             // State of the session
-            std::shared_ptr<RpcState> rpc_state;
+            std::shared_ptr<SessionState> rpc_state;
             // State of the connection
             Action_ next_action;
             // File descriptor of the socket connecting us to the client
@@ -344,7 +344,7 @@ class TcpTransportServerWorker {
             // File descriptor signalling that a response is available
             int response_fd;
 
-            Connection_(int request_fd, std::shared_ptr<RpcState> const & rpc_state)
+            Connection_(int request_fd, std::shared_ptr<SessionState> const & rpc_state)
                 : rpc_state(rpc_state)
                 , next_action(Action_::receive_request)
                 , request_fd(request_fd)
@@ -526,15 +526,17 @@ int TcpTransportServer::set_up_socket_() {
     return sockfd;
 }
 
-std::tuple<int64_t, std::shared_ptr<RpcState>> TcpTransportServer::start_session_(int socket_fd) {
-    std::shared_ptr<RpcState> rpc_state;
+std::tuple<int64_t, std::shared_ptr<SessionState>> TcpTransportServer::start_session_(
+        int socket_fd)
+{
+    std::shared_ptr<SessionState> rpc_state;
 
     int64_t req_session_id = recv_int64(socket_fd);
 
     int64_t session_id;
     if (req_session_id == 0) {
         session_id = next_session_++;
-        rpc_state = std::make_shared<RpcState>();
+        rpc_state = std::make_shared<SessionState>();
         session_store_[session_id] = rpc_state;
 
         send_int64(socket_fd, session_id);
@@ -591,7 +593,7 @@ void TcpTransportServer::server_thread_(TcpTransportServer * self) {
                 // macOS doesn't have quickack unfortunately
 #endif
                 int64_t session_id;
-                std::shared_ptr<RpcState> rpc_state;
+                std::shared_ptr<SessionState> rpc_state;
                 std::tie(session_id, rpc_state) = self->start_session_(new_fd);
 
                 if (self->worker_for_session_.count(session_id) == 0) {

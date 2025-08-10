@@ -46,7 +46,6 @@ class TcpHandler(ss.BaseRequestHandler):
     the client a request also.
     """
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        self._session_id = 0
         super().__init__(*args, **kwargs)
 
     def handle(self) -> None:
@@ -83,20 +82,18 @@ class TcpHandler(ss.BaseRequestHandler):
         both store. If we get disconnected, the client can reconnect with that session
         id, so that we can resend whatever we were sending when we were rudely
         interrupted.
-
-        Sets self._session_id to the obtained session id.
         """
         req_session_id = recv_int64(self.request)
 
         server = cast(TcpTransportServerImpl, self.server)
         if req_session_id == 0:
             with server.session_lock:
-                self._session_id = server.next_session
-                server.session_store[self._session_id] = SessionState()
-                self._session_state = server.session_store[self._session_id]
+                session_id = server.next_session
+                server.session_store[session_id] = SessionState()
+                self._session_state = server.session_store[session_id]
                 server.next_session += 1
 
-            send_int64(self.request, self._session_id)
+            send_int64(self.request, session_id)
 
         else:
             _logger.warning(
@@ -107,9 +104,9 @@ class TcpHandler(ss.BaseRequestHandler):
                     raise RuntimeError(f'Unknown session {req_session_id} requested')
                 self._session_state = server.session_store[req_session_id]
 
-            self._session_id = req_session_id
-            send_int64(self.request, self._session_id)
-            _logger.warning(f'Resuming session {self._session_id}')
+            session_id = req_session_id
+            send_int64(self.request, session_id)
+            _logger.warning(f'Resuming session {session_id}')
 
     def finish(self) -> None:
         """Called when shutting down the thread?"""

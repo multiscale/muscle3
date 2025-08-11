@@ -72,6 +72,8 @@ class TcpTransportClient : public TransportClient {
         void handle_disconnect_(Retrier & retrier);
         void reconnect_(bool re = true);
         void make_connection_();
+        void end_session_();
+        void close_connection_();
 };
 
 } } }

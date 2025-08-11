@@ -164,13 +164,14 @@ TcpTransportClient::TcpTransportClient(std::string const & location)
 }
 
 TcpTransportClient::~TcpTransportClient() {
-    if (socket_fd_ != -1)
-        close();
+    if (socket_fd_ != -1) {
+        end_session_();
+        close_connection_();
+    }
 }
 
 std::tuple<std::vector<char>, ProfileData> TcpTransportClient::call(
-        char const * req_buf, std::size_t req_len,
-        TimeoutHandler* timeout_handler
+        char const * req_buf, std::size_t req_len, TimeoutHandler* timeout_handler
 ) {
     ++cur_request_;
     Retrier retrier(reconnect_timeout);
@@ -215,8 +216,8 @@ std::tuple<std::vector<char>, ProfileData> TcpTransportClient::call(
 }
 
 void TcpTransportClient::close() {
-    ::close(socket_fd_);
-    socket_fd_ = -1;
+    end_session_();
+    close_connection_();
 }
 
 /** Handles a broken network connection.
@@ -227,7 +228,7 @@ void TcpTransportClient::handle_disconnect_(Retrier & retrier) {
     log_warning("The TCP network connection with ", location_, " was lost unexpectedly.");
 
     try {
-        close();
+        close_connection_();
     }
     catch (Disconnect const & e) {}
 
@@ -259,7 +260,7 @@ void TcpTransportClient::reconnect_(bool re) {
         }
     }
     catch (Disconnect const & e) {
-        close();
+        close_connection_();
         log_warning("Failed to reconnect to ", location_,  ", will retry later");
     }
 }
@@ -323,6 +324,31 @@ void TcpTransportClient::make_connection_() {
 #endif
 
     socket_fd_ = sock_fd;
+}
+
+
+/** Tell the server we want to end our session
+ *
+ * We ignore errors here and rely on the server to time out if we don't manage to send.
+ */
+void TcpTransportClient::end_session_() {
+    // End session
+    try {
+        send_int64(socket_fd_, 0);
+    }
+    catch (Disconnect const &) {
+        log_warning(
+                "Disconnected while trying to end session, shutdown will take longer",
+                " than usual because of this.");
+    }
+}
+
+
+/** Close the network connection and reset the socket fd
+ */
+void TcpTransportClient::close_connection_() {
+    ::close(socket_fd_);
+    socket_fd_ = -1;
 }
 
 

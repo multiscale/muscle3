@@ -10,6 +10,7 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace mcp {
 SessionState::SessionState()
     : cur_request_(0)
     , response_(std::make_shared<std::vector<char>>())
+    , ended_(false)
 {}
 
 std::tuple<bool, bool> SessionState::triage_request(int64_t request_nr) {
@@ -33,6 +34,16 @@ void SessionState::set_response(std::shared_ptr<std::vector<char>> response) {
 std::shared_ptr<std::vector<char>> SessionState::get_response() {
     const std::lock_guard<std::mutex> lock(mutex_);
     return response_;
+}
+
+void SessionState::set_ended() {
+    const std::lock_guard<std::mutex> lock(mutex_);
+    ended_ = true;
+}
+
+bool SessionState::has_ended() {
+    const std::lock_guard<std::mutex> lock(mutex_);
+    return ended_;
 }
 
 } } }

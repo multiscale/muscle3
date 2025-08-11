@@ -4,6 +4,7 @@
 #include "libmuscle/logger.hpp"
 #include "libmuscle/mcp/transport_server.hpp"
 #include "libmuscle/mcp/tcp_util.hpp"
+#include "libmuscle/util.hpp"
 
 #include <arpa/inet.h>
 #include <chrono>
@@ -78,9 +79,26 @@ class TcpTransportServerWorker {
          *
          * @param fd The file descriptor of the socket to communicate on.
          */
-        void add_connection(int fd, std::shared_ptr<SessionState> const & session_state) {
+        void add_connection(
+                int fd, int64_t session_id,
+                std::shared_ptr<SessionState> const & session_state)
+        {
             std::lock_guard<std::mutex> lock(mutex_);
-            new_connections_.emplace_back(fd, session_state);
+            new_connections_.emplace_back(fd, session_id, session_state);
+        }
+
+        /** Get ids of closed sessions.
+         *
+         * Called by the server thread. Repeated calls will return the ids of sessions
+         * closed between the previous call and now.
+         *
+         * @return A vector of session ids of closed sessions
+         */
+        std::vector<int64_t> get_closed_sessions() {
+            std::lock_guard<std::mutex> lock(mutex_);
+            auto result = std::move(closed_sessions_);
+            closed_sessions_.clear();
+            return result;
         }
 
         /** Shut down this worker.
@@ -111,6 +129,7 @@ class TcpTransportServerWorker {
          * Called by the worker thread.
          */
         void update_connections_() {
+            collect_closed_sessions_();
             remove_closed_connections_();
 
             {
@@ -123,6 +142,25 @@ class TcpTransportServerWorker {
             }
 
             update_polled_fds_();
+        }
+
+        /* Collects closed sessions.
+         *
+         * After a session is closed by the client, we can close the connection and mark
+         * it for removal, and hand the session id back to the server main thread.
+         */
+        void collect_closed_sessions_() {
+            for (std::size_t i = 0; i < connections_.size(); ++i) {
+                auto & conn = connections_[i];
+                if (conn.session_state->has_ended()) {
+                    ::close(conn.request_fd);
+                    {
+                        std::lock_guard<std::mutex> lock(mutex_);
+                        closed_sessions_.push_back(conn.session_id);
+                    }
+                    polled_fds_[i].revents |= POLLHUP;
+                }
+            }
         }
 
         /* Detects sockets that have closed and removes those connections.
@@ -148,6 +186,8 @@ class TcpTransportServerWorker {
         }
 
         /* Update the polled_fds_ vector from connections_.
+         *
+         * After this, polled_fds_ lines up with connections_.
          *
          * Called by the worker thread
          */
@@ -208,6 +248,11 @@ class TcpTransportServerWorker {
             auto & conn = connections_[i];
             int64_t request_nr = receive_request_(conn.request_fd);
 
+            if (request_nr == 0) {
+                conn.session_state->set_ended();
+                return;
+            }
+
             bool should_process, should_send;
             std::tie(should_process, should_send) = conn.session_state->triage_request(
                     request_nr);
@@ -241,9 +286,11 @@ class TcpTransportServerWorker {
          */
         int64_t receive_request_(int fd) {
             int64_t request_nr = recv_int64(fd);
-            int64_t length = recv_int64(fd);
-            req_buf_.resize(length);
-            recv_all(fd, req_buf_.data(), length);
+            if (request_nr > 0) {
+                int64_t length = recv_int64(fd);
+                req_buf_.resize(length);
+                recv_all(fd, req_buf_.data(), length);
+            }
             return request_nr;
         }
 
@@ -336,6 +383,8 @@ class TcpTransportServerWorker {
          * from the handler signalling that a response is available.
          */
         struct Connection_ {
+            // Id of the session
+            int64_t session_id;
             // State of the session
             std::shared_ptr<SessionState> session_state;
             // State of the connection
@@ -345,8 +394,11 @@ class TcpTransportServerWorker {
             // File descriptor signalling that a response is available
             int response_fd;
 
-            Connection_(int request_fd, std::shared_ptr<SessionState> const & session_state)
-                : session_state(session_state)
+            Connection_(
+                    int request_fd, int64_t session_id,
+                    std::shared_ptr<SessionState> const & session_state)
+                : session_id(session_id)
+                , session_state(session_state)
                 , next_action(Action_::receive_request)
                 , request_fd(request_fd)
                 , response_fd(-1)
@@ -359,6 +411,7 @@ class TcpTransportServerWorker {
         mutable std::mutex mutex_;
         std::vector<Connection_> new_connections_;
         std::size_t num_active_connections_;
+        std::vector<int64_t> closed_sessions_;
         bool shutting_down_;
 
         std::vector<Connection_> connections_;
@@ -527,8 +580,8 @@ int TcpTransportServer::set_up_socket_() {
     return sockfd;
 }
 
-std::tuple<int64_t, std::shared_ptr<SessionState>> TcpTransportServer::start_session_(
-        int socket_fd)
+std::tuple<int64_t, std::shared_ptr<SessionState>>
+TcpTransportServer::start_session_(int socket_fd)
 {
     std::shared_ptr<SessionState> session_state;
 
@@ -611,7 +664,8 @@ void TcpTransportServer::server_thread_(TcpTransportServer * self) {
                 }
 
                 std::size_t selected_worker = self->worker_for_session_[session_id];
-                workers[selected_worker]->add_connection(new_fd, session_state);
+                workers[selected_worker]->add_connection(
+                        new_fd, session_id, session_state);
             }
             catch (Disconnect const & e) {
                 if (new_fd != -1) {
@@ -622,6 +676,19 @@ void TcpTransportServer::server_thread_(TcpTransportServer * self) {
     }
 
     ::close(socket_fd);
+
+    Retrier retrier(30.0, 0.1);
+    while (!retrier.should_give_up()) {
+        for (auto & worker: workers)
+            for (int session_id : worker->get_closed_sessions())
+                self->session_store_.erase(session_id);
+
+        if (self->session_store_.empty()) {
+            break;
+        }
+
+        retrier.sleep();
+    }
 
     for (auto & worker: workers)
         worker->shutdown();

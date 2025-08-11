@@ -15,7 +15,7 @@ model:
     micro.result: macro.in
 settings:
   muscle_local_log_level: debug
-  muscle_remote_log_level: debug
+  muscle_remote_log_level: warning
 """
 
 

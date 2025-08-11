@@ -54,12 +54,25 @@ class SessionState {
          */
         std::shared_ptr<std::vector<char>> get_response();
 
+        /** Mark this session as ended.
+         *
+         * We're not calling it closed because we've got locks of sockets that get
+         * closed, and that could get confusing.
+         */
+        void set_ended();
+
+        /** Check if the session is ended.
+         */
+        bool has_ended();
+
     private:
-        // Protects cur_request_ and response_ (but not what it points to)
+        // Protects cur_request_, response_ (but not what it points to), and ended_
         std::mutex mutex_;
 
         int64_t cur_request_;
         std::shared_ptr<std::vector<char>> response_;
+
+        bool ended_;
 };
 
 

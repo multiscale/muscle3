@@ -10,6 +10,7 @@ from libmuscle.mcp.session_state import SessionState
 from libmuscle.mcp.transport_server import RequestHandler, TransportServer
 from libmuscle.mcp.tcp_util import (
         is_disconnect, recv_frame, recv_int64, send_frame, send_int64)
+from libmuscle.util import Retrier
 
 
 _logger = logging.getLogger(__name__)
@@ -53,10 +54,10 @@ class TcpHandler(ss.BaseRequestHandler):
         server = cast(TcpTransportServerImpl, self.server)
 
         try:
-            self._start_session()
+            session_id = self._start_session()
 
-            while True:
-                request_nr = recv_int64(self.request)
+            request_nr = recv_int64(self.request)
+            while request_nr != 0:
                 request = recv_frame(self.request)
 
                 should_process, should_send = self._session_state.triage_request(
@@ -71,17 +72,24 @@ class TcpHandler(ss.BaseRequestHandler):
                     if response_to_send is not None:
                         send_frame(self.request, response_to_send)
 
+                request_nr = recv_int64(self.request)
+
+            self._end_session(session_id)
+
         except Exception as e:
             if not is_disconnect(e):
                 raise
 
-    def _start_session(self) -> None:
+    def _start_session(self) -> int:
         """(Re)starts a session
 
         Sessions are identified by a number, which we create and which we and the client
         both store. If we get disconnected, the client can reconnect with that session
         id, so that we can resend whatever we were sending when we were rudely
         interrupted.
+
+        Returns:
+            The id of the new session
         """
         req_session_id = recv_int64(self.request)
 
@@ -107,6 +115,14 @@ class TcpHandler(ss.BaseRequestHandler):
             session_id = req_session_id
             send_int64(self.request, session_id)
             _logger.warning(f'Resuming session {session_id}')
+
+        return session_id
+
+    def _end_session(self, session_id: int) -> None:
+        """Removes a closed session"""
+        server = cast(TcpTransportServerImpl, self.server)
+        with server.session_lock:
+            del server.session_store[session_id]
 
     def finish(self) -> None:
         """Called when shutting down the thread?"""
@@ -150,9 +166,16 @@ class TcpTransportServer(TransportServer):
     def close(self) -> None:
         """Closes this server.
 
-        Stops the server listening, waits for existing clients to
-        disconnect, then frees any other resources.
+        Waits for all sessions to be closed by the clients, stops the server listening,
+        waits for existing handlers to close, then frees any other resources.
         """
+        retrier = Retrier(60.0, 0.1)
+        while not retrier.should_give_up():
+            with self._server.session_lock:
+                if len(self._server.session_store) == 0:
+                    break
+            retrier.sleep()
+
         self._server.shutdown()
         self._server_thread.join()
         self._server.server_close()

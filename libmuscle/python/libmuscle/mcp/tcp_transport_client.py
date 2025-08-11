@@ -106,15 +106,8 @@ class TcpTransportClient(TransportClient):
         This closes any connections this client has and performs other shutdown
         activities as needed.
         """
-        try:
-            if self._socket is not None:
-                self._socket.shutdown(socket.SHUT_RDWR)
-                self._socket.close()
-        except Exception as e:
-            # This can raise if the peer has shut down already when we close our
-            # connection to it, which is fine and can be ignored. Otherwise, we reraise.
-            if not is_disconnect(e):
-                raise
+        self._end_session()
+        self._close_connection()
 
     def _poll(self, timeout: float) -> bool:
         """Poll the socket and return whether its ready for receiving.
@@ -155,7 +148,7 @@ class TcpTransportClient(TransportClient):
                 ' unexpectedly.')
 
         try:
-            self.close()
+            self._close_connection()
         except Exception as e:
             if not is_disconnect(e):
                 raise
@@ -191,7 +184,7 @@ class TcpTransportClient(TransportClient):
 
         except Exception as e:
             if is_disconnect(e):
-                self.close()
+                self._close_connection()
                 _logger.warning(
                         f'Failed to reconnect to {self._addresses}, will retry'
                         ' later')
@@ -292,3 +285,22 @@ class TcpTransportClient(TransportClient):
                 time_left = (start_time + timeout) - time.monotonic()
 
         raise RuntimeError('Could not connect')
+
+    def _end_session(self) -> None:
+        try:
+            if self._socket is not None:
+                send_int64(self._socket, 0)
+        except Exception as e:
+            # This can raise if the peer has shut down already when we close our
+            # connection to it, which is fine and can be ignored. Otherwise, we reraise.
+            if not is_disconnect(e):
+                raise
+
+            _logger.warning(
+                    'Disconnected while trying to end session, shutdown will take'
+                    ' longer than usual because of this.')
+
+    def _close_connection(self) -> None:
+        if self._socket is not None:
+            self._socket.shutdown(socket.SHUT_RDWR)
+            self._socket.close()

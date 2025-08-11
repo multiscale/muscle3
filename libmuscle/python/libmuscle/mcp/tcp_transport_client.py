@@ -302,5 +302,12 @@ class TcpTransportClient(TransportClient):
 
     def _close_connection(self) -> None:
         if self._socket is not None:
-            self._socket.shutdown(socket.SHUT_RDWR)
-            self._socket.close()
+            try:
+                self._socket.shutdown(socket.SHUT_RDWR)
+                self._socket.close()
+            except Exception as e:
+                # This can raise if the peer has shut down already when we close our
+                # connection to it, which is fine and can be ignored. Otherwise, we
+                # reraise.
+                if not is_disconnect(e):
+                    raise

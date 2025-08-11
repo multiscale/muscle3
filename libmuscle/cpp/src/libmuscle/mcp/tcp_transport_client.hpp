@@ -67,8 +67,7 @@ class TcpTransportClient : public TransportClient {
         int64_t session_;
         int64_t cur_request_;
 
-        void send_request_(char const * req_buf, std::size_t req_len);
-        std::vector<char> receive_response_();
+        void send_request_(int64_t request_nr, char const * req_buf, std::size_t req_len);
         void handle_disconnect_(Retrier & retrier);
         void reconnect_(bool re = true);
         void make_connection_();

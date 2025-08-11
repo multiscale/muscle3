@@ -180,8 +180,7 @@ std::tuple<std::vector<char>, ProfileData> TcpTransportClient::call(
     while (true) {
         try {
             ProfileTimestamp start_wait;
-            send_int64(socket_fd_, cur_request_);
-            send_frame(socket_fd_, req_buf, req_len);
+            send_request_(cur_request_, req_buf, req_len);
 
             if (timeout_handler != nullptr) {
                 pollfd socket_poll_fd;
@@ -218,6 +217,32 @@ std::tuple<std::vector<char>, ProfileData> TcpTransportClient::call(
 void TcpTransportClient::close() {
     end_session_();
     close_connection_();
+}
+
+/** Sends a request in a single send call.
+ *
+ * This is an optimisation, we could just send_int64() the request_nr and then
+ * send_frame() the data, but that causes short messages to be split across two packets,
+ * with a 40ms delay in between. So we combine them here.
+ */
+void TcpTransportClient::send_request_(
+        int64_t request_nr, char const * req_buf, std::size_t req_len)
+{
+    static_assert(sizeof(ssize_t) == 8, "MUSCLE3 needs a 64-bit machine/OS to compile");
+
+    const ssize_t length = static_cast<ssize_t>(req_len);
+
+    assert(length + 16 < std::numeric_limits<ssize_t>::max());
+
+    const char * req_nr_data = reinterpret_cast<char*>(&request_nr);
+    const char * len_data = reinterpret_cast<const char*>(&length);
+
+    std::vector<char> buf(length + 16);
+    std::copy(req_nr_data, req_nr_data + 8, buf.data());
+    std::copy(len_data, len_data + 8, buf.data() + 8);
+    std::copy(req_buf, req_buf + length, buf.data() + 16);
+
+    send_all(socket_fd_, buf.data(), length + 16);
 }
 
 /** Handles a broken network connection.

@@ -126,34 +126,21 @@ def implementation_process(
     else:
         sys.argv.append(f'--muscle-manager={manager_location}')
 
-    with open(f'muscle3.{instance}.log', 'w') as log_file:
-        # Redirect an already-configured standard logging setup
-        # Logger.handlers and StreamHandler.stream are private, so this
-        # is dangerous in theory. But this part of the logging code
-        # hasn't changed in two decades, and we can use introspection to
-        # avoid crashes, so in practice, it'll work.
-        root_logger = logging.getLogger()
-        if hasattr(root_logger, 'handlers'):
-            for h in root_logger.handlers:
-                if isinstance(h, logging.StreamHandler):
-                    if hasattr(h, 'stream'):
-                        if h.stream == sys.stderr:
-                            h.stream = log_file
-                        elif h.stream == sys.stdout:
-                            h.stream = log_file
+    root_logger = logging.getLogger()
+    handler = logging.FileHandler(f'muscle3.{instance}.log', 'w')
+    handler.setFormatter(logging.Formatter(
+        '%(asctime)s %(levelname)s %(filename)s:%(lineno)d %(message)s'))
+    root_logger.addHandler(handler)
 
-        sys.stderr = log_file
-        sys.stdout = log_file
-
-        # chain call
-        try:
-            implementation()
-        except Exception:
-            traceback.print_exc()
-            _logger.error(
-                    f'Component {instance} crashed, please check the log file'
-                    ' for error messages')
-            exit(1)
+    # chain call
+    try:
+        implementation()
+    except Exception:
+        traceback.print_exc()
+        _logger.error(
+                f'Component {instance} crashed, please check the log file'
+                ' for error messages')
+        exit(1)
 
 
 def _parse_prefix(prefix: str) -> Tuple[str, List[int]]:

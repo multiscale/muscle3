@@ -53,10 +53,13 @@ class TransportServer:
         """
         raise NotImplementedError()  # pragma: no cover
 
-    def close(self) -> None:
+    def close(self, graceful: bool = True) -> None:
         """Closes this server.
 
         Stops the server listening, waits for existing clients to
         disconnect, then frees any other resources.
+
+        Args:
+            graceful: Wait for clients to finish their sessions, where applicable.
         """
         raise NotImplementedError()  # pragma: no cover

@@ -457,7 +457,8 @@ class MMPServer:
     def stop(self) -> None:
         """Stops the server.
 
-        This makes the server stop serving requests, and shuts down its
-        background threads.
+        This makes the server stop serving requests, and shuts down its background
+        threads. By the time this gets called, the instances are down, so we don't need
+        to wait for any sessions to time out.
         """
-        self._server.close()
+        self._server.close(False)

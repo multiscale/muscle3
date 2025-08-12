@@ -163,18 +163,22 @@ class TcpTransportServer(TransportServer):
             locs.append('{}:{}'.format(address, port))
         return 'tcp:{}'.format(','.join(locs))
 
-    def close(self) -> None:
+    def close(self, graceful: bool = True) -> None:
         """Closes this server.
 
         Waits for all sessions to be closed by the clients, stops the server listening,
         waits for existing handlers to close, then frees any other resources.
+
+        Args:
+            graceful: Wait for clients to finish their sessions, where applicable.
         """
-        retrier = Retrier(60.0, 0.1)
-        while not retrier.should_give_up():
-            with self._server.session_lock:
-                if len(self._server.session_store) == 0:
-                    break
-            retrier.sleep()
+        if graceful:
+            retrier = Retrier(60.0, 0.1)
+            while not retrier.should_give_up():
+                with self._server.session_lock:
+                    if len(self._server.session_store) == 0:
+                        break
+                retrier.sleep()
 
         self._server.shutdown()
         self._server_thread.join()

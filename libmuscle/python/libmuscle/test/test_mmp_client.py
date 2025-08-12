@@ -21,8 +21,6 @@ def test_connection_fail() -> None:
     ttc = 'libmuscle.mcp.tcp_transport_client'
     with (
             patch(f'{ttc}._CONNECT_TIMEOUT', 0.1),
-            patch(f'{ttc}._CONNECT_TIMEOUT_PATIENT', 0.5),
-            patch(f'{ttc}._CONNECT_TIMEOUT_PATIENT_STEP', 0.1),
             patch(f'{ttc}._RECONNECT_TIMEOUT', 0.5)):
 
         with pytest.raises(ConnectionError):

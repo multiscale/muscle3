@@ -15,8 +15,6 @@ _logger = logging.getLogger(__name__)
 
 
 _CONNECT_TIMEOUT = 3.0                      # seconds
-_CONNECT_TIMEOUT_PATIENT = 60.0             # seconds
-_CONNECT_TIMEOUT_PATIENT_STEP = 3.0         # seconds
 _RECONNECT_TIMEOUT = 60.0                   # seconds
 
 
@@ -70,24 +68,43 @@ class TcpTransportClient(TransportClient):
         """
         self._cur_request += 1
         retrier = Retrier(_RECONNECT_TIMEOUT)
+        deadline = None
+        did_timeout = False
+
+        def handle_timeout() -> None:
+            nonlocal timeout_handler
+            nonlocal deadline
+            nonlocal did_timeout
+
+            assert timeout_handler is not None      # mypy
+            assert deadline is not None             # mypy
+
+            timeout_handler.on_timeout()
+            deadline += timeout_handler.timeout
+            did_timeout = True
+
         while True:
             try:
-                start_wait = ProfileTimestamp()
+                if deadline is not None and deadline < time.monotonic():
+                    handle_timeout()
+
                 if self._socket is None:
                     raise ConnectionError('No connection could be established')
 
+                start_wait = ProfileTimestamp()
                 send_int64(self._socket, self._cur_request)
                 send_frame(self._socket, request)
 
-                did_timeout = False
                 if timeout_handler is not None:
-                    while not self._poll(timeout_handler.timeout):
-                        did_timeout = True
-                        timeout_handler.on_timeout()
+                    if deadline is None:
+                        deadline = time.monotonic() + timeout_handler.timeout
 
-                if did_timeout:
-                    assert timeout_handler is not None  # mypy
-                    timeout_handler.on_receive()
+                    while not self._poll(deadline - time.monotonic()):
+                        handle_timeout()
+
+                    if did_timeout:
+                        timeout_handler.on_receive()
+                        did_timeout = False
 
                 start_transfer = ProfileTimestamp()
                 response = recv_frame(self._socket)
@@ -121,21 +138,12 @@ class TcpTransportClient(TransportClient):
         Returns:
             True if the socket is ready for receiving data, False otherwise.
         """
-        retrier = Retrier()
-        while True:
-            try:
-                if self._poll_obj is not None:
-                    ready = self._poll_obj.poll(timeout * 1000)  # poll timeout is in ms
-                else:
-                    # Fallback to select()
-                    ready, _, _ = select.select([self._socket], (), (), timeout)
-                return bool(ready)
-
-            except Exception as e:
-                if is_disconnect(e):
-                    self._handle_disconnect(retrier)
-                else:
-                    raise
+        if self._poll_obj is not None:
+            ready = self._poll_obj.poll(timeout * 1000)  # poll timeout is in ms
+        else:
+            # Fallback to select()
+            ready, _, _ = select.select([self._socket], (), (), timeout)
+        return bool(ready)
 
     def _handle_disconnect(self, retrier: Retrier) -> None:
         """Handles a broken network connection.
@@ -199,46 +207,27 @@ class TcpTransportClient(TransportClient):
         sock: Optional[socket.SocketType] = None
         for address in self._addresses:
             try:
-                sock = self._connect(address, False)
+                sock = self._connect(address)
                 break
             except RuntimeError:
                 pass
 
         if sock is None:
-            # None of our quick connection attempts worked. Either there's a network
-            # problem, or the server is very busy. Let's try again with more patience.
-            _logger.warning(
-                    f'Could not immediately connect to {self._addresses}, trying again'
-                    ' with more patience. Please report this if it happens frequently.')
+            raise ConnectionRefusedError('Failed to connect')
 
-            for address in self._addresses:
-                try:
-                    _logger.debug(
-                            f'Trying to connect to {address} patiently')
-                    sock = self._connect(address, True)
-                    break
-                except RuntimeError:
-                    pass
-
-        if sock is None:
-            _logger.error(
-                    f'Failed to connect also on the second try to {self._addresses}')
-            raise ConnectionRefusedError(
-                    f'Could not connect to any server at locations {self._addresses}')
-
-        if hasattr(socket, "TCP_NODELAY"):
+        if hasattr(socket, 'TCP_NODELAY'):
             sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
-        if hasattr(socket, "TCP_QUICKACK"):
+        if hasattr(socket, 'TCP_QUICKACK'):
             sock.setsockopt(socket.SOL_TCP, socket.TCP_QUICKACK, 1)
         self._socket = sock
 
-        if hasattr(select, "poll"):
+        if hasattr(select, 'poll'):
             self._poll_obj: Optional[select.poll] = select.poll()
             self._poll_obj.register(self._socket, select.POLLIN)
         else:
             self._poll_obj = None  # On platforms that don't support select.poll
 
-    def _connect(self, address: str, patient: bool) -> socket.SocketType:
+    def _connect(self, address: str) -> socket.SocketType:
         loc_parts = address.rsplit(':', 1)
         host = loc_parts[0]
         if host.startswith('['):
@@ -248,41 +237,25 @@ class TcpTransportClient(TransportClient):
                 raise RuntimeError('Invalid address')
         port = int(loc_parts[1])
 
-        timeout = _CONNECT_TIMEOUT_PATIENT if patient else _CONNECT_TIMEOUT
-        patient_step = _CONNECT_TIMEOUT_PATIENT_STEP
-
         addrinfo = socket.getaddrinfo(
                 host, port, 0, socket.SOCK_STREAM, socket.IPPROTO_TCP)
 
         for family, socktype, proto, _, sockaddr in addrinfo:
             try:
                 sock = socket.socket(family, socktype, proto)
-            except Exception:
-                continue
+                sock.settimeout(_CONNECT_TIMEOUT)
+                sock.connect(sockaddr)
+                sock.settimeout(None)
+                return sock
+            except (ConnectionRefusedError, ConnectionAbortedError):
+                _logger.info(f'Failed to connect to {sockaddr}')
+                sock.close()
+                break
 
-            start_time = time.monotonic()
-            time_left = (start_time + timeout) - time.monotonic()
-            while (time_left > 0.0):
-                try:
-                    sock.settimeout(time_left)
-                    sock.connect(sockaddr)
-                    sock.settimeout(None)
-                    return sock
-                except (ConnectionRefusedError, ConnectionAbortedError):
-                    if patient:
-                        _logger.warning('Connection refused, sleeping')
-                        time.sleep(patient_step)
-                    else:
-                        _logger.info(f'Failed to connect to {sockaddr}')
-                        sock.close()
-                        break
-
-                except Exception as e:
-                    _logger.debug(f'Failed to connect socket: {e}')
-                    sock.close()
-                    break
-
-                time_left = (start_time + timeout) - time.monotonic()
+            except Exception as e:
+                _logger.debug(f'Failed to connect socket: {e}')
+                sock.close()
+                break
 
         raise RuntimeError('Could not connect')
 

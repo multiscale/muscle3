@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cstring>
 #include <chrono>
+#include <cmath>
 #include <exception>
 #include <memory>
 #include <stdexcept>
@@ -38,8 +39,6 @@ using std::chrono::duration;
 
 
 const double connect_timeout = 3.0;                 // seconds
-const double connect_timeout_patient = 60.0;        // seconds
-const double connect_timeout_patient_step = 3.0;    // seconds
 const double reconnect_timeout = 60.0;              // seconds
 
 
@@ -63,7 +62,7 @@ std::vector<std::string> split_location(std::string const & location) {
 }
 
 
-int connect(std::string const & address, bool patient) {
+int connect(std::string const & address) {
     std::string errors;
 
     std::size_t split = address.rfind(':');
@@ -77,8 +76,6 @@ int connect(std::string const & address, bool patient) {
     std::string port = address.substr(split + 1);
 
     int err_code;
-    const double timeout = patient ? connect_timeout_patient : connect_timeout;
-    const double patient_step = connect_timeout_patient_step;
 
     // collect addresses to connect to
     addrinfo hints;
@@ -100,7 +97,7 @@ int connect(std::string const & address, bool patient) {
         if (socket_fd == -1) continue;
 
         const double start_time = time_monotonic();
-        double time_left = (start_time + timeout) - time_monotonic();
+        double time_left = (start_time + connect_timeout) - time_monotonic();
 
         while (time_left > 0.0) {
             try {
@@ -121,15 +118,9 @@ int connect(std::string const & address, bool patient) {
                 return socket_fd;
             }
             catch (ConnectionRefused const & e) {
-                if (patient) {
-                    log_warning("Connection refused, sleeping");
-                    std::this_thread::sleep_for(duration<double>(patient_step));
-                }
-                else {
-                    log_info("Failed to connect to ", host);
-                    ::close(socket_fd);
-                    break;
-                }
+                log_info("Failed to connect to ", host);
+                ::close(socket_fd);
+                break;
             }
             catch (std::exception const & e) {
                 log_debug("Failed to connect socket ", e.what());
@@ -137,7 +128,7 @@ int connect(std::string const & address, bool patient) {
                 break;
             }
 
-            time_left = (start_time + timeout) - time_monotonic();
+            time_left = (start_time + connect_timeout) - time_monotonic();
         }
     }
 
@@ -175,27 +166,38 @@ std::tuple<std::vector<char>, ProfileData> TcpTransportClient::call(
 ) {
     ++cur_request_;
     Retrier retrier(reconnect_timeout);
-
+    double deadline = std::numeric_limits<double>::infinity();
     bool did_timeout = false;
+
     while (true) {
         try {
+            if (deadline < time_monotonic()) {
+                timeout_handler->on_timeout();
+                deadline += timeout_handler->get_timeout();
+                did_timeout = true;
+            }
+
+            if (socket_fd_ == -1)
+                throw Disconnect("No connection could be established");
+
             ProfileTimestamp start_wait;
             send_request_(cur_request_, req_buf, req_len);
 
             if (timeout_handler != nullptr) {
+                if (std::isinf(deadline))
+                    deadline = time_monotonic() + timeout_handler->get_timeout();
+
                 pollfd socket_poll_fd;
                 socket_poll_fd.fd = socket_fd_;
                 socket_poll_fd.events = POLLIN;
-                while (poll_retry_eintr(&socket_poll_fd, 1, timeout_handler->get_timeout()) == 0) {
+                while (poll_retry_eintr(
+                            &socket_poll_fd, 1, deadline - time_monotonic()) == 0) {
                     timeout_handler->on_timeout();
+                    deadline += timeout_handler->get_timeout();
                     did_timeout = true;
                 }
-                if (did_timeout) {
-                    // We call this to give the manager a chance to tell us about a
-                    // deadlock if the poll ended because of a disconnect because the
-                    // peer crashed due to that deadlock.
-                    timeout_handler->on_timeout();
 
+                if (did_timeout) {
                     timeout_handler->on_receive();
                     did_timeout = false;
                 }
@@ -301,7 +303,7 @@ void TcpTransportClient::make_connection_() {
 
     for (auto const & address: addresses_)
         try {
-            sock_fd = connect(address, false);
+            sock_fd = connect(address);
             break;
         }
         catch (std::runtime_error const & e) {
@@ -309,34 +311,7 @@ void TcpTransportClient::make_connection_() {
         }
 
     if (sock_fd == -1) {
-        // None of our quick connection attempts worked. Either there's a network
-        // problem, or the server is very busy. Let's try again with more patience.
-        log_warning(
-                "Could not immediately connect to ", location_, ", trying again"
-                "with more patience. Please report this if it happens frequently.");
-
-        for (auto const & address: addresses_)
-            try {
-                log_debug("Trying to connect to ", location_, " patiently");
-                sock_fd = connect(address, true);
-                break;
-            }
-            catch (std::runtime_error const & e) {
-                errors += std::string(e.what()) + "\n";
-            }
-    }
-
-    if (sock_fd == -1) {
-        log_error("Failed to connect also on the second try to ", location_);
-        std::string location("[");
-        for (auto const & address: addresses_) {
-            if (location.size() > 1u)
-                location += ", ";
-            location += address;
-        }
-        throw std::runtime_error(
-                "Could not connect to any server at locations " + location
-                + ": " + errors);
+        throw Disconnect("Failed to connect");
     }
 
     int flags = 0;

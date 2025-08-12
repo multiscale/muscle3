@@ -68,6 +68,8 @@ class Agent:
 
             sleep(0.1)
 
+        self._server.close()
+
     def _inspect_resources(self) -> OnNodeResources:
         """Inspect the node to find resources and report on them.
 

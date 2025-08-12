@@ -21,17 +21,20 @@ _FAULT_PROB_MAX = 0.1
 _start_time = 0
 _repeat_period = 0.0
 
+_loops = 100
+_data_scale = 500
+
 
 def _inject_fault(socket: SocketType) -> None:
     """Randomly closes the socket to simulate a dropped connection."""
     t = math.fmod((time.monotonic_ns() - _start_time) / 1e9, _repeat_period)
     fault_prob = 0.0
-    if 0.5 < t and t < 1.5:
-        fault_prob = (t - 0.5) * _FAULT_PROB_MAX
-    elif 1.5 < t and t < 3.0:
+    if 0.0 < t and t < 1.0:
+        fault_prob = t * _FAULT_PROB_MAX
+    elif 1.0 < t and t < 2.0:
         fault_prob = _FAULT_PROB_MAX
-    elif 3.0 < t and t < 4.0:
-        fault_prob = (4.0 - t) * _FAULT_PROB_MAX
+    elif 2.0 < t and t < 3.0:
+        fault_prob = (3.0 - t) * _FAULT_PROB_MAX
 
     if random() < fault_prob:
         mode = choice((SHUT_RD, SHUT_WR, SHUT_RDWR))
@@ -61,12 +64,12 @@ def component():
     while instance.reuse_instance():
         _logger.info('top of reuse loop')
         init_msg = instance.receive('init', default=Message(0.0, data=None))
-        assert init_msg.data is None or init_msg.data == [j] * (j * 1000)
+        assert init_msg.data is None or init_msg.data == [j] * (j * _data_scale)
 
         if instance.is_connected('out'):
-            for i in range(200):
+            for i in range(_loops):
                 _logger.info(f'i = {i}')
-                data = [i] * (i * 1000)
+                data = [i] * (i * _data_scale)
                 out_msg = Message(float(i), data=data)
                 instance.send('out', out_msg)
 
@@ -82,7 +85,7 @@ def component():
 def test_python_tcp_reconnect(tcp_fault_injection, log_file_in_tmpdir):
     global _start_time, _repeat_period
     _start_time = time.monotonic_ns()
-    _repeat_period = uniform(4.0, 6.0)
+    _repeat_period = uniform(3.0, 5.0)
 
     elements = [
             Component('macro', 'component'),

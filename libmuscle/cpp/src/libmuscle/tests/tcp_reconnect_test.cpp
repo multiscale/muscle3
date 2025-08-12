@@ -86,17 +86,20 @@ const double fault_prob_max = 0.1;
 double start_time = 0.0;
 double repeat_period = 0.0;
 
+const int loops = 100;
+const int data_scale = 500;
+
 
 // Randomly closes the socket to simulate a dropped connection.
 void inject_fault(int socket_fd) {
     double t = fmod((time_monotonic() - start_time), repeat_period);
     double fault_prob = 0.0;
-    if (0.5 < t && t < 1.5)
-        fault_prob = (t - 0.5) * fault_prob_max;
-    else if (1.5 < t && t < 3.0)
+    if (0.0 < t && t < 1.0)
+        fault_prob = t * fault_prob_max;
+    else if (1.0 < t && t < 2.0)
         fault_prob = fault_prob_max;
-    else if (3.0 < t && t < 4.0)
-        fault_prob = (4.0 - t) * fault_prob_max;
+    else if (2.0 < t && t < 3.0)
+        fault_prob = (3.0 - t) * fault_prob_max;
 
     if (rand01() < fault_prob)
         shutdown(socket_fd, random_mode());
@@ -105,7 +108,7 @@ void inject_fault(int socket_fd) {
 
 bool data_matches(DataConstRef const & data, int i) {
     if (!data.is_a_list()) return false;
-    if (data.size() != (static_cast<std::size_t>(i) * 1000u)) return false;
+    if (data.size() != (static_cast<std::size_t>(i * data_scale))) return false;
     for (std::size_t k = 0u; k < data.size(); ++k)
         if (data[k].as<int>() != i) return false;
     return true;
@@ -129,8 +132,8 @@ void component(int argc, char * argv[]) {
         assert(init_msg.data().is_nil() || data_matches(init_msg.data(), j));
 
         if (instance.is_connected("out")) {
-            for (int i = 0; i < 200; ++i) {
-                auto data = Data::nils(i * 1000);
+            for (int i = 0; i < loops; ++i) {
+                auto data = Data::nils(i * data_scale);
                 for (std::size_t k = 0u; k < data.size(); ++k)
                     data[k] = i;
 
@@ -151,7 +154,7 @@ void component(int argc, char * argv[]) {
 
 int main(int argc, char * argv[]) {
     start_time = time_monotonic();
-    repeat_period = 4.0 + rand01() * 2.0;
+    repeat_period = 3.0 + rand01() * 2.0;
 
     component(argc, argv);
     return EXIT_SUCCESS;

@@ -1,6 +1,7 @@
 #include <libmuscle/snapshot_manager.hpp>
 
 #include <libmuscle/data.hpp>
+#include <libmuscle/logger.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -24,12 +25,10 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 SnapshotManager::SnapshotManager(
             ymmsl::Reference const & instance_id,
             MMPClient & manager,
-            PortManager & port_manager,
-            Logger & logger)
+            PortManager & port_manager)
         : instance_id_(instance_id)
         , manager_(manager)
         , port_manager_(port_manager)
-        , logger_(logger)
         , resume_from_snapshot_()
         , resume_overlay_()
         , next_snapshot_num_(1)
@@ -167,7 +166,7 @@ double SnapshotManager::save_snapshot(
 
 Snapshot SnapshotManager::load_snapshot_from_file(
         std::string const & snapshot_location) {
-    logger_.debug("Loading snapshot from " + snapshot_location);
+    log_debug("Loading snapshot from " + snapshot_location);
 
     std::ifstream snapshot_file(snapshot_location, std::ios::binary);
     if (!snapshot_file.good()) {
@@ -208,7 +207,7 @@ Snapshot SnapshotManager::load_snapshot_from_file(
 }
 
 std::string SnapshotManager::store_snapshot_(Snapshot const & snapshot) {
-    logger_.debug("Saving snapshot to " + snapshot_directory_);
+    log_debug("Saving snapshot to " + snapshot_directory_);
     std::ofstream snapshot_file;
     std::string fpath;
     for (int i=0; i<MAX_FILE_EXISTS_CHECK; ++i) {

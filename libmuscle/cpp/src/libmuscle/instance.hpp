@@ -655,8 +655,8 @@ class Instance {
         /** Check if this instance is resuming from a snapshot.
          *
          * Must be used by submodels that implement the checkpointing API. You'll
-         * get a RuntimeError if you don't call this method in an iteration of the
-         * reuse loop.
+         * get a std::runtime_error if you don't call this method in an iteration
+         * of the reuse loop.
          *
          * This method returns True for the first iteration of the reuse loop after
          * resuming from a previously taken snapshot. When resuming from a

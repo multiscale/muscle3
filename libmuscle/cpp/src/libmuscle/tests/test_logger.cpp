@@ -37,9 +37,9 @@ struct libmuscle_logging : ::testing::Test {
 
 
 TEST_F(libmuscle_logging, test_logger) {
-    Logger logger("test_instance[10]", "", mock_mmp_client_);
+    Logger::instance().init("test_instance[10]", "", &mock_mmp_client_);
 
-    logger.log(LogLevel::CRITICAL, "Testing: ", 10, " == ", 10.0);
+    log(LogLevel::CRITICAL, "Testing: ", 10, " == ", 10.0);
 
     auto const & msg = mock_mmp_client_.submit_log_message.call_arg<0>();
     ASSERT_EQ(msg.instance_id, "test_instance[10]");
@@ -49,40 +49,40 @@ TEST_F(libmuscle_logging, test_logger) {
 }
 
 TEST_F(libmuscle_logging, test_set_level) {
-    Logger logger("test_instance", "", mock_mmp_client_);
+    Logger::instance().init("test_instance", "", &mock_mmp_client_);
 
     auto const & submit = mock_mmp_client_.submit_log_message;
 
     // default is WARNING
-    logger.log(LogLevel::WARNING, "WARNING");
+    log(LogLevel::WARNING, "WARNING");
     ASSERT_EQ(submit.call_arg<0>().text, "WARNING");
 
-    logger.log(LogLevel::INFO, "INFO");
+    log(LogLevel::INFO, "INFO");
     ASSERT_EQ(submit.call_arg<0>().text, "WARNING");
 
-    logger.log(LogLevel::WARNING, "WARNING2");
+    log(LogLevel::WARNING, "WARNING2");
     ASSERT_EQ(submit.call_arg<0>().text, "WARNING2");
 
-    logger.log(LogLevel::DEBUG, "DEBUG");
+    log(LogLevel::DEBUG, "DEBUG");
     ASSERT_EQ(submit.call_arg<0>().text, "WARNING2");
 
-    logger.log(LogLevel::CRITICAL, "CRITICAL");
+    log(LogLevel::CRITICAL, "CRITICAL");
     ASSERT_EQ(submit.call_arg<0>().text, "CRITICAL");
 
-    logger.set_remote_level(LogLevel::DEBUG);
+    Logger::instance().set_remote_level(LogLevel::DEBUG);
 
-    logger.log(LogLevel::DEBUG, "DEBUG");
+    log(LogLevel::DEBUG, "DEBUG");
     ASSERT_EQ(submit.call_arg<0>().text, "DEBUG");
 
-    logger.log(LogLevel::CRITICAL, "CRITICAL");
+    log(LogLevel::CRITICAL, "CRITICAL");
     ASSERT_EQ(submit.call_arg<0>().text, "CRITICAL");
 
-    logger.set_remote_level(LogLevel::CRITICAL);
+    Logger::instance().set_remote_level(LogLevel::CRITICAL);
 
-    logger.log(LogLevel::ERROR, "ERROR");
+    log(LogLevel::ERROR, "ERROR");
     ASSERT_EQ(submit.call_arg<0>().text, "CRITICAL");
 
-    logger.log(LogLevel::CRITICAL, "CRITICAL2");
+    log(LogLevel::CRITICAL, "CRITICAL2");
     ASSERT_EQ(submit.call_arg<0>().text, "CRITICAL2");
 }
 

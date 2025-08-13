@@ -222,7 +222,6 @@ struct ConnectedPortManagerHelper : libmuscle_instance_base {
 struct libmuscle_instance : ConnectedPortManagerHelper {
     Instance instance_;
 
-    MockLogger & logger_;
     MockMMPClient & mmp_client_;
     MockProfiler & profiler_;
     MockPortManager & port_manager_;
@@ -233,7 +232,6 @@ struct libmuscle_instance : ConnectedPortManagerHelper {
 
     libmuscle_instance()
         : instance_(test_argc_, test_argv_, declared_ports_)
-        , logger_(*instance_.impl_()->logger_)
         , mmp_client_(*instance_.impl_()->manager_)
         , profiler_(*instance_.impl_()->profiler_)
         , port_manager_(*instance_.impl_()->port_manager_)
@@ -248,7 +246,6 @@ struct libmuscle_instance : ConnectedPortManagerHelper {
 struct libmuscle_instance_dont_apply_overlay : ConnectedPortManagerHelper {
     Instance instance_dont_apply_overlay_;
 
-    MockLogger & logger_;
     MockMMPClient & mmp_client_;
     MockProfiler & profiler_;
     MockPortManager & port_manager_;
@@ -261,7 +258,6 @@ struct libmuscle_instance_dont_apply_overlay : ConnectedPortManagerHelper {
         : instance_dont_apply_overlay_(
                 test_argc_, test_argv_, declared_ports_,
                 InstanceFlags::DONT_APPLY_OVERLAY)
-        , logger_(*instance_dont_apply_overlay_.impl_()->logger_)
         , mmp_client_(*instance_dont_apply_overlay_.impl_()->manager_)
         , profiler_(*instance_dont_apply_overlay_.impl_()->profiler_)
         , port_manager_(*instance_dont_apply_overlay_.impl_()->port_manager_)
@@ -392,9 +388,8 @@ TEST_F(libmuscle_instance_base, create_instance_set_up_logging) {
 
     Instance instance(test_argc_, test_argv_, declared_ports_);
 
-    auto const & impl = *instance.impl_();
-    ASSERT_EQ(impl.logger_->set_local_level.call_arg<0>(), LogLevel::DEBUG);
-    ASSERT_EQ(impl.logger_->set_remote_level.call_arg<0>(), LogLevel::ERROR);
+    ASSERT_EQ(MockLogger::instance().set_local_level.call_arg<0>(), LogLevel::DEBUG);
+    ASSERT_EQ(MockLogger::instance().set_remote_level.call_arg<0>(), LogLevel::ERROR);
 }
 
 TEST_F(libmuscle_instance, shutdown_instance) {
@@ -405,7 +400,7 @@ TEST_F(libmuscle_instance, shutdown_instance) {
 
     instance_.error_shutdown(msg);
 
-    ASSERT_TRUE(logger_.caplog.any_call(LogLevel::CRITICAL, msg));
+    ASSERT_TRUE(MockLogger::instance().caplog.any_call(LogLevel::CRITICAL, msg));
     ASSERT_TRUE(communicator_.shutdown.called());
 
     ASSERT_TRUE(mmp_client_.deregister_instance.called_once_with());

@@ -1,13 +1,19 @@
+import logging
 import socket
 import socketserver as ss
 import threading
-from typing import cast, List, Optional, Tuple, Type
+from typing import Any, cast, Dict, List, Tuple, Type
 
 import psutil
 
+from libmuscle.mcp.session_state import SessionState
 from libmuscle.mcp.transport_server import RequestHandler, TransportServer
-from libmuscle.mcp.tcp_util import (recv_all, recv_int64, send_int64,
-                                    SocketClosed)
+from libmuscle.mcp.tcp_util import (
+        is_disconnect, recv_frame, recv_int64, send_frame, send_int64)
+from libmuscle.util import Retrier
+
+
+_logger = logging.getLogger(__name__)
 
 
 class TcpTransportServerImpl(ss.ThreadingMixIn, ss.TCPServer):
@@ -24,38 +30,99 @@ class TcpTransportServerImpl(ss.ThreadingMixIn, ss.TCPServer):
         if hasattr(socket, "TCP_QUICKACK"):
             self.socket.setsockopt(socket.SOL_TCP, socket.TCP_QUICKACK, 1)
 
+        self.session_store: Dict[int, SessionState] = dict()
+        self.session_lock = threading.Lock()
+        self.next_session = 1
+
 
 class TcpHandler(ss.BaseRequestHandler):
     """Handler for MCP-over-TCP connections.
 
     This is a Python handler for Python's TCPServer, which forwards
     to the RequestHandler attached to the server.
+
+    There's a small terminology issue here: Python calls an entire connection a request,
+    so self.request actually refers to the current connection we're servicing. We're
+    doing Remote Procedure Call over that, and we call every RPC call we receive from
+    the client a request also.
     """
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+
     def handle(self) -> None:
-        """Handles requests on a socket
-        """
-        request = self.receive_request()
+        """Handles connections, one per call"""
+        server = cast(TcpTransportServerImpl, self.server)
 
-        while request is not None:
-            server = cast(TcpTransportServerImpl, self.server).transport_server
-            response = server._handler.handle_request(request)
+        try:
+            session_id = self._start_session()
 
-            send_int64(self.request, len(response))
-            self.request.sendall(response)
-            request = self.receive_request()
+            request_nr = recv_int64(self.request)
+            while request_nr != 0:
+                request = recv_frame(self.request)
 
-    def receive_request(self) -> Optional[bytes]:
-        """Receives a request
+                should_process, should_send = self._session_state.triage_request(
+                        request_nr)
+
+                if should_process:
+                    response = server.transport_server._handler.handle_request(request)
+                    self._session_state.set_response(response)
+
+                if should_send:
+                    response_to_send = self._session_state.wait_get_response(request_nr)
+                    if response_to_send is not None:
+                        send_frame(self.request, response_to_send)
+
+                request_nr = recv_int64(self.request)
+
+            self._end_session(session_id)
+
+        except Exception as e:
+            if not is_disconnect(e):
+                raise
+
+    def _start_session(self) -> int:
+        """(Re)starts a session
+
+        Sessions are identified by a number, which we create and which we and the client
+        both store. If we get disconnected, the client can reconnect with that session
+        id, so that we can resend whatever we were sending when we were rudely
+        interrupted.
 
         Returns:
-            The received bytes
+            The id of the new session
         """
-        try:
-            length = recv_int64(self.request)
-            reqbuf = recv_all(self.request, length)
-            return reqbuf
-        except SocketClosed:
-            return None
+        req_session_id = recv_int64(self.request)
+
+        server = cast(TcpTransportServerImpl, self.server)
+        if req_session_id == 0:
+            with server.session_lock:
+                session_id = server.next_session
+                server.session_store[session_id] = SessionState()
+                self._session_state = server.session_store[session_id]
+                server.next_session += 1
+
+            send_int64(self.request, session_id)
+
+        else:
+            _logger.warning(
+                    f'The TCP network connection for session {req_session_id} was lost')
+
+            with server.session_lock:
+                if req_session_id not in server.session_store:
+                    raise RuntimeError(f'Unknown session {req_session_id} requested')
+                self._session_state = server.session_store[req_session_id]
+
+            session_id = req_session_id
+            send_int64(self.request, session_id)
+            _logger.warning(f'Resuming session {session_id}')
+
+        return session_id
+
+    def _end_session(self, session_id: int) -> None:
+        """Removes a closed session"""
+        server = cast(TcpTransportServerImpl, self.server)
+        with server.session_lock:
+            del server.session_store[session_id]
 
     def finish(self) -> None:
         """Called when shutting down the thread?"""
@@ -97,12 +164,23 @@ class TcpTransportServer(TransportServer):
             locs.append('{}:{}'.format(address, port))
         return 'tcp:{}'.format(','.join(locs))
 
-    def close(self) -> None:
+    def close(self, graceful: bool = True) -> None:
         """Closes this server.
 
-        Stops the server listening, waits for existing clients to
-        disconnect, then frees any other resources.
+        Waits for all sessions to be closed by the clients, stops the server listening,
+        waits for existing handlers to close, then frees any other resources.
+
+        Args:
+            graceful: Wait for clients to finish their sessions, where applicable.
         """
+        if graceful:
+            retrier = Retrier(60.0, 0.1)
+            while not retrier.should_give_up():
+                with self._server.session_lock:
+                    if len(self._server.session_store) == 0:
+                        break
+                retrier.sleep()
+
         self._server.shutdown()
         self._server_thread.join()
         self._server.server_close()

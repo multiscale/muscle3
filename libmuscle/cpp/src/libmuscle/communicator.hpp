@@ -4,7 +4,6 @@
 #include LIBMUSCLE_MOCK_COMMUNICATOR
 #else
 
-#include <libmuscle/logger.hpp>
 #include <libmuscle/message.hpp>
 #include <libmuscle/mmp_client.hpp>
 #include <libmuscle/mpp_client.hpp>
@@ -55,7 +54,7 @@ class Communicator {
                 ymmsl::Reference const & kernel,
                 std::vector<int> const & index,
                 PortManager & port_manager,
-                Logger & logger, Profiler & profiler,
+                Profiler & profiler,
                 MMPClient & manager);
 
         /** Returns a list of locations that we can be reached at.
@@ -132,7 +131,7 @@ class Communicator {
 
         /** Update the timeout after which the manager is notified that we are
          * waiting for a message.
-         * 
+         *
          * @param receive_timeout Timeout (seconds). A negative number disables
          *      the deadlock notification mechanism.
          */
@@ -201,7 +200,6 @@ class Communicator {
         ymmsl::Reference kernel_;
         std::vector<int> index_;
         PortManager & port_manager_;
-        Logger & logger_;
         Profiler & profiler_;
         MMPClient & manager_;
         MPPServer server_;

@@ -28,7 +28,7 @@ class TimeoutHandler {
          */
         virtual void on_timeout() = 0;
         /** Callback when receiving a response from the peer.
-         * 
+         *
          * Note: this method is only called when the request has timed out.
          */
         virtual void on_receive() = 0;
@@ -89,7 +89,7 @@ class TransportClient {
          */
         virtual std::tuple<std::vector<char>, ProfileData> call(
                 char const * req_buf, std::size_t req_len,
-                TimeoutHandler* timeout_handler=nullptr) const = 0;
+                TimeoutHandler* timeout_handler=nullptr) = 0;
 
         /** Closes this client.
          *

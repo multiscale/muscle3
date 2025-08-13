@@ -103,6 +103,9 @@ mpi_component_test: mpi_component_test.cpp $(CURDIR)/../../ymmsl/libymmsl_d.a $(
 mpi_snapshot_micro_test: mpi_snapshot_micro_test.cpp $(CURDIR)/../../ymmsl/libymmsl_d.a $(CURDIR)/../libmuscle_mpi_d.a
 	$(MPICXX) $(CXXFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS2)
 
+tcp_reconnect_test: tcp_reconnect_test.o $(CURDIR)/../../ymmsl/libymmsl_d.a
+	$(CXX) $(CXXFLAGS) $^ -o $@ -pthread
+
 
 empty :=
 space := $(empty) $(empty)

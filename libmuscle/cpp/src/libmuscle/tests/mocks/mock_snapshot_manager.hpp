@@ -30,16 +30,15 @@ class MockSnapshotManager : public MockClass<MockSnapshotManager> {
         MockSnapshotManager(
                 ymmsl::Reference const & instance_id,
                 MMPClient & manager,
-                PortManager & port_manager,
-                Logger & logger)
+                PortManager & port_manager)
         {
             init_from_return_value();
-            constructor(instance_id, manager, port_manager, logger);
+            constructor(instance_id, manager, port_manager);
         }
 
         MockFun<
             Void, Val<ymmsl::Reference const &>, Obj<MMPClient &>,
-            Obj<PortManager &>, Obj<Logger &>> constructor;
+            Obj<PortManager &>> constructor;
 
         MockFun<
             Val<Optional<double>>, Val<Optional<std::string> const &>,

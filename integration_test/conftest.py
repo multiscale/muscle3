@@ -66,14 +66,31 @@ def make_server_process(ymmsl_doc, tmpdir):
         process.join()
 
 
-def _python_wrapper(instance_name, muscle_manager, callable):
+def _python_wrapper(tmpdir, instance_name, muscle_manager, callable):
     sys.argv.append(f'--muscle-instance={instance_name}')
     sys.argv.append(f'--muscle-manager={muscle_manager}')
-    callable()
+
+    with open(tmpdir / f'{instance_name}_stdout.txt', 'w') as f_out:
+        with open(tmpdir / f'{instance_name}_stderr.txt', 'w') as f_err:
+            sys.stdout = f_out
+            sys.stderr = f_err
+
+            root_logger = logging.getLogger()
+            handler = logging.StreamHandler()
+            handler.setFormatter(logging.Formatter(
+                '%(asctime)s %(levelname)s %(filename)s:%(lineno)d %(message)s'))
+            root_logger.addHandler(handler)
+            root_logger.setLevel(logging.DEBUG)
+
+            try:
+                callable()
+            except Exception as e:
+                root_logger.exception(e)
+                raise
 
 
 def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
-    """Start muscle_manager along with C++ and python actors.
+    """Start muscle_manager along with C++ and Python actors.
 
     Args:
         ymmsl_text: YMMSL configuration for the simulation
@@ -126,7 +143,7 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
                 # start python actor
                 proc = mp.Process(
                         target=_python_wrapper,
-                        args=(instance_name, env['MUSCLE_MANAGER'], actor),
+                        args=(tmpdir, instance_name, env['MUSCLE_MANAGER'], actor),
                         name=instance_name)
                 proc.start()
                 python_processes.append(proc)

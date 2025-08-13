@@ -156,7 +156,8 @@ class TcpTransportServer(TransportServer):
         Returns:
             A string containing the location.
         """
-        host, port = self._server.server_address
+        # IPv6 may give two more (unneeded) items, so can't unpack directly
+        port = self._server.server_address[1]
 
         locs: List[str] = []
         for address in self._get_if_addresses():

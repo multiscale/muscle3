@@ -140,7 +140,7 @@ libmuscle_fortran.so: $(lobjects)
 	$(FC) -shared -o $@ $^ $(LDFLAGS2)
 
 libmuscle_fortran.dylib: $(lobjects)
-	$(FC) -shared -o $@ $^ $(LDFLAGS2)
+	$(FC) -shared -Wl,-headerpad_max_install_names -o $@ $^ $(LDFLAGS2)
 
 libmuscle_mpi_fortran.a: $(mobjects)
 	ar rcs $@ $^
@@ -149,7 +149,7 @@ libmuscle_mpi_fortran.so: $(mlobjects)
 	$(MPIFC) -shared -o $@ $^ $(LDFLAGS2_MPI)
 
 libmuscle_mpi_fortran.dylib: $(mlobjects)
-	$(MPIFC) -shared -o $@ $^ $(LDFLAGS2_MPI)
+	$(MPIFC) -shared -Wl,-headerpad_max_install_names -o $@ $^ $(LDFLAGS2_MPI)
 
 $(PREFIX)/include/%.f90: $(srcdir)/%.f90
 	@mkdir -p $(@D)

@@ -43,10 +43,9 @@ def _inject_fault(socket: SocketType) -> None:
 
 @pytest.fixture
 def tcp_fault_injection():
-    with (
-            patch('libmuscle.mark.before_tcp_receive', _inject_fault),
-            patch('libmuscle.mark.before_tcp_send', _inject_fault)):
-        yield
+    with patch('libmuscle.mark.before_tcp_receive', _inject_fault):
+        with patch('libmuscle.mark.before_tcp_send', _inject_fault):
+            yield
 
 
 def component():

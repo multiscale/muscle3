@@ -72,7 +72,6 @@ class TcpTransportClient(TransportClient):
         did_timeout = False
 
         def handle_timeout() -> None:
-            nonlocal timeout_handler
             nonlocal deadline
             nonlocal did_timeout
 

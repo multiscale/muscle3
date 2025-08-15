@@ -1,4 +1,5 @@
 # Because I hate writing this over and over again
+# Note to the reviewer: delete this script per your discretion
 
 echo "=== Building C++ tests ==="
 make cpp_tests \

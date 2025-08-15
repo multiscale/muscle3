@@ -2,6 +2,7 @@
 *.egg-info
 *.eggs
 
+# Editor environment
 .vscode/
 
 
@@ -25,4 +26,5 @@ docs/source/examples/python/performance.sqlite
 
 libmuscle/python/libmuscle/version.py
 
+# Build Artifact from `build cpp`
 libmuscle/cpp/src/libmuscle/version.h-e

@@ -12,13 +12,14 @@ distclean: clean
 
 
 release-$(googletest_VERSION).tar.gz:
-	$(DOWNLOAD) https://github.com/google/googletest/archive/release-$(googletest_VERSION).tar.gz
+	$(DOWNLOAD) https://github.com/google/googletest/releases/download/v$(googletest_VERSION)/googletest-$(googletest_VERSION).tar.gz
+	mv googletest-$(googletest_VERSION).tar.gz release-$(googletest_VERSION).tar.gz
 
 googletest-release-$(googletest_VERSION): release-$(googletest_VERSION).tar.gz
 	$(TAR) xf release-$(googletest_VERSION).tar.gz
 
-googletest: googletest-release-$(googletest_VERSION)
-	cd googletest-release-$(googletest_VERSION) && mkdir -p build
-	cd googletest-release-$(googletest_VERSION)/build && cmake -DCMAKE_INSTALL_PREFIX=$(CURDIR)/googletest ..
-	cd googletest-release-$(googletest_VERSION)/build && $(MAKE) -j $(NCORES) && make install
-
+googletest: release-$(googletest_VERSION).tar.gz
+	tar xf release-$(googletest_VERSION).tar.gz
+	cd googletest-$(googletest_VERSION) && mkdir -p build
+	cd googletest-$(googletest_VERSION)/build && cmake -DCMAKE_INSTALL_PREFIX=$(CURDIR)/googletest ..
+	cd googletest-$(googletest_VERSION)/build && $(MAKE) -j $(NCORES) && make install

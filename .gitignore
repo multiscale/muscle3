@@ -12,6 +12,7 @@
 .pytest_cache
 .mypy_cache
 *.swp
+*.log
 
 htmlcov
 .coverage
@@ -25,4 +26,3 @@ docs/source/examples/python/performance.sqlite
 libmuscle/python/libmuscle/version.py
 
 libmuscle/cpp/src/libmuscle/version.h-e
-cpp_tests_std*

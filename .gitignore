@@ -2,6 +2,9 @@
 *.egg-info
 *.eggs
 
+.vscode/
+
+
 /dist
 /build
 .tox

@@ -20,3 +20,5 @@ docs/source/examples/*.log
 docs/source/examples/python/performance.sqlite
 
 libmuscle/python/libmuscle/version.py
+
+libmuscle/cpp/src/libmuscle/version.h-e

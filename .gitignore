@@ -2,18 +2,12 @@
 *.egg-info
 *.eggs
 
-# Editor environment
-.vscode/
-
-
 /dist
 /build
 .tox
 .cache
 .pytest_cache
 .mypy_cache
-*.swp
-*.log
 
 htmlcov
 .coverage

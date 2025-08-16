@@ -3,12 +3,12 @@ all: googletest
 
 .PHONY: clean
 clean:
-	rm -rf googletest-release-*
+	rm -rf googletest-*
 	rm -rf googletest
 
 .PHONY: distclean
 distclean: clean
-	rm -f release-*.tar.gz
+	rm -f googletest-*.tar.gz
 
 
 googletest-$(googletest_VERSION).tar.gz:

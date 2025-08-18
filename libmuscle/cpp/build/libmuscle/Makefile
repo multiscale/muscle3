@@ -31,8 +31,16 @@ endif
 
 tests_deps := libmuscle_d.a version.h
 
+# Checking if we are installing and have MPI libs
+INSTALL_LIBS := $(findstring install,$(MAKECMDGOALS))
+LIBMUSCLE_MPI_SO_PRESENT := $(wildcard libmuscle_mpi.so)
+INSTALLING_WITH_MPI_LIBS := $(and $(INSTALL_LIBS),$(LIBMUSCLE_MPI_SO_PRESENT))
+
 # if we're compiling with MPI, or we are installing and have MPI libs
-ifeq ($(if $(or $(MUSCLE_ENABLE_CPP_MPI),$(and $(findstring install,$(MAKECMDGOALS)),$(wildcard libmuscle_mpi.so))),1,0),1)
+USE_MPI := $(or $(MUSCLE_ENABLE_CPP_MPI),$(INSTALLING_WITH_MPI_LIBS))
+MAKE_USE_MPI_FLAG := $(if $(USE_MPI),1,0)
+
+ifeq ($(MAKE_USE_MPI_FLAG),1)
     ifdef MUSCLE_MACOS
         prod_libs += libmuscle_mpi.a libmuscle_mpi.dylib
         debug_libs += libmuscle_mpi_d.a libmuscle_mpi_d.dylib
@@ -62,7 +70,7 @@ installed_headers := $(public_headers:%=$(PREFIX)/include/%)
 
 pkg_config_files := libmuscle.pc
 
-ifeq ($(if $(or $(MUSCLE_ENABLE_CPP_MPI),$(and $(findstring install,$(MAKECMDGOALS)),$(wildcard libmuscle_mpi.so))),1,0),1)
+ifeq ($(MAKE_USE_MPI_FLAG),1)
     pkg_config_files += libmuscle_mpi.pc
 endif
 
@@ -157,9 +165,17 @@ LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS):$(PKG_CONFIG
 endif
 
 
+ifdef MUSCLE_ENABLE_CPP_MPI
+    CONDITIONAL_CC := $(MPICXX)
+    DEP_FLAGS := $(CXXFLAGS) $(MPIFLAGS)
+else
+    CONDITIONAL_CC := $(CXX)
+    DEP_FLAGS := $(CXXFLAGS)
+endif
+
 $(objdir)/%.d: %.cpp $(srcdir)/version.h
 	@mkdir -p $(@D)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(MPIFLAGS) -E -MM -MT $(@:.d=.o) $< -o $@
+	$(CONDITIONAL_CC) $(CPPFLAGS) $(DEP_FLAGS) -E -MM -MT $(@:.d=.o) $< -o $@
 
 $(objdir)/%.o: %.cpp $(srcdir)/version.h
 	@mkdir -p $(@D)

@@ -167,15 +167,15 @@ endif
 
 ifdef MUSCLE_ENABLE_CPP_MPI
     CONDITIONAL_CC := $(MPICXX)
-	DEP_FLAGS := $(CXXFLAGS) $(MPIFLAGS)
+    DEP_FLAGS := $(CXXFLAGS) $(MPIFLAGS)
 else
     CONDITIONAL_CC := $(CXX)
-	DEP_FLAGS := $(CXXFLAGS)
+    DEP_FLAGS := $(CXXFLAGS)
 endif
 
 $(objdir)/%.d: %.cpp $(srcdir)/version.h
 	@mkdir -p $(@D)
-	$(CONDITIONAL_CC) $(CPPFLAGS) -E -MM -MT $(@:.d=.o) $< -o $@
+	$(CONDITIONAL_CC) $(CPPFLAGS) $(DEP_FLAGS) -E -MM -MT $(@:.d=.o) $< -o $@
 
 $(objdir)/%.o: %.cpp $(srcdir)/version.h
 	@mkdir -p $(@D)

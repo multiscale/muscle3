@@ -48,7 +48,7 @@ include $(TOOLDIR)/check_override.make
 
 # Enforces that MacOS (Darwin) prioritizes clang++ use over g++
 #   and that everything else (Linux, Windows) uses g++
-ifeq ($(_os),Darwin)
+ifdef MUSCLE_MACOS
     # Try clang++ first, then g++
     tool_command := clang++
     include $(TOOLDIR)/detect_tool_implicit.make

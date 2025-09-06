@@ -46,21 +46,10 @@ $(info Looking for C++ compiler...)
 tool_var := CXX
 include $(TOOLDIR)/check_override.make
 
-# Enforces that MacOS (Darwin) prioritizes clang++ use over g++
-#   and that everything else (Linux, Windows) uses g++
-ifdef MUSCLE_MACOS
-    # Try clang++ first, then g++
-    tool_command := clang++
-    include $(TOOLDIR)/detect_tool_implicit.make
-    tool_command := g++
-    include $(TOOLDIR)/detect_tool_implicit.make
-else
-    # Try g++ first, then clang++
-    tool_command := g++
-    include $(TOOLDIR)/detect_tool_implicit.make
-    tool_command := clang++
-    include $(TOOLDIR)/detect_tool_implicit.make
-endif
+tool_command := g++
+include $(TOOLDIR)/detect_tool_implicit.make
+tool_command := clang++
+include $(TOOLDIR)/detect_tool_implicit.make
 
 ifeq ($(origin CXX), default)
     $(error - No C++ compiler found! Please install one and/or set CXX to the correct command.)

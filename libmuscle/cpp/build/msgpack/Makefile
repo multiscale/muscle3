@@ -42,4 +42,3 @@ msgpack: $(MSGPACK_LIB)
 	install_name_tool -id $(CURDIR)/msgpack/lib/libmsgpackc.dylib $(CURDIR)/msgpack/lib/libmsgpackc.dylib
 
 endif
-

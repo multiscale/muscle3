@@ -1098,4 +1098,3 @@ DataConstRef DataConstRef::grid_data_<bool>(
 }
 
 } }  // namespace libmuscle::_MUSCLE_IMPL_NS
-

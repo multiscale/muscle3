@@ -28,9 +28,9 @@ distclean:
 # Find dependencies or set up build
 
 dep_name := msgpack
-dep_version_constraint := >= 3.2.0
-dep_version := 3.2.0
-dep_pkgconfig_name := msgpack
+dep_version_constraint := >= 4.0.0
+dep_version := 7.0.0
+dep_pkgconfig_name := msgpack-cxx
 dep_install := 1
 include $(TOOLDIR)/make_available.make
 
@@ -46,7 +46,7 @@ include $(TOOLDIR)/make_available.make
 DEP_DIRS += $(CURDIR)/msgpack/msgpack
 export DEP_DIRS
 
-PKG_CONFIG_EXTRA_DIRS := $(PKG_CONFIG_EXTRA_DIRS):$(CURDIR)/msgpack/msgpack/lib/pkgconfig
+PKG_CONFIG_EXTRA_DIRS := $(PKG_CONFIG_EXTRA_DIRS):$(CURDIR)/msgpack/lib/pkgconfig
 export PKG_CONFIG_EXTRA_DIRS
 
 

@@ -189,7 +189,7 @@ TEST_F(libmuscle_communicator2, receive_message) {
 TEST_F(libmuscle_communicator2, receive_message_vector) {
     MPPMessage msg(
             "peer2.out_v", "component.in_v", 5, 4.0, 6.0,
-            Settings({{"s0", {0.0}}, {"s1", 1.3}}), 0, 3.5, "Testing2");
+            Settings({{"s0", {0.0}}, {"s1", 1.0}}), 0, 3.5, "Testing2");
 
     MockMPPClient::return_value.receive.return_value = std::make_tuple(
             msg.encoded(), ProfileData());
@@ -205,7 +205,7 @@ TEST_F(libmuscle_communicator2, receive_message_vector) {
     ASSERT_EQ(recv_msg.next_timestamp(), 6.0);
     ASSERT_EQ(recv_msg.data().as<std::string>(), "Testing2");
     ASSERT_EQ(recv_msg.settings().at("s0"), std::vector<double>{0.0});
-    ASSERT_EQ(recv_msg.settings().at("s1"), 1.3);
+    ASSERT_EQ(recv_msg.settings().at("s1"), 1.0);
     ASSERT_EQ(saved_until, 3.5);
 }
 

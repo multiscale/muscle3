@@ -527,7 +527,6 @@ bool DataConstRef::is_a_byte_array() const {
     return mp_obj_->type == msgpack::type::BIN;
 }
 
-
 template <>
 SettingValue DataConstRef::as<SettingValue>() const {
     DataConstRef const & self = *this;

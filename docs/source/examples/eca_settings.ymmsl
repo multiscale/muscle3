@@ -1,0 +1,9 @@
+ymmsl_version: v0.1
+
+settings:
+  muscle_local_log_level: INFO
+  muscle_remote_log_level: WARNING
+
+  macro.max_steps: 100
+  macro.size: 50
+  micro.rule: 57 

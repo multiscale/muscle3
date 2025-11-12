@@ -1,0 +1,27 @@
+ymmsl_version: v0.1
+
+model:
+  name: elementary_cellular_automata
+
+  components:
+    macro:
+      implementation: elemental_ca_macro_python
+      ports:
+        o_i: state_out
+        s: state_in
+
+    micro:
+      implementation: elemental_ca_micro_python
+      ports:
+        f_init: initial_state
+        o_f: final_state
+
+  conduits:
+    macro.state_out: micro.initial_state
+    micro.final_state: macro.state_in
+
+resources:
+  macro:
+    threads: 1
+  micro:
+    threads: 1

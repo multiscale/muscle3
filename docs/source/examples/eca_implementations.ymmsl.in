@@ -1,0 +1,11 @@
+ymmsl_version: v0.1
+
+implementations:
+  elemental_ca_macro_python:
+    executable: python
+    args: MUSCLE3_EXAMPLES/python/elemental_ca_macro.py
+
+  elemental_ca_micro_python:
+    executable: python
+    args: MUSCLE3_EXAMPLES/python/elemental_ca_micro.py
+

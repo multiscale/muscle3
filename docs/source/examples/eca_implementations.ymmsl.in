@@ -9,3 +9,7 @@ implementations:
     executable: python
     args: MUSCLE3_EXAMPLES/python/elemental_ca_micro.py
 
+  cache_python:
+    executable: python
+    args: MUSCLE3_EXAMPLES/python/cache.py
+

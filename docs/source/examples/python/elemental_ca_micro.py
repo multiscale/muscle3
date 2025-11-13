@@ -10,6 +10,8 @@ from ymmsl import Operator
 def new_state(rule, old_state):
     """
     old state is treated as a 3 bit number
+    rule is a 8 bit number, that encodes the next position 
+    for each of the possible old states
     """
     return (rule>>old_state)%2
 
@@ -30,7 +32,7 @@ def elemental_ca_micro() -> None:
         U_new = U.copy()
 
         for i in range(U.size):
-            a = 0 if i == 1 else U[i-1]
+            a = 0 if i == 0 else U[i-1]
             b = U[i]
             c = 0 if i == U.size -1 else U[i+1]
         

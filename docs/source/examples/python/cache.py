@@ -5,7 +5,11 @@ from libmuscle import Grid, Instance, InstanceFlags, Message
 from ymmsl import Operator
 
 def cache() -> None:
-    """A simple exponential reaction model on a 1D grid.
+    """A simple cache
+
+       WARNING: does not use timestamp(s) or settings for determining cached response
+
+       only msg.data is used to determine if a response is cached.
     """
     instance = Instance({
             Operator.F_INIT: ['front_in'],
@@ -14,16 +18,22 @@ def cache() -> None:
             Operator.O_I: ['back_out']},
             InstanceFlags.DONT_APPLY_OVERLAY,
             )         
+    
+    cachesize=128
+    try:
+        cachesize = instance.get_setting('size', 'int')
+    except KeyError:
+        pass
 
-    @lru_cache(maxsize=128)
-    def cached_response(msg):
-        instance.send('back_out', msg)
+
+    @lru_cache(maxsize=cachesize)
+    def cached_response(data):
+        instance.send('back_out', msg) # use python magic to pass msg from outside this function
         return instance.receive_with_settings('back_in')
 
     while instance.reuse_instance():
-        # F_INIT
         msg = instance.receive_with_settings('front_in')
-        msg = cached_response(msg)
+        msg = cached_response(tuple(msg.data.array))
         instance.send('front_out', msg)
     
     logging.info(cached_response.cache_info())

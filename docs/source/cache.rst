@@ -5,7 +5,7 @@ Sometimes when performing complex simulations micromodels are run with the same
 data more than once and it can be useful to cache the results to save computing
 time.
 
-A simple caching component can be found in the ``examples/python`` folder named 
+A simple caching component can be found in the ``examples/python`` folder named
 ``cache.py``. This cache can be inserted between to models to cache results from
 the micro model.
 
@@ -18,7 +18,7 @@ side to the model you want cached, and the ``front`` to the caller.
 
 One setting is available for the cache, determining how many responses the cache
 will remember. Setting this too high for data-intensive applications will result
-in a lot of memory usage. If this setting is not set a cache size of ``128`` is 
+in a lot of memory usage. If this setting is not set a cache size of ``128`` is
 used.
 
 .. literalinclude:: examples/eca_settings.ymmsl
@@ -28,13 +28,13 @@ used.
 Example caching results
 -----------------------
 
-An example elementary cellular automata can be run with and without cache to see 
+An example elementary cellular automata can be run with and without cache to see
 the impact.
 
 To run the examples with and without cache you can execute the following
 
 .. code-block:: bash
-  
+
   # without cache
   muscle_manager --start-all eca_implementations.ymmsl eca_python.ymmsl eca_settings.ymmsl
   # with cache

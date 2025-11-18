@@ -11,8 +11,8 @@ from ymmsl import Operator
 def elemental_ca_macro() -> None:
     """A simple elementary cellular automata on a 1d grid.
 
-    This model tries to solve an elemental ca, the actual calculation of the 
-    next timestap is delegated to the micro model. The macro model only 
+    This model tries to solve an elemental ca, the actual calculation of the
+    next timestap is delegated to the micro model. The macro model only
     collects the results
     """
     logger = logging.getLogger()

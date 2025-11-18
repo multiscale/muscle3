@@ -6,5 +6,5 @@ settings:
 
   macro.max_steps: 1000
   macro.size: 400
-  micro.rule: 57 
+  micro.rule: 57
   cache.size: 10

@@ -71,12 +71,12 @@ def mmp_request_handler(
 
 @pytest.fixture
 def loaded_instance_registry(instance_registry):
-    instance_registry.add(Reference('macro'), ['direct:macro'], [])
+    instance_registry.add(Reference('macro'), ['direct:macro'], [], 10, 'test_host')
     for j in range(10):
         for i in range(10):
             name = Reference('micro') + j + i
             location = 'direct:{}'.format(name)
-            instance_registry.add(name, [location], [])
+            instance_registry.add(name, [location], [], 100 + j + i * 10, 'test_host')
     return instance_registry
 
 
@@ -121,18 +121,18 @@ def snapshot_registry2(mmp_configuration2, topology_store) -> SnapshotRegistry:
 def loaded_instance_registry2():
     instance_registry = InstanceRegistry()
 
-    instance_registry.add(Reference('macro'), ['direct:macro'], [])
+    instance_registry.add(Reference('macro'), ['direct:macro'], [], 10, 'test_host')
 
     for j in range(5):
         name = Reference('meso') + j
         location = 'direct:{}'.format(name)
-        instance_registry.add(name, [location], [])
+        instance_registry.add(name, [location], [], 10 + j, 'test_host')
 
     for j in range(5):
         for i in range(10):
             name = Reference('micro') + j + i
             location = 'direct:{}'.format(name)
-            instance_registry.add(name, [location], [])
+            instance_registry.add(name, [location], [], 100 + j*10 + i, 'test_host')
     return instance_registry
 
 

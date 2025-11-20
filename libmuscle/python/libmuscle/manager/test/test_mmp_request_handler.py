@@ -82,6 +82,8 @@ def test_register_instance(mmp_request_handler, instance_registry):
             'test_instance',
             ['tcp://localhost:10000'],
             [['test_in', 'F_INIT']],
+            12345,
+            'test_host',
             libmuscle.__version__]
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
@@ -102,7 +104,9 @@ def test_register_instance_no_version(mmp_request_handler):
             RequestType.REGISTER_INSTANCE.value,
             'test_instance',
             ['tcp://localhost:10000'],
-            [['test_in', 'F_INIT']]]
+            [['test_in', 'F_INIT']],
+            12345,
+            'test_host']
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
     result = mmp_request_handler.handle_request(encoded_request)
@@ -118,6 +122,8 @@ def test_register_instance_version_mismatch(mmp_request_handler):
             'test_instance',
             ['tcp://localhost:10000'],
             [['test_in', 'F_INIT']],
+            12345,
+            'test_host',
             libmuscle.__version__ + "dev"]
     encoded_request = msgpack.packb(request, use_bin_type=True)
 
@@ -184,6 +190,8 @@ def test_double_register_instance(mmp_request_handler):
             'test_instance',
             ['tcp://localhost:10000'],
             [['test_in', 'F_INIT']],
+            12345,
+            'test_host',
             libmuscle.__version__]
     encoded_request = msgpack.packb(request, use_bin_type=True)
 

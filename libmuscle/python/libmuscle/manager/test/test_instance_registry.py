@@ -21,7 +21,7 @@ def test_port(port):
 
 
 def test_registry_add(registry, port):
-    registry.add('instance1', 'tcp://localhost:6253', [port])
+    registry.add('instance1', 'tcp://localhost:6253', [port], 12345, 'test_host')
     assert (registry._locations['instance1'] ==
             'tcp://localhost:6253')
     assert registry._ports['instance1'] == [port]
@@ -31,6 +31,8 @@ def test_registry_get(registry, port):
     registry._locations['instance1'] = [
             'tcp://localhost:6253']
     registry._ports['instance1'] = [port]
+    registry._pids['instance1'] = 12345
+    registry._hostnames['instance1'] = 'test_host'
     assert registry.get_locations('instance1') == ['tcp://localhost:6253']
     assert registry.get_ports('instance1') == [port]
 
@@ -45,6 +47,8 @@ def test_registry_remove(registry, port):
     registry._locations['instance1'] = [
             'tcp://localhost:6253']
     registry._ports['instance1'] = [port]
+    registry._pids['instance1'] = 12345
+    registry._hostnames['instance1'] = 'test_host'
     registry.remove('instance1')
     assert 'instance1' not in registry._locations
     assert 'instance1' not in registry._ports

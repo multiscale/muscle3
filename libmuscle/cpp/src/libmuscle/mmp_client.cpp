@@ -191,7 +191,8 @@ void MMPClient::register_instance(
     auto request = Data::list(
             static_cast<int>(RequestType::register_instance),
             static_cast<std::string>(instance_id_), encoded_locs,
-            encoded_ports, MUSCLE3_VERSION);
+            encoded_ports, get_process_id(), get_hostname(),
+            MUSCLE3_VERSION);
 
     auto response = call_manager_(request);
 

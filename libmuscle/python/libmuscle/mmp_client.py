@@ -1,6 +1,8 @@
 import dataclasses
+from os import getpid
 from pathlib import Path
 from random import uniform
+from socket import gethostname
 from threading import get_ident, RLock
 from time import perf_counter, sleep
 from typing import Any, Dict, Iterable, List, Optional, Tuple
@@ -232,6 +234,7 @@ class MMPClient():
                 RequestType.REGISTER_INSTANCE.value,
                 str(self._instance_id), locations,
                 [encode_port(p) for p in ports],
+                getpid(), gethostname(),
                 libmuscle.__version__]
         response = self._call_manager(request)
         if response[0] == ResponseType.ERROR.value:

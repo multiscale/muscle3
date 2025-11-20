@@ -227,6 +227,14 @@ std::ostream & operator<<(std::ostream & os, Optional<T> const & t);
  */
 double time_monotonic();
 
+/* Return the current process ID.
+ */
+int get_process_id();
+
+/* Return the hostname.
+ */
+std::string get_hostname();
+
 
 /* Helper class for retrying things with a delay and timeout.
  *

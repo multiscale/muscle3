@@ -146,13 +146,15 @@ class MMPRequestHandler(RequestHandler):
 
     def _register_instance(
             self, instance_id: str, locations: List[str],
-            ports: List[List[str]], version: str = '') -> Any:
+            ports: List[List[str]], pid: int, hostname: str, version: str = '') -> Any:
         """Handle a register instance request.
 
         Args:
             instance_id: ID of the instance to register
             locations: Locations where it can be reached
             ports: Ports of this instance
+            pid: PID of the instance
+            hostname: Hostname of the instance
             version: Version of libmuscle that this instance uses
 
         Returns:
@@ -169,11 +171,10 @@ class MMPRequestHandler(RequestHandler):
                     f' manager libmuscle version ({libmuscle.__version__}).'
                     ' Please ensure that the instance and the manager use the'
                     ' same version of libmuscle.']
-
         port_objs = [decode_port(p) for p in ports]
         instance = Reference(instance_id)
         try:
-            self._instance_registry.add(instance, locations, port_objs)
+            self._instance_registry.add(instance, locations, port_objs, pid, hostname)
 
             _logger.info(f'Registered instance {instance_id}')
             return [ResponseType.SUCCESS.value]

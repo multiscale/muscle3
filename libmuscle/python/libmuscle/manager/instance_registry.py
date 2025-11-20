@@ -19,17 +19,21 @@ class InstanceRegistry:
         self._deregistered_one = Condition()    # doubles as lock
         self._locations: Dict[Reference, List[str]] = {}
         self._ports: Dict[Reference, List[Port]] = {}
+        self._pids: Dict[Reference, int] = {}
+        self._hostnames: Dict[Reference, str] = {}
         self._seen: Set[Reference] = set()
         self._startup = True
 
-    def add(self, name: Reference, locations: List[str], ports: List[Port]
-            ) -> None:
+    def add(self, name: Reference, locations: List[str], ports: List[Port],
+            pid: int, hostname: str) -> None:
         """Add an instance to the registry.
 
         Args:
             name: Name of the instance.
             locations: Network locations where it can be reached.
             ports: List of ports of this instance.
+            pid: PID of the instance
+            hostname: Hostname of the instance
 
         Raises:
             ValueError: If an instance with this name has already been
@@ -42,6 +46,8 @@ class InstanceRegistry:
 
             self._locations[name] = locations
             self._ports[name] = ports
+            self._pids[name] = pid
+            self._hostnames[name] = hostname
             self._seen.add(name)
             self._startup = False
 
@@ -81,6 +87,8 @@ class InstanceRegistry:
         with self._deregistered_one:
             del self._locations[name]
             del self._ports[name]
+            del self._pids[name]
+            del self._hostnames[name]
             self._deregistered_one.notify()
 
     def did_register(self, name: Reference) -> bool:

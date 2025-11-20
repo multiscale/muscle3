@@ -72,7 +72,7 @@ def test_exit_code(lpm, tmp_path):
 def test_multiple(lpm, tmp_path):
     for i in range(3):
         lpm.start(
-                f'test_{i}', tmp_path, ['bash', '-c', 'sleep 1'], {},
+                f'test_{i}', tmp_path, ['bash', '-c', '/usr/bin/env sleep 1'], {},
                 tmp_path / f'out{i}', tmp_path / f'err{i}')
 
     completed_jobs = _poll_completion(lpm, 3)
@@ -85,7 +85,7 @@ def test_cancel_all(lpm, tmp_path):
 
     for i in range(2):
         lpm.start(
-                f'test_{i}', tmp_path, ['bash', '-c', 'sleep 1'], {},
+                f'test_{i}', tmp_path, ['bash', '-c', '/usr/bin/env sleep 1'], {},
                 tmp_path / f'out{i}', tmp_path / f'err{i}')
 
     lpm.cancel_all()
@@ -100,7 +100,7 @@ def test_cancel_all(lpm, tmp_path):
 
 def test_output_redirect(lpm, tmp_path):
     lpm.start(
-            'test', tmp_path, ['bash', '-c', 'ls'], {},
+            'test', tmp_path, ['bash', '-c', '/usr/bin/env ls'], {},
             tmp_path / 'out', tmp_path / 'err')
     _poll_completion(lpm, 1)
     with (tmp_path / 'out').open('r') as f:
@@ -111,7 +111,7 @@ def test_output_redirect(lpm, tmp_path):
 
 def test_error_redirect(lpm, tmp_path):
     lpm.start(
-            'test', tmp_path, ['bash', '-c', 'ls 1>&2'], {},
+            'test', tmp_path, ['bash', '-c', '/usr/bin/env ls 1>&2'], {},
             tmp_path / 'out', tmp_path / 'err')
     _poll_completion(lpm, 1)
     with (tmp_path / 'out').open('r') as f:

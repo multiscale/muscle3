@@ -28,7 +28,7 @@ distclean:
 # Find dependencies or set up build
 
 dep_name := msgpack
-dep_version_constraint := >= 4.0.0
+dep_version_constraint := >= 7.0.0
 dep_version := 7.0.0
 dep_pkgconfig_name := msgpack-cxx
 dep_install := 1

@@ -18,6 +18,8 @@ def test_registration(log_file_in_tmpdir, mmp_server):
     assert registry.get_locations(instance_name) == ['tcp:localhost:10000']
     assert registry.get_ports(instance_name)[0].name == 'test_in'
     assert registry.get_ports(instance_name)[0].operator == Operator.S
+    assert registry.get_pid(instance_name) == os.getpid()
+    assert registry.get_hostname(instance_name) == socket.gethostname()
     client.close()
 
 

@@ -74,15 +74,14 @@ def test_add_events(tmp_path):
                 " AND e.port_operator_oid = o.oid AND i.name = 'instance[0]'"
                 " AND et.name = (?)", (ProfileEventType.SEND.name,))
         events2 = cur.fetchall()
-
         assert len(events2) == 1
         e = events2[0]
         assert e[1:11] == (
                 ProfileEventType.SEND.value, 800, 812, 'out_port',
                 Operator.O_I.value, 10, 3, 67, 12345, 13.42)
-        assert e[12] == 'instance[0]'
-        assert e[14] == 'SEND'
-        assert e[16] == 'O_I'
+        assert e[14] == 'instance[0]'
+        assert e[16] == 'SEND'
+        assert e[18] == 'O_I'
 
         cur.execute("COMMIT")
 

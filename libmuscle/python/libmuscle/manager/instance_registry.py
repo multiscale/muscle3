@@ -75,6 +75,30 @@ class InstanceRegistry:
         with self._deregistered_one:
             return self._ports[name]
 
+    def get_pid(self, name: Reference) -> int:
+        """Retrieves the PID of a registered instance.
+
+        Args:
+            name: The name of the instance to get the PID of.
+
+        Raises:
+            KeyError: If no instance with this name was registered.
+        """
+        with self._deregistered_one:
+            return self._pids[name]
+
+    def get_hostname(self, name: Reference) -> str:
+        """Retrieves the hostname of a registered instance.
+
+        Args:
+            name: The name of the instance to get the hostname of.
+
+        Raises:
+            KeyError: If no instance with this name was registered.
+        """
+        with self._deregistered_one:
+            return self._hostnames[name]
+
     def remove(self, name: Reference) -> None:
         """Remove an instance from the registry.
 

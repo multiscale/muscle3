@@ -125,7 +125,7 @@ class ProfileStore(ProfileDatabase):
         Record = Tuple[
                 int, int, float, float, Optional[str], Optional[int],
                 Optional[int], Optional[int], Optional[int], Optional[int],
-                Optional[float]]
+                Optional[float], Optional[float], Optional[int]]
 
         def to_tuple(e: ProfileEvent) -> Record:
             # Tell mypy this shouldn't happen
@@ -139,7 +139,7 @@ class ProfileStore(ProfileDatabase):
                     instance_oid, e.event_type.value, e.start_time.nanoseconds,
                     e.stop_time.nanoseconds, port_name, port_operator,
                     e.port_length, e.slot, e.message_number, e.message_size,
-                    e.message_timestamp)
+                    e.message_timestamp, e.cpu_percent, e.memory_usage)
 
         cur = self._get_cursor()
         batch = self._queue.get()
@@ -155,8 +155,9 @@ class ProfileStore(ProfileDatabase):
                     "INSERT INTO events"
                     " (instance_oid, event_type_oid, start_time, stop_time,"
                     "  port_name, port_operator_oid, port_length, slot,"
-                    "  message_number, message_size, message_timestamp)"
-                    " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "  message_number, message_size, message_timestamp,"
+                    "  cpu_percent, memory_usage)"
+                    " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     map(to_tuple, events))
             cur.execute("COMMIT")
             if _SYNCHED:
@@ -237,7 +238,9 @@ class ProfileStore(ProfileDatabase):
                 "    slot INTEGER,"
                 "    message_number INTEGER,"
                 "    message_size INTEGER,"
-                "    message_timestamp DOUBLE)")
+                "    message_timestamp DOUBLE,"
+                "    cpu_percent DOUBLE,"
+                "    memory_usage INTEGER)")
 
         cur.execute("CREATE INDEX instances_oid_idx ON instances(oid)")
 
@@ -252,7 +255,9 @@ class ProfileStore(ProfileDatabase):
                 "    e.port_length AS port_length, e.slot AS slot,"
                 "    e.message_number AS message_number,"
                 "    e.message_size AS message_size,"
-                "    e.message_timestamp AS message_timestamp"
+                "    e.message_timestamp AS message_timestamp,"
+                "    e.cpu_percent AS cpu_percent,"
+                "    e.memory_usage AS memory_usage"
                 " FROM"
                 "    events e"
                 "    JOIN instances i ON e.instance_oid = i.oid"

@@ -54,8 +54,13 @@ class MAPRequestHandler(RequestHandler):
         return cast(bytes, msgpack.packb(response, use_bin_type=True))
 
     def _monitor_usage(self, node_name: str, usage: Dict[int, Tuple[float, int]]) -> Any:
-        """Handle a monitor usage request."""
-        print(f"Received usage report {usage} for node {node_name}")
+        """Handle a monitor usage request.
+        
+        Args:
+            node_name: Name (hostname) of the node
+            usage: Dictionary of instance id to (cpu_usage, memory_usage)
+        """
+        self._agent_manager.monitor_usage(usage)
         return [ResponseType.SUCCESS.value]
 
     def _report_resources(

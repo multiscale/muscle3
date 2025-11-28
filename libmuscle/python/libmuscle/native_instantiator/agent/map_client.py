@@ -46,7 +46,12 @@ class MAPClient:
         self._call_agent_manager(request)
 
     def monitor_usage(self, pids: List[Tuple[str, int]], logger) -> None:
-        """Monitor usage of resources of processes with given (instance_id, pid) on this node."""
+        """Monitor usage of resources of processes with given (instance_id, pid) on this node.
+
+        Args:
+            pids: List of (instance_id, pid) tuples
+            logger: Logger to use for logging
+        """
         if len(pids) == 0:
             """ Nothing to monitor, return """
             return

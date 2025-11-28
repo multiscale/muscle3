@@ -72,7 +72,8 @@ class Manager:
             configuration = self._configuration.as_configuration()
             if self._run_dir is not None:
                 self._instance_manager = InstanceManager(
-                        configuration, self._run_dir, self._instance_registry)
+                        configuration, self._run_dir, self._instance_registry,
+                        profile_store=self._profile_store)
         except ValueError:
             pass
 

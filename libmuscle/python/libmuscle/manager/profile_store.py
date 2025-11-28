@@ -102,6 +102,20 @@ class ProfileStore(ProfileDatabase):
         cur.execute("COMMIT")
         cur.close()
 
+    def add_event(
+            self, instance_id: Reference, event: ProfileEvent
+            ) -> None:
+        """Adds a profiling event to the database.
+
+        Args:
+            event: The event to add.
+        """
+        _logger.debug(f"DEBUG: Add profile event for instance {instance_id}, cpu: {event.cpu_percent}, memory: {event.memory_usage}")
+
+        self._queue.put((instance_id, [event]))
+        if _SYNCHED:
+            self._confirmation_queue.get()
+
     def add_events(
             self, instance_id: Reference, events: Iterable[ProfileEvent]
             ) -> None:

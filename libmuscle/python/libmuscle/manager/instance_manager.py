@@ -18,6 +18,8 @@ from libmuscle.manager.run_dir import RunDir
 from libmuscle.native_instantiator.native_instantiator import NativeInstantiator
 from libmuscle.planner.planner import Planner, ResourceAssignment
 from libmuscle.planner.resources import Resources
+from libmuscle.profiling import ProfileEvent
+from libmuscle.manager.profile_store import ProfileStore
 
 
 _logger = logging.getLogger(__name__)
@@ -62,26 +64,31 @@ class InstanceManager:
     """Instantiates and manages running instances"""
     def __init__(
             self, configuration: Configuration, run_dir: RunDir,
-            instance_registry: InstanceRegistry) -> None:
+            instance_registry: InstanceRegistry,
+            profile_store: ProfileStore) -> None:
         """Create an InstanceManager.
 
         Args:
             configuration: The global configuration
             run_dir: Directory to run in
             instance_registry: The InstanceRegistry to use
+            profile_store: The ProfileStore to use
         """
         self._configuration = configuration
         self._run_dir = run_dir
         self._instance_registry = instance_registry
+        self._profile_store = profile_store
 
         self._resources_in: Queue[Resources] = Queue()
         self._requests_out: Queue[InstantiatorRequest] = Queue()
         self._results_in: Queue[_ResultType] = Queue()
         self._log_records_in: Queue[logging.LogRecord] = Queue()
+        self._profile_events_in: Queue[List[Tuple[str, ProfileEvent]]] = Queue()
 
         self._instantiator = NativeInstantiator(
                 self._resources_in, self._requests_out, self._results_in,
-                self._log_records_in, self._run_dir.path)
+                self._log_records_in, self._profile_events_in,
+                self._run_dir.path)
         self._instantiator.start()
 
         self._log_handler = LogHandlingThread(self._log_records_in)
@@ -172,23 +179,33 @@ class InstanceManager:
         results: List[Process] = list()
 
         while self._num_running > 0:
-            result = self._results_in.get()
+            try:
+                profile_events = self._profile_events_in.get_nowait()
+                for instance_id, event in profile_events:
+                    self._profile_store.add_event(Reference(instance_id), event)
+            except Empty:
+                pass
 
-            if isinstance(result, CrashedResult):
-                if isinstance(result.exception, ConfigurationError):
-                    _logger.error(str(result.exception))
-                else:
-                    _logger.error(
-                        'Instantiator crashed. This should not happen, please file'
-                        ' a bug report.')
-                return False
+            try:
+                result = self._results_in.get_nowait()
 
-            results.append(result)
-            if result.status != ProcessStatus.CANCELED:
-                registered = self._instance_registry.did_register(result.instance)
-                if result.exit_code != 0 or not registered:
-                    cancel_all()
-            self._num_running -= 1
+                if isinstance(result, CrashedResult):
+                    if isinstance(result.exception, ConfigurationError):
+                        _logger.error(str(result.exception))
+                    else:
+                        _logger.error(
+                            'Instantiator crashed. This should not happen, please file'
+                            ' a bug report.')
+                    return False
+
+                results.append(result)
+                if result.status != ProcessStatus.CANCELED:
+                    registered = self._instance_registry.did_register(result.instance)
+                    if result.exit_code != 0 or not registered:
+                        cancel_all()
+                self._num_running -= 1
+            except Empty:
+                continue
 
         # Summarise outcome
         crashes: List[Tuple[Process, Path]] = list()

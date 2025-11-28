@@ -25,7 +25,8 @@ class NativeInstantiator(mp.Process):
     """Instantiates instances on the local machine."""
     def __init__(
             self, resources: mp.Queue, requests: mp.Queue, results: mp.Queue,
-            log_records: mp.Queue, run_dir: Path) -> None:
+            log_records: mp.Queue, profile_events: mp.Queue,
+            run_dir: Path) -> None:
         """Create a NativeInstantiator
 
         Args:
@@ -40,6 +41,7 @@ class NativeInstantiator(mp.Process):
         self._requests_in = requests
         self._results_out = results
         self._log_records_out = log_records
+        self._profile_events_out = profile_events
         self._run_dir = run_dir
 
         self._processes: Dict[str, Process] = dict()
@@ -50,7 +52,7 @@ class NativeInstantiator(mp.Process):
             logs_dir = self._run_dir / 'logs'
             logs_dir.mkdir(exist_ok=True)
 
-            self._agent_manager = AgentManager(logs_dir)
+            self._agent_manager = AgentManager(logs_dir, self._profile_events_out)
 
             reconfigure_logging(self._log_records_out)
             self._send_resources()
@@ -85,7 +87,7 @@ class NativeInstantiator(mp.Process):
 
                     if isinstance(request, MonitorRequest):
                         _logger.debug('Got MonitorRequest')
-                        self._agent_manager.monitor_usage(request.instance, request.hostname, request.pid)
+                        self._agent_manager.add_monitor(request.instance, request.hostname, request.pid)
 
                     elif isinstance(request, CancelAllRequest):
                         _logger.debug('Got CancelAllRequest')

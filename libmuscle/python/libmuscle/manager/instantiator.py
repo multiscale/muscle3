@@ -105,6 +105,12 @@ class InstantiationRequest(InstantiatorRequest):
         self.stdout_path = stdout_path
         self.stderr_path = stderr_path
 
+class MonitorRequest(InstantiatorRequest):
+    """Requests monitoring a process."""
+    def __init__(self, instance: str, hostname: str, pid: int) -> None:
+        self.instance = instance
+        self.hostname = hostname
+        self.pid = pid
 
 class CancelAllRequest(InstantiatorRequest):
     """Requests stopping all running processes."""

@@ -7,6 +7,7 @@ from time import sleep
 from typing import Dict, List, Tuple
 
 from libmuscle.native_instantiator.agent.agent_commands import (
+        AddMonitorCommand,
         CancelAllCommand, StartCommand, ShutdownCommand)
 from libmuscle.native_instantiator.iagent_manager import IAgentManager
 from libmuscle.native_instantiator.map_server import MAPServer
@@ -79,6 +80,10 @@ class AgentManager(IAgentManager):
         agent_hostname = self._nodes[node_name]
         command = StartCommand(name, work_dir, args, env, stdout, stderr)
         self._server.deposit_command(agent_hostname, command)
+    
+    def monitor_usage(self, instance: str, hostname: str, pid: int) -> None:
+        """Monitor usage of resources."""
+        #self._server.deposit_command(hostname, AddMonitorCommand(instance, hostname, pid))
 
     def cancel_all(self) -> None:
         """Cancel all processes.

@@ -25,6 +25,8 @@ from libmuscle.profiling import (
         ProfileEvent, ProfileEventType, ProfileTimestamp)
 from libmuscle.snapshot import SnapshotMetadata
 from libmuscle.timestamp import Timestamp
+from libmuscle.manager.instance_manager import InstanceManager
+from libmuscle.manager.instantiator import MonitorRequest
 
 
 _logger = logging.getLogger(__name__)
@@ -79,7 +81,8 @@ class MMPRequestHandler(RequestHandler):
             topology_store: TopologyStore,
             snapshot_registry: SnapshotRegistry,
             deadlock_detector: DeadlockDetector,
-            run_dir: Optional[RunDir]
+            run_dir: Optional[RunDir],
+            instance_manager: Optional[InstanceManager] = None,
             ) -> None:
         """Create an MMPRequestHandler.
 
@@ -98,6 +101,7 @@ class MMPRequestHandler(RequestHandler):
         self._deadlock_detector = deadlock_detector
         self._run_dir = run_dir
         self._reference_time = time.monotonic()
+        self._instance_manager = instance_manager
 
     def handle_request(self, request: bytes) -> bytes:
         """Handles a manager request.
@@ -173,6 +177,10 @@ class MMPRequestHandler(RequestHandler):
                     ' same version of libmuscle.']
         port_objs = [decode_port(p) for p in ports]
         instance = Reference(instance_id)
+
+        if self._instance_manager:
+            self._instance_manager._requests_out.put(MonitorRequest(instance_id, hostname, pid))
+        
         try:
             self._instance_registry.add(instance, locations, port_objs, pid, hostname)
 
@@ -418,7 +426,8 @@ class MMPServer:
             topology_store: TopologyStore,
             snapshot_registry: SnapshotRegistry,
             deadlock_detector: DeadlockDetector,
-            run_dir: Optional[RunDir]
+            run_dir: Optional[RunDir],
+            instance_manager: Optional[InstanceManager]
             ) -> None:
         """Create an MMPServer.
 
@@ -440,7 +449,8 @@ class MMPServer:
         """
         self._handler = MMPRequestHandler(
                 logger, profile_store, configuration, instance_registry,
-                topology_store, snapshot_registry, deadlock_detector, run_dir)
+                topology_store, snapshot_registry, deadlock_detector, run_dir,
+                instance_manager=instance_manager)
         try:
             self._server = TcpTransportServer(self._handler, 9000)
         except OSError as e:

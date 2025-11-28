@@ -10,7 +10,7 @@ from typing import Dict, List, Optional
 from libmuscle.errors import ConfigurationError
 from libmuscle.manager.instantiator import (
         CancelAllRequest, CrashedResult, create_instance_env, InstantiationRequest,
-        Process, ProcessStatus, reconfigure_logging, ShutdownRequest)
+        MonitorRequest, Process, ProcessStatus, reconfigure_logging, ShutdownRequest)
 from libmuscle.native_instantiator.agent_manager import AgentManager
 from libmuscle.native_instantiator.global_resources import global_resources
 from libmuscle.native_instantiator.run_script import make_script, prep_resources
@@ -82,6 +82,10 @@ class NativeInstantiator(mp.Process):
                     if isinstance(request, ShutdownRequest):
                         _logger.debug('Got ShutdownRequest')
                         shutting_down = True
+
+                    if isinstance(request, MonitorRequest):
+                        _logger.debug('Got MonitorRequest')
+                        self._agent_manager.monitor_usage(request.instance, request.hostname, request.pid)
 
                     elif isinstance(request, CancelAllRequest):
                         _logger.debug('Got CancelAllRequest')

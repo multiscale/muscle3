@@ -59,7 +59,8 @@ def encode_profile_event(event: ProfileEvent) -> Any:
             event.event_type.value,
             event.start_time.nanoseconds, event.stop_time.nanoseconds,
             encoded_port, event.port_length, event.slot,
-            event.message_number, event.message_size, event.message_timestamp]
+            event.message_number, event.message_size, event.message_timestamp,
+            event.cpu_percent, event.memory_usage]
 
 
 def decode_checkpoint_rule(rule: Dict[str, Any]) -> CheckpointRule:

@@ -2,13 +2,14 @@ from pathlib import Path
 from typing import Any, List, Optional, Tuple
 
 import msgpack
+import psutil
 
 from libmuscle.mcp.protocol import AgentCommandType, RequestType, ResponseType
 from libmuscle.mcp.tcp_transport_client import TcpTransportClient
 from libmuscle.native_instantiator.agent.agent_commands import (
-        AgentCommand, StartCommand, CancelAllCommand, ShutdownCommand)
+        AgentCommand, AddMonitorCommand, StartCommand, CancelAllCommand, 
+        ShutdownCommand)
 from libmuscle.planner.resources import OnNodeResources
-
 
 class MAPClient:
     """The client for the MUSCLE Agent Protocol.
@@ -44,6 +45,32 @@ class MAPClient:
                 resources.node_name, {'cpu': enc_cpu_resources}]
         self._call_agent_manager(request)
 
+    def monitor_usage(self, pids: List[Tuple[str, int]], logger) -> None:
+        """Monitor usage of resources of processes with given (instance_id, pid) on this node."""
+        if len(pids) == 0:
+            """ Nothing to monitor, return """
+            return
+
+        usage : Dict[str, Tuple[float, int]] = {}
+        for instance_id, pid in pids:
+            try:
+                process = psutil.Process(pid)
+                cpu = process.cpu_percent()
+                mem = process.memory_info().vms
+                logger.debug(f'PID {pid}: CPU {cpu}%, Memory {mem}')
+                usage[instance_id] = (cpu, mem)
+            except psutil.NoSuchProcess:
+                logger.debug(f'PID {pid}: Process not found')
+
+        if len(usage) < 1:
+            """ Nothing to monitor """
+            return
+
+        request = [
+                RequestType.MONITOR_USAGE.value,
+                self._node_name, usage]
+        self._call_agent_manager(request)
+
     def get_command(self) -> Optional[AgentCommand]:
         """Get a command from the agent manager.
 
@@ -67,6 +94,9 @@ class MAPClient:
             stderr = Path(command[6])
 
             return StartCommand(name, workdir, args, env, stdout, stderr)
+        
+        elif command[0] == AgentCommandType.ADD_MONITOR.value:
+            return AddMonitorCommand(command[1], command[2], command[3])
 
         elif command[0] == AgentCommandType.CANCEL_ALL.value:
             return CancelAllCommand()

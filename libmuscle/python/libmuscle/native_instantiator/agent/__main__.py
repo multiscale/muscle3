@@ -9,9 +9,8 @@ from typing import Dict, Set, Tuple
 from libmuscle.native_instantiator.process_manager import ProcessManager
 from libmuscle.native_instantiator.agent.map_client import MAPClient
 from libmuscle.native_instantiator.agent.agent_commands import (
-        CancelAllCommand, ShutdownCommand, StartCommand)
+        AddMonitorCommand, CancelAllCommand, ShutdownCommand, StartCommand)
 from libmuscle.planner.resources import Core, CoreSet, OnNodeResources
-
 
 _logger = logging.getLogger(__name__)
 
@@ -30,6 +29,7 @@ class Agent:
         self._process_manager = ProcessManager()
 
         self._node_name = node_name
+        self._monitor_pids : List[Tuple[str, int]] = []
 
         _logger.info(f'Connecting to manager at {server_location}')
         self._server = MAPClient(self._node_name, server_location)
@@ -51,6 +51,8 @@ class Agent:
                 self._process_manager.start(
                         command.name, command.work_dir, command.args, command.env,
                         command.stdout, command.stderr)
+            elif isinstance(command, AddMonitorCommand):
+                self._monitor_pids.append((command.instance, command.pid))
             elif isinstance(command, CancelAllCommand):
                 _logger.info('Cancelling all instances')
                 self._process_manager.cancel_all()
@@ -60,11 +62,15 @@ class Agent:
                 shutting_down = True
                 _logger.info('Agent shutting down')
 
+
             finished = self._process_manager.get_finished()
             if finished:
                 for name, exit_code in finished:
                     _logger.info(f'Process {name} finished with exit code {exit_code}')
                 self._server.report_result(finished)
+
+            if not shutting_down and not finished:
+                self._server.monitor_usage(self._monitor_pids, _logger)
 
             sleep(0.1)
 

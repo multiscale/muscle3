@@ -83,7 +83,7 @@ class AgentManager(IAgentManager):
     
     def monitor_usage(self, instance: str, hostname: str, pid: int) -> None:
         """Monitor usage of resources."""
-        #self._server.deposit_command(hostname, AddMonitorCommand(instance, hostname, pid))
+        self._server.deposit_command(hostname, AddMonitorCommand(instance, hostname, pid))
 
     def cancel_all(self) -> None:
         """Cancel all processes.

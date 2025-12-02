@@ -60,7 +60,8 @@ setup(
         'psutil>=5.0.0',
         'parsimonious',
         "numpy>=1.22",
-        'ymmsl>=0.14.0,<0.15'          # Also in CI, and examples requirements.txt
+        'ymmsl>=0.14.0,<0.15',         # Also in CI, and examples requirements.txt
+        'yatiml @ git+https://github.com/yatiml/yatiml.git'
     ],
     extras_require={
         'dev': [

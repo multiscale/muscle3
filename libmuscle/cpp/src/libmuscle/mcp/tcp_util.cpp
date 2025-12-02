@@ -84,7 +84,8 @@ int do_poll_out(int socket_fd, double timeout) {
 }
 
 ssize_t send_all(int fd, char const * data, ssize_t length) {
-    for (ssize_t sent = 0; sent < length; ) {
+    ssize_t sent = 0;
+    while (sent < length) {
         mark::before_tcp_send(fd);
         ssize_t sent_now = check_conn(
                 send(fd, data + sent, length - sent, MSG_NOSIGNAL));
@@ -94,7 +95,8 @@ ssize_t send_all(int fd, char const * data, ssize_t length) {
 }
 
 ssize_t recv_all(int fd, char * data, ssize_t length) {
-    for (ssize_t recvd = 0; recvd < length; ) {
+    ssize_t recvd = 0;
+    while (recvd < length) {
         mark::before_tcp_receive(fd);
         ssize_t recvd_now = check_conn(recv(fd, data + recvd, length - recvd, 0));
         if (recvd_now == 0)

@@ -56,8 +56,7 @@ LDFLAGS2 := $(LDFLAGS)
 LDFLAGS2 += -pthread $(CURDIR)/../libmuscle_fortran.a $(CURDIR)/../../ymmsl/libymmsl_fortran.a
 LDFLAGS2 += $(CPP_BUILD_DIR)/libmuscle/libmuscle_d.a $(CPP_BUILD_DIR)/ymmsl/libymmsl_d.a
 LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIGPATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs msgpack)
-LDFLAGS2 += $(EXTRA_LINK_DIRS)
-LDFLAGS2 += -lstdc++
+LDFLAGS2 += $(EXTRA_LINK_DIRS) $(MUSCLE_CXX_STDLIB)
 
 LINK_DEPS = $(CURDIR)/../libmuscle_fortran.a $(CURDIR)/../../ymmsl/libymmsl_fortran.a
 LINK_DEPS += $(CPP_BUILD_DIR)/libmuscle/libmuscle_d.a $(CPP_BUILD_DIR)/ymmsl/libymmsl_d.a

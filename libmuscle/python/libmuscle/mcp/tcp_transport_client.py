@@ -138,11 +138,12 @@ class TcpTransportClient(TransportClient):
             True if the socket is ready for receiving data, False otherwise.
         """
         if self._poll_obj is not None:
-            ready = self._poll_obj.poll(timeout * 1000)  # poll timeout is in ms
+            ready_events = self._poll_obj.poll(timeout * 1000)  # poll timeout is in ms
+            return bool(ready_events)
         else:
             # Fallback to select()
-            ready, _, _ = select.select([self._socket], (), (), timeout)
-        return bool(ready)
+            ready_sockets, _, _ = select.select([self._socket], (), (), timeout)
+            return bool(ready_sockets)
 
     def _handle_disconnect(self, retrier: Retrier) -> None:
         """Handles a broken network connection.

@@ -28,7 +28,7 @@ jobs:
         HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install pkg-config
         python3 -m pip install --upgrade pip
         pip3 install tox tox-gh-actions
-        pip3 install yatiml @ git+https://github.com/yatiml/yatiml.git
+        pip3 install "yatiml @ git+https://github.com/yatiml/yatiml.git"
 
     - name: Run all tests on macOS Ventura 13 with Clang
       run: cd ${GITHUB_WORKSPACE} && make test test_examples

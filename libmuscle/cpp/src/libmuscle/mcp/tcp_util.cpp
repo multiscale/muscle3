@@ -137,7 +137,7 @@ ssize_t send_frame(int fd, char const * data, ssize_t length) {
 std::vector<char> recv_frame(int fd) {
     ssize_t length = recv_int64(fd);
     std::vector<char> result(length);
-    recv_all(fd, &result[0], length);
+    recv_all(fd, result.data(), length);
     return result;
 }
 

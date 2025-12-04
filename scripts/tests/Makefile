@@ -33,4 +33,4 @@ test_use_echolib: libecholib.so echolib.f90 test_use_echolib.f90
 	$(FC) -o $@ $(FFLAGS) $(DEBUGFLAGS) echolib.f90 test_use_echolib.f90 -L. -lecholib
 
 test: test_use_echolib
-	LD_LIBRARY_PATH=$(PWD):$(LD_LIBRARY_PATH) $(VALGRIND) ./test_use_echolib
+	LD_LIBRARY_PATH=$(PWD):$(LD_LIBRARY_PATH) $(LEAK_DETECTOR) ./test_use_echolib

@@ -113,7 +113,7 @@ test_dep_lib_paths := $(subst $(space),:,$(foreach DIR,$(DEP_DIRS),$(DIR)/lib))
 
 .PHONY: run_test%
 run_test%: test%
-	export LD_LIBRARY_PATH=$(test_dep_lib_paths):$(LD_LIBRARY_PATH) ; $(VALGRIND) ./$< $(GTEST_OPTIONS)
+	export LD_LIBRARY_PATH=$(test_dep_lib_paths):$(LD_LIBRARY_PATH) ; $(LEAK_DETECTOR) ./$< $(GTEST_OPTIONS)
 
 # This uses setrlimit, which is not compatible with Valgrind, so run without
 .PHONY: run_test_data_memory_use

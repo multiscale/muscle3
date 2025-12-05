@@ -141,7 +141,7 @@ install: all $(installed_headers) $(installed_pkg_config_files)
 	# install_name_tool -change @rpath/libmsgpackc.2.dylib @loader_path/libmsgpackc.2.dylib $(PREFIX)/lib/libmuscle.dylib
 	# -install_name_tool -change @rpath/libmsgpackc.2.dylib @loader_path/libmsgpackc.2.dylib $(PREFIX)/lib/libmuscle_d.dylib
 	# -install_name_tool -change @rpath/libmsgpackc.2.dylib @loader_path/libmsgpackc.2.dylib $(PREFIX)/lib/libmuscle_mpi.dylib
-	# -install_name_tool -change @rpath/libmsgpackc.2.dylib @loader_path/libmsgpackc.2.dylib $(PREFIX)/lib/libmuscle_mpi_d.dylib 
+	# -install_name_tool -change @rpath/libmsgpackc.2.dylib @loader_path/libmsgpackc.2.dylib $(PREFIX)/lib/libmuscle_mpi_d.dylib
 	@mkdir -p $(PREFIX)/bin
 	sed -e 's@%PREFIX%@$(PREFIX)@g' muscle3.env.in >$(PREFIX)/bin/muscle3.env
 	for pc in $(PREFIX)/lib/pkgconfig/* ; do sed -i -e 's@^prefix=.*$$@prefix=$(PREFIX)@' $$pc ; done
@@ -289,9 +289,9 @@ libmuscle.pc:
 	@echo 'URL: https://muscle3.readthedocs.io' >>$@
 	@echo 'Version: $(muscle_version)' >>$@
 	@echo 'Requires: ymmsl = $(muscle_version)' >>$@
-	@echo 'Requires.private: msgpack >= 3.1.0' >>$@
-	@echo 'Cflags: -I$${includedir} -pthread' >>$@
-	@echo 'Cflags.private: -pthread' >>$@
+	@echo 'Requires.private:' >>$@
+	@echo 'Cflags: -I$${includedir} -pthread -DMSGPACK_NO_BOOST' >>$@
+	@echo 'Cflags.private: -pthread -DMSGPACK_NO_BOOST' >>$@
 	@echo 'Libs: -L$${libdir} -lmuscle' >>$@
 	@echo 'Libs.private: -pthread' >>$@
 
@@ -306,8 +306,8 @@ libmuscle_mpi.pc:
 	@echo 'URL: https://muscle3.readthedocs.io' >>$@
 	@echo 'Version: $(muscle_version)' >>$@
 	@echo 'Requires: ymmsl = $(muscle_version)' >>$@
-	@echo 'Requires.private: msgpack >= 3.1.0' >>$@
-	@echo 'Cflags: -I$${includedir} -pthread -DMUSCLE_ENABLE_MPI' >>$@
-	@echo 'Cflags.private: -pthread' >>$@
+	@echo 'Requires.private:' >>$@
+	@echo 'Cflags: -I$${includedir} -pthread -DMUSCLE_ENABLE_MPI -DMSGPACK_NO_BOOST' >>$@
+	@echo 'Cflags.private: -pthread -DMSGPACK_NO_BOOST' >>$@
 	@echo 'Libs: -L$${libdir} -lmuscle_mpi' >>$@
 	@echo 'Libs.private: -pthread' >>$@

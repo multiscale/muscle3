@@ -39,6 +39,12 @@ def test_create_profile_store(tmp_path):
     events = cur.fetchall()
     assert len(events) == 0
 
+    cur.execute(
+            "SELECT instance_oid, event_type_oid, start_time, stop_time,"
+            "       cpu_percent, memory_usage FROM usage_events")
+    usage_events = cur.fetchall()
+    assert len(usage_events) == 0
+
     cur.execute("COMMIT")
     cur.close()
     conn.close()
@@ -62,7 +68,10 @@ def test_add_events(tmp_path):
                 Port('out_port', Operator.O_I), 10, 3, 67, 12345, 13.42),
             ProfileEvent(
                 ProfileEventType.DEREGISTER, ProfileTimestamp(1000000000000),
-                ProfileTimestamp(1100000000000))]
+                ProfileTimestamp(1100000000000)),
+            ProfileEvent(
+                ProfileEventType.RESOURCE_USAGE, ProfileTimestamp(200),
+                ProfileTimestamp(300), cpu_percent=10.0, memory_usage=1000)]
 
     def check_send_event(instance):
         cur.execute("BEGIN TRANSACTION")
@@ -79,9 +88,27 @@ def test_add_events(tmp_path):
         assert e[1:11] == (
                 ProfileEventType.SEND.value, 800, 812, 'out_port',
                 Operator.O_I.value, 10, 3, 67, 12345, 13.42)
-        assert e[14] == 'instance[0]'
-        assert e[16] == 'SEND'
-        assert e[18] == 'O_I'
+        assert e[12] == 'instance[0]'
+        assert e[14] == 'SEND'
+        assert e[16] == 'O_I'
+
+        cur.execute("COMMIT")
+
+    def check_resource_event(instance):
+        cur.execute("BEGIN TRANSACTION")
+        cur.execute(
+                "SELECT *"
+                " FROM usage_events AS e, instances AS i, event_types AS et"
+                " WHERE e.instance_oid = i.oid AND e.event_type_oid = et.oid"
+                " AND i.name = 'instance[0]'"
+                " AND et.name = (?)", (ProfileEventType.RESOURCE_USAGE.name,))
+        events2 = cur.fetchall()
+        assert len(events2) == 1
+        e = events2[0]
+        assert e[1:6] == (
+                ProfileEventType.RESOURCE_USAGE.value, 200, 300, 10.0, 1000)
+        assert e[7] == 'instance[0]'
+        assert e[9] == 'RESOURCE_USAGE'
 
         cur.execute("COMMIT")
 
@@ -89,6 +116,7 @@ def test_add_events(tmp_path):
 
     db.add_events(Reference('instance[0]'), events)
     check_send_event('instance[0]')
+    check_resource_event('instance[0]')
 
     db.add_events(Reference('instance[1]'), events)
     check_send_event('instance[1]')

@@ -144,7 +144,7 @@ def test_time_taken(db_file):
 def test_resource_usage_event(db_file):
     with ProfileDatabase(db_file) as db:
         cur = db._get_cursor()
-        cur.execute(f"SELECT * FROM events WHERE event_type_oid = '{ProfileEventType.RESOURCE_USAGE.value}'")
+        cur.execute(f"SELECT * FROM usage_events WHERE event_type_oid = '{ProfileEventType.RESOURCE_USAGE.value}'")
         rows = cur.fetchall()
         assert len(rows) == 1
         # Check columns (cpu_percent is 2nd to last, memory_usage is last)

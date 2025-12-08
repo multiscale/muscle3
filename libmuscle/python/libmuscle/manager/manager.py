@@ -11,6 +11,7 @@ from libmuscle.manager.logger import Logger
 from libmuscle.manager.mmp_server import MMPServer
 from libmuscle.manager.instance_manager import InstanceManager
 from libmuscle.manager.profile_store import ProfileStore
+from libmuscle.manager.mlp_server import MLPServer
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.manager.snapshot_registry import SnapshotRegistry
 from libmuscle.manager.topology_store import TopologyStore

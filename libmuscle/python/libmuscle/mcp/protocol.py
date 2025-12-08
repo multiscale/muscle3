@@ -34,7 +34,12 @@ class RequestType(Enum):
     REPORT_RESOURCES = 41
     GET_COMMAND = 42
     REPORT_RESULT = 43
-    MONITOR_USAGE = 44
+
+    # MUSCLE Log Protocol
+    REPORT_USAGE = 51
+
+    #TODO remove
+    MONITOR_USAGE = 99
 
 
 class ResponseType(Enum):

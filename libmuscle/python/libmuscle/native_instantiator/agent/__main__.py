@@ -8,6 +8,7 @@ from typing import Dict, Set, Tuple
 
 from libmuscle.native_instantiator.process_manager import ProcessManager
 from libmuscle.native_instantiator.agent.map_client import MAPClient
+from libmuscle.mlp_client import MLPClient
 from libmuscle.native_instantiator.agent.agent_commands import (
         AddMonitorCommand, CancelAllCommand, ShutdownCommand, StartCommand)
 from libmuscle.planner.resources import Core, CoreSet, OnNodeResources
@@ -34,6 +35,7 @@ class Agent:
         _logger.info(f'Connecting to manager at {server_location}')
         self._server = MAPClient(self._node_name, server_location)
         _logger.info('Connected to manager')
+        self._mlpclient = MLPClient(self._node_name, server_location)
 
     def run(self) -> None:
         """Execute commands and monitor processes."""
@@ -70,7 +72,7 @@ class Agent:
                 self._server.report_result(finished)
 
             if not shutting_down and not finished:
-                self._server.monitor_usage(self._monitor_pids, _logger)
+                self._mlpclient.report_usage(self._monitor_pids, _logger)
 
             sleep(0.1)
 

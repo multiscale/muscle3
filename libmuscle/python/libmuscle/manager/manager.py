@@ -90,6 +90,8 @@ class Manager:
                 self._snapshot_registry, self._deadlock_detector, run_dir, 
                 instance_manager=self._instance_manager)
 
+        self._mlp_server = MLPServer(self._logger, self._profile_store)
+
         if self._instance_manager:
             self._instance_manager.set_manager_location(
                     self.get_server_location())
@@ -127,6 +129,7 @@ class Manager:
         if self._instance_manager:
             self._instance_manager.shutdown()
         self._server.stop()
+        self._mlp_server.stop()
         self._snapshot_registry.shutdown()
         self._snapshot_registry.join()
         self._profile_store.shutdown()

@@ -65,7 +65,7 @@ class InstanceManager:
     def __init__(
             self, configuration: Configuration, run_dir: RunDir,
             instance_registry: InstanceRegistry,
-            profile_store: ProfileStore) -> None:
+            profile_store: ProfileStore, mlp_location: str) -> None:
         """Create an InstanceManager.
 
         Args:
@@ -78,6 +78,7 @@ class InstanceManager:
         self._run_dir = run_dir
         self._instance_registry = instance_registry
         self._profile_store = profile_store
+        self._mlp_location = mlp_location
 
         self._resources_in: Queue[Resources] = Queue()
         self._requests_out: Queue[InstantiatorRequest] = Queue()
@@ -88,7 +89,7 @@ class InstanceManager:
         self._instantiator = NativeInstantiator(
                 self._resources_in, self._requests_out, self._results_in,
                 self._log_records_in, self._profile_events_in,
-                self._run_dir.path)
+                self._run_dir.path, mlp_location=self._mlp_location)
         self._instantiator.start()
 
         self._log_handler = LogHandlingThread(self._log_records_in)

@@ -18,12 +18,13 @@ _logger = logging.getLogger(__name__)
 
 class Agent:
     """Runs on a compute node and starts processes there."""
-    def __init__(self, node_name: str, server_location: str) -> None:
+    def __init__(self, node_name: str, server_location: str, mlp_location: str) -> None:
         """Create an Agent.
 
         Args:
             node_name: Name (hostname) of this node
             server_location: MAP server of the manager to connect to
+            mlp_location: MLP server of the manager to connect to
         """
         _logger.info(f'Agent at {node_name} starting')
 
@@ -35,7 +36,7 @@ class Agent:
         _logger.info(f'Connecting to manager at {server_location}')
         self._server = MAPClient(self._node_name, server_location)
         _logger.info('Connected to manager')
-        self._mlpclient = MLPClient(self._node_name, server_location)
+        self._mlpclient = MLPClient(self._node_name, mlp_location)
 
     def run(self) -> None:
         """Execute commands and monitor processes."""
@@ -195,8 +196,9 @@ if __name__ == '__main__':
     node_name = gethostname()
     server_location = sys.argv[1]
     log_level = int(sys.argv[2])
+    mlp_location = sys.argv[3]
 
     configure_logging(node_name, log_level)
 
-    agent = Agent(node_name, server_location)
+    agent = Agent(node_name, server_location, mlp_location)
     agent.run()

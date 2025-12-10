@@ -110,7 +110,7 @@ class ProfileStore(ProfileDatabase):
         Args:
             event: The event to add.
         """
-        _logger.debug(f"DEBUG: Add profile event for instance {instance_id}, cpu: {event.cpu_percent}, memory: {event.memory_usage}")
+        _logger.debug(f"Add profile event for instance {instance_id}, cpu: {event.cpu_percent}, memory: {event.memory_usage}")
 
         self._queue.put((instance_id, [event]))
         if _SYNCHED:

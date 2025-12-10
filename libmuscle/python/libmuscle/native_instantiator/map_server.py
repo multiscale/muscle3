@@ -51,6 +51,8 @@ class MAPRequestHandler(RequestHandler):
             response = self._report_result(*req_args)
         elif req_type == RequestType.MONITOR_USAGE.value:
             response = self._monitor_usage(*req_args)
+        else:
+            _logger.warning(f'Unknown request type {req_type}')
         return cast(bytes, msgpack.packb(response, use_bin_type=True))
 
     def _monitor_usage(self, node_name: str, usage: Dict[int, Tuple[float, int]]) -> Any:

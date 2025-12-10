@@ -26,7 +26,6 @@ from libmuscle.profiling import (
 from libmuscle.snapshot import SnapshotMetadata
 from libmuscle.timestamp import Timestamp
 from libmuscle.manager.instance_manager import InstanceManager
-from libmuscle.manager.instantiator import MonitorRequest
 
 
 _logger = logging.getLogger(__name__)
@@ -179,8 +178,7 @@ class MMPRequestHandler(RequestHandler):
         instance = Reference(instance_id)
 
         if self._instance_manager:
-            self._instance_manager._requests_out.put(
-                    MonitorRequest(instance_id, hostname, pid))
+            self._instance_manager.monitor_process(instance_id, hostname, pid)
 
         try:
             self._instance_registry.add(instance, locations, port_objs, pid, hostname)

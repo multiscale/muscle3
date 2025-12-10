@@ -12,7 +12,8 @@ from libmuscle.errors import ConfigurationError
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.instantiator import (
         CancelAllRequest, CrashedResult, InstantiatorRequest,
-        InstantiationRequest, Process, ProcessStatus, ShutdownRequest)
+        InstantiationRequest, Process, ProcessStatus, ShutdownRequest,
+        MonitorRequest)
 from libmuscle.manager.logger import last_lines
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.native_instantiator.native_instantiator import NativeInstantiator
@@ -160,6 +161,16 @@ class InstanceManager:
                     'Tried to get resources but we are running without --start-all')
 
         return self._allocations
+
+    def monitor_process(self, instance_id: str, hostname: str, process_id: int) -> None:
+        """Monitor a process for resource usage.
+
+        Args:
+            instance_id: The ID of the instance
+            hostname: The hostname of the process
+            process_id: The process ID of the process
+        """
+        self._requests_out.put(MonitorRequest(instance_id, hostname, process_id))
 
     def wait(self) -> bool:
         """Waits for all instances to be done."""

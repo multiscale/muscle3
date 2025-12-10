@@ -181,7 +181,9 @@ void MMPClient::submit_snapshot_metadata(
 
 void MMPClient::register_instance(
         std::vector<std::string> const & locations,
-        std::vector<::ymmsl::Port> const & ports)
+        std::vector<::ymmsl::Port> const & ports,
+        std::string const & process_id,
+        std::string const & hostname)
 {
     auto encoded_locs = encode_vector(locations);
     auto encoded_ports = Data::nils(ports.size());
@@ -191,7 +193,7 @@ void MMPClient::register_instance(
     auto request = Data::list(
             static_cast<int>(RequestType::register_instance),
             static_cast<std::string>(instance_id_), encoded_locs,
-            encoded_ports, get_process_id(), get_hostname(),
+            encoded_ports, process_id, hostname,
             MUSCLE3_VERSION);
 
     auto response = call_manager_(request);

@@ -14,7 +14,7 @@ def test_create_mlp_client():
 
 
 def test_close_mlp_client():
-    with patch('libmuscle.mlp_client.TcpTransportClient') as mock_ttc:
+    with patch('libmuscle.mlp_client.TcpTransportClient'):
         client = MLPClient('node_name', 'location')
         client.close()
         client._transport_client.close.assert_called_once()
@@ -42,14 +42,14 @@ def test_report_usage():
             expected_request = [
                     RequestType.REPORT_USAGE.value,
                     'node_name', expected_usage]
-            
+
             args, _ = client._transport_client.call.call_args
             decoded_request = msgpack.unpackb(args[0], raw=False)
             assert decoded_request == expected_request
 
 
 def test_report_usage_no_pids():
-    with patch('libmuscle.mlp_client.TcpTransportClient') as mock_ttc:
+    with patch('libmuscle.mlp_client.TcpTransportClient'):
         client = MLPClient('node_name', 'location')
         logger = MagicMock()
         client.report_usage([], logger)
@@ -57,7 +57,7 @@ def test_report_usage_no_pids():
 
 
 def test_report_usage_process_not_found():
-    with patch('libmuscle.mlp_client.TcpTransportClient') as mock_ttc:
+    with patch('libmuscle.mlp_client.TcpTransportClient'):
         client = MLPClient('node_name', 'location')
 
         with patch('libmuscle.mlp_client.psutil') as mock_psutil:

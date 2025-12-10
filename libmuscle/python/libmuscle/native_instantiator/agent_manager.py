@@ -49,7 +49,7 @@ class AgentManager(IAgentManager):
         self._finished_processes_lock = Lock()
 
         self._server = MAPServer(self)
-        self._launch_agents(agent_dir, self._server.get_location(), mlp_location )
+        self._launch_agents(agent_dir, self._server.get_location(), mlp_location)
 
     def get_resources(self) -> Resources:
         """Return detected resources.
@@ -81,16 +81,17 @@ class AgentManager(IAgentManager):
         agent_hostname = self._nodes[node_name]
         command = StartCommand(name, work_dir, args, env, stdout, stderr)
         self._server.deposit_command(agent_hostname, command)
-    
+
     def add_monitor(self, instance: str, hostname: str, pid: int) -> None:
         """Handle a monitor usage request.
-        
+
         Args:
             instance: Name of the instance to monitor
             hostname: Hostname of the node to monitor
             pid: Process id to monitor
         """
-        self._server.deposit_command(hostname, AddMonitorCommand(instance, hostname, pid))
+        self._server.deposit_command(
+                hostname, AddMonitorCommand(instance, hostname, pid))
 
     def cancel_all(self) -> None:
         """Cancel all processes.
@@ -176,7 +177,9 @@ class AgentManager(IAgentManager):
         with self._finished_processes_lock:
             self._finished_processes.extend(names_exit_codes)
 
-    def _launch_agents(self, agent_dir: Path, server_location: str, mlp_location: str) -> None:
+    def _launch_agents(
+            self, agent_dir: Path, server_location: str, mlp_location: str
+            ) -> None:
         """Actually launch the agents.
 
         This runs a local process, either to start a single agent locally, or on a
@@ -184,8 +187,9 @@ class AgentManager(IAgentManager):
 
         Args:
             agent_dir: Working directory for the agents
-            server_location: MAPServer network location string for the agents to connect to
-            mlp_location: MLPServer network location string for the agents to connect to            
+            server_location: MAPServer network location string for the agents to
+                connect to
+            mlp_location: MLPServer network location string for the agents to connect to
         """
         _logger.info('Launching MUSCLE agents...')
 

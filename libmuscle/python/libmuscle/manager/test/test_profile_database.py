@@ -75,8 +75,8 @@ def db_file(tmp_path) -> Path:
                     ProfileEventType.RECEIVE_WAIT, t(2600), t(2870),
                     Port('in', Operator.O_I), None, None, 1000000, 0.0),
                 ProfileEvent(
-                   ProfileEventType.RESOURCE_USAGE, start_time=t(2700), stop_time=t(2800),
-                   cpu_percent=12.5, memory_usage=1024000),
+                   ProfileEventType.RESOURCE_USAGE, start_time=t(2700),
+                   stop_time=t(2800), cpu_percent=12.5, memory_usage=1024000),
                 ProfileEvent(ProfileEventType.SHUTDOWN_WAIT, t(10000), t(11000)),
                 ProfileEvent(ProfileEventType.DEREGISTER, t(11000), t(11100))]
 
@@ -141,14 +141,14 @@ def test_time_taken(db_file):
         assert 200.0 == db.time_taken(etype='DEREGISTER', aggregate='sum')
         assert 600.0 == db.time_taken(etype='SEND', aggregate='sum')
 
+
 def test_resource_usage_event(db_file):
     with ProfileDatabase(db_file) as db:
         cur = db._get_cursor()
-        cur.execute(f"SELECT * FROM usage_events WHERE event_type_oid = '{ProfileEventType.RESOURCE_USAGE.value}'")
+        cur.execute(f"SELECT * FROM usage_events WHERE event_type_oid = \
+                    '{ProfileEventType.RESOURCE_USAGE.value}'")
         rows = cur.fetchall()
         assert len(rows) == 1
         # Check columns (cpu_percent is 2nd to last, memory_usage is last)
         assert rows[0][-2] == 12.5
         assert rows[0][-1] == 1024000
-
-

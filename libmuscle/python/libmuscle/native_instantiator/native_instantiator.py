@@ -86,7 +86,8 @@ class NativeInstantiator(mp.Process):
 
                     if isinstance(request, MonitorRequest):
                         _logger.debug('Got MonitorRequest')
-                        self._agent_manager.add_monitor(request.instance, request.hostname, request.pid)
+                        self._agent_manager.add_monitor(
+                                request.instance, request.hostname, request.pid)
 
                     elif isinstance(request, CancelAllRequest):
                         _logger.debug('Got CancelAllRequest')

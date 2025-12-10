@@ -61,7 +61,7 @@ _ResultType = Union[Process, CrashedResult]
 class InstanceManager:
     """Instantiates and manages running instances"""
     def __init__(
-            self, configuration: Configuration, run_dir: RunDir, 
+            self, configuration: Configuration, run_dir: RunDir,
             instance_registry: InstanceRegistry, mlp_location: str) -> None:
         """Create an InstanceManager.
 
@@ -83,7 +83,7 @@ class InstanceManager:
 
         self._instantiator = NativeInstantiator(
                 self._resources_in, self._requests_out, self._results_in,
-                self._log_records_in, self._run_dir.path, 
+                self._log_records_in, self._run_dir.path,
                 mlp_location=self._mlp_location)
         self._instantiator.start()
 

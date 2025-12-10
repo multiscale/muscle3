@@ -14,7 +14,7 @@ class ProcessManager:
         self._processes: Dict[str, Popen] = dict()
 
     def start(
-            self, name: str, work_dir: Path, args: List[str], 
+            self, name: str, work_dir: Path, args: List[str],
             stdout: Path, stderr: Path, env: Optional[Dict[str, str]] = None) -> None:
         """Start a process.
 

@@ -1,7 +1,6 @@
 import msgpack
 from ymmsl import Reference
 
-from libmuscle.logging import LogLevel
 from libmuscle.manager.mlp_server import MLPRequestHandler
 from libmuscle.mcp.protocol import RequestType, ResponseType
 
@@ -11,13 +10,12 @@ def test_create_servicer(logger, profile_store):
 
 
 def test_report_usage(logger, profile_store):
-    profile_store.store_instances([Reference('instance1'),Reference('instance2'),Reference('instance3')])
+    profile_store.store_instances([Reference('instance1'), Reference('instance2')])
     handler = MLPRequestHandler(logger, profile_store)
 
     usage = {
             "instance1": (0.1, 1024),
             "instance2": (0.2, 2048),
-            "instance3": (0.3, 3072),
             }
 
     request = [

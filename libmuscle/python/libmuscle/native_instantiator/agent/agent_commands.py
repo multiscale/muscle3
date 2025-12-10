@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List
-from ymmsl import Reference
 
 
 class AgentCommand:
@@ -24,6 +23,7 @@ class CancelAllCommand(AgentCommand):
 
 class ShutdownCommand(AgentCommand):
     pass
+
 
 @dataclass
 class AddMonitorCommand(AgentCommand):

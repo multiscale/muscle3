@@ -31,7 +31,7 @@ class Agent:
         self._process_manager = ProcessManager()
 
         self._node_name = node_name
-        self._monitor_pids : List[Tuple[str, int]] = []
+        self._monitor_pids: List[Tuple[str, int]] = []
 
         _logger.info(f'Connecting to manager at {server_location}')
         self._server = MAPClient(self._node_name, server_location)
@@ -64,7 +64,6 @@ class Agent:
                 # check that nothing is running
                 shutting_down = True
                 _logger.info('Agent shutting down')
-
 
             finished = self._process_manager.get_finished()
             if finished:

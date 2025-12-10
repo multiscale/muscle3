@@ -179,8 +179,9 @@ class MMPRequestHandler(RequestHandler):
         instance = Reference(instance_id)
 
         if self._instance_manager:
-            self._instance_manager._requests_out.put(MonitorRequest(instance_id, hostname, pid))
-        
+            self._instance_manager._requests_out.put(
+                    MonitorRequest(instance_id, hostname, pid))
+
         try:
             self._instance_registry.add(instance, locations, port_objs, pid, hostname)
 

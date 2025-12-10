@@ -94,7 +94,8 @@ def test_register_instance(mocked_mmp_client, profile_data) -> None:
     sent_msg = msgpack.unpackb(stub.call.call_args[0][0], raw=False)
     assert sent_msg == [
             RequestType.REGISTER_INSTANCE.value, 'component[13]',
-            ['direct:test', 'tcp:test'], [['out', 'O_I'], ['in', 'S']], getpid(), gethostname(),
+            ['direct:test', 'tcp:test'], [['out', 'O_I'], ['in', 'S']],
+            getpid(), gethostname(),
             libmuscle.__version__]
 
 

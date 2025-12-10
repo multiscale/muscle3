@@ -3,17 +3,15 @@ import logging
 from typing import Any, Dict, List, Tuple, cast
 
 import msgpack
-from ymmsl import Operator, Port, Reference
+from ymmsl import Reference
 
-from libmuscle.logging import LogLevel
 from libmuscle.manager.logger import Logger
 from libmuscle.manager.profile_store import ProfileStore
 from libmuscle.mcp.protocol import RequestType, ResponseType
 from libmuscle.mcp.tcp_transport_server import TcpTransportServer
 from libmuscle.mcp.transport_server import RequestHandler
-from libmuscle.profiling import (
-        ProfileEvent, ProfileEventType, ProfileTimestamp)
-from libmuscle.timestamp import Timestamp
+from libmuscle.profiling import (ProfileTimestamp, ProfileEvent,
+                                 ProfileEventType)
 
 
 _logger = logging.getLogger(__name__)
@@ -73,18 +71,19 @@ class MLPRequestHandler(RequestHandler):
 
             status (ResponseType): SUCCESS
         """
-        events : List[Tuple[str, ProfileEvent]] = []
+        events: List[Tuple[str, ProfileEvent]] = []
         for instance_id, (cpu_usage, memory_usage) in usage.items():
             time = ProfileTimestamp()
             prof_event = ProfileEvent(ProfileEventType.RESOURCE_USAGE,
-            start_time=time, stop_time=time,
-            cpu_percent=cpu_usage, memory_usage=memory_usage)
+                                      start_time=time, stop_time=time,
+                                      cpu_percent=cpu_usage, memory_usage=memory_usage)
             events.append((instance_id, prof_event))
 
         for event in events:
             self._profile_store.add_event(Reference(event[0]), event[1])
 
         return [ResponseType.SUCCESS.value]
+
 
 class MLPServer:
     """The MUSCLE Logging Protocol server.

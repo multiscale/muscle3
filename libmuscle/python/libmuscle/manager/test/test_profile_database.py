@@ -149,6 +149,6 @@ def test_resource_usage_event(db_file):
                     '{ProfileEventType.RESOURCE_USAGE.value}'")
         rows = cur.fetchall()
         assert len(rows) == 1
-        # Check columns (cpu_percent is 2nd to last, memory_usage is last)
-        assert rows[0][-2] == 12.5
-        assert rows[0][-1] == 1024000
+        # Check columns
+        assert rows[0][4] == 12.5
+        assert rows[0][5] == 1024000

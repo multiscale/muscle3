@@ -18,8 +18,6 @@ from libmuscle.manager.run_dir import RunDir
 from libmuscle.native_instantiator.native_instantiator import NativeInstantiator
 from libmuscle.planner.planner import Planner, ResourceAssignment
 from libmuscle.planner.resources import Resources
-from libmuscle.profiling import ProfileEvent
-from libmuscle.manager.profile_store import ProfileStore
 
 
 _logger = logging.getLogger(__name__)
@@ -63,21 +61,16 @@ _ResultType = Union[Process, CrashedResult]
 class InstanceManager:
     """Instantiates and manages running instances"""
     def __init__(
-            self, configuration: Configuration, run_dir: RunDir,
-            instance_registry: InstanceRegistry,
-            profile_store: ProfileStore, mlp_location: str) -> None:
+            self, configuration: Configuration, run_dir: RunDir, mlp_location: str) -> None:
         """Create an InstanceManager.
 
         Args:
             configuration: The global configuration
             run_dir: Directory to run in
-            instance_registry: The InstanceRegistry to use
-            profile_store: The ProfileStore to use
+            mlp_location: Location of the MUSCLE Log Protocol server
         """
         self._configuration = configuration
         self._run_dir = run_dir
-        self._instance_registry = instance_registry
-        self._profile_store = profile_store
         self._mlp_location = mlp_location
 
         self._resources_in: Queue[Resources] = Queue()

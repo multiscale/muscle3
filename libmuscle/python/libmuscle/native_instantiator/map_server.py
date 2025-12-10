@@ -1,6 +1,6 @@
 import errno
 import logging
-from typing import Any, Dict, cast, List, Optional, Tuple
+from typing import Any, Dict, cast, List, Optional
 
 import msgpack
 
@@ -50,7 +50,6 @@ class MAPRequestHandler(RequestHandler):
         elif req_type == RequestType.REPORT_RESULT.value:
             response = self._report_result(*req_args)
         else:
-            response = [ResponseType.ERROR.value]   
             _logger.warning(f'Unknown request type {req_type}')
         return cast(bytes, msgpack.packb(response, use_bin_type=True))
 

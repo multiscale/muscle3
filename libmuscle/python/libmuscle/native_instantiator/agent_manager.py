@@ -2,7 +2,6 @@ import logging
 from pathlib import Path
 from subprocess import Popen, TimeoutExpired
 import sys
-import multiprocessing as mp
 from threading import Lock
 from time import sleep
 from typing import Dict, List, Tuple

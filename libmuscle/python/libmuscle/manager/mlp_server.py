@@ -61,25 +61,25 @@ class MLPRequestHandler(RequestHandler):
         self._profile_store.close()
 
     def _report_usage_events(
-            self, node_name: str, usage: Dict[int, Tuple[float, int]]) -> Any:
+            self, node_name: str, usage: Dict[str, Tuple[float, int]]) -> Any:
         """Handle a submit usage events request.
 
         Args:
-            instance_id: Instance that sent these events
-            events: Profiling events to store
+            node_name: Name of the node that sent these events
+            usage: Usage events to store
 
         Returns:
             A list containing the following values on success:
 
             status (ResponseType): SUCCESS
         """
-        events = []
+        events : List[Tuple[str, ProfileEvent]] = []
         for instance_id, (cpu_usage, memory_usage) in usage.items():
             time = ProfileTimestamp()
-            event = ProfileEvent(ProfileEventType.RESOURCE_USAGE,
+            prof_event = ProfileEvent(ProfileEventType.RESOURCE_USAGE,
             start_time=time, stop_time=time,
             cpu_percent=cpu_usage, memory_usage=memory_usage)
-            events.append((instance_id, event))
+            events.append((instance_id, prof_event))
 
         for event in events:
             self._profile_store.add_event(Reference(event[0]), event[1])

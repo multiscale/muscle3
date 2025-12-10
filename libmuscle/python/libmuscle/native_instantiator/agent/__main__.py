@@ -4,7 +4,7 @@ import psutil
 from socket import gethostname
 import sys
 from time import sleep
-from typing import Dict, Set, Tuple
+from typing import Dict, Set, Tuple, List
 
 from libmuscle.native_instantiator.process_manager import ProcessManager
 from libmuscle.native_instantiator.agent.map_client import MAPClient

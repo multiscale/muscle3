@@ -61,16 +61,19 @@ _ResultType = Union[Process, CrashedResult]
 class InstanceManager:
     """Instantiates and manages running instances"""
     def __init__(
-            self, configuration: Configuration, run_dir: RunDir, mlp_location: str) -> None:
+            self, configuration: Configuration, run_dir: RunDir, 
+            instance_registry: InstanceRegistry, mlp_location: str) -> None:
         """Create an InstanceManager.
 
         Args:
             configuration: The global configuration
             run_dir: Directory to run in
+            instance_registry: The InstanceRegistry to use
             mlp_location: Location of the MUSCLE Log Protocol server
         """
         self._configuration = configuration
         self._run_dir = run_dir
+        self._instance_registry = instance_registry
         self._mlp_location = mlp_location
 
         self._resources_in: Queue[Resources] = Queue()

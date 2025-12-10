@@ -1,8 +1,8 @@
-from typing import Any, Dict, List, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Tuple
+from logging import Logger
 
 import msgpack
 import psutil
-
 from libmuscle.mcp.protocol import RequestType
 from libmuscle.mcp.tcp_transport_client import TcpTransportClient
 
@@ -29,12 +29,11 @@ class MLPClient:
         """
         self._transport_client.close()
 
-    def report_usage(self, pids: List[Tuple[str, int]], logger) -> None:
+    def report_usage(self, pids: List[Tuple[str, int]], logger: Logger) -> None:
         """Report usage of resources of processes with given (instance_id, pid) on this node.
 
         Args:
             pids: List of (instance_id, pid) tuples
-            logger: Logger to use for logging
         """
         if len(pids) == 0:
             """ Nothing to monitor, return """

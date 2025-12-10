@@ -72,7 +72,7 @@ def test_exit_code(lpm, tmp_path):
 def test_multiple(lpm, tmp_path):
     for i in range(3):
         lpm.start(
-                f'test_{i}', tmp_path, ['bash', '-c', '/usr/bin/env sleep 1'], 
+                f'test_{i}', tmp_path, ['bash', '-c', '/usr/bin/env sleep 1'], {},
                 tmp_path / f'out{i}', tmp_path / f'err{i}')
 
     completed_jobs = _poll_completion(lpm, 3)

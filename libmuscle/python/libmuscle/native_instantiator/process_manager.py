@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 from subprocess import Popen
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 
 _logger = logging.getLogger(__name__)
@@ -14,8 +14,8 @@ class ProcessManager:
         self._processes: Dict[str, Popen] = dict()
 
     def start(
-            self, name: str, work_dir: Path, args: List[str], env: Dict[str, str],
-            stdout: Path, stderr: Path) -> None:
+            self, name: str, work_dir: Path, args: List[str], 
+            stdout: Path, stderr: Path, env: Optional[Dict[str, str]] = None) -> None:
         """Start a process.
 
         The files that the output is directed to will be overwritten if they already

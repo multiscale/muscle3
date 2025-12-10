@@ -52,8 +52,8 @@ class Agent:
                 _logger.debug(f'Env: {command.env}')
 
                 self._process_manager.start(
-                        command.name, command.work_dir, command.args, command.env,
-                        command.stdout, command.stderr)
+                        command.name, command.work_dir, command.args,
+                        command.stdout, command.stderr, command.env)
             elif isinstance(command, AddMonitorCommand):
                 self._monitor_pids.append((command.instance, command.pid))
             elif isinstance(command, CancelAllCommand):

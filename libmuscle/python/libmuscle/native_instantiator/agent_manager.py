@@ -14,7 +14,6 @@ from libmuscle.native_instantiator.iagent_manager import IAgentManager
 from libmuscle.native_instantiator.map_server import MAPServer
 from libmuscle.native_instantiator.global_resources import global_resources
 from libmuscle.planner.resources import OnNodeResources, Resources
-from libmuscle.profiling import ProfileEvent, ProfileEventType, ProfileTimestamp
 
 
 _logger = logging.getLogger(__name__)
@@ -32,7 +31,7 @@ class AgentManager(IAgentManager):
     cancel processes on nodes, and it gets called by MAPServer with requests from the
     agents.
     """
-    def __init__(self, agent_dir: Path, profile_events_out: mp.Queue, mlp_location: str) -> None:
+    def __init__(self, agent_dir: Path, mlp_location: str) -> None:
         """Create an AgentManager.
 
         Create the object, then launch the agents and wait for them to connect and send
@@ -40,9 +39,8 @@ class AgentManager(IAgentManager):
 
         Args:
             agent_dir: Directory in which agents can write log files.
-            profile_events_out: Queue to which profile events are sent.
+            mlp_location: Location of the MLP server.
         """
-        self._profile_events_out = profile_events_out
         self._expected_nodes = global_resources().nodes
         self._nodes: Dict[str, str] = dict()
         self._resources: Resources = Resources([])
@@ -94,22 +92,6 @@ class AgentManager(IAgentManager):
             pid: Process id to monitor
         """
         self._server.deposit_command(hostname, AddMonitorCommand(instance, hostname, pid))
-
-    def monitor_usage(self, usage: Dict[int, Tuple[float, int]]) -> None:
-        """Send back a monitor event to the profile store via the queue to the instance manager
-
-        Args:
-            usage: Dictionary of instance id to (cpu_usage, memory_usage)
-        """
-        events = []
-        for instance_id, (cpu_usage, memory_usage) in usage.items():
-            time = ProfileTimestamp()
-            event = ProfileEvent(ProfileEventType.RESOURCE_USAGE,
-            start_time=time, stop_time=time,
-            cpu_percent=cpu_usage, memory_usage=memory_usage)
-            events.append((instance_id, event))
-
-        self._profile_events_out.put(events)
 
     def cancel_all(self) -> None:
         """Cancel all processes.

@@ -38,9 +38,6 @@ class RequestType(Enum):
     # MUSCLE Log Protocol
     REPORT_USAGE = 51
 
-    #TODO remove
-    MONITOR_USAGE = 99
-
 
 class ResponseType(Enum):
     """Identifier for different types of response

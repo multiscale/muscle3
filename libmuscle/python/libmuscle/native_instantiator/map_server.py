@@ -49,21 +49,10 @@ class MAPRequestHandler(RequestHandler):
             response = self._get_command(*req_args)
         elif req_type == RequestType.REPORT_RESULT.value:
             response = self._report_result(*req_args)
-        elif req_type == RequestType.MONITOR_USAGE.value:
-            response = self._monitor_usage(*req_args)
         else:
+            response = [ResponseType.ERROR.value]   
             _logger.warning(f'Unknown request type {req_type}')
         return cast(bytes, msgpack.packb(response, use_bin_type=True))
-
-    def _monitor_usage(self, node_name: str, usage: Dict[int, Tuple[float, int]]) -> Any:
-        """Handle a monitor usage request.
-        
-        Args:
-            node_name: Name (hostname) of the node
-            usage: Dictionary of instance id to (cpu_usage, memory_usage)
-        """
-        self._agent_manager.monitor_usage(usage)
-        return [ResponseType.SUCCESS.value]
 
     def _report_resources(
             self, node_name: str, data: Dict[str, Any]) -> Any:

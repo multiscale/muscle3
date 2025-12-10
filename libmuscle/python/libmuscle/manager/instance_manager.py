@@ -84,12 +84,11 @@ class InstanceManager:
         self._requests_out: Queue[InstantiatorRequest] = Queue()
         self._results_in: Queue[_ResultType] = Queue()
         self._log_records_in: Queue[logging.LogRecord] = Queue()
-        self._profile_events_in: Queue[List[Tuple[str, ProfileEvent]]] = Queue()
 
         self._instantiator = NativeInstantiator(
                 self._resources_in, self._requests_out, self._results_in,
-                self._log_records_in, self._profile_events_in,
-                self._run_dir.path, mlp_location=self._mlp_location)
+                self._log_records_in, self._run_dir.path, 
+                mlp_location=self._mlp_location)
         self._instantiator.start()
 
         self._log_handler = LogHandlingThread(self._log_records_in)
@@ -180,33 +179,23 @@ class InstanceManager:
         results: List[Process] = list()
 
         while self._num_running > 0:
-            try:
-                profile_events = self._profile_events_in.get_nowait()
-                for instance_id, event in profile_events:
-                    self._profile_store.add_event(Reference(instance_id), event)
-            except Empty:
-                pass
+            result = self._results_in.get()
 
-            try:
-                result = self._results_in.get_nowait()
+            if isinstance(result, CrashedResult):
+                if isinstance(result.exception, ConfigurationError):
+                    _logger.error(str(result.exception))
+                else:
+                    _logger.error(
+                        'Instantiator crashed. This should not happen, please file'
+                        ' a bug report.')
+                return False
 
-                if isinstance(result, CrashedResult):
-                    if isinstance(result.exception, ConfigurationError):
-                        _logger.error(str(result.exception))
-                    else:
-                        _logger.error(
-                            'Instantiator crashed. This should not happen, please file'
-                            ' a bug report.')
-                    return False
-
-                results.append(result)
-                if result.status != ProcessStatus.CANCELED:
-                    registered = self._instance_registry.did_register(result.instance)
-                    if result.exit_code != 0 or not registered:
-                        cancel_all()
-                self._num_running -= 1
-            except Empty:
-                continue
+            results.append(result)
+            if result.status != ProcessStatus.CANCELED:
+                registered = self._instance_registry.did_register(result.instance)
+                if result.exit_code != 0 or not registered:
+                    cancel_all()
+            self._num_running -= 1
 
         # Summarise outcome
         crashes: List[Tuple[Process, Path]] = list()

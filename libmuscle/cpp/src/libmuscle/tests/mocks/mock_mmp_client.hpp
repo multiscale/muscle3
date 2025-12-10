@@ -91,8 +91,8 @@ class MockMMPClient : public MockClass<MockMMPClient> {
 
         MockFun<
             Void, Val<std::vector<std::string> const &>,
-            Val<std::vector<::ymmsl::Port> const &>
-            > register_instance;
+            Val<std::vector<::ymmsl::Port> const &>,
+            Val<int>, Val<std::string const &>> register_instance;
 
         MockFun<Val<std::tuple<
             std::vector<::ymmsl::Conduit>,

@@ -182,7 +182,7 @@ void MMPClient::submit_snapshot_metadata(
 void MMPClient::register_instance(
         std::vector<std::string> const & locations,
         std::vector<::ymmsl::Port> const & ports,
-        std::string const & process_id,
+        int const process_id,
         std::string const & hostname)
 {
     auto encoded_locs = encode_vector(locations);

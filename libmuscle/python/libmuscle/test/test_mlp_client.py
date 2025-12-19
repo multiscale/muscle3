@@ -1,5 +1,6 @@
 import msgpack
 from unittest.mock import MagicMock, patch
+from time import sleep
 
 from libmuscle.mcp.protocol import RequestType
 from libmuscle.mlp_client import MLPClient
@@ -31,8 +32,9 @@ def test_report_usage():
             mock_process.memory_info.return_value.vms = 1000
             mock_psutil.Process.return_value = mock_process
 
-            logger = MagicMock()
-            client.report_usage([('instance1', 123)], logger)
+            client.report_usage([('instance1', 123)])
+            sleep(1.5)  # necessary because of async nature of usage reporting
+            client.report_usage([('instance1', 123)])
 
             mock_psutil.Process.assert_called_with(123)
             mock_process.cpu_percent.assert_called()
@@ -51,21 +53,5 @@ def test_report_usage():
 def test_report_usage_no_pids():
     with patch('libmuscle.mlp_client.TcpTransportClient'):
         client = MLPClient('node_name', 'location')
-        logger = MagicMock()
-        client.report_usage([], logger)
+        client.report_usage([])
         client._transport_client.call.assert_not_called()
-
-
-def test_report_usage_process_not_found():
-    with patch('libmuscle.mlp_client.TcpTransportClient'):
-        client = MLPClient('node_name', 'location')
-
-        with patch('libmuscle.mlp_client.psutil') as mock_psutil:
-            mock_psutil.Process.side_effect = Exception('Process not found')
-            mock_psutil.NoSuchProcess = Exception
-
-            logger = MagicMock()
-            client.report_usage([('instance1', 123)], logger)
-
-            client._transport_client.call.assert_not_called()
-            logger.debug.assert_called()

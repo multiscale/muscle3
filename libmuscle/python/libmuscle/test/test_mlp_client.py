@@ -34,6 +34,7 @@ def test_report_usage():
             client.report_usage([('instance1', 123)])
             client._async_usage_results.wait()
             client.report_usage([('instance1', 123)])
+            client.close()
 
             mock_psutil.Process.assert_called_with(123)
             mock_process.cpu_percent.assert_called()

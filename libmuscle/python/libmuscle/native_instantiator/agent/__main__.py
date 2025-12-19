@@ -72,7 +72,7 @@ class Agent:
                 self._server.report_result(finished)
 
             if not shutting_down and not finished:
-                self._mlpclient.report_usage(self._monitor_pids, _logger)
+                self._mlpclient.report_usage(self._monitor_pids)
 
             sleep(0.1)
 

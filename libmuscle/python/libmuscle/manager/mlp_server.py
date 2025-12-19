@@ -73,6 +73,8 @@ class MLPRequestHandler(RequestHandler):
         """
         events: List[Tuple[str, ProfileEvent]] = []
         for instance_id, (cpu_usage, memory_usage) in usage.items():
+            _logger.info(f'Adding usage event: {instance_id}: {cpu_usage}% cpu, '
+                         f'{memory_usage} bytes memory')
             time = ProfileTimestamp()
             prof_event = ProfileEvent(ProfileEventType.RESOURCE_USAGE,
                                       start_time=time, stop_time=time,

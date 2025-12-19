@@ -1,6 +1,5 @@
 import msgpack
 from unittest.mock import MagicMock, patch
-from time import sleep
 
 from libmuscle.mcp.protocol import RequestType
 from libmuscle.mlp_client import MLPClient
@@ -33,7 +32,7 @@ def test_report_usage():
             mock_psutil.Process.return_value = mock_process
 
             client.report_usage([('instance1', 123)])
-            sleep(1.5)  # necessary because of async nature of usage reporting
+            client._async_usage_results.wait()
             client.report_usage([('instance1', 123)])
 
             mock_psutil.Process.assert_called_with(123)
@@ -55,3 +54,4 @@ def test_report_usage_no_pids():
         client = MLPClient('node_name', 'location')
         client.report_usage([])
         client._transport_client.call.assert_not_called()
+        client.close()

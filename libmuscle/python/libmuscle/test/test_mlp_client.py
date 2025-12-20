@@ -11,6 +11,7 @@ def test_create_mlp_client():
         assert client._node_name == 'node_name'
         assert client._transport_client == mock_ttc.return_value
         mock_ttc.assert_called_with('location')
+        client.close()
 
 
 def test_close_mlp_client():
@@ -48,6 +49,7 @@ def test_report_usage():
             args, _ = client._transport_client.call.call_args
             decoded_request = msgpack.unpackb(args[0], raw=False)
             assert decoded_request == expected_request
+        client.close()
 
 
 def test_report_usage_no_pids():

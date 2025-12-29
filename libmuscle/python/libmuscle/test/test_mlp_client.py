@@ -1,5 +1,6 @@
 import msgpack
 from unittest.mock import MagicMock, patch
+from datetime import datetime
 
 from libmuscle.mcp.protocol import RequestType
 from libmuscle.mlp_client import MLPClient
@@ -33,9 +34,8 @@ def test_report_usage():
             mock_psutil.Process.return_value = mock_process
 
             client.report_usage([('instance1', 123)])
-            client._async_usage_results.wait()
+            client._usage.last_updated = datetime(1970, 1, 1, 0, 0, 0)
             client.report_usage([('instance1', 123)])
-            client.close()
 
             mock_psutil.Process.assert_called_with(123)
             mock_process.cpu_percent.assert_called()

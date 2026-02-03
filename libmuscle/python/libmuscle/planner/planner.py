@@ -17,7 +17,33 @@ _PredSuccType = Dict[Component, Set[Tuple[Component, int]]]
 
 
 class ModelGraph:
-    """Represents a yMMSL model as a graph."""
+    """Represents a yMMSL model as a graph.
+
+    This introduces some definitions:
+
+    - Call conduits (from O_I to F_INIT) go from a direct superpredecessor to a direct
+      subsuccessor.
+    - Dispatch conduits (from O_F to F_INIT) go from a direct predecessor to a direct
+      successor.
+    - Release conduits (from O_F to S) go from a direct subpredecessor to a direct
+      supersuccessor.
+
+    - Supersuccessors are components that are reachable from the current component via
+      dispatch and at least one release conduits.
+    - Subsuccessors are components that are reachable from the current component via
+      dispatch and at least one call conduit.
+    - Successors are components that will start running after the current component
+      finishes.
+
+    - Superpredecessors are the inverse of subsuccessors.
+    - Subpredecessors are the inverse of supersuccessors.
+    - Predecessors are the inverse of successors.
+
+    - Macros are components that are both a superpredecessor and a supersuccessor of the
+      current component.
+    - Micros are components that are both a subsuccessor and a subpredecessor of the
+      current component.
+    """
     def __init__(self, model: Model) -> None:
         """Create a ModelGraph.
 
@@ -334,15 +360,29 @@ class ModelGraph:
             done |= finished
 
     def _calc_direct_succs_preds(self) -> None:
-        """Calculates all successors and predecessors of components.
+        """Calculates all direct successors and predecessors of components.
 
         Preconditions:
             self._model set
 
         Side effects:
-            Sets self._direct_successors to a dictionary mapping each
-            component in the model to the set of components that it
-            has a * -> F_INIT conduit to.
+            Sets self._direct_supersuccs to a dictionary mapping each component in the
+            model to the set of components that it has ain O_F -> S conduit to.
+
+            Sets self._direct_successors to a dictionary mapping each component in the
+            model to the set of components that it has an O_F -> F_INIT conduit to.
+
+            Sets self._direct_subsuccs to a dictionary mapping each component in the
+            model to the set of components that it has an O_I -> F_INIT conduit to.
+
+            Sets self._direct_superpreds to a dictionary mapping each component in the
+            model to the set of components that it has an O_I -> F_INIT conduit from.
+
+            Sets self._direct_predecessors to a dictionary mapping each component in the
+            model to the set of components that it has an O_F -> F_INIT conduit from.
+
+            Sets self._direct_subpreds to a dictionary mapping each component in the
+            model to the set of components that it has an O_F -> S conduit from.
         """
         components = {c.name: c for c in self._model.components}
         self._direct_supersuccs = {c: set() for c in self._model.components}

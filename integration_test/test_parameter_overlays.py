@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
-from ymmsl import (Component, Conduit, Configuration, Model, Operator,
-                   Settings)
+from ymmsl.v0_1 import (
+        Component, Conduit, Configuration, Model, Operator, Settings)
 
 from libmuscle import Instance, Message, DONT_APPLY_OVERLAY
 from libmuscle.runner import run_simulation

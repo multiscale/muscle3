@@ -3,7 +3,7 @@ from typing import Any, Optional, Tuple, Dict
 
 from libmuscle import Instance, InstanceFlags, Message
 from libmuscle.runner import run_simulation
-from ymmsl import (
+from ymmsl.v0_1 import (
         Component, Conduit, Configuration, Model, Operator, Ports, Settings)
 
 

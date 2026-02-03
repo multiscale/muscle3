@@ -1,6 +1,6 @@
 import pytest
 
-from ymmsl import Conduit, Identifier as Id, Reference as Ref
+from ymmsl.v0_1 import Conduit, Identifier as Id, Reference as Ref
 
 from libmuscle.peer_info import PeerInfo
 

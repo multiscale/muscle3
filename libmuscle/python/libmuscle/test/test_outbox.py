@@ -4,7 +4,7 @@ from libmuscle.mpp_message import MPPMessage
 from copy import copy
 import pytest
 
-from ymmsl import Reference
+from ymmsl.v0_1 import Reference
 
 
 @pytest.fixture

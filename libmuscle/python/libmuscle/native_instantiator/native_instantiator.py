@@ -15,7 +15,9 @@ from libmuscle.native_instantiator.agent_manager import AgentManager
 from libmuscle.native_instantiator.global_resources import global_resources
 from libmuscle.native_instantiator.run_script import make_script, prep_resources
 from libmuscle.planner.resources import OnNodeResources, Resources
-from ymmsl import MPICoresResReq, MPINodesResReq, ResourceRequirements, ThreadedResReq
+
+from ymmsl.v0_1 import (
+        MPICoresResReq, MPINodesResReq, ResourceRequirements, ThreadedResReq)
 
 
 _logger = logging.getLogger(__name__)

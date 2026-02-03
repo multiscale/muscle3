@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
 
-from ymmsl import Reference
+from ymmsl.v0_1 import Reference
 
 from libmuscle.mcp.transport_client import TimeoutHandler
 from libmuscle.mmp_client import MMPClient

@@ -13,7 +13,7 @@ from time import sleep
 import traceback
 from typing import Callable, Dict, List, Set, Tuple, cast
 
-from ymmsl import Configuration, Identifier, Model, Reference
+from ymmsl.v0_1 import Configuration, Identifier, Model, Reference
 
 from libmuscle.util import generate_indices
 from libmuscle.manager.logger import last_lines

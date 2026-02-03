@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Tuple, Union
 from multiprocessing import Queue
 from queue import Empty
 
-from ymmsl import Configuration, Reference
+from ymmsl.v0_1 import Configuration, Reference
 
 from libmuscle.errors import ConfigurationError
 from libmuscle.manager.instance_registry import InstanceRegistry

@@ -2,8 +2,8 @@ from collections import OrderedDict
 import sqlite3
 
 import numpy as np
-from ymmsl import (Component, Conduit, Configuration, Model, Operator,
-                   Settings)
+from ymmsl.v0_1 import (
+        Component, Conduit, Configuration, Model, Operator, Settings)
 
 from libmuscle import Grid, Instance, Message
 from libmuscle.runner import run_simulation

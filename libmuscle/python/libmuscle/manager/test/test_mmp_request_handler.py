@@ -3,7 +3,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import msgpack
-from ymmsl import (
+from ymmsl.v0_1 import (
         Operator, Reference, Checkpoints, CheckpointRangeRule, CheckpointAtRule)
 
 import libmuscle

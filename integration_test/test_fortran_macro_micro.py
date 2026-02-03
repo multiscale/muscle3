@@ -1,7 +1,7 @@
 import numpy as np
 
 from libmuscle import Instance, Message
-from ymmsl import Operator
+from ymmsl.v0_1 import Operator
 
 from .conftest import (
         skip_if_python_only, skip_if_no_fortran, run_manager_with_actors)

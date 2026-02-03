@@ -1,7 +1,7 @@
 import pytest
 from typing import Dict, List
 
-from ymmsl import (
+from ymmsl.v0_1 import (
         Component, Conduit, Configuration, Implementation, Model,
         MPICoresResReq, Ports, Reference, ResourceRequirements, ThreadedResReq)
 

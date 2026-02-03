@@ -3,7 +3,7 @@ import time
 
 from libmuscle import Instance, Message
 from libmuscle.runner import run_simulation
-from ymmsl import (
+from ymmsl.v0_1 import (
         Component, Conduit, Configuration, Model, Operator, Ports, Settings)
 
 

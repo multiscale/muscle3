@@ -3,7 +3,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from ymmsl import (
+from ymmsl.v0_1 import (
         Configuration, Model, Component, Conduit, Implementation,
         KeepsStateForNextUse, Reference)
 

@@ -4,7 +4,7 @@ import time
 from typing import Any, Dict, cast, List, Optional
 
 import msgpack
-from ymmsl import (
+from ymmsl.v0_1 import (
         Conduit, Identifier, Operator, Port, Reference, PartialConfiguration,
         Checkpoints, CheckpointRule, CheckpointAtRule, CheckpointRangeRule)
 

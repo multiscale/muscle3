@@ -1,7 +1,7 @@
 from typing import Dict, List
 from libmuscle.util import generate_indices, instance_indices
 
-from ymmsl import Conduit, PartialConfiguration, Model, Reference
+from ymmsl.v0_1 import Conduit, PartialConfiguration, Model, Reference
 
 
 class TopologyStore:

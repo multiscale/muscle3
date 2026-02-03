@@ -1,5 +1,5 @@
-from ymmsl import (Component, Conduit, Configuration, Operator, Model,
-                   Settings)
+from ymmsl.v0_1 import (
+        Component, Conduit, Configuration, Operator, Model, Settings)
 
 from libmuscle import Instance, Message
 from libmuscle.runner import run_simulation

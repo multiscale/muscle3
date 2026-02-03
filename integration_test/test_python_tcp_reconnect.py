@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 import pytest
 
-from ymmsl import (
+from ymmsl.v0_1 import (
         Component, Conduit, Configuration, Operator, Model, Settings)
 
 from libmuscle import Instance, Message

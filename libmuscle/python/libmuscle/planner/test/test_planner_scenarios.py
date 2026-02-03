@@ -2,7 +2,7 @@ from copy import deepcopy
 from typing import Dict, Tuple
 
 import pytest
-from ymmsl import (
+from ymmsl.v0_1 import (
         Component, Conduit, Configuration, Implementation, Model,
         MPICoresResReq, Ports, Reference, ResourceRequirements, ThreadedResReq)
 

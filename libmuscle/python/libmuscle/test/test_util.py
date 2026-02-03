@@ -1,7 +1,7 @@
 from typing import List
 
 import pytest
-from ymmsl import Reference
+from ymmsl.v0_1 import Reference
 
 from libmuscle.util import instance_indices, instance_to_kernel
 

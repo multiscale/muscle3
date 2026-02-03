@@ -1,5 +1,5 @@
 import ymmsl
-from ymmsl import Reference
+from ymmsl.v0_1 import Reference
 
 from libmuscle.logging import LogLevel, LogMessage, Timestamp
 from libmuscle.manager.manager import Manager

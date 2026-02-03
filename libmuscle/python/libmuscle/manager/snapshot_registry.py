@@ -9,9 +9,9 @@ from queue import Queue
 from threading import Thread
 from typing import Dict, Optional, Set, FrozenSet, List, Tuple, TypeVar
 
-from ymmsl import (
-        Reference, Model, Identifier, Implementation, save,
-        PartialConfiguration)
+from ymmsl.v0_1 import (
+        Reference, Model, Identifier, Implementation, PartialConfiguration)
+from ymmsl import save
 
 from libmuscle.manager.topology_store import TopologyStore
 from libmuscle.snapshot import SnapshotMetadata

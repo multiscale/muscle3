@@ -5,8 +5,8 @@ import os
 import sys
 from typing import cast, Dict, List, Literal, Optional, Tuple, overload
 
-from ymmsl import (Identifier, Operator, SettingValue, Port, Reference,
-                   Settings)
+from ymmsl.v0_1 import (
+        Identifier, Operator, SettingValue, Port, Reference, Settings)
 
 from libmuscle.api_guard import APIGuard
 from libmuscle.checkpoint_triggers import TriggerManager

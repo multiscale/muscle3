@@ -5,7 +5,7 @@ from typing import Dict, Iterable, List, Optional, Tuple
 from libmuscle.errors import ConfigurationError
 from libmuscle.native_instantiator.slurm import slurm
 from libmuscle.planner.planner import ResourceAssignment
-from ymmsl import (
+from ymmsl.v0_1 import (
         BaseEnv, ExecutionModel, Implementation, MPICoresResReq, MPINodesResReq,
         ResourceRequirements, ThreadedResReq)
 

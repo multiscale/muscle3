@@ -1,5 +1,6 @@
 import pytest
-from ymmsl import Operator, load, dump
+from ymmsl.v0_1 import Operator
+from ymmsl import load, dump
 
 from libmuscle import (
         Instance, Message, KEEPS_NO_STATE_FOR_NEXT_USE, USES_CHECKPOINT_API)

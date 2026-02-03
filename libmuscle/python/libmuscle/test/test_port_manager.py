@@ -2,7 +2,7 @@ from typing import List
 from libmuscle.peer_info import PeerInfo
 from libmuscle.port_manager import PortManager
 
-from ymmsl import Conduit, Identifier, Operator, Reference as Ref
+from ymmsl.v0_1 import Conduit, Identifier, Operator, Reference as Ref
 
 import pytest
 

@@ -4,7 +4,7 @@ import sys
 import time
 from typing import Generator, List, Optional, cast
 
-from ymmsl import Reference
+from ymmsl.v0_1 import Reference
 
 
 def instance_to_kernel(instance: Reference) -> Reference:

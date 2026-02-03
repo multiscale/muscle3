@@ -5,7 +5,7 @@ from typing import Sequence
 
 import click
 import ymmsl
-from ymmsl import PartialConfiguration
+from ymmsl.v0_1 import PartialConfiguration
 
 
 from libmuscle.planner.planner import Planner, InsufficientResourcesAvailable
@@ -219,7 +219,7 @@ def _load_ymmsl_files(ymmsl_files: Sequence[str]) -> PartialConfiguration:
     configuration = PartialConfiguration()
     for path in ymmsl_files:
         with open(path, 'r') as f:
-            configuration.update(ymmsl.load(f))
+            configuration.update(ymmsl.load_as(PartialConfiguration, f))
     return configuration
 
 

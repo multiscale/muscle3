@@ -2,7 +2,7 @@ from copy import copy
 import logging
 from typing import Dict, Iterable, List, Mapping, Set, Tuple
 
-from ymmsl import (
+from ymmsl.v0_1 import (
         Component, Configuration, Model, MPICoresResReq, MPINodesResReq,
         Operator, Reference, ResourceRequirements, ThreadedResReq)
 

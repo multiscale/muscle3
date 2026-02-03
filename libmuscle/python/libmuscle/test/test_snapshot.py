@@ -1,5 +1,5 @@
 import pytest
-from ymmsl import Settings
+from ymmsl.v0_1 import Settings
 
 from libmuscle.communicator import Message
 from libmuscle.snapshot import Snapshot, MsgPackSnapshot, SnapshotMetadata

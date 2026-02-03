@@ -1,5 +1,5 @@
 import pytest
-from ymmsl import Component, Conduit, Configuration, Model, Reference
+from ymmsl.v0_1 import Component, Conduit, Configuration, Model, Reference
 
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger

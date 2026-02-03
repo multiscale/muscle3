@@ -6,7 +6,7 @@ from pathlib import Path
 import traceback
 from typing import Dict, Optional
 
-from ymmsl import BaseEnv, Implementation, Reference, ResourceRequirements
+from ymmsl.v0_1 import BaseEnv, Implementation, Reference, ResourceRequirements
 
 from libmuscle.planner.planner import ResourceAssignment
 

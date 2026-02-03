@@ -2,7 +2,7 @@ import logging
 from functools import lru_cache
 
 from libmuscle import Grid, Instance, InstanceFlags, Message
-from ymmsl import Operator
+from ymmsl.v0_1 import Operator
 
 def cache() -> None:
     """A simple cache

@@ -9,7 +9,7 @@ import click
 from yaml.scanner import ScannerError
 from yatiml import RecognitionError
 import ymmsl
-from ymmsl import Identifier, PartialConfiguration
+from ymmsl.v0_1 import Identifier, PartialConfiguration
 
 from libmuscle.manager.logger import last_lines
 from libmuscle.manager.manager import Manager
@@ -87,7 +87,7 @@ def manage_simulation(
         else:  # Only require that a Model exists and is consistent
             if configuration.model is None:
                 raise ValueError('Model section is missing from the configuration.')
-            if not isinstance(configuration.model, ymmsl.Model):
+            if not isinstance(configuration.model, ymmsl.v0_1.Model):
                 raise ValueError('Model section from the configuration is incomplete.')
             configuration.model.check_consistent()
     except Exception as exc:
@@ -167,7 +167,7 @@ def load_configuration(path: str) -> PartialConfiguration:
     """
     with open(path, 'r') as f:
         try:
-            return ymmsl.load(f)
+            return ymmsl.load_as(PartialConfiguration, f)
         except ScannerError as exc:  # capture yaml errors
             # PyYAML error messages are not very user friendly, but there is not
             # too much we can do about it

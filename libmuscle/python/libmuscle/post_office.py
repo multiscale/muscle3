@@ -2,7 +2,7 @@ from threading import Lock
 import time
 from typing import Dict
 
-from ymmsl import Reference
+from ymmsl.v0_1 import Reference
 
 from libmuscle.outbox import Outbox
 

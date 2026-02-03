@@ -6,7 +6,7 @@ import sobol_seq
 
 from libmuscle import Grid, Instance, Message, DONT_APPLY_OVERLAY
 from libmuscle.runner import run_simulation
-from ymmsl import (
+from ymmsl.v0_1 import (
         Component, Conduit, Configuration, Model, Operator, Ports, Settings)
 
 

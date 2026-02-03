@@ -4,7 +4,8 @@ import sys
 import traceback
 from typing import Optional
 
-from ymmsl import Model, PartialConfiguration, save as save_ymmsl
+from ymmsl.v0_1 import Model, PartialConfiguration
+from ymmsl import save as save_ymmsl
 
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger

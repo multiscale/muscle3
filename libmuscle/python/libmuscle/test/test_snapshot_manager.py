@@ -1,7 +1,7 @@
 from pathlib import Path
 from unittest.mock import MagicMock
 
-from ymmsl import Reference, Settings
+from ymmsl.v0_1 import Reference, Settings
 
 from libmuscle.communicator import Message
 from libmuscle.snapshot import SnapshotMetadata

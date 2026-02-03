@@ -1,7 +1,7 @@
 from libmuscle.manager.topology_store import TopologyStore
 
 import pytest
-from ymmsl import Configuration, Reference
+from ymmsl.v0_1 import Configuration, Reference
 
 
 def test_create_topology_store(topology_store) -> None:

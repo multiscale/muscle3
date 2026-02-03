@@ -4,7 +4,7 @@ from pathlib import Path
 import subprocess
 
 import ymmsl
-from ymmsl import Operator, Port, Reference
+from ymmsl.v0_1 import Operator, Port, Reference
 
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir

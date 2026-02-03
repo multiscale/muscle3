@@ -106,6 +106,26 @@ tests, it reports the code coverage to `Codacy`_, which integrates it with the
 linting results into its dashboard. It also reports back to GitHub, adding an
 icon to e.g. a pull request to signal whether the tests have passed or not.
 
+There's a special set of tests for testing MUSCLE3's HPC cluster support. These require
+Docker to be installed, they're run on Linux only, and are typically run only just
+before a new release is made, because they are very expensive. On the first run, Docker
+containers get built, which make take several hours and a few GB of RAM, and the tests
+themselves take up to half an hour to complete.
+
+To run these test, use ``make test_cluster``. If any of them fail, edit
+``integration_test/cluster_test/conftest.py`` and set ``CLEAN_UP_CONTAINERS`` to
+``False`` and run again. You'll probably also want to reduce the list of SLURM versions
+in ``IDX_SLURM_VERSIONS`` down to a single one, to speed up the debugging process.
+
+Once the tests have completed, you'll have a set of docker containers still running. Use
+ssh to connect to a headnode container with username ``cerulean`` and password
+``kingfisher``, e.g. ``ssh -p 10022 cerulean@localhost``. You'll find the test results
+under ``/home/cerulean/shared/test_results``; the logs in there should show what went
+wrong so that you can fix the issue.
+
+Note that a successful run will still result in an ``Operation not permitted`` error
+during clean-up, because the container is still running and therefore the shared folder
+cannot be removed. Setting ``CLEAN_UP_CONTAINERS`` back to ``True`` will fix that.
 
 Documentation
 =============

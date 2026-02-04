@@ -33,12 +33,12 @@ setup(
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: POSIX :: Linux',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
         'Programming Language :: Python :: 3.13',
+        'Programming Language :: Python :: 3.14',
         ],
 
     packages=_muscle3_packages,
@@ -52,7 +52,7 @@ setup(
             'muscle_manager=muscle3.muscle_manager:manage_simulation',
             'muscle3=muscle3.muscle3:muscle3']
     },
-    python_requires='>=3.8, <4',
+    python_requires='>=3.9, <4',
     install_requires=[
         'click>=7.1,<9',
         'matplotlib>=3,<4',

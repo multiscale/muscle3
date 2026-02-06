@@ -66,12 +66,24 @@ def component():
 
 
 def test_snapshot_interact_lockstep(tmp_path):
-    config = f"""ymmsl_version: v0.1
-model:
-  name: test_snapshot
+    config = f"""ymmsl_version: v0.2
+description: Interact setup for testing checkpointing - lockstep
+models:
+- name: test_snapshot
+  description: Model with two interacting components
   components:
-    comp1: component
-    comp2: component
+    comp1:
+      ports:
+        o_i: o_i
+        s: s
+      description: The first component
+      implementation: component
+    comp2:
+      ports:
+        o_i: o_i
+        s: s
+      description: The second component
+      implementation: component
   conduits:
     comp1.o_i: comp2.s
     comp2.o_i: comp1.s
@@ -113,13 +125,35 @@ checkpoints:
 
 @pytest.mark.parametrize('scale', [0.1, 0.9, 1.0, 1.1, 1.5])
 def test_snapshot_interact_varstep(tmp_path, scale):
-    config = f"""ymmsl_version: v0.1
-model:
-  name: test_snapshot
+    config = f"""ymmsl_version: v0.2
+description: Interact setup for testing checkpointing - different timesteps
+models:
+- name: test_snapshot
+  description: Model with two interacting components
   components:
-    comp1: component
-    comp2: component
-    coupler: checkpointing_temporal_coupler
+    comp1:
+      ports:
+        o_i: o_i
+        s: s
+      description: The first component
+      implementation: component
+    comp2:
+      ports:
+        o_i: o_i
+        s: s
+      description: The second component
+      implementation: component
+    coupler:
+      ports:
+        +timeline_a:
+          o_i: a_in
+          s: a_out
+        +timeline_b:
+          o_i: b_in
+          s: b_out
+      description: >
+        A time bridge to connect the two components together while interpolating
+      implementation: checkpointing_temporal_coupler
   conduits:
     comp1.o_i: coupler.a_in
     coupler.a_out: comp1.s

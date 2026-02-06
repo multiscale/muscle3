@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Optional
 
-from ymmsl.v0_1 import Reference
+from ymmsl.v0_2 import Reference
 
 
 class RunDir:

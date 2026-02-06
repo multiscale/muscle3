@@ -21,15 +21,26 @@ def receiver():
 def test_multicast_cpp(tmp_path):
     run_manager_with_actors(
         """
-ymmsl_version: v0.1
-model:
+ymmsl_version: v0.2
+description: Testing multicast in C++
+models:
+- description: Multicast test model
   name: test_model
   components:
     multicast:
+      ports:
+        o_i: out
+      description: Sending component that multicasts
       implementation: component
     receiver1:
+      ports:
+        f_init: in
+      description: First receiver
       implementation: receiver
     receiver2:
+      ports:
+        f_init: in
+      description: Second receiver
       implementation: receiver
   conduits:
     multicast.out:

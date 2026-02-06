@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import msgpack
 import pytest
-from ymmsl.v0_1 import Conduit, Operator, Port, Reference
+from ymmsl.v0_2 import Conduit, Operator, Port, Reference
 
 import libmuscle
 from libmuscle.logging import LogLevel, LogMessage, Timestamp

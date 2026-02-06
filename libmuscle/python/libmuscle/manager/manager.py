@@ -4,7 +4,7 @@ import sys
 import traceback
 from typing import Optional
 
-from ymmsl.v0_1 import Model, PartialConfiguration
+from ymmsl.v0_2 import Configuration
 from ymmsl import save as save_ymmsl
 
 from libmuscle.manager.instance_registry import InstanceRegistry
@@ -28,13 +28,15 @@ class Manager:
     according to the simulation configuration.
     """
     def __init__(
-            self, configuration: PartialConfiguration,
+            self, configuration: Configuration,
             run_dir: Optional[RunDir] = None, log_level: Optional[str] = None
             ) -> None:
         """Create a Manager.
 
         This creates the manager and the associated server, but does
         not start any instances.
+
+        The configuration must be flattened, containing a single top model.
 
         Args:
             configuration: The simulation configuration.
@@ -48,6 +50,7 @@ class Manager:
         self._topology_store = TopologyStore(configuration)
         self._instance_registry = InstanceRegistry()
         self._deadlock_detector = DeadlockDetector()
+
         if run_dir is not None:
             snapshot_dir = run_dir.snapshot_dir()
         else:
@@ -62,20 +65,15 @@ class Manager:
                     self._configuration,
                     self._run_dir.path / 'configuration.ymmsl')
 
-        if isinstance(self._configuration.model, Model):
-            self._profile_store.store_instances([
-                instance_name
-                for c in self._configuration.model.components
-                for instance_name in c.instances()])
+        self._profile_store.store_instances([
+            instance_name
+            for c in self._configuration.root_model().components.values()
+            for instance_name in c.instances()])
 
         self._instance_manager: Optional[InstanceManager] = None
-        try:
-            configuration = self._configuration.as_configuration()
-            if self._run_dir is not None:
-                self._instance_manager = InstanceManager(
-                        configuration, self._run_dir, self._instance_registry)
-        except ValueError:
-            pass
+        if self._run_dir is not None:
+            self._instance_manager = InstanceManager(
+                    configuration, self._run_dir, self._instance_registry)
 
         # SnapshotRegistry creates a worker thread, must be created after
         # instance_manager which forks the process

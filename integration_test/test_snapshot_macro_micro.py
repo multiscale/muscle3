@@ -162,12 +162,24 @@ def data_transformer():
 
 @pytest.fixture
 def base_config():
-    return load(f"""ymmsl_version: v0.1
-model:
-  name: test_snapshot
+    # TODO: add transformers with a dummy implementation
+    return load(f"""ymmsl_version: v0.2
+description: Basic config for testing macro-micro snapshots
+models:
+- name: test_snapshot
   components:
-    macro: macro_implementation
-    micro: micro_implementation
+    macro:
+      ports:
+        o_i: o_i
+        s: s
+      description: Macro model
+      implementation: macro_implementation
+    micro:
+      ports:
+        f_init: f_i
+        o_f: o_f
+      description: Micro model
+      implementation: micro_implementation
   conduits:
     macro.o_i: micro.f_i
     micro.o_f: macro.s
@@ -185,19 +197,53 @@ checkpoints:
 
 
 @pytest.fixture
-def config_with_transformer(base_config):
-    base_config.update(load("""ymmsl_version: v0.1
-model:
-  name: test_snapshot
+def config_with_transformer():
+    # TODO: use custom_implementations to fill in transformers
+    return load(f"""ymmsl_version: v0.2
+description: Config with transformer for macro-micro snapshots
+models:
+- name: test_snapshot
   components:
-    transformer1: transformer
-    transformer2: transformer
+    macro:
+      ports:
+        o_i: o_i
+        s: s
+      description: Macro model
+      implementation: macro_implementation
+    micro:
+      ports:
+        f_init: f_i
+        o_f: o_f
+      description: Micro model
+      implementation: micro_implementation
+    transformer1:
+      ports:
+        f_init: f_i
+        o_f: o_f
+      description: The first transformer
+      implementation: transformer
+    transformer2:
+      ports:
+        f_init: f_i
+        o_f: o_f
+      description: The second transformer
+      implementation: transformer
   conduits:
     macro.o_i: transformer1.f_i
     transformer1.o_f: micro.f_i
     micro.o_f: transformer2.f_i
-    transformer2.o_f: macro.s"""))
-    return base_config
+    transformer2.o_f: macro.s
+settings:
+  macro.t0: 0.14
+  macro.dt: 0.17
+  macro.t_max: 1.9
+  micro.dt: 0.009
+  micro.t_max: 0.1
+  muscle_remote_log_level: {_LOG_LEVEL}
+checkpoints:
+  at_end: true
+  simulation_time:
+  - every: 0.4""")
 
 
 @pytest.mark.parametrize('actors', [
@@ -290,7 +336,7 @@ def test_snapshot_macro_stateless_micro(tmp_path, base_config, micro_actor):
         marks=[skip_if_python_only, skip_if_no_fortran]),
 ])
 def test_snapshot_macro_vector_micro(tmp_path, base_config, macro_actor):
-    base_config.model.components[1].multiplicity = [2]
+    base_config.root_model().components['micro'].multiplicity = [2]
     actors = {'macro': macro_actor,
               'micro[0]': ('python', micro),
               'micro[1]': ('python', micro)}

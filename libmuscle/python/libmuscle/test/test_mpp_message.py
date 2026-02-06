@@ -3,7 +3,7 @@ import struct
 import msgpack
 import numpy as np
 
-from ymmsl.v0_1 import Reference, Settings
+from ymmsl.v0_2 import Reference, Settings
 
 from libmuscle.grid import Grid
 from libmuscle.mpp_message import MPPMessage

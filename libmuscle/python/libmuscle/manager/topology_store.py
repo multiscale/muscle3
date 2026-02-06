@@ -1,7 +1,7 @@
 from typing import Dict, List
 from libmuscle.util import generate_indices, instance_indices
 
-from ymmsl.v0_1 import Conduit, PartialConfiguration, Model, Reference
+from ymmsl.v0_2 import Conduit, Configuration, Reference
 
 
 class TopologyStore:
@@ -13,23 +13,20 @@ class TopologyStore:
     Attributes:
         conduits (List[Conduit]): A list of conduits.
     """
-    def __init__(self, config: PartialConfiguration) -> None:
+    def __init__(self, config: Configuration) -> None:
         """Creates a TopologyStore.
 
-        Creates a TopologyStore containing conduits read from the given
-        configuration data, which must contain a 'model' key.
+        Creates a TopologyStore containing conduits read from the given configuration
+        data, which is expected to contain a single model
 
         Args:
             configuration: A yMMSL configuration.
         """
-        if config.model is None or not isinstance(config.model, Model):
-            raise ValueError('The yMMSL experiment description does not'
-                             ' contain a (complete) model section, so there'
-                             ' is nothing to run!')
-        self.conduits = config.model.conduits
+        model = config.root_model()
+        self.conduits = model.conduits
         self.kernel_dimensions = {
                 k.name: k.multiplicity
-                for k in config.model.components}
+                for k in model.components.values()}
 
     def has_kernel(self, kernel: Reference) -> bool:
         """Returns True iff the given kernel is in the model.

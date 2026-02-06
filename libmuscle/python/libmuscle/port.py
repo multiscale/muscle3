@@ -1,6 +1,6 @@
 from typing import List, Optional, TypeVar
 
-from ymmsl.v0_1 import Identifier, Operator
+from ymmsl.v0_2 import Identifier, Operator
 import ymmsl
 
 
@@ -15,7 +15,7 @@ def _extend_list_to_size(lst: List[_T], size: int, padding: _T) -> None:
         lst += [padding] * num_extend
 
 
-class Port(ymmsl.v0_1.Port):
+class Port(ymmsl.v0_2.Port):
     """Represents a gateway to the outside world.
 
     Ports can be used to send or receive messages. They have a name and

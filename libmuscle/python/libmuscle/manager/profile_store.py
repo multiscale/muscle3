@@ -8,7 +8,7 @@ from typing import cast, Dict, Iterable, List, Optional, Tuple
 from libmuscle.planner.planner import ResourceAssignment
 from libmuscle.profiling import ProfileEvent, ProfileEventType
 from libmuscle.manager.profile_database import ProfileDatabase
-from ymmsl.v0_1 import Operator, Reference
+from ymmsl.v0_2 import Operator, Reference
 
 
 _logger = logging.getLogger(__name__)

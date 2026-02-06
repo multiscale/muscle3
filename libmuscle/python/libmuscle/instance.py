@@ -5,7 +5,7 @@ import os
 import sys
 from typing import cast, Dict, List, Literal, Optional, Tuple, overload
 
-from ymmsl.v0_1 import (
+from ymmsl.v0_2 import (
         Identifier, Operator, SettingValue, Port, Reference, Settings)
 
 from libmuscle.api_guard import APIGuard

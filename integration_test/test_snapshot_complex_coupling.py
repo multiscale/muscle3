@@ -110,18 +110,66 @@ def main_component():
 
 @pytest.fixture
 def config():
-    return load(f"""ymmsl_version: v0.1
-model:
-  name: test_snapshot
+    return load(f"""ymmsl_version: v0.2
+description: Complex coupling for testing snapshots
+models:
+- name: test_snapshot
+  description: A complex model with a bunch of caches
   components:
-    main: main_component
-    cacheA: cache_component
-    cacheB: cache_component
-    cacheC: cache_component
-    calcA: echo_component
-    calcB: echo_component
-    calcC: echo_component
-    calcD: echo_component
+    main:
+      ports:
+        o_i: state_out
+        s: Ai Bi Ci Di
+      description: Driver component
+      implementation: main_component
+    cacheA:
+      ports:
+        f_init: in1
+        o_i: sub_out1 sub_out2
+        s: sub_in1 sub_in2
+        o_f: out1 out2
+      description: Cache for calcA
+      implementation: cache_component
+    cacheB:
+      ports:
+        f_init: in1
+        o_i: sub_out1
+        s: sub_in1
+        o_f: out1
+      description: Cache for calcB
+      implementation: cache_component
+    cacheC:
+      ports:
+        f_init: in1
+        o_i: sub_out1 sub_out2
+        s: sub_in1
+        o_f: out1
+      description: Cache for calcC
+      implementation: cache_component
+    calcA:
+      ports:
+        f_init: in1 in2
+        o_f: out1 out2
+      description: Calculates A
+      implementation: echo_component
+    calcB:
+      ports:
+        f_init: in1
+        o_f: out1
+      description: Calculates B
+      implementation: echo_component
+    calcC:
+      ports:
+        f_init: in1 in2
+        o_f: out1
+      description: Calculates C
+      implementation: echo_component
+    calcD:
+      ports:
+        f_init: in1
+        o_f: out1
+      description: Calculates D
+      implementation: echo_component
   conduits:
     main.state_out:
     - cacheA.in1

@@ -1,6 +1,6 @@
 import logging
 from typing import Any, Dict, List, Optional, Tuple, cast
-from ymmsl.v0_1 import Identifier, Reference, Settings
+from ymmsl.v0_2 import Identifier, Reference, Settings
 
 from libmuscle.endpoint import Endpoint
 from libmuscle.mmp_client import MMPClient

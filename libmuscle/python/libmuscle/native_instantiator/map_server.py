@@ -13,7 +13,7 @@ from libmuscle.native_instantiator.iagent_manager import IAgentManager
 from libmuscle.planner.resources import Core, CoreSet, OnNodeResources
 from libmuscle.post_office import PostOffice
 
-from ymmsl.v0_1 import Reference
+from ymmsl.v0_2 import Reference
 
 
 _logger = logging.getLogger(__name__)

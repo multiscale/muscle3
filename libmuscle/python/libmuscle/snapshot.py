@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, cast
 
 import msgpack
-from ymmsl.v0_1 import Reference, Settings
+from ymmsl.v0_2 import Reference, Settings
 
 from libmuscle.mpp_message import MPPMessage
 from libmuscle import communicator

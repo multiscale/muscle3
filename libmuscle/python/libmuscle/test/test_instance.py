@@ -6,7 +6,7 @@ import pytest
 
 from libmuscle.instance import Instance, InstanceFlags
 from libmuscle.mpp_message import ClosePort
-from ymmsl.v0_1 import Checkpoints, Operator, Reference as Ref, Settings
+from ymmsl.v0_2 import Checkpoints, Operator, Reference as Ref, Settings
 
 
 @pytest.fixture

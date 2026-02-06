@@ -5,8 +5,8 @@ from typing import Dict, Iterable, List, Optional, Tuple
 from libmuscle.errors import ConfigurationError
 from libmuscle.native_instantiator.slurm import slurm
 from libmuscle.planner.planner import ResourceAssignment
-from ymmsl.v0_1 import (
-        BaseEnv, ExecutionModel, Implementation, MPICoresResReq, MPINodesResReq,
+from ymmsl.v0_2 import (
+        BaseEnv, ExecutionModel, MPICoresResReq, MPINodesResReq, Program,
         ResourceRequirements, ThreadedResReq)
 
 
@@ -193,23 +193,23 @@ def num_mpi_tasks(res_req: ResourceRequirements) -> int:
     raise RuntimeError('Invalid ResourceRequirements')
 
 
-def local_command(implementation: Implementation, enable_debug: bool) -> str:
+def local_command(program: Program, enable_debug: bool) -> str:
     """Make a format string for the command to run.
 
     This interprets the execution_model and produces an appropriate shell command to
-    start the implementation. This function produces commands for running locally:
+    start the program. This function produces commands for running locally:
     pinning is disabled and there's only one node.
 
     Args:
-        implementation: The implementation to start.
+        program: The program to start.
         enable_debug: Whether to produce extra debug output.
 
     Return:
         A format string with embedded {ntasks} and {rankfile}.
     """
-    if implementation.execution_model == ExecutionModel.DIRECT:
+    if program.execution_model == ExecutionModel.DIRECT:
         fstr = 'exec {command} {args}'
-    elif implementation.execution_model == ExecutionModel.OPENMPI:
+    elif program.execution_model == ExecutionModel.OPENMPI:
         # Native name is orterun for older and prterun for newer OpenMPI.
         # So we go with mpirun, which works for either.
         fargs = [
@@ -224,47 +224,47 @@ def local_command(implementation: Implementation, enable_debug: bool) -> str:
 
         fstr = ' '.join(fargs)
 
-    elif implementation.execution_model == ExecutionModel.INTELMPI:
+    elif program.execution_model == ExecutionModel.INTELMPI:
         fstr = 'exec mpirun -n $MUSCLE_MPI_PROCESSES {command} {args}'
-    elif implementation.execution_model == ExecutionModel.SRUNMPI:
+    elif program.execution_model == ExecutionModel.SRUNMPI:
         raise ConfigurationError(
-                f'Could not start {implementation.name} because the SRUNMPI execution'
+                f'Could not start {program.name} because the SRUNMPI execution'
                 ' method only works in a SLURM allocation, and we are running locally.'
-                ' Please switch this implementation to a different execution method'
+                ' Please switch this program to a different execution method'
                 ' in the configuration file. You will probably want OPENMPI or'
-                ' INTELMPI depending on which MPI implementation this code was'
+                ' INTELMPI depending on which MPI program this code was'
                 ' compiled with.')
-    # elif implementation.execution_model == ExecutionModel.MPICH
+    # elif program.execution_model == ExecutionModel.MPICH
     #    fstr = 'mpiexec -n {{ntasks}} {command} {args}'
 
-    if implementation.args is None:
+    if program.args is None:
         args = ''
-    elif isinstance(implementation.args, str):
-        args = implementation.args
-    elif isinstance(implementation.args, list):
-        args = ' '.join(implementation.args)
+    elif isinstance(program.args, str):
+        args = program.args
+    elif isinstance(program.args, list):
+        args = ' '.join(program.args)
 
     return fstr.format(
-            command=implementation.executable,
+            command=program.executable,
             args=args
             )
 
 
-def cluster_command(implementation: Implementation, enable_debug: bool) -> str:
+def cluster_command(program: Program, enable_debug: bool) -> str:
     """Make a format string for the command to run.
 
     This interprets the execution_model and produces an appropriate shell command to
-    start the implementation. This function produces commands for running on a cluster,
+    start the program. This function produces commands for running on a cluster,
     with processes distributed across nodes and CPU pinning enabled.
 
     Args:
-        implementation: The implementation to start.
+        program: The program to start.
         enable_debug: Whether to produce extra debug output.
 
     Return:
-        A string with the command to use to start the implementation.
+        A string with the command to use to start the program.
     """
-    if implementation.execution_model == ExecutionModel.DIRECT:
+    if program.execution_model == ExecutionModel.DIRECT:
         fargs = [
                 'if ! taskset -V >/dev/null 2>&1 ; then',
                 '    exec {command} {args}',
@@ -274,7 +274,7 @@ def cluster_command(implementation: Implementation, enable_debug: bool) -> str:
                 ]
         fstr = '\n'.join(fargs)
 
-    elif implementation.execution_model == ExecutionModel.OPENMPI:
+    elif program.execution_model == ExecutionModel.OPENMPI:
         fargs = [
                 # Native name is orterun for older and prterun for newer OpenMPI.
                 # So we go with mpirun, which works for either.
@@ -298,7 +298,7 @@ def cluster_command(implementation: Implementation, enable_debug: bool) -> str:
 
         fstr = ' '.join(fargs)
 
-    elif implementation.execution_model == ExecutionModel.INTELMPI:
+    elif program.execution_model == ExecutionModel.INTELMPI:
         fargs = [
                 'exec mpirun -n $MUSCLE_MPI_PROCESSES',
                 '-machinefile $MUSCLE_RANKFILE']
@@ -310,7 +310,7 @@ def cluster_command(implementation: Implementation, enable_debug: bool) -> str:
 
         fstr = ' '.join(fargs)
 
-    elif implementation.execution_model == ExecutionModel.SRUNMPI:
+    elif program.execution_model == ExecutionModel.SRUNMPI:
         fargs = ['exec srun -n $MUSCLE_MPI_PROCESSES -m arbitrary']
 
         if slurm().quirks.overlap:
@@ -323,29 +323,29 @@ def cluster_command(implementation: Implementation, enable_debug: bool) -> str:
 
         fstr = ' '.join(fargs)
 
-    # elif implementation.execution_model == ExecutionModel.MPICH
+    # elif program.execution_model == ExecutionModel.MPICH
     #    fstr = 'mpiexec -n $MUSCLE_MPI_PROCESSES -f $MUSCLE_RANKFILE {command} {args}'
 
-    if implementation.args is None:
+    if program.args is None:
         args = ''
-    elif isinstance(implementation.args, str):
-        args = implementation.args
-    elif isinstance(implementation.args, list):
-        args = ' '.join(implementation.args)
+    elif isinstance(program.args, str):
+        args = program.args
+    elif isinstance(program.args, list):
+        args = ' '.join(program.args)
 
     return fstr.format(
-            command=implementation.executable,
+            command=program.executable,
             args=args
             )
 
 
 def make_script(
-        implementation: Implementation, res_req: ResourceRequirements,
+        program: Program, res_req: ResourceRequirements,
         work_dir: Path, local: bool, rankfile: Optional[Path] = None) -> str:
-    """Make a run script for a given implementation.
+    """Make a run script for a given program.
 
     Args:
-        implementation: The implementation to launch
+        program: The program to launch
         res_req: The job's resource requirements
         work_dir: The directory to start the instance in
         local: Whether this is to run locally (True) or on a cluster (False)
@@ -358,7 +358,7 @@ def make_script(
 
     lines: List[str] = list()
 
-    if implementation.base_env == BaseEnv.LOGIN:
+    if program.base_env == BaseEnv.LOGIN:
         # We try to emulate an interactive login shell here by starting a
         # non-interactive login shell and manually loading the configuration files that
         # an interactive one would load. This avoids a confusing warning on stderr that
@@ -388,31 +388,31 @@ def make_script(
     # The environment is passed when starting the script, rather than as a set of
     # export statements here.
 
-    if implementation.base_env == BaseEnv.CLEAN:
+    if program.base_env == BaseEnv.CLEAN:
         lines.append('module purge')
         lines.append('')
 
-    if implementation.modules:
-        if isinstance(implementation.modules, str):
-            lines.append(f'module load {implementation.modules}')
+    if program.modules:
+        if isinstance(program.modules, str):
+            lines.append(f'module load {program.modules}')
         else:
-            for module in implementation.modules:
+            for module in program.modules:
                 lines.append(f'module load {module}')
         lines.append('')
 
-    if implementation.virtual_env:
-        lines.append(f'. {implementation.virtual_env}/bin/activate')
+    if program.virtual_env:
+        lines.append(f'. {program.virtual_env}/bin/activate')
         lines.append('')
 
-    if implementation.base_env == BaseEnv.LOGIN:
+    if program.base_env == BaseEnv.LOGIN:
         # config files may change the work directory from what we set, so we add this to
         # ensure it's correct.
         lines.append(f'cd {work_dir}')
 
     if local:
-        lines.append(local_command(implementation, enable_debug))
+        lines.append(local_command(program, enable_debug))
     else:
-        lines.append(cluster_command(implementation, enable_debug))
+        lines.append(cluster_command(program, enable_debug))
 
     lines.append('')
 

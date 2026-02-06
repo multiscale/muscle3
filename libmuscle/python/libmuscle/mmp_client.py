@@ -6,7 +6,7 @@ from time import perf_counter, sleep
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import msgpack
-from ymmsl.v0_1 import (
+from ymmsl.v0_2 import (
         Conduit, Operator, Port, Reference, Settings, Checkpoints,
         CheckpointRule, CheckpointRangeRule, CheckpointAtRule)
 

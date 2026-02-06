@@ -1,6 +1,6 @@
 from typing import List
 
-from ymmsl.v0_1 import Identifier, Reference
+from ymmsl.v0_2 import Identifier, Reference
 
 
 class Endpoint:

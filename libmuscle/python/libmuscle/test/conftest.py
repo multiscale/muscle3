@@ -3,7 +3,7 @@ import pytest
 from typing import Dict, List, Set, Union
 from unittest.mock import patch
 
-from ymmsl.v0_1 import Operator, Reference, Settings
+from ymmsl.v0_2 import Operator, Reference, Settings
 
 from libmuscle.api_guard import APIGuard
 from libmuscle.communicator import Message

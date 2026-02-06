@@ -3,7 +3,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import msgpack
-from ymmsl.v0_1 import (
+from ymmsl.v0_2 import (
         Operator, Reference, Checkpoints, CheckpointRangeRule, CheckpointAtRule)
 
 import libmuscle
@@ -276,12 +276,12 @@ def test_request_peers_bidir(registered_mmp_request_handler2):
     assert status == ResponseType.SUCCESS.value
 
     assert conduits[0][0] == 'macro.out'
-    assert conduits[0][1] == 'meso.in'
+    assert conduits[0][1] == 'meso.init'
     assert conduits[1][0] == 'meso.out'
-    assert conduits[1][1] == 'micro.in'
-    assert conduits[2][0] == 'micro.out'
+    assert conduits[1][1] == 'micro.init'
+    assert conduits[2][0] == 'micro.final'
     assert conduits[2][1] == 'meso.in'
-    assert conduits[3][0] == 'meso.out'
+    assert conduits[3][0] == 'meso.final'
     assert conduits[3][1] == 'macro.in'
 
     assert dims['micro'] == [5, 10]
@@ -305,8 +305,8 @@ def test_request_peers_own_conduits(registered_mmp_request_handler2):
     assert status == ResponseType.SUCCESS.value
 
     assert conduits[0][0] == 'macro.out'
-    assert conduits[0][1] == 'meso.in'
-    assert conduits[1][0] == 'meso.out'
+    assert conduits[0][1] == 'meso.init'
+    assert conduits[1][0] == 'meso.final'
     assert conduits[1][1] == 'macro.in'
 
 

@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 from typing import cast, List, Optional
 
-from ymmsl.v0_1 import Reference, Operator, Settings
+from ymmsl.v0_2 import Reference, Operator, Settings
 
 from libmuscle.communicator import Message
 from libmuscle.port_manager import PortManager

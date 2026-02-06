@@ -3,9 +3,9 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from ymmsl.v0_1 import (
-        Configuration, Model, Component, Conduit, Implementation,
-        KeepsStateForNextUse, Reference)
+from ymmsl.v0_2 import (
+        Configuration, Model, Component, Conduit, KeepsStateForNextUse, Ports, Program,
+        Reference)
 
 from libmuscle.manager.snapshot_registry import (
     SnapshotNode, SnapshotRegistry, calc_consistency, calc_consistency_list,
@@ -26,43 +26,46 @@ def micro_is_stateless(request: pytest.FixtureRequest) -> bool:
 @pytest.fixture
 def macro_micro(micro_is_stateless: bool) -> Configuration:
     components = [
-            Component('macro', 'macro_impl'),
-            Component('micro', 'micro_impl')]
+            Component('macro', Ports(), '', 'macro_impl'),
+            Component('micro', Ports(), '', 'micro_impl')]
     conduits = [
             Conduit('macro.o_i', 'micro.f_i'),
             Conduit('micro.o_f', 'macro.s')]
-    model = Model('macro_micro', components, conduits)
+    model = Model('macro_micro', None, '', None, components, conduits)
 
     if micro_is_stateless:
-        micro_impl = Implementation(
+        micro_impl = Program(
                 'micro_impl',
                 keeps_state_for_next_use=KeepsStateForNextUse.NO,
                 executable='pass')
     else:
-        micro_impl = Implementation('micro_impl', executable='pass')
+        micro_impl = Program('micro_impl', executable='pass')
 
-    implementations = [
-            Implementation('macro_impl', executable='pass'),
+    programs = [
+            Program('macro_impl', executable='pass'),
             micro_impl]
 
-    return Configuration(model, implementations=implementations)
+    return Configuration('macro_micro', [], [model], programs=programs)
 
 
 @pytest.fixture
 def uq(macro_micro: Configuration) -> Configuration:
-    for component in macro_micro.model.components:
+    model = macro_micro.models['macro_micro']
+    for component in model.components.values():
         component.multiplicity = [5]
-    macro_micro.model.components.append(Component('qmc', 'qmc_impl'))
-    macro_micro.model.components.append(Component('rr', 'rr_impl'))
-    macro_micro.model.conduits.extend([
+    model.components[Reference('qmc')] = Component(
+            'qmc', Ports(o_i='parameters_out', s='states_in'), '', 'qmc_impl')
+    model.components[Reference('rr')] = Component(
+            'rr',
+            Ports(f_init='front_in', o_i='back_out', s='back_in', o_f='front_out'), '',
+            'rr_impl')
+    model.conduits.extend([
             Conduit('qmc.parameters_out', 'rr.front_in'),
             Conduit('rr.front_out', 'qmc.states_in'),
             Conduit('rr.back_out', 'macro.muscle_settings_in'),
             Conduit('macro.final_state_out', 'rr.back_in')])
-    macro_micro.implementations[Reference('qmc_impl')] = Implementation(
-            'qmc_impl', executable='pass')
-    macro_micro.implementations[Reference('rr_impl')] = Implementation(
-            'rr_impl', executable='pass')
+    macro_micro.programs[Reference('qmc_impl')] = Program('qmc_impl', executable='pass')
+    macro_micro.programs[Reference('rr_impl')] = Program('rr_impl', executable='pass')
     return macro_micro
 
 
@@ -114,7 +117,7 @@ def test_calc_consistency_list() -> None:
 
 
 def test_write_ymmsl(tmp_path: Path):
-    configuration = Configuration(Model('empty', []))
+    configuration = Configuration('', [], [Model('empty', None, '')])
     snapshot_registry = SnapshotRegistry(
             configuration, tmp_path, TopologyStore(configuration))
     snapshot_registry._write_snapshot_ymmsl([])
@@ -136,7 +139,7 @@ def test_write_ymmsl(tmp_path: Path):
 
 
 def test_snapshot_config():
-    configuration = Configuration(Model('empty', []))
+    configuration = Configuration('', [], [Model('empty', None, '')])
     snapshot_registry = SnapshotRegistry(
             configuration, None, TopologyStore(configuration))
     micro_metadata = SnapshotMetadata(
@@ -377,13 +380,13 @@ def test_uq(uq: Configuration) -> None:
 
 
 def test_heuristic_rollbacks() -> None:
-    components = [Component(f'comp{i}', f'impl{i}') for i in range(4)]
-    conduits = [Conduit(f'comp{i}.o_f', f'comp{i+1}.f_i') for i in range(3)]
-    model = Model('linear', components, conduits)
-    implementations = [
-            Implementation(f'impl{i}', script='xyz')
+    components = [
+            Component(f'comp{i}', Ports(f_init='f_i', o_f='o_f'), '', f'impl{i}')
             for i in range(4)]
-    config = Configuration(model, implementations=implementations)
+    conduits = [Conduit(f'comp{i}.o_f', f'comp{i+1}.f_i') for i in range(3)]
+    model = Model('linear', None, '', None, components, conduits)
+    programs = [Program(f'impl{i}', script='xyz') for i in range(4)]
+    config = Configuration('', [], [model], programs=programs)
 
     comp1, comp2, comp3, comp4 = (Reference(f'comp{i}') for i in range(4))
 

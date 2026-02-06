@@ -1,6 +1,6 @@
 from typing import cast, Dict, List, Tuple
 
-from ymmsl.v0_1 import Conduit, Identifier, Reference
+from ymmsl.v0_2 import Conduit, Identifier, Reference
 
 from libmuscle.endpoint import Endpoint
 

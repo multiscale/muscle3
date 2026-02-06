@@ -2,7 +2,7 @@ from typing import List
 from libmuscle.peer_info import PeerInfo
 from libmuscle.port_manager import PortManager
 
-from ymmsl.v0_1 import Conduit, Identifier, Operator, Reference as Ref
+from ymmsl.v0_2 import Conduit, Identifier, Operator, Reference as Ref
 
 import pytest
 
@@ -116,7 +116,7 @@ def test_connect_multidimensional_ports() -> None:
     port_manager = PortManager(index, declared_ports)
 
     component_id = Ref('component')
-    conduits = [Conduit(Ref('other.out'), Ref('component.in'))]
+    conduits = [Conduit('other.out', 'component.in')]
     peer_dims = {Ref('other'): [20, 7, 30]}
     peer_locations = {Ref('other'): ['direct:test']}
     peer_info = PeerInfo(component_id, index, conduits, peer_dims, peer_locations)

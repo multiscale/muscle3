@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 import pytest
-from ymmsl.v0_1 import Reference
+from ymmsl.v0_2 import Reference
 
 from libmuscle.mcp.tcp_transport_server import TcpTransportServer
 from libmuscle.mpp_message import MPPMessage

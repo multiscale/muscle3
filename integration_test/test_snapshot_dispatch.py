@@ -46,15 +46,42 @@ def component():
 
 @pytest.fixture
 def dispatch_config():
-    return load(f"""ymmsl_version: v0.1
-model:
-  name: test_snapshot
+    return load(f"""ymmsl_version: v0.2
+description: Configuration for testing snapshots with dispatch conduits
+models:
+- name: test_snapshot
+  description: Model with five components dispatching to each other
   components:
-    comp1: component
-    comp2: component
-    comp3: component
-    comp4: component
-    comp5: component
+    comp1:
+      ports:
+        f_init: f_i
+        o_f: o_f
+      description: Component 1
+      implementation: component
+    comp2:
+      ports:
+        f_init: f_i
+        o_f: o_f
+      description: Component 2
+      implementation: component
+    comp3:
+      ports:
+        f_init: f_i
+        o_f: o_f
+      description: Component 3
+      implementation: component
+    comp4:
+      ports:
+        f_init: f_i
+        o_f: o_f
+      description: Component 4
+      implementation: component
+    comp5:
+      ports:
+        f_init: f_i
+        o_f: o_f
+      description: Component 5
+      implementation: component
   conduits:
     comp1.o_f: comp2.f_i
     comp2.o_f: comp3.f_i

@@ -8,7 +8,7 @@ from libmuscle.profiling import (
 
 from libmuscle.test.conftest import on_node_resources as onr
 
-from ymmsl.v0_1 import Operator, Port, Reference
+from ymmsl.v0_2 import Operator, Port, Reference
 
 import pytest
 

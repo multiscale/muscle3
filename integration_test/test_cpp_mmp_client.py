@@ -4,7 +4,7 @@ from pathlib import Path
 import subprocess
 
 import ymmsl
-from ymmsl.v0_1 import Operator, Port, Reference
+from ymmsl.v0_2 import Operator, Port, Reference
 
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
@@ -14,12 +14,23 @@ from .conftest import skip_if_python_only
 
 def do_mmp_client_test(tmpdir, caplog):
     ymmsl_text = (
-            'ymmsl_version: v0.1\n'
-            'model:\n'
-            '  name: test_model\n'
+            'ymmsl_version: v0.2\n'
+            'description: Configuration for testing MMP clients\n'
+            'models:\n'
+            '- name: test_model\n'
+            '  description: A model for testing the MMP client\n'
             '  components:\n'
-            '    macro: macro_implementation\n'
+            '    macro:\n'
+            '      description: Macro model\n'
+            '      ports:\n'
+            '        o_i: out\n'
+            '        s: in\n'
+            '      implementation: macro_implementation\n'
             '    micro:\n'
+            '      description: Micro model\n'
+            '      ports:\n'
+            '        f_init: in\n'
+            '        o_f: out\n'
             '      implementation: micro_implementation\n'
             '      multiplicity: [10]\n'
             '  conduits:\n'

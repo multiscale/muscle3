@@ -1,5 +1,5 @@
 import pytest
-from ymmsl.v0_1 import Identifier
+from ymmsl.v0_2 import Identifier
 
 from libmuscle.port import Operator, Port
 

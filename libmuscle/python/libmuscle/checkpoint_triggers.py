@@ -3,7 +3,7 @@ import logging
 import time
 from typing import List, Optional, Union
 
-from ymmsl.v0_1 import (
+from ymmsl.v0_2 import (
         CheckpointRangeRule, CheckpointAtRule, CheckpointRule, Checkpoints)
 
 
@@ -122,7 +122,7 @@ class CombinedCheckpointTriggers(CheckpointTrigger):
         """Create a new combined checkpoint trigger from the given rules
 
         Args:
-            checkpoint_rules: checkpoint rules (from ymmsl.v0_1)
+            checkpoint_rules: checkpoint rules (from ymmsl)
         """
         self._triggers: List[CheckpointTrigger] = []
         at_rules: List[CheckpointAtRule] = []

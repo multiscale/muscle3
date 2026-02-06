@@ -16,7 +16,7 @@ from libmuscle.native_instantiator.global_resources import global_resources
 from libmuscle.native_instantiator.run_script import make_script, prep_resources
 from libmuscle.planner.resources import OnNodeResources, Resources
 
-from ymmsl.v0_1 import (
+from ymmsl.v0_2 import (
         MPICoresResReq, MPINodesResReq, ResourceRequirements, ThreadedResReq)
 
 
@@ -186,20 +186,18 @@ class NativeInstantiator(mp.Process):
         self._resources_out.put(resources)
 
     def _instantiate(self, request: InstantiationRequest) -> None:
-        """Instantiate an implementation according to the request."""
+        """Instantiate a program according to the request."""
         name = str(request.instance)
 
         env = create_instance_env(
-                request.instance, request.implementation.base_env,
-                request.implementation.env)
+                request.instance, request.program.base_env, request.program.env)
         self._add_resources(env, request.res_req)
 
         rankfile = request.instance_dir / 'rankfile'
 
         if global_resources().on_cluster():
             rankfile_contents, resource_env = prep_resources(
-                  request.implementation.execution_model, request.resources,
-                  rankfile)
+                  request.program.execution_model, request.resources, rankfile)
 
             if rankfile_contents:
                 with rankfile.open('w') as f:
@@ -229,13 +227,13 @@ class NativeInstantiator(mp.Process):
     def _write_run_script(
             self, request: InstantiationRequest, rankfile: Optional[Path]) -> Path:
         """Create and write out the run script and return its location."""
-        # TODO: Only write out once for each implementation
-        if request.implementation.script:
-            run_script = request.implementation.script
+        # TODO: Only write out once for each program
+        if request.program.script:
+            run_script = request.program.script
         else:
             run_script = make_script(
-                    request.implementation, request.res_req,
-                    request.work_dir, not global_resources().on_cluster(), rankfile)
+                    request.program, request.res_req, request.work_dir,
+                    not global_resources().on_cluster(), rankfile)
 
         run_script_file = request.instance_dir / 'run_script.sh'
 

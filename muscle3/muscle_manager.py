@@ -14,6 +14,7 @@ import ymmsl
 import ymmsl.v0_1 as v0_1
 import ymmsl.v0_2 as v0_2
 
+from libmuscle.manager.hammer import flatten
 from libmuscle.manager.logger import last_lines
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
@@ -91,11 +92,7 @@ def manage_simulation(
               textwrap.indent(str(exc), 4*' '), file=sys.stderr)
         sys.exit(1)
 
-    # TODO: prune unimplemented optional components here
-
-    # TODO: flatten
-
-    # find top models, error if multiple
+    # find root models, error if multiple
     try:
         model = configuration.root_model()
     except RuntimeError as e:
@@ -104,6 +101,8 @@ def manage_simulation(
                 'Please add or remove models, or select one using the -m option.',
                 file=sys.stderr)
         sys.exit(1)
+
+    configuration = flatten(configuration)
 
     run_dir_obj = create_run_dir(run_dir, model)
     manager = Manager(configuration, run_dir_obj, log_level)

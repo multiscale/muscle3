@@ -19,6 +19,7 @@ import ymmsl.v0_1 as v0_1
 from ymmsl.v0_2 import Configuration, Identifier, Reference
 
 from libmuscle.util import generate_indices
+from libmuscle.manager.hammer import flatten
 from libmuscle.manager.logger import last_lines
 from libmuscle.manager.manager import Manager
 
@@ -308,8 +309,7 @@ def run_simulation(
                 ' larger models, please use the command line.')
 
     configuration.check_consistent(False)
-
-    # TODO: flatten
+    configuration = flatten(configuration)
 
     model = configuration.root_model()
 

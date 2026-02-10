@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from ymmsl.v0_2 import Conduit, Configuration, Model, Ports, Reference
 
@@ -251,7 +251,9 @@ def glue_partial_conduits(
                     plate.add(joined_cdt, snd_final, recv_final)
 
 
-def flatten(nested_config: Configuration) -> Configuration:
+def flatten(
+        nested_config: Configuration, model: Optional[Reference] = None
+        ) -> Configuration:
     """Creates a flat version of the given configuration.
 
     The result will have a single model, without any components that have a model for
@@ -271,6 +273,7 @@ def flatten(nested_config: Configuration) -> Configuration:
     Args:
         nested_configuration: A complete, consistent, (potentially) nested
             configuration.
+        model: Root model to start from
 
     Returns:
         A copy of that configuration, modified to contain only a single flat model
@@ -279,7 +282,7 @@ def flatten(nested_config: Configuration) -> Configuration:
     config = deepcopy(nested_config)
 
     plate = Plate()
-    root_model = config.root_model()
+    root_model = config.root_model(model)
     flat_model = Model(
             str(root_model.name), Ports(), root_model.description,
             root_model.supported_settings, [], [])

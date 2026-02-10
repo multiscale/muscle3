@@ -58,12 +58,16 @@ from libmuscle.manager.run_dir import RunDir
         )
 @click.option(
         '--start-all/--no-start-all', default=False, help=(
-            'Start all submodel instances listed in the configuration file(s).'
-            )
+            'Start all submodel instances listed in the configuration file(s).')
+        )
+@click.option(
+        '-m', '--model', nargs=1, type=str, help=(
+            'Start the specified model, which must be present in the ymmsl files')
         )
 def manage_simulation(
         ymmsl_files: Sequence[str],
         start_all: bool,
+        model: Optional[str],
         run_dir: Optional[str],
         log_level: Optional[str],
         location_file: Optional[str]
@@ -93,8 +97,15 @@ def manage_simulation(
         sys.exit(1)
 
     # find root models, error if multiple
+    model_ref: Optional[v0_2.Reference] = None
+    if model:
+        try:
+            model_ref = v0_2.Reference(model)
+        except RuntimeError as e:
+            raise RuntimeError('An invalid model name was given: {e}') from None
+
     try:
-        model = configuration.root_model()
+        root_model = configuration.root_model(model_ref)
     except RuntimeError as e:
         print(e, file=sys.stderr)
         print(
@@ -102,9 +113,9 @@ def manage_simulation(
                 file=sys.stderr)
         sys.exit(1)
 
-    configuration = flatten(configuration)
+    run_dir_obj = create_run_dir(run_dir, root_model)
 
-    run_dir_obj = create_run_dir(run_dir, model)
+    configuration = flatten(configuration, model_ref)
     manager = Manager(configuration, run_dir_obj, log_level)
 
     if start_all:

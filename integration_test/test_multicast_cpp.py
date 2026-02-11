@@ -1,4 +1,4 @@
-import ymmsl
+from ymmsl.v0_2 import Operator
 
 from libmuscle import Instance
 
@@ -6,7 +6,7 @@ from .conftest import skip_if_python_only, run_manager_with_actors
 
 
 def receiver():
-    instance = Instance({ymmsl.v0_1.Operator.F_INIT: ['in']})
+    instance = Instance({Operator.F_INIT: ['in']})
 
     i = 0
     while instance.reuse_instance():

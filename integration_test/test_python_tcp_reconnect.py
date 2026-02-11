@@ -8,8 +8,8 @@ from unittest.mock import patch
 
 import pytest
 
-from ymmsl.v0_1 import (
-        Component, Conduit, Configuration, Operator, Model, Settings)
+from ymmsl.v0_2 import (
+        Component, Conduit, Configuration, Operator, Ports, Model, Settings)
 
 from libmuscle import Instance, Message
 from libmuscle.runner import run_simulation
@@ -86,20 +86,20 @@ def test_python_tcp_reconnect(tcp_fault_injection, log_file_in_tmpdir):
     _start_time = time.monotonic_ns()
     _repeat_period = uniform(3.0, 5.0)
 
-    elements = [
-            Component('macro', 'component'),
-            Component('micro', 'component')]
+    components = [
+            Component('macro', Ports(o_i='out', s='in'), '', 'component'),
+            Component('micro', Ports('init', o_f='result'), '', 'component')]
 
     conduits = [
                 Conduit('macro.out', 'micro.init'),
                 Conduit('micro.result', 'macro.in')]
 
-    model = Model('test_python_tcp_reconnect', elements, conduits)
+    model = Model('test_python_tcp_reconnect', None, '', None, components, conduits)
     settings = Settings()
     settings['muscle_remote_log_level'] = 'warning'
     settings['muscle_local_log_level'] = 'debug'
 
-    configuration = Configuration(model, settings)
+    configuration = Configuration('python_tcp_reconnect', None, [model], None, settings)
 
     implementations = {'component': component}
 

@@ -3,7 +3,7 @@ import os
 import socket
 
 from libmuscle import Instance, Message
-from ymmsl.v0_1 import Operator
+from ymmsl.v0_2 import Operator
 
 
 def log_location() -> None:

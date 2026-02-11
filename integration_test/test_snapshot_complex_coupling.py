@@ -2,7 +2,7 @@ import random
 import time
 
 import pytest
-from ymmsl.v0_1 import Operator
+from ymmsl.v0_2 import Operator
 from ymmsl import load, dump
 
 from libmuscle import (

@@ -1,7 +1,7 @@
 import functools
 import sys
 
-from ymmsl.v0_1 import Operator
+from ymmsl.v0_2 import Operator
 
 from libmuscle import Instance, Message
 

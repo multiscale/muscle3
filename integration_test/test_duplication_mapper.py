@@ -1,5 +1,5 @@
-from ymmsl.v0_1 import (
-        Component, Conduit, Configuration, Operator, Model, Settings)
+from ymmsl.v0_2 import (
+        Component, Conduit, Configuration, Operator, Ports, Model, Settings)
 
 from libmuscle import Instance, Message
 from libmuscle.runner import run_simulation
@@ -35,19 +35,22 @@ def test_duplication_mapper(log_file_in_tmpdir):
 
     This is an acyclic workflow.
     """
-    elements = [
-            Component('dm', 'muscle.duplication_mapper'),
-            Component('first', 'receiver'),
-            Component('second', 'receiver')]
+    components = [
+            Component(
+                'dm', Ports(o_f='out out2'), '', 'muscle.duplication_mapper'),
+            Component(
+                'first', Ports('in'), '', 'receiver'),
+            Component(
+                'second', Ports('in'), '', 'receiver')]
 
     conduits = [
                 Conduit('dm.out', 'first.in'),
                 Conduit('dm.out2', 'second.in')]
 
-    model = Model('test_model', elements, conduits)
+    model = Model('test_model', None, '', None, components, conduits)
     settings = Settings()
 
-    configuration = Configuration(model, settings)
+    configuration = Configuration('test_dm', None, [model], None, settings)
 
     implementations = {
             'muscle.duplication_mapper': duplication_mapper,

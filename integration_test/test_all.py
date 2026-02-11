@@ -2,8 +2,8 @@ from collections import OrderedDict
 import sqlite3
 
 import numpy as np
-from ymmsl.v0_1 import (
-        Component, Conduit, Configuration, Model, Operator, Settings)
+from ymmsl.v0_2 import (
+        Component, Conduit, Configuration, Model, Operator, Ports, Settings)
 
 from libmuscle import Grid, Instance, Message
 from libmuscle.runner import run_simulation
@@ -91,15 +91,16 @@ def check_profile_output(tmp_path):
 def test_all(log_file_in_tmpdir, tmp_path):
     """A positive all-up test of everything.
     """
-    elements = [
-            Component('macro', 'macro_impl'),
-            Component('micro', 'micro_impl', [NUM_MICROS])]
+    components = [
+            Component('macro', Ports(o_i='out', s='in'), '', 'macro_impl'),
+            Component(
+                'micro', Ports('in', o_f='out'), '', 'micro_impl', False, [NUM_MICROS])]
 
     conduits = [
             Conduit('macro.out', 'micro.in'),
             Conduit('micro.out', 'macro.in')]
 
-    model = Model('test_model', elements, conduits)
+    model = Model('test_model', None, '', None, components, conduits)
     settings = Settings(OrderedDict([
                 ('test1', 13),
                 ('test2', 13.3),
@@ -108,7 +109,7 @@ def test_all(log_file_in_tmpdir, tmp_path):
                 ('test5', [2.3, 5.6]),
                 ('test6', [[1.0, 2.0], [3.0, 1.0]])]))
 
-    configuration = Configuration(model, settings)
+    configuration = Configuration('test_all', None, [model], None, settings)
 
     implementations = {'macro_impl': macro, 'micro_impl': micro}
     run_simulation(configuration, implementations)

@@ -74,6 +74,23 @@ def manage_simulation(
         ) -> None:
     """Run the MUSCLE3 Manager.
 
+    This is a thin wrapper so that we can call the implementation directly for testing
+    purposes. The decorators above change the signature so that this function can't be
+    called from Python anymore.
+    """
+    _manage_simulation(ymmsl_files, start_all, model, run_dir, log_level, location_file)
+
+
+def _manage_simulation(
+        ymmsl_files: Sequence[str],
+        start_all: bool,
+        model: Optional[str],
+        run_dir: Optional[str],
+        log_level: Optional[str],
+        location_file: Optional[str]
+        ) -> None:
+    """Run the MUSCLE3 Manager.
+
     The MUSCLE manager manages a coupled simulation. It can start the
     various submodels, and it helps them to find and connect to each
     other to exchange messages. The manager also distributes settings
@@ -85,9 +102,12 @@ def manage_simulation(
     times, then the value in the last file in the list to mention it is
     used.
     """
-    configuration = load_configuration(ymmsl_files)
-
-    # TODO: resolve here
+    try:
+        configuration = load_configuration(ymmsl_files)
+        v0_2.resolve(v0_2.Reference([]), configuration)
+    except RuntimeError as e:
+        print(f'An error occurred while loading the ymmsl files:\n{e}')
+        sys.exit(1)
 
     try:
         configuration.check_consistent(start_all)

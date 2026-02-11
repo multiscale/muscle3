@@ -1,0 +1,37 @@
+ymmsl_version: v0.2
+
+description: |
+  A model to import for testing. In turn, it will import some more implementations so
+  that we can test that everything works correctly.
+
+imports:
+- from codes.macro import implementation macro
+- from models.micro import implementation micro
+
+models:
+  macro_micro:
+    description: A macro-micro model implemented with a few abstraction layers
+    components:
+      macro:
+        ports:
+          o_i: out
+          s: in
+        description: The macro model, imported using a program imported above.
+        implementation: macro
+      micro:
+        ports:
+          f_init: init
+          o_f: final
+        description: The micro model, implemented using another model we imported above.
+        implementation: micro
+    conduits:
+      macro.out: micro.init
+      micro.final: macro.in
+
+resources:
+  macro:
+    threads: 1
+  micro.first:
+    threads: 1
+  micro.second:
+    threads: 1

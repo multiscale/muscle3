@@ -34,6 +34,16 @@ def yatiml_log_warning():
     yatiml.logger.setLevel(logging.WARNING)
 
 
+@pytest.fixture
+def ymmsl_path() -> str:
+    return str(Path(__file__).parent / 'ymmsl')
+
+
+@pytest.fixture
+def codes_path() -> str:
+    return str(Path(__file__).parent / 'codes')
+
+
 def ls_snapshots(run_dir, instance=None):
     """List all snapshots of the instance or workflow"""
     return sorted(run_dir.snapshot_dir(instance).iterdir(),

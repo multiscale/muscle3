@@ -6,7 +6,10 @@
 #include <stdexcept>
 #include <string>
 #include <sys/stat.h>
+#include <sys/stat.h>
 #include <thread>
+#include <unistd.h>
+#include <limits.h>
 
 
 using std::chrono::duration;
@@ -114,6 +117,16 @@ bool Retrier::should_give_up() {
 const double Retrier::default_base_delay_ = 0.5;
 const double Retrier::default_timeout_ = 30.0;
 const double Retrier::factor_ = std::pow(2.0, 1.0 / 3.0);
+int get_process_id() {
+    return ::getpid();
+}
+
+std::string get_hostname() {
+    char hostname[HOST_NAME_MAX+1];
+    if (::gethostname(hostname, HOST_NAME_MAX+1) != 0)
+        throw std::runtime_error("Could not get hostname");
+    return std::string(hostname);
+}
 
 } }
 

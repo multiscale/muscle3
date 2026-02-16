@@ -10,7 +10,7 @@ from typing import Dict, List, Optional
 from libmuscle.errors import ConfigurationError
 from libmuscle.manager.instantiator import (
         CancelAllRequest, CrashedResult, create_instance_env, InstantiationRequest,
-        Process, ProcessStatus, reconfigure_logging, ShutdownRequest)
+        MonitorRequest, Process, ProcessStatus, reconfigure_logging, ShutdownRequest)
 from libmuscle.native_instantiator.agent_manager import AgentManager
 from libmuscle.native_instantiator.global_resources import global_resources
 from libmuscle.native_instantiator.run_script import make_script, prep_resources
@@ -25,7 +25,7 @@ class NativeInstantiator(mp.Process):
     """Instantiates instances on the local machine."""
     def __init__(
             self, resources: mp.Queue, requests: mp.Queue, results: mp.Queue,
-            log_records: mp.Queue, run_dir: Path) -> None:
+            log_records: mp.Queue, run_dir: Path, mlp_location: str) -> None:
         """Create a NativeInstantiator
 
         Args:
@@ -34,6 +34,7 @@ class NativeInstantiator(mp.Process):
             results: Queue to communicate finished processes over
             log_messages: Queue to push log messages to
             run_dir: Run directory for the current run
+            mlp_location: MLPServer network location string for the agents to connect to
         """
         super().__init__(name='NativeInstantiator')
         self._resources_out = resources
@@ -41,7 +42,7 @@ class NativeInstantiator(mp.Process):
         self._results_out = results
         self._log_records_out = log_records
         self._run_dir = run_dir
-
+        self._mlp_location = mlp_location
         self._processes: Dict[str, Process] = dict()
 
     def run(self) -> None:
@@ -50,7 +51,7 @@ class NativeInstantiator(mp.Process):
             logs_dir = self._run_dir / 'logs'
             logs_dir.mkdir(exist_ok=True)
 
-            self._agent_manager = AgentManager(logs_dir)
+            self._agent_manager = AgentManager(logs_dir, self._mlp_location)
 
             reconfigure_logging(self._log_records_out)
             self._send_resources()
@@ -82,6 +83,11 @@ class NativeInstantiator(mp.Process):
                     if isinstance(request, ShutdownRequest):
                         _logger.debug('Got ShutdownRequest')
                         shutting_down = True
+
+                    if isinstance(request, MonitorRequest):
+                        _logger.debug('Got MonitorRequest')
+                        self._agent_manager.add_monitor(
+                                request.instance, request.hostname, request.pid)
 
                     elif isinstance(request, CancelAllRequest):
                         _logger.debug('Got CancelAllRequest')

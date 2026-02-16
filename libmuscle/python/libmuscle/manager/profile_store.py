@@ -102,6 +102,21 @@ class ProfileStore(ProfileDatabase):
         cur.execute("COMMIT")
         cur.close()
 
+    def add_event(
+            self, instance_id: Reference, event: ProfileEvent
+            ) -> None:
+        """Adds a profiling event to the database.
+
+        Args:
+            event: The event to add.
+        """
+        _logger.debug(f"Add profile event for instance {instance_id}, \
+                      cpu: {event.cpu_percent}, memory: {event.memory_usage}")
+
+        self._queue.put((instance_id, [event]))
+        if _SYNCHED:
+            self._confirmation_queue.get()
+
     def add_events(
             self, instance_id: Reference, events: Iterable[ProfileEvent]
             ) -> None:
@@ -122,12 +137,14 @@ class ProfileStore(ProfileDatabase):
         threads. So we use a single background thread now to do the
         writing.
         """
-        Record = Tuple[
+        ProfileRecord = Tuple[
                 int, int, float, float, Optional[str], Optional[int],
                 Optional[int], Optional[int], Optional[int], Optional[int],
                 Optional[float]]
+        UsageRecord = Tuple[
+                int, int, float, float, Optional[float], Optional[int]]
 
-        def to_tuple(e: ProfileEvent) -> Record:
+        def to_tuple(e: ProfileEvent) -> ProfileRecord:
             # Tell mypy this shouldn't happen
             assert e.start_time is not None
             assert e.stop_time is not None
@@ -141,6 +158,14 @@ class ProfileStore(ProfileDatabase):
                     e.port_length, e.slot, e.message_number, e.message_size,
                     e.message_timestamp)
 
+        def to_usage_tuple(e: ProfileEvent) -> UsageRecord:
+            assert e.start_time is not None
+            assert e.stop_time is not None
+
+            return (
+                    instance_oid, e.event_type.value, e.start_time.nanoseconds,
+                    e.stop_time.nanoseconds, e.cpu_percent, e.memory_usage)
+
         cur = self._get_cursor()
         batch = self._queue.get()
         while batch is not None:
@@ -151,13 +176,32 @@ class ProfileStore(ProfileDatabase):
 
             instance_oid = self._get_instance_oid(cur, instance_id)
 
-            cur.executemany(
-                    "INSERT INTO events"
-                    " (instance_oid, event_type_oid, start_time, stop_time,"
-                    "  port_name, port_operator_oid, port_length, slot,"
-                    "  message_number, message_size, message_timestamp)"
-                    " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    map(to_tuple, events))
+            # Split events into events and profile events
+            profile_events = []
+            usage_events = []
+            for e in events:
+                if e.event_type == ProfileEventType.RESOURCE_USAGE:
+                    usage_events.append(e)
+                else:
+                    profile_events.append(e)
+
+            if profile_events:
+                cur.executemany(
+                        "INSERT INTO events"
+                        " (instance_oid, event_type_oid, start_time, stop_time,"
+                        "  port_name, port_operator_oid, port_length, slot,"
+                        "  message_number, message_size, message_timestamp)"
+                        " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        map(to_tuple, profile_events))
+
+            if usage_events:
+                cur.executemany(
+                        "INSERT INTO usage_events"
+                        " (instance_oid, event_type_oid, start_time, stop_time,"
+                        "  cpu_percent, memory_usage)"
+                        " VALUES (?, ?, ?, ?, ?, ?)",
+                        map(to_usage_tuple, usage_events))
+
             cur.execute("COMMIT")
             if _SYNCHED:
                 self._confirmation_queue.put(None)
@@ -239,9 +283,21 @@ class ProfileStore(ProfileDatabase):
                 "    message_size INTEGER,"
                 "    message_timestamp DOUBLE)")
 
+        cur.execute(
+                "CREATE TABLE usage_events ("
+                "    instance_oid INTEGER NOT NULL REFERENCES instances(oid),"
+                "    event_type_oid INTEGER NOT NULL REFERENCES event_types(oid),"
+                "    start_time INTEGER NOT NULL,"
+                "    stop_time INTEGER NOT NULL,"
+                "    cpu_percent DOUBLE,"
+                "    memory_usage INTEGER)")
+
         cur.execute("CREATE INDEX instances_oid_idx ON instances(oid)")
 
         cur.execute("CREATE INDEX events_start_time_idx ON events(start_time)")
+        cur.execute(
+                "CREATE INDEX usage_events_start_time_idx"
+                " ON usage_events(start_time)")
 
         cur.execute(
                 "CREATE VIEW all_events"

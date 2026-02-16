@@ -11,6 +11,7 @@ from libmuscle.manager.logger import Logger
 from libmuscle.manager.mmp_server import MMPServer
 from libmuscle.manager.instance_manager import InstanceManager
 from libmuscle.manager.profile_store import ProfileStore
+from libmuscle.manager.mlp_server import MLPServer
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.manager.snapshot_registry import SnapshotRegistry
 from libmuscle.manager.topology_store import TopologyStore
@@ -67,12 +68,15 @@ class Manager:
                 for c in self._configuration.model.components
                 for instance_name in c.instances()])
 
+        self._mlp_server = MLPServer(self._logger, self._profile_store)
+
         self._instance_manager: Optional[InstanceManager] = None
         try:
             configuration = self._configuration.as_configuration()
             if self._run_dir is not None:
                 self._instance_manager = InstanceManager(
-                        configuration, self._run_dir, self._instance_registry)
+                        configuration, self._run_dir, self._instance_registry,
+                        mlp_location=self._mlp_server.get_location())
         except ValueError:
             pass
 
@@ -85,7 +89,8 @@ class Manager:
         self._server = MMPServer(
                 self._logger, self._profile_store, self._configuration,
                 self._instance_registry, self._topology_store,
-                self._snapshot_registry, self._deadlock_detector, run_dir)
+                self._snapshot_registry, self._deadlock_detector, run_dir,
+                instance_manager=self._instance_manager)
 
         if self._instance_manager:
             self._instance_manager.set_manager_location(
@@ -124,6 +129,7 @@ class Manager:
         if self._instance_manager:
             self._instance_manager.shutdown()
         self._server.stop()
+        self._mlp_server.stop()
         self._snapshot_registry.shutdown()
         self._snapshot_registry.join()
         self._profile_store.shutdown()

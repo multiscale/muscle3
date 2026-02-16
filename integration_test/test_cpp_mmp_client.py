@@ -52,7 +52,7 @@ def do_mmp_client_test(tmpdir, caplog):
     # add some peers
     manager._instance_registry.add(
             Reference('macro'), ['tcp:test3', 'tcp:test4'],
-            [Port('out', Operator.O_I), Port('in', Operator.S)])
+            [Port('out', Operator.O_I), Port('in', Operator.S)], 1234, "test_host")
 
     # create C++ client
     # it runs through the various RPC calls

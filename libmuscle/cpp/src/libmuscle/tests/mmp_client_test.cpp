@@ -44,7 +44,8 @@ void test_submit_log_message(MMPClient & client) {
 void test_register_instance(MMPClient & client) {
     client.register_instance(
             {"tcp:test1", "tcp:test2"},
-            {Port("out", Operator::O_F), Port("in", Operator::F_INIT)});
+            {Port("out", Operator::O_F), Port("in", Operator::F_INIT)},
+            1235, "localhost");
 }
 
 void test_request_peers(MMPClient & client) {

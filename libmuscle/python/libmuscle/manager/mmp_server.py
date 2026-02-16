@@ -25,6 +25,7 @@ from libmuscle.profiling import (
         ProfileEvent, ProfileEventType, ProfileTimestamp)
 from libmuscle.snapshot import SnapshotMetadata
 from libmuscle.timestamp import Timestamp
+from libmuscle.manager.instance_manager import InstanceManager
 
 
 _logger = logging.getLogger(__name__)
@@ -79,7 +80,8 @@ class MMPRequestHandler(RequestHandler):
             topology_store: TopologyStore,
             snapshot_registry: SnapshotRegistry,
             deadlock_detector: DeadlockDetector,
-            run_dir: Optional[RunDir]
+            run_dir: Optional[RunDir],
+            instance_manager: Optional[InstanceManager] = None,
             ) -> None:
         """Create an MMPRequestHandler.
 
@@ -98,6 +100,7 @@ class MMPRequestHandler(RequestHandler):
         self._deadlock_detector = deadlock_detector
         self._run_dir = run_dir
         self._reference_time = time.monotonic()
+        self._instance_manager = instance_manager
 
     def handle_request(self, request: bytes) -> bytes:
         """Handles a manager request.
@@ -146,13 +149,15 @@ class MMPRequestHandler(RequestHandler):
 
     def _register_instance(
             self, instance_id: str, locations: List[str],
-            ports: List[List[str]], version: str = '') -> Any:
+            ports: List[List[str]], pid: int, hostname: str, version: str = '') -> Any:
         """Handle a register instance request.
 
         Args:
             instance_id: ID of the instance to register
             locations: Locations where it can be reached
             ports: Ports of this instance
+            pid: PID of the instance
+            hostname: Hostname of the instance
             version: Version of libmuscle that this instance uses
 
         Returns:
@@ -169,11 +174,14 @@ class MMPRequestHandler(RequestHandler):
                     f' manager libmuscle version ({libmuscle.__version__}).'
                     ' Please ensure that the instance and the manager use the'
                     ' same version of libmuscle.']
-
         port_objs = [decode_port(p) for p in ports]
         instance = Reference(instance_id)
+
+        if self._instance_manager:
+            self._instance_manager.monitor_process(instance_id, hostname, pid)
+
         try:
-            self._instance_registry.add(instance, locations, port_objs)
+            self._instance_registry.add(instance, locations, port_objs, pid, hostname)
 
             _logger.info(f'Registered instance {instance_id}')
             return [ResponseType.SUCCESS.value]
@@ -417,7 +425,8 @@ class MMPServer:
             topology_store: TopologyStore,
             snapshot_registry: SnapshotRegistry,
             deadlock_detector: DeadlockDetector,
-            run_dir: Optional[RunDir]
+            run_dir: Optional[RunDir],
+            instance_manager: Optional[InstanceManager]
             ) -> None:
         """Create an MMPServer.
 
@@ -439,7 +448,8 @@ class MMPServer:
         """
         self._handler = MMPRequestHandler(
                 logger, profile_store, configuration, instance_registry,
-                topology_store, snapshot_registry, deadlock_detector, run_dir)
+                topology_store, snapshot_registry, deadlock_detector, run_dir,
+                instance_manager=instance_manager)
         try:
             self._server = TcpTransportServer(self._handler, 9000)
         except OSError as e:

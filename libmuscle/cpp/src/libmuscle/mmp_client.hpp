@@ -104,7 +104,9 @@ class MMPClient {
          */
         void register_instance(
                 std::vector<std::string> const & locations,
-                std::vector<::ymmsl::Port> const & ports);
+                std::vector<::ymmsl::Port> const & ports,
+                int const process_id,
+                std::string const & hostname);
 
         /** Request connection information about peers.
          *

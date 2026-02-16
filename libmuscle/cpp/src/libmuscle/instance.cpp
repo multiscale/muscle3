@@ -474,7 +474,7 @@ void Instance::Impl::register_() {
     ProfileEvent register_event(ProfileEventType::register_, ProfileTimestamp());
     auto locations = communicator_->get_locations();
     auto port_list = list_declared_ports_();
-    manager_->register_instance(locations, port_list);
+    manager_->register_instance(locations, port_list, get_process_id(), get_hostname());
     profiler_->record_event(std::move(register_event));
     log_info("Registered with the manager");
 }

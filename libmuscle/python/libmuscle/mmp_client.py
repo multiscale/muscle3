@@ -1,6 +1,8 @@
 import dataclasses
+from os import getpid
 from pathlib import Path
 from random import uniform
+from socket import gethostname
 from threading import get_ident, RLock
 from time import perf_counter, sleep
 from typing import Any, Dict, Iterable, List, Optional, Tuple
@@ -57,7 +59,8 @@ def encode_profile_event(event: ProfileEvent) -> Any:
             event.event_type.value,
             event.start_time.nanoseconds, event.stop_time.nanoseconds,
             encoded_port, event.port_length, event.slot,
-            event.message_number, event.message_size, event.message_timestamp]
+            event.message_number, event.message_size, event.message_timestamp,
+            event.cpu_percent, event.memory_usage]
 
 
 def decode_checkpoint_rule(rule: Dict[str, Any]) -> CheckpointRule:
@@ -232,6 +235,7 @@ class MMPClient():
                 RequestType.REGISTER_INSTANCE.value,
                 str(self._instance_id), locations,
                 [encode_port(p) for p in ports],
+                getpid(), gethostname(),
                 libmuscle.__version__]
         response = self._call_manager(request)
         if response[0] == ResponseType.ERROR.value:

@@ -8,7 +8,8 @@ from libmuscle.mcp.protocol import AgentCommandType, RequestType, ResponseType
 from libmuscle.mcp.tcp_transport_server import TcpTransportServer
 from libmuscle.mcp.transport_server import RequestHandler
 from libmuscle.native_instantiator.agent.agent_commands import (
-        AgentCommand, CancelAllCommand, ShutdownCommand, StartCommand)
+        AgentCommand, AddMonitorCommand, CancelAllCommand, ShutdownCommand,
+        StartCommand)
 from libmuscle.native_instantiator.iagent_manager import IAgentManager
 from libmuscle.planner.resources import Core, CoreSet, OnNodeResources
 from libmuscle.post_office import PostOffice
@@ -49,7 +50,8 @@ class MAPRequestHandler(RequestHandler):
             response = self._get_command(*req_args)
         elif req_type == RequestType.REPORT_RESULT.value:
             response = self._report_result(*req_args)
-
+        else:
+            _logger.warning(f'Unknown request type {req_type}')
         return cast(bytes, msgpack.packb(response, use_bin_type=True))
 
     def _report_resources(
@@ -165,6 +167,11 @@ class MAPServer:
             command_obj = [
                     AgentCommandType.START.value, command.name, str(command.work_dir),
                     command.args, command.env, str(command.stdout), str(command.stderr)
+                    ]
+        elif isinstance(command, AddMonitorCommand):
+            command_obj = [
+                    AgentCommandType.ADD_MONITOR.value, command.instance,
+                    command.hostname, command.pid
                     ]
         elif isinstance(command, CancelAllCommand):
             command_obj = [AgentCommandType.CANCEL_ALL.value]

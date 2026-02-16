@@ -23,3 +23,10 @@ class CancelAllCommand(AgentCommand):
 
 class ShutdownCommand(AgentCommand):
     pass
+
+
+@dataclass
+class AddMonitorCommand(AgentCommand):
+    instance: str
+    hostname: str
+    pid: int

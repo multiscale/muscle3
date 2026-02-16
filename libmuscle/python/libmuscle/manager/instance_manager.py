@@ -12,7 +12,8 @@ from libmuscle.errors import ConfigurationError
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.instantiator import (
         CancelAllRequest, CrashedResult, InstantiatorRequest,
-        InstantiationRequest, Process, ProcessStatus, ShutdownRequest)
+        InstantiationRequest, Process, ProcessStatus, ShutdownRequest,
+        MonitorRequest)
 from libmuscle.manager.logger import last_lines
 from libmuscle.manager.run_dir import RunDir
 from libmuscle.native_instantiator.native_instantiator import NativeInstantiator
@@ -62,17 +63,19 @@ class InstanceManager:
     """Instantiates and manages running instances"""
     def __init__(
             self, configuration: Configuration, run_dir: RunDir,
-            instance_registry: InstanceRegistry) -> None:
+            instance_registry: InstanceRegistry, mlp_location: str) -> None:
         """Create an InstanceManager.
 
         Args:
             configuration: The global configuration
             run_dir: Directory to run in
             instance_registry: The InstanceRegistry to use
+            mlp_location: Location of the MUSCLE Log Protocol server
         """
         self._configuration = configuration
         self._run_dir = run_dir
         self._instance_registry = instance_registry
+        self._mlp_location = mlp_location
 
         self._resources_in: Queue[Resources] = Queue()
         self._requests_out: Queue[InstantiatorRequest] = Queue()
@@ -81,7 +84,8 @@ class InstanceManager:
 
         self._instantiator = NativeInstantiator(
                 self._resources_in, self._requests_out, self._results_in,
-                self._log_records_in, self._run_dir.path)
+                self._log_records_in, self._run_dir.path,
+                mlp_location=self._mlp_location)
         self._instantiator.start()
 
         self._log_handler = LogHandlingThread(self._log_records_in)
@@ -157,6 +161,16 @@ class InstanceManager:
                     'Tried to get resources but we are running without --start-all')
 
         return self._allocations
+
+    def monitor_process(self, instance_id: str, hostname: str, process_id: int) -> None:
+        """Monitor a process for resource usage.
+
+        Args:
+            instance_id: The ID of the instance
+            hostname: The hostname of the process
+            process_id: The process ID of the process
+        """
+        self._requests_out.put(MonitorRequest(instance_id, hostname, process_id))
 
     def wait(self) -> bool:
         """Waits for all instances to be done."""

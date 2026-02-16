@@ -7,6 +7,7 @@ from time import sleep
 from typing import Dict, List, Tuple
 
 from libmuscle.native_instantiator.agent.agent_commands import (
+        AddMonitorCommand,
         CancelAllCommand, StartCommand, ShutdownCommand)
 from libmuscle.native_instantiator.iagent_manager import IAgentManager
 from libmuscle.native_instantiator.map_server import MAPServer
@@ -29,7 +30,7 @@ class AgentManager(IAgentManager):
     cancel processes on nodes, and it gets called by MAPServer with requests from the
     agents.
     """
-    def __init__(self, agent_dir: Path) -> None:
+    def __init__(self, agent_dir: Path, mlp_location: str) -> None:
         """Create an AgentManager.
 
         Create the object, then launch the agents and wait for them to connect and send
@@ -37,6 +38,7 @@ class AgentManager(IAgentManager):
 
         Args:
             agent_dir: Directory in which agents can write log files.
+            mlp_location: Location of the MLP server.
         """
         self._expected_nodes = global_resources().nodes
         self._nodes: Dict[str, str] = dict()
@@ -47,7 +49,7 @@ class AgentManager(IAgentManager):
         self._finished_processes_lock = Lock()
 
         self._server = MAPServer(self)
-        self._launch_agents(agent_dir, self._server.get_location())
+        self._launch_agents(agent_dir, self._server.get_location(), mlp_location)
 
     def get_resources(self) -> Resources:
         """Return detected resources.
@@ -79,6 +81,17 @@ class AgentManager(IAgentManager):
         agent_hostname = self._nodes[node_name]
         command = StartCommand(name, work_dir, args, env, stdout, stderr)
         self._server.deposit_command(agent_hostname, command)
+
+    def add_monitor(self, instance: str, hostname: str, pid: int) -> None:
+        """Handle a monitor usage request.
+
+        Args:
+            instance: Name of the instance to monitor
+            hostname: Hostname of the node to monitor
+            pid: Process id to monitor
+        """
+        self._server.deposit_command(
+                hostname, AddMonitorCommand(instance, hostname, pid))
 
     def cancel_all(self) -> None:
         """Cancel all processes.
@@ -164,7 +177,9 @@ class AgentManager(IAgentManager):
         with self._finished_processes_lock:
             self._finished_processes.extend(names_exit_codes)
 
-    def _launch_agents(self, agent_dir: Path, server_location: str) -> None:
+    def _launch_agents(
+            self, agent_dir: Path, server_location: str, mlp_location: str
+            ) -> None:
         """Actually launch the agents.
 
         This runs a local process, either to start a single agent locally, or on a
@@ -174,6 +189,7 @@ class AgentManager(IAgentManager):
             agent_dir: Working directory for the agents
             server_location: MAPServer network location string for the agents to
                 connect to
+            mlp_location: MLPServer network location string for the agents to connect to
         """
         _logger.info('Launching MUSCLE agents...')
 
@@ -186,7 +202,7 @@ class AgentManager(IAgentManager):
 
         args = [
                 sys.executable, '-m', 'libmuscle.native_instantiator.agent',
-                server_location, str(log_level)]
+                server_location, str(log_level), mlp_location]
 
         args = global_resources().agent_launch_command(args)
 

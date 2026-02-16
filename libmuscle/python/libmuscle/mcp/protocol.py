@@ -35,6 +35,9 @@ class RequestType(Enum):
     GET_COMMAND = 42
     REPORT_RESULT = 43
 
+    # MUSCLE Log Protocol
+    REPORT_USAGE = 51
+
 
 class ResponseType(Enum):
     """Identifier for different types of response
@@ -57,3 +60,4 @@ class AgentCommandType(Enum):
     START = 1
     CANCEL_ALL = 2
     SHUTDOWN = 3
+    ADD_MONITOR = 4

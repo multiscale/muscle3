@@ -18,6 +18,7 @@ class ProfileEventType(Enum):
     DISCONNECT_WAIT = 8
     SHUTDOWN = 10
     DEREGISTER = 1
+    RESOURCE_USAGE = 11
 
 
 class ProfileTimestamp:
@@ -62,6 +63,8 @@ class ProfileEvent:
         message_size: Size of the message involved, if applicable.
         message_timestamp: Timestamp sent with the message, if
                 applicable.
+        cpu_percent: CPU usage in percent, if applicable.
+        memory_usage: Memory usage in bytes, if applicable.
 
     Attributes:
         event_type: Type of event that was measured.
@@ -77,6 +80,8 @@ class ProfileEvent:
         message_size: Size of the message involved, if applicable.
         message_timestamp: Timestamp sent with the message, if
                 applicable.
+        cpu_percent: CPU usage in percent, if applicable.
+        memory_usage: Memory usage in bytes, if applicable.
     """
     def __init__(
             self,
@@ -88,7 +93,9 @@ class ProfileEvent:
             slot: Optional[int] = None,
             message_number: Optional[int] = None,
             message_size: Optional[int] = None,
-            message_timestamp: Optional[float] = None
+            message_timestamp: Optional[float] = None,
+            cpu_percent: Optional[float] = None,
+            memory_usage: Optional[int] = None
             ) -> None:
 
         self.event_type = event_type
@@ -100,6 +107,8 @@ class ProfileEvent:
         self.message_number = message_number
         self.message_size = message_size
         self.message_timestamp = message_timestamp
+        self.cpu_percent = cpu_percent
+        self.memory_usage = memory_usage
 
     def start(self) -> None:
         """Sets start_time to the current time.

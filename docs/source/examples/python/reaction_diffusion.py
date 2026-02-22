@@ -5,7 +5,7 @@ import numpy as np
 
 from libmuscle import Grid, Instance, Message
 from libmuscle.runner import run_simulation
-from ymmsl.v0_1 import (
+from ymmsl.v0_2 import (
         Component, Conduit, Configuration, Model, Operator, Ports, Settings)
 
 
@@ -128,17 +128,23 @@ if __name__ == '__main__':
 
     components = [
             Component(
-                'macro', 'diffusion', None,
-                Ports(o_i=['state_out'], s=['state_in'])),
+                'macro', Ports(o_i=['state_out'], s=['state_in']),
+                'This is the macro model, which calculates the diffusion',
+                implementation='diffusion'),
             Component(
-                'micro', 'reaction', None,
-                Ports(f_init=['initial_state'], o_f=['final_state']))]
+                'micro', Ports(f_init=['initial_state'], o_f=['final_state']),
+                'This is the micro model, which calculates the reaction',
+                implementation='reaction')]
 
     conduits = [
             Conduit('macro.state_out', 'micro.initial_state'),
             Conduit('micro.final_state', 'macro.state_in')]
 
-    model = Model('reaction_diffusion', components, conduits)
+    model = Model(
+            'reaction_diffusion',
+            description='Reaction-diffusion model example',
+            components=components, conduits=conduits)
+
     settings = Settings({
         'micro.t_max': 2.469136e-6,
         'micro.dt': 2.469136e-8,
@@ -150,7 +156,8 @@ if __name__ == '__main__':
         'd': 4.05e-2      # diffusion parameter
         })
 
-    configuration = Configuration(model, settings)
+    configuration = Configuration(
+            'Macro-micro configuration', models=[model], settings=settings)
 
     implementations = {'diffusion': diffusion, 'reaction': reaction}
     run_simulation(configuration, implementations)

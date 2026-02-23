@@ -1,0 +1,14 @@
+ymmsl_version: v0.2
+
+description: |
+  # Resources for the Reaction-Diffusion model
+
+  This file contains resource definitions for the reaction-diffusion model. It assumes
+  that both components are implemented by a single-threaded implementations. For
+  parallel implementations, see rd_resources_mpi.ymmsl.
+
+resources:
+  macro:
+    threads: 1
+  micro:
+    threads: 1

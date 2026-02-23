@@ -1,4 +1,10 @@
-ymmsl_version: v0.1
+ymmsl_version: v0.2
+description: |
+  # Settings for the reaction-diffusion model
+
+  These set the macro model to use large time steps, and the micro model to use very
+  small ones. Also, the total runtime for the micro model is much shorter than the
+  timestep of the macro model, making this a timescale separated model.
 
 settings:
   muscle_local_log_level: INFO

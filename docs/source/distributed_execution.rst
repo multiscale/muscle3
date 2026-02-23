@@ -2,41 +2,31 @@ Distributed execution
 =====================
 
 In the previous section, we created a simple macro-micro multiscale model with
-MUSCLE3, and ran it as a single Python script. This section briefly explains
-how to go from there to a distributed simulation, possibly on multiple nodes.
+MUSCLE3, and ran it as a single Python script. This section explains
+how to go from there to running separate programs, possibly on multiple nodes.
 
-Note that distributed simulations are not as easy to use as we would like them
-to be yet. All the necessary pieces are in place however. Below, we explain how
-they work. If you want to run the example below using a premade script, then you
-can go to the ``docs/examples/`` directory in the source code, and set up and
-run the Python example like this:
-
-.. code-block:: bash
-
-  docs/examples$ make python
-  docs/examples$ ./reaction_diffusion_python.sh
-
-
-Below, we explain how it works and how to run it by hand. First though, a bit of
-terminology:
+Previously, we've seen that MUSCLE3 simulations are built out of components, which have
+implementations. To get set up, we'll define those here, and add a third concept,
+instance:
 
 Component
-  Coupled simulations are built out of components. A component is a model, or
-  some none-model helper component that e.g. converts data, samples parameters,
-  or does load balancing. Components have ports, which can be connected by
-  conduits. Components are abstract things in the MUSCLE3 configuration.
+  Coupled simulations are built out of components. A component simulates some real-world
+  process, or it can perform some in-simulation job like data conversion, sampling, or
+  load balancing. Components have ports, which can be connected using conduits.
+  Components are abstract objects in the MUSCLE3 configuration.
 
 Implementation
   An implementation is a computer program that implements a particular
   component. If you browse through the examples, you'll find implementations of
   the reaction and diffusion models in different programming languages. They all
-  implement the same model (component) though.
+  simulate the same thing in the same way though, and can be used to implement the same
+  components.
 
 Instance
   An instance is a running program. Instances are made by starting, or
   instantiating, an implementation. Components have an attribute called their
   *multiplicity* which specifies how many instances of the associated
-  implementation there are. Often, and by default, this will be one but for
+  implementation there are. Often and by default this will be one, but for
   e.g. UQ ensembles or spatial scale separation many instances of a component
   may be required.
 
@@ -68,32 +58,36 @@ diffusion model:
 Again, it's exactly the same code as before, just split off into a separate
 file.
 
+
 yMMSL files
 -----------
 
-In a distributed set-up, the manager and each instance run as separate programs,
-communicating via the network. To make this work, we need to describe how the
-different models need to be connected, how the programs implementing them need
-to be started, and we may want to configure them by specifying some simulation
-settings. All this information is stored in one or more yMMSL files. This is the
-YAML version of the Multiscale Modelling and Simulation Language, in case you
-were wondering about the acronym.
+The third part of our coupled model is the coupling itself. In a distributed set-up,
+this is not described in Python, but in a configuration file in the yMMSL format. yMMSL
+is a text-based format, YAML in fact, so you can edit it with a normal text editor.
+
+Like before, we'll need to describe the components and conduits, as well as the
+settings. Additionally, we now need to tell MUSCLE3 how to start the programs we use as
+implementations, and how many resources they'll each need.
 
 It is often convenient to split your configuration over multiple files. That
 way, you can easily run the same simulation with different settings for example:
 just specify a different settings file while keeping the others the same.
 
-Here is a yMMSL file describing our previous example. Note that it's one
+The model
+`````````
+
+Here is a yMMSL file describing the model from our previous example. Note that it's one
 directory up, in the ``examples/`` dir rather than under ``examples/python``.
 This is because there are some examples that mix languages as well.
 
-.. literalinclude:: examples/rd_python.ymmsl
-  :caption: ``docs/source/examples/rd_python.ymmsl``
+.. literalinclude:: examples/rd_model.ymmsl
+  :caption: ``docs/source/examples/rd_model.ymmsl``
   :language: yaml
 
 
-As you can see, this looks like the object representation, although there are a
-few more things being specified. You can load a yMMSL file from Python using
+As you can see, this has all the same terms we saw in the Python version, but it's not
+written in YAML format. You can load a yMMSL file from Python using
 `ymmsl.load
 <https://ymmsl-python.readthedocs.io/en/stable/overview.html#reading-ymmsl-files>`_ and
 save it back using `ymmsl.save
@@ -103,39 +97,61 @@ Let's have a look at this file:
 
 .. code-block:: yaml
 
-  ymmsl_version: v0.1
+  ymmsl_version: v0.2
 
-  model:
-    name: reaction_diffusion_python
+  models:
+    reaction_diffusion:
+      description: |
+        # Reaction-Diffusion model with time scale separation.
+
+        The diffusion model is run at a much lager timestep than the reaction model,
+        making this a multiscale model with the diffusion model simulating the macro
+        dynamics and the reaction model the micro dynamics.
 
 
-This specifies the version of the file format (``v0.1`` is currently the only
-version), and the name of the model.
+This specifies the version of the file format (``v0.2`` is the current version), and the
+name of the model. yMMSL files can contain multiple model definitions, but here we have
+only one. The model has a description, which is a string that's formatted here using the
+``|`` format. This is standard YAML syntax indicating a multi-line string. You can and
+should use MarkDown formatting here.
 
 .. code-block:: yaml
 
   components:
     macro:
-      implementation: diffusion_python
       ports:
         o_i: state_out
         s: state_in
-
+      description: |
+        This is the macro model, which calculates the diffusion
+      implementation: diffusion_python
     micro:
-      implementation: reaction_python
       ports:
         f_init: initial_state
         o_f: final_state
+      description: |
+        This is the micro model, which calculates the reaction
+      implementation: reaction_python
 
 
-We have seen the ``macro`` and ``micro`` components before. The implementations
-have an added ``_python`` in their names here, because there are also examples
-in other languages. A new thing is that the ports are now declared in the
-configuration (they are also still in the code, and need to be). The manager
-needs this information to be able to assign resources to the components. You
-can write a list of ports if you have more than one port for an operator, see
-`ymmsl.Ports
-<https://ymmsl-python.readthedocs.io/en/develop/api.html#ymmsl.Ports>`_.
+We have seen the ``macro`` and ``micro`` components before. They have the same ports and
+description as in Python, but the implementations have an added ``_python`` in their
+names here, because we have implementations in other languages as well (more on those in
+the language sections).
+
+If a component has multiple ports for an operator, then the names can be added to the
+line separated by spaces, or you can specify a list of them in one of these ways:
+
+.. code-block:: yaml
+
+  f_init: port1 port2
+  o_i:
+  - port3
+  - port4
+  o_f: [port5, port6]
+
+
+In this case, there is at most one port per operator.
 
 .. code-block:: yaml
 
@@ -146,42 +162,54 @@ can write a list of ports if you have more than one port for an operator, see
 
 Here are the conduits that connect the models together. The ports used here
 should match those given above, of course. As before, ``macro`` sends messages
-on its ``state_out`` port to ``micro``s ``initial_state``, and ``micro`` sends
-its answer on its ``final_state`` port, which is routed to ``macro``s
+on its ``state_out`` port to ``micro``'s ``initial_state``, and ``micro`` sends
+its answer on its ``final_state`` port, which is routed to ``macro``'s
 ``state_in``.
 
+
+Settings
+````````
+
+To simulate a specific system, we'll need to configure the model with some settings.
+These are in a file named ``rd_settings.ymmsl``:
+
+.. literalinclude:: examples/rd_settings.ymmsl
+  :caption: ``docs/source/examples/rd_settings.ymmsl``
+  :language: yaml
+
+
+This matches what we've seen before in the integrated Python example, it's now
+just written up as YAML.
+
+
+Programs
+````````
+
+To run the simulation MUSCLE3 will have to start our Python programs, and we need to
+tell it how to do that. This is done by some definitions in
+``rd_programs.ymmsl``. Note that this file actually contains definitions for all
+of our programs, but we'll focus on the Python ones here:
+
+
 .. code-block:: yaml
 
-  resources:
-    macro:
-      threads: 1
-    micro:
-      threads: 1
-
-
-Finally, we need to tell MUSCLE3 which resources each model instance should be
-given. For the moment, only the number of threads or MPI processes can be
-specified. In this case, the implementations are single-threaded Python
-scripts, so we specify one thread each. See `the yMMSL documentation on
-resources
-<https://ymmsl-python.readthedocs.io/en/master/ymmsl_python.html#resources>`_
-for other options.
-
-To be able to instantiate this model, we still need to define the
-``diffusion_python`` and ``reaction_python`` implementations. We also need some
-settings for the configuration. These are specified in two additional files,
-``rd_implementations.ymmsl`` and ``rd_settings.ymmsl``. The former actually
-contains definitions for all the example implementations, but we'll focus on the
-parts that define the Python ones we're using here:
-
-.. code-block:: yaml
-
-  implementations:
+  programs:
     reaction_python:
+      ports:
+        f_init: initial_state
+        o_f: final_state
+      description: Reaction model implemented in Python
       executable: python
       args: <muscle3_src>/docs/source/examples/python/reaction.py
 
+    # ... other programs ...
+
     diffusion_python:
+      ports:
+        o_i: state_out
+        s: state_in
+        o_f: final_state_out
+      description: Diffusion model implemented in Python
       executable: python
       args: <muscle3_src>/docs/source/examples/python/diffusion.py
 
@@ -191,7 +219,7 @@ As you can see, there are some absolute paths here, with a prefix shown here as
 directory then you should have a version of this file with the correct paths for
 your local setup.
 
-There are two implementations shown here, which the components above refer to by
+There are two programs shown here, which the components above refer to by
 name. They are Python scripts, so we need to run ``python /path/to/reaction.py``
 or equivalent for the ``diffusion.py`` script, and that is exactly these
 definitions do. Of course, it's also possible to add a ``#!/usr/bin/env
@@ -201,20 +229,28 @@ executable.
 The scripts have some dependencies, which will be installed in a virtual
 environment in which we'll run the whole simulation, so we don't need to do any
 other environment setup here, but MUSCLE3 is capable of running each
-implementation in a separate environment if needed. See `the yMMSL
-documentation on implementations
-<https://ymmsl-python.readthedocs.io/en/stable/api.html#ymmsl.Implementation>`_
-for more information.
+program in a separate environment if needed. See `the yMMSL
+documentation on programs
+<https://ymmsl-python.readthedocs.io/en/stable/api.html#ymmsl.v0_2.Program>`_
+for more information on how to specify a virtual environment, set environment variables,
+load environment modules, and more.
 
-Finally, the settings in ``rd_settings.ymmsl``:
+Resources
+`````````
 
-.. literalinclude:: examples/rd_settings.ymmsl
-  :caption: ``docs/source/examples/rd_settings.ymmsl``
+Finally, we need to tell MUSCLE3 which resources each model instance should be
+given. This information is contained in ``rd_resources.ymmsl``:
+
+.. literalinclude:: examples/rd_resources.ymmsl
+  :caption: ``docs/source/examples/rd_resources.ymmsl``
   :language: yaml
 
 
-This matches what we've seen before in the integrated Python example, it's now
-just written up as YAML.
+In this case, the implementations are single-threaded Python
+scripts, so we specify one thread each. See `the yMMSL documentation on
+resources
+<https://ymmsl-python.readthedocs.io/en/master/ymmsl_python.html#resources>`_
+for other options, including for OpenMP and MPI.
 
 
 Starting the simulation
@@ -235,12 +271,12 @@ directory like this:
 .. code-block:: bash
 
   . python/build/venv/bin/activate
-  muscle_manager --start-all rd_implementations.ymmsl rd_python.ymmsl rd_settings.ymmsl
+  muscle_manager --start-all rd_model.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
 
 
 This will start the manager, run the simulation, plot the results on the screen,
 and when you close the plot, finish the simulation. It will also produce a
-directory named ``run_reaction_diffusion_python_<date>_<time>`` in which some
+directory named ``run_reaction_diffusion_<date>_<time>`` in which some
 output is written. Have a look at the ``muscle3_manager.log`` file for an
 overview of the execution, or see ``instance/<instance>/stderr.txt`` for log
 output of a particular instance (we use the default Python logging configuration
@@ -270,7 +306,7 @@ Determining resource requirements
 `````````````````````````````````
 
 The MUSCLE Manager will automatically detect when it's inside of a SLURM
-allocation, and instantiate implementations accordingly. However, that
+allocation, and instantiate programs accordingly. However, that
 allocation still needs to be made by the user, and to do that we need to know
 how many resources to request. Since instances may share resources (cores) in
 some cases, this is not easy to see from the configuration.
@@ -294,12 +330,12 @@ For example, for the Python example above, we can run:
 
 .. code-block:: bash
 
-  muscle3 resources --cores-per-node 16 rd_implementations.ymmsl rd_python.ymmsl rd_settings.ymmsl
+  muscle3 resources --cores-per-node 16 rd_model.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
 
 
 and be informed that we'll need only a single node. (``rd_settings.ymmsl`` is
 actually redundant here and could be omitted, the analysis is based only on the
-model components, conduits, implementations and resources.)
+model components, conduits, programs and resources.)
 
 To get more insight into how the instances will be divided over the available
 resources, you can use the ``-v`` option to enable verbose output. For the
@@ -320,39 +356,39 @@ coupling pattern. For more interesting output, try this command on the example
 from the :ref:`Uncertainty Quantification` section, and increase the number of
 instances a bit.
 
-To determine whether models can overlap, MUSCLE3 assumes that models do not do
-any significant amount of computation before receiving the F_INIT messages, in
-between having sent the O_I messages and receiving the S messages, and after
-having sent the O_F messages. If an implementation does do this, then the
+To determine whether models can overlap, MUSCLE3 assumes that programs do not do
+any significant amount of computation before receiving the ``F_INIT`` messages, in
+between having sent the ``O_I`` messages and receiving the ``S`` messages, and after
+having sent the ``O_F`` messages. If a program does do this, then the
 simulation will still run, but different models may end up competing for the
-same cores. This will slow down the simulation. To avoid this, an implementation
+same cores, which will slow down the simulation. To avoid this, a program
 may be marked as not being able to share resources:
 
 .. code-block::
 
-  implementations:
+  programs:
     industrious:
       executable: /home/user/models/industrious
       execution_model: openmpi
       can_share_resources: false
 
 
-If an implementation is marked as such, the MUSCLE Manager will give it a set of
+If a program is marked as such, the MUSCLE Manager will give it a set of
 cores of its own, so that it can compute whenever it wants.
 
 Loading modules
 ```````````````
 
 On an HPC machine, you often need to load some environment modules to make
-needed software available. If an implementation needs to have modules available
+needed software available. If a program needs to have modules available
 to run, then you should use the ``modules`` option when describing the
-implementation:
+program:
 
 .. code-block:: yaml
 
-  implementations:
+  programs:
     on_hpc:
-      modules: c++ openmpi
+      modules: GCC/14.3.0 OpenMPI/5.0.3
       executable: /home/user/models/mpi_model
       execution_model: openmpi
 

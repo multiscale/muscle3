@@ -1,7 +1,7 @@
 import logging
 
 from libmuscle import Grid, Instance, Message
-from ymmsl.v0_1 import Operator
+from ymmsl import Operator
 
 
 def reaction() -> None:

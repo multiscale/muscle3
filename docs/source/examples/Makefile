@@ -71,14 +71,14 @@ endif
 
 
 .PHONY: base
-base: python rd_implementations.ymmsl benchmark_implementations.ymmsl dispatch_implementations.ymmsl
+base: python rd_programs.ymmsl benchmark_implementations.ymmsl dispatch_implementations.ymmsl
 
 
 
 # Specific targets
 
 .PHONY: python
-python: rd_implementations.ymmsl
+python: rd_programs.ymmsl
 	$(MAKE) -C python all
 
 .PHONY: cpp
@@ -108,7 +108,7 @@ clean:
 	$(MAKE) -C cpp clean
 	$(MAKE) -C fortran clean
 	$(MAKE) -C python clean
-	rm -f rd_implementations.ymmsl
+	rm -f rd_programs.ymmsl
 	rm -f benchmark_implementations.ymmsl
 	rm -f dispatch_implementations.ymmsl
 	rm -rf run_*/
@@ -118,41 +118,41 @@ clean:
 
 .PHONY: test_python
 test_python: base
-	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_implementations.ymmsl rd_python.ymmsl rd_settings.ymmsl
-	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_programs.ymmsl rd_python.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_programs.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl
 	# test restarting, sleep 1 second to prevent reusing the same run directory
-	. python/build/venv/bin/activate && sleep 1 && DONTPLOT=1 muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl \
+	. python/build/venv/bin/activate && sleep 1 && DONTPLOT=1 muscle_manager --start-all rd_programs.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl \
 		$$(ls $$(ls -d run_checkpointing_reaction_diffusion_python* | tail -n1)/snapshots/*.ymmsl | head -n1)
 	make -C python test
 
 .PHONY: test_cpp
 test_cpp: base cpp
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_cpp.ymmsl rd_settings.ymmsl
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints_cpp.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all rd_programs.ymmsl rd_cpp.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all rd_programs.ymmsl rd_checkpoints_cpp.ymmsl rd_settings.ymmsl
 	# test restarting, sleep 1 second to prevent reusing the same run directory
-	. python/build/venv/bin/activate && sleep 1 && muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints_cpp.ymmsl rd_settings.ymmsl \
+	. python/build/venv/bin/activate && sleep 1 && muscle_manager --start-all rd_programs.ymmsl rd_checkpoints_cpp.ymmsl rd_settings.ymmsl \
 		$$(ls $$(ls -d run_checkpointing_reaction_diffusion_cpp* | tail -n1)/snapshots/*.ymmsl | head -n1)
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_python_cpp.ymmsl rd_settings.ymmsl
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rdmc_cpp.ymmsl rdmc_settings.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all rd_programs.ymmsl rd_python_cpp.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all rd_programs.ymmsl rdmc_cpp.ymmsl rdmc_settings.ymmsl
 	. python/build/venv/bin/activate && muscle_manager --start-all dispatch_implementations.ymmsl dispatch_cpp.ymmsl
 
 .PHONY: test_cpp_mpi
 test_cpp_mpi: base cpp_mpi
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_cpp_mpi.ymmsl rd_settings.ymmsl || cat run_reaction_diffusion_cpp_mpi_*/instances/micro/run_script.sh run_reaction_diffusion_cpp_mpi_*/instances/micro/stderr.txt
+	. python/build/venv/bin/activate && muscle_manager --start-all rd_programs.ymmsl rd_cpp_mpi.ymmsl rd_settings.ymmsl || cat run_reaction_diffusion_cpp_mpi_*/instances/micro/run_script.sh run_reaction_diffusion_cpp_mpi_*/instances/micro/stderr.txt
 
 .PHONY: test_fortran
 test_fortran: base fortran
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_fortran.ymmsl rd_settings.ymmsl
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints_fortran.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all rd_programs.ymmsl rd_fortran.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all rd_programs.ymmsl rd_checkpoints_fortran.ymmsl rd_settings.ymmsl
 	# test restarting, sleep 1 second to prevent reusing the same run directory
-	. python/build/venv/bin/activate && sleep 1 && muscle_manager --start-all rd_implementations.ymmsl rd_checkpoints_fortran.ymmsl rd_settings.ymmsl \
+	. python/build/venv/bin/activate && sleep 1 && muscle_manager --start-all rd_programs.ymmsl rd_checkpoints_fortran.ymmsl rd_settings.ymmsl \
 		$$(ls $$(ls -d run_checkpointing_reaction_diffusion_fortran* | tail -n1)/snapshots/*.ymmsl | head -n1)
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_python_fortran.ymmsl rd_settings.ymmsl
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rdmc_fortran.ymmsl rdmc_settings.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all rd_programs.ymmsl rd_python_fortran.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all rd_programs.ymmsl rdmc_fortran.ymmsl rdmc_settings.ymmsl
 
 .PHONY: test_fortran_mpi
 test_fortran_mpi: base fortran_mpi
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_implementations.ymmsl rd_fortran_mpi.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all rd_programs.ymmsl rd_fortran_mpi.ymmsl rd_settings.ymmsl
 
 .PHONY: benchmark
 benchmark: base cpp

@@ -1,0 +1,169 @@
+ymmsl_version: v0.2
+
+programs:
+  reaction_python:
+    ports:
+      f_init: initial_state
+      o_f: final_state
+    description: Reaction model implemented in Python
+    executable: python
+    args: MUSCLE3_EXAMPLES/python/reaction.py
+
+  reaction_cpp:
+    ports:
+      f_init: initial_state
+      o_f: final_state
+    description: Reaction model implemented in C++
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/cpp/build/reaction
+
+  reaction_cpp_mpi:
+    ports:
+      f_init: initial_state
+      o_f: final_state
+    description: Reaction model implemented in C++ with MPI
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/cpp/build/reaction_mpi
+    execution_model: EXECUTION_MODEL
+
+  reaction_fortran:
+    ports:
+      f_init: initial_state
+      o_f: final_state
+    description: Reaction model implemented in Fortran
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/fortran/build/reaction
+
+  reaction_fortran_mpi:
+    ports:
+      f_init: initial_state
+      o_f: final_state
+    description: Reaction model implemented in Fortran with MPI
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/fortran/build/reaction_mpi
+    execution_model: EXECUTION_MODEL
+
+  diffusion_python:
+    ports:
+      o_i: state_out
+      s: state_in
+      o_f: final_state_out
+    description: Diffusion model implemented in Python
+    executable: python
+    args: MUSCLE3_EXAMPLES/python/diffusion.py
+
+  diffusion_cpp:
+    ports:
+      o_i: state_out
+      s: state_in
+      o_f: final_state_out
+    description: Diffusion model implemented in C++
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/cpp/build/diffusion
+
+  diffusion_fortran:
+    ports:
+      o_i: state_out
+      s: state_in
+      o_f: final_state_out
+    description: Diffusion model implemented in Fortran
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/fortran/build/diffusion
+
+  mc_driver_cpp:
+    ports:
+      o_i: parameters_out
+      s: states_in
+    description: Monte Carlo driver component implemented in C++
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/cpp/build/mc_driver
+
+  mc_driver_fortran:
+    ports:
+      o_i: parameters_out
+      s: states_in
+    description: Monte Carlo driver component implemented in Fortran
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/fortran/build/mc_driver
+
+  load_balancer_cpp:
+    ports:
+      f_init: front_in
+      o_i: back_out
+      s: back_in
+      o_f: front_out
+    description: Round-robin load balancer implemented in C++
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/cpp/build/load_balancer
+
+  load_balancer_fortran:
+    ports:
+      f_init: front_in
+      o_i: back_out
+      s: back_in
+      o_f: front_out
+    description: Round-robin load balancer implemented in Fortran
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/fortran/build/load_balancer
+
+  checkpointing_reaction_python:
+    ports:
+      f_init: initial_state
+      o_f: final_state
+    description: Reaction model implemented in Python with checkpointing support
+    executable: python
+    args: MUSCLE3_EXAMPLES/python/checkpointing_reaction.py
+
+  checkpointing_reaction_cpp:
+    ports:
+      f_init: initial_state
+      o_f: final_state
+    description: Reaction model implemented in C++ with checkpointing support
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/cpp/build/checkpointing_reaction
+
+  checkpointing_reaction_fortran:
+    ports:
+      f_init: initial_state
+      o_f: final_state
+    description: Reaction model implemented in Fortran with checkpointing support
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/fortran/build/checkpointing_reaction
+
+  checkpointing_diffusion_python:
+    ports:
+      o_i: state_out
+      s: state_in
+    description: Diffusion model implemented in Python with checkpointing support
+    executable: python
+    args: MUSCLE3_EXAMPLES/python/checkpointing_diffusion.py
+
+  checkpointing_diffusion_cpp:
+    ports:
+      o_i: state_out
+      s: state_in
+    description: Diffusion model implemented in C++ with checkpointing support
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/cpp/build/checkpointing_diffusion
+
+  checkpointing_diffusion_fortran:
+    ports:
+      o_i: state_out
+      s: state_in
+    description: Diffusion model implemented in Fortran with checkpointing support
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/fortran/build/checkpointing_diffusion

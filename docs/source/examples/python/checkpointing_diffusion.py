@@ -4,7 +4,7 @@ import os
 import numpy as np
 
 from libmuscle import Grid, Instance, Message, USES_CHECKPOINT_API
-from ymmsl.v0_1 import Operator
+from ymmsl import Operator
 
 
 def laplacian(Z: np.array, dx: float) -> np.array:

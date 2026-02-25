@@ -218,9 +218,9 @@ rules to set checkpoint moments for these:
 
     yMMSL documentation on :external+ymmsl:ref:`Checkpoints`
 
-    yMMSL API reference: :external:py:class:`ymmsl.Checkpoints`,
-    :external:py:class:`ymmsl.CheckpointAtRule`,
-    :external:py:class:`ymmsl.CheckpointRangeRule`.
+    yMMSL API reference: :external:py:class:`ymmsl.v0_2.Checkpoints`,
+    :external:py:class:`ymmsl.v0_2.CheckpointAtRule`,
+    :external:py:class:`ymmsl.v0_2.CheckpointRangeRule`.
 
 
 Simulation time checkpoints
@@ -351,11 +351,11 @@ repository. Then execute the following command:
 .. code-block:: bash
 
     $ mkdir run_rd_example
-    $ muscle_manager --start-all --run-dir run_rd_example rd_implementations.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl
+    $ muscle_manager --start-all --run-dir run_rd_example rd_model.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
 
 .. note::
 
-    You may get an error ``File 'rd_implementations.ymmsl' does not exist.`` To
+    You may get an error ``File 'rd_programs.ymmsl' does not exist.`` To
     fix this, you need to build the examples in the MUSCLE3 source; in the root
     of the git repository, execute:
 
@@ -369,7 +369,7 @@ contains the checkpoint definitions used in this example:
 
 .. literalinclude:: examples/rd_checkpoints_python.ymmsl
     :caption: ``docs/source/examples/rd_checkpoints_python.ymmsl, lines 31-33``
-    :lines: 31-33
+    :lines: 7-9
     :language: yaml
 
 MUSCLE3 will create the run directory ``run_rd_example`` for you. In it you'll
@@ -420,7 +420,7 @@ point to the snapshot you want to resume from.
     :caption: Resume from an earlier snapshot. Replace ``<date>`` and ``<time>`` to point to an actual snapshot file.
 
     $ mkdir run_rd_resume
-    $ muscle_manager --start-all --run-dir run_rd_resume rd_implementations.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl run_rd_example/snapshots/snapshot_<date>_<time>.ymmsl
+    $ muscle_manager --start-all --run-dir run_rd_resume rd_model.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl run_rd_example/snapshots/snapshot_<date>_<time>.ymmsl
 
 When the command completes you can see the output in the new working directory
 ``run_rd_resume``.
@@ -690,7 +690,7 @@ creating the instance:
         .. seealso::
 
             API documentation for
-            :cpp:enumerator:`~libmuscle::impl::InstanceFlags::USES_CHECKPOINT_API`.
+            :cpp:enumerator:`~libmuscle::InstanceFlags::USES_CHECKPOINT_API`.
 
     .. group-tab:: Fortran
 
@@ -792,8 +792,8 @@ the reaction-diffusion models and the component template.
       :py:meth:`~libmuscle.Instance.should_save_snapshot`,
       :py:meth:`~libmuscle.Instance.save_snapshot`.
     - C++ API documentation:
-      :cpp:func:`~libmuscle::impl::Instance::should_save_snapshot`,
-      :cpp:func:`~libmuscle::impl::Instance::save_snapshot`.
+      :cpp:func:`~libmuscle::Instance::should_save_snapshot`,
+      :cpp:func:`~libmuscle::Instance::save_snapshot`.
     - Fortran API documentation:
       :f:func:`LIBMUSCLE_Instance_should_save_snapshot`,
       :f:func:`LIBMUSCLE_Instance_save_snapshot`.
@@ -826,8 +826,8 @@ the reaction-diffusion models and the component template.
       :py:meth:`~libmuscle.Instance.should_save_final_snapshot`,
       :py:meth:`~libmuscle.Instance.save_final_snapshot`.
     - C++ API documentation:
-      :cpp:func:`~libmuscle::impl::Instance::should_save_final_snapshot`,
-      :cpp:func:`~libmuscle::impl::Instance::save_final_snapshot`.
+      :cpp:func:`~libmuscle::Instance::should_save_final_snapshot`,
+      :cpp:func:`~libmuscle::Instance::save_final_snapshot`.
     - Fortran API documentation:
       :f:func:`LIBMUSCLE_Instance_should_save_final_snapshot`,
       :f:func:`LIBMUSCLE_Instance_save_final_snapshot`.
@@ -988,9 +988,9 @@ implementations in the reaction-diffusion models and the component template.
       :py:meth:`~libmuscle.Instance.load_snapshot`,
       :py:meth:`~libmuscle.Instance.should_init`.
     - C++ API documentation:
-      :cpp:func:`~libmuscle::impl::Instance::resuming`,
-      :cpp:func:`~libmuscle::impl::Instance::load_snapshot`,
-      :cpp:func:`~libmuscle::impl::Instance::should_init`.
+      :cpp:func:`~libmuscle::Instance::resuming`,
+      :cpp:func:`~libmuscle::Instance::load_snapshot`,
+      :cpp:func:`~libmuscle::Instance::should_init`.
     - Fortran API documentation:
       :f:func:`LIBMUSCLE_Instance_resuming`,
       :f:func:`LIBMUSCLE_Instance_load_snapshot`,
@@ -1151,7 +1151,7 @@ reaction model.
 .. seealso::
 
     - Python API documentation: :py:class:`~libmuscle.InstanceFlags`.
-    - C++ API documentation :cpp:enum:`~libmuscle::impl::InstanceFlags`.
+    - C++ API documentation :cpp:enum:`~libmuscle::InstanceFlags`.
     - Fortran API documentation :f:type:`LIBMUSCLE_InstanceFlags`.
 
 
@@ -1169,7 +1169,7 @@ for fixing the problem.
 Checkpointing in MPI-enabled components
 ```````````````````````````````````````
 
-Checkpionting in MPI-enabled components works in the same way as for non-MPI components.
+Checkpointing in MPI-enabled components works in the same way as for non-MPI components.
 The main difference is that some API methods must be called by all processes, while
 others can only be called from the root process.
 
@@ -1187,13 +1187,13 @@ others can only be called from the root process.
 
     - C++ API documentation:
 
-      - :cpp:func:`~libmuscle::impl::Instance::resuming`
-      - :cpp:func:`~libmuscle::impl::Instance::load_snapshot`
-      - :cpp:func:`~libmuscle::impl::Instance::should_init`
-      - :cpp:func:`~libmuscle::impl::Instance::should_save_final_snapshot`
-      - :cpp:func:`~libmuscle::impl::Instance::save_final_snapshot`
-      - :cpp:func:`~libmuscle::impl::Instance::should_save_snapshot`
-      - :cpp:func:`~libmuscle::impl::Instance::save_snapshot`
+      - :cpp:func:`~libmuscle::Instance::resuming`
+      - :cpp:func:`~libmuscle::Instance::load_snapshot`
+      - :cpp:func:`~libmuscle::Instance::should_init`
+      - :cpp:func:`~libmuscle::Instance::should_save_final_snapshot`
+      - :cpp:func:`~libmuscle::Instance::save_final_snapshot`
+      - :cpp:func:`~libmuscle::Instance::should_save_snapshot`
+      - :cpp:func:`~libmuscle::Instance::save_snapshot`
 
     - Fortran API documentation:
 

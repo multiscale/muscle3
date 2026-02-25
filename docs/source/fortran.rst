@@ -35,8 +35,7 @@ You can then run the examples using the provided scripts in
 .. code-block:: bash
 
   . python/build/venv/bin/activate
-  muscle_manager --start-all rd_implementations.ymmsl rd_fortran.ymmsl rd_settings.ymmsl
-  muscle_manager --start-all rd_implementations.ymmsl rd_python_fortran.ymmsl rd_settings.ymmsl
+  muscle_manager --start-all rd_model.ymmsl rd_fortran.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
 
 
 Log output
@@ -55,22 +54,50 @@ the messages will end up in ``<rundir>/instances/<instance-id>/stdout.txt`` or
 ``stderr.txt``. If the model logs to a file in the working directory, then
 you'll find it in ``<rundir>/instances/<instance-id>/workdir/``.
 
+Overriding implementations
+--------------------------
 
-Describing Fortran implementations
-----------------------------------
+In the above commands, we use the same ``rd_model.ymmsl`` file that we used for the
+Python version of the reaction-diffusion model. This file specifies the Python
+implementations of the ``macro`` and ``micro`` components. To run the model with the
+alternative C++ implementations, we need to override them, which is done in
+``rd_fortran.ymmsl``:
 
-The only difference between this and the Python-only example is that the
-Fortran implementations are used. These differ a bit from the Python versions,
-but they are the same as the C++ ones:
+.. literalinclude:: examples/rd_fortran.ymmsl
+  :caption: ``docs/source/examples/rd_fortran.ymmsl``
+  :language: yaml
+
+The ``custom_implementations`` section contains a mapping that specifies an
+implementation (to the right of the ``:``) for one or more components (on the left). Any
+implementations specified here will override the implementation set in the model
+description. Multiple yMMSL files with custom implementations may be given and all of
+them will be applied. If a component has a custom implementation in more than one file,
+then the one that is farthest to the right on the command line will be applied.
+
+MUSCLE3 allows programs written in different languages to be used together
+transparently. The ``rd_python_fortran.ymmsl`` file only overrides the implementation for
+``macro``, but leaves ``micro`` to run with the Python reaction program. Give it a try
+and look at the logs to see it in action!
+
+Can you run the model with the Python diffusion program and the Fortran reaction
+program? You'll need to make your own yMMSL file for this.
+
+Describing Fortran programs
+---------------------------
+
+The only difference between this and the Python-only example is that the Fortran
+programs are used for some of the components. Like for the Python programs,
+``rd_programs.ymmsl`` says how to start them. These differ a bit from the Python
+versions, but they are the same as the C++ ones:
 
 .. code-block:: yaml
 
-  reaction_cpp:
+  reaction_fortran:
     env:
       +LD_LIBRARY_PATH: :<muscle3_prefix>/lib
     executable: <muscle3_src>/docs/source/examples/fortran/build/reaction
 
-  diffusion_cpp:
+  diffusion_fortran:
     env:
       +LD_LIBRARY_PATH: :<muscle3_prefix>/lib
     executable: <muscle3_src>/docs/source/examples/fortran/build/diffusion
@@ -229,6 +256,7 @@ ports we'll use when we make that. So here, we first create a
 :f:type:`LIBMUSCLE_PortsDescription`, and add some ports to the ``F_INIT`` and
 ``O_F`` operators. We can then create the Instance object, passing the ports.
 Finally, we need to free the PortsDescription object.
+
 You will have to be careful to always free any
 object you create, or that is returned by a MUSCLE function, after you're done
 using it. So we free the PortsDescription here, but we don't free the Instance,

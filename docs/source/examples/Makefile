@@ -138,7 +138,7 @@ test_cpp: base cpp
 
 .PHONY: test_cpp_mpi
 test_cpp_mpi: base cpp_mpi
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_programs.ymmsl rd_cpp_mpi.ymmsl rd_settings.ymmsl || cat run_reaction_diffusion_cpp_mpi_*/instances/micro/run_script.sh run_reaction_diffusion_cpp_mpi_*/instances/micro/stderr.txt
+	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_model.ymmsl rd_cpp_mpi.ymmsl rd_programs.ymmsl rd_settings.ymmsl rd_resources_mpi.ymmsl
 
 .PHONY: test_fortran
 test_fortran: base fortran
@@ -152,7 +152,7 @@ test_fortran: base fortran
 
 .PHONY: test_fortran_mpi
 test_fortran_mpi: base fortran_mpi
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_programs.ymmsl rd_fortran_mpi.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_model.ymmsl rd_fortran_mpi.ymmsl rd_programs.ymmsl rd_settings.ymmsl rd_resources_mpi.ymmsl
 
 .PHONY: benchmark
 benchmark: base cpp

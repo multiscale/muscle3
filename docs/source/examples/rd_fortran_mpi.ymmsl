@@ -1,27 +1,8 @@
-ymmsl_version: v0.1
+ymmsl_version: v0.2
 
-model:
-  name: reaction_diffusion_fortran_mpi
+description: |
+  Sets the micro model to use the Fortran MPI implementation. For use with
+  rd_model.ymmsl.
 
-  components:
-    macro:
-      implementation: diffusion_fortran
-      ports:
-        o_i: state_out
-        s: state_in
-
-    micro:
-      implementation: reaction_fortran_mpi
-      ports:
-        f_init: initial_state
-        o_f: final_state
-
-  conduits:
-    macro.state_out: micro.initial_state
-    micro.final_state: macro.state_in
-
-resources:
-  macro:
-    threads: 1
-  micro:
-    mpi_processes: 2
+custom_implementations:
+  micro: reaction_fortran_mpi

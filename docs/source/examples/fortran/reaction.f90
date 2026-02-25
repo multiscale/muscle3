@@ -43,7 +43,7 @@ program reaction
             ! O_I
 
             ! S
-            U = k * U * dt
+            U = U + k * U * dt
             t_cur = t_cur + dt
         end do
 

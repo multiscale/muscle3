@@ -163,7 +163,7 @@ Reaction model
             ! O_I
 
             ! S
-            U = k * U * dt
+            U = U + k * U * dt
             t_cur = t_cur + dt
         end do
 
@@ -365,7 +365,7 @@ functions will help you do so however.
             ! O_I
 
             ! S
-            U = k * U * dt
+            U = U + k * U * dt
             t_cur = t_cur + dt
         end do
 

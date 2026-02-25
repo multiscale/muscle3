@@ -1,0 +1,14 @@
+ymmsl_version: v0.2
+
+resources:
+  mc:
+    threads: 1
+
+  rr:
+    threads: 1
+
+  macro:
+    threads: 1
+
+  micro:
+    threads: 1

@@ -6,7 +6,7 @@ import sobol_seq
 
 from libmuscle import Grid, Instance, Message, DONT_APPLY_OVERLAY
 from libmuscle.runner import run_simulation
-from ymmsl.v0_1 import (
+from ymmsl.v0_2 import (
         Component, Conduit, Configuration, Model, Operator, Ports, Settings)
 
 
@@ -249,21 +249,24 @@ if __name__ == '__main__':
 
     components = [
             Component(
-                'qmc', 'qmc_driver', None,
-                Ports(o_i=['parameters_out'], s=['states_in'])),
+                'qmc', Ports(o_i=['parameters_out'], s=['states_in']),
+                'The quasi-Monte Carlo driver component samples the parameters'
+                ' and collects results for statistical evaluation',
+                'qmc_driver'),
             Component(
-                'rr', 'load_balancer', None,
-                Ports(
+                'rr', Ports(
                     f_init=['front_in'], o_i=['back_out'],
-                    s=['back_in'], o_f=['front_out'])),
+                    s=['back_in'], o_f=['front_out']),
+                'A round-robin load balancer to distribute the runs over a number of'
+                ' instances.', 'load_balancer'),
             Component(
-                'macro', 'diffusion', [10],
-                Ports(
-                    o_i=['state_out'], s=['state_in'], o_f=['final_state_out']
-                    )),
+                'macro', Ports(
+                    o_i=['state_out'], s=['state_in'], o_f=['final_state_out']),
+                'The macro model, which calculates diffusion, with 10 instances.',
+                'diffusion', multiplicity=[10]),
             Component(
-                'micro', 'reaction', [10],
-                Ports(f_init=['initial_state'], o_f=['final_state']))]
+                'micro', Ports(f_init=['initial_state'], o_f=['final_state']),
+                'reaction', multiplicity=[10])]
 
     conduits = [
             Conduit('qmc.parameters_out', 'rr.front_in'),
@@ -274,7 +277,11 @@ if __name__ == '__main__':
             Conduit('micro.final_state', 'macro.state_in')
             ]
 
-    model = Model('reaction_diffusion_qmc', components, conduits)
+    model = Model(
+            'reaction_diffusion_qmc',
+            description='A reaction-diffusion model with quasi-Monte Carlo UQ',
+            components=components, conduits=conduits)
+
     settings = Settings({
         'micro.t_max': 2.469136e-6,
         'micro.dt': 2.469136e-8,
@@ -291,7 +298,8 @@ if __name__ == '__main__':
         'n_samples': 100
         })
 
-    configuration = Configuration(model, settings)
+    configuration = Configuration(
+            'A quasi-Monte Carlo UQ example', models=[model], settings=settings)
 
     implementations = {
             'qmc_driver': qmc_driver,

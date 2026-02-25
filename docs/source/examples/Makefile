@@ -133,7 +133,7 @@ test_cpp: base cpp
 	. python/build/venv/bin/activate && sleep 1 && muscle_manager --start-all rd_programs.ymmsl rd_checkpoints_cpp.ymmsl rd_settings.ymmsl \
 		$$(ls $$(ls -d run_checkpointing_reaction_diffusion_cpp* | tail -n1)/snapshots/*.ymmsl | head -n1)
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_model.ymmsl rd_python_cpp.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_programs.ymmsl rdmc_cpp.ymmsl rdmc_settings.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all rdmc_model.ymmsl rdmc_cpp.ymmsl rdmc_settings.ymmsl rd_programs.ymmsl rdmc_resources.ymmsl
 	. python/build/venv/bin/activate && muscle_manager --start-all dispatch_implementations.ymmsl dispatch_cpp.ymmsl
 
 .PHONY: test_cpp_mpi
@@ -148,7 +148,7 @@ test_fortran: base fortran
 	. python/build/venv/bin/activate && sleep 1 && muscle_manager --start-all rd_programs.ymmsl rd_checkpoints_fortran.ymmsl rd_settings.ymmsl \
 		$$(ls $$(ls -d run_checkpointing_reaction_diffusion_fortran* | tail -n1)/snapshots/*.ymmsl | head -n1)
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_model.ymmsl rd_python_fortran.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_programs.ymmsl rdmc_fortran.ymmsl rdmc_settings.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all rdmc_model.ymmsl rdmc_fortran.ymmsl rdmc_settings.ymmsl rd_programs.ymmsl rdmc_resources.ymmsl
 
 .PHONY: test_fortran_mpi
 test_fortran_mpi: base fortran_mpi

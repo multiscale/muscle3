@@ -1,0 +1,29 @@
+ymmsl_version: v0.2
+
+models:
+  benchmark:
+    description: |
+      A benchmark model that sends messages back and forth between a driver and a
+      mirror. Message sizes are configurable, and delays can be set before sending and
+      receiving to measure one-way latencies.
+
+      The model doesn't measure anything itself, instead we rely on the profiling system
+      to measure performance.
+
+    components:
+      driver:
+        ports:
+          o_i: out
+          s: in
+        description: |
+          The driver sends out messages of varying size.
+      mirror:
+        ports:
+          f_init: in
+          o_f: out
+        description: |
+          The mirror receives messages and sends them back to the driver
+
+    conduits:
+      driver.out: mirror.in
+      mirror.out: driver.in

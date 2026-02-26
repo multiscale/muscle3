@@ -1,0 +1,47 @@
+ymmsl_version: v0.2
+
+description: |
+  This file describes how to start programs for the benchmark example
+
+programs:
+  benchmark_driver_python:
+    ports:
+      o_i: out
+      s: in
+    description: Benchmark driver written in Python
+    executable: python
+    args:
+    - MUSCLE3_EXAMPLES/python/benchmark.py
+    - driver
+
+  benchmark_mirror_python:
+    description: Benchmark mirror written in Python
+    ports:
+      f_init: in
+      o_f: out
+    executable: python
+    args:
+    - MUSCLE3_EXAMPLES/python/benchmark.py
+    - mirror
+
+  benchmark_driver_cpp:
+    ports:
+      o_i: out
+      s: in
+    description: Benchmark driver written in C++
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/cpp/build/benchmark
+    args:
+    - driver
+
+  benchmark_mirror_cpp:
+    ports:
+      f_init: in
+      o_f: out
+    description: Benchmark mirror written in C++
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/cpp/build/benchmark
+    args:
+    - mirror

@@ -71,7 +71,7 @@ endif
 
 
 .PHONY: base
-base: python rd_programs.ymmsl benchmark_implementations.ymmsl dispatch_implementations.ymmsl
+base: python rd_programs.ymmsl benchmark_programs.ymmsl dispatch_implementations.ymmsl
 
 
 
@@ -109,7 +109,7 @@ clean:
 	$(MAKE) -C fortran clean
 	$(MAKE) -C python clean
 	rm -f rd_programs.ymmsl
-	rm -f benchmark_implementations.ymmsl
+	rm -f benchmark_programs.ymmsl
 	rm -f dispatch_implementations.ymmsl
 	rm -rf run_*/
 
@@ -156,6 +156,6 @@ test_fortran_mpi: base fortran_mpi
 
 .PHONY: benchmark
 benchmark: base cpp
-	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all benchmark_implementations.ymmsl benchmark_python.ymmsl benchmark_settings.ymmsl
-	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all benchmark_implementations.ymmsl benchmark_cpp.ymmsl benchmark_settings.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all benchmark_model.ymmsl benchmark_python.ymmsl benchmark_settings.ymmsl benchmark_programs.ymmsl benchmark_resources.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all benchmark_model.ymmsl benchmark_cpp.ymmsl benchmark_settings.ymmsl benchmark_programs.ymmsl benchmark_resources.ymmsl
 

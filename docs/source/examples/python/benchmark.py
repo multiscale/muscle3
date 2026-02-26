@@ -1,5 +1,5 @@
 from libmuscle import Instance, Message
-from ymmsl.v0_1 import Operator
+from ymmsl import Operator
 
 import sys
 import time

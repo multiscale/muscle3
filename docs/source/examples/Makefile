@@ -71,7 +71,7 @@ endif
 
 
 .PHONY: base
-base: python rd_programs.ymmsl benchmark_programs.ymmsl dispatch_implementations.ymmsl
+base: python rd_programs.ymmsl benchmark_programs.ymmsl dispatch_programs.ymmsl
 
 
 
@@ -110,7 +110,7 @@ clean:
 	$(MAKE) -C python clean
 	rm -f rd_programs.ymmsl
 	rm -f benchmark_programs.ymmsl
-	rm -f dispatch_implementations.ymmsl
+	rm -f dispatch_programs.ymmsl
 	rm -rf run_*/
 
 
@@ -134,7 +134,7 @@ test_cpp: base cpp
 		$$(ls $$(ls -d run_reaction_diffusion* | tail -n1)/snapshots/*.ymmsl | head -n1)
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_model.ymmsl rd_python_cpp.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
 	. python/build/venv/bin/activate && muscle_manager --start-all rdmc_model.ymmsl rdmc_cpp.ymmsl rdmc_settings.ymmsl rd_programs.ymmsl rdmc_resources.ymmsl
-	. python/build/venv/bin/activate && muscle_manager --start-all dispatch_implementations.ymmsl dispatch_cpp.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all dispatch_cpp.ymmsl dispatch_programs.ymmsl
 
 .PHONY: test_cpp_mpi
 test_cpp_mpi: base cpp_mpi

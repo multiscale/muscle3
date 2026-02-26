@@ -3,7 +3,7 @@ import time
 
 from libmuscle import Instance, Message
 from libmuscle.runner import run_simulation
-from ymmsl.v0_1 import (
+from ymmsl.v0_2 import (
         Component, Conduit, Configuration, Model, Operator, Ports, Settings)
 
 
@@ -33,22 +33,22 @@ if __name__ == '__main__':
 
     components = [
             Component(
-                'component1', 'buffer', None,
-                Ports(o_f=['out'])),
+                'component1', Ports(o_f=['out']), 'First component', 'buffer'),
             Component(
-                'component2', 'buffer', None,
-                Ports(f_init=['in'], o_f=['out'])),
+                'component2', Ports(f_init=['in'], o_f=['out']), 'Second component',
+                'buffer'),
             Component(
-                'component3', 'buffer', None,
-                Ports(f_init=['in']))]
+                'component3', Ports(f_init=['in']), 'Third component', 'buffer')]
 
     conduits = [
             Conduit('component1.out', 'component2.in'),
             Conduit('component2.out', 'component3.in')]
 
-    model = Model('dispatch', components, conduits)
+    model = Model(
+            'dispatch', description='A model demonstrating dispatch between three'
+            ' components', components=components, conduits=conduits)
     settings = Settings({})
-    configuration = Configuration(model, settings)
+    configuration = Configuration(models=[model], settings=settings)
 
     implementations = {'buffer': buffer}
     run_simulation(configuration, implementations)

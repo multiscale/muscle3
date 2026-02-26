@@ -1,4 +1,4 @@
 rd_programs.ymmsl
 benchmark_programs.ymmsl
-dispatch_implementations.ymmsl
+dispatch_programs.ymmsl
 run_*

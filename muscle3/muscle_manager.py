@@ -2,6 +2,7 @@ from datetime import datetime
 from pathlib import Path
 import sys
 import textwrap
+from time import sleep
 import traceback
 from typing import cast, List, Optional, Sequence
 from warnings import catch_warnings, filterwarnings
@@ -259,9 +260,16 @@ def create_run_dir(run_dir: Optional[str], model: v0_2.Model) -> RunDir:
         A RunDir object pointing to the created directory
     """
     if run_dir is None:
-        timestamp = datetime.now()
-        timestr = timestamp.strftime('%Y%m%d_%H%M%S')
-        run_dir_path = Path.cwd() / f'run_{model.name}_{timestr}'
+        for i in range(10):
+            timestamp = datetime.now()
+            timestr = timestamp.strftime('%Y%m%d_%H%M%S')
+            run_dir_path = Path.cwd() / f'run_{model.name}_{timestr}'
+            if not run_dir_path.exists():
+                break
+            sleep(1.0)
+        else:
+            raise RuntimeError(
+                    f'Tried to create run dir at {run_dir_path} but it already exists')
     else:
         run_dir_path = Path(run_dir).resolve()
 

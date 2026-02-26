@@ -1,5 +1,6 @@
-ymmsl_version: v0.1
-
+ymmsl_version: v0.2
+description: |
+  Settings for the cellular automaton example
 settings:
   muscle_local_log_level: INFO
   muscle_remote_log_level: WARNING

@@ -1,34 +1,37 @@
-ymmsl_version: v0.1
+ymmsl_version: v0.2
 
-model:
-  name: elementary_cellular_automata
+models:
+  elementary_cellular_automata:
+    description: A simple cellular automaton model with cache
+    components:
+      macro:
+        ports:
+          o_i: state_out
+          s: state_in
+        description: Macro model containing only the time stepping loop
+        implementation: elemental_ca_macro_python
 
-  components:
-    macro:
-      implementation: elemental_ca_macro_python
-      ports:
-        o_i: state_out
-        s: state_in
+      cache:
+        ports:
+          f_init: front_in
+          o_i: back_out
+          s: back_in
+          o_f: front_out
+        description: A cache that stores state update results
+        implementation: cache_python
 
-    cache:
-      implementation: cache_python
-      ports:
-        f_init: front_in
-        o_i: back_out
-        s: back_in
-        o_f: front_out
+      micro:
+        ports:
+          f_init: initial_state
+          o_f: final_state
+        description: Micro model computing the state update
+        implementation: elemental_ca_micro_python
 
-    micro:
-      implementation: elemental_ca_micro_python
-      ports:
-        f_init: initial_state
-        o_f: final_state
-
-  conduits:
-    macro.state_out: cache.front_in
-    cache.back_out: micro.initial_state
-    micro.final_state: cache.back_in
-    cache.front_out: macro.state_in
+    conduits:
+      macro.state_out: cache.front_in
+      cache.back_out: micro.initial_state
+      micro.final_state: cache.back_in
+      cache.front_out: macro.state_in
 
 resources:
   macro:

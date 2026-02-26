@@ -6,7 +6,7 @@ data more than once and it can be useful to cache the results to save computing
 time.
 
 A simple caching component can be found in the ``examples/python`` folder named
-``cache.py``. This cache can be inserted between to models to cache results from
+``cache.py``. This cache can be inserted between two models to cache results from
 the micro model.
 
 .. literalinclude:: examples/ecac_python.ymmsl

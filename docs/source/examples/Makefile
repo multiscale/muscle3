@@ -71,7 +71,7 @@ endif
 
 
 .PHONY: base
-base: python rd_programs.ymmsl benchmark_programs.ymmsl dispatch_programs.ymmsl
+base: python rd_programs.ymmsl benchmark_programs.ymmsl dispatch_programs.ymmsl eca_programs.ymmsl
 
 
 
@@ -123,6 +123,8 @@ test_python: base
 	# test restarting
 	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_model.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl \
 		$$(ls $$(ls -d run_reaction_diffusion* | tail -n1)/snapshots/*.ymmsl | head -n1)
+	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all eca_python.ymmsl eca_settings.ymmsl eca_programs.ymmsl
+	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all ecac_python.ymmsl eca_settings.ymmsl eca_programs.ymmsl
 	make -C python test
 
 .PHONY: test_cpp

@@ -111,8 +111,14 @@ class SettingsManager:
         names.update(extract_names(self.overlay))
         return sorted(names)
 
-    def get_setting(self, instance: Reference, setting_name: Reference,
-                    typ: Optional[str] = None) -> SettingValue:
+    def get_setting(
+        self,
+        instance: Reference,
+        setting_name: Reference,
+        typ: Optional[str] = None,
+        *,
+        default: Optional[SettingValue] = None,
+    ) -> SettingValue:
         """Returns the value of a setting.
 
         Args:
@@ -122,9 +128,13 @@ class SettingsManager:
                     is checked for a match before returning. Valid
                     values are 'str', 'int', 'float', 'bool',
                     '[float]' and '[[float]]'.
+            default: A default value to return if this setting is not
+                    set. If not provided and the setting is not set,
+                    a KeyError will be raised.
 
         Raises:
-            KeyError: If the setting has not been set.
+            KeyError: If the setting has not been set and no default
+                    was provided.
             TypeError: If the setting was set to a value that does
                     not match `typ`.
             ValueError: If an invalid value was specified for `typ`
@@ -142,12 +152,14 @@ class SettingsManager:
                 value = self.base[name]
                 break
         else:
-            raise KeyError(('Value for setting "{}" was not set.'.format(
-                setting_name)))
+            if default is not None:
+                return default
+            raise KeyError(('Value for setting "{}" was not set.'.format(setting_name)))
 
         if typ is not None:
             if not has_setting_type(value, typ):
-                raise TypeError('Value for setting "{}" is of type {},'
-                                ' where {} was expected.'.format(
-                                    name, type(value), typ))
+                raise TypeError(
+                    'Value for setting "{}" is of type {},'
+                    " where {} was expected.".format(name, type(value), typ)
+                )
         return value

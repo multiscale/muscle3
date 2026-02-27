@@ -331,8 +331,13 @@ class Instance:
     def get_setting(self, name: str, typ: None = None) -> SettingValue:
         ...
 
-    def get_setting(self, name: str, typ: Optional[str] = None
-                    ) -> SettingValue:
+    def get_setting(
+        self,
+        name: str,
+        typ: Optional[str] = None,
+        *,
+        default: Optional[SettingValue] = None,
+    ) -> SettingValue:
         """Returns the value of a model setting.
 
         Args:
@@ -343,14 +348,19 @@ class Instance:
                     If not specified, any of the supported types
                     will be accepted, and you'll have to figure out
                     what you got yourself.
+            default: A default value to return if this setting is not
+                    set. If not provided and the setting is not set,
+                    a KeyError will be raised.
 
         Raises:
-            KeyError: If no value was set for this setting.
+            KeyError: If no value was set for this setting and no
+                    default was provided.
             TypeError: If the type of the setting's value was not
                     as expected.
         """
         return self._settings_manager.get_setting(
-                self._instance_id, Reference(name), typ)
+            self._instance_id, Reference(name), typ, default=default
+        )
 
     def list_ports(self) -> Dict[Operator, List[str]]:
         """Returns a description of the ports that this Instance has.

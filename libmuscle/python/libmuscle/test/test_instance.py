@@ -335,23 +335,23 @@ def test_get_setting_with_default_and_type(instance, settings_manager):
 
 def test_get_setting_default_various_types(instance, settings_manager):
     settings_manager.get_setting.side_effect = None  # don't raise KeyError
-    
+
     settings_manager.get_setting.return_value = 'string_default'
     result = instance.get_setting('test1', default='string_default')
     assert result == 'string_default'
-    
+
     settings_manager.get_setting.return_value = 123
     result = instance.get_setting('test2', default=123)
     assert result == 123
-    
+
     settings_manager.get_setting.return_value = 3.14
     result = instance.get_setting('test3', default=3.14)
     assert result == 3.14
-    
+
     settings_manager.get_setting.return_value = True
     result = instance.get_setting('test4', default=True)
     assert result is True
-    
+
     settings_manager.get_setting.return_value = [1, 2, 3]
     result = instance.get_setting('test5', default=[1, 2, 3])
     assert result == [1, 2, 3]

@@ -315,6 +315,54 @@ def test_get_setting(instance, settings_manager):
         Ref('component'), Ref('test'), 'int', default=None)
 
 
+def test_get_setting_with_default(instance, settings_manager):
+    settings_manager.get_setting.side_effect = None  # don't raise KeyError
+    settings_manager.get_setting.return_value = 'default_value'
+    result = instance.get_setting('test', default='default_value')
+    settings_manager.get_setting.assert_called_with(
+        Ref('component'), Ref('test'), None, default='default_value')
+    assert result == 'default_value'
+
+
+def test_get_setting_with_default_and_type(instance, settings_manager):
+    settings_manager.get_setting.side_effect = None  # don't raise KeyError
+    settings_manager.get_setting.return_value = 42
+    result = instance.get_setting('test', 'int', default=0)
+    settings_manager.get_setting.assert_called_with(
+        Ref('component'), Ref('test'), 'int', default=0)
+    assert result == 42
+
+
+def test_get_setting_default_various_types(instance, settings_manager):
+    settings_manager.get_setting.side_effect = None  # don't raise KeyError
+    
+    settings_manager.get_setting.return_value = 'string_default'
+    result = instance.get_setting('test1', default='string_default')
+    assert result == 'string_default'
+    
+    settings_manager.get_setting.return_value = 123
+    result = instance.get_setting('test2', default=123)
+    assert result == 123
+    
+    settings_manager.get_setting.return_value = 3.14
+    result = instance.get_setting('test3', default=3.14)
+    assert result == 3.14
+    
+    settings_manager.get_setting.return_value = True
+    result = instance.get_setting('test4', default=True)
+    assert result is True
+    
+    settings_manager.get_setting.return_value = [1, 2, 3]
+    result = instance.get_setting('test5', default=[1, 2, 3])
+    assert result == [1, 2, 3]
+
+
+def test_get_setting_without_default_raises_keyerror(instance, settings_manager):
+    settings_manager.get_setting.side_effect = KeyError('Setting not found')
+    with pytest.raises(KeyError):
+        instance.get_setting('nonexistent')
+
+
 def test_list_ports(instance, port_manager):
     port_manager.list_ports.assert_called_once_with()
     port_manager.list_ports.reset_mock()

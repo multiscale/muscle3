@@ -312,8 +312,7 @@ def test_get_setting(instance, settings_manager):
     settings_manager.get_setting.side_effect = None  # don't raise KeyError
     instance.get_setting('test', 'int')
     settings_manager.get_setting.assert_called_with(
-        Ref("component"), Ref("test"), "int", default=None
-    )
+        Ref('component'), Ref('test'), 'int', default=None)
 
 
 def test_list_ports(instance, port_manager):

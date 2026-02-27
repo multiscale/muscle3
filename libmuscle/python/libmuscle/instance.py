@@ -331,11 +331,7 @@ class Instance:
     def get_setting(self, name: str, typ: None = None) -> SettingValue:
         ...
 
-    def get_setting(
-        self,
-        name: str,
-        typ: Optional[str] = None,
-        *,
+    def get_setting(self, name: str, typ: Optional[str] = None, *,
         default: Optional[SettingValue] = None,
     ) -> SettingValue:
         """Returns the value of a model setting.
@@ -359,8 +355,7 @@ class Instance:
                     as expected.
         """
         return self._settings_manager.get_setting(
-            self._instance_id, Reference(name), typ, default=default
-        )
+            self._instance_id, Reference(name), typ, default=default)
 
     def list_ports(self) -> Dict[Operator, List[str]]:
         """Returns a description of the ports that this Instance has.

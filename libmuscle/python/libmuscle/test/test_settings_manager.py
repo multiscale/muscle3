@@ -152,3 +152,23 @@ def test_get_setting_without_default_raises_keyerror(settings_manager):
     with pytest.raises(KeyError, match='Value for setting "nonexistent" was not set'):
         settings_manager.get_setting(ref('instance'), ref('nonexistent'))
 
+
+def test_get_setting_with_default_and_type_check(settings_manager):
+    ref = Reference
+    
+    result = settings_manager.get_setting(
+        ref('instance'), ref('nonexistent'), typ='str', default='default'
+    )
+    assert result == 'default'
+    
+    settings_manager.base[ref('test')] = 42
+    result = settings_manager.get_setting(
+        ref('instance'), ref('test'), typ='int', default=0
+    )
+    assert result == 42
+    
+    with pytest.raises(TypeError):
+        settings_manager.get_setting(
+            ref('instance'), ref('test'), typ='str', default='default'
+        )
+

@@ -331,9 +331,10 @@ class Instance:
     def get_setting(self, name: str, typ: None = None) -> SettingValue:
         ...
 
-    def get_setting(self, name: str, typ: Optional[str] = None, *,
-        default: Optional[SettingValue] = None,
-    ) -> SettingValue:
+    def get_setting(
+            self, name: str, typ: Optional[str] = None, *,
+            default: Optional[SettingValue] = None
+            ) -> SettingValue:
         """Returns the value of a model setting.
 
         Args:

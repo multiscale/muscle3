@@ -257,7 +257,7 @@ def test_create_instance_set_up_checkpointing(
 def test_create_instance_set_up_logging(
         manager_location_argv, instance_argv, settings_manager, declared_ports):
 
-    def get_setting(instance, name, typ):
+    def get_setting(instance, name, typ, default=None):
         return {
                 'muscle_local_log_level': 'debug',
                 'muscle_remote_log_level': 'error'}[str(name)]

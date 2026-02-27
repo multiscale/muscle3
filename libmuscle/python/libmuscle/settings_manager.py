@@ -111,8 +111,11 @@ class SettingsManager:
         names.update(extract_names(self.overlay))
         return sorted(names)
 
-    def get_setting(self, instance: Reference, setting_name: Reference,
-        typ: Optional[str] = None, *, default: Optional[SettingValue] = None) -> SettingValue:
+    def get_setting(
+            self, instance: Reference, setting_name: Reference,
+            typ: Optional[str] = None, *,
+            default: Optional[SettingValue] = None
+            ) -> SettingValue:
         """Returns the value of a setting.
 
         Args:
@@ -152,7 +155,8 @@ class SettingsManager:
 
         if typ is not None:
             if not has_setting_type(value, typ):
-                raise TypeError('Value for setting "{}" is of type {},'
-                                " where {} was expected.".format(name, type(value), typ)
-                )
+                raise TypeError(
+                        'Value for setting "{}" is of type {},'
+                        ' where {} was expected.'.format(
+                            name, type(value), typ))
         return value

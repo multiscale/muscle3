@@ -118,7 +118,7 @@ clean:
 
 .PHONY: test_python
 test_python: base
-	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_programs.ymmsl rd_python.ymmsl rd_settings.ymmsl
+	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_model.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
 	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_model.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
 	# test restarting
 	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_model.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl \

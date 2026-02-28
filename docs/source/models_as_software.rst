@@ -198,6 +198,68 @@ Here, we import the framework, and then the model, and then we use the
 ``custom_implementations`` feature to plug the model into the framework. The file would
 then contain some settings and resources as well to configure things (not shown).
 
+.. rubric:: Optional components
+
+Above, we have a framework that has an extension point that has to be filled in by the
+user. Often when making a framework you'll want to make those points optional. With
+MUSCLE3, there are two ways of doing this.
+
+The first is to make an optionally-implemented component, by ensuring that everything
+connected to it can deal with the ports leading to and from the optional component not
+being connected.
+
+For ports sending to the optional component this is always the case, as sends on ports
+that are not connected to anything are valid and will do nothing. For ports receiving
+from the optional component, a default message must be given in the receive call. We've
+actually already seen this in the diffusion model, which can run without a reaction
+model attached.
+
+With the above set up, the optional component can then be added to the model, and
+connected to the other components it needs to communicate with if present. You can
+specify an implementation, if you want the optional component to have a default
+implementation, or you can leave out the implementation if you want it to be absent by
+default.
+
+Users can use ``custom_implementations`` to set a different implementation if they want,
+and they can even unset the implementation using
+
+.. code-block:: yaml
+
+   custom_implementations:
+     optional_component:
+
+This looks a bit odd, not specifying a value at all, but it's how you write ``None`` in
+YAML, and this syntax will override any default implementation and leave the component
+with no implementation at all.
+
+MUSCLE3 will automatically remove components without an implementation, as well as any
+conduits attached to them, so you'll end up with either a component with the desired
+implementation, or no component at all.
+
+Sometimes having the component missing entirely isn't what you want, for example if you
+want to have an optional component on a conduit in between two non-optional ones. In
+that case, you want to either have the component in there, with e.g. an implementation
+that modifies the data being sent, or you want to have the sender and the receiver
+connected directly to each other.
+
+In this case, rather than removing the component entirely if it's not needed, you can
+use a default implementation that simply passes the data unchanged. This is easy to
+implement using an empty model:
+
+.. code-block:: yaml
+
+   models:
+     passthrough:
+       ports:
+         f_init: in
+         o_f: out
+       conduits:
+         in: out
+
+If you set this as the default implementation of a component in between the sender and
+the receiver, then they'll be connected directly by default. However, if a
+``custom_implementation`` changes the implementation to a program that does something to
+the data, then that will end up in between and the transformation is applied.
 
 Collaborative development
 -------------------------

@@ -122,7 +122,7 @@ test_python: base
 	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_model.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
 	# test restarting
 	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_model.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl \
-		$$(ls $$(ls -d run_reaction_diffusion* | tail -n1)/snapshots/*.ymmsl | head -n1)
+		$$(ls $$(ls -d -r -t run_reaction_diffusion* | tail -n1)/snapshots/*.ymmsl | head -n1)
 	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all eca_python.ymmsl eca_settings.ymmsl eca_programs.ymmsl
 	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all ecac_python.ymmsl eca_settings.ymmsl eca_programs.ymmsl
 	make -C python test
@@ -133,7 +133,7 @@ test_cpp: base cpp
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_model.ymmsl rd_checkpoints_cpp.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
 	# test restarting
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_model.ymmsl rd_checkpoints_cpp.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl \
-		$$(ls $$(ls -d run_reaction_diffusion* | tail -n1)/snapshots/*.ymmsl | head -n1)
+		$$(ls $$(ls -d -r -t run_reaction_diffusion* | tail -n1)/snapshots/*.ymmsl | head -n1)
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_model.ymmsl rd_python_cpp.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
 	. python/build/venv/bin/activate && muscle_manager --start-all rdmc_model.ymmsl rdmc_cpp.ymmsl rdmc_settings.ymmsl rd_programs.ymmsl rdmc_resources.ymmsl
 	. python/build/venv/bin/activate && YMMSL_PATH=./ymmsl muscle_manager --start-all nested_rdmc_imports.ymmsl
@@ -149,7 +149,7 @@ test_fortran: base fortran
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_model.ymmsl rd_checkpoints_fortran.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
 	# test restarting
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_model.ymmsl rd_checkpoints_fortran.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl \
-		$$(ls $$(ls -d run_reaction_diffusion* | tail -n1)/snapshots/*.ymmsl | head -n1)
+		$$(ls $$(ls -d -r -t run_reaction_diffusion* | tail -n1)/snapshots/*.ymmsl | head -n1)
 	. python/build/venv/bin/activate && muscle_manager --start-all rd_model.ymmsl rd_python_fortran.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
 	. python/build/venv/bin/activate && muscle_manager --start-all rdmc_model.ymmsl rdmc_fortran.ymmsl rdmc_settings.ymmsl rd_programs.ymmsl rdmc_resources.ymmsl
 

@@ -186,10 +186,9 @@ Programs
 ````````
 
 To run the simulation MUSCLE3 will have to start our Python programs, and we need to
-tell it how to do that. This is done by some definitions in
-``rd_programs.ymmsl``. Note that this file actually contains definitions for all
-of our programs, but we'll focus on the Python ones here:
-
+tell it how to do that. This is done by some definitions in ``rd_programs.ymmsl``. Note
+that this file actually contains definitions for all of our programs, but we'll focus on
+the ``reaction_python`` one here:
 
 .. code-block:: yaml
 
@@ -198,26 +197,39 @@ of our programs, but we'll focus on the Python ones here:
       ports:
         f_init: initial_state
         o_f: final_state
+      supported_settings:
+        t_max: float  Time point at which to end the simulation
+        dt: float     Time step size
+        k: float      Reaction coefficient
       description: Reaction model implemented in Python
       executable: python
       args: <muscle3_src>/docs/source/examples/python/reaction.py
 
-    # ... other programs ...
+The first thing to note here is that there are three kinds of metadata: ports, supported
+settings, and a description.
 
-    diffusion_python:
-      ports:
-        o_i: state_out
-        s: state_in
-        o_f: final_state_out
-      description: Diffusion model implemented in Python
-      executable: python
-      args: <muscle3_src>/docs/source/examples/python/diffusion.py
+Programs usually have a fixed set of ports on which they expect to communicate, and
+which are hard-coded into them. These ports can be documented here, and you should do so
+because this will allow MUSCLE3 to check that the program actually fits with the
+component it is implementing, and give an easy to understand error message rather than a
+crash or a hang.
 
+The same goes for any MUSCLE3 settings that the program uses. If you list them under
+``supported_settings``, with their type and a description, then users of your program
+can quickly see what's what, and MUSCLE3 can check for settings that have the wrong type
+and give a nice error message. Supported types are ``str``, ``bool``, ``int``,
+``float``, ``[int]`` (a list of ints), ``[float]``, and ``[[float]]`` (list of lists of
+floats), and note that the description is separated from the type by whitespace. In
+particular, don't put a ``#`` in front of the description, because that will make it
+into a YAML comment and make it invisible to the documentation tools.
 
-As you can see, there are some absolute paths here, with a prefix shown here as
-``<muscle3_src>``. If you've run ``make`` in the ``docs/source/examples/``
-directory then you should have a version of this file with the correct paths for
-your local setup.
+Finally, there's a description, which is very brief here but for a real model should be
+more extensive, explaining what the model does and how to use it. 
+
+Next is some information on how to run the program.  As you can see, there are some
+absolute paths here, with a prefix shown here as ``<muscle3_src>``. If you've run
+``make`` in the ``docs/source/examples/`` directory then you should have a version of
+this file with the correct paths for your local setup.
 
 There are two programs shown here, which the components above refer to by
 name. They are Python scripts, so we need to run ``python /path/to/reaction.py``

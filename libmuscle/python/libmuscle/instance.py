@@ -344,6 +344,9 @@ class Instance:
                     will be accepted, and you'll have to figure out
                     what you got yourself.
 
+                    Valid values are ``str``, ``bool``, ``int``, ``float``, ``[int]`` (a
+                    list of ints), ``[float]`` (a list of floats), and ``[[float]]`` (a
+                    list of lists of floats).
         Raises:
             KeyError: If no value was set for this setting.
             TypeError: If the type of the setting's value was not

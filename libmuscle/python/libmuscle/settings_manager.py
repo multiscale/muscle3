@@ -120,7 +120,7 @@ class SettingsManager:
             setting_name: The name of the setting to get the value of.
             typ: An optional type designation; if specified the type
                     is checked for a match before returning. Valid
-                    values are 'str', 'int', 'float', 'bool',
+                    values are 'str', 'int', 'float', 'bool', '[int]',
                     '[float]' and '[[float]]'.
 
         Raises:

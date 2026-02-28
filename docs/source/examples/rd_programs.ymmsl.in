@@ -5,6 +5,10 @@ programs:
     ports:
       f_init: initial_state
       o_f: final_state
+    supported_settings:
+      t_max: float  Time point at which to end the simulation
+      dt: float     Time step size
+      k: float      Reaction coefficient
     description: Reaction model implemented in Python
     executable: python
     args: MUSCLE3_EXAMPLES/python/reaction.py
@@ -13,6 +17,10 @@ programs:
     ports:
       f_init: initial_state
       o_f: final_state
+    supported_settings:
+      t_max: float  Time point at which to end the simulation
+      dt: float     Time step size
+      k: float      Reaction coefficient
     description: Reaction model implemented in C++
     env:
       +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
@@ -22,6 +30,10 @@ programs:
     ports:
       f_init: initial_state
       o_f: final_state
+    supported_settings:
+      t_max: float  Time point at which to end the simulation
+      dt: float     Time step size
+      k: float      Reaction coefficient
     description: Reaction model implemented in C++ with MPI
     env:
       +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
@@ -32,6 +44,10 @@ programs:
     ports:
       f_init: initial_state
       o_f: final_state
+    supported_settings:
+      t_max: float  Time point at which to end the simulation
+      dt: float     Time step size
+      k: float      Reaction coefficient
     description: Reaction model implemented in Fortran
     env:
       +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
@@ -41,6 +57,10 @@ programs:
     ports:
       f_init: initial_state
       o_f: final_state
+    supported_settings:
+      t_max: float  Time point at which to end the simulation
+      dt: float     Time step size
+      k: float      Reaction coefficient
     description: Reaction model implemented in Fortran with MPI
     env:
       +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
@@ -52,6 +72,12 @@ programs:
       o_i: state_out
       s: state_in
       o_f: final_state_out
+    supported_settings:
+      t_max: float  Time point at which to end the simulation
+      dt: float     Time step size
+      x_max: float  Size of the domain
+      dx: float     Distance between cells
+      d: float      Diffusion coefficient
     description: Diffusion model implemented in Python
     executable: python
     args: MUSCLE3_EXAMPLES/python/diffusion.py
@@ -61,6 +87,12 @@ programs:
       o_i: state_out
       s: state_in
       o_f: final_state_out
+    supported_settings:
+      t_max: float  Time point at which to end the simulation
+      dt: float     Time step size
+      x_max: float  Size of the domain
+      dx: float     Distance between cells
+      d: float      Diffusion coefficient
     description: Diffusion model implemented in C++
     env:
       +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
@@ -71,6 +103,12 @@ programs:
       o_i: state_out
       s: state_in
       o_f: final_state_out
+    supported_settings:
+      t_max: float  Time point at which to end the simulation
+      dt: float     Time step size
+      x_max: float  Size of the domain
+      dx: float     Distance between cells
+      d: float      Diffusion coefficient
     description: Diffusion model implemented in Fortran
     env:
       +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib

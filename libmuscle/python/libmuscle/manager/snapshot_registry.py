@@ -9,9 +9,8 @@ from queue import Queue
 from threading import Thread
 from typing import Dict, Optional, Set, FrozenSet, List, Tuple, TypeVar
 
-from ymmsl import (
-        Reference, Model, Identifier, Implementation, save,
-        PartialConfiguration)
+from ymmsl.v0_2 import Configuration, Identifier, Program, Reference
+from ymmsl import save
 
 from libmuscle.manager.topology_store import TopologyStore
 from libmuscle.snapshot import SnapshotMetadata
@@ -182,21 +181,17 @@ class SnapshotRegistry(Thread):
     """
 
     def __init__(
-            self, config: PartialConfiguration, snapshot_folder: Path,
+            self, config: Configuration, snapshot_folder: Path,
             topology_store: TopologyStore) -> None:
         """Create a snapshot graph using provided configuration.
 
         Args:
-            config: ymmsl configuration describing the workflow.
+            config: ymmsl configuration describing the workflow, flattened.
         """
         super().__init__(name='SnapshotRegistry')
 
-        if config.model is None or not isinstance(config.model, Model):
-            raise ValueError('The yMMSL experiment description does not'
-                             ' contain a (complete) model section, so there'
-                             ' is nothing to run!')
         self._configuration = config
-        self._model = config.model
+        self._model = config.root_model()
         self._snapshot_folder = snapshot_folder
         self._topology_store = topology_store
 
@@ -204,7 +199,7 @@ class SnapshotRegistry(Thread):
         self._snapshots: _SnapshotDictType = {}
 
         self._instances: Set[Reference] = set()
-        for component in config.model.components:
+        for component in self._model.components.values():
             self._instances.update(component.instances())
 
         # Create snapshot nodes for starting from scratch
@@ -412,7 +407,7 @@ class SnapshotRegistry(Thread):
 
     def _generate_snapshot_config(
                 self, selected_snapshots: List[SnapshotNode], now: datetime
-                ) -> PartialConfiguration:
+                ) -> Configuration:
         """Generate ymmsl configuration for snapshot file
         """
         selected_snapshots.sort(key=attrgetter('instance'))
@@ -424,7 +419,7 @@ class SnapshotRegistry(Thread):
                 # restarted from the beginning.
                 resume[node.instance] = Path(node.snapshot.snapshot_filename)
         description = self._generate_description(selected_snapshots, now)
-        return PartialConfiguration(resume=resume, description=description)
+        return Configuration(resume=resume, description=description)
 
     def _generate_description(
             self, selected_snapshots: List[SnapshotNode], now: datetime) -> str:
@@ -569,20 +564,17 @@ class SnapshotRegistry(Thread):
         return connected_ports
 
     @lru_cache(maxsize=None)
-    def _implementation(self, kernel: Reference) -> Optional[Implementation]:
+    def _implementation(self, kernel: Reference) -> Optional[Program]:
         """Return the implementation of a kernel.
 
         Args:
             kernel: The kernel to get the implementation for.
 
         Returns:
-            Implementation for the kernel, or None if not provided in the
-            configuration.
+            Program for the kernel, or None if not provided in the configuration.
         """
-        implementation = None
-        for component in self._model.components:
-            if component.name == kernel:
-                implementation = component.implementation
-        if implementation in self._configuration.implementations:
-            return self._configuration.implementations[implementation]
+        component = self._model.components.get(kernel)
+        if component and component.implementation:
+            if component.implementation in self._configuration.programs:
+                return self._configuration.programs[component.implementation]
         return None

@@ -1,0 +1,60 @@
+ymmsl_version: v0.2
+
+imports:
+- from reaction_diffusion import implementation reaction_diffusion
+- from uncertainty import implementation qmc
+
+models:
+  rduq:
+    components:
+      uq:
+        ports:
+          o_i: settings_out   # vector port, Settings
+          s: final_state_in   # vecotr port, 1D array
+        description: |
+          Implements a quasi-Monte Carlo uncertainty quantification method.
+        implementation: qmc
+
+      uncertain_model:
+        ports:
+          f_init: settings_in
+          o_f: final_state_out
+        description: |
+          A model with uncertain parameters to apply UQ to.
+        multiplicity: 2
+        implementation: reaction_diffusion
+
+    conduits:
+      uq.settings_out: uncertain_model.settings_in
+      uncertain_model.final_state_out: uq.final_state_in
+
+
+settings:
+  muscle_local_log_level: INFO
+  muscle_remote_log_level: WARNING
+
+  uncertain_model.micro.t_max: 2.469136e-06
+  uncertain_model.micro.dt: 2.469136e-08
+  uncertain_model.macro.t_max: 0.0001234568
+  uncertain_model.macro.dt: 2.469136e-06
+  x_max: 1.01
+  dx: 0.01
+  k_min: -4.455e4
+  k_max: -3.645e4
+  d_min: 0.03645
+  d_max: 0.04455
+  n_samples: 10
+
+
+resources:
+  uq.mc:
+    threads: 1
+
+  uq.rr:
+    threads: 1
+
+  uncertain_model.macro:
+    threads: 1
+
+  uncertain_model.micro:
+    threads: 1

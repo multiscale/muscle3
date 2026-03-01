@@ -34,6 +34,16 @@ def yatiml_log_warning():
     yatiml.logger.setLevel(logging.WARNING)
 
 
+@pytest.fixture
+def ymmsl_path() -> str:
+    return str(Path(__file__).parent / 'ymmsl')
+
+
+@pytest.fixture
+def codes_path() -> str:
+    return str(Path(__file__).parent / 'codes')
+
+
 def ls_snapshots(run_dir, instance=None):
     """List all snapshots of the instance or workflow"""
     return sorted(run_dir.snapshot_dir(instance).iterdir(),
@@ -191,12 +201,23 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
 @pytest.fixture
 def mmp_server_config(yatiml_log_warning):
     return (
-            'ymmsl_version: v0.1\n'
-            'model:\n'
-            '  name: test_model\n'
+            'ymmsl_version: v0.2\n'
+            'description: A less simple configuration for integration tests\n'
+            'models:\n'
+            '- name: test_model\n'
+            '  description: A model for testing\n'
             '  components:\n'
-            '    macro: macro_implementation\n'
+            '    macro:\n'
+            '      description: The macro model\n'
+            '      ports:\n'
+            '        o_i: out\n'
+            '        s: in\n'
+            '      implementation: macro_implementation\n'
             '    micro:\n'
+            '      description: The micro model, many of them\n'
+            '      ports:\n'
+            '        f_init: in\n'
+            '        o_f: out\n'
             '      implementation: micro_implementation\n'
             '      multiplicity: [10]\n'
             '  conduits:\n'
@@ -211,9 +232,13 @@ def mmp_server_config(yatiml_log_warning):
             '  test6:\n'
             '    - [1.0, 2.0]\n'
             '    - [3.0, 1.0]\n'
-            'implementations:\n'
-            '  macro_implementation: macro.py\n'
-            '  micro_implementation: micro.py\n'
+            'programs:\n'
+            '  macro_implementation:\n'
+            '    description: Program implementing macro\n'
+            '    executable: macro.py\n'
+            '  micro_implementation:\n'
+            '    description: Program implementing micro\n'
+            '    executable: micro.py\n'
             )
 
 
@@ -226,12 +251,24 @@ def mmp_server_process(mmp_server_config, tmpdir):
 @pytest.fixture
 def mmp_server_config_simple(yatiml_log_warning):
     return (
-            'ymmsl_version: v0.1\n'
-            'model:\n'
-            '  name: test_model\n'
+            'ymmsl_version: v0.2\n'
+            'description: A simple configuration for integration tests\n'
+            'models:\n'
+            '- name: test_model\n'
+            '  description: A model for testing\n'
             '  components:\n'
-            '    macro: macro_implementation\n'
-            '    micro: micro_implementation\n'
+            '    macro:\n'
+            '      description: The macro model\n'
+            '      ports:\n'
+            '        o_i: out\n'
+            '        s: in\n'
+            '      implementation: macro_implementation\n'
+            '    micro:\n'
+            '      description: The micro model\n'
+            '      ports:\n'
+            '        f_init: in\n'
+            '        o_f: out\n'
+            '      implementation: micro_implementation\n'
             '  conduits:\n'
             '    macro.out: micro.in\n'
             '    micro.out: macro.in\n'

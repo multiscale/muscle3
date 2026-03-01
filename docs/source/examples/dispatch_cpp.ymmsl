@@ -1,28 +1,30 @@
-ymmsl_version: v0.1
+ymmsl_version: v0.2
 
-model:
-  name: dispatch_cpp
+models:
+  dispatch_cpp:
+      components:
+        component1:
+          implementation: buffer_cpp
+          ports:
+            o_f: out
+          description: The first component in a chain of three
 
-  components:
-    component1:
-      implementation: buffer_cpp
-      ports:
-        o_f: out
+        component2:
+          implementation: buffer_cpp
+          ports:
+            f_init: in
+            o_f: out
+          description: The second component in a chain of three
 
-    component2:
-      implementation: buffer_cpp
-      ports:
-        f_init: in
-        o_f: out
+        component3:
+          implementation: buffer_cpp
+          ports:
+            f_init: in
+          description: The third component in a chain of three
 
-    component3:
-      implementation: buffer_cpp
-      ports:
-        f_init: in
-
-  conduits:
-    component1.out: component2.in
-    component2.out: component3.in
+      conduits:
+        component1.out: component2.in
+        component2.out: component3.in
 
 resources:
   component1:

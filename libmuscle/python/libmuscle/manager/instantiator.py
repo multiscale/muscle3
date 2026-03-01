@@ -6,7 +6,7 @@ from pathlib import Path
 import traceback
 from typing import Dict, Optional
 
-from ymmsl import BaseEnv, Implementation, Reference, ResourceRequirements
+from ymmsl.v0_2 import BaseEnv, Program, Reference, ResourceRequirements
 
 from libmuscle.planner.planner import ResourceAssignment
 
@@ -71,7 +71,7 @@ class InstantiationRequest(InstantiatorRequest):
 
     Attributes:
         instance: The name of the instance
-        implementation: The implementation to start for it
+        program: The program to start for it
         res_req: The resource requirements for this instance
         resources: The specific resources to start it on
         instance_dir: The main directory for this instance
@@ -80,7 +80,7 @@ class InstantiationRequest(InstantiatorRequest):
         stderr_path: Path of file to redirect stderr to
     """
     def __init__(
-            self, instance: Reference, implementation: Implementation,
+            self, instance: Reference, program: Program,
             res_req: ResourceRequirements, resources: ResourceAssignment,
             instance_dir: Path, work_dir: Path, stdout_path: Path, stderr_path: Path
             ) -> None:
@@ -88,7 +88,7 @@ class InstantiationRequest(InstantiatorRequest):
 
         Args:
             instance: The name of the instance
-            implementation: The implementation to start for it
+            program: The program to start for it
             res_req: The resource requirements for this instance
             resources: The specific resources to instantiate on
             instance_dir: The main directory for this instance
@@ -97,7 +97,7 @@ class InstantiationRequest(InstantiatorRequest):
             stderr_path: Path of file to redirect stderr to
         """
         self.instance = instance
-        self.implementation = implementation
+        self.program = program
         self.res_req = res_req
         self.resources = resources
         self.instance_dir = instance_dir
@@ -185,9 +185,9 @@ def create_instance_env(
             # do. Note that _OLD_VIRTUAL_PYTHONHOME isn't exported by default either,
             # but we check for it anyway; if we're on a system where PYTHONHOME is
             # needed and the manager needs to be run with an active virtualenv and one
-            # of the implementations needs a clean shell, then the user will have to
-            # export it manually between activating the virtualenv and starting the
-            # manager and things will work.
+            # of the programs needs a clean shell, then the user will have to export
+            # it manually between activating the virtualenv and starting the manager
+            # and things will work.
             vep = env.get('VIRTUAL_ENV_PROMPT')
             if vep is not None:
                 if 'PS1' in env:

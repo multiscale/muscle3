@@ -5,7 +5,7 @@ Only in very rare cases are the inputs and parameters of a model known exactly.
 Usually, inputs and parameter values come from measurements done in the field or
 in the lab, and those measurements are never exact. So every model is subject to
 uncertainty. Uncertainty Quantification (UQ) provides techniques for analysing
-th uncertainty in models, parameters and results. This section shows an example
+the uncertainty in models, parameters and results. This section shows an example
 of a black-box quasi-Monte Carlo uncertainty quantification of the
 reaction-diffusion model we created before, implemented using MUSCLE3.
 
@@ -50,7 +50,7 @@ in a set of parameter values {(k, d)}. It writes these parameters to its
 
 The name of this port in the diagram ends in a pair of square brackets, which
 designates the port a *vector port*. A vector port is a port that is used to
-talk to multiple instances of a connected components. It has a number of slots
+talk to multiple instances of a connected component. It has a number of slots
 on which messages can be sent (or received, if it is a receiving port). The
 number of slots is known as the *length* of a vector port. Since we are going
 to run an ensemble, and we want to be able to run the ensemble members in
@@ -333,8 +333,9 @@ Examples in C++ and Fortran
 ---------------------------
 
 MUSCLE3 comes with C++ and Fortran versions of this Uncertainty Quantification
-use case. They can be run like the other models, but use ``rdmc_settings.ymmsl``
-instead of ``rd_settings.ymmsl``. The models themselves are in
-``rdmc_cpp.ymmsl`` and ``rdmc_fortran.ymmsl``. The source code for the
-components may be found in ``docs/source/examples/cpp`` and
+use case. They can be run like the other models, but use the files ``rdmc_model.ymmsl``,
+``rdmc_cpp.ymmsl``, ``rdmc_settings.ymmsl``, and ``rdmc_resources.ymmsl``. The programs
+are in ``rd_programs.ymmsl``.
+
+The source code for the programs may be found in ``docs/source/examples/cpp`` and
 ``docs/source/examples/fortran``.

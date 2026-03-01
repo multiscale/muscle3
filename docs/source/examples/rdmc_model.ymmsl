@@ -1,0 +1,44 @@
+ymmsl_version: v0.2
+
+models:
+  reaction_diffusion_mc:
+      components:
+        mc:
+          ports:
+            o_i: parameters_out
+            s: states_in
+          description: |
+            The Monte Carlo driver component samples parameters and collects results for
+            statistical analysis.
+        rr:
+          ports:
+            f_init: front_in
+            o_i: back_out
+            s: back_in
+            o_f: front_out
+          description: |
+            The round-robin load balancer distributes runs across the implementations of
+            the model.
+        macro:
+          ports:
+            o_i: state_out
+            s: state_in
+            o_f: final_state_out
+          description: |
+            The macro model implements the diffusion process.
+          multiplicity: 2
+        micro:
+          ports:
+            f_init: initial_state
+            o_f: final_state
+          description: |
+            The micro model implements the reaction process.
+          multiplicity: 2
+
+      conduits:
+        mc.parameters_out: rr.front_in
+        rr.front_out: mc.states_in
+        rr.back_out: macro.muscle_settings_in
+        macro.final_state_out: rr.back_in
+        macro.state_out: micro.initial_state
+        micro.final_state: macro.state_in

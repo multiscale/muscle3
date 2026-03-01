@@ -2,7 +2,7 @@ from enum import Enum
 from time import perf_counter_ns, time_ns
 from typing import Optional
 
-from ymmsl import Port
+from ymmsl.v0_2 import Port
 
 
 class ProfileEventType(Enum):

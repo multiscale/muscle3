@@ -5,7 +5,7 @@ from typing import Sequence
 
 import click
 import ymmsl
-from ymmsl import PartialConfiguration
+from ymmsl.v0_2 import Configuration
 
 
 from libmuscle.planner.planner import Planner, InsufficientResourcesAvailable
@@ -131,10 +131,8 @@ def resources(
       sbatch -N ${num_nodes} simulation.sh
 
     """
-    partial_config = _load_ymmsl_files(ymmsl_files)
-    try:
-        config = partial_config.as_configuration()
-    except ValueError:
+    config = _load_ymmsl_files(ymmsl_files)
+    if not config.models or not config.resources or not config.programs:
         click.echo(_RESOURCES_INCOMPLETE_MODEL, err=True)
         sys.exit(1)
 
@@ -214,12 +212,18 @@ def snapshot(
         click.echo()
 
 
-def _load_ymmsl_files(ymmsl_files: Sequence[str]) -> PartialConfiguration:
+def _load_ymmsl_files(ymmsl_files: Sequence[str]) -> Configuration:
     """Loads and merges yMMSL files."""
-    configuration = PartialConfiguration()
+    configuration = None
     for path in ymmsl_files:
         with open(path, 'r') as f:
-            configuration.update(ymmsl.load(f))
+            config = ymmsl.load_as(Configuration, f)
+        if not configuration:
+            configuration = config
+        else:
+            configuration.update(ymmsl.load_as(Configuration, f))
+
+    assert configuration is not None
     return configuration
 
 

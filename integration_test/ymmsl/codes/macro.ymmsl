@@ -1,0 +1,19 @@
+ymmsl_version: v0.2
+
+description: |
+  yMMSL metadata for the macro code
+
+programs:
+  macro:
+    ports:
+      o_i: out
+      s: in
+    description: |
+      # A simple macro model that can call a micro model
+
+      ## Ports
+
+      out: Sends a single integer counting the iterations, starting with 0
+      in: Expects a single integer of any value
+    executable: python3
+    args: "-m macro"

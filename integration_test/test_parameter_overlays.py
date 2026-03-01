@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
-from ymmsl import (Component, Conduit, Configuration, Model, Operator,
-                   Settings)
+from ymmsl.v0_2 import (
+        Component, Conduit, Configuration, Model, Operator, Ports, Settings)
 
 from libmuscle import Instance, Message, DONT_APPLY_OVERLAY
 from libmuscle.runner import run_simulation
@@ -96,12 +96,15 @@ def micro():
 def test_settings_overlays(log_file_in_tmpdir):
     """A positive all-up test of settings overlays.
     """
-    elements = [
-            Component('qmc', 'qmc'),
-            Component('macro', 'macro', [_ENSEMBLE_SIZE]),
-            Component('relay', 'explicit_relay'),
-            Component('relay2', 'explicit_relay'),
-            Component('micro', 'micro', [_ENSEMBLE_SIZE])]
+    components = [
+            Component('qmc', Ports(o_f='settings_out'), '', 'qmc'),
+            Component(
+                'macro', Ports(o_i='out', s='in'), '', 'macro', False, [_ENSEMBLE_SIZE]
+                ),
+            Component('relay', Ports('in', o_f='out'), '', 'explicit_relay'),
+            Component('relay2', Ports('in', o_f='out'), '', 'explicit_relay'),
+            Component(
+                'micro', Ports('in', o_f='out'), '', 'micro', False, [_ENSEMBLE_SIZE])]
 
     conduits = [
                 Conduit('qmc.settings_out', 'macro.muscle_settings_in'),
@@ -110,7 +113,7 @@ def test_settings_overlays(log_file_in_tmpdir):
                 Conduit('micro.out', 'relay2.in'),
                 Conduit('relay2.out', 'macro.in')]
 
-    model = Model('test_model', elements, conduits)
+    model = Model('test_model', None, '', None, components, conduits)
 
     settings = Settings(OrderedDict([
                 ('test1', 13),
@@ -120,7 +123,7 @@ def test_settings_overlays(log_file_in_tmpdir):
                 ('test5', [2.3, 5.6]),
                 ('test6', [[1.0, 2.0], [3.0, 1.0]])]))
 
-    configuration = Configuration(model, settings)
+    configuration = Configuration('settings_overlays', None, [model], None, settings)
 
     implementations = {
             'qmc': qmc,

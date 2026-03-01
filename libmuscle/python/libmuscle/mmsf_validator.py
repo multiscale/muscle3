@@ -4,7 +4,7 @@ import types
 from typing import List, Optional
 
 from libmuscle.port_manager import PortManager
-from ymmsl import Operator
+from ymmsl.v0_2 import Operator
 
 
 _logger = logging.getLogger(__name__)

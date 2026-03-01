@@ -1,0 +1,7 @@
+ymmsl_version: v0.2
+
+resources:
+  driver:
+    threads: 1
+  mirror:
+    threads: 1

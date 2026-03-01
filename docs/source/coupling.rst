@@ -19,30 +19,40 @@ Example
 
     .. code-tab:: yaml Basic macro/micro model configuration
 
-        ymmsl_version: v0.1
-        model:
-          name: multicast
-          components:
-            macro: macro
-            micro: micro
-          conduits:
-            macro.state_out: micro.state_in
-            micro.state_out: macro.state_in
+        ymmsl_version: v0.2
+        models:
+          multicast:
+            components:
+              macro:
+                description: A macro model
+                implementation: macro
+              micro:
+                description: A micro model
+                implementation: micro
+            conduits:
+              macro.state_out: micro.state_in
+              micro.state_out: macro.state_in
 
     .. code-tab:: yaml Extended configuration with multicast
 
-        ymmsl_version: v0.1
-        model:
-          name: multicast
-          components:
-            macro: macro
-            micro: micro
-            printer: printer
-          conduits:
-            macro.state_out: micro.state_in
-            micro.state_out:
-            - macro.state_in
-            - printer.in
+        ymmsl_version: v0.2
+        models:
+          multicast:
+            components:
+              macro:
+                description: A macro model
+                implementation: macro
+              micro:
+                description: A micro model
+                implementation: micro
+              printer:
+                description: Prints messages for debugging
+                implementation: printer
+            conduits:
+              macro.state_out: micro.state_in
+              micro.state_out:
+              - macro.state_in
+              - printer.in
 
 In the second tab, a new component `printer` is added and wired to the
 ``state_out`` port of the micro model. Whenever the micro model sends a message

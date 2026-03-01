@@ -1,6 +1,6 @@
 matplotlib>=3,<4
 numpy>=1.22
 sobol_seq==0.2.0
-ymmsl>=0.14,<0.15
-yatiml @ git+https://github.com/yatiml/yatiml.git
+ymmsl @ git+https://github.com/multiscale/ymmsl-python.git@develop#egg=ymmsl
+yatiml @ git+https://github.com/yatiml/yatiml@develop#egg_info=yatiml
 

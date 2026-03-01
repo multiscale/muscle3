@@ -1,0 +1,33 @@
+# Run Continuous Integration on macOS 26 Tahoe, with native Clang and
+# without Fortran.
+
+# This mainly checks for issues/regressions in the native build
+name: compatibility_macos_tahoe_26_clang
+on:
+  schedule:
+    - cron: '30 1 * * 6'
+  push:
+    branches:
+      - 'release-*'
+      - fix_native_compatibility_ci
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 30
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest
+
+    - name: Install dependencies
+      run: |
+        python3 -m venv ${GITHUB_WORKSPACE}/test_venv
+        . ${GITHUB_WORKSPACE}/test_venv/bin/activate && pip install tox tox-gh-actions
+        . ${GITHUB_WORKSPACE}/test_venv/bin/activate && pip3 install "yatiml @ git+https://github.com/yatiml/yatiml.git"
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install openmpi
+
+    - name: Run all tests on macOS Tahoe 26 with Clang
+      run: cd ${GITHUB_WORKSPACE} && PATH=$PATH:${GITHUB_WORKSPACE}/test_venv/bin make test test_examples

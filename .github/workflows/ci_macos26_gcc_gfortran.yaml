@@ -4,7 +4,7 @@
 name: compatibility_macos_tahoe_26_gcc_gfortran
 on:
   schedule:
-    - cron: '00 2 * * 6'
+    - cron: '00 3 * * 6'
   push:
     branches:
       - 'release-*'

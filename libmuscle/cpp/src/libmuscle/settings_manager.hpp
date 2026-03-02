@@ -49,13 +49,18 @@ class SettingsManager {
          *
          * @param instance The name of the instance to get the setting for.
          * @param setting_name The name of the setting to get.
+         * @param default_value An optional default value to return if the
+         *                      setting is not found. If nullptr and the
+         *                      setting is not found, an exception is thrown.
          *
          * @return The value of the setting.
-         * @throws std::out_of_range if the setting was not found.
+         * @throws std::out_of_range if the setting was not found and no
+         *                           default value was provided.
          */
         ymmsl::SettingValue const & get_setting(
                 ymmsl::Reference const & instance,
-                ymmsl::Reference const & setting_name) const;
+                ymmsl::Reference const & setting_name,
+                ymmsl::SettingValue const * default_value = nullptr) const;
 
         /** Get a setting's value, checking the type.
          *

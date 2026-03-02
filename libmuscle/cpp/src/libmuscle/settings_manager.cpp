@@ -67,7 +67,8 @@ std::vector<std::string> SettingsManager::list_settings(
 
 SettingValue const & SettingsManager::get_setting(
         Reference const & instance,
-        Reference const & setting_name
+        Reference const & setting_name,
+        SettingValue const * default_value
         ) const
 {
     auto it = instance.cend();
@@ -86,6 +87,10 @@ SettingValue const & SettingsManager::get_setting(
         --it;
     }
     while (true);
+    
+    if (default_value != nullptr)
+        return *default_value;
+    
     throw std::out_of_range("Value for setting "
                             + static_cast<std::string>(setting_name)
                             + " was not set");

@@ -971,7 +971,7 @@ instance_members = [
     MemFunTmpl(
         [String(), Int64t(), Double(), Bool(), VecInt64t('value'), VecDbl('value'),
          Vec2Dbl('value')],
-        T(), 'get_setting_with_default_as', [String('name'), T('default')], True,
+        T(), 'get_setting_with_default_as', [String('name'), T('default_value')], True,
         cpp_chain_call=lambda cpp_args, tpl_type, **kwargs: f'self_p->get_setting_as<{tpl_type}>({cpp_args})'),
     OverloadSet('get_setting_with_default', [
         'get_setting_with_default_as_character', 'get_setting_with_default_as_int8',

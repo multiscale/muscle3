@@ -93,6 +93,10 @@ class Instance::Impl {
                 Optional<::ymmsl::SettingValue> const & default_value) const;
         template <typename ValueType>
         ValueType get_setting_as(std::string const & name) const;
+        template <typename ValueType>
+        ValueType get_setting_as(
+                std::string const & name,
+                Optional<ValueType> const & default_value) const;
         std::unordered_map<::ymmsl::Operator, std::vector<std::string>>
         list_ports() const;
         bool is_connected(std::string const & port) const;
@@ -342,6 +346,18 @@ std::vector<std::string> Instance::Impl::list_settings() const {
 template <typename ValueType>
 ValueType Instance::Impl::get_setting_as(std::string const & name) const {
     return settings_manager_.get_setting(instance_name_, name).template as<ValueType>();
+}
+
+template <typename ValueType>
+ValueType Instance::Impl::get_setting_as(
+        std::string const & name,
+        Optional<ValueType> const & default_value) const {
+    Optional<::ymmsl::SettingValue> default_setting_value;
+    if (default_value.is_set())
+        default_setting_value = ::ymmsl::SettingValue(default_value.get());
+    
+    auto setting = settings_manager_.get_setting(instance_name_, name, default_setting_value);
+    return setting.template as<ValueType>();
 }
 
 std::unordered_map<::ymmsl::Operator, std::vector<std::string>>
@@ -1371,6 +1387,13 @@ ValueType Instance::get_setting_as(std::string const & name) const {
     return impl_()->get_setting_as<ValueType>(name);
 }
 
+template <typename ValueType>
+ValueType Instance::get_setting_as(
+        std::string const & name,
+        Optional<ValueType> const & default_value) const {
+    return impl_()->get_setting_as<ValueType>(name, default_value);
+}
+
 /** This keeps Doxygen from getting confused.
  * \cond
  */
@@ -1384,6 +1407,21 @@ template std::vector<double> Instance::get_setting_as<std::vector<double>>(
         std::string const & name) const;
 template std::vector<std::vector<double>> Instance::get_setting_as<std::vector<std::vector<double>>>(
         std::string const & name) const;
+
+template std::string Instance::get_setting_as<std::string>(
+        std::string const & name, Optional<std::string> const & default_value) const;
+template int64_t Instance::get_setting_as<int64_t>(
+        std::string const & name, Optional<int64_t> const & default_value) const;
+template double Instance::get_setting_as<double>(
+        std::string const & name, Optional<double> const & default_value) const;
+template bool Instance::get_setting_as<bool>(
+        std::string const & name, Optional<bool> const & default_value) const;
+template std::vector<int64_t> Instance::get_setting_as<std::vector<int64_t>>(
+        std::string const & name, Optional<std::vector<int64_t>> const & default_value) const;
+template std::vector<double> Instance::get_setting_as<std::vector<double>>(
+        std::string const & name, Optional<std::vector<double>> const & default_value) const;
+template std::vector<std::vector<double>> Instance::get_setting_as<std::vector<std::vector<double>>>(
+        std::string const & name, Optional<std::vector<std::vector<double>>> const & default_value) const;
 /** \endcond
  */
 

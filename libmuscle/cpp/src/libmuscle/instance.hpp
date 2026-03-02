@@ -302,6 +302,31 @@ class Instance {
         template <typename ValueType>
         ValueType get_setting_as(std::string const & name) const;
 
+        /** Returns the value of a model setting.
+         *
+         * MPI-based components may call this function at any time
+         * within the reuse loop, in any or all processes, simultaneously or
+         * not.
+         *
+         * @tparam ValueType The (expected) type of the setting. Needs to
+         *      match exactly or an exception will be thrown, this will not
+         *      convert e.g. an integer into a string.
+         * @param name The name of the setting, without any instance prefix.
+         * @param default_value An optional default value to return if the
+         *                      setting is not found. If not set and the
+         *                      setting is not found, an exception is thrown.
+         *
+         * @return The value of the setting as a ValueType
+         *
+         * @throw std::out_of_range if no setting with the given name exists
+         *                          and no default value was provided.
+         * @throw std::bad_cast if the value is not of the specified type.
+         */
+        template <typename ValueType>
+        ValueType get_setting_as(
+                std::string const & name,
+                Optional<ValueType> const & default_value) const;
+
         /** Returns a description of the ports that this CE has.
          *
          * Note that the result has almost the same format as the port
@@ -800,6 +825,11 @@ class Instance {
 
         Impl const * impl_() const;
         Impl * impl_();
+
+        template <typename ValueType>
+        ValueType get_setting_as_impl_(
+                std::string const & name,
+                Optional<ValueType> const & default_value) const;
 };
 
 } }

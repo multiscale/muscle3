@@ -1,6 +1,7 @@
 #pragma once
 
 #include <libmuscle/namespace.hpp>
+#include <libmuscle/util.hpp>
 #include <ymmsl/ymmsl.hpp>
 
 #include <libmuscle/tests/mocks/mock_support.hpp>
@@ -10,6 +11,29 @@
 
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
+
+// Wrapper for get_setting to support default argument
+struct MockGetSetting : public MockFun<
+    Val<::ymmsl::SettingValue const &>,
+    Val<::ymmsl::Reference const &>,
+    Val<::ymmsl::Reference const &>,
+    Val<Optional<::ymmsl::SettingValue> const &>
+> {
+    using BaseMockFun = MockFun<
+        Val<::ymmsl::SettingValue const &>,
+        Val<::ymmsl::Reference const &>,
+        Val<::ymmsl::Reference const &>,
+        Val<Optional<::ymmsl::SettingValue> const &>
+    >;
+
+    // Overload to support calling with 2 arguments (default third argument = {})
+    ::ymmsl::SettingValue const & operator()(
+            ::ymmsl::Reference const & instance,
+            ::ymmsl::Reference const & setting_name,
+            Optional<::ymmsl::SettingValue> const & default_value = {}) const {
+        return BaseMockFun::operator()(instance, setting_name, default_value);
+    }
+};
 
 class MockSettingsManager : public MockClass<MockSettingsManager> {
     public:
@@ -32,11 +56,7 @@ class MockSettingsManager : public MockClass<MockSettingsManager> {
             Val<std::vector<std::string>>, Val<::ymmsl::Reference const &>
             > list_settings;
 
-        MockFun<
-            Val<::ymmsl::SettingValue const &>,
-            Val<::ymmsl::Reference const &>, Val<::ymmsl::Reference const &>, 
-            Val<::ymmsl::SettingValue const *>
-            > get_setting;
+        MockGetSetting get_setting;
 };
 
 using SettingsManager = MockSettingsManager;

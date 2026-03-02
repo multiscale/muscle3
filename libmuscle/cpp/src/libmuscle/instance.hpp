@@ -4,6 +4,7 @@
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/ports_description.hpp>
 #include <libmuscle/test_support.hpp>
+#include <libmuscle/util.hpp>
 
 #ifdef MUSCLE_ENABLE_MPI
 #include <mpi.h>
@@ -270,7 +271,7 @@ class Instance {
          *
          * @param name The name of the setting, without any instance prefix.
          * @param default_value An optional default value to return if the
-         *                      setting is not found. If nullptr and the
+         *                      setting is not found. If not set and the
          *                      setting is not found, an exception is thrown.
          *
          * @return The value of the setting as a generic SettingValue.
@@ -280,7 +281,7 @@ class Instance {
          */
         ::ymmsl::SettingValue get_setting(
                 std::string const & name,
-                ::ymmsl::SettingValue const * default_value = nullptr) const;
+                Optional<::ymmsl::SettingValue> const & default_value = {}) const;
 
         /** Returns the value of a model setting.
          *

@@ -5,6 +5,7 @@
 #else
 
 #include <libmuscle/namespace.hpp>
+#include <libmuscle/util.hpp>
 
 #include <ymmsl/ymmsl.hpp>
 
@@ -50,7 +51,7 @@ class SettingsManager {
          * @param instance The name of the instance to get the setting for.
          * @param setting_name The name of the setting to get.
          * @param default_value An optional default value to return if the
-         *                      setting is not found. If nullptr and the
+         *                      setting is not found. If not set and the
          *                      setting is not found, an exception is thrown.
          *
          * @return The value of the setting.
@@ -60,7 +61,7 @@ class SettingsManager {
         ymmsl::SettingValue const & get_setting(
                 ymmsl::Reference const & instance,
                 ymmsl::Reference const & setting_name,
-                ymmsl::SettingValue const * default_value = nullptr) const;
+                Optional<ymmsl::SettingValue> const & default_value = {}) const;
 
         /** Get a setting's value, checking the type.
          *

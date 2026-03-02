@@ -968,6 +968,17 @@ instance_members = [
         [String(), Int64t(), Double(), Bool(), VecInt64t('value'), VecDbl('value'),
          Vec2Dbl('value')],
         T(), 'get_setting_as', [String('name')], True),
+    MemFunTmpl(
+        [String(), Int64t(), Double(), Bool(), VecInt64t('value'), VecDbl('value'),
+         Vec2Dbl('value')],
+        T(), 'get_setting_with_default_as', [String('name'), T('default')], True,
+        cpp_chain_call=lambda cpp_args, tpl_type, **kwargs: f'self_p->get_setting_as<{tpl_type}>({cpp_args})'),
+    OverloadSet('get_setting_with_default', [
+        'get_setting_with_default_as_character', 'get_setting_with_default_as_int8',
+        'get_setting_with_default_as_real8', 'get_setting_with_default_as_logical',
+        'get_setting_with_default_as_int8array', 'get_setting_with_default_as_real8array',
+        'get_setting_with_default_as_real8array2'
+        ], False),
     MemFun(VecString('value'), 'list_settings'),
     MemFun(Obj('PortsDescription'), 'list_ports'),
     MemFun(Bool(), 'is_connected', [String('port')]),

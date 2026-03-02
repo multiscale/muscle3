@@ -125,3 +125,18 @@ TEST(libmuscle_settings_manager, test_get_setting) {
     ASSERT_EQ(s.get_setting("instance[11]"s, "test5"s), "overlay_test5");
 }
 
+TEST(libmuscle_settings_manager, test_get_setting_with_default) {
+    SettingsManager s;
+
+    s.base["test"] = 13;
+    ASSERT_EQ(s.get_setting("instance"s, "test"s), 13);
+
+    ymmsl::SettingValue default_val = 42;
+    ASSERT_EQ(s.get_setting("instance"s, "test"s, &default_val), 13);
+
+    ymmsl::SettingValue default_str = "default_value"s;
+    ASSERT_EQ(s.get_setting("instance"s, "nonexistent"s, &default_str), "default_value"s);
+
+    ASSERT_THROW(s.get_setting("instance"s, "nonexistent"s), std::out_of_range);
+}
+

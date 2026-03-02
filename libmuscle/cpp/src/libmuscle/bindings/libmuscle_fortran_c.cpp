@@ -4366,6 +4366,354 @@ void LIBMUSCLE_Instance_get_setting_as_real8array2_(std::intptr_t self, char * n
     }
 }
 
+void LIBMUSCLE_Instance_get_setting_with_default_as_character_(std::intptr_t self, char * name, std::size_t name_size, char * default_value, std::size_t default_value_size, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Instance * self_p = reinterpret_cast<Instance *>(self);
+    std::string name_s(name, name_size);
+    std::string default_value_s(default_value, default_value_size);
+    try {
+        *err_code = 0;
+        static std::string result;
+        result = self_p->get_setting_as<std::string>(name_s, default_value_s);
+        *ret_val = const_cast<char*>(result.c_str());
+        *ret_val_size = result.size();
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+int64_t LIBMUSCLE_Instance_get_setting_with_default_as_int8_(std::intptr_t self, char * name, std::size_t name_size, int64_t default_value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Instance * self_p = reinterpret_cast<Instance *>(self);
+    std::string name_s(name, name_size);
+    try {
+        *err_code = 0;
+        int64_t result = self_p->get_setting_as<int64_t>(name_s, default_value);
+        return result;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    return 0;
+}
+
+double LIBMUSCLE_Instance_get_setting_with_default_as_real8_(std::intptr_t self, char * name, std::size_t name_size, double default_value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Instance * self_p = reinterpret_cast<Instance *>(self);
+    std::string name_s(name, name_size);
+    try {
+        *err_code = 0;
+        double result = self_p->get_setting_as<double>(name_s, default_value);
+        return result;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    return 0.0;
+}
+
+bool LIBMUSCLE_Instance_get_setting_with_default_as_logical_(std::intptr_t self, char * name, std::size_t name_size, bool default_value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Instance * self_p = reinterpret_cast<Instance *>(self);
+    std::string name_s(name, name_size);
+    try {
+        *err_code = 0;
+        bool result = self_p->get_setting_as<bool>(name_s, default_value);
+        return result;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    return false;
+}
+
+void LIBMUSCLE_Instance_get_setting_with_default_as_int8array_(std::intptr_t self, char * name, std::size_t name_size, std::int64_t * default_value, std::int64_t default_value_size, std::int64_t ** value, std::size_t * value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Instance * self_p = reinterpret_cast<Instance *>(self);
+    std::string name_s(name, name_size);
+    std::vector<std::int64_t> default_value_v(default_value, default_value + default_value_size);
+    try {
+        *err_code = 0;
+        static std::vector<std::int64_t> result;
+        result = self_p->get_setting_as<std::vector<int64_t>>(name_s, default_value_v);
+        *value = result.data();
+        *value_size = result.size();
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Instance_get_setting_with_default_as_real8array_(std::intptr_t self, char * name, std::size_t name_size, double * default_value, std::size_t default_value_size, double ** value, std::size_t * value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Instance * self_p = reinterpret_cast<Instance *>(self);
+    std::string name_s(name, name_size);
+    std::vector<double> default_value_v(default_value, default_value + default_value_size);
+    try {
+        *err_code = 0;
+        static std::vector<double> result;
+        result = self_p->get_setting_as<std::vector<double>>(name_s, default_value_v);
+        *value = result.data();
+        *value_size = result.size();
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
+void LIBMUSCLE_Instance_get_setting_with_default_as_real8array2_(std::intptr_t self, char * name, std::size_t name_size, double * default_value, std::size_t * default_value_shape, double ** value, std::size_t * value_shape, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+    Instance * self_p = reinterpret_cast<Instance *>(self);
+    std::string name_s(name, name_size);
+    std::vector<std::vector<double>> default_value_v(
+            default_value_shape[0], std::vector<double>(default_value_shape[1]));
+    for (std::size_t i = 0; i < default_value_shape[0]; ++i)
+        for (std::size_t j = 0; j < default_value_shape[1]; ++j)
+            default_value_v[i][j] = default_value[j * default_value_shape[0] + i];
+    try {
+        *err_code = 0;
+        std::vector<std::vector<double>> result = self_p->get_setting_as<std::vector<std::vector<double>>>(name_s, default_value_v);
+        std::size_t max_len = 0u;
+        for (auto const & v : result)
+            max_len = std::max(max_len, v.size());
+
+        static std::vector<double> ret;
+        ret.resize(result.size() * max_len);
+        for (std::size_t i = 0; i < result.size(); ++i)
+            for (std::size_t j = 0; j < result[i].size(); ++j)
+                ret[j * result.size() + i] = result[i][j];
+
+        *value = ret.data();
+        value_shape[0] = result.size();
+        value_shape[1] = max_len;
+        return;
+    }
+    catch (std::domain_error const & e) {
+        *err_code = 1;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::out_of_range const & e) {
+        *err_code = 2;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::logic_error const & e) {
+        *err_code = 3;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::runtime_error const & e) {
+        *err_code = 4;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+    catch (std::bad_cast const & e) {
+        *err_code = 5;
+        static std::string msg;
+        msg = e.what();
+        *err_msg = const_cast<char*>(msg.data());
+        *err_msg_len = msg.size();
+    }
+}
+
 void LIBMUSCLE_Instance_list_settings_(std::intptr_t self, char ** value, std::size_t * value_shape) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::vector<std::string> result = self_p->list_settings();

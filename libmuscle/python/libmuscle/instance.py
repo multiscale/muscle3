@@ -299,36 +299,42 @@ class Instance:
         return self._settings_manager.list_settings(self._instance_id)
 
     @overload
-    def get_setting(self, name: str, typ: Literal['str']) -> str:
+    def get_setting(self, name: str, typ: Literal['str'], *, default: Optional[str] = None) -> str:
         ...
 
     @overload
-    def get_setting(self, name: str, typ: Literal['int']) -> int:
+    def get_setting(self, name: str, typ: Literal['int'], *, default: Optional[int] = None) -> int:
         ...
 
     @overload
-    def get_setting(self, name: str, typ: Literal['float']) -> float:
+    def get_setting(self, name: str, typ: Literal['float'], *,
+                    default: Optional[float] = None) -> float:
         ...
 
     @overload
-    def get_setting(self, name: str, typ: Literal['bool']) -> bool:
+    def get_setting(self, name: str, typ: Literal['bool'], *,
+                    default: Optional[bool] = None) -> bool:
         ...
 
     @overload
-    def get_setting(self, name: str, typ: Literal['[int]']) -> List[int]:
+    def get_setting(self, name: str, typ: Literal['[int]'], *,
+                    default: Optional[List[int]] = None) -> List[int]:
         ...
 
     @overload
-    def get_setting(self, name: str, typ: Literal['[float]']) -> List[float]:
+    def get_setting(self, name: str, typ: Literal['[float]'], *,
+                    default: Optional[List[float]] = None) -> List[float]:
         ...
 
     @overload
     def get_setting(
-            self, name: str, typ: Literal['[[float]]']) -> List[List[float]]:
+            self, name: str, typ: Literal['[[float]]'], *,
+            default: Optional[List[List[float]]] = None) -> List[List[float]]:
         ...
 
     @overload
-    def get_setting(self, name: str, typ: None = None) -> SettingValue:
+    def get_setting(self, name: str, typ: None = None, *,
+                    default: Optional[SettingValue] = None) -> SettingValue:
         ...
 
     def get_setting(

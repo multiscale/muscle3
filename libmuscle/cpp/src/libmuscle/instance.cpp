@@ -88,7 +88,9 @@ class Instance::Impl {
         bool reuse_instance();
         void error_shutdown(std::string const & message);
         std::vector<std::string> list_settings() const;
-        ::ymmsl::SettingValue get_setting(std::string const & name) const;
+        ::ymmsl::SettingValue get_setting(
+                std::string const & name,
+                ::ymmsl::SettingValue const * default_value = nullptr) const;
         template <typename ValueType>
         ValueType get_setting_as(std::string const & name) const;
         std::unordered_map<::ymmsl::Operator, std::vector<std::string>>
@@ -327,8 +329,10 @@ std::vector<std::string> Instance::Impl::list_settings() const {
 }
 
 
-::ymmsl::SettingValue Instance::Impl::get_setting(std::string const & name) const {
-    return settings_manager_.get_setting(instance_name_, name);
+::ymmsl::SettingValue Instance::Impl::get_setting(
+        std::string const & name,
+        ::ymmsl::SettingValue const * default_value) const {
+    return settings_manager_.get_setting(instance_name_, name, default_value);
 }
 
 /* This is a template, but it's only ever instantiated in this file,
@@ -1352,8 +1356,10 @@ std::vector<std::string> Instance::list_settings() const {
     return impl_()->list_settings();
 }
 
-::ymmsl::SettingValue Instance::get_setting(std::string const & name) const {
-    return impl_()->get_setting(name);
+::ymmsl::SettingValue Instance::get_setting(
+        std::string const & name,
+        ::ymmsl::SettingValue const * default_value) const {
+    return impl_()->get_setting(name, default_value);
 }
 
 /* This is instantiated explicitly, it's the only way to do this with a

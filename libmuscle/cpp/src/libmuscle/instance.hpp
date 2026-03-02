@@ -269,12 +269,18 @@ class Instance {
          * not.
          *
          * @param name The name of the setting, without any instance prefix.
+         * @param default_value An optional default value to return if the
+         *                      setting is not found. If nullptr and the
+         *                      setting is not found, an exception is thrown.
          *
          * @return The value of the setting as a generic SettingValue.
          *
-         * @throw std::out_of_range if no setting with the given name exists.
+         * @throw std::out_of_range if no setting with the given name exists
+         *                          and no default value was provided.
          */
-        ::ymmsl::SettingValue get_setting(std::string const & name) const;
+        ::ymmsl::SettingValue get_setting(
+                std::string const & name,
+                ::ymmsl::SettingValue const * default_value = nullptr) const;
 
         /** Returns the value of a model setting.
          *

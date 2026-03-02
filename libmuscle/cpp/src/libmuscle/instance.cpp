@@ -341,7 +341,7 @@ std::vector<std::string> Instance::Impl::list_settings() const {
  */
 template <typename ValueType>
 ValueType Instance::Impl::get_setting_as(std::string const & name) const {
-    return settings_manager_.get_setting(instance_name_, name, {}).template as<ValueType>();
+    return settings_manager_.get_setting(instance_name_, name).template as<ValueType>();
 }
 
 std::unordered_map<::ymmsl::Operator, std::vector<std::string>>

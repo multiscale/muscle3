@@ -299,11 +299,15 @@ class Instance:
         return self._settings_manager.list_settings(self._instance_id)
 
     @overload
-    def get_setting(self, name: str, typ: Literal['str'], *, default: Optional[str] = None) -> str:
+    def get_setting(
+            self, name: str, typ: Literal['str'], *,
+            default: Optional[str] = None) -> str:
         ...
 
     @overload
-    def get_setting(self, name: str, typ: Literal['int'], *, default: Optional[int] = None) -> int:
+    def get_setting(
+            self, name: str, typ: Literal['int'], *,
+            default: Optional[int] = None) -> int:
         ...
 
     @overload

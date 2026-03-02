@@ -341,7 +341,7 @@ std::vector<std::string> Instance::Impl::list_settings() const {
  */
 template <typename ValueType>
 ValueType Instance::Impl::get_setting_as(std::string const & name) const {
-    return settings_manager_.get_setting(instance_name_, name).template as<ValueType>();
+    return settings_manager_.get_setting(instance_name_, name, nullptr).template as<ValueType>();
 }
 
 std::unordered_map<::ymmsl::Operator, std::vector<std::string>>
@@ -553,7 +553,7 @@ void Instance::Impl::setup_profiling_() {
     std::string profile_level_str("all");
     try {
         profile_level_str = settings_manager_.get_setting(
-               instance_name_, "muscle_profile_level").as<std::string>();
+               instance_name_, "muscle_profile_level", nullptr).as<std::string>();
     }
     catch (std::runtime_error const & e) {
         log_error(e.what() + std::string(" in muscle_profile_level"));
@@ -578,7 +578,7 @@ void Instance::Impl::setup_receive_timeout_() {
     double timeout;
     try {
         timeout = settings_manager_.get_setting(
-               instance_name_, "muscle_deadlock_receive_timeout").as<double>();
+               instance_name_, "muscle_deadlock_receive_timeout", nullptr).as<double>();
         if (timeout >= 0 && timeout < 0.1) {
             log_info(
                     "Provided muscle_deadlock_receive_timeout (", timeout,
@@ -1198,7 +1198,7 @@ void Instance::Impl::save_snapshot_(
 void Instance::Impl::set_local_log_level_() {
     try {
         std::string log_level_str = settings_manager_.get_setting(
-               instance_name_, "muscle_local_log_level").as<std::string>();
+               instance_name_, "muscle_local_log_level", nullptr).as<std::string>();
 
         LogLevel level = string_to_level(log_level_str);
         Logger::instance().set_local_level(level);
@@ -1218,7 +1218,7 @@ void Instance::Impl::set_local_log_level_() {
 void Instance::Impl::set_remote_log_level_() {
     try {
         std::string log_level_str = settings_manager_.get_setting(
-               instance_name_, "muscle_remote_log_level").as<std::string>();
+               instance_name_, "muscle_remote_log_level", nullptr).as<std::string>();
 
         LogLevel level = string_to_level(log_level_str);
         Logger::instance().set_remote_level(level);

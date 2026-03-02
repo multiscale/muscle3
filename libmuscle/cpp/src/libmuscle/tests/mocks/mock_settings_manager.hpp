@@ -34,7 +34,8 @@ class MockSettingsManager : public MockClass<MockSettingsManager> {
 
         MockFun<
             Val<::ymmsl::SettingValue const &>,
-            Val<::ymmsl::Reference const &>, Val<::ymmsl::Reference const &>
+            Val<::ymmsl::Reference const &>, Val<::ymmsl::Reference const &>, 
+            Val<::ymmsl::SettingValue const *>
             > get_setting;
 };
 

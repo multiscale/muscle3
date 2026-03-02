@@ -202,7 +202,7 @@ struct libmuscle_instance_base : ::testing::Test, ConnectedPortManagerFixture {
                 std::vector<std::string>());
 
         MockSettingsManager::return_value.get_setting.side_effect = [](
-                Reference const &, Reference const &) -> const SettingValue & {
+                Reference const &, Reference const &, SettingValue const *) -> const SettingValue & {
             throw std::out_of_range("No settings set in mock, unset or replace side_effect");
         };
     }
@@ -382,7 +382,7 @@ TEST_F(libmuscle_instance_base, create_instance_set_up_logging) {
         {"muscle_remote_log_level", "error"}};
 
     MockSettingsManager::return_value.get_setting.side_effect = [&settings](
-            Reference const & instance, Reference const & setting_name) -> SettingValue const & {
+            Reference const & instance, Reference const & setting_name, SettingValue const *) -> SettingValue const & {
         return settings.at(setting_name);
     };
 
@@ -419,7 +419,7 @@ TEST_F(libmuscle_instance, get_setting) {
     settings_manager_.get_setting.side_effect = {};
     settings_manager_.get_setting.return_value = 42;
     ASSERT_EQ(instance_.get_setting_as<int>("test"), 42);
-    ASSERT_TRUE(settings_manager_.get_setting.called_with("component", "test"));
+    ASSERT_TRUE(settings_manager_.get_setting.called_with("component", "test", nullptr));
 }
 
 TEST_F(libmuscle_instance, list_ports) {

@@ -33,6 +33,15 @@ struct MockGetSetting : public MockFun<
             Optional<::ymmsl::SettingValue> const & default_value = {}) const {
         return BaseMockFun::operator()(instance, setting_name, default_value);
     }
+
+    // Overload called_with to support 2 arguments (with default third argument)
+    template <typename A1, typename A2>
+    bool called_with(A1 arg1, A2 arg2) const {
+        return BaseMockFun::called_with(arg1, arg2, Optional<::ymmsl::SettingValue>());
+    }
+
+    // Forward the 3-argument version to the base class
+    using BaseMockFun::called_with;
 };
 
 class MockSettingsManager : public MockClass<MockSettingsManager> {

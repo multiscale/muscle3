@@ -419,7 +419,7 @@ TEST_F(libmuscle_instance, get_setting) {
     settings_manager_.get_setting.side_effect = {};
     settings_manager_.get_setting.return_value = 42;
     ASSERT_EQ(instance_.get_setting_as<int>("test"), 42);
-    ASSERT_TRUE(settings_manager_.get_setting.called_with("component", "test", Optional<SettingValue>()));
+    ASSERT_TRUE(settings_manager_.get_setting.called_with("component", "test"));
 }
 
 TEST_F(libmuscle_instance, list_ports) {

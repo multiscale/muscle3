@@ -151,12 +151,11 @@ class SettingsManager:
         else:
             if default is not None:
                 return default
-            raise KeyError(('Value for setting "{}" was not set.'.format(setting_name)))
+            raise KeyError((f'Value for setting "{setting_name}" was not set.'))
 
         if typ is not None:
             if not has_setting_type(value, typ):
-                raise TypeError(
-                        'Value for setting "{}" is of type {},'
-                        ' where {} was expected.'.format(
-                            name, type(value), typ))
+                raise TypeError('Value for setting "{}" is of type {},'
+                                ' where {} was expected.'.format(
+                                    name, type(value), typ))
         return value

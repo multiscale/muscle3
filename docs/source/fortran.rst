@@ -298,9 +298,10 @@ double precision reals). See the :f:func:`API documentation
 
 If you want to provide a default value to be returned when the setting is not
 configured, you need to call a different function:
-``LIBMUSCLE_Instance_get_setting_with_default_as_<type>()``.  If no default is
-provided and the setting is missing, an error will be printed and the program 
-will be halted.
+``LIBMUSCLE_Instance_get_setting_with_default_as_<type>()``, which requires a
+default value as a parameter. If you use the regular
+``LIBMUSCLE_Instance_get_setting_as_<type>()`` function and the setting is
+missing, an error will be printed and the program will be halted.
 
 
 Receiving messages and DataConstRef

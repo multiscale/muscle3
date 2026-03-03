@@ -198,6 +198,10 @@ is of that type, and if not raise an exception. Note that getting settings needs
 happen *within* the reuse loop; doing it before can lead to incorrect results in some
 cases.
 
+You can also provide a ``default`` value as a keyword
+argument, which will be returned if the setting is not configured. If no default
+is provided and the setting is missing, a KeyError will be raised. 
+
 After getting our settings, we receive the initial state on the ``initial_state`` port.
 The message that we receive contains several bits of information. The ``data`` attribute
 contains the data that was put into this message by the sender. We cannot control what

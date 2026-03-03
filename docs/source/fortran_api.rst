@@ -1781,6 +1781,98 @@ LIBMUSCLE_Instance
     :p integer err_code: An error code output (optional).
     :p character err_msg: An error message output (allocatable, optional).
 
+.. f:function:: LIBMUSCLE_Instance_get_setting_with_default_as_character(self, name, default_value, err_code, err_msg)
+
+    Returns the value of a character-valued model setting, or a default value.
+
+    This function works like :f:func:`LIBMUSCLE_Instance_get_setting_as_character`,
+    but if no setting with the given name exists, it returns the provided
+    ``default_value`` instead of raising an error.
+
+    If the setting exists but is not of type character, then ``err_code`` will
+    be set to ``LIBMUSCLE_bad_cast``. See :f:func:`LIBMUSCLE_Data_as_logical`
+    for an example of error handling.
+
+    MPI-based components may call this function at any time within the
+    reuse loop, in any or all processes, simultaneously or not.
+
+    :p LIBMUSCLE_Instance self: The instance to get the setting from.
+    :p character name: The name of the setting to retrieve.
+    :p character default_value: The value to return if the setting does not exist.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The setting's value, or the default value.
+    :rtype value: character
+
+.. f:function:: LIBMUSCLE_Instance_get_setting_with_default_as_int8(self, name, default_value, err_code, err_msg)
+
+    Returns the value of an integer-valued model setting, or a default value.
+
+    This function works like :f:func:`LIBMUSCLE_Instance_get_setting_as_int8`,
+    but if no setting with the given name exists, it returns the provided
+    ``default_value`` instead of raising an error.
+
+    If the setting exists but is not of type integer, then ``err_code`` will
+    be set to ``LIBMUSCLE_bad_cast``. See :f:func:`LIBMUSCLE_Data_as_logical`
+    for an example of error handling.
+
+    MPI-based components may call this function at any time within the
+    reuse loop, in any or all processes, simultaneously or not.
+
+    :p LIBMUSCLE_Instance self: The instance to get the setting from.
+    :p character name: The name of the setting to retrieve.
+    :p integer default_value: The value to return if the setting does not exist (kind=LIBMUSCLE_int8).
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The setting's value, or the default value (kind=LIBMUSCLE_int8).
+    :rtype value: integer
+
+.. f:function:: LIBMUSCLE_Instance_get_setting_with_default_as_real8(self, name, default_value, err_code, err_msg)
+
+    Returns the value of a real-valued model setting, or a default value.
+
+    This function works like :f:func:`LIBMUSCLE_Instance_get_setting_as_real8`,
+    but if no setting with the given name exists, it returns the provided
+    ``default_value`` instead of raising an error.
+
+    If the setting exists but is not of type real, then ``err_code`` will
+    be set to ``LIBMUSCLE_bad_cast``. See :f:func:`LIBMUSCLE_Data_as_logical`
+    for an example of error handling.
+
+    MPI-based components may call this function at any time within the
+    reuse loop, in any or all processes, simultaneously or not.
+
+    :p LIBMUSCLE_Instance self: The instance to get the setting from.
+    :p character name: The name of the setting to retrieve.
+    :p real default_value: The value to return if the setting does not exist (kind=LIBMUSCLE_real8).
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The setting's value, or the default value (kind=LIBMUSCLE_real8).
+    :rtype value: real
+
+.. f:function:: LIBMUSCLE_Instance_get_setting_with_default_as_logical(self, name, default_value, err_code, err_msg)
+
+    Returns the value of a logical-valued model setting, or a default value.
+
+    This function works like :f:func:`LIBMUSCLE_Instance_get_setting_as_logical`,
+    but if no setting with the given name exists, it returns the provided
+    ``default_value`` instead of raising an error.
+
+    If the setting exists but is not of type logical, then ``err_code`` will
+    be set to ``LIBMUSCLE_bad_cast``. See :f:func:`LIBMUSCLE_Data_as_logical`
+    for an example of error handling.
+
+    MPI-based components may call this function at any time within the
+    reuse loop, in any or all processes, simultaneously or not.
+
+    :p LIBMUSCLE_Instance self: The instance to get the setting from.
+    :p character name: The name of the setting to retrieve.
+    :p logical default_value: The value to return if the setting does not exist.
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+    :r value: The setting's value, or the default value.
+    :rtype value: logical
+
 .. f:function:: LIBMUSCLE_Instance_list_ports(self)
 
     Returns a description of the ports of this instance.

@@ -825,11 +825,6 @@ class Instance {
 
         Impl const * impl_() const;
         Impl * impl_();
-
-        template <typename ValueType>
-        ValueType get_setting_as_impl_(
-                std::string const & name,
-                Optional<ValueType> const & default_value) const;
 };
 
 } }

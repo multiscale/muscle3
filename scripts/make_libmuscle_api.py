@@ -975,14 +975,6 @@ instance_members = [
         [String('name'), T('default_value')], True,
         cpp_chain_call=lambda cpp_args, tpl_type, **kwargs: (
             f'self_p->get_setting_as<{tpl_type}>({cpp_args})')),
-    OverloadSet('get_setting_with_default', [
-        'get_setting_with_default_as_character',
-        'get_setting_with_default_as_int8',
-        'get_setting_with_default_as_real8',
-        'get_setting_with_default_as_logical'
-        ], False),
-    # Array versions are available as separate functions, not in the overload set
-    # because they have different signatures
     MemFun(VecString('value'), 'list_settings'),
     MemFun(Obj('PortsDescription'), 'list_ports'),
     MemFun(Bool(), 'is_connected', [String('port')]),

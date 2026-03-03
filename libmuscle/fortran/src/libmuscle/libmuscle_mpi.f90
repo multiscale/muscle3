@@ -747,10 +747,6 @@ module libmuscle_mpi
         procedure :: get_setting_with_default_as_int8array => LIBMUSCLE_Instance_get_setting_with_default_as_int8array
         procedure :: get_setting_with_default_as_real8array => LIBMUSCLE_Instance_get_setting_with_default_as_real8array
         procedure :: get_setting_with_default_as_real8array2 => LIBMUSCLE_Instance_get_setting_with_default_as_real8array2
-        generic :: get_setting_with_default => get_setting_with_default_as_character, &
-            get_setting_with_default_as_int8, &
-            get_setting_with_default_as_real8, &
-            get_setting_with_default_as_logical
         procedure :: list_settings => LIBMUSCLE_Instance_list_settings
         procedure :: list_ports => LIBMUSCLE_Instance_list_ports
         procedure :: is_connected => LIBMUSCLE_Instance_is_connected
@@ -813,7 +809,6 @@ module libmuscle_mpi
     public :: LIBMUSCLE_Instance_get_setting_with_default_as_int8array
     public :: LIBMUSCLE_Instance_get_setting_with_default_as_real8array
     public :: LIBMUSCLE_Instance_get_setting_with_default_as_real8array2
-    public :: LIBMUSCLE_Instance_get_setting_with_default
     public :: LIBMUSCLE_Instance_list_settings
     public :: LIBMUSCLE_Instance_list_ports
     public :: LIBMUSCLE_Instance_is_connected
@@ -4513,14 +4508,6 @@ module libmuscle_mpi
 
     interface LIBMUSCLE_Instance
         module procedure LIBMUSCLE_Instance_create
-    end interface
-
-    interface LIBMUSCLE_Instance_get_setting_with_default
-        module procedure &
-            LIBMUSCLE_Instance_get_setting_with_default_as_character, &
-            LIBMUSCLE_Instance_get_setting_with_default_as_int8, &
-            LIBMUSCLE_Instance_get_setting_with_default_as_real8, &
-            LIBMUSCLE_Instance_get_setting_with_default_as_logical
     end interface
 
     interface LIBMUSCLE_Instance_send

@@ -1873,6 +1873,72 @@ LIBMUSCLE_Instance
     :r value: The setting's value, or the default value.
     :rtype value: logical
 
+.. f:subroutine:: LIBMUSCLE_Instance_get_setting_with_default_as_int8array(self, name, default_value, value, err_code, err_msg)
+
+    Returns the value of an array-of-int8-valued model setting, or a default value.
+
+    This function works like :f:func:`LIBMUSCLE_Instance_get_setting_as_int8array`,
+    but if no setting with the given name exists, it returns the provided
+    ``default_value`` instead of raising an error.
+
+    If the setting exists but is not a 1D array of int8, then ``err_code`` will
+    be set to ``LIBMUSCLE_bad_cast``. See :f:func:`LIBMUSCLE_Data_as_logical`
+    for an example of error handling.
+
+    MPI-based components may call this function at any time within the
+    reuse loop, in any or all processes, simultaneously or not.
+
+    :p LIBMUSCLE_Instance self: The instance to get the setting from.
+    :p character name: The name of the setting to retrieve.
+    :p LIBMUSCLE_int8 default_value: The value to return if the setting does not exist (dimension(:)).
+    :p LIBMUSCLE_int8 value: The returned value (out, dimension(:))
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+
+.. f:subroutine:: LIBMUSCLE_Instance_get_setting_with_default_as_real8array(self, name, default_value, value, err_code, err_msg)
+
+    Returns the value of an array-of-real8-valued model setting, or a default value.
+
+    This function works like :f:func:`LIBMUSCLE_Instance_get_setting_as_real8array`,
+    but if no setting with the given name exists, it returns the provided
+    ``default_value`` instead of raising an error.
+
+    If the setting exists but is not a 1D array of real8, then ``err_code`` will
+    be set to ``LIBMUSCLE_bad_cast``. See :f:func:`LIBMUSCLE_Data_as_logical`
+    for an example of error handling.
+
+    MPI-based components may call this function at any time within the
+    reuse loop, in any or all processes, simultaneously or not.
+
+    :p LIBMUSCLE_Instance self: The instance to get the setting from.
+    :p character name: The name of the setting to retrieve.
+    :p LIBMUSCLE_real8 default_value: The value to return if the setting does not exist (dimension(:)).
+    :p LIBMUSCLE_real8 value: The returned value (out, dimension(:))
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+
+.. f:subroutine:: LIBMUSCLE_Instance_get_setting_with_default_as_real8array2(self, name, default_value, value, err_code, err_msg)
+
+    Returns the value of a 2D-array-of-real8-valued model setting, or a default value.
+
+    This function works like :f:func:`LIBMUSCLE_Instance_get_setting_as_real8array2`,
+    but if no setting with the given name exists, it returns the provided
+    ``default_value`` instead of raising an error.
+
+    If the setting exists but is not a 2D array of real8, then ``err_code`` will
+    be set to ``LIBMUSCLE_bad_cast``. See :f:func:`LIBMUSCLE_Data_as_logical`
+    for an example of error handling.
+
+    MPI-based components may call this function at any time within the
+    reuse loop, in any or all processes, simultaneously or not.
+
+    :p LIBMUSCLE_Instance self: The instance to get the setting from.
+    :p character name: The name of the setting to retrieve.
+    :p LIBMUSCLE_real8 default_value: The value to return if the setting does not exist (dimension(:,:)).
+    :p LIBMUSCLE_real8 value: The returned value (out, dimension(:,:))
+    :p integer err_code: An error code output (optional).
+    :p character err_msg: An error message output (allocatable, optional).
+
 .. f:function:: LIBMUSCLE_Instance_list_ports(self)
 
     Returns a description of the ports of this instance.

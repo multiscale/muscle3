@@ -168,6 +168,10 @@ MUSCLE will check that the user specified a value of the correct type, and if
 not raise an exception. Note that getting settings needs to happen *within* the
 reuse loop; doing it before can lead to incorrect results.
 
+You can also provide a ``default`` value as a keyword
+argument, which will be returned if the setting is not configured. If no default
+is provided and the setting is missing, a KeyError will be raised. 
+
 After getting our settings, we receive the initial state on the
 ``initial_state`` port. Note that we have declared that port above, and declared
 it to be associated with the F_INIT operator. During F_INIT, messages can only

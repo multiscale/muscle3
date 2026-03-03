@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Tuple, Union
 from multiprocessing import Queue
 from queue import Empty
 
-from ymmsl import Configuration, Reference
+from ymmsl.v0_2 import Configuration, Reference
 
 from libmuscle.errors import ConfigurationError
 from libmuscle.manager.instance_registry import InstanceRegistry
@@ -66,7 +66,7 @@ class InstanceManager:
         """Create an InstanceManager.
 
         Args:
-            configuration: The global configuration
+            configuration: The global configuration, flattened
             run_dir: Directory to run in
             instance_registry: The InstanceRegistry to use
         """
@@ -118,17 +118,16 @@ class InstanceManager:
         for instance, resources in self._allocations.items():
             _logger.info(f'Planned {instance} on {resources.as_resources()}')
 
-        components = {c.name: c for c in self._configuration.model.components}
+        model = self._configuration.root_model()
         for instance, resources in self._allocations.items():
-            component = components[instance.without_trailing_ints()]
+            component = model.components[instance.without_trailing_ints()]
             if component.implementation is None:
                 _logger.warning(
                         f'No implementation specified for {component.name}'
                         ', not starting it.')
                 continue
-            implementation = self._configuration.implementations[
-                    component.implementation]
-            implementation.env['MUSCLE_MANAGER'] = self._manager_location
+            program = self._configuration.programs[component.implementation]
+            program.env['MUSCLE_MANAGER'] = self._manager_location
             idir = self._run_dir.add_instance_dir(instance)
             workdir = idir / 'workdir'
             workdir.mkdir()
@@ -136,7 +135,7 @@ class InstanceManager:
             stderr_path = idir / 'stderr.txt'
 
             request = InstantiationRequest(
-                    instance, implementation,
+                    instance, program,
                     self._configuration.resources[component.name],
                     resources, idir, workdir, stdout_path, stderr_path)
             _logger.info(f'Instantiating {instance}')

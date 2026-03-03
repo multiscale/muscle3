@@ -47,7 +47,7 @@ simulation. This can be achieved with the special setting
 .. code-block:: yaml
     :caption: Example configuration setting ``muscle_deadlock_receive_timeout``
 
-    ymmsl_version: v0.1
+    ymmsl_version: v0.2
     settings:
       muscle_deadlock_receive_timeout: 1.0
 
@@ -65,16 +65,16 @@ output of a component in real time.
 
 If you run your simulation in an environment with a graphical interface, you can use the
 following trick: run a component inside a new terminal window. Adjust the
-implementations section of your configuration as illustrated in below code sample.
+programs section of your configuration as illustrated in the code sample below.
 
 .. tabs::
 
-    .. tab:: Original implementations section
+    .. tab:: Original programs section
 
         .. code-block:: yaml
 
-            implementations:
-                my_component:
+            programs:
+                my_code:
                     executable: my_program
                     args:
                     - arg1
@@ -84,8 +84,8 @@ implementations section of your configuration as illustrated in below code sampl
 
         .. code-block:: yaml
 
-            implementations:
-                my_component:
+            programs:
+                my_code:
                     executable: xterm
                     args:
                     - -e
@@ -97,8 +97,8 @@ implementations section of your configuration as illustrated in below code sampl
 
         .. code-block:: yaml
 
-            implementations:
-                my_component:
+            programs:
+                my_code:
                     executable: gnome-terminal
                     args:
                     - --
@@ -120,8 +120,8 @@ If you don't have a graphical interface available, you could use a screen manage
 
         .. code-block:: yaml
 
-            implementations:
-                my_component:
+            programs:
+                my_code:
                     executable: my_program
                     args:
                     - arg1
@@ -131,8 +131,8 @@ If you don't have a graphical interface available, you could use a screen manage
 
         .. code-block:: yaml
 
-            implementations:
-                my_component:
+            programs:
+                my_code:
                     executable: screen
                     args:
                     - -dmS
@@ -173,13 +173,13 @@ these debuggers.
 
         .. code-block:: yaml
 
-            implementations:
-                my_component:
+            programs:
+                my_code:
                     executable: my_program
                     args:
                     - arg1
                     - arg2
-                my_python_component:
+                my_python_code:
                     executable: python
                     args: my_python_program.py
 
@@ -187,8 +187,8 @@ these debuggers.
 
         .. code-block:: yaml
 
-            implementations:
-                my_component:
+            programs:
+                my_code:
                     executable: xterm
                     args:
                     - -e
@@ -197,7 +197,7 @@ these debuggers.
                     - my_program
                     - arg1
                     - arg2
-                my_python_component:
+                my_python_code:
                     executable: xterm
                     args:
                     - -e

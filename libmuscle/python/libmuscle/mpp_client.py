@@ -1,7 +1,7 @@
 from typing import List, Optional, Tuple
 
 import msgpack
-from ymmsl import Reference
+from ymmsl.v0_2 import Reference
 
 from libmuscle.mcp.protocol import RequestType
 from libmuscle.mcp.transport_client import ProfileData, TransportClient, TimeoutHandler

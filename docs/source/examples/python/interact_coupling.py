@@ -3,7 +3,7 @@ from typing import Any, Optional, Tuple, Dict
 
 from libmuscle import Instance, InstanceFlags, Message
 from libmuscle.runner import run_simulation
-from ymmsl import (
+from ymmsl.v0_2 import (
         Component, Conduit, Configuration, Model, Operator, Ports, Settings)
 
 
@@ -320,14 +320,14 @@ if __name__ == '__main__':
 
     components = [
             Component(
-                'left', 'model', None,
-                Ports(o_i=['boundary_out'], s=['boundary_in'])),
+                'left', Ports(o_i=['boundary_out'], s=['boundary_in']),
+                'One of the interacting components', 'model'),
             Component(
-                'right', 'model', None,
-                Ports(o_i=['boundary_out'], s=['boundary_in'])),
+                'right', Ports(o_i=['boundary_out'], s=['boundary_in']),
+                'The other interacting component', 'model'),
             Component(
-                'coupler', 'temporal_coupler', None,
-                Ports(o_i=['a_out', 'b_out'], s=['a_in', 'b_in']))]
+                'coupler', Ports(o_i=['a_out', 'b_out'], s=['a_in', 'b_in']),
+                'This connects the two and interpolates', 'temporal_coupler')]
 
     conduits = [
             Conduit('left.boundary_out', 'coupler.a_in'),
@@ -335,7 +335,10 @@ if __name__ == '__main__':
             Conduit('coupler.a_out', 'left.boundary_in'),
             Conduit('coupler.b_out', 'right.boundary_in')]
 
-    model = Model('interact_coupling', components, conduits)
+    model = Model(
+            'interact_coupling', description='A model demonstrating a time scale'
+            ' overlapping coupling, using a time bridge.', components=components,
+            conduits=conduits)
 
     settings = Settings({
         't_max': 100.0,
@@ -343,7 +346,10 @@ if __name__ == '__main__':
         'right.dt': 13.0,
         })
 
-    configuration = Configuration(model, settings)
+    configuration = Configuration(
+            'This demonstrates two models running with different timesteps while'
+            ' communicating with each other via a time bridge', models=[model],
+            settings=settings)
 
     implementations = {'model': submodel, 'temporal_coupler': temporal_coupler}
     run_simulation(configuration, implementations)

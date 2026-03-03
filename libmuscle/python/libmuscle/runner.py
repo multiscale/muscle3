@@ -12,10 +12,14 @@ import sys
 from time import sleep
 import traceback
 from typing import Callable, Dict, List, Set, Tuple, cast
+from warnings import catch_warnings, filterwarnings
 
-from ymmsl import Configuration, Identifier, Model, Reference
+from ymmsl import convert_to, Document
+import ymmsl.v0_1 as v0_1
+from ymmsl.v0_2 import Configuration, Identifier, Reference
 
 from libmuscle.util import generate_indices
+from libmuscle.manager.hammer import flatten
 from libmuscle.manager.logger import last_lines
 from libmuscle.manager.manager import Manager
 
@@ -277,29 +281,40 @@ def run_instances(
 
 
 def run_simulation(
-        configuration: Configuration, implementations: Dict[str, Callable]
+        configuration: Document, implementations: Dict[str, Callable]
         ) -> None:
     """Runs a simulation with the given configuration and instances.
 
-    The yMMSL document must contain both a model and settings.
+    The yMMSL document must contain a complete configuration.
 
-    This function will start the necessary instances described in
-    the yMMSL document. To do so, it needs the corresponding
-    implementations, which are given as a dictionary mapping the
-    implementation name to a Python function (or any callable).
+    This function will start the necessary instances described in the configuration. To
+    do so, it needs the corresponding implementations, which are given as a dictionary
+    mapping the implementation name to a Python function (or any callable).
 
     Args:
-        configuration: A description of the model and settings.
+        configuration: A description of the model and settings, either v0.1 or v0.2.
         instances: A dictionary of instances to run.
     """
-    if not isinstance(configuration.model, Model):
-        raise ValueError('The model description does not include a model'
-                         ' definition, so the simulation can not be run.')
+    if isinstance(configuration, v0_1.PartialConfiguration):
+        with catch_warnings():
+            filterwarnings('ignore', 'In yMMSL v0.2.*')
+            filterwarnings('ignore', 'Comments can unfortunately.*')
+            configuration = convert_to(Configuration, configuration)
+    elif not isinstance(configuration, Configuration):
+        raise RuntimeError('Invalid configuration type {type(configuration)}')
 
-    configuration.model.check_consistent()
+    if configuration.imports:
+        raise RuntimeError(
+                'Imports are not supported when running directly from Python. To run'
+                ' larger models, please use the command line.')
+
+    configuration.check_consistent(False)
+    configuration = flatten(configuration)
+
+    model = configuration.root_model()
 
     instances = dict()
-    for ce in configuration.model.components:
+    for ce in model.components.values():
         impl_name = str(ce.implementation)
         if impl_name not in implementations:
             raise ValueError(('The model specifies an implementation named'

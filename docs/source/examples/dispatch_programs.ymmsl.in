@@ -1,0 +1,19 @@
+ymmsl_version: v0.2
+
+programs:
+  buffer_cpp:
+    ports:
+      f_init: in
+      o_f: out
+    description: |
+      # Buffer
+
+      A simple component that receives a message, sleeps a while, and then sends it on.
+
+      ## Ports
+
+      in (optional): Receives any message.
+      out: Sends the received message, or a string "Testing" if in was not connected.
+    env:
+      +LD_LIBRARY_PATH: :MUSCLE3_HOME/lib
+    executable: MUSCLE3_EXAMPLES/cpp/build/buffer

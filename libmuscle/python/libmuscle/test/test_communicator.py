@@ -6,7 +6,7 @@ import pytest
 from libmuscle.communicator import Communicator, Message
 from libmuscle.mpp_message import ClosePort, MPPMessage
 from libmuscle.peer_info import PeerInfo
-from ymmsl import Conduit, Reference as Ref, Settings
+from ymmsl.v0_2 import Conduit, Reference as Ref, Settings
 
 
 @pytest.fixture

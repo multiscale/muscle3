@@ -71,6 +71,8 @@ Cham.  `<https://doi.org/10.1007/978-3-030-50433-5_33>`_
    installing
    tutorial
    distributed_execution
+   nested_models
+   models_as_software
    profiling
 
    coupling

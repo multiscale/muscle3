@@ -1,0 +1,32 @@
+ymmsl_version: v0.2
+
+description: |
+  A model to import for testing. This dispatches together two programs.
+
+imports:
+- from codes.micro1 import implementation micro1
+- from codes.micro2 import implementation micro2
+
+models:
+  micro:
+    ports:
+      f_init: init
+      o_f: final
+    description: A compound micro model, consisting of two models in series
+    components:
+      first:
+        ports:
+          f_init: init
+          o_f: final
+        description: The first micro model
+        implementation: micro1
+      second:
+        ports:
+          f_init: init
+          o_f: final
+        description: The second micro model
+        implementation: micro2
+    conduits:
+      init: first.init
+      first.final: second.init
+      second.final: final

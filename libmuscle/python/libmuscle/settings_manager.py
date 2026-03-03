@@ -1,6 +1,6 @@
 from typing import List, Optional, Set
 
-from ymmsl import SettingValue, Reference, Settings
+from ymmsl.v0_2 import SettingValue, Reference, Settings
 
 
 def has_setting_type(value: SettingValue, typ: str) -> bool:
@@ -123,7 +123,7 @@ class SettingsManager:
             setting_name: The name of the setting to get the value of.
             typ: An optional type designation; if specified the type
                     is checked for a match before returning. Valid
-                    values are 'str', 'int', 'float', 'bool',
+                    values are 'str', 'int', 'float', 'bool', '[int]',
                     '[float]' and '[[float]]'.
             default: A default value to return if this setting is not
                     set. If not provided and the setting is not set,

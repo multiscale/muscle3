@@ -3,7 +3,7 @@ import logging
 import time
 from typing import List, Optional, Union
 
-from ymmsl import (
+from ymmsl.v0_2 import (
         CheckpointRangeRule, CheckpointAtRule, CheckpointRule, Checkpoints)
 
 

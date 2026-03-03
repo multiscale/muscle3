@@ -1,5 +1,5 @@
 import pytest
-from ymmsl import Reference, Settings
+from ymmsl.v0_2 import Reference, Settings
 
 from libmuscle.settings_manager import SettingsManager
 

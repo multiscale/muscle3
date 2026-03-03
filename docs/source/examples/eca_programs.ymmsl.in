@@ -1,0 +1,36 @@
+ymmsl_version: v0.2
+
+programs:
+  elemental_ca_macro_python:
+    ports:
+      o_i: state_out
+      s: state_in
+      o_f: final_state_in
+    description: |
+      Time integration loop for the cellular automaton model
+    executable: python
+    args: MUSCLE3_EXAMPLES/python/elemental_ca_macro.py
+
+  elemental_ca_micro_python:
+    ports:
+      f_init: initial_state
+      o_f: final_state
+    description: |
+      State update function for the cellular automaton model
+    executable: python
+    args: MUSCLE3_EXAMPLES/python/elemental_ca_micro.py
+
+  cache_python:
+    ports:
+      f_init: front_in
+      o_i: back_out
+      s: back_in
+      o_f: front_out
+    description: |
+      A generic data cache component
+
+      Connect a calling component to front_in and front_out, and the component to be
+      cached to back_out and back_in.
+    executable: python
+    args: MUSCLE3_EXAMPLES/python/cache.py
+

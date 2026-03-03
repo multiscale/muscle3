@@ -1,0 +1,34 @@
+ymmsl_version: v0.2
+
+imports:
+- from rd_programs import implementation diffusion_cpp
+- from rd_programs import implementation reaction_cpp
+
+models:
+  reaction_diffusion:
+    ports:
+      f_init: settings_in     # Settings
+      o_f: final_state_out    # 1D array
+
+    components:
+      macro:
+        ports:
+          o_i: state_out
+          s: state_in
+          o_f: final_state_out
+        description: |
+          The macro model implements the diffusion process.
+        implementation: diffusion_cpp
+      micro:
+        ports:
+          f_init: initial_state
+          o_f: final_state
+        description: |
+          The micro model implements the reaction process.
+        implementation: reaction_cpp
+
+    conduits:
+      settings_in: macro.muscle_settings_in
+      macro.final_state_out: final_state_out
+      macro.state_out: micro.initial_state
+      micro.final_state: macro.state_in

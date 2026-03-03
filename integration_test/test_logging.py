@@ -1,5 +1,5 @@
 import ymmsl
-from ymmsl import Reference
+from ymmsl.v0_2 import Reference
 
 from libmuscle.logging import LogLevel, LogMessage, Timestamp
 from libmuscle.manager.manager import Manager
@@ -8,12 +8,23 @@ from libmuscle.mmp_client import MMPClient
 
 def test_logging(log_file_in_tmpdir, caplog):
     ymmsl_text = (
-            'ymmsl_version: v0.1\n'
-            'model:\n'
-            '  name: test_model\n'
+            'ymmsl_version: v0.2\n'
+            'description: A log test configuration\n'
+            'models:\n'
+            '- name: test_model\n'
+            '  description: Macro-micro ensemble model\n'
             '  components:\n'
-            '    macro: macro_implementation\n'
+            '    macro:\n'
+            '      ports:\n'
+            '        o_i: out\n'
+            '        s: in\n'
+            '      description: The macro model\n'
+            '      implementation: macro_implementation\n'
             '    micro:\n'
+            '      ports:\n'
+            '        f_init: in\n'
+            '        o_f: out\n'
+            '      description: The micro model\n'
             '      implementation: micro_implementation\n'
             '      multiplicity: [10]\n'
             '  conduits:\n'

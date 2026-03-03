@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, Tuple
 
-from ymmsl import Identifier, Operator
+from ymmsl.v0_2 import Identifier, Operator
 
 from libmuscle.peer_info import PeerInfo
 from libmuscle.port import Port

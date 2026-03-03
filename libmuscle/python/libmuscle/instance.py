@@ -5,8 +5,8 @@ import os
 import sys
 from typing import cast, Dict, List, Literal, Optional, Tuple, overload
 
-from ymmsl import (Identifier, Operator, SettingValue, Port, Reference,
-                   Settings)
+from ymmsl.v0_2 import (
+        Identifier, Operator, SettingValue, Port, Reference, Settings)
 
 from libmuscle.api_guard import APIGuard
 from libmuscle.checkpoint_triggers import TriggerManager
@@ -359,6 +359,9 @@ class Instance:
                     set. If not provided and the setting is not set,
                     a KeyError will be raised.
 
+                    Valid values are ``str``, ``bool``, ``int``, ``float``, ``[int]`` (a
+                    list of ints), ``[float]`` (a list of floats), and ``[[float]]`` (a
+                    list of lists of floats).
         Raises:
             KeyError: If no value was set for this setting and no
                     default was provided.

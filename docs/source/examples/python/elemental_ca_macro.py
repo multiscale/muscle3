@@ -7,7 +7,6 @@ from libmuscle import Grid, Instance, Message
 from ymmsl import Operator
 
 
-
 def elemental_ca_macro() -> None:
     """A simple elementary cellular automata on a 1d grid.
 

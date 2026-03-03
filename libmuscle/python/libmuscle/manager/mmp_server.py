@@ -4,9 +4,9 @@ import time
 from typing import Any, Dict, cast, List, Optional
 
 import msgpack
-from ymmsl import (
-        Conduit, Identifier, Operator, Port, Reference, PartialConfiguration,
-        Checkpoints, CheckpointRule, CheckpointAtRule, CheckpointRangeRule)
+from ymmsl.v0_2 import (
+        CheckpointAtRule, CheckpointRangeRule, CheckpointRule, Checkpoints, Conduit,
+        Configuration, Identifier, Operator, Port, Reference)
 
 import libmuscle
 from libmuscle.logging import LogLevel
@@ -74,7 +74,7 @@ class MMPRequestHandler(RequestHandler):
             self,
             logger: Logger,
             profile_store: ProfileStore,
-            configuration: PartialConfiguration,
+            configuration: Configuration,
             instance_registry: InstanceRegistry,
             topology_store: TopologyStore,
             snapshot_registry: SnapshotRegistry,
@@ -412,7 +412,7 @@ class MMPServer:
             self,
             logger: Logger,
             profile_store: ProfileStore,
-            configuration: PartialConfiguration,
+            configuration: Configuration,
             instance_registry: InstanceRegistry,
             topology_store: TopologyStore,
             snapshot_registry: SnapshotRegistry,

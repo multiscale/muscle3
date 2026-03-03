@@ -1,7 +1,7 @@
 from threading import Condition
 from typing import Dict, List, Set
 
-from ymmsl import Port, Reference
+from ymmsl.v0_2 import Port, Reference
 
 
 class AlreadyRegistered(RuntimeError):

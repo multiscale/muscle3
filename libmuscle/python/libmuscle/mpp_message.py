@@ -4,7 +4,7 @@ from typing import Any, cast, Optional
 import msgpack
 import numpy as np
 
-from ymmsl import Reference, Settings
+from ymmsl.v0_2 import Reference, Settings
 
 from libmuscle.grid import Grid
 

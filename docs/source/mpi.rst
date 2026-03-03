@@ -17,7 +17,7 @@ are many copies of your program running simultaneously doing the same thing,
 except that some of the data they're processing are different for each copy, and
 every once in a while the copies communicate.
 
-The MUSCLE parts of the simulation follow this: each process makes an Instance,
+MUSCLE-enabled MPI codes also work like this: each MPI process makes an Instance,
 each process runs through the reuse loop, and each process calls the send and
 receive functions at the same time. Two exceptions are that configuring ports
 may only be done in the root process, and getting settings can be done anytime
@@ -51,8 +51,8 @@ there's both a C++ and a Fortran implementation of the reaction model:
 .. code-block:: bash
 
   . python/build/venv/bin/activate
-  muscle_manager --start-all rd_implementations.ymmsl rd_cpp_mpi.ymmsl rd_settings.ymmsl
-  muscle_manager --start-all rd_implementations.ymmsl rd_fortran_mpi.ymmsl rd_settings.ymmsl
+  muscle_manager --start-all rd_model.ymmsl rd_cpp_mpi.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources_mpi.ymmsl
+  muscle_manager --start-all rd_model.ymmsl rd_fortran_mpi.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources_mpi.ymmsl
 
 
 Note that activating the virtual environment is needed to make the
@@ -108,9 +108,8 @@ Headers and modules
 
 
         In order to use MPI, we need to include the MPI header. The headers for
-        libmuscle are unchanged. Remember that we're compiling with
-        ``MUSCLE_ENABLE_MPI`` defined however, and this changes the API
-        slightly as shown below.
+        libmuscle are unchanged. We will be compiling with ``MUSCLE_ENABLE_MPI``
+        defined however, and this changes the API slightly as shown below.
 
     .. group-tab:: Fortran
 

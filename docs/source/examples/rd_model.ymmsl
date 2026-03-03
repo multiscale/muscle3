@@ -1,0 +1,30 @@
+ymmsl_version: v0.2
+
+models:
+  reaction_diffusion:
+    description: |
+      # Reaction-Diffusion model with time scale separation.
+
+      The diffusion model is run at a much lager timestep than the reaction model,
+      making this a multiscale model with the diffusion model simulating the macro
+      dynamics and the reaction model the micro dynamics.
+
+    components:
+      macro:
+        ports:
+          o_i: state_out
+          s: state_in
+        description: |
+          This is the macro model, which calculates the diffusion
+        implementation: diffusion_python
+      micro:
+        ports:
+          f_init: initial_state
+          o_f: final_state
+        description: |
+          This is the micro model, which calculates the reaction
+        implementation: reaction_python
+
+    conduits:
+      macro.state_out: micro.initial_state
+      micro.final_state: macro.state_in

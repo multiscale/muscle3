@@ -30,14 +30,13 @@ We also need the Python version of MUSCLE3 installed, because the MUSCLE
 Manager comes with that, and we need it to run the simulation. The above command
 will create a Python virtual env with everything needed as well.
 
-You can then run the examples in the same way as for python, but using a yMMSL
+You can then run the examples in the same way as for Python, but using a yMMSL
 file that specifies the C++ implementation of one or both of the submodels:
 
 .. code-block:: bash
 
   . python/build/venv/bin/activate
-  muscle_manager --start-all rd_implementations.ymmsl rd_cpp.ymmsl rd_settings.ymmsl
-  muscle_manager --start-all rd_implementations.ymmsl rd_python_cpp.ymmsl rd_settings.ymmsl
+  muscle_manager --start-all rd_model.ymmsl rd_cpp.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
 
 
 Note that activating the virtual environment is needed to make the
@@ -58,11 +57,40 @@ the messages will end up in ``<rundir>/instances/<instance-id>/stdout.txt`` or
 ``stderr.txt``. If the model logs to a file in the working directory, then
 you'll find it in ``<rundir>/instances/<instance-id>/workdir/``.
 
-Describing C++ implementations
-------------------------------
+Overriding implementations
+--------------------------
+
+In the above commands, we use the same ``rd_model.ymmsl`` file that we used for the
+Python version of the reaction-diffusion model. This file specifies the Python
+implementations of the ``macro`` and ``micro`` components. To run the model with the
+alternative C++ implementations, we need to override them, which is done in
+``rd_cpp.ymmsl``:
+
+.. literalinclude:: examples/rd_cpp.ymmsl
+  :caption: ``docs/source/examples/rd_cpp.ymmsl``
+  :language: yaml
+
+The ``custom_implementations`` section contains a mapping that specifies an
+implementation (to the right of the ``:``) for one or more components (on the left). Any
+implementations specified here will override the implementation set in the model
+description. Multiple yMMSL files with custom implementations may be given and all of
+them will be applied. If a component has a custom implementation in more than one file,
+then the one that is farthest to the right on the command line will be applied.
+
+MUSCLE3 allows programs written in different languages to be used together
+transparently. The ``rd_python_cpp.ymmsl`` file only overrides the implementation for
+``macro``, but leaves ``micro`` to run with the Python reaction program. Give it a try
+and look at the logs to see it in action!
+
+Can you run the model with the Python diffusion program and the C++ reaction program?
+You'll need to make your own yMMSL file for this.
+
+Describing C++ programs
+-----------------------
 
 The only difference between this and the Python-only example is that the C++
-implementations are used. These differ a bit from the Python versions:
+programs are used for some of the components. Like for the Python programs,
+``rd_programs.ymmsl`` says how to start them:
 
 .. code-block:: yaml
 
@@ -178,8 +206,9 @@ has ``libmuscle`` and ``ymmsl`` like in Python. However, in C++ there is no
 separate yMMSL library. Instead the classes needed are included with libmuscle.
 This means that there is no support for manipulating yMMSL files from C++.
 
-There are two classes here that don't have a Python equivalent, ``Data`` and
-``DataConstRef``. More on that when we use them below.
+There are two classes here that don't have a Python equivalent,
+:cpp:class:`libmuscle::Data` and :cpp:class:`libmuscle::DataConstRef`. More on those
+when we use them below.
 
 Creating an Instance
 ````````````````````
@@ -195,10 +224,10 @@ Creating an Instance
 The ``reaction`` function has changed a bit: it now takes the command line
 parameters as arguments. Like the Python version, the C++ libmuscle takes some
 information from the command line, but in C++ this needs to be passed
-explicitly to the ``Instance`` object. Otherwise, constructing the ``Instance``
-is the same: it is passed a dictionary mapping operators to a list of port
-descriptions (see ``PortsDescription`` in the API documentation). Like in the
-Python version, we'll be passing a 1D array of doubles between the models.
+explicitly to the :cpp:class:`libmuscle::Instance` object. Otherwise, constructing the
+``Instance`` is the same: it is passed a dictionary mapping operators to a list of port
+descriptions (see :cpp:class:`libmuscle::PortsDescription` in the API documentation).
+Like in the Python version, we'll be passing a 1D array of doubles between the models.
 
 Reuse loop and settings
 ```````````````````````
@@ -220,9 +249,9 @@ will be thrown.
 
 Supported types for settings are ``std::string``, ``bool``, ``int64_t``,
 ``double``, ``std::vector<double>`` and ``std::vector<std::vector<double>>``.
-There is also a ``get_setting()`` member function, which returns a
-``SettingValue`` object. A ``SettingValue`` can contain a value of any of the
-above types, and it can be queried to see what is in it.
+There is also a :cpp:func:`libmuscle::Instance::get_setting()` member function, which
+returns a :cpp:class:`ymmsl::SettingValue` object. A ``SettingValue`` can contain a
+value of any of the above types, and it can be queried to see what is in it.
 
 You can also provide a default value as the second argument to
 ``get_setting_as``, which will be returned if the setting is not configured. If
@@ -241,19 +270,21 @@ message on our ``F_INIT`` port with the initial state:
     std::vector<double> U(data_ptr, data_ptr + msg.data().size());
 
 
-Calling the ``receive`` method on an instance yields an object of type
-``libmuscle::Message``. In Python, this is a very simple class with several
+Calling the :cpp:func:`libmuscle::Instance::receive()` method on an instance yields an
+object of type :cpp:class:`libmuscle::Message`. In Python, this is a very simple class
+with several
 public members. In C++, these members are wrapped in accessors, so while the API
 is conceptually the same, the syntax is slightly different. Here, we're
 interested in the data that was sent to us, so we use ``msg.data()`` to access
 it.
 
-This returns an object of type ``libmuscle::DataConstRef``. This type is new in
+This returns an object of type :cpp:class:`libmuscle::DataConstRef`. This type is new in
 the C++ version of the library, and it exists because C++ is a statically typed
 language, while in a MUSCLE simulation the type of data that is sent in a
 message can vary from message to message. So we need some kind of class that can
-contain data of many different types, and that's what ``Data`` and
-``DataConstRef`` are for. Here are some key properties of ``DataConstRef``:
+contain data of many different types, and that's what :cpp:class:`libmuscle::Data` and
+:cpp:class:`libmuscle::DataConstRef` are for. Here are some key properties of
+``DataConstRef``:
 
 - ``DataConstRef`` is like a reference in that it points to an actual data
   object of some type. If you copy it into a second ``DataConstRef``, both
@@ -288,9 +319,9 @@ Here, we expect a 1D grid of doubles, which is just a vector of numbers. Storage
 order is irrelevant then. We'll use the standard C++ ``std::vector`` class to
 contain our state. It has a constructor that takes a pointer to an array of
 objects of the appropriate type and the number of them, and copies those objects
-into itself. We use the :cpp:func:`DataConstRef::elements` to get a pointer to
-the elements, and :cpp:func:`DataConstRef::size` to get the number of elements,
-and that's all we need to create our state vector ``U``.
+into itself. We use the :cpp:func:`libmuscle::DataConstRef::elements` to get a pointer
+to the elements, and :cpp:func:`libmuscle::DataConstRef::size` to get the number of
+elements, and that's all we need to create our state vector ``U``.
 
 Note that MUSCLE3 will in this case check that we have the right type of
 elements (doubles), but it cannot know and therefore will not check that we're
@@ -328,8 +359,8 @@ Sending messages and Data
 
 Having computed our final state, we will send it to the outside world on the
 ``final_state`` port. In this case, we need to send a 1D grid of doubles, which
-we first need to wrap up into a ``Data`` object. A ``Data`` object works just
-like a ``DataConstRef``, except that it isn't constant, and can thus be
+we first need to wrap up into a :cpp:class:`libmuscle::Data` object. A ``Data`` object
+works just like a ``DataConstRef``, except that it isn't constant, and can thus be
 modified. (It is in fact a reference, like ``DataConstRef``, despite the name,
 and it has automatic memory management as well.)
 
@@ -339,16 +370,16 @@ the grid is 1-dimensional. The third argument contains the names of the indexes,
 which helps to avoid confusion over which index is x and which is y (or
 row/column, or latitude/longitude, or... you get the idea). You are not
 required to add these (and MUSCLE3 doesn't use them), but you or someone else
-using your code will be very grateful you did at some point in the future.
+using your code will be very grateful in the future that you did.
 
-With our data item constructed, we can send a ``Message`` to the ``final_state``
-port containing the current timestamp and the data. Note that there are
+With our data item constructed, we can send a :cpp:class:`libmuscle::Message` to the
+``final_state`` port containing the current timestamp and the data. Note that there are
 different ways of creating a ``Message``, depending on whether you set the next
 timestamp, or are using an explicit settings overlay. See the API documentation
 for details.
 
-``Data`` is quite versatile, and makes it easier to send data of various
-types between submodels. Here are some other examples of creating ``Data``
+:cpp:class:`libmuscle::Data` is quite versatile, and makes it easier to send data of
+various types between submodels. Here are some other examples of creating ``Data``
 objects containing different kinds of data:
 
 .. code-block:: cpp

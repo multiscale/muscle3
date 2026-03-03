@@ -41,16 +41,29 @@ environment, and then running the file ``reaction_diffusion.py``:
   exmaples/python$ python3 reaction_diffusion.py
 
 
-Our first example is a reaction-diffusion model on a 1D grid. It consists of a
-reaction model coupled to a diffusion model in a macro-micro fashion, with the
-diffusion model the macro model and the reaction model the micro model. In a
-macro-micro model with timescale separation, the micro model does a full run (of
-many timesteps) for every timestep of the macro model. Thus, the macro model
-effectively calls the micro model before each state update, sending it the
-current state and using its output as an input for the state update operation.
+Our first example is a reaction-diffusion model on a 1D grid. The model is configured so
+that the diffusion process is much slower than the reaction process. This time scale
+separation makes this a multiscale model, which can be implemented efficiently using
+operator splitting.
 
-Here's how to implement that with MUSCLE3. (A detailed explanation follows
-below the code.)
+This means in this case that we will integrate the state of the system over time by
+applying the diffusion operator at a large time step, with many applications of the
+reaction operator in between, using a much smaller time step.
+
+With MUSCLE3, we implement each process in its own function, with its own time
+integration loop. Each function is run simultaneously by MUSCLE3, with the state
+transferred between them via messages whenever we switch from applying the diffusion
+operator to applying the reaction operator or vice versa. This communication pattern
+between the processes is specified separately.
+
+This way of designing the implementation has a bit more structure than a single
+integrated script, but it's really a better design because it allows us to implement one
+process at a time (possibly using a different existing code for each, and even a
+different programming language), and to figure out the connections separately.
+Implementing more complex models is easier if you split the work into separate tasks.
+
+But first, we'll do a reaction-diffusion model. Here's how to implement it with
+MUSCLE3. (A detailed explanation follows below the code.)
 
 .. literalinclude:: examples/python/reaction_diffusion.py
   :caption: ``docs/source/examples/python/reaction_diffusion.py``
@@ -71,30 +84,33 @@ Importing headers
 
   from libmuscle import Grid, Instance, Message
   from libmuscle.runner import run_simulation
-  from ymmsl import (
+  from ymmsl.v0_2 import (
           Component, Conduit, Configuration, Model, Operator, Ports, Settings)
 
 
-As usual, we begin by importing some required libraries. OrderedDict and logging
-come from the Python standard library, and NumPy provides matrix math
-functionality. From libmuscle, we import :class:`libmuscle.Instance`, which will
-represent a model instance in the larger simulation, and
-:class:`libmuscle.Message`, which represents a MUSCLE message as passed between
+As usual, we begin by importing some required libraries. The Python standard library
+provides the ``logging`` and ``os`` libraries, and we use NumPy for matrix math.
+From libmuscle, we import :class:`libmuscle.Instance`, which will
+represent a model instance (here either reaction or diffusion) in the larger simulation,
+and :class:`libmuscle.Message`, which represents a MUSCLE message as passed between
 instances.  The :func:`libmuscle.run_simulation` function allows us to run a
-complete simulation from a single Python file, as opposed to having separate
-implementations started by the manager.
+complete simulation from a single Python file.
 
-In order to describe our model, we use a number of definitions from
-`ymmsl-python`. More about those below.
+In order to describe the connections between the reaction and diffusion processes, we
+use definitions from `ymmsl-python`. More about those below.
 
-A simple submodel
------------------
+The reaction model
+------------------
 
 Next is the reaction model. It is defined as a single Python function that takes
-no arguments and returns nothing. (Note that this code uses type annotations to
-show the types of function arguments and return values. These are ignored by the
-Python interpreter, and also by MUSCLE3, so you don't have to use them if you
-don't want to.)
+no arguments and returns nothing. This function contains a loop in which we step through
+time, and inside of the loop is the code to calculate the next state from the current
+one using a simple exponential growth model and an explicit Euler integrator.
+
+Note that this code uses type annotations to show the types of function arguments and
+return values. These are ignored by the Python interpreter, and also by MUSCLE3, so you
+don't have to use them in your own code if you don't want to. They're worth learning
+more about though, as you can see they make the code easier to understand.
 
 The first step in a MUSCLE model is to create an :class:`libmuscle.Instance`
 object:
@@ -103,23 +119,34 @@ object:
 
   def reaction() -> None:
       instance = Instance({
-              Operator.F_INIT: ['initial_state'],       # list of float
-              Operator.O_F: ['final_state']})           # list of float
+              Operator.F_INIT: ['initial_state'],       # 1D Grid
+              Operator.O_F: ['final_state']})           # 1D Grid
       # ...
 
-The constructor takes a single argument, a dictionary that maps operators to
-lists of ports. Ports are used by submodels to exchange messages with the
-outside world. Ports can be input ports or output ports, but not both at the
-same time. In this model, we have a single input port named ``initial_state``
-that will receive an initial state at the beginning of the model run, and a
-single output port named ``final_state`` that sends the final state of the
-reaction simulation to the rest of the simulation. Note that the type of data
-that is sent is documented in a comment. This is obviously not required, but it
-makes life a lot easier if someone else needs to use the code or you haven't
-looked at it for a while, so it's highly recommended. Available types are
-described below.
+The constructor takes a single argument, a dictionary that maps *operators* to lists of
+*ports*. Ports are used by submodels to exchange messages with other submodels.
+Operators specify when each port is used by the model.
 
-The operators will become clear shortly.
+Conceptually, in MUSCLE3 each submodel is a function that creates an initial state, does
+one or more time steps simulating a process, and then finishes. The creation of the
+initial state is called the ``F_INIT`` operator in MUSCLE3 terms. Note that this is a
+MUSCLE3 operator, not a physics operator! Likewise, there is a MUSCLE3 operator called
+``O_F`` which describes the part of the calculations after the timestepping is done.
+
+In this model, we're planning to run many reaction steps in between each pair of
+subsequent diffusion time steps. We can do this by running the reaction model
+repeatedly. On each run, we'll receive the system state in ``F_INIT``, using the
+``initial_state`` port, then we'll run the reaction time steps, and then we'll send the
+updated state back during ``O_F`` using the ``final_state`` port so that the diffusion
+model can do its next timestep.
+
+Ports can be input ports or output ports, but not both at the same time. ``F_INIT``
+ports can only be used to receive, and ``O_F`` ports only to send.
+
+Besides the definition of the ports, we document the type of data we'll send or receive
+in a comment. This is obviously not required, but it makes life a lot easier if someone
+else needs to use the code or you haven't looked at it for a while, so it's highly
+recommended. Available types are described below.
 
 The reuse loop
 --------------
@@ -131,14 +158,17 @@ The reuse loop
       # State update loop
       # O_F
 
-Now that we have an :class:`libmuscle.Instance` object, we can start the *reuse
-loop*. In multiscale simulations, submodels often have to run multiple times,
-for instance because they're used as a micro model or because they are part of
-an ensemble that cannot be completely parallelised. In order to accomplish
-this, the entire model is wrapped into a loop. Exactly when this loop ends
-depends on the behaviour of the whole model, and is not easy to determine, but
-fortunately MUSCLE will do that for us if we call the
-:meth:`libmuscle.Instance.reuse_instance` method.
+Now that we have an :class:`libmuscle.Instance` object, we can start the *reuse loop*.
+As mentioned above, we want to run the reaction model repeatedly in between each pair of
+diffusion state updates. To be able to do that, we wrap the entire model code in an
+extra loop, which is called the *reuse loop*. Note that all MUSCLE3-enabled codes have a
+reuse loop, regardless of how often they run in a particular simulation.
+
+In this case, we'll need to run this loop exactly once for every time step of the
+diffusion model.  Since this is not the diffusion model, we can't know how many times
+that is, so we just ask MUSCLE3 whether we need to run again via the
+:meth:`libmuscle.Instance.reuse_instance` method and let it figure things out for us.
+
 
 Initialisation: Settings and receiving messages
 -----------------------------------------------
@@ -157,31 +187,29 @@ Initialisation: Settings and receiving messages
       t_cur = msg.timestamp
 
 
-Next is the first part of the model, in which the state is initialised. Pretty
-much every model has such an initialisation phase at the beginning. In MUSCLE's
-abstract idea of what a submodel does, the Submodel Execution Loop, this part of
-the code is referred to as the F_INIT operator. Here, we ask MUSCLE for the
-values of some settings that we're going to need later, in particular the total
-time to simulate, the time step to use, and the model parameter ``k``. The
-second argument, which specifies the expected type, is optional. If it's given,
-MUSCLE will check that the user specified a value of the correct type, and if
-not raise an exception. Note that getting settings needs to happen *within* the
-reuse loop; doing it before can lead to incorrect results.
+Next is the first part of the model, in which the state is initialised. This is what
+MUSCLE3 calls ``F_INIT``. Here, we ask MUSCLE for the values of some settings that we're
+going to need later, in particular the total time to simulate, the time step to use, and
+the model parameter ``k``. We'll see later where these settings come from.
 
-After getting our settings, we receive the initial state on the
-``initial_state`` port. Note that we have declared that port above, and declared
-it to be associated with the F_INIT operator. During F_INIT, messages can only
-be received, not sent, so that declaration makes ``initial_state`` a receiving
-port.
+The second argument to :meth:`Instance.get_setting`, which specifies the expected type,
+is optional. If it's given, MUSCLE will check that the value specified for this setting
+is of that type, and if not raise an exception. Note that getting settings needs to
+happen *within* the reuse loop; doing it before can lead to incorrect results in some
+cases.
 
-The message that we receive contains several bits of information. Here, we are
-interested in the ``data`` attribute, which we assume to be a grid of floats
-containing our initial state, which we'll call ``U``. The ``msg.data`` attribute
-holds an object of type :class:`libmuscle.Grid`, which holds a read-only NumPy
-array and optionally a list of index names. Here, we take the array and make a
-copy of it for ``U``, so that we can modify ``U`` in our upcoming state update.
-Without calling ``.copy()``, ``U`` would end up pointing to the same read-only
-array, and we'd get an error message if we tried to modify it.
+After getting our settings, we receive the initial state on the ``initial_state`` port.
+The message that we receive contains several bits of information. The ``data`` attribute
+contains the data that was put into this message by the sender. We cannot control what
+that is exactly, but we'll assume it to be a 1D array of floats containing our initial
+state, which we'll store in the variable ``U``.
+
+In particular, we'll assume that the ``msg.data`` attribute holds an object of
+type :class:`libmuscle.Grid`, which holds a read-only NumPy array and optionally a list
+of index names. Here, we take the array and make a copy of it for ``U``, so that we can
+modify ``U`` in our upcoming state update.  Without calling ``.copy()``, ``U`` would end
+up pointing to the same read-only array, and we'd get an error message if we tried to
+modify it.
 
 Finally, we'll initialise our simulation time to the time at which that state is
 valid, which is contained in the ``timestamp`` attribute. This is a
@@ -204,23 +232,14 @@ The state update loop
 
   # O_F
 
-Having initialised the model, it is now time for the state update loop. This
-code should look familiar: we loop until we reach our maximum time (now
-relative to when we started), and on each iteration update the state according
-to the model equation. This state update is called operator S in the Submodel
-Execution Loop, and in this model, it is determined entirely by the current
-state. Since no information from outside is needed, we do not receive any
-messages, and in our :class:`libmuscle.Instance` declaration above, we did not
-declare any ports associated with ``Operator.S``.
+Having initialised the model, it is now time for the state update loop. If you've
+written a time integration code before, then this will look familiar: we loop until we
+reach our maximum time (now relative to when we started), and on each iteration update
+the state according to the model equation, and the current time by the time step.
 
-The Submodel Execution Loop specifies another operator within the state update
-loop, which is called O_I and comes before S. This operator provides for
-observations of intermediate states. In other words, here is where you can send
-a message to the outside world with (part of) the current state. In this case,
-the O_I operator is empty; we're not sending anything. While this makes the
-model a bit less reusable (it won't work as a macro-model like this), it is
-perfectly legal. MUSCLE tries hard to let you break in places where it doesn't
-break anything, and where it does it tries to give a helpful error message.
+As you can see from the comments, there are two more MUSCLE3 operators here, which we
+don't use in this model. We'll come back to them when we make the diffusion submodel.
+
 
 Sending the final result
 ------------------------
@@ -234,37 +253,30 @@ Sending the final result
 After the update loop is done, the model has arrived at its final state. We
 finish up by sharing that final state with the outside world, by sending it on
 the ``final_state`` port. The part of the code after the state update loop (but
-still within the reuse loop) is known as the O_F operator in the Submodel
-Execution Loop, so that is where we declared this port to live in our
-:class:`libmuscle.Instance` declaration above.
+still within the reuse loop) is known as the ``O_F`` operator, so that is where we
+declared this port to live in our :class:`libmuscle.Instance` declaration above.
 
 To send a message, we specify the port on which to send (which must match the
-declaration by name and operator), and a Message object containing the current
-simulation time and the current state, converted to a Grid.
+declaration by name and operator), and pass a :class:`libmuscle.Message` object
+containing the current simulation time and the current state, converted to a Grid.
 
-MUSCLE3 uses `MessagePack <https://msgpack.org>`_ to encode messages between
-models. MessagePack is a binary encoding format which can be thought of as a
-binary version of JSON. That means that the message can be an integer, float,
-bool, string, or a list or dictionary containing such, and MUSCLE3 additionally
-supports NumPy arrays and byte arrays. Like with JSON, these can be nested, so
-you can send a dictionary containing lists of floats for example.
+MUSCLE3 can send and receive a range of different data types inside messages, including
+integers, floats, boolean, strings, lists and dictionaries, and additionally NumPy
+arrays and byte arrays. In most cases, all data you send or expect to receive on a
+particular port will be of the same type, but it doesn't have to be.
 
-MessagePack is self-describing, so you can inspect the received message to find
-out what you were sent. In most cases, all data you send on a particular
-port will be of the same type, and you will expect data in a particular format
-when receiving. We intentionally chose a self-describing format to keep you from
-having to change a definition and recompile bindings every time you change what
-you send. That does have a downside in that it makes it more difficult to see
-what should be sent to someone elses submodel. So please make sure that you
-document, for each port, which data type you're expecting or sending! Your
-future colleagues (and possibly your future self) will thank you.
+This flexibility is very convenient, but it does make it more difficult for someone
+trying to understand your code (or who wants to use your submodel in their simulation!)
+to know what you're sending or are expecting to receive. Se please make sure that you
+document, for each port, which data type you're expecting or sending! Your future
+colleagues (and likely your future self) will thank you.
 
-MessagePack is an extensible format, and since sending grids is very common in
-these kinds of models MUSCLE3 supports sending NumPy arrays directly. Here, we
-wrap our array U into a :class:`libmuscle.Grid` object, so that we can add the
-name of the dimensions. In this case there's only one, and ``x`` is not very
-descriptive, so we could have also passed ``U`` directly, in which case MUSCLE
-would have sent a :class:`libmuscle.Grid` without index names automatically.
+Arrays are of course commonly used in computational science, but not all programming
+languages support them directly, so MUSCLE3 has its own class for sending them called
+:class:`libmuscle.Grid`. In Python, these contain a NumPy array and a list of names of
+the dimensions. In this case there's only one, and ``x`` is not very descriptive, so we
+could have also passed ``U`` directly, in which case MUSCLE would have sent a
+:class:`libmuscle.Grid` without index names automatically.
 
 Note that grids (and NumPy arrays) are much more efficient than lists and
 dictionaries. If you have a lot of data to send, then you should use those as
@@ -279,16 +291,28 @@ object, which will be transmitted as-is, with minimal overhead.
 This concludes our reaction model. As you can see, submodels that are used with
 MUSCLE3 very much look like they would without. With one additional variable,
 one extra loop, and a few send and receive statements you're ready to connect
-your model into a larger simulation.
+your submodel into a larger simulation.
 
 
-Message timestamps
-------------------
+Diffusion model
+---------------
 
 In order to make a coupled simulation, we need at least two models. The second
 model here is the diffusion model. Its overall structure is the same as for the
-reaction model, but it has a few additional features. The first of these is an
-O_I operator.
+reaction model, but it has a few additional features.
+
+Recall that the diffusion process is much slower than the reaction process, and that
+we're running it at a much larger time step. Before each state update by the diffusion
+code, we'll do a run of the reaction model to apply a series of reaction state updates.
+
+To do that, the diffusion code needs to send the system state to the reaction model,
+receive back the updated state, and then apply its own update. We'll do that using
+two more MUSCLE3 operators called ``O_I`` and ``S``.
+
+``O_I`` represents the point right at the start of the time stepping loop, before the
+next state is calculated. A typical stand-alone code does not do anything here, but in a
+MUSCLE3 simulation this is where a message can be sent, using a port associated with the
+``O_I`` operator, and that's what the diffusion model does:
 
 .. code-block:: python
 
@@ -299,24 +323,19 @@ O_I operator.
   cur_state_msg = Message(t_cur, t_next, Grid(U, ['x']))
   instance.send('state_out', cur_state_msg)
 
+The construction of the :class:`libmuscle.Message` object is the key here. It contains
+the current simulation time ``t_cur``, the time that we'll step to on our next state
+update ``t_next``, and the state array ``U`` wrapped in a :class:`libmuscle.Grid`. If
+this is the last timestep, then ``t_next`` is set to ``None``. Once we have the message,
+we can send it on our ``state_out`` port, which is declared for ``O_I`` in the diffusion
+model's :class:`libmuscle.Instance`.
 
-Since the diffusion model is the macro-submodel in this model, it needs to send
-its state to the outside world on every timestep. This is done in the O_I
-operator. The message contains the state, converted to a
-:class:`libmuscle.Grid`, and it is sent on the ``state_out`` port, which was
-declared for the O_I operator when we made the :class:`libmuscle.Instance` for
-this model. The message is sent with the current simulation time, and a second
-timestamp that gives the simulation time for the next message that will be sent
-on this port. Since our time steps are fixed, this is easy to calculate. We do
-need to take care to send ``None`` if this is the final message on this port
-however, since there won't be another message in that case.
-
-This deserves a bit more explanation. First, MUSCLE3 does not use the
-timestamps that are attached to the messages for anything, and in this
-particular case, always sending ``None`` for the second timestamp will work
-fine.  These timestamps are necessary if two submodels with timescale overlap
-need to be connected together. In that case, both models will run concurrently,
-and they will exchange messages between their O_I and S operators.
+This deserves a bit more explanation. First, MUSCLE3 does not use the timestamps that
+are attached to the messages for anything, and in this particular case, always sending
+``None`` for the second timestamp will work fine. These timestamps are necessary if two
+submodels that use identical or similar timestep sizes need to be connected together. In
+that case, both models will run concurrently, and they will exchange messages between
+their O_I and S operators.
 
 If their time scales (step sizes) do not match exactly, then the number of
 messages sent by one submodel does not match the number of messages that the
@@ -338,6 +357,12 @@ as ``next_timestamp`` and move on to the next problem, it'll work just fine.
 Receiving messages with a default
 ---------------------------------
 
+Having sent the state, we now need to receive back the updated one. This is done in the
+part of the state update loop that comes after ``O_I``, which MUSCLE3 calls ``S``. In
+``S``, we can receive input and calculate the next state. In this case, we receive a
+state, but in general also other kinds of inputs can be received, like boundary
+conditions or fluxes.
+
 .. code-block:: python
 
   # S
@@ -347,28 +372,28 @@ Receiving messages with a default
   np.copyto(U, msg.data.array)
 
 
-The diffusion model being the macro-model, it will need to receive input for its
-state update from the micro-model, which it does by calling
-:meth:`libmuscle.Instance.receive`. This receive is a bit special in that we
-are passing a default message. The default message is returned if this port is
+The diffusion model calls :meth:`libmuscle.Instance.receive` to receive back the state,
+just like the reaction model used this function. This receive is a bit special in that
+we are passing a default message. The default message is returned if this port is
 not connected. We are cleverly passing the message containing our current
 state, so that if this port is not connected, the model continues from its
-current state. Since MUSCLE3 will simply ignore a send command on a
-disconnected port, this makes it possible to run the diffusion model without a
+current state.
+
+MUSCLE3 will ignore send commands to ports that are not connected to anything,
+so this makes it possible to run the diffusion model without a
 micro-model attached.
 
 Of course, a sensible default value will not be available in all cases, but if
 there is one, using it like this is a good idea.
 
-Next, we check that we didn't receive a message from the future. This can happen
-if the micro-model runs for longer than our macro-model timestep. In this case,
-the number of steps is fixed, so that this warning will never be emitted.
-However, if the micro-model runs until it detects convergence, then it can
-happen that it runs for longer than the timestep of the macro-model, and that
-would indicate that there is no timescale separation anymore. In that case, the
-result could be wrong, and a warning is appropriate.
+Next, we check that we didn't receive a message from the future. This should not happen
+if the models are truly time scale separated, as they are in this set-up. It's possible
+however to choose a longer run time for the reaction model (and even to make a reaction
+model that runs until it reaches convergence, however long that takes), in which case it
+could run past our next time step, rendering the operator splitting approach invalid and
+the result potentially wrong, so it's nice to get a warning if that happens.
 
-Then, we copy the received data into our state array. The received
+Next, we copy the received data into our state array. The received
 :class:`libmuscle.Grid` object contains a read-only array, and just writing ``U
 = msg.data.array`` would discard the state we have in ``U``, and instead make
 the variable ``U`` refer to the received read-only array. We would then get an
@@ -377,18 +402,21 @@ instead copies the (read-only) contents of ``msg.data.array`` into the existing
 (writable) array referred to by ``U``. This way, we can do our state update, and
 it's also a bit more efficient than reallocating memory all the time.
 
-The S operator here calls the ``laplacian()`` function (not shown). There is no
+The ``S`` operator here calls the ``laplacian()`` function (not shown). There is no
 requirement for a submodel to be a single function, you can split it up, call
 library functions, and so on. There has to be a top-level function however if
-you want to run more than one submodel in a single Python program. Also, you
-cannot share any data with other components, other than by sending and receiving
-messages. In particular, you can't use global variables to communicate between
-models. This is intentional, because it doesn't work if you're running as
-separate programs on different computers.
+you want to run more than one submodel in a single Python program.
+
+Another limitation is that you cannot share any data with other components, other than
+by sending and receiving messages. In particular, you can't use global variables to
+communicate between models. This is intentional, because it doesn't work if you're
+running as separate programs on different computers, and more importantly, because
+global variables create difficult to understand dependencies between different parts of
+your code that lead to hard to find bugs. Avoid them, with or without MUSCLE3.
 
 
-Connecting it all together
---------------------------
+Designing the connections
+-------------------------
 
 With both models defined, we now need to instruct MUSCLE3 on how to connect
 them together. We do this by creating an object of type
@@ -403,19 +431,49 @@ simulation. It often helps to draw a diagram first:
 
 
 This is a gMMSL diagram of the reaction-diffusion model. It shows that there
-are two components named ``macro`` and ``micro``. A conduit connects port
-``state_out`` on ``macro`` to ``state_in`` on ``micro``. The symbols at the
-ends of the conduit show the operators that the ports belong to, O_I for
-``macro.state_out`` and F_INIT for ``micro.state_in``. Another conduit connects
-port ``micro.final_state`` (O_F) to ``macro.state_in`` (S).
+are two components named ``macro`` (the slow diffusion process) and ``micro`` (the fast
+reaction process). A *conduit*, shown by a line, connects port
+``state_out`` on ``macro`` to ``initial_state`` on ``micro``. Another conduit connects
+port ``micro.final_state`` to ``macro.state_in``.
 
-Note that there's a mnemonic here: Operators O_I and S, which are within the
-state update loop, have a circular symbol, while F_INIT and O_F use a diamond
-shape. Also, filled symbols designate ports on which messages are sent, while
-open symbols designate receiving ports. We can therefore see that for each state
-update, ``macro`` will send on ``state_out``, after which ``micro`` will do a
-full run and send its final result as input for the next state update of
-``macro``.
+The symbols at the ends of the conduits show the operators that the ports belong to,
+``O_I`` for ``macro.state_out``, ``F_INIT`` for ``micro.state_in``, and ``O_F`` and
+``S`` for ``micro.final_state`` and ``macro.state_in`` respectively..
+
+We can use a trick to remember which symbol is for which operator: operators ``O_I`` and
+``S``, which are within the state update loop, have a circular symbol, while ``F_INIT``
+and ``O_F`` use a diamond shape. Also, filled symbols designate ports on which messages
+are sent, while open symbols designate receiving ports.
+
+If we put this together with the submodel codes we looked at above, then we can see how
+the model works. Both models start with ``F_INIT``. The macro (diffusion) model creates
+the initial state, then goes into its state update loop and enters ``O_I``. It sends the
+state on ``state_out``, then enters ``S`` and tries to receive the updated state on
+``state_in``.
+
+Meanwhile, the micro (reaction) model has also started and entered ``F_INIT``, in which
+it receives that state, via the conduit, on ``initial_state``. Since the two models are
+started simultaneously, it's possible that the reaction model tries to receive before
+the diffusion model sends, in which case it will wait for the message to arrive.
+
+Now the reaction (micro) model runs its state update loop for the configured time, and
+then it enters ``O_F`` to send the updated state on ``final_state``, via the conduit to
+the diffusion model's ``state_in`` port. The diffusion model receives it, applies its
+own single state update, and then loops back in its time integration loop to send that
+new state on ``state_out`` again.
+
+Meanwhile, the reaction model was done with its timestepping, and returns to the top of
+its reuse loop. Since there is another incoming state, the model needs to run again, so
+MUSCLE3 tells it to do that, and so the simulation continues, alternating macro
+(diffusion) timesteps with micro (reaction) model runs.
+
+At some point, the diffusion code decides that it has completed its final timestep. It
+then ends its time stepping loop, returns to the top of the reuse loop, is told by
+MUSCLE3 that it doesn't need to run again, and quits, and at that point MUSCLE3 will
+also tell the reaction model that it can quit, finishing the simulation.
+
+Connecting models in Python
+---------------------------
 
 Since diagrams aren't valid Python, we need an alternative way of describing
 this model in our code. For this, we use the ``ymmsl`` library to create a set
@@ -425,24 +483,31 @@ of objects that form a description.
 
     components = [
             Component(
-                    'macro', 'diffusion', 1,
-                    Ports(o_i=['state_out'], s=['state_in'])),
+                    'macro', Ports(o_i=['state_out'], s=['state_in']),
+                    'This is the macro model, which calculates the diffusion',
+                    implementation='diffusion'),
             Component(
-                    'micro', 'reaction', 1,
-                    Ports(f_init['initial_state'], o_f=['final_state']))]
+                    'micro', Ports(f_init['initial_state'], o_f=['final_state']),
+                    'This is the micro model, which calculates the reaction',
+                    implementation='reaction')]
 
 
 First, we describe the two components in this model. Components can be
 submodels, or helper components that convert data, control the simulation, or
-otherwise implement required non-model functionality. In this simple example,
-we only have two submodels: one named ``macro`` and one named ``micro``. Macro
-is implemented by an implementation named ``diffusion``, while micro is
-implemented by an implementation named ``reaction``.
+otherwise implement required non-model functionality.
 
-The name of a component is used by MUSCLE as an address for communication
-between the models. The implementation name is intended for use by a launcher,
-which would start the corresponding program to create an instance of a
-component.  It is these instances that form the actual running simulation.
+In this simple example, we only have two submodels: one named ``macro`` and one named
+``micro``. Each component has two ports, with associated operators. These describe how
+it can be connected to other components. There's a description, so that we know what
+each component does, and finally an *implementation*.
+
+The implementation is referred to here by name, and is usually a program, but in this
+case we'll use the Python functions we created above. Both components and
+implementations have ports, which need to be compatible. The ports on a component
+usually match those on its implementation directly, but the diffusion model for example
+has optional ports, and could be used to implement a component without ports, or with
+only one of the two.
+
 
 .. code-block:: python
 
@@ -456,11 +521,11 @@ component.  It is these instances that form the actual running simulation.
 Next, we need to connect the components together. This is done by conduits,
 which have a sender and a receiver. Here, we connect sending port ``state_out``
 on component ``macro`` to receiving port ``initial_state`` on component
-``micro``. Note that these ports are actually defined in the implementations,
-and not in this configuration file, and they are referred to here.
+``micro``. When the simulation runs, messages sent by the implementations will pass
+through these to the receiving component's implementation.
 
-The components and the conduits together form a ``Model``, which has a name and
-those two sets of objects.
+The components and the conduits together form a ``Model``, which has a name, a
+description, and those two sets of objects.
 
 .. code-block:: python
 
@@ -488,9 +553,9 @@ settings go before generic ones, so if you specify both ``micro.t_max`` and
 ``t_max``, then the ``micro`` component will use ``micro.t_max`` and all others
 will use ``t_max``.
 
-The model and the settings are combined into a Configuration, which contains
-everything needed to run the simulation. A Configuration object is also the
-Python-side equivalent to a yMMSL YAML file.
+The model and the settings are combined into a :class:`ymmsl.Configuration`, which
+contains everything needed to run the simulation. A Configuration object can be saved to
+or loaded from a YAML file, but we'll not use that right now.
 
 
 Launching the simulation
@@ -501,7 +566,7 @@ script (as we do here), and by having the MUSCLE Manager start a set of programs
 implementing the components. The first option puts everything into one or more
 Python files and is suitable for testing, experimentation, learning, and small
 scale production use on a local machine. The second option, described in the
-`Distributed execution`_ section, is needed for larger simulations possibly on
+:ref:`Distributed execution` section, is needed for larger simulations possibly on
 HPC machines, or if any of the components is not written in Python.
 
 Here, we're learning, and we have all our models in a Python file already, so

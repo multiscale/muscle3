@@ -92,8 +92,6 @@ class Instance::Impl {
                 std::string const & name,
                 Optional<::ymmsl::SettingValue> const & default_value) const;
         template <typename ValueType>
-        ValueType get_setting_as(std::string const & name) const;
-        template <typename ValueType>
         ValueType get_setting_as(
                 std::string const & name,
                 Optional<ValueType> const & default_value) const;
@@ -350,11 +348,6 @@ std::vector<std::string> Instance::Impl::list_settings() const {
  * namely below in the public version that calls this. So it doesn't need
  * to be in a .tpp file.
  */
-template <typename ValueType>
-ValueType Instance::Impl::get_setting_as(std::string const & name) const {
-    return settings_manager_.get_setting(instance_name_, name).template as<ValueType>();
-}
-
 template <typename ValueType>
 ValueType Instance::Impl::get_setting_as(
         std::string const & name,
@@ -1392,11 +1385,6 @@ std::vector<std::string> Instance::list_settings() const {
  * works this way.
  */
 template <typename ValueType>
-ValueType Instance::get_setting_as(std::string const & name) const {
-    return impl_()->get_setting_as<ValueType>(name);
-}
-
-template <typename ValueType>
 ValueType Instance::get_setting_as(
         std::string const & name,
         Optional<ValueType> const & default_value) const {
@@ -1406,17 +1394,6 @@ ValueType Instance::get_setting_as(
 /** This keeps Doxygen from getting confused.
  * \cond
  */
-template std::string Instance::get_setting_as<std::string>(std::string const & name) const;
-template int64_t Instance::get_setting_as<int64_t>(std::string const & name) const;
-template double Instance::get_setting_as<double>(std::string const & name) const;
-template bool Instance::get_setting_as<bool>(std::string const & name) const;
-template std::vector<int64_t> Instance::get_setting_as<std::vector<int64_t>>(
-        std::string const & name) const;
-template std::vector<double> Instance::get_setting_as<std::vector<double>>(
-        std::string const & name) const;
-template std::vector<std::vector<double>> Instance::get_setting_as<std::vector<std::vector<double>>>(
-        std::string const & name) const;
-
 template std::string Instance::get_setting_as<std::string>(
         std::string const & name, Optional<std::string> const & default_value) const;
 template int64_t Instance::get_setting_as<int64_t>(

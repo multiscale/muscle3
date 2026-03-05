@@ -368,8 +368,13 @@ class Instance:
             TypeError: If the type of the setting's value was not
                     as expected.
         """
-        return self._settings_manager.get_setting(
-            self._instance_id, Reference(name), typ, default=default)
+        try:
+            return self._settings_manager.get_setting(
+                self._instance_id, Reference(name), typ)
+        except KeyError:
+            if default is not None:
+                return default
+            raise
 
     def list_ports(self) -> Dict[Operator, List[str]]:
         """Returns a description of the ports that this Instance has.

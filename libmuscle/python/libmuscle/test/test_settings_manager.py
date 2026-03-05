@@ -113,61 +113,7 @@ def test_get_setting(settings_manager):
                                         ) == 'overlay_test5'
 
 
-def test_get_setting_with_default(settings_manager):
-    ref = Reference
-
-    assert settings_manager.get_setting(
-        ref('instance'), ref('nonexistent'), default='default_value'
-    ) == 'default_value'
-
-    assert settings_manager.get_setting(
-        ref('instance'), ref('nonexistent'), default=42
-    ) == 42
-
-    assert settings_manager.get_setting(
-        ref('instance'), ref('nonexistent'), default=3.14
-    ) == 3.14
-
-    assert settings_manager.get_setting(
-        ref('instance'), ref('nonexistent'), default=True
-    ) is True
-
-    assert settings_manager.get_setting(
-        ref('instance'), ref('nonexistent'), default=[1, 2, 3]
-    ) == [1, 2, 3]
-
-    settings_manager.base[ref('test')] = 'actual_value'
-    assert settings_manager.get_setting(
-        ref('instance'), ref('test'), default='default_value'
-    ) == 'actual_value'
-
-    settings_manager.overlay[ref('test2')] = 'overlay_value'
-    assert settings_manager.get_setting(
-        ref('instance'), ref('test2'), default='default_value'
-    ) == 'overlay_value'
-
-
 def test_get_setting_without_default_raises_keyerror(settings_manager):
     ref = Reference
     with pytest.raises(KeyError, match='Value for setting "nonexistent" was not set'):
         settings_manager.get_setting(ref('instance'), ref('nonexistent'))
-
-
-def test_get_setting_with_default_and_type_check(settings_manager):
-    ref = Reference
-
-    result = settings_manager.get_setting(
-        ref('instance'), ref('nonexistent'), typ='str', default='default'
-    )
-    assert result == 'default'
-
-    settings_manager.base[ref('test')] = 42
-    result = settings_manager.get_setting(
-        ref('instance'), ref('test'), typ='int', default=0
-    )
-    assert result == 42
-
-    with pytest.raises(TypeError):
-        settings_manager.get_setting(
-            ref('instance'), ref('test'), typ='str', default='default'
-        )

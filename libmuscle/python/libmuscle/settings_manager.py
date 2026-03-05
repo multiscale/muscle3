@@ -113,9 +113,7 @@ class SettingsManager:
 
     def get_setting(
             self, instance: Reference, setting_name: Reference,
-            typ: Optional[str] = None, *,
-            default: Optional[SettingValue] = None
-            ) -> SettingValue:
+            typ: Optional[str] = None) -> SettingValue:
         """Returns the value of a setting.
 
         Args:
@@ -125,13 +123,9 @@ class SettingsManager:
                     is checked for a match before returning. Valid
                     values are 'str', 'int', 'float', 'bool', '[int]',
                     '[float]' and '[[float]]'.
-            default: A default value to return if this setting is not
-                    set. If not provided and the setting is not set,
-                    a KeyError will be raised.
 
         Raises:
-            KeyError: If the setting has not been set and no default
-                    was provided.
+            KeyError: If the setting has not been set.
             TypeError: If the setting was set to a value that does
                     not match `typ`.
             ValueError: If an invalid value was specified for `typ`
@@ -149,8 +143,6 @@ class SettingsManager:
                 value = self.base[name]
                 break
         else:
-            if default is not None:
-                return default
             raise KeyError((f'Value for setting "{setting_name}" was not set.'))
 
         if typ is not None:

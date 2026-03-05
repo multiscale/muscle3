@@ -336,7 +336,14 @@ std::vector<std::string> Instance::Impl::list_settings() const {
 ::ymmsl::SettingValue Instance::Impl::get_setting(
         std::string const & name,
         Optional<::ymmsl::SettingValue> const & default_value) const {
-    return settings_manager_.get_setting(instance_name_, name, default_value);
+    try {
+        return settings_manager_.get_setting(instance_name_, name);
+    }
+    catch (std::out_of_range const & e) {
+        if (default_value.is_set())
+            return default_value.get();
+        throw;
+    }
 }
 
 /* This is a template, but it's only ever instantiated in this file,
@@ -352,12 +359,14 @@ template <typename ValueType>
 ValueType Instance::Impl::get_setting_as(
         std::string const & name,
         Optional<ValueType> const & default_value) const {
-    Optional<::ymmsl::SettingValue> default_setting_value;
-    if (default_value.is_set())
-        default_setting_value = ::ymmsl::SettingValue(default_value.get());
-    
-    auto setting = settings_manager_.get_setting(instance_name_, name, default_setting_value);
-    return setting.template as<ValueType>();
+    try {
+        return settings_manager_.get_setting(instance_name_, name).template as<ValueType>();
+    }
+    catch (std::out_of_range const & e) {
+        if (default_value.is_set())
+            return default_value.get();
+        throw;
+    }
 }
 
 std::unordered_map<::ymmsl::Operator, std::vector<std::string>>

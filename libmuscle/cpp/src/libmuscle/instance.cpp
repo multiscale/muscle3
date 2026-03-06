@@ -1374,9 +1374,13 @@ std::vector<std::string> Instance::list_settings() const {
     return impl_()->list_settings();
 }
 
+::ymmsl::SettingValue Instance::get_setting(std::string const & name) const {
+    return impl_()->get_setting(name, {});
+}
+
 ::ymmsl::SettingValue Instance::get_setting(
         std::string const & name,
-        Optional<::ymmsl::SettingValue> const & default_value) const {
+        ::ymmsl::SettingValue const & default_value) const {
     return impl_()->get_setting(name, default_value);
 }
 
@@ -1385,9 +1389,14 @@ std::vector<std::string> Instance::list_settings() const {
  * works this way.
  */
 template <typename ValueType>
+ValueType Instance::get_setting_as(std::string const & name) const {
+    return impl_()->get_setting_as<ValueType>(name, Optional<ValueType>());
+}
+
+template <typename ValueType>
 ValueType Instance::get_setting_as(
         std::string const & name,
-        Optional<ValueType> const & default_value) const {
+        ValueType const & default_value) const {
     return impl_()->get_setting_as<ValueType>(name, default_value);
 }
 
@@ -1395,19 +1404,34 @@ ValueType Instance::get_setting_as(
  * \cond
  */
 template std::string Instance::get_setting_as<std::string>(
-        std::string const & name, Optional<std::string> const & default_value) const;
+        std::string const & name) const;
 template int64_t Instance::get_setting_as<int64_t>(
-        std::string const & name, Optional<int64_t> const & default_value) const;
+        std::string const & name) const;
 template double Instance::get_setting_as<double>(
-        std::string const & name, Optional<double> const & default_value) const;
+        std::string const & name) const;
 template bool Instance::get_setting_as<bool>(
-        std::string const & name, Optional<bool> const & default_value) const;
+        std::string const & name) const;
 template std::vector<int64_t> Instance::get_setting_as<std::vector<int64_t>>(
-        std::string const & name, Optional<std::vector<int64_t>> const & default_value) const;
+        std::string const & name) const;
 template std::vector<double> Instance::get_setting_as<std::vector<double>>(
-        std::string const & name, Optional<std::vector<double>> const & default_value) const;
+        std::string const & name) const;
 template std::vector<std::vector<double>> Instance::get_setting_as<std::vector<std::vector<double>>>(
-        std::string const & name, Optional<std::vector<std::vector<double>>> const & default_value) const;
+        std::string const & name) const;
+
+template std::string Instance::get_setting_as<std::string>(
+        std::string const & name, std::string const & default_value) const;
+template int64_t Instance::get_setting_as<int64_t>(
+        std::string const & name, int64_t const & default_value) const;
+template double Instance::get_setting_as<double>(
+        std::string const & name, double const & default_value) const;
+template bool Instance::get_setting_as<bool>(
+        std::string const & name, bool const & default_value) const;
+template std::vector<int64_t> Instance::get_setting_as<std::vector<int64_t>>(
+        std::string const & name, std::vector<int64_t> const & default_value) const;
+template std::vector<double> Instance::get_setting_as<std::vector<double>>(
+        std::string const & name, std::vector<double> const & default_value) const;
+template std::vector<std::vector<double>> Instance::get_setting_as<std::vector<std::vector<double>>>(
+        std::string const & name, std::vector<std::vector<double>> const & default_value) const;
 /** \endcond
  */
 

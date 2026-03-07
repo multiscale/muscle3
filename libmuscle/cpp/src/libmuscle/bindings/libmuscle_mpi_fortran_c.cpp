@@ -4030,7 +4030,7 @@ bool LIBMUSCLE_MPI_Instance_is_setting_a_real8array2_(std::intptr_t self, char *
     return false;
 }
 
-void LIBMUSCLE_MPI_Instance_get_setting_as_character_(std::intptr_t self, char * name, std::size_t name_size, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Instance_get_setting_as1_character_(std::intptr_t self, char * name, std::size_t name_size, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -4078,7 +4078,7 @@ void LIBMUSCLE_MPI_Instance_get_setting_as_character_(std::intptr_t self, char *
     }
 }
 
-int64_t LIBMUSCLE_MPI_Instance_get_setting_as_int8_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+int64_t LIBMUSCLE_MPI_Instance_get_setting_as1_int8_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -4124,7 +4124,7 @@ int64_t LIBMUSCLE_MPI_Instance_get_setting_as_int8_(std::intptr_t self, char * n
     return 0;
 }
 
-double LIBMUSCLE_MPI_Instance_get_setting_as_real8_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+double LIBMUSCLE_MPI_Instance_get_setting_as1_real8_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -4170,7 +4170,7 @@ double LIBMUSCLE_MPI_Instance_get_setting_as_real8_(std::intptr_t self, char * n
     return 0.0;
 }
 
-bool LIBMUSCLE_MPI_Instance_get_setting_as_logical_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_MPI_Instance_get_setting_as1_logical_(std::intptr_t self, char * name, std::size_t name_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -4216,7 +4216,7 @@ bool LIBMUSCLE_MPI_Instance_get_setting_as_logical_(std::intptr_t self, char * n
     return false;
 }
 
-void LIBMUSCLE_MPI_Instance_get_setting_as_int8array_(std::intptr_t self, char * name, std::size_t name_size, std::int64_t ** value, std::size_t * value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Instance_get_setting_as1_int8array_(std::intptr_t self, char * name, std::size_t name_size, std::int64_t ** value, std::size_t * value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -4264,7 +4264,7 @@ void LIBMUSCLE_MPI_Instance_get_setting_as_int8array_(std::intptr_t self, char *
     }
 }
 
-void LIBMUSCLE_MPI_Instance_get_setting_as_real8array_(std::intptr_t self, char * name, std::size_t name_size, double ** value, std::size_t * value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Instance_get_setting_as1_real8array_(std::intptr_t self, char * name, std::size_t name_size, double ** value, std::size_t * value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -4312,7 +4312,7 @@ void LIBMUSCLE_MPI_Instance_get_setting_as_real8array_(std::intptr_t self, char 
     }
 }
 
-void LIBMUSCLE_MPI_Instance_get_setting_as_real8array2_(std::intptr_t self, char * name, std::size_t name_size, double ** value, std::size_t * value_shape, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Instance_get_setting_as1_real8array2_(std::intptr_t self, char * name, std::size_t name_size, double ** value, std::size_t * value_shape, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -4370,7 +4370,7 @@ void LIBMUSCLE_MPI_Instance_get_setting_as_real8array2_(std::intptr_t self, char
     }
 }
 
-void LIBMUSCLE_MPI_Instance_get_setting_with_default_as_character_(std::intptr_t self, char * name, std::size_t name_size, char * default_value, std::size_t default_value_size, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Instance_get_setting_as2_character_(std::intptr_t self, char * name, std::size_t name_size, char * default_value, std::size_t default_value_size, char ** ret_val, std::size_t * ret_val_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     std::string default_value_s(default_value, default_value_size);
@@ -4419,7 +4419,7 @@ void LIBMUSCLE_MPI_Instance_get_setting_with_default_as_character_(std::intptr_t
     }
 }
 
-int64_t LIBMUSCLE_MPI_Instance_get_setting_with_default_as_int8_(std::intptr_t self, char * name, std::size_t name_size, int64_t default_value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+int64_t LIBMUSCLE_MPI_Instance_get_setting_as2_int8_(std::intptr_t self, char * name, std::size_t name_size, int64_t default_value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -4465,7 +4465,7 @@ int64_t LIBMUSCLE_MPI_Instance_get_setting_with_default_as_int8_(std::intptr_t s
     return 0;
 }
 
-double LIBMUSCLE_MPI_Instance_get_setting_with_default_as_real8_(std::intptr_t self, char * name, std::size_t name_size, double default_value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+double LIBMUSCLE_MPI_Instance_get_setting_as2_real8_(std::intptr_t self, char * name, std::size_t name_size, double default_value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -4511,7 +4511,7 @@ double LIBMUSCLE_MPI_Instance_get_setting_with_default_as_real8_(std::intptr_t s
     return 0.0;
 }
 
-bool LIBMUSCLE_MPI_Instance_get_setting_with_default_as_logical_(std::intptr_t self, char * name, std::size_t name_size, bool default_value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+bool LIBMUSCLE_MPI_Instance_get_setting_as2_logical_(std::intptr_t self, char * name, std::size_t name_size, bool default_value, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     try {
@@ -4557,7 +4557,7 @@ bool LIBMUSCLE_MPI_Instance_get_setting_with_default_as_logical_(std::intptr_t s
     return false;
 }
 
-void LIBMUSCLE_MPI_Instance_get_setting_with_default_as_int8array_(std::intptr_t self, char * name, std::size_t name_size, std::int64_t * default_value, std::int64_t default_value_size, std::int64_t ** value, std::size_t * value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Instance_get_setting_as2_int8array_(std::intptr_t self, char * name, std::size_t name_size, std::int64_t * default_value, std::int64_t default_value_size, std::int64_t ** value, std::size_t * value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     std::vector<std::int64_t> default_value_v(default_value, default_value + default_value_size);
@@ -4606,7 +4606,7 @@ void LIBMUSCLE_MPI_Instance_get_setting_with_default_as_int8array_(std::intptr_t
     }
 }
 
-void LIBMUSCLE_MPI_Instance_get_setting_with_default_as_real8array_(std::intptr_t self, char * name, std::size_t name_size, double * default_value, std::size_t default_value_size, double ** value, std::size_t * value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Instance_get_setting_as2_real8array_(std::intptr_t self, char * name, std::size_t name_size, double * default_value, std::size_t default_value_size, double ** value, std::size_t * value_size, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     std::vector<double> default_value_v(default_value, default_value + default_value_size);
@@ -4655,7 +4655,7 @@ void LIBMUSCLE_MPI_Instance_get_setting_with_default_as_real8array_(std::intptr_
     }
 }
 
-void LIBMUSCLE_MPI_Instance_get_setting_with_default_as_real8array2_(std::intptr_t self, char * name, std::size_t name_size, double * default_value, std::size_t * default_value_shape, double ** value, std::size_t * value_shape, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
+void LIBMUSCLE_MPI_Instance_get_setting_as2_real8array2_(std::intptr_t self, char * name, std::size_t name_size, double * default_value, std::size_t * default_value_shape, double ** value, std::size_t * value_shape, int * err_code, char ** err_msg, std::size_t * err_msg_len) {
     Instance * self_p = reinterpret_cast<Instance *>(self);
     std::string name_s(name, name_size);
     std::vector<std::vector<double>> default_value_v(

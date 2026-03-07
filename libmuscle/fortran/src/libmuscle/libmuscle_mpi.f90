@@ -733,20 +733,34 @@ module libmuscle_mpi
         procedure :: is_setting_a_int8array => LIBMUSCLE_Instance_is_setting_a_int8array
         procedure :: is_setting_a_real8array => LIBMUSCLE_Instance_is_setting_a_real8array
         procedure :: is_setting_a_real8array2 => LIBMUSCLE_Instance_is_setting_a_real8array2
-        procedure :: get_setting_as_character => LIBMUSCLE_Instance_get_setting_as_character
-        procedure :: get_setting_as_int8 => LIBMUSCLE_Instance_get_setting_as_int8
-        procedure :: get_setting_as_real8 => LIBMUSCLE_Instance_get_setting_as_real8
-        procedure :: get_setting_as_logical => LIBMUSCLE_Instance_get_setting_as_logical
-        procedure :: get_setting_as_int8array => LIBMUSCLE_Instance_get_setting_as_int8array
-        procedure :: get_setting_as_real8array => LIBMUSCLE_Instance_get_setting_as_real8array
-        procedure :: get_setting_as_real8array2 => LIBMUSCLE_Instance_get_setting_as_real8array2
-        procedure :: get_setting_with_default_as_character => LIBMUSCLE_Instance_get_setting_with_default_as_character
-        procedure :: get_setting_with_default_as_int8 => LIBMUSCLE_Instance_get_setting_with_default_as_int8
-        procedure :: get_setting_with_default_as_real8 => LIBMUSCLE_Instance_get_setting_with_default_as_real8
-        procedure :: get_setting_with_default_as_logical => LIBMUSCLE_Instance_get_setting_with_default_as_logical
-        procedure :: get_setting_with_default_as_int8array => LIBMUSCLE_Instance_get_setting_with_default_as_int8array
-        procedure :: get_setting_with_default_as_real8array => LIBMUSCLE_Instance_get_setting_with_default_as_real8array
-        procedure :: get_setting_with_default_as_real8array2 => LIBMUSCLE_Instance_get_setting_with_default_as_real8array2
+        procedure :: get_setting_as1_character => LIBMUSCLE_Instance_get_setting_as1_character
+        procedure :: get_setting_as1_int8 => LIBMUSCLE_Instance_get_setting_as1_int8
+        procedure :: get_setting_as1_real8 => LIBMUSCLE_Instance_get_setting_as1_real8
+        procedure :: get_setting_as1_logical => LIBMUSCLE_Instance_get_setting_as1_logical
+        procedure :: get_setting_as1_int8array => LIBMUSCLE_Instance_get_setting_as1_int8array
+        procedure :: get_setting_as1_real8array => LIBMUSCLE_Instance_get_setting_as1_real8array
+        procedure :: get_setting_as1_real8array2 => LIBMUSCLE_Instance_get_setting_as1_real8array2
+        procedure :: get_setting_as2_character => LIBMUSCLE_Instance_get_setting_as2_character
+        procedure :: get_setting_as2_int8 => LIBMUSCLE_Instance_get_setting_as2_int8
+        procedure :: get_setting_as2_real8 => LIBMUSCLE_Instance_get_setting_as2_real8
+        procedure :: get_setting_as2_logical => LIBMUSCLE_Instance_get_setting_as2_logical
+        procedure :: get_setting_as2_int8array => LIBMUSCLE_Instance_get_setting_as2_int8array
+        procedure :: get_setting_as2_real8array => LIBMUSCLE_Instance_get_setting_as2_real8array
+        procedure :: get_setting_as2_real8array2 => LIBMUSCLE_Instance_get_setting_as2_real8array2
+        generic :: get_setting_as_character => get_setting_as1_character, &
+            get_setting_as2_character
+        generic :: get_setting_as_int8 => get_setting_as1_int8, &
+            get_setting_as2_int8
+        generic :: get_setting_as_real8 => get_setting_as1_real8, &
+            get_setting_as2_real8
+        generic :: get_setting_as_logical => get_setting_as1_logical, &
+            get_setting_as2_logical
+        generic :: get_setting_as_int8array => get_setting_as1_int8array, &
+            get_setting_as2_int8array
+        generic :: get_setting_as_real8array => get_setting_as1_real8array, &
+            get_setting_as2_real8array
+        generic :: get_setting_as_real8array2 => get_setting_as1_real8array2, &
+            get_setting_as2_real8array2
         procedure :: list_settings => LIBMUSCLE_Instance_list_settings
         procedure :: list_ports => LIBMUSCLE_Instance_list_ports
         procedure :: is_connected => LIBMUSCLE_Instance_is_connected
@@ -795,6 +809,20 @@ module libmuscle_mpi
     public :: LIBMUSCLE_Instance_is_setting_a_int8array
     public :: LIBMUSCLE_Instance_is_setting_a_real8array
     public :: LIBMUSCLE_Instance_is_setting_a_real8array2
+    public :: LIBMUSCLE_Instance_get_setting_as1_character
+    public :: LIBMUSCLE_Instance_get_setting_as1_int8
+    public :: LIBMUSCLE_Instance_get_setting_as1_real8
+    public :: LIBMUSCLE_Instance_get_setting_as1_logical
+    public :: LIBMUSCLE_Instance_get_setting_as1_int8array
+    public :: LIBMUSCLE_Instance_get_setting_as1_real8array
+    public :: LIBMUSCLE_Instance_get_setting_as1_real8array2
+    public :: LIBMUSCLE_Instance_get_setting_as2_character
+    public :: LIBMUSCLE_Instance_get_setting_as2_int8
+    public :: LIBMUSCLE_Instance_get_setting_as2_real8
+    public :: LIBMUSCLE_Instance_get_setting_as2_logical
+    public :: LIBMUSCLE_Instance_get_setting_as2_int8array
+    public :: LIBMUSCLE_Instance_get_setting_as2_real8array
+    public :: LIBMUSCLE_Instance_get_setting_as2_real8array2
     public :: LIBMUSCLE_Instance_get_setting_as_character
     public :: LIBMUSCLE_Instance_get_setting_as_int8
     public :: LIBMUSCLE_Instance_get_setting_as_real8
@@ -802,13 +830,6 @@ module libmuscle_mpi
     public :: LIBMUSCLE_Instance_get_setting_as_int8array
     public :: LIBMUSCLE_Instance_get_setting_as_real8array
     public :: LIBMUSCLE_Instance_get_setting_as_real8array2
-    public :: LIBMUSCLE_Instance_get_setting_with_default_as_character
-    public :: LIBMUSCLE_Instance_get_setting_with_default_as_int8
-    public :: LIBMUSCLE_Instance_get_setting_with_default_as_real8
-    public :: LIBMUSCLE_Instance_get_setting_with_default_as_logical
-    public :: LIBMUSCLE_Instance_get_setting_with_default_as_int8array
-    public :: LIBMUSCLE_Instance_get_setting_with_default_as_real8array
-    public :: LIBMUSCLE_Instance_get_setting_with_default_as_real8array2
     public :: LIBMUSCLE_Instance_list_settings
     public :: LIBMUSCLE_Instance_list_ports
     public :: LIBMUSCLE_Instance_is_connected
@@ -3502,7 +3523,7 @@ module libmuscle_mpi
             integer (c_size_t), intent(out) :: err_msg_len
         end function LIBMUSCLE_MPI_Instance_is_setting_a_real8array2_
 
-        subroutine LIBMUSCLE_MPI_Instance_get_setting_as_character_( &
+        subroutine LIBMUSCLE_MPI_Instance_get_setting_as1_character_( &
                 self, &
                 name, &
                 name_size, &
@@ -3511,7 +3532,7 @@ module libmuscle_mpi
                 err_code, &
                 err_msg, &
                 err_msg_len) &
-                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_as_character_")
+                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_as1_character_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
@@ -3522,16 +3543,16 @@ module libmuscle_mpi
             integer (c_int), intent(out) :: err_code
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
-        end subroutine LIBMUSCLE_MPI_Instance_get_setting_as_character_
+        end subroutine LIBMUSCLE_MPI_Instance_get_setting_as1_character_
 
-        integer (c_int64_t) function LIBMUSCLE_MPI_Instance_get_setting_as_int8_( &
+        integer (c_int64_t) function LIBMUSCLE_MPI_Instance_get_setting_as1_int8_( &
                 self, &
                 name, &
                 name_size, &
                 err_code, &
                 err_msg, &
                 err_msg_len) &
-                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_as_int8_")
+                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_as1_int8_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
@@ -3540,16 +3561,16 @@ module libmuscle_mpi
             integer (c_int), intent(out) :: err_code
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
-        end function LIBMUSCLE_MPI_Instance_get_setting_as_int8_
+        end function LIBMUSCLE_MPI_Instance_get_setting_as1_int8_
 
-        real (c_double) function LIBMUSCLE_MPI_Instance_get_setting_as_real8_( &
+        real (c_double) function LIBMUSCLE_MPI_Instance_get_setting_as1_real8_( &
                 self, &
                 name, &
                 name_size, &
                 err_code, &
                 err_msg, &
                 err_msg_len) &
-                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_as_real8_")
+                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_as1_real8_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
@@ -3558,16 +3579,16 @@ module libmuscle_mpi
             integer (c_int), intent(out) :: err_code
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
-        end function LIBMUSCLE_MPI_Instance_get_setting_as_real8_
+        end function LIBMUSCLE_MPI_Instance_get_setting_as1_real8_
 
-        logical (c_bool) function LIBMUSCLE_MPI_Instance_get_setting_as_logical_( &
+        logical (c_bool) function LIBMUSCLE_MPI_Instance_get_setting_as1_logical_( &
                 self, &
                 name, &
                 name_size, &
                 err_code, &
                 err_msg, &
                 err_msg_len) &
-                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_as_logical_")
+                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_as1_logical_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
@@ -3576,9 +3597,9 @@ module libmuscle_mpi
             integer (c_int), intent(out) :: err_code
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
-        end function LIBMUSCLE_MPI_Instance_get_setting_as_logical_
+        end function LIBMUSCLE_MPI_Instance_get_setting_as1_logical_
 
-        subroutine LIBMUSCLE_MPI_Instance_get_setting_as_int8array_( &
+        subroutine LIBMUSCLE_MPI_Instance_get_setting_as1_int8array_( &
                 self, &
                 name, &
                 name_size, &
@@ -3587,7 +3608,7 @@ module libmuscle_mpi
                 err_code, &
                 err_msg, &
                 err_msg_len) &
-                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_as_int8array_")
+                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_as1_int8array_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
@@ -3598,9 +3619,9 @@ module libmuscle_mpi
             integer (c_int), intent(out) :: err_code
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
-        end subroutine LIBMUSCLE_MPI_Instance_get_setting_as_int8array_
+        end subroutine LIBMUSCLE_MPI_Instance_get_setting_as1_int8array_
 
-        subroutine LIBMUSCLE_MPI_Instance_get_setting_as_real8array_( &
+        subroutine LIBMUSCLE_MPI_Instance_get_setting_as1_real8array_( &
                 self, &
                 name, &
                 name_size, &
@@ -3609,7 +3630,7 @@ module libmuscle_mpi
                 err_code, &
                 err_msg, &
                 err_msg_len) &
-                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_as_real8array_")
+                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_as1_real8array_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
@@ -3620,9 +3641,9 @@ module libmuscle_mpi
             integer (c_int), intent(out) :: err_code
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
-        end subroutine LIBMUSCLE_MPI_Instance_get_setting_as_real8array_
+        end subroutine LIBMUSCLE_MPI_Instance_get_setting_as1_real8array_
 
-        subroutine LIBMUSCLE_MPI_Instance_get_setting_as_real8array2_( &
+        subroutine LIBMUSCLE_MPI_Instance_get_setting_as1_real8array2_( &
                 self, &
                 name, &
                 name_size, &
@@ -3631,7 +3652,7 @@ module libmuscle_mpi
                 err_code, &
                 err_msg, &
                 err_msg_len) &
-                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_as_real8array2_")
+                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_as1_real8array2_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
@@ -3642,9 +3663,9 @@ module libmuscle_mpi
             integer (c_int), intent(out) :: err_code
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
-        end subroutine LIBMUSCLE_MPI_Instance_get_setting_as_real8array2_
+        end subroutine LIBMUSCLE_MPI_Instance_get_setting_as1_real8array2_
 
-        subroutine LIBMUSCLE_MPI_Instance_get_setting_with_default_as_character_( &
+        subroutine LIBMUSCLE_MPI_Instance_get_setting_as2_character_( &
                 self, &
                 name, &
                 name_size, &
@@ -3655,7 +3676,7 @@ module libmuscle_mpi
                 err_code, &
                 err_msg, &
                 err_msg_len) &
-                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_with_default_as_character_")
+                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_as2_character_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
@@ -3668,9 +3689,9 @@ module libmuscle_mpi
             integer (c_int), intent(out) :: err_code
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
-        end subroutine LIBMUSCLE_MPI_Instance_get_setting_with_default_as_character_
+        end subroutine LIBMUSCLE_MPI_Instance_get_setting_as2_character_
 
-        integer (c_int64_t) function LIBMUSCLE_MPI_Instance_get_setting_with_default_as_int8_( &
+        integer (c_int64_t) function LIBMUSCLE_MPI_Instance_get_setting_as2_int8_( &
                 self, &
                 name, &
                 name_size, &
@@ -3678,7 +3699,7 @@ module libmuscle_mpi
                 err_code, &
                 err_msg, &
                 err_msg_len) &
-                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_with_default_as_int8_")
+                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_as2_int8_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
@@ -3688,9 +3709,9 @@ module libmuscle_mpi
             integer (c_int), intent(out) :: err_code
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
-        end function LIBMUSCLE_MPI_Instance_get_setting_with_default_as_int8_
+        end function LIBMUSCLE_MPI_Instance_get_setting_as2_int8_
 
-        real (c_double) function LIBMUSCLE_MPI_Instance_get_setting_with_default_as_real8_( &
+        real (c_double) function LIBMUSCLE_MPI_Instance_get_setting_as2_real8_( &
                 self, &
                 name, &
                 name_size, &
@@ -3698,7 +3719,7 @@ module libmuscle_mpi
                 err_code, &
                 err_msg, &
                 err_msg_len) &
-                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_with_default_as_real8_")
+                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_as2_real8_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
@@ -3708,9 +3729,9 @@ module libmuscle_mpi
             integer (c_int), intent(out) :: err_code
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
-        end function LIBMUSCLE_MPI_Instance_get_setting_with_default_as_real8_
+        end function LIBMUSCLE_MPI_Instance_get_setting_as2_real8_
 
-        logical (c_bool) function LIBMUSCLE_MPI_Instance_get_setting_with_default_as_logical_( &
+        logical (c_bool) function LIBMUSCLE_MPI_Instance_get_setting_as2_logical_( &
                 self, &
                 name, &
                 name_size, &
@@ -3718,7 +3739,7 @@ module libmuscle_mpi
                 err_code, &
                 err_msg, &
                 err_msg_len) &
-                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_with_default_as_logical_")
+                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_as2_logical_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
@@ -3728,9 +3749,9 @@ module libmuscle_mpi
             integer (c_int), intent(out) :: err_code
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
-        end function LIBMUSCLE_MPI_Instance_get_setting_with_default_as_logical_
+        end function LIBMUSCLE_MPI_Instance_get_setting_as2_logical_
 
-        subroutine LIBMUSCLE_MPI_Instance_get_setting_with_default_as_int8array_( &
+        subroutine LIBMUSCLE_MPI_Instance_get_setting_as2_int8array_( &
                 self, &
                 name, &
                 name_size, &
@@ -3741,7 +3762,7 @@ module libmuscle_mpi
                 err_code, &
                 err_msg, &
                 err_msg_len) &
-                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_with_default_as_int8array_")
+                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_as2_int8array_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
@@ -3754,9 +3775,9 @@ module libmuscle_mpi
             integer (c_int), intent(out) :: err_code
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
-        end subroutine LIBMUSCLE_MPI_Instance_get_setting_with_default_as_int8array_
+        end subroutine LIBMUSCLE_MPI_Instance_get_setting_as2_int8array_
 
-        subroutine LIBMUSCLE_MPI_Instance_get_setting_with_default_as_real8array_( &
+        subroutine LIBMUSCLE_MPI_Instance_get_setting_as2_real8array_( &
                 self, &
                 name, &
                 name_size, &
@@ -3767,7 +3788,7 @@ module libmuscle_mpi
                 err_code, &
                 err_msg, &
                 err_msg_len) &
-                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_with_default_as_real8array_")
+                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_as2_real8array_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
@@ -3780,9 +3801,9 @@ module libmuscle_mpi
             integer (c_int), intent(out) :: err_code
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
-        end subroutine LIBMUSCLE_MPI_Instance_get_setting_with_default_as_real8array_
+        end subroutine LIBMUSCLE_MPI_Instance_get_setting_as2_real8array_
 
-        subroutine LIBMUSCLE_MPI_Instance_get_setting_with_default_as_real8array2_( &
+        subroutine LIBMUSCLE_MPI_Instance_get_setting_as2_real8array2_( &
                 self, &
                 name, &
                 name_size, &
@@ -3793,7 +3814,7 @@ module libmuscle_mpi
                 err_code, &
                 err_msg, &
                 err_msg_len) &
-                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_with_default_as_real8array2_")
+                bind(C, name="LIBMUSCLE_MPI_Instance_get_setting_as2_real8array2_")
 
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
@@ -3806,7 +3827,7 @@ module libmuscle_mpi
             integer (c_int), intent(out) :: err_code
             type (c_ptr), intent(out) :: err_msg
             integer (c_size_t), intent(out) :: err_msg_len
-        end subroutine LIBMUSCLE_MPI_Instance_get_setting_with_default_as_real8array2_
+        end subroutine LIBMUSCLE_MPI_Instance_get_setting_as2_real8array2_
 
         subroutine LIBMUSCLE_MPI_Instance_list_settings_( &
                 self, &
@@ -17653,7 +17674,7 @@ contains
         LIBMUSCLE_Instance_is_setting_a_real8array2 = ret_val
     end function LIBMUSCLE_Instance_is_setting_a_real8array2
 
-    function LIBMUSCLE_Instance_get_setting_as_character( &
+    function LIBMUSCLE_Instance_get_setting_as1_character( &
             self, &
             name, &
             err_code, &
@@ -17663,7 +17684,7 @@ contains
         character (len=*), intent(in) :: name
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
-        character(:), allocatable :: LIBMUSCLE_Instance_get_setting_as_character
+        character(:), allocatable :: LIBMUSCLE_Instance_get_setting_as1_character
 
         type (c_ptr) :: ret_val
         integer (c_size_t) :: ret_val_size
@@ -17676,7 +17697,7 @@ contains
         character(:), allocatable :: err_msg_p
         integer (c_size_t) :: err_msg_i
 
-        call LIBMUSCLE_MPI_Instance_get_setting_as_character_( &
+        call LIBMUSCLE_MPI_Instance_get_setting_as1_character_( &
             self%ptr, &
             name, int(len(name), c_size_t), &
             ret_val, &
@@ -17695,7 +17716,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
-                allocate (character(0) :: LIBMUSCLE_Instance_get_setting_as_character)
+                allocate (character(0) :: LIBMUSCLE_Instance_get_setting_as1_character)
 
                 return
             else
@@ -17714,13 +17735,13 @@ contains
         end if
 
         call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
-        allocate (character(ret_val_size) :: LIBMUSCLE_Instance_get_setting_as_character)
+        allocate (character(ret_val_size) :: LIBMUSCLE_Instance_get_setting_as1_character)
         do i_loop = 1, ret_val_size
-            LIBMUSCLE_Instance_get_setting_as_character(i_loop:i_loop) = f_ret_ptr(i_loop)
+            LIBMUSCLE_Instance_get_setting_as1_character(i_loop:i_loop) = f_ret_ptr(i_loop)
         end do
-    end function LIBMUSCLE_Instance_get_setting_as_character
+    end function LIBMUSCLE_Instance_get_setting_as1_character
 
-    function LIBMUSCLE_Instance_get_setting_as_int8( &
+    function LIBMUSCLE_Instance_get_setting_as1_int8( &
             self, &
             name, &
             err_code, &
@@ -17730,7 +17751,7 @@ contains
         character (len=*), intent(in) :: name
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
-        integer (selected_int_kind(18)) :: LIBMUSCLE_Instance_get_setting_as_int8
+        integer (selected_int_kind(18)) :: LIBMUSCLE_Instance_get_setting_as1_int8
 
         integer (c_int64_t) :: ret_val
         integer (c_int) :: err_code_v
@@ -17740,7 +17761,7 @@ contains
         character(:), allocatable :: err_msg_p
         integer (c_size_t) :: err_msg_i
 
-        ret_val = LIBMUSCLE_MPI_Instance_get_setting_as_int8_( &
+        ret_val = LIBMUSCLE_MPI_Instance_get_setting_as1_int8_( &
             self%ptr, &
             name, int(len(name), c_size_t), &
             err_code_v, &
@@ -17773,10 +17794,10 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Instance_get_setting_as_int8 = ret_val
-    end function LIBMUSCLE_Instance_get_setting_as_int8
+        LIBMUSCLE_Instance_get_setting_as1_int8 = ret_val
+    end function LIBMUSCLE_Instance_get_setting_as1_int8
 
-    function LIBMUSCLE_Instance_get_setting_as_real8( &
+    function LIBMUSCLE_Instance_get_setting_as1_real8( &
             self, &
             name, &
             err_code, &
@@ -17786,7 +17807,7 @@ contains
         character (len=*), intent(in) :: name
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
-        real (LIBMUSCLE_real8) :: LIBMUSCLE_Instance_get_setting_as_real8
+        real (LIBMUSCLE_real8) :: LIBMUSCLE_Instance_get_setting_as1_real8
 
         real (c_double) :: ret_val
         integer (c_int) :: err_code_v
@@ -17796,7 +17817,7 @@ contains
         character(:), allocatable :: err_msg_p
         integer (c_size_t) :: err_msg_i
 
-        ret_val = LIBMUSCLE_MPI_Instance_get_setting_as_real8_( &
+        ret_val = LIBMUSCLE_MPI_Instance_get_setting_as1_real8_( &
             self%ptr, &
             name, int(len(name), c_size_t), &
             err_code_v, &
@@ -17829,10 +17850,10 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Instance_get_setting_as_real8 = ret_val
-    end function LIBMUSCLE_Instance_get_setting_as_real8
+        LIBMUSCLE_Instance_get_setting_as1_real8 = ret_val
+    end function LIBMUSCLE_Instance_get_setting_as1_real8
 
-    function LIBMUSCLE_Instance_get_setting_as_logical( &
+    function LIBMUSCLE_Instance_get_setting_as1_logical( &
             self, &
             name, &
             err_code, &
@@ -17842,7 +17863,7 @@ contains
         character (len=*), intent(in) :: name
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
-        logical :: LIBMUSCLE_Instance_get_setting_as_logical
+        logical :: LIBMUSCLE_Instance_get_setting_as1_logical
 
         logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
@@ -17852,7 +17873,7 @@ contains
         character(:), allocatable :: err_msg_p
         integer (c_size_t) :: err_msg_i
 
-        ret_val = LIBMUSCLE_MPI_Instance_get_setting_as_logical_( &
+        ret_val = LIBMUSCLE_MPI_Instance_get_setting_as1_logical_( &
             self%ptr, &
             name, int(len(name), c_size_t), &
             err_code_v, &
@@ -17886,10 +17907,10 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Instance_get_setting_as_logical = ret_val
-    end function LIBMUSCLE_Instance_get_setting_as_logical
+        LIBMUSCLE_Instance_get_setting_as1_logical = ret_val
+    end function LIBMUSCLE_Instance_get_setting_as1_logical
 
-    subroutine LIBMUSCLE_Instance_get_setting_as_int8array( &
+    subroutine LIBMUSCLE_Instance_get_setting_as1_int8array( &
             self, &
             name, &
             value, &
@@ -17912,7 +17933,7 @@ contains
         character(:), allocatable :: err_msg_p
         integer (c_size_t) :: err_msg_i
 
-        call LIBMUSCLE_MPI_Instance_get_setting_as_int8array_( &
+        call LIBMUSCLE_MPI_Instance_get_setting_as1_int8array_( &
             self%ptr, &
             name, int(len(name), c_size_t), &
             ret_val, &
@@ -17950,9 +17971,9 @@ contains
 
         call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
         value(1:ret_val_size) = f_ret_ptr
-    end subroutine LIBMUSCLE_Instance_get_setting_as_int8array
+    end subroutine LIBMUSCLE_Instance_get_setting_as1_int8array
 
-    subroutine LIBMUSCLE_Instance_get_setting_as_real8array( &
+    subroutine LIBMUSCLE_Instance_get_setting_as1_real8array( &
             self, &
             name, &
             value, &
@@ -17975,7 +17996,7 @@ contains
         character(:), allocatable :: err_msg_p
         integer (c_size_t) :: err_msg_i
 
-        call LIBMUSCLE_MPI_Instance_get_setting_as_real8array_( &
+        call LIBMUSCLE_MPI_Instance_get_setting_as1_real8array_( &
             self%ptr, &
             name, int(len(name), c_size_t), &
             ret_val, &
@@ -18013,9 +18034,9 @@ contains
 
         call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
         value = f_ret_ptr
-    end subroutine LIBMUSCLE_Instance_get_setting_as_real8array
+    end subroutine LIBMUSCLE_Instance_get_setting_as1_real8array
 
-    subroutine LIBMUSCLE_Instance_get_setting_as_real8array2( &
+    subroutine LIBMUSCLE_Instance_get_setting_as1_real8array2( &
             self, &
             name, &
             value, &
@@ -18038,7 +18059,7 @@ contains
         character(:), allocatable :: err_msg_p
         integer (c_size_t) :: err_msg_i
 
-        call LIBMUSCLE_MPI_Instance_get_setting_as_real8array2_( &
+        call LIBMUSCLE_MPI_Instance_get_setting_as1_real8array2_( &
             self%ptr, &
             name, int(len(name), c_size_t), &
             ret_val, &
@@ -18076,9 +18097,9 @@ contains
 
         call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
         value = f_ret_ptr
-    end subroutine LIBMUSCLE_Instance_get_setting_as_real8array2
+    end subroutine LIBMUSCLE_Instance_get_setting_as1_real8array2
 
-    function LIBMUSCLE_Instance_get_setting_with_default_as_character( &
+    function LIBMUSCLE_Instance_get_setting_as2_character( &
             self, &
             name, &
             default_value, &
@@ -18090,7 +18111,7 @@ contains
         character (len=*), intent(in) :: default_value
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
-        character(:), allocatable :: LIBMUSCLE_Instance_get_setting_with_default_as_character
+        character(:), allocatable :: LIBMUSCLE_Instance_get_setting_as2_character
 
         type (c_ptr) :: ret_val
         integer (c_size_t) :: ret_val_size
@@ -18103,7 +18124,7 @@ contains
         character(:), allocatable :: err_msg_p
         integer (c_size_t) :: err_msg_i
 
-        call LIBMUSCLE_MPI_Instance_get_setting_with_default_as_character_( &
+        call LIBMUSCLE_MPI_Instance_get_setting_as2_character_( &
             self%ptr, &
             name, int(len(name), c_size_t), &
             default_value, int(len(default_value), c_size_t), &
@@ -18123,7 +18144,7 @@ contains
                         err_msg(err_msg_i:err_msg_i) = err_msg_f(err_msg_i)
                     end do
                 end if
-                allocate (character(0) :: LIBMUSCLE_Instance_get_setting_with_default_as_character)
+                allocate (character(0) :: LIBMUSCLE_Instance_get_setting_as2_character)
 
                 return
             else
@@ -18142,13 +18163,13 @@ contains
         end if
 
         call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
-        allocate (character(ret_val_size) :: LIBMUSCLE_Instance_get_setting_with_default_as_character)
+        allocate (character(ret_val_size) :: LIBMUSCLE_Instance_get_setting_as2_character)
         do i_loop = 1, ret_val_size
-            LIBMUSCLE_Instance_get_setting_with_default_as_character(i_loop:i_loop) = f_ret_ptr(i_loop)
+            LIBMUSCLE_Instance_get_setting_as2_character(i_loop:i_loop) = f_ret_ptr(i_loop)
         end do
-    end function LIBMUSCLE_Instance_get_setting_with_default_as_character
+    end function LIBMUSCLE_Instance_get_setting_as2_character
 
-    function LIBMUSCLE_Instance_get_setting_with_default_as_int8( &
+    function LIBMUSCLE_Instance_get_setting_as2_int8( &
             self, &
             name, &
             default_value, &
@@ -18160,7 +18181,7 @@ contains
         integer (selected_int_kind(18)), intent(in) :: default_value
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
-        integer (selected_int_kind(18)) :: LIBMUSCLE_Instance_get_setting_with_default_as_int8
+        integer (selected_int_kind(18)) :: LIBMUSCLE_Instance_get_setting_as2_int8
 
         integer (c_int64_t) :: ret_val
         integer (c_int) :: err_code_v
@@ -18170,7 +18191,7 @@ contains
         character(:), allocatable :: err_msg_p
         integer (c_size_t) :: err_msg_i
 
-        ret_val = LIBMUSCLE_MPI_Instance_get_setting_with_default_as_int8_( &
+        ret_val = LIBMUSCLE_MPI_Instance_get_setting_as2_int8_( &
             self%ptr, &
             name, int(len(name), c_size_t), &
             default_value, &
@@ -18204,10 +18225,10 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Instance_get_setting_with_default_as_int8 = ret_val
-    end function LIBMUSCLE_Instance_get_setting_with_default_as_int8
+        LIBMUSCLE_Instance_get_setting_as2_int8 = ret_val
+    end function LIBMUSCLE_Instance_get_setting_as2_int8
 
-    function LIBMUSCLE_Instance_get_setting_with_default_as_real8( &
+    function LIBMUSCLE_Instance_get_setting_as2_real8( &
             self, &
             name, &
             default_value, &
@@ -18219,7 +18240,7 @@ contains
         real (LIBMUSCLE_real8), intent(in) :: default_value
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
-        real (LIBMUSCLE_real8) :: LIBMUSCLE_Instance_get_setting_with_default_as_real8
+        real (LIBMUSCLE_real8) :: LIBMUSCLE_Instance_get_setting_as2_real8
 
         real (c_double) :: ret_val
         integer (c_int) :: err_code_v
@@ -18229,7 +18250,7 @@ contains
         character(:), allocatable :: err_msg_p
         integer (c_size_t) :: err_msg_i
 
-        ret_val = LIBMUSCLE_MPI_Instance_get_setting_with_default_as_real8_( &
+        ret_val = LIBMUSCLE_MPI_Instance_get_setting_as2_real8_( &
             self%ptr, &
             name, int(len(name), c_size_t), &
             default_value, &
@@ -18263,10 +18284,10 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Instance_get_setting_with_default_as_real8 = ret_val
-    end function LIBMUSCLE_Instance_get_setting_with_default_as_real8
+        LIBMUSCLE_Instance_get_setting_as2_real8 = ret_val
+    end function LIBMUSCLE_Instance_get_setting_as2_real8
 
-    function LIBMUSCLE_Instance_get_setting_with_default_as_logical( &
+    function LIBMUSCLE_Instance_get_setting_as2_logical( &
             self, &
             name, &
             default_value, &
@@ -18278,7 +18299,7 @@ contains
         logical, intent(in) :: default_value
         integer, optional, intent(out) :: err_code
         character(:), allocatable, optional, intent(out) :: err_msg
-        logical :: LIBMUSCLE_Instance_get_setting_with_default_as_logical
+        logical :: LIBMUSCLE_Instance_get_setting_as2_logical
 
         logical (c_bool) :: ret_val
         integer (c_int) :: err_code_v
@@ -18288,7 +18309,7 @@ contains
         character(:), allocatable :: err_msg_p
         integer (c_size_t) :: err_msg_i
 
-        ret_val = LIBMUSCLE_MPI_Instance_get_setting_with_default_as_logical_( &
+        ret_val = LIBMUSCLE_MPI_Instance_get_setting_as2_logical_( &
             self%ptr, &
             name, int(len(name), c_size_t), &
             logical(default_value, c_bool), &
@@ -18323,10 +18344,10 @@ contains
             end if
         end if
 
-        LIBMUSCLE_Instance_get_setting_with_default_as_logical = ret_val
-    end function LIBMUSCLE_Instance_get_setting_with_default_as_logical
+        LIBMUSCLE_Instance_get_setting_as2_logical = ret_val
+    end function LIBMUSCLE_Instance_get_setting_as2_logical
 
-    subroutine LIBMUSCLE_Instance_get_setting_with_default_as_int8array( &
+    subroutine LIBMUSCLE_Instance_get_setting_as2_int8array( &
             self, &
             name, &
             default_value, &
@@ -18351,7 +18372,7 @@ contains
         character(:), allocatable :: err_msg_p
         integer (c_size_t) :: err_msg_i
 
-        call LIBMUSCLE_MPI_Instance_get_setting_with_default_as_int8array_( &
+        call LIBMUSCLE_MPI_Instance_get_setting_as2_int8array_( &
             self%ptr, &
             name, int(len(name), c_size_t), &
             default_value, int(size(default_value), c_int64_t), &
@@ -18390,9 +18411,9 @@ contains
 
         call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
         value(1:ret_val_size) = f_ret_ptr
-    end subroutine LIBMUSCLE_Instance_get_setting_with_default_as_int8array
+    end subroutine LIBMUSCLE_Instance_get_setting_as2_int8array
 
-    subroutine LIBMUSCLE_Instance_get_setting_with_default_as_real8array( &
+    subroutine LIBMUSCLE_Instance_get_setting_as2_real8array( &
             self, &
             name, &
             default_value, &
@@ -18417,7 +18438,7 @@ contains
         character(:), allocatable :: err_msg_p
         integer (c_size_t) :: err_msg_i
 
-        call LIBMUSCLE_MPI_Instance_get_setting_with_default_as_real8array_( &
+        call LIBMUSCLE_MPI_Instance_get_setting_as2_real8array_( &
             self%ptr, &
             name, int(len(name), c_size_t), &
             default_value, int(size(default_value), c_size_t), &
@@ -18456,9 +18477,9 @@ contains
 
         call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
         value = f_ret_ptr
-    end subroutine LIBMUSCLE_Instance_get_setting_with_default_as_real8array
+    end subroutine LIBMUSCLE_Instance_get_setting_as2_real8array
 
-    subroutine LIBMUSCLE_Instance_get_setting_with_default_as_real8array2( &
+    subroutine LIBMUSCLE_Instance_get_setting_as2_real8array2( &
             self, &
             name, &
             default_value, &
@@ -18483,7 +18504,7 @@ contains
         character(:), allocatable :: err_msg_p
         integer (c_size_t) :: err_msg_i
 
-        call LIBMUSCLE_MPI_Instance_get_setting_with_default_as_real8array2_( &
+        call LIBMUSCLE_MPI_Instance_get_setting_as2_real8array2_( &
             self%ptr, &
             name, int(len(name), c_size_t), &
             default_value, int(shape(default_value), c_size_t), &
@@ -18522,7 +18543,7 @@ contains
 
         call c_f_pointer(ret_val, f_ret_ptr, ret_val_shape)
         value = f_ret_ptr
-    end subroutine LIBMUSCLE_Instance_get_setting_with_default_as_real8array2
+    end subroutine LIBMUSCLE_Instance_get_setting_as2_real8array2
 
     function LIBMUSCLE_Instance_list_settings( &
             self)

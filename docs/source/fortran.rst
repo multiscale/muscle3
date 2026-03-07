@@ -296,12 +296,10 @@ Supported types are ``character``, ``logical``, ``int8`` (a 64-bit integer), ``r
 double precision reals). See the :f:func:`API documentation
 <LIBMUSCLE_Instance_get_setting_as_character>` for details.
 
-If you want to provide a default value to be returned when the setting is not
-configured, you need to call a different function:
-``LIBMUSCLE_Instance_get_setting_with_default_as_<type>()``, which requires a
-default value as a parameter. If you use the regular
-``LIBMUSCLE_Instance_get_setting_as_<type>()`` function and the setting is
-missing, an error will be printed and the program will be halted.
+You can also provide a default value as the second argument to
+``get_setting_as_<type>()``, which will be returned if the setting is not configured. If
+no default is provided and the setting is  missing, then an error will be printed and
+the program will be halted unless you provided error output arguments.
 
 
 Receiving messages and DataConstRef

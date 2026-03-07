@@ -62,7 +62,7 @@ setup(
         "numpy>=1.22",
         # 'ymmsl>=0.14.0,<0.15',         # Also in CI, and examples requirements.txt
         'ymmsl @ git+https://github.com/multiscale/ymmsl-python.git',
-        'yatiml @ git+https://github.com/yatiml/yatiml@develop#egg=yatiml'
+        'yatiml>=0.12,<0.13',
     ],
     extras_require={
         'dev': [

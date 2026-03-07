@@ -26,7 +26,6 @@ jobs:
       run: |
         python3 -m venv ${GITHUB_WORKSPACE}/test_venv
         . ${GITHUB_WORKSPACE}/test_venv/bin/activate && pip install tox tox-gh-actions
-        . ${GITHUB_WORKSPACE}/test_venv/bin/activate && pip3 install "yatiml @ git+https://github.com/yatiml/yatiml.git"
         HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install openmpi
 
     - name: Run all tests on macOS Tahoe 26 with Clang

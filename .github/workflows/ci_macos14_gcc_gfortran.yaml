@@ -29,7 +29,6 @@ jobs:
         python3 -m venv ~/tox_venv
         . ~/tox_venv/bin/activate && python3 -m pip install --upgrade pip
         . ~/tox_venv/bin/activate && pip3 install tox tox-gh-actions
-        . ~/tox_venv/bin/activate && pip3 install "yatiml @ git+https://github.com/yatiml/yatiml.git"
 
     - name: Run all tests
       run: cd ${GITHUB_WORKSPACE} && PATH=$PATH:~/tox_venv/bin CXX=g++-15 OMPI_CXX=g++-15 FC=gfortran-15 OMPI_FC=gfortran-15 make test test_examples

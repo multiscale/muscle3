@@ -257,7 +257,7 @@ def test_create_instance_set_up_checkpointing(
 def test_create_instance_set_up_logging(
         manager_location_argv, instance_argv, settings_manager, declared_ports):
 
-    def get_setting(instance, name, typ):
+    def get_setting(instance, name, typ, default=None):
         return {
                 'muscle_local_log_level': 'debug',
                 'muscle_remote_log_level': 'error'}[str(name)]
@@ -312,7 +312,25 @@ def test_get_setting(instance, settings_manager):
     settings_manager.get_setting.side_effect = None  # don't raise KeyError
     instance.get_setting('test', 'int')
     settings_manager.get_setting.assert_called_with(
-            Ref('component'), Ref('test'), 'int')
+        Ref('component'), Ref('test'), 'int')
+
+
+def test_get_setting_with_default(instance, settings_manager):
+    settings_manager.get_setting.side_effect = None  # don't raise KeyError
+    settings_manager.get_setting.return_value = 'default_value'
+    result = instance.get_setting('test', default='default_value')
+    settings_manager.get_setting.assert_called_with(
+        Ref('component'), Ref('test'), None)
+    assert result == 'default_value'
+
+
+def test_get_setting_with_default_and_type(instance, settings_manager):
+    settings_manager.get_setting.side_effect = None  # don't raise KeyError
+    settings_manager.get_setting.return_value = 42
+    result = instance.get_setting('test', 'int', default=0)
+    settings_manager.get_setting.assert_called_with(
+        Ref('component'), Ref('test'), 'int')
+    assert result == 42
 
 
 def test_list_ports(instance, port_manager):

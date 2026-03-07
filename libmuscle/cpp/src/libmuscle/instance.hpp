@@ -4,6 +4,7 @@
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/ports_description.hpp>
 #include <libmuscle/test_support.hpp>
+#include <libmuscle/util.hpp>
 
 #ifdef MUSCLE_ENABLE_MPI
 #include <mpi.h>
@@ -282,6 +283,22 @@ class Instance {
          * within the reuse loop, in any or all processes, simultaneously or
          * not.
          *
+         * @param name The name of the setting, without any instance prefix.
+         * @param default_value A default value to return if the setting is
+         *                      not found.
+         *
+         * @return The value of the setting as a generic SettingValue.
+         */
+        ::ymmsl::SettingValue get_setting(
+                std::string const & name,
+                ::ymmsl::SettingValue const & default_value) const;
+
+        /** Returns the value of a model setting.
+         *
+         * MPI-based components may call this function at any time
+         * within the reuse loop, in any or all processes, simultaneously or
+         * not.
+         *
          * @tparam ValueType The (expected) type of the setting. Needs to
          *      match exactly or an exception will be thrown, this will not
          *      convert e.g. an integer into a string.
@@ -294,6 +311,28 @@ class Instance {
          */
         template <typename ValueType>
         ValueType get_setting_as(std::string const & name) const;
+
+        /** Returns the value of a model setting.
+         *
+         * MPI-based components may call this function at any time
+         * within the reuse loop, in any or all processes, simultaneously or
+         * not.
+         *
+         * @tparam ValueType The (expected) type of the setting. Needs to
+         *      match exactly or an exception will be thrown, this will not
+         *      convert e.g. an integer into a string.
+         * @param name The name of the setting, without any instance prefix.
+         * @param default_value A default value to return if the setting is
+         *                      not found.
+         *
+         * @return The value of the setting as a ValueType
+         *
+         * @throw std::bad_cast if the value is not of the specified type.
+         */
+        template <typename ValueType>
+        ValueType get_setting_as(
+                std::string const & name,
+                ValueType const & default_value) const;
 
         /** Returns a description of the ports that this CE has.
          *

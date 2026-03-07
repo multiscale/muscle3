@@ -66,6 +66,19 @@ program micro_model
         call assert_eq_int8(instance%get_setting_as_int8('test1'), 13_LIBMUSCLE_int8)
         call assert_true(instance%get_setting_as_logical('test4'))
 
+        ! Test get_setting_with_default_as functions (scalar types only)
+        call assert_eq_int8(instance%get_setting_as_int8('test1', 99_LIBMUSCLE_int8), &
+                            13_LIBMUSCLE_int8)
+        call assert_eq_int8(instance%get_setting_as_int8('does_not_exist', 99_LIBMUSCLE_int8), &
+                            99_LIBMUSCLE_int8)
+        call assert_true(instance%get_setting_as_logical('test4', .false.))
+        call assert_false(instance%get_setting_as_logical('does_not_exist', .false.))
+        call assert_eq_real8(instance%get_setting_as_real8('test2', 99.0d0), 13.3d0)
+        call assert_eq_real8(instance%get_setting_as_real8('does_not_exist', 99.0d0), 99.0d0)
+        call assert_eq_character(instance%get_setting_as_character('test3', 'default'), 'testing')
+        call assert_eq_character(instance%get_setting_as_character('does_not_exist', 'default'), &
+                                 'default')
+
         msg = instance%receive('in')
 
         rdata = msg%get_data()

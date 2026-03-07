@@ -253,6 +253,10 @@ There is also a :cpp:func:`libmuscle::Instance::get_setting()` member function, 
 returns a :cpp:class:`ymmsl::SettingValue` object. A ``SettingValue`` can contain a
 value of any of the above types, and it can be queried to see what is in it.
 
+You can also provide a default value as the second argument to
+``get_setting_as``, which will be returned if the setting is not configured. If
+no default is provided and the setting is missing, an exception will be thrown.
+
 Receiving messages and DataConstRef
 ```````````````````````````````````
 

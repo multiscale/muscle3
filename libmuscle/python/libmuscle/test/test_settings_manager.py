@@ -111,3 +111,9 @@ def test_get_setting(settings_manager):
                                         ) == 'base_test5'
     assert settings_manager.get_setting(ref('instance[11]'), ref('test5')
                                         ) == 'overlay_test5'
+
+
+def test_get_setting_without_default_raises_keyerror(settings_manager):
+    ref = Reference
+    with pytest.raises(KeyError, match='Value for setting "nonexistent" was not set'):
+        settings_manager.get_setting(ref('instance'), ref('nonexistent'))

@@ -2505,6 +2505,45 @@ class OverloadSet(Member):
         return f'    generic :: {self.name} => {mem_fun_names}\n'
 
 
+class OverloadSetTmpl(MultiMemFun):
+    """Represents a set of overloaded function templates.
+
+    This is like an OverloadSet, but takes a set of template arguments values and
+    aggregates a set of member functions under a single name for each template argument
+    value.
+    """
+    def __init__(
+            self, types: List[Par], name: str, names: List[str], is_constructor: bool
+            ) -> None:
+        """Create an OverloadSetTmpl.
+
+        Args:
+            types: Types for which this template can be instantiated.
+            name: Name of the overloaded function to generate.
+            names: List of function names to aggregate.
+            is_constructor: Whether this overload set is for a constructor.
+        """
+        super().__init__()
+
+        for typ in types:
+            generic_name = f'{name}_{typ.tname()}'
+            specific_names = [f'{n}_{typ.tname()}' for n in names]
+            self.instances.append(
+                    OverloadSet(generic_name, specific_names, is_constructor))
+
+    def __copy__(self) -> 'OverloadSetTmpl':
+        result = OverloadSetTmpl([], '', [], False)
+        result.c_prefix = self.c_prefix
+        result.f_prefix = self.f_prefix
+        result.public = self.public
+        if self.class_name is None:
+            result.class_name = None
+        else:
+            result.set_class_name(self.class_name)
+        result.instances = [copy(instance) for instance in self.instances]
+        return result
+
+
 class NamespaceMember(abc.ABC):
     def __init__(self, name: str):
         self.c_prefix: Optional[str] = None

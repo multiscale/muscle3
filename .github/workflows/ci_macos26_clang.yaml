@@ -1,17 +1,18 @@
-# Run Continuous Integration on macOS 15 Sequoia with GCC
-# This includes Fortran support
+# Run Continuous Integration on macOS 26 Tahoe, with native Clang and
+# without Fortran.
+
 # This mainly checks for issues/regressions in the native build
-name: compatibility_macos_sequoia_15_gcc_gfortran
+name: compatibility_macos_tahoe_26_clang
 on:
   schedule:
-    - cron: '00 2 * * 6'
+    - cron: '30 2 * * 6'
   push:
     branches:
       - 'release-*'
       - fix_native_compatibility_ci
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 60
 
     steps:
@@ -23,9 +24,9 @@ jobs:
 
     - name: Install dependencies
       run: |
-        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install openmpi
         python3 -m venv ${GITHUB_WORKSPACE}/test_venv
         . ${GITHUB_WORKSPACE}/test_venv/bin/activate && pip install tox tox-gh-actions
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install openmpi
 
-    - name: Run all tests
-      run: cd ${GITHUB_WORKSPACE} && PATH=$PATH:${GITHUB_WORKSPACE}/test_venv/bin CXX=g++-15 OMPI_CXX=g++-15 FC=gfortran-15 OMPI_FC=gfortran-15 make test test_examples
+    - name: Run all tests on macOS Tahoe 26 with Clang
+      run: cd ${GITHUB_WORKSPACE} && PATH=$PATH:${GITHUB_WORKSPACE}/test_venv/bin make test test_examples

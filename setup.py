@@ -61,8 +61,8 @@ setup(
         'parsimonious',
         "numpy>=1.22",
         # 'ymmsl>=0.14.0,<0.15',         # Also in CI, and examples requirements.txt
-        'ymmsl @ git+https://github.com/multiscale/ymmsl-python.git@develop#egg=ymmsl',
-        'yatiml @ git+https://github.com/yatiml/yatiml@develop#egg=yatiml'
+        'ymmsl @ git+https://github.com/multiscale/ymmsl-python.git',
+        'yatiml>=0.12,<0.13',
     ],
     extras_require={
         'dev': [

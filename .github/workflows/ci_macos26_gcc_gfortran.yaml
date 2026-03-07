@@ -1,17 +1,17 @@
-# Run Continuous Integration on macOS 15 Sequoia with GCC
+# Run Continuous Integration on macOS 26 Tahoe with GCC
 # This includes Fortran support
 # This mainly checks for issues/regressions in the native build
-name: compatibility_macos_sequoia_15_gcc_gfortran
+name: compatibility_macos_tahoe_26_gcc_gfortran
 on:
   schedule:
-    - cron: '00 2 * * 6'
+    - cron: '00 3 * * 6'
   push:
     branches:
       - 'release-*'
       - fix_native_compatibility_ci
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 60
 
     steps:

@@ -13,7 +13,7 @@ on:
 jobs:
   build:
     runs-on: macos-15
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     steps:
     - uses: actions/checkout@v4
@@ -26,7 +26,6 @@ jobs:
       run: |
         python3 -m venv ${GITHUB_WORKSPACE}/test_venv
         . ${GITHUB_WORKSPACE}/test_venv/bin/activate && pip install tox tox-gh-actions
-        . ${GITHUB_WORKSPACE}/test_venv/bin/activate && pip3 install "yatiml @ git+https://github.com/yatiml/yatiml.git"
         HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install openmpi
 
     - name: Run all tests on macOS Sequoia 15 with Clang

@@ -2512,6 +2512,8 @@ class OverloadSetTmpl(MultiMemFun):
     aggregates a set of member functions under a single name for each template argument
     value.
     """
+    instances: list[OverloadSet]
+
     def __init__(
             self, types: List[Par], name: str, names: List[str], is_constructor: bool
             ) -> None:
@@ -2542,6 +2544,9 @@ class OverloadSetTmpl(MultiMemFun):
             result.set_class_name(self.class_name)
         result.instances = [copy(instance) for instance in self.instances]
         return result
+
+    def fortran_overload(self) -> str:
+        return ''.join(i.fortran_overload() for i in self.instances)
 
 
 class NamespaceMember(abc.ABC):
@@ -2663,7 +2668,7 @@ class Class(NamespaceMember):
         """
         result = ''
         for member in self.members:
-            if isinstance(member, (OverloadSet, Constructor)):
+            if isinstance(member, (OverloadSet, OverloadSetTmpl, Constructor)):
                 result += member.fortran_overload()
         return result
 

@@ -4531,6 +4531,48 @@ module libmuscle_mpi
         module procedure LIBMUSCLE_Instance_create
     end interface
 
+    interface LIBMUSCLE_Instance_get_setting_as_character
+        module procedure &
+            LIBMUSCLE_Instance_get_setting_as1_character, &
+            LIBMUSCLE_Instance_get_setting_as2_character
+    end interface
+
+    interface LIBMUSCLE_Instance_get_setting_as_int8
+        module procedure &
+            LIBMUSCLE_Instance_get_setting_as1_int8, &
+            LIBMUSCLE_Instance_get_setting_as2_int8
+    end interface
+
+    interface LIBMUSCLE_Instance_get_setting_as_real8
+        module procedure &
+            LIBMUSCLE_Instance_get_setting_as1_real8, &
+            LIBMUSCLE_Instance_get_setting_as2_real8
+    end interface
+
+    interface LIBMUSCLE_Instance_get_setting_as_logical
+        module procedure &
+            LIBMUSCLE_Instance_get_setting_as1_logical, &
+            LIBMUSCLE_Instance_get_setting_as2_logical
+    end interface
+
+    interface LIBMUSCLE_Instance_get_setting_as_int8array
+        module procedure &
+            LIBMUSCLE_Instance_get_setting_as1_int8array, &
+            LIBMUSCLE_Instance_get_setting_as2_int8array
+    end interface
+
+    interface LIBMUSCLE_Instance_get_setting_as_real8array
+        module procedure &
+            LIBMUSCLE_Instance_get_setting_as1_real8array, &
+            LIBMUSCLE_Instance_get_setting_as2_real8array
+    end interface
+
+    interface LIBMUSCLE_Instance_get_setting_as_real8array2
+        module procedure &
+            LIBMUSCLE_Instance_get_setting_as1_real8array2, &
+            LIBMUSCLE_Instance_get_setting_as2_real8array2
+    end interface
+
     interface LIBMUSCLE_Instance_send
         module procedure &
             LIBMUSCLE_Instance_send_pm, &

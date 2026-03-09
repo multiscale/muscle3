@@ -3,7 +3,7 @@
 import abc
 from copy import copy
 from textwrap import indent, dedent
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union, cast
 
 
 error_codes = {
@@ -2512,8 +2512,6 @@ class OverloadSetTmpl(MultiMemFun):
     aggregates a set of member functions under a single name for each template argument
     value.
     """
-    instances: list[OverloadSet]
-
     def __init__(
             self, types: List[Par], name: str, names: List[str], is_constructor: bool
             ) -> None:
@@ -2546,7 +2544,7 @@ class OverloadSetTmpl(MultiMemFun):
         return result
 
     def fortran_overload(self) -> str:
-        return ''.join(i.fortran_overload() for i in self.instances)
+        return ''.join(cast(OverloadSet, i).fortran_overload() for i in self.instances)
 
 
 class NamespaceMember(abc.ABC):

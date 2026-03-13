@@ -7,6 +7,7 @@ from typing import Optional
 from ymmsl.v0_2 import Configuration
 from ymmsl import save as save_ymmsl
 
+import libmuscle
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger
 from libmuscle.manager.mmp_server import MMPServer
@@ -50,6 +51,8 @@ class Manager:
         self._topology_store = TopologyStore(configuration)
         self._instance_registry = InstanceRegistry()
         self._deadlock_detector = DeadlockDetector()
+
+        _logger.info("libmuscle version: %s", libmuscle.__version__)
 
         if run_dir is not None:
             snapshot_dir = run_dir.snapshot_dir()

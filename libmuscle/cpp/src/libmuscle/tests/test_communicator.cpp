@@ -385,4 +385,3 @@ TEST_F(libmuscle_communicator2, test_shutdown) {
 
     ASSERT_TRUE(expected_receivers.empty());
 }
-

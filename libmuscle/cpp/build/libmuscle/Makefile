@@ -76,7 +76,7 @@ endif
 
 installed_pkg_config_files := $(pkg_config_files:%=$(PREFIX)/lib/pkgconfig/%)
 
-CXXFLAGS += -Wall -pedantic -std=c++14 -pthread -O3
+CXXFLAGS += -Wall -pedantic -std=c++14 -pthread -O3 -DMSGPACK_NO_BOOST
 export CXXFLAGS
 
 MPIFLAGS := -DMUSCLE_ENABLE_MPI
@@ -136,10 +136,7 @@ install: all $(installed_headers) $(installed_pkg_config_files)
 	-install_name_tool -change libymmsl.dylib @loader_path/libymmsl.dylib $(PREFIX)/lib/libmuscle_d.dylib
 	-install_name_tool -change libymmsl.dylib @loader_path/libymmsl.dylib $(PREFIX)/lib/libmuscle_mpi.dylib
 	-install_name_tool -change libymmsl.dylib @loader_path/libymmsl.dylib $(PREFIX)/lib/libmuscle_mpi_d.dylib
-	install_name_tool -change @rpath/libmsgpackc.2.dylib @loader_path/libmsgpackc.2.dylib $(PREFIX)/lib/libmuscle.dylib
-	-install_name_tool -change @rpath/libmsgpackc.2.dylib @loader_path/libmsgpackc.2.dylib $(PREFIX)/lib/libmuscle_d.dylib
-	-install_name_tool -change @rpath/libmsgpackc.2.dylib @loader_path/libmsgpackc.2.dylib $(PREFIX)/lib/libmuscle_mpi.dylib
-	-install_name_tool -change @rpath/libmsgpackc.2.dylib @loader_path/libmsgpackc.2.dylib $(PREFIX)/lib/libmuscle_mpi_d.dylib
+
 	@mkdir -p $(PREFIX)/bin
 	sed -e 's@%PREFIX%@$(PREFIX)@g' muscle3.env.in >$(PREFIX)/bin/muscle3.env
 	for pc in $(PREFIX)/lib/pkgconfig/* ; do sed -i -e 's@^prefix=.*$$@prefix=$(PREFIX)@' $$pc ; done
@@ -152,11 +149,12 @@ ifeq "$(filter $(MAKECMDGOALS),$(cleantargets))" ""
 
 # Dependencies
 $(info pcextra: $(PKG_CONFIG_EXTRA_DIRS))
-CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS):$(PKG_CONFIG_PATH) ; pkg-config --cflags msgpack)
+MSGPACK_INCLUDE_DIR = $(CURDIR)/../msgpack/msgpack/include
+export MSGPACK_INCLUDE_DIR
+CXXFLAGS += -I$(MSGPACK_INCLUDE_DIR)
 
 LDFLAGS2 = $(LDFLAGS)
 LDFLAGS2 += -pthread -L$(CURDIR)/../ymmsl -lymmsl
-LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_EXTRA_DIRS):$(PKG_CONFIG_PATH) ; pkg-config --libs msgpack)
 
 # Automatic header dependencies
 -include $(deps)
@@ -284,9 +282,9 @@ libmuscle.pc:
 	@echo 'URL: https://muscle3.readthedocs.io' >>$@
 	@echo 'Version: $(muscle_version)' >>$@
 	@echo 'Requires: ymmsl = $(muscle_version)' >>$@
-	@echo 'Requires.private: msgpack >= 3.1.0' >>$@
-	@echo 'Cflags: -I$${includedir} -pthread' >>$@
-	@echo 'Cflags.private: -pthread' >>$@
+	@echo 'Requires.private:' >>$@
+	@echo 'Cflags: -I$${includedir} -pthread -DMSGPACK_NO_BOOST' >>$@
+	@echo 'Cflags.private: -pthread -DMSGPACK_NO_BOOST' >>$@
 	@echo 'Libs: -L$${libdir} -lmuscle' >>$@
 	@echo 'Libs.private: -pthread' >>$@
 
@@ -301,8 +299,8 @@ libmuscle_mpi.pc:
 	@echo 'URL: https://muscle3.readthedocs.io' >>$@
 	@echo 'Version: $(muscle_version)' >>$@
 	@echo 'Requires: ymmsl = $(muscle_version)' >>$@
-	@echo 'Requires.private: msgpack >= 3.1.0' >>$@
-	@echo 'Cflags: -I$${includedir} -pthread -DMUSCLE_ENABLE_MPI' >>$@
-	@echo 'Cflags.private: -pthread' >>$@
+	@echo 'Requires.private:' >>$@
+	@echo 'Cflags: -I$${includedir} -pthread -DMUSCLE_ENABLE_MPI -DMSGPACK_NO_BOOST' >>$@
+	@echo 'Cflags.private: -pthread -DMSGPACK_NO_BOOST' >>$@
 	@echo 'Libs: -L$${libdir} -lmuscle_mpi' >>$@
 	@echo 'Libs.private: -pthread' >>$@

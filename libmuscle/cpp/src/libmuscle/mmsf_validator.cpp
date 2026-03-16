@@ -2,6 +2,7 @@
 
 #include <libmuscle/logger.hpp>
 
+#include <algorithm>
 #include <sstream>
 
 namespace {

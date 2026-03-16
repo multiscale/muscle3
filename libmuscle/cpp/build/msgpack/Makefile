@@ -3,8 +3,6 @@ all: msgpack
 
 .PHONY: install
 install: msgpack
-	mkdir -p $(PREFIX)/include
-	cp -a msgpack/include/* $(PREFIX)/include/
 
 .PHONY: clean
 clean:

@@ -1,5 +1,8 @@
 #include <libmuscle/close_port.hpp>
 
+#include <msgpack.hpp>
+
+#include <libmuscle/mcp/data_pack.hpp>
 #include <libmuscle/mcp/ext_types.hpp>
 
 

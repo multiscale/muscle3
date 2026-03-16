@@ -4,6 +4,7 @@
 #include <libmuscle/mcp/tcp_util.hpp>
 
 #include <algorithm>
+#include <cassert>
 #include <cstring>
 #include <chrono>
 #include <cmath>

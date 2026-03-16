@@ -3,7 +3,7 @@
 import abc
 from copy import copy
 from textwrap import indent, dedent
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union, cast
 
 
 error_codes = {
@@ -2543,6 +2543,9 @@ class OverloadSetTmpl(MultiMemFun):
         result.instances = [copy(instance) for instance in self.instances]
         return result
 
+    def fortran_overload(self) -> str:
+        return ''.join(cast(OverloadSet, i).fortran_overload() for i in self.instances)
+
 
 class NamespaceMember(abc.ABC):
     def __init__(self, name: str):
@@ -2663,7 +2666,7 @@ class Class(NamespaceMember):
         """
         result = ''
         for member in self.members:
-            if isinstance(member, (OverloadSet, Constructor)):
+            if isinstance(member, (OverloadSet, OverloadSetTmpl, Constructor)):
                 result += member.fortran_overload()
         return result
 

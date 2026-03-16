@@ -64,7 +64,9 @@ program micro_model
         call assert_eq_integer(err_code, LIBMUSCLE_out_of_range)
 
         call assert_eq_int8(instance%get_setting_as_int8('test1'), 13_LIBMUSCLE_int8)
+        call assert_eq_int8(LIBMUSCLE_Instance_get_setting_as_int8(instance, 'test1'), 13_LIBMUSCLE_int8)
         call assert_true(instance%get_setting_as_logical('test4'))
+        call assert_true(LIBMUSCLE_Instance_get_setting_as_logical(instance, 'test4'))
 
         ! Test get_setting_with_default_as functions (scalar types only)
         call assert_eq_int8(instance%get_setting_as_int8('test1', 99_LIBMUSCLE_int8), &
@@ -72,7 +74,9 @@ program micro_model
         call assert_eq_int8(instance%get_setting_as_int8('does_not_exist', 99_LIBMUSCLE_int8), &
                             99_LIBMUSCLE_int8)
         call assert_true(instance%get_setting_as_logical('test4', .false.))
+        call assert_true(LIBMUSCLE_Instance_get_setting_as_logical(instance, 'test4', .false.))
         call assert_false(instance%get_setting_as_logical('does_not_exist', .false.))
+        call assert_false(LIBMUSCLE_Instance_get_setting_as_logical(instance, 'does_not_exist', .false.))
         call assert_eq_real8(instance%get_setting_as_real8('test2', 99.0d0), 13.3d0)
         call assert_eq_real8(instance%get_setting_as_real8('does_not_exist', 99.0d0), 99.0d0)
         call assert_eq_character(instance%get_setting_as_character('test3', 'default'), 'testing')

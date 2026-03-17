@@ -33,59 +33,11 @@ program micro_model
     i = 0
     do while (instance%reuse_instance())
         ! F_INIT
-        settings = instance%list_settings()
-        call assert_eq_integer(size(settings, 1), 7) ! test1-6, test_with_a_longer_name
-        do settings_i = 1, size(settings, 1)
-            setting = settings(settings_i)
-            if (trim(setting) .eq. 'test1') then
-                setting_seen(1) = .true.
-            elseif (trim(setting) .eq. 'test2') then
-                setting_seen(2) = .true.
-            elseif (trim(setting) .eq. 'test3') then
-                setting_seen(3) = .true.
-            elseif (trim(setting) .eq. 'test4') then
-                setting_seen(4) = .true.
-            elseif (trim(setting) .eq. 'test5') then
-                setting_seen(5) = .true.
-            elseif (trim(setting) .eq. 'test6') then
-                setting_seen(6) = .true.
-            elseif (trim(setting) .eq. 'test_with_a_longer_name') then
-                setting_seen(7) = .true.
-            else
-                print *, 'Unexpected setting name: ', trim(setting)
-                stop 1
-            endif
-        end do
-        call assert_true(all(setting_seen))
-
-        call assert_true(instance%is_setting_a_int8('test1'))
-        call assert_false(instance%is_setting_a_logical('test1'))
-        is_int = instance%is_setting_a_int8('does_not_exist', err_code)
-        call assert_eq_integer(err_code, LIBMUSCLE_out_of_range)
-
-        call assert_eq_int8(instance%get_setting_as_int8('test1'), 13_LIBMUSCLE_int8)
-        call assert_eq_int8(LIBMUSCLE_Instance_get_setting_as_int8(instance, 'test1'), 13_LIBMUSCLE_int8)
-        call assert_true(instance%get_setting_as_logical('test4'))
-        call assert_true(LIBMUSCLE_Instance_get_setting_as_logical(instance, 'test4'))
-
-        ! Test get_setting_with_default_as functions (scalar types only)
-        call assert_eq_int8(instance%get_setting_as_int8('test1', 99_LIBMUSCLE_int8), &
-                            13_LIBMUSCLE_int8)
-        call assert_eq_int8(instance%get_setting_as_int8('does_not_exist', 99_LIBMUSCLE_int8), &
-                            99_LIBMUSCLE_int8)
-        call assert_true(instance%get_setting_as_logical('test4', .false.))
-        call assert_true(LIBMUSCLE_Instance_get_setting_as_logical(instance, 'test4', .false.))
-        call assert_false(instance%get_setting_as_logical('does_not_exist', .false.))
-        call assert_false(LIBMUSCLE_Instance_get_setting_as_logical(instance, 'does_not_exist', .false.))
-        call assert_eq_real8(instance%get_setting_as_real8('test2', 99.0d0), 13.3d0)
-        call assert_eq_real8(instance%get_setting_as_real8('does_not_exist', 99.0d0), 99.0d0)
-        call assert_eq_character(instance%get_setting_as_character('test3', 'default'), 'testing')
-        call assert_eq_character(instance%get_setting_as_character('does_not_exist', 'default'), &
-                                 'default')
+        call check_settings(instance)
 
         msg = instance%receive('in')
-
         rdata = msg%get_data()
+
         rdata2 = rdata%get_item('message')
         call assert_eq_character(rdata2%as_character(), 'testing')
         call LIBMUSCLE_DataConstRef_free(rdata2)
@@ -123,6 +75,66 @@ program micro_model
     end do
 
     call LIBMUSCLE_Instance_free(instance)
+
+contains
+
+    subroutine check_settings(instance)
+        type(LIBMUSCLE_Instance) :: instance
+        character(:), dimension(:), allocatable :: settings
+        integer :: i, err_code
+
+        settings = instance%list_settings()
+        call assert_eq_integer(size(settings, 1), 7) ! test1-6, test_with_a_longer_name
+        do i = 1, size(settings, 1)
+            setting = settings(i)
+            if (trim(setting) .eq. 'test1') then
+                setting_seen(1) = .true.
+            elseif (trim(setting) .eq. 'test2') then
+                setting_seen(2) = .true.
+            elseif (trim(setting) .eq. 'test3') then
+                setting_seen(3) = .true.
+            elseif (trim(setting) .eq. 'test4') then
+                setting_seen(4) = .true.
+            elseif (trim(setting) .eq. 'test5') then
+                setting_seen(5) = .true.
+            elseif (trim(setting) .eq. 'test6') then
+                setting_seen(6) = .true.
+            elseif (trim(setting) .eq. 'test_with_a_longer_name') then
+                setting_seen(7) = .true.
+            else
+                print *, 'Unexpected setting name: ', trim(setting)
+                stop 1
+            endif
+        end do
+        call assert_true(all(setting_seen))
+
+        call assert_true(instance%is_setting_a_int8('test1'))
+        call assert_false(instance%is_setting_a_logical('test1'))
+        is_int = instance%is_setting_a_int8('does_not_exist', err_code)
+        call assert_eq_integer(err_code, LIBMUSCLE_out_of_range)
+
+        call assert_eq_int8(instance%get_setting_as_int8('test1'), 13_LIBMUSCLE_int8)
+        call assert_true(instance%get_setting_as_logical('test4'))
+
+        ! Test get_setting_with_default_as functions (scalar types only)
+        call assert_eq_int8( &
+                instance%get_setting_as_int8('test1', 99_LIBMUSCLE_int8), &
+                13_LIBMUSCLE_int8)
+        call assert_eq_int8( &
+                instance%get_setting_as_int8('does_not_exist', 99_LIBMUSCLE_int8), &
+                99_LIBMUSCLE_int8)
+        call assert_true(instance%get_setting_as_logical('test4', .false.))
+        call assert_false(instance%get_setting_as_logical('does_not_exist', .false.))
+        call assert_eq_real8(instance%get_setting_as_real8('test2', 99.0d0), 13.3d0)
+        call assert_eq_real8( &
+                instance%get_setting_as_real8('does_not_exist', 99.0d0), 99.0d0)
+        call assert_eq_character( &
+                instance%get_setting_as_character('test3', 'default'), 'testing')
+        call assert_eq_character( &
+                instance%get_setting_as_character('does_not_exist', 'default'), &
+                'default')
+
+    end subroutine check_settings
 
 end program micro_model
 

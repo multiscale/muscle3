@@ -5,7 +5,8 @@ import numpy as np
 from libmuscle import Instance, Message
 from ymmsl.v0_2 import Operator
 
-from .conftest import skip_if_python_only, run_manager_with_actors
+from .conftest import (
+        skip_if_python_only, skip_if_no_fortran, run_manager_with_actors)
 
 
 def macro():
@@ -77,3 +78,15 @@ def test_cpp_macro_micro(mmp_server_config_simple, tmp_path):
              'macro': ('python', macro)})
 
     check_profile_output(tmp_path)
+
+
+@skip_if_python_only
+@skip_if_no_fortran
+def test_fortran_macro_micro(mmp_server_config_simple, tmp_path):
+    # create Fortran micro model
+    # see libmuscle/fortran/src/libmuscle/tests/fortran_micro_model_test.f90
+    run_manager_with_actors(
+            mmp_server_config_simple,
+            tmp_path,
+            {'micro': ('fortran', 'fortran_micro_model_test'),
+             'macro': ('python', macro)})

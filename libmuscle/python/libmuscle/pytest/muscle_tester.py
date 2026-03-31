@@ -46,8 +46,8 @@ class MuscleTester:
         - add the s and o_i ports for the component.
         - add the conduits which connect to the implementation which is connected to
         a specific component.
-        - set it to manual: class ExecutionModel(*values), describes how to start a model
-        component: MANUAL=5, Let the user start it by hand.
+        - set it to manual: class ExecutionModel(*values), describes how to start a
+        model component: MANUAL=5, Let the user start it by hand.
         """
         target_model: Optional[Model] = None
         target_name: Optional[Reference] = None

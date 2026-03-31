@@ -1,4 +1,3 @@
-import contextlib
 import pytest
 from typing import Iterator
 from pathlib import Path

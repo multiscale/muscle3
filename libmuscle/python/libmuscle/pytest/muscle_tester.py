@@ -78,16 +78,16 @@ class MuscleTester:
                     f"'{target_comp.implementation}', expected '{implementation}'."
                 )
 
-            tester_ports = Ports()
+            tester_o_i_ports = []
+            tester_s_ports = []
+
             # F_INIT and S of target (inputs) → tester needs O_I (outputs) to send to them
             for port_attr in ["f_init", "s"]:
                 ports = getattr(target_comp.ports, port_attr, None)
                 if ports:
                     if isinstance(ports, str):
                         ports = [ports]
-                    if tester_ports.o_i is None:
-                        tester_ports.o_i = []
-                    tester_ports.o_i.extend([f"send_{port}" for port in ports])
+                    tester_o_i_ports.extend([f"send_{port}" for port in ports])
 
                     for port_name in ports:
                         conduit = Conduit(
@@ -102,9 +102,7 @@ class MuscleTester:
                 if ports:
                     if isinstance(ports, str):
                         ports = [ports]
-                    if tester_ports.s is None:
-                        tester_ports.s = []
-                    tester_ports.s.extend([f"receive_{port}" for port in ports])
+                    tester_s_ports.extend([f"receive_{port}" for port in ports])
 
                     for port_name in ports:
                         conduit = Conduit(
@@ -112,6 +110,12 @@ class MuscleTester:
                             f"muscle3_implementation_tester.receive_{port_name}",
                         )
                         model.conduits.append(conduit)
+
+            # Create Ports object with collected port names
+            tester_ports = Ports(
+                o_i=tester_o_i_ports if tester_o_i_ports else None,
+                s=tester_s_ports if tester_s_ports else None,
+            )
 
             tester_comp = Component(
                 name="muscle3_implementation_tester",

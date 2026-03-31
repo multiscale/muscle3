@@ -50,8 +50,9 @@ setup(
     entry_points={
         'console_scripts': [
             'muscle_manager=muscle3.muscle_manager:manage_simulation',
-            'muscle3=muscle3.muscle3:muscle3'],
-        'pytest11': ['muscle3 = libmuscle.pytest'],  # pytest plugin
+            'muscle3=muscle3.muscle3:muscle3']
+        # TODO: fix libmuscle.pytest plugin
+        # 'pytest11': ['muscle3 = libmuscle.pytest'],  # pytest plugin
     },
     python_requires='>=3.9, <4',
     install_requires=[

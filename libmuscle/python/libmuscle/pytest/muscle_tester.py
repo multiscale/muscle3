@@ -59,7 +59,7 @@ class MuscleTester:
         config.models = pruned_models
         return config
 
-    def add_tester_component_simple(
+    def add_tester_component(
         self, config: Configuration, implementation: str
     ) -> Configuration:
         """
@@ -133,7 +133,7 @@ class MuscleTester:
             ymmsl_config, implementation
         )
 
-        test_ymmsl_config = self.add_tester_component_simple(
+        test_ymmsl_config = self.add_tester_component(
             pruned_ymmsl_config, implementation
         )
 

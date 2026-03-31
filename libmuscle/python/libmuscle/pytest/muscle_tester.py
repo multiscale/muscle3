@@ -71,10 +71,6 @@ class MuscleTester:
                 f"No component found using implementation '{implementation}'."
             )
 
-        print(f"The target model is {target_model}")
-        print(f"The target name is {target_name}")
-        print(f"The target component is {target_comp}")
-
         tester_o_i_ports = []
         tester_s_ports = []
 
@@ -93,8 +89,6 @@ class MuscleTester:
                     )
                     target_model.conduits.append(conduit)
 
-        print(f"The tester O_I ports are: {tester_o_i_ports}")
-
         # O_I and O_F of target (outputs) → tester needs S (inputs) to receive from them
         for port_attr in ["o_i", "o_f"]:
             ports = getattr(target_comp.ports, port_attr, None)
@@ -109,8 +103,6 @@ class MuscleTester:
                         f"tester.receive_{port_name}",
                     )
                     target_model.conduits.append(conduit)
-
-        print(f"The tester S ports are: {tester_s_ports}")
 
         tester_ports = Ports(
             o_i=tester_o_i_ports if tester_o_i_ports else None,

@@ -11,8 +11,8 @@ from ymmsl.v0_2 import (
     Configuration,
     Reference,
     Program,
-    Model,
     ExecutionModel,
+    Implementation,
 )
 
 from libmuscle.pytest.implementation_tester import ImplementationTester
@@ -39,93 +39,60 @@ class MuscleTester:
         self.cleanup()
 
     def add_tester_component(
-        self, config: Configuration, implementation: str
+    self, config: Configuration, implementation_name: str
     ) -> Configuration:
         """
-        Add a 'muscle3_implementation_tester' as a tester component
-        - add the s and o_i ports for the component.
-        - add the conduits which connect to the implementation which is connected to
-        a specific component.
-        - set it to manual: class ExecutionModel(*values), describes how to start a
-        model component: MANUAL=5, Let the user start it by hand.
+        Add a 'muscle3_implementation_tester' as a tester component.
+        - Finds the implementation (model or program) by name.
+        - Finds the component using that implementation.
+        - Adds tester ports and conduits.
+        - Adds a tester component with MANUAL execution.
         """
-        target_model: Optional[Model] = None
-        target_name: Optional[Reference] = None
-        target_comp: Optional[Component] = None
-
         for model in config.models.values():
-            for comp_name, comp in model.components.items():
-                if comp.implementation == implementation:
-                    if target_comp is not None:
-                        raise ValueError(
-                            f"Found multiple components using implementation "
-                            f"'{implementation}': '{target_name}' and '{comp_name}'. "
-                            f"Expected exactly one component."
-                        )
-                    target_model = model
-                    target_name = comp_name
-                    target_comp = comp
+            implementation: Implementation
+            if implementation_name in model.models:
+                implementation = model.models[implementation_name]
+            elif implementation_name in model.programs:
+                implementation = model.programs[implementation_name]
+            else:
+                raise ValueError(f"No implementation '{implementation}' found in the yMMSL")
 
-        if target_model is None or target_comp is None or target_name is None:
-            raise ValueError(
-                f"No component found using implementation '{implementation}'."
-            )
-
+        tester_name =  "muscle3_implementation_tester"
         tester_o_i_ports = []
         tester_s_ports = []
 
-        # F_INIT and S of target (inputs) → tester needs O_I (outputs) to send to them
-        for port_attr in ["f_init", "s"]:
-            ports = getattr(target_comp.ports, port_attr, None)
-            if ports:
-                if isinstance(ports, str):
-                    ports = [ports]
-                tester_o_i_ports.extend([f"send_{port}" for port in ports])
+        # Inputs of target → tester sends (O_I)
+        for port_name in implementation.ports.receiving_port_names():
+            tester_o_i_ports.append(f"{port_name}")
+            implementation.conduits.append(
+                Conduit(
+                    f"{tester_name}.{port_name}"
+                )
+            )
 
-                for port_name in ports:
-                    conduit = Conduit(
-                        f"tester.send_{port_name}",
-                        f"{target_name}.{port_name}",
-                    )
-                    target_model.conduits.append(conduit)
+        # Outputs of target → tester receives (S)
+        for port_name in implementation.ports.sending_port_names():
+            tester_s_ports.append(f"{port_name}")
+            implementation.conduits.append(
+                Conduit(
+                    f"{tester_name}.{port_name}"
+                )
+            )
 
-        # O_I and O_F of target (outputs) → tester needs S (inputs) to receive from them
-        for port_attr in ["o_i", "o_f"]:
-            ports = getattr(target_comp.ports, port_attr, None)
-            if ports:
-                if isinstance(ports, str):
-                    ports = [ports]
-                tester_s_ports.extend([f"receive_{port}" for port in ports])
-
-                for port_name in ports:
-                    conduit = Conduit(
-                        f"{target_name}.{port_name}",
-                        f"tester.receive_{port_name}",
-                    )
-                    target_model.conduits.append(conduit)
-
-        tester_ports = Ports(
-            o_i=tester_o_i_ports if tester_o_i_ports else None,
-            s=tester_s_ports if tester_s_ports else None,
-        )
-
-        tester_comp = Component(
-            name="tester",
-            ports=tester_ports,
+        implementation.components[Reference(tester_name)] = Component(
+            name=tester_name,
+            ports= Ports(o_i=tester_o_i_ports, s=tester_s_ports),
             description="Manual tester component for implementation testing",
-            implementation="muscle3_implementation_tester",
+            implementation=tester_name,
             optional=False,
         )
-        target_model.components[Reference("tester")] = tester_comp
 
-        tester_program = Program(
-            name="muscle3_implementation_tester",
+        config.programs[Reference(tester_name)] = Program(
+            name=tester_name,
             execution_model=ExecutionModel.MANUAL,
             description="Manual tester program for implementation testing",
         )
-        if config.programs is None:
-            config.programs = {}
-        config.programs[Reference("muscle3_implementation_tester")] = tester_program
+
         return config
 
     def start_implementation(

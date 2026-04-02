@@ -13,6 +13,7 @@ from ymmsl.v0_2 import (
     Program,
     ExecutionModel,
     Implementation,
+    Model
 )
 
 from libmuscle.pytest.implementation_tester import ImplementationTester
@@ -31,9 +32,9 @@ class MuscleTester:
 
     def __exit__(
         self,
-        typ: type[BaseException] | None,
-        exc: BaseException | None,
-        tb: TracebackType | None,
+        typ: Optional[type[BaseException]],
+        exc: Optional[BaseException],
+        tb: Optional[TracebackType],
     ) -> None:
         """Allows usage in a with-statement"""
         self.cleanup()
@@ -48,38 +49,47 @@ class MuscleTester:
         - Adds tester ports and conduits.
         - Adds a tester component with MANUAL execution.
         """
-        for model in config.models.values():
-            implementation: Implementation
-            if implementation_name in model.models:
-                implementation = model.models[implementation_name]
-            elif implementation_name in model.programs:
-                implementation = model.programs[implementation_name]
-            else:
-                raise ValueError(f"No implementation '{implementation}' found in the yMMSL")
+        
+        implementation: Implementation
+        if implementation_name in config.models:
+            implementation = config.models[Reference(implementation_name)]
+        elif implementation_name in config.programs:
+            implementation = config.programs[Reference(implementation_name)]
+        else:
+            raise ValueError(f"No implementation '{implementation}' found in the yMMSL")
 
         tester_name =  "muscle3_implementation_tester"
         tester_o_i_ports = []
         tester_s_ports = []
 
+        tester_model = Model(
+            name=tester_name,
+            ports=Ports(o_i=[], s=[]),
+            components=[],
+            conduits=[]
+        )
+
         # Inputs of target → tester sends (O_I)
         for port_name in implementation.ports.receiving_port_names():
             tester_o_i_ports.append(f"{port_name}")
-            implementation.conduits.append(
+            tester_model.conduits.append(
                 Conduit(
-                    f"{tester_name}.{port_name}"
+                    f"{tester_name}.{port_name}", 
+                    f"{implementation}.{port_name}"
                 )
             )
 
         # Outputs of target → tester receives (S)
         for port_name in implementation.ports.sending_port_names():
             tester_s_ports.append(f"{port_name}")
-            implementation.conduits.append(
+            tester_model.conduits.append(
                 Conduit(
+                    f"{implementation}.{port_name}",
                     f"{tester_name}.{port_name}"
                 )
             )
 
-        implementation.components[Reference(tester_name)] = Component(
+        tester_model.components[Reference(tester_name)] = Component(
             name=tester_name,
             ports= Ports(o_i=tester_o_i_ports, s=tester_s_ports),
             description="Manual tester component for implementation testing",
@@ -93,6 +103,7 @@ class MuscleTester:
             description="Manual tester program for implementation testing",
         )
 
+        config.models[Reference(tester_name)] = tester_model
         return config
 
     def start_implementation(

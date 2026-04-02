@@ -40,8 +40,8 @@ class MuscleTester:
         self.cleanup()
 
     def add_tester_component(
-    self, config: Configuration, implementation_name: str
-    ) -> Configuration:
+            self, config: Configuration, implementation_name: str
+            ) -> Configuration:
         """
         Add a 'muscle3_implementation_tester' as a tester component.
         - Finds the implementation (model or program) by name.
@@ -49,7 +49,7 @@ class MuscleTester:
         - Adds tester ports and conduits.
         - Adds a tester component with MANUAL execution.
         """
-        
+
         implementation: Implementation
         if implementation_name in config.models:
             implementation = config.models[Reference(implementation_name)]
@@ -58,7 +58,7 @@ class MuscleTester:
         else:
             raise ValueError(f"No implementation '{implementation}' found in the yMMSL")
 
-        tester_name =  "muscle3_implementation_tester"
+        tester_name = "muscle3_implementation_tester"
         tester_o_i_ports = []
         tester_s_ports = []
 
@@ -74,7 +74,7 @@ class MuscleTester:
             tester_o_i_ports.append(f"{port_name}")
             tester_model.conduits.append(
                 Conduit(
-                    f"{tester_name}.{port_name}", 
+                    f"{tester_name}.{port_name}",
                     f"{implementation}.{port_name}"
                 )
             )
@@ -91,7 +91,7 @@ class MuscleTester:
 
         tester_model.components[Reference(tester_name)] = Component(
             name=tester_name,
-            ports= Ports(o_i=tester_o_i_ports, s=tester_s_ports),
+            ports=Ports(o_i=tester_o_i_ports, s=tester_s_ports),
             description="Manual tester component for implementation testing",
             implementation=tester_name,
             optional=False,

@@ -1,7 +1,9 @@
 from types import TracebackType
 from pathlib import Path
 import subprocess
-from typing import Optional
+import multiprocessing as mp
+from typing import Optional, Tuple
+from multiprocessing.connection import Connection
 
 import ymmsl.v0_2
 from ymmsl.v0_2 import (
@@ -17,6 +19,8 @@ from ymmsl.v0_2 import (
 )
 
 from libmuscle.pytest.implementation_tester import ImplementationTester
+from libmuscle.manager.manager import Manager
+from libmuscle.manager.run_dir import RunDir
 
 
 class MuscleTester:
@@ -116,31 +120,40 @@ class MuscleTester:
         test_ymmsl_path = self.run_dir / "test_config.ymmsl"
         ymmsl.save(test_ymmsl_config, test_ymmsl_path)
 
-        # Start the manager process with --start-all flag
-        manager_stdout = self.run_dir / "manager_stdout.txt"
-        manager_stderr = self.run_dir / "manager_stderr.txt"
-
-        with open(manager_stdout, "w") as f_out, open(manager_stderr, "w") as f_err:
-            self._manager_process = subprocess.Popen(
-                ["muscle_manager", "--start-all", str(test_ymmsl_path)],
-                stdout=f_out,
-                stderr=f_err,
-                cwd=str(self.run_dir),
-            )
-
-        return ImplementationTester(default_timeout)
+        muscle_manager_address, self.control_pipe, self.process = make_server_process(
+            test_ymmsl_config, RunDir(self.run_dir))
+        self.implementation_tester = ImplementationTester(default_timeout,
+                                                          muscle_manager_address,
+                                                          test_ymmsl_config)
+        return self.implementation_tester
 
     def cleanup(self) -> None:
-        # Clean up any running processes, etc. log appropriate errors when the test
-        # implementation doesn't shut down nicely?
-        # N.B. allow calling this multiple times
-        if self._manager_process is not None:
-            # Try to terminate gracefully first
-            self._manager_process.terminate()
-            try:
-                self._manager_process.wait(timeout=5.0)
-            except subprocess.TimeoutExpired:
-                # Force kill if it doesn't terminate gracefully
-                self._manager_process.kill()
-                self._manager_process.wait()
-            self._manager_process = None
+        self.implementation_tester.cleanup()
+        self.control_pipe[0].send(True)
+        self.control_pipe[0].close()
+        self.process.join()
+
+
+def start_mmp_server(control_pipe: Tuple[Connection, Connection],
+                     ymmsl_config: Configuration, run_dir: RunDir) -> None:
+    control_pipe[0].close()
+    manager = Manager(ymmsl_config, run_dir, 'DEBUG')
+    control_pipe[1].send(manager.get_server_location())
+    manager.start_instances()
+    control_pipe[1].recv()
+    control_pipe[1].close()
+    manager.stop()
+
+
+def make_server_process(ymmsl_config: Configuration, run_dir: RunDir
+                        ) -> Tuple[str, Tuple[Connection, Connection], mp.Process]:
+    control_pipe = mp.Pipe()
+    process = mp.Process(
+        target=start_mmp_server,
+        args=(control_pipe, ymmsl_config, run_dir),
+        name='Manager'
+    )
+    process.start()
+    control_pipe[1].close()
+    muscle_manager_address = control_pipe[0].recv()
+    return muscle_manager_address, control_pipe, process

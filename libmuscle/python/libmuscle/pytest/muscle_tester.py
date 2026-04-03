@@ -60,7 +60,9 @@ class MuscleTester:
         elif implementation_name in config.programs:
             implementation = config.programs[Reference(implementation_name)]
         else:
-            raise ValueError(f"No implementation '{implementation_name}' found in the yMMSL")
+            raise ValueError(
+                f"No implementation '{implementation_name}' found in the yMMSL"
+            )
 
         tester_name = "muscle3_implementation_tester"
         tester_o_i_ports = []

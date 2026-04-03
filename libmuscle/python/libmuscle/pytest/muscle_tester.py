@@ -29,6 +29,9 @@ class MuscleTester:
     def __init__(self, run_dir: Path) -> None:
         self.run_dir = run_dir
         self._manager_process: Optional[subprocess.Popen] = None
+        self.implementation_tester: Optional[ImplementationTester] = None
+        self.control_pipe: Optional[Tuple[Connection, Connection]] = None
+        self.process: Optional[mp.Process] = None
 
     def __enter__(self) -> "MuscleTester":
         """Allows usage in a with-statement"""
@@ -130,10 +133,15 @@ class MuscleTester:
         return self.implementation_tester
 
     def cleanup(self) -> None:
-        self.implementation_tester.cleanup()
-        self.control_pipe[0].send(True)
-        self.control_pipe[0].close()
-        self.process.join()
+        if self.implementation_tester is not None:
+            self.implementation_tester.cleanup()
+            self.implementation_tester = None
+        if self.control_pipe is not None and self.process is not None:
+            self.control_pipe[0].send(True)
+            self.control_pipe[0].close()
+            self.process.join()
+            self.control_pipe = None
+            self.process = None
 
 
 def start_mmp_server(control_pipe: Tuple[Connection, Connection],

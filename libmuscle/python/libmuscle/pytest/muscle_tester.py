@@ -60,7 +60,7 @@ class MuscleTester:
         elif implementation_name in config.programs:
             implementation = config.programs[Reference(implementation_name)]
         else:
-            raise ValueError(f"No implementation '{implementation}' found in the yMMSL")
+            raise ValueError(f"No implementation '{implementation_name}' found in the yMMSL")
 
         tester_name = "muscle3_implementation_tester"
         tester_o_i_ports = []
@@ -79,7 +79,7 @@ class MuscleTester:
             tester_model.conduits.append(
                 Conduit(
                     f"{tester_name}.{port_name}",
-                    f"{implementation}.{port_name}"
+                    f"{implementation_name}.{port_name}"
                 )
             )
 
@@ -88,7 +88,7 @@ class MuscleTester:
             tester_s_ports.append(f"{port_name}")
             tester_model.conduits.append(
                 Conduit(
-                    f"{implementation}.{port_name}",
+                    f"{implementation_name}.{port_name}",
                     f"{tester_name}.{port_name}"
                 )
             )

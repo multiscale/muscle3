@@ -285,6 +285,13 @@ class DataConstRef {
          */
         void reseat(DataConstRef const & target);
 
+        /** Describe the contained data.
+         *
+         * This returns a string describing the type and, for simple types, value
+         * of the contained data.
+         */
+        std::string describe() const;
+
         /** Determine the type of the referenced data.
          *
          * This works for the following types:

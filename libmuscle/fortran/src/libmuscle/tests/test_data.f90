@@ -505,6 +505,38 @@ contains
 
         print *, '[       OK ] data.byte_array'
     end subroutine test_data_byte_array
+
+    subroutine test_data_describe
+        use libmuscle
+
+        implicit none
+        type(LIBMUSCLE_Data) :: d1
+        character(len=:), allocatable :: c1
+
+        print *, '[  RUN     ] data.describe'
+
+        d1 = LIBMUSCLE_Data_create(.true.)
+        c1 = d1%describe()
+        deallocate(c1)
+        call LIBMUSCLE_Data_free(d1)
+
+        d1 = LIBMUSCLE_Data_create(12345)
+        c1 = d1%describe()
+        deallocate(c1)
+        call LIBMUSCLE_Data_free(d1)
+
+        d1 = LIBMUSCLE_Data_create(12.345_LIBMUSCLE_real4)
+        c1 = d1%describe()
+        deallocate(c1)
+        call LIBMUSCLE_Data_free(d1)
+
+        d1 = LIBMUSCLE_Data_create(12.345_LIBMUSCLE_real8)
+        c1 = d1%describe()
+        deallocate(c1)
+        call LIBMUSCLE_Data_free(d1)
+
+        print *, '[       OK ] data.byte_array'
+    end subroutine
 end module data_tests
 
 program test_data
@@ -521,6 +553,7 @@ program test_data
     call test_data_grid
     call test_data_byte_array
     call test_data_settings
+    call test_data_describe
 
     print *, '[==========] Fortran API Data'
     print *, '[  PASSED  ] Fortran API Data'

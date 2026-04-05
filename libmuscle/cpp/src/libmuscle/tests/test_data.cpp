@@ -776,3 +776,64 @@ TEST(libmuscle_mcp_data, as_wrong_type) {
     ASSERT_THROW(d.as<float>(), std::runtime_error);
 }
 
+
+void check_contains(
+        std::string const & description, std::string const & s1,
+        std::string const & s2 = "") {
+    ASSERT_TRUE(description.find(s1) != std::string::npos);
+    ASSERT_TRUE(description.find(s2) != std::string::npos);
+}
+
+
+TEST(libmuscle_mcp_data, describe) {
+    Data d1(true);
+    check_contains(d1.describe(), "boolean", "true");
+
+    Data d2("test");
+    check_contains(d2.describe(), "string", "test");
+
+    Data d3(123456);
+    check_contains(d3.describe(), "int", "123456");
+
+    Data d4(124.4f);
+    check_contains(d4.describe(), "single-precision float", "124.4");
+
+    Data d5(12.3456);
+    check_contains(d5.describe(), "double-precision float", "12.3456");
+
+    Data d6;
+    check_contains(d6.describe(), "nil");
+
+    auto d7 = Data::dict("test1", 1, "test2", 2);
+    check_contains(d7.describe(), "dictionary");
+
+    auto d8 = Data::list("test1", 1, 7.34);
+    check_contains(d8.describe(), "list");
+
+    auto d9 = Data::byte_array(10u);
+    check_contains(d9.describe(), "byte array");
+
+    Data d10{Settings()};
+    check_contains(d10.describe(), "Settings");
+
+    int32_t data = 123;
+    auto d11 = Data::grid(&data, {1});
+    check_contains(d11.describe(), "grid", "32-bit integer");
+
+    int64_t data2 = 123;
+    auto d12 = Data::grid(&data2, {1});
+    check_contains(d12.describe(), "grid", "64-bit integer");
+
+    float data3 = 123.0f;
+    auto d13 = Data::grid(&data3, {1});
+    check_contains(d13.describe(), "grid", "single-precision float");
+
+    double data4 = 123.9;
+    auto d14 = Data::grid(&data4, {1});
+    check_contains(d14.describe(), "grid", "double-precision float");
+
+    bool data5 = true;
+    auto d15 = Data::grid(&data5, {1});
+    check_contains(d15.describe(), "grid", "bool");
+}
+

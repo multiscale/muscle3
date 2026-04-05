@@ -27,6 +27,7 @@ module libmuscle_mpi
     type LIBMUSCLE_DataConstRef
         integer (c_intptr_t) :: ptr = 0
     contains
+        procedure :: describe => LIBMUSCLE_DataConstRef_describe
         procedure :: is_a_logical => LIBMUSCLE_DataConstRef_is_a_logical
         procedure :: is_a_character => LIBMUSCLE_DataConstRef_is_a_character
         procedure :: is_a_int => LIBMUSCLE_DataConstRef_is_a_int
@@ -223,6 +224,7 @@ module libmuscle_mpi
     public :: LIBMUSCLE_DataConstRef_create_grid_7_real8_n
     public :: LIBMUSCLE_DataConstRef_create_grid
     public :: LIBMUSCLE_DataConstRef_free
+    public :: LIBMUSCLE_DataConstRef_describe
     public :: LIBMUSCLE_DataConstRef_is_a_logical
     public :: LIBMUSCLE_DataConstRef_is_a_character
     public :: LIBMUSCLE_DataConstRef_is_a_int
@@ -300,6 +302,7 @@ module libmuscle_mpi
     type LIBMUSCLE_Data
         integer (c_intptr_t) :: ptr = 0
     contains
+        procedure :: describe => LIBMUSCLE_Data_describe
         procedure :: is_a_logical => LIBMUSCLE_Data_is_a_logical
         procedure :: is_a_character => LIBMUSCLE_Data_is_a_character
         procedure :: is_a_int => LIBMUSCLE_Data_is_a_int
@@ -553,6 +556,7 @@ module libmuscle_mpi
     public :: LIBMUSCLE_Data_create_grid_7_real8_n
     public :: LIBMUSCLE_Data_create_grid
     public :: LIBMUSCLE_Data_free
+    public :: LIBMUSCLE_Data_describe
     public :: LIBMUSCLE_Data_is_a_logical
     public :: LIBMUSCLE_Data_is_a_character
     public :: LIBMUSCLE_Data_is_a_int
@@ -1240,6 +1244,18 @@ module libmuscle_mpi
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end subroutine LIBMUSCLE_MPI_DataConstRef_free_
+
+        subroutine LIBMUSCLE_MPI_DataConstRef_describe_( &
+                self, &
+                ret_val, &
+                ret_val_size) &
+                bind(C, name="LIBMUSCLE_MPI_DataConstRef_describe_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_size_t), intent(out) :: ret_val_size
+        end subroutine LIBMUSCLE_MPI_DataConstRef_describe_
 
         logical (c_bool) function LIBMUSCLE_MPI_DataConstRef_is_a_logical_(self) &
                 bind(C, name="LIBMUSCLE_MPI_DataConstRef_is_a_logical_")
@@ -2098,6 +2114,18 @@ module libmuscle_mpi
             use iso_c_binding
             integer (c_intptr_t), value, intent(in) :: self
         end subroutine LIBMUSCLE_MPI_Data_free_
+
+        subroutine LIBMUSCLE_MPI_Data_describe_( &
+                self, &
+                ret_val, &
+                ret_val_size) &
+                bind(C, name="LIBMUSCLE_MPI_Data_describe_")
+
+            use iso_c_binding
+            integer (c_intptr_t), value, intent(in) :: self
+            type (c_ptr), intent(out) :: ret_val
+            integer (c_size_t), intent(out) :: ret_val_size
+        end subroutine LIBMUSCLE_MPI_Data_describe_
 
         logical (c_bool) function LIBMUSCLE_MPI_Data_is_a_logical_(self) &
                 bind(C, name="LIBMUSCLE_MPI_Data_is_a_logical_")
@@ -6449,6 +6477,29 @@ contains
         call LIBMUSCLE_MPI_DataConstRef_free_(self%ptr)
         self%ptr = 0
     end subroutine LIBMUSCLE_DataConstRef_free
+
+    function LIBMUSCLE_DataConstRef_describe( &
+            self)
+        implicit none
+        class(LIBMUSCLE_DataConstRef), intent(in) :: self
+        character(:), allocatable :: LIBMUSCLE_DataConstRef_describe
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t) :: ret_val_size
+        character (c_char), dimension(:), pointer :: f_ret_ptr
+        integer :: i_loop
+
+        call LIBMUSCLE_MPI_DataConstRef_describe_( &
+            self%ptr, &
+            ret_val, &
+            ret_val_size)
+
+        call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
+        allocate (character(ret_val_size) :: LIBMUSCLE_DataConstRef_describe)
+        do i_loop = 1, ret_val_size
+            LIBMUSCLE_DataConstRef_describe(i_loop:i_loop) = f_ret_ptr(i_loop)
+        end do
+    end function LIBMUSCLE_DataConstRef_describe
 
     function LIBMUSCLE_DataConstRef_is_a_logical( &
             self)
@@ -11900,6 +11951,29 @@ contains
         call LIBMUSCLE_MPI_Data_free_(self%ptr)
         self%ptr = 0
     end subroutine LIBMUSCLE_Data_free
+
+    function LIBMUSCLE_Data_describe( &
+            self)
+        implicit none
+        class(LIBMUSCLE_Data), intent(in) :: self
+        character(:), allocatable :: LIBMUSCLE_Data_describe
+
+        type (c_ptr) :: ret_val
+        integer (c_size_t) :: ret_val_size
+        character (c_char), dimension(:), pointer :: f_ret_ptr
+        integer :: i_loop
+
+        call LIBMUSCLE_MPI_Data_describe_( &
+            self%ptr, &
+            ret_val, &
+            ret_val_size)
+
+        call c_f_pointer(ret_val, f_ret_ptr, (/ret_val_size/))
+        allocate (character(ret_val_size) :: LIBMUSCLE_Data_describe)
+        do i_loop = 1, ret_val_size
+            LIBMUSCLE_Data_describe(i_loop:i_loop) = f_ret_ptr(i_loop)
+        end do
+    end function LIBMUSCLE_Data_describe
 
     function LIBMUSCLE_Data_is_a_logical( &
             self)

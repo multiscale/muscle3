@@ -286,6 +286,16 @@ def mmp_server_config_simple(yatiml_log_warning):
 
 
 @pytest.fixture
+def mmp_server_config_simple_nopython(mmp_server_config_simple):
+    return mmp_server_config_simple + '  python_compat: false\n'
+
+
+@pytest.fixture
+def mmp_server_config_simple_python(mmp_server_config_simple):
+    return mmp_server_config_simple + '  python_compat: true\n'
+
+
+@pytest.fixture
 def mmp_server_process_simple(mmp_server_config_simple, tmpdir):
     ymmsl_doc = ymmsl.load(mmp_server_config_simple)
     yield from make_server_process(ymmsl_doc, tmpdir)

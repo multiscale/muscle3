@@ -379,6 +379,7 @@ dataconstref_desc = Class('DataConstRef', None, [
     GridConstructor(True),
     OverloadSet('create_grid', create_grid_overloads, True),
     Destructor(),
+    MemFun(String(), 'describe'),
     MemFunTmpl(
         [Bool(), String(), Int(), Char(), Int16t(), Int32t(), Int64t(),
             Float(), Double()],

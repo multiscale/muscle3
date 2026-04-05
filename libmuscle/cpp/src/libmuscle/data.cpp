@@ -25,6 +25,79 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 // helper functions
 
+template <typename T>
+std::string describe_type_();
+
+template <>
+std::string describe_type_<bool>() {
+    return "boolean";
+}
+
+template <>
+std::string describe_type_<std::string>() {
+    return "string";
+}
+
+template <>
+std::string describe_type_<char>() {
+    return "char";
+}
+
+template <>
+std::string describe_type_<short int>() {
+    return "short int";
+}
+
+template <>
+std::string describe_type_<int>() {
+    return "int";
+}
+
+template <>
+std::string describe_type_<long int>() {
+    return "long int";
+}
+
+template <>
+std::string describe_type_<long long int>() {
+    return "long long int";
+}
+
+template <>
+std::string describe_type_<unsigned char>() {
+    return "unsigned char";
+}
+
+template <>
+std::string describe_type_<unsigned short int>() {
+    return "unsigned short int";
+}
+
+template <>
+std::string describe_type_<unsigned int>() {
+    return "unsigned int";
+}
+
+template <>
+std::string describe_type_<unsigned long int>() {
+    return "unsigned long int";
+}
+
+template <>
+std::string describe_type_<unsigned long long int>() {
+    return "unsigned long long int";
+}
+
+template <>
+std::string describe_type_<float>() {
+    return "single-precision float";
+}
+
+template <>
+std::string describe_type_<double>() {
+    return "double-precision float";
+}
+
 template <typename Element>
 ExtTypeId grid_type_id_();
 
@@ -405,6 +478,69 @@ void DataConstRef::reseat(DataConstRef const & target) {
     obj_cache_ = target.obj_cache_;
 }
 
+std::string DataConstRef::describe() const {
+    std::ostringstream oss;
+    int8_t et = -1;
+
+    switch (mp_obj_->type) {
+        case msgpack::type::BOOLEAN:
+            oss << "a boolean with value " << std::boolalpha << as<bool>();
+            break;
+        case msgpack::type::POSITIVE_INTEGER:
+            oss << "an (unsigned) int with value " << as<int>();
+            break;
+        case msgpack::type::NEGATIVE_INTEGER:
+            oss << "an int with value " << as<int>();
+            break;
+        case msgpack::type::FLOAT32:
+            oss << "a single-precision float with value " << as<float>();
+            break;
+        case msgpack::type::FLOAT64:
+            oss << "a double-precision float with value " << as<double>();
+            break;
+        case msgpack::type::STR:
+            oss << "a string with value '" << as<std::string>() << "'";
+            break;
+        case msgpack::type::NIL:
+            oss << "a nil value";
+            break;
+        case msgpack::type::MAP:
+            oss << "a dictionary";
+            break;
+        case msgpack::type::ARRAY:
+            oss << "a list";
+            break;
+        case msgpack::type::BIN:
+            oss << "a byte array";
+            break;
+        case msgpack::type::EXT:
+            et = mp_obj_->via.ext.type();
+            if (et == static_cast<int8_t>(ExtTypeId::settings)) {
+                oss << "a Settings object";
+            }
+            else if (et == static_cast<int8_t>(ExtTypeId::grid_int32))  {
+                oss << "a grid of 32-bit integers";
+            }
+            else if (et == static_cast<int8_t>(ExtTypeId::grid_int64))  {
+                oss << "a grid of 64-bit integers";
+            }
+            else if (et == static_cast<int8_t>(ExtTypeId::grid_float32))  {
+                oss << "a grid of single-precision floats";
+            }
+            else if (et == static_cast<int8_t>(ExtTypeId::grid_float64))  {
+                oss << "a grid of double-precision floats";
+            }
+            else if (et == static_cast<int8_t>(ExtTypeId::grid_bool))  {
+                oss << "a grid of booleans";
+            }
+            break;
+        default:
+            oss << "something the MUSCLE3 developers overlooked...";
+    }
+
+    return oss.str();
+}
+
 template <>
 bool DataConstRef::is_a<bool>() const {
     return mp_obj_->type == msgpack::type::BOOLEAN;
@@ -563,9 +699,10 @@ SettingValue DataConstRef::as<SettingValue>() const {
                     " lists, which I cannot convert to a SettingValue.");
     }
     else
-        throw std::runtime_error("Tried to convert a DataConstRef or Data to"
-                " a SettingValue, which it isn't. Did you receive data of a"
-                " type you were not expecting?");
+        throw std::runtime_error(
+                "Tried to convert a DataConstRef or Data to a SettingValue, but it is "
+                + describe() + ". Did you receive data of a type you were not"
+                " expecting?");
 }
 
 // This uses as<SettingValue>, so has to be below it.
@@ -590,9 +727,10 @@ bool DataConstRef::is_a<SettingValue>() const {
 template <>
 Settings DataConstRef::as<Settings>() const {
     if (!is_a<Settings>())
-        throw std::runtime_error("Tried to convert a DataConstRef or Data to"
-                " a Settings, which it isn't. Did you receive data of a type"
-                " you were not expecting?");
+        throw std::runtime_error(
+                "Tried to convert a DataConstRef or Data to a Settings, but it is "
+                + describe() + ". Did you receive data of a type you were not"
+                " expecting?");
 
     auto ext = mp_obj_->as<msgpack::type::ext>();
     auto oh = msgpack::unpack(ext.data(), ext.size());
@@ -615,9 +753,10 @@ Settings DataConstRef::as<Settings>() const {
 template <typename T>
 T DataConstRef::as() const {
     if (!is_a<T>())
-        throw std::runtime_error("Tried to convert a DataConstRef or Data to"
-                " a type that does not match its value. Did you receive data"
-                " of a type you were not expecting?");
+        throw std::runtime_error(
+                "Tried to convert a DataConstRef or Data to a " + describe_type_<T>() +
+                " but it is " + describe() + ". Did you receive data of a type you were"
+                " not expecting?");
     return mp_obj_->as<T>();
 }
 

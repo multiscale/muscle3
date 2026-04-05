@@ -62,8 +62,7 @@ header_root := $(CURDIR)/../../src
 CXXFLAGS += -I$(header_root)
 
 public_headers := libmuscle/data.hpp libmuscle/data.tpp libmuscle/instance.hpp
-public_headers += libmuscle/libmuscle.hpp libmuscle/mcp/data_pack.hpp
-public_headers += libmuscle/mcp/data_pack.tpp libmuscle/message.hpp
+public_headers += libmuscle/libmuscle.hpp libmuscle/message.hpp
 public_headers += libmuscle/ports_description.hpp libmuscle/util.hpp libmuscle/util.tpp
 public_headers += libmuscle/version.h libmuscle/namespace.hpp libmuscle/test_support.hpp
 installed_headers := $(public_headers:%=$(PREFIX)/include/%)
@@ -282,9 +281,8 @@ libmuscle.pc:
 	@echo 'URL: https://muscle3.readthedocs.io' >>$@
 	@echo 'Version: $(muscle_version)' >>$@
 	@echo 'Requires: ymmsl = $(muscle_version)' >>$@
-	@echo 'Requires.private:' >>$@
-	@echo 'Cflags: -I$${includedir} -pthread -DMSGPACK_NO_BOOST' >>$@
-	@echo 'Cflags.private: -pthread -DMSGPACK_NO_BOOST' >>$@
+	@echo 'Cflags: -I$${includedir} -pthread' >>$@
+	@echo 'Cflags.private: -pthread' >>$@
 	@echo 'Libs: -L$${libdir} -lmuscle' >>$@
 	@echo 'Libs.private: -pthread' >>$@
 
@@ -299,8 +297,7 @@ libmuscle_mpi.pc:
 	@echo 'URL: https://muscle3.readthedocs.io' >>$@
 	@echo 'Version: $(muscle_version)' >>$@
 	@echo 'Requires: ymmsl = $(muscle_version)' >>$@
-	@echo 'Requires.private:' >>$@
-	@echo 'Cflags: -I$${includedir} -pthread -DMUSCLE_ENABLE_MPI -DMSGPACK_NO_BOOST' >>$@
-	@echo 'Cflags.private: -pthread -DMSGPACK_NO_BOOST' >>$@
+	@echo 'Cflags: -I$${includedir} -pthread -DMUSCLE_ENABLE_MPI' >>$@
+	@echo 'Cflags.private: -pthread' >>$@
 	@echo 'Libs: -L$${libdir} -lmuscle_mpi' >>$@
 	@echo 'Libs.private: -pthread' >>$@

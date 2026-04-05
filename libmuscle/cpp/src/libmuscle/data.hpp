@@ -9,10 +9,35 @@
 #include <utility>
 #include <vector>
 
-#include <msgpack.hpp>
-
 #include <ymmsl/ymmsl.hpp>
 
+
+namespace msgpack {
+    namespace v1 {
+        class zone;
+    }
+    using v1::zone;
+
+    namespace v2 {
+        struct object;
+    }
+    using v2::object;
+
+    inline namespace v3 {
+        namespace adaptor {
+            template <typename T, typename Enabler>
+            struct object_with_zone;
+
+            template <typename T, typename Enabler>
+            struct pack;
+        }
+    }
+
+    namespace adaptor {
+        using ::msgpack::v3::adaptor::object_with_zone;
+        using ::msgpack::v3::adaptor::pack;
+    }
+}
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
@@ -548,11 +573,14 @@ class DataConstRef {
         template <typename Element>
         DataConstRef grid_data_(Element const * const data, std::size_t num_elems) const;
 
+        template <typename T>
+        struct si_arg_type_;
+
     private:
-        // this requires packing, so needs to be non-template
+        template <typename T>
         void set_dict_item_(
                 uint32_t offset,
-                std::string const & key, DataConstRef const & value);
+                std::string const & key, typename si_arg_type_<T>::type value);
 
         void init_dict_(uint32_t size);
 
@@ -568,11 +596,20 @@ class DataConstRef {
                 std::string const & key, Data const & value,
                 Args const &...args);
 
+        template <typename... Args>
+        void init_dict_(
+                uint32_t offset,
+                std::string const & key, char const * value,
+                Args const &...args);
+
         template <typename Arg, typename... Args>
         void init_dict_(
                 uint32_t offset,
                 std::string const & key, Arg const & value,
                 Args const &...args);
+
+        template <typename T>
+        void set_list_item_(uint32_t offset, typename si_arg_type_<T>::type value);
 
         void init_list_(uint32_t size);
 
@@ -586,13 +623,18 @@ class DataConstRef {
                 uint32_t offset, Data const & value,
                 Args const &...args);
 
+        template <typename... Args>
+        void init_list_(
+                uint32_t offset, char const * value,
+                Args const &...args);
+
         template <typename Arg, typename... Args>
         void init_list_(
                 uint32_t offset, Arg const & value,
                 Args const &...args);
 
-        friend struct msgpack::adaptor::object_with_zone<DataConstRef>;
-        friend struct msgpack::adaptor::pack<DataConstRef>;
+        friend struct msgpack::adaptor::object_with_zone<DataConstRef, void>;
+        friend struct msgpack::adaptor::pack<DataConstRef, void>;
 
         // see comment at Data::init_dict_'s implementation
         friend class Data;
@@ -826,10 +868,10 @@ class Data : public DataConstRef {
         char * as_byte_array();
 
     private:
-        // this requires packing, so needs to be non-template
+        template <typename T>
         void set_dict_item_(
                 uint32_t offset,
-                std::string const & key, Data const & value);
+                std::string const & key, typename si_arg_type_<T>::type value);
 
         void init_dict_(uint32_t size);
 
@@ -845,11 +887,20 @@ class Data : public DataConstRef {
                 std::string const & key, Data const & value,
                 Args const &...args);
 
+        template <typename... Args>
+        void init_dict_(
+                uint32_t offset,
+                std::string const & key, char const * value,
+                Args const &...args);
+
         template <typename Arg, typename... Args>
         void init_dict_(
                 uint32_t offset,
                 std::string const & key, Arg const & value,
                 Args const &...args);
+
+        template <typename T>
+        void set_list_item_(uint32_t offset, typename si_arg_type_<T>::type value);
 
         void init_list_(uint32_t size);
 
@@ -863,13 +914,18 @@ class Data : public DataConstRef {
                 uint32_t offset, Data const & value,
                 Args const &...args);
 
+        template <typename... Args>
+        void init_list_(
+                uint32_t offset, char const * value,
+                Args const &...args);
+
         template <typename Arg, typename... Args>
         void init_list_(
                 uint32_t offset, Arg const & value,
                 Args const &...args);
 
-        friend struct msgpack::adaptor::pack<Data>;
-        friend struct msgpack::adaptor::object_with_zone<Data>;
+        friend struct msgpack::adaptor::pack<Data, void>;
+        friend struct msgpack::adaptor::object_with_zone<Data, void>;
         friend Data libmuscle::_MUSCLE_IMPL_NS::mcp::unpack_data(
                 std::shared_ptr<msgpack::zone> const & zone,
                 char const * begin, std::size_t length);

@@ -6,6 +6,8 @@
 #include <libmuscle/post_office.hpp>
 #include <ymmsl/ymmsl.hpp>
 
+#include <msgpack.hpp>
+#include <libmuscle/mcp/data_pack.hpp>
 
 using libmuscle::_MUSCLE_IMPL_NS::mcp::TcpTransportServer;
 using ymmsl::Reference;

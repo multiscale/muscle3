@@ -60,8 +60,8 @@ setup(
         'psutil>=5.0.0',
         'parsimonious',
         "numpy>=1.22",
-        # 'ymmsl>=0.14.0,<0.15',         # Also in CI, and examples requirements.txt
-        'ymmsl @ git+https://github.com/multiscale/ymmsl-python.git',
+        'ymmsl>=0.15.0,<0.16',         # Also in examples requirements.txt
+        # 'ymmsl @ git+https://github.com/multiscale/ymmsl-python.git',
         'yatiml>=0.12,<0.13',
     ],
     extras_require={

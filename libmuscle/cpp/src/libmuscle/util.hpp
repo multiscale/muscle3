@@ -15,6 +15,18 @@
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
+/* Check for unexpected errors.
+ *
+ * This takes a return value from a function and throws if it equals -1. Used in places
+ * where an error is almost impossible but the compiler still complains if I don't check
+ * the return value.
+ *
+ * @param ret_val The return value of the function
+ * @return The value passed, if it isn't -1
+ * @throw std::runtime_error if the return value equals -1
+ */
+int throw_on_error(int ret_val);
+
 
 /* Gets the log file location from the command line.
  *
@@ -206,6 +218,52 @@ class Optional {
 
 template <typename T>
 std::ostream & operator<<(std::ostream & os, Optional<T> const & t);
+
+
+/* Return time in seconds as a double.
+ *
+ * The epoch of this clock is arbitrary, but doesn't get adjusted, so it's suitable for
+ * measuring intervals. Wraps std::chrono::steady_clock.
+ */
+double time_monotonic();
+
+
+/* Helper class for retrying things with a delay and timeout.
+ *
+ * This backs off exponentially, immediately retrying on the first attempt, then
+ * waiting 2**tries * base_delay seconds between tries.
+ */
+class Retrier {
+    public:
+        /** Create a Retrier.
+         *
+         * @param timeout Timeout in seconds after which to give up
+         * @param base_delay Base delay in seconds between retries
+         */
+        Retrier(
+                double timeout = default_timeout_,
+                double base_delay = default_base_delay_);
+
+        /** Sleep until it's time for the next retry
+         */
+        void sleep();
+
+        /** Return whether to give up or retry */
+        bool should_give_up();
+
+    private:
+        static const double default_base_delay_;
+        static const double default_timeout_;
+
+        static const double factor_;
+
+        const double base_delay_;
+        const double timeout_;
+
+        double start_;
+        int tries_;
+};
+
 
 } }
 

@@ -28,15 +28,15 @@ distclean:
 # Find dependencies or set up build
 
 dep_name := msgpack
-dep_version_constraint := >= 3.2.0
-dep_version := 3.2.0
-dep_pkgconfig_name := msgpack
+dep_version_constraint := >= 7.0.0
+dep_version := 7.0.0
+dep_pkgconfig_name := msgpack-cxx
 dep_install := 1
 include $(TOOLDIR)/make_available.make
 
 dep_name := googletest
 dep_version_constraint := >= 1.8.1
-dep_version := 1.12.1
+dep_version := 1.15.2
 dep_pkgconfig_name := gtest
 dep_install := 0
 include $(TOOLDIR)/make_available.make
@@ -46,7 +46,7 @@ include $(TOOLDIR)/make_available.make
 DEP_DIRS += $(CURDIR)/msgpack/msgpack
 export DEP_DIRS
 
-PKG_CONFIG_EXTRA_DIRS := $(PKG_CONFIG_EXTRA_DIRS):$(CURDIR)/msgpack/msgpack/lib/pkgconfig
+PKG_CONFIG_EXTRA_DIRS := $(PKG_CONFIG_EXTRA_DIRS):$(CURDIR)/msgpack/lib/pkgconfig
 export PKG_CONFIG_EXTRA_DIRS
 
 
@@ -64,8 +64,22 @@ libmuscle: ymmsl msgpack
 	$(MAKE) -j $(NCORES) -C libmuscle
 
 
+.PHONY: ymmsl_debug
+ymmsl_debug:
+	@echo
+	@echo 'Building ymmsl debug libraries...'
+	$(MAKE) -j $(NCORES) -C ymmsl MUSCLE_ENABLE_DEBUG=1
+
+
+.PHONY: libmuscle_debug
+libmuscle_debug: ymmsl_debug msgpack
+	@echo
+	@echo 'Building libmuscle debug libraries...'
+	$(MAKE) -j $(NCORES) -C libmuscle MUSCLE_ENABLE_DEBUG=1
+
+
 .PHONY: tests
-tests: ymmsl libmuscle msgpack googletest
+tests: ymmsl_debug libmuscle_debug msgpack googletest
 	$(MAKE) -j $(NCORES) -C ymmsl tests
 	$(MAKE) -j $(NCORES) -C libmuscle tests
 

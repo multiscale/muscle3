@@ -424,7 +424,7 @@ struct ReturnValue {};
  *             constructor(i);
  *         }
  *
- *         MockFun<Void> constructor;
+ *         MockFun<Void, Val<int>> constructor;
  *         MockFun<Val<int>> fn1;
  *         MockFun<Val<std::string>> fn2;
  * };

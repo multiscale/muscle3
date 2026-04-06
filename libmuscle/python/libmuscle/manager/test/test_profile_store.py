@@ -1,7 +1,7 @@
 from libmuscle.profiling import (
         ProfileEvent, ProfileEventType, ProfileTimestamp)
 from libmuscle.manager.profile_store import ProfileStore
-from ymmsl import Operator, Port, Reference
+from ymmsl.v0_2 import Operator, Port, Reference
 
 import sqlite3
 from unittest.mock import patch

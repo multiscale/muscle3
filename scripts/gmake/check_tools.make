@@ -154,7 +154,7 @@ tool_command := curl
 include $(TOOLDIR)/detect_tool.make
 
 ifeq ($(DOWNLOAD), curl)
-    export DOWNLOAD := curl -LO
+    export DOWNLOAD := curl --retry 7 -LO
 endif
 
 ifndef DOWNLOAD
@@ -182,22 +182,26 @@ endif
 
 # Check for valgrind (for testing for memory leaks)
 $(info )
-$(info Looking for valgrind...)
-tool_var := VALGRIND
+$(info Looking for a leak detection tool...)
+tool_var := LEAK_DETECTOR
 include $(TOOLDIR)/check_override.make
 
 tool_command := valgrind
 include $(TOOLDIR)/detect_tool.make
 
-ifeq ($(VALGRIND), valgrind)
-    export VALGRIND := valgrind --leak-check=full --error-exitcode=1
+ifeq ($(LEAK_DETECTOR), valgrind)
+    export LEAK_DETECTOR := valgrind --leak-check=full --error-exitcode=1
 endif
 
-ifndef VALGRIND
+ifdef MUSCLE_MACOS
+    export LEAK_DETECTOR := leaks -atExit --
+endif
+
+ifndef LEAK_DETECTOR
     $(warning - Could not find valgrind, so tests will run without it.)
-    $(warning - To fix this, install valgrind and if necessary set VALGRIND to point to it.)
+    $(warning - To fix this, install valgrind and if necessary set LEAK_DETECTOR to point to it.)
 else
-    $(info - Will check for leaks using $(VALGRIND).)
+    $(info - Will check for leaks using $(LEAK_DETECTOR).)
 endif
 
 # Check number of cores

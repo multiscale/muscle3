@@ -1,5 +1,8 @@
 #include "mmsf_validator.hpp"
 
+#include <libmuscle/logger.hpp>
+
+#include <algorithm>
 #include <sstream>
 
 namespace {
@@ -15,9 +18,8 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 using ::ymmsl::Operator;
 
-MMSFValidator::MMSFValidator(PortManager const& port_manager, Logger & logger)
+MMSFValidator::MMSFValidator(PortManager const& port_manager)
     : port_manager_(port_manager)
-    , logger_(logger)
     , enabled_(true)
     , current_operator_(Operator::NONE)
 {
@@ -28,7 +30,7 @@ MMSFValidator::MMSFValidator(PortManager const& port_manager, Logger & logger)
     connected_ports_[Operator::O_I] = {};
     connected_ports_[Operator::S] = {};
     connected_ports_[Operator::O_F] = {};
-    
+
     for (auto const & value : port_names) {
         auto const & op = value.first;
         std::vector<std::string> connected_ports;
@@ -46,7 +48,7 @@ MMSFValidator::MMSFValidator(PortManager const& port_manager, Logger & logger)
     }
 
     if (!connected_ports_[Operator::NONE].empty())
-        logger_.warning(
+        log_warning(
                 "This instance is using ports with Operator.NONE. This does not "
                 "adhere to the Multiscale Modelling and Simulation Framework "
                 "and may lead to deadlocks. You can disable this warning by "
@@ -83,9 +85,9 @@ MMSFValidator::MMSFValidator(PortManager const& port_manager, Logger & logger)
     }
 
     if (enabled_) {
-        logger_.debug("MMSF Validator is enabled");
+        log_debug("MMSF Validator is enabled");
     } else {
-        logger_.debug(
+        log_debug(
                 "MMSF Validator is disabled: this instance uses vector ports, "
                 "which are not supported by the MMSF Validator.");
     }
@@ -197,7 +199,7 @@ void MMSFValidator::check_transition_(
             action = "Send on port '" + port_name + "'";
         }
 
-        logger_.warning(
+        log_warning(
                 action, " does not adhere to the MMSF: was expecting ", expected,
                 ".\n"
                 "Not adhering to the Multiscale Modelling and Simulation Framework "

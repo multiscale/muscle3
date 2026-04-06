@@ -1,6 +1,6 @@
 from typing import List, Optional, Set
 
-from ymmsl import SettingValue, Reference, Settings
+from ymmsl.v0_2 import SettingValue, Reference, Settings
 
 
 def has_setting_type(value: SettingValue, typ: str) -> bool:
@@ -111,8 +111,9 @@ class SettingsManager:
         names.update(extract_names(self.overlay))
         return sorted(names)
 
-    def get_setting(self, instance: Reference, setting_name: Reference,
-                    typ: Optional[str] = None) -> SettingValue:
+    def get_setting(
+            self, instance: Reference, setting_name: Reference,
+            typ: Optional[str] = None) -> SettingValue:
         """Returns the value of a setting.
 
         Args:
@@ -120,7 +121,7 @@ class SettingsManager:
             setting_name: The name of the setting to get the value of.
             typ: An optional type designation; if specified the type
                     is checked for a match before returning. Valid
-                    values are 'str', 'int', 'float', 'bool',
+                    values are 'str', 'int', 'float', 'bool', '[int]',
                     '[float]' and '[[float]]'.
 
         Raises:
@@ -142,8 +143,7 @@ class SettingsManager:
                 value = self.base[name]
                 break
         else:
-            raise KeyError(('Value for setting "{}" was not set.'.format(
-                setting_name)))
+            raise KeyError((f'Value for setting "{setting_name}" was not set.'))
 
         if typ is not None:
             if not has_setting_type(value, typ):

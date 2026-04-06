@@ -34,6 +34,16 @@ def yatiml_log_warning():
     yatiml.logger.setLevel(logging.WARNING)
 
 
+@pytest.fixture
+def ymmsl_path() -> str:
+    return str(Path(__file__).parent / 'ymmsl')
+
+
+@pytest.fixture
+def codes_path() -> str:
+    return str(Path(__file__).parent / 'codes')
+
+
 def ls_snapshots(run_dir, instance=None):
     """List all snapshots of the instance or workflow"""
     return sorted(run_dir.snapshot_dir(instance).iterdir(),
@@ -66,14 +76,31 @@ def make_server_process(ymmsl_doc, tmpdir):
         process.join()
 
 
-def _python_wrapper(instance_name, muscle_manager, callable):
+def _python_wrapper(tmpdir, instance_name, muscle_manager, callable):
     sys.argv.append(f'--muscle-instance={instance_name}')
     sys.argv.append(f'--muscle-manager={muscle_manager}')
-    callable()
+
+    with open(tmpdir / f'{instance_name}_stdout.txt', 'w') as f_out:
+        with open(tmpdir / f'{instance_name}_stderr.txt', 'w') as f_err:
+            sys.stdout = f_out
+            sys.stderr = f_err
+
+            root_logger = logging.getLogger()
+            handler = logging.StreamHandler()
+            handler.setFormatter(logging.Formatter(
+                '%(asctime)s %(levelname)s %(filename)s:%(lineno)d %(message)s'))
+            root_logger.addHandler(handler)
+            root_logger.setLevel(logging.DEBUG)
+
+            try:
+                callable()
+            except Exception as e:
+                root_logger.exception(e)
+                raise
 
 
 def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
-    """Start muscle_manager along with C++ and python actors.
+    """Start muscle_manager along with C++ and Python actors.
 
     Args:
         ymmsl_text: YMMSL configuration for the simulation
@@ -126,7 +153,7 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
                 # start python actor
                 proc = mp.Process(
                         target=_python_wrapper,
-                        args=(instance_name, env['MUSCLE_MANAGER'], actor),
+                        args=(tmpdir, instance_name, env['MUSCLE_MANAGER'], actor),
                         name=instance_name)
                 proc.start()
                 python_processes.append(proc)
@@ -174,12 +201,23 @@ def run_manager_with_actors(ymmsl_text, tmpdir, actors, expect_success=True):
 @pytest.fixture
 def mmp_server_config(yatiml_log_warning):
     return (
-            'ymmsl_version: v0.1\n'
-            'model:\n'
-            '  name: test_model\n'
+            'ymmsl_version: v0.2\n'
+            'description: A less simple configuration for integration tests\n'
+            'models:\n'
+            '- name: test_model\n'
+            '  description: A model for testing\n'
             '  components:\n'
-            '    macro: macro_implementation\n'
+            '    macro:\n'
+            '      description: The macro model\n'
+            '      ports:\n'
+            '        o_i: out\n'
+            '        s: in\n'
+            '      implementation: macro_implementation\n'
             '    micro:\n'
+            '      description: The micro model, many of them\n'
+            '      ports:\n'
+            '        f_init: in\n'
+            '        o_f: out\n'
             '      implementation: micro_implementation\n'
             '      multiplicity: [10]\n'
             '  conduits:\n'
@@ -194,9 +232,13 @@ def mmp_server_config(yatiml_log_warning):
             '  test6:\n'
             '    - [1.0, 2.0]\n'
             '    - [3.0, 1.0]\n'
-            'implementations:\n'
-            '  macro_implementation: macro.py\n'
-            '  micro_implementation: micro.py\n'
+            'programs:\n'
+            '  macro_implementation:\n'
+            '    description: Program implementing macro\n'
+            '    executable: macro.py\n'
+            '  micro_implementation:\n'
+            '    description: Program implementing micro\n'
+            '    executable: micro.py\n'
             )
 
 
@@ -209,12 +251,24 @@ def mmp_server_process(mmp_server_config, tmpdir):
 @pytest.fixture
 def mmp_server_config_simple(yatiml_log_warning):
     return (
-            'ymmsl_version: v0.1\n'
-            'model:\n'
-            '  name: test_model\n'
+            'ymmsl_version: v0.2\n'
+            'description: A simple configuration for integration tests\n'
+            'models:\n'
+            '- name: test_model\n'
+            '  description: A model for testing\n'
             '  components:\n'
-            '    macro: macro_implementation\n'
-            '    micro: micro_implementation\n'
+            '    macro:\n'
+            '      description: The macro model\n'
+            '      ports:\n'
+            '        o_i: out\n'
+            '        s: in\n'
+            '      implementation: macro_implementation\n'
+            '    micro:\n'
+            '      description: The micro model\n'
+            '      ports:\n'
+            '        f_init: in\n'
+            '        o_f: out\n'
+            '      implementation: micro_implementation\n'
             '  conduits:\n'
             '    macro.out: micro.in\n'
             '    micro.out: macro.in\n'
@@ -229,6 +283,16 @@ def mmp_server_config_simple(yatiml_log_warning):
             '    - [3.0, 1.0]\n'
             '  test_with_a_longer_name: 1\n'
             )
+
+
+@pytest.fixture
+def mmp_server_config_simple_nopython(mmp_server_config_simple):
+    return mmp_server_config_simple + '  python_compat: false\n'
+
+
+@pytest.fixture
+def mmp_server_config_simple_python(mmp_server_config_simple):
+    return mmp_server_config_simple + '  python_compat: true\n'
 
 
 @pytest.fixture

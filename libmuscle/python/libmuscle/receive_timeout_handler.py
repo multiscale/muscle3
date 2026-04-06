@@ -1,9 +1,13 @@
+import logging
 from typing import Optional
 
-from ymmsl import Reference
+from ymmsl.v0_2 import Reference
 
 from libmuscle.mcp.transport_client import TimeoutHandler
 from libmuscle.mmp_client import MMPClient
+
+
+_logger = logging.getLogger(__name__)
 
 
 class Deadlock(Exception):
@@ -56,6 +60,9 @@ class ReceiveTimeoutHandler(TimeoutHandler):
         else:
             # Ask the manager if we're part of a detected deadlock
             if self._manager.is_deadlocked():
+                _logger.error(
+                        'Deadlock detected, shutting down! Please see the manager log'
+                        ' for a description of the problem.')
                 raise Deadlock()
         self._num_timeouts += 1
 

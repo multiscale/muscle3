@@ -1,0 +1,14 @@
+ymmsl_version: v0.2
+
+description: |
+  Resources for the MPI-enabled versions of the reaction-diffusion model.
+
+  This specifies a single thread for macro, as in rd_resources.ymmsl, but the micro
+  (reaction) model is now MPI-enabled, so we specify the number of MPI processes
+  instead.
+
+resources:
+  macro:
+    threads: 1
+  micro:
+    mpi_processes: 2

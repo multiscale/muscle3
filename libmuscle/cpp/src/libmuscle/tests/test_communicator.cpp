@@ -9,10 +9,11 @@
 // into the real implementation under test.
 #include <ymmsl/ymmsl.hpp>
 
+#include <libmuscle/data.cpp>   // needs to be above close_port.cpp
 #include <libmuscle/close_port.cpp>
 #include <libmuscle/communicator.cpp>
-#include <libmuscle/data.cpp>
 #include <libmuscle/endpoint.cpp>
+#include <libmuscle/mark.cpp>
 #include <libmuscle/mcp/data_pack.cpp>
 #include <libmuscle/mpp_message.cpp>
 #include <libmuscle/mcp/tcp_util.cpp>
@@ -23,6 +24,7 @@
 #include <libmuscle/profiling.cpp>
 #include <libmuscle/receive_timeout_handler.cpp>
 #include <libmuscle/timestamp.cpp>
+#include <libmuscle/util.cpp>
 
 // Test code dependencies
 #include <memory>
@@ -78,7 +80,6 @@ struct libmuscle_communicator
     RESET_MOCKS(
             MockLogger, MockMMPClient, MockMPPClient, MockMPPServer, MockProfiler);
 
-    MockLogger logger_;
     MockProfiler profiler_;
     MockPortManager port_manager_;
     MockMMPClient manager_;
@@ -86,7 +87,7 @@ struct libmuscle_communicator
     Communicator communicator_;
 
     libmuscle_communicator()
-        : communicator_("component", {}, connected_port_manager_, logger_, profiler_, manager_)
+        : communicator_("component", {}, connected_port_manager_, profiler_, manager_)
     {
         port_manager_.settings_in_connected.return_value = false;
     }
@@ -275,7 +276,7 @@ TEST_F(libmuscle_communicator2, port_discard_error_on_resume) {
     // message_number=1
     ASSERT_THROW(connected_communicator_.receive_message("in"), std::runtime_error);
     bool message_logged = false;
-    for (auto const & log_args : logger_.caplog.call_args_list) {
+    for (auto const & log_args : MockLogger::instance().caplog.call_args_list) {
         auto const & msg = std::get<1>(log_args);
         if (msg.find("Discarding received message") != msg.npos) {
             message_logged = true;
@@ -317,7 +318,7 @@ TEST_F(libmuscle_communicator2, port_discard_success_on_resume) {
     auto const & recv_msg = std::get<0>(recv_msg_saved_until);
 
     bool message_logged = false;
-    for (auto const & log_args : logger_.caplog.call_args_list) {
+    for (auto const & log_args : MockLogger::instance().caplog.call_args_list) {
         auto const & log_msg = std::get<1>(log_args);
         if (log_msg.find("Discarding received message") != log_msg.npos) {
             message_logged = true;
@@ -384,4 +385,3 @@ TEST_F(libmuscle_communicator2, test_shutdown) {
 
     ASSERT_TRUE(expected_receivers.empty());
 }
-

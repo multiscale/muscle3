@@ -19,6 +19,9 @@
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
+class ConnectionLockedError : public std::runtime_error {
+    using std::runtime_error::runtime_error; };
+
 class MockMMPClient : public MockClass<MockMMPClient> {
     public:
         MockMMPClient(ReturnValue) {

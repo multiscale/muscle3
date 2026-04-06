@@ -2,7 +2,7 @@ from copy import copy
 import logging
 from typing import Dict, Iterable, List, Mapping, Set, Tuple
 
-from ymmsl import (
+from ymmsl.v0_2 import (
         Component, Configuration, Model, MPICoresResReq, MPINodesResReq,
         Operator, Reference, ResourceRequirements, ThreadedResReq)
 
@@ -17,7 +17,33 @@ _PredSuccType = Dict[Component, Set[Tuple[Component, int]]]
 
 
 class ModelGraph:
-    """Represents a yMMSL model as a graph."""
+    """Represents a yMMSL model as a graph.
+
+    This introduces some definitions:
+
+    - Call conduits (from O_I to F_INIT) go from a direct superpredecessor to a direct
+      subsuccessor.
+    - Dispatch conduits (from O_F to F_INIT) go from a direct predecessor to a direct
+      successor.
+    - Release conduits (from O_F to S) go from a direct subpredecessor to a direct
+      supersuccessor.
+
+    - Supersuccessors are components that are reachable from the current component via
+      dispatch and at least one release conduits.
+    - Subsuccessors are components that are reachable from the current component via
+      dispatch and at least one call conduit.
+    - Successors are components that will start running after the current component
+      finishes.
+
+    - Superpredecessors are the inverse of subsuccessors.
+    - Subpredecessors are the inverse of supersuccessors.
+    - Predecessors are the inverse of successors.
+
+    - Macros are components that are both a superpredecessor and a supersuccessor of the
+      current component.
+    - Micros are components that are both a subsuccessor and a subpredecessor of the
+      current component.
+    """
     def __init__(self, model: Model) -> None:
         """Create a ModelGraph.
 
@@ -51,7 +77,7 @@ class ModelGraph:
 
     def components(self) -> Iterable[Component]:
         """Return the components of the model (nodes)."""
-        return self._model.components
+        return self._model.components.values()
 
     def component(self, name: Reference) -> Component:
         """Return a component by name.
@@ -65,10 +91,7 @@ class ModelGraph:
         Raises:
             KeyError: If no component could be found
         """
-        for component in self._model.components:
-            if component.name == name:
-                return component
-        raise KeyError('Component {} not found'.format(name))
+        return self._model.components[name]
 
     def successors(self, component: Component) -> Set[Tuple[Component, int]]:
         """Return the successors of the given component.
@@ -164,20 +187,20 @@ class ModelGraph:
             with for each component in the model the corresponding set
             of components.
         """
-        self._superpreds = {c: set() for c in self._model.components}
-        self._predecessors = {c: set() for c in self._model.components}
-        self._subpreds = {c: set() for c in self._model.components}
+        self._superpreds = {c: set() for c in self._model.components.values()}
+        self._predecessors = {c: set() for c in self._model.components.values()}
+        self._subpreds = {c: set() for c in self._model.components.values()}
 
         num_remaining_preds = {
                 c: (
                     len(self._direct_predecessors[c]) +
                     len(self._direct_superpreds[c]))
-                for c in self._model.components}
+                for c in self._model.components.values()}
         num_remaining_subpreds = {
                 c: len(self._direct_subpreds[c])
-                for c in self._model.components}
+                for c in self._model.components.values()}
 
-        todo = set(self._model.components)
+        todo = set(self._model.components.values())
         started: Set[Component] = set()
         doing: Set[Component] = set()
         finished: Set[Component] = set()
@@ -261,21 +284,21 @@ class ModelGraph:
             with for each component in the model the corresponding set
             of components.
         """
-        self._supersuccs = {c: set() for c in self._model.components}
-        self._successors = {c: set() for c in self._model.components}
-        self._subsuccs = {c: set() for c in self._model.components}
+        self._supersuccs = {c: set() for c in self._model.components.values()}
+        self._successors = {c: set() for c in self._model.components.values()}
+        self._subsuccs = {c: set() for c in self._model.components.values()}
 
         num_remaining_succs = {
                 c: (
                     len(self._direct_successors[c]) +
                     len(self._direct_supersuccs[c]))
-                for c in self._model.components}
+                for c in self._model.components.values()}
 
         num_remaining_subsuccs = {
                 c: len(self._direct_subsuccs[c])
-                for c in self._model.components}
+                for c in self._model.components.values()}
 
-        todo = set(self._model.components)
+        todo = set(self._model.components.values())
         started: Set[Component] = set()
         doing: Set[Component] = set()
         finished: Set[Component] = set()
@@ -334,42 +357,51 @@ class ModelGraph:
             done |= finished
 
     def _calc_direct_succs_preds(self) -> None:
-        """Calculates all successors and predecessors of components.
+        """Calculates all direct successors and predecessors of components.
 
         Preconditions:
             self._model set
 
         Side effects:
-            Sets self._direct_successors to a dictionary mapping each
-            component in the model to the set of components that it
-            has a * -> F_INIT conduit to.
+            Sets self._direct_supersuccs to a dictionary mapping each component in the
+            model to the set of components that it has ain O_F -> S conduit to.
+
+            Sets self._direct_successors to a dictionary mapping each component in the
+            model to the set of components that it has an O_F -> F_INIT conduit to.
+
+            Sets self._direct_subsuccs to a dictionary mapping each component in the
+            model to the set of components that it has an O_I -> F_INIT conduit to.
+
+            Sets self._direct_superpreds to a dictionary mapping each component in the
+            model to the set of components that it has an O_I -> F_INIT conduit from.
+
+            Sets self._direct_predecessors to a dictionary mapping each component in the
+            model to the set of components that it has an O_F -> F_INIT conduit from.
+
+            Sets self._direct_subpreds to a dictionary mapping each component in the
+            model to the set of components that it has an O_F -> S conduit from.
         """
-        components = {c.name: c for c in self._model.components}
-        self._direct_supersuccs = {c: set() for c in self._model.components}
-        self._direct_successors = {c: set() for c in self._model.components}
-        self._direct_subsuccs = {c: set() for c in self._model.components}
-        self._direct_superpreds = {c: set() for c in self._model.components}
-        self._direct_predecessors = {c: set() for c in self._model.components}
-        self._direct_subpreds = {c: set() for c in self._model.components}
+        self._direct_supersuccs = {c: set() for c in self._model.components.values()}
+        self._direct_successors = {c: set() for c in self._model.components.values()}
+        self._direct_subsuccs = {c: set() for c in self._model.components.values()}
+        self._direct_superpreds = {c: set() for c in self._model.components.values()}
+        self._direct_predecessors = {c: set() for c in self._model.components.values()}
+        self._direct_subpreds = {c: set() for c in self._model.components.values()}
 
         for conduit in self._model.conduits:
-            sender = components[conduit.sending_component()]
+            sender = self._model.components[conduit.sending_component()]
             snd_op = None
-            if sender.ports:
-                if conduit.sending_port() in sender.ports.o_i:
-                    snd_op = Operator.O_I
-                elif conduit.sending_port() in sender.ports.o_f:
-                    snd_op = Operator.O_F
+            if conduit.sending_port() in sender.ports:
+                snd_op = sender.ports[conduit.sending_port()].operator
 
-            receiver = components[conduit.receiving_component()]
+            receiver = self._model.components[conduit.receiving_component()]
+            recv_port = conduit.receiving_port()
             recv_op = None
-            if conduit.receiving_port() == 'muscle_settings_in':
+            if recv_port == 'muscle_settings_in':
                 recv_op = Operator.F_INIT
             elif receiver.ports:
-                if conduit.receiving_port() in receiver.ports.f_init:
-                    recv_op = Operator.F_INIT
-                elif conduit.receiving_port() in receiver.ports.s:
-                    recv_op = Operator.S
+                if recv_port in receiver.ports:
+                    recv_op = receiver.ports[recv_port].operator
 
             shared_dims = min(len(sender.multiplicity), len(receiver.multiplicity))
 
@@ -483,13 +515,13 @@ class Planner:
         _logger.debug(f'Planning on resources {self._all_resources}')
 
         # Analyse model
-        model = ModelGraph(configuration.model)
+        model = ModelGraph(configuration.root_model())
         requirements = configuration.resources
-        implementations = configuration.implementations
+        programs = configuration.programs
         exclusive = {
                 i for c in model.components() for i in c.instances()
                 if (c.implementation and
-                    not implementations[c.implementation].can_share_resources)}
+                    not programs[c.implementation].can_share_resources)}
 
         # Allocate
         unallocated_instances = [

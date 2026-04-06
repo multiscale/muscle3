@@ -1,20 +1,29 @@
-from errno import ENOTCONN
 import select
 import logging
 import socket
+import time
 from typing import Optional, Tuple
 
 from libmuscle.mcp.transport_client import ProfileData, TransportClient, TimeoutHandler
-from libmuscle.mcp.tcp_util import recv_all, recv_int64, send_int64
+from libmuscle.mcp.tcp_util import (
+        is_disconnect, recv_frame, recv_int64, send_frame, send_int64)
 from libmuscle.profiling import ProfileTimestamp
+from libmuscle.util import Retrier
 
 
 _logger = logging.getLogger(__name__)
 
 
+_CONNECT_TIMEOUT = 3.0                      # seconds
+_RECONNECT_TIMEOUT = 60.0                   # seconds
+
+
+class NoPendingResponse(RuntimeError):
+    pass
+
+
 class TcpTransportClient(TransportClient):
-    """A client that connects to a TCPTransport server.
-    """
+    """A client that connects to a TCPTransport server."""
     @staticmethod
     def can_connect_to(location: str) -> bool:
         """Whether this client class can connect to the given location.
@@ -30,52 +39,18 @@ class TcpTransportClient(TransportClient):
     def __init__(self, location: str) -> None:
         """Create a TcpClient for a given location.
 
-        The client will connect to this location and be able to request
-        messages from any instance and port represented by it.
+        The client will connect to this location and be able to send requests to it and
+        return the response.
 
         Args:
             location: A location string for the peer.
         """
-        addresses = location[4:].split(',')
+        self._addresses = location[4:].split(',')
+        self._socket: Optional[socket.SocketType] = None
+        self._session = 0
+        self._cur_request = 0
 
-        sock: Optional[socket.SocketType] = None
-        for address in addresses:
-            try:
-                sock = self._connect(address, False)
-                break
-            except RuntimeError:
-                pass
-
-        if sock is None:
-            # None of our quick connection attempts worked. Either there's a network
-            # problem, or the server is very busy. Let's try again with more patience.
-            _logger.warning(
-                    f'Could not immediately connect to {location}, trying again with'
-                    ' more patience. Please report this if it happens frequently.')
-
-            for address in addresses:
-                try:
-                    sock = self._connect(address, True)
-                    break
-                except RuntimeError:
-                    pass
-
-        if sock is None:
-            _logger.error(f'Failed to connect also on the second try to {location}')
-            raise RuntimeError('Could not connect to the server at location'
-                               ' {}'.format(location))
-
-        if hasattr(socket, "TCP_NODELAY"):
-            sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
-        if hasattr(socket, "TCP_QUICKACK"):
-            sock.setsockopt(socket.SOL_TCP, socket.TCP_QUICKACK, 1)
-        self._socket = sock
-
-        if hasattr(select, "poll"):
-            self._poll_obj: Optional[select.poll] = select.poll()
-            self._poll_obj.register(self._socket, select.POLLIN)
-        else:
-            self._poll_obj = None  # On platforms that don't support select.poll
+        self._reconnect(False)
 
     def call(self, request: bytes, timeout_handler: Optional[TimeoutHandler] = None
              ) -> Tuple[bytes, ProfileData]:
@@ -91,25 +66,64 @@ class TcpTransportClient(TransportClient):
         Returns:
             The received response
         """
-        start_wait = ProfileTimestamp()
-        send_int64(self._socket, len(request))
-        self._socket.sendall(request)
-
+        self._cur_request += 1
+        retrier = Retrier(_RECONNECT_TIMEOUT)
+        deadline = None
         did_timeout = False
-        if timeout_handler is not None:
-            while not self._poll(timeout_handler.timeout):
-                did_timeout = True
-                timeout_handler.on_timeout()
 
-        length = recv_int64(self._socket)
-        if did_timeout:
-            assert timeout_handler is not None  # mypy
-            timeout_handler.on_receive()
-        start_transfer = ProfileTimestamp()
+        def handle_timeout() -> None:
+            nonlocal deadline
+            nonlocal did_timeout
 
-        response = recv_all(self._socket, length)
-        stop_transfer = ProfileTimestamp()
-        return response, (start_wait, start_transfer, stop_transfer)
+            assert timeout_handler is not None      # mypy
+            assert deadline is not None             # mypy
+
+            timeout_handler.on_timeout()
+            deadline += timeout_handler.timeout
+            did_timeout = True
+
+        while True:
+            try:
+                if deadline is not None and deadline < time.monotonic():
+                    handle_timeout()
+
+                if self._socket is None:
+                    raise ConnectionError('No connection could be established')
+
+                start_wait = ProfileTimestamp()
+                send_int64(self._socket, self._cur_request)
+                send_frame(self._socket, request)
+
+                if timeout_handler is not None:
+                    if deadline is None:
+                        deadline = time.monotonic() + timeout_handler.timeout
+
+                    while not self._poll(deadline - time.monotonic()):
+                        handle_timeout()
+
+                    if did_timeout:
+                        timeout_handler.on_receive()
+                        did_timeout = False
+
+                start_transfer = ProfileTimestamp()
+                response = recv_frame(self._socket)
+                stop_transfer = ProfileTimestamp()
+                return response, (start_wait, start_transfer, stop_transfer)
+
+            except Exception as e:
+                if is_disconnect(e):
+                    self._handle_disconnect(retrier)
+                else:
+                    raise
+
+    def close(self) -> None:
+        """Closes this client.
+
+        This closes any connections this client has and performs other shutdown
+        activities as needed.
+        """
+        self._end_session()
+        self._close_connection()
 
     def _poll(self, timeout: float) -> bool:
         """Poll the socket and return whether its ready for receiving.
@@ -124,28 +138,96 @@ class TcpTransportClient(TransportClient):
             True if the socket is ready for receiving data, False otherwise.
         """
         if self._poll_obj is not None:
-            ready = self._poll_obj.poll(timeout * 1000)  # poll timeout is in ms
+            ready_events = self._poll_obj.poll(timeout * 1000)  # poll timeout is in ms
+            return bool(ready_events)
         else:
             # Fallback to select()
-            ready, _, _ = select.select([self._socket], (), (), timeout)
-        return bool(ready)
+            ready_sockets, _, _ = select.select([self._socket], (), (), timeout)
+            return bool(ready_sockets)
 
-    def close(self) -> None:
-        """Closes this client.
+    def _handle_disconnect(self, retrier: Retrier) -> None:
+        """Handles a broken network connection.
 
-        This closes any connections this client has and/or performs
-        other shutdown activities.
+        Args:
+            retrier: A Retrier that keeps track of timing any retries
         """
+        _logger.warning(
+                f'The TCP network connection with {self._addresses} was lost'
+                ' unexpectedly.')
+
         try:
-            self._socket.shutdown(socket.SHUT_RDWR)
-            self._socket.close()
-        except OSError as e:
-            # This can happen if the peer has shut down already when we
-            # close our connection to it, which is fine.
-            if e.errno != ENOTCONN:
+            self._close_connection()
+        except Exception as e:
+            if not is_disconnect(e):
                 raise
 
-    def _connect(self, address: str, patient: bool) -> socket.SocketType:
+        if retrier.should_give_up():
+            _logger.warning(
+                    f'I am unable to reconnect to {self._addresses} despite repeated'
+                    ' attempts, and I am giving up. Please check your network.')
+            raise
+
+        retrier.sleep()
+
+        _logger.warning(f'Trying to reconnect to {self._addresses}')
+
+        self._reconnect()
+
+    def _reconnect(self, re: bool = True) -> None:
+        """(Re)connect to the server and resume the current session
+
+        Args:
+            re: True if this is a reconnect rather than an initial connect.
+        """
+        try:
+            self._make_connection()
+            assert self._socket is not None
+            send_int64(self._socket, self._session)
+            self._session = recv_int64(self._socket)
+
+            if re:
+                _logger.warning(
+                        f'Reconnected to {self._addresses}, continuing the'
+                        ' simulation')
+
+        except Exception as e:
+            if is_disconnect(e):
+                self._close_connection()
+                _logger.warning(
+                        f'Failed to reconnect to {self._addresses}, will retry'
+                        ' later')
+            else:
+                raise
+
+    def _make_connection(self) -> None:
+        """Connect to the server and set up polling
+
+        Uses self._addresses and creates a (new) self._socket and self._poll_obj.
+        """
+        sock: Optional[socket.SocketType] = None
+        for address in self._addresses:
+            try:
+                sock = self._connect(address)
+                break
+            except RuntimeError:
+                pass
+
+        if sock is None:
+            raise ConnectionRefusedError('Failed to connect')
+
+        if hasattr(socket, 'TCP_NODELAY'):
+            sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
+        if hasattr(socket, 'TCP_QUICKACK'):
+            sock.setsockopt(socket.SOL_TCP, socket.TCP_QUICKACK, 1)
+        self._socket = sock
+
+        if hasattr(select, 'poll'):
+            self._poll_obj: Optional[select.poll] = select.poll()
+            self._poll_obj.register(self._socket, select.POLLIN)
+        else:
+            self._poll_obj = None  # On platforms that don't support select.poll
+
+    def _connect(self, address: str) -> socket.SocketType:
         loc_parts = address.rsplit(':', 1)
         host = loc_parts[0]
         if host.startswith('['):
@@ -161,16 +243,44 @@ class TcpTransportClient(TransportClient):
         for family, socktype, proto, _, sockaddr in addrinfo:
             try:
                 sock = socket.socket(family, socktype, proto)
-            except Exception:
-                continue
-
-            try:
-                sock.settimeout(20.0 if patient else 3.0)     # seconds
+                sock.settimeout(_CONNECT_TIMEOUT)
                 sock.connect(sockaddr)
-                sock.settimeout(60.0)
-            except Exception:
+                sock.settimeout(None)
+                return sock
+            except (ConnectionRefusedError, ConnectionAbortedError):
+                _logger.info(f'Failed to connect to {sockaddr}')
                 sock.close()
-                continue
-            return sock
+                break
+
+            except Exception as e:
+                _logger.debug(f'Failed to connect socket: {e}')
+                sock.close()
+                break
 
         raise RuntimeError('Could not connect')
+
+    def _end_session(self) -> None:
+        try:
+            if self._socket is not None:
+                send_int64(self._socket, 0)
+        except Exception as e:
+            # This can raise if the peer has shut down already when we close our
+            # connection to it, which is fine and can be ignored. Otherwise, we reraise.
+            if not is_disconnect(e):
+                raise
+
+            _logger.warning(
+                    'Disconnected while trying to end session, shutdown will take'
+                    ' longer than usual because of this.')
+
+    def _close_connection(self) -> None:
+        if self._socket is not None:
+            try:
+                self._socket.shutdown(socket.SHUT_RDWR)
+                self._socket.close()
+            except Exception as e:
+                # This can raise if the peer has shut down already when we close our
+                # connection to it, which is fine and can be ignored. Otherwise, we
+                # reraise.
+                if not is_disconnect(e):
+                    raise

@@ -3,6 +3,48 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.9.0
+
+## Added
+
+- Resilient TCP network connections
+- New yMMSL v0.2 file format
+- Support for hierarchical models
+- Importing from other yMMSL files
+- Supported settings for programs and models
+
+- Instance.get_setting() now takes a default value
+- DataConstRef::describe() function for easier debugging
+
+- Support for Python 3.14
+- Support for macOS 26
+
+### Improved
+
+- MessagePack upgraded from 3.2.0 to 7.0.0
+- MessagePack headers no longer needed to compile codes
+
+### Removed
+
+- Support for Python 3.8
+- Support for macOS 13
+- Support for Ubuntu 20.04 LTS
+
+### Thanks
+
+- Saber for build fixes
+- Pranav Shridar for GoogleTest and MessagePack upgrades and fixes
+- Pranav Shridar for macOS development improvements
+- Victor for caching example
+- Iris and Maarten for get_setting() default value
+
+### Funding
+
+- EUROfusion
+- Netherlands eScience Center
+- The ITER Organization
+
+
 ## 0.8.0
 
 ### Added

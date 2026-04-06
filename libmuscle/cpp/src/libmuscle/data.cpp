@@ -25,6 +25,79 @@ namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
 // helper functions
 
+template <typename T>
+std::string describe_type_();
+
+template <>
+std::string describe_type_<bool>() {
+    return "boolean";
+}
+
+template <>
+std::string describe_type_<std::string>() {
+    return "string";
+}
+
+template <>
+std::string describe_type_<char>() {
+    return "char";
+}
+
+template <>
+std::string describe_type_<short int>() {
+    return "short int";
+}
+
+template <>
+std::string describe_type_<int>() {
+    return "int";
+}
+
+template <>
+std::string describe_type_<long int>() {
+    return "long int";
+}
+
+template <>
+std::string describe_type_<long long int>() {
+    return "long long int";
+}
+
+template <>
+std::string describe_type_<unsigned char>() {
+    return "unsigned char";
+}
+
+template <>
+std::string describe_type_<unsigned short int>() {
+    return "unsigned short int";
+}
+
+template <>
+std::string describe_type_<unsigned int>() {
+    return "unsigned int";
+}
+
+template <>
+std::string describe_type_<unsigned long int>() {
+    return "unsigned long int";
+}
+
+template <>
+std::string describe_type_<unsigned long long int>() {
+    return "unsigned long long int";
+}
+
+template <>
+std::string describe_type_<float>() {
+    return "single-precision float";
+}
+
+template <>
+std::string describe_type_<double>() {
+    return "double-precision float";
+}
+
 template <typename Element>
 ExtTypeId grid_type_id_();
 
@@ -405,6 +478,69 @@ void DataConstRef::reseat(DataConstRef const & target) {
     obj_cache_ = target.obj_cache_;
 }
 
+std::string DataConstRef::describe() const {
+    std::ostringstream oss;
+    int8_t et = -1;
+
+    switch (mp_obj_->type) {
+        case msgpack::type::BOOLEAN:
+            oss << "a boolean with value " << std::boolalpha << as<bool>();
+            break;
+        case msgpack::type::POSITIVE_INTEGER:
+            oss << "an (unsigned) int with value " << as<int>();
+            break;
+        case msgpack::type::NEGATIVE_INTEGER:
+            oss << "an int with value " << as<int>();
+            break;
+        case msgpack::type::FLOAT32:
+            oss << "a single-precision float with value " << as<float>();
+            break;
+        case msgpack::type::FLOAT64:
+            oss << "a double-precision float with value " << as<double>();
+            break;
+        case msgpack::type::STR:
+            oss << "a string with value '" << as<std::string>() << "'";
+            break;
+        case msgpack::type::NIL:
+            oss << "a nil value";
+            break;
+        case msgpack::type::MAP:
+            oss << "a dictionary";
+            break;
+        case msgpack::type::ARRAY:
+            oss << "a list";
+            break;
+        case msgpack::type::BIN:
+            oss << "a byte array";
+            break;
+        case msgpack::type::EXT:
+            et = mp_obj_->via.ext.type();
+            if (et == static_cast<int8_t>(ExtTypeId::settings)) {
+                oss << "a Settings object";
+            }
+            else if (et == static_cast<int8_t>(ExtTypeId::grid_int32))  {
+                oss << "a grid of 32-bit integers";
+            }
+            else if (et == static_cast<int8_t>(ExtTypeId::grid_int64))  {
+                oss << "a grid of 64-bit integers";
+            }
+            else if (et == static_cast<int8_t>(ExtTypeId::grid_float32))  {
+                oss << "a grid of single-precision floats";
+            }
+            else if (et == static_cast<int8_t>(ExtTypeId::grid_float64))  {
+                oss << "a grid of double-precision floats";
+            }
+            else if (et == static_cast<int8_t>(ExtTypeId::grid_bool))  {
+                oss << "a grid of booleans";
+            }
+            break;
+        default:
+            oss << "something the MUSCLE3 developers overlooked...";
+    }
+
+    return oss.str();
+}
+
 template <>
 bool DataConstRef::is_a<bool>() const {
     return mp_obj_->type == msgpack::type::BOOLEAN;
@@ -563,9 +699,10 @@ SettingValue DataConstRef::as<SettingValue>() const {
                     " lists, which I cannot convert to a SettingValue.");
     }
     else
-        throw std::runtime_error("Tried to convert a DataConstRef or Data to"
-                " a SettingValue, which it isn't. Did you receive data of a"
-                " type you were not expecting?");
+        throw std::runtime_error(
+                "Tried to convert a DataConstRef or Data to a SettingValue, but it is "
+                + describe() + ". Did you receive data of a type you were not"
+                " expecting?");
 }
 
 // This uses as<SettingValue>, so has to be below it.
@@ -590,9 +727,10 @@ bool DataConstRef::is_a<SettingValue>() const {
 template <>
 Settings DataConstRef::as<Settings>() const {
     if (!is_a<Settings>())
-        throw std::runtime_error("Tried to convert a DataConstRef or Data to"
-                " a Settings, which it isn't. Did you receive data of a type"
-                " you were not expecting?");
+        throw std::runtime_error(
+                "Tried to convert a DataConstRef or Data to a Settings, but it is "
+                + describe() + ". Did you receive data of a type you were not"
+                " expecting?");
 
     auto ext = mp_obj_->as<msgpack::type::ext>();
     auto oh = msgpack::unpack(ext.data(), ext.size());
@@ -611,6 +749,31 @@ Settings DataConstRef::as<Settings>() const {
     }
     return settings;
 }
+
+template <typename T>
+T DataConstRef::as() const {
+    if (!is_a<T>())
+        throw std::runtime_error(
+                "Tried to convert a DataConstRef or Data to a " + describe_type_<T>() +
+                " but it is " + describe() + ". Did you receive data of a type you were"
+                " not expecting?");
+    return mp_obj_->as<T>();
+}
+
+template bool DataConstRef::as<bool>() const;
+template std::string DataConstRef::as<std::string>() const;
+template char DataConstRef::as<char>() const;
+template short int DataConstRef::as<short int>() const;
+template int DataConstRef::as<int>() const;
+template long int DataConstRef::as<long int>() const;
+template long long int DataConstRef::as<long long int>() const;
+template unsigned char DataConstRef::as<unsigned char>() const;
+template unsigned short int DataConstRef::as<unsigned short int>() const;
+template unsigned int DataConstRef::as<unsigned int>() const;
+template unsigned long int DataConstRef::as<unsigned long int>() const;
+template unsigned long long int DataConstRef::as<unsigned long long int>() const;
+template float DataConstRef::as<float>() const;
+template double DataConstRef::as<double>() const;
 
 std::size_t DataConstRef::size() const {
     if (is_a_dict())
@@ -786,6 +949,18 @@ DataConstRef::DataConstRef(char ext_type_id, DataConstRef const & data)
     *mp_obj_ << msgpack::type::ext_ref(zoned_mem, buf.size() + 1);
 }
 
+template <typename T>
+T * DataConstRef::zone_alloc_(uint32_t size) {
+    if (mp_zones_->empty())
+        mp_zones_->push_back(std::make_shared<msgpack::zone>(24));
+    auto num_bytes = sizeof(T) * size;
+    return static_cast<T*>((*mp_zones_)[0]->allocate_align(
+                num_bytes, MSGPACK_ZONE_ALIGNOF(T)));
+}
+
+template msgpack::object * DataConstRef::zone_alloc_<msgpack::object>(uint32_t);
+template char * DataConstRef::zone_alloc_<char>(uint32_t);
+
 std::vector<int64_t> DataConstRef::as_vec_int_() const {
     std::vector<int64_t> result;
     DataConstRef const & self = *this;
@@ -837,19 +1012,108 @@ DataConstRef DataConstRef::grid_dict_() const {
     return *obj_cache_;
 }
 
+template <typename T>
 void DataConstRef::set_dict_item_(
-        uint32_t offset, std::string const & key, DataConstRef const & value
-) {
+        uint32_t offset, std::string const & key, typename si_arg_type_<T>::type value)
+{
     mp_obj_->via.map.ptr[offset].key = msgpack::object(key, *mp_zones_->front());
     mp_obj_->via.map.ptr[offset].val = msgpack::object(value, *mp_zones_->front());
-    mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
 }
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
+template void DataConstRef::set_dict_item_<DataConstRef>(
+        uint32_t, std::string const &, DataConstRef const &);
+template void DataConstRef::set_dict_item_<Data>(
+        uint32_t, std::string const &, Data const &);
+template void DataConstRef::set_dict_item_<bool>(
+        uint32_t, std::string const &, bool);
+template void DataConstRef::set_dict_item_<std::string>(
+        uint32_t, std::string const &, std::string const &);
+template void DataConstRef::set_dict_item_<char const *>(
+        uint32_t, std::string const &, char const *);
+template void DataConstRef::set_dict_item_<char *>(
+        uint32_t, std::string const &, char *);
+template void DataConstRef::set_dict_item_<char>(
+        uint32_t, std::string const &, char);
+template void DataConstRef::set_dict_item_<short int>(
+        uint32_t, std::string const &, short int);
+template void DataConstRef::set_dict_item_<int>(
+        uint32_t, std::string const &, int);
+template void DataConstRef::set_dict_item_<long int>(
+        uint32_t, std::string const &, long int);
+template void DataConstRef::set_dict_item_<long long int>(
+        uint32_t, std::string const &, long long int);
+template void DataConstRef::set_dict_item_<unsigned char>(
+        uint32_t, std::string const &, unsigned char);
+template void DataConstRef::set_dict_item_<unsigned short int>(
+        uint32_t, std::string const &, unsigned short int);
+template void DataConstRef::set_dict_item_<unsigned int>(
+        uint32_t, std::string const &, unsigned int);
+template void DataConstRef::set_dict_item_<unsigned long int>(
+        uint32_t, std::string const &, unsigned long int);
+template void DataConstRef::set_dict_item_<unsigned long long int>(
+        uint32_t, std::string const &, unsigned long long int);
+template void DataConstRef::set_dict_item_<float>(
+        uint32_t, std::string const &, float);
+template void DataConstRef::set_dict_item_<double>(
+        uint32_t, std::string const &, double);
+
+#endif
 
 void DataConstRef::init_dict_(uint32_t size) {
     mp_obj_->type = msgpack::type::MAP;
     mp_obj_->via.map.size = size;
     mp_obj_->via.map.ptr = zone_alloc_<msgpack::object_kv>(size);
 }
+
+template <typename T>
+void DataConstRef::set_list_item_(
+        uint32_t offset, typename si_arg_type_<T>::type value)
+{
+    mp_obj_->via.array.ptr[offset] = msgpack::object(value, *mp_zones_->front());
+}
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
+template void DataConstRef::set_list_item_<DataConstRef>(
+        uint32_t, DataConstRef const &);
+template void DataConstRef::set_list_item_<Data>(
+        uint32_t, Data const &);
+template void DataConstRef::set_list_item_<bool>(
+        uint32_t, bool);
+template void DataConstRef::set_list_item_<std::string>(
+        uint32_t, std::string const &);
+template void DataConstRef::set_list_item_<char const *>(
+        uint32_t, char const *);
+template void DataConstRef::set_list_item_<char *>(
+        uint32_t, char *);
+template void DataConstRef::set_list_item_<char>(
+        uint32_t, char);
+template void DataConstRef::set_list_item_<short int>(
+        uint32_t, short int);
+template void DataConstRef::set_list_item_<int>(
+        uint32_t, int);
+template void DataConstRef::set_list_item_<long int>(
+        uint32_t, long int);
+template void DataConstRef::set_list_item_<long long int>(
+        uint32_t, long long int);
+template void DataConstRef::set_list_item_<unsigned char>(
+        uint32_t, unsigned char);
+template void DataConstRef::set_list_item_<unsigned short int>(
+        uint32_t, unsigned short int);
+template void DataConstRef::set_list_item_<unsigned int>(
+        uint32_t, unsigned int);
+template void DataConstRef::set_list_item_<unsigned long int>(
+        uint32_t, unsigned long int);
+template void DataConstRef::set_list_item_<unsigned long long int>(
+        uint32_t, unsigned long long int);
+template void DataConstRef::set_list_item_<float>(
+        uint32_t, float);
+template void DataConstRef::set_list_item_<double>(
+        uint32_t, double);
+
+#endif
 
 void DataConstRef::init_list_(uint32_t size) {
     mp_obj_->type = msgpack::type::ARRAY;
@@ -1062,19 +1326,102 @@ char * Data::as_byte_array() {
     return const_cast<char *>(mp_obj_->via.bin.ptr);
 }
 
+template <typename T>
 void Data::set_dict_item_(
-        uint32_t offset, std::string const & key, Data const & value
-) {
+        uint32_t offset, std::string const & key, typename si_arg_type_<T>::type value)
+{
     mp_obj_->via.map.ptr[offset].key = msgpack::object(key, *mp_zones_->front());
     mp_obj_->via.map.ptr[offset].val = msgpack::object(value, *mp_zones_->front());
-    mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
 }
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
+template void Data::set_dict_item_<Data>(
+        uint32_t, std::string const &, Data const &);
+template void Data::set_dict_item_<bool>(
+        uint32_t, std::string const &, bool);
+template void Data::set_dict_item_<std::string>(
+        uint32_t, std::string const &, std::string const &);
+template void Data::set_dict_item_<char const *>(
+        uint32_t, std::string const &, char const *);
+template void Data::set_dict_item_<char *>(
+        uint32_t, std::string const &, char *);
+template void Data::set_dict_item_<char>(
+        uint32_t, std::string const &, char);
+template void Data::set_dict_item_<short int>(
+        uint32_t, std::string const &, short int);
+template void Data::set_dict_item_<int>(
+        uint32_t, std::string const &, int);
+template void Data::set_dict_item_<long int>(
+        uint32_t, std::string const &, long int);
+template void Data::set_dict_item_<long long int>(
+        uint32_t, std::string const &, long long int);
+template void Data::set_dict_item_<unsigned char>(
+        uint32_t, std::string const &, unsigned char);
+template void Data::set_dict_item_<unsigned short int>(
+        uint32_t, std::string const &, unsigned short int);
+template void Data::set_dict_item_<unsigned int>(
+        uint32_t, std::string const &, unsigned int);
+template void Data::set_dict_item_<unsigned long int>(
+        uint32_t, std::string const &, unsigned long int);
+template void Data::set_dict_item_<unsigned long long int>(
+        uint32_t, std::string const &, unsigned long long int);
+template void Data::set_dict_item_<float>(
+        uint32_t, std::string const &, float);
+template void Data::set_dict_item_<double>(
+        uint32_t, std::string const &, double);
+
+#endif
 
 void Data::init_dict_(uint32_t size) {
     mp_obj_->type = msgpack::type::MAP;
     mp_obj_->via.map.size = size;
     mp_obj_->via.map.ptr = zone_alloc_<msgpack::object_kv>(size);
 }
+
+template <typename T>
+void Data::set_list_item_(uint32_t offset, typename si_arg_type_<T>::type value) {
+    mp_obj_->via.array.ptr[offset] = msgpack::object(value, *mp_zones_->front());
+}
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
+template void Data::set_list_item_<Data>(
+        uint32_t, Data const &);
+template void Data::set_list_item_<bool>(
+        uint32_t, bool);
+template void Data::set_list_item_<std::string>(
+        uint32_t, std::string const &);
+template void Data::set_list_item_<char const *>(
+        uint32_t, char const *);
+template void Data::set_list_item_<char *>(
+        uint32_t, char *);
+template void Data::set_list_item_<char>(
+        uint32_t, char);
+template void Data::set_list_item_<short int>(
+        uint32_t, short int);
+template void Data::set_list_item_<int>(
+        uint32_t, int);
+template void Data::set_list_item_<long int>(
+        uint32_t, long int);
+template void Data::set_list_item_<long long int>(
+        uint32_t, long long int);
+template void Data::set_list_item_<unsigned char>(
+        uint32_t, unsigned char);
+template void Data::set_list_item_<unsigned short int>(
+        uint32_t, unsigned short int);
+template void Data::set_list_item_<unsigned int>(
+        uint32_t, unsigned int);
+template void Data::set_list_item_<unsigned long int>(
+        uint32_t, unsigned long int);
+template void Data::set_list_item_<unsigned long long int>(
+        uint32_t, unsigned long long int);
+template void Data::set_list_item_<float>(
+        uint32_t, float);
+template void Data::set_list_item_<double>(
+        uint32_t, double);
+
+#endif
 
 void Data::init_list_(uint32_t size) {
     mp_obj_->type = msgpack::type::ARRAY;

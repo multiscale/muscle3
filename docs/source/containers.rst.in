@@ -26,9 +26,8 @@ How to run containerized components
     that the MUSCLE3 library version must be identical for all containers (and for the
     :ref:`muscle_manager` installed on the host), otherwise an error is generated when
     starting the simulation.
-3.  Configure the :ref:`implementations section of your yMMSL file <ymmsl file>` to
-    start the components in the container. See also further down this document how this
-    works with Singularity and Docker.
+3.  Configure the programs section of your yMMSL file to start the components in the
+    container. Examples of how do to this with Singularity and Docker are below.
 
     .. note::
 
@@ -90,30 +89,32 @@ container <https://hub.docker.com/_/python>`_, then it downloads and installs th
 muscle3 release.
 
 
-.. rubric:: Configure the implementations section
+.. rubric:: Configure the programs section
 
 .. code-block:: yaml
 
-    ymmsl_version: v0.1
+    ymmsl_version: v0.2
 
-    model:
-      name: reaction_diffusion_python
+    models:
+      reaction_diffusion_python:
 
-      components:
-        macro:
-          implementation: diffusion_python_singularity
-          ports:
-            o_i: state_out
-            s: state_in
-        micro:
-          implementation: reaction_python_singularity
-          ports:
-            f_init: initial_state
-            o_f: final_state
+        components:
+          macro:
+            ports:
+              o_i: state_out
+              s: state_in
+            description: The macro model, using diffusion Python in a container
+            implementation: diffusion_python_singularity
+          micro:
+            ports:
+              f_init: initial_state
+              o_f: final_state
+            description: The micro model, using reaction Python in a container
+            implementation: reaction_python_singularity
 
-      conduits:
-        macro.state_out: micro.initial_state
-        micro.final_state: macro.state_in
+        conduits:
+          macro.state_out: micro.initial_state
+          micro.final_state: macro.state_in
 
     resources:
       macro:
@@ -133,7 +134,7 @@ muscle3 release.
       k: -40500.0
       d: 0.0405
 
-    implementations:
+    programs:
       reaction_python_singularity:
         executable: singularity
         args:
@@ -204,30 +205,31 @@ container <https://hub.docker.com/_/python>`_, then it downloads and installs th
 muscle3 release.
 
 
-.. rubric:: Configure the implementations section
+.. rubric:: Configure the programs section
 
 .. code-block:: yaml
 
-    ymmsl_version: v0.1
+    ymmsl_version: v0.2
 
-    model:
-      name: reaction_diffusion_python
+    models:
+      reaction_diffusion_python:
+        components:
+          macro:
+            ports:
+              o_i: state_out
+              s: state_in
+            description: The macro model, using diffusion Python in a container
+            implementation: diffusion_python_singularity
+          micro:
+            ports:
+              f_init: initial_state
+              o_f: final_state
+            description: The micro model, using reaction Python in a container
+            implementation: reaction_python_singularity
 
-      components:
-        macro:
-          implementation: diffusion_python_singularity
-          ports:
-            o_i: state_out
-            s: state_in
-        micro:
-          implementation: reaction_python_singularity
-          ports:
-            f_init: initial_state
-            o_f: final_state
-
-      conduits:
-        macro.state_out: micro.initial_state
-        micro.final_state: macro.state_in
+        conduits:
+          macro.state_out: micro.initial_state
+          micro.final_state: macro.state_in
 
     resources:
       macro:
@@ -247,7 +249,7 @@ muscle3 release.
       k: -40500.0
       d: 0.0405
 
-    implementations:
+    programs:
       reaction_python_singularity:
         executable: docker
         args:

@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import msgpack
 import pytest
-from ymmsl import Conduit, Operator, Port, Reference
+from ymmsl.v0_2 import Conduit, Operator, Port, Reference
 
 import libmuscle
 from libmuscle.logging import LogLevel, LogMessage, Timestamp
@@ -18,10 +18,14 @@ def test_init() -> None:
 
 
 def test_connection_fail() -> None:
-    with pytest.raises(RuntimeError):
-        # Port 255 is reserved and privileged, so there's probably
-        # nothing there.
-        MMPClient(Reference([]), 'tcp:localhost:255')
+    ttc = 'libmuscle.mcp.tcp_transport_client'
+    with patch(f'{ttc}._CONNECT_TIMEOUT', 0.1):
+        with patch(f'{ttc}._RECONNECT_TIMEOUT', 0.5):
+            with pytest.raises(ConnectionError):
+                # Port 255 is reserved and privileged, so there's probably
+                # nothing there.
+                client = MMPClient(Reference([]), 'tcp:localhost:255')
+                client.get_settings()
 
 
 def test_submit_log_message(mocked_mmp_client, profile_data) -> None:

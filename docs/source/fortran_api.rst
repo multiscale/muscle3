@@ -1661,26 +1661,30 @@ LIBMUSCLE_Instance
     :r is_real8array2: .true. if the setting is of real8array2 type.
     :rtype is_real8array2: logical
 
-.. f:function:: LIBMUSCLE_Instance_get_setting_as_character(self, name, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Instance_get_setting_as_character(self, name, default_value, err_code, err_msg)
 
     Returns the value of a character-valued model setting.
 
-    If no setting with the given name exists, ``err_code`` will be set to
-    ``LIBMUSCLE_out_of_range``. If the value is not of type character, then
-    ``err_code`` will be set to ``LIBMUSCLE_bad_cast``. See
+    If no setting with the given name exists and no default value is provided,
+    then ``err_code`` will be set to ``LIBMUSCLE_out_of_range``. If the value is not of
+    type character, then ``err_code`` will be set to ``LIBMUSCLE_bad_cast``. See
     :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
+
+    Note that ``default_value`` is optional, and you can specify ``err_code`` and
+    ``err_msg`` as the third and fourth argument if you don't give a default value.
 
     MPI-based components may call this function at any time within the
     reuse loop, in any or all processes, simultaneously or not.
 
     :p LIBMUSCLE_Instance self: The instance to get the setting from.
     :p character name: The name of the setting to retrieve.
+    :p character default_value: Default value to return if not set (optional).
     :p integer err_code: An error code output (optional).
     :p character err_msg: An error message output (allocatable, optional).
     :r value: The setting's value.
     :rtype value: character
 
-.. f:function:: LIBMUSCLE_Instance_get_setting_as_int8(self, name, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Instance_get_setting_as_int8(self, name, default_value, err_code, err_msg)
 
     Returns the value of an integer-valued model setting.
 
@@ -1689,55 +1693,67 @@ LIBMUSCLE_Instance
     ``err_code`` will be set to ``LIBMUSCLE_bad_cast``. See
     :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
 
+    Note that ``default_value`` is optional, and you can specify ``err_code`` and
+    ``err_msg`` as the third and fourth argument if you don't give a default value.
+
     MPI-based components may call this function at any time within the
     reuse loop, in any or all processes, simultaneously or not.
 
     :p LIBMUSCLE_Instance self: The instance to get the setting from.
     :p character name: The name of the setting to retrieve.
+    :p integer default_value: Default value to return if not set (optional, kind=LIBMUSCLE_int8)).
     :p integer err_code: An error code output (optional).
     :p character err_msg: An error message output (allocatable, optional).
     :r value: The setting's value (kind=LIBMUSCLE_int8).
     :rtype value: integer
 
-.. f:function:: LIBMUSCLE_Instance_get_setting_as_real8(self, name, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Instance_get_setting_as_real8(self, name, default_value, err_code, err_msg)
 
     Returns the value of a real-valued model setting.
 
     If no setting with the given name exists, ``err_code`` will be set to
-    ``LIBMUSCLE_out_of_range``. If the value is not of type integer, then
+    ``LIBMUSCLE_out_of_range``. If the value is not of type real, then
     ``err_code`` will be set to ``LIBMUSCLE_bad_cast``. See
     :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
+
+    Note that ``default_value`` is optional, and you can specify ``err_code`` and
+    ``err_msg`` as the third and fourth argument if you don't give a default value.
 
     MPI-based components may call this function at any time within the
     reuse loop, in any or all processes, simultaneously or not.
 
     :p LIBMUSCLE_Instance self: The instance to get the setting from.
     :p character name: The name of the setting to retrieve.
+    :p real default_value: Default value to return if not set (optional, kind=LIBMUSCLE_real8).
     :p integer err_code: An error code output (optional).
     :p character err_msg: An error message output (allocatable, optional).
     :r value: The setting's value (kind=LIBMUSCLE_real8).
     :rtype value: real
 
-.. f:function:: LIBMUSCLE_Instance_get_setting_as_logical(self, name, err_code, err_msg)
+.. f:function:: LIBMUSCLE_Instance_get_setting_as_logical(self, name, default_value err_code, err_msg)
 
     Returns the value of a logical-valued model setting.
 
     If no setting with the given name exists, ``err_code`` will be set to
-    ``LIBMUSCLE_out_of_range``. If the value is not of type integer, then
+    ``LIBMUSCLE_out_of_range``. If the value is not of type logical, then
     ``err_code`` will be set to ``LIBMUSCLE_bad_cast``. See
     :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
+
+    Note that ``default_value`` is optional, and you can specify ``err_code`` and
+    ``err_msg`` as the third and fourth argument if you don't give a default value.
 
     MPI-based components may call this function at any time within the
     reuse loop, in any or all processes, simultaneously or not.
 
     :p LIBMUSCLE_Instance self: The instance to get the setting from.
     :p character name: The name of the setting to retrieve.
+    :p logical default_value: Default value to return if not set (optional).
     :p integer err_code: An error code output (optional).
     :p character err_msg: An error message output (allocatable, optional).
     :r value: The setting's value.
     :rtype value: logical
 
-.. f:subroutine:: LIBMUSCLE_Instance_get_setting_as_real8array(self, name, value, err_code, err_msg)
+.. f:subroutine:: LIBMUSCLE_Instance_get_setting_as_real8array(self, name, value, default_value, err_code, err_msg)
 
     Returns the value of an array-of-real8-valued model setting.
 
@@ -1750,16 +1766,20 @@ LIBMUSCLE_Instance
     ``err_code`` will be set to ``LIBMUSCLE_bad_cast``. See
     :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
 
+    Note that ``default_value`` is optional, and you can specify ``err_code`` and
+    ``err_msg`` as the fourth and fifth argument if you don't give a default value.
+
     MPI-based components may call this function at any time within the
     reuse loop, in any or all processes, simultaneously or not.
 
     :p LIBMUSCLE_Instance self: The instance to get the setting from.
     :p character name: The name of the setting to retrieve.
-    :p LIBMUSCLE_real8: The returned value (out, dimension(:))
+    :p real value: The returned value (out, dimension(:), kind=LIBMUSCLE_real8)
+    :p real default_value: Default value to return if not set (optional, dimension(:), kind=LIBMUSCLE_real8)
     :p integer err_code: An error code output (optional).
     :p character err_msg: An error message output (allocatable, optional).
 
-.. f:subroutine:: LIBMUSCLE_Instance_get_setting_as_real8array2(self, name, value, err_code, err_msg)
+.. f:subroutine:: LIBMUSCLE_Instance_get_setting_as_real8array2(self, name, value, default_value, err_code, err_msg)
 
     Returns the value of a 2D-array-of-real8-valued model setting.
 
@@ -1772,12 +1792,16 @@ LIBMUSCLE_Instance
     ``err_code`` will be set to ``LIBMUSCLE_bad_cast``. See
     :f:func:`LIBMUSCLE_Data_as_logical` for an example of error handling.
 
+    Note that ``default_value`` is optional, and you can specify ``err_code`` and
+    ``err_msg`` as the fourth and fifth argument if you don't give a default value.
+
     MPI-based components may call this function at any time within the
     reuse loop, in any or all processes, simultaneously or not.
 
     :p LIBMUSCLE_Instance self: The instance to get the setting from.
     :p character name: The name of the setting to retrieve.
-    :p LIBMUSCLE_real8: The returned value (out, dimension(:,:))
+    :p value real: The returned value (out, dimension(:,:), kind=LIBMUSCLE_real8)
+    :p real default_value: Default value to return if not set (optional, dimension(:,:), kind=LIBMUSCLE_real8)
     :p integer err_code: An error code output (optional).
     :p character err_msg: An error message output (allocatable, optional).
 

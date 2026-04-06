@@ -1,7 +1,7 @@
 import functools
 import sys
 
-from ymmsl import Operator
+from ymmsl.v0_2 import Operator
 
 from libmuscle import Instance, Message
 
@@ -67,13 +67,23 @@ def macro():
 
 
 MACRO_MICRO_CONFIG = """
-ymmsl_version: v0.1
-model:
-  name: test_model
+ymmsl_version: v0.2
+description: Another simple macro-micro configuration
+models:
+- name: test_model
+  description: The test model
   components:
     macro:
+      ports:
+        o_i: out
+        s: in
+      description: The macro model
       implementation: macro
     micro:
+      ports:
+        f_init: in
+        o_f: out
+      description: The micro model
       implementation: micro
   conduits:
     macro.out: micro.in
@@ -84,17 +94,35 @@ settings:
 
 
 MACRO_MICRO_WITH_DISPATCH_CONFIG = """
-ymmsl_version: v0.1
-model:
-  name: test_model
+ymmsl_version: v0.2
+description: This one dispatches between three serial micros
+models:
+- name: test_model
+  description: The test model
   components:
     macro:
+      ports:
+        o_i: out
+        s: in
+      description: The macro model
       implementation: macro
     micro1:
+      ports:
+        f_init: in
+        o_f: out
+      description: The first micro model
       implementation: micro
     micro2:
+      ports:
+        f_init: in
+        o_f: out
+      description: The second micro model
       implementation: micro
     micro3:
+      ports:
+        f_init: in
+        o_f: out
+      description: The third micro model
       implementation: micro
   conduits:
     macro.out: micro1.in

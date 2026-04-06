@@ -1,12 +1,12 @@
 import dataclasses
 from pathlib import Path
 from random import uniform
-from threading import Lock
+from threading import get_ident, RLock
 from time import perf_counter, sleep
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import msgpack
-from ymmsl import (
+from ymmsl.v0_2 import (
         Conduit, Operator, Port, Reference, Settings, Checkpoints,
         CheckpointRule, CheckpointRangeRule, CheckpointAtRule)
 
@@ -17,6 +17,8 @@ from libmuscle.profiling import ProfileEvent
 from libmuscle.logging import LogMessage
 from libmuscle.snapshot import SnapshotMetadata
 
+
+TIMID_WAIT = 1.0
 
 PEER_TIMEOUT = 600
 PEER_INTERVAL_MIN = 5.0
@@ -98,6 +100,10 @@ def decode_checkpoint_info(
     return (elapsed_time, checkpoints, resume_path, snapshot_path)
 
 
+class ConnectionLockedError(RuntimeError):
+    pass
+
+
 class MMPClient():
     """The client for the MUSCLE Manager Protocol.
 
@@ -118,7 +124,8 @@ class MMPClient():
         """
         self._instance_id = instance_id
         self._transport_client = TcpTransportClient(location)
-        self._mutex = Lock()
+        self._mutex = RLock()
+        self._cur_owner = 0
 
     def close(self) -> None:
         """Close the connection
@@ -131,14 +138,38 @@ class MMPClient():
     def submit_log_message(self, message: LogMessage) -> None:
         """Send a log message to the manager.
 
+        This particular call is a bit tricky because of its potentially recursive
+        nature. It's used by a special logging handler (see logging_handler.py) to send
+        high-priority log messages to the manager for inclusion in the manager log. The
+        problem is that the connection to the manager may fail while doing so, which
+        causes more log messages to be generated (dropped connection are rare and
+        shouldn't really happen, so we want the user to know about them). Of course
+        those then get picked up by the handler, which sends them here recursively.
+
+        The Python logging system has an internal mutex, and we've got a mutex here as
+        well, and this recursion causes a thread to try to lock them alternatingly. If
+        the thread starts with making a request to the manager, then it will try to lock
+        the MMPClient mutex first, then the logging mutex, but if it starts with sending
+        a log message, then it will try to lock the logging mutex first and then the
+        MMPClient one. If two threads try to lock two mutexes in a different order then
+        you'll get a deadlock.
+
+        To avoid this, this function will not wait for the internal lock forever, but
+        time out after a while and raise. Note that the actual implementation is in
+        _call_manager().
+
         Args:
             message: The message to send.
+
+        Raises:
+            ConnectionLockedError: if the connection to the manager was being used
+                already.
         """
         request = [
                 RequestType.SUBMIT_LOG_MESSAGE.value,
                 message.instance_id, message.timestamp.seconds,
                 message.level.value, message.text]
-        self._call_manager(request)
+        self._call_manager(request, True)
 
     def submit_profile_events(self, events: Iterable[ProfileEvent]) -> None:
         """Sends profiling events to the manager.
@@ -302,16 +333,44 @@ class MMPClient():
         response = self._call_manager(request)
         return bool(response[1])
 
-    def _call_manager(self, request: Any) -> Any:
+    def _call_manager(self, request: Any, timid: bool = False) -> Any:
         """Call the manager and do en/decoding.
 
         Args:
             request: The request to encode and send
+            timid: If True, raise if we can't get the lock after a while
 
         Returns:
             The decoded response
+
+        Raises:
+            ConnectionLockedError: If timid was True and we failed to get the lock
         """
-        with self._mutex:
+        if timid:
+            if self._mutex.acquire(timeout=TIMID_WAIT):
+                # We were trying to log, disconnected, then logged the disconnect and
+                # now we're back here. Since we're still disconnected, we need to raise
+                # and drop this message.
+                if self._cur_owner == get_ident():
+                    self._mutex.release()
+                    raise ConnectionLockedError()
+            else:
+                # Timed out, someone else has held the lock for a long time, so either
+                # the manager is overloaded or there are connection problems. Raise and
+                # drop.
+                raise ConnectionLockedError()
+        else:
+            self._mutex.acquire()
+
+        self._cur_owner = get_ident()
+
+        try:
             encoded_request = msgpack.packb(request, use_bin_type=True)
             response, _ = self._transport_client.call(encoded_request)
-            return msgpack.unpackb(response, raw=False)
+            result = msgpack.unpackb(response, raw=False)
+
+            return result
+
+        finally:
+            self._cur_owner = 0
+            self._mutex.release()

@@ -9,7 +9,7 @@ from api_generator import (
         API, Array, AssignmentOperator, Bool, Bytes, Char, Class, Constructor,
         Destructor, Double, Enum, Flags, EnumVal, Float, IndexAssignmentOperator, Int,
         Int16t, Int32t, Int64t, Member, MemFun, MemFunTmpl, MultiMemFun,
-        NamedConstructor, Namespace, Obj, OverloadSet, Par,
+        NamedConstructor, Namespace, Obj, OverloadSet, OverloadSetTmpl, Par,
         ShiftedIndexAssignmentOperator, Sizet, String, T, VecInt64t, VecDbl, Vec2Dbl,
         VecSizet, VecString, Void)
 
@@ -379,6 +379,7 @@ dataconstref_desc = Class('DataConstRef', None, [
     GridConstructor(True),
     OverloadSet('create_grid', create_grid_overloads, True),
     Destructor(),
+    MemFun(String(), 'describe'),
     MemFunTmpl(
         [Bool(), String(), Int(), Char(), Int16t(), Int32t(), Int64t(),
             Float(), Double()],
@@ -967,7 +968,20 @@ instance_members = [
     MemFunTmpl(
         [String(), Int64t(), Double(), Bool(), VecInt64t('value'), VecDbl('value'),
          Vec2Dbl('value')],
-        T(), 'get_setting_as', [String('name')], True),
+        T(), 'get_setting_as1', [String('name')], True,
+        cpp_chain_call=lambda cpp_args, tpl_type, **kwargs: (
+            f'self_p->get_setting_as<{tpl_type}>({cpp_args})')),
+    MemFunTmpl(
+        [String(), Int64t(), Double(), Bool(), VecInt64t('value'),
+         VecDbl('value'), Vec2Dbl('value')],
+        T(), 'get_setting_as2',
+        [String('name'), T('default_value')], True,
+        cpp_chain_call=lambda cpp_args, tpl_type, **kwargs: (
+            f'self_p->get_setting_as<{tpl_type}>({cpp_args})')),
+    OverloadSetTmpl(
+        [String(), Int64t(), Double(), Bool(), VecInt64t('value'),
+         VecDbl('value'), Vec2Dbl('value')],
+        'get_setting_as', ['get_setting_as1', 'get_setting_as2'], False),
     MemFun(VecString('value'), 'list_settings'),
     MemFun(Obj('PortsDescription'), 'list_ports'),
     MemFun(Bool(), 'is_connected', [String('port')]),

@@ -26,6 +26,7 @@ using libmuscle::_MUSCLE_IMPL_NS::mcp::unpack_data;
 using libmuscle::_MUSCLE_IMPL_NS::Optional;
 using libmuscle::_MUSCLE_IMPL_NS::ProfileEvent;
 using libmuscle::_MUSCLE_IMPL_NS::SnapshotMetadata;
+using std::chrono::duration;
 using std::chrono::steady_clock;
 using ymmsl::Conduit;
 using ymmsl::Reference;
@@ -33,6 +34,8 @@ using ymmsl::SettingValue;
 
 
 namespace {
+    const double timid_wait = 1.0;          // seconds
+
     const std::chrono::milliseconds peer_timeout(600000);
     const int peer_interval_min = 5000;     // milliseconds
     const int peer_interval_max = 10000;    // milliseconds
@@ -131,8 +134,7 @@ namespace {
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
-MMPClient::MMPClient(
-        Reference const & instance_id, std::string const & location)
+MMPClient::MMPClient(Reference const & instance_id, std::string const & location)
     : instance_id_(instance_id)
     , transport_client_(location)
 {}
@@ -149,7 +151,7 @@ void MMPClient::submit_log_message(LogMessage const & message) {
             static_cast<int>(message.level),
             message.text);
 
-    call_manager_(request);
+    call_manager_(request, true);
 }
 
 void MMPClient::submit_profile_events(
@@ -351,22 +353,51 @@ bool MMPClient::is_deadlocked() {
     auto request = Data::list(
             static_cast<int>(RequestType::is_deadlocked),
             static_cast<std::string>(instance_id_));
-    
+
     auto response = call_manager_(request);
     return response[1].as<bool>();
 }
 
-DataConstRef MMPClient::call_manager_(DataConstRef const & request) {
-    std::lock_guard<std::mutex> lock(mutex_);
+DataConstRef MMPClient::call_manager_(DataConstRef const & request, bool timid) {
+    std::unique_lock<std::recursive_timed_mutex> lock(mutex_, std::defer_lock);
 
-    msgpack::sbuffer sbuf;
-    msgpack::pack(sbuf, request);
+    if (timid) {
+        if (lock.try_lock_for(duration<double>(timid_wait))) {
+            if (cur_owner_ == std::this_thread::get_id()) {
+                // We were trying to log, disconnected, then logged the disconnect and
+                // now we're back here. Since we're still disconnected, we need to throw
+                // and drop this message.
+                throw ConnectionLockedError("");
+            }
+        }
+        else {
+            // Timed out, someone else has held the lock for a long time, so either the
+            // manager is overloaded or there are connection problems. Throw and drop.
+            throw ConnectionLockedError("");
+        }
+    }
+    else
+        lock.lock();
 
-    auto res = transport_client_.call(sbuf.data(), sbuf.size());
-    auto const & result = std::get<0>(res);
+    try {
+        cur_owner_ = std::this_thread::get_id();
 
-    auto zone = std::make_shared<msgpack::zone>();
-    return unpack_data(zone, result.data(), result.size());
+        msgpack::sbuffer sbuf;
+        msgpack::pack(sbuf, request);
+
+        auto response_and_profile = transport_client_.call(sbuf.data(), sbuf.size());
+        auto const & response = std::get<0>(response_and_profile);
+
+        auto zone = std::make_shared<msgpack::zone>();
+        auto result = unpack_data(zone, response.data(), response.size());
+
+        cur_owner_ = std::thread::id();
+        return result;
+    }
+    catch (std::exception const & e) {
+        cur_owner_ = std::thread::id();
+        throw;
+    }
 }
 
 

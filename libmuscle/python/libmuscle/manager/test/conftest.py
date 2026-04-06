@@ -1,5 +1,5 @@
 import pytest
-from ymmsl import Component, Conduit, Configuration, Model, Reference
+from ymmsl.v0_2 import Component, Conduit, Configuration, Model, Ports, Reference
 
 from libmuscle.manager.instance_registry import InstanceRegistry
 from libmuscle.manager.logger import Logger
@@ -21,16 +21,19 @@ def logger(tmp_path):
 @pytest.fixture
 def mmp_configuration():
     return Configuration(
-            Model(
-                'test_model',
+            'mmp_configuration', [], [Model(
+                'test_model', None, '', None,
                 [
-                    Component('macro', 'macro_implementation'),
                     Component(
-                        'micro', 'micro_implementation', [10, 10])],
+                        'macro', Ports(o_i=['out'], s=['in']), '',
+                        'macro_implementation'),
+                    Component(
+                        'micro', Ports(f_init=['in'], o_f=['out']), '',
+                        'micro_implementation', False, [10, 10])],
                 [
                     Conduit('macro.out', 'micro.in'),
                     Conduit('micro.out', 'macro.in')
-                ]))
+                ])])
 
 
 @pytest.fixture
@@ -92,19 +95,26 @@ def registered_mmp_request_handler(
 @pytest.fixture
 def mmp_configuration2():
     return Configuration(
-            Model(
-                'test_model',
+            'mmp_configuration2', [], [Model(
+                'test_model', None, '', None,
                 [
-                    Component('macro', 'macro_implementation'),
-                    Component('meso', 'meso_implementation', [5]),
-                    Component('micro', 'micro_implementation', [5, 10])
+                    Component(
+                        'macro', Ports(o_i=['out'], s=['in']), '',
+                        'macro_implementation'),
+                    Component(
+                        'meso',
+                        Ports(f_init=['init'], o_i=['out'], s=['in'], o_f=['final']),
+                        '', 'meso_implementation', False, [5]),
+                    Component(
+                        'micro', Ports(f_init=['init'], o_f=['final']), '',
+                        'micro_implementation', False, [5, 10])
                 ],
                 [
-                    Conduit('macro.out', 'meso.in'),
-                    Conduit('meso.out', 'micro.in'),
-                    Conduit('micro.out', 'meso.in'),
-                    Conduit('meso.out', 'macro.in')
-                ]))
+                    Conduit('macro.out', 'meso.init'),
+                    Conduit('meso.out', 'micro.init'),
+                    Conduit('micro.final', 'meso.in'),
+                    Conduit('meso.final', 'macro.in')
+                ])])
 
 
 @pytest.fixture

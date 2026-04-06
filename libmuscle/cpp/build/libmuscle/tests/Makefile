@@ -44,18 +44,12 @@ distclean: clean
 cleantargets := clean distclean
 ifeq "$(filter $(MAKECMDGOALS),$(cleantargets))" ""
 
-EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-Wl,-rpath,$(DIR)/lib)
-
 CXXFLAGS += -I$(libmuscle_testdir) -isystem $(googletest_ROOT)/include -pthread
-CXXFLAGS += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --cflags msgpack)
+CXXFLAGS += -I$(MSGPACK_INCLUDE_DIR)
 CXXFLAGS += -DTESTING $(DEBUGFLAGS)
 
 LDFLAGS += $(CURDIR)/../libmuscle_d.a $(CURDIR)/../../ymmsl/libymmsl_d.a
 LDFLAGS += $(googletest_LIB) -pthread
-
-LDFLAGS2 := $(LDFLAGS)
-LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIG_PATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs msgpack)
-LDFLAGS2 += $(EXTRA_LINK_DIRS)
 
 -include $(deps)
 
@@ -71,10 +65,10 @@ mpi%.d: mpi%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 test_%: test_%.o $(CURDIR)/../libmuscle_d.a $(CURDIR)/../../ymmsl/libymmsl_d.a
-	$(CXX) $(CXXFLAGS) $< -o $@ $(LDFLAGS2)
+	$(CXX) $(CXXFLAGS) $< -o $@ $(LDFLAGS)
 
 %_test: %_test.o $(CURDIR)/../libmuscle_d.a $(CURDIR)/../../ymmsl/libymmsl_d.a
-	$(CXX) $(CXXFLAGS) $< -o $@ $(LDFLAGS2)
+	$(CXX) $(CXXFLAGS) $< -o $@ $(LDFLAGS)
 
 test_communicator.o: test_communicator.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@ -pthread
@@ -86,7 +80,7 @@ test_instance.o: test_instance.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@ -pthread
 
 test_instance: test_instance.o $(CURDIR)/../../ymmsl/libymmsl_d.a
-	$(CXX) $(CXXFLAGS) $^ -o $@ $(googletest_LIB) -pthread $(LDFLAGS2)
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(googletest_LIB) -pthread $(LDFLAGS)
 
 test_logging.o: test_logging.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@ -pthread
@@ -95,24 +89,23 @@ test_logging: test_logging.o $(CURDIR)/../../ymmsl/libymmsl_d.a
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(googletest_LIB) -pthread
 
 mpi_micro_model_test: mpi_micro_model_test.cpp $(CURDIR)/../../ymmsl/libymmsl_d.a $(CURDIR)/../../libmuscle/libmuscle_mpi_d.a
-	$(MPICXX) $(CXXFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS2)
+	$(MPICXX) $(CXXFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS)
 
 mpi_component_test: mpi_component_test.cpp $(CURDIR)/../../ymmsl/libymmsl_d.a $(CURDIR)/../libmuscle_mpi_d.a
-	$(MPICXX) $(CXXFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS2)
+	$(MPICXX) $(CXXFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS)
 
 mpi_snapshot_micro_test: mpi_snapshot_micro_test.cpp $(CURDIR)/../../ymmsl/libymmsl_d.a $(CURDIR)/../libmuscle_mpi_d.a
-	$(MPICXX) $(CXXFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS2)
+	$(MPICXX) $(CXXFLAGS) -I$(CURDIR)/.. $(MPIFLAGS) $^ -o $@ $(LDFLAGS)
 
+tcp_reconnect_test: tcp_reconnect_test.o $(CURDIR)/../../ymmsl/libymmsl_d.a
+	$(CXX) $(CXXFLAGS) $^ -o $@ -pthread
 
-empty :=
-space := $(empty) $(empty)
-test_dep_lib_paths := $(subst $(space),:,$(foreach DIR,$(DEP_DIRS),$(DIR)/lib))
 
 .PHONY: run_test%
 run_test%: test%
-	export LD_LIBRARY_PATH=$(test_dep_lib_paths):$(LD_LIBRARY_PATH) ; $(VALGRIND) ./$< $(GTEST_OPTIONS)
+	$(LEAK_DETECTOR) ./$< $(GTEST_OPTIONS)
 
 # This uses setrlimit, which is not compatible with Valgrind, so run without
 .PHONY: run_test_data_memory_use
 run_test_data_memory_use: test_data_memory_use
-	export LD_LIBRARY_PATH=$(test_dep_lib_paths):$(LD_LIBRARY_PATH) ; ./$< $(GTEST_OPTIONS)
+	./$< $(GTEST_OPTIONS)

@@ -114,16 +114,16 @@ class MockCommunicator : public MockClass<MockCommunicator> {
                 ymmsl::Reference const & kernel,
                 std::vector<int> const & index,
                 PortManager & port_manager,
-                Logger & logger, Profiler & profiler,
+                Profiler & profiler,
                 MMPClient & manager)
         {
             init_from_return_value();
-            constructor(kernel, index, port_manager, logger, profiler, manager);
+            constructor(kernel, index, port_manager, profiler, manager);
         }
 
         MockFun<
             Void, Val<ymmsl::Reference const &>, Val<std::vector<int> const &>,
-            Obj<PortManager &>, Obj<Logger &>, Obj<Profiler &>, Obj<MMPClient &>>
+            Obj<PortManager &>, Obj<Profiler &>, Obj<MMPClient &>>
                 constructor;
 
         MockFun<Val<std::vector<std::string>>> get_locations;

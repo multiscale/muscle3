@@ -1,5 +1,5 @@
-from ymmsl import (Component, Conduit, Configuration, Operator, Model,
-                   Settings)
+from ymmsl.v0_2 import (
+        Component, Conduit, Configuration, Operator, Ports, Model, Settings)
 
 from libmuscle import Instance, Message
 from libmuscle.runner import run_simulation
@@ -25,18 +25,18 @@ def receiver():
 
 def test_multicast(log_file_in_tmpdir):
     elements = [
-            Component('broadcast', 'broadcaster'),
-            Component('first', 'receiver'),
-            Component('second', 'receiver')]
+            Component('broadcast', Ports(o_f='out'), '', 'broadcaster'),
+            Component('first', Ports('in'), '', 'receiver'),
+            Component('second', Ports('in'), '', 'receiver')]
 
     conduits = [
                 Conduit('broadcast.out', 'first.in'),
                 Conduit('broadcast.out', 'second.in')]
 
-    model = Model('test_model', elements, conduits)
+    model = Model('test_model', None, '', None, elements, conduits)
     settings = Settings()
 
-    configuration = Configuration(model, settings)
+    configuration = Configuration('multicast', None, [model], None, settings)
 
     implementations = {
             'broadcaster': multicaster,

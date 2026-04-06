@@ -12,10 +12,14 @@ import sys
 from time import sleep
 import traceback
 from typing import Callable, Dict, List, Set, Tuple, cast
+from warnings import catch_warnings, filterwarnings
 
-from ymmsl import Configuration, Identifier, Model, Reference
+from ymmsl import convert_to, Document
+import ymmsl.v0_1 as v0_1
+from ymmsl.v0_2 import Configuration, Identifier, Reference
 
 from libmuscle.util import generate_indices
+from libmuscle.manager.hammer import flatten
 from libmuscle.manager.logger import last_lines
 from libmuscle.manager.manager import Manager
 
@@ -126,34 +130,21 @@ def implementation_process(
     else:
         sys.argv.append(f'--muscle-manager={manager_location}')
 
-    with open(f'muscle3.{instance}.log', 'w') as log_file:
-        # Redirect an already-configured standard logging setup
-        # Logger.handlers and StreamHandler.stream are private, so this
-        # is dangerous in theory. But this part of the logging code
-        # hasn't changed in two decades, and we can use introspection to
-        # avoid crashes, so in practice, it'll work.
-        root_logger = logging.getLogger()
-        if hasattr(root_logger, 'handlers'):
-            for h in root_logger.handlers:
-                if isinstance(h, logging.StreamHandler):
-                    if hasattr(h, 'stream'):
-                        if h.stream == sys.stderr:
-                            h.stream = log_file
-                        elif h.stream == sys.stdout:
-                            h.stream = log_file
+    root_logger = logging.getLogger()
+    handler = logging.FileHandler(f'muscle3.{instance}.log', 'w')
+    handler.setFormatter(logging.Formatter(
+        '%(asctime)s %(levelname)s %(filename)s:%(lineno)d %(message)s'))
+    root_logger.addHandler(handler)
 
-        sys.stderr = log_file
-        sys.stdout = log_file
-
-        # chain call
-        try:
-            implementation()
-        except Exception:
-            traceback.print_exc()
-            _logger.error(
-                    f'Component {instance} crashed, please check the log file'
-                    ' for error messages')
-            exit(1)
+    # chain call
+    try:
+        implementation()
+    except Exception:
+        traceback.print_exc()
+        _logger.error(
+                f'Component {instance} crashed, please check the log file'
+                ' for error messages')
+        exit(1)
 
 
 def _parse_prefix(prefix: str) -> Tuple[str, List[int]]:
@@ -290,29 +281,40 @@ def run_instances(
 
 
 def run_simulation(
-        configuration: Configuration, implementations: Dict[str, Callable]
+        configuration: Document, implementations: Dict[str, Callable]
         ) -> None:
     """Runs a simulation with the given configuration and instances.
 
-    The yMMSL document must contain both a model and settings.
+    The yMMSL document must contain a complete configuration.
 
-    This function will start the necessary instances described in
-    the yMMSL document. To do so, it needs the corresponding
-    implementations, which are given as a dictionary mapping the
-    implementation name to a Python function (or any callable).
+    This function will start the necessary instances described in the configuration. To
+    do so, it needs the corresponding implementations, which are given as a dictionary
+    mapping the implementation name to a Python function (or any callable).
 
     Args:
-        configuration: A description of the model and settings.
+        configuration: A description of the model and settings, either v0.1 or v0.2.
         instances: A dictionary of instances to run.
     """
-    if not isinstance(configuration.model, Model):
-        raise ValueError('The model description does not include a model'
-                         ' definition, so the simulation can not be run.')
+    if isinstance(configuration, v0_1.PartialConfiguration):
+        with catch_warnings():
+            filterwarnings('ignore', 'In yMMSL v0.2.*')
+            filterwarnings('ignore', 'Comments can unfortunately.*')
+            configuration = convert_to(Configuration, configuration)
+    elif not isinstance(configuration, Configuration):
+        raise RuntimeError('Invalid configuration type {type(configuration)}')
 
-    configuration.model.check_consistent()
+    if configuration.imports:
+        raise RuntimeError(
+                'Imports are not supported when running directly from Python. To run'
+                ' larger models, please use the command line.')
+
+    configuration.check_consistent(False)
+    configuration = flatten(configuration)
+
+    model = configuration.root_model()
 
     instances = dict()
-    for ce in configuration.model.components:
+    for ce in model.components.values():
         impl_name = str(ce.implementation)
         if impl_name not in implementations:
             raise ValueError(('The model specifies an implementation named'

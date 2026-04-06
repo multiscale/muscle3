@@ -1,6 +1,6 @@
 import pytest
 
-from ymmsl import Operator
+from ymmsl.v0_2 import Operator
 
 from libmuscle.manager.instance_registry import Port, InstanceRegistry
 

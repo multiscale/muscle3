@@ -3,7 +3,7 @@ from typing import Any
 from unittest.mock import Mock
 
 import pytest
-from ymmsl import Operator, Reference
+from ymmsl.v0_2 import Operator, Reference
 
 from libmuscle.port_manager import PortManager
 from libmuscle.mmsf_validator import MMSFValidator

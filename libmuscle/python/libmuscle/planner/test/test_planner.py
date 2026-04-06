@@ -1,9 +1,9 @@
 import pytest
 from typing import Dict, List
 
-from ymmsl import (
-        Component, Conduit, Configuration, Implementation, Model,
-        MPICoresResReq, Ports, Reference, ResourceRequirements, ThreadedResReq)
+from ymmsl.v0_2 import (
+        Component, Conduit, Configuration, Model, MPICoresResReq, Ports, Program,
+        Reference, ResourceRequirements, ThreadedResReq)
 
 from libmuscle.planner.planner import (
         InsufficientResourcesAvailable, ModelGraph, Planner, ResourceAssignment)
@@ -25,26 +25,26 @@ def all_resources() -> Resources:
 
 @pytest.fixture
 def init() -> Component:
-    return Component('init', 'init', ports=Ports(o_f=['state_out']))
+    return Component('init', Ports(o_f=['state_out']), '', 'init')
 
 
 @pytest.fixture
 def macro() -> Component:
-    return Component('macro', 'macro', ports=Ports(
-            f_init=['initial_state_in'], o_i=['bc_out'], s=['bc_in']))
+    return Component(
+            'macro', Ports(f_init=['initial_state_in'], o_i=['bc_out'], s=['bc_in']),
+            '', 'macro')
 
 
 @pytest.fixture
 def micro() -> Component:
-    return Component('micro', 'micro', ports=Ports(
-            f_init=['initial_bc_in'], o_f=['final_bc_out']))
+    return Component(
+            'micro', Ports(f_init=['initial_bc_in'], o_f=['final_bc_out']), '', 'micro')
 
 
 @pytest.fixture
 def model(init: Component, macro: Component, micro: Component) -> Model:
     return Model(
-            'test_model',
-            [init, macro, micro],
+            'test_model', None, '', None, [init, macro, micro],
             [
                 Conduit('init.state_out', 'macro.initial_state_in'),
                 Conduit('macro.bc_out', 'micro.initial_bc_in'),
@@ -52,11 +52,11 @@ def model(init: Component, macro: Component, micro: Component) -> Model:
 
 
 @pytest.fixture
-def implementations() -> List[Implementation]:
+def programs() -> List[Program]:
     return [
-            Implementation(Ref('init'), script='init'),
-            Implementation(Ref('macro'), script='macro'),
-            Implementation(Ref('micro'), script='micro')]
+            Program(Ref('init'), script='init'),
+            Program(Ref('macro'), script='macro'),
+            Program(Ref('micro'), script='micro')]
 
 
 @pytest.fixture
@@ -70,9 +70,9 @@ def requirements() -> Dict[Reference, ResourceRequirements]:
 
 @pytest.fixture
 def configuration(
-        model: Model, implementations: List[Implementation],
+        model: Model, programs: List[Program],
         requirements: Dict[Reference, ResourceRequirements]) -> Configuration:
-    return Configuration(model, None, implementations, requirements)
+    return Configuration('config', [], [model], None, None, programs, requirements)
 
 
 @pytest.fixture
@@ -87,7 +87,7 @@ def test_model_graph(
         ) -> None:
     graph = ModelGraph(model)
 
-    assert graph.components() == model.components
+    assert set(graph.components()) == set(model.components.values())
 
     assert not graph.predecessors(init)
     assert not graph.macros(init)
@@ -165,7 +165,7 @@ def test_planner(
 def test_planner_exclusive_macro(
         all_resources: Resources, configuration: Configuration) -> None:
     planner = Planner(all_resources)
-    configuration.implementations[Ref('macro')].can_share_resources = False
+    configuration.programs[Ref('macro')].can_share_resources = False
     allocations = planner.allocate_all(configuration)
 
     assert allocations[Ref('init')].by_rank == [onr('node001', {1, 2, 3, 4})]
@@ -176,7 +176,7 @@ def test_planner_exclusive_macro(
 def test_planner_exclusive_predecessor(
         all_resources: Resources, configuration: Configuration) -> None:
     planner = Planner(all_resources)
-    configuration.implementations[Ref('init')].can_share_resources = False
+    configuration.programs[Ref('init')].can_share_resources = False
     allocations = planner.allocate_all(configuration)
 
     assert allocations[Ref('init')].by_rank == [onr('node001', {1, 2, 3, 4})]
@@ -187,8 +187,8 @@ def test_planner_exclusive_predecessor(
 def test_oversubscribe(
         all_resources: Resources, configuration: Configuration) -> None:
 
-    for i in range(3):
-        configuration.model.components[i].multiplicity = [5]
+    for component in configuration.models['test_model'].components.values():
+        component.multiplicity = [5]
 
     planner = Planner(all_resources)
     allocations = planner.allocate_all(configuration)
@@ -213,11 +213,11 @@ def test_oversubscribe(
 
 
 def test_oversubscribe_single_instance_threaded() -> None:
-    model = Model('single_instance', [Component('x', 'x', ports=Ports())])
-    impl = [Implementation(Ref('x'), script='x')]
+    model = Model('single_instance', None, '', None, [Component('x', Ports(), '', 'x')])
+    programs = [Program(Ref('x'), script='x')]
     reqs: Dict[Reference, ResourceRequirements] = {
             Ref('x'): ThreadedResReq(Ref('x'), 24)}
-    config = Configuration(model, None, impl, reqs)
+    config = Configuration('config', [], [model], None, None, programs, reqs)
 
     res = resources({'node001': [c(1), c(2), c(3), c(4)]})
 
@@ -228,11 +228,11 @@ def test_oversubscribe_single_instance_threaded() -> None:
 
 
 def test_oversubscribe_single_instance_mpi() -> None:
-    model = Model('single_instance', [Component('x', 'x', ports=Ports())])
-    impl = [Implementation(Ref('x'), script='x')]
+    model = Model('single_instance', None, '', None, [Component('x', Ports(), '', 'x')])
+    programs = [Program(Ref('x'), script='x')]
     reqs: Dict[Reference, ResourceRequirements] = {
             Ref('x'): MPICoresResReq(Ref('x'), 24)}
-    config = Configuration(model, None, impl, reqs)
+    config = Configuration('config', [], [model], None, None, programs, reqs)
 
     res = resources({'node001': [c(1), c(2), c(3), c(4)]})
 
@@ -245,11 +245,12 @@ def test_oversubscribe_single_instance_mpi() -> None:
 
 
 def test_virtual_allocation() -> None:
-    model = Model('ensemble', [Component('x', 'x', 9, ports=Ports())])
-    impl = [Implementation(Ref('x'), script='x')]
+    model = Model(
+            'ensemble', None, '', None, [Component('x', Ports(), '', 'x', False, 9)])
+    programs = [Program(Ref('x'), script='x')]
     reqs: Dict[Ref, ResourceRequirements] = {
             Ref('x'): MPICoresResReq(Ref('x'), 13)}
-    config = Configuration(model, None, impl, reqs)
+    config = Configuration('config', [], [model], None, None, programs, reqs)
 
     res = resources({'node000001': [c(1), c(2), c(3), c(4)]})
 
@@ -264,11 +265,12 @@ def test_virtual_allocation() -> None:
 
 
 def test_impossible_virtual_allocation() -> None:
-    model = Model('ensemble', [Component('x', 'x', 9, ports=Ports())])
-    impl = [Implementation(Ref('x'), script='x')]
+    model = Model(
+            'ensemble', None, '', None, [Component('x', Ports(), '', 'x', False, 9)])
+    program = [Program(Ref('x'), script='x')]
     reqs: Dict[Ref, ResourceRequirements] = {
             Ref('x'): ThreadedResReq(Ref('x'), 13)}
-    config = Configuration(model, None, impl, reqs)
+    config = Configuration('config', [], [model], None, None, program, reqs)
 
     res = resources({'node000001': [c(1), c(2), c(3), c(4)]})
 

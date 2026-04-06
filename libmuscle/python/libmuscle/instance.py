@@ -5,8 +5,8 @@ import os
 import sys
 from typing import cast, Dict, List, Literal, Optional, Tuple, overload
 
-from ymmsl import (Identifier, Operator, SettingValue, Port, Reference,
-                   Settings)
+from ymmsl.v0_2 import (
+        Identifier, Operator, SettingValue, Port, Reference, Settings)
 
 from libmuscle.api_guard import APIGuard
 from libmuscle.checkpoint_triggers import TriggerManager
@@ -299,40 +299,52 @@ class Instance:
         return self._settings_manager.list_settings(self._instance_id)
 
     @overload
-    def get_setting(self, name: str, typ: Literal['str']) -> str:
-        ...
-
-    @overload
-    def get_setting(self, name: str, typ: Literal['int']) -> int:
-        ...
-
-    @overload
-    def get_setting(self, name: str, typ: Literal['float']) -> float:
-        ...
-
-    @overload
-    def get_setting(self, name: str, typ: Literal['bool']) -> bool:
-        ...
-
-    @overload
-    def get_setting(self, name: str, typ: Literal['[int]']) -> List[int]:
-        ...
-
-    @overload
-    def get_setting(self, name: str, typ: Literal['[float]']) -> List[float]:
+    def get_setting(
+            self, name: str, typ: Literal['str'], *,
+            default: Optional[str] = None) -> str:
         ...
 
     @overload
     def get_setting(
-            self, name: str, typ: Literal['[[float]]']) -> List[List[float]]:
+            self, name: str, typ: Literal['int'], *,
+            default: Optional[int] = None) -> int:
         ...
 
     @overload
-    def get_setting(self, name: str, typ: None = None) -> SettingValue:
+    def get_setting(self, name: str, typ: Literal['float'], *,
+                    default: Optional[float] = None) -> float:
         ...
 
-    def get_setting(self, name: str, typ: Optional[str] = None
-                    ) -> SettingValue:
+    @overload
+    def get_setting(self, name: str, typ: Literal['bool'], *,
+                    default: Optional[bool] = None) -> bool:
+        ...
+
+    @overload
+    def get_setting(self, name: str, typ: Literal['[int]'], *,
+                    default: Optional[List[int]] = None) -> List[int]:
+        ...
+
+    @overload
+    def get_setting(self, name: str, typ: Literal['[float]'], *,
+                    default: Optional[List[float]] = None) -> List[float]:
+        ...
+
+    @overload
+    def get_setting(
+            self, name: str, typ: Literal['[[float]]'], *,
+            default: Optional[List[List[float]]] = None) -> List[List[float]]:
+        ...
+
+    @overload
+    def get_setting(self, name: str, typ: None = None, *,
+                    default: Optional[SettingValue] = None) -> SettingValue:
+        ...
+
+    def get_setting(
+            self, name: str, typ: Optional[str] = None, *,
+            default: Optional[SettingValue] = None
+            ) -> SettingValue:
         """Returns the value of a model setting.
 
         Args:
@@ -343,14 +355,26 @@ class Instance:
                     If not specified, any of the supported types
                     will be accepted, and you'll have to figure out
                     what you got yourself.
+            default: A default value to return if this setting is not
+                    set. If not provided and the setting is not set,
+                    a KeyError will be raised.
 
+                    Valid values are ``str``, ``bool``, ``int``, ``float``, ``[int]`` (a
+                    list of ints), ``[float]`` (a list of floats), and ``[[float]]`` (a
+                    list of lists of floats).
         Raises:
-            KeyError: If no value was set for this setting.
+            KeyError: If no value was set for this setting and no
+                    default was provided.
             TypeError: If the type of the setting's value was not
                     as expected.
         """
-        return self._settings_manager.get_setting(
+        try:
+            return self._settings_manager.get_setting(
                 self._instance_id, Reference(name), typ)
+        except KeyError:
+            if default is not None:
+                return default
+            raise
 
     def list_ports(self) -> Dict[Operator, List[str]]:
         """Returns a description of the ports that this Instance has.

@@ -1,0 +1,38 @@
+ymmsl_version: v0.2
+
+imports:
+- from rd_programs import implementation mc_driver_cpp
+- from rd_programs import implementation load_balancer_cpp
+
+models:
+  qmc:
+    ports:
+      o_i: settings_out     # vector port, Settings
+      s: final_state_in     # vector port, 1D array
+
+    components:
+      mc:
+        ports:
+          o_i: parameters_out
+          s: states_in
+        description: |
+          The Monte Carlo driver component samples parameters and collects results for
+          statistical analysis.
+        implementation: mc_driver_cpp
+
+      rr:
+        ports:
+          f_init: front_in
+          o_i: back_out
+          s: back_in
+          o_f: front_out
+        description: |
+          The round-robin load balancer distributes runs across the implementations of
+          the model.
+        implementation: load_balancer_cpp
+
+    conduits:
+      mc.parameters_out: rr.front_in
+      rr.front_out: mc.states_in
+      rr.back_out: settings_out
+      final_state_in: rr.back_in

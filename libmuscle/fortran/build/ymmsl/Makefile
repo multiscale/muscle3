@@ -87,7 +87,7 @@ lib%_fortran.so: %.lo
 	$(FC) -shared -o $@ $^ $(LDFLAGS)
 
 lib%_fortran.dylib: %.lo
-	$(FC) -shared -o $@ $^ $(LDFLAGS)
+	$(FC) -shared -Wl,-headerpad_max_install_names -o $@ $^ $(LDFLAGS)
 
 $(PREFIX)/include/%.f90: $(srcdir)/%.f90
 	@mkdir -p $(@D)

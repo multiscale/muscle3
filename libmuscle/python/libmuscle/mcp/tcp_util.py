@@ -1,10 +1,29 @@
+from errno import EBADF, ENOTCONN
 from socket import SocketType
+
+import libmuscle.mark as mark
 
 
 class SocketClosed(Exception):
     """Raised when trying to read from a socket that was closed.
     """
     pass
+
+
+_CONNECTION_ERRORS = (BrokenPipeError, ConnectionError, SocketClosed, TimeoutError)
+
+
+_CONNECTION_ERRNOS = (EBADF, ENOTCONN)
+
+
+def is_disconnect(exception: Exception) -> bool:
+    """Checks whether this is a disconnect or another problem."""
+    if isinstance(exception, _CONNECTION_ERRORS):
+        return True
+    if isinstance(exception, OSError):
+        if exception.errno in _CONNECTION_ERRNOS:
+            return True
+    return False
 
 
 def recv_all(socket: SocketType, length: int) -> bytes:
@@ -21,6 +40,7 @@ def recv_all(socket: SocketType, length: int) -> bytes:
     databuf = bytearray(length)
     received_count = 0
     while received_count < length:
+        mark.before_tcp_receive(socket)
         bytes_left = length - received_count
         received_now = socket.recv_into(
             memoryview(databuf)[received_count:], bytes_left)
@@ -47,6 +67,7 @@ def send_int64(socket: SocketType, data: int) -> None:
         RuntimeError: If there was an error sending the data.
     """
     buf = data.to_bytes(8, byteorder='little')
+    mark.before_tcp_send(socket)
     socket.sendall(buf)
 
 
@@ -60,5 +81,37 @@ def recv_int64(socket: SocketType) -> int:
         SocketClosed: If the socket was closed by the peer.
         RuntimeError: If a read error occurred.
     """
+    mark.before_tcp_receive(socket)
     buf = recv_all(socket, 8)
     return int.from_bytes(buf, 'little')
+
+
+def send_frame(socket: SocketType, data: bytes) -> None:
+    """Sends a frame as length + data.
+
+    Args:
+        socket: The socket to send on
+        data: The data to send
+
+    Raises:
+        RuntimeError: If there was an error sending the data.
+    """
+    send_int64(socket, len(data))
+    socket.sendall(data)
+
+
+def recv_frame(socket: SocketType) -> bytes:
+    """Receives a frame as length + data.
+
+    Args:
+        socket: The socket to receive on
+
+    Returns:
+        The received data.
+
+    Raises:
+        RuntimeError: If there was an error receiving the data.
+    """
+    length = recv_int64(socket)
+    data = recv_all(socket, length)
+    return data

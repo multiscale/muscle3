@@ -7,7 +7,9 @@
 
 #include <memory>
 #include <mutex>
+#include <stdexcept>
 #include <string>
+#include <thread>
 #include <tuple>
 #include <unordered_map>
 #include <vector>
@@ -23,6 +25,11 @@
 
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
+
+/** Represent a failure due to lock timeout.
+ */
+class ConnectionLockedError : public std::runtime_error {
+    using std::runtime_error::runtime_error; };
 
 /** The client for the MUSCLE Manager Protocol.
  *
@@ -139,11 +146,12 @@ class MMPClient {
     private:
         ymmsl::Reference instance_id_;
         mcp::TcpTransportClient transport_client_;
-        mutable std::mutex mutex_;
+        mutable std::recursive_timed_mutex mutex_;
+        std::thread::id cur_owner_;
 
         /* Helper function that encodes/decodes and calls the manager.
          */
-        DataConstRef call_manager_(DataConstRef const & request);
+        DataConstRef call_manager_(DataConstRef const & request, bool timid = false);
 };
 
 } }

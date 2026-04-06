@@ -1,0 +1,21 @@
+ymmsl_version: v0.2
+
+description: |
+  yMMSL metadata for the micro2 code
+
+programs:
+  micro2:
+    ports:
+      f_init: init
+      o_f: final
+    description: |
+      # A simple micro model that passes on a value
+
+      ## Ports
+
+      init: Receives a single integer
+      final: Sends the received integer
+
+      This shares the implementation with micro1 to save some duplication
+    executable: python3
+    args: "-m micro"

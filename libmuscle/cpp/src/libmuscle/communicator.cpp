@@ -2,6 +2,7 @@
 
 #include <libmuscle/close_port.hpp>
 #include <libmuscle/data.hpp>
+#include <libmuscle/logger.hpp>
 #include <libmuscle/mcp/ext_types.hpp>
 #include <libmuscle/mpp_message.hpp>
 #include <libmuscle/mcp/tcp_transport_server.hpp>
@@ -34,12 +35,11 @@ Communicator::Communicator(
         ymmsl::Reference const & kernel,
         std::vector<int> const & index,
         PortManager & port_manager,
-        Logger & logger, Profiler & profiler,
+        Profiler & profiler,
         MMPClient & manager)
     : kernel_(kernel)
     , index_(index)
     , port_manager_(port_manager)
-    , logger_(logger)
     , profiler_(profiler)
     , manager_(manager)
     , server_()
@@ -63,11 +63,11 @@ void Communicator::send_message(
 {
     std::vector<int> slot_list;
     if (slot.is_set()) {
-        logger_.debug("Sending message on ", port_name, "[", slot.get(), "]");
+        log_debug("Sending message on ", port_name, "[", slot.get(), "]");
         slot_list.push_back(slot.get());
     }
     else
-        logger_.debug("Sending message on ", port_name);
+        log_debug("Sending message on ", port_name);
 
     Endpoint snd_endpoint = get_endpoint_(port_name, slot_list);
     if (!port_manager_.get_port(snd_endpoint.port).is_connected())
@@ -125,7 +125,7 @@ std::tuple<Message, double> Communicator::receive_message(
     std::string port_and_slot = port_name;
     if (slot.is_set())
         port_and_slot = port_name + "[" + std::to_string(slot.get()) + "]";
-    logger_.debug("Waiting for message on ", port_and_slot);
+    log_debug("Waiting for message on ", port_and_slot);
     std::vector<int> slot_list;
     if (slot.is_set())
         slot_list.emplace_back(slot.get());
@@ -209,7 +209,7 @@ std::tuple<Message, double> Communicator::receive_message(
     if (expected_message_number != mpp_message.message_number) {
         if (expected_message_number - 1 == mpp_message.message_number and
                 port.is_resuming(slot)) {
-            logger_.debug("Discarding received message on ", port_and_slot,
+            log_debug("Discarding received message on ", port_and_slot,
                           ": resuming from weakly consistent snapshot");
             port.set_resumed(slot);
             return receive_message(port_name, slot, default_msg);
@@ -223,10 +223,10 @@ std::tuple<Message, double> Communicator::receive_message(
     }
     port.increment_num_messages(slot);
 
-    logger_.debug("Received message on ", port_and_slot);
+    log_debug("Received message on ", port_and_slot);
 
     if (is_close_port(message.data())) {
-        logger_.debug("Port ", port_and_slot, " is now closed");
+        log_debug("Port ", port_and_slot, " is now closed");
     }
     return std::make_tuple(message, mpp_message.saved_until);
 }
@@ -262,7 +262,7 @@ MPPClient & Communicator::get_client_(Reference const & instance) {
             oss << locations[i];
         }
         oss << "]";
-        logger_.info(oss.str());
+        log_info(oss.str());
         clients_[instance] = std::make_unique<MPPClient>(locations);
     }
     return *clients_.at(instance);
@@ -305,9 +305,9 @@ void Communicator::close_port_(
             std::numeric_limits<double>::infinity(),
             ClosePort(), Settings());
     if (slot.is_set())
-        logger_.debug("Closing port ", port_name, "[", slot.get(), "]");
+        log_debug("Closing port ", port_name, "[", slot.get(), "]");
     else
-        logger_.debug("Closing port ", port_name);
+        log_debug("Closing port ", port_name);
     send_message(port_name, message, slot);
 }
 

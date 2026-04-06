@@ -1,0 +1,11 @@
+ymmsl_version: v0.2
+description: |
+  Settings for the cellular automaton example
+settings:
+  muscle_local_log_level: INFO
+  muscle_remote_log_level: WARNING
+
+  macro.max_steps: 1000
+  macro.size: 400
+  micro.rule: 57
+  cache.size: 10

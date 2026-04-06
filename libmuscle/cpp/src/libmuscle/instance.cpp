@@ -88,9 +88,13 @@ class Instance::Impl {
         bool reuse_instance();
         void error_shutdown(std::string const & message);
         std::vector<std::string> list_settings() const;
-        ::ymmsl::SettingValue get_setting(std::string const & name) const;
+        ::ymmsl::SettingValue get_setting(
+                std::string const & name,
+                Optional<::ymmsl::SettingValue> const & default_value) const;
         template <typename ValueType>
-        ValueType get_setting_as(std::string const & name) const;
+        ValueType get_setting_as(
+                std::string const & name,
+                Optional<ValueType> const & default_value) const;
         std::unordered_map<::ymmsl::Operator, std::vector<std::string>>
         list_ports() const;
         bool is_connected(std::string const & port) const;
@@ -117,7 +121,6 @@ class Instance::Impl {
     PRIVATE:
         ::ymmsl::Reference instance_name_;
         std::unique_ptr<MMPClient> manager_;
-        std::unique_ptr<Logger> logger_;
         std::unique_ptr<APIGuard> api_guard_;
         std::unique_ptr<Profiler> profiler_;
         std::unique_ptr<PortManager> port_manager_;
@@ -223,15 +226,15 @@ Instance::Impl::Impl(
         std::string instance_id = static_cast<std::string>(instance_name_);
         std::string default_logfile = "muscle_" + instance_id + ".log";
         std::string log_file = extract_log_file_location(argc, argv, default_logfile);
-        logger_.reset(new Logger(instance_id, log_file, *manager_));
+        Logger::instance().init(instance_id, log_file, manager_.get());
         profiler_.reset(new Profiler(*manager_));
 
         port_manager_.reset(new PortManager(index_(), ports));
         communicator_.reset(
                 new Communicator(
-                    name_(), index_(), *port_manager_, *logger_, *profiler_, *manager_));
+                    name_(), index_(), *port_manager_, *profiler_, *manager_));
         snapshot_manager_.reset(new SnapshotManager(
-                instance_name_, *manager_, *port_manager_, *logger_));
+                instance_name_, *manager_, *port_manager_));
         trigger_manager_.reset(new TriggerManager());
 
         register_();
@@ -245,7 +248,7 @@ Instance::Impl::Impl(
         setup_receive_timeout_();
         // MMSFValidator needs a connected port manager, and does some logging
         if (! (InstanceFlags::SKIP_MMSF_SEQUENCE_CHECKS & flags_)) {
-            mmsf_validator_.reset(new MMSFValidator(*port_manager_, *logger_));
+            mmsf_validator_.reset(new MMSFValidator(*port_manager_));
         }
 #ifdef MUSCLE_ENABLE_MPI
         auto sbase_data = Data(settings_manager_.base);
@@ -272,6 +275,7 @@ Instance::Impl::~Impl() {
     // an exception and a crash. Since we're already going down abnormally,
     // trying to not hurt the rest of the simulation seems worth it.
     shutdown_();
+    Logger::instance().close();
 }
 
 bool Instance::Impl::reuse_instance() {
@@ -327,8 +331,17 @@ std::vector<std::string> Instance::Impl::list_settings() const {
 }
 
 
-::ymmsl::SettingValue Instance::Impl::get_setting(std::string const & name) const {
-    return settings_manager_.get_setting(instance_name_, name);
+::ymmsl::SettingValue Instance::Impl::get_setting(
+        std::string const & name,
+        Optional<::ymmsl::SettingValue> const & default_value) const {
+    try {
+        return settings_manager_.get_setting(instance_name_, name);
+    }
+    catch (std::out_of_range const & e) {
+        if (default_value.is_set())
+            return default_value.get();
+        throw;
+    }
 }
 
 /* This is a template, but it's only ever instantiated in this file,
@@ -336,8 +349,17 @@ std::vector<std::string> Instance::Impl::list_settings() const {
  * to be in a .tpp file.
  */
 template <typename ValueType>
-ValueType Instance::Impl::get_setting_as(std::string const & name) const {
-    return settings_manager_.get_setting(instance_name_, name).template as<ValueType>();
+ValueType Instance::Impl::get_setting_as(
+        std::string const & name,
+        Optional<ValueType> const & default_value) const {
+    try {
+        return settings_manager_.get_setting(instance_name_, name).template as<ValueType>();
+    }
+    catch (std::out_of_range const & e) {
+        if (default_value.is_set())
+            return default_value.get();
+        throw;
+    }
 }
 
 std::unordered_map<::ymmsl::Operator, std::vector<std::string>>
@@ -476,7 +498,7 @@ void Instance::Impl::register_() {
     auto port_list = list_declared_ports_();
     manager_->register_instance(locations, port_list);
     profiler_->record_event(std::move(register_event));
-    logger_->info("Registered with the manager");
+    log_info("Registered with the manager");
 }
 
 /* Connect this instance to the given peers / conduits.
@@ -495,7 +517,7 @@ void Instance::Impl::connect_() {
     settings_manager_.base = manager_->get_settings();
 
     profiler_->record_event(std::move(connect_event));
-    logger_->info("Received peer locations and base settings");
+    log_info("Received peer locations and base settings");
 }
 
 /* Deregister this instance from the manager.
@@ -511,7 +533,7 @@ void Instance::Impl::deregister_() {
 
     // This is the last thing we'll profile, so flush messages
     profiler_->shutdown();
-    logger_->info("Deregistered from the manager");
+    log_info("Deregistered from the manager");
 }
 
 void Instance::Impl::setup_checkpointing_() {
@@ -552,7 +574,7 @@ void Instance::Impl::setup_profiling_() {
                instance_name_, "muscle_profile_level").as<std::string>();
     }
     catch (std::runtime_error const & e) {
-        logger_->error(e.what() + std::string(" in muscle_profile_level"));
+        log_error(e.what() + std::string(" in muscle_profile_level"));
     }
     catch (std::out_of_range const &) {
         // muscle_profile_level not set, do nothing and keep the default
@@ -563,7 +585,7 @@ void Instance::Impl::setup_profiling_() {
         msg += profile_level_str;
         msg += ". Please specify \"none\" or \"all\". Using default value";
         msg += " \"all\"";
-        logger_->warning(msg);
+        log_warning(msg);
 
         profile_level_str = "all";
     }
@@ -576,7 +598,7 @@ void Instance::Impl::setup_receive_timeout_() {
         timeout = settings_manager_.get_setting(
                instance_name_, "muscle_deadlock_receive_timeout").as<double>();
         if (timeout >= 0 && timeout < 0.1) {
-            logger_->info(
+            log_info(
                     "Provided muscle_deadlock_receive_timeout (", timeout,
                     ") was less than the minimum of 0.1 seconds, setting it to 0.1.");
             timeout = 0.1;
@@ -584,12 +606,12 @@ void Instance::Impl::setup_receive_timeout_() {
         communicator_->set_receive_timeout(timeout);
     }
     catch (std::runtime_error const & e) {
-        logger_->error(e.what() + std::string(" in muscle_deadlock_receive_timeout"));
+        log_error(e.what() + std::string(" in muscle_deadlock_receive_timeout"));
     }
     catch (std::out_of_range const &) {
         // muscle_deadlock_receive_timeout not set, do nothing and keep the default
     }
-    logger_->debug(
+    log_debug(
             "Timeout on receiving messages set to ",
             communicator_->get_receive_timeout());
 }
@@ -666,7 +688,7 @@ Message Instance::Impl::receive_message(
                 std::ostringstream oss;
                 oss << "No message received on " << port_ref << " as it is not";
                 oss << " connected.";
-                logger_->debug(oss.str());
+                log_debug(oss.str());
                 result = default_msg.get();
             }
         }
@@ -946,7 +968,7 @@ bool Instance::Impl::receive_settings_() {
         oss << "'" << instance_name_ << "' received a message on";
         oss << " muscle_settings_in that is not a Settings. It seems that the";
         oss << " simulation is miswired or the sending instance is broken.";
-        logger_->critical(oss.str());
+        log_critical(oss.str());
         shutdown_();
         throw std::logic_error(oss.str());
     }
@@ -1034,7 +1056,7 @@ void Instance::Impl::pre_receive_f_init_() {
     auto ports = port_manager_->list_ports();
     if (ports.count(Operator::F_INIT) == 1) {
         for (auto const & port_name : ports.at(Operator::F_INIT)) {
-            logger_->debug("Pre-receiving on port ", port_name);
+            log_debug("Pre-receiving on port ", port_name);
             auto const & port = port_manager_->get_port(port_name);
             if (!port.is_connected())
                 continue;
@@ -1197,10 +1219,10 @@ void Instance::Impl::set_local_log_level_() {
                instance_name_, "muscle_local_log_level").as<std::string>();
 
         LogLevel level = string_to_level(log_level_str);
-        logger_->set_local_level(level);
+        Logger::instance().set_local_level(level);
     }
     catch (std::runtime_error const & e) {
-        logger_->error(e.what() + std::string(" in muscle_local_log_level"));
+        log_error(e.what() + std::string(" in muscle_local_log_level"));
     }
     catch (std::out_of_range const &) {
         // muscle_local_log_level not set, do nothing and keep the default
@@ -1217,10 +1239,10 @@ void Instance::Impl::set_remote_log_level_() {
                instance_name_, "muscle_remote_log_level").as<std::string>();
 
         LogLevel level = string_to_level(log_level_str);
-        logger_->set_remote_level(level);
+        Logger::instance().set_remote_level(level);
     }
     catch (std::runtime_error const & e) {
-        logger_->error(e.what() + std::string(" in muscle_remote_log_level"));
+        log_error(e.what() + std::string(" in muscle_remote_log_level"));
     }
     catch (std::out_of_range const &) {
         // muscle_remote_log_level not set, do nothing and keep the default
@@ -1254,7 +1276,7 @@ void Instance::Impl::check_compatibility_(
         oss << " '" << port_name << "'. My settings are '";
         oss << settings_manager_.overlay << "' and I received from a";
         oss << " universe with '" << overlay << "'.";
-        logger_->critical(oss.str());
+        log_critical(oss.str());
         shutdown_();
         throw std::logic_error(oss.str());
     }
@@ -1272,7 +1294,7 @@ void Instance::Impl::shutdown_(Optional<std::string> const & message) {
         if (mpi_barrier_.is_root()) {
 #endif
             if (message.is_set())
-                logger_->critical(message.get());
+                log_critical(message.get());
             communicator_->shutdown();
             deregister_();
             manager_->close();
@@ -1353,7 +1375,13 @@ std::vector<std::string> Instance::list_settings() const {
 }
 
 ::ymmsl::SettingValue Instance::get_setting(std::string const & name) const {
-    return impl_()->get_setting(name);
+    return impl_()->get_setting(name, {});
+}
+
+::ymmsl::SettingValue Instance::get_setting(
+        std::string const & name,
+        ::ymmsl::SettingValue const & default_value) const {
+    return impl_()->get_setting(name, default_value);
 }
 
 /* This is instantiated explicitly, it's the only way to do this with a
@@ -1362,22 +1390,48 @@ std::vector<std::string> Instance::list_settings() const {
  */
 template <typename ValueType>
 ValueType Instance::get_setting_as(std::string const & name) const {
-    return impl_()->get_setting_as<ValueType>(name);
+    return impl_()->get_setting_as<ValueType>(name, Optional<ValueType>());
+}
+
+template <typename ValueType>
+ValueType Instance::get_setting_as(
+        std::string const & name,
+        ValueType const & default_value) const {
+    return impl_()->get_setting_as<ValueType>(name, default_value);
 }
 
 /** This keeps Doxygen from getting confused.
  * \cond
  */
-template std::string Instance::get_setting_as<std::string>(std::string const & name) const;
-template int64_t Instance::get_setting_as<int64_t>(std::string const & name) const;
-template double Instance::get_setting_as<double>(std::string const & name) const;
-template bool Instance::get_setting_as<bool>(std::string const & name) const;
+template std::string Instance::get_setting_as<std::string>(
+        std::string const & name) const;
+template int64_t Instance::get_setting_as<int64_t>(
+        std::string const & name) const;
+template double Instance::get_setting_as<double>(
+        std::string const & name) const;
+template bool Instance::get_setting_as<bool>(
+        std::string const & name) const;
 template std::vector<int64_t> Instance::get_setting_as<std::vector<int64_t>>(
         std::string const & name) const;
 template std::vector<double> Instance::get_setting_as<std::vector<double>>(
         std::string const & name) const;
 template std::vector<std::vector<double>> Instance::get_setting_as<std::vector<std::vector<double>>>(
         std::string const & name) const;
+
+template std::string Instance::get_setting_as<std::string>(
+        std::string const & name, std::string const & default_value) const;
+template int64_t Instance::get_setting_as<int64_t>(
+        std::string const & name, int64_t const & default_value) const;
+template double Instance::get_setting_as<double>(
+        std::string const & name, double const & default_value) const;
+template bool Instance::get_setting_as<bool>(
+        std::string const & name, bool const & default_value) const;
+template std::vector<int64_t> Instance::get_setting_as<std::vector<int64_t>>(
+        std::string const & name, std::vector<int64_t> const & default_value) const;
+template std::vector<double> Instance::get_setting_as<std::vector<double>>(
+        std::string const & name, std::vector<double> const & default_value) const;
+template std::vector<std::vector<double>> Instance::get_setting_as<std::vector<std::vector<double>>>(
+        std::string const & name, std::vector<std::vector<double>> const & default_value) const;
 /** \endcond
  */
 

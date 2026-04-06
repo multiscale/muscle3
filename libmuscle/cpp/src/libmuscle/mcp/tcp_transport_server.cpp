@@ -1,13 +1,19 @@
 #include "libmuscle/mcp/tcp_transport_server.hpp"
 
 #include "libmuscle/data.hpp"
+#include "libmuscle/logger.hpp"
 #include "libmuscle/mcp/transport_server.hpp"
 #include "libmuscle/mcp/tcp_util.hpp"
+#include "libmuscle/util.hpp"
 
 #include <arpa/inet.h>
 #include <chrono>
+#include <condition_variable>
 #include <cstring>
 #include <ifaddrs.h>
+#include <limits>
+#include <memory>
+#include <mutex>
 #include <netinet/tcp.h>
 #include <poll.h>
 #include <thread>
@@ -20,19 +26,23 @@
 using namespace std::string_literals;
 
 using libmuscle::_MUSCLE_IMPL_NS::DataConstRef;
+using libmuscle::_MUSCLE_IMPL_NS::log_warning;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::check_conn;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::Disconnect;
 using libmuscle::_MUSCLE_IMPL_NS::mcp::recv_all;
-using libmuscle::_MUSCLE_IMPL_NS::mcp::send_frame;
 using libmuscle::_MUSCLE_IMPL_NS::mcp::recv_int64;
 using libmuscle::_MUSCLE_IMPL_NS::mcp::RequestHandler;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::SessionState;
+using libmuscle::_MUSCLE_IMPL_NS::mcp::send_frame;
 
 
 namespace {
 
 /** A worker that handles MCP-over-TCP connections.
  *
- * This class contains a list of connections and a thread that handles them
- * (the worker thread). Operations are synchronised internally, so it's
- * thread-safe. It forwards the requests to a RequestHandler.
+ * This class contains a list of connections and a thread that handles them (the worker
+ * thread). Operations are synchronised internally, so it's thread-safe. It forwards the
+ * requests to a RequestHandler.
  */
 class TcpTransportServerWorker {
     public:
@@ -42,12 +52,13 @@ class TcpTransportServerWorker {
          */
         explicit TcpTransportServerWorker(RequestHandler & handler)
             : handler_(handler)
+            , mutex_()
+            , new_connections_()
+            , num_active_connections_(0)
             , shutting_down_(false)
             , connections_()
-            , connections_changed_(false)
             , polled_fds_()
-            , polled_fd_types_()
-            , mutex_()
+            , req_buf_()
             , thread_(worker_thread_, this)
         {}
 
@@ -59,7 +70,7 @@ class TcpTransportServerWorker {
          */
         int count_active_connections() const {
             std::lock_guard<std::mutex> lock(mutex_);
-            return connections_.size();
+            return num_active_connections_;
         }
 
         /** Add a new active connection to handle.
@@ -68,17 +79,32 @@ class TcpTransportServerWorker {
          *
          * @param fd The file descriptor of the socket to communicate on.
          */
-        void add_connection(int fd) {
+        void add_connection(
+                int fd, int64_t session_id,
+                std::shared_ptr<SessionState> const & session_state)
+        {
             std::lock_guard<std::mutex> lock(mutex_);
-            connections_.push_back(fd);
-            connections_changed_ = true;
+            new_connections_.emplace_back(fd, session_id, session_state);
+        }
+
+        /** Get ids of closed sessions.
+         *
+         * Called by the server thread. Repeated calls will return the ids of sessions
+         * closed between the previous call and now.
+         *
+         * @return A vector of session ids of closed sessions
+         */
+        std::vector<int64_t> get_closed_sessions() {
+            std::lock_guard<std::mutex> lock(mutex_);
+            auto result = std::move(closed_sessions_);
+            closed_sessions_.clear();
+            return result;
         }
 
         /** Shut down this worker.
          *
-         * This will cause the worker to wait for all clients to disconnect,
-         * then shut down. This call will block until the worker has shut
-         * down.
+         * This will cause the worker to wait for all clients to disconnect, then shut
+         * down. This call will block until the worker has shut down.
          *
          * Called by the server thread on shut down.
          */
@@ -93,125 +119,214 @@ class TcpTransportServerWorker {
     private:
         /* Copies the list of managed connections into a poll_fd structure.
          *
-         * Having a copy allows the server thread to add connections while the
-         * worker is handling requests.
+         * Having a copy allows the server thread to add connections while the worker is
+         * handling requests.
          *
-         * This readies the polled_fds_ member for calling poll(), and the
-         * polled_fd_types_ member for subsequent handling. After this is
-         * called, polled_fds_ and polled_fd_types_ correspond index-wise to
-         * connections_.
+         * This readies the polled_fds_ member for calling poll(), and the next_actions_
+         * member for subsequent handling. After this is called, polled_fds_
+         * corresponds index-wise to connections_.
          *
          * Called by the worker thread.
          */
-        void update_polled_fds_() {
-            std::lock_guard<std::mutex> lock(mutex_);
-            if (connections_changed_) {
-                polled_fds_.resize(connections_.size());
-                polled_fd_types_.resize(connections_.size());
-                std::size_t i = 0;
-                for (auto & conn: connections_) {
-                    if (conn.response_fd != -1) {
-                        polled_fds_[i].fd = conn.response_fd;
-                        polled_fd_types_[i] = FdType_::response;
+        void update_connections_() {
+            collect_closed_sessions_();
+            remove_closed_connections_();
+
+            {
+                std::lock_guard<std::mutex> lock(mutex_);
+
+                connections_.insert(
+                        connections_.end(), new_connections_.begin(), new_connections_.end());
+                new_connections_.clear();
+                num_active_connections_ = connections_.size();
+            }
+
+            update_polled_fds_();
+        }
+
+        /* Collects closed sessions.
+         *
+         * After a session is closed by the client, we can close the connection and mark
+         * it for removal, and hand the session id back to the server main thread.
+         */
+        void collect_closed_sessions_() {
+            for (std::size_t i = 0; i < connections_.size(); ++i) {
+                auto & conn = connections_[i];
+                if (conn.session_state->has_ended()) {
+                    ::close(conn.request_fd);
+                    {
+                        std::lock_guard<std::mutex> lock(mutex_);
+                        closed_sessions_.push_back(conn.session_id);
                     }
-                    else {
-                        polled_fds_[i].fd = conn.request_fd;
-                        polled_fd_types_[i] = FdType_::request;
-                    }
-                    polled_fds_[i].events = POLLIN;
-                    polled_fds_[i].revents = 0;
-                    ++i;
+                    polled_fds_[i].revents |= POLLHUP;
                 }
-                connections_changed_ = false;
+            }
+        }
+
+        /* Detects sockets that have closed and removes those connections.
+         *
+         * This cleans up the internal administration when clients disconnect. It
+         * invalidates polled_fds_.
+         *
+         * @return True iff any changes were made
+         *
+         * Called by the worker thread.
+         */
+        void remove_closed_connections_() {
+            for (std::size_t i = connections_.size(); i > 0u; --i) {
+                std::size_t j = i - 1;
+                if (connections_[j].next_action == Action_::receive_request) {
+                    auto const & polled_fd = polled_fds_[j];
+                    if (polled_fd.revents & POLLHUP) {
+                        ::close(connections_[j].request_fd);
+                        connections_.erase(connections_.begin() + j);
+                    }
+                }
+            }
+        }
+
+        /* Update the polled_fds_ vector from connections_.
+         *
+         * After this, polled_fds_ lines up with connections_.
+         *
+         * Called by the worker thread
+         */
+        void update_polled_fds_() {
+            polled_fds_.resize(connections_.size());
+
+            std::size_t i = 0;
+            for (auto & conn: connections_) {
+                switch (conn.next_action) {
+                    case Action_::receive_request:
+                        polled_fds_[i].fd = conn.request_fd;
+                        break;
+                    case Action_::receive_response:
+                        polled_fds_[i].fd = conn.response_fd;
+                        break;
+                    case Action_::send_response:
+                        // poll() ignores negative values
+                        polled_fds_[i].fd = -1;
+                        break;
+                }
+
+                polled_fds_[i].events = POLLIN;
+                polled_fds_[i].revents = 0;
+
+                ++i;
             }
         }
 
         /* Checks which fds are ready, and handles requests and responses.
          *
-         * This takes the results from calling poll(), answers any requests
-         * that can be answered immediately, waits for the responses on the
-         * rest, and when responses are available, gets them and sends them
-         * to the requester.
+         * This takes the results from calling poll(), answers any requests that can be
+         * answered immediately, requests responses on the rest, and when responses are
+         * available, gets them and sends them to the requester.
          *
          * Called by the worker thread.
          */
         void handle_ready_fds_() {
             for (std::size_t i = 0; i < polled_fds_.size(); ++i) {
-                auto & polled_fd = polled_fds_[i];
-                if (polled_fd.revents & POLLIN) {
-                    if (polled_fd_types_[i] == FdType_::request) {
-                        try {
-                            int64_t length = recv_int64(polled_fd.fd);
-                            req_buf_.resize(length);
-                            recv_all(polled_fd.fd, req_buf_.data(), length);
-
-                            std::vector<char> res_buf;
-                            int res_fd = handler_.handle_request(req_buf_.data(), length, res_buf);
-                            if (res_fd < 0) {
-                                // got a response immediately, send it
-                                send_response_(polled_fd.fd, std::move(res_buf));
-                            }
-                            else {
-                                // response not yet available, wait for it
-                                std::lock_guard<std::mutex> lock(mutex_);
-                                connections_[i].response_fd = res_fd;
-                                connections_changed_ = true;
-                            }
-                        }
-                        catch (std::runtime_error const & e) {
-                            // EOF; port was closed, mark as such
-                            polled_fd.revents |= POLLHUP;
-                        }
+                try {
+                    if (polled_fds_[i].revents & POLLIN) {
+                        if (connections_[i].next_action == Action_::receive_request)
+                            handle_request_(i);
+                        else
+                            handle_response_(i);
                     }
-                    else {  // response ready
-                        char dummy;
-                        read(polled_fd.fd, &dummy, 1);
-
-                        std::vector<char> res_buf;
-                        res_buf = handler_.get_response(polled_fd.fd);
-
-                        int fd;
-                        {
-                            std::lock_guard<std::mutex> lock(mutex_);
-                            fd = connections_[i].request_fd;
-                            connections_[i].response_fd = -1;
-                            connections_changed_ = true;
-                        }
-                        send_response_(fd, std::move(res_buf));
-                    }
+                }
+                catch (Disconnect const & e) {
+                    polled_fds_[i].revents |= POLLHUP;
                 }
             }
         }
 
-        /* Send contents of response buffer to the given fd.
+        /* Receive a newly available request, and process and send as needed.
          *
-         * This saves some duplication in the code above. Takes ownership of
-         * res_buf and discards it after sending.
-         *
-         * @param fd The fd to send the data on
+         * @param i Index of the current connection
          */
-        void send_response_(int fd, std::vector<char> && res_buf) {
-            send_frame(fd, res_buf.data(), res_buf.size());
+        void handle_request_(std::size_t i) {
+            auto & conn = connections_[i];
+            int64_t request_nr = receive_request_(conn.request_fd);
+
+            if (request_nr == 0) {
+                conn.session_state->set_ended();
+                return;
+            }
+
+            bool should_process, should_send;
+            std::tie(should_process, should_send) = conn.session_state->triage_request(
+                    request_nr);
+
+            if (should_process) {
+                std::shared_ptr<std::vector<char>> res_buf = std::make_shared<std::vector<char>>();
+                int res_fd = handler_.handle_request(req_buf_.data(), req_buf_.size(), *res_buf);
+
+                if (res_fd < 0) {
+                    // got a response immediately, share it
+                    conn.session_state->set_response(res_buf);
+                }
+                else {
+                    // response not yet available, pick it up on the next poll
+                    conn.response_fd = res_fd;
+                    conn.next_action = Action_::receive_response;
+                    return;
+                }
+            }
+
+            if (should_send) {
+                conn.next_action = Action_::send_response;
+            }
         }
 
-        /* Detects ports that have closed and removes those connections.
+        /* Receive the next request and return the request number.
          *
-         * This cleans up the internal administration when clients disconnect.
-         * After this procedure has been called, connections_ and polled_fds_
-         * no longer correspond one-on-one to each other.
+         * The request is received into req_buf_, which is reused as an optimisation.
          *
-         * Called by the worker thread.
+         * @param fd The socket fd to receive on
          */
-        void remove_closed_ports_() {
-            for (std::size_t i = polled_fds_.size(); i > 0u; --i) {
-                std::size_t j = i - 1;
-                if (polled_fd_types_[j] == FdType_::request) {
-                    auto const & polled_fd = polled_fds_[j];
-                    if (polled_fd.revents & POLLHUP) {
-                        ::close(polled_fd.fd);
-                        std::lock_guard<std::mutex> lock(mutex_);
-                        connections_.erase(connections_.begin() + j);
-                        connections_changed_ = true;
+        int64_t receive_request_(int fd) {
+            int64_t request_nr = recv_int64(fd);
+            if (request_nr > 0) {
+                int64_t length = recv_int64(fd);
+                req_buf_.resize(length);
+                recv_all(fd, req_buf_.data(), length);
+            }
+            return request_nr;
+        }
+
+        /* Get a newly available response, and share it.
+         *
+         * @param i Index of the current connection
+         */
+        void handle_response_(std::size_t i) {
+            auto & conn = connections_[i];
+
+            char dummy;
+            check_conn(read(conn.response_fd, &dummy, 1));
+
+            std::shared_ptr<std::vector<char>> res_buf = std::make_shared<std::vector<char>>();
+            *res_buf = handler_.get_response(conn.response_fd);
+
+            conn.session_state->set_response(res_buf);
+
+            conn.next_action = Action_::send_response;
+            conn.response_fd = -1;
+        }
+
+        void send_responses_() {
+            for (std::size_t i = 0; i < connections_.size(); ++i) {
+                auto & conn = connections_[i];
+                if (conn.next_action == Action_::send_response) {
+                    auto response_to_send = conn.session_state->get_response();
+                    if (response_to_send) {
+                        conn.next_action = Action_::receive_request;
+
+                        try {
+                            send_frame(conn.request_fd, response_to_send->data(), response_to_send->size());
+                        }
+                        catch (Disconnect const & e) {
+                            polled_fds_[i].revents |= POLLHUP;
+                        }
                     }
                 }
             }
@@ -219,21 +334,20 @@ class TcpTransportServerWorker {
 
         /* The main function for the worker thread.
          *
-         * This is static since I'm not sure if std::thread works with a
-         * thiscall. Probably with some adaptor, but this works too.
+         * This is static since I'm not sure if std::thread works with a thiscall.
+         * Probably with some adaptor, but this works too.
          *
-         * This runs in a loop until shutdown() is called by the server
-         * thread.
+         * This runs in a loop until shutdown() is called by the server thread.
          *
          * @param self The TcpTransportServerWorker this thread belongs to.
          */
         static void worker_thread_(TcpTransportServerWorker * self) {
             while (true) {
-                self->update_polled_fds_();
+                self->update_connections_();
                 if (!self->polled_fds_.empty()) {
                     poll(self->polled_fds_.data(), self->polled_fds_.size(), 100);
                     self->handle_ready_fds_();
-                    self->remove_closed_ports_();
+                    self->send_responses_();
                 }
                 else {
                     // Avoid blocking the CPU while waiting for clients to
@@ -248,33 +362,65 @@ class TcpTransportServerWorker {
             }
         }
 
-        struct Connection_ {
-            int request_fd, response_fd;
+        /* Next action needed for a given connection.
+         */
+        enum class Action_ {
+            // receive the next request from the client
+            receive_request,
+            // receive the response from the handler and share it
+            receive_response,
+            // get the shared response and send it to the client
+            send_response
+        };
 
-            Connection_(int request_fd)
-                : request_fd(request_fd)
+        /* Data associated with a TCP network connection.
+         *
+         * The request_fd is always the fd of the socket to the client.
+         *
+         * If next_action is receive_request or send_response, then response_fd is -1.
+         *
+         * If next_action is receive_response, then response_fd is the fd of the pipe
+         * from the handler signalling that a response is available.
+         */
+        struct Connection_ {
+            // Id of the session
+            int64_t session_id;
+            // State of the session
+            std::shared_ptr<SessionState> session_state;
+            // State of the connection
+            Action_ next_action;
+            // File descriptor of the socket connecting us to the client
+            int request_fd;
+            // File descriptor signalling that a response is available
+            int response_fd;
+
+            Connection_(
+                    int request_fd, int64_t session_id,
+                    std::shared_ptr<SessionState> const & session_state)
+                : session_id(session_id)
+                , session_state(session_state)
+                , next_action(Action_::receive_request)
+                , request_fd(request_fd)
                 , response_fd(-1)
             {}
         };
 
-        enum class FdType_ {
-            request,
-            response
-        };
-
         RequestHandler & handler_;
+
+        // the mutex protects the following three member variables
+        mutable std::mutex mutex_;
+        std::vector<Connection_> new_connections_;
+        std::size_t num_active_connections_;
+        std::vector<int64_t> closed_sessions_;
         bool shutting_down_;
+
         std::vector<Connection_> connections_;
-        bool connections_changed_;
 
         std::vector<pollfd> polled_fds_;
-        std::vector<FdType_> polled_fd_types_;
-
         mutable std::vector<char> req_buf_;
 
-        // mutex before thread, it needs to be initialised before the thread
-        // is started.
-        mutable std::mutex mutex_;
+        // This needs to be after mutex_, which needs to be initialised before the
+        // thread is started.
         std::thread thread_;
 };
 
@@ -283,10 +429,12 @@ class TcpTransportServerWorker {
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS { namespace mcp {
 
+
 TcpTransportServer::TcpTransportServer(RequestHandler & handler)
     : TransportServerBase(handler)
+    , next_session_(1)
 {
-    pipe(control_pipe_);
+    throw_on_error(pipe(control_pipe_));
     thread_ = std::thread(server_thread_, this);
 }
 
@@ -304,7 +452,7 @@ std::string TcpTransportServer::get_location() const {
 
 void TcpTransportServer::close() {
     char dummy = 0;
-    ::write(control_pipe_[1], &dummy, 1);
+    throw_on_error(::write(control_pipe_[1], &dummy, 1));
     thread_.join();
 }
 
@@ -432,6 +580,38 @@ int TcpTransportServer::set_up_socket_() {
     return sockfd;
 }
 
+std::tuple<int64_t, std::shared_ptr<SessionState>>
+TcpTransportServer::start_session_(int socket_fd)
+{
+    std::shared_ptr<SessionState> session_state;
+
+    int64_t req_session_id = recv_int64(socket_fd);
+
+    int64_t session_id;
+    if (req_session_id == 0) {
+        session_id = next_session_++;
+        session_state = std::make_shared<SessionState>();
+        session_store_[session_id] = session_state;
+
+        send_int64(socket_fd, session_id);
+    }
+    else {
+        log_warning("The TCP network connection for session ", req_session_id, " was lost");
+        if (session_store_.count(req_session_id) == 0) {
+            throw std::runtime_error(
+                    "Unknown session " + std::to_string(req_session_id) +
+                    " requested");
+        }
+        session_id = req_session_id;
+
+        session_state = session_store_[session_id];
+        send_int64(socket_fd, session_id);
+        log_warning("Resuming session ", session_id);
+    }
+
+    return std::make_tuple(session_id, session_state);
+}
+
 void TcpTransportServer::server_thread_(TcpTransportServer * self) {
     std::vector<std::unique_ptr<TcpTransportServerWorker>> workers;
     workers.emplace_back(new TcpTransportServerWorker(self->handler_));
@@ -449,38 +629,66 @@ void TcpTransportServer::server_thread_(TcpTransportServer * self) {
 
         if (poll_fds[0].revents & POLLIN) {
             char dummy;
-            read(poll_fds[0].fd, &dummy, 1);
+            throw_on_error(read(poll_fds[0].fd, &dummy, 1));
             break;
         }
 
         // TODO: get peer info and log it
         if (poll_fds[1].revents & POLLIN) {
-            int new_fd = accept(poll_fds[1].fd, nullptr, nullptr);
-            int flags = 0;
+            int new_fd = -1;
+            try {
+                new_fd = check_conn(accept(poll_fds[1].fd, nullptr, nullptr));
+                int flags = 0;
 #ifdef __linux
-            setsockopt(new_fd, SOL_TCP, TCP_NODELAY, &flags, sizeof(flags));
-            setsockopt(new_fd, SOL_TCP, TCP_QUICKACK, &flags, sizeof(flags));
+                setsockopt(new_fd, SOL_TCP, TCP_NODELAY, &flags, sizeof(flags));
+                setsockopt(new_fd, SOL_TCP, TCP_QUICKACK, &flags, sizeof(flags));
 #elif __APPLE__
-            setsockopt(new_fd, IPPROTO_TCP, TCP_NODELAY, &flags, sizeof(flags));
-            // macOS doesn't have quickack unfortunately
+                setsockopt(new_fd, IPPROTO_TCP, TCP_NODELAY, &flags, sizeof(flags));
+                // macOS doesn't have quickack unfortunately
 #endif
+                int64_t session_id;
+                std::shared_ptr<SessionState> session_state;
+                std::tie(session_id, session_state) = self->start_session_(new_fd);
 
-            // TODO: there's a trait<size_t>::max, isn't there?
-            std::size_t min_size = static_cast<std::size_t>(-1);
-            std::size_t selected_worker = 0u;
-            for (std::size_t j = 0u; j < workers.size(); ++j) {
-                std::size_t cur_size = workers[j]->count_active_connections();
-                if (cur_size < min_size) {
-                    min_size = cur_size;
-                    selected_worker = j;
+                if (self->worker_for_session_.count(session_id) == 0) {
+                    std::size_t selected_worker = 0u;
+                    std::size_t min_size = std::numeric_limits<std::size_t>::max();
+                    for (std::size_t j = 0u; j < workers.size(); ++j) {
+                        std::size_t cur_size = workers[j]->count_active_connections();
+                        if (cur_size < min_size) {
+                            min_size = cur_size;
+                            selected_worker = j;
+                        }
+                    }
+                    self->worker_for_session_[session_id] = selected_worker;
+                }
+
+                std::size_t selected_worker = self->worker_for_session_[session_id];
+                workers[selected_worker]->add_connection(
+                        new_fd, session_id, session_state);
+            }
+            catch (Disconnect const & e) {
+                if (new_fd != -1) {
+                    ::close(new_fd);
                 }
             }
-
-            workers[selected_worker]->add_connection(new_fd);
         }
     }
 
     ::close(socket_fd);
+
+    Retrier retrier(30.0, 0.1);
+    while (!retrier.should_give_up()) {
+        for (auto & worker: workers)
+            for (int session_id : worker->get_closed_sessions())
+                self->session_store_.erase(session_id);
+
+        if (self->session_store_.empty()) {
+            break;
+        }
+
+        retrier.sleep();
+    }
 
     for (auto & worker: workers)
         worker->shutdown();

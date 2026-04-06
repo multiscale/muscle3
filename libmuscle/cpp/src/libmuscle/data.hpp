@@ -32,11 +32,6 @@ namespace msgpack {
             struct pack;
         }
     }
-
-    namespace adaptor {
-        using ::msgpack::v3::adaptor::object_with_zone;
-        using ::msgpack::v3::adaptor::pack;
-    }
 }
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {

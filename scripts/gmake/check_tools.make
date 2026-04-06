@@ -154,7 +154,7 @@ tool_command := curl
 include $(TOOLDIR)/detect_tool.make
 
 ifeq ($(DOWNLOAD), curl)
-    export DOWNLOAD := curl -LO
+    export DOWNLOAD := curl --retry 7 -LO
 endif
 
 ifndef DOWNLOAD

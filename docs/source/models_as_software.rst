@@ -283,7 +283,8 @@ generic packaging or installation system like conda or, on HPC, environment modu
 Regardless of how you package, distribute, and install MUSCLE3 model components, they
 need to be made available to MUSCLE3. To do that, there need to be one or more yMMSL
 files with program or model descriptions, and they need to be in a place where MUSCLE3
-can find them.
+can find them. If you're distributing a Python package, you can also declare an Entry
+Point, this is described in: :ref:`Python package Entry Points`
 
 In general, you can do that as follows. First, make a ``ymmsl/`` directory somewhere in
 the source directory for your yMMSL files to go into. You may want to make a
@@ -322,3 +323,52 @@ user whenever they activate the package.
 
 The final thing to do then is to document how the user should import your program or
 model, and how to use it, and then they should be good to go.
+
+
+.. _`Python package Entry Points`:
+
+Python package Entry Points
+'''''''''''''''''''''''''''
+
+.. important:: This functionality requires the 0.15.1 release of ymmsl-python.
+
+.. seealso:: `Corresponding ymmsl-python documentation <https://ymmsl-python.readthedocs.io/en/stable/describing_models.html#python-entrypoints>`__
+
+When distributing a model as a Python package, you can use Python's plugin mechanism
+(Entry Points) to make your model importable for users. You will need to:
+
+1. Configure the entry point in your ``pyproject.toml`` (or ``setup.py``) file.
+2. Provide the yMMSL configuration as a string inside your python distribution.
+
+Below code listings provide an example how to do this.
+
+.. code-block:: toml
+    :caption: Entry point configuration in ``pyproject.toml``
+
+    # Indicate you want to provide an entry point for "ymmsl.path":
+    [project.entry-points."ymmsl.path"]
+    # Provide one or more "name = value" entries, pointing to a valid yMMSL
+    # configuration string (see next code listing). For more details, see
+    # https://setuptools.pypa.io/en/latest/userguide/entry_point.html#entry-points-syntax
+    "example.model" = "my_package.example_model:YMMSL_CONFIG"
+
+.. code-block:: python
+    :caption: yMMSL configuration string in ``my_package/example_model.py``
+
+    import sys
+
+    YMMSL_CONFIG = f"""
+    ymmsl_version: v0.2
+    description: Example model
+    programs:
+      example:
+        description: |
+          Example component that can be imported with
+          `- from example.model import implementation example`
+        executable: {sys.executable}
+        args: -m my_package.example_model
+        ports:
+          f_init: example_input
+          o_f: example_output
+    """
+

@@ -45,8 +45,8 @@ def model_config() -> Configuration:
 def test_add_tester_model_to_config(tmp_run_dir: Path, program_config: Configuration,
                                     model_config: Configuration) -> None:
     tester = MuscleTester(tmp_run_dir)
-    result_program = tester.add_tester_component(program_config, "micro_model_program")
-    result_model = tester.add_tester_component(model_config, "macro_model")
+    result_program = tester._add_tester_component(program_config, "micro_model_program")
+    result_model = tester._add_tester_component(model_config, "macro_model")
     assert Reference("muscle3_implementation_tester") in result_program.models
     assert Reference("muscle3_implementation_tester") in result_model.models
 
@@ -57,7 +57,7 @@ def test_add_tester_model_to_config(tmp_run_dir: Path, program_config: Configura
 def test_add_tester_program_to_config(tmp_run_dir: Path, program_config: Configuration
                                       ) -> None:
     tester = MuscleTester(tmp_run_dir)
-    result = tester.add_tester_component(program_config, "micro_model_program")
+    result = tester._add_tester_component(program_config, "micro_model_program")
     assert Reference("muscle3_implementation_tester") in result.programs
 
     tester_prog = result.programs[Reference("muscle3_implementation_tester")]
@@ -67,7 +67,7 @@ def test_add_tester_program_to_config(tmp_run_dir: Path, program_config: Configu
 def test_add_test_ports_to_config(tmp_run_dir: Path, program_config: Configuration
                                   ) -> None:
     tester = MuscleTester(tmp_run_dir)
-    result = tester.add_tester_component(program_config, "micro_model_program")
+    result = tester._add_tester_component(program_config, "micro_model_program")
     tester_model = result.models[Reference("muscle3_implementation_tester")]
     tester_comp = tester_model.components[Reference("muscle3_implementation_tester")]
     # init_in is a receiving port of micro_model_program → tester sends on it (O_I)
@@ -80,7 +80,7 @@ def test_add_test_ports_to_config(tmp_run_dir: Path, program_config: Configurati
 def test_add_test_conduits_to_config(tmp_run_dir: Path, program_config: Configuration
                                      ) -> None:
     tester = MuscleTester(tmp_run_dir)
-    result = tester.add_tester_component(program_config, "micro_model_program")
+    result = tester._add_tester_component(program_config, "micro_model_program")
     tester_model = result.models[Reference("muscle3_implementation_tester")]
     conduit_pairs = {
         (str(c.sender), str(c.receiver)) for c in tester_model.conduits
@@ -101,7 +101,7 @@ def test_original_config_unchanged(tmp_run_dir: Path, program_config: Configurat
                                    ) -> None:
     """add_tester_component should not remove the original model/program."""
     tester = MuscleTester(tmp_run_dir)
-    result = tester.add_tester_component(program_config, "micro_model_program")
+    result = tester._add_tester_component(program_config, "micro_model_program")
     assert Reference("micro_model_program") in result.programs
 
 
@@ -109,4 +109,4 @@ def test_error_for_unknown_implementation(tmp_run_dir: Path) -> None:
     config = Configuration(models=[], programs=[])
     tester = MuscleTester(tmp_run_dir)
     with pytest.raises(ValueError, match="No implementation 'nonexistent'"):
-        tester.add_tester_component(config, "nonexistent")
+        tester._add_tester_component(config, "nonexistent")

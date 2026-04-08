@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Tuple, Union
 from multiprocessing import Queue
 from queue import Empty
 
-from ymmsl.v0_2 import Configuration, Reference
+from ymmsl.v0_2 import Configuration, ExecutionModel, Reference
 
 from libmuscle.errors import ConfigurationError
 from libmuscle.manager.instance_registry import InstanceRegistry
@@ -127,6 +127,11 @@ class InstanceManager:
                         ', not starting it.')
                 continue
             program = self._configuration.programs[component.implementation]
+            if program.execution_model == ExecutionModel.MANUAL:
+                _logger.info(
+                        f'Instance {instance} has a MANUAL execution model,'
+                        ' not starting it.')
+                continue
             program.env['MUSCLE_MANAGER'] = self._manager_location
             idir = self._run_dir.add_instance_dir(instance)
             workdir = idir / 'workdir'

@@ -98,7 +98,7 @@ class MuscleTester:
         tester_model.components[Reference(tester_name)] = Component(
             name=tester_name,
             ports=Ports(o_i=tester_o_i_ports, s=tester_s_ports),
-            description="Manual tester component for implementation testing",
+            description="Tester component for implementation testing",
             implementation=tester_name,
             optional=False,
         )

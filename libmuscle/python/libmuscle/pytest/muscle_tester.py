@@ -113,6 +113,7 @@ class MuscleTester:
 
         config.programs[Reference(tester_name)] = Program(
             name=tester_name,
+            ports=Ports(o_i=tester_o_i_ports, s=tester_s_ports),
             execution_model=ExecutionModel.MANUAL,
             description="Manual tester program for implementation testing",
         )

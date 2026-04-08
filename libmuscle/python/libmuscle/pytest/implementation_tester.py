@@ -22,12 +22,12 @@ class ImplementationTester:
         # Pass manager address and instance name through environment
         os.environ["MUSCLE_MANAGER"] = muscle_manager_address
         os.environ["MUSCLE_INSTANCE"] = "muscle3_implementation_tester"
-        test_model = test_ymmsl_config.models[Reference("muscle3_test_model")]
-        tester_component = test_model.components[
-            Reference("muscle3_implementation_tester")]
+        test_model = test_ymmsl_config.programs[
+            Reference("muscle3_implementation_tester")
+            ]
         instance_ports = {
-            Operator.O_I: [str(p) for p in tester_component.ports.sending_port_names()],
-            Operator.S: [str(p) for p in tester_component.ports.receiving_port_names()]
+            Operator.O_I: [str(p) for p in test_model.ports.sending_port_names()],
+            Operator.S: [str(p) for p in test_model.ports.receiving_port_names()]
         }
         self._instance = Instance(ports=instance_ports)
         self._instance.reuse_instance()

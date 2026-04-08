@@ -15,7 +15,8 @@ from ymmsl.v0_2 import (
     Program,
     ExecutionModel,
     Implementation,
-    Model
+    Model,
+    ThreadedResReq,
 )
 
 from libmuscle.pytest.implementation_tester import ImplementationTester
@@ -46,7 +47,7 @@ class MuscleTester:
         """Allows usage in a with-statement"""
         self.cleanup()
 
-    def add_tester_component(
+    def _add_tester_component(
             self, config: Configuration, implementation_name: str
             ) -> Configuration:
         """
@@ -68,15 +69,11 @@ class MuscleTester:
             )
 
         tester_name = "muscle3_implementation_tester"
+        test_model_name = "muscle3_test_model"
         tester_o_i_ports = []
         tester_s_ports = []
 
-        tester_model = Model(
-            name=tester_name,
-            ports=Ports(o_i=[], s=[]),
-            components=[],
-            conduits=[]
-        )
+        tester_model = Model(name=test_model_name)
 
         # Inputs of target → tester sends (O_I)
         for port_name in implementation.ports.receiving_port_names():
@@ -106,20 +103,33 @@ class MuscleTester:
             optional=False,
         )
 
+        tester_model.components[Reference(implementation_name)] = Component(
+            name=implementation_name,
+            ports=implementation.ports,
+            description="The tested implementation",
+            implementation=implementation_name,
+            optional=False,
+        )
+
         config.programs[Reference(tester_name)] = Program(
             name=tester_name,
             execution_model=ExecutionModel.MANUAL,
             description="Manual tester program for implementation testing",
         )
 
-        config.models[Reference(tester_name)] = tester_model
+        config.resources[Reference(tester_name)] = ThreadedResReq(
+                name=Reference(tester_name),
+                threads=1
+            )
+
+        config.models[Reference(test_model_name)] = tester_model
         return config
 
     def start_implementation(
         self, ymmsl_path: str, implementation: str, *, default_timeout: float = 60
     ) -> ImplementationTester:
         ymmsl_config = ymmsl.load_as(ymmsl.v0_2.Configuration, Path(ymmsl_path))
-        test_ymmsl_config = self.add_tester_component(ymmsl_config, implementation)
+        test_ymmsl_config = self._add_tester_component(ymmsl_config, implementation)
 
         # Save the test configuration to a temporary file
         test_ymmsl_path = self.run_dir / "test_config.ymmsl"

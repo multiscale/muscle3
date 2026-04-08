@@ -19,3 +19,7 @@ programs:
       This shares the implementation with micro2 to save some duplication
     executable: python3
     args: "-m micro"
+
+resources:
+  micro1:
+    threads: 1

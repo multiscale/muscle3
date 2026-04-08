@@ -22,11 +22,12 @@ class ImplementationTester:
         # Pass manager address and instance name through environment
         os.environ["MUSCLE_MANAGER"] = muscle_manager_address
         os.environ["MUSCLE_INSTANCE"] = "muscle3_implementation_tester"
-        test_model = test_ymmsl_config.models[
+        test_model = test_ymmsl_config.models[Reference("muscle3_test_model")]
+        tester_component = test_model.components[
             Reference("muscle3_implementation_tester")]
         instance_ports = {
-            Operator.O_I: [str(p) for p in test_model.ports.receiving_port_names()],
-            Operator.S: [str(p) for p in test_model.ports.sending_port_names()]
+            Operator.O_I: [str(p) for p in tester_component.ports.sending_port_names()],
+            Operator.S: [str(p) for p in tester_component.ports.receiving_port_names()]
         }
         self._instance = Instance(ports=instance_ports)
         self._instance.reuse_instance()
@@ -42,10 +43,7 @@ class ImplementationTester:
             message: The message to send.
             slot: Optional slot number for vector ports.
         """
-        if slot is not None:
-            self._instance.send(port_name, message, slot)
-        else:
-            self._instance.send(port_name, message)
+        self._instance.send(port_name, message, slot)
 
     def receive(
         self,
@@ -62,13 +60,11 @@ class ImplementationTester:
             slot: Optional slot number for vector ports.
             timeout: Timeout in seconds. If None, uses default_timeout.
         """
+        # TODO: Should implement what should be done when we reached the timeout
         if timeout is None:
             timeout = self._default_timeout
 
-        if slot is not None:
-            return self._instance.receive(port_name, slot)
-        else:
-            return self._instance.receive(port_name)
+        return self._instance.receive(port_name, slot)
 
     def cleanup(self) -> None:
         while self._instance.reuse_instance():

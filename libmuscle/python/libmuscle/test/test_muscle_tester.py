@@ -47,10 +47,10 @@ def test_add_tester_model_to_config(tmp_run_dir: Path, program_config: Configura
     tester = MuscleTester(tmp_run_dir)
     result_program = tester._add_tester_component(program_config, "micro_model_program")
     result_model = tester._add_tester_component(model_config, "macro_model")
-    assert Reference("muscle3_implementation_tester") in result_program.models
-    assert Reference("muscle3_implementation_tester") in result_model.models
+    assert Reference("muscle3_test_model") in result_program.models
+    assert Reference("muscle3_test_model") in result_model.models
 
-    tester_model = result_program.models[Reference("muscle3_implementation_tester")]
+    tester_model = result_program.models[Reference("muscle3_test_model")]
     assert Reference("muscle3_implementation_tester") in tester_model.components
 
 
@@ -68,7 +68,7 @@ def test_add_test_ports_to_config(tmp_run_dir: Path, program_config: Configurati
                                   ) -> None:
     tester = MuscleTester(tmp_run_dir)
     result = tester._add_tester_component(program_config, "micro_model_program")
-    tester_model = result.models[Reference("muscle3_implementation_tester")]
+    tester_model = result.models[Reference("muscle3_test_model")]
     tester_comp = tester_model.components[Reference("muscle3_implementation_tester")]
     # init_in is a receiving port of micro_model_program → tester sends on it (O_I)
     assert "init_in" in [str(p) for p in tester_comp.ports.sending_port_names()]
@@ -81,7 +81,7 @@ def test_add_test_conduits_to_config(tmp_run_dir: Path, program_config: Configur
                                      ) -> None:
     tester = MuscleTester(tmp_run_dir)
     result = tester._add_tester_component(program_config, "micro_model_program")
-    tester_model = result.models[Reference("muscle3_implementation_tester")]
+    tester_model = result.models[Reference("muscle3_test_model")]
     conduit_pairs = {
         (str(c.sender), str(c.receiver)) for c in tester_model.conduits
     }

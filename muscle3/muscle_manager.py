@@ -14,6 +14,7 @@ from ymmsl import Document
 import ymmsl
 import ymmsl.v0_1 as v0_1
 import ymmsl.v0_2 as v0_2
+from ymmsl.v0_2 import ExecutionModel
 
 from libmuscle.manager.hammer import flatten
 from libmuscle.manager.logger import last_lines
@@ -136,6 +137,11 @@ def _manage_simulation(
 
     run_dir_obj = create_run_dir(run_dir, root_model)
 
+    has_manual_components = any(
+        program.execution_model == ExecutionModel.MANUAL
+        for program in configuration.programs.values()
+    )
+
     configuration = flatten(configuration, model_ref)
     manager = Manager(configuration, run_dir_obj, log_level)
 
@@ -150,8 +156,7 @@ def _manage_simulation(
             print('Check the manager log for more details:', file=sys.stderr)
             print('   ', run_dir_obj.path / 'muscle3_manager.log', file=sys.stderr)
             sys.exit(1)
-
-    else:
+    elif not start_all or has_manual_components:
         server_location = manager.get_server_location()
         if location_file is None:
             print(server_location, flush=True)

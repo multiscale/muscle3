@@ -44,19 +44,20 @@ from libmuscle.manager.run_dir import RunDir
             exists=False, file_okay=True, dir_okay=True, readable=False,
             allow_dash=True),
         help=(
-            'File to write the network location of the manager to if'
-            ' --start-all is not specified. If a relative path is given,'
-            ' then it will be resolved relative to the directory in which'
-            ' the manager was started.'
+            'File to write the network location of the manager to. This is'
+            ' useful when --start-all is not specified, or when --start-all'
+            ' is used together with manually started instances. If a relative'
+            ' path is given, then it will be resolved relative to the'
+            ' directory in which the manager was started.'
             '\b\n\n'
             ' The manager will write to this file a single line of text,'
             ' which should be passed to the instances via the'
             ' MUSCLE_MANAGER environment variable or on their command line'
             ' using the --muscle-manager=<contents> option.'
             '\b\n\n'
-            ' If --start-all is not specified and --location-file is also'
-            ' not given, then the location will be printed on standard'
-            ' output.')
+            ' If --start-all is not specified (or if there are manual'
+            ' components) and --location-file is also not given, then the'
+            ' location will be printed on standard output.')
         )
 @click.option(
         '--start-all/--no-start-all', default=False, help=(
@@ -156,7 +157,8 @@ def _manage_simulation(
             print('Check the manager log for more details:', file=sys.stderr)
             print('   ', run_dir_obj.path / 'muscle3_manager.log', file=sys.stderr)
             sys.exit(1)
-    elif not start_all or has_manual_components:
+
+    if not start_all or has_manual_components:
         server_location = manager.get_server_location()
         if location_file is None:
             print(server_location, flush=True)

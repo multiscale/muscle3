@@ -17,5 +17,3 @@ docs/doxygen
 docs/apidocs
 docs/source/examples/*.log
 docs/source/examples/python/performance.sqlite
-
-libmuscle/python/libmuscle/version.py

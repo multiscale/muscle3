@@ -85,7 +85,7 @@ def do_mmp_client_test(tmpdir, caplog):
     assert result.returncode == 0
 
     # check submit_log_message (if supported, see below)
-    if mp.get_start_method() != 'spawn':
+    if caplog is not None:
         for rec in caplog.records:
             if rec.name == 'instances.test_logging':
                 assert rec.time_stamp == '1970-01-01T00:00:02Z'
@@ -110,9 +110,9 @@ def do_mmp_client_test(tmpdir, caplog):
 @skip_if_python_only
 def test_mmp_client(log_file_in_tmpdir, tmpdir, caplog):
     # caplog cannot be pickled, causing a crash if we try to pass it to the
-    # process on platforms that spawn. In this case, don't pass it and skip
+    # process on platforms that don't fork. In this case, don't pass it and skip
     # the output check, if it works on one platform it'll work everywhere.
-    pass_caplog = caplog if mp.get_start_method() != 'spawn' else None
+    pass_caplog = caplog if mp.get_start_method() == 'fork' else None
 
     process = mp.Process(target=do_mmp_client_test, args=(tmpdir, pass_caplog))
     process.start()

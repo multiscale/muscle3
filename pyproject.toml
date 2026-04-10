@@ -70,6 +70,7 @@ output = "cobertura.xml"
 [tool.pytest.ini_options]
 testpaths = ["libmuscle/python/libmuscle", "integration_test"]
 addopts = "--cov --cov-report xml --cov-report term-missing -s --import-mode importlib"
+pythonpath = "."
 filterwarnings = [
     # raise an error when there are unhandled exceptions in a worker thread
     "error::pytest.PytestUnhandledThreadExceptionWarning",

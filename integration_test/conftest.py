@@ -10,8 +10,6 @@ import pytest
 import yatiml
 import ymmsl
 
-import integration_test.include_libmuscle   # noqa: F401
-
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
 

@@ -57,7 +57,8 @@ from libmuscle.manager.run_dir import RunDir
             '\b\n\n'
             ' If --start-all is not specified (or if there are manual'
             ' components) and --location-file is also not given, then the'
-            ' location will be printed on standard output.')
+            ' location will be printed on standard output.'
+            '\b\n\n')
         )
 @click.option(
         '--start-all/--no-start-all', default=False, help=(
@@ -139,7 +140,7 @@ def _manage_simulation(
     run_dir_obj = create_run_dir(run_dir, root_model)
 
     has_manual_components = any(
-        program.execution_model == ExecutionModel.MANUAL
+        program.execution_model is ExecutionModel.MANUAL
         for program in configuration.programs.values()
     )
 

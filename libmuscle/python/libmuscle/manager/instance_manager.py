@@ -127,7 +127,7 @@ class InstanceManager:
                         ', not starting it.')
                 continue
             program = self._configuration.programs[component.implementation]
-            if program.execution_model == ExecutionModel.MANUAL:
+            if program.execution_model is ExecutionModel.MANUAL:
                 _logger.info(
                         f'Instance {instance} has execution_model MANUAL'
                         ' - please start it manually.')

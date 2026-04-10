@@ -1,12 +1,9 @@
 """Tests for InstanceManager with ExecutionModel.MANUAL support."""
 import logging
-from pathlib import Path
 from unittest.mock import patch
 
-from ymmsl.v0_2 import (
-    Component, Conduit, Configuration, ExecutionModel, Model, Ports,
-    Program, Reference, ThreadedResReq
-)
+import ymmsl
+from ymmsl.v0_2 import (Configuration, Reference)
 
 from libmuscle.manager.instance_manager import InstanceManager
 from libmuscle.manager.instance_registry import InstanceRegistry
@@ -15,62 +12,53 @@ from libmuscle.manager.run_dir import RunDir
 from libmuscle.planner.resources import Core, CoreSet, OnNodeResources, Resources
 
 
-def make_configuration(
-        macro_execution_model: ExecutionModel = ExecutionModel.DIRECT,
-        micro_execution_model: ExecutionModel = ExecutionModel.DIRECT
-) -> Configuration:
-    """Create a test configuration with macro and micro components."""
+def make_configuration() -> Configuration:
+    """Create a test configuration using yMMSL (macro=MANUAL, micro=DIRECT)."""
 
-    macro_program_kwargs = dict(
-        name='macro_implementation',
-        execution_model=macro_execution_model
-    )
-    if macro_execution_model != ExecutionModel.MANUAL:
-        macro_program_kwargs['executable'] = Path('/usr/bin/macro')
+    ymmsl_text = """
+    ymmsl_version: v0.2
 
-    micro_program_kwargs = dict(
-        name='micro_implementation',
-        execution_model=micro_execution_model
-    )
-    if micro_execution_model != ExecutionModel.MANUAL:
-        micro_program_kwargs['executable'] = Path('/usr/bin/micro')
+    description: test_config
 
-    programs = [
-        Program(**macro_program_kwargs),
-        Program(**micro_program_kwargs),
-    ]
+    models:
+        test_model:
+            description: A test model
+            components:
+                macro:
+                    ports:
+                        o_i: out
+                        s: in
+                    description: Macro component
+                    implementation: macro_implementation
 
-    model = Model(
-        name='test_model',
-        components=[
-            Component(
-                name='macro',
-                ports=Ports(o_i=['out'], s=['in']),
-                description=None,
-                implementation='macro_implementation'
-            ),
-            Component(
-                name='micro',
-                ports=Ports(f_init=['in'], o_f=['out']),
-                description=None,
-                implementation='micro_implementation'
-            ),
-        ],
-        conduits=[
-            Conduit('macro.out', 'micro.in'),
-            Conduit('micro.out', 'macro.in'),
-        ]
-    )
+                micro:
+                    ports:
+                        f_init: in
+                        o_f: out
+                    description: Micro component
+                    implementation: micro_implementation
 
-    return Configuration(
-        description='test_config',
-        models=model,
-        programs=programs,
-        resources={
-            Reference('macro'): ThreadedResReq(Reference('macro'), 1),
-            Reference('micro'): ThreadedResReq(Reference('micro'), 1),
-        }
-    )
+            conduits:
+                macro.out: micro.in
+                micro.out: macro.in
+
+    programs:
+      macro_implementation:
+        execution_model: manual
+
+      micro_implementation:
+        execution_model: direct
+        executable: /usr/bin/micro
+
+    resources:
+      macro:
+        threads: 1
+
+      micro:
+        threads: 1
+    """
+
+    return ymmsl.load_as(Configuration, ymmsl_text)
 
 
 class MockNativeInstantiator:
@@ -100,10 +88,7 @@ class MockNativeInstantiator:
 
 def test_start_all_skips_manual_instances(tmp_path, caplog):
     """Test that start_all() skips instances with ExecutionModel.MANUAL."""
-    config = make_configuration(
-        macro_execution_model=ExecutionModel.DIRECT,
-        micro_execution_model=ExecutionModel.MANUAL
-    )
+    config = make_configuration()
 
     instance_registry = InstanceRegistry()
     run_dir = RunDir(tmp_path / 'run')
@@ -133,26 +118,23 @@ def test_start_all_skips_manual_instances(tmp_path, caplog):
         r for r in sent_requests if isinstance(r, InstantiationRequest)
         ]
     assert len(instantiation_requests) == 1
-    assert instantiation_requests[0].instance == Reference('macro')
+    assert instantiation_requests[0].instance == Reference('micro')
 
     manual_requests = [
-        r for r in instantiation_requests if r.instance == Reference('micro')
+        r for r in instantiation_requests if r.instance == Reference('macro')
         ]
     assert len(manual_requests) == 0
 
     manual_log_messages = [
         r.message for r in caplog.records
-        if 'micro' in r.message and 'manual' in r.message.lower()
+        if 'macro' in r.message and 'manual' in r.message.lower()
     ]
     assert len(manual_log_messages) > 0
 
 
 def test_manual_instances_not_counted_in_num_running(tmp_path):
     """Test that MANUAL instances are not counted in _num_running."""
-    config = make_configuration(
-        macro_execution_model=ExecutionModel.DIRECT,
-        micro_execution_model=ExecutionModel.MANUAL
-    )
+    config = make_configuration()
 
     instance_registry = InstanceRegistry()
     run_dir = RunDir(tmp_path / 'run')

@@ -53,7 +53,6 @@ include-package-data = true
 [tool.setuptools.packages.find]
 where = [".", "libmuscle/python"]
 include = ["muscle3", "libmuscle", "libmuscle.*"]
-exclude = ["libmuscle*.test.*"]  # Exclude unit tests from the python distribution
 namespaces = false  # Prevent setuptools from marking /libmuscle as a namespace package
 
 [tool.setuptools.dynamic]

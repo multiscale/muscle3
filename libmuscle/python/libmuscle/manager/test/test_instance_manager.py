@@ -2,6 +2,8 @@
 import logging
 from unittest.mock import patch
 
+import pytest
+
 import ymmsl
 from ymmsl.v0_2 import (Configuration, Reference)
 
@@ -12,7 +14,8 @@ from libmuscle.manager.run_dir import RunDir
 from libmuscle.planner.resources import Core, CoreSet, OnNodeResources, Resources
 
 
-def make_configuration() -> Configuration:
+@pytest.fixture
+def configuration() -> Configuration:
     """Create a test configuration using yMMSL (macro=MANUAL, micro=DIRECT)."""
 
     ymmsl_text = """
@@ -86,10 +89,8 @@ class MockNativeInstantiator:
         pass
 
 
-def test_start_all_skips_manual_instances(tmp_path, caplog):
+def test_start_all_skips_manual_instances(tmp_path, caplog, configuration):
     """Test that start_all() skips instances with ExecutionModel.MANUAL."""
-    config = make_configuration()
-
     instance_registry = InstanceRegistry()
     run_dir = RunDir(tmp_path / 'run')
 
@@ -97,7 +98,7 @@ def test_start_all_skips_manual_instances(tmp_path, caplog):
         'libmuscle.manager.instance_manager.NativeInstantiator',
         MockNativeInstantiator
     ):
-        instance_manager = InstanceManager(config, run_dir, instance_registry)
+        instance_manager = InstanceManager(configuration, run_dir, instance_registry)
         instance_manager.set_manager_location('localhost:9000')
 
         sent_requests = []
@@ -132,10 +133,8 @@ def test_start_all_skips_manual_instances(tmp_path, caplog):
     assert len(manual_log_messages) > 0
 
 
-def test_manual_instances_not_counted_in_num_running(tmp_path):
+def test_manual_instances_not_counted_in_num_running(tmp_path, configuration):
     """Test that MANUAL instances are not counted in _num_running."""
-    config = make_configuration()
-
     instance_registry = InstanceRegistry()
     run_dir = RunDir(tmp_path / 'run')
 
@@ -143,7 +142,7 @@ def test_manual_instances_not_counted_in_num_running(tmp_path):
         'libmuscle.manager.instance_manager.NativeInstantiator',
         MockNativeInstantiator
     ):
-        instance_manager = InstanceManager(config, run_dir, instance_registry)
+        instance_manager = InstanceManager(configuration, run_dir, instance_registry)
         instance_manager.set_manager_location('localhost:9000')
         instance_manager.start_all()
         num_running = instance_manager._num_running

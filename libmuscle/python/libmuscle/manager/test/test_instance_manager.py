@@ -92,7 +92,7 @@ def _drain_instantiation_requests(queue):
     requests = []
     while True:
         try:
-            item = queue.get(timeout=1.0)
+            item = queue.get(timeout=0.1)
             if isinstance(item, InstantiationRequest):
                 requests.append(item)
         except Empty:

@@ -1,5 +1,6 @@
 """Tests for InstanceManager with ExecutionModel.MANUAL support."""
 import logging
+from queue import Empty
 from unittest.mock import patch
 
 import pytest
@@ -67,17 +68,11 @@ def configuration() -> Configuration:
 class MockNativeInstantiator:
     """Mock for NativeInstantiator that records requests and returns fake results."""
 
-    def __init__(self, resources_queue, requests_queue, results_queue,
-                 log_records_queue, run_dir):
+    def __init__(self, resources_queue, requests_queue):
         self._resources_queue = resources_queue
         self._requests_queue = requests_queue
-        self._results_queue = results_queue
-        self._log_records_queue = log_records_queue
-        self._run_dir = run_dir
-        self._started = False
 
     def start(self):
-        self._started = True
         # Send fake resources
         resources = Resources()
         cores = CoreSet([Core(i, {i}) for i in range(4)])
@@ -87,6 +82,24 @@ class MockNativeInstantiator:
 
     def join(self):
         pass
+
+
+def _drain_instantiation_requests(queue):
+    """
+    Drain all InstantiationRequests currently in the queue.
+
+    Uses a short timeout to allow the multiprocessing.Queue feeder thread to
+    flush items before we read them.
+    """
+    requests = []
+    while True:
+        try:
+            item = queue.get(timeout=1.0)
+            if isinstance(item, InstantiationRequest):
+                requests.append(item)
+        except Empty:
+            break
+    return requests
 
 
 def test_start_all_skips_manual_instances(tmp_path, caplog, configuration):
@@ -101,23 +114,15 @@ def test_start_all_skips_manual_instances(tmp_path, caplog, configuration):
         instance_manager = InstanceManager(configuration, run_dir, instance_registry)
         instance_manager.set_manager_location('localhost:9000')
 
-        sent_requests = []
-        original_put = instance_manager._requests_out.put
-
-        def capture_put(item):
-            sent_requests.append(item)
-            original_put(item)
-
-        instance_manager._requests_out.put = capture_put
-
         with caplog.at_level(logging.INFO):
             instance_manager.start_all()
 
+        instantiation_requests = _drain_instantiation_requests(
+            instance_manager._instantiator._requests_queue
+        )
+
         instance_manager.shutdown()
 
-    instantiation_requests = [
-        r for r in sent_requests if isinstance(r, InstantiationRequest)
-        ]
     assert len(instantiation_requests) == 1
     assert instantiation_requests[0].instance == Reference('micro')
 

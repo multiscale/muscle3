@@ -1,3 +1,4 @@
+from libmuscle.timestamp import Timestamp
 import multiprocessing as mp
 import os
 from pathlib import Path
@@ -87,10 +88,14 @@ def do_mmp_client_test(tmpdir, caplog):
     # check submit_log_message (if supported, see below)
     if caplog is not None:
         for rec in caplog.records:
-            if rec.name == 'instances.test_logging':
-                assert rec.time_stamp == '1970-01-01T00:00:02Z'
+            if rec.name == 'test_logging':
+                # N.B. string representation of iasctime depends on timezone settings
+                assert rec.iasctime == Timestamp(2).to_asctime()
                 assert rec.levelname == 'CRITICAL'
                 assert rec.message == 'Integration testing'
+                break
+        else:
+            raise RuntimeError(f"No log message for 'test_logging' in {caplog.records}")
 
     # check instance registry
     assert (manager._instance_registry.get_locations('micro[3]') ==
@@ -112,9 +117,16 @@ def test_mmp_client(log_file_in_tmpdir, tmpdir, caplog):
     # caplog cannot be pickled, causing a crash if we try to pass it to the
     # process on platforms that don't fork. In this case, don't pass it and skip
     # the output check, if it works on one platform it'll work everywhere.
-    pass_caplog = caplog if mp.get_start_method() == 'fork' else None
+    pass_caplog = caplog if mp.get_start_method() != 'spawn' else None
 
-    process = mp.Process(target=do_mmp_client_test, args=(tmpdir, pass_caplog))
+    if mp.get_start_method() == "forkserver":
+        # Python 3.14+ defaults to the forkserver start method, but we want to
+        # run this test with the "fork" startmethod to test with caplog
+        Process = mp.get_context("fork").Process
+    else:
+        Process = mp.Process
+
+    process = Process(target=do_mmp_client_test, args=(tmpdir, pass_caplog))
     process.start()
     process.join()
     assert process.exitcode == 0

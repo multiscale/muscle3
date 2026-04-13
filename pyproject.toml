@@ -9,6 +9,7 @@ description = "Version 3 of the MUltiScale Coupling Library and Environment"
 readme = "README.rst"
 authors = [
   {name = "Lourens Veen", email = "l.veen@esciencecenter.nl"},
+  {name = "Maarten Sebregts", email = "msebregts@ignitioncomputing.com"},
 ]
 license = "Apache-2.0"
 license-files = ["LICENSE"]

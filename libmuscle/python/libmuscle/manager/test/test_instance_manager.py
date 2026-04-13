@@ -68,7 +68,8 @@ def configuration() -> Configuration:
 class MockNativeInstantiator:
     """Mock for NativeInstantiator that records requests and returns fake results."""
 
-    def __init__(self, resources_queue, requests_queue):
+    def __init__(self, resources_queue, requests_queue, results_queue,
+                 log_records_queue, run_dir):
         self._resources_queue = resources_queue
         self._requests_queue = requests_queue
 
@@ -87,9 +88,6 @@ class MockNativeInstantiator:
 def _drain_instantiation_requests(queue):
     """
     Drain all InstantiationRequests currently in the queue.
-
-    Uses a short timeout to allow the multiprocessing.Queue feeder thread to
-    flush items before we read them.
     """
     requests = []
     while True:

@@ -213,7 +213,7 @@ class MMPRequestHandler(RequestHandler):
         # get info from yMMSL
         instance = Reference(instance_id)
         component = instance.without_trailing_ints()
-        if not self._topology_store.has_kernel(component):
+        if not self._topology_store.has_component(component):
             return [ResponseType.ERROR.value, f'Unknown component {component}']
 
         conduits = self._topology_store.get_conduits(component)

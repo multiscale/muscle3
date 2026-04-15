@@ -8,8 +8,6 @@
 
 #include <ymmsl/ymmsl.hpp>
 
-#include <msgpack.hpp>
-
 
 namespace libmuscle { namespace _MUSCLE_IMPL_NS {
 
@@ -21,30 +19,6 @@ void constness_static_assert_() {
         "Putting a DataConstRef into a Data::dict is not allowed,"
         " because it could allow modifying e.g. a list in the DataConstRef via"
         " the created Data object. Please use DataConstRef::dict() instead");
-}
-
-template <>
-ymmsl::SettingValue DataConstRef::as<ymmsl::SettingValue>() const;
-
-template <>
-ymmsl::Settings DataConstRef::as<ymmsl::Settings>() const;
-
-template <typename T>
-T DataConstRef::as() const {
-    if (!is_a<T>())
-        throw std::runtime_error("Tried to convert a DataConstRef or Data to"
-                " a type that does not match its value. Did you receive data"
-                " of a type you were not expecting?");
-    return mp_obj_->as<T>();
-}
-
-template <typename T>
-T * DataConstRef::zone_alloc_(uint32_t size) {
-    if (mp_zones_->empty())
-        mp_zones_->push_back(std::make_shared<msgpack::zone>(24));
-    auto num_bytes = sizeof(T) * size;
-    return static_cast<T*>((*mp_zones_)[0]->allocate_align(
-                num_bytes, MSGPACK_ZONE_ALIGNOF(T)));
 }
 
 template <typename... Args>
@@ -75,13 +49,34 @@ Data Data::list(Args const & ... args) {
     return list;
 }
 
+template <>
+struct DataConstRef::si_arg_type_<DataConstRef> {
+    using type = DataConstRef const &;
+};
+
+template <>
+struct DataConstRef::si_arg_type_<Data> {
+    using type = Data const &;
+};
+
+template <>
+struct DataConstRef::si_arg_type_<std::string> {
+    using type = std::string const &;
+};
+
+template <typename T>
+struct DataConstRef::si_arg_type_ {
+    using type = T;
+};
+
 template <typename... Args>
 void DataConstRef::init_dict_(
         uint32_t offset, std::string const & key, DataConstRef const & value,
         Args const & ... args)
 {
     init_dict_(offset + 1, args...);
-    set_dict_item_(offset, key, value);
+    set_dict_item_<DataConstRef>(offset, key, value);
+    mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
 }
 
 template <typename... Args>
@@ -90,7 +85,17 @@ void DataConstRef::init_dict_(
         Args const & ... args)
 {
     init_dict_(offset + 1, args...);
-    set_dict_item_(offset, key, value);
+    set_dict_item_<Data>(offset, key, value);
+    mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
+}
+
+template <typename... Args>
+void DataConstRef::init_dict_(
+        uint32_t offset, std::string const & key, char const * value,
+        Args const & ... args)
+{
+    init_dict_(offset + 1, args...);
+    set_dict_item_<char const *>(offset, key, value);
 }
 
 template <typename Arg, typename... Args>
@@ -99,15 +104,14 @@ void DataConstRef::init_dict_(
         Args const & ... args)
 {
     init_dict_(offset + 1, args...);
-    mp_obj_->via.map.ptr[offset].key = msgpack::object(key, *mp_zones_->front());
-    mp_obj_->via.map.ptr[offset].val = msgpack::object(value, *mp_zones_->front());
+    set_dict_item_<Arg>(offset, key, value);
 }
 
 template <typename... Args>
 void DataConstRef::init_list_(
         uint32_t offset, DataConstRef const & value, Args const &...args) {
     init_list_(offset + 1, args...);
-    mp_obj_->via.array.ptr[offset] = msgpack::object(value, *mp_zones_->front());
+    set_list_item_<DataConstRef>(offset, value);
     mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
 }
 
@@ -115,15 +119,22 @@ template <typename... Args>
 void DataConstRef::init_list_(
         uint32_t offset, Data const & value, Args const &...args) {
     init_list_(offset + 1, args...);
-    mp_obj_->via.array.ptr[offset] = msgpack::object(value, *mp_zones_->front());
+    set_list_item_<DataConstRef>(offset, value);
     mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
+}
+
+template <typename... Args>
+void DataConstRef::init_list_(
+        uint32_t offset, char const * value, Args const &...args) {
+    init_list_(offset + 1, args...);
+    set_list_item_<char const *>(offset, value);
 }
 
 template <typename Arg, typename... Args>
 void DataConstRef::init_list_(
         uint32_t offset, Arg const & value, Args const &...args) {
     init_list_(offset + 1, args...);
-    mp_obj_->via.array.ptr[offset] = msgpack::object(value, *mp_zones_->front());
+    set_list_item_<Arg>(offset, value);
 }
 
 /* Note that we access value's mp_zones_ member here. mp_zones_ is protected,
@@ -147,7 +158,16 @@ void Data::init_dict_(uint32_t offset, std::string const & key, Data const & val
                 Args const & ... args)
 {
     init_dict_(offset + 1, args...);
-    set_dict_item_(offset, key, value);
+    set_dict_item_<Data>(offset, key, value);
+    mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
+}
+
+template <typename... Args>
+void Data::init_dict_(uint32_t offset, std::string const & key, char const * value,
+                Args const & ... args)
+{
+    init_dict_(offset + 1, args...);
+    set_dict_item_<char const *>(offset, key, value);
 }
 
 template <typename Arg, typename... Args>
@@ -155,8 +175,7 @@ void Data::init_dict_(uint32_t offset, std::string const & key, Arg const & valu
                 Args const & ... args)
 {
     init_dict_(offset + 1, args...);
-    mp_obj_->via.map.ptr[offset].key = msgpack::object(key, *mp_zones_->front());
-    mp_obj_->via.map.ptr[offset].val = msgpack::object(value, *mp_zones_->front());
+    set_dict_item_<Arg>(offset, key, value);
 }
 
 template <typename... Args>
@@ -169,15 +188,22 @@ template <typename... Args>
 void Data::init_list_(uint32_t offset, Data const & value,
                       Args const &...args) {
     init_list_(offset + 1, args...);
-    mp_obj_->via.array.ptr[offset] = msgpack::object(value, *mp_zones_->front());
+    set_list_item_<Data>(offset, value);
     mp_zones_->insert(mp_zones_->end(), value.mp_zones_->cbegin(), value.mp_zones_->cend());
+}
+
+template <typename... Args>
+void Data::init_list_(uint32_t offset, char const * value,
+                      Args const &...args) {
+    init_list_(offset + 1, args...);
+    set_list_item_<char const *>(offset, value);
 }
 
 template <typename Arg, typename... Args>
 void Data::init_list_(uint32_t offset, Arg const & value,
                       Args const &...args) {
     init_list_(offset + 1, args...);
-    mp_obj_->via.array.ptr[offset] = msgpack::object(value, *mp_zones_->front());
+    set_list_item_<Arg>(offset, value);
 }
 
 } }   // namespace libmuscle::_MUSCLE_IMPL_NS

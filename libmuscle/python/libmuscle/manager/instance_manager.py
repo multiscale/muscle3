@@ -127,10 +127,10 @@ class InstanceManager:
                         ', not starting it.')
                 continue
             program = self._configuration.programs[component.implementation]
-            if program.execution_model == ExecutionModel.MANUAL:
+            if program.execution_model is ExecutionModel.MANUAL:
                 _logger.info(
-                        f'Instance {instance} has a MANUAL execution model,'
-                        ' not starting it.')
+                        f'Instance {instance} has execution_model MANUAL'
+                        ' - please start it manually.')
                 continue
             program.env['MUSCLE_MANAGER'] = self._manager_location
             idir = self._run_dir.add_instance_dir(instance)

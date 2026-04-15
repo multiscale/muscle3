@@ -8,9 +8,9 @@
 // into the real implementation to test.
 #include <ymmsl/ymmsl.hpp>
 
+#include <libmuscle/data.cpp>           // needs to be before close_port.cpp
 #include <libmuscle/close_port.cpp>
 #include <libmuscle/communicator.cpp>
-#include <libmuscle/data.cpp>
 #include <libmuscle/instance.cpp>
 #include <libmuscle/logging.cpp>
 #include <libmuscle/mark.cpp>

@@ -3,7 +3,6 @@
 #include <libmuscle/namespace.hpp>
 #include <libmuscle/data.hpp>
 #include <libmuscle/instance.hpp>
-#include <libmuscle/mcp/data_pack.hpp>
 #include <libmuscle/message.hpp>
 #include <libmuscle/ports_description.hpp>
 

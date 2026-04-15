@@ -311,6 +311,15 @@ void LIBMUSCLE_DataConstRef_free_(std::intptr_t self) {
     return;
 }
 
+void LIBMUSCLE_DataConstRef_describe_(std::intptr_t self, char ** ret_val, std::size_t * ret_val_size) {
+    DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
+    static std::string result;
+    result = self_p->describe();
+    *ret_val = const_cast<char*>(result.c_str());
+    *ret_val_size = result.size();
+    return;
+}
+
 bool LIBMUSCLE_DataConstRef_is_a_logical_(std::intptr_t self) {
     DataConstRef * self_p = reinterpret_cast<DataConstRef *>(self);
     bool result = self_p->is_a<bool>();
@@ -1558,6 +1567,15 @@ std::intptr_t LIBMUSCLE_Data_create_grid_real8_n_(
 void LIBMUSCLE_Data_free_(std::intptr_t self) {
     Data * self_p = reinterpret_cast<Data *>(self);
     delete self_p;
+    return;
+}
+
+void LIBMUSCLE_Data_describe_(std::intptr_t self, char ** ret_val, std::size_t * ret_val_size) {
+    Data * self_p = reinterpret_cast<Data *>(self);
+    static std::string result;
+    result = self_p->describe();
+    *ret_val = const_cast<char*>(result.c_str());
+    *ret_val_size = result.size();
     return;
 }
 

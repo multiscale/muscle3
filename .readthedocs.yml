@@ -6,9 +6,9 @@ sphinx:
   configuration: docs/source/conf.py
 
 build:
-  os: "ubuntu-20.04"
+  os: "ubuntu-lts-latest"
   tools:
-    python: "3.8"
+    python: "3.12"
   jobs:
     post_create_environment:
       - pip install tox\<4

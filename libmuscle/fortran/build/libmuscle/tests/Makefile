@@ -35,8 +35,6 @@ distclean: clean
 cleantargets := clean distclean
 ifeq "$(filter $(MAKECMDGOALS),$(cleantargets))" ""
 
-EXTRA_LINK_DIRS := $(foreach DIR,$(DEP_DIRS),-Wl,-rpath,$(DIR)/lib)
-
 FFLAGS += -g -I. -I.. -I../../ymmsl
 ifdef MUSCLE_FC_INTEL
     FFLAGS += -e03
@@ -55,7 +53,6 @@ LDFLAGS2 := $(LDFLAGS)
 
 LDFLAGS2 += -pthread $(CURDIR)/../libmuscle_fortran.a $(CURDIR)/../../ymmsl/libymmsl_fortran.a
 LDFLAGS2 += $(CPP_BUILD_DIR)/libmuscle/libmuscle_d.a $(CPP_BUILD_DIR)/ymmsl/libymmsl_d.a
-LDFLAGS2 += $(shell export PKG_CONFIG_PATH=$(PKG_CONFIGPATH):$(PKG_CONFIG_EXTRA_DIRS) ; pkg-config --libs msgpack)
 LDFLAGS2 += $(EXTRA_LINK_DIRS) $(MUSCLE_CXX_STDLIB)
 
 LINK_DEPS = $(CURDIR)/../libmuscle_fortran.a $(CURDIR)/../../ymmsl/libymmsl_fortran.a
@@ -76,10 +73,6 @@ test_%: test_%.o assert.o $(LINK_DEPS)
 	$(FC) $(FFLAGS) $(DEBUGFLAGS) $^ -o $@ $(LDFLAGS2)
 
 
-empty :=
-space := $(empty) $(empty)
-test_dep_lib_paths := $(subst $(space),:,$(foreach DIR,$(DEP_DIRS),$(DIR)/lib))
-
 .PHONY: run_test%
 run_test%: test%
-	export LD_LIBRARY_PATH=$(test_dep_lib_paths):$(LD_LIBRARY_PATH) ; $(LEAK_DETECTOR) ./$<
+	$(LEAK_DETECTOR) ./$<

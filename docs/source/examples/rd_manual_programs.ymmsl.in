@@ -1,0 +1,36 @@
+ymmsl_version: v0.2
+
+description: |
+  # Programs for the reaction-diffusion model with a manually started macro.
+
+  The ``diffusion_manual_python`` program has ``execution_model: manual``,
+  which tells the MUSCLE3 manager to skip starting it automatically. You
+  must start it yourself and pass the manager location via
+  ``--muscle-manager``.
+
+  The ``reaction_python`` program is started normally by the manager.
+
+programs:
+  diffusion_python:
+    ports:
+      o_i: state_out
+      s: state_in
+    description: |
+      Diffusion model implemented in Python, to be started manually.
+      Start it with:
+        python MUSCLE3_EXAMPLES/python/diffusion.py \
+            --muscle-manager=<host>:<port> \
+            --muscle-instance=macro
+    execution_model: manual
+
+  reaction_python:
+    ports:
+      f_init: initial_state
+      o_f: final_state
+    supported_settings:
+      t_max: float  Time point at which to end the simulation
+      dt: float     Time step size
+      k: float      Reaction coefficient
+    description: Reaction model implemented in Python
+    executable: python
+    args: MUSCLE3_EXAMPLES/python/reaction.py

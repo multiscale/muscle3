@@ -38,7 +38,7 @@ Legal
 =====
 
 MUSCLE3 is Copyright 2018-2022 University of Amsterdam and Netherlands eScience
-Center, Copyright 2022-2024 The ITER Organisation, and Copyright 2023-2026 Netherlands
+Center, Copyright 2022-2024, 2026 The ITER Organisation, and Copyright 2023-2026 Netherlands
 eScience Center. It is licensed under the Apache License 2.0.
 
 

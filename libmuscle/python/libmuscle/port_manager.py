@@ -159,54 +159,28 @@ class PortManager:
                             ' MUSCLE, please rename port "{}"'.format(port_name))
                 port_id = Identifier(port_name)
                 is_connected = peer_info.is_connected(port_id)
-                if is_connected:
-                    peer_ports = peer_info.get_peer_ports(port_id)
-                    peer_port = peer_ports[0]
-                    peer_component = peer_port[:-1]
-                    port_peer_dims = peer_info.get_peer_dims(peer_component)
-                    for peer_port in peer_ports[1:]:
-                        peer_component = peer_port[:-1]
-                        if port_peer_dims != peer_info.get_peer_dims(peer_component):
-                            port_strs = ', '.join(map(str, peer_ports))
-                            raise RuntimeError(
-                                    'Multicast port "{}" is connected to peers with'
-                                    ' different dimensions. All peer components that'
-                                    ' this port is connected to must have the same'
-                                    ' multiplicity. Connected to ports: {}.'.format(
-                                        port_name, port_strs))
-                else:
-                    port_peer_dims = []
+                peer_dims = peer_info.check_peer_dimensions(port_id)
                 ports[port_name] = Port(
                         port_name, operator, is_vector, is_connected,
-                        len(self._index), port_peer_dims)
+                        len(self._index), peer_dims)
         return ports
 
     def _ports_from_conduits(self, peer_info: PeerInfo) -> Dict[str, Port]:
-        """Derives port definitions from conduits.
+        """Derives port definitions from the yMMSL configuration.
 
         Args:
             peer_info: Information about our peers from the manager.
         """
         ports = dict()
-
-        def make_port(
-                port_id: Identifier, operator: Operator, peer_dims: List[int]) -> None:
-            if not str(port_id).startswith('muscle_'):
-                ndims = max(0, len(peer_dims) - len(self._index))
-                is_vector = (ndims == 1)
-                is_connected = peer_info.is_connected(port_id)
-                ports[str(port_id)] = Port(
-                        str(port_id), operator, is_vector, is_connected,
-                        len(self._index), peer_dims)
-
-        for port_id, sender_ref in peer_info.list_incoming_ports():
-            peer_dims = peer_info.get_peer_dims(sender_ref[:-1])
-            make_port(port_id, Operator.F_INIT, peer_dims)
-
-        for port_id, receiver_refs in peer_info.list_outgoing_ports():
-            peer_dims = peer_info.get_peer_dims(receiver_refs[0][:-1])
-            make_port(port_id, Operator.O_F, peer_dims)
-
+        for port in peer_info.list_ymmsl_ports():
+            port_name = str(port.name)
+            is_connected = peer_info.is_connected(port.name)
+            peer_dims = peer_info.check_peer_dimensions(port.name)
+            ndims = max(0, len(peer_dims) - len(self._index))
+            is_vector = (ndims == 1)
+            ports[port_name] = Port(
+                port_name, port.operator, is_vector, is_connected,
+                len(self._index), peer_dims)
         return ports
 
     def _split_port_desc(self, port_desc: str) -> Tuple[str, bool]:

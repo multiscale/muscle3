@@ -2,7 +2,7 @@ from typing import List
 from libmuscle.peer_info import PeerInfo
 from libmuscle.port_manager import PortManager
 
-from ymmsl.v0_2 import Conduit, Identifier, Operator, Reference as Ref, Port
+from ymmsl.v0_2 import Conduit, Identifier as Id, Operator, Reference as Ref, Port
 
 import pytest
 
@@ -56,17 +56,17 @@ def test_connect_ports(index, port_manager) -> None:
 
     # check automatic ports
     assert port_manager.settings_in_connected()
-    assert port_manager._muscle_settings_in.name == Identifier('muscle_settings_in')
+    assert port_manager._muscle_settings_in.name == Id('muscle_settings_in')
     assert port_manager._muscle_settings_in.operator == Operator.F_INIT
     assert port_manager._muscle_settings_in._length is None
 
     # check declared ports
     ports = port_manager._ports
-    assert ports['in'].name == Identifier('in')
+    assert ports['in'].name == Id('in')
     assert ports['in'].operator == Operator.S
     assert ports['in']._length is None
 
-    assert ports['out'].name == Identifier('out')
+    assert ports['out'].name == Id('out')
     assert ports['out'].operator == Operator.O_I
     assert ports['out']._length is None
 
@@ -95,16 +95,16 @@ def test_connect_vector_ports(index) -> None:
     port_manager.connect_ports(peer_info)
 
     ports = port_manager._ports
-    assert ports['in'].name == Identifier('in')
+    assert ports['in'].name == Id('in')
     assert ports['in'].operator == Operator.F_INIT
     assert ports['in']._length == 7
     assert ports['in']._is_resizable is False
 
-    assert ports['out1'].name == Identifier('out1')
+    assert ports['out1'].name == Id('out1')
     assert ports['out1'].operator == Operator.O_F
     assert ports['out1']._length is None
 
-    assert ports['out2'].name == Identifier('out2')
+    assert ports['out2'].name == Id('out2')
     assert ports['out2'].operator == Operator.O_F
     assert ports['out2']._length == 0
     assert ports['out2']._is_resizable is True
@@ -142,27 +142,49 @@ def test_connect_inferred_ports() -> None:
             Ref('other1'): ['direct:test1'],
             Ref('other2'): ['direct:test2']}
     ymmsl_ports = [
-        Port(Identifier("in"), Operator.F_INIT),
-        Port(Identifier("out1"), Operator.O_F),
-        Port(Identifier("out3"), Operator.O_F)]
+        Port(Id("in"), Operator.F_INIT),
+        Port(Id("out1"), Operator.O_F),
+        Port(Id("out3"), Operator.O_F)]
     peer_info = PeerInfo(
             component_id, index, conduits, peer_dims, peer_locations, ymmsl_ports)
 
     port_manager.connect_ports(peer_info)
 
     ports = port_manager._ports
-    assert ports['in'].name == Identifier('in')
+    assert ports['in'].name == Id('in')
     assert ports['in'].operator == Operator.F_INIT
     assert ports['in']._length == 7
     assert ports['in']._is_resizable is False
 
-    assert ports['out1'].name == Identifier('out1')
+    assert ports['out1'].name == Id('out1')
     assert ports['out1'].operator == Operator.O_F
     assert ports['out1']._length is None
 
-    assert ports['out3'].name == Identifier('out3')
+    assert ports['out3'].name == Id('out3')
     assert ports['out3'].operator == Operator.O_F
     assert ports['out3']._length is None
+
+
+def test_connect_inferred_ports_oi_s() -> None:
+    port_manager = PortManager([], None)
+    peer_info = PeerInfo(
+        Ref("Component"),
+        [],
+        [Conduit("component.oi", "other.init"), Conduit("other.final", "component.s")],
+        {Ref("other"): []},
+        {Ref("other"): ["direct:test"]},
+        [Port(Id("oi"), Operator.O_I), Port(Id("s"), Operator.S)],
+    )
+    port_manager.connect_ports(peer_info)
+
+    ports = port_manager._ports
+    assert ports["oi"].name == Id("oi")
+    assert ports["oi"].operator == Operator.O_I
+    assert ports["oi"]._length is None
+
+    assert ports["s"].name == Id("s")
+    assert ports["s"].operator == Operator.S
+    assert ports["s"]._length is None
 
 
 def test_port_message_counts(port_manager) -> None:

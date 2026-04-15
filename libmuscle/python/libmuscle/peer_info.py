@@ -155,3 +155,30 @@ class PeerInfo:
                     Endpoint(peer_kernel, peer_index, peer_port, peer_slot))
 
         return endpoints
+
+    def check_peer_dimensions(self, port_id: Identifier) -> list[int]:
+        """Checks peer dimensions are as expected.
+
+        Args:
+            port_id: Port to check peer dimensions for.
+
+        Returns:
+            Dimensions of connected peers.
+        """
+        if not self.is_connected(port_id):
+            return []
+        peer_ports = self.get_peer_ports(port_id)
+        peer_port = peer_ports[0]
+        peer_component = peer_port[:-1]
+        port_peer_dims = self.get_peer_dims(peer_component)
+        for peer_port in peer_ports[1:]:
+            peer_component = peer_port[:-1]
+            if port_peer_dims != self.get_peer_dims(peer_component):
+                port_strs = ", ".join(map(str, peer_ports))
+                raise RuntimeError(
+                    f'Multicast port "{port_id}" is connected to peers with'
+                    " different dimensions. All peer components that"
+                    " this port is connected to must have the same"
+                    f" multiplicity. Connected to ports: {port_strs}."
+                )
+        return port_peer_dims

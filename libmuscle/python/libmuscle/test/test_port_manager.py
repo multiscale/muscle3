@@ -2,7 +2,7 @@ from typing import List
 from libmuscle.peer_info import PeerInfo
 from libmuscle.port_manager import PortManager
 
-from ymmsl.v0_2 import Conduit, Identifier, Operator, Reference as Ref
+from ymmsl.v0_2 import Conduit, Identifier, Operator, Reference as Ref, Port
 
 import pytest
 
@@ -37,7 +37,7 @@ def port_manager2(index2) -> PortManager:
                 Conduit('other.out', 'component.in')]
     peer_dims = {Ref('component'): [20]}
     peer_locations = {Ref('component'): ['direct:test']}
-    peer_info = PeerInfo(component_id, index2, conduits, peer_dims, peer_locations)
+    peer_info = PeerInfo(component_id, index2, conduits, peer_dims, peer_locations, [])
 
     port_manager.connect_ports(peer_info)
     return port_manager
@@ -50,7 +50,7 @@ def test_connect_ports(index, port_manager) -> None:
                 Conduit('other.out', 'component.in')]
     peer_dims = {Ref('other'): []}
     peer_locations = {Ref('other'): ['direct:test']}
-    peer_info = PeerInfo(component_id, index, conduits, peer_dims, peer_locations)
+    peer_info = PeerInfo(component_id, index, conduits, peer_dims, peer_locations, [])
 
     port_manager.connect_ports(peer_info)
 
@@ -90,7 +90,7 @@ def test_connect_vector_ports(index) -> None:
             Ref('other'): ['direct:test'],
             Ref('other1'): ['direct:test1'],
             Ref('other3'): ['direct:test3']}
-    peer_info = PeerInfo(component_id, index, conduits, peer_dims, peer_locations)
+    peer_info = PeerInfo(component_id, index, conduits, peer_dims, peer_locations, [])
 
     port_manager.connect_ports(peer_info)
 
@@ -119,7 +119,7 @@ def test_connect_multidimensional_ports() -> None:
     conduits = [Conduit('other.out', 'component.in')]
     peer_dims = {Ref('other'): [20, 7, 30]}
     peer_locations = {Ref('other'): ['direct:test']}
-    peer_info = PeerInfo(component_id, index, conduits, peer_dims, peer_locations)
+    peer_info = PeerInfo(component_id, index, conduits, peer_dims, peer_locations, [])
 
     with pytest.raises(ValueError):
         port_manager.connect_ports(peer_info)
@@ -141,7 +141,12 @@ def test_connect_inferred_ports() -> None:
             Ref('other'): ['direct:test'],
             Ref('other1'): ['direct:test1'],
             Ref('other2'): ['direct:test2']}
-    peer_info = PeerInfo(component_id, index, conduits, peer_dims, peer_locations)
+    ymmsl_ports = [
+        Port(Identifier("in"), Operator.F_INIT),
+        Port(Identifier("out1"), Operator.O_F),
+        Port(Identifier("out3"), Operator.O_F)]
+    peer_info = PeerInfo(
+            component_id, index, conduits, peer_dims, peer_locations, ymmsl_ports)
 
     port_manager.connect_ports(peer_info)
 
@@ -161,7 +166,7 @@ def test_connect_inferred_ports() -> None:
 
 
 def test_port_message_counts(port_manager) -> None:
-    port_manager.connect_ports(PeerInfo('component', [], [], {}, {}))
+    port_manager.connect_ports(PeerInfo('component', [], [], {}, {}, []))
 
     msg_counts = port_manager.get_message_counts()
     assert msg_counts == {'in': [0], 'out': [0], 'muscle_settings_in': [0]}

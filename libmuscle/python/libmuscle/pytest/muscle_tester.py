@@ -1,3 +1,4 @@
+import os
 from types import TracebackType
 from pathlib import Path
 import subprocess
@@ -156,7 +157,11 @@ class MuscleTester:
 
 
 def start_mmp_server(control_pipe: Tuple[Connection, Connection],
-                     ymmsl_config: Configuration, run_dir: RunDir) -> None:
+                     ymmsl_config: Configuration, run_dir: RunDir,
+                     env: Optional[dict] = None) -> None:
+    if env is not None:
+        os.environ.clear()
+        os.environ.update(env)
     control_pipe[0].close()
     manager = Manager(ymmsl_config, run_dir, 'DEBUG')
     control_pipe[1].send(manager.get_server_location())
@@ -168,10 +173,12 @@ def start_mmp_server(control_pipe: Tuple[Connection, Connection],
 
 def make_server_process(ymmsl_config: Configuration, run_dir: RunDir
                         ) -> Tuple[str, Tuple[Connection, Connection], mp.Process]:
+    env = os.environ.copy()
+
     control_pipe = mp.Pipe()
     process = mp.Process(
         target=start_mmp_server,
-        args=(control_pipe, ymmsl_config, run_dir),
+        args=(control_pipe, ymmsl_config, run_dir, env),
         name='Manager'
     )
     process.start()

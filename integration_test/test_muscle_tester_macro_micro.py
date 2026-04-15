@@ -4,7 +4,7 @@ These tests verify that the MuscleTester and ImplementationTester work correctly
 by testing the macro and micro components from the macro-micro example.
 
 The macro model (integration_test/codes/macro):
-  - Sends on port 'out' (O_I)
+  - Sends on port 'out' (O_I): integers 0, 1 for two iterations
   - Receives on port 'in' (S): expects the same integer back
 
 The micro model (integration_test/codes/micro):
@@ -42,50 +42,65 @@ def muscle3_tester(tmp_path: Path):
 
 @pytest.fixture(autouse=True)
 def set_pythonpath():
-    """Ensure example code directory is available for module resolution."""
+    """Ensure the codes directory is on PYTHONPATH so 'python3 -m micro' works."""
     original = os.environ.get('PYTHONPATH', '')
     codes_path = str(CODES_DIR)
-    os.environ['PYTHONPATH'] = codes_path + (':' + original if original else '')
+    if original:
+        os.environ['PYTHONPATH'] = codes_path + ':' + original
+    else:
+        os.environ['PYTHONPATH'] = codes_path
     yield
     os.environ['PYTHONPATH'] = original
 
 
 def test_micro_model_with_tester(muscle3_tester: MuscleTester) -> None:
-    """Validate micro model integration via a single end-to-end message exchange.
+    """Test the micro model using MuscleTester acting as the macro.
 
-    This test ensures:
-    - The micro implementation starts correctly under MuscleTester
-    - Messages sent on 'init' are received and processed
-    - The response is correctly emitted on 'final'
-    - Data integrity is preserved through the full IPC pipeline
+    The micro model:
+      - Receives a value on 'init' (F_INIT)
+      - Sends the same value back on 'final' (O_F)
+
+    The tester (acting as macro):
+      - Sends integers 0 and 1 on 'init'
+      - Expects to receive the same integers back on 'final'
     """
     ymmsl_path = str(YMMSL_CODES_DIR / 'micro1.ymmsl')
     tester = muscle3_tester.start_implementation(ymmsl_path, 'micro1')
 
-    msg = Message(10.0, 20.0, 42)
+    for i in range(2):
+        msg = Message(float(i) * 10.0, float(i + 1) * 10.0, i)
 
-    tester.send('init', msg)
-    reply = tester.receive('final')
+        tester.send('init', msg)
+        reply = tester.receive('final')
 
-    assert reply.data == 42
-    assert reply.timestamp == 10.0
+        assert reply.data == i, (
+            f"Iteration {i}: expected micro to echo back {i}, got {reply.data}"
+        )
+        assert reply.timestamp == float(i) * 10.0, (
+            f"Iteration {i}: expected timestamp {float(i) * 10.0}, "
+            f"got {reply.timestamp}"
+        )
 
 
 def test_macro_model_with_tester(muscle3_tester: MuscleTester) -> None:
-    """Validate macro model integration via a single end-to-end message exchange.
+    """Test the macro model using MuscleTester acting as the micro.
 
-    This test ensures:
-    - The macro implementation starts correctly under MuscleTester
-    - A message is emitted on 'out'
-    - The tester can respond on 'in'
-    - The communication cycle between macro and tester is correctly wired
+    The macro model:
+      - Sends integers 0 and 1 on 'out' (O_I) for two iterations
+      - Receives a reply on 'in' (S) and asserts it equals the sent integer
+
+    The tester (acting as micro):
+      - Receives messages on 'out'
+      - Sends the same value back on 'in'
     """
     ymmsl_path = str(YMMSL_CODES_DIR / 'macro.ymmsl')
     tester = muscle3_tester.start_implementation(ymmsl_path, 'macro')
 
-    msg = tester.receive('out')
+    for i in range(2):
+        msg = tester.receive('out')
+        assert msg.data == i, (
+            f"Iteration {i}: expected macro to send {i}, got {msg.data}"
+        )
 
-    assert msg.data == 0
-
-    reply = Message(msg.timestamp, msg.next_timestamp, msg.data)
-    tester.send('in', reply)
+        reply = Message(msg.timestamp, msg.next_timestamp, msg.data)
+        tester.send('in', reply)

@@ -76,7 +76,7 @@ class Instance::Impl {
     public:
         Impl(
                 int argc, char const * const argv[],
-                PortsDescription const & ports,
+                Optional<PortsDescription> const & ports,
                 InstanceFlags flags
 #ifdef MUSCLE_ENABLE_MPI
                 , MPI_Comm const & communicator
@@ -130,7 +130,7 @@ class Instance::Impl {
         MPI_Comm mpi_comm_;
         MPITcpBarrier mpi_barrier_;
 #endif
-        PortsDescription declared_ports_;
+        Optional<PortsDescription> declared_ports_;
         SettingsManager settings_manager_;
         std::unique_ptr<SnapshotManager> snapshot_manager_;
         std::unique_ptr<TriggerManager> trigger_manager_;
@@ -184,7 +184,7 @@ class Instance::Impl {
 
 Instance::Impl::Impl(
         int argc, char const * const argv[],
-        PortsDescription const & ports,
+        Optional<PortsDescription> const & ports,
         InstanceFlags flags
 #ifdef MUSCLE_ENABLE_MPI
         , MPI_Comm const & communicator
@@ -856,7 +856,8 @@ std::string Instance::Impl::extract_manager_location_(
  */
 std::vector<::ymmsl::Port> Instance::Impl::list_declared_ports_() const {
     std::vector<::ymmsl::Port> result;
-    for (auto const & oper_ports : declared_ports_) {
+    if (!declared_ports_.is_set()) return result;
+    for (auto const & oper_ports : declared_ports_.get()) {
         for (auto const & fullname : oper_ports.second) {
             std::string portname(fullname);
             if (fullname.size() > 2 && fullname.substr(fullname.size() - 2) == "[]")

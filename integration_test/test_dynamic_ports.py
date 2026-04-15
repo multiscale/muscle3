@@ -2,7 +2,7 @@ from ymmsl.v0_2 import Operator
 
 from libmuscle import Instance, Message
 
-from .conftest import run_manager_with_actors
+from .conftest import run_manager_with_actors, skip_if_python_only
 
 
 YMMSL = """\
@@ -69,6 +69,18 @@ def test_dynamic_ports(tmp_path) -> None:
         tmp_path,
         {
             "macro": ("python", dynamic_macro),
+            "micro": ("python", dynamic_micro),
+        },
+    )
+
+
+@skip_if_python_only
+def test_dynamic_ports_cpp(tmp_path) -> None:
+    run_manager_with_actors(
+        YMMSL,
+        tmp_path,
+        {
+            "macro": ("cpp", "dynamic_macro_test"),
             "micro": ("python", dynamic_micro),
         },
     )

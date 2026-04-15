@@ -114,6 +114,13 @@ class PeerInfo {
                 ymmsl::Identifier const & port,
                 std::vector<int> const & slot) const;
 
+        /** Checks peer dimensions are as expected.
+         * 
+         * @param port_id Port to check peer dimensions for.
+         * @return Dimensions of connected peers.
+         */
+        std::vector<int> check_peer_dimensions(ymmsl::Identifier port_id) const;
+
     PRIVATE:
         ymmsl::Reference kernel_;
         std::vector<int> index_;

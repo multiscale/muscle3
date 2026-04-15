@@ -191,7 +191,7 @@ TEST_F(libmuscle_port_manager, test_connect_inferred_ports) {
     std::vector<::ymmsl::Port> ymmsl_ports({
             {"in", Operator::F_INIT},
             {"out1", Operator::O_F},
-            {"out2", Operator::O_F}
+            {"out3", Operator::O_F}
             });
     PeerInfo peer_info(
             component_id, index_, conduits, peer_dims, peer_locations, ymmsl_ports);
@@ -212,6 +212,28 @@ TEST_F(libmuscle_port_manager, test_connect_inferred_ports) {
     ASSERT_EQ(ports.at("out3").name, "out3");
     ASSERT_EQ(ports.at("out3").oper, Operator::O_F);
     ASSERT_EQ(ports.at("out3").length_, -1);
+}
+
+TEST_F(libmuscle_port_manager, test_connect_inferred_ports_oi_s) {
+    PortManager port_manager(index_, {});
+    PeerInfo peer_info(
+        "component",
+        {},
+        {Conduit("component.oi", "other.init"), Conduit("other.final", "component.s")},
+        {{Reference("other"), {25}}},
+        {{Reference("other"), {"tcp:test"}}},
+        {{"oi", Operator::O_I}, {"s", Operator::S}});
+    port_manager.connect_ports(peer_info);
+
+    auto const & ports = port_manager.ports_;
+
+    ASSERT_EQ(ports.at("oi").name, "oi");
+    ASSERT_EQ(ports.at("oi").oper, Operator::O_I);
+    ASSERT_EQ(ports.at("oi").length_, -1);
+
+    ASSERT_EQ(ports.at("s").name, "s");
+    ASSERT_EQ(ports.at("s").oper, Operator::S);
+    ASSERT_EQ(ports.at("s").length_, -1);
 }
 
 TEST_F(libmuscle_port_manager, test_port_message_counts) {

@@ -334,14 +334,8 @@ TEST_F(libmuscle_instance_base, create_instance_profiling) {
 }
 
 TEST_F(libmuscle_instance_base, create_instance_connecting) {
-    auto & rpret = MockMMPClient::return_value.request_peers.return_value.get();
-    auto & peer_dims = std::get<1>(rpret);
-    peer_dims["component"] = {};
-    peer_dims["other"] = {};
-
-    auto & peer_locs = std::get<2>(rpret);
-    peer_locs["component"] = {"tcp:localhost:9003"};
-    peer_locs["other"] = {"tcp:localhost:9004"};
+    auto const mock_peer_info = \
+        MockMMPClient::return_value.request_peers.return_value.get();
 
     MockMMPClient::return_value.get_settings.return_value.get()["test"] = 37;
 
@@ -350,10 +344,7 @@ TEST_F(libmuscle_instance_base, create_instance_connecting) {
     auto const & connect_ports = instance.impl_()->port_manager_->connect_ports;
     ASSERT_TRUE(connect_ports.called_once());
     auto const & peer_info = connect_ports.call_arg<0>(0);
-    ASSERT_EQ(peer_info.kernel_, "component");
-    ASSERT_EQ(peer_info.index_.size(), 0u);
-    ASSERT_EQ(peer_info.peer_dims_, peer_dims);
-    ASSERT_EQ(peer_info.peer_locations_, peer_locs);
+    ASSERT_EQ(peer_info, mock_peer_info);
 
     auto const & impl = *instance.impl_();
     ASSERT_TRUE(impl.communicator_->set_peer_info.called_once());

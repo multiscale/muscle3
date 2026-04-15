@@ -20,7 +20,7 @@ def peer_info() -> PeerInfo:
     peer_locations = {
             Ref('other'): ['tcp:other']}
 
-    ymmsl_ports = [Port(Id("out"), Operator.O_F), Port(Id("in"), Operator.F_INIT)]
+    ymmsl_ports = [Port(Id("out"), Operator.O_I), Port(Id("in"), Operator.S)]
 
     return PeerInfo(kernel, index, conduits, peer_dims, peer_locations, ymmsl_ports)
 
@@ -40,7 +40,7 @@ def peer_info2() -> PeerInfo:
     peer_locations = {
             Ref('kernel'): ['tcp:kernel']}
 
-    ymmsl_ports = [Port(Id("out"), Operator.O_I), Port(Id("in"), Operator.S)]
+    ymmsl_ports = [Port(Id("out"), Operator.O_F), Port(Id("in"), Operator.F_INIT)]
 
     return PeerInfo(kernel, index, conduits, peer_dims, peer_locations, ymmsl_ports)
 
@@ -111,5 +111,5 @@ def test_get_peer_endpoint(peer_info, peer_info2, peer_info3) -> None:
 
 def test_get_ymmsl_ports(peer_info) -> None:
     assert peer_info.list_ymmsl_ports() == [
-        Port(Id("out"), Operator.O_F), Port(Id("in"), Operator.F_INIT)
+        Port(Id("out"), Operator.O_I), Port(Id("in"), Operator.S)
     ]

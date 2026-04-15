@@ -238,12 +238,7 @@ auto MMPClient::get_checkpoint_info() ->
             decode_optional<std::string>(response[4]));
 }
 
-auto MMPClient::request_peers() ->
-        std::tuple<
-            std::vector<::ymmsl::Conduit>,
-            std::unordered_map<::ymmsl::Reference, std::vector<int>>,
-            std::unordered_map<::ymmsl::Reference, std::vector<std::string>>
-        >
+auto MMPClient::request_peers() -> PeerInfo
 {
     int sleep_time = 100;   // milliseconds
     auto start_time = steady_clock::now();
@@ -307,10 +302,18 @@ auto MMPClient::request_peers() ->
         peer_locations[recv_locs.key(i)] = locs;
     }
 
-    return std::make_tuple(
-            std::move(conduits),
-            std::move(peer_dimensions),
-            std::move(peer_locations));
+    auto const & recv_ports = response[4];
+    std::vector<::ymmsl::Port> ports;
+    for (std::size_t i = 0u; i < recv_ports.size(); ++i) {
+        auto recv_port = recv_ports[i];
+        std::string name = recv_port[0].as<std::string>();
+        std::string oper = recv_port[1].as<std::string>();
+        ports.emplace_back(name, ::ymmsl::operator_for_name(oper));
+    }
+
+    return PeerInfo(
+        instance_to_component(instance_id_), instance_indices(instance_id_),
+        conduits, peer_dimensions, peer_locations, ports);
 }
 
 void MMPClient::deregister_instance() {

@@ -15,7 +15,8 @@ PeerInfo::PeerInfo(
         std::vector<int> const & index,
         std::vector<Conduit> const & conduits,
         PeerDims const & peer_dims,
-        PeerLocations const & peer_locations
+        PeerLocations const & peer_locations,
+        std::vector<::ymmsl::Port> const & ymmsl_ports
         )
     : kernel_(kernel)
     , index_(index)
@@ -24,6 +25,7 @@ PeerInfo::PeerInfo(
     , peers_()                          // peer port ids, indexed by local kernel.port
     , peer_dims_(peer_dims)             // indexed by peer kernel id
     , peer_locations_(peer_locations)   // indexed by peer instance id
+    , ymmsl_ports_(ymmsl_ports)
 {
     for (auto const & conduit : conduits) {
         if (conduit.sending_component() == kernel_) {
@@ -54,6 +56,10 @@ PeerInfo::PeerInfo(
             peers_.emplace(conduit.receiver, vec);
         }
     }
+}
+
+std::vector<::ymmsl::Port> const & PeerInfo::list_ymmsl_ports() const {
+    return ymmsl_ports_;
 }
 
 IncomingPorts PeerInfo::list_incoming_ports() const {

@@ -60,7 +60,8 @@ struct libmuscle_port_manager : ::testing::Test {
                 Conduit("other.out", "component.in")});
         PeerDims peer_dims({ {"component", {20}}});
         PeerLocations peer_locations({{"component", {"direct:test"}}});
-        PeerInfo peer_info(component_id, index2_, conduits, peer_dims, peer_locations);
+        PeerInfo peer_info(
+                component_id, index2_, conduits, peer_dims, peer_locations, {});
 
         port_manager2_.connect_ports(peer_info);
     }
@@ -77,7 +78,7 @@ TEST_F(libmuscle_port_manager, test_connect_ports) {
     PeerDims peer_dims({{Reference("other"), {}}});
     PeerLocations peer_locations({
             {Reference("other"), {"direct:test"}}});
-    PeerInfo peer_info(component_id, index_, conduits, peer_dims, peer_locations);
+    PeerInfo peer_info(component_id, index_, conduits, peer_dims, peer_locations, {});
 
     port_manager_.connect_ports(peer_info);
 
@@ -123,7 +124,7 @@ TEST_F(libmuscle_port_manager, test_connect_vector_ports) {
             {Reference("other1"), {"tcp:test1"}},
             {Reference("other3"), {"tcp:test3"}}
             });
-    PeerInfo peer_info(component_id, index_, conduits, peer_dims, peer_locations);
+    PeerInfo peer_info(component_id, index_, conduits, peer_dims, peer_locations, {});
 
     port_manager.connect_ports(peer_info);
 
@@ -162,7 +163,7 @@ TEST_F(libmuscle_port_manager, test_connect_multidimensional_ports) {
     PeerLocations peer_locations({
             {Reference("other"), {"direct:test"}}
             });
-    PeerInfo peer_info(component_id, index_, conduits, peer_dims, peer_locations);
+    PeerInfo peer_info(component_id, index_, conduits, peer_dims, peer_locations, {});
 
     ASSERT_THROW(
             port_manager.connect_ports(peer_info), std::invalid_argument);
@@ -187,7 +188,13 @@ TEST_F(libmuscle_port_manager, test_connect_inferred_ports) {
             {Reference("other1"), {"tcp:test1"}},
             {Reference("other2"), {"tcp:test2"}}
             });
-    PeerInfo peer_info(component_id, index_, conduits, peer_dims, peer_locations);
+    std::vector<::ymmsl::Port> ymmsl_ports({
+            {"in", Operator::F_INIT},
+            {"out1", Operator::O_F},
+            {"out2", Operator::O_F}
+            });
+    PeerInfo peer_info(
+            component_id, index_, conduits, peer_dims, peer_locations, ymmsl_ports);
 
     port_manager.connect_ports(peer_info);
 
@@ -208,7 +215,7 @@ TEST_F(libmuscle_port_manager, test_connect_inferred_ports) {
 }
 
 TEST_F(libmuscle_port_manager, test_port_message_counts) {
-    port_manager_.connect_ports(PeerInfo("component", {}, {}, {}, {}));
+    port_manager_.connect_ports(PeerInfo("component", {}, {}, {}, {}, {}));
 
     auto msg_counts = port_manager_.get_message_counts();
     ASSERT_EQ(msg_counts.size(), 3);

@@ -18,6 +18,7 @@
 #include <libmuscle/logging.hpp>
 #include <libmuscle/mcp/tcp_transport_client.hpp>
 #include <libmuscle/namespace.hpp>
+#include <libmuscle/peer_info.hpp>
 #include <libmuscle/profiling.hpp>
 #include <libmuscle/snapshot.hpp>
 #include <libmuscle/util.hpp>
@@ -113,20 +114,9 @@ class MMPClient {
          * peer_interval_min and peer_interval_max. From there on, intervals
          * are drawn randomly from that range.
          *
-         * @return A tuple containing a list of conduits that this instance is
-         *      attached to, a dictionary of peer dimensions, which is indexed
-         *      by Reference to the peer kernel and specifies how many
-         *      instances of the kernel there are, and a dictionary of peer
-         *      instance locations, indexed by Reference to a peer instance and
-         *      containing for each peer instance a list of network location
-         *      strings at which it can be reached.
+         * @return PeerInfo received from the manager
          */
-        auto request_peers() ->
-            std::tuple<
-                std::vector<::ymmsl::Conduit>,
-                std::unordered_map<::ymmsl::Reference, std::vector<int>>,
-                std::unordered_map<::ymmsl::Reference, std::vector<std::string>>
-            >;
+        auto request_peers() -> PeerInfo;
 
         void deregister_instance();
 

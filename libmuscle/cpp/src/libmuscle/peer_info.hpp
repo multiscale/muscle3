@@ -50,7 +50,14 @@ class PeerInfo {
                 std::vector<int> const & index,
                 std::vector<ymmsl::Conduit> const & conduits,
                 PeerDims const & peer_dims,
-                PeerLocations const & peer_locations);
+                PeerLocations const & peer_locations,
+                std::vector<::ymmsl::Port> const & ymmsl_ports);
+
+        /** List ports declared in the yMMSL configuration.
+         * 
+         * @return A vector of ymmsl Ports.
+         */
+        std::vector<::ymmsl::Port> const & list_ymmsl_ports() const;
 
         /** List incoming ports.
          *
@@ -116,6 +123,7 @@ class PeerInfo {
         std::unordered_map<ymmsl::Reference, std::vector<ymmsl::Reference>> peers_;
         PeerDims peer_dims_;
         PeerLocations peer_locations_;
+        std::vector<::ymmsl::Port> ymmsl_ports_;
 };
 
 } }

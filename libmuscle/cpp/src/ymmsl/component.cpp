@@ -33,6 +33,21 @@ std::string operator_name(Operator op) {
     throw std::logic_error("Unreachable code reached");
 }
 
+Operator operator_for_name(std::string name) {
+    if (name == "NONE") {
+        return Operator::NONE;
+    } else if (name == "F_INIT") {
+        return Operator::F_INIT;
+    } else if (name == "O_I") {
+        return Operator::O_I;
+    } else if (name == "S") {
+        return Operator::S;
+    } else if (name == "O_F") {
+        return Operator::O_F;
+    }
+    throw std::invalid_argument("Unknown operator name: " + name);
+}
+
 Port::Port(Identifier const & name, Operator oper)
     : name(name)
     , oper(oper)

@@ -45,6 +45,13 @@ bool allows_receiving(Operator op);
  */
 std::string operator_name(Operator op);
 
+/** Return the operator from its name
+ * 
+ * @param name The operator name
+ * @return The operator enum instance
+ */
+Operator operator_for_name(std::string name);
+
 /** A port on a component.
  *
  * Ports are used by components to send or receive messages on. They are

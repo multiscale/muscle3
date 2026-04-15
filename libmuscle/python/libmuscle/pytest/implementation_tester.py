@@ -1,7 +1,11 @@
+import logging
 import os
 from typing import Optional
 from libmuscle import Instance, Message
 from ymmsl.v0_2 import Configuration, Operator, Reference
+
+
+_logger = logging.getLogger(__name__)
 
 
 class ImplementationTester:
@@ -19,6 +23,7 @@ class ImplementationTester:
             default_timeout: Default timeout for receive operations in seconds.
         """
         self._default_timeout = default_timeout
+        self._is_shut_down = False
         # Pass manager address and instance name through environment
         os.environ["MUSCLE_MANAGER"] = muscle_manager_address
         os.environ["MUSCLE_INSTANCE"] = "muscle3_implementation_tester"
@@ -30,6 +35,10 @@ class ImplementationTester:
             Operator.S: [str(p) for p in test_model.ports.receiving_port_names()]
         }
         self._instance = Instance(ports=instance_ports)
+        # Configure the deadlock-detection timeout to match the default receive
+        # timeout: after `default_timeout` seconds of waiting the manager is
+        # notified, and if a deadlock is detected the simulation is aborted.
+        self._instance._communicator.set_receive_timeout(default_timeout)
         self._instance.reuse_instance()
 
     def send(
@@ -59,13 +68,37 @@ class ImplementationTester:
             port_name: Name of the port to receive from (without 'receive_' prefix).
             slot: Optional slot number for vector ports.
             timeout: Timeout in seconds. If None, uses default_timeout.
+
+        Raises:
+            RuntimeError: If a deadlock is detected while waiting for a message.
         """
-        # TODO: Should implement what should be done when we reached the timeout
         if timeout is None:
             timeout = self._default_timeout
 
-        return self._instance.receive(port_name, slot)
+        prev_timeout = self._instance._communicator._receive_timeout
+        self._instance._communicator.set_receive_timeout(timeout)
+        try:
+            return self._instance.receive(port_name, slot)
+        except RuntimeError as exc:
+            # A RuntimeError here means either a deadlock was detected by the
+            # manager, or the connection to the implementation was lost (e.g.
+            # it crashed)
+            _logger.error(
+                "ImplementationTester: error while waiting for a message on"
+                " port '%s': %s. Shutting down.", port_name, exc
+            )
+            self._instance.error_shutdown(str(exc))
+            self._is_shut_down = True
+            raise
+        finally:
+            self._instance._communicator.set_receive_timeout(prev_timeout)
 
     def cleanup(self) -> None:
-        while self._instance.reuse_instance():
-            pass
+        """Clean up the tester instance.
+
+        Safe to call even if the instance was already shut down due to a
+        timeout or deadlock error.
+        """
+        if not self._is_shut_down:
+            while self._instance.reuse_instance():
+                pass

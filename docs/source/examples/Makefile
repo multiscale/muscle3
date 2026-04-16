@@ -71,7 +71,7 @@ endif
 
 
 .PHONY: base
-base: python rd_programs.ymmsl benchmark_programs.ymmsl dispatch_programs.ymmsl eca_programs.ymmsl
+base: python rd_programs.ymmsl benchmark_programs.ymmsl dispatch_programs.ymmsl eca_programs.ymmsl combiner.ymmsl
 
 
 
@@ -125,6 +125,8 @@ test_python: base
 		$$(ls $$(ls -d -r -t run_reaction_diffusion* | tail -n1)/snapshots/*.ymmsl | head -n1)
 	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all eca_python.ymmsl eca_settings.ymmsl eca_programs.ymmsl
 	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all ecac_python.ymmsl eca_settings.ymmsl eca_programs.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all combiner.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all combiner.ymmsl combiner_3_sources.ymmsl
 	make -C python test
 
 .PHONY: test_cpp
@@ -139,6 +141,8 @@ test_cpp: base cpp
 	. python/build/venv/bin/activate && muscle_manager --start-all nested_rdmc.ymmsl rd_programs.ymmsl
 	. python/build/venv/bin/activate && YMMSL_PATH=./ymmsl muscle_manager --start-all nested_rdmc_imports.ymmsl
 	. python/build/venv/bin/activate && muscle_manager --start-all dispatch_cpp.ymmsl dispatch_programs.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all combiner.ymmsl combiner_cpp.ymmsl
+	. python/build/venv/bin/activate && muscle_manager --start-all combiner.ymmsl combiner_3_sources.ymmsl combiner_cpp.ymmsl
 
 .PHONY: test_cpp_mpi
 test_cpp_mpi: base cpp_mpi

@@ -2,4 +2,5 @@ rd_programs.ymmsl
 benchmark_programs.ymmsl
 dispatch_programs.ymmsl
 eca_programs.ymmsl
+combiner.ymmsl
 run_*

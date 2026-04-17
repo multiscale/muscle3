@@ -345,8 +345,8 @@ Below code listings provide an example how to do this.
 .. code-block:: toml
     :caption: Entry point configuration in ``pyproject.toml``
 
-    # Indicate you want to provide an entry point for "ymmsl.path":
-    [project.entry-points."ymmsl.path"]
+    # Indicate you want to provide an entry point for "ymmsl.module":
+    [project.entry-points."ymmsl.module"]
     # Provide one or more "name = value" entries, pointing to a valid yMMSL
     # configuration string (see next code listing). For more details, see
     # https://setuptools.pypa.io/en/latest/userguide/entry_point.html#entry-points-syntax

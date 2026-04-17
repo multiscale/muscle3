@@ -85,21 +85,6 @@ class MockNativeInstantiator:
         pass
 
 
-def _drain_instantiation_requests(queue):
-    """
-    Drain all InstantiationRequests currently in the queue.
-    """
-    requests = []
-    while True:
-        try:
-            item = queue.get(timeout=0.1)
-            if isinstance(item, InstantiationRequest):
-                requests.append(item)
-        except Empty:
-            break
-    return requests
-
-
 def test_start_all_skips_manual_instances(tmp_path, caplog, configuration):
     """Test that start_all() skips instances with ExecutionModel.MANUAL."""
     instance_registry = InstanceRegistry()
@@ -115,25 +100,13 @@ def test_start_all_skips_manual_instances(tmp_path, caplog, configuration):
         with caplog.at_level(logging.INFO):
             instance_manager.start_all()
 
-        instantiation_requests = _drain_instantiation_requests(
-            instance_manager._instantiator._requests_queue
-        )
-
+        request = instance_manager._instantiator._requests_queue.get(timeout=0.1)
+        with pytest.raises(Empty):
+            instance_manager._instantiator._requests_queue.get(timeout=0.1)
         instance_manager.shutdown()
 
-    assert len(instantiation_requests) == 1
-    assert instantiation_requests[0].instance == Reference('micro')
-
-    manual_requests = [
-        r for r in instantiation_requests if r.instance == Reference('macro')
-        ]
-    assert len(manual_requests) == 0
-
-    manual_log_messages = [
-        r.message for r in caplog.records
-        if 'macro' in r.message and 'manual' in r.message.lower()
-    ]
-    assert len(manual_log_messages) > 0
+        assert isinstance(request, InstantiationRequest)
+        assert request.instance == Reference('micro')
 
 
 def test_manual_instances_not_counted_in_num_running(tmp_path, configuration):

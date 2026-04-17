@@ -108,6 +108,12 @@ def test_start_all_skips_manual_instances(tmp_path, caplog, configuration):
         assert isinstance(request, InstantiationRequest)
         assert request.instance == Reference('micro')
 
+        manual_log_messages = [
+            r.message for r in caplog.records
+            if 'macro' in r.message and 'manual' in r.message.lower()
+        ]
+        assert len(manual_log_messages) > 0
+
 
 def test_manual_instances_not_counted_in_num_running(tmp_path, configuration):
     """Test that MANUAL instances are not counted in _num_running."""

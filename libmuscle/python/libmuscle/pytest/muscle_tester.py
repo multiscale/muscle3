@@ -1,9 +1,9 @@
 import os
 from types import TracebackType
 from pathlib import Path
-import subprocess
 import multiprocessing as mp
-from typing import Optional, Tuple
+from unittest.mock import patch
+from typing import Any, Optional, Tuple
 from multiprocessing.connection import Connection
 
 import ymmsl.v0_2
@@ -23,6 +23,11 @@ from ymmsl.v0_2 import (
 from libmuscle.pytest.implementation_tester import ImplementationTester
 from libmuscle.manager.manager import Manager
 from libmuscle.manager.run_dir import RunDir
+from libmuscle.receive_timeout_handler import ReceiveTimeoutHandler
+
+
+def raise_error(*args: object) -> None:
+    raise RuntimeError(args)
 
 
 class MuscleTester:
@@ -30,10 +35,11 @@ class MuscleTester:
 
     def __init__(self, run_dir: Path) -> None:
         self.run_dir = run_dir
-        self._manager_process: Optional[subprocess.Popen] = None
+        self.run_dir.mkdir(parents=True, exist_ok=True)
         self.implementation_tester: Optional[ImplementationTester] = None
         self.control_pipe: Optional[Tuple[Connection, Connection]] = None
         self.process: Optional[mp.Process] = None
+        self._patcher: Optional[Any] = None
 
     def __enter__(self) -> "MuscleTester":
         """Allows usage in a with-statement"""
@@ -139,6 +145,9 @@ class MuscleTester:
 
         muscle_manager_address, self.control_pipe, self.process = make_server_process(
             test_ymmsl_config, RunDir(self.run_dir))
+        # monkeypatch ReceiveTimeoutHandler so we can (ab)use it for our timeouts:
+        self._patcher = patch.object(ReceiveTimeoutHandler, 'on_timeout', raise_error)
+        self._patcher.start()
         self.implementation_tester = ImplementationTester(default_timeout,
                                                           muscle_manager_address,
                                                           test_ymmsl_config)
@@ -148,6 +157,9 @@ class MuscleTester:
         if self.implementation_tester is not None:
             self.implementation_tester.cleanup()
             self.implementation_tester = None
+        if self._patcher is not None:
+            self._patcher.stop()
+            self._patcher = None
         if self.control_pipe is not None and self.process is not None:
             self.control_pipe[0].send(True)
             self.control_pipe[0].close()
@@ -158,10 +170,10 @@ class MuscleTester:
 
 def start_mmp_server(control_pipe: Tuple[Connection, Connection],
                      ymmsl_config: Configuration, run_dir: RunDir,
-                     env: Optional[dict] = None) -> None:
-    if env is not None:
-        os.environ.clear()
-        os.environ.update(env)
+                     env: dict[str, str]) -> None:
+    os.environ.clear()
+    os.environ.update(env)
+
     control_pipe[0].close()
     manager = Manager(ymmsl_config, run_dir, 'DEBUG')
     control_pipe[1].send(manager.get_server_location())

@@ -1,24 +1,3 @@
-"""Integration tests for MuscleTester and ImplementationTester.
-
-These tests verify that the MuscleTester and ImplementationTester work correctly
-by testing the macro and micro components from the macro-micro example.
-
-The macro model (integration_test/codes/macro):
-  - Sends on port 'out' (O_I): integers 0, 1 for two iterations
-  - Receives on port 'in' (S): expects the same integer back
-
-The micro model (integration_test/codes/micro):
-  - Receives on port 'init' (F_INIT)
-  - Sends on port 'final' (O_F): echoes back the received value
-
-When testing the micro model, the ImplementationTester acts as the macro:
-  - It sends messages on 'init' and receives replies on 'final'.
-
-When testing the macro model, the ImplementationTester acts as the micro:
-  - It receives messages on 'out' and sends replies on 'in'.
-"""
-
-import os
 from pathlib import Path
 
 import pytest
@@ -31,26 +10,10 @@ YMMSL_CODES_DIR = Path(__file__).parent / 'ymmsl' / 'codes'
 CODES_DIR = Path(__file__).parent / 'codes'
 
 
-@pytest.fixture
-def muscle3_tester(tmp_path: Path):
-    """Pytest fixture providing a MuscleTester instance with a run directory."""
-    run_dir = tmp_path / 'run_dir'
-    run_dir.mkdir()
-    with MuscleTester(run_dir) as tester:
-        yield tester
-
-
 @pytest.fixture(autouse=True)
-def set_pythonpath():
+def set_pythonpath(monkeypatch):
     """Ensure the codes directory is on PYTHONPATH so 'python3 -m micro' works."""
-    original = os.environ.get('PYTHONPATH', '')
-    codes_path = str(CODES_DIR)
-    if original:
-        os.environ['PYTHONPATH'] = codes_path + ':' + original
-    else:
-        os.environ['PYTHONPATH'] = codes_path
-    yield
-    os.environ['PYTHONPATH'] = original
+    monkeypatch.setenv("PYTHONPATH", str(CODES_DIR),  prepend=":")
 
 
 def test_micro_model_with_tester(muscle3_tester: MuscleTester) -> None:
@@ -104,3 +67,18 @@ def test_macro_model_with_tester(muscle3_tester: MuscleTester) -> None:
 
         reply = Message(msg.timestamp, msg.next_timestamp, msg.data)
         tester.send('in', reply)
+
+
+def test_receive_timeout_raises_error(muscle3_tester: MuscleTester) -> None:
+    """Test that a RuntimeError is raised when the tester's receive times out.
+
+    The micro model waits to receive on 'final' without sending on 'init', the micro
+    model never sends and the tester's receive will time out and raise a RuntimeError.
+    """
+    ymmsl_path = str(YMMSL_CODES_DIR / 'micro1.ymmsl')
+    tester = muscle3_tester.start_implementation(
+        ymmsl_path, 'micro1', default_timeout=0.1
+    )
+
+    with pytest.raises(RuntimeError):
+        tester.receive('final')

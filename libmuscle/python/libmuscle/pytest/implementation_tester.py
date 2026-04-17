@@ -75,7 +75,6 @@ class ImplementationTester:
         if timeout is None:
             timeout = self._default_timeout
 
-        prev_timeout = self._instance._communicator._receive_timeout
         self._instance._communicator.set_receive_timeout(timeout)
         try:
             return self._instance.receive(port_name, slot)
@@ -90,8 +89,6 @@ class ImplementationTester:
             self._instance.error_shutdown(str(exc))
             self._is_shut_down = True
             raise
-        finally:
-            self._instance._communicator.set_receive_timeout(prev_timeout)
 
     def cleanup(self) -> None:
         """Clean up the tester instance.

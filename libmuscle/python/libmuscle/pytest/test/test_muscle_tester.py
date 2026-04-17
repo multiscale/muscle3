@@ -1,4 +1,3 @@
-"""Tests for MuscleTester and ImplementationTester."""
 import pytest
 from pathlib import Path
 
@@ -9,6 +8,8 @@ from ymmsl.v0_2 import (
     Ports,
     Program,
     Reference,
+    Conduit,
+    Identifier
 )
 
 from libmuscle.pytest.muscle_tester import MuscleTester
@@ -70,11 +71,11 @@ def test_add_test_ports_to_config(tmp_run_dir: Path, program_config: Configurati
     result = tester._add_tester_component(program_config, "micro_model_program")
     tester_model = result.models[Reference("muscle3_test_model")]
     tester_comp = tester_model.components[Reference("muscle3_implementation_tester")]
-    # init_in is a receiving port of micro_model_program → tester sends on it (O_I)
-    assert "init_in" in [str(p) for p in tester_comp.ports.sending_port_names()]
+    # init_in is a receiving port of micro_model_program -> tester sends on it (O_I)
+    assert Identifier("init_in") in tester_comp.ports.sending_port_names()
 
-    # final_out is a sending port of micro_model_program → tester receives on it (S)
-    assert "final_out" in [str(p) for p in tester_comp.ports.receiving_port_names()]
+    # final_out is a sending port of micro_model_program -> tester receives on it (S)
+    assert Identifier("final_out") in tester_comp.ports.receiving_port_names()
 
 
 def test_add_test_conduits_to_config(tmp_run_dir: Path, program_config: Configuration
@@ -82,19 +83,17 @@ def test_add_test_conduits_to_config(tmp_run_dir: Path, program_config: Configur
     tester = MuscleTester(tmp_run_dir)
     result = tester._add_tester_component(program_config, "micro_model_program")
     tester_model = result.models[Reference("muscle3_test_model")]
-    conduit_pairs = {
-        (str(c.sender), str(c.receiver)) for c in tester_model.conduits
-    }
-    # Tester sends init_in → implementation receives init_in
-    assert (
+
+    # Tester sends init_in -> implementation receives init_in
+    assert Conduit(
         "muscle3_implementation_tester.init_in",
         "micro_model_program.init_in",
-    ) in conduit_pairs
-    # Implementation sends final_out → tester receives final_out
-    assert (
+    ) in tester_model.conduits
+    # Implementation sends final_out -> tester receives final_out
+    assert Conduit(
         "micro_model_program.final_out",
         "muscle3_implementation_tester.final_out",
-    ) in conduit_pairs
+    ) in tester_model.conduits
 
 
 def test_original_config_unchanged(tmp_run_dir: Path, program_config: Configuration

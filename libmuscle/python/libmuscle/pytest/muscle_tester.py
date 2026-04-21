@@ -139,12 +139,12 @@ class MuscleTester:
         """Start a MUSCLE3 manager and return an ImplementationTester for a given
         implementation from a yMMSL file.
         - A tester component is added and connected to all ports of the implementation
-        defined in the ymmsl file at ymmsl_path. 
+        defined in the ymmsl file at ymmsl_path.
         - A process is generated where the MUSCLE3 manager will be started and the
         address is derived.
         - A monkeypatch is used to overwrite ReceiveTimeoutHandler.on_timeout so
         that a RuntimeError is raised when a receive timeout is reached, causing the
-        test simulation to quit. 
+        test simulation to quit.
         - The ImplementationTester is then created based on the manager address and the
         generated test yMMSL configuration.
 

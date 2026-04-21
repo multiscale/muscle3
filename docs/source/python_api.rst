@@ -9,3 +9,11 @@ API Documentation for Python
 
 .. automodule:: libmuscle.runner
    :members: run_simulation
+
+.. automodule:: libmuscle.pytest
+   :members:
+   :undoc-members:
+
+.. automodule:: libmuscle.pytest.implementation_tester
+   :members:
+   :undoc-members:

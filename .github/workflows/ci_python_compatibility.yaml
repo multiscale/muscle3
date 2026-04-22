@@ -1,6 +1,10 @@
-# Run Continuous Integration on every push
+# Run Continuous Integration when a PR is updated and for pushes to main/develop
 name: python_compatibility
-on: [push, pull_request]
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    types: [opened, synchronize, reopened]
 jobs:
   build:
     runs-on: ubuntu-latest

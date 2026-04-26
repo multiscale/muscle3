@@ -1,0 +1,132 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "muscle3"
+dynamic = ["version"]
+description = "Version 3 of the MUltiScale Coupling Library and Environment"
+readme = "README.rst"
+authors = [
+  {name = "Lourens Veen", email = "l.veen@esciencecenter.nl"},
+  {name = "Maarten Sebregts", email = "msebregts@ignitioncomputing.com"},
+]
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+keywords = ["multiscale", "coupling", "MUSCLE"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+requires-python = ">=3.9, <4"
+dependencies = [
+    "click>=7.1,<9",
+    "matplotlib>=3,<4",
+    "msgpack>=1,<2",
+    "psutil>=5.0.0",
+    "parsimonious",
+    "numpy>=1.22",
+    "ymmsl>=0.15.0,<0.16",         # Also in examples requirements.txt
+    # "ymmsl @ git+https://github.com/multiscale/ymmsl-python.git",
+    "yatiml>=0.12,<0.13",
+]
+
+[project.optional-dependencies]
+dev = ["tox"]
+
+[project.urls]
+homepage = "https://github.com/multiscale/muscle3"
+documentation = "https://muscle3.readthedocs.io/"
+
+[project.scripts]
+muscle_manager = "muscle3.muscle_manager:manage_simulation"
+muscle3 = "muscle3.muscle3:muscle3"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = [".", "libmuscle/python"]
+include = ["muscle3", "libmuscle", "libmuscle.*"]
+namespaces = false  # Prevent setuptools from marking /libmuscle as a namespace package
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION"}
+
+[tool.coverage.run]
+source = [
+    "libmuscle/python/libmuscle",
+    "integration_test",
+]
+
+[tool.coverage.xml]
+output = "cobertura.xml"
+
+[tool.pytest.ini_options]
+testpaths = ["libmuscle/python/libmuscle", "integration_test"]
+addopts = "--cov --cov-report xml --cov-report term-missing -s --import-mode importlib"
+pythonpath = "."
+filterwarnings = [
+    # raise an error when there are unhandled exceptions in a worker thread
+    "error::pytest.PytestUnhandledThreadExceptionWarning",
+]
+
+[tool.mypy]
+files = ["libmuscle/python/**/*.py", "scripts/*.py", "muscle3/*.py"]
+mypy_path = "libmuscle/python"
+warn_unused_configs = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = false
+warn_return_any = true
+
+[[tool.mypy.overrides]]
+# We don't bother with type annotations for tests
+module = ["*.test.*"]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = [
+    "msgpack",
+    "yaml.*",
+]
+ignore_missing_imports = true
+
+[tool.ruff]
+exclude = [
+  "docs",
+  ".git",
+]
+include = ["pyproject.toml", "muscle3/**/*.py", "libmuscle/python/libmuscle/**/*.py"]
+# Same as Black
+indent-width = 4
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+  # pycodestyle
+  "E",
+  # Pyflakes
+  "F",
+  # TODO: enable these at some point?
+  # pyupgrade
+  # "UP",
+  # flake8-bugbear
+  #"B",
+  # flake8-simplify
+  #"SIM",
+  # isort
+  # "I",
+]

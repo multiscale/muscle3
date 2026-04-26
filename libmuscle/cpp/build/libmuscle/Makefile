@@ -215,7 +215,7 @@ INSTANTIATE_VERSION_H += s/@PROJECT_VERSION_MINOR@/$(minor_version)/\n
 INSTANTIATE_VERSION_H += s/@PROJECT_VERSION_PATCH@/$(patch_version)/\n
 INSTANTIATE_VERSION_H += s/@PROJECT_VERSION@/$(muscle_version)/\n
 
-$(srcdir)/version.h: version.h.in
+$(srcdir)/version.h: version.h.in $(version_file)
 	printf "$(INSTANTIATE_VERSION_H)" | sed -f - $< >$@
 
 libmuscle.a: $(objects)

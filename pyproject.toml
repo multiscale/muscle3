@@ -12,7 +12,7 @@ authors = [
   {name = "Maarten Sebregts", email = "msebregts@ignitioncomputing.com"},
 ]
 license = "Apache-2.0"
-license-files = ["LICENSE"]
+license-files = ["LICENSE", "NOTICE"]
 keywords = ["multiscale", "coupling", "MUSCLE"]
 classifiers = [
     "Development Status :: 4 - Beta",

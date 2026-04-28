@@ -50,7 +50,7 @@ std::string operator_name(Operator op);
  * @param name The operator name
  * @return The operator enum instance
  */
-Operator operator_for_name(std::string name);
+Operator operator_for_name(std::string const & name);
 
 /** A port on a component.
  *

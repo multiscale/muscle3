@@ -25,7 +25,7 @@ ports:
 
 
 Some components in your simulation can be generic, for example merging multiple inputs
-into a single container. For these generic component, MUSCLE3 allows the component to
+into a single container. For these generic components, MUSCLE3 allows the component to
 have a `dynamic` ports configuration: the ports will be created based on the yMMSL
 configuration instead of statically configured when creating the Instance.
 

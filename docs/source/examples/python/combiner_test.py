@@ -26,7 +26,7 @@ def destination():
         assert msg.timestamp == 0.0
         assert isinstance(msg.data, list)
         for i in range(len(msg.data)):
-            # source1 will send 1, sourc2 will send 2, etc.
+            # source1 will send 1, source2 will send 2, etc.
             assert msg.data[i] == i + 1, msg.data
 
 

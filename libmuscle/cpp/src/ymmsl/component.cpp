@@ -33,7 +33,7 @@ std::string operator_name(Operator op) {
     throw std::logic_error("Unreachable code reached");
 }
 
-Operator operator_for_name(std::string name) {
+Operator operator_for_name(std::string const & name) {
     if (name == "NONE") {
         return Operator::NONE;
     } else if (name == "F_INIT") {

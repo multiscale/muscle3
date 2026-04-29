@@ -13,7 +13,3 @@ API Documentation for Python
 .. automodule:: libmuscle.pytest
    :members:
    :undoc-members:
-
-.. automodule:: libmuscle.pytest.implementation_tester
-   :members:
-   :undoc-members:

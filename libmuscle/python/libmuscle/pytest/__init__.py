@@ -2,9 +2,10 @@ import pytest
 from typing import Iterator
 from pathlib import Path
 
+from libmuscle.pytest.implementation_tester import ImplementationTester
 from libmuscle.pytest.muscle_tester import MuscleTester
 
-__all__ = ["MuscleTester"]
+__all__ = ["ImplementationTester", "MuscleTester"]
 
 
 @pytest.fixture

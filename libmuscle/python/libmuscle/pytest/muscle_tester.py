@@ -3,7 +3,7 @@ from types import TracebackType
 from pathlib import Path
 import multiprocessing as mp
 from unittest.mock import patch
-from typing import Any, Optional, Tuple
+from typing import Any, Optional, Tuple, Union
 from multiprocessing.connection import Connection
 
 import ymmsl.v0_2
@@ -134,12 +134,13 @@ class MuscleTester:
         return config
 
     def start_implementation(
-        self, ymmsl_path: str, implementation: str, *, default_timeout: float = 60
+        self, ymmsl_source: Union[str, Path], implementation: str,
+        *, default_timeout: float = 60
     ) -> ImplementationTester:
         """Start a MUSCLE3 manager and return an ImplementationTester for a given
-        implementation from a yMMSL file.
+        implementation from a yMMSL source.
         - A tester component is added and connected to all ports of the implementation
-        defined in the ymmsl file at ymmsl_path.
+        defined in the ymmsl source.
         - A process is generated where the MUSCLE3 manager will be started and the
         address is derived.
         - A monkeypatch is used to overwrite ReceiveTimeoutHandler.on_timeout so
@@ -149,14 +150,15 @@ class MuscleTester:
         generated test yMMSL configuration.
 
         Args:
-            ymmsl_path: Path to the yMMSL configuration file.
+            ymmsl_source: Either a str containing the yMMSL, or a pathlib.Path
+            pointing to a file containing the yMMSL.
             implementation: Name of the implementation under test.
             default_timeout: Timeout (seconds) for message operations (default: 60).
 
         Returns:
             An ImplementationTester connected to the running manager.
         """
-        ymmsl_config = ymmsl.load_as(ymmsl.v0_2.Configuration, Path(ymmsl_path))
+        ymmsl_config = ymmsl.load_as(ymmsl.v0_2.Configuration, ymmsl_source)
         test_ymmsl_config = self._add_tester_component(ymmsl_config, implementation)
 
         # Save the test configuration to a temporary file

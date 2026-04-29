@@ -27,8 +27,9 @@ def test_micro_model_with_tester(muscle3_tester: MuscleTester) -> None:
       - Sends integers 0 and 1 on 'init'
       - Expects to receive the same integers back on 'final'
     """
-    ymmsl_path = str(YMMSL_CODES_DIR / 'micro1.ymmsl')
-    tester = muscle3_tester.start_implementation(ymmsl_path, 'micro1')
+    tester = muscle3_tester.start_implementation(
+        YMMSL_CODES_DIR / 'micro1.ymmsl','micro1'
+        )
 
     for i in range(2):
         msg = Message(float(i) * 10.0, float(i + 1) * 10.0, i)
@@ -56,8 +57,9 @@ def test_macro_model_with_tester(muscle3_tester: MuscleTester) -> None:
       - Receives messages on 'out'
       - Sends the same value back on 'in'
     """
-    ymmsl_path = str(YMMSL_CODES_DIR / 'macro.ymmsl')
-    tester = muscle3_tester.start_implementation(ymmsl_path, 'macro')
+    tester = muscle3_tester.start_implementation(
+        YMMSL_CODES_DIR / 'macro.ymmsl', 'macro'
+        )
 
     for i in range(2):
         msg = tester.receive('out')
@@ -75,9 +77,8 @@ def test_receive_timeout_raises_error(muscle3_tester: MuscleTester) -> None:
     The micro model waits to receive on 'final' without sending on 'init', the micro
     model never sends and the tester's receive will time out and raise a RuntimeError.
     """
-    ymmsl_path = str(YMMSL_CODES_DIR / 'micro1.ymmsl')
     tester = muscle3_tester.start_implementation(
-        ymmsl_path, 'micro1', default_timeout=0.1
+        YMMSL_CODES_DIR / 'micro1.ymmsl', 'micro1', default_timeout=0.1
     )
 
     with pytest.raises(RuntimeError):

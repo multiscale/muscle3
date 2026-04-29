@@ -32,12 +32,16 @@ within a pytest test.
 Quick start
 ===========
 
-Step 1: Provide the yMMSL file for testing your implementation
----------------------------------------------------
+Step 1: Provide the yMMSL configuration for your implementation
+---------------------------------------------------------------
 
-Your implementation needs a yMMSL file that declares its ports. We recommend
-placing this file in a ``tests/`` folder at the root of your project, next to
-your test files:
+:meth:`~libmuscle.pytest.MuscleTester.start_implementation` accepts the yMMSL in
+two forms.
+
+**Option A: yMMSL file**
+
+Place the yMMSL file in a ``tests/`` folder at the root of your project, next
+to your test files:
 
 .. code-block:: text
 
@@ -68,15 +72,66 @@ sends a result on ``final``:
         threads: 1
 
 .. note::
-
     The path passed to
     :meth:`~libmuscle.pytest.MuscleTester.start_implementation` is resolved
     relative to the directory from which you run ``pytest`` — typically the
     project root. The executable in the yMMSL file is also launched from that
     directory, so make sure your implementation is importable from there.
 
+**Option B: inline yMMSL string**
+You can embed the yMMSL configuration directly in your test file as a string.
+This is handy for short configurations or when you want the test to be fully
+self-contained:
+
+.. code-block:: python
+    :caption: tests/test_micro.py
+
+    CONFIG = """
+    ymmsl_version: v0.2
+
+    programs:
+      micro:
+        ports:
+          f_init: init
+          o_f: final
+        executable: python3
+        args: micro.py
+
+    resources:
+      micro:
+        threads: 1
+    """
+
 Step 2: Use the ``muscle3_tester`` fixture in your test
 -------------------------------------------------------
+
+**Using a Path:**
+
+.. code-block:: python
+    :caption: tests/test_micro.py
+
+    from pathlib import Path
+    from libmuscle import Message
+    from libmuscle.pytest import MuscleTester
+
+    TESTS_DIR = Path(__file__).parent
+
+
+    def test_micro_model(muscle3_tester: MuscleTester) -> None:
+        """Test the micro model by acting as the macro."""
+        tester = muscle3_tester.start_implementation(
+            TESTS_DIR / "micro.ymmsl", "micro"
+            )
+
+        # Send a message to the micro model's 'init' port
+        tester.send("init", Message(0.0, 10.0, 42))
+
+        # Receive the result from the micro model's 'final' port
+        reply = tester.receive("final")
+
+        assert reply.data == 42
+
+**Using an inline string:**
 
 .. code-block:: python
     :caption: tests/test_micro.py
@@ -84,10 +139,26 @@ Step 2: Use the ``muscle3_tester`` fixture in your test
     from libmuscle import Message
     from libmuscle.pytest import MuscleTester
 
+    CONFIG = """
+    ymmsl_version: v0.2
+
+    programs:
+      micro:
+        ports:
+          f_init: init
+          o_f: final
+        executable: python3
+        args: micro.py
+
+    resources:
+      micro:
+        threads: 1
+    """
+
 
     def test_micro_model(muscle3_tester: MuscleTester) -> None:
         """Test the micro model by acting as the macro."""
-        tester = muscle3_tester.start_implementation("tests/micro.ymmsl", "micro")
+        tester = muscle3_tester.start_implementation(CONFIG, "micro")
 
         # Send a message to the micro model's 'init' port
         tester.send("init", Message(0.0, 10.0, 42))
@@ -132,7 +203,7 @@ You can adjust this timeout:
 .. code-block:: python
 
     tester = muscle3_tester.start_implementation(
-        "tests/micro.ymmsl", "micro", default_timeout=5.0
+        TESTS_DIR / "micro.ymmsl", "micro", default_timeout=5.0
     )
 
 You can also override the timeout for individual receive calls:

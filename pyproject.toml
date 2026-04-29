@@ -48,6 +48,9 @@ documentation = "https://muscle3.readthedocs.io/"
 muscle_manager = "muscle3.muscle_manager:manage_simulation"
 muscle3 = "muscle3.muscle3:muscle3"
 
+[project.entry-points."pytest11"]
+muscle3 = "libmuscle.pytest"
+
 [tool.setuptools]
 include-package-data = true
 

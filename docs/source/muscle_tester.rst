@@ -38,69 +38,70 @@ Step 1: Provide the yMMSL configuration for your implementation
 :meth:`~libmuscle.pytest.MuscleTester.start_implementation` accepts the yMMSL in
 two forms.
 
-**Option A: yMMSL file**
+.. tabs::
 
-Place the yMMSL file in a ``tests/`` folder at the root of your project, next
-to your test files:
+    .. group-tab:: Using a Path
 
-.. code-block:: text
+        Place the yMMSL file in a ``tests/`` folder at the root of your project, next
+        to your test files:
 
-    my_project/
-    ├── micro.py
-    └── tests/
-        ├── micro.ymmsl
-        └── test_micro.py
+        .. code-block:: text
 
-For example, for a simple micro model that receives a value on ``init`` and
-sends a result on ``final``:
+            my_project/
+            ├── micro.py
+            ├── micro.ymmsl
+            └── tests/
+                └── test_micro.py
 
-.. code-block:: yaml
-    :caption: tests/micro.ymmsl
+        For example, for a simple micro model that receives a value on ``init`` and
+        sends a result on ``final``:
 
-    ymmsl_version: v0.2
+        .. code-block:: yaml
+            :caption: tests/micro.ymmsl
 
-    programs:
-      micro:
-        ports:
-          f_init: init
-          o_f: final
-        executable: python3
-        args: micro.py
+            ymmsl_version: v0.2
 
-    resources:
-      micro:
-        threads: 1
+            programs:
+              micro:
+                ports:
+                  f_init: init
+                  o_f: final
+                executable: python3
+                args: /path/to/my_project/micro.py
 
-.. note::
-    The path passed to
-    :meth:`~libmuscle.pytest.MuscleTester.start_implementation` is resolved
-    relative to the directory from which you run ``pytest`` — typically the
-    project root. The executable in the yMMSL file is also launched from that
-    directory, so make sure your implementation is importable from there.
+            resources:
+              micro:
+                threads: 1
 
-**Option B: inline yMMSL string**
-You can embed the yMMSL configuration directly in your test file as a string.
-This is handy for short configurations or when you want the test to be fully
-self-contained:
+    .. group-tab:: Using an inline string
 
-.. code-block:: python
-    :caption: tests/test_micro.py
+        You can embed the yMMSL configuration directly in your test file as an
+        f-string. Using ``Path(__file__).parent.resolve()`` gives the absolute path
+        to the ``tests/`` directory; ``.parent`` then steps up to the project root
+        where ``micro.py`` lives:
 
-    CONFIG = """
-    ymmsl_version: v0.2
+        .. code-block:: python
+            :caption: tests/test_micro.py
 
-    programs:
-      micro:
-        ports:
-          f_init: init
-          o_f: final
-        executable: python3
-        args: micro.py
+            from pathlib import Path
 
-    resources:
-      micro:
-        threads: 1
-    """
+            PROJECT_DIR = Path(__file__).parent.parent.resolve()
+
+            CONFIG = f"""
+            ymmsl_version: v0.2
+
+            programs:
+              micro:
+                ports:
+                  f_init: init
+                  o_f: final
+                executable: python3
+                args: {PROJECT_DIR / "micro.py"}
+
+            resources:
+              micro:
+                threads: 1
+            """
 
 Step 2: Use the ``muscle3_tester`` fixture in your test
 -------------------------------------------------------
@@ -116,13 +117,13 @@ Step 2: Use the ``muscle3_tester`` fixture in your test
             from libmuscle import Message
             from libmuscle.pytest import MuscleTester
 
-            TESTS_DIR = Path(__file__).parent
+            PROJECT_DIR = Path(__file__).parent.parent.resolve()
 
 
             def test_micro_model(muscle3_tester: MuscleTester) -> None:
                 """Test the micro model by acting as the macro."""
                 tester = muscle3_tester.start_implementation(
-                    TESTS_DIR / "micro.ymmsl", "micro"
+                    PROJECT_DIR / "micro.ymmsl", "micro"
                     )
 
                 # Send a message to the micro model's 'init' port
@@ -138,10 +139,13 @@ Step 2: Use the ``muscle3_tester`` fixture in your test
         .. code-block:: python
             :caption: tests/test_micro.py
 
+            from pathlib import Path
             from libmuscle import Message
             from libmuscle.pytest import MuscleTester
 
-            CONFIG = """
+            TESTS_DIR = Path(__file__).parent.parent.resolve()
+
+            CONFIG = f"""
             ymmsl_version: v0.2
 
             programs:
@@ -150,7 +154,7 @@ Step 2: Use the ``muscle3_tester`` fixture in your test
                   f_init: init
                   o_f: final
                 executable: python3
-                args: micro.py
+                args: {PROJECT_DIR / "micro.py"}
 
             resources:
               micro:

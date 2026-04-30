@@ -15,7 +15,7 @@ within a pytest test.
 .. note::
 
    The testing infrastructure described here relies on `pytest
-   <https://docs.pytest.org>`_, which is **not** installed automatically as
+   <https://docs.pytest.org>`_, which is not installed automatically as
    part of muscle3. If you have not installed it yet, you can do so with:
 
    .. code-block:: bash
@@ -105,68 +105,70 @@ self-contained:
 Step 2: Use the ``muscle3_tester`` fixture in your test
 -------------------------------------------------------
 
-**Using a Path:**
+.. tabs::
 
-.. code-block:: python
-    :caption: tests/test_micro.py
+    .. group-tab:: Using a Path
 
-    from pathlib import Path
-    from libmuscle import Message
-    from libmuscle.pytest import MuscleTester
+        .. code-block:: python
+            :caption: tests/test_micro.py
 
-    TESTS_DIR = Path(__file__).parent
+            from pathlib import Path
+            from libmuscle import Message
+            from libmuscle.pytest import MuscleTester
 
-
-    def test_micro_model(muscle3_tester: MuscleTester) -> None:
-        """Test the micro model by acting as the macro."""
-        tester = muscle3_tester.start_implementation(
-            TESTS_DIR / "micro.ymmsl", "micro"
-            )
-
-        # Send a message to the micro model's 'init' port
-        tester.send("init", Message(0.0, 10.0, 42))
-
-        # Receive the result from the micro model's 'final' port
-        reply = tester.receive("final")
-
-        assert reply.data == 42
-
-**Using an inline string:**
-
-.. code-block:: python
-    :caption: tests/test_micro.py
-
-    from libmuscle import Message
-    from libmuscle.pytest import MuscleTester
-
-    CONFIG = """
-    ymmsl_version: v0.2
-
-    programs:
-      micro:
-        ports:
-          f_init: init
-          o_f: final
-        executable: python3
-        args: micro.py
-
-    resources:
-      micro:
-        threads: 1
-    """
+            TESTS_DIR = Path(__file__).parent
 
 
-    def test_micro_model(muscle3_tester: MuscleTester) -> None:
-        """Test the micro model by acting as the macro."""
-        tester = muscle3_tester.start_implementation(CONFIG, "micro")
+            def test_micro_model(muscle3_tester: MuscleTester) -> None:
+                """Test the micro model by acting as the macro."""
+                tester = muscle3_tester.start_implementation(
+                    TESTS_DIR / "micro.ymmsl", "micro"
+                    )
 
-        # Send a message to the micro model's 'init' port
-        tester.send("init", Message(0.0, 10.0, 42))
+                # Send a message to the micro model's 'init' port
+                tester.send("init", Message(0.0, 10.0, 42))
 
-        # Receive the result from the micro model's 'final' port
-        reply = tester.receive("final")
+                # Receive the result from the micro model's 'final' port
+                reply = tester.receive("final")
 
-        assert reply.data == 42
+                assert reply.data == 42
+
+    .. group-tab:: Using an inline string
+
+        .. code-block:: python
+            :caption: tests/test_micro.py
+
+            from libmuscle import Message
+            from libmuscle.pytest import MuscleTester
+
+            CONFIG = """
+            ymmsl_version: v0.2
+
+            programs:
+              micro:
+                ports:
+                  f_init: init
+                  o_f: final
+                executable: python3
+                args: micro.py
+
+            resources:
+              micro:
+                threads: 1
+            """
+
+
+            def test_micro_model(muscle3_tester: MuscleTester) -> None:
+                """Test the micro model by acting as the macro."""
+                tester = muscle3_tester.start_implementation(CONFIG, "micro")
+
+                # Send a message to the micro model's 'init' port
+                tester.send("init", Message(0.0, 10.0, 42))
+
+                # Receive the result from the micro model's 'final' port
+                reply = tester.receive("final")
+
+                assert reply.data == 42
 
 
 Step 3: Run your tests
@@ -188,13 +190,13 @@ uses a 60-second timeout for all receive operations. If the implementation
 does not send a message within that time, a :class:`RuntimeError` is raised
 and the test fails.
 
-You may want to **increase** the timeout when your implementation performs
+You may want to increase the timeout when your implementation performs
 expensive work between messages, for example, a micro-model that runs a
 numerical solver for several minutes per time step. In those cases the default
 60 seconds may expire before the component has had a chance to reply, causing a
 spurious test failure.
 
-Conversely, you may want to **decrease** the timeout in fast unit tests so
+Conversely, you may want to decrease the timeout in fast unit tests so
 that a missing ``send`` call is detected quickly rather than making the test
 suite hang for a full minute.
 
@@ -216,6 +218,6 @@ You can also override the timeout for individual receive calls:
 API reference
 =============
 
-The full API for :class:`libmuscle.pytest.MuscleTester` and
-:class:`libmuscle.pytest.implementation_tester.ImplementationTester` is
+The full API for :class:`~libmuscle.pytest.MuscleTester` and
+:class:`~libmuscle.pytest.implementation_tester.ImplementationTester` is
 documented in the :doc:`python_api`.

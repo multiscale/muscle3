@@ -1,8 +1,13 @@
 ymmsl_version: v0.2
 
+imports:
+- from rd_model import implementation reaction_diffusion
+- from rd_programs import implementation diffusion_python
+- from rd_programs import implementation reaction_cpp_mpi
+
 description: |
-  Sets the micro model to use the C++ MPI implementation. For use with
-  rd_model.ymmsl.
+  Uses a Python macro model and sets the micro model to use the C++ MPI implementation.
 
 custom_implementations:
-  micro: reaction_cpp_mpi
+  reaction_diffusion.macro: diffusion_python
+  reaction_diffusion.micro: reaction_cpp_mpi

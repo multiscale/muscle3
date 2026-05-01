@@ -145,7 +145,6 @@ distclean: docsclean
 	- find docs scripts integration_test muscle3 libmuscle/python -name __pycache__ -type d -depth -exec rm -rf \{\} \;
 	rm -rf ./build
 	rm -rf $(CURDIR)/libmuscle/build/test_install/*
-	rm -rf libmuscle/python/libmuscle/version.py
 
 .PHONY: fortran
 fortran: cpp

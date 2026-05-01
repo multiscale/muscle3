@@ -1,5 +1,5 @@
 from ymmsl import load
-from ymmsl.v0_2 import Conduit, Model, Reference
+from ymmsl.v0_2 import Conduit, Model, Reference, resolve
 
 from libmuscle.manager.hammer import flatten, Plate
 
@@ -593,8 +593,9 @@ def test_flatten_passthrough_overload() -> None:
     assert len(model.conduits) == 1
     assert has_conduit(model, 'c1.out', 'c3.in')
 
-    nested_config.custom_implementations['c2'] = Reference('p2')
-
+    nested_config = load(nested_config_yaml)
+    nested_config.custom_implementations[Reference('framework.c2')] = Reference('p2')
+    resolve(Reference([]), nested_config)      # apply custom_implementations
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -661,7 +662,9 @@ def test_remove_no_implementation() -> None:
 
     assert len(model.conduits) == 0
 
-    nested_config.custom_implementations['micro'] = Reference('p2')
+    nested_config.custom_implementations[Reference('optional_micro.micro')] = \
+        Reference('p2')
+    resolve(Reference([]), nested_config)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -680,9 +683,11 @@ def test_remove_no_implementation() -> None:
     assert len(flat_config.custom_implementations) == 0
     assert model.components['micro'].implementation == 'p2'
 
+    nested_config = load(nested_config_yaml)
     nested_config.models['optional_micro'].components['micro'].implementation = \
         Reference('p2')
-    nested_config.custom_implementations['micro'] = None
+    nested_config.custom_implementations[Reference('optional_micro.micro')] = None
+    resolve(Reference([]), nested_config)
     flat_config = flatten(nested_config)
 
     assert len(flat_config.models) == 1
@@ -694,3 +699,76 @@ def test_remove_no_implementation() -> None:
     assert 'macro' in model.components
 
     assert len(model.conduits) == 0
+
+
+def test_nested_custom_implementations() -> None:
+    nested_config_yaml = (
+            'ymmsl_version: v0.2\n'
+            'description: Testing nested custom implementations\n'
+            'models:\n'
+            '  outer:\n'
+            '    description: Outer model\n'
+            '    components:\n'
+            '      c1:\n'
+            '        ports:\n'
+            '          o_f: out\n'
+            '        description: Component c1\n'
+            '        implementation: p1\n'
+            '      c2:\n'
+            '        ports:\n'
+            '          f_init: in\n'
+            '        description: Component c1\n'
+            '        implementation: p1\n'
+            '    conduits:\n'
+            '      c1.out: c2.in\n'
+            '  middle:\n'
+            '    ports:\n'
+            '      o_f: out\n'
+            '    description: Middle model\n'
+            '    components:\n'
+            '      c1:\n'
+            '        ports:\n'
+            '          o_f: out\n'
+            '        description: Another component c1\n'
+            '      c2:\n'
+            '        ports:\n'
+            '          o_f: out\n'
+            '        description: Component c2\n'
+            '    conduits:\n'
+            '      c2.out: out\n'
+            '  inner:\n'
+            '    ports:\n'
+            '      o_f: out\n'
+            '    description: Inner model\n'
+            '    components:\n'
+            '      c1:\n'
+            '        ports:\n'
+            '          o_f: out\n'
+            '        description: Yet another c1, it could happen...\n'
+            '        implementation: p1\n'
+            '    conduits:\n'
+            '      c1.out: out\n'
+            'programs:\n'
+            '  p1:\n'
+            '    description: Program 1\n'
+            '    executable: /home/user/codes/p1\n'
+            '  p2:\n'
+            '    description: Program 2\n'
+            '    executable: /home/user/codes/p2\n'
+            'custom_implementations:\n'
+            '  outer.c1: middle\n'
+            '  outer.c1.c1: inner\n'
+            '  outer.c1.c2: inner\n'
+            '  outer.c1.c2.c1: p2\n'
+            )
+    nested_config = load(nested_config_yaml)
+    resolve(Reference([]), nested_config)
+    flat_config = flatten(nested_config)
+
+    flat_model = flat_config.models['outer']
+    assert len(flat_model.components) == 3
+    assert flat_model.components['c1.c1.c1'].implementation == 'p1'
+    assert flat_model.components['c1.c2.c1'].implementation == 'p2'
+    assert len(flat_model.conduits) == 1
+    assert flat_model.conduits[0].sender == 'c1.c2.c1.out'
+    assert flat_model.conduits[0].receiver == 'c2.in'

@@ -6,9 +6,8 @@ rm -f manager_location.txt
 # Start muscle_manager in the background, which starts the micro instance
 DONTPLOT=1 muscle_manager --start-all \
     --location-file manager_location.txt \
-    rd_model.ymmsl \
+    rd_manual.ymmsl \
     rd_settings.ymmsl \
-    rd_manual_programs.ymmsl \
     rd_resources.ymmsl &
 
 MUSCLE_MANAGER_PID=$!

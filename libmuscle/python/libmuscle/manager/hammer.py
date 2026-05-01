@@ -93,31 +93,6 @@ being added to the flattened model.
 """
 
 
-def apply_custom_implementations(nested_config: Configuration) -> None:
-    """Applies custom implementations and removes them.
-
-    Custom implementations are keyed by the full component path, so we need to traverse
-    the hierarchy to determine that, then copy the implementation reference.
-
-    After this, the configuration will not have any entries in custom_implementations.
-    """
-    root_model = nested_config.root_model()
-    queue: List[Tuple[Model, Reference]] = [(root_model, Reference([]))]
-    while queue:
-        model, parent_path = queue.pop(0)
-        for component in model.components.values():
-            cmp_path = parent_path + component.name
-            component.implementation = nested_config.custom_implementations.get(
-                    cmp_path, component.implementation)
-
-            if component.implementation:
-                model_impl = nested_config.models.get(component.implementation)
-                if model_impl:
-                    queue.append((model_impl, cmp_path))
-
-    nested_config.custom_implementations.clear()
-
-
 def process_components(
         nested_config: Configuration, flat_model: Model, node: Node) -> List[Node]:
     """Copy components to the flattened model.
@@ -125,7 +100,7 @@ def process_components(
     This copies the components in the given model in nested_config to flat_model,
     prefixing their names with the given path and and multiplicities with the given
     multiplicity. Components that are implemented by a model are recursed into and are
-    note added, and components with a None implementation are skipped and not added
+    not added, and components with a None implementation are skipped and not added
     either.
 
     Args:
@@ -265,7 +240,7 @@ def flatten(
     from the root model and a virtual component with an empty name and multiplicity. As
     it recurses downward, it accumulates component names and multiplicities.
 
-    Program-implemented components inside of the processed model-implemnted components
+    Program-implemented components inside of the processed model-implemented components
     have their names and implementations prefixed with those of the parent component,
     and conduits between them have their endpoints updated accordingly. Finally,
     components leading into and out of submodels are glued together and added as well.
@@ -286,8 +261,6 @@ def flatten(
     flat_model = Model(
             str(root_model.name), Ports(), root_model.description,
             root_model.supported_settings, [], [])
-
-    apply_custom_implementations(config)
 
     queue: List[Node] = [(root_model, Reference([]), [])]
     while queue:

@@ -1,5 +1,10 @@
 ymmsl_version: v0.2
 
+imports:
+  from benchmark_model import implementation benchmark
+  from benchmark_programs import implementation benchmark_driver_cpp
+  from benchmark_programs import implementation benchmark_mirror_cpp
+
 custom_implementations:
-  driver: benchmark_driver_cpp
-  mirror: benchmark_mirror_cpp
+  benchmark.driver: benchmark_driver_cpp
+  benchmark.mirror: benchmark_mirror_cpp

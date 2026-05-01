@@ -36,7 +36,7 @@ file that specifies the C++ implementation of one or both of the submodels:
 .. code-block:: bash
 
   . python/build/venv/bin/activate
-  muscle_manager --start-all rd_model.ymmsl rd_cpp.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
+  YMMSL_PATH=. muscle_manager --start-all rd_cpp.ymmsl rd_settings.ymmsl rd_resources.ymmsl
 
 
 Note that activating the virtual environment is needed to make the
@@ -57,30 +57,23 @@ the messages will end up in ``<rundir>/instances/<instance-id>/stdout.txt`` or
 ``stderr.txt``. If the model logs to a file in the working directory, then
 you'll find it in ``<rundir>/instances/<instance-id>/workdir/``.
 
-Overriding implementations
---------------------------
+Setting implementations
+-----------------------
 
-In the above commands, we use the same ``rd_model.ymmsl`` file that we used for the
-Python version of the reaction-diffusion model. This file specifies the Python
-implementations of the ``macro`` and ``micro`` components. To run the model with the
-alternative C++ implementations, we need to override them, which is done in
-``rd_cpp.ymmsl``:
+The above commands are the same as for the Python version of the reaction-diffusion
+model, except that we're using ``rd_cpp.ymmsl`` instead of ``rd_python.ymmsl``. This
+file is almost the same, except that it imports C++ implementations of the reaction and
+diffusion models:
 
 .. literalinclude:: examples/rd_cpp.ymmsl
   :caption: ``docs/source/examples/rd_cpp.ymmsl``
   :language: yaml
 
-The ``custom_implementations`` section contains a mapping that specifies an
-implementation (to the right of the ``:``) for one or more components (on the left). Any
-implementations specified here will override the implementation set in the model
-description. Multiple yMMSL files with custom implementations may be given and all of
-them will be applied. If a component has a custom implementation in more than one file,
-then the one that is farthest to the right on the command line will be applied.
 
 MUSCLE3 allows programs written in different languages to be used together
-transparently. The ``rd_python_cpp.ymmsl`` file only overrides the implementation for
-``macro``, but leaves ``micro`` to run with the Python reaction program. Give it a try
-and look at the logs to see it in action!
+transparently. The ``rd_python_cpp.ymmsl`` file sets a C++ implementation for ``macro``,
+but makes ``micro`` run with the Python reaction program. Give it a try and look at the
+logs to see it in action!
 
 Can you run the model with the Python diffusion program and the C++ reaction program?
 You'll need to make your own yMMSL file for this.

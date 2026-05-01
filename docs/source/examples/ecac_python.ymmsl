@@ -1,5 +1,10 @@
 ymmsl_version: v0.2
 
+imports:
+- from eca_programs import implementation elemental_ca_macro_python
+- from eca_programs import implementation elemental_ca_micro_python
+- from eca_programs import implementation cache_python
+
 models:
   elementary_cellular_automata:
     description: A simple cellular automaton model with cache

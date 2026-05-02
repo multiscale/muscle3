@@ -32,8 +32,8 @@ dependencies = [
     "psutil>=5.0.0",
     "parsimonious",
     "numpy>=1.22",
-    # "ymmsl>=0.15.1,<0.16",         # Also in examples requirements.txt
-    "ymmsl @ git+https://github.com/multiscale/ymmsl-python.git@develop",
+    "ymmsl>=0.16.0,<0.17",         # Also in examples requirements.txt
+    # "ymmsl @ git+https://github.com/multiscale/ymmsl-python.git@develop",
     "yatiml>=0.12,<0.13",
 ]
 

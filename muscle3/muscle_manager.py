@@ -8,12 +8,12 @@ from typing import cast, List, Optional, Sequence
 from warnings import catch_warnings, filterwarnings
 
 import click
-from yaml.scanner import ScannerError
 from yatiml import RecognitionError
 from ymmsl import Document
 import ymmsl
 import ymmsl.v0_1 as v0_1
 import ymmsl.v0_2 as v0_2
+from ymmsl.v0_2 import ExecutionModel
 
 from libmuscle.manager.hammer import flatten
 from libmuscle.manager.logger import last_lines
@@ -43,19 +43,21 @@ from libmuscle.manager.run_dir import RunDir
             exists=False, file_okay=True, dir_okay=True, readable=False,
             allow_dash=True),
         help=(
-            'File to write the network location of the manager to if'
-            ' --start-all is not specified. If a relative path is given,'
-            ' then it will be resolved relative to the directory in which'
-            ' the manager was started.'
+            'File to write the network location of the manager to. This is'
+            ' useful when --start-all is not specified, or when --start-all'
+            ' is used together with manually started instances. If a relative'
+            ' path is given, then it will be resolved relative to the'
+            ' directory in which the manager was started.'
             '\b\n\n'
             ' The manager will write to this file a single line of text,'
             ' which should be passed to the instances via the'
             ' MUSCLE_MANAGER environment variable or on their command line'
             ' using the --muscle-manager=<contents> option.'
             '\b\n\n'
-            ' If --start-all is not specified and --location-file is also'
-            ' not given, then the location will be printed on standard'
-            ' output.')
+            ' If --start-all is not specified (or if there are manual'
+            ' components) and --location-file is also not given, then the'
+            ' location will be printed on standard output.'
+            '\b\n\n')
         )
 @click.option(
         '--start-all/--no-start-all', default=False, help=(
@@ -123,7 +125,7 @@ def _manage_simulation(
         try:
             model_ref = v0_2.Reference(model)
         except RuntimeError as e:
-            raise RuntimeError('An invalid model name was given: {e}') from None
+            raise RuntimeError(f'An invalid model name was given: {e}') from None
 
     try:
         root_model = configuration.root_model(model_ref)
@@ -135,6 +137,11 @@ def _manage_simulation(
         sys.exit(1)
 
     run_dir_obj = create_run_dir(run_dir, root_model)
+
+    has_manual_components = any(
+        program.execution_model is ExecutionModel.MANUAL
+        for program in configuration.programs.values()
+    )
 
     configuration = flatten(configuration, model_ref)
     manager = Manager(configuration, run_dir_obj, log_level)
@@ -151,7 +158,7 @@ def _manage_simulation(
             print('   ', run_dir_obj.path / 'muscle3_manager.log', file=sys.stderr)
             sys.exit(1)
 
-    else:
+    if not start_all or has_manual_components:
         server_location = manager.get_server_location()
         if location_file is None:
             print(server_location, flush=True)

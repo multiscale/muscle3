@@ -86,7 +86,7 @@ This is because there are some examples that mix languages as well.
   :language: yaml
 
 
-As you can see, this has all the same terms we saw in the Python version, but it's not
+As you can see, this has all the same terms we saw in the Python version, but it's
 written in YAML format. You can load a yMMSL file from Python using
 `ymmsl.load
 <https://ymmsl-python.readthedocs.io/en/stable/overview.html#reading-ymmsl-files>`_ and
@@ -124,20 +124,16 @@ should use MarkDown formatting here.
         s: state_in
       description: |
         This is the macro model, which calculates the diffusion
-      implementation: diffusion_python
     micro:
       ports:
         f_init: initial_state
         o_f: final_state
       description: |
         This is the micro model, which calculates the reaction
-      implementation: reaction_python
 
 
 We have seen the ``macro`` and ``micro`` components before. They have the same ports and
-description as in Python, but the implementations have an added ``_python`` in their
-names here, because we have implementations in other languages as well (more on those in
-the language sections).
+description as in Python.
 
 If a component has multiple ports for an operator, then the names can be added to the
 line separated by spaces, or you can specify a list of them in one of these ways:
@@ -166,6 +162,51 @@ on its ``state_out`` port to ``micro``'s ``initial_state``, and ``micro`` sends
 its answer on its ``final_state`` port, which is routed to ``macro``'s
 ``state_in``.
 
+Like in Python, we'll need some implementations. These can be specified directly for
+each component like this:
+
+.. code-block:: yaml
+
+  components:
+    micro:
+      ports:
+        f_init: initial_state
+        o_f: final_state
+      implementation: reaction_python
+
+
+Usually, you have specific models that you're connecting together, and then this is the
+easiest way to specify them.
+
+In this case we have many examples that all run this model, but with implementations
+written in different languages. To avoid duplication, we've made ``rd_model.py``
+generic, and to run the model with Python implementations we have a second file
+``rd_python.py``:
+
+.. code-block:: yaml
+
+  ymmsl_version: v0.2
+
+  imports:
+  - from rd_model import implementation reaction_diffusion
+  - from rd_programs import implementation diffusion_python
+  - from rd_programs import implementation reaction_python
+
+  custom_implementations:
+    reaction_diffusion.macro: diffusion_python
+    reaction_diffusion.micro: reaction_python
+
+
+Here, we import the ``reaction_diffusion`` model from ``rd_model``, and the
+implementations we want to use from ``rd_programs``. Then we use the
+``custom_implementations`` section to specify which implementation should be used for
+which component of the model.
+
+Note the syntax: there's the name of the model we want to customise,
+``reaction_diffusion``, then a period, then the name of the component within that model
+whose implementation we want to set, ``macro``. Then a colon, and the name of the
+implementation ``diffusion_python``.
+
 
 Settings
 ````````
@@ -186,9 +227,9 @@ Programs
 ````````
 
 To run the simulation MUSCLE3 will have to start our Python programs, and we need to
-tell it how to do that. This is done by some definitions in ``rd_programs.ymmsl``. Note
-that this file actually contains definitions for all of our programs, but we'll focus on
-the ``reaction_python`` one here:
+tell it how to do that. This is done by some definitions in ``rd_programs.ymmsl``, which
+we imported above. Note that this file actually contains definitions for all of our
+programs, but we'll focus on the ``reaction_python`` one here:
 
 .. code-block:: yaml
 
@@ -271,7 +312,7 @@ Starting the simulation
 With the above in place, we now have all the pieces we need to start a
 distributed simulation. We do this by starting the MUSCLE3 manager and giving it
 the configuration files. It will then start the needed model instances, help
-then to find each other, and distribute the settings to them. The instances will
+them to find each other, and distribute the settings to them. The instances will
 then connect to each other via the network and run the simulation.
 
 The manager is included with the Python version of MUSCLE3. Running ``make`` or
@@ -283,8 +324,11 @@ directory like this:
 .. code-block:: bash
 
   . python/build/venv/bin/activate
-  muscle_manager --start-all rd_model.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
+  YMMSL_PATH=. muscle_manager --start-all rd_python.ymmsl rd_settings.ymmsl rd_resources.ymmsl
 
+
+(The YMMSL_PATH variable points the manager to the ``rd_model.ymmsl`` and
+``rd_programs.ymmsl`` we are importing from.)
 
 This will start the manager, run the simulation, plot the results on the screen,
 and when you close the plot, finish the simulation. It will also produce a

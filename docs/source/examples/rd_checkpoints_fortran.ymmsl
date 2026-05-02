@@ -1,8 +1,13 @@
 ymmsl_version: v0.2
 
+imports:
+- from rd_model import implementation reaction_diffusion
+- from rd_programs import implementation checkpointing_diffusion_fortran
+- from rd_programs import implementation checkpointing_reaction_fortran
+
 custom_implementations:
-  macro: checkpointing_diffusion_fortran
-  micro: checkpointing_reaction_fortran
+  reaction_diffusion.macro: checkpointing_diffusion_fortran
+  reaction_diffusion.micro: checkpointing_reaction_fortran
 
 checkpoints:
   simulation_time:

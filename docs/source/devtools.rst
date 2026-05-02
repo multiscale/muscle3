@@ -55,7 +55,7 @@ individual tools.
 Python has a standard coding standard known as PEP8, which specifies how Python
 code should be formatted. Consistently writing our code according to PEP8 makes
 it easier to read, and makes it easier for new developers to get started. We use
-`flake8`_ to check the formatting.
+`ruff`_ to check the formatting.
 
 Although Python is a dynamically-typed language, it supports type annotations,
 and using those for static type checking. While writing code with type
@@ -86,11 +86,7 @@ test cases, and a runner that automatically detects tests and runs them. Tests
 are located in `test/` subdirectories in the code, and in the `integration_test`
 directory in the root of the repository. In various places in the code, files
 named `conftest.py` are located, which contain test fixtures. These files are
-picked up automatically by PyTest. Having such a file in the root directory
-causes PyTest to add that path to the PYTHONPATH, so that Python can find the
-module under test if you import it from the test case. This doesn't work for the
-integration tests, so there's a separate `include_libmuscle.py` there that sets
-the path correctly.
+picked up automatically by PyTest.
 
 We use a code coverage plug-in for PyTest, which measures which lines of the
 code are executed during testing, and more importantly, which lines aren't.
@@ -150,7 +146,7 @@ documentation and display it online. This uses Sphinx, but does not support
 .. _`setuptools`: https://setuptools.readthedocs.io
 .. _`Requires.io`: https://requires.io/
 .. _`tox`: https://tox.wiki
-.. _`flake8`: https://github.com/PyCQA/flake8
+.. _`ruff`: https://docs.astral.sh/ruff/
 .. _`mypy`: https://mypy.readthedocs.io
 .. _`Codacy`: https://support.codacy.com
 .. _`PyTest`: https://pytest.org

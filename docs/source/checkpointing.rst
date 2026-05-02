@@ -351,7 +351,7 @@ repository. Then execute the following command:
 .. code-block:: bash
 
     $ mkdir run_rd_example
-    $ muscle_manager --start-all --run-dir run_rd_example rd_model.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
+    $ YMMSL_PATH=. muscle_manager --start-all --run-dir run_rd_example rd_checkpoints_python.ymmsl rd_settings.ymmsl rd_resources.ymmsl
 
 .. note::
 
@@ -368,8 +368,8 @@ reaction model and the diffusion model). The ``rd_checkpoints_python.ymmsl`` fil
 contains the checkpoint definitions used in this example:
 
 .. literalinclude:: examples/rd_checkpoints_python.ymmsl
-    :caption: ``docs/source/examples/rd_checkpoints_python.ymmsl, lines 31-33``
-    :lines: 7-9
+    :caption: ``docs/source/examples/rd_checkpoints_python.ymmsl, lines 12-14``
+    :lines: 12-14
     :language: yaml
 
 MUSCLE3 will create the run directory ``run_rd_example`` for you. In it you'll
@@ -420,7 +420,7 @@ point to the snapshot you want to resume from.
     :caption: Resume from an earlier snapshot. Replace ``<date>`` and ``<time>`` to point to an actual snapshot file.
 
     $ mkdir run_rd_resume
-    $ muscle_manager --start-all --run-dir run_rd_resume rd_model.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl run_rd_example/snapshots/snapshot_<date>_<time>.ymmsl
+    $ YMMSL_PATH=. muscle_manager --start-all --run-dir run_rd_resume rd_checkpoints_python.ymmsl rd_settings.ymmsl rd_resources.ymmsl run_rd_example/snapshots/snapshot_<date>_<time>.ymmsl
 
 When the command completes you can see the output in the new working directory
 ``run_rd_resume``.

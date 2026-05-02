@@ -71,7 +71,7 @@ endif
 
 
 .PHONY: base
-base: python rd_programs.ymmsl benchmark_programs.ymmsl dispatch_programs.ymmsl eca_programs.ymmsl
+base: python rd_programs.ymmsl rd_manual_programs.ymmsl benchmark_programs.ymmsl dispatch_programs.ymmsl eca_programs.ymmsl
 
 
 
@@ -109,6 +109,7 @@ clean:
 	$(MAKE) -C fortran clean
 	$(MAKE) -C python clean
 	rm -f rd_programs.ymmsl
+	rm -f rd_manual_programs.ymmsl
 	rm -f benchmark_programs.ymmsl
 	rm -f dispatch_programs.ymmsl
 	rm -rf run_*/
@@ -118,48 +119,49 @@ clean:
 
 .PHONY: test_python
 test_python: base
-	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_model.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
-	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_model.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
+	. python/build/venv/bin/activate && DONTPLOT=1 YMMSL_PATH=. muscle_manager --start-all rd_python.ymmsl rd_settings.ymmsl rd_resources.ymmsl
+	. python/build/venv/bin/activate && DONTPLOT=1 YMMSL_PATH=. muscle_manager --start-all rd_checkpoints_python.ymmsl rd_settings.ymmsl rd_resources.ymmsl
 	# test restarting
-	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_model.ymmsl rd_checkpoints_python.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl \
+	. python/build/venv/bin/activate && DONTPLOT=1 YMMSL_PATH=. muscle_manager --start-all rd_checkpoints_python.ymmsl rd_settings.ymmsl rd_resources.ymmsl \
 		$$(ls $$(ls -d -r -t run_reaction_diffusion* | tail -n1)/snapshots/*.ymmsl | head -n1)
-	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all eca_python.ymmsl eca_settings.ymmsl eca_programs.ymmsl
-	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all ecac_python.ymmsl eca_settings.ymmsl eca_programs.ymmsl
+	. python/build/venv/bin/activate && DONTPLOT=1 YMMSL_PATH=. muscle_manager --start-all eca_python.ymmsl eca_settings.ymmsl
+	. python/build/venv/bin/activate && DONTPLOT=1 YMMSL_PATH=. muscle_manager --start-all ecac_python.ymmsl eca_settings.ymmsl
+	. python/build/venv/bin/activate && DONTPLOT=1 YMMSL_PATH=. ./rd_manual.sh
 	make -C python test
 
 .PHONY: test_cpp
 test_cpp: base cpp
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_model.ymmsl rd_cpp.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_model.ymmsl rd_checkpoints_cpp.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
+	. python/build/venv/bin/activate && YMMSL_PATH=. muscle_manager --start-all rd_cpp.ymmsl rd_settings.ymmsl rd_resources.ymmsl
+	. python/build/venv/bin/activate && YMMSL_PATH=. muscle_manager --start-all rd_checkpoints_cpp.ymmsl rd_settings.ymmsl rd_resources.ymmsl
 	# test restarting
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_model.ymmsl rd_checkpoints_cpp.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl \
+	. python/build/venv/bin/activate && YMMSL_PATH=. muscle_manager --start-all rd_checkpoints_cpp.ymmsl rd_settings.ymmsl rd_resources.ymmsl \
 		$$(ls $$(ls -d -r -t run_reaction_diffusion* | tail -n1)/snapshots/*.ymmsl | head -n1)
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_model.ymmsl rd_python_cpp.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
-	. python/build/venv/bin/activate && muscle_manager --start-all rdmc_model.ymmsl rdmc_cpp.ymmsl rdmc_settings.ymmsl rd_programs.ymmsl rdmc_resources.ymmsl
+	. python/build/venv/bin/activate && YMMSL_PATH=. muscle_manager --start-all rd_python_cpp.ymmsl rd_settings.ymmsl rd_resources.ymmsl
+	. python/build/venv/bin/activate && YMMSL_PATH=. muscle_manager --start-all rdmc_cpp.ymmsl rdmc_settings.ymmsl rdmc_resources.ymmsl
 	. python/build/venv/bin/activate && muscle_manager --start-all nested_rdmc.ymmsl rd_programs.ymmsl
 	. python/build/venv/bin/activate && YMMSL_PATH=./ymmsl muscle_manager --start-all nested_rdmc_imports.ymmsl
-	. python/build/venv/bin/activate && muscle_manager --start-all dispatch_cpp.ymmsl dispatch_programs.ymmsl
+	. python/build/venv/bin/activate && YMMSL_PATH=. muscle_manager --start-all dispatch_cpp.ymmsl
 
 .PHONY: test_cpp_mpi
 test_cpp_mpi: base cpp_mpi
-	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_model.ymmsl rd_cpp_mpi.ymmsl rd_programs.ymmsl rd_settings.ymmsl rd_resources_mpi.ymmsl
+	. python/build/venv/bin/activate && DONTPLOT=1 YMMSL_PATH=. muscle_manager --start-all rd_cpp_mpi.ymmsl rd_settings.ymmsl rd_resources_mpi.ymmsl
 
 .PHONY: test_fortran
 test_fortran: base fortran
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_model.ymmsl rd_fortran.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_model.ymmsl rd_checkpoints_fortran.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
+	. python/build/venv/bin/activate && YMMSL_PATH=. muscle_manager --start-all rd_fortran.ymmsl rd_settings.ymmsl rd_resources.ymmsl
+	. python/build/venv/bin/activate && YMMSL_PATH=. muscle_manager --start-all rd_checkpoints_fortran.ymmsl rd_settings.ymmsl rd_resources.ymmsl
 	# test restarting
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_model.ymmsl rd_checkpoints_fortran.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl \
+	. python/build/venv/bin/activate && YMMSL_PATH=. muscle_manager --start-all rd_checkpoints_fortran.ymmsl rd_settings.ymmsl rd_resources.ymmsl \
 		$$(ls $$(ls -d -r -t run_reaction_diffusion* | tail -n1)/snapshots/*.ymmsl | head -n1)
-	. python/build/venv/bin/activate && muscle_manager --start-all rd_model.ymmsl rd_python_fortran.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources.ymmsl
-	. python/build/venv/bin/activate && muscle_manager --start-all rdmc_model.ymmsl rdmc_fortran.ymmsl rdmc_settings.ymmsl rd_programs.ymmsl rdmc_resources.ymmsl
+	. python/build/venv/bin/activate && YMMSL_PATH=. muscle_manager --start-all rd_python_fortran.ymmsl rd_settings.ymmsl rd_resources.ymmsl
+	. python/build/venv/bin/activate && YMMSL_PATH=. muscle_manager --start-all rdmc_fortran.ymmsl rdmc_settings.ymmsl rdmc_resources.ymmsl
 
 .PHONY: test_fortran_mpi
 test_fortran_mpi: base fortran_mpi
-	. python/build/venv/bin/activate && DONTPLOT=1 muscle_manager --start-all rd_model.ymmsl rd_fortran_mpi.ymmsl rd_programs.ymmsl rd_settings.ymmsl rd_resources_mpi.ymmsl
+	. python/build/venv/bin/activate && DONTPLOT=1 YMMSL_PATH=. muscle_manager --start-all rd_fortran_mpi.ymmsl rd_settings.ymmsl rd_resources_mpi.ymmsl
 
 .PHONY: benchmark
 benchmark: base cpp
-	. python/build/venv/bin/activate && muscle_manager --start-all benchmark_model.ymmsl benchmark_python.ymmsl benchmark_settings.ymmsl benchmark_programs.ymmsl benchmark_resources.ymmsl
-	. python/build/venv/bin/activate && muscle_manager --start-all benchmark_model.ymmsl benchmark_cpp.ymmsl benchmark_settings.ymmsl benchmark_programs.ymmsl benchmark_resources.ymmsl
+	. python/build/venv/bin/activate && YMMSL_PATH=. muscle_manager --start-all benchmark_python.ymmsl benchmark_settings.ymmsl benchmark_resources.ymmsl
+	. python/build/venv/bin/activate && YMMSL_PATH=. muscle_manager --start-all benchmark_cpp.ymmsl benchmark_settings.ymmsl benchmark_resources.ymmsl
 

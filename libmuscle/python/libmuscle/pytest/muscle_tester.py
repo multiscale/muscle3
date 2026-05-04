@@ -31,7 +31,11 @@ def raise_error(*args: object) -> None:
 
 
 class MuscleTester:
-    """Helper class to test an implementation."""
+    """Helper class to test an implementation.
+
+    Note: You don't need to construct a MuscleTester directly; use the
+    ``muscle3_tester`` pytest fixture instead.
+    """
 
     def __init__(self, run_dir: Path) -> None:
         self.run_dir = run_dir
@@ -137,23 +141,22 @@ class MuscleTester:
         self, ymmsl_source: Union[str, Path], implementation: str,
         *, default_timeout: float = 60
     ) -> ImplementationTester:
-        """Start a MUSCLE3 manager and return an ImplementationTester for a given
-        implementation from a yMMSL source.
-        - A tester component is added and connected to all ports of the implementation
-        defined in the ymmsl source.
-        - A process is generated where the MUSCLE3 manager will be started and the
-        address is derived.
-        - A monkeypatch is used to overwrite ReceiveTimeoutHandler.on_timeout so
-        that a RuntimeError is raised when a receive timeout is reached, causing the
-        test simulation to quit.
-        - The ImplementationTester is then created based on the manager address and the
-        generated test yMMSL configuration.
+        """Start a MUSCLE3 manager and return an ImplementationTester.
+
+        A tester component is added and connected to all ports of the
+        implementation defined in the yMMSL source. A subprocess is started in
+        which the MUSCLE3 manager runs, and its address is retrieved. A
+        monkeypatch overwrites :meth:`ReceiveTimeoutHandler.on_timeout` so that
+        a :exc:`RuntimeError` is raised when a receive timeout is reached,
+        causing the test simulation to quit. Finally, an
+        :class:`ImplementationTester` is created from the manager address and
+        the generated test yMMSL configuration.
 
         Args:
-            ymmsl_source: Either a str containing the yMMSL, or a pathlib.Path
-            pointing to a file containing the yMMSL.
-            implementation: Name of the implementation under test.
-            default_timeout: Timeout (seconds) for message operations (default: 60).
+            ymmsl_source: Either a string containing the yMMSL, or a
+                :class:`pathlib.Path` pointing to a file containing the yMMSL.
+            implementation: Name of the implementation to test.
+            default_timeout: Timeout (seconds) for message operations.
 
         Returns:
             An ImplementationTester connected to the running manager.
@@ -176,6 +179,12 @@ class MuscleTester:
         return self.implementation_tester
 
     def cleanup(self) -> None:
+        """Stop the manager process and clean up all resources.
+
+        Stops the :class:`ImplementationTester`, restores the monkeypatched
+        :meth:`ReceiveTimeoutHandler.on_timeout`, and shuts down the manager
+        subprocess.
+        """
         if self.implementation_tester is not None:
             self.implementation_tester.cleanup()
             self.implementation_tester = None

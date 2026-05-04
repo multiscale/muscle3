@@ -75,10 +75,10 @@ two forms.
 
     .. group-tab:: Using an inline string
 
-        You can embed the yMMSL configuration directly in your test file as an
-        f-string. Using ``Path(__file__).parent.resolve()`` gives the absolute path
-        to the ``tests/`` directory; ``.parent`` then steps up to the project root
-        where ``micro.py`` lives:
+        You can embed the yMMSL configuration directly in your test file as a
+        string.
+        
+        Tip: using ``Path(__file__).parent.resolve()`` gives the absolute path.
 
         .. code-block:: python
             :caption: tests/test_micro.py

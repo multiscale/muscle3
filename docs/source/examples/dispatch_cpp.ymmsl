@@ -1,5 +1,8 @@
 ymmsl_version: v0.2
 
+imports:
+- from dispatch_programs import implementation buffer_cpp
+
 models:
   dispatch_cpp:
       components:

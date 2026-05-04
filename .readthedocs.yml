@@ -11,7 +11,7 @@ build:
     python: "3.12"
   jobs:
     post_create_environment:
-      - pip install tox\<4
+      - pip install tox
       # let tox set up a build environment
       - tox -e docs --notest
       # export tox installed packages as requirements for the install step

@@ -3,9 +3,30 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.9.1
+
+### Added
+
+- Support for execution_model: manual
+- Support for importing implementations from Python entry points
+
+### Improved
+
+- Fixed custom_implementations syntax and algorithm
+- Internal tooling
+
+### Thanks
+
+- Iris and Maarten for the new features and tooling improvements
+
+### Funding
+
+- The ITER Organization
+
+
 ## 0.9.0
 
-## Added
+### Added
 
 - Resilient TCP network connections
 - New yMMSL v0.2 file format

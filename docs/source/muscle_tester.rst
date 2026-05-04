@@ -217,11 +217,3 @@ You can also override the timeout for individual receive calls:
 .. code-block:: python
 
     reply = tester.receive("final", timeout=2.0)
-
-
-API reference
-=============
-
-The full API for :class:`~libmuscle.pytest.MuscleTester` and
-:class:`~libmuscle.pytest.implementation_tester.ImplementationTester` is
-documented in the :doc:`python_api`.

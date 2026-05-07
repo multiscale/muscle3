@@ -3,8 +3,8 @@ import logging
 from typing import Dict, Iterable, List, Mapping, Set, Tuple
 
 from ymmsl.v0_2 import (
-        Component, Configuration, Model, MPICoresResReq, MPINodesResReq,
-        Operator, Reference, ResourceRequirements, ThreadedResReq)
+        Component, Configuration, ExecutionModel, Model, MPICoresResReq,
+        MPINodesResReq, Operator, Reference, ResourceRequirements, ThreadedResReq)
 
 from libmuscle.planner.resources import OnNodeResources, Resources
 from libmuscle.util import instance_indices
@@ -516,12 +516,26 @@ class Planner:
 
         # Analyse model
         model = ModelGraph(configuration.root_model())
-        requirements = configuration.resources
         programs = configuration.programs
         exclusive = {
                 i for c in model.components() for i in c.instances()
                 if (c.implementation and
                     not programs[c.implementation].can_share_resources)}
+
+        # Build requirements: filling in defaults for DIRECT components
+        # that have no resources defined (default: 1 thread).
+        requirements: Dict[Reference, ResourceRequirements] = dict(
+                configuration.resources)
+        for component in model.components():
+            if (component.name not in requirements and
+                    component.implementation is not None and
+                    component.implementation in programs and
+                    programs[component.implementation].execution_model
+                    is ExecutionModel.DIRECT):
+                _logger.debug(
+                        f'No resources defined for {component.name}, using default'
+                        ' of 1 thread.')
+                requirements[component.name] = ThreadedResReq(component.name, 1)
 
         # Allocate
         unallocated_instances = [

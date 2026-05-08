@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Tuple, Union
 from multiprocessing import Queue
 from queue import Empty
 
-from ymmsl.v0_2 import Configuration, ExecutionModel, Reference, ThreadedResReq
+from ymmsl.v0_2 import Configuration, ExecutionModel, Reference
 
 from libmuscle.errors import ConfigurationError
 from libmuscle.manager.instance_registry import InstanceRegistry
@@ -18,6 +18,7 @@ from libmuscle.manager.run_dir import RunDir
 from libmuscle.native_instantiator.native_instantiator import NativeInstantiator
 from libmuscle.planner.planner import Planner, ResourceAssignment
 from libmuscle.planner.resources import Resources
+from libmuscle.util import get_resources
 
 
 _logger = logging.getLogger(__name__)
@@ -139,10 +140,7 @@ class InstanceManager:
             stdout_path = idir / 'stdout.txt'
             stderr_path = idir / 'stderr.txt'
 
-            res_req = self._configuration.resources.get(component.name)
-            if res_req is None:
-                # No resources defined; use default of 1 thread for DIRECT components.
-                res_req = ThreadedResReq(component.name, 1)
+            res_req = get_resources(self._configuration, component.name)
 
             request = InstantiationRequest(
                     instance, program,

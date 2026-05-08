@@ -33,8 +33,8 @@ dependencies = [
     "parsimonious",
     "typing_extensions~=4.6",
     "numpy>=1.22",
-    "ymmsl>=0.16.0,<0.17",         # Also in examples requirements.txt
-    # "ymmsl @ git+https://github.com/multiscale/ymmsl-python.git@develop",
+    # "ymmsl>=0.16.0,<0.17",         # Also in examples requirements.txt
+    "ymmsl @ git+https://github.com/multiscale/ymmsl-python.git@develop",
     "yatiml>=0.12,<0.13",
 ]
 

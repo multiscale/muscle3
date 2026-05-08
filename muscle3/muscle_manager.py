@@ -113,7 +113,7 @@ def _manage_simulation(
         sys.exit(1)
 
     try:
-        configuration.check_consistent(start_all)
+        configuration.check_consistent(start_all, model)
     except Exception as exc:
         print('Failed to start the simulation, found a configuration error:\n' +
               textwrap.indent(str(exc), 4*' '), file=sys.stderr)

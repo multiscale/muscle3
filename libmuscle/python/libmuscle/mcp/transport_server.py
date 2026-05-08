@@ -6,7 +6,7 @@ class RequestHandler:
     handle the request, and return a chunk of bytes containing an
     encoded response.
     """
-    def handle_request(self, request: bytes) -> bytes:
+    def handle_request(self, request: bytearray) -> bytes:
         """Handle a request.
 
         Args:

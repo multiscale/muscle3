@@ -41,7 +41,7 @@ class MPPClient:
         self._transport_client = client
 
     def receive(self, receiver: Reference, timeout_handler: Optional[TimeoutHandler]
-                ) -> Tuple[bytes, ProfileData]:
+                ) -> Tuple[bytearray, ProfileData]:
         """Receive a message from a port this client connects to.
 
         Args:

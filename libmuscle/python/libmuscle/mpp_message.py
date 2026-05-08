@@ -1,5 +1,5 @@
 from enum import IntEnum
-from typing import Any, cast, Optional
+from typing import Any, cast, Optional, Union
 
 import msgpack
 import numpy as np
@@ -193,7 +193,7 @@ class MPPMessage:
             self.data = data
 
     @staticmethod
-    def from_bytes(message: bytes) -> 'MPPMessage':
+    def from_bytes(message: Union[bytes, bytearray]) -> 'MPPMessage':
         """Create an MPP Message from an encoded buffer.
 
         Args:

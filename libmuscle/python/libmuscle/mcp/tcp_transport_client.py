@@ -53,7 +53,7 @@ class TcpTransportClient(TransportClient):
         self._reconnect(False)
 
     def call(self, request: bytes, timeout_handler: Optional[TimeoutHandler] = None
-             ) -> Tuple[bytes, ProfileData]:
+             ) -> Tuple[bytearray, ProfileData]:
         """Send a request to the server and receive the response.
 
         This is a blocking call.

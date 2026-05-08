@@ -31,7 +31,7 @@ class MAPRequestHandler(RequestHandler):
         self._agent_manager = agent_manager
         self._post_office = post_office
 
-    def handle_request(self, request: bytes) -> bytes:
+    def handle_request(self, request: bytearray) -> bytes:
         """Handles an agent request.
 
         Args:

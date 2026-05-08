@@ -99,7 +99,7 @@ class MMPRequestHandler(RequestHandler):
         self._run_dir = run_dir
         self._reference_time = time.monotonic()
 
-    def handle_request(self, request: bytes) -> bytes:
+    def handle_request(self, request: bytearray) -> bytes:
         """Handles a manager request.
 
         Args:

@@ -23,7 +23,7 @@ class MPPRequestHandler(RequestHandler):
         """
         self._post_office = post_office
 
-    def handle_request(self, request: bytes) -> bytes:
+    def handle_request(self, request: bytearray) -> bytes:
         """Handle a request.
 
         This receives an MCP request and handles it by blocking until

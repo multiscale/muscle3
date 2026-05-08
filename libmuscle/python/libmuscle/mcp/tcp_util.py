@@ -26,7 +26,7 @@ def is_disconnect(exception: Exception) -> bool:
     return False
 
 
-def recv_all(socket: SocketType, length: int) -> bytes:
+def recv_all(socket: SocketType, length: int) -> bytearray:
     """Receive length bytes from a socket.
 
     Args:
@@ -100,7 +100,7 @@ def send_frame(socket: SocketType, data: bytes) -> None:
     socket.sendall(data)
 
 
-def recv_frame(socket: SocketType) -> bytes:
+def recv_frame(socket: SocketType) -> bytearray:
     """Receives a frame as length + data.
 
     Args:

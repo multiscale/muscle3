@@ -526,11 +526,12 @@ class Planner:
         # that have no resources defined (default: 1 thread).
         requirements: Dict[Reference, ResourceRequirements] = dict(
                 configuration.resources)
+        direct_programs = {
+                name for name, prog in programs.items()
+                if prog.execution_model is ExecutionModel.DIRECT}
         for component in model.components():
-            program = programs.get(component.implementation)
-            if (component.name not in requirements and
-                    program is not None and
-                    program.execution_model is ExecutionModel.DIRECT):
+            if (component.implementation in direct_programs and
+                    component.name not in requirements):
                 _logger.debug(
                         f'No resources defined for {component.name}, using default'
                         ' of 1 thread.')

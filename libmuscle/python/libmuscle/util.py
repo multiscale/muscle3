@@ -6,8 +6,8 @@ import time
 from typing import Generator, List, Optional, cast
 
 from ymmsl.v0_2 import (
-        Configuration, ExecutionModel, Reference, ResourceRequirements,
-        ThreadedResReq)
+    Configuration, Reference, ResourceRequirements, ThreadedResReq
+    )
 
 
 _logger = logging.getLogger(__name__)

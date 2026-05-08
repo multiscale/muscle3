@@ -31,13 +31,9 @@ def get_resources(
     """
     res_req = configuration.resources.get(name)
     if res_req is None:
-        implementation = configuration.root_model().components[name].implementation
-        if (implementation is not None and
-                configuration.programs[implementation].execution_model
-                is ExecutionModel.DIRECT):
-            _logger.debug(
-                    f'No resources defined for {name}, using default of 1 thread.')
-            res_req = ThreadedResReq(name, 1)
+        _logger.debug(
+                f'No resources defined for {name}, using default of 1 thread.')
+        res_req = ThreadedResReq(name, 1)
     return res_req
 
 

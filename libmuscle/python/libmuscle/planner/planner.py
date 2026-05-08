@@ -524,11 +524,10 @@ class Planner:
 
         # Build requirements: filling in defaults for DIRECT components
         # that have no resources defined (default: 1 thread).
-        requirements: Dict[Reference, ResourceRequirements] = {}
-        for component in model.components():
-            res = get_resources(configuration, component.name)
-            if res is not None:
-                requirements[component.name] = res
+        requirements: dict[Reference, ResourceRequirements] = {
+            component.name: get_resources(configuration, component.name)
+            for component in model.components()
+        }
 
         # Allocate
         unallocated_instances = [

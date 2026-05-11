@@ -53,7 +53,7 @@ def recv_all(socket: SocketType, length: int) -> bytes:
 
         received_count += received_now
 
-    return bytes(databuf)
+    return databuf
 
 
 def send_int64(socket: SocketType, data: int) -> None:

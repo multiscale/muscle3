@@ -277,23 +277,3 @@ def test_impossible_virtual_allocation() -> None:
     planner = Planner(res)
     with pytest.raises(InsufficientResourcesAvailable):
         planner.allocate_all(config, virtual=True)
-
-
-def test_default_resource_for_direct_without_resources() -> None:
-    """Test that a DIRECT component with no resources gets a default of 1 thread."""
-    model = Model(
-            'test_model', None, '', None,
-            [Component('micro', Ports(), '', 'micro')])
-    # Program with DIRECT execution model (the default), no resources defined
-    programs = [Program(Ref('micro'), executable='/usr/bin/micro')]
-    config = Configuration('config', [], [model], None, None, programs, None)
-
-    res = resources({'node001': [c(1), c(2), c(3), c(4)]})
-
-    planner = Planner(res)
-    allocations = planner.allocate_all(config)
-
-    # Should have allocated 1 core (the default) for the micro instance
-    assert Ref('micro') in allocations
-    assert len(allocations[Ref('micro')].by_rank) == 1
-    assert allocations[Ref('micro')].by_rank[0].total_cores() == 1

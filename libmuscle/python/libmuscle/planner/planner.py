@@ -7,7 +7,7 @@ from ymmsl.v0_2 import (
         MPINodesResReq, Operator, Reference, ResourceRequirements, ThreadedResReq)
 
 from libmuscle.planner.resources import OnNodeResources, Resources
-from libmuscle.util import get_resources, instance_indices
+from libmuscle.util import instance_indices
 
 
 _logger = logging.getLogger(__name__)
@@ -525,7 +525,7 @@ class Planner:
         # Build requirements: filling in defaults for DIRECT components
         # that have no resources defined (default: 1 thread).
         requirements: dict[Reference, ResourceRequirements] = {
-            component.name: get_resources(configuration, component.name)
+            component.name: configuration.get_resources(component.name)
             for component in model.components()
         }
 

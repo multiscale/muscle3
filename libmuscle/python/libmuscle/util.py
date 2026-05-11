@@ -1,40 +1,10 @@
 import itertools
-import logging
 from pathlib import Path
 import sys
 import time
 from typing import Generator, List, Optional, cast
 
-from ymmsl.v0_2 import (
-    Configuration, Reference, ResourceRequirements, ThreadedResReq
-    )
-
-
-_logger = logging.getLogger(__name__)
-
-
-def get_resources(
-        configuration: Configuration, name: Reference
-        ) -> ResourceRequirements:
-    """Get the resource requirements for a component.
-
-    If no resources are defined for this component and
-    it uses a non-MPI execution model (DIRECT), a default of 1 thread is
-    returned.
-
-    Args:
-        configuration: The configuration to look up resources in.
-        name: The name of the component to get resources for.
-
-    Returns:
-        The resource requirements for the component.
-    """
-    res_req = configuration.resources.get(name)
-    if res_req is None:
-        _logger.debug(
-                f'No resources defined for {name}, using default of 1 thread.')
-        res_req = ThreadedResReq(name, 1)
-    return res_req
+from ymmsl.v0_2 import Reference
 
 
 def instance_to_kernel(instance: Reference) -> Reference:

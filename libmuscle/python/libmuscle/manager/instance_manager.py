@@ -18,7 +18,6 @@ from libmuscle.manager.run_dir import RunDir
 from libmuscle.native_instantiator.native_instantiator import NativeInstantiator
 from libmuscle.planner.planner import Planner, ResourceAssignment
 from libmuscle.planner.resources import Resources
-from libmuscle.util import get_resources
 
 
 _logger = logging.getLogger(__name__)
@@ -140,7 +139,7 @@ class InstanceManager:
             stdout_path = idir / 'stdout.txt'
             stderr_path = idir / 'stderr.txt'
 
-            res_req = get_resources(self._configuration, component.name)
+            res_req = self._configuration.get_resources(component.name)
 
             request = InstantiationRequest(
                     instance, program,

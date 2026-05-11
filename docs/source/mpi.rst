@@ -51,8 +51,8 @@ there's both a C++ and a Fortran implementation of the reaction model:
 .. code-block:: bash
 
   . python/build/venv/bin/activate
-  muscle_manager --start-all rd_model.ymmsl rd_cpp_mpi.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources_mpi.ymmsl
-  muscle_manager --start-all rd_model.ymmsl rd_fortran_mpi.ymmsl rd_settings.ymmsl rd_programs.ymmsl rd_resources_mpi.ymmsl
+  YMMSL_PATH=. muscle_manager --start-all rd_cpp_mpi.ymmsl rd_settings.ymmsl rd_resources_mpi.ymmsl
+  YMMSL_PATH=. muscle_manager --start-all rd_fortran_mpi.ymmsl rd_settings.ymmsl rd_resources_mpi.ymmsl
 
 
 Note that activating the virtual environment is needed to make the

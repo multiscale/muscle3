@@ -8,7 +8,6 @@ from typing import cast, List, Optional, Sequence
 from warnings import catch_warnings, filterwarnings
 
 import click
-from yaml.scanner import ScannerError
 from yatiml import RecognitionError
 from ymmsl import Document
 import ymmsl
@@ -126,7 +125,7 @@ def _manage_simulation(
         try:
             model_ref = v0_2.Reference(model)
         except RuntimeError as e:
-            raise RuntimeError('An invalid model name was given: {e}') from None
+            raise RuntimeError(f'An invalid model name was given: {e}') from None
 
     try:
         root_model = configuration.root_model(model_ref)

@@ -1,6 +1,6 @@
 export TOOLDIR := $(CURDIR)/scripts/gmake
 
-version_file := $(CURDIR)/VERSION
+export version_file := $(CURDIR)/VERSION
 export muscle_version := $(shell cat $(version_file))
 export major_version := $(shell sed -e 's/^\([0-9]*\)\..*/\1/' $(version_file))
 export minor_version := $(shell sed -e 's/^[0-9]*\.\([0-9]*\)\..*/\1/' $(version_file))
@@ -145,7 +145,6 @@ distclean: docsclean
 	- find docs scripts integration_test muscle3 libmuscle/python -name __pycache__ -type d -depth -exec rm -rf \{\} \;
 	rm -rf ./build
 	rm -rf $(CURDIR)/libmuscle/build/test_install/*
-	rm -rf libmuscle/python/libmuscle/version.py
 
 .PHONY: fortran
 fortran: cpp

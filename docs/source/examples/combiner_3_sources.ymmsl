@@ -1,5 +1,5 @@
 ymmsl_version: v0.2
 # Use three sources to combine
 custom_implementations:
-  source2: source
-  source3: source
+  combiner.source2: source
+  combiner.source3: source

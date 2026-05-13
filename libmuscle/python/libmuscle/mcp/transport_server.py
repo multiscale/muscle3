@@ -1,3 +1,6 @@
+from typing_extensions import Buffer
+
+
 class RequestHandler:
     """Handles requests sent to a TransportServer.
 
@@ -6,7 +9,7 @@ class RequestHandler:
     handle the request, and return a chunk of bytes containing an
     encoded response.
     """
-    def handle_request(self, request: bytearray) -> bytes:
+    def handle_request(self, request: Buffer) -> Buffer:
         """Handle a request.
 
         Args:

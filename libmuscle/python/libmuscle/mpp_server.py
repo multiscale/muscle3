@@ -1,4 +1,5 @@
 from typing import List
+from typing_extensions import Buffer
 
 import msgpack
 from ymmsl.v0_2 import Reference
@@ -23,7 +24,7 @@ class MPPRequestHandler(RequestHandler):
         """
         self._post_office = post_office
 
-    def handle_request(self, request: bytearray) -> bytes:
+    def handle_request(self, request: Buffer) -> Buffer:
         """Handle a request.
 
         This receives an MCP request and handles it by blocking until
@@ -70,7 +71,7 @@ class MPPServer:
         """
         return [server.get_location() for server in self._servers]
 
-    def deposit(self, receiver: Reference, message: bytes) -> None:
+    def deposit(self, receiver: Reference, message: Buffer) -> None:
         """Deposits a message for the receiver to retrieve.
 
         Args:

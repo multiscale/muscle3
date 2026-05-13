@@ -1,5 +1,6 @@
 from enum import IntEnum
-from typing import Any, cast, Optional, Union
+from typing import Any, cast, Optional
+from typing_extensions import Buffer
 
 import msgpack
 import numpy as np
@@ -85,7 +86,7 @@ def _encode_grid(grid: Grid) -> msgpack.ExtType:
     return msgpack.ExtType(ext_type_map[array_type], packed_data)
 
 
-def _decode_grid(code: int, data: bytes) -> Grid:
+def _decode_grid(code: int, data: Buffer) -> Grid:
     """Creates a Grid from serialised data.
     """
     type_map = {
@@ -129,7 +130,7 @@ def _data_encoder(obj: Any) -> Any:
     return obj
 
 
-def _ext_decoder(code: int, data: bytes) -> msgpack.ExtType:
+def _ext_decoder(code: int, data: Buffer) -> msgpack.ExtType:
     if code == ExtTypeId.CLOSE_PORT:
         return ClosePort()
     elif code == ExtTypeId.SETTINGS:
@@ -193,7 +194,7 @@ class MPPMessage:
             self.data = data
 
     @staticmethod
-    def from_bytes(message: Union[bytes, bytearray]) -> 'MPPMessage':
+    def from_bytes(message: Buffer) -> 'MPPMessage':
         """Create an MPP Message from an encoded buffer.
 
         Args:
@@ -215,7 +216,7 @@ class MPPMessage:
                 sender, receiver, port_length, timestamp, next_timestamp,
                 settings_overlay, message_number, saved_until, data)
 
-    def encoded(self) -> bytes:
+    def encoded(self) -> Buffer:
         """Encode the message and return as a bytes buffer.
         """
         message_dict = {
@@ -230,5 +231,5 @@ class MPPMessage:
                 'data': self.data
                 }
 
-        return cast(bytes, msgpack.packb(
+        return cast(Buffer, msgpack.packb(
             message_dict, default=_data_encoder, use_bin_type=True))

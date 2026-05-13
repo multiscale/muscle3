@@ -1,6 +1,7 @@
 import errno
 import logging
 from typing import Any, Dict, cast, List, Optional
+from typing_extensions import Buffer
 
 import msgpack
 
@@ -31,7 +32,7 @@ class MAPRequestHandler(RequestHandler):
         self._agent_manager = agent_manager
         self._post_office = post_office
 
-    def handle_request(self, request: bytearray) -> bytes:
+    def handle_request(self, request: Buffer) -> Buffer:
         """Handles an agent request.
 
         Args:
@@ -50,7 +51,7 @@ class MAPRequestHandler(RequestHandler):
         elif req_type == RequestType.REPORT_RESULT.value:
             response = self._report_result(*req_args)
 
-        return cast(bytes, msgpack.packb(response, use_bin_type=True))
+        return cast(Buffer, msgpack.packb(response, use_bin_type=True))
 
     def _report_resources(
             self, node_name: str, data: Dict[str, Any]) -> Any:
@@ -85,7 +86,7 @@ class MAPRequestHandler(RequestHandler):
             node_name: Hostname (name) of the agent's node
         """
         node_ref = Reference('_' + node_name.replace('-', '_'))
-        next_request: Optional[bytes] = None
+        next_request: Optional[Buffer] = None
         if self._post_office.have_message(node_ref):
             next_request = self._post_office.get_message(node_ref)
 
@@ -95,7 +96,7 @@ class MAPRequestHandler(RequestHandler):
         return [ResponseType.PENDING.value]
 
     def _report_result(self, instances: List[List[Any]]) -> Any:
-        """Handle a report result rquest.
+        """Handle a report result request.
 
         This is sent by the agent if an instance it launched exited.
 

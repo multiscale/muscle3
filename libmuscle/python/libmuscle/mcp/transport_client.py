@@ -1,4 +1,5 @@
 from typing import Optional, Tuple
+from typing_extensions import Buffer
 
 from libmuscle.profiling import ProfileTimestamp
 
@@ -47,8 +48,8 @@ class TransportClient:
         """
         raise NotImplementedError()     # pragma: no cover
 
-    def call(self, request: bytes, timeout_handler: Optional[TimeoutHandler] = None
-             ) -> Tuple[bytearray, ProfileData]:
+    def call(self, request: Buffer, timeout_handler: Optional[TimeoutHandler] = None
+             ) -> Tuple[Buffer, ProfileData]:
         """Send a request to the server and receive the response.
 
         This is a blocking call. Besides the result, this function

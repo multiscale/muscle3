@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Dict, List, Optional, cast
+from typing_extensions import Buffer
 
 import msgpack
 from ymmsl.v0_2 import Reference, Settings
@@ -80,7 +81,7 @@ class MsgPackSnapshot(Snapshot):
         }))
 
     @staticmethod
-    def message_to_bytes(message: Optional['communicator.Message']) -> bytes:
+    def message_to_bytes(message: Optional['communicator.Message']) -> Buffer:
         """Use MPPMessage serializer for serializing the message object
         """
         if message is None:
@@ -93,7 +94,7 @@ class MsgPackSnapshot(Snapshot):
                           settings, 0, -1.0, message.data).encoded()
 
     @staticmethod
-    def bytes_to_message(data: bytes) -> Optional['communicator.Message']:
+    def bytes_to_message(data: Buffer) -> Optional['communicator.Message']:
         """Use MPPMessage deserializer for serializing the message object
         """
         if not data:

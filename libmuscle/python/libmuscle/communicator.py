@@ -189,7 +189,7 @@ class Communicator:
         profile_event.stop()
         if port.is_vector():
             profile_event.port_length = port.get_length()
-        profile_event.message_size = len(encoded_message)
+        profile_event.message_size = len(memoryview(encoded_message))
         if not isinstance(message.data, ClosePort):
             self._profiler.record_event(profile_event)
 
@@ -268,7 +268,7 @@ class Communicator:
         recv_decode_event = ProfileEvent(
                 ProfileEventType.RECEIVE_DECODE, ProfileTimestamp(), None,
                 port, None, slot, port.get_num_messages(),
-                len(mpp_message_bytes))
+                len(memoryview(mpp_message_bytes)))
         mpp_message = MPPMessage.from_bytes(mpp_message_bytes)
         recv_decode_event.stop()
 
@@ -286,12 +286,12 @@ class Communicator:
         recv_wait_event = ProfileEvent(
                 ProfileEventType.RECEIVE_WAIT, profile[0], profile[1], port,
                 mpp_message.port_length, slot, port.get_num_messages(),
-                len(mpp_message_bytes), message.timestamp)
+                len(memoryview(mpp_message_bytes)), message.timestamp)
 
         recv_xfer_event = ProfileEvent(
                 ProfileEventType.RECEIVE_TRANSFER, profile[1], profile[2],
                 port, mpp_message.port_length, slot, port.get_num_messages(),
-                len(mpp_message_bytes), message.timestamp)
+                len(memoryview(mpp_message_bytes)), message.timestamp)
 
         recv_decode_event.message_timestamp = message.timestamp
         receive_event.message_timestamp = message.timestamp
@@ -302,7 +302,7 @@ class Communicator:
             recv_xfer_event.port_length = port.get_length()
             recv_decode_event.port_length = port.get_length()
 
-        receive_event.message_size = len(mpp_message_bytes)
+        receive_event.message_size = len(memoryview(mpp_message_bytes))
 
         if not isinstance(mpp_message.data, ClosePort):
             self._profiler.record_event(recv_wait_event)

@@ -1,5 +1,6 @@
 from errno import EBADF, ENOTCONN
 from socket import SocketType
+from typing_extensions import Buffer
 
 import libmuscle.mark as mark
 
@@ -26,7 +27,7 @@ def is_disconnect(exception: Exception) -> bool:
     return False
 
 
-def recv_all(socket: SocketType, length: int) -> bytes:
+def recv_all(socket: SocketType, length: int) -> Buffer:
     """Receive length bytes from a socket.
 
     Args:
@@ -86,7 +87,7 @@ def recv_int64(socket: SocketType) -> int:
     return int.from_bytes(buf, 'little')
 
 
-def send_frame(socket: SocketType, data: bytes) -> None:
+def send_frame(socket: SocketType, data: Buffer) -> None:
     """Sends a frame as length + data.
 
     Args:
@@ -96,11 +97,11 @@ def send_frame(socket: SocketType, data: bytes) -> None:
     Raises:
         RuntimeError: If there was an error sending the data.
     """
-    send_int64(socket, len(data))
+    send_int64(socket, len(memoryview(data)))
     socket.sendall(data)
 
 
-def recv_frame(socket: SocketType) -> bytes:
+def recv_frame(socket: SocketType) -> Buffer:
     """Receives a frame as length + data.
 
     Args:

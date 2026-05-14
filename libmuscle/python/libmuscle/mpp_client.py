@@ -1,4 +1,5 @@
 from typing import List, Optional, Tuple
+from typing_extensions import Buffer
 
 import msgpack
 from ymmsl.v0_2 import Reference
@@ -41,7 +42,7 @@ class MPPClient:
         self._transport_client = client
 
     def receive(self, receiver: Reference, timeout_handler: Optional[TimeoutHandler]
-                ) -> Tuple[bytes, ProfileData]:
+                ) -> Tuple[Buffer, ProfileData]:
         """Receive a message from a port this client connects to.
 
         Args:

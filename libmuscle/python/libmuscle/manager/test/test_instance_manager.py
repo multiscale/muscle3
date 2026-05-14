@@ -55,10 +55,10 @@ def configuration() -> Configuration:
         executable: /usr/bin/micro
 
     resources:
-      macro:
+      test_model.macro:
         threads: 1
 
-      micro:
+      test_model.micro:
         threads: 1
     """
 

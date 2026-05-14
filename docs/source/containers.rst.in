@@ -117,9 +117,9 @@ muscle3 release.
           micro.final_state: macro.state_in
 
     resources:
-      macro:
+      reaction_diffusion_python.macro:
         threads: 1
-      micro:
+      reaction_diffusion_python.micro:
         threads: 1
 
     settings:
@@ -232,9 +232,9 @@ muscle3 release.
           micro.final_state: macro.state_in
 
     resources:
-      macro:
+      reaction_diffusion_python.macro:
         threads: 1
-      micro:
+      reaction_diffusion_python.micro:
         threads: 1
 
     settings:

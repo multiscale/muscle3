@@ -63,9 +63,9 @@ def test_start_script(tmpdir):
             '    - ""\n'
             '    - mpirun -n ${{MUSCLE_MPI_PROCESSES}} {}\n'
             'resources:\n'
-            '  macro:\n'
+            '  test_model.macro:\n'
             '    threads: 1\n'
-            '  micro:\n'
+            '  test_model.micro:\n'
             '    mpi_processes: 2\n'
             ).format(
                 ld_lib_path, test_component, ld_lib_path, mpi_test_component))

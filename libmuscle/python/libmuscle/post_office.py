@@ -1,6 +1,7 @@
 from threading import Lock
 import time
 from typing import Dict
+from typing_extensions import Buffer
 
 from ymmsl.v0_2 import Reference
 
@@ -29,7 +30,7 @@ class PostOffice:
         self._ensure_outbox_exists(receiver)
         return not self._outboxes[receiver].is_empty()
 
-    def get_message(self, receiver: Reference) -> bytes:
+    def get_message(self, receiver: Reference) -> Buffer:
         """Get a message from a receiver's outbox.
 
         Used by servers to get messages that have been sent to another
@@ -41,7 +42,7 @@ class PostOffice:
         self._ensure_outbox_exists(receiver)
         return self._outboxes[receiver].retrieve()
 
-    def deposit(self, receiver: Reference, message: bytes) -> None:
+    def deposit(self, receiver: Reference, message: Buffer) -> None:
         """Deposits a message into an outbox.
 
         Args:

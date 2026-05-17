@@ -139,7 +139,7 @@ class InstanceManager:
             stdout_path = idir / 'stdout.txt'
             stderr_path = idir / 'stderr.txt'
 
-            res_req = self._configuration.get_resources(component.name)
+            res_req = self._configuration.get_resources(model.name + component.name)
 
             request = InstantiationRequest(
                     instance, program,

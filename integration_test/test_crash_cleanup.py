@@ -54,9 +54,9 @@ def test_crash_cleanup(tmpdir):
             '      LD_LIBRARY_PATH: {}\n'
             '    executable: {}\n'
             'resources:\n'
-            '  macro:\n'
+            '  test_model.macro:\n'
             '    threads: 1\n'
-            '  micro:\n'
+            '  test_model.micro:\n'
             '    threads: 1\n'
             ).format(
                 ld_lib_path, crash_component, ld_lib_path, test_component))

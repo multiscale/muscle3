@@ -30,10 +30,10 @@ models:
         component2.out: component3.in
 
 resources:
-  component1:
+  dispatch_cpp.component1:
     threads: 1
-  component2:
+  dispatch_cpp.component2:
     threads: 1
-  component3:
+  dispatch_cpp.component3:
     threads: 1
 
